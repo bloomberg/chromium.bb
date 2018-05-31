@@ -29,7 +29,6 @@ class OpenTabsUIDelegate;
 namespace syncer {
 
 class BaseTransaction;
-class DataTypeController;
 class JsController;
 class LocalDeviceInfoProvider;
 class GlobalIdMapper;
@@ -263,13 +262,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
 
   // Returns DeviceInfo provider for the local device.
   virtual LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const = 0;
-
-  // Registers a data type controller with the sync service.  This
-  // makes the data type controller available for use, it does not
-  // enable or activate the synchronization of the data type (see
-  // ActivateDataType).  Takes ownership of the pointer.
-  virtual void RegisterDataTypeController(
-      std::unique_ptr<DataTypeController> data_type_controller) = 0;
 
   // Called to re-enable a type disabled by DisableDatatype(..). Note, this does
   // not change the preferred state of a datatype, and is not persisted across

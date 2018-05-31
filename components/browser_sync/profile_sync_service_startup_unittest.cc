@@ -92,10 +92,17 @@ class ProfileSyncServiceStartupTest : public testing::Test {
         profile_sync_service_bundle_.CreateBasicInitParams(start_behavior,
                                                            builder.Build());
 
+    ON_CALL(*component_factory_, CreateCommonDataTypeControllers(_, _))
+        .WillByDefault(testing::InvokeWithoutArgs([=]() {
+          syncer::DataTypeController::TypeVector controllers;
+          controllers.push_back(
+              std::make_unique<syncer::FakeDataTypeController>(
+                  syncer::BOOKMARKS));
+          return controllers;
+        }));
+
     sync_service_ =
         std::make_unique<ProfileSyncService>(std::move(init_params));
-    sync_service_->RegisterDataTypeController(
-        std::make_unique<syncer::FakeDataTypeController>(syncer::BOOKMARKS));
     sync_service_->AddObserver(&observer_);
   }
 

@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_SYNC_DRIVER_FRONTEND_DATA_TYPE_CONTROLLER_MOCK_H__
 #define COMPONENTS_SYNC_DRIVER_FRONTEND_DATA_TYPE_CONTROLLER_MOCK_H__
 
+#include <memory>
 #include <string>
 
 #include "components/sync/driver/frontend_data_type_controller.h"
+#include "components/sync/driver/model_associator.h"
+#include "components/sync/model/change_processor.h"
 #include "components/sync/model/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -33,9 +36,11 @@ class FrontendDataTypeControllerMock : public FrontendDataTypeController {
   MOCK_METHOD0(CreateSyncComponents, void());
   MOCK_METHOD0(CleanUpState, void());
   MOCK_CONST_METHOD0(model_associator, AssociatorInterface*());
-  MOCK_METHOD1(set_model_associator, void(AssociatorInterface* associator));
+  MOCK_METHOD1(set_model_associator,
+               void(std::unique_ptr<AssociatorInterface> associator));
   MOCK_CONST_METHOD0(change_processor, ChangeProcessor*());
-  MOCK_METHOD1(set_change_processor, void(ChangeProcessor* processor));
+  MOCK_METHOD1(set_change_processor,
+               void(std::unique_ptr<ChangeProcessor> processor));
   MOCK_METHOD1(RecordAssociationTime, void(base::TimeDelta time));
   MOCK_METHOD1(RecordStartFailure, void(ConfigureResult result));
 };

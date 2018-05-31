@@ -164,7 +164,7 @@ class ProfileSyncServiceBundle {
   FakeSigninManagerType signin_manager_;
   FakeProfileOAuth2TokenService auth_service_;
   identity::IdentityManager identity_manager_;
-  syncer::SyncApiComponentFactoryMock component_factory_;
+  testing::NiceMock<syncer::SyncApiComponentFactoryMock> component_factory_;
   testing::NiceMock<sync_sessions::MockSyncSessionsClient>
       sync_sessions_client_;
   invalidation::FakeInvalidationService fake_invalidation_service_;

@@ -182,24 +182,25 @@ void ExtensionSessionsTest::SetUpOnMainThread() {
 
 std::unique_ptr<KeyedService> ExtensionSessionsTest::BuildProfileSyncService(
     content::BrowserContext* context) {
-  std::unique_ptr<syncer::SyncApiComponentFactoryMock> factory(
-      new syncer::SyncApiComponentFactoryMock());
+  auto factory = std::make_unique<
+      testing::NiceMock<syncer::SyncApiComponentFactoryMock>>();
 
-  factory->SetLocalDeviceInfoProvider(
-      std::unique_ptr<syncer::LocalDeviceInfoProvider>(
-          new syncer::LocalDeviceInfoProviderMock(
-              kSessionTags[0], "machine name", "Chromium 10k", "Chrome 10k",
-              sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id")));
+  ON_CALL(*factory, CreateLocalDeviceInfoProvider())
+      .WillByDefault(testing::Invoke([]() {
+        return std::make_unique<syncer::LocalDeviceInfoProviderMock>(
+            kSessionTags[0], "machine name", "Chromium 10k", "Chrome 10k",
+            sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id");
+      }));
 
   Profile* profile = static_cast<Profile*>(context);
-  browser_sync::ProfileSyncServiceMock* sync_service =
-      new browser_sync::ProfileSyncServiceMock(
-          CreateProfileSyncServiceParamsForTest(
-              std::make_unique<browser_sync::ChromeSyncClient>(profile),
-              profile));
-  static_cast<browser_sync::ChromeSyncClient*>(sync_service->GetSyncClient())
-      ->SetSyncApiComponentFactoryForTesting(std::move(factory));
-  return base::WrapUnique(sync_service);
+  auto sync_client = std::make_unique<browser_sync::ChromeSyncClient>(profile);
+  sync_client->SetSyncApiComponentFactoryForTesting(std::move(factory));
+
+  auto sync_service =
+      std::make_unique<testing::NiceMock<browser_sync::ProfileSyncServiceMock>>(
+          CreateProfileSyncServiceParamsForTest(std::move(sync_client),
+                                                profile));
+  return sync_service;
 }
 
 void ExtensionSessionsTest::CreateTestProfileSyncService() {

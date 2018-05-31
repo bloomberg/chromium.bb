@@ -18,7 +18,7 @@
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/generic_change_processor.h"
 #include "components/sync/driver/generic_change_processor_factory.h"
-#include "components/sync/driver/sync_api_component_factory.h"
+#include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/engine/sync_engine.h"
 #include "components/sync/model/data_type_error_handler_mock.h"
 #include "components/sync/model/fake_syncable_service.h"
@@ -32,42 +32,6 @@ namespace {
 
 using ::testing::NiceMock;
 using ::testing::StrictMock;
-
-class TestSyncApiComponentFactory : public SyncApiComponentFactory {
- public:
-  TestSyncApiComponentFactory() {}
-  ~TestSyncApiComponentFactory() override {}
-
-  // SyncApiComponentFactory implementation.
-  void RegisterDataTypes(
-      SyncService* sync_service,
-      const RegisterDataTypesMethod& register_platform_types_method) override {}
-  std::unique_ptr<DataTypeManager> CreateDataTypeManager(
-      ModelTypeSet initial_types,
-      const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-      const DataTypeController::TypeMap* controllers,
-      const DataTypeEncryptionHandler* encryption_handler,
-      ModelTypeConfigurer* configurer,
-      DataTypeManagerObserver* observer) override {
-    return nullptr;
-  }
-  std::unique_ptr<SyncEngine> CreateSyncEngine(
-      const std::string& name,
-      invalidation::InvalidationService* invalidator,
-      const base::WeakPtr<SyncPrefs>& sync_prefs,
-      const base::FilePath& sync_folder) override {
-    return nullptr;
-  }
-  std::unique_ptr<LocalDeviceInfoProvider> CreateLocalDeviceInfoProvider()
-      override {
-    return nullptr;
-  }
-  SyncApiComponentFactory::SyncComponents CreateBookmarkSyncComponents(
-      SyncService* sync_service,
-      std::unique_ptr<DataTypeErrorHandler> error_handler) override {
-    return SyncApiComponentFactory::SyncComponents(nullptr, nullptr);
-  }
-};
 
 class SyncSharedChangeProcessorTest : public testing::Test,
                                       public FakeSyncClient {
@@ -159,7 +123,7 @@ class SyncSharedChangeProcessorTest : public testing::Test,
   base::MessageLoop frontend_loop_;
   base::Thread model_thread_;
   TestUserShare test_user_share_;
-  TestSyncApiComponentFactory factory_;
+  NiceMock<SyncApiComponentFactoryMock> factory_;
 
   scoped_refptr<SharedChangeProcessor> shared_change_processor_;
 

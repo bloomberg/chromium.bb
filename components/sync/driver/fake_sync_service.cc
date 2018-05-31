@@ -152,9 +152,6 @@ LocalDeviceInfoProvider* FakeSyncService::GetLocalDeviceInfoProvider() const {
   return nullptr;
 }
 
-void FakeSyncService::RegisterDataTypeController(
-    std::unique_ptr<DataTypeController> data_type_controller) {}
-
 void FakeSyncService::ReenableDatatype(ModelType type) {}
 
 syncer::SyncTokenStatus FakeSyncService::GetSyncTokenStatus() const {

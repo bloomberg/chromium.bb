@@ -44,6 +44,7 @@ class SyncSessionsClient;
 
 namespace syncer {
 
+class LocalDeviceInfoProvider;
 class SyncService;
 class SyncableService;
 
@@ -77,10 +78,11 @@ class SyncClient {
   virtual history::HistoryService* GetHistoryService() = 0;
   virtual bool HasPasswordStore() = 0;
 
-  // Returns a callback that will register the types specific to the current
-  // platform.
-  virtual SyncApiComponentFactory::RegisterDataTypesMethod
-  GetRegisterPlatformTypesCallback() = 0;
+  // Returns a vector with all supported datatypes and their controllers.
+  // TODO(crbug.com/681921): Remove |local_device_info_provider| once the
+  // migration to USS is completed.
+  virtual DataTypeController::TypeVector CreateDataTypeControllers(
+      LocalDeviceInfoProvider* local_device_info_provider) = 0;
 
   // Returns a callback that will be invoked when password sync state has
   // potentially been changed.

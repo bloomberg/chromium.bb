@@ -9,28 +9,29 @@
 #include <string>
 
 #include "components/sync/base/model_type.h"
+#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/data_type_manager.h"
+#include "components/sync/driver/model_associator.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/engine/sync_engine.h"
+#include "components/sync/model/change_processor.h"
 #include "components/sync/model/data_type_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncer {
 
-class AssociatorInterface;
-class ChangeProcessor;
 class DataTypeEncryptionHandler;
 
 class SyncApiComponentFactoryMock : public SyncApiComponentFactory {
  public:
   SyncApiComponentFactoryMock();
-  SyncApiComponentFactoryMock(AssociatorInterface* model_associator,
-                              ChangeProcessor* change_processor);
   ~SyncApiComponentFactoryMock() override;
 
-  MOCK_METHOD2(RegisterDataTypes,
-               void(SyncService* sync_service, const RegisterDataTypesMethod&));
+  MOCK_METHOD2(CreateCommonDataTypeControllers,
+               DataTypeController::TypeVector(
+                   ModelTypeSet disabled_types,
+                   LocalDeviceInfoProvider* local_device_info_provider));
   MOCK_METHOD6(CreateDataTypeManager,
                std::unique_ptr<DataTypeManager>(
                    ModelTypeSet,
@@ -45,24 +46,11 @@ class SyncApiComponentFactoryMock : public SyncApiComponentFactory {
                    invalidation::InvalidationService* invalidator,
                    const base::WeakPtr<SyncPrefs>& sync_prefs,
                    const base::FilePath& sync_folder));
-
-  std::unique_ptr<LocalDeviceInfoProvider> CreateLocalDeviceInfoProvider()
-      override;
-  void SetLocalDeviceInfoProvider(
-      std::unique_ptr<LocalDeviceInfoProvider> local_device);
-
-  SyncComponents CreateBookmarkSyncComponents(
-      SyncService* sync_service,
-      std::unique_ptr<DataTypeErrorHandler> error_handler) override;
-
- private:
-  SyncApiComponentFactory::SyncComponents MakeSyncComponents();
-
-  std::unique_ptr<AssociatorInterface> model_associator_;
-  std::unique_ptr<ChangeProcessor> change_processor_;
-  // LocalDeviceInfoProvider is initially owned by this class,
-  // transferred to caller when CreateLocalDeviceInfoProvider is called.
-  std::unique_ptr<LocalDeviceInfoProvider> local_device_;
+  MOCK_METHOD0(CreateLocalDeviceInfoProvider,
+               std::unique_ptr<LocalDeviceInfoProvider>());
+  MOCK_METHOD1(
+      CreateBookmarkSyncComponents,
+      SyncComponents(std::unique_ptr<DataTypeErrorHandler> error_handler));
 };
 
 }  // namespace syncer
