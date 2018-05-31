@@ -46,11 +46,13 @@
 
 namespace blink {
 
+constexpr unsigned HarfBuzzRunGlyphData::kMaxCharacterIndex;
+
 unsigned ShapeResult::RunInfo::NextSafeToBreakOffset(unsigned offset) const {
   DCHECK_LE(offset, num_characters_);
-  for (unsigned i = 0; i < safe_break_offsets_.size(); i++) {
-    if (safe_break_offsets_[i] >= offset)
-      return safe_break_offsets_[i];
+  for (const auto& glyph_data : glyph_data_) {
+    if (glyph_data.safe_to_break_before && glyph_data.character_index >= offset)
+      return glyph_data.character_index;
   }
 
   // Next safe break is at the end of the run.
@@ -61,10 +63,10 @@ unsigned ShapeResult::RunInfo::PreviousSafeToBreakOffset(
     unsigned offset) const {
   if (offset >= num_characters_)
     return num_characters_;
-
-  for (unsigned i = safe_break_offsets_.size(); i > 0; i--) {
-    if (safe_break_offsets_[i - 1] <= offset)
-      return safe_break_offsets_[i - 1];
+  for (auto it = glyph_data_.rbegin(); it != glyph_data_.rend(); ++it) {
+    const auto& glyph_data = *it;
+    if (glyph_data.safe_to_break_before && glyph_data.character_index <= offset)
+      return glyph_data.character_index;
   }
 
   // Next safe break is at the start of the run.
@@ -169,11 +171,14 @@ void ShapeResult::RunInfo::CharacterIndexForXPosition(
 void HarfBuzzRunGlyphData::SetGlyphAndPositions(uint16_t glyph_id,
                                                 uint16_t character_index,
                                                 float advance,
-                                                const FloatSize& offset) {
+                                                const FloatSize& offset,
+                                                bool safe_to_break_before) {
   glyph = glyph_id;
+  DCHECK_LE(character_index, kMaxCharacterIndex);
   this->character_index = character_index;
   this->advance = advance;
   this->offset = offset;
+  this->safe_to_break_before = safe_to_break_before;
 }
 
 ShapeResult::ShapeResult(const SimpleFontData* font_data,
@@ -675,9 +680,6 @@ void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
   GlyphBoundsAccumulator bounds(width_);
   bool has_vertical_offsets = !is_horizontal_run;
 
-  // Because we reverse this later, it must be empty at this point.
-  DCHECK(run->safe_break_offsets_.IsEmpty());
-
   // HarfBuzz returns result in visual order, no need to flip for RTL.
   for (unsigned i = 0; i < num_glyphs; ++i) {
     uint16_t glyph = glyph_infos[start_glyph + i].codepoint;
@@ -695,18 +697,23 @@ void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
 
     uint16_t character_index =
         glyph_infos[start_glyph + i].cluster - start_cluster;
+    if (UNLIKELY(character_index > HarfBuzzRunGlyphData::kMaxCharacterIndex)) {
+      // If the character index exceeds the limit, abort and shrink the run to
+      // what are actually stored.
+      run->num_characters_ = character_index;
+      run->glyph_data_.Shrink(i);
+      break;
+    }
     HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
-    glyph_data.SetGlyphAndPositions(glyph, character_index, advance, offset);
+    glyph_data.SetGlyphAndPositions(
+        glyph, character_index, advance, offset,
+        IsSafeToBreakBefore(glyph_infos + start_glyph, num_glyphs, i));
     total_advance += advance;
     has_vertical_offsets |= (offset.Height() != 0);
 
     bounds.Unite<is_horizontal_run>(
         glyph_data, current_font_data.BoundsForGlyph(glyph_data.glyph));
     bounds.origin += advance;
-
-    // Check if it is safe to break without reshaping before the cluster.
-    if (IsSafeToBreakBefore(glyph_infos + start_glyph, num_glyphs, i))
-      run->safe_break_offsets_.push_back(character_index);
   }
 
   run->width_ = std::max(0.0f, total_advance);
@@ -715,9 +722,6 @@ void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
   if (!is_horizontal_run)
     bounds.ConvertVerticalRunToLogical(current_font_data.GetFontMetrics());
   glyph_bounding_box_.Unite(bounds.bounds);
-
-  if (UNLIKELY(run->Rtl()))
-    run->safe_break_offsets_.Reverse();
 }
 
 void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run_to_insert,
@@ -740,8 +744,8 @@ void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run_to_insert,
                                  harf_buzz_buffer);
   }
   width_ += run->width_;
-  num_glyphs_ += num_glyphs;
-  DCHECK_GE(num_glyphs_, num_glyphs);
+  num_glyphs_ += run->NumGlyphs();
+  DCHECK_GE(num_glyphs_, run->NumGlyphs());
 
   InsertRun(std::move(run));
 }
@@ -789,9 +793,13 @@ ShapeResult::RunInfo* ShapeResult::InsertRunForTesting(
     Vector<uint16_t> safe_break_offsets) {
   std::unique_ptr<RunInfo> run = std::make_unique<ShapeResult::RunInfo>(
       nullptr, IsLtr(direction) ? HB_DIRECTION_LTR : HB_DIRECTION_RTL,
-      CanvasRotationInVertical::kRegular, HB_SCRIPT_COMMON, start_index, 0,
-      num_characters);
-  run->safe_break_offsets_.AppendVector(safe_break_offsets);
+      CanvasRotationInVertical::kRegular, HB_SCRIPT_COMMON, start_index,
+      num_characters, num_characters);
+  unsigned i = 0;
+  for (auto& glyph_data : run->glyph_data_)
+    glyph_data.SetGlyphAndPositions(0, i++, 0, FloatSize(), false);
+  for (uint16_t offset : safe_break_offsets)
+    run->glyph_data_[offset].safe_to_break_before = true;
   RunInfo* run_ptr = run.get();
   InsertRun(std::move(run));
   return run_ptr;
@@ -1026,10 +1034,8 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
     float advance = font->TabWidth(font_data, text_run.GetTabSize(), position);
     HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
     glyph_data.SetGlyphAndPositions(font_data->SpaceGlyph(), i, advance,
-                                    FloatSize());
+                                    FloatSize(), true);
 
-    // Assume it's safe to break after a tab character.
-    run->safe_break_offsets_.push_back(glyph_data.character_index);
     position += advance;
   }
   run->width_ = position - start_position;

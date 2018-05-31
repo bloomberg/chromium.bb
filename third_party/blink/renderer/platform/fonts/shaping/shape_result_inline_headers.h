@@ -44,15 +44,20 @@ class SimpleFontData;
 
 struct HarfBuzzRunGlyphData {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+
+  static constexpr unsigned kMaxCharacterIndex = (1 << 15) - 1;
+
   uint16_t glyph;
-  uint16_t character_index;
+  unsigned character_index : 15;
+  unsigned safe_to_break_before : 1;
   float advance;
   FloatSize offset;
 
   void SetGlyphAndPositions(uint16_t glyph_id,
                             uint16_t character_index,
                             float advance,
-                            const FloatSize& offset);
+                            const FloatSize& offset,
+                            bool safe_to_break_before);
 };
 
 struct ShapeResult::RunInfo {
@@ -85,6 +90,7 @@ struct ShapeResult::RunInfo {
         num_characters_(other.num_characters_),
         width_(other.width_) {}
 
+  unsigned NumGlyphs() const { return glyph_data_.size(); }
   bool Rtl() const { return HB_DIRECTION_IS_BACKWARD(direction_); }
   bool IsHorizontal() const { return HB_DIRECTION_IS_HORIZONTAL(direction_); }
   CanvasRotationInVertical CanvasRotation() const { return canvas_rotation_; }
@@ -138,6 +144,7 @@ struct ShapeResult::RunInfo {
           HarfBuzzRunGlyphData& sub_glyph = run->glyph_data_[sub_glyph_index++];
           sub_glyph.glyph = glyph_data.glyph;
           sub_glyph.character_index = glyph_data.character_index - start;
+          sub_glyph.safe_to_break_before = glyph_data.safe_to_break_before;
           sub_glyph.advance = glyph_data.advance;
           sub_glyph.offset = glyph_data.offset;
           total_advance += glyph_data.advance;
@@ -146,11 +153,6 @@ struct ShapeResult::RunInfo {
 
     run->width_ = total_advance;
     run->num_characters_ = number_of_characters;
-
-    for (unsigned i = 0; i < safe_break_offsets_.size(); i++) {
-      if (safe_break_offsets_[i] >= start && safe_break_offsets_[i] <= end)
-        run->safe_break_offsets_.push_back(safe_break_offsets_[i] - start);
-    }
 
     return run;
   }
@@ -189,7 +191,7 @@ struct ShapeResult::RunInfo {
         initial_advance,
         [&](const HarfBuzzRunGlyphData& glyph_data,
             float total_advance) -> bool {
-          const uint16_t character_index =
+          const unsigned character_index =
               start_index_ + glyph_data.character_index + index_offset;
 
           if (character_index < from) {
@@ -218,7 +220,6 @@ struct ShapeResult::RunInfo {
   Vector<HarfBuzzRunGlyphData> glyph_data_;
   // List of character indecies before which it's safe to break without
   // reshaping.
-  Vector<uint16_t> safe_break_offsets_;
   unsigned start_index_;
   unsigned num_characters_;
   float width_;

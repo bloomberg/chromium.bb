@@ -334,13 +334,30 @@ void HarfBuzzShaper::CommitGlyphs(RangeData* range_data,
                                   const BufferSlice& slice,
                                   ShapeResult* shape_result) const {
   hb_direction_t direction = range_data->HarfBuzzDirection(canvas_rotation);
+  hb_script_t script = ICUScriptToHBScript(current_run_script);
   // Here we need to specify glyph positions.
-  ShapeResult::RunInfo* run = new ShapeResult::RunInfo(
-      current_font, direction, canvas_rotation,
-      ICUScriptToHBScript(current_run_script), slice.start_character_index,
-      slice.num_glyphs, slice.num_characters);
-  shape_result->InsertRun(base::WrapUnique(run), slice.start_glyph_index,
-                          slice.num_glyphs, range_data->buffer);
+  BufferSlice next_slice;
+  for (const BufferSlice* current_slice = &slice;;) {
+    ShapeResult::RunInfo* run = new ShapeResult::RunInfo(
+        current_font, direction, canvas_rotation, script,
+        current_slice->start_character_index, current_slice->num_glyphs,
+        current_slice->num_characters);
+    shape_result->InsertRun(base::WrapUnique(run),
+                            current_slice->start_glyph_index,
+                            current_slice->num_glyphs, range_data->buffer);
+    unsigned num_glyphs_inserted = run->NumGlyphs();
+    if (num_glyphs_inserted == current_slice->num_glyphs)
+      break;
+    // If the slice exceeds the limit a RunInfo can store, create another
+    // RunInfo for the rest of the slice.
+    DCHECK_GT(current_slice->num_characters, run->num_characters_);
+    DCHECK_GT(current_slice->num_glyphs, num_glyphs_inserted);
+    next_slice = {current_slice->start_character_index + run->num_characters_,
+                  current_slice->num_characters - run->num_characters_,
+                  current_slice->start_glyph_index + num_glyphs_inserted,
+                  current_slice->num_glyphs - num_glyphs_inserted};
+    current_slice = &next_slice;
+  }
   if (is_last_resort)
     range_data->font->ReportNotDefGlyph();
 }
