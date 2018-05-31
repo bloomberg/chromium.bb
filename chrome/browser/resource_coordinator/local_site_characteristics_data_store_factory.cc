@@ -5,6 +5,7 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 
 #include "base/feature_list.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store.h"
@@ -35,7 +36,9 @@ LocalSiteCharacteristicsDataStoreFactory::
     LocalSiteCharacteristicsDataStoreFactory()
     : BrowserContextKeyedServiceFactory(
           "LocalSiteCharacteristicsDataStore",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(HistoryServiceFactory::GetInstance());
+}
 
 LocalSiteCharacteristicsDataStoreFactory::
     ~LocalSiteCharacteristicsDataStoreFactory() = default;
