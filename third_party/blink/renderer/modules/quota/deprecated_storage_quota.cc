@@ -143,7 +143,7 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
 
   const SecurityOrigin* security_origin =
       execution_context->GetSecurityOrigin();
-  if (security_origin->IsUnique()) {
+  if (security_origin->IsOpaque()) {
     EnqueueStorageErrorCallback(script_state, error_callback,
                                 kNotSupportedError);
     return;
@@ -186,7 +186,7 @@ void DeprecatedStorageQuota::requestQuota(
 
   Document* document = ToDocument(execution_context);
   const SecurityOrigin* security_origin = document->GetSecurityOrigin();
-  if (security_origin->IsUnique()) {
+  if (security_origin->IsOpaque()) {
     // Unique origins cannot store persistent state.
     std::move(callback).Run(blink::mojom::QuotaStatusCode::kErrorAbort, 0, 0);
     return;

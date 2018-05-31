@@ -25,7 +25,7 @@ bool Policy::allowsFeature(const String& feature) const {
 bool Policy::allowsFeature(const String& feature, const String& url) const {
   scoped_refptr<const SecurityOrigin> origin =
       SecurityOrigin::CreateFromString(url);
-  if (!origin || origin->IsUnique()) {
+  if (!origin || origin->IsOpaque()) {
     GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
         kOtherMessageSource, kWarningMessageLevel,
         "Invalid origin url for feature '" + feature + "': " + url + "."));

@@ -248,7 +248,7 @@ bool History::CanChangeToUrl(const KURL& url,
   // We allow sandboxed documents, `data:`/`file:` URLs, etc. to use
   // 'pushState'/'replaceState' to modify the URL fragment: see
   // https://crbug.com/528681 for the compatibility concerns.
-  if (document_origin->IsUnique() || document_origin->IsLocal())
+  if (document_origin->IsOpaque() || document_origin->IsLocal())
     return EqualIgnoringQueryAndFragment(url, document_url);
 
   if (!EqualIgnoringPathQueryAndFragment(url, document_url))
@@ -256,7 +256,7 @@ bool History::CanChangeToUrl(const KURL& url,
 
   scoped_refptr<const SecurityOrigin> requested_origin =
       SecurityOrigin::Create(url);
-  if (requested_origin->IsUnique() ||
+  if (requested_origin->IsOpaque() ||
       !requested_origin->IsSameSchemeHostPort(document_origin)) {
     return false;
   }

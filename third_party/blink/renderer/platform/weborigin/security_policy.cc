@@ -72,8 +72,8 @@ static void AddOriginAccessEntry(const SecurityOrigin& source_origin,
                                  bool allow_destination_subdomains,
                                  OriginAccessMap& access_map) {
   DCHECK(IsMainThread());
-  DCHECK(!source_origin.IsUnique());
-  if (source_origin.IsUnique())
+  DCHECK(!source_origin.IsOpaque());
+  if (source_origin.IsOpaque())
     return;
 
   String source_string = source_origin.ToString();
@@ -94,8 +94,8 @@ static void RemoveOriginAccessEntry(const SecurityOrigin& source_origin,
                                     bool allow_destination_subdomains,
                                     OriginAccessMap& access_map) {
   DCHECK(IsMainThread());
-  DCHECK(!source_origin.IsUnique());
-  if (source_origin.IsUnique())
+  DCHECK(!source_origin.IsOpaque());
+  if (source_origin.IsOpaque())
     return;
 
   String source_string = source_origin.ToString();
@@ -257,7 +257,7 @@ bool SecurityPolicy::IsOriginWhiteListedTrustworthy(
     const SecurityOrigin& origin) {
   // Early return if there are no whitelisted origins to avoid unnecessary
   // allocations, copies, and frees.
-  if (origin.IsUnique() || TrustworthyOriginSet().IsEmpty())
+  if (origin.IsOpaque() || TrustworthyOriginSet().IsEmpty())
     return false;
   if (TrustworthyOriginSet().Contains(origin.ToRawString()))
     return true;

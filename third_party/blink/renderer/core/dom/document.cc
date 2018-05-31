@@ -4102,7 +4102,7 @@ void Document::UpdateViewportDescription() {
 }
 
 String Document::OutgoingReferrer() const {
-  if (GetSecurityOrigin()->IsUnique()) {
+  if (GetSecurityOrigin()->IsOpaque()) {
     // Return |no-referrer|.
     return String();
   }

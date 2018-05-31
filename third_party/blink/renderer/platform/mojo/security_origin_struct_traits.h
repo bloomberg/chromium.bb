@@ -28,7 +28,7 @@ struct StructTraits<url::mojom::blink::Origin::DataView,
   }
   static bool unique(
       const scoped_refptr<const ::blink::SecurityOrigin>& origin) {
-    return origin->IsUnique();
+    return origin->IsOpaque();
   }
   static bool Read(url::mojom::blink::Origin::DataView data,
                    scoped_refptr<const ::blink::SecurityOrigin>* out) {
@@ -45,7 +45,7 @@ struct StructTraits<url::mojom::blink::Origin::DataView,
 
     // If a unique origin was created, but the unique flag wasn't set, then
     // the values provided to 'create' were invalid.
-    if (!data.unique() && (*out)->IsUnique())
+    if (!data.unique() && (*out)->IsOpaque())
       return false;
 
     return true;

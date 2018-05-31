@@ -38,7 +38,7 @@ mojom::blink::BroadcastChannelProviderPtr& GetThreadSpecificProvider() {
 BroadcastChannel* BroadcastChannel::Create(ExecutionContext* execution_context,
                                            const String& name,
                                            ExceptionState& exception_state) {
-  if (execution_context->GetSecurityOrigin()->IsUnique()) {
+  if (execution_context->GetSecurityOrigin()->IsOpaque()) {
     // TODO(mek): Decide what to do here depending on
     // https://github.com/whatwg/html/issues/1319
     exception_state.ThrowDOMException(

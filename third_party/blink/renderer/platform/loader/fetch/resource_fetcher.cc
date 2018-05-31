@@ -711,7 +711,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
     return blocked_reason;
 
   const scoped_refptr<const SecurityOrigin>& origin = options.security_origin;
-  if (origin && !origin->IsUnique() &&
+  if (origin && !origin->IsOpaque() &&
       !origin->IsSameSchemeHostPort(Context().GetSecurityOrigin())) {
     // |options.security_origin| may differ from the document's origin if
     // this is a fetch initiated by an isolated world execution context, with a

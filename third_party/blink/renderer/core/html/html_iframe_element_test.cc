@@ -40,13 +40,13 @@ TEST_F(HTMLIFrameElementTest, FramesUseCorrectOrigin) {
   effective_origin = GetOriginForFeaturePolicy(frame_element);
   EXPECT_FALSE(
       effective_origin->IsSameSchemeHostPort(document->GetSecurityOrigin()));
-  EXPECT_TRUE(effective_origin->IsUnique());
+  EXPECT_TRUE(effective_origin->IsOpaque());
 
   frame_element->setAttribute(HTMLNames::srcAttr, "http://example.net/");
   effective_origin = GetOriginForFeaturePolicy(frame_element);
   EXPECT_FALSE(
       effective_origin->IsSameSchemeHostPort(document->GetSecurityOrigin()));
-  EXPECT_FALSE(effective_origin->IsUnique());
+  EXPECT_FALSE(effective_origin->IsOpaque());
 }
 
 // Test that a unique origin is used when constructing the container policy in a
@@ -65,13 +65,13 @@ TEST_F(HTMLIFrameElementTest, SandboxFramesUseCorrectOrigin) {
       GetOriginForFeaturePolicy(frame_element);
   EXPECT_FALSE(
       effective_origin->IsSameSchemeHostPort(document->GetSecurityOrigin()));
-  EXPECT_TRUE(effective_origin->IsUnique());
+  EXPECT_TRUE(effective_origin->IsOpaque());
 
   frame_element->setAttribute(HTMLNames::srcAttr, "http://example.net/");
   effective_origin = GetOriginForFeaturePolicy(frame_element);
   EXPECT_FALSE(
       effective_origin->IsSameSchemeHostPort(document->GetSecurityOrigin()));
-  EXPECT_TRUE(effective_origin->IsUnique());
+  EXPECT_TRUE(effective_origin->IsOpaque());
 }
 
 // Test that a sandboxed iframe with the allow-same-origin sandbox flag uses the
@@ -90,7 +90,7 @@ TEST_F(HTMLIFrameElementTest, SameOriginSandboxFramesUseCorrectOrigin) {
       GetOriginForFeaturePolicy(frame_element);
   EXPECT_TRUE(
       effective_origin->IsSameSchemeHostPort(document->GetSecurityOrigin()));
-  EXPECT_FALSE(effective_origin->IsUnique());
+  EXPECT_FALSE(effective_origin->IsOpaque());
 }
 
 // Test that the parent document's origin is used when constructing the
@@ -126,7 +126,7 @@ TEST_F(HTMLIFrameElementTest, SandboxedSrcdocFramesUseCorrectOrigin) {
       GetOriginForFeaturePolicy(frame_element);
   EXPECT_FALSE(
       effective_origin->IsSameSchemeHostPort(document->GetSecurityOrigin()));
-  EXPECT_TRUE(effective_origin->IsUnique());
+  EXPECT_TRUE(effective_origin->IsOpaque());
 }
 
 // Test that iframes with relative src urls correctly construct their origin

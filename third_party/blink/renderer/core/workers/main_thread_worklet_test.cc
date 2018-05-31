@@ -83,8 +83,8 @@ class MainThreadWorkletTest : public PageTestBase {
 TEST_F(MainThreadWorkletTest, SecurityOrigin) {
   // The SecurityOrigin for a worklet should be a unique opaque origin, while
   // the owner Document's SecurityOrigin shouldn't.
-  EXPECT_TRUE(global_scope_->GetSecurityOrigin()->IsUnique());
-  EXPECT_FALSE(global_scope_->DocumentSecurityOrigin()->IsUnique());
+  EXPECT_TRUE(global_scope_->GetSecurityOrigin()->IsOpaque());
+  EXPECT_FALSE(global_scope_->DocumentSecurityOrigin()->IsOpaque());
 }
 
 TEST_F(MainThreadWorkletTest, ContentSecurityPolicy) {

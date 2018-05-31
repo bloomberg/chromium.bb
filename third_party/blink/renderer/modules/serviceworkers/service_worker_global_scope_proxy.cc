@@ -287,7 +287,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchExtendableMessageEvent(
   MessagePortArray* ports =
       MessagePort::EntanglePorts(*worker_global_scope_, std::move(msg.ports));
   String origin;
-  if (!source_origin.IsUnique())
+  if (!source_origin.IsOpaque())
     origin = source_origin.ToString();
   ServiceWorkerClient* source = nullptr;
   if (client.client_type == mojom::ServiceWorkerClientType::kWindow)
@@ -312,7 +312,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchExtendableMessageEvent(
   MessagePortArray* ports =
       MessagePort::EntanglePorts(*worker_global_scope_, std::move(msg.ports));
   String origin;
-  if (!source_origin.IsUnique())
+  if (!source_origin.IsOpaque())
     origin = source_origin.ToString();
   ServiceWorker* source =
       ServiceWorker::From(worker_global_scope_->GetExecutionContext(),

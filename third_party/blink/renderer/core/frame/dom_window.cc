@@ -170,7 +170,7 @@ void DOMWindow::postMessage(scoped_refptr<SerializedScriptValue> message,
     target = SecurityOrigin::CreateFromString(target_origin);
     // It doesn't make sense target a postMessage at a unique origin
     // because there's no way to represent a unique origin in a string.
-    if (target->IsUnique()) {
+    if (target->IsOpaque()) {
       exception_state.ThrowDOMException(
           kSyntaxError, "Invalid target origin '" + target_origin +
                             "' in a call to 'postMessage'.");

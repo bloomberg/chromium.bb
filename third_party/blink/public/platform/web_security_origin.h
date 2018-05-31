@@ -76,7 +76,9 @@ class WebSecurityOrigin {
   BLINK_PLATFORM_EXPORT unsigned short EffectivePort() const;
 
   // A unique WebSecurityOrigin is the least privileged WebSecurityOrigin.
-  BLINK_PLATFORM_EXPORT bool IsUnique() const;
+  BLINK_PLATFORM_EXPORT bool IsOpaque() const;
+  // TODO(dcheng): Remove this. https://crbug.com/695622
+  bool IsUnique() const { return IsOpaque(); }
 
   // Returns true if this WebSecurityOrigin can script objects in the given
   // SecurityOrigin. For example, call this function before allowing

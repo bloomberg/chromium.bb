@@ -86,8 +86,8 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     WorkletGlobalScope* global_scope = ToWorkletGlobalScope(GlobalScope());
     // The SecurityOrigin for a worklet should be a unique opaque origin, while
     // the owner Document's SecurityOrigin shouldn't.
-    EXPECT_TRUE(global_scope->GetSecurityOrigin()->IsUnique());
-    EXPECT_FALSE(global_scope->DocumentSecurityOrigin()->IsUnique());
+    EXPECT_TRUE(global_scope->GetSecurityOrigin()->IsOpaque());
+    EXPECT_FALSE(global_scope->DocumentSecurityOrigin()->IsOpaque());
     PostCrossThreadTask(
         *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
         FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
