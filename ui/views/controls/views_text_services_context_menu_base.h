@@ -30,6 +30,9 @@ class ViewsTextServicesContextMenuBase : public ViewsTextServicesContextMenu {
   Textfield* client() const { return client_; }
 
  private:
+  // Do not change the values in this enum as they are used by UMA.
+  enum class Command { kEmoji = 0, kMaxValue = kEmoji };
+
   // The view associated with the menu. Weak. Owns |this|.
   Textfield* client_ = nullptr;
 
