@@ -7241,10 +7241,10 @@ I don't think this site should be blocked!
         More options
       </message>
       <message name="IDS_SYNC_CONFIRMATION_UNITY_MORE_OPTIONS_TITLE" desc="Title of the sync confirmation more options dialog">
-        Sync and personalization options
+        Control sync, personalization, and more
       </message>
       <message name="IDS_SYNC_CONFIRMATION_UNITY_MORE_OPTIONS_SUBTITLE" desc="Subitle of the sync confirmation more options dialog">
-        Features related to sync and personalization are now under a single control. Turning this on may change your current settings.
+        The settings that control sync, personalization, and other Google services in Chrome have changed. This may affect your current settings.
       </message>
       <message name="IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_REVIEW_SETTINGS_TITLE" desc="Title of the sync confirmation option to review settings">
         Review your settings on the next screen
@@ -7256,13 +7256,10 @@ I don't think this site should be blocked!
         The data you sync to Google and the features you use will not change
       </message>
       <message name="IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_USE_DEFAULT_TITLE" desc="Title of the sync confirmation option to use the default settings">
-        Yes, turn on sync and personalization
+        Turn on sync, personalization, and other Google services
       </message>
       <message name="IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_USE_DEFAULT_SUBTITLE" desc="Subtitle of the sync confirmation option to use the default settings">
         You can customize this anytime in Chrome Settings
-      </message>
-      <message name="IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_CONFIRM_BUTTON_LABEL" desc="Label of the sync confirmation options confirm button">
-        Ok
       </message>
       <message name="IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_BACK_BUTTON_LABEL" desc="Label of the sync confirmation options button to go to the previous screen">
         Back
