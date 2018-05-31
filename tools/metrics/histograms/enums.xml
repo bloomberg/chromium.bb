@@ -47114,6 +47114,10 @@ Full version information for the fingerprint enum values:
   <int value="66" label=".gslides"/>
 </enum>
 
+<enum name="ViewsTextServicesContextMenu">
+  <int value="0" label="EMOJI"/>
+</enum>
+
 <enum name="VirtualKeyboardContainerType">
   <int value="0" label="FULL_WIDTH"/>
   <int value="1" label="FLOATING"/>
