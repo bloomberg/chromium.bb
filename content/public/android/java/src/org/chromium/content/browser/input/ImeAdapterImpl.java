@@ -463,6 +463,8 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
                 } else {
                     needsRestart = true;
                 }
+            } else if (textInputType == TextInputType.NONE) {
+                hide = true;
             }
 
             boolean editable = focusedNodeEditable();
