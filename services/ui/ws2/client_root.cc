@@ -31,10 +31,6 @@ ClientRoot::ClientRoot(WindowServiceClient* window_service_client,
   // TODO: wire up gfx::Insets() correctly below. See usage in
   // aura::ClientSurfaceEmbedder for details. Insets here are used for
   // guttering.
-  // TODO: this may only be needed for top-level windows and any ClientRoots
-  // created as the result of a direct call to create a WindowServiceClient by
-  // code running in process (that is, not at the request of a client through
-  // WindowServiceClient).
   client_surface_embedder_ = std::make_unique<aura::ClientSurfaceEmbedder>(
       window_, is_top_level, gfx::Insets());
 }
