@@ -59,7 +59,7 @@ class FakeDeviceSyncImplFactory : public DeviceSyncImpl::Factory {
       identity::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
       service_manager::Connector* connector,
-      cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
+      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
       scoped_refptr<net::URLRequestContextGetter> url_request_context)
       override {
     EXPECT_TRUE(fake_device_sync_);

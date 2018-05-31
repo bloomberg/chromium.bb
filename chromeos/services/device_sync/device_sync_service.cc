@@ -17,7 +17,7 @@ namespace device_sync {
 DeviceSyncService::DeviceSyncService(
     identity::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
-    cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
+    const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
     scoped_refptr<net::URLRequestContextGetter> url_request_context)
     : identity_manager_(identity_manager),
       gcm_driver_(gcm_driver),
