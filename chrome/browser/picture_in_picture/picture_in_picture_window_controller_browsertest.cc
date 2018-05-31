@@ -319,4 +319,62 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                 .WaitAndGetTitle());
 }
 
+// Tests that calling PictureInPictureWindowController::Close() twice has no
+// side effect.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       CloseTwiceSideEffects) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents);
+
+  SetUpWindowController(active_web_contents);
+  ASSERT_TRUE(window_controller());
+
+  EXPECT_TRUE(
+      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
+
+  // Wait for resize event from the page.
+  base::string16 expected_title = base::ASCIIToUTF16("1");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  window_controller()->Close();
+
+  // Wait for the window to close.
+  expected_title = base::ASCIIToUTF16("left");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  bool video_paused = false;
+
+  // Video is paused after Picture-in-Picture window was closed.
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "window.domAutomationController.send(video.paused);",
+      &video_paused));
+  EXPECT_TRUE(video_paused);
+
+  // Resume playback.
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "window.domAutomationController.send(video.paused);",
+      &video_paused));
+  EXPECT_FALSE(video_paused);
+
+  // This should be a no-op because the window is not visible.
+  window_controller()->Close();
+
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "window.domAutomationController.send(video.paused);",
+      &video_paused));
+  EXPECT_FALSE(video_paused);
+}
+
 #endif  // !defined(OS_LINUX) && !defined(OS_WIN)
