@@ -1607,6 +1607,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_rateThisAppDialog setDelegate:nil];
   [_model closeAllTabs];
   [_paymentRequestManager setActiveWebState:nullptr];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 #pragma mark - NSObject
@@ -1873,6 +1874,21 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
   [self dismissPopups];
   [self reshowFindBarIfNeededWithCoordinator:coordinator];
+
+  if (!self.view.window.keyWindow && !base::ios::IsRunningOnIOS11OrLater()) {
+    // When a UIViewController in a background window is rotated, its top layout
+    // guide's length is not updated before |-viewDidLayoutSubviews| is called.
+    // In order to correctly capture the status bar height in the toolbar frame,
+    // start observing the key window notification here so that the updated top
+    // layout guide length can be used to resize the primary toolbar. This is
+    // only necessary on iOS10, as the safe area insets used in iOS11 are
+    // correctly updated for background window rotations.
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(updateToolbarHeightForKeyWindow)
+               name:UIWindowDidBecomeKeyNotification
+             object:self.view.window];
+  }
 }
 
 - (void)dismissViewControllerAnimated:(BOOL)flag
@@ -2162,6 +2178,19 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _infoBarContainer.reset(
         new InfoBarContainerIOS(_infoBarContainerDelegate.get()));
   }
+}
+
+// Called by NSNotificationCenter when the view's window becomes key to account
+// for topLayoutGuide length updates.
+- (void)updateToolbarHeightForKeyWindow {
+  // Update the toolbar height to account for |topLayoutGuide| changes.
+  self.primaryToolbarHeightConstraint.constant =
+      [self primaryToolbarHeightWithInset];
+  // Stop listening for the key window notification.
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:self
+                name:UIWindowDidBecomeKeyNotification
+              object:self.view.window];
 }
 
 // The height of the primary toolbar with the top safe area inset included.
