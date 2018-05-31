@@ -33,8 +33,12 @@ void NotificationCounterView::Update() {
 
 QuietModeView::QuietModeView() : TrayItemView(nullptr) {
   CreateImageView();
-  image_view()->SetImage(gfx::CreateVectorIcon(
-      kNotificationCenterDoNotDisturbOnIcon, kTrayIconSize, kTrayIconColor));
+  // TODO(yamaguchi): Add this check when new style of the system tray is
+  // implemented, so that icon resizing will not happen here.
+  // DCHECK_EQ(kTrayIconSize,
+  //     gfx::GetDefaultSizeOfVectorIcon(kSystemTrayDoNotDisturbIcon));
+  image_view()->SetImage(gfx::CreateVectorIcon(kSystemTrayDoNotDisturbIcon,
+                                               kTrayIconSize, kTrayIconColor));
   Update();
 }
 
