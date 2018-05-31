@@ -2693,20 +2693,26 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="RendererAudible">
     <summary>
-      Whether renderer was playing audio when this task was run. Boolean,
+      Whether renderer was playing audio when this task was completed. Boolean,
       encoded as an integer (0/1).
     </summary>
   </metric>
   <metric name="RendererBackgrounded">
     <summary>
-      Whether renderer was backgrounded when this task was run. Boolean, encoded
-      as an integer (0/1).
+      Whether renderer was backgrounded when this task was completed. Boolean,
+      encoded as an integer (0/1).
     </summary>
   </metric>
   <metric name="RendererHidden">
     <summary>
-      Whether renderer was hidden when this task was run. Boolean, encoded as an
-      integer (0/1).
+      Whether renderer was hidden when this task was completed. Boolean, encoded
+      as an integer (0/1).
+    </summary>
+  </metric>
+  <metric name="SecondsSinceBackgrounded">
+    <summary>
+      Seconds since the renderer was backgrounded, recorded when the task was
+      completed. Only set if the renderer is backgrounded.
     </summary>
   </metric>
   <metric name="TaskCPUDuration">
@@ -2726,7 +2732,7 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="UseCase">
     <summary>
-      MainThreadSchedulerImpl's UseCase when this task was run. See
+      MainThreadSchedulerImpl's UseCase when this task was completed. See
       blink::scheduler::UseCase for the values of this enum.
     </summary>
   </metric>

@@ -63,6 +63,7 @@ const double kFastCompositingIdleTimeThreshold = .2;
 constexpr base::TimeDelta kQueueingTimeWindowDuration =
     base::TimeDelta::FromSeconds(1);
 const double kSamplingRateForTaskUkm = 0.0001;
+const int64_t kSecondsPerMinute = 60;
 
 // Field trial name.
 const char kWakeUpThrottlingTrial[] = "RendererSchedulerWakeUpThrottling";
@@ -2602,6 +2603,23 @@ void MainThreadSchedulerImpl::RecordTaskUkmImpl(
   builder.SetFrameStatus(static_cast<int>(
       GetFrameStatus(queue ? queue->GetFrameScheduler() : nullptr)));
   builder.SetTaskDuration((end - start).InMicroseconds());
+
+  if (main_thread_only().renderer_backgrounded) {
+    base::TimeDelta time_since_backgrounded =
+        (end - main_thread_only().background_status_changed_at);
+
+    // Trade off for privacy: Round to seconds for times below 10 minutes and
+    // minutes afterwards.
+    int seconds_since_backgrounded = 0;
+    if (time_since_backgrounded < base::TimeDelta::FromMinutes(10)) {
+      seconds_since_backgrounded = time_since_backgrounded.InSeconds();
+    } else {
+      seconds_since_backgrounded =
+          time_since_backgrounded.InMinutes() * kSecondsPerMinute;
+    }
+
+    builder.SetSecondsSinceBackgrounded(seconds_since_backgrounded);
+  }
 
   if (thread_time) {
     builder.SetTaskCPUDuration(thread_time->InMicroseconds());
