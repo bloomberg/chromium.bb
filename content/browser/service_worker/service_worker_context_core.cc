@@ -23,7 +23,6 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
@@ -299,7 +298,6 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     ServiceWorkerContextCore* old_context,
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
-      dispatcher_hosts_(std::move(old_context->dispatcher_hosts_)),
       providers_(old_context->providers_.release()),
       provider_by_uuid_(old_context->provider_by_uuid_.release()),
       loader_factory_getter_(old_context->loader_factory_getter()),
@@ -323,32 +321,6 @@ ServiceWorkerContextCore::~ServiceWorkerContextCore() {
   for (const auto& it : live_versions_)
     it.second->RemoveListener(this);
   weak_factory_.InvalidateWeakPtrs();
-}
-
-void ServiceWorkerContextCore::AddDispatcherHost(
-    int process_id,
-    content::ServiceWorkerDispatcherHost* dispatcher_host) {
-  DCHECK(dispatcher_hosts_.find(process_id) == dispatcher_hosts_.end());
-  dispatcher_hosts_[process_id] = dispatcher_host;
-}
-
-ServiceWorkerDispatcherHost* ServiceWorkerContextCore::GetDispatcherHost(
-    int process_id) {
-  auto it = dispatcher_hosts_.find(process_id);
-  if (it == dispatcher_hosts_.end())
-    return nullptr;
-  return it->second;
-}
-
-void ServiceWorkerContextCore::RemoveDispatcherHost(int process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // TODO(falken) Try to remove this call. It should be unnecessary because
-  // provider hosts remove themselves when their Mojo connection to the renderer
-  // is destroyed. But if we don't remove the hosts immediately here, collisions
-  // of <process_id, provider_id> can occur if a new dispatcher host is
-  // created for a reused RenderProcessHost. https://crbug.com/736203
-  RemoveAllProviderHostsForProcess(process_id);
-  dispatcher_hosts_.erase(process_id);
 }
 
 void ServiceWorkerContextCore::AddProviderHost(

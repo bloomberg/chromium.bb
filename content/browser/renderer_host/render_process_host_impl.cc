@@ -1839,9 +1839,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #endif
 
   auto service_worker_filter =
-      base::MakeRefCounted<ServiceWorkerDispatcherHost>(GetID());
-  service_worker_filter->Init(
-      storage_partition_impl_->GetServiceWorkerContext());
+      base::MakeRefCounted<ServiceWorkerDispatcherHost>(
+          storage_partition_impl_->GetServiceWorkerContext(), GetID());
   AddFilter(service_worker_filter.get());
 
   p2p_socket_dispatcher_host_ = new P2PSocketDispatcherHost(

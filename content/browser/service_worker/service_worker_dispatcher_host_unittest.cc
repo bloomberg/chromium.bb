@@ -85,9 +85,11 @@ std::unique_ptr<ServiceWorkerNavigationHandleCore> CreateNavigationHandleCore(
 
 class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
  public:
-  TestingServiceWorkerDispatcherHost(int process_id,
-                                     EmbeddedWorkerTestHelper* helper)
-      : ServiceWorkerDispatcherHost(process_id),
+  TestingServiceWorkerDispatcherHost(
+      scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
+      int process_id,
+      EmbeddedWorkerTestHelper* helper)
+      : ServiceWorkerDispatcherHost(context_wrapper, process_id),
         bad_messages_received_count_(0),
         helper_(helper) {}
 
@@ -128,9 +130,8 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     helper_.reset(helper.release());
     // Replace the default dispatcher host.
     int process_id = helper_->mock_render_process_id();
-    dispatcher_host_ =
-        new TestingServiceWorkerDispatcherHost(process_id, helper_.get());
-    dispatcher_host_->Init(context_wrapper());
+    dispatcher_host_ = new TestingServiceWorkerDispatcherHost(
+        context_wrapper(), process_id, helper_.get());
   }
 
   void SetUpRegistration(const GURL& scope, const GURL& script_url) {
@@ -282,9 +283,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
   // is not yet destroyed. This is what the browser does when reusing a crashed
   // render process.
   auto new_dispatcher_host =
-      base::MakeRefCounted<TestingServiceWorkerDispatcherHost>(process_id,
-                                                               helper_.get());
-  new_dispatcher_host->Init(context_wrapper());
+      base::MakeRefCounted<TestingServiceWorkerDispatcherHost>(
+          context_wrapper(), process_id, helper_.get());
 
   // To show the new dispatcher can operate, simulate provider creation. Since
   // the old dispatcher cleaned up the old provider host, the new one won't
