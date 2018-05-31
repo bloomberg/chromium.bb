@@ -53,7 +53,9 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   static bool IsPathUseable(const SkPath& path);
 
   // Sets the path to draw this FocusRing around. This path is in the parent
-  // view's coordinate system, *not* in the FocusRing's coordinate system.
+  // view's coordinate system, *not* in the FocusRing's coordinate system. Note
+  // that this path will not be mirrored in RTL, so your View's computation of
+  // it should take RTL into account.
   void SetPath(const SkPath& path);
 
   // Sets whether the FocusRing should show an invalid state for the View it
