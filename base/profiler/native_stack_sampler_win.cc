@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/profiler/win32_stack_frame_unwinder.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -220,14 +221,14 @@ std::string GetBuildIDForModule(HMODULE module_handle) {
   DWORD age;
   win::PEImage(module_handle).GetDebugId(&guid, &age, /* pdb_file= */ nullptr);
   const int kGUIDSize = 39;
-  std::wstring build_id;
+  base::string16 build_id;
   int result =
       ::StringFromGUID2(guid, WriteInto(&build_id, kGUIDSize), kGUIDSize);
   if (result != kGUIDSize)
     return std::string();
   RemoveChars(build_id, L"{}-", &build_id);
   build_id += StringPrintf(L"%d", age);
-  return WideToUTF8(build_id);
+  return UTF16ToUTF8(build_id);
 }
 
 // ScopedDisablePriorityBoost -------------------------------------------------
