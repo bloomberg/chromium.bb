@@ -2097,7 +2097,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 
   constexpr bool automatic_flushes = false;
   constexpr bool support_locking = false;
-  constexpr bool support_grcontext = false;
+  constexpr bool support_grcontext = true;
 
   scoped_refptr<ui::ContextProviderCommandBuffer> context_provider(
       new ui::ContextProviderCommandBuffer(
