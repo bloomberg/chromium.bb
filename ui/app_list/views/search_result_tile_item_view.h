@@ -46,9 +46,6 @@ class APP_LIST_EXPORT SearchResultTileItemView
   // color.
   void SetParentBackgroundColor(SkColor color);
 
-  // Records the context menu user journey time.
-  void OnContextMenuClosed(const base::TimeTicks& open_time);
-
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
@@ -78,6 +75,9 @@ class APP_LIST_EXPORT SearchResultTileItemView
                              const gfx::Point& point,
                              ui::MenuSourceType source_type,
                              std::vector<ash::mojom::MenuItemPtr> menu);
+
+  // The callback used when a menu closes.
+  void OnMenuClosed();
 
   void SetIcon(const gfx::ImageSkia& icon);
   void SetBadgeIcon(const gfx::ImageSkia& badge_icon);

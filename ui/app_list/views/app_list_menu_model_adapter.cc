@@ -13,16 +13,18 @@
 
 namespace app_list {
 
-AppListMenuModelAdapter::AppListMenuModelAdapter(const std::string& app_id,
-                                                 views::View* menu_owner,
-                                                 ui::MenuSourceType source_type,
-                                                 Delegate* delegate,
-                                                 AppListViewAppType type)
+AppListMenuModelAdapter::AppListMenuModelAdapter(
+    const std::string& app_id,
+    views::View* menu_owner,
+    ui::MenuSourceType source_type,
+    Delegate* delegate,
+    AppListViewAppType type,
+    base::OnceClosure on_menu_closed_callback)
     : ash::AppMenuModelAdapter(app_id,
                                std::make_unique<ui::SimpleMenuModel>(nullptr),
                                menu_owner,
                                source_type,
-                               base::OnceClosure()),
+                               std::move(on_menu_closed_callback)),
       delegate_(delegate),
       type_(type) {
   DCHECK(delegate_);

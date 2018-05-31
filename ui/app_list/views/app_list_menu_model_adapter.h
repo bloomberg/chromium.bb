@@ -45,7 +45,8 @@ class APP_LIST_EXPORT AppListMenuModelAdapter
                           views::View* menu_owner,
                           ui::MenuSourceType source_type,
                           Delegate* delegate,
-                          AppListViewAppType type);
+                          AppListViewAppType type,
+                          base::OnceClosure on_menu_closed_callback);
   ~AppListMenuModelAdapter() override;
 
   // Builds the menu model from |items|.

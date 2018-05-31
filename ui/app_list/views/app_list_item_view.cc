@@ -310,9 +310,12 @@ void AppListItemView::OnContextMenuModelReceived(
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
       item_weak_->GetMetadata()->id, this, source_type, this,
-      AppListMenuModelAdapter::FULLSCREEN_APP_GRID);
+      AppListMenuModelAdapter::FULLSCREEN_APP_GRID,
+      base::BindOnce(&AppListItemView::OnMenuClosed,
+                     weak_ptr_factory_.GetWeakPtr()));
   context_menu_->Build(std::move(menu));
   context_menu_->Run(anchor_rect, anchor_position, run_types);
+  apps_grid_view_->SetSelectedView(this);
 }
 
 void AppListItemView::ShowContextMenuForView(views::View* source,
@@ -528,6 +531,8 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_END:
       touch_drag_timer_.Stop();
       SetTouchDragging(false);
+      if (context_menu_ && context_menu_->IsShowingMenu())
+        apps_grid_view_->SetSelectedView(this);
       break;
     case ui::ET_GESTURE_TWO_FINGER_TAP:
       if (touch_dragging_) {
@@ -560,6 +565,10 @@ void AppListItemView::ImageShadowAnimationProgressed(
     ImageShadowAnimator* animator) {
   icon_->SetImage(animator->shadow_image());
   Layout();
+}
+
+void AppListItemView::OnMenuClosed() {
+  OnBlur();
 }
 
 void AppListItemView::OnSyncDragEnd() {

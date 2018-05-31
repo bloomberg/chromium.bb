@@ -428,7 +428,7 @@ void SearchResultView::OnGetContextMenu(
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
       std::string(), this, source_type, this,
-      AppListMenuModelAdapter::SEARCH_RESULT);
+      AppListMenuModelAdapter::SEARCH_RESULT, base::OnceClosure());
   context_menu_->Build(std::move(menu));
   context_menu_->Run(gfx::Rect(point, gfx::Size()), views::MENU_ANCHOR_TOPLEFT,
                      views::MenuRunner::HAS_MNEMONICS);
