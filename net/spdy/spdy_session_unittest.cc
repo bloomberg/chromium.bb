@@ -14,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/test_mock_time_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
@@ -130,7 +130,13 @@ class SpdySessionTest : public PlatformTest, public WithScopedTaskEnvironment {
 
  protected:
   SpdySessionTest()
-      : old_max_group_sockets_(ClientSocketPoolManager::max_sockets_per_group(
+      : SpdySessionTest(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO){};
+
+  explicit SpdySessionTest(
+      base::test::ScopedTaskEnvironment::MainThreadType type)
+      : WithScopedTaskEnvironment(type),
+        old_max_group_sockets_(ClientSocketPoolManager::max_sockets_per_group(
             HttpNetworkSession::NORMAL_SOCKET_POOL)),
         old_max_pool_sockets_(ClientSocketPoolManager::max_sockets_per_pool(
             HttpNetworkSession::NORMAL_SOCKET_POOL)),
@@ -363,6 +369,13 @@ class SpdySessionTest : public PlatformTest, public WithScopedTaskEnvironment {
   SpdySessionKey key_;
   SSLSocketDataProvider ssl_;
   BoundTestNetLog log_;
+};
+
+class SpdySessionTestWithMockTime : public SpdySessionTest {
+ protected:
+  SpdySessionTestWithMockTime()
+      : SpdySessionTest(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME){};
 };
 
 // Try to create a SPDY session that will fail during
@@ -1516,10 +1529,7 @@ TEST_F(SpdySessionTest, CancelPushAfterSessionGoesAway) {
                                      6, 1);
 }
 
-TEST_F(SpdySessionTest, CancelPushAfterExpired) {
-  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-  base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner.get());
-
+TEST_F(SpdySessionTestWithMockTime, CancelPushAfterExpired) {
   base::HistogramTester histogram_tester;
 
   spdy::SpdySerializedFrame req(
@@ -1547,40 +1557,7 @@ TEST_F(SpdySessionTest, CancelPushAfterExpired) {
   AddSSLSocketData();
 
   CreateNetworkSession();
-
-  // TODO(bnc): Use CreateSpdySession() instead of the boilerplate below once
-  // ScopedTaskEnvironment supports mocked time and can be used instead of
-  // TestMockTimeTaskRunner.
-  auto transport_params = base::MakeRefCounted<TransportSocketParams>(
-      key_.host_port_pair(), false, OnHostResolutionCallback(),
-      TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
-
-  auto connection = std::make_unique<ClientSocketHandle>();
-  TestCompletionCallback callback;
-
-  auto ssl_params = base::MakeRefCounted<SSLSocketParams>(
-      transport_params, nullptr, nullptr, key_.host_port_pair(), SSLConfig(),
-      key_.privacy_mode(), 0);
-  int rv = connection->Init(
-      key_.host_port_pair().ToString(), ssl_params, MEDIUM, SocketTag(),
-      ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
-      http_session_->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL),
-      log_.bound());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-
-  task_runner->RunUntilIdle();
-  // At this point, |callback| already has the result, so the following will not
-  // call RunLoop().
-  rv = callback.WaitForResult();
-
-  EXPECT_THAT(rv, IsOk());
-
-  session_ =
-      http_session_->spdy_session_pool()->CreateAvailableSessionFromSocket(
-          key_, /*is_trusted_proxy=*/false, std::move(connection),
-          log_.bound());
-  EXPECT_TRUE(session_);
-  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
+  CreateSpdySession();
 
   base::WeakPtr<SpdyStream> spdy_stream =
       CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM, session_,
@@ -1592,7 +1569,7 @@ TEST_F(SpdySessionTest, CancelPushAfterExpired) {
       spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
 
-  task_runner->RunUntilIdle();
+  RunUntilIdle();
 
   // Verify that there is one unclaimed push stream.
   const GURL pushed_url(kPushedUrl);
@@ -1606,8 +1583,8 @@ TEST_F(SpdySessionTest, CancelPushAfterExpired) {
 
   // Fast forward to CancelPushedStreamIfUnclaimed() that was posted with a
   // delay.
-  task_runner->FastForwardUntilNoTasksRemain();
-  task_runner->RunUntilIdle();
+  FastForwardUntilNoTasksRemain();
+  RunUntilIdle();
 
   // Verify that pushed stream is cancelled.
   EXPECT_EQ(0u, num_unclaimed_pushed_streams());
@@ -1623,7 +1600,7 @@ TEST_F(SpdySessionTest, CancelPushAfterExpired) {
 
   // Read and process EOF.
   data.Resume();
-  task_runner->RunUntilIdle();
+  RunUntilIdle();
   EXPECT_FALSE(session_);
 
   histogram_tester.ExpectBucketCount("Net.SpdyStreamsPushedPerSession", 1, 1);
@@ -1637,10 +1614,7 @@ TEST_F(SpdySessionTest, CancelPushAfterExpired) {
   histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
 }
 
-TEST_F(SpdySessionTest, ClaimPushedStreamBeforeExpires) {
-  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-  base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner.get());
-
+TEST_F(SpdySessionTestWithMockTime, ClaimPushedStreamBeforeExpires) {
   base::HistogramTester histogram_tester;
 
   spdy::SpdySerializedFrame req(
@@ -1663,40 +1637,7 @@ TEST_F(SpdySessionTest, ClaimPushedStreamBeforeExpires) {
   AddSSLSocketData();
 
   CreateNetworkSession();
-
-  // TODO(bnc): Use CreateSpdySession() instead of the boilerplate below once
-  // ScopedTaskEnvironment supports mocked time and can be used instead of
-  // TestMockTimeTaskRunner.
-  auto transport_params = base::MakeRefCounted<TransportSocketParams>(
-      key_.host_port_pair(), false, OnHostResolutionCallback(),
-      TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
-
-  auto connection = std::make_unique<ClientSocketHandle>();
-  TestCompletionCallback callback;
-
-  auto ssl_params = base::MakeRefCounted<SSLSocketParams>(
-      transport_params, nullptr, nullptr, key_.host_port_pair(), SSLConfig(),
-      key_.privacy_mode(), 0);
-  int rv = connection->Init(
-      key_.host_port_pair().ToString(), ssl_params, MEDIUM, SocketTag(),
-      ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
-      http_session_->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL),
-      log_.bound());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-
-  task_runner->RunUntilIdle();
-  // At this point, |callback| already has the result, so the following will not
-  // call RunLoop().
-  rv = callback.WaitForResult();
-
-  EXPECT_THAT(rv, IsOk());
-
-  session_ =
-      http_session_->spdy_session_pool()->CreateAvailableSessionFromSocket(
-          key_, /*is_trusted_proxy=*/false, std::move(connection),
-          log_.bound());
-  EXPECT_TRUE(session_);
-  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
+  CreateSpdySession();
 
   base::WeakPtr<SpdyStream> spdy_stream1 =
       CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM, session_,
@@ -1708,7 +1649,7 @@ TEST_F(SpdySessionTest, ClaimPushedStreamBeforeExpires) {
       spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   spdy_stream1->SendRequestHeaders(std::move(headers1), NO_MORE_DATA_TO_SEND);
 
-  task_runner->RunUntilIdle();
+  RunUntilIdle();
 
   // Verify that there is one unclaimed push stream.
   const GURL pushed_url(kPushedUrl);
@@ -1736,8 +1677,8 @@ TEST_F(SpdySessionTest, ClaimPushedStreamBeforeExpires) {
   EXPECT_EQ(0u, num_unclaimed_pushed_streams());
 
   SpdyStream* spdy_stream2;
-  rv = session_->GetPushedStream(pushed_url, pushed_stream_id, MEDIUM,
-                                 &spdy_stream2, NetLogWithSource());
+  int rv = session_->GetPushedStream(pushed_url, pushed_stream_id, MEDIUM,
+                                     &spdy_stream2, NetLogWithSource());
   ASSERT_THAT(rv, IsOk());
   ASSERT_TRUE(spdy_stream2);
 
@@ -1746,13 +1687,13 @@ TEST_F(SpdySessionTest, ClaimPushedStreamBeforeExpires) {
 
   // Fast forward to CancelPushedStreamIfUnclaimed() that was posted with a
   // delay.  CancelPushedStreamIfUnclaimed() must be a no-op.
-  task_runner->FastForwardUntilNoTasksRemain();
-  task_runner->RunUntilIdle();
+  FastForwardUntilNoTasksRemain();
+  RunUntilIdle();
   EXPECT_TRUE(session_);
 
   // Read and process EOF.
   data.Resume();
-  task_runner->RunUntilIdle();
+  RunUntilIdle();
   EXPECT_FALSE(session_);
 
   histogram_tester.ExpectBucketCount("Net.SpdyStreamsPushedPerSession", 1, 1);
