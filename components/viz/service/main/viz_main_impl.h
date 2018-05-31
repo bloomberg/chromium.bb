@@ -33,6 +33,7 @@ namespace viz {
 class DisplayProvider;
 class FrameSinkManagerImpl;
 class GpuServiceImpl;
+class ServerSharedBitmapManager;
 
 class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
  public:
@@ -149,8 +150,9 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
 
   // Provides mojo interfaces for creating and managing FrameSinks. These live
   // on the compositor thread.
-  std::unique_ptr<FrameSinkManagerImpl> frame_sink_manager_;
+  std::unique_ptr<ServerSharedBitmapManager> server_shared_bitmap_manager_;
   std::unique_ptr<DisplayProvider> display_provider_;
+  std::unique_ptr<FrameSinkManagerImpl> frame_sink_manager_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_task_runner_;
 

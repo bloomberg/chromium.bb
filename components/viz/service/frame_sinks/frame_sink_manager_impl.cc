@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display_embedder/display_provider.h"
 #include "components/viz/service/display_embedder/external_begin_frame_controller_impl.h"
@@ -39,9 +40,11 @@ FrameSinkManagerImpl::FrameSinkSourceMapping::operator=(
     FrameSinkSourceMapping&& other) = default;
 
 FrameSinkManagerImpl::FrameSinkManagerImpl(
+    SharedBitmapManager* shared_bitmap_manager,
     base::Optional<uint32_t> activation_deadline_in_frames,
     DisplayProvider* display_provider)
-    : display_provider_(display_provider),
+    : shared_bitmap_manager_(shared_bitmap_manager),
+      display_provider_(display_provider),
       surface_manager_(activation_deadline_in_frames),
       hit_test_manager_(surface_manager()),
       binding_(this) {

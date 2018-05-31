@@ -96,6 +96,10 @@ namespace ui {
 enum class DomCode;
 }
 
+namespace viz {
+class ServerSharedBitmapManager;
+}
+
 namespace content {
 
 class BrowserAccessibilityManager;
@@ -1170,9 +1174,15 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   base::Optional<uint16_t> screen_orientation_angle_for_testing_;
   base::Optional<ScreenOrientationValues> screen_orientation_type_for_testing_;
 
+  // When the viz display compositor is in the browser process, this is used to
+  // register and unregister the bitmaps (stored in |owned_bitmaps_| reported to
+  // this class from the renderer.
+  viz::ServerSharedBitmapManager* shared_bitmap_manager_ = nullptr;
   // The set of SharedBitmapIds that have been reported as allocated to this
   // interface. On closing this interface, the display compositor should drop
-  // ownership of the bitmaps with these ids to avoid leaking them.
+  // ownership of the bitmaps with these ids to avoid leaking them. This is only
+  // used when SharedBitmaps are reported to this class because the display
+  // compositor is in the browser process.
   std::set<viz::SharedBitmapId> owned_bitmaps_;
 
   bool force_enable_zoom_ = false;

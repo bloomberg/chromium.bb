@@ -69,6 +69,7 @@ GpuDisplayProvider::GpuDisplayProvider(
     GpuServiceImpl* gpu_service_impl,
     scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
     gpu::GpuChannelManager* gpu_channel_manager,
+    ServerSharedBitmapManager* server_shared_bitmap_manager,
     bool headless,
     bool wait_for_all_pipeline_stages_before_draw)
     : restart_id_(restart_id),
@@ -79,6 +80,7 @@ GpuDisplayProvider::GpuDisplayProvider(
           std::make_unique<InProcessGpuMemoryBufferManager>(
               gpu_channel_manager)),
       image_factory_(GetImageFactory(gpu_channel_manager)),
+      server_shared_bitmap_manager_(server_shared_bitmap_manager),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       headless_(headless),
       wait_for_all_pipeline_stages_before_draw_(
@@ -195,7 +197,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
   *out_begin_frame_source = std::move(synthetic_begin_frame_source);
 
   return std::make_unique<Display>(
-      ServerSharedBitmapManager::current(), renderer_settings, frame_sink_id,
+      server_shared_bitmap_manager_, renderer_settings, frame_sink_id,
       std::move(output_surface), std::move(scheduler), task_runner_,
       skia_output_surface);
 }

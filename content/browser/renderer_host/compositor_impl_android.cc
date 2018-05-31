@@ -174,7 +174,10 @@ class CompositorDependencies {
     bool enable_viz =
         base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
     if (!enable_viz) {
-      frame_sink_manager_impl = std::make_unique<viz::FrameSinkManagerImpl>();
+      // The SharedBitmapManager can be null as software compositing is not
+      // supported or used on Android.
+      frame_sink_manager_impl = std::make_unique<viz::FrameSinkManagerImpl>(
+          /*shared_bitmap_manager=*/nullptr);
       surface_utils::ConnectWithLocalFrameSinkManager(
           &host_frame_sink_manager, frame_sink_manager_impl.get());
     }
@@ -1008,9 +1011,8 @@ void CompositorImpl::InitializeDisplay(
   const bool should_register_begin_frame_source = !display_;
 
   display_ = std::make_unique<viz::Display>(
-      viz::ServerSharedBitmapManager::current(), renderer_settings,
-      frame_sink_id_, std::move(display_output_surface), std::move(scheduler),
-      task_runner);
+      nullptr, renderer_settings, frame_sink_id_,
+      std::move(display_output_surface), std::move(scheduler), task_runner);
 
   auto layer_tree_frame_sink = std::make_unique<viz::DirectLayerTreeFrameSink>(
       frame_sink_id_, GetHostFrameSinkManager(), manager, display_.get(),

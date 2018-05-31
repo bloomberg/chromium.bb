@@ -23,6 +23,7 @@
 namespace viz {
 class GLHelper;
 class FrameSinkManagerImpl;
+class ServerSharedBitmapManager;
 class TestFrameSinkManagerImpl;
 }  // namespace viz
 
@@ -98,6 +99,7 @@ class TestImageTransportFactory : public ui::ContextFactory,
   viz::HostFrameSinkManager host_frame_sink_manager_;
 
   // Objects that exist if |enable_viz_| is false.
+  std::unique_ptr<viz::ServerSharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_impl_;
   std::unique_ptr<viz::GLHelper> gl_helper_;
 

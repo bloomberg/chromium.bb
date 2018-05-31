@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/sys_info.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
@@ -16,6 +17,7 @@
 namespace {
 
 static viz::HostFrameSinkManager* g_host_frame_sink_manager = nullptr;
+static viz::ServerSharedBitmapManager* g_shared_bitmap_manager = nullptr;
 static viz::FrameSinkManagerImpl* g_frame_sink_manager = nullptr;
 static ui::InProcessContextFactory* g_implicit_factory = nullptr;
 static gl::DisableNullDrawGLBindings* g_disable_null_draw = nullptr;
@@ -44,7 +46,8 @@ void InitializeContextFactoryForTests(
   if (enable_pixel_output)
     g_disable_null_draw = new gl::DisableNullDrawGLBindings;
   g_host_frame_sink_manager = new viz::HostFrameSinkManager;
-  g_frame_sink_manager = new viz::FrameSinkManagerImpl;
+  g_shared_bitmap_manager = new viz::ServerSharedBitmapManager;
+  g_frame_sink_manager = new viz::FrameSinkManagerImpl(g_shared_bitmap_manager);
   g_implicit_factory = new InProcessContextFactory(g_host_frame_sink_manager,
                                                    g_frame_sink_manager);
   g_implicit_factory->SetUseFastRefreshRateForTests();
@@ -64,6 +67,8 @@ void TerminateContextFactoryForTests() {
   g_host_frame_sink_manager = nullptr;
   delete g_frame_sink_manager;
   g_frame_sink_manager = nullptr;
+  delete g_shared_bitmap_manager;
+  g_shared_bitmap_manager = nullptr;
   delete g_disable_null_draw;
   g_disable_null_draw = nullptr;
 }

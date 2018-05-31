@@ -68,6 +68,7 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
         task_runner_(new cc::OrderedSimpleTaskRunner(now_src_.get(), true)),
         display_size_(1920, 1080),
         display_rect_(display_size_),
+        frame_sink_manager_(&bitmap_manager_),
         support_manager_(&frame_sink_manager_),
         context_provider_(TestContextProvider::Create()) {
     auto display_output_surface = FakeOutputSurface::Create3d();
@@ -130,9 +131,9 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
 
   const gfx::Size display_size_;
   const gfx::Rect display_rect_;
+  TestSharedBitmapManager bitmap_manager_;
   FrameSinkManagerImpl frame_sink_manager_;
   TestCompositorFrameSinkSupportManager support_manager_;
-  TestSharedBitmapManager bitmap_manager_;
   TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
 
   scoped_refptr<TestContextProvider> context_provider_;

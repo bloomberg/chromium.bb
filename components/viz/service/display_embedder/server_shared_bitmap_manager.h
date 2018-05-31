@@ -33,8 +33,6 @@ class VIZ_SERVICE_EXPORT ServerSharedBitmapManager
   ServerSharedBitmapManager();
   ~ServerSharedBitmapManager() override;
 
-  static ServerSharedBitmapManager* current();
-
   // SharedBitmapManager implementation.
   std::unique_ptr<SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size& size,

@@ -12,9 +12,3 @@ include_rules = [
   "+ui/latency",
   "+ui/ozone/public",
 ]
-
-specific_include_rules = {
-  ".*_unittest\.cc": [
-    "+components/viz/test",
-  ]
-}

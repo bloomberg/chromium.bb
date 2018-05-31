@@ -181,8 +181,10 @@ void OffscreenCanvasResourceProvider::ReclaimResourceInternal(
 }
 
 OffscreenCanvasResourceProvider::FrameResource::~FrameResource() {
-  provider->frame_dispatcher_->DidDeleteSharedBitmap(
-      SharedBitmapIdToGpuMailboxPtr(shared_bitmap_id));
+  if (!shared_bitmap_id.IsZero()) {
+    provider->frame_dispatcher_->DidDeleteSharedBitmap(
+        SharedBitmapIdToGpuMailboxPtr(shared_bitmap_id));
+  }
 }
 
 }  // namespace blink

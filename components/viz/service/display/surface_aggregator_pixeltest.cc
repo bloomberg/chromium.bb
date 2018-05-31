@@ -13,6 +13,7 @@
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/surface_aggregator.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -36,7 +37,8 @@ constexpr bool kNeedsSyncPoints = true;
 class SurfaceAggregatorPixelTest : public cc::RendererPixelTest<GLRenderer> {
  public:
   SurfaceAggregatorPixelTest()
-      : support_(std::make_unique<CompositorFrameSinkSupport>(
+      : manager_(&shared_bitmap_manager_),
+        support_(std::make_unique<CompositorFrameSinkSupport>(
             nullptr,
             &manager_,
             kArbitraryRootFrameSinkId,
@@ -51,6 +53,7 @@ class SurfaceAggregatorPixelTest : public cc::RendererPixelTest<GLRenderer> {
   }
 
  protected:
+  ServerSharedBitmapManager shared_bitmap_manager_;
   FrameSinkManagerImpl manager_;
   ParentLocalSurfaceIdAllocator allocator_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;

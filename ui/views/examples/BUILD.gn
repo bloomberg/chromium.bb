@@ -113,6 +113,7 @@ executable("views_examples_exe") {
     "//base/test:test_support",
     "//build/win:default_exe_manifest",
     "//components/viz/host",
+    "//components/viz/service",
     "//ui/base",
     "//ui/compositor",
     "//ui/compositor:test_support",

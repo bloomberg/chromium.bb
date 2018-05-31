@@ -73,7 +73,8 @@ bool TestLayerTreeFrameSink::BindToClient(
   if (!LayerTreeFrameSink::BindToClient(client))
     return false;
 
-  frame_sink_manager_ = std::make_unique<FrameSinkManagerImpl>();
+  frame_sink_manager_ =
+      std::make_unique<FrameSinkManagerImpl>(&shared_bitmap_manager_);
 
   std::unique_ptr<OutputSurface> display_output_surface =
       test_client_->CreateDisplayOutputSurface(context_provider());

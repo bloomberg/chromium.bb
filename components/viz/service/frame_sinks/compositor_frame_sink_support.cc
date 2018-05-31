@@ -9,9 +9,9 @@
 
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/display/display.h"
-#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_reference.h"
@@ -65,7 +65,7 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   // SharedBitmapId that has been reported from the client. Since the client is
   // gone that memory can be freed. If we don't then it would leak.
   for (const auto& id : owned_bitmaps_)
-    ServerSharedBitmapManager::current()->ChildDeletedSharedBitmap(id);
+    frame_sink_manager_->shared_bitmap_manager()->ChildDeletedSharedBitmap(id);
 
   // No video capture clients should remain after calling
   // UnregisterCompositorFrameSinkSupport().
@@ -254,7 +254,7 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
 bool CompositorFrameSinkSupport::DidAllocateSharedBitmap(
     mojo::ScopedSharedBufferHandle buffer,
     const SharedBitmapId& id) {
-  if (!ServerSharedBitmapManager::current()->ChildAllocatedSharedBitmap(
+  if (!frame_sink_manager_->shared_bitmap_manager()->ChildAllocatedSharedBitmap(
           std::move(buffer), id))
     return false;
 
@@ -264,7 +264,7 @@ bool CompositorFrameSinkSupport::DidAllocateSharedBitmap(
 
 void CompositorFrameSinkSupport::DidDeleteSharedBitmap(
     const SharedBitmapId& id) {
-  ServerSharedBitmapManager::current()->ChildDeletedSharedBitmap(id);
+  frame_sink_manager_->shared_bitmap_manager()->ChildDeletedSharedBitmap(id);
   owned_bitmaps_.erase(id);
 }
 

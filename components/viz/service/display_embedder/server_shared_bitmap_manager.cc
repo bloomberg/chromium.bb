@@ -57,17 +57,10 @@ class ServerSharedBitmap : public SharedBitmap {
 
 }  // namespace
 
-base::LazyInstance<ServerSharedBitmapManager>::DestructorAtExit
-    g_shared_memory_manager = LAZY_INSTANCE_INITIALIZER;
-
 ServerSharedBitmapManager::ServerSharedBitmapManager() = default;
 
 ServerSharedBitmapManager::~ServerSharedBitmapManager() {
   DCHECK(handle_map_.empty());
-}
-
-ServerSharedBitmapManager* ServerSharedBitmapManager::current() {
-  return g_shared_memory_manager.Pointer();
 }
 
 std::unique_ptr<SharedBitmap> ServerSharedBitmapManager::GetSharedBitmapFromId(

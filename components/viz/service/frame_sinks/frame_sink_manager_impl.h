@@ -37,10 +37,10 @@
 #include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
 
 namespace viz {
-
 class CapturableFrameSink;
 class CompositorFrameSinkSupport;
 class DisplayProvider;
+class SharedBitmapManager;
 
 // FrameSinkManagerImpl manages BeginFrame hierarchy. This is the implementation
 // detail for FrameSinkManagerImpl.
@@ -50,9 +50,11 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       public mojom::FrameSinkManager,
       public HitTestAggregatorDelegate {
  public:
-  FrameSinkManagerImpl(base::Optional<uint32_t> activation_deadline_in_frames =
-                           kDefaultActivationDeadlineInFrames,
-                       DisplayProvider* display_provider = nullptr);
+  explicit FrameSinkManagerImpl(
+      SharedBitmapManager* shared_bitmap_manager,
+      base::Optional<uint32_t> activation_deadline_in_frames =
+          kDefaultActivationDeadlineInFrames,
+      DisplayProvider* display_provider = nullptr);
   ~FrameSinkManagerImpl() override;
 
   // Performs cleanup needed to force shutdown from the GPU process. Stops all
@@ -146,8 +148,10 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   BeginFrameSource* GetPrimaryBeginFrameSource();
 
   SurfaceManager* surface_manager() { return &surface_manager_; }
-
   const HitTestManager* hit_test_manager() { return &hit_test_manager_; }
+  SharedBitmapManager* shared_bitmap_manager() {
+    return shared_bitmap_manager_;
+  }
 
   void SubmitHitTestRegionList(
       const SurfaceId& surface_id,
@@ -214,6 +218,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   bool ChildContains(const FrameSinkId& child_frame_sink_id,
                      const FrameSinkId& search_frame_sink_id) const;
 
+  // SharedBitmapManager for the viz display service for receiving software
+  // resources in CompositorFrameSinks.
+  SharedBitmapManager* const shared_bitmap_manager_;
   // Provides a Display for CreateRootCompositorFrameSink().
   DisplayProvider* const display_provider_;
 

@@ -6,6 +6,7 @@
 
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -70,7 +71,7 @@ using namespace test;
 
 class SurfaceHittestTest : public testing::Test {
  public:
-  SurfaceHittestTest() = default;
+  SurfaceHittestTest() : frame_sink_manager_(&shared_bitmap_manager_) {}
   ~SurfaceHittestTest() override = default;
 
   CompositorFrameSinkSupport& root_support() { return *supports_[0]; }
@@ -96,6 +97,7 @@ class SurfaceHittestTest : public testing::Test {
   void TearDown() override { supports_.clear(); }
 
  private:
+  ServerSharedBitmapManager shared_bitmap_manager_;
   FrameSinkManagerImpl frame_sink_manager_;
   std::vector<std::unique_ptr<CompositorFrameSinkSupport>> supports_;
   FakeCompositorFrameSinkClient client_;
