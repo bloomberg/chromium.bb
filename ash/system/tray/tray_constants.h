@@ -174,6 +174,11 @@ constexpr int kUnifiedFeaturePodItemsInRow = 3;
 constexpr int kUnifiedFeaturePodMaxItemsInCollapsed = 5;
 constexpr int kUnifiedNotificationSeparatorThickness = 1;
 
+// Gap between the buttons on the top shortcut row, other than the
+// expand/collapse button.
+constexpr int kUnifiedTopShortcutButtonDefaultSpacing = 16;
+constexpr int kUnifiedTopShortcutButtonMinSpacing = 4;
+
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_
