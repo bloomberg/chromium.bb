@@ -64,7 +64,7 @@ function {{union.name}}(value) {
     {
       field: "{{field.name}}",
 
-      mutator: function() { return {{generate_or_mutate('mutator_', 'mutate', field.kind, 'this.' ~ field.name)|indent(6)}}; },
+      mutator: function(val) { return {{generate_or_mutate('mutator_', 'mutate', field.kind, 'val.' ~ field.name)|indent(6)}}; },
     },
 {%-     endfor %}
   ];
