@@ -87,9 +87,9 @@ class ConnectionAttemptBase : public ConnectionAttempt<FailureDetailType>,
       StartNextConnectToDeviceOperation();
   }
 
-  std::vector<ClientConnectionParameters> ExtractClientConnectionParameters()
-      override {
-    std::vector<ClientConnectionParameters> data_list;
+  std::vector<std::unique_ptr<ClientConnectionParameters>>
+  ExtractClientConnectionParameters() override {
+    std::vector<std::unique_ptr<ClientConnectionParameters>> data_list;
     for (auto& map_entry : id_to_request_map_) {
       data_list.push_back(
           PendingConnectionRequest<FailureDetailType>::

@@ -58,7 +58,7 @@ FakeActiveConnectionManager::GetConnectionState(
 
 void FakeActiveConnectionManager::PerformAddActiveConnection(
     std::unique_ptr<AuthenticatedChannel> authenticated_channel,
-    std::vector<ClientConnectionParameters> initial_clients,
+    std::vector<std::unique_ptr<ClientConnectionParameters>> initial_clients,
     const ConnectionDetails& connection_details) {
   DCHECK(!base::ContainsKey(connection_details_to_channel_map_,
                             connection_details));
@@ -68,7 +68,7 @@ void FakeActiveConnectionManager::PerformAddActiveConnection(
 }
 
 void FakeActiveConnectionManager::PerformAddClientToChannel(
-    ClientConnectionParameters client_connection_parameters,
+    std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
     const ConnectionDetails& connection_details) {
   DCHECK(base::ContainsKey(connection_details_to_channel_map_,
                            connection_details));

@@ -65,7 +65,7 @@ ActiveConnectionManagerImpl::GetConnectionState(
 
 void ActiveConnectionManagerImpl::PerformAddActiveConnection(
     std::unique_ptr<AuthenticatedChannel> authenticated_channel,
-    std::vector<ClientConnectionParameters> initial_clients,
+    std::vector<std::unique_ptr<ClientConnectionParameters>> initial_clients,
     const ConnectionDetails& connection_details) {
   details_to_channel_map_[connection_details] =
       MultiplexedChannelImpl::Factory::Get()->BuildInstance(
@@ -74,7 +74,7 @@ void ActiveConnectionManagerImpl::PerformAddActiveConnection(
 }
 
 void ActiveConnectionManagerImpl::PerformAddClientToChannel(
-    ClientConnectionParameters client_connection_parameters,
+    std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
     const ConnectionDetails& connection_details) {
   bool success =
       details_to_channel_map_[connection_details]->AddClientToChannel(

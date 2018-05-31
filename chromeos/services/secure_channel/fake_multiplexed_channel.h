@@ -29,7 +29,7 @@ class FakeMultiplexedChannel : public MultiplexedChannel {
           base::OnceCallback<void(const ConnectionDetails&)>());
   ~FakeMultiplexedChannel() override;
 
-  std::vector<ClientConnectionParameters>& added_clients() {
+  std::vector<std::unique_ptr<ClientConnectionParameters>>& added_clients() {
     return added_clients_;
   }
 
@@ -43,13 +43,13 @@ class FakeMultiplexedChannel : public MultiplexedChannel {
   // MultiplexedChannel:
   bool IsDisconnecting() const override;
   bool IsDisconnected() const override;
-  void PerformAddClientToChannel(
-      ClientConnectionParameters client_connection_parameters) override;
+  void PerformAddClientToChannel(std::unique_ptr<ClientConnectionParameters>
+                                     client_connection_parameters) override;
 
   bool is_disconnecting_ = false;
   bool is_disconnected_ = false;
 
-  std::vector<ClientConnectionParameters> added_clients_;
+  std::vector<std::unique_ptr<ClientConnectionParameters>> added_clients_;
 
   base::OnceCallback<void(const ConnectionDetails&)> destructor_callback_;
 

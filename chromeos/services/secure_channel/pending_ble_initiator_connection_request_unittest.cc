@@ -9,9 +9,8 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/unguessable_token.h"
-#include "chromeos/services/secure_channel/client_connection_parameters.h"
+#include "chromeos/services/secure_channel/fake_client_connection_parameters.h"
 #include "chromeos/services/secure_channel/fake_pending_connection_request_delegate.h"
-#include "chromeos/services/secure_channel/test_client_connection_parameters_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -32,13 +31,14 @@ class SecureChannelPendingBleInitiatorConnectionRequestTest
   void SetUp() override {
     fake_pending_connection_request_delegate_ =
         std::make_unique<FakePendingConnectionRequestDelegate>();
-    auto client_connection_parameters =
-        TestClientConnectionParametersFactory::Get()->Create(kTestFeature);
-    client_connection_parameters_id_ = client_connection_parameters.id();
+    auto fake_client_connection_parameters =
+        std::make_unique<FakeClientConnectionParameters>(kTestFeature);
+    fake_client_connection_parameters_ =
+        fake_client_connection_parameters.get();
 
     pending_ble_initiator_request_ =
         PendingBleInitiatorConnectionRequest::Factory::Get()->BuildInstance(
-            std::move(client_connection_parameters),
+            std::move(fake_client_connection_parameters),
             fake_pending_connection_request_delegate_.get());
   }
 
@@ -52,26 +52,11 @@ class SecureChannelPendingBleInitiatorConnectionRequestTest
 
   const base::Optional<mojom::ConnectionAttemptFailureReason>&
   GetConnectionAttemptFailureReason() {
-    return fake_connection_delegate()->connection_attempt_failure_reason();
+    return fake_client_connection_parameters_->failure_reason();
   }
 
-  void HandleConnectionFailure(BleInitiatorFailureType failure_type,
-                               bool expected_to_become_inactive) {
-    base::RunLoop run_loop;
-    if (expected_to_become_inactive) {
-      fake_connection_delegate()->set_closure_for_next_delegate_callback(
-          run_loop.QuitClosure());
-    }
-
+  void HandleConnectionFailure(BleInitiatorFailureType failure_type) {
     pending_ble_initiator_request_->HandleConnectionFailure(failure_type);
-
-    if (expected_to_become_inactive)
-      run_loop.Run();
-  }
-
-  FakeConnectionDelegate* fake_connection_delegate() {
-    return TestClientConnectionParametersFactory::Get()
-        ->GetDelegateForParameters(client_connection_parameters_id_);
   }
 
  private:
@@ -79,7 +64,7 @@ class SecureChannelPendingBleInitiatorConnectionRequestTest
 
   std::unique_ptr<FakePendingConnectionRequestDelegate>
       fake_pending_connection_request_delegate_;
-  base::UnguessableToken client_connection_parameters_id_;
+  FakeClientConnectionParameters* fake_client_connection_parameters_;
 
   std::unique_ptr<PendingConnectionRequest<BleInitiatorFailureType>>
       pending_ble_initiator_request_;
@@ -90,8 +75,7 @@ class SecureChannelPendingBleInitiatorConnectionRequestTest
 
 TEST_F(SecureChannelPendingBleInitiatorConnectionRequestTest,
        HandleAuthenticationError) {
-  HandleConnectionFailure(BleInitiatorFailureType::kAuthenticationError,
-                          true /* expected_to_become_inactive */);
+  HandleConnectionFailure(BleInitiatorFailureType::kAuthenticationError);
   EXPECT_EQ(
       PendingConnectionRequestDelegate::FailedConnectionReason::kRequestFailed,
       *GetFailedConnectionReason());
@@ -101,8 +85,7 @@ TEST_F(SecureChannelPendingBleInitiatorConnectionRequestTest,
 
 TEST_F(SecureChannelPendingBleInitiatorConnectionRequestTest,
        HandleInvalidBeaconSeeds) {
-  HandleConnectionFailure(BleInitiatorFailureType::kInvalidBeaconSeeds,
-                          true /* expected_to_become_inactive */);
+  HandleConnectionFailure(BleInitiatorFailureType::kInvalidBeaconSeeds);
   EXPECT_EQ(
       PendingConnectionRequestDelegate::FailedConnectionReason::kRequestFailed,
       *GetFailedConnectionReason());
@@ -115,15 +98,13 @@ TEST_F(SecureChannelPendingBleInitiatorConnectionRequestTest,
        HandleGattErrors) {
   // Fail 5 times; no fatal error should occur.
   for (size_t i = 0; i < 5; ++i) {
-    HandleConnectionFailure(BleInitiatorFailureType::kGattConnectionError,
-                            false /* expected_to_become_inactive */);
+    HandleConnectionFailure(BleInitiatorFailureType::kGattConnectionError);
     EXPECT_FALSE(GetFailedConnectionReason());
     EXPECT_FALSE(GetConnectionAttemptFailureReason());
   }
 
   // Fail a 6th time; this should be a fatal error.
-  HandleConnectionFailure(BleInitiatorFailureType::kGattConnectionError,
-                          true /* expected_to_become_inactive */);
+  HandleConnectionFailure(BleInitiatorFailureType::kGattConnectionError);
   EXPECT_EQ(
       PendingConnectionRequestDelegate::FailedConnectionReason::kRequestFailed,
       *GetFailedConnectionReason());
@@ -135,16 +116,14 @@ TEST_F(SecureChannelPendingBleInitiatorConnectionRequestTest, HandleTimeouts) {
   // Fail 2 times; no fatal error should occur.
   for (size_t i = 0; i < 2; ++i) {
     HandleConnectionFailure(
-        BleInitiatorFailureType::kTimeoutContactingRemoteDevice,
-        false /* expected_to_become_inactive */);
+        BleInitiatorFailureType::kTimeoutContactingRemoteDevice);
     EXPECT_FALSE(GetFailedConnectionReason());
     EXPECT_FALSE(GetConnectionAttemptFailureReason());
   }
 
   // Fail a 3rd time; this should be a fatal error.
   HandleConnectionFailure(
-      BleInitiatorFailureType::kTimeoutContactingRemoteDevice,
-      true /* expected_to_become_inactive */);
+      BleInitiatorFailureType::kTimeoutContactingRemoteDevice);
   EXPECT_EQ(
       PendingConnectionRequestDelegate::FailedConnectionReason::kRequestFailed,
       *GetFailedConnectionReason());
@@ -156,8 +135,7 @@ TEST_F(SecureChannelPendingBleInitiatorConnectionRequestTest,
        NonFailingErrors) {
   // Fail 5 times due to GATT errors; no fatal error should occur.
   for (size_t i = 0; i < 5; ++i) {
-    HandleConnectionFailure(BleInitiatorFailureType::kGattConnectionError,
-                            false /* expected_to_become_inactive */);
+    HandleConnectionFailure(BleInitiatorFailureType::kGattConnectionError);
     EXPECT_FALSE(GetFailedConnectionReason());
     EXPECT_FALSE(GetConnectionAttemptFailureReason());
   }
@@ -165,8 +143,7 @@ TEST_F(SecureChannelPendingBleInitiatorConnectionRequestTest,
   // Fail 2 times due to timeouts; no fatal error should occur.
   for (size_t i = 0; i < 2; ++i) {
     HandleConnectionFailure(
-        BleInitiatorFailureType::kTimeoutContactingRemoteDevice,
-        false /* expected_to_become_inactive */);
+        BleInitiatorFailureType::kTimeoutContactingRemoteDevice);
     EXPECT_FALSE(GetFailedConnectionReason());
     EXPECT_FALSE(GetConnectionAttemptFailureReason());
   }
@@ -174,8 +151,7 @@ TEST_F(SecureChannelPendingBleInitiatorConnectionRequestTest,
   // Fail due to being interrupted by a higher-priority attempt; no fatal error
   // should occur.
   HandleConnectionFailure(
-      BleInitiatorFailureType::kInterruptedByHigherPriorityConnectionAttempt,
-      false /* expected_to_become_inactive */);
+      BleInitiatorFailureType::kInterruptedByHigherPriorityConnectionAttempt);
   EXPECT_FALSE(GetFailedConnectionReason());
   EXPECT_FALSE(GetConnectionAttemptFailureReason());
 }

@@ -13,8 +13,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/services/secure_channel/client_connection_parameters.h"
-#include "chromeos/services/secure_channel/fake_connection_delegate.h"
+#include "chromeos/services/secure_channel/fake_client_connection_parameters.h"
 #include "chromeos/services/secure_channel/fake_message_receiver.h"
 #include "chromeos/services/secure_channel/fake_single_client_message_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,17 +38,19 @@ class SecureChannelSingleClientMessageProxyImplTest : public testing::Test {
     auto fake_message_receiver = std::make_unique<FakeMessageReceiver>();
     fake_message_receiver_ = fake_message_receiver.get();
 
-    fake_connection_delegate_ = std::make_unique<FakeConnectionDelegate>();
-    fake_connection_delegate_->set_message_receiver(
+    auto fake_client_connection_parameters =
+        std::make_unique<FakeClientConnectionParameters>(kTestFeature);
+    fake_client_connection_parameters_ =
+        fake_client_connection_parameters.get();
+    fake_client_connection_parameters_->set_message_receiver(
         std::move(fake_message_receiver));
 
     proxy_ = SingleClientMessageProxyImpl::Factory::Get()->BuildInstance(
         fake_proxy_delegate_.get(),
-        ClientConnectionParameters(
-            kTestFeature, fake_connection_delegate_->GenerateInterfacePtr()));
+        std::move(fake_client_connection_parameters));
 
     CompletePendingMojoCalls();
-    EXPECT_TRUE(fake_connection_delegate_->channel());
+    EXPECT_TRUE(fake_client_connection_parameters_->channel());
   }
 
   void CompletePendingMojoCalls() {
@@ -70,7 +71,7 @@ class SecureChannelSingleClientMessageProxyImplTest : public testing::Test {
 
     int message_counter = next_message_counter_++;
 
-    mojom::ChannelPtr& channel = fake_connection_delegate_->channel();
+    mojom::ChannelPtr& channel = *fake_client_connection_parameters_->channel();
     channel->SendMessage(
         message,
         base::BindOnce(
@@ -122,10 +123,6 @@ class SecureChannelSingleClientMessageProxyImplTest : public testing::Test {
     return fake_message_receiver_;
   }
 
-  FakeConnectionDelegate* fake_connection_delegate() {
-    return fake_connection_delegate_.get();
-  }
-
   bool WasMessageSent(int message_counter) {
     return base::ContainsKey(sent_message_counters_, message_counter);
   }
@@ -136,21 +133,21 @@ class SecureChannelSingleClientMessageProxyImplTest : public testing::Test {
     base::RunLoop run_loop;
     fake_proxy_delegate_->set_on_client_disconnected_closure(
         run_loop.QuitClosure());
-    fake_connection_delegate_->channel().reset();
+    fake_client_connection_parameters_->channel().reset();
     run_loop.Run();
 
     EXPECT_TRUE(WasDelegateNotifiedOfDisconnection());
   }
 
   void DisconnectFromRemoteDeviceSide() {
-    EXPECT_TRUE(fake_connection_delegate()->channel());
+    EXPECT_TRUE(fake_client_connection_parameters_->channel());
 
     proxy_->HandleRemoteDeviceDisconnection();
     CompletePendingMojoCalls();
 
-    EXPECT_FALSE(fake_connection_delegate()->channel());
+    EXPECT_FALSE(fake_client_connection_parameters_->channel());
     EXPECT_EQ(static_cast<uint32_t>(mojom::Channel::kConnectionDroppedReason),
-              fake_connection_delegate()->disconnection_reason());
+              fake_client_connection_parameters_->disconnection_reason());
   }
 
   bool WasDelegateNotifiedOfDisconnection() {
@@ -159,7 +156,7 @@ class SecureChannelSingleClientMessageProxyImplTest : public testing::Test {
   }
 
   const mojom::ConnectionMetadata& GetConnectionMetadataFromChannel() {
-    mojom::ChannelPtr& channel = fake_connection_delegate_->channel();
+    mojom::ChannelPtr& channel = *fake_client_connection_parameters_->channel();
     channel->GetConnectionMetadata(base::BindOnce(
         &SecureChannelSingleClientMessageProxyImplTest::OnConnectionMetadata,
         base::Unretained(this)));
@@ -180,7 +177,7 @@ class SecureChannelSingleClientMessageProxyImplTest : public testing::Test {
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<FakeSingleClientMessageProxyDelegate> fake_proxy_delegate_;
-  std::unique_ptr<FakeConnectionDelegate> fake_connection_delegate_;
+  FakeClientConnectionParameters* fake_client_connection_parameters_;
   FakeMessageReceiver* fake_message_receiver_;
 
   int next_message_counter_ = 0;

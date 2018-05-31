@@ -27,10 +27,10 @@ void FakePendingConnectionRequest::HandleConnectionFailure(
   handled_failure_details_.push_back(failure_detail);
 }
 
-ClientConnectionParameters
+std::unique_ptr<ClientConnectionParameters>
 FakePendingConnectionRequest::ExtractClientConnectionParameters() {
   DCHECK(client_data_for_extraction_);
-  return std::move(*client_data_for_extraction_);
+  return std::move(client_data_for_extraction_);
 }
 
 }  // namespace secure_channel

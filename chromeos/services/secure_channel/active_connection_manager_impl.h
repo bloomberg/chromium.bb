@@ -47,10 +47,10 @@ class ActiveConnectionManagerImpl : public ActiveConnectionManager,
       const ConnectionDetails& connection_details) const override;
   void PerformAddActiveConnection(
       std::unique_ptr<AuthenticatedChannel> authenticated_channel,
-      std::vector<ClientConnectionParameters> initial_clients,
+      std::vector<std::unique_ptr<ClientConnectionParameters>> initial_clients,
       const ConnectionDetails& connection_details) override;
   void PerformAddClientToChannel(
-      ClientConnectionParameters client_connection_parameters,
+      std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       const ConnectionDetails& connection_details) override;
 
   // MultiplexedChannel::Delegate:

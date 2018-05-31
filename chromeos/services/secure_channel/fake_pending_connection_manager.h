@@ -24,9 +24,10 @@ class FakePendingConnectionManager : public PendingConnectionManager {
   FakePendingConnectionManager(Delegate* delegate);
   ~FakePendingConnectionManager() override;
 
-  using HandledRequestsList = std::vector<std::tuple<ConnectionDetails,
-                                                     ClientConnectionParameters,
-                                                     ConnectionRole>>;
+  using HandledRequestsList =
+      std::vector<std::tuple<ConnectionDetails,
+                             std::unique_ptr<ClientConnectionParameters>,
+                             ConnectionRole>>;
   HandledRequestsList& handled_requests() { return handled_requests_; }
 
   // Make NotifyOnConnection() public for testing.
@@ -35,7 +36,7 @@ class FakePendingConnectionManager : public PendingConnectionManager {
  private:
   void HandleConnectionRequest(
       const ConnectionDetails& connection_details,
-      ClientConnectionParameters client_connection_parameters,
+      std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       ConnectionRole connection_role) override;
 
   HandledRequestsList handled_requests_;
@@ -50,18 +51,19 @@ class FakePendingConnectionManagerDelegate
   FakePendingConnectionManagerDelegate();
   ~FakePendingConnectionManagerDelegate() override;
 
-  using ReceivedConnectionsList =
-      std::vector<std::tuple<std::unique_ptr<AuthenticatedChannel>,
-                             std::vector<ClientConnectionParameters>,
-                             ConnectionDetails>>;
+  using ReceivedConnectionsList = std::vector<
+      std::tuple<std::unique_ptr<AuthenticatedChannel>,
+                 std::vector<std::unique_ptr<ClientConnectionParameters>>,
+                 ConnectionDetails>>;
   ReceivedConnectionsList& received_connections_list() {
     return received_connections_list_;
   }
 
  private:
-  void OnConnection(std::unique_ptr<AuthenticatedChannel> authenticated_channel,
-                    std::vector<ClientConnectionParameters> clients,
-                    const ConnectionDetails& connection_details) override;
+  void OnConnection(
+      std::unique_ptr<AuthenticatedChannel> authenticated_channel,
+      std::vector<std::unique_ptr<ClientConnectionParameters>> clients,
+      const ConnectionDetails& connection_details) override;
 
   ReceivedConnectionsList received_connections_list_;
 

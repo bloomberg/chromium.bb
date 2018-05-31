@@ -30,7 +30,8 @@ class SingleClientMessageProxyImpl : public SingleClientMessageProxy,
     virtual ~Factory();
     virtual std::unique_ptr<SingleClientMessageProxy> BuildInstance(
         SingleClientMessageProxy::Delegate* delegate,
-        ClientConnectionParameters client_connection_parameters);
+        std::unique_ptr<ClientConnectionParameters>
+            client_connection_parameters);
 
    private:
     static Factory* test_factory_;
@@ -46,7 +47,7 @@ class SingleClientMessageProxyImpl : public SingleClientMessageProxy,
 
   SingleClientMessageProxyImpl(
       SingleClientMessageProxy::Delegate* delegate,
-      ClientConnectionParameters client_connection_parameters);
+      std::unique_ptr<ClientConnectionParameters> client_connection_parameters);
 
   // SingleClientMessageProxy:
   void HandleReceivedMessage(const std::string& feature,
@@ -61,7 +62,7 @@ class SingleClientMessageProxyImpl : public SingleClientMessageProxy,
 
   void FlushForTesting();
 
-  ClientConnectionParameters client_connection_parameters_;
+  std::unique_ptr<ClientConnectionParameters> client_connection_parameters_;
   std::unique_ptr<ChannelImpl> channel_;
   mojom::MessageReceiverPtr message_receiver_ptr_;
 

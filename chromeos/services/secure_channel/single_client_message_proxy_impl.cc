@@ -35,19 +35,19 @@ SingleClientMessageProxyImpl::Factory::~Factory() = default;
 std::unique_ptr<SingleClientMessageProxy>
 SingleClientMessageProxyImpl::Factory::BuildInstance(
     SingleClientMessageProxy::Delegate* delegate,
-    ClientConnectionParameters client_connection_parameters) {
+    std::unique_ptr<ClientConnectionParameters> client_connection_parameters) {
   return base::WrapUnique(new SingleClientMessageProxyImpl(
       delegate, std::move(client_connection_parameters)));
 }
 
 SingleClientMessageProxyImpl::SingleClientMessageProxyImpl(
     SingleClientMessageProxy::Delegate* delegate,
-    ClientConnectionParameters client_connection_parameters)
+    std::unique_ptr<ClientConnectionParameters> client_connection_parameters)
     : SingleClientMessageProxy(delegate),
       client_connection_parameters_(std::move(client_connection_parameters)),
       channel_(std::make_unique<ChannelImpl>(this /* delegate */)) {
-  DCHECK(client_connection_parameters_.connection_delegate_ptr());
-  client_connection_parameters_.connection_delegate_ptr()->OnConnection(
+  DCHECK(client_connection_parameters_);
+  client_connection_parameters_->SetConnectionSucceeded(
       channel_->GenerateInterfacePtr(),
       mojo::MakeRequest(&message_receiver_ptr_));
 }
@@ -55,14 +55,14 @@ SingleClientMessageProxyImpl::SingleClientMessageProxyImpl(
 SingleClientMessageProxyImpl::~SingleClientMessageProxyImpl() = default;
 
 const base::UnguessableToken& SingleClientMessageProxyImpl::GetProxyId() {
-  return client_connection_parameters_.id();
+  return client_connection_parameters_->id();
 }
 
 void SingleClientMessageProxyImpl::HandleReceivedMessage(
     const std::string& feature,
     const std::string& payload) {
   // Ignore messages intended for other clients.
-  if (feature != client_connection_parameters_.feature())
+  if (feature != client_connection_parameters_->feature())
     return;
 
   message_receiver_ptr_->OnMessageReceived(payload);
@@ -75,7 +75,7 @@ void SingleClientMessageProxyImpl::HandleRemoteDeviceDisconnection() {
 void SingleClientMessageProxyImpl::OnSendMessageRequested(
     const std::string& message,
     base::OnceClosure on_sent_callback) {
-  NotifySendMessageRequested(client_connection_parameters_.feature(), message,
+  NotifySendMessageRequested(client_connection_parameters_->feature(), message,
                              std::move(on_sent_callback));
 }
 
@@ -89,9 +89,6 @@ void SingleClientMessageProxyImpl::OnClientDisconnected() {
 }
 
 void SingleClientMessageProxyImpl::FlushForTesting() {
-  DCHECK(client_connection_parameters_.connection_delegate_ptr());
-  client_connection_parameters_.connection_delegate_ptr().FlushForTesting();
-
   DCHECK(message_receiver_ptr_);
   message_receiver_ptr_.FlushForTesting();
 }

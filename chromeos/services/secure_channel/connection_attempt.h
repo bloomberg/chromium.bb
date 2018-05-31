@@ -33,7 +33,7 @@ class ConnectionAttempt {
   // Extracts all of the ClientConnectionParameters owned by |attempt|'s
   // PendingConnectionRequests. This function deletes |attempt| as part of this
   // process to ensure that it is no longer used after extraction is complete.
-  static std::vector<ClientConnectionParameters>
+  static std::vector<std::unique_ptr<ClientConnectionParameters>>
   ExtractClientConnectionParameters(
       std::unique_ptr<ConnectionAttempt<FailureDetailType>> attempt) {
     return attempt->ExtractClientConnectionParameters();
@@ -81,7 +81,7 @@ class ConnectionAttempt {
 
   // Extracts the ClientConnectionParameters from all child
   // PendingConnectionRequests.
-  virtual std::vector<ClientConnectionParameters>
+  virtual std::vector<std::unique_ptr<ClientConnectionParameters>>
   ExtractClientConnectionParameters() = 0;
 
   void OnConnectionAttemptSucceeded(

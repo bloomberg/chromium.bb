@@ -24,7 +24,8 @@ class PendingBleInitiatorConnectionRequest
     static void SetFactoryForTesting(Factory* test_factory);
     virtual ~Factory();
     virtual std::unique_ptr<PendingConnectionRequest<BleInitiatorFailureType>>
-    BuildInstance(ClientConnectionParameters client_connection_parameters,
+    BuildInstance(std::unique_ptr<ClientConnectionParameters>
+                      client_connection_parameters,
                   PendingConnectionRequestDelegate* delegate);
 
    private:
@@ -38,7 +39,7 @@ class PendingBleInitiatorConnectionRequest
   static const size_t kMaxGattConnectionAttemptsPerDevice;
 
   PendingBleInitiatorConnectionRequest(
-      ClientConnectionParameters client_connection_parameters,
+      std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       PendingConnectionRequestDelegate* delegate);
 
   // PendingConnectionRequest<BleInitiatorFailureType>:

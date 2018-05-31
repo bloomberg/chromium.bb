@@ -19,7 +19,7 @@ PendingConnectionManager::~PendingConnectionManager() = default;
 
 void PendingConnectionManager::NotifyOnConnection(
     std::unique_ptr<AuthenticatedChannel> authenticated_channel,
-    std::vector<ClientConnectionParameters> clients,
+    std::vector<std::unique_ptr<ClientConnectionParameters>> clients,
     const ConnectionDetails& connection_details) {
   delegate_->OnConnection(std::move(authenticated_channel), std::move(clients),
                           connection_details);

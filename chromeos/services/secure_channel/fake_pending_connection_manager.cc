@@ -17,7 +17,7 @@ FakePendingConnectionManager::~FakePendingConnectionManager() = default;
 
 void FakePendingConnectionManager::HandleConnectionRequest(
     const ConnectionDetails& connection_details,
-    ClientConnectionParameters client_connection_parameters,
+    std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
     ConnectionRole connection_role) {
   handled_requests_.push_back(std::make_tuple(
       connection_details, std::move(client_connection_parameters),
@@ -32,7 +32,7 @@ FakePendingConnectionManagerDelegate::~FakePendingConnectionManagerDelegate() =
 
 void FakePendingConnectionManagerDelegate::OnConnection(
     std::unique_ptr<AuthenticatedChannel> authenticated_channel,
-    std::vector<ClientConnectionParameters> clients,
+    std::vector<std::unique_ptr<ClientConnectionParameters>> clients,
     const ConnectionDetails& connection_details) {
   received_connections_list_.push_back(
       std::make_tuple(std::move(authenticated_channel), std::move(clients),

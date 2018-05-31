@@ -47,13 +47,13 @@ class ActiveConnectionManager {
   // GetConnectionState() returns kNoConnectionExists.
   void AddActiveConnection(
       std::unique_ptr<AuthenticatedChannel> authenticated_channel,
-      std::vector<ClientConnectionParameters> initial_clients,
+      std::vector<std::unique_ptr<ClientConnectionParameters>> initial_clients,
       const ConnectionDetails& connection_details);
 
   // Adds a client to an active connection. A client can only be added if
   // GetConnectionState() returns kActiveConnectionExists.
   void AddClientToChannel(
-      ClientConnectionParameters client_connection_parameters,
+      std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       const ConnectionDetails& connection_details);
 
  protected:
@@ -63,14 +63,14 @@ class ActiveConnectionManager {
   // it has already been verified that there is no existing connection.
   virtual void PerformAddActiveConnection(
       std::unique_ptr<AuthenticatedChannel> authenticated_channel,
-      std::vector<ClientConnectionParameters> initial_clients,
+      std::vector<std::unique_ptr<ClientConnectionParameters>> initial_clients,
       const ConnectionDetails& connection_details) = 0;
 
   // Actually adds the provided client/feature pair. By the time this function
   // is called, it has already been verified that there an active connection
   // exists.
   virtual void PerformAddClientToChannel(
-      ClientConnectionParameters client_connection_parameters,
+      std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       const ConnectionDetails& connection_details) = 0;
 
   void OnChannelDisconnected(const ConnectionDetails& connection_details);

@@ -9,9 +9,8 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/unguessable_token.h"
-#include "chromeos/services/secure_channel/client_connection_parameters.h"
+#include "chromeos/services/secure_channel/fake_client_connection_parameters.h"
 #include "chromeos/services/secure_channel/fake_pending_connection_request_delegate.h"
-#include "chromeos/services/secure_channel/test_client_connection_parameters_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -32,13 +31,14 @@ class SecureChannelPendingBleListenerConnectionRequestTest
   void SetUp() override {
     fake_pending_connection_request_delegate_ =
         std::make_unique<FakePendingConnectionRequestDelegate>();
-    auto client_connection_parameters =
-        TestClientConnectionParametersFactory::Get()->Create(kTestFeature);
-    client_connection_parameters_id_ = client_connection_parameters.id();
+    auto fake_client_connection_parameters =
+        std::make_unique<FakeClientConnectionParameters>(kTestFeature);
+    fake_client_connection_parameters_ =
+        fake_client_connection_parameters.get();
 
     pending_ble_listener_request_ =
         PendingBleListenerConnectionRequest::Factory::Get()->BuildInstance(
-            std::move(client_connection_parameters),
+            std::move(fake_client_connection_parameters),
             fake_pending_connection_request_delegate_.get());
   }
 
@@ -52,22 +52,11 @@ class SecureChannelPendingBleListenerConnectionRequestTest
 
   const base::Optional<mojom::ConnectionAttemptFailureReason>&
   GetConnectionAttemptFailureReason() {
-    return fake_connection_delegate()->connection_attempt_failure_reason();
+    return fake_client_connection_parameters_->failure_reason();
   }
 
   void HandleConnectionFailure(BleListenerFailureType failure_type) {
-    base::RunLoop run_loop;
-    fake_connection_delegate()->set_closure_for_next_delegate_callback(
-        run_loop.QuitClosure());
-
     pending_ble_listener_request_->HandleConnectionFailure(failure_type);
-
-    run_loop.Run();
-  }
-
-  FakeConnectionDelegate* fake_connection_delegate() {
-    return TestClientConnectionParametersFactory::Get()
-        ->GetDelegateForParameters(client_connection_parameters_id_);
   }
 
  private:
@@ -75,7 +64,7 @@ class SecureChannelPendingBleListenerConnectionRequestTest
 
   std::unique_ptr<FakePendingConnectionRequestDelegate>
       fake_pending_connection_request_delegate_;
-  base::UnguessableToken client_connection_parameters_id_;
+  FakeClientConnectionParameters* fake_client_connection_parameters_;
 
   std::unique_ptr<PendingConnectionRequest<BleListenerFailureType>>
       pending_ble_listener_request_;

@@ -24,7 +24,8 @@ class PendingBleListenerConnectionRequest
     static void SetFactoryForTesting(Factory* test_factory);
     virtual ~Factory();
     virtual std::unique_ptr<PendingConnectionRequest<BleListenerFailureType>>
-    BuildInstance(ClientConnectionParameters client_connection_parameters,
+    BuildInstance(std::unique_ptr<ClientConnectionParameters>
+                      client_connection_parameters,
                   PendingConnectionRequestDelegate* delegate);
 
    private:
@@ -35,7 +36,7 @@ class PendingBleListenerConnectionRequest
 
  private:
   PendingBleListenerConnectionRequest(
-      ClientConnectionParameters client_connection_parameters,
+      std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       PendingConnectionRequestDelegate* delegate);
 
   // PendingConnectionRequest<BleListenerFailureType>:

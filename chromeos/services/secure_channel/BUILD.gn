@@ -19,6 +19,8 @@ static_library("secure_channel") {
     "channel_impl.h",
     "client_connection_parameters.cc",
     "client_connection_parameters.h",
+    "client_connection_parameters_impl.cc",
+    "client_connection_parameters_impl.h",
     "connect_to_device_operation.h",
     "connect_to_device_operation_base.h",
     "connect_to_device_operation_factory.h",
@@ -70,6 +72,10 @@ static_library("test_support") {
     "fake_active_connection_manager.h",
     "fake_authenticated_channel.cc",
     "fake_authenticated_channel.h",
+    "fake_channel.cc",
+    "fake_channel.h",
+    "fake_client_connection_parameters.cc",
+    "fake_client_connection_parameters.h",
     "fake_connect_to_device_operation.cc",
     "fake_connect_to_device_operation.h",
     "fake_connect_to_device_operation_factory.cc",
@@ -92,8 +98,6 @@ static_library("test_support") {
     "fake_pending_connection_request_delegate.h",
     "fake_single_client_message_proxy.cc",
     "fake_single_client_message_proxy.h",
-    "test_client_connection_parameters_factory.cc",
-    "test_client_connection_parameters_factory.h",
   ]
 
   deps = [
@@ -110,6 +114,7 @@ source_set("unit_tests") {
   sources = [
     "active_connection_manager_impl_unittest.cc",
     "authenticated_channel_impl_unittest.cc",
+    "client_connection_parameters_impl_unittest.cc",
     "connect_to_device_operation_base_unittest.cc",
     "connect_to_device_operation_factory_base_unittest.cc",
     "connection_attempt_base_unittest.cc",

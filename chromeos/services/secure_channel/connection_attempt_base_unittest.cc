@@ -13,6 +13,7 @@
 #include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/connection_medium.h"
 #include "chromeos/services/secure_channel/fake_authenticated_channel.h"
+#include "chromeos/services/secure_channel/fake_client_connection_parameters.h"
 #include "chromeos/services/secure_channel/fake_connect_to_device_operation.h"
 #include "chromeos/services/secure_channel/fake_connect_to_device_operation_factory.h"
 #include "chromeos/services/secure_channel/fake_connection_attempt_delegate.h"
@@ -193,7 +194,8 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
     EXPECT_FALSE(fake_delegate_->authenticated_channel());
   }
 
-  std::vector<ClientConnectionParameters> ExtractClientConnectionParameters() {
+  std::vector<std::unique_ptr<ClientConnectionParameters>>
+  ExtractClientConnectionParameters() {
     is_extract_client_data_test_ = true;
     return ConnectionAttempt<std::string>::ExtractClientConnectionParameters(
         std::move(connection_attempt_));
@@ -362,20 +364,16 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_FailThenSuccess) {
 TEST_F(SecureChannelConnectionAttemptBaseTest,
        ExtractClientConnectionParameters) {
   FakePendingConnectionRequest* request1 = AddNewRequest();
-  auto fake_connection_delegate_1 = std::make_unique<FakeConnectionDelegate>();
-  auto fake_connection_delegate_ptr_1 =
-      fake_connection_delegate_1->GenerateInterfacePtr();
-  auto* fake_connection_delegate_proxy_1 = fake_connection_delegate_ptr_1.get();
-  request1->set_client_data_for_extraction(ClientConnectionParameters(
-      "request1Feature", std::move(fake_connection_delegate_ptr_1)));
+  auto fake_parameters_1 =
+      std::make_unique<FakeClientConnectionParameters>("request1Feature");
+  auto* fake_parameters_1_raw = fake_parameters_1.get();
+  request1->set_client_data_for_extraction(std::move(fake_parameters_1));
 
   FakePendingConnectionRequest* request2 = AddNewRequest();
-  auto fake_connection_delegate_2 = std::make_unique<FakeConnectionDelegate>();
-  auto fake_connection_delegate_ptr_2 =
-      fake_connection_delegate_2->GenerateInterfacePtr();
-  auto* fake_connection_delegate_proxy_2 = fake_connection_delegate_ptr_2.get();
-  request2->set_client_data_for_extraction(ClientConnectionParameters(
-      "request2Feature", std::move(fake_connection_delegate_ptr_2)));
+  auto fake_parameters_2 =
+      std::make_unique<FakeClientConnectionParameters>("request2Feature");
+  auto* fake_parameters_2_raw = fake_parameters_2.get();
+  request2->set_client_data_for_extraction(std::move(fake_parameters_2));
 
   auto extracted_client_data = ExtractClientConnectionParameters();
   EXPECT_EQ(2u, extracted_client_data.size());
@@ -384,14 +382,13 @@ TEST_F(SecureChannelConnectionAttemptBaseTest,
   // associated requests were added to |conenction_attempt_|, since
   // ConnectionAttemptBase internally utilizes a std::unordered_map. Sort the
   // data before making verifications to ensure correctness.
-  std::sort(extracted_client_data.begin(), extracted_client_data.end());
+  std::sort(extracted_client_data.begin(), extracted_client_data.end(),
+            [](const auto& ptr_1, const auto& ptr_2) {
+              return ptr_1->feature() < ptr_2->feature();
+            });
 
-  EXPECT_EQ("request1Feature", extracted_client_data[0].feature());
-  EXPECT_EQ(fake_connection_delegate_proxy_1,
-            extracted_client_data[0].connection_delegate_ptr().get());
-  EXPECT_EQ("request2Feature", extracted_client_data[1].feature());
-  EXPECT_EQ(fake_connection_delegate_proxy_2,
-            extracted_client_data[1].connection_delegate_ptr().get());
+  EXPECT_EQ(fake_parameters_1_raw, extracted_client_data[0].get());
+  EXPECT_EQ(fake_parameters_2_raw, extracted_client_data[1].get());
 }
 
 }  // namespace secure_channel
