@@ -1491,39 +1491,15 @@ void ShelfView::UpdateOverflowRange(ShelfView* overflow_view) const {
   overflow_view->last_visible_index_ = last_overflow_index;
 }
 
-gfx::Rect ShelfView::GetMenuAnchorRect(const views::View* source,
-                                       const gfx::Point& location,
-                                       ui::MenuSourceType source_type,
-                                       bool context_menu) const {
-  if (context_menu) {
-    if (source_type == ui::MenuSourceType::MENU_SOURCE_TOUCH)
-      return GetTouchMenuAnchorRect(source, location);
-    return gfx::Rect(location, gfx::Size());
-  }
-
-  // The menu is for an application list.
-  DCHECK(source) << "Application lists require a source button view.";
-  // Application lists use a bubble. It is possible to invoke the menu while
-  // it is sliding into view. To cover that case, the screen coordinates are
-  // offsetted by the animation delta.
-  aura::Window* window = GetWidget()->GetNativeWindow();
-  gfx::Rect anchor =
-      source->GetBoundsInScreen() +
-      (window->GetTargetBounds().origin() - window->bounds().origin());
-  if (source->border())
-    anchor.Inset(source->border()->GetInsets());
-  return anchor;
-}
-
-gfx::Rect ShelfView::GetTouchMenuAnchorRect(const views::View* source,
-                                            const gfx::Point& location) const {
-  const bool for_item = ShelfItemForView(source);
+gfx::Rect ShelfView::GetMenuAnchorRect(const views::View& source,
+                                       const gfx::Point& location) const {
+  const bool for_item = ShelfItemForView(&source);
   const gfx::Rect shelf_bounds =
       is_overflow_mode()
           ? owner_overflow_bubble_->bubble_view()->GetBubbleBounds()
           : screen_util::GetDisplayBoundsWithShelf(
                 shelf_widget_->GetNativeWindow());
-  const gfx::Rect& source_bounds_in_screen = source->GetBoundsInScreen();
+  const gfx::Rect& source_bounds_in_screen = source.GetBoundsInScreen();
   gfx::Point origin;
   switch (shelf_->alignment()) {
     case SHELF_ALIGNMENT_BOTTOM:
@@ -2024,9 +2000,9 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
       item ? item->id.app_id : std::string(), std::move(menu_model), source,
       source_type,
       base::BindOnce(&ShelfView::OnMenuClosed, base::Unretained(this), source));
-  shelf_menu_model_adapter_->Run(
-      GetMenuAnchorRect(source, click_point, source_type, context_menu),
-      GetMenuAnchorPosition(item, context_menu), run_types);
+  shelf_menu_model_adapter_->Run(GetMenuAnchorRect(*source, click_point),
+                                 GetMenuAnchorPosition(item, context_menu),
+                                 run_types);
 }
 
 void ShelfView::OnMenuClosed(views::View* source) {

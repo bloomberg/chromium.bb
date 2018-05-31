@@ -2085,82 +2085,27 @@ class ShelfViewTouchableContextMenuTest : public ShelfViewTest {
   DISALLOW_COPY_AND_ASSIGN(ShelfViewTouchableContextMenuTest);
 };
 
-// Tests that anchor points are aligned with the shelf button bounds for touch.
-TEST_F(ShelfViewTouchableContextMenuTest,
-       ShelfViewContextMenuAnchorPointTouch) {
+// Tests that menu anchor points are aligned with the shelf button bounds.
+TEST_F(ShelfViewTouchableContextMenuTest, ShelfViewMenuAnchorPoint) {
   const ShelfButton* shelf_button = GetButtonByID(AddApp());
   EXPECT_EQ(ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM,
             GetPrimaryShelf()->alignment());
 
   // Test for bottom shelf.
   EXPECT_EQ(shelf_button->GetBoundsInScreen().y(),
-            test_api_
-                ->GetMenuAnchorRect(shelf_button, gfx::Point(),
-                                    ui::MenuSourceType::MENU_SOURCE_TOUCH,
-                                    true /*context_menu*/)
-                .y());
+            test_api_->GetMenuAnchorRect(*shelf_button, gfx::Point()).y());
 
   // Test for left shelf.
   GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_LEFT);
 
   EXPECT_EQ(shelf_button->GetBoundsInScreen().x(),
-            test_api_
-                ->GetMenuAnchorRect(shelf_button, gfx::Point(),
-                                    ui::MenuSourceType::MENU_SOURCE_TOUCH,
-                                    true /*context_menu*/)
-                .x());
+            test_api_->GetMenuAnchorRect(*shelf_button, gfx::Point()).x());
 
   // Test for right shelf.
   GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_RIGHT);
 
   EXPECT_EQ(shelf_button->GetBoundsInScreen().x(),
-            test_api_
-                ->GetMenuAnchorRect(shelf_button, gfx::Point(),
-                                    ui::MenuSourceType::MENU_SOURCE_TOUCH,
-                                    true /*context_menu*/)
-                .x());
-}
-
-// Tests that anchor points are the click point for mouse context menus.
-TEST_F(ShelfViewTouchableContextMenuTest, ShelfViewContextMenuAnchorPoint) {
-  const ShelfButton* shelf_button = GetButtonByID(AddApp());
-  EXPECT_EQ(ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM,
-            GetPrimaryShelf()->alignment());
-
-  // Test for bottom shelf.
-  const gfx::Point click_point_bottom =
-      shelf_button->GetBoundsInScreen().CenterPoint();
-
-  EXPECT_EQ(click_point_bottom,
-            test_api_
-                ->GetMenuAnchorRect(shelf_button, click_point_bottom,
-                                    ui::MenuSourceType::MENU_SOURCE_MOUSE,
-                                    true /*context_menu*/)
-                .origin());
-
-  // Test for left shelf.
-  GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_LEFT);
-  const gfx::Point click_point_left =
-      shelf_button->GetBoundsInScreen().CenterPoint();
-
-  EXPECT_EQ(click_point_left,
-            test_api_
-                ->GetMenuAnchorRect(shelf_button, click_point_left,
-                                    ui::MenuSourceType::MENU_SOURCE_MOUSE,
-                                    true /*context_menu*/)
-                .origin());
-
-  // Test for right shelf.
-  GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_RIGHT);
-  const gfx::Point click_point_right =
-      shelf_button->GetBoundsInScreen().CenterPoint();
-
-  EXPECT_EQ(click_point_right,
-            test_api_
-                ->GetMenuAnchorRect(shelf_button, click_point_right,
-                                    ui::MenuSourceType::MENU_SOURCE_MOUSE,
-                                    true /*context_menu*/)
-                .origin());
+            test_api_->GetMenuAnchorRect(*shelf_button, gfx::Point()).x());
 }
 
 // Tests that the app list button does not show a context menu on right click

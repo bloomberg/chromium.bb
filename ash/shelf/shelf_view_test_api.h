@@ -75,10 +75,8 @@ class ShelfViewTestAPI {
 
   // Gets the anchor point that would be used for a context menu with these
   // parameters.
-  gfx::Rect GetMenuAnchorRect(const views::View* source,
-                              const gfx::Point& location,
-                              ui::MenuSourceType source_type,
-                              bool context_menu) const;
+  gfx::Rect GetMenuAnchorRect(const views::View& source,
+                              const gfx::Point& location) const;
 
   // Close any open app list or context menu; returns true if a menu was closed.
   bool CloseMenu();

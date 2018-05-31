@@ -306,19 +306,9 @@ class ASH_EXPORT ShelfView : public views::View,
   void UpdateOverflowRange(ShelfView* overflow_view) const;
 
   // Gets the menu anchor rect for menus. |source| is the view that is
-  // asking for a menu, |location| is the location of the event,
-  // |source_type| is the type of event that asked for the menu, and
-  // |context_menu| is whether the menu is for a context or app menu.
-  gfx::Rect GetMenuAnchorRect(const views::View* source,
-                              const gfx::Point& location,
-                              ui::MenuSourceType source_type,
-                              bool context_menu) const;
-
-  // Gets the menu anchor rect that aligns the menu to the edge of the
-  // shelf for touch events. |source| is the view that is asking for the
-  // menu, |location| is the location of the event.
-  gfx::Rect GetTouchMenuAnchorRect(const views::View* source,
-                                   const gfx::Point& location) const;
+  // asking for a menu, |location| is the location of the event.
+  gfx::Rect GetMenuAnchorRect(const views::View& source,
+                              const gfx::Point& location) const;
 
   // Gets the menu anchor position for a menu. |for_item| is true if the menu is
   // for an item on the shelf, or false if the menu is for the shelf view
