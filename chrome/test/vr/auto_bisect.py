@@ -177,6 +177,13 @@ def ParseArgsAndAssertValid():
                            'Assumes that gn args have already been generated '
                            'for the provided directory. Must be relative to '
                            'the Chromium src/ directory, e.g. out/Release.')
+  parser.add_argument('--regenerate-args-after-sync', action='store_true',
+                      default=False,
+                      help='Causes the build output directory to be deleted '
+                           'and re-created using the same gn args after each '
+                           'sync. Normally not necessary, but can work around '
+                           'weird issues like the build target not being '
+                           'available unless the directory is re-created.')
   parser.add_argument('--build-target', required=True,
                       help='The target to build for testing')
 
@@ -264,6 +271,8 @@ def VerifyInput(args, unknown_args):
                                                     args.build_output_dir)
   print '%d parallel jobs will be used with a load limit of %d' % (
       args.parallel_jobs, args.load_limit)
+  if args.regenerate_args_after_sync:
+    print 'The build output directory will be recreated after each sync'
   print '======'
   print 'The target %s will be isolated and uploaded to %s' % (
       args.isolate_target, args.isolate_server)
@@ -471,6 +480,17 @@ def BuildTarget(args):
                            '-l', str(args.load_limit), args.build_target])
 
 
+def RegenerateGnArgs(args):
+  """Recreates the build output directory using existing GN args."""
+  with open(os.path.join(args.build_output_dir, 'args.gn'), 'r') as args_file:
+    gn_args = args_file.read()
+  shutil.rmtree(args.build_output_dir)
+  os.mkdir(args.build_output_dir)
+  with open(os.path.join(args.build_output_dir, 'args.gn'), 'w') as args_file:
+    args_file.write(gn_args)
+  subprocess.check_output(['gn', 'gen', args.build_output_dir])
+
+
 def SyncAndBuild(args, unknown_args, revision):
   """Syncs to the given revision and builds the test target.
 
@@ -525,6 +545,8 @@ def SyncAndBuild(args, unknown_args, revision):
       os.chdir(repo)
       subprocess.check_output(['git', 'checkout', rev])
       os.chdir(cwd)
+  if args.regenerate_args_after_sync:
+    RegenerateGnArgs(args)
   BuildTarget(args)
 
 
