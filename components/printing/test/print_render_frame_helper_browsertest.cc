@@ -1156,6 +1156,29 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForSelectedText) {
   VerifyPagesPrinted(false);
 }
 
+// Test to verify that preview generated only for two pages.
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForSelectedText2) {
+  LoadHTML(kMultipageHTML);
+  GetMainFrame()->SelectRange(blink::WebRange(1, 8),
+                              blink::WebLocalFrame::kHideSelectionHandle,
+                              blink::mojom::SelectionMenuBehavior::kHide);
+
+  // Fill in some dummy values.
+  base::DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  dict.SetBoolean(kSettingShouldPrintSelectionOnly, true);
+
+  OnPrintPreview(dict);
+
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  VerifyDidPreviewPage(true, 0);
+  VerifyPreviewPageCount(2);
+  VerifyPrintPreviewCancelled(false);
+  VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(true);
+  VerifyPagesPrinted(false);
+}
+
 // Tests that print preview fails and receiving error messages through
 // that channel all works.
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewFail) {

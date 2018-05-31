@@ -844,8 +844,7 @@ void PrepareFrameAndViewForPrint::CopySelectionIfNeeded(
 void PrepareFrameAndViewForPrint::CopySelection(
     const WebPreferences& preferences) {
   ResizeForPrinting();
-  std::string html =
-      net::EscapeQueryParamValue(frame()->SelectionAsMarkup().Utf8(), false);
+  std::string html = frame()->SelectionAsMarkup().Utf8();
   RestoreSize();
   // Create a new WebView with the same settings as the current display one.
   // Except that we disable javascript (don't want any active content running
