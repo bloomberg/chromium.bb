@@ -26,7 +26,7 @@ using ProtoKeyEntryVector =
 
 // Returns the prefix to all keys in the database.
 std::string GetDatabaseKeyPrefix(DownloadNamespace download_namespace) {
-  return std::to_string(static_cast<int>(download_namespace)) + ",";
+  return DownloadNamespaceToString(download_namespace) + ",";
 }
 
 // Check if an input string is under a given namespace.
@@ -75,6 +75,7 @@ void DownloadDBImpl::Initialize(InitializeCallback callback) {
   db_->Init(kDatabaseClientName, database_dir_, options,
             base::BindOnce(&DownloadDBImpl::OnDatabaseInitialized,
                            weak_factory_.GetWeakPtr(), std::move(callback)));
+  // TODO(qinmin): migrate all the data from InProgressCache into this database.
 }
 
 void DownloadDBImpl::DestroyAndReinitialize(InitializeCallback callback) {

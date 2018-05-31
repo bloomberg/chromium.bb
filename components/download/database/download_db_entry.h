@@ -21,6 +21,7 @@ struct DownloadDBEntry {
   ~DownloadDBEntry();
 
   bool operator==(const DownloadDBEntry& other) const;
+  bool operator!=(const DownloadDBEntry& other) const;
 
   // Gets a unique ID for this entry.
   std::string GetGuid() const;
