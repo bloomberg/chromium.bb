@@ -131,6 +131,12 @@ void FrameHeader::SetFrameColors(SkColor active_frame_color,
   DoSetFrameColors(active_frame_color, inactive_frame_color);
 }
 
+void FrameHeader::SetFrameTextOverride(
+    const base::string16& frame_text_override) {
+  frame_text_override_ = frame_text_override;
+  SchedulePaintForTitle();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // gfx::AnimationDelegate overrides:
 
@@ -161,15 +167,18 @@ void FrameHeader::UpdateCaptionButtonColors() {
 }
 
 void FrameHeader::PaintTitleBar(gfx::Canvas* canvas) {
+  base::string16 text = frame_text_override_;
   views::WidgetDelegate* target_widget_delegate =
       target_widget_->widget_delegate();
-  if (target_widget_delegate &&
-      target_widget_delegate->ShouldShowWindowTitle() &&
-      !target_widget_delegate->GetWindowTitle().empty()) {
+  if (text.empty() && target_widget_delegate &&
+      target_widget_delegate->ShouldShowWindowTitle()) {
+    text = target_widget_delegate->GetWindowTitle();
+  }
+
+  if (!text.empty()) {
     canvas->DrawStringRectWithFlags(
-        target_widget_delegate->GetWindowTitle(),
-        views::NativeWidgetAura::GetWindowTitleFontList(), GetTitleColor(),
-        GetTitleBounds(), gfx::Canvas::NO_SUBPIXEL_RENDERING);
+        text, views::NativeWidgetAura::GetWindowTitleFontList(),
+        GetTitleColor(), GetTitleBounds(), gfx::Canvas::NO_SUBPIXEL_RENDERING);
   }
 }
 

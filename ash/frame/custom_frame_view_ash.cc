@@ -332,7 +332,7 @@ void CustomFrameViewAsh::SetHeaderHeight(base::Optional<int> height) {
   overlay_view_->SetHeaderHeight(height);
 }
 
-views::View* CustomFrameViewAsh::GetHeaderView() {
+HeaderView* CustomFrameViewAsh::GetHeaderView() {
   return header_view_;
 }
 

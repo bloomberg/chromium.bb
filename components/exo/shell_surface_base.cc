@@ -908,17 +908,11 @@ bool ShellSurfaceBase::CanMinimize() const {
 }
 
 base::string16 ShellSurfaceBase::GetWindowTitle() const {
-  if (extra_title_.empty())
-    return title_;
-
-  // TODO(estade): revisit how the extra title is shown in the window frame and
-  // other surfaces like overview mode.
-  return title_ + base::ASCIIToUTF16(" (") + extra_title_ +
-         base::ASCIIToUTF16(")");
+  return title_;
 }
 
 bool ShellSurfaceBase::ShouldShowWindowTitle() const {
-  return !extra_title_.empty();
+  return false;
 }
 
 gfx::ImageSkia ShellSurfaceBase::GetWindowIcon() {

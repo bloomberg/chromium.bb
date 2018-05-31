@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
+#include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -70,6 +71,10 @@ class ASH_EXPORT FrameHeader : public gfx::AnimationDelegate {
   // Sets the active and inactive frame colors. Note the inactive frame color
   // will have some transparency added when the frame is drawn.
   void SetFrameColors(SkColor active_frame_color, SkColor inactive_frame_color);
+
+  // Sets text to display in place of the window's title. This will be shown
+  // regardless of what WidgetDelegate::ShouldShowWindowTitle() returns.
+  void SetFrameTextOverride(const base::string16& frame_text_override);
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -150,6 +155,8 @@ class ASH_EXPORT FrameHeader : public gfx::AnimationDelegate {
 
   // Whether the header is painted for the first time.
   bool initial_paint_ = true;
+
+  base::string16 frame_text_override_;
 
   gfx::SlideAnimation activation_animation_{this};
 

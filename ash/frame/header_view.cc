@@ -66,7 +66,7 @@ class WindowPropertyAppearanceProvider
 
 // The view used to draw the content (background and title string)
 // of the header. This is a separate view so that it can use
-// differnent scaling strategy than the rest of the frame such
+// different scaling strategy than the rest of the frame such
 // as caption buttons.
 class HeaderView::HeaderContentView : public views::View {
  public:
