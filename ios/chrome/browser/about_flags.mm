@@ -50,7 +50,6 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/history/history_base_feature.h"
 #include "ios/chrome/browser/ui/main/main_feature_flags.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_flags.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/user_feedback_features.h"
@@ -269,9 +268,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewClearBrowsingDataUIName,
      flag_descriptions::kNewClearBrowsingDataUIDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNewClearBrowsingDataUI)},
-    {"new-tools_menu", flag_descriptions::kNewToolsMenuName,
-     flag_descriptions::kNewToolsMenuDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kNewToolsMenu)},
     {"itunes-urls-store-kit-handling",
      flag_descriptions::kITunesUrlsStoreKitHandlingName,
      flag_descriptions::kITunesUrlsStoreKitHandlingDescription,

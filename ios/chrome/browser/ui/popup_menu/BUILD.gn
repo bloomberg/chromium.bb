@@ -60,7 +60,6 @@ source_set("popup_menu_ui") {
   ]
   deps = [
     ":constants",
-    ":flags",
     "resources:popup_background",
     "resources:popup_menu_add_bookmark",
     "resources:popup_menu_bookmarks",
@@ -142,15 +141,4 @@ source_set("unit_tests") {
     "//third_party/ocmock",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("flags") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "popup_menu_flags.h",
-    "popup_menu_flags.mm",
-  ]
-  deps = [
-    "//base",
-  ]
 }
