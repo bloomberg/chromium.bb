@@ -204,10 +204,9 @@ bool MatchesBool(bool* boolean, bool value) {
 
 template <typename T>
 void AssignOptionalValue(const std::unique_ptr<T>& source,
-                         std::unique_ptr<T>& destination) {
-  if (source.get()) {
-    destination.reset(new T(*source));
-  }
+                         std::unique_ptr<T>* destination) {
+  if (source)
+    *destination = std::make_unique<T>(*source);
 }
 
 void ReportRequestedWindowState(windows::WindowState state) {
@@ -1080,15 +1079,15 @@ ExtensionFunction::ResponseAction TabsCreateFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   ExtensionTabUtil::OpenTabParams options;
-  AssignOptionalValue(params->create_properties.window_id, options.window_id);
+  AssignOptionalValue(params->create_properties.window_id, &options.window_id);
   AssignOptionalValue(params->create_properties.opener_tab_id,
-                      options.opener_tab_id);
-  AssignOptionalValue(params->create_properties.selected, options.active);
+                      &options.opener_tab_id);
+  AssignOptionalValue(params->create_properties.selected, &options.active);
   // The 'active' property has replaced the 'selected' property.
-  AssignOptionalValue(params->create_properties.active, options.active);
-  AssignOptionalValue(params->create_properties.pinned, options.pinned);
-  AssignOptionalValue(params->create_properties.index, options.index);
-  AssignOptionalValue(params->create_properties.url, options.url);
+  AssignOptionalValue(params->create_properties.active, &options.active);
+  AssignOptionalValue(params->create_properties.pinned, &options.pinned);
+  AssignOptionalValue(params->create_properties.index, &options.index);
+  AssignOptionalValue(params->create_properties.url, &options.url);
 
   std::string error;
   std::unique_ptr<base::DictionaryValue> result(
