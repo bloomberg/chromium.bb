@@ -39,9 +39,8 @@ class TabController {
   // Returns true if multiple selection is supported.
   virtual bool SupportsMultipleSelection() = 0;
 
-  // Returns true if the close buttons of the inactive tabs are forced to be
-  // hidden.
-  virtual bool ShouldHideCloseButtonForInactiveTabs() = 0;
+  // Returns true if the close button for the given tab is forced to be hidden.
+  virtual bool ShouldHideCloseButtonForTab(Tab* tab) const = 0;
 
   // Returns true if the close button on an inactive tab should be shown on
   // mouse hover. This is predicated on ShouldHideCloseButtonForInactiveTabs()

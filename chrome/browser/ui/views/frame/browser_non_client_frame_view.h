@@ -90,8 +90,13 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // https://crbug.com/820485.
   virtual int GetTabStripLeftInset() const;
 
+  // Whether the special painting mode for one tab is allowed, regardless of how
+  // many tabs there are right now.
+  bool IsSingleTabModeAvailable() const;
+
   // views::NonClientFrameView:
   void ChildPreferredSizeChanged(views::View* child) override;
+  void OnThemeChanged() override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 
   // TabStripObserver:
@@ -104,7 +109,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // not.
   virtual bool ShouldPaintAsThemed() const;
 
-  // Whether the frame should be painted with a special mode for one tab.
+  // Whether the frame should be painted with the special mode for one tab.
   bool ShouldPaintAsSingleTabMode() const;
 
   // Compute aspects of the frame needed to paint the frame background.

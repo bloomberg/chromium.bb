@@ -70,6 +70,7 @@ class BrowserTabStripController : public TabStripController,
   void CreateNewTabWithLocation(const base::string16& loc) override;
   bool IsIncognito() override;
   void StackedLayoutMaybeChanged() override;
+  bool IsSingleTabModeAvailable() override;
   void OnStartedDraggingTabs() override;
   void OnStoppedDraggingTabs() override;
   SkColor GetToolbarTopSeparatorColor() const override;

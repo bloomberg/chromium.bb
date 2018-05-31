@@ -102,6 +102,9 @@ class TabStripController {
   // Invoked if the stacked layout (on or off) might have changed.
   virtual void StackedLayoutMaybeChanged() = 0;
 
+  // Whether the special painting mode for one tab is allowed.
+  virtual bool IsSingleTabModeAvailable() = 0;
+
   // Notifies controller that the user started dragging this tabstrip's tabs.
   virtual void OnStartedDraggingTabs() = 0;
 
