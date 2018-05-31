@@ -50,7 +50,7 @@ class NoChromiumSrcDir(Exception):
   """Error thrown when no chromium src dir is found."""
 
   def __init__(self, path):
-    Exception.__init__(self, 'No chromium src dir found in: ' % (path))
+    Exception.__init__(self, 'No chromium src dir found in: %s' % (path))
 
 class MissingLKGMFile(Exception):
   """Error thrown when we cannot get the version from CHROMEOS_LKGM."""
