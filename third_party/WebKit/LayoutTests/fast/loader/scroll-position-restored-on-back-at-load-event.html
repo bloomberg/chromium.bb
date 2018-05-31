@@ -1,39 +1,42 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <script src="../../resources/js-test.js"></script>
-    <script>
-    description('Test ensures that scrollingElement.scrollTop/Left properties are available by the time DOMContentLoaded event fires.');
-    // Navigation steps:
-    // 1- page gets first loaded and scrolled.
-    // 2- loaded page away and then 'back'.
-    // Test: ensure that by the time DOMContenLoaded fires (after a back navigation), scrollingElement.scrollTop/Left are set.
+<script src='../../resources/testharness.js'></script>
+<script src='../../resources/testharnessreport.js'></script>
+<script src='../../resources/gesture-util.js'></script>
 
-    function init(evt) {
-        if (window.name == 'second/load') {
-            shouldBe('document.scrollingElement.scrollTop', '2000');
-            shouldBe('document.scrollingElement.scrollLeft', '1000');
-            window.name = "";
+<style>
+  #overflow {
+    width: 9999px;
+    height: 9999px;
+    float: left;
+  }
+</style>
 
-            if (window.testRunner)
-                finishJSTest();
-        } else {
-            window.scrollTo(1000, 2000);
+<div id='overflow'></div>
 
-            window.name = "second/load";
-        }
-    }
-    function onLoad() {
-        setTimeout('window.location = "../../resources/back.html"', 0);
-    }
+<script>
+  // Navigation steps:
+  // 1- page gets first loaded and scrolled.
+  // 2- loaded page away and then 'back'.
+  // Test: ensure that by the time DOMContenLoaded fires (after a back navigation), scrollingElement.scrollTop/Left are set.
 
-    window.addEventListener('DOMContentLoaded', init, true);
-    window.onunload = function() {}  // prevent caching
+  let t = async_test('Test ensures that scrollingElement.scrollTop/Left properties are available by the time DOMContentLoaded event fires.');
 
-    var jsTestIsAsync = true;
-    </script>
-    <body onload="onLoad()">
-        <div id="overflow" style='width: 9999px; height:9999px; float:left;'></div>
-        <h1 id='console'/>
-    </body>
-</html>
+  function init() {
+    t.step(() => {
+      if (window.name == 'second/load') {
+        assert_equals(document.scrollingElement.scrollTop, 2000);
+        assert_equals(document.scrollingElement.scrollLeft, 1000);
+        window.name = '';
+
+        t.done();
+      } else {
+        window.scrollTo(1000, 2000);
+
+        window.name = 'second/load';
+        setTimeout(() => { window.location = '../../resources/back.html'; }, 0);
+      }
+    });
+  }
+
+  window.addEventListener('DOMContentLoaded', init, true);
+</script>
