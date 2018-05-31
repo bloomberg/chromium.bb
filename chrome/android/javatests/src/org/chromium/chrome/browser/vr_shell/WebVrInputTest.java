@@ -66,8 +66,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-@CommandLineFlags.
-Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr", "enable-gamepad-extensions"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT) // WebVR and WebXR are only supported on K+
 public class WebVrInputTest {
     @ClassParameter
@@ -255,6 +254,18 @@ public class WebVrInputTest {
         });
     }
 
+    private void spamScreenTaps(final View view, final int x, final int y, final int iterations) {
+        // Tap the screen a bunch of times.
+        // Android doesn't seem to like sending touch events too quickly, so have a short delay
+        // between events.
+        for (int i = 0; i < iterations; i++) {
+            long downTime = sendScreenTouchDown(view, x, y);
+            SystemClock.sleep(100);
+            sendScreenTouchUp(view, x, y, downTime);
+            SystemClock.sleep(100);
+        }
+    }
+
     /**
      * Tests that screen touches are still registered when the viewer is Cardboard.
      */
@@ -314,14 +325,7 @@ public class WebVrInputTest {
                                               .getPresentationViewForTesting();
 
         // Tap the screen a bunch of times and make sure that they're all registered.
-        // Android doesn't seem to like sending touch events too quickly, so have a short delay
-        // between events.
-        for (int i = 0; i < numIterations; i++) {
-            long downTime = sendScreenTouchDown(presentationView, x, y);
-            SystemClock.sleep(100);
-            sendScreenTouchUp(presentationView, x, y, downTime);
-            SystemClock.sleep(100);
-        }
+        spamScreenTaps(presentationView, x, y, numIterations);
 
         XrTestFramework.waitOnJavaScriptStep(mXrTestFramework.getFirstTabWebContents());
         XrTestFramework.endTest(mXrTestFramework.getFirstTabWebContents());
@@ -627,5 +631,140 @@ public class WebVrInputTest {
         EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
         controller.pressReleaseAppButton();
         assertAppButtonEffect(true /* shouldHaveExited */, framework);
+    }
+
+    /**
+     * Verifies that a Gamepad API gamepad is not returned when using WebXR and a Daydream View if
+     * WebXRGamepadSupport is not explicitly enabled. Correctness testing for
+     * https://crbug.com/830935.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @CommandLineFlags.Remove({"enable-webvr"})
+    @CommandLineFlags.Add({"enable-features=WebXR"})
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    public void testWebXrGamepadNotReturnedWithoutGamepadSupport() throws InterruptedException {
+        webxrGamepadSupportImpl(
+                0 /* numExpectedGamepads */, true /* webxrPresent */, true /* daydream */);
+    }
+
+    /**
+     * Verifies that a Gamepad API gamepad is not returned when using WebXR and Cardboard if
+     * WebXRGamepadSupport is not explicitly enabled. Correctness testing for
+     * https://crbug.com/830935.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
+    @CommandLineFlags.Remove({"enable-webvr"})
+    @CommandLineFlags.Add({"enable-features=WebXR"})
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    public void testWebXrGamepadNotReturnedWithoutGamepadSupport_Cardboard()
+            throws InterruptedException {
+        webxrGamepadSupportImpl(
+                0 /* numExpectedGamepads */, true /* webxrPresent */, false /* daydream */);
+    }
+
+    /**
+     * Verifies that a Gamepad API gamepad is returned when using WebXR  and Daydream View if
+     * WebXRGamepadSupport is explicitly enabled. Correctness testing for https://crbug.com/830935.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @CommandLineFlags.Remove({"enable-webvr"})
+    @CommandLineFlags.Add({"enable-features=WebXR,WebXRGamepadSupport"})
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    public void testWebXrGamepadReturnedWithGamepadSupport() throws InterruptedException {
+        webxrGamepadSupportImpl(
+                1 /* numExpectedGamepads */, true /* webxrPresent */, true /* daydream */);
+    }
+
+    /**
+     * Verifies that a Gamepad API gamepad is returned when using WebXR and Cardboard if
+     * WebXRGamepadSupport is explicitly enabled. Correctness testing for https://crbug.com/830935.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
+    @CommandLineFlags.Remove({"enable-webvr"})
+    @CommandLineFlags.Add({"enable-features=WebXR,WebXRGamepadSupport"})
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    public void testWebXrGamepadReturnedWithGamepadSupport_Cardboard()
+            throws InterruptedException {
+        webxrGamepadSupportImpl(
+                1 /* numExpectedGamepads */, true /* webxrPresent */, false /* daydream */);
+    }
+
+    /**
+     * Verifies that a Gamepad API gamepad is not returned when not using WebXR, WebVR, or the
+     * WebXRGamepadSupport feature with Daydream View. Correctness testing for
+     * https://crbug.com/830935.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @CommandLineFlags.Remove({"enable-webvr"})
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    public void testWebXrGamepadNotReturnedWithoutAnyFeatures() throws InterruptedException {
+        webxrGamepadSupportImpl(
+                0 /* numExpectedGamepads */, false /* webxrPresent */, true /* daydream */);
+    }
+
+    /**
+     * Verifies that a Gamepad API gamepad is not returned when not using WebXR, WebVR, or the
+     * WebXRGamepadSupport feature with Cardboard. Correctness testing for https://crbug.com/830935.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
+    @CommandLineFlags.Remove({"enable-webvr"})
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    public void testWebXrGamepadNotReturnedWithoutAnyFeatures_Cardboard()
+            throws InterruptedException {
+        webxrGamepadSupportImpl(
+                0 /* numExpectedGamepads */, false /* webxrPresent */, false /* daydream */);
+    }
+
+    private void webxrGamepadSupportImpl(int numExpectedGamepads, boolean webxrPresent,
+            boolean daydream) throws InterruptedException {
+        if (webxrPresent) {
+            mXrTestFramework.loadUrlAndAwaitInitialization(
+                    XrTestFramework.getFileUrlForHtmlTestFile("test_webxr_gamepad_support"),
+                    PAGE_LOAD_TIMEOUT_S);
+            TransitionUtils.enterPresentationOrFail(mXrTestFramework);
+        } else {
+            mXrTestFramework.loadUrlAndAwaitInitialization(
+                    XrTestFramework.getFileUrlForHtmlTestFile("test_webxr_gamepad_support_nowebxr"),
+                    PAGE_LOAD_TIMEOUT_S);
+        }
+
+        // Spam input to make sure the Gamepad API registers the gamepad if it should.
+        int numIterations = 10;
+        if (daydream) {
+            EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
+            for (int i = 0; i < numIterations; i++) {
+                controller.performControllerClick();
+            }
+        } else {
+            int x = mXrTestFramework.getFirstTabContentView().getWidth() / 2;
+            int y = mXrTestFramework.getFirstTabContentView().getHeight() / 2;
+
+            View presentationView;
+            if (webxrPresent) {
+                presentationView = ((VrShellImpl) TestVrShellDelegate.getVrShellForTesting())
+                                           .getPresentationViewForTesting();
+            } else {
+                presentationView = mTestRule.getActivity().getWindow().getDecorView();
+            }
+
+            spamScreenTaps(presentationView, x, y, numIterations);
+        }
+
+        XrTestFramework.executeStepAndWait("stepAssertNumGamepadsMatchesExpectation("
+                        + String.valueOf(numExpectedGamepads) + ")",
+                mXrTestFramework.getFirstTabWebContents());
+        XrTestFramework.endTest(mXrTestFramework.getFirstTabWebContents());
     }
 }
