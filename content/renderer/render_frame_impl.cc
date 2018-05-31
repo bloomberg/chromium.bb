@@ -421,8 +421,7 @@ WebURLRequest CreateURLRequestForNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     std::unique_ptr<NavigationResponseOverrideParameters> response_override,
-    bool is_view_source_mode_enabled,
-    bool is_same_document_navigation) {
+    bool is_view_source_mode_enabled) {
   // Use the original navigation url to construct the WebURLRequest. The
   // WebURLloaderImpl will replay the redirects afterwards and will eventually
   // commit the final url.
@@ -455,7 +454,6 @@ WebURLRequest CreateURLRequestForNavigation(
     request.SetHTTPReferrer(web_referrer, common_params.referrer.policy);
   }
 
-  request.SetIsSameDocumentNavigation(is_same_document_navigation);
   request.SetPreviewsState(
       static_cast<WebURLRequest::PreviewsState>(common_params.previews_state));
 
@@ -3037,8 +3035,7 @@ void RenderFrameImpl::CommitFailedNavigation(
       WebURLError::IsWebSecurityViolation::kFalse, common_params.url);
   WebURLRequest failed_request = CreateURLRequestForNavigation(
       common_params, request_params,
-      /*response_override=*/nullptr, frame_->IsViewSourceModeEnabled(),
-      false);  // is_same_document_navigation
+      /*response_override=*/nullptr, frame_->IsViewSourceModeEnabled());
 
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
     // The browser expects this frame to be loading an error page. Inform it
@@ -6339,7 +6336,7 @@ WebURLRequest RenderFrameImpl::CreateURLRequestForCommit(
 
   WebURLRequest request = CreateURLRequestForNavigation(
       common_params, request_params, std::move(response_override),
-      frame_->IsViewSourceModeEnabled(), false /* is_same_document */);
+      frame_->IsViewSourceModeEnabled());
   request.SetFrameType(IsTopLevelNavigation(frame_)
                            ? network::mojom::RequestContextFrameType::kTopLevel
                            : network::mojom::RequestContextFrameType::kNested);
