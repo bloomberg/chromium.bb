@@ -8,8 +8,8 @@
 
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/test/simple_test_tick_clock.h"
-#include "components/viz/test/ordered_simple_task_runner.h"
+#include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -29,16 +29,21 @@ namespace frame_scheduler_impl_unittest {
 
 class FrameSchedulerImplTest : public testing::Test {
  public:
-  FrameSchedulerImplTest() = default;
+  FrameSchedulerImplTest()
+      : task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {
+    // Null clock might trigger some assertions.
+    task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5));
+  }
+
   ~FrameSchedulerImplTest() override = default;
 
   void SetUp() override {
-    clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
-    mock_task_runner_ =
-        base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
     scheduler_.reset(new MainThreadSchedulerImpl(
         base::sequence_manager::TaskQueueManagerForTest::Create(
-            nullptr, mock_task_runner_, &clock_),
+            nullptr, task_environment_.GetMainThreadTaskRunner(),
+            task_environment_.GetMockTickClock()),
         base::nullopt));
     page_scheduler_.reset(
         new PageSchedulerImpl(nullptr, scheduler_.get(), false));
@@ -95,8 +100,7 @@ class FrameSchedulerImplTest : public testing::Test {
     return frame_scheduler_->CalculateThrottlingState(type);
   }
 
-  base::SimpleTestTickClock clock_;
-  scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
+  base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
   std::unique_ptr<PageSchedulerImpl> page_scheduler_;
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler_;
@@ -294,13 +298,13 @@ TEST_F(FrameSchedulerImplTest, PauseAndResume) {
   frame_scheduler_->SetPaused(true);
 
   EXPECT_EQ(0, counter);
-  mock_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, counter);
 
   frame_scheduler_->SetPaused(false);
 
   EXPECT_EQ(1, counter);
-  mock_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(5, counter);
 }
 
@@ -323,14 +327,15 @@ TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagEnabled) {
   page_scheduler_->SetPageFrozen(true);
 
   EXPECT_EQ(0, counter);
-  mock_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // unpausable tasks continue to run.
   EXPECT_EQ(1, counter);
 
   page_scheduler_->SetPageFrozen(false);
 
   EXPECT_EQ(1, counter);
-  mock_task_runner_->RunUntilIdle();
+  // Same as RunUntilIdle but also advances the cock if necessary.
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(5, counter);
 }
 
@@ -353,14 +358,15 @@ TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagDisabled) {
   page_scheduler_->SetPageFrozen(true);
 
   EXPECT_EQ(0, counter);
-  mock_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // throttleable tasks are frozen, other tasks continue to run.
   EXPECT_EQ(4, counter);
 
   page_scheduler_->SetPageFrozen(false);
 
   EXPECT_EQ(4, counter);
-  mock_task_runner_->RunUntilIdle();
+  // Same as RunUntilIdle but also advances the clock if necessary.
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(5, counter);
 }
 
@@ -387,7 +393,7 @@ TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
   page_scheduler_->SetPageFrozen(true);
 
   EXPECT_THAT(tasks, UnorderedElementsAre());
-  mock_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Everything runs except throttleable tasks (timers)
   EXPECT_THAT(tasks, UnorderedElementsAre(
                          std::string(LoadingTaskQueue()->GetName()),
@@ -400,7 +406,7 @@ TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
       FROM_HERE, base::BindOnce(&RecordQueueName, LoadingTaskQueue(), &tasks));
 
   EXPECT_THAT(tasks, UnorderedElementsAre());
-  mock_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // loading task runs
   EXPECT_THAT(tasks,
               UnorderedElementsAre(std::string(LoadingTaskQueue()->GetName())));
@@ -411,13 +417,13 @@ TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
   // KeepActive is false when Service Worker stops.
   page_scheduler_->SetKeepActive(false);
   EXPECT_THAT(tasks, UnorderedElementsAre());
-  mock_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_THAT(tasks, UnorderedElementsAre());  // loading task does not run
 
   tasks.clear();
   page_scheduler_->SetKeepActive(true);
   EXPECT_THAT(tasks, UnorderedElementsAre());
-  mock_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // loading task runs
   EXPECT_THAT(tasks,
               UnorderedElementsAre(std::string(LoadingTaskQueue()->GetName())));
@@ -442,14 +448,14 @@ TEST_F(FrameSchedulerImplTest, PageFreezeAndPageVisible) {
   page_scheduler_->SetPageFrozen(true);
 
   EXPECT_EQ(0, counter);
-  mock_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, counter);
 
   // Making the page visible should cause frozen queues to resume.
   page_scheduler_->SetPageVisible(true);
 
   EXPECT_EQ(1, counter);
-  mock_task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(5, counter);
 }
 
@@ -487,7 +493,7 @@ TEST_F(FrameSchedulerImplTest, ThrottlingObserver) {
   observer->CheckObserverState(FROM_HERE, not_throttled_count, hidden_count,
                                throttled_count, stopped_count);
 
-  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(30));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(30));
 
   // The frame gets throttled after some time in background.
   observer->CheckObserverState(FROM_HERE, not_throttled_count, hidden_count,
@@ -521,8 +527,8 @@ TEST_F(FrameSchedulerImplTest, ThrottlingObserver) {
   page_scheduler_->SetPageVisible(false);
 
   // Wait 100 secs virtually and run pending tasks just in case.
-  clock_.Advance(base::TimeDelta::FromSeconds(100));
-  mock_task_runner_->RunUntilIdle();
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(100));
+  base::RunLoop().RunUntilIdle();
 
   observer->CheckObserverState(FROM_HERE, not_throttled_count, hidden_count,
                                throttled_count, stopped_count);
