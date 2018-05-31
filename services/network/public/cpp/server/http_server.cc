@@ -178,11 +178,6 @@ bool HttpServer::SetSendBufferSize(int connection_id, int32_t size) {
   return connection;
 }
 
-void HttpServer::GetLocalAddress(
-    mojom::TCPServerSocket::GetLocalAddressCallback callback) {
-  server_socket_->GetLocalAddress(std::move(callback));
-}
-
 void HttpServer::DoAcceptLoop() {
   server_socket_->Accept(
       nullptr, /* observer */
