@@ -45,6 +45,9 @@ class AssistantOptInUI
   void OnGetSettingsResponse(const std::string& settings);
   void OnUpdateSettingsResponse(const std::string& settings);
 
+  // Show next screen in the optin flow.
+  void Next();
+
   // Consent token used to complete the opt-in.
   std::string consent_token_;
 
