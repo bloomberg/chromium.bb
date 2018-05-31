@@ -694,6 +694,34 @@ TEST_P(AppsGridViewTest, ScrollDownShouldNotExitFolder) {
   EXPECT_TRUE(contents_view_->GetAppsContainerView()->IsInFolderView());
 }
 
+// Tests that an app icon is selected when a menu is shown by click.
+TEST_F(AppsGridViewTest, AppIconSelectedWhenMenuIsShown) {
+  model_->PopulateApps(1);
+  ASSERT_EQ(1u, model_->top_level_item_list()->item_count());
+  AppListItemView* app = GetItemViewAt(0);
+  EXPECT_FALSE(apps_grid_view_->IsSelectedView(app));
+
+  // Send a mouse event which would show a context menu.
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), ui::EF_RIGHT_MOUSE_BUTTON,
+                             ui::EF_RIGHT_MOUSE_BUTTON);
+
+  // Use a views::View* to expose OnMouseEvent.
+  views::View* const view = app;
+  view->OnMouseEvent(&press_event);
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(app));
+
+  ui::MouseEvent release_event(
+      ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
+      ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON);
+  view->OnMouseEvent(&release_event);
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(app));
+
+  // Cancel the menu, |app| should no longer be selected.
+  app->CancelContextMenu();
+  EXPECT_FALSE(apps_grid_view_->IsSelectedView(app));
+}
+
 // Tests various dragging behaviors.
 class AppsGridViewDragTest : public AppsGridViewTest {
  public:

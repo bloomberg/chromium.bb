@@ -107,6 +107,9 @@ class APP_LIST_EXPORT AppListItemView
     UI_STATE_DROPPING_IN_FOLDER,  // Folder dropping preview UI
   };
 
+  // Callback used when a menu is closed.
+  void OnMenuClosed();
+
   // Get icon from |item_| and schedule background processing.
   void UpdateIcon();
 

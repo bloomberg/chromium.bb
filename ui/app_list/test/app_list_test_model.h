@@ -14,6 +14,7 @@
 
 namespace ui {
 class MenuModel;
+class SimpleMenuModel;
 }  // namespace ui
 
 namespace app_list {
@@ -35,6 +36,9 @@ class AppListTestModel : public AppListModel {
 
    private:
     AppListTestModel* model_;
+
+    // The menu that holds context menu options.
+    std::unique_ptr<ui::SimpleMenuModel> menu_model_;
 
     DISALLOW_COPY_AND_ASSIGN(AppListTestItem);
   };

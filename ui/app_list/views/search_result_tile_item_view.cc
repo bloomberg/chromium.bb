@@ -382,10 +382,16 @@ void SearchResultTileItemView::OnGetContextMenuModel(
   }
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
-      item_->id(), this, source_type, this, GetAppType());
+      item_->id(), this, source_type, this, GetAppType(),
+      base::BindOnce(&SearchResultTileItemView::OnMenuClosed,
+                     weak_ptr_factory_.GetWeakPtr()));
   context_menu_->Build(std::move(menu));
   context_menu_->Run(anchor_rect, anchor_position, run_types);
   source->RequestFocus();
+}
+
+void SearchResultTileItemView::OnMenuClosed() {
+  OnBlur();
 }
 
 void SearchResultTileItemView::ExecuteCommand(int command_id, int event_flags) {
