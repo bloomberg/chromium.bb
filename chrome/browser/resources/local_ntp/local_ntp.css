@@ -103,8 +103,7 @@ button {
   top: calc(50% - 155px);
 }
 
-body.hide-fakebox-logo #logo,
-body.hide-fakebox-logo #fakebox {
+body.hide-fakebox #fakebox {
   opacity: 0;
 }
 
