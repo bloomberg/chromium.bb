@@ -40,7 +40,7 @@ class PLATFORM_EXPORT CanvasResource
     : public WTF::ThreadSafeRefCounted<CanvasResource> {
  public:
   virtual ~CanvasResource();
-  virtual void Abandon() = 0;
+  virtual void Abandon() { TearDown(); }
   virtual bool IsRecycleable() const = 0;
   virtual bool IsAccelerated() const = 0;
   virtual bool IsValid() const = 0;
@@ -51,7 +51,7 @@ class PLATFORM_EXPORT CanvasResource
   bool PrepareTransferableResource(
       viz::TransferableResource* out_resource,
       std::unique_ptr<viz::SingleReleaseCallback>* out_callback);
-  void SetSyncTokenForRelease(const gpu::SyncToken&);
+  void WaitSyncToken(const gpu::SyncToken&);
   virtual scoped_refptr<CanvasResource> MakeAccelerated(
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) = 0;
   virtual scoped_refptr<CanvasResource> MakeUnaccelerated() = 0;
@@ -61,7 +61,6 @@ class PLATFORM_EXPORT CanvasResource
     return false;
   }
   virtual scoped_refptr<StaticBitmapImage> Bitmap();
-  void WaitSyncTokenBeforeRelease();
   virtual void CopyFromTexture(GLuint source_texture,
                                GLenum format,
                                GLenum type) {
@@ -115,7 +114,6 @@ class PLATFORM_EXPORT CanvasResourceBitmap final : public CanvasResource {
   bool IsRecycleable() const final { return false; }
   bool IsAccelerated() const final;
   bool IsValid() const final;
-  void Abandon() final;
   IntSize Size() const final;
   bool IsBitmap() final;
   void Transfer() final;

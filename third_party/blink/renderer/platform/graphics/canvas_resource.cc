@@ -62,16 +62,11 @@ gpu::gles2::GLES2Interface* CanvasResource::ContextGL() const {
   return ContextProviderWrapper()->ContextProvider()->ContextGL();
 }
 
-void CanvasResource::SetSyncTokenForRelease(const gpu::SyncToken& token) {
-  sync_token_for_release_ = token;
-}
-
-void CanvasResource::WaitSyncTokenBeforeRelease() {
-  if (sync_token_for_release_.HasData()) {
+void CanvasResource::WaitSyncToken(const gpu::SyncToken& sync_token) {
+  if (sync_token.HasData()) {
     auto* gl = ContextGL();
     if (gl)
-      gl->WaitSyncTokenCHROMIUM(sync_token_for_release_.GetData());
-    sync_token_for_release_.Clear();
+      gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }
 }
 
@@ -80,7 +75,7 @@ static void ReleaseFrameResources(
     scoped_refptr<CanvasResource> resource,
     const gpu::SyncToken& sync_token,
     bool lost_resource) {
-  resource->SetSyncTokenForRelease(sync_token);
+  resource->WaitSyncToken(sync_token);
   if (lost_resource) {
     resource->Abandon();
   }
@@ -200,15 +195,6 @@ scoped_refptr<CanvasResource> CanvasResourceBitmap::MakeUnaccelerated() {
 }
 
 void CanvasResourceBitmap::TearDown() {
-  WaitSyncTokenBeforeRelease();
-  // We must not disassociate the mailbox from the texture object here because
-  // the texture may be recycled by skia and the associated cached mailbox
-  // stored by GraphicsContext3DUtils.cpp must remain valid.
-  image_ = nullptr;
-}
-
-void CanvasResourceBitmap::Abandon() {
-  // In the abandon case, we do no wait on the release sync token.
   image_ = nullptr;
 }
 
@@ -336,7 +322,6 @@ CanvasResourceGpuMemoryBuffer::Create(
 }
 
 void CanvasResourceGpuMemoryBuffer::TearDown() {
-  WaitSyncTokenBeforeRelease();
   if (!context_provider_wrapper_ || !image_id_)
     return;
   auto* gl = context_provider_wrapper_->ContextProvider()->ContextGL();

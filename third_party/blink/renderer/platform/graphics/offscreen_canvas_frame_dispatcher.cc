@@ -93,9 +93,6 @@ void OffscreenCanvasFrameDispatcher::PostImageToPlaceholderIfNotBlocked(
   // Determines whether the main thread may be blocked. If unblocked, post the
   // image. Otherwise, save the image and do not post it.
   if (num_unreclaimed_frames_posted_ < kMaxUnreclaimedPlaceholderFrames) {
-    // After this point, |image| can only be used on the main thread, until it
-    // is returned.
-    image->Transfer();
     this->PostImageToPlaceholder(std::move(image), resource_id);
     num_unreclaimed_frames_posted_++;
   } else {
@@ -116,6 +113,10 @@ void OffscreenCanvasFrameDispatcher::PostImageToPlaceholder(
     viz::ResourceId resource_id) {
   scoped_refptr<base::SingleThreadTaskRunner> dispatcher_task_runner =
       Platform::Current()->CurrentThread()->GetTaskRunner();
+
+  // After this point, |image| can only be used on the main thread, until it
+  // is returned.
+  image->Transfer();
 
   PostCrossThreadTask(
       *Platform::Current()->MainThread()->Scheduler()->CompositorTaskRunner(),

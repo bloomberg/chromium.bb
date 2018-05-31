@@ -198,8 +198,6 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
       scoped_refptr<CanvasResource> resource =
           std::move(recycled_resources_.back());
       recycled_resources_.pop_back();
-      // Recycling implies releasing the old content
-      resource->WaitSyncTokenBeforeRelease();
       return resource;
     }
     return CreateResource();
