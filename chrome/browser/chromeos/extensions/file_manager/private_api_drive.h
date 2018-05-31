@@ -16,6 +16,7 @@
 #include "base/files/file.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/file_errors.h"
 
@@ -98,7 +99,11 @@ class FileManagerPrivateInternalPinDriveFileFunction
   bool RunAsync() override;
 
  private:
-  // Callback for RunAsync().
+  bool RunAsyncForDrive(const GURL& url, bool pin);
+  bool RunAsyncForDriveFs(const storage::FileSystemURL& file_system_url,
+                          bool pin);
+
+  // Callback for RunAsyncForDrive() and RunAsyncForDriveFs.
   void OnPinStateSet(drive::FileError error);
 };
 
@@ -268,13 +273,22 @@ class FileManagerPrivateInternalGetDownloadUrlFunction
   // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 
+ private:
+  bool RunAsyncForDrive(const GURL& url);
+
   void OnGetResourceEntry(drive::FileError error,
                           std::unique_ptr<drive::ResourceEntry> entry);
+
+  void OnGotDownloadUrl(GURL download_url);
 
   // Callback with an |access_token|, called by
   // drive::DriveReadonlyTokenFetcher.
   void OnTokenFetched(google_apis::DriveApiErrorCode code,
                       const std::string& access_token);
+
+  bool RunAsyncForDriveFs(const storage::FileSystemURL& file_system_url);
+  void OnGotMetadata(drive::FileError error,
+                     drivefs::mojom::FileMetadataPtr metadata);
 
  private:
   GURL download_url_;

@@ -9,8 +9,11 @@
 #include <set>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/strcat.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -29,7 +32,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/drive/drive_app_registry.h"
@@ -558,13 +560,15 @@ class SingleEntryPropertiesGetterForDriveFs {
 
   // Creates an instance and starts the process.
   static void Start(base::FilePath local_path,
+                    bool want_thumbnail,
                     Profile* const profile,
                     ResultCallback callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     SingleEntryPropertiesGetterForDriveFs* instance =
         new SingleEntryPropertiesGetterForDriveFs(std::move(local_path),
-                                                  profile, std::move(callback));
+                                                  want_thumbnail, profile,
+                                                  std::move(callback));
     instance->StartProcess();
 
     // The instance will be destroyed by itself.
@@ -572,10 +576,12 @@ class SingleEntryPropertiesGetterForDriveFs {
 
  private:
   SingleEntryPropertiesGetterForDriveFs(base::FilePath local_path,
+                                        bool want_thumbnail,
                                         Profile* const profile,
                                         ResultCallback callback)
       : callback_(std::move(callback)),
         local_path_(std::move(local_path)),
+        want_thumbnail_(want_thumbnail),
         running_profile_(profile),
         properties_(std::make_unique<EntryProperties>()),
         weak_ptr_factory_(this) {
@@ -604,7 +610,7 @@ class SingleEntryPropertiesGetterForDriveFs {
     }
 
     drivefs_interface->GetMetadata(
-        local_path_,
+        local_path_, want_thumbnail_,
         mojo::WrapCallbackWithDefaultInvokeIfNotRun(
             base::BindOnce(
                 &SingleEntryPropertiesGetterForDriveFs::OnGetFileInfo,
@@ -669,6 +675,34 @@ class SingleEntryPropertiesGetterForDriveFs {
             std::make_unique<int32_t>(metadata->image_metadata->rotation);
       }
     }
+    if (metadata->thumbnail) {
+      base::PostTaskAndReplyWithResult(
+          FROM_HERE,
+          base::BindOnce(&SingleEntryPropertiesGetterForDriveFs::
+                             MakeThumbnailDataUrlOnSequence,
+                         std::move(*metadata->thumbnail)),
+          base::BindOnce(
+              &SingleEntryPropertiesGetterForDriveFs::SetThumbnailAndComplete,
+              weak_ptr_factory_.GetWeakPtr()));
+      return;
+    }
+
+    CompleteGetEntryProperties(drive::FILE_ERROR_OK);
+  }
+
+  static std::string MakeThumbnailDataUrlOnSequence(
+      const std::vector<uint8_t>& png_data) {
+    std::string encoded;
+    base::Base64Encode(
+        base::StringPiece(reinterpret_cast<const char*>(png_data.data()),
+                          png_data.size()),
+        &encoded);
+    return base::StrCat({"data:image/png;base64,", encoded});
+  }
+
+  void SetThumbnailAndComplete(std::string thumbnail_data_url) {
+    properties_->thumbnail_url =
+        std::make_unique<std::string>(std::move(thumbnail_data_url));
 
     CompleteGetEntryProperties(drive::FILE_ERROR_OK);
   }
@@ -685,6 +719,7 @@ class SingleEntryPropertiesGetterForDriveFs {
   // Given parameters.
   ResultCallback callback_;
   const base::FilePath local_path_;
+  const bool want_thumbnail_;
   Profile* const running_profile_;
 
   // Values used in the process.
@@ -741,7 +776,10 @@ bool FileManagerPrivateInternalGetEntryPropertiesFunction::RunAsync() {
         break;
       case storage::kFileSystemTypeNativeLocal:
         SingleEntryPropertiesGetterForDriveFs::Start(
-            file_system_url.path(), GetProfile(),
+            file_system_url.path(),
+            names_as_set.count(
+                api::file_manager_private::ENTRY_PROPERTY_NAME_THUMBNAILURL),
+            GetProfile(),
             base::BindOnce(
                 &FileManagerPrivateInternalGetEntryPropertiesFunction::
                     CompleteGetEntryProperties,
@@ -798,56 +836,68 @@ bool FileManagerPrivateInternalPinDriveFileFunction::RunAsync() {
       file_system_context->CrackURL(url);
 
   switch (file_system_url.type()) {
-    case storage::kFileSystemTypeDrive: {
-      drive::FileSystemInterface* const file_system =
-          drive::util::GetFileSystemByProfile(GetProfile());
-      if (!file_system)  // |file_system| is NULL if Drive is disabled.
-        return false;
+    case storage::kFileSystemTypeDrive:
+      return RunAsyncForDrive(url, params->pin);
 
-      const base::FilePath drive_path =
-          drive::util::ExtractDrivePath(file_manager::util::GetLocalPathFromURL(
-              render_frame_host(), GetProfile(), url));
-      if (params->pin) {
-        file_system->Pin(
-            drive_path,
-            base::Bind(
-                &FileManagerPrivateInternalPinDriveFileFunction::OnPinStateSet,
-                this));
-      } else {
-        file_system->Unpin(
-            drive_path,
-            base::Bind(
-                &FileManagerPrivateInternalPinDriveFileFunction::OnPinStateSet,
-                this));
-      }
-      return true;
-    }
-    case storage::kFileSystemTypeNativeLocal: {
-      drive::DriveIntegrationService* integration_service =
-          drive::DriveIntegrationServiceFactory::FindForProfile(GetProfile());
-      if (!integration_service || !integration_service->IsMounted() ||
-          !integration_service->GetMountPointPath().IsParent(
-              file_system_url.path())) {
-        return false;
-      }
+    case storage::kFileSystemTypeNativeLocal:
+      return RunAsyncForDriveFs(file_system_url, params->pin);
 
-      auto* drivefs_interface = integration_service->GetDriveFsInterface();
-      if (!drivefs_interface)
-        return false;
-
-      drivefs_interface->SetPinned(
-          file_system_url.path(), params->pin,
-          mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-              base::BindOnce(&FileManagerPrivateInternalPinDriveFileFunction::
-                                 OnPinStateSet,
-                             this),
-              drive::FILE_ERROR_SERVICE_UNAVAILABLE));
-      return true;
-    }
-    default: { return false; }
+    default:
+      return false;
   }
 }
 
+bool FileManagerPrivateInternalPinDriveFileFunction::RunAsyncForDrive(
+    const GURL& url,
+    bool pin) {
+  drive::FileSystemInterface* const file_system =
+      drive::util::GetFileSystemByProfile(GetProfile());
+  if (!file_system)  // |file_system| is NULL if Drive is disabled.
+    return false;
+
+  const base::FilePath drive_path =
+      drive::util::ExtractDrivePath(file_manager::util::GetLocalPathFromURL(
+          render_frame_host(), GetProfile(), url));
+  if (pin) {
+    file_system->Pin(
+        drive_path,
+        base::Bind(
+            &FileManagerPrivateInternalPinDriveFileFunction::OnPinStateSet,
+            this));
+  } else {
+    file_system->Unpin(
+        drive_path,
+        base::Bind(
+            &FileManagerPrivateInternalPinDriveFileFunction::OnPinStateSet,
+            this));
+  }
+  return true;
+}
+
+bool FileManagerPrivateInternalPinDriveFileFunction::RunAsyncForDriveFs(
+    const storage::FileSystemURL& file_system_url,
+    bool pin) {
+  drive::DriveIntegrationService* integration_service =
+      drive::DriveIntegrationServiceFactory::FindForProfile(GetProfile());
+  if (!integration_service || !integration_service->IsMounted() ||
+      !integration_service->GetMountPointPath().IsParent(
+          file_system_url.path())) {
+    return false;
+  }
+
+  auto* drivefs_interface = integration_service->GetDriveFsInterface();
+  if (!drivefs_interface)
+    return false;
+
+  drivefs_interface->SetPinned(
+      file_system_url.path(), pin,
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          base::BindOnce(
+              &FileManagerPrivateInternalPinDriveFileFunction::OnPinStateSet,
+              this),
+          drive::FILE_ERROR_SERVICE_UNAVAILABLE));
+  return true;
+}
 void FileManagerPrivateInternalPinDriveFileFunction::OnPinStateSet(
     drive::FileError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1325,6 +1375,25 @@ bool FileManagerPrivateInternalGetDownloadUrlFunction::RunAsync() {
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          GetProfile(), render_frame_host());
+  const GURL url = GURL(params->url);
+  const storage::FileSystemURL file_system_url =
+      file_system_context->CrackURL(url);
+
+  switch (file_system_url.type()) {
+    case storage::kFileSystemTypeDrive:
+      return RunAsyncForDrive(url);
+    case storage::kFileSystemTypeNativeLocal:
+      return RunAsyncForDriveFs(file_system_url);
+    default:
+      return false;
+  }
+}
+
+bool FileManagerPrivateInternalGetDownloadUrlFunction::RunAsyncForDrive(
+    const GURL& url) {
   // Start getting the file info.
   drive::FileSystemInterface* const file_system =
       drive::util::GetFileSystemByProfile(GetProfile());
@@ -1337,7 +1406,7 @@ bool FileManagerPrivateInternalGetDownloadUrlFunction::RunAsync() {
   }
 
   const base::FilePath path = file_manager::util::GetLocalPathFromURL(
-      render_frame_host(), GetProfile(), GURL(params->url));
+      render_frame_host(), GetProfile(), url);
   if (!drive::util::IsUnderDriveMountPoint(path)) {
     SetError("The given file is not in Drive.");
     // Intentionally returns a blank.
@@ -1360,20 +1429,27 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGetResourceEntry(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error != drive::FILE_ERROR_OK) {
+    OnGotDownloadUrl(GURL());
+    return;
+  }
+
+  DriveApiUrlGenerator url_generator(
+      (GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction)),
+      (GURL(google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction)),
+      google_apis::GetTeamDrivesIntegrationSwitch());
+  OnGotDownloadUrl(url_generator.GenerateDownloadFileUrl(entry->resource_id()));
+}
+
+void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotDownloadUrl(
+    GURL download_url) {
+  if (download_url.is_empty()) {
     SetError("Download Url for this item is not available.");
     // Intentionally returns a blank.
     SetResult(std::make_unique<base::Value>(std::string()));
     SendResponse(false);
     return;
   }
-
-  DriveApiUrlGenerator url_generator(
-      (GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction)),
-      (GURL(
-          google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction)),
-      google_apis::GetTeamDrivesIntegrationSwitch());
-  download_url_ = url_generator.GenerateDownloadFileUrl(entry->resource_id());
-
+  download_url_ = std::move(download_url);
   ProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
   SigninManagerBase* signin_manager =
@@ -1402,11 +1478,40 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnTokenFetched(
     return;
   }
 
-  const std::string url =
-      download_url_.Resolve("?alt=media&access_token=" + access_token).spec();
-  SetResult(std::make_unique<base::Value>(url));
+  SetResult(std::make_unique<base::Value>(
+      download_url_.Resolve("?alt=media&access_token=" + access_token).spec()));
 
   SendResponse(true);
+}
+
+bool FileManagerPrivateInternalGetDownloadUrlFunction::RunAsyncForDriveFs(
+    const storage::FileSystemURL& file_system_url) {
+  drive::DriveIntegrationService* integration_service =
+      drive::DriveIntegrationServiceFactory::FindForProfile(GetProfile());
+  if (!integration_service || !integration_service->IsMounted() ||
+      !integration_service->GetMountPointPath().IsParent(
+          file_system_url.path())) {
+    return false;
+  }
+
+  auto* drivefs_interface = integration_service->GetDriveFsInterface();
+  if (!drivefs_interface)
+    return false;
+
+  drivefs_interface->GetMetadata(
+      file_system_url.path(), false,
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          base::BindOnce(
+              &FileManagerPrivateInternalGetDownloadUrlFunction::OnGotMetadata,
+              this),
+          drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr));
+  return true;
+}
+
+void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotMetadata(
+    drive::FileError error,
+    drivefs::mojom::FileMetadataPtr metadata) {
+  OnGotDownloadUrl(metadata ? GURL(metadata->download_url) : GURL());
 }
 
 }  // namespace extensions
