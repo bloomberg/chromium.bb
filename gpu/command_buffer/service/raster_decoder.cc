@@ -3058,12 +3058,15 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
       return;
     }
 
+    std::vector<SkDiscardableHandleId> new_locked_handles;
     if (!font_manager_.Deserialize(font_buffer_memory, font_shm_size,
-                                   &locked_handles_)) {
+                                   &new_locked_handles)) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRasterCHROMIUM",
                          "Invalid font buffer.");
       return;
     }
+    locked_handles_.insert(locked_handles_.end(), new_locked_handles.begin(),
+                           new_locked_handles.end());
   }
 
   char* paint_buffer_memory = GetSharedMemoryAs<char*>(

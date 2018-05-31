@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/base/completion_event.h"
 #include "cc/base/region.h"
 #include "cc/layers/recording_source.h"
 #include "cc/paint/display_item_list.h"
@@ -28,6 +29,7 @@
 #include "gpu/ipc/gl_in_process_context.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -99,6 +101,7 @@ class OopPixelTest : public testing::Test {
     bool preclear = false;
     SkColor preclear_color;
     ImageDecodeCache* image_cache = nullptr;
+    std::vector<scoped_refptr<DisplayItemList>> additional_lists;
   };
 
   SkBitmap Raster(scoped_refptr<DisplayItemList> display_item_list,
@@ -151,6 +154,12 @@ class OopPixelTest : public testing::Test {
         display_item_list.get(), &image_provider, options.content_size,
         options.full_raster_rect, options.playback_rect, options.post_translate,
         options.post_scale, options.requires_clear);
+    for (const auto& list : options.additional_lists) {
+      raster_implementation->RasterCHROMIUM(
+          list.get(), &image_provider, options.content_size,
+          options.full_raster_rect, options.playback_rect,
+          options.post_translate, options.post_scale, options.requires_clear);
+    }
     raster_implementation->EndRasterCHROMIUM();
 
     // Produce a mailbox and insert an ordering barrier (assumes the raster
@@ -1200,10 +1209,12 @@ TEST_F(OopPixelTest, DrawRectColorSpace) {
   ExpectEquals(actual, expected);
 }
 
-scoped_refptr<PaintTextBlob> buildTextBlob() {
+scoped_refptr<PaintTextBlob> BuildTextBlob(
+    PaintTypeface typeface = PaintTypeface()) {
   SkFontStyle style;
-  PaintTypeface typeface =
-      PaintTypeface::FromFamilyNameAndFontStyle("monospace", style);
+  if (!typeface) {
+    typeface = PaintTypeface::FromFamilyNameAndFontStyle("monospace", style);
+  }
 
   PaintFont font;
   font.SetTypeface(typeface);
@@ -1235,7 +1246,7 @@ TEST_F(OopPixelTest, DrawTextBlob) {
   PaintFlags flags;
   flags.setStyle(PaintFlags::kFill_Style);
   flags.setColor(SK_ColorGREEN);
-  display_item_list->push<DrawTextBlobOp>(buildTextBlob(), 0u, 0u, flags);
+  display_item_list->push<DrawTextBlobOp>(BuildTextBlob(), 0u, 0u, flags);
   display_item_list->EndPaintOfUnpaired(options.full_raster_rect);
   display_item_list->Finalize();
 
@@ -1256,7 +1267,7 @@ TEST_F(OopPixelTest, DrawRecordShaderWithTextScaled) {
   PaintFlags flags;
   flags.setStyle(PaintFlags::kFill_Style);
   flags.setColor(SK_ColorGREEN);
-  paint_record->push<DrawTextBlobOp>(buildTextBlob(), 0u, 0u, flags);
+  paint_record->push<DrawTextBlobOp>(BuildTextBlob(), 0u, 0u, flags);
   auto paint_record_shader = PaintShader::MakePaintRecord(
       paint_record, SkRect::MakeWH(25, 25), SkShader::kRepeat_TileMode,
       SkShader::kRepeat_TileMode, nullptr);
@@ -1287,7 +1298,7 @@ TEST_F(OopPixelTest, DrawRecordFilterWithTextScaled) {
   PaintFlags flags;
   flags.setStyle(PaintFlags::kFill_Style);
   flags.setColor(SK_ColorGREEN);
-  paint_record->push<DrawTextBlobOp>(buildTextBlob(), 0u, 0u, flags);
+  paint_record->push<DrawTextBlobOp>(BuildTextBlob(), 0u, 0u, flags);
   auto paint_record_filter =
       sk_make_sp<RecordPaintFilter>(paint_record, SkRect::MakeWH(100, 100));
 
@@ -1303,6 +1314,57 @@ TEST_F(OopPixelTest, DrawRecordFilterWithTextScaled) {
   auto actual = Raster(display_item_list, options);
   auto expected = RasterExpectedBitmap(display_item_list, options);
   ExpectEquals(actual, expected);
+}
+
+void ClearFontCache(CompletionEvent* event) {
+  SkGraphics::PurgeFontCache();
+  event->Signal();
+}
+
+TEST_F(OopPixelTest, DrawTextMultipleRasterCHROMIUM) {
+  RasterOptions options;
+  options.resource_size = gfx::Size(100, 100);
+  options.content_size = options.resource_size;
+  options.full_raster_rect = gfx::Rect(options.content_size);
+  options.playback_rect = options.full_raster_rect;
+  options.color_space = gfx::ColorSpace::CreateSRGB();
+
+  auto sk_typeface_1 = SkTypeface::MakeFromName("monospace", SkFontStyle());
+  auto sk_typeface_2 = SkTypeface::MakeFromName("roboto", SkFontStyle());
+
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  PaintFlags flags;
+  flags.setStyle(PaintFlags::kFill_Style);
+  flags.setColor(SK_ColorGREEN);
+  display_item_list->push<DrawTextBlobOp>(
+      BuildTextBlob(PaintTypeface::FromSkTypeface(sk_typeface_1)), 0u, 0u,
+      flags);
+  display_item_list->EndPaintOfUnpaired(options.full_raster_rect);
+  display_item_list->Finalize();
+
+  // Create another list with a different typeface.
+  auto display_item_list_2 = base::MakeRefCounted<DisplayItemList>();
+  display_item_list_2->StartPaint();
+  display_item_list_2->push<DrawTextBlobOp>(
+      BuildTextBlob(PaintTypeface::FromSkTypeface(sk_typeface_2)), 0u, 0u,
+      flags);
+  display_item_list_2->EndPaintOfUnpaired(options.full_raster_rect);
+  display_item_list_2->Finalize();
+
+  // Raster both these lists with 2 RasterCHROMIUM commands between a single
+  // Begin/EndRaster sequence.
+  options.additional_lists = {display_item_list_2};
+  Raster(display_item_list, options);
+
+  // Clear skia's font cache. No entries should remain since the service
+  // should unpin everything.
+  EXPECT_GT(SkGraphics::GetFontCacheUsed(), 0u);
+  CompletionEvent event;
+  raster_context_provider_->ExecuteOnGpuThread(
+      base::BindOnce(&ClearFontCache, &event));
+  event.Wait();
+  EXPECT_EQ(SkGraphics::GetFontCacheUsed(), 0u);
 }
 
 INSTANTIATE_TEST_CASE_P(P, OopImagePixelTest, ::testing::Bool());

@@ -261,6 +261,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     gles2::FramebufferCompletenessCache framebuffer_completeness_cache_;
   };
 
+  Service* service_for_testing() const { return service_.get(); }
+
  private:
   struct InitializeOnGpuThreadParams {
     bool is_offscreen;
