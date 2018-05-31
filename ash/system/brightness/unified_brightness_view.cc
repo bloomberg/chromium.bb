@@ -19,15 +19,15 @@ UnifiedBrightnessView::UnifiedBrightnessView(
                         IDS_ASH_STATUS_TRAY_BRIGHTNESS),
       model_(model) {
   model_->AddObserver(this);
-  OnBrightnessChanged();
+  OnDisplayBrightnessChanged(false /* by_user */);
 }
 
 UnifiedBrightnessView::~UnifiedBrightnessView() {
   model_->RemoveObserver(this);
 }
 
-void UnifiedBrightnessView::OnBrightnessChanged() {
-  slider()->SetValue(model_->brightness());
+void UnifiedBrightnessView::OnDisplayBrightnessChanged(bool by_user) {
+  slider()->SetValue(model_->display_brightness());
 }
 
 }  // namespace ash

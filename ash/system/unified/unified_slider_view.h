@@ -23,6 +23,25 @@ class UnifiedSliderListener : public views::ButtonListener,
   ~UnifiedSliderListener() override = default;
 };
 
+// A slider that ignores inputs.
+// TODO(tetsui): Move to anonymous namespace.
+class ReadOnlySlider : public views::Slider {
+ public:
+  ReadOnlySlider();
+
+ private:
+  // views::View:
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+
+  // ui::EventHandler:
+  void OnGestureEvent(ui::GestureEvent* event) override;
+
+  DISALLOW_COPY_AND_ASSIGN(ReadOnlySlider);
+};
+
 // A button used in a slider row of UnifiedSystemTray. The button is togglable.
 class UnifiedSliderButton : public TopShortcutButton {
  public:
@@ -51,9 +70,11 @@ class UnifiedSliderButton : public TopShortcutButton {
 // left side and a slider on the right side.
 class UnifiedSliderView : public views::View {
  public:
+  // If |readonly| is set, the slider will not accept any user events.
   UnifiedSliderView(UnifiedSliderListener* listener,
                     const gfx::VectorIcon& icon,
-                    int accessible_name_id);
+                    int accessible_name_id,
+                    bool readonly = false);
   ~UnifiedSliderView() override;
 
  protected:

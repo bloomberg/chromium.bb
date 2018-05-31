@@ -23,6 +23,8 @@ class UnifiedSystemTrayModel::DBusObserver
   // chromeos::PowerManagerClient::Observer:
   void ScreenBrightnessChanged(
       const power_manager::BacklightBrightnessChange& change) override;
+  void KeyboardBrightnessChanged(
+      const power_manager::BacklightBrightnessChange& change) override;
 
   UnifiedSystemTrayModel* const owner_;
 
@@ -49,14 +51,26 @@ UnifiedSystemTrayModel::DBusObserver::~DBusObserver() {
 void UnifiedSystemTrayModel::DBusObserver::HandleInitialBrightness(
     base::Optional<double> percent) {
   if (percent.has_value())
-    owner_->BrightnessChanged(percent.value() / 100.);
+    owner_->DisplayBrightnessChanged(percent.value() / 100.,
+                                     false /* by_user */);
 }
 
 void UnifiedSystemTrayModel::DBusObserver::ScreenBrightnessChanged(
     const power_manager::BacklightBrightnessChange& change) {
   Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_BRIGHTNESS_CHANGED);
-  owner_->BrightnessChanged(change.percent() / 100.);
+  owner_->DisplayBrightnessChanged(
+      change.percent() / 100.,
+      change.cause() ==
+          power_manager::BacklightBrightnessChange_Cause_USER_REQUEST);
+}
+
+void UnifiedSystemTrayModel::DBusObserver::KeyboardBrightnessChanged(
+    const power_manager::BacklightBrightnessChange& change) {
+  owner_->KeyboardBrightnessChanged(
+      change.percent() / 100.,
+      change.cause() ==
+          power_manager::BacklightBrightnessChange_Cause_USER_REQUEST);
 }
 
 UnifiedSystemTrayModel::UnifiedSystemTrayModel()
@@ -72,10 +86,18 @@ void UnifiedSystemTrayModel::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void UnifiedSystemTrayModel::BrightnessChanged(float brightness) {
-  brightness_ = brightness;
+void UnifiedSystemTrayModel::DisplayBrightnessChanged(float brightness,
+                                                      bool by_user) {
+  display_brightness_ = brightness;
   for (auto& observer : observers_)
-    observer.OnBrightnessChanged();
+    observer.OnDisplayBrightnessChanged(by_user);
+}
+
+void UnifiedSystemTrayModel::KeyboardBrightnessChanged(float brightness,
+                                                       bool by_user) {
+  keyboard_brightness_ = brightness;
+  for (auto& observer : observers_)
+    observer.OnKeyboardBrightnessChanged(by_user);
 }
 
 }  // namespace ash

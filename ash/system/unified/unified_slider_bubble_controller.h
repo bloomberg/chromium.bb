@@ -36,11 +36,15 @@ class UnifiedSliderBubbleController
   void OnOutputMuteChanged(bool mute_on, bool system_adjust) override;
 
   // UnifiedSystemTrayModel::Observer:
-  void OnBrightnessChanged() override;
+  void OnDisplayBrightnessChanged(bool by_user) override;
+  void OnKeyboardBrightnessChanged(bool by_user) override;
 
  private:
-  // TODO(tetsui): Implement SLIDER_TYPE_KEYBOARD_BRIGHTNESS.
-  enum SliderType { SLIDER_TYPE_VOLUME = 0, SLIDER_TYPE_DISPLAY_BRIGHTNESS };
+  enum SliderType {
+    SLIDER_TYPE_VOLUME = 0,
+    SLIDER_TYPE_DISPLAY_BRIGHTNESS,
+    SLIDER_TYPE_KEYBOARD_BRIGHTNESS
+  };
 
   // Show a slider of |slider_type|. If the slider of same type is already
   // shown, it just extends the auto close timer.

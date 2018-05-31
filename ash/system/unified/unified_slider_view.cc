@@ -13,6 +13,35 @@
 
 namespace ash {
 
+namespace {
+
+views::Slider* CreateSlider(UnifiedSliderListener* listener, bool readonly) {
+  if (readonly)
+    return new ReadOnlySlider();
+
+  return new views::Slider(listener);
+}
+
+}  // namespace
+
+ReadOnlySlider::ReadOnlySlider() : Slider(nullptr) {}
+
+bool ReadOnlySlider::OnMousePressed(const ui::MouseEvent& event) {
+  return false;
+}
+
+bool ReadOnlySlider::OnMouseDragged(const ui::MouseEvent& event) {
+  return false;
+}
+
+void ReadOnlySlider::OnMouseReleased(const ui::MouseEvent& event) {}
+
+bool ReadOnlySlider::OnKeyPressed(const ui::KeyEvent& event) {
+  return false;
+}
+
+void ReadOnlySlider::OnGestureEvent(ui::GestureEvent* event) {}
+
 UnifiedSliderButton::UnifiedSliderButton(views::ButtonListener* listener,
                                          const gfx::VectorIcon& icon,
                                          int accessible_name_id)
@@ -46,9 +75,10 @@ void UnifiedSliderButton::PaintButtonContents(gfx::Canvas* canvas) {
 
 UnifiedSliderView::UnifiedSliderView(UnifiedSliderListener* listener,
                                      const gfx::VectorIcon& icon,
-                                     int accessible_name_id)
+                                     int accessible_name_id,
+                                     bool readonly)
     : button_(new UnifiedSliderButton(listener, icon, accessible_name_id)),
-      slider_(new views::Slider(listener)) {
+      slider_(CreateSlider(listener, readonly)) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, kUnifiedMenuItemPadding,
       kUnifiedTopShortcutSpacing));
