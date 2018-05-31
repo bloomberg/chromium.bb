@@ -309,7 +309,8 @@ class RemoteAccess(object):
     return ssh_cmd
 
   def RemoteSh(self, cmd, connect_settings=None, error_code_ok=False,
-               remote_sudo=False, ssh_error_ok=False, **kwargs):
+               remote_sudo=False, remote_user=None, ssh_error_ok=False,
+               **kwargs):
     """Run a sh command on the remote device through ssh.
 
     Args:
@@ -323,6 +324,7 @@ class RemoteAccess(object):
       ssh_error_ok: Does not throw an exception when the ssh command itself
                     fails (return code 255).
       remote_sudo: If set, run the command in remote shell with sudo.
+      remote_user: If set, run the command as the specified user.
       **kwargs: See cros_build_lib.RunCommand documentation.
 
     Returns:
@@ -340,6 +342,10 @@ class RemoteAccess(object):
     # Force English SSH messages. SSHConnectionError.IsKnownHostsMismatch()
     # requires English errors to detect a known_hosts key mismatch error.
     kwargs.setdefault('extra_env', {})['LC_MESSAGES'] = 'C'
+
+    prev_user = self.username
+    if remote_user:
+      self.username = remote_user
 
     ssh_cmd = self.GetSSHCommand(connect_settings=connect_settings)
 
@@ -369,6 +375,9 @@ class RemoteAccess(object):
         raise SSHConnectionError(e.result.error)
       else:
         raise
+    finally:
+      # Restore the previous user if we temporarily changed it earlier.
+      self.username = prev_user
 
   def _GetBootId(self, rebooting=False):
     """Obtains unique boot session identifier.
