@@ -84,7 +84,7 @@ DOMHighResTimeStamp GetUnixAtZeroMonotonic() {
 
 using PerformanceObserverVector = HeapVector<Member<PerformanceObserver>>;
 
-static const size_t kDefaultResourceTimingBufferSize = 150;
+static const size_t kDefaultResourceTimingBufferSize = 250;
 static const size_t kDefaultFrameTimingBufferSize = 150;
 constexpr size_t kDefaultEventTimingBufferSize = 150;
 
