@@ -262,6 +262,10 @@ if (enable_av1_decoder) {
     sources += aom_scale_sources
     sources += aom_sources
     sources += aom_util_sources
+    if (current_cpu == "arm64") {
+      sources += aom_av1_common_intrin_neon
+      sources += aom_dsp_common_intrin_neon
+    }
     deps = []
     if (current_cpu == "x86" || (current_cpu == "x64" && !is_msan)) {
       deps += [

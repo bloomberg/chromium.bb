@@ -17,6 +17,9 @@
 # Toolchain for armv7:
 #  -gcc-arm-linux-gnueabihf
 #  -g++-arm-linux-gnueabihf
+# Toolchain for arm64:
+#  -gcc-aarch64-linux-gnu
+#  -g++-aarch64-linux-gnu
 # 32bit build environment for cmake. Including but potentially not limited to:
 #  -lib32gcc-7-dev
 #  -lib32stdc++-7-dev
@@ -212,5 +215,9 @@ reset_dirs linux/arm-neon-cpu-detect
 gen_config_files linux/arm-neon-cpu-detect \
   "${toolchain}/armv7-linux-gcc.cmake -DCONFIG_RUNTIME_CPU_DETECT=1 ${all_platforms}"
 gen_rtcd_header linux/arm-neon-cpu-detect armv7
+
+reset_dirs linux/arm64
+gen_config_files linux/arm64 "${toolchain}/arm64-linux-gcc.cmake ${all_platforms}"
+gen_rtcd_header linux/arm64 arm64
 
 clean
