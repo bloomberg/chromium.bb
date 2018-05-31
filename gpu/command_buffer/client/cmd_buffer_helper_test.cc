@@ -334,6 +334,34 @@ TEST_F(CommandBufferHelperTest, TestCalcImmediateEntriesAutoFlushing) {
   EXPECT_EQ(error::kNoError, GetError());
 }
 
+// Checks that automatic flushing treats ordering barriers as flushes.
+TEST_F(CommandBufferHelperTest,
+       TestCalcImmediateEntriesAutoFlushingOrderingBarrier) {
+  // Check that auto flush happens without an ordering barrier.
+  AddUniqueCommandWithExpect(error::kNoError, kAutoFlushSmall - 1);
+  EXPECT_EQ(0, command_buffer_->FlushCount());
+  AddUniqueCommandWithExpect(error::kNoError, 1);
+  // Auto flush should be triggered by going past the threshold.
+  EXPECT_EQ(1, command_buffer_->FlushCount());
+  helper_->Finish();
+  EXPECT_EQ(2, command_buffer_->FlushCount());
+
+  // Check that an ordering barrier prevents auto flush.
+  AddUniqueCommandWithExpect(error::kNoError, kAutoFlushSmall - 1);
+  EXPECT_EQ(2, command_buffer_->FlushCount());
+  helper_->OrderingBarrier();
+  EXPECT_EQ(3, command_buffer_->FlushCount());
+  AddUniqueCommandWithExpect(error::kNoError, 1);
+  // Adding a command should not have caused a flush because there was an
+  // ordering barrier.
+  EXPECT_EQ(3, command_buffer_->FlushCount());
+
+  // Check that the commands did happen.
+  helper_->Finish();
+  Mock::VerifyAndClearExpectations(api_mock_.get());
+  EXPECT_EQ(error::kNoError, GetError());
+}
+
 // Checks immediate_entry_count_ calc when automatic flushing is enabled, and
 // we allocate commands over the immediate_entry_count_ size.
 TEST_F(CommandBufferHelperTest, TestCalcImmediateEntriesOverFlushLimit) {
