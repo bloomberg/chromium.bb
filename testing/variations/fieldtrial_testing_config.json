@@ -1262,21 +1262,6 @@
             ]
         }
     ],
-    "EmojiContextMenu": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EnableEmojiContextMenu"
-                    ]
-                }
-            ]
-        }
-    ],
     "EnableAppContainer": [
         {
             "platforms": [
@@ -1335,6 +1320,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "EnableDialLocalDiscovery"
+                    ]
+                }
+            ]
+        }
+    ],
+    "EnableEmojiContextMenu": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableEmojiContextMenu"
                     ]
                 }
             ]
