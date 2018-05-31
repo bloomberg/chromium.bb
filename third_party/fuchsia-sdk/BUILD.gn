@@ -35,8 +35,8 @@ fuchsia_sdk_pkg("async_default") {
 
 fuchsia_sdk_fidl_pkg("component") {
   sources = [
-    "application_controller.fidl",
     "application_launcher.fidl",
+    "component_controller.fidl",
     "environment.fidl",
     "environment_controller.fidl",
     "flat_namespace.fidl",
@@ -293,6 +293,9 @@ fuchsia_sdk_pkg("svc") {
 }
 
 fuchsia_sdk_fidl_pkg("views") {
+  namespace = "fuchsia.ui"
+  namespace_path = "fuchsia/ui"
+
   sources = [
     "commands.fidl",
     "events.fidl",
@@ -304,6 +307,9 @@ fuchsia_sdk_fidl_pkg("views") {
 }
 
 fuchsia_sdk_fidl_pkg("views_v1") {
+  namespace = "fuchsia.ui"
+  namespace_path = "fuchsia/ui"
+
   sources = [
     "view_containers.fidl",
     "view_manager.fidl",
@@ -323,6 +329,9 @@ fuchsia_sdk_fidl_pkg("views_v1") {
 }
 
 fuchsia_sdk_fidl_pkg("views_v1_token") {
+  namespace = "fuchsia.ui"
+  namespace_path = "fuchsia/ui"
+
   sources = [
     "view_token.fidl",
   ]
