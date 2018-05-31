@@ -103,7 +103,7 @@ void ShelfTooltipManager::ShowTooltip(views::View* view) {
   const base::string16 text = shelf_view_->GetTitleForView(view);
   if (chromeos::switches::ShouldShowShelfHoverPreviews() &&
       open_windows.size() > 0) {
-    bubble_ = new ShelfTooltipPreviewBubble(view, arrow, open_windows.front());
+    bubble_ = new ShelfTooltipPreviewBubble(view, arrow, open_windows);
   } else {
     bubble_ = new ShelfTooltipBubble(view, arrow, text);
   }
