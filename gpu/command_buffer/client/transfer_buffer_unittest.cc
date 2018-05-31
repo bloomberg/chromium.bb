@@ -44,14 +44,10 @@ class TransferBufferTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  virtual void Initialize(unsigned int size_to_flush) {
+  virtual void Initialize() {
     ASSERT_TRUE(transfer_buffer_->Initialize(
-        kTransferBufferSize,
-        kStartingOffset,
-        kTransferBufferSize,
-        kTransferBufferSize,
-        kAlignment,
-        size_to_flush));
+        kTransferBufferSize, kStartingOffset, kTransferBufferSize,
+        kTransferBufferSize, kAlignment));
   }
 
   MockClientCommandBufferMockFlush* command_buffer() const {
@@ -101,7 +97,7 @@ const size_t TransferBufferTest::kTransferBufferSize;
 #endif
 
 TEST_F(TransferBufferTest, Basic) {
-  Initialize(0);
+  Initialize();
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
   EXPECT_EQ(transfer_buffer_id_, transfer_buffer_->GetShmId());
   EXPECT_EQ(
@@ -112,7 +108,7 @@ TEST_F(TransferBufferTest, Basic) {
 }
 
 TEST_F(TransferBufferTest, Free) {
-  Initialize(0);
+  Initialize();
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
   EXPECT_EQ(transfer_buffer_id_, transfer_buffer_->GetShmId());
   EXPECT_NE(base::UnguessableToken(),
@@ -204,7 +200,7 @@ TEST_F(TransferBufferTest, Free) {
 }
 
 TEST_F(TransferBufferTest, TooLargeAllocation) {
-  Initialize(0);
+  Initialize();
   // Check that we can't allocate large than max size.
   void* ptr = transfer_buffer_->Alloc(kTransferBufferSize + 1);
   EXPECT_TRUE(ptr == NULL);
@@ -218,7 +214,7 @@ TEST_F(TransferBufferTest, TooLargeAllocation) {
 }
 
 TEST_F(TransferBufferTest, MemoryAlignmentAfterZeroAllocation) {
-  Initialize(32u);
+  Initialize();
   void* ptr = transfer_buffer_->Alloc(0);
   EXPECT_EQ((reinterpret_cast<uintptr_t>(ptr) & (kAlignment - 1)), 0u);
   transfer_buffer_->FreePendingToken(ptr, helper_->InsertToken());
@@ -226,32 +222,6 @@ TEST_F(TransferBufferTest, MemoryAlignmentAfterZeroAllocation) {
   ptr = transfer_buffer_->Alloc(4);
   EXPECT_EQ((reinterpret_cast<uintptr_t>(ptr) & (kAlignment - 1)), 0u);
   transfer_buffer_->FreePendingToken(ptr, helper_->InsertToken());
-}
-
-TEST_F(TransferBufferTest, Flush) {
-  Initialize(16u);
-  unsigned int size_allocated = 0;
-  for (int i = 0; i < 8; ++i) {
-    void* ptr = transfer_buffer_->AllocUpTo(8u, &size_allocated);
-    ASSERT_TRUE(ptr != NULL);
-    EXPECT_EQ(8u, size_allocated);
-    if (i % 2) {
-      EXPECT_CALL(*command_buffer(), Flush(_))
-          .Times(1)
-          .RetiresOnSaturation();
-    }
-    transfer_buffer_->FreePendingToken(ptr, helper_->InsertToken());
-  }
-  for (int i = 0; i < 8; ++i) {
-    void* ptr = transfer_buffer_->Alloc(8u);
-    ASSERT_TRUE(ptr != NULL);
-    if (i % 2) {
-      EXPECT_CALL(*command_buffer(), Flush(_))
-          .Times(1)
-          .RetiresOnSaturation();
-    }
-    transfer_buffer_->FreePendingToken(ptr, helper_->InsertToken());
-  }
 }
 
 class MockClientCommandBufferCanFail : public MockClientCommandBufferMockFlush {
@@ -321,12 +291,8 @@ void TransferBufferExpandContractTest::SetUp() {
 
   transfer_buffer_.reset(new TransferBuffer(helper_.get()));
   ASSERT_TRUE(transfer_buffer_->Initialize(
-      kStartTransferBufferSize,
-      kStartingOffset,
-      kMinTransferBufferSize,
-      kMaxTransferBufferSize,
-      kAlignment,
-      0));
+      kStartTransferBufferSize, kStartingOffset, kMinTransferBufferSize,
+      kMaxTransferBufferSize, kAlignment));
 }
 
 void TransferBufferExpandContractTest::TearDown() {
