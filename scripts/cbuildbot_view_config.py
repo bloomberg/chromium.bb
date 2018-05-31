@@ -9,7 +9,7 @@ from __future__ import print_function
 
 import sys
 
-from chromite.cbuildbot import chromeos_config
+from chromite.config import chromeos_config
 from chromite.lib import constants
 from chromite.lib import commandline
 

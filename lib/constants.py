@@ -44,13 +44,12 @@ CHROMITE_BIN_DIR = os.path.join(CHROMITE_DIR, 'bin')
 PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')
 DEFAULT_CHROOT_DIR = 'chroot'
 
-CHROMEOS_CONFIG_FILE = os.path.join(CHROMITE_DIR, 'cbuildbot',
-                                    'config_dump.json')
-WATERFALL_CONFIG_FILE = os.path.join(CHROMITE_DIR, 'cbuildbot',
+CHROMEOS_CONFIG_FILE = os.path.join(CHROMITE_DIR, 'config', 'config_dump.json')
+WATERFALL_CONFIG_FILE = os.path.join(CHROMITE_DIR, 'config',
                                      'waterfall_layout_dump.txt')
 
 GE_BUILD_CONFIG_FILE = os.path.join(
-    CHROMITE_DIR, 'cbuildbot', 'ge_build_config.json')
+    CHROMITE_DIR, 'config', 'ge_build_config.json')
 
 # The following define the location for storing toolchain packages and
 # SDK overlay tarballs created during SDK builder runs. The paths are relative
