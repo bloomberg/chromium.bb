@@ -1250,6 +1250,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
   std::unique_ptr<network::ResourceRequest> new_request = CreateResourceRequest(
       request_info.get(), frame_tree_node_id, allow_download_);
+  new_request->transition_type = request_info->common_params.transition;
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     DCHECK(!request_controller_);

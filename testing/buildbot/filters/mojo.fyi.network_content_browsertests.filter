@@ -3,7 +3,6 @@
 # failures. Otherwise please reach out to network-service-dev@.
 
 # https://crbug.com/715640
--ServiceWorkerBrowserTest.Reload
 -ServiceWorkerNavigationPreloadTest.CanceledByInterceptor
 -ServiceWorkerNavigationPreloadTest.RespondWithNavigationPreloadWithMimeSniffing
 -ServiceWorkerV8CodeCacheForCacheStorageTest.V8CacheOnCacheStorage
