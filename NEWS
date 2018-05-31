@@ -17,6 +17,7 @@ issues]].
 - Fix input-output mapping of context rules thanks to Bert Frees.
 - Fix back tracking with all caps words thanks to Bert Frees.
 - Fix context rules with lookback thanks to Bert Frees.
+- Fix a memory leak in default table resolver thanks to Timothy Lee.
 
 ** Braille table improvements
 - Fix some forward- and back-translation errors in Unified French Grade
