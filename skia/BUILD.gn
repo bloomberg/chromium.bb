@@ -118,6 +118,7 @@ config("skia_config") {
 config("skia_library_config") {
   # These include directories are only included for Skia code and are not
   # exported to dependents.
+  defines = []
   include_dirs = [
     "//third_party/skia/include/codec",
     "//third_party/skia/include/private",
@@ -145,8 +146,6 @@ config("skia_library_config") {
 
   # TODO: remove after Skia shader relocation (https://skia-review.googlesource.com/c/17927)
   include_dirs += [ "//third_party/skia/src/effects/gradients" ]
-
-  defines = [ "SK_USE_SKCMS" ]
 
   if (!is_ios && !use_system_freetype) {
     defines += [ "SK_FREETYPE_MINIMUM_RUNTIME_VERSION=(((FREETYPE_MAJOR) * 0x01000000) | ((FREETYPE_MINOR) * 0x00010000) | ((FREETYPE_PATCH) * 0x00000100))" ]
@@ -228,12 +227,7 @@ config("skia_library_config") {
 }
 
 import("//third_party/skia/third_party/skcms/skcms.gni")
-config("skcms_public") {
-  include_dirs = [ "//third_party/skia/third_party/skcms" ]
-}
 source_set("skcms") {
-  public_configs = [ ":skcms_public" ]
-
   cflags = []
   if (!is_win || is_clang) {
     cflags += [
@@ -578,7 +572,6 @@ component("skia") {
 
   # skcms
   deps += [ ":skcms" ]
-  sources += [ "//third_party/skia/src/core/SkColorSpaceXform_skcms.cpp" ]
 }
 
 # Template for things that are logically part of :skia, but need to be split out
