@@ -883,6 +883,15 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
   }
 }
 
+void ThreadState::FinishSnapshot() {
+  // Force setting NoGCScheduled to circumvent checkThread()
+  // in setGCState().
+  gc_state_ = kNoGCScheduled;
+  SetGCPhase(GCPhase::kSweeping);
+  SetGCPhase(GCPhase::kNone);
+  Heap().stats_collector()->Stop();
+}
+
 void ThreadState::PreSweep(BlinkGC::MarkingType marking_type,
                            BlinkGC::SweepingType sweeping_type) {
   DCHECK(InAtomicMarkingPause());
@@ -899,13 +908,6 @@ void ThreadState::PreSweep(BlinkGC::MarkingType marking_type,
     Heap().MakeConsistentForMutator();
 
     Heap().TakeSnapshot(ThreadHeap::SnapshotType::kFreelistSnapshot);
-
-    // Force setting NoGCScheduled to circumvent checkThread()
-    // in setGCState().
-    gc_state_ = kNoGCScheduled;
-    SetGCPhase(GCPhase::kSweeping);
-    SetGCPhase(GCPhase::kNone);
-    Heap().stats_collector()->Stop();
     return;
   }
 
@@ -1373,6 +1375,7 @@ void ThreadState::IncrementalMarkingFinalize() {
     PreSweep(current_gc_data_.marking_type, BlinkGC::kLazySweeping);
     DCHECK(IsSweepingInProgress());
     DCHECK_EQ(GcState(), kNoGCScheduled);
+    ScheduleIdleLazySweep();
   }
 }
 
@@ -1412,28 +1415,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
     CompleteSweep();
     SetGCState(kNoGCScheduled);
     Heap().stats_collector()->Start(reason);
-    AtomicPauseScope atomic_pause_scope(this);
-    {
-      ThreadHeapStatsCollector::EnabledScope stats_scope(
-          Heap().stats_collector(),
-          ThreadHeapStatsCollector::kAtomicPhaseMarking, "lazySweeping",
-          sweeping_type == BlinkGC::kLazySweeping ? "yes" : "no", "gcReason",
-          GcReasonString(reason));
-      MarkPhasePrologue(stack_state, marking_type, reason);
-      MarkPhaseVisitRoots();
-      CHECK(MarkPhaseAdvanceMarking(std::numeric_limits<double>::infinity()));
-      MarkPhaseEpilogue(marking_type);
-    }
-    PreSweep(marking_type, sweeping_type);
-  }
-
-  if (sweeping_type == BlinkGC::kEagerSweeping) {
-    // Eager sweeping should happen only in testing.
-    CompleteSweep();
-  } else {
-    DCHECK(sweeping_type == BlinkGC::kLazySweeping);
-    // The default behavior is lazy sweeping.
-    ScheduleIdleLazySweep();
+    RunAtomicPause(stack_state, marking_type, sweeping_type, reason);
   }
 
   double total_collect_garbage_time =
@@ -1451,33 +1433,77 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
           << " reason: " << GcReasonString(reason);
 }
 
+void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
+                                 BlinkGC::MarkingType marking_type,
+                                 BlinkGC::SweepingType sweeping_type,
+                                 BlinkGC::GCReason reason) {
+  {
+    ThreadHeapStatsCollector::EnabledScope stats1(
+        Heap().stats_collector(), ThreadHeapStatsCollector::kAtomicPhase);
+    AtomicPauseScope atomic_pause_scope(this);
+    {
+      ThreadHeapStatsCollector::EnabledScope stats2(
+          Heap().stats_collector(),
+          ThreadHeapStatsCollector::kAtomicPhaseMarking, "lazySweeping",
+          sweeping_type == BlinkGC::kLazySweeping ? "yes" : "no", "gcReason",
+          GcReasonString(reason));
+      MarkPhasePrologue(stack_state, marking_type, reason);
+      MarkPhaseVisitRoots();
+      CHECK(MarkPhaseAdvanceMarking(std::numeric_limits<double>::infinity()));
+      MarkPhaseEpilogue(marking_type);
+    }
+    PreSweep(marking_type, sweeping_type);
+  }
+  if (marking_type == BlinkGC::kTakeSnapshot) {
+    FinishSnapshot();
+    CHECK(!IsSweepingInProgress());
+    CHECK_EQ(GcState(), kNoGCScheduled);
+    return;
+  }
+  DCHECK(IsSweepingInProgress());
+  if (sweeping_type == BlinkGC::kEagerSweeping) {
+    // Eager sweeping should happen only in testing.
+    CompleteSweep();
+  } else {
+    DCHECK(sweeping_type == BlinkGC::kLazySweeping);
+    // The default behavior is lazy sweeping.
+    ScheduleIdleLazySweep();
+  }
+}
+
+namespace {
+
+MarkingVisitor::MarkingMode GetMarkingMode(bool should_compact,
+                                           bool create_snapshot) {
+  CHECK(!should_compact || !create_snapshot);
+  return (create_snapshot)
+             ? MarkingVisitor::kSnapshotMarking
+             : (should_compact) ? MarkingVisitor::kGlobalMarkingWithCompaction
+                                : MarkingVisitor::kGlobalMarking;
+}
+
+}  // namespace
+
 void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
                                     BlinkGC::MarkingType marking_type,
                                     BlinkGC::GCReason reason) {
   SetGCPhase(GCPhase::kMarking);
   Heap().CommitCallbackStacks();
 
+  const bool take_snapshot = marking_type == BlinkGC::kTakeSnapshot;
+  const bool should_compact =
+      !take_snapshot && Heap().Compaction()->ShouldCompact(
+                            &Heap(), stack_state, marking_type, reason);
+
+  current_gc_data_.visitor = MarkingVisitor::Create(
+      this, GetMarkingMode(should_compact, take_snapshot));
   current_gc_data_.stack_state = stack_state;
   current_gc_data_.marking_type = marking_type;
   current_gc_data_.reason = reason;
   current_gc_data_.marking_time_in_milliseconds = 0;
 
-  if (marking_type == BlinkGC::kTakeSnapshot) {
-    current_gc_data_.visitor =
-        MarkingVisitor::Create(this, MarkingVisitor::kSnapshotMarking);
-  } else {
-    DCHECK(marking_type == BlinkGC::kAtomicMarking ||
-           marking_type == BlinkGC::kIncrementalMarking);
-    if (Heap().Compaction()->ShouldCompact(&Heap(), stack_state, marking_type,
-                                           reason)) {
-      Heap().Compaction()->Initialize(this);
-      current_gc_data_.visitor = MarkingVisitor::Create(
-          this, MarkingVisitor::kGlobalMarkingWithCompaction);
-    } else {
-      current_gc_data_.visitor =
-          MarkingVisitor::Create(this, MarkingVisitor::kGlobalMarking);
-    }
-  }
+  if (should_compact)
+    Heap().Compaction()->Initialize(this);
 
   if (marking_type == BlinkGC::kTakeSnapshot)
     BlinkGCMemoryDumpProvider::Instance()->ClearProcessDumpForCurrentGC();
