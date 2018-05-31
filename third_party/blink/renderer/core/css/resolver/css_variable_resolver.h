@@ -54,28 +54,31 @@ class CSSVariableResolver {
   // These return false if we encounter a reference to an invalid variable with
   // no fallback.
 
-  // Resolves a range which may contain var() references.
+  // Resolves a range which may contain var() or env() references.
   bool ResolveTokenRange(CSSParserTokenRange,
                          bool disallow_animation_tainted,
                          Vector<CSSParserToken>& result,
                          Vector<String>& result_backing_strings,
                          bool& result_is_animation_tainted);
-  // Resolves the fallback (if present) of a var() reference, starting from the
-  // comma.
+  // Resolves the fallback (if present) of a var() or env() reference, starting
+  // from the comma.
   bool ResolveFallback(CSSParserTokenRange,
                        bool disallow_animation_tainted,
                        Vector<CSSParserToken>& result,
                        Vector<String>& result_backing_strings,
                        bool& result_is_animation_tainted);
-  // Resolves the contents of a var() reference.
+  // Resolves the contents of a var() or env() reference.
   bool ResolveVariableReference(CSSParserTokenRange,
                                 bool disallow_animation_tainted,
                                 Vector<CSSParserToken>& result,
                                 Vector<String>& result_backing_strings,
-                                bool& result_is_animation_tainted);
+                                bool& result_is_animation_tainted,
+                                bool is_env_variable);
 
   // These return null if the custom property is invalid.
 
+  // Returns the CSSVariableData for an environment variable.
+  CSSVariableData* ValueForEnvironmentVariable(const AtomicString& name);
   // Returns the CSSVariableData for a custom property, resolving and storing it
   // if necessary.
   CSSVariableData* ValueForCustomProperty(AtomicString name);

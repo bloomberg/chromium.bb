@@ -1156,6 +1156,7 @@
 
     "var",
     "-internal-variable-value",
+    "env",
 
     // break-before, break-after, break-inside
     "avoid-page",

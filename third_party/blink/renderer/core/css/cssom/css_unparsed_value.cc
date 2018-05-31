@@ -40,7 +40,8 @@ HeapVector<CSSUnparsedSegment> ParserTokenRangeToTokens(
   HeapVector<CSSUnparsedSegment> tokens;
   StringBuilder builder;
   while (!range.AtEnd()) {
-    if (range.Peek().FunctionId() == CSSValueVar) {
+    if (range.Peek().FunctionId() == CSSValueVar ||
+        range.Peek().FunctionId() == CSSValueEnv) {
       if (!builder.IsEmpty()) {
         tokens.push_back(CSSUnparsedSegment::FromString(builder.ToString()));
         builder.Clear();

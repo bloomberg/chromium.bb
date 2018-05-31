@@ -126,7 +126,8 @@ bool CSSVariableResolver::ResolveVariableReference(
     bool disallow_animation_tainted,
     Vector<CSSParserToken>& result,
     Vector<String>& result_backing_strings,
-    bool& result_is_animation_tainted) {
+    bool& result_is_animation_tainted,
+    bool is_env_variable) {
   range.ConsumeWhitespace();
   DCHECK_EQ(range.Peek().GetType(), kIdentToken);
   AtomicString variable_name =
@@ -147,7 +148,9 @@ bool CSSVariableResolver::ResolveVariableReference(
     inherited_variables_ = state_.Style()->InheritedVariables();
     non_inherited_variables_ = state_.Style()->NonInheritedVariables();
   }
-  CSSVariableData* variable_data = ValueForCustomProperty(variable_name);
+  CSSVariableData* variable_data =
+      is_env_variable ? ValueForEnvironmentVariable(variable_name)
+                      : ValueForCustomProperty(variable_name);
   if (!variable_data ||
       (disallow_animation_tainted && variable_data->IsAnimationTainted())) {
     // TODO(alancutter): Append the registered initial custom property value if
@@ -169,6 +172,13 @@ bool CSSVariableResolver::ResolveVariableReference(
   return true;
 }
 
+CSSVariableData* CSSVariableResolver::ValueForEnvironmentVariable(
+    const AtomicString& name) {
+  // TODO(beccahughes): Make this resolve the environment variable (what is here
+  // is just for testing for now).
+  return ValueForCustomProperty(name);
+}
+
 bool CSSVariableResolver::ResolveTokenRange(
     CSSParserTokenRange range,
     bool disallow_animation_tainted,
@@ -177,10 +187,13 @@ bool CSSVariableResolver::ResolveTokenRange(
     bool& result_is_animation_tainted) {
   bool success = true;
   while (!range.AtEnd()) {
-    if (range.Peek().FunctionId() == CSSValueVar) {
+    const CSSParserToken& token = range.Peek();
+    if (token.FunctionId() == CSSValueVar ||
+        token.FunctionId() == CSSValueEnv) {
       success &= ResolveVariableReference(
           range.ConsumeBlock(), disallow_animation_tainted, result,
-          result_backing_strings, result_is_animation_tainted);
+          result_backing_strings, result_is_animation_tainted,
+          token.FunctionId() == CSSValueEnv);
     } else {
       result.push_back(range.Consume());
     }

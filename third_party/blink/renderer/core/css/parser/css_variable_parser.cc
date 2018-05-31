@@ -7,12 +7,14 @@
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
 namespace {
 
 bool IsValidVariableReference(CSSParserTokenRange);
+bool IsValidEnvVariableReference(CSSParserTokenRange);
 
 bool ClassifyBlock(CSSParserTokenRange range, bool& has_references) {
   size_t block_stack_size = 0;
@@ -20,13 +22,27 @@ bool ClassifyBlock(CSSParserTokenRange range, bool& has_references) {
   while (!range.AtEnd()) {
     // First check if this is a valid variable reference, then handle the next
     // token accordingly.
-    if (range.Peek().GetBlockType() == CSSParserToken::kBlockStart &&
-        range.Peek().FunctionId() == CSSValueVar) {
-      CSSParserTokenRange block = range.ConsumeBlock();
-      if (!IsValidVariableReference(block))
-        return false;  // Bail if any references are invalid
-      has_references = true;
-      continue;
+    if (range.Peek().GetBlockType() == CSSParserToken::kBlockStart) {
+      const CSSParserToken& token = range.Peek();
+
+      // A block may have both var and env references. They can also be nested
+      // and used as fallbacks.
+      switch (token.FunctionId()) {
+        case CSSValueVar:
+          if (!IsValidVariableReference(range.ConsumeBlock()))
+            return false;  // Invalid reference.
+          has_references = true;
+          continue;
+        case CSSValueEnv:
+          if (!RuntimeEnabledFeatures::CSSEnvironmentVariablesEnabled())
+            return false;
+          if (!IsValidEnvVariableReference(range.ConsumeBlock()))
+            return false;  // Invalid reference.
+          has_references = true;
+          continue;
+        default:
+          break;
+      }
     }
 
     const CSSParserToken& token = range.Consume();
@@ -63,6 +79,23 @@ bool IsValidVariableReference(CSSParserTokenRange range) {
   range.ConsumeWhitespace();
   if (!CSSVariableParser::IsValidVariableName(
           range.ConsumeIncludingWhitespace()))
+    return false;
+  if (range.AtEnd())
+    return true;
+
+  if (range.Consume().GetType() != kCommaToken)
+    return false;
+  if (range.AtEnd())
+    return false;
+
+  bool has_references = false;
+  return ClassifyBlock(range, has_references);
+}
+
+bool IsValidEnvVariableReference(CSSParserTokenRange range) {
+  range.ConsumeWhitespace();
+  if (range.ConsumeIncludingWhitespace().GetType() !=
+      CSSParserTokenType::kIdentToken)
     return false;
   if (range.AtEnd())
     return true;
