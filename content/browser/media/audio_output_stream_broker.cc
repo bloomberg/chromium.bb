@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/media/media_internals.h"
 #include "content/public/browser/content_browser_client.h"
@@ -57,7 +58,12 @@ AudioOutputStreamBroker::~AudioOutputStreamBroker() {
     TRACE_EVENT_NESTABLE_ASYNC_END1("audio", "CreateStream", this, "success",
                                     "failed or cancelled");
   }
-  TRACE_EVENT_NESTABLE_ASYNC_END0("audio", "AudioOutputStreamBroker", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END1("audio", "AudioOutputStreamBroker", this,
+                                  "disconnect reason",
+                                  static_cast<uint32_t>(disconnect_reason_));
+
+  UMA_HISTOGRAM_ENUMERATION("Media.Audio.Render.StreamBrokerDisconnectReason",
+                            disconnect_reason_);
 }
 
 void AudioOutputStreamBroker::CreateStream(
@@ -102,9 +108,12 @@ void AudioOutputStreamBroker::StreamCreated(
   awaiting_created_ = false;
   if (!data_pipe) {
     // Stream creation failed. Signal error.
-    client_.ResetWithReason(media::mojom::AudioOutputStreamProviderClient::
-                                kPlatformErrorDisconnectReason,
-                            std::string());
+    client_.ResetWithReason(
+        static_cast<uint32_t>(media::mojom::AudioOutputStreamObserver::
+                                  DisconnectReason::kPlatformError),
+        std::string());
+    disconnect_reason_ = media::mojom::AudioOutputStreamObserver::
+        DisconnectReason::kStreamCreationFailed;
     Cleanup();
     return;
   }
@@ -119,12 +128,23 @@ void AudioOutputStreamBroker::ObserverBindingLost(
 
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("audio", "ObserverBindingLost", this,
                                       "reset reason", reason);
+  const uint32_t maxValidReason = static_cast<uint32_t>(
+      media::mojom::AudioOutputStreamObserver::DisconnectReason::kMaxValue);
+  if (reason > maxValidReason) {
+    NOTREACHED() << "Invalid reason: " << reason;
+  } else if (disconnect_reason_ == media::mojom::AudioOutputStreamObserver::
+                                       DisconnectReason::kDocumentDestroyed) {
+    disconnect_reason_ =
+        static_cast<media::mojom::AudioOutputStreamObserver::DisconnectReason>(
+            reason);
+  }
 
   // TODO(https://crbug.com/787806): Don't propagate errors if we can retry
   // instead.
-  client_.ResetWithReason(media::mojom::AudioOutputStreamProviderClient::
-                              kPlatformErrorDisconnectReason,
-                          std::string());
+  client_.ResetWithReason(
+      static_cast<uint32_t>(media::mojom::AudioOutputStreamObserver::
+                                DisconnectReason::kPlatformError),
+      std::string());
 
   Cleanup();
 }

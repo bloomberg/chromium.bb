@@ -65,8 +65,8 @@ InputStream::InputStream(CreatedCallback created_callback,
                                     params.AsHumanReadableString());
 
   // |this| owns these objects, so unretained is safe.
-  base::RepeatingClosure error_handler =
-      base::BindRepeating(&InputStream::OnStreamError, base::Unretained(this));
+  base::RepeatingClosure error_handler = base::BindRepeating(
+      &InputStream::OnStreamError, base::Unretained(this), false);
   binding_.set_connection_error_handler(error_handler);
   client_.set_connection_error_handler(error_handler);
 
@@ -79,12 +79,12 @@ InputStream::InputStream(CreatedCallback created_callback,
   // Only MONO, STEREO and STEREO_AND_KEYBOARD_MIC channel layouts are expected,
   // see AudioManagerBase::MakeAudioInputStream().
   if (!params.IsValid() || (params.channels() > kMaxInputChannels)) {
-    OnStreamError();
+    OnStreamError(true);
     return;
   }
 
   if (!writer_) {
-    OnStreamError();
+    OnStreamError(true);
     return;
   }
 
@@ -98,6 +98,12 @@ InputStream::~InputStream() {
 
   if (log_)
     log_->get()->OnClosed();
+
+  if (observer_)
+    observer_.ResetWithReason(
+        static_cast<uint32_t>(media::mojom::AudioInputStreamObserver::
+                                  DisconnectReason::kTerminatedByClient),
+        std::string());
 
   if (created_callback_) {
     // Didn't manage to create the stream. Call the callback anyways as mandated
@@ -146,7 +152,7 @@ void InputStream::SetVolume(double volume) {
 
   if (volume < 0 || volume > 1) {
     mojo::ReportBadMessage("Invalid volume");
-    OnStreamError();
+    OnStreamError(true);
     return;
   }
 
@@ -163,7 +169,7 @@ void InputStream::OnCreated(bool initially_muted) {
   base::ReadOnlySharedMemoryRegion shared_memory_region =
       writer_->TakeSharedMemoryRegion();
   if (!shared_memory_region.IsValid()) {
-    OnStreamError();
+    OnStreamError(true);
     return;
   }
 
@@ -188,7 +194,7 @@ void InputStream::OnError(media::AudioInputController::ErrorCode error_code) {
   client_->OnError();
   if (log_)
     log_->get()->OnError();
-  OnStreamError();
+  OnStreamError(true);
 }
 
 void InputStream::OnLog(base::StringPiece message) {
@@ -202,9 +208,16 @@ void InputStream::OnMuted(bool is_muted) {
   client_->OnMutedStateChanged(is_muted);
 }
 
-void InputStream::OnStreamError() {
+void InputStream::OnStreamError(bool signalPlatformError) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("audio", "OnStreamError", this);
+
+  if (signalPlatformError && observer_) {
+    observer_.ResetWithReason(
+        static_cast<uint32_t>(media::mojom::AudioInputStreamObserver::
+                                  DisconnectReason::kPlatformError),
+        std::string());
+  }
 
   // Defer callback so we're not destructed while in the constructor.
   base::SequencedTaskRunnerHandle::Get()->PostTask(

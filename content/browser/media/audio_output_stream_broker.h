@@ -65,6 +65,10 @@ class CONTENT_EXPORT AudioOutputStreamBroker final : public AudioStreamBroker {
   mojo::AssociatedBinding<media::mojom::AudioOutputStreamObserver>
       observer_binding_;
 
+  media::mojom::AudioOutputStreamObserver::DisconnectReason disconnect_reason_ =
+      media::mojom::AudioOutputStreamObserver::DisconnectReason::
+          kDocumentDestroyed;
+
   base::WeakPtrFactory<AudioOutputStreamBroker> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputStreamBroker);

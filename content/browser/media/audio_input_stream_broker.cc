@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/media/media_internals.h"
@@ -108,7 +109,12 @@ AudioInputStreamBroker::~AudioInputStreamBroker() {
     TRACE_EVENT_NESTABLE_ASYNC_END1("audio", "CreateStream", this, "success",
                                     "failed or cancelled");
   }
-  TRACE_EVENT_NESTABLE_ASYNC_END0("audio", "AudioInputStreamBroker", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END1("audio", "AudioInputStreamBroker", this,
+                                  "disconnect reason",
+                                  static_cast<uint32_t>(disconnect_reason_));
+
+  UMA_HISTOGRAM_ENUMERATION("Media.Audio.Capture.StreamBrokerDisconnectReason",
+                            disconnect_reason_);
 }
 
 void AudioInputStreamBroker::CreateStream(
@@ -137,8 +143,8 @@ void AudioInputStreamBroker::CreateStream(
   observer_binding_.Bind(mojo::MakeRequest(&observer_ptr));
 
   // Unretained is safe because |this| owns |observer_binding_|.
-  observer_binding_.set_connection_error_handler(
-      base::BindOnce(&AudioInputStreamBroker::Cleanup, base::Unretained(this)));
+  observer_binding_.set_connection_error_with_reason_handler(base::BindOnce(
+      &AudioInputStreamBroker::ObserverBindingLost, base::Unretained(this)));
 
   // Note that the component id for AudioLog is used to differentiate between
   // several users of the same audio log. Since this audio log is for a single
@@ -173,6 +179,8 @@ void AudioInputStreamBroker::StreamCreated(
                                   !!data_pipe);
 
   if (!data_pipe) {
+    disconnect_reason_ = media::mojom::AudioInputStreamObserver::
+        DisconnectReason::kStreamCreationFailed;
     Cleanup();
     return;
   }
@@ -182,6 +190,24 @@ void AudioInputStreamBroker::StreamCreated(
   renderer_factory_client_->StreamCreated(
       std::move(stream), std::move(client_request_), std::move(data_pipe),
       initially_muted, stream_id);
+}
+void AudioInputStreamBroker::ObserverBindingLost(
+    uint32_t reason,
+    const std::string& description) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  const uint32_t maxValidReason = static_cast<uint32_t>(
+      media::mojom::AudioInputStreamObserver::DisconnectReason::kMaxValue);
+  if (reason > maxValidReason) {
+    DLOG(ERROR) << "Invalid reason: " << reason;
+  } else if (disconnect_reason_ == media::mojom::AudioInputStreamObserver::
+                                       DisconnectReason::kDocumentDestroyed) {
+    disconnect_reason_ =
+        static_cast<media::mojom::AudioInputStreamObserver::DisconnectReason>(
+            reason);
+  }
+
+  Cleanup();
 }
 
 void AudioInputStreamBroker::Cleanup() {

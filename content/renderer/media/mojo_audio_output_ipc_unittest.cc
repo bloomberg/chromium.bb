@@ -76,8 +76,8 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
 
   void SignalErrorToProviderClient() {
     provider_client_.ResetWithReason(
-        media::mojom::AudioOutputStreamProviderClient::
-            kPlatformErrorDisconnectReason,
+        static_cast<uint32_t>(media::mojom::AudioOutputStreamObserver::
+                                  DisconnectReason::kPlatformError),
         std::string());
   }
 

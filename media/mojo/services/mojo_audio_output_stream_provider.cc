@@ -69,7 +69,8 @@ void MojoAudioOutputStreamProvider::Acquire(
 void MojoAudioOutputStreamProvider::CleanUp(bool had_error) {
   if (had_error) {
     provider_client_.ResetWithReason(
-        mojom::AudioOutputStreamProviderClient::kPlatformErrorDisconnectReason,
+        static_cast<uint32_t>(media::mojom::AudioOutputStreamObserver::
+                                  DisconnectReason::kPlatformError),
         std::string());
   }
   std::move(deleter_callback_).Run(this);

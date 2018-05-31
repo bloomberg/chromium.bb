@@ -221,8 +221,9 @@ TEST(AudioOutputStreamBrokerTest,
 
   EXPECT_TRUE(stream_request_data.requested);
   EXPECT_CALL(env.provider_client,
-              ConnectionError(media::mojom::AudioOutputStreamProviderClient::
-                                  kPlatformErrorDisconnectReason,
+              ConnectionError(static_cast<uint32_t>(
+                                  media::mojom::AudioOutputStreamObserver::
+                                      DisconnectReason::kPlatformError),
                               std::string()));
   EXPECT_CALL(env.deleter, Run(env.broker.release()))
       .WillOnce(testing::DeleteArg<0>());
@@ -244,8 +245,9 @@ TEST(AudioOutputStreamBrokerTest,
 
   EXPECT_TRUE(stream_request_data.requested);
   EXPECT_CALL(env.provider_client,
-              ConnectionError(media::mojom::AudioOutputStreamProviderClient::
-                                  kPlatformErrorDisconnectReason,
+              ConnectionError(static_cast<uint32_t>(
+                                  media::mojom::AudioOutputStreamObserver::
+                                      DisconnectReason::kPlatformError),
                               std::string()));
   EXPECT_CALL(env.deleter, Run(env.broker.release()))
       .WillOnce(testing::DeleteArg<0>());
@@ -268,8 +270,9 @@ TEST(AudioOutputStreamBrokerTest,
   EXPECT_CALL(env.deleter, Run(env.broker.release()))
       .WillOnce(testing::DeleteArg<0>());
   EXPECT_CALL(env.provider_client,
-              ConnectionError(media::mojom::AudioOutputStreamProviderClient::
-                                  kPlatformErrorDisconnectReason,
+              ConnectionError(static_cast<uint32_t>(
+                                  media::mojom::AudioOutputStreamObserver::
+                                      DisconnectReason::kPlatformError),
                               std::string()));
 
   env.RunUntilIdle();

@@ -1890,6 +1890,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Audio and silence"/>
 </enum>
 
+<enum name="AudioInputStreamDisconnectReason">
+  <int value="0" label="Default"/>
+  <int value="1" label="Platform error"/>
+  <int value="2" label="Terminated by client"/>
+  <int value="3" label="Stream creation failed"/>
+  <int value="4" label="Document destroyed"/>
+</enum>
+
 <enum name="AudioOutputProxyStreamFormat">
   <int value="0" label="Bitstream"/>
   <int value="1" label="Linear PCM"/>
@@ -1915,6 +1923,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="0" label="OK"/>
   <int value="1" label="Failed to create stream"/>
   <int value="2" label="Failed to open stream"/>
+</enum>
+
+<enum name="AudioOutputStreamDisconnectReason">
+  <int value="0" label="Default"/>
+  <int value="1" label="Platform error"/>
+  <int value="2" label="Terminated by client"/>
+  <int value="3" label="Stream creation failed"/>
+  <int value="4" label="Document destroyed"/>
 </enum>
 
 <enum name="AudioRendererEvents">

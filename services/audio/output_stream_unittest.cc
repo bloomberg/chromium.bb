@@ -52,7 +52,11 @@ class MockStream : public media::AudioOutputStream {
   DISALLOW_COPY_AND_ASSIGN(MockStream);
 };
 
-const uint32_t kNoDisconnectReason = 0;
+const uint32_t kPlatformErrorDisconnectReason = static_cast<uint32_t>(
+    media::mojom::AudioOutputStreamObserver::DisconnectReason::kPlatformError);
+const uint32_t kTerminatedByClientDisconnectReason =
+    static_cast<uint32_t>(media::mojom::AudioOutputStreamObserver::
+                              DisconnectReason::kTerminatedByClient);
 
 class MockObserver : public media::mojom::AudioOutputStreamObserver {
  public:
@@ -177,7 +181,8 @@ TEST(AudioServiceOutputStreamTest, ConstructDestruct) {
 
   EXPECT_CALL(env.log(), OnClosed());
   EXPECT_CALL(mock_stream, Close());
-  EXPECT_CALL(env.observer(), BindingConnectionError(kNoDisconnectReason, _));
+  EXPECT_CALL(env.observer(),
+              BindingConnectionError(kTerminatedByClientDisconnectReason, _));
   stream_ptr.reset();
   base::RunLoop().RunUntilIdle();
 }
@@ -227,7 +232,8 @@ TEST(AudioServiceOutputStreamTest,
   Mock::VerifyAndClear(&env.created_callback());
 
   EXPECT_CALL(mock_stream, Close());
-  EXPECT_CALL(env.observer(), BindingConnectionError(kNoDisconnectReason, _));
+  EXPECT_CALL(env.observer(),
+              BindingConnectionError(kTerminatedByClientDisconnectReason, _));
 
   stream_ptr.reset();
   base::RunLoop().RunUntilIdle();
@@ -268,7 +274,8 @@ TEST(AudioServiceOutputStreamTest, Play_Plays) {
   EXPECT_CALL(mock_stream, Close());
   EXPECT_CALL(env.observer(), DidChangeAudibleState(false)).Times(AtMost(1));
   EXPECT_CALL(env.observer(), DidStopPlaying()).Times(AtMost(1));
-  EXPECT_CALL(env.observer(), BindingConnectionError(kNoDisconnectReason, _));
+  EXPECT_CALL(env.observer(),
+              BindingConnectionError(kTerminatedByClientDisconnectReason, _));
   stream_ptr.reset();
   base::RunLoop().RunUntilIdle();
 }
@@ -310,7 +317,8 @@ TEST(AudioServiceOutputStreamTest, PlayAndPause_PlaysAndStops) {
   Mock::VerifyAndClear(&env.observer());
 
   EXPECT_CALL(mock_stream, Close());
-  EXPECT_CALL(env.observer(), BindingConnectionError(kNoDisconnectReason, _));
+  EXPECT_CALL(env.observer(),
+              BindingConnectionError(kTerminatedByClientDisconnectReason, _));
   stream_ptr.reset();
   base::RunLoop().RunUntilIdle();
 }
@@ -340,7 +348,8 @@ TEST(AudioServiceOutputStreamTest, SetVolume_SetsVolume) {
   Mock::VerifyAndClear(&mock_stream);
 
   EXPECT_CALL(mock_stream, Close());
-  EXPECT_CALL(env.observer(), BindingConnectionError(kNoDisconnectReason, _));
+  EXPECT_CALL(env.observer(),
+              BindingConnectionError(kTerminatedByClientDisconnectReason, _));
   stream_ptr.reset();
   base::RunLoop().RunUntilIdle();
 }
@@ -363,7 +372,8 @@ TEST(AudioServiceOutputStreamTest, SetNegativeVolume_BadMessage) {
   Mock::VerifyAndClear(&env.created_callback());
 
   EXPECT_CALL(mock_stream, Close());
-  EXPECT_CALL(env.observer(), BindingConnectionError(kNoDisconnectReason, _));
+  EXPECT_CALL(env.observer(),
+              BindingConnectionError(kPlatformErrorDisconnectReason, _));
   EXPECT_CALL(env.bad_message_callback(), Run(_));
   stream_ptr->SetVolume(-0.1);
   base::RunLoop().RunUntilIdle();
@@ -387,7 +397,8 @@ TEST(AudioServiceOutputStreamTest, SetVolumeGreaterThanOne_BadMessage) {
   Mock::VerifyAndClear(&env.created_callback());
 
   EXPECT_CALL(mock_stream, Close());
-  EXPECT_CALL(env.observer(), BindingConnectionError(kNoDisconnectReason, _));
+  EXPECT_CALL(env.observer(),
+              BindingConnectionError(kPlatformErrorDisconnectReason, _));
   EXPECT_CALL(env.bad_message_callback(), Run(_));
   stream_ptr->SetVolume(1.1);
   base::RunLoop().RunUntilIdle();
@@ -403,9 +414,7 @@ TEST(AudioServiceOutputStreamTest,
 
   EXPECT_CALL(env.created_callback(), Created(unsuccessfully_));
   EXPECT_CALL(env.observer(),
-              BindingConnectionError(media::mojom::AudioOutputStreamObserver::
-                                         kPlatformErrorDisconnectReason,
-                                     _));
+              BindingConnectionError(kPlatformErrorDisconnectReason, _));
   EXPECT_CALL(env.log(), OnError());
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClear(&env.observer());
@@ -423,9 +432,7 @@ TEST(AudioServiceOutputStreamTest,
   EXPECT_CALL(env.created_callback(), Created(unsuccessfully_));
 
   EXPECT_CALL(env.observer(),
-              BindingConnectionError(media::mojom::AudioOutputStreamObserver::
-                                         kPlatformErrorDisconnectReason,
-                                     _));
+              BindingConnectionError(kPlatformErrorDisconnectReason, _));
 
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClear(&env.observer());
