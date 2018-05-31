@@ -44,9 +44,9 @@ class PLATFORM_EXPORT WorkerScheduler : public FrameOrWorkerScheduler {
     return thread_scheduler_;
   }
 
-  void OnThrottlingStateChanged(ThrottlingState throttling_state);
+  void OnLifecycleStateChanged(SchedulingLifecycleState lifecycle_state);
 
-  ThrottlingState CalculateThrottlingState(ObserverType) const override;
+  SchedulingLifecycleState CalculateLifecycleState(ObserverType) const override;
 
  protected:
   scoped_refptr<base::sequence_manager::TaskQueue> DefaultTaskQueue();
@@ -60,8 +60,8 @@ class PLATFORM_EXPORT WorkerScheduler : public FrameOrWorkerScheduler {
   scoped_refptr<base::sequence_manager::TaskQueue> default_task_queue_;
   scoped_refptr<base::sequence_manager::TaskQueue> throttleable_task_queue_;
 
-  FrameScheduler::ThrottlingState throttling_state_ =
-      FrameScheduler::ThrottlingState::kNotThrottled;
+  SchedulingLifecycleState throttling_state_ =
+      SchedulingLifecycleState::kNotThrottled;
 
   WorkerThreadScheduler* thread_scheduler_;  // NOT OWNED
 

@@ -97,7 +97,7 @@ FrameSchedulerImpl::FrameSchedulerImpl(
       main_thread_scheduler_(main_thread_scheduler),
       parent_page_scheduler_(parent_page_scheduler),
       blame_context_(blame_context),
-      throttling_state_(FrameScheduler::ThrottlingState::kNotThrottled),
+      throttling_state_(SchedulingLifecycleState::kNotThrottled),
       frame_visible_(true,
                      "FrameScheduler.FrameVisible",
                      this,
@@ -569,7 +569,7 @@ void FrameSchedulerImpl::UpdatePolicy() {
 
   UpdateThrottling();
 
-  NotifyThrottlingObservers();
+  NotifyLifecycleObservers();
 }
 
 void FrameSchedulerImpl::UpdateQueuePolicy(
@@ -587,27 +587,27 @@ void FrameSchedulerImpl::UpdateQueuePolicy(
   voter->SetQueueEnabled(!queue_paused && !queue_frozen);
 }
 
-FrameScheduler::ThrottlingState FrameSchedulerImpl::CalculateThrottlingState(
+SchedulingLifecycleState FrameSchedulerImpl::CalculateLifecycleState(
     ObserverType type) const {
   // Detached frames are not throttled.
   if (!parent_page_scheduler_)
-    return FrameScheduler::ThrottlingState::kNotThrottled;
+    return SchedulingLifecycleState::kNotThrottled;
 
   if (RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled() &&
       parent_page_scheduler_->IsFrozen() &&
       !parent_page_scheduler_->KeepActive()) {
     DCHECK(!parent_page_scheduler_->IsPageVisible());
-    return FrameScheduler::ThrottlingState::kStopped;
+    return SchedulingLifecycleState::kStopped;
   }
   if (type == ObserverType::kLoader &&
       parent_page_scheduler_->HasActiveConnection()) {
-    return FrameScheduler::ThrottlingState::kNotThrottled;
+    return SchedulingLifecycleState::kNotThrottled;
   }
   if (parent_page_scheduler_->IsThrottled())
-    return FrameScheduler::ThrottlingState::kThrottled;
+    return SchedulingLifecycleState::kThrottled;
   if (!parent_page_scheduler_->IsPageVisible())
-    return FrameScheduler::ThrottlingState::kHidden;
-  return FrameScheduler::ThrottlingState::kNotThrottled;
+    return SchedulingLifecycleState::kHidden;
+  return SchedulingLifecycleState::kNotThrottled;
 }
 
 void FrameSchedulerImpl::OnFirstMeaningfulPaint() {
