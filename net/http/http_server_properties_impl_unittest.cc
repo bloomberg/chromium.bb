@@ -10,13 +10,14 @@
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
-#include "base/test/test_mock_time_task_runner.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/http/http_network_session.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -63,11 +64,12 @@ class HttpServerPropertiesImplPeer {
 
 namespace {
 
-class HttpServerPropertiesImplTest : public testing::Test {
+class HttpServerPropertiesImplTest : public TestWithScopedTaskEnvironment {
  protected:
   HttpServerPropertiesImplTest()
-      : test_task_runner_(new base::TestMockTimeTaskRunner()),
-        test_tick_clock_(test_task_runner_->GetMockTickClock()),
+      : TestWithScopedTaskEnvironment(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+        test_tick_clock_(GetMockTickClock()),
         impl_(test_tick_clock_, &test_clock_) {
     // Set |test_clock_| to some random time.
     test_clock_.Advance(base::TimeDelta::FromSeconds(12345));
@@ -96,8 +98,6 @@ class HttpServerPropertiesImplTest : public testing::Test {
   void MarkBrokenAndLetExpireAlternativeServiceNTimes(
       const AlternativeService& alternative_service,
       int num_times) {}
-
-  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
 
   const base::TickClock* test_tick_clock_;
   base::SimpleTestClock test_clock_;
@@ -279,8 +279,6 @@ TEST_F(SpdyServerPropertiesTest, SupportsRequestPriorityTest) {
 }
 
 TEST_F(SpdyServerPropertiesTest, Clear) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
-
   // Add www.google.com:443 and mail.google.com:443 as supporting SPDY.
   url::SchemeHostPort spdy_server_google("https", "www.google.com", 443);
   impl_.SetSupportsSpdy(spdy_server_google, true);
@@ -472,8 +470,6 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
 // SetAlternativeServiceServers() should not crash if there is an empty
 // hostname is the mapping.
 TEST_F(AlternateProtocolServerPropertiesTest, SetWithEmptyHostname) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
-
   url::SchemeHostPort server("https", "foo", 443);
   const AlternativeService alternative_service_with_empty_hostname(kProtoHTTP2,
                                                                    "", 1234);
@@ -625,8 +621,6 @@ TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternativeServiceInfos) {
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
-
   url::SchemeHostPort test_server("http", "foo", 80);
   const AlternativeService alternative_service1(kProtoHTTP2, "foo", 443);
   SetAlternativeService(test_server, alternative_service1);
@@ -805,8 +799,6 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearAlternativeServices) {
 // particular, an alternative service mapped to an origin shadows alternative
 // services of canonical hosts.
 TEST_F(AlternateProtocolServerPropertiesTest, BrokenShadowsCanonical) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
-
   url::SchemeHostPort test_server("https", "foo.c.youtube.com", 443);
   url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
   AlternativeService canonical_alternative_service(kProtoQUIC,
@@ -832,8 +824,6 @@ TEST_F(AlternateProtocolServerPropertiesTest, BrokenShadowsCanonical) {
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, ClearBroken) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
-
   url::SchemeHostPort test_server("http", "foo", 80);
   const AlternativeService alternative_service(kProtoHTTP2, "foo", 443);
   SetAlternativeService(test_server, alternative_service);
@@ -922,8 +912,6 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearCanonical) {
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBroken) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
-
   url::SchemeHostPort test_server("https", "foo.c.youtube.com", 443);
   url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
   AlternativeService canonical_alternative_service(kProtoQUIC,
@@ -1050,44 +1038,37 @@ TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc2) {
   // Repeatedly mark alt svc 1 broken and wait for its brokenness to expire.
   // This will increase its time until expiration.
   for (int i = 0; i < 3; ++i) {
-    {
-      base::TestMockTimeTaskRunner::ScopedContext scoped_context(
-          test_task_runner_);
-      impl_.MarkAlternativeServiceBroken(alternative_service1);
-    }
+    impl_.MarkAlternativeServiceBroken(alternative_service1);
+
     // |impl_| should have posted task to expire the brokenness of
     // |alternative_service1|
-    EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+    EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
     EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1));
 
     // Advance time by just enough so that |alternative_service1|'s brokenness
     // expires.
-    test_task_runner_->FastForwardBy(BROKEN_ALT_SVC_EXPIRE_DELAYS[i]);
+    FastForwardBy(BROKEN_ALT_SVC_EXPIRE_DELAYS[i]);
 
     // Ensure brokenness of |alternative_service1| has expired.
-    EXPECT_FALSE(test_task_runner_->HasPendingTask());
+    EXPECT_FALSE(MainThreadHasPendingTask());
     EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service1));
   }
 
-  {
-    base::TestMockTimeTaskRunner::ScopedContext scoped_context(
-        test_task_runner_);
-    impl_.MarkAlternativeServiceBroken(alternative_service1);
-    impl_.MarkAlternativeServiceBroken(alternative_service2);
-  }
+  impl_.MarkAlternativeServiceBroken(alternative_service1);
+  impl_.MarkAlternativeServiceBroken(alternative_service2);
 
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service2));
 
   // Advance time by just enough so that |alternative_service2|'s brokennness
   // expires.
-  test_task_runner_->FastForwardBy(BROKEN_ALT_SVC_EXPIRE_DELAYS[0]);
+  FastForwardBy(BROKEN_ALT_SVC_EXPIRE_DELAYS[0]);
 
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1));
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service2));
 
   // Advance time by enough so that |alternative_service1|'s brokenness expires.
-  test_task_runner_->FastForwardBy(BROKEN_ALT_SVC_EXPIRE_DELAYS[3] -
-                                   BROKEN_ALT_SVC_EXPIRE_DELAYS[0]);
+  FastForwardBy(BROKEN_ALT_SVC_EXPIRE_DELAYS[3] -
+                BROKEN_ALT_SVC_EXPIRE_DELAYS[0]);
 
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service1));
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service2));
@@ -1095,8 +1076,6 @@ TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc2) {
 
 TEST_F(AlternateProtocolServerPropertiesTest,
        GetAlternativeServiceInfoAsValue) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
-
   base::Time::Exploded now_exploded;
   now_exploded.year = 2018;
   now_exploded.month = 1;
