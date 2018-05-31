@@ -25,8 +25,6 @@ TransferBuffer::TransferBuffer(
       min_buffer_size_(0),
       max_buffer_size_(0),
       alignment_(0),
-      size_to_flush_(0),
-      bytes_since_last_flush_(0),
       buffer_id_(-1),
       result_buffer_(NULL),
       result_shm_offset_(0),
@@ -45,19 +43,16 @@ base::SharedMemoryHandle TransferBuffer::shared_memory_handle() const {
   return buffer_->backing()->shared_memory_handle();
 }
 
-bool TransferBuffer::Initialize(
-    unsigned int default_buffer_size,
-    unsigned int result_size,
-    unsigned int min_buffer_size,
-    unsigned int max_buffer_size,
-    unsigned int alignment,
-    unsigned int size_to_flush) {
+bool TransferBuffer::Initialize(unsigned int default_buffer_size,
+                                unsigned int result_size,
+                                unsigned int min_buffer_size,
+                                unsigned int max_buffer_size,
+                                unsigned int alignment) {
   result_size_ = result_size;
   default_buffer_size_ = default_buffer_size;
   min_buffer_size_ = min_buffer_size;
   max_buffer_size_ = max_buffer_size;
   alignment_ = alignment;
-  size_to_flush_ = size_to_flush;
   ReallocateRingBuffer(default_buffer_size_ - result_size);
   return HaveBuffer();
 }
@@ -72,7 +67,6 @@ void TransferBuffer::Free() {
     result_buffer_ = NULL;
     result_shm_offset_ = 0;
     ring_buffer_.reset();
-    bytes_since_last_flush_ = 0;
   }
 }
 
@@ -91,10 +85,6 @@ void TransferBuffer::DiscardBlock(void* p) {
 
 void TransferBuffer::FreePendingToken(void* p, unsigned int token) {
   ring_buffer_->FreePendingToken(p, token);
-  if (bytes_since_last_flush_ >= size_to_flush_ && size_to_flush_ > 0) {
-    helper_->Flush();
-    bytes_since_last_flush_ = 0;
-  }
 }
 
 unsigned int TransferBuffer::GetSize() const {
@@ -168,7 +158,6 @@ void* TransferBuffer::AllocUpTo(
 
   unsigned int max_size = ring_buffer_->GetLargestFreeOrPendingSize();
   *size_allocated = std::min(max_size, size);
-  bytes_since_last_flush_ += *size_allocated;
   return ring_buffer_->Alloc(*size_allocated);
 }
 
@@ -184,7 +173,6 @@ void* TransferBuffer::Alloc(unsigned int size) {
     return NULL;
   }
 
-  bytes_since_last_flush_ += size;
   return ring_buffer_->Alloc(size);
 }
 
