@@ -28,7 +28,8 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
     kPrimaryErrorSecondaryValid = 3,
     kBothValidDifferentDetails = 4,
     kBothErrorDifferentDetails = 5,
-    kMaxValue = kBothErrorDifferentDetails
+    kIgnoredMacUndesiredRevocationChecking = 6,
+    kMaxValue = kIgnoredMacUndesiredRevocationChecking
   };
 
   TrialComparisonCertVerifier(
@@ -51,6 +52,8 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
              const net::NetLogWithSource& net_log) override;
 
   bool SupportsOCSPStapling() override;
+
+  net::CertVerifier* trial_verifier() const { return trial_verifier_.get(); }
 
  private:
   class TrialVerificationJob;

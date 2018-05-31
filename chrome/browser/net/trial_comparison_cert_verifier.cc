@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
@@ -121,6 +122,7 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
  public:
   TrialVerificationJob(const net::CertVerifier::RequestParams& params,
                        const net::NetLogWithSource& source_net_log,
+                       scoped_refptr<net::CRLSet> crl_set,
                        TrialComparisonCertVerifier* cert_verifier,
                        int primary_error,
                        const net::CertVerifyResult& primary_result,
@@ -129,10 +131,11 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
         net_log_(net::NetLogWithSource::Make(
             source_net_log.net_log(),
             net::NetLogSourceType::TRIAL_CERT_VERIFIER_JOB)),
+        crl_set_(std::move(crl_set)),
+        profile_id_(profile_id),
         cert_verifier_(cert_verifier),
         primary_error_(primary_error),
-        primary_result_(primary_result),
-        profile_id_(profile_id) {
+        primary_result_(primary_result) {
     net_log_.BeginEvent(net::NetLogEventType::TRIAL_CERT_VERIFIER_JOB);
     source_net_log.AddEvent(
         net::NetLogEventType::TRIAL_CERT_VERIFIER_JOB_COMPARISON_STARTED,
@@ -146,82 +149,139 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
     }
   }
 
-  int Start(net::CertVerifier* verifier, scoped_refptr<net::CRLSet> crl_set) {
+  void Start() {
     // Unretained is safe because trial_request_ will cancel the callback on
     // destruction.
-    int rv = verifier->Verify(
-        params_, crl_set.get(), &trial_result_,
+    int rv = cert_verifier_->trial_verifier()->Verify(
+        params_, crl_set_.get(), &trial_result_,
         base::AdaptCallbackForRepeating(base::BindOnce(
             &TrialVerificationJob::OnJobCompleted, base::Unretained(this))),
         &trial_request_, net_log_);
     if (rv != net::ERR_IO_PENDING)
-      CompareTrialResults(rv);
-    return rv;
+      OnJobCompleted(rv);
   }
 
-  void CompareTrialResults(int trial_result_error) {
+  void Finish(bool is_success, TrialComparisonResult result_code) {
+    TrialComparisonCertVerifier* cert_verifier = cert_verifier_;
     cert_verifier_ = nullptr;
-    bool errors_equal = trial_result_error == primary_error_;
-    bool details_equal = CertVerifyResultEqual(trial_result_, primary_result_);
-    bool trial_success = errors_equal && details_equal;
 
-    net_log_.EndEvent(net::NetLogEventType::TRIAL_CERT_VERIFIER_JOB,
-                      base::BindRepeating(&TrialVerificationJobResultCallback,
-                                          trial_success));
+    UMA_HISTOGRAM_ENUMERATION("Net.CertVerifier_TrialComparisonResult",
+                              result_code);
+
+    net_log_.EndEvent(
+        net::NetLogEventType::TRIAL_CERT_VERIFIER_JOB,
+        base::BindRepeating(&TrialVerificationJobResultCallback, is_success));
+
+    if (!is_success &&
+        !base::GetFieldTrialParamByFeatureAsBool(
+            features::kCertDualVerificationTrialFeature, "uma_only", false)) {
+      content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+          ->PostTask(FROM_HERE,
+                     base::BindOnce(&SendTrialVerificationReport, profile_id_,
+                                    params_, primary_result_, trial_result_));
+    }
+
+    // |this| is deleted after RemoveJob returns.
+    cert_verifier->RemoveJob(this);
+  }
+
+  void FinishSuccess(TrialComparisonResult result_code) {
+    Finish(true /* is_success */, result_code);
+  }
+
+  void FinishWithError() {
+    bool errors_equal = trial_error_ == primary_error_;
+    bool details_equal = CertVerifyResultEqual(trial_result_, primary_result_);
+
+    DCHECK(!errors_equal || !details_equal);
 
     TrialComparisonResult result_code = kInvalid;
-    if (trial_success) {
-      result_code = kEqual;
-    } else if (errors_equal) {
+
+    if (errors_equal) {
       if (primary_error_ == net::OK)
         result_code = kBothValidDifferentDetails;
       else
         result_code = kBothErrorDifferentDetails;
     } else if (primary_error_ == net::OK) {
       result_code = kPrimaryValidSecondaryError;
-    } else {
+    } else if (trial_error_ == net::OK) {
       result_code = kPrimaryErrorSecondaryValid;
     }
-    UMA_HISTOGRAM_ENUMERATION("Net.CertVerifier_TrialComparisonResult",
-                              result_code);
-
-    if (trial_success)
-      return;
-
-    if (base::GetFieldTrialParamByFeatureAsBool(
-            features::kCertDualVerificationTrialFeature, "uma_only", false)) {
-      return;
-    }
-
-    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(&SendTrialVerificationReport, profile_id_,
-                                  params_, primary_result_, trial_result_));
+    Finish(false /* is_success */, result_code);
   }
 
   void OnJobCompleted(int trial_result_error) {
-    // cert_verifier_ is cleared by CompareTrialResults, save a copy now.
-    TrialComparisonCertVerifier* cert_verifier = cert_verifier_;
+    trial_error_ = trial_result_error;
 
-    CompareTrialResults(trial_result_error);
+    bool errors_equal = trial_result_error == primary_error_;
+    bool details_equal = CertVerifyResultEqual(trial_result_, primary_result_);
+    bool trial_success = errors_equal && details_equal;
 
-    // |this| is deleted after RemoveJob returns.
-    cert_verifier->RemoveJob(this);
+    if (trial_success) {
+      FinishSuccess(kEqual);
+      return;
+    }
+
+#if defined(OS_MACOSX)
+    if (primary_error_ == net::ERR_CERT_REVOKED &&
+        !(params_.flags() & net::CertVerifier::VERIFY_REV_CHECKING_ENABLED) &&
+        !(primary_result_.cert_status &
+          net::CERT_STATUS_REV_CHECKING_ENABLED) &&
+        !(trial_result_.cert_status &
+          (net::CERT_STATUS_REVOKED | net::CERT_STATUS_REV_CHECKING_ENABLED))) {
+      // CertVerifyProcMac does some revocation checking even if we didn't want
+      // it. Try verifying with the trial verifier with revocation checking
+      // enabled, see if it then returns REVOKED.
+
+      RequestParams reverification_params(
+          params_.certificate(), params_.hostname(),
+          params_.flags() | net::CertVerifier::VERIFY_REV_CHECKING_ENABLED,
+          params_.ocsp_response(), params_.additional_trust_anchors());
+
+      int rv = cert_verifier_->trial_verifier()->Verify(
+          reverification_params, crl_set_.get(), &reverification_result_,
+          base::AdaptCallbackForRepeating(base::BindOnce(
+              &TrialVerificationJob::OnMacRevcheckingReverificationJobCompleted,
+              base::Unretained(this))),
+          &reverification_request_, net_log_);
+      if (rv != net::ERR_IO_PENDING)
+        OnMacRevcheckingReverificationJobCompleted(rv);
+      return;
+    }
+#endif
+
+    FinishWithError();
   }
+
+#if defined(OS_MACOSX)
+  void OnMacRevcheckingReverificationJobCompleted(int reverification_error) {
+    if (reverification_error == net::ERR_CERT_REVOKED) {
+      FinishSuccess(kIgnoredMacUndesiredRevocationChecking);
+      return;
+    }
+    FinishWithError();
+  }
+#endif
 
  private:
   const net::CertVerifier::RequestParams params_;
+  const net::NetLogWithSource net_log_;
+  scoped_refptr<net::CRLSet> crl_set_;
+  void* profile_id_;
+  TrialComparisonCertVerifier* cert_verifier_;  // Non-owned.
+
+  // Results from the trial verification.
+  int trial_error_;
   net::CertVerifyResult trial_result_;
   std::unique_ptr<net::CertVerifier::Request> trial_request_;
-
-  const net::NetLogWithSource net_log_;
-  TrialComparisonCertVerifier* cert_verifier_;  // Non-owned.
 
   // Saved results of the primary verification.
   int primary_error_;
   const net::CertVerifyResult primary_result_;
 
-  void* profile_id_;
+  // Results from re-verification attempt.
+  net::CertVerifyResult reverification_result_;
+  std::unique_ptr<net::CertVerifier::Request> reverification_request_;
 
   DISALLOW_COPY_AND_ASSIGN(TrialVerificationJob);
 };
@@ -340,12 +400,11 @@ void TrialComparisonCertVerifier::MaybeDoTrialVerification(
 
   std::unique_ptr<TrialVerificationJob> job =
       std::make_unique<TrialVerificationJob>(
-          params, net_log, this, primary_error, primary_result, profile_id);
-
-  if (job->Start(trial_verifier_.get(), std::move(crl_set)) ==
-      net::ERR_IO_PENDING) {
-    jobs_.insert(std::move(job));
-  }
+          params, net_log, std::move(crl_set), this, primary_error,
+          primary_result, profile_id);
+  TrialVerificationJob* job_ptr = job.get();
+  jobs_.insert(std::move(job));
+  job_ptr->Start();
 }
 
 void TrialComparisonCertVerifier::RemoveJob(TrialVerificationJob* job_ptr) {

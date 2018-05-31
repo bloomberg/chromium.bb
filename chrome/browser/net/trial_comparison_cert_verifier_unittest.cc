@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_test_utils.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
@@ -32,12 +33,15 @@
 #include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using certificate_reporting_test_utils::CertificateReportingServiceTestHelper;
 using certificate_reporting_test_utils::ReportExpectation;
 using certificate_reporting_test_utils::RetryStatus;
 using net::test::IsError;
+using testing::_;
+using testing::Return;
 
 namespace {
 
@@ -67,12 +71,12 @@ MATCHER_P(CertChainMatches, expected_cert, "") {
   return actual_der_certs == expected_der_certs;
 }
 
-// Mock CertVerifyProc that sets the CertVerifyResult to a given value for
+// Fake CertVerifyProc that sets the CertVerifyResult to a given value for
 // all certificates that are Verify()'d
-class MockCertVerifyProc : public net::CertVerifyProc {
+class FakeCertVerifyProc : public net::CertVerifyProc {
  public:
-  explicit MockCertVerifyProc(const int result_error,
-                              const net::CertVerifyResult& result)
+  FakeCertVerifyProc(const int result_error,
+                     const net::CertVerifyResult& result)
       : result_error_(result_error), result_(result) {}
 
   void WaitForVerifyCall() {
@@ -86,7 +90,7 @@ class MockCertVerifyProc : public net::CertVerifyProc {
   bool SupportsOCSPStapling() const override { return false; }
 
  protected:
-  ~MockCertVerifyProc() override = default;
+  ~FakeCertVerifyProc() override = default;
 
  private:
   int VerifyInternal(net::X509Certificate* cert,
@@ -101,10 +105,10 @@ class MockCertVerifyProc : public net::CertVerifyProc {
   const net::CertVerifyResult result_;
   net::TestClosure verify_called_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockCertVerifyProc);
+  DISALLOW_COPY_AND_ASSIGN(FakeCertVerifyProc);
 };
 
-int MockCertVerifyProc::VerifyInternal(
+int FakeCertVerifyProc::VerifyInternal(
     net::X509Certificate* cert,
     const std::string& hostname,
     const std::string& ocsp_response,
@@ -118,7 +122,7 @@ int MockCertVerifyProc::VerifyInternal(
   return result_error_;
 }
 
-// Mock CertVerifyProc that causes a failure if it is called.
+// Fake CertVerifyProc that causes a failure if it is called.
 class NotCalledCertVerifyProc : public net::CertVerifyProc {
  public:
   NotCalledCertVerifyProc() = default;
@@ -157,6 +161,27 @@ int NotCalledCertVerifyProc::VerifyInternal(
 void NotCalledCallback(int error) {
   ADD_FAILURE() << "NotCalledCallback was called with error code " << error;
 }
+
+class MockCertVerifyProc : public net::CertVerifyProc {
+ public:
+  MockCertVerifyProc() = default;
+  // CertVerifyProc implementation:
+  bool SupportsAdditionalTrustAnchors() const override { return false; }
+  bool SupportsOCSPStapling() const override { return false; }
+  MOCK_METHOD7(VerifyInternal,
+               int(net::X509Certificate* cert,
+                   const std::string& hostname,
+                   const std::string& ocsp_response,
+                   int flags,
+                   net::CRLSet* crl_set,
+                   const net::CertificateList& additional_trust_anchors,
+                   net::CertVerifyResult* verify_result));
+
+ protected:
+  ~MockCertVerifyProc() override = default;
+
+  DISALLOW_COPY_AND_ASSIGN(MockCertVerifyProc);
+};
 
 }  // namespace
 
@@ -263,7 +288,7 @@ TEST_F(TrialComparisonCertVerifierTest, NotOptedIn) {
   dummy_result.verified_cert = cert_chain_1_;
   TrialComparisonCertVerifier verifier(
       profile(),
-      base::MakeRefCounted<MockCertVerifyProc>(net::OK, dummy_result),
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, dummy_result),
       base::MakeRefCounted<NotCalledCertVerifyProc>());
   net::CertVerifier::RequestParams params(
       leaf_cert_1_, "127.0.0.1", 0 /* flags */,
@@ -305,7 +330,7 @@ TEST_F(TrialComparisonCertVerifierTest, NotScoutOptIn) {
   dummy_result.verified_cert = cert_chain_1_;
   TrialComparisonCertVerifier verifier(
       profile(),
-      base::MakeRefCounted<MockCertVerifyProc>(net::OK, dummy_result),
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, dummy_result),
       base::MakeRefCounted<NotCalledCertVerifyProc>());
   net::CertVerifier::RequestParams params(
       leaf_cert_1_, "127.0.0.1", 0 /* flags */,
@@ -344,7 +369,7 @@ TEST_F(TrialComparisonCertVerifierTest, FeatureDisabled) {
   dummy_result.verified_cert = cert_chain_1_;
   TrialComparisonCertVerifier verifier(
       profile(),
-      base::MakeRefCounted<MockCertVerifyProc>(net::OK, dummy_result),
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, dummy_result),
       base::MakeRefCounted<NotCalledCertVerifyProc>());
   net::CertVerifier::RequestParams params(
       leaf_cert_1_, "127.0.0.1", 0 /* flags */,
@@ -378,10 +403,10 @@ TEST_F(TrialComparisonCertVerifierTest, FeatureDisabled) {
 TEST_F(TrialComparisonCertVerifierTest, SameResult) {
   net::CertVerifyResult dummy_result;
   dummy_result.verified_cert = cert_chain_1_;
-  scoped_refptr<MockCertVerifyProc> verify_proc1 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::OK, dummy_result);
-  scoped_refptr<MockCertVerifyProc> verify_proc2 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::OK, dummy_result);
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, dummy_result);
+  scoped_refptr<FakeCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, dummy_result);
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
@@ -418,7 +443,7 @@ TEST_F(TrialComparisonCertVerifierTest, Incognito) {
   dummy_result.verified_cert = cert_chain_1_;
   TrialComparisonCertVerifier verifier(
       profile()->GetOffTheRecordProfile(),  // Use an incognito Profile.
-      base::MakeRefCounted<MockCertVerifyProc>(net::OK, dummy_result),
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, dummy_result),
       base::MakeRefCounted<NotCalledCertVerifyProc>());
   net::CertVerifier::RequestParams params(
       leaf_cert_1_, "127.0.0.1", 0 /* flags */,
@@ -452,14 +477,14 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierErrorSecondaryOk) {
   net::CertVerifyResult primary_result;
   primary_result.verified_cert = cert_chain_1_;
   primary_result.cert_status = net::CERT_STATUS_DATE_INVALID;
-  scoped_refptr<MockCertVerifyProc> verify_proc1 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
                                                primary_result);
 
   net::CertVerifyResult secondary_result;
   secondary_result.verified_cert = cert_chain_1_;
-  scoped_refptr<MockCertVerifyProc> verify_proc2 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::OK, secondary_result);
+  scoped_refptr<FakeCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, secondary_result);
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
@@ -519,15 +544,15 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierErrorSecondaryOk) {
 TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierOkSecondaryError) {
   net::CertVerifyResult primary_result;
   primary_result.verified_cert = cert_chain_1_;
-  scoped_refptr<MockCertVerifyProc> verify_proc1 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::OK, primary_result);
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, primary_result);
 
   // Trial verifier returns an error status.
   net::CertVerifyResult secondary_result;
   secondary_result.cert_status = net::CERT_STATUS_DATE_INVALID;
   secondary_result.verified_cert = cert_chain_1_;
-  scoped_refptr<MockCertVerifyProc> verify_proc2 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
+  scoped_refptr<FakeCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
                                                secondary_result);
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
@@ -589,14 +614,14 @@ TEST_F(TrialComparisonCertVerifierTest,
        BothVerifiersOk_DifferentVerifiedChains) {
   net::CertVerifyResult primary_result;
   primary_result.verified_cert = cert_chain_1_;
-  scoped_refptr<MockCertVerifyProc> verify_proc1 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::OK, primary_result);
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, primary_result);
 
   // Trial verifier returns a different verified cert chain.
   net::CertVerifyResult secondary_result;
   secondary_result.verified_cert = cert_chain_2_;
-  scoped_refptr<MockCertVerifyProc> verify_proc2 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::OK, secondary_result);
+  scoped_refptr<FakeCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, secondary_result);
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
@@ -657,14 +682,14 @@ TEST_F(TrialComparisonCertVerifierTest, BothVerifiersOkDifferentCertStatus) {
   primary_result.verified_cert = cert_chain_1_;
   primary_result.cert_status =
       net::CERT_STATUS_IS_EV | net::CERT_STATUS_REV_CHECKING_ENABLED;
-  scoped_refptr<MockCertVerifyProc> verify_proc1 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::OK, primary_result);
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, primary_result);
 
   net::CertVerifyResult secondary_result;
   secondary_result.verified_cert = cert_chain_1_;
   secondary_result.cert_status = net::CERT_STATUS_CT_COMPLIANCE_FAILED;
-  scoped_refptr<MockCertVerifyProc> verify_proc2 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::OK, secondary_result);
+  scoped_refptr<FakeCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, secondary_result);
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
@@ -739,15 +764,15 @@ TEST_F(TrialComparisonCertVerifierTest, Coalescing) {
   net::CertVerifyResult primary_result;
   primary_result.verified_cert = cert_chain_1_;
   primary_result.cert_status = net::CERT_STATUS_DATE_INVALID;
-  scoped_refptr<MockCertVerifyProc> verify_proc1 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
                                                primary_result);
 
   // Trial verifier has ok status.
   net::CertVerifyResult secondary_result;
   secondary_result.verified_cert = cert_chain_1_;
-  scoped_refptr<MockCertVerifyProc> verify_proc2 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::OK, secondary_result);
+  scoped_refptr<FakeCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, secondary_result);
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
@@ -827,15 +852,15 @@ TEST_F(TrialComparisonCertVerifierTest, CancelledDuringPrimaryVerification) {
   net::CertVerifyResult primary_result;
   primary_result.verified_cert = cert_chain_1_;
   primary_result.cert_status = net::CERT_STATUS_DATE_INVALID;
-  scoped_refptr<MockCertVerifyProc> verify_proc1 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
                                                primary_result);
 
   // Trial verifier has ok status.
   net::CertVerifyResult secondary_result;
   secondary_result.verified_cert = cert_chain_1_;
-  scoped_refptr<MockCertVerifyProc> verify_proc2 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::OK, secondary_result);
+  scoped_refptr<FakeCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, secondary_result);
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
@@ -900,8 +925,8 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedDuringPrimaryVerification) {
   net::CertVerifyResult primary_result;
   primary_result.verified_cert = cert_chain_1_;
   primary_result.cert_status = net::CERT_STATUS_DATE_INVALID;
-  scoped_refptr<MockCertVerifyProc> verify_proc1 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
                                                primary_result);
 
   auto verifier = std::make_unique<TrialComparisonCertVerifier>(
@@ -944,15 +969,15 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedDuringTrialVerification) {
   net::CertVerifyResult primary_result;
   primary_result.verified_cert = cert_chain_1_;
   primary_result.cert_status = net::CERT_STATUS_DATE_INVALID;
-  scoped_refptr<MockCertVerifyProc> verify_proc1 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
                                                primary_result);
 
   // Trial verifier has ok status.
   net::CertVerifyResult secondary_result;
   secondary_result.verified_cert = cert_chain_1_;
-  scoped_refptr<MockCertVerifyProc> verify_proc2 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::OK, secondary_result);
+  scoped_refptr<FakeCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, secondary_result);
 
   auto verifier = std::make_unique<TrialComparisonCertVerifier>(
       profile(), verify_proc1, verify_proc2);
@@ -1004,15 +1029,15 @@ TEST_F(TrialComparisonCertVerifierTest,
 
   net::CertVerifyResult primary_result;
   primary_result.verified_cert = cert_chain_1_;
-  scoped_refptr<MockCertVerifyProc> verify_proc1 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::OK, primary_result);
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, primary_result);
 
   // Trial verifier returns an error status.
   net::CertVerifyResult secondary_result;
   secondary_result.cert_status = net::CERT_STATUS_DATE_INVALID;
   secondary_result.verified_cert = cert_chain_1_;
-  scoped_refptr<MockCertVerifyProc> verify_proc2 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
+  scoped_refptr<FakeCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
                                                secondary_result);
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
@@ -1048,4 +1073,133 @@ TEST_F(TrialComparisonCertVerifierTest,
   histograms_.ExpectUniqueSample(
       "Net.CertVerifier_TrialComparisonResult",
       TrialComparisonCertVerifier::kPrimaryValidSecondaryError, 1);
+}
+
+TEST_F(TrialComparisonCertVerifierTest, MacUndesiredRevocationChecking) {
+  // Primary verifier returns an error status.
+  net::CertVerifyResult primary_result;
+  primary_result.verified_cert = cert_chain_1_;
+  primary_result.cert_status = net::CERT_STATUS_REVOKED;
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::ERR_CERT_REVOKED,
+                                               primary_result);
+
+  net::CertVerifyResult secondary_result;
+  secondary_result.verified_cert = cert_chain_1_;
+  scoped_refptr<MockCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<MockCertVerifyProc>();
+  EXPECT_CALL(*verify_proc2, VerifyInternal(_, _, _, _, _, _, _))
+      .WillRepeatedly(Return(net::OK));
+  EXPECT_CALL(
+      *verify_proc2,
+      VerifyInternal(_, _, _, net::CertVerifier::VERIFY_REV_CHECKING_ENABLED, _,
+                     _, _))
+      .WillRepeatedly(Return(net::ERR_CERT_REVOKED));
+
+  TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
+
+  net::CertVerifier::RequestParams params(
+      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
+      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifyResult result;
+  net::TestCompletionCallback callback;
+  std::unique_ptr<net::CertVerifier::Request> request;
+  int error =
+      verifier.Verify(params, nullptr /* crl_set */, &result,
+                      callback.callback(), &request, net::NetLogWithSource());
+  ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
+  EXPECT_TRUE(request);
+
+  error = callback.WaitForResult();
+  EXPECT_THAT(error, IsError(net::ERR_CERT_REVOKED));
+
+  content::RunAllTasksUntilIdle();
+
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
+#if defined(OS_MACOSX)
+  // Expect no report.
+  reporting_service_test_helper()->ExpectNoRequests(service());
+
+  // Secondary should have been called twice
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
+                               2);
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kIgnoredMacUndesiredRevocationChecking, 1);
+#else
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
+                               1);
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kPrimaryErrorSecondaryValid, 1);
+
+  // Expect a report.
+  std::vector<std::string> full_reports;
+  reporting_service_test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Successful({{"127.0.0.1", RetryStatus::NOT_RETRIED}}),
+      &full_reports);
+
+  ASSERT_EQ(1U, full_reports.size());
+#endif
+}
+
+TEST_F(TrialComparisonCertVerifierTest, PrimaryRevokedSecondaryOk) {
+  // Primary verifier returns an error status.
+  net::CertVerifyResult primary_result;
+  primary_result.verified_cert = cert_chain_1_;
+  primary_result.cert_status = net::CERT_STATUS_REVOKED;
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::ERR_CERT_REVOKED,
+                                               primary_result);
+
+  net::CertVerifyResult secondary_result;
+  secondary_result.verified_cert = cert_chain_1_;
+  scoped_refptr<MockCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<MockCertVerifyProc>();
+  EXPECT_CALL(*verify_proc2, VerifyInternal(_, _, _, _, _, _, _))
+      .WillRepeatedly(Return(net::OK));
+
+  TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
+
+  net::CertVerifier::RequestParams params(
+      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
+      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifyResult result;
+  net::TestCompletionCallback callback;
+  std::unique_ptr<net::CertVerifier::Request> request;
+  int error =
+      verifier.Verify(params, nullptr /* crl_set */, &result,
+                      callback.callback(), &request, net::NetLogWithSource());
+  ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
+  EXPECT_TRUE(request);
+
+  error = callback.WaitForResult();
+  EXPECT_THAT(error, IsError(net::ERR_CERT_REVOKED));
+
+  content::RunAllTasksUntilIdle();
+
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
+#if defined(OS_MACOSX)
+  // Secondary should have been called twice on mac due to attempting the
+  // kIgnoredMacUndesiredRevocationChecking workaround.
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
+                               2);
+#else
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
+                               1);
+
+#endif
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kPrimaryErrorSecondaryValid, 1);
+
+  // Expect a report.
+  std::vector<std::string> full_reports;
+  reporting_service_test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Successful({{"127.0.0.1", RetryStatus::NOT_RETRIED}}),
+      &full_reports);
+
+  ASSERT_EQ(1U, full_reports.size());
 }

@@ -114,7 +114,7 @@ scoped_refptr<X509Certificate> CreateX509CertificateFromBuffers(
     const STACK_OF(CRYPTO_BUFFER) * buffers);
 
 // Returns the default ParseCertificateOptions for the net stack.
-ParseCertificateOptions DefaultParseCertificateOptions();
+NET_EXPORT ParseCertificateOptions DefaultParseCertificateOptions();
 
 // On success, returns true and updates |hash| to be the SHA-256 hash of the
 // subjectPublicKeyInfo of the certificate in |buffer|. If |buffer| is not a
