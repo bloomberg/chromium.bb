@@ -96,6 +96,9 @@ class CORE_EXPORT ImageDocument final : public HTMLDocument {
 
   enum ShrinkToFitMode { kViewport, kDesktop };
   ShrinkToFitMode shrink_to_fit_mode_;
+
+  FRIEND_TEST_ALL_PREFIXES(ImageDocumentViewportTest, ZoomForDSFScaleImage);
+  FRIEND_TEST_ALL_PREFIXES(ImageDocumentViewportTest, DivWidthWithZoomForDSF);
 };
 
 DEFINE_DOCUMENT_TYPE_CASTS(ImageDocument);
