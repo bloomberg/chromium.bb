@@ -2843,6 +2843,7 @@ crbug.com/832071 virtual/service-worker-servicification/external/wpt/service-wor
 crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win10 ] external/wpt/fullscreen/api/document-exit-fullscreen-nested-in-iframe-manual.html [ Skip ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/range/sw.https.window.html [ Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/accelerometer/Accelerometer.https.html [ Timeout ]
 crbug.com/626703 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]

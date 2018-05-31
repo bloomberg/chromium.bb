@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL ks_c_5601-1989 encoding (form) Uncaught ReferenceError: rangesAll is not defined
+Harness: the test ran to completion.
+
