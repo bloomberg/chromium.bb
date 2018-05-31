@@ -290,11 +290,9 @@ function audioRepeatAllModeSingleFile(path) {
     },
     // Click the repeat button for repeat-all.
     function() {
+      const repeatButton = ['repeat-button .no-repeat'];
       audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick',
-          audioAppId,
-          ['audio-player /deep/ repeat-button .no-repeat'],
-          this.next);
+          'fakeMouseClick', audioAppId, repeatButton, this.next);
     },
     function(result) {
       chrome.test.assertTrue(result, 'Failed to click the repeat button');
@@ -389,20 +387,16 @@ function audioRepeatOneModeSingleFile(path) {
     },
     // Click the repeat button for repeat-all.
     function() {
+      const repeatButton = ['repeat-button .no-repeat'];
       audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick',
-          audioAppId,
-          ['audio-player /deep/ repeat-button .no-repeat'],
-          this.next);
+          'fakeMouseClick', audioAppId, repeatButton, this.next);
     },
     // Click the repeat button again for repeat-once.
     function(result) {
       chrome.test.assertTrue(result, 'Failed to click the repeat button');
+      const repeatButton = ['repeat-button .repeat-all'];
       audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick',
-          audioAppId,
-          ['audio-player /deep/ repeat-button .repeat-all'],
-          this.next);
+          'fakeMouseClick', audioAppId, repeatButton, this.next);
     },
     function(result) {
       chrome.test.assertTrue(result, 'Failed to click the repeat button');
@@ -470,11 +464,9 @@ function audioRepeatAllModeMultipleFile(path) {
     },
     // Click the repeat button for repeat-all.
     function() {
+      const repeatButton = ['repeat-button .no-repeat'];
       audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick',
-          audioAppId,
-          ['audio-player /deep/ repeat-button .no-repeat'],
-          this.next);
+          'fakeMouseClick', audioAppId, repeatButton, this.next);
     },
     // Wait for next song.
     function(result) {
@@ -595,19 +587,16 @@ function audioRepeatOneModeMultipleFile(path) {
     },
     // Click the repeat button for repeat-all.
     function() {
+      const repeatButton = ['repeat-button .no-repeat'];
       audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick',
-          audioAppId,
-          ['audio-player /deep/ repeat-button .no-repeat'],
-          this.next);
+          'fakeMouseClick', audioAppId, repeatButton, this.next);
     },
     // Click the repeat button again for repeat-once.
-    function() {
+    function(result) {
+      chrome.test.assertTrue(result, 'Failed to click the repeat button');
+      const repeatButton = ['repeat-button .repeat-all'];
       audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick',
-          audioAppId,
-          ['audio-player /deep/ repeat-button .repeat-all'],
-          this.next);
+          'fakeMouseClick', audioAppId, repeatButton, this.next);
     },
     function(result) {
       chrome.test.assertTrue(result, 'Failed to click the repeat button');
