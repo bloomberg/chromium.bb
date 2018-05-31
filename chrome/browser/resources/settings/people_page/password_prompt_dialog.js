@@ -54,17 +54,22 @@ Polymer({
     },
 
     /**
-     * Helper property which marks whether the confirm button should be enabled
-     * or disabled.
      * @private
      */
-    confirmEnabled_: Boolean,
+    inputValue_: {
+      type: Boolean,
+      value: '',
+      observer: 'onInputValueChange_',
+    },
 
     /**
      * Helper property which marks password as valid/invalid.
      * @private
      */
-    passwordInvalid_: Boolean,
+    passwordInvalid_: {
+      type: Boolean,
+      value: false,
+    },
 
     /**
      * Interface for chrome.quickUnlockPrivate calls. May be overriden by tests.
@@ -167,13 +172,13 @@ Polymer({
   },
 
   /** @private */
-  onPasswordChanged_: function() {
+  onInputValueChange_: function() {
     this.passwordInvalid_ = false;
   },
 
   /** @private */
-  onValueChanged_: function() {
-    this.confirmEnabled_ = this.$.passwordInput.value && !this.passwordInvalid_;
+  isConfirmEnabled_: function() {
+    return !this.passwordInvalid_ && this.inputValue_;
   },
 });
 })();
