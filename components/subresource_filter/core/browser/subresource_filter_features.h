@@ -64,11 +64,6 @@ struct Configuration {
     // otherwise satisfied. A greater value indicates higher priority.
     int priority = 0;
 
-    // This boolean is set to true for a navigation which has forced activation,
-    // despite other conditions not matching. It should never be possible to set
-    // this via variation params.
-    bool forced_activation = false;
-
     std::unique_ptr<base::trace_event::TracedValue> ToTracedValue() const;
   };
 
@@ -128,10 +123,6 @@ struct Configuration {
   static Configuration MakePresetForLiveRunOnPhishingSites();
   static Configuration MakePresetForPerformanceTestingDryRunOnAllSites();
   static Configuration MakePresetForLiveRunForBetterAds();
-
-  // Not really a preset, but used as the configuration for forcing activation
-  // (e.g. via devtools).
-  static Configuration MakeForForcedActivation();
 
   ActivationConditions activation_conditions;
   ActivationOptions activation_options;

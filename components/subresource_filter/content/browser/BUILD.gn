@@ -12,8 +12,6 @@ static_library("browser") {
     "content_activation_list_utils.h",
     "content_ruleset_service.cc",
     "content_ruleset_service.h",
-    "content_subresource_filter_driver_factory.cc",
-    "content_subresource_filter_driver_factory.h",
     "content_subresource_filter_throttle_manager.cc",
     "content_subresource_filter_throttle_manager.h",
     "navigation_console_logger.cc",

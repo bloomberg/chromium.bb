@@ -537,7 +537,6 @@ TEST_F(SubresourceFilterFeaturesTest, PresetForLiveRunOnBetterAdsSites) {
   EXPECT_EQ(ActivationScope::ACTIVATION_LIST,
             config.activation_conditions.activation_scope);
   EXPECT_EQ(800, config.activation_conditions.priority);
-  EXPECT_FALSE(config.activation_conditions.forced_activation);
   EXPECT_EQ(ActivationLevel::ENABLED,
             config.activation_options.activation_level);
   EXPECT_EQ(0.0, config.activation_options.performance_measurement_rate);
@@ -648,23 +647,6 @@ TEST_F(SubresourceFilterFeaturesTest,
           Configuration::MakePresetForPerformanceTestingDryRunOnAllSites()));
   EXPECT_EQ(kTestRulesetFlavor,
             config_list->lexicographically_greatest_ruleset_flavor());
-}
-
-TEST_F(SubresourceFilterFeaturesTest, ForcedActivation_NotConfigurable) {
-  ScopedExperimentalStateToggle scoped_experimental_state(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-      {{kActivationLevelParameterName, kActivationLevelEnabled},
-       {kActivationScopeParameterName, kActivationScopeNoSites},
-       {"forced_activation", "true"}});
-
-  Configuration actual_configuration;
-  ExpectAndRetrieveExactlyOneExtraEnabledConfig(&actual_configuration);
-  EXPECT_EQ(ActivationLevel::ENABLED,
-            actual_configuration.activation_options.activation_level);
-  EXPECT_EQ(ActivationScope::NO_SITES,
-            actual_configuration.activation_conditions.activation_scope);
-
-  EXPECT_FALSE(actual_configuration.activation_conditions.forced_activation);
 }
 
 TEST_F(SubresourceFilterFeaturesTest, AdTagging_EnablesDryRun) {

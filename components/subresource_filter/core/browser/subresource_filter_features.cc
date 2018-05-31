@@ -289,16 +289,6 @@ Configuration Configuration::MakePresetForPerformanceTestingDryRunOnAllSites() {
 }
 
 // static
-Configuration Configuration::MakeForForcedActivation() {
-  // This is a strange configuration, but it is generated on-the-fly rather than
-  // via finch configs, and is separate from the standard activation computation
-  // (which is why scope is no_sites).
-  Configuration config(ActivationLevel::ENABLED, ActivationScope::NO_SITES);
-  config.activation_conditions.forced_activation = true;
-  return config;
-}
-
-// static
 Configuration Configuration::MakePresetForLiveRunForBetterAds() {
   Configuration config(ActivationLevel::ENABLED,
                        ActivationScope::ACTIVATION_LIST,
@@ -326,7 +316,6 @@ bool Configuration::operator==(const Configuration& rhs) const {
     return std::tie(config.activation_conditions.activation_scope,
                     config.activation_conditions.activation_list,
                     config.activation_conditions.priority,
-                    config.activation_conditions.forced_activation,
                     config.activation_options.activation_level,
                     config.activation_options.performance_measurement_rate,
                     config.general_settings.ruleset_flavor);
@@ -344,7 +333,6 @@ Configuration::ActivationConditions::ToTracedValue() const {
   value->SetString("activation_scope", StreamToString(activation_scope));
   value->SetString("activation_list", StreamToString(activation_list));
   value->SetInteger("priority", priority);
-  value->SetBoolean("forced_activation", forced_activation);
   return value;
 }
 
@@ -374,7 +362,6 @@ ActivationState Configuration::GetActivationState(
   // This bit keeps track of BAS enforcement-style logging, not warning logging.
   state.enable_logging =
       effective_activation_level == ActivationLevel::ENABLED &&
-      *this != Configuration::MakeForForcedActivation() &&
       base::FeatureList::IsEnabled(
           kSafeBrowsingSubresourceFilterExperimentalUI);
   return state;

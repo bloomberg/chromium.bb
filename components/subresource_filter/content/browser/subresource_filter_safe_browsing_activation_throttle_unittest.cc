@@ -18,7 +18,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "components/safe_browsing/db/test_database_manager.h"
-#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_test_utils.h"
@@ -72,10 +72,17 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
   MockSubresourceFilterClient() = default;
   ~MockSubresourceFilterClient() override = default;
 
-  bool OnPageActivationComputed(content::NavigationHandle* handle,
-                                bool activated) override {
+  ActivationLevel OnPageActivationComputed(
+      content::NavigationHandle* handle,
+      ActivationLevel effective_level,
+      ActivationDecision* decision) override {
     DCHECK(handle->IsInMainFrame());
-    return whitelisted_hosts_.count(handle->GetURL().host());
+    if (whitelisted_hosts_.count(handle->GetURL().host())) {
+      if (effective_level == subresource_filter::ActivationLevel::ENABLED)
+        *decision = subresource_filter::ActivationDecision::URL_WHITELISTED;
+      return ActivationLevel::DISABLED;
+    }
+    return effective_level;
   }
 
   MOCK_METHOD0(ShowNotification, void());
@@ -170,13 +177,9 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
     auto* contents = RenderViewHostTestHarness::web_contents();
     client_ =
         std::make_unique<::testing::NiceMock<MockSubresourceFilterClient>>();
-    ContentSubresourceFilterDriverFactory::CreateForWebContents(contents,
-                                                                client_.get());
-    auto* driver_factory =
-        ContentSubresourceFilterDriverFactory::FromWebContents(contents);
     throttle_manager_ =
         std::make_unique<ContentSubresourceFilterThrottleManager>(
-            driver_factory, ruleset_dealer_.get(), contents);
+            client_.get(), ruleset_dealer_.get(), contents);
     fake_safe_browsing_database_ = new FakeSafeBrowsingDatabaseManager();
     NavigateAndCommit(GURL("https://test.com"));
     Observe(contents);
@@ -594,9 +597,9 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
     // Whitelisting is only applied when the page will otherwise activate.
     client()->WhitelistInCurrentWebContents(url);
     ActivationDecision decision =
-        test_data.activation_level == ActivationLevel::DISABLED
-            ? test_data.activation_decision
-            : ActivationDecision::URL_WHITELISTED;
+        test_data.activation_level == ActivationLevel::ENABLED
+            ? ActivationDecision::URL_WHITELISTED
+            : test_data.activation_decision;
     SimulateNavigateAndCommit({url}, main_rfh());
     EXPECT_EQ(decision, *observer()->GetPageActivationForLastCommittedLoad());
   }

@@ -17,6 +17,7 @@
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/navigation_console_logger.h"
 #include "components/subresource_filter/content/browser/page_load_statistics.h"
+#include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/content/common/subresource_filter_utils.h"
@@ -33,13 +34,13 @@ namespace subresource_filter {
 
 ContentSubresourceFilterThrottleManager::
     ContentSubresourceFilterThrottleManager(
-        Delegate* delegate,
+        SubresourceFilterClient* client,
         VerifiedRulesetDealer::Handle* dealer_handle,
         content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       scoped_observer_(this),
       dealer_handle_(dealer_handle),
-      delegate_(delegate),
+      client_(client),
       weak_ptr_factory_(this) {
   SubresourceFilterObserverManager::CreateForWebContents(web_contents);
   scoped_observer_.Add(
@@ -374,7 +375,7 @@ void ContentSubresourceFilterThrottleManager::MaybeCallFirstDisallowedLoad() {
           ActivationLevel::ENABLED) {
     return;
   }
-  delegate_->OnFirstSubresourceLoadDisallowed();
+  client_->ShowNotification();
   current_committed_load_has_notified_disallowed_load_ = true;
 }
 

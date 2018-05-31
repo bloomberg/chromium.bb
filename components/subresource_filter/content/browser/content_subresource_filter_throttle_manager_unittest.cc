@@ -18,6 +18,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
+#include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/common/activation_level.h"
@@ -113,7 +114,7 @@ class MockPageStateActivationThrottle : public content::NavigationThrottle {
 class ContentSubresourceFilterThrottleManagerTest
     : public content::RenderViewHostTestHarness,
       public content::WebContentsObserver,
-      public ContentSubresourceFilterThrottleManager::Delegate,
+      public SubresourceFilterClient,
       public ::testing::WithParamInterface<PageActivationNotificationTiming> {
  public:
   ContentSubresourceFilterThrottleManagerTest() {}
@@ -279,9 +280,13 @@ class ContentSubresourceFilterThrottleManagerTest
     }
   }
 
-  // ContentSubresourceFilterThrottleManager::Delegate:
-  void OnFirstSubresourceLoadDisallowed() override {
-    ++disallowed_notification_count_;
+  // SubresourceFilterClient:
+  void ShowNotification() override { ++disallowed_notification_count_; }
+  ActivationLevel OnPageActivationComputed(
+      content::NavigationHandle* navigation_handle,
+      ActivationLevel effective_activation_level,
+      ActivationDecision* decision) override {
+    return effective_activation_level;
   }
 
   ContentSubresourceFilterThrottleManager* throttle_manager() {
