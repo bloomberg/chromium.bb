@@ -490,6 +490,8 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
                  ? theme_provider->GetColor(
                        ThemeProperties::COLOR_TAB_ALERT_CAPTURING)
                  : button_color_;
+    case TabAlertState::PIP_PLAYING:
+      return theme_provider->GetColor(ThemeProperties::COLOR_TAB_PIP_PLAYING);
     case TabAlertState::BLUETOOTH_CONNECTED:
     case TabAlertState::USB_CONNECTED:
     case TabAlertState::NONE:

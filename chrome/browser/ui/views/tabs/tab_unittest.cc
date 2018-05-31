@@ -295,8 +295,9 @@ TEST_F(TabTest, HitTestTopPixel) {
 
 TEST_F(TabTest, LayoutAndVisibilityOfElements) {
   static const TabAlertState kAlertStatesToTest[] = {
-      TabAlertState::NONE, TabAlertState::TAB_CAPTURING,
+      TabAlertState::NONE,          TabAlertState::TAB_CAPTURING,
       TabAlertState::AUDIO_PLAYING, TabAlertState::AUDIO_MUTING,
+      TabAlertState::PIP_PLAYING,
   };
 
   Widget widget;

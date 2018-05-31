@@ -422,6 +422,9 @@ class WebContents : public PageNavigator,
   // Device.
   virtual bool IsConnectedToBluetoothDevice() const = 0;
 
+  // Indicates whether a video is in Picture-in-Picture for |this|.
+  virtual bool HasPictureInPictureVideo() const = 0;
+
   // Indicates whether this tab should be considered crashed. The setter will
   // also notify the delegate when the flag is changed.
   virtual bool IsCrashed() const  = 0;

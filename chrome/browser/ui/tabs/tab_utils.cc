@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
@@ -176,6 +177,9 @@ TabAlertState GetTabAlertStateForContents(content::WebContents* contents) {
   if (usb_tab_helper && usb_tab_helper->IsDeviceConnected())
     return TabAlertState::USB_CONNECTED;
 
+  if (contents->HasPictureInPictureVideo())
+    return TabAlertState::PIP_PLAYING;
+
   if (contents->WasRecentlyAudible()) {
     if (contents->IsAudioMuted())
       return TabAlertState::AUDIO_MUTING;
@@ -215,6 +219,9 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
     case TabAlertState::USB_CONNECTED:
       icon = &kTabUsbConnectedIcon;
       break;
+    case TabAlertState::PIP_PLAYING:
+      icon = &kPictureInPictureAltIcon;
+      break;
     case TabAlertState::NONE:
       return gfx::Image();
   }
@@ -236,6 +243,7 @@ gfx::Image GetTabAlertIndicatorAffordanceImage(TabAlertState alert_state,
     case TabAlertState::TAB_CAPTURING:
     case TabAlertState::BLUETOOTH_CONNECTED:
     case TabAlertState::USB_CONNECTED:
+    case TabAlertState::PIP_PLAYING:
       return GetTabAlertIndicatorImage(alert_state, button_color);
   }
   NOTREACHED();
@@ -297,6 +305,10 @@ base::string16 AssembleTabTooltipText(const base::string16& title,
       result.append(
           l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_ALERT_STATE_USB_CONNECTED));
       break;
+    case TabAlertState::PIP_PLAYING:
+      result.append(
+          l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_ALERT_STATE_PIP_PLAYING));
+      break;
     case TabAlertState::NONE:
       NOTREACHED();
       break;
@@ -338,6 +350,9 @@ base::string16 AssembleTabAccessibilityLabel(const base::string16& title,
     case TabAlertState::TAB_CAPTURING:
       return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_TAB_CAPTURING_FORMAT,
                                         title);
+    case TabAlertState::PIP_PLAYING:
+      return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_PIP_PLAYING_FORMAT,
+                                        title);
     case TabAlertState::NONE:
       return title;
   }
@@ -361,6 +376,7 @@ bool CanToggleAudioMute(content::WebContents* contents) {
     case TabAlertState::TAB_CAPTURING:
     case TabAlertState::BLUETOOTH_CONNECTED:
     case TabAlertState::USB_CONNECTED:
+    case TabAlertState::PIP_PLAYING:
       // The new Audio Service implements muting separately from the tab audio
       // capture infrastructure; so the mute state can be toggled independently
       // at all times.

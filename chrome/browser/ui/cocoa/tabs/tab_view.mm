@@ -685,6 +685,8 @@ CGFloat LineWidthFromContext(CGContextRef context) {
     case TabAlertState::MEDIA_RECORDING:
       return themeProvider->GetColor(
           ThemeProperties::COLOR_TAB_ALERT_RECORDING);
+    case TabAlertState::PIP_PLAYING:
+      return themeProvider->GetColor(ThemeProperties::COLOR_TAB_PIP_PLAYING);
     case TabAlertState::AUDIO_PLAYING:
     case TabAlertState::AUDIO_MUTING:
     case TabAlertState::TAB_CAPTURING:
