@@ -664,6 +664,10 @@ bool VisitDatabase::MigrateVisitsWithoutIncrementedOmniboxTypedScore() {
     while (read.is_valid() && read.Step()) {
       VisitRow row;
       FillVisitRow(read, &row);
+      // Check if the visit row is in an invalid state and if it is then
+      // leave the new field as the default value.
+      if (row.visit_id == row.referring_visit)
+        continue;
       row.incremented_omnibox_typed_score =
           HistoryBackend::IsTypedIncrement(row.transition);
       if (!UpdateVisitRow(row))
