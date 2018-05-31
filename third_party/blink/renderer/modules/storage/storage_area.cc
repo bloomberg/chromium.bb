@@ -167,8 +167,8 @@ void StorageArea::DispatchLocalStorageEvent(
   for (Page* page : Page::OrdinaryPages()) {
     for (Frame* frame = page->MainFrame(); frame;
          frame = frame->Tree().TraverseNext()) {
-      // FIXME: We do not yet have a way to dispatch events to out-of-process
-      // frames.
+      // Remote frames are cross-origin and do not need to be notified of
+      // events.
       if (!frame->IsLocalFrame())
         continue;
       LocalFrame* local_frame = ToLocalFrame(frame);
@@ -219,8 +219,7 @@ void StorageArea::DispatchSessionStorageEvent(
 
   for (Frame* frame = page->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
-    // FIXME: We do not yet have a way to dispatch events to out-of-process
-    // frames.
+    // Remote frames are cross-origin and do not need to be notified of events.
     if (!frame->IsLocalFrame())
       continue;
     LocalFrame* local_frame = ToLocalFrame(frame);
