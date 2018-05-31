@@ -189,7 +189,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
     stage.PerformStage()
     self.assertTrue(schedule_mock.called)
 
-  def testPostSlaveBuildToBuildbucket(self):
+  def testPostSlaveBuildToBuildbucketOnSingleBoardBuild(self):
     """Test PostSlaveBuildToBuildbucket on builds with a single board."""
     content = {'build':{'id':'bb_id_1', 'created_ts':1}}
     self.PatchObject(buildbucket_lib.BuildbucketClient, 'PutBuildRequest',
@@ -202,7 +202,25 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
 
     stage = self.ConstructStage()
     buildbucket_id, created_ts = stage.PostSlaveBuildToBuildbucket(
-        'slave', slave_config, 0, 'master_bb_id', dryrun=True)
+        'slave', slave_config, 0, 'master_bb_id', 'buildset_tag', dryrun=True)
+
+    self.assertEqual(buildbucket_id, 'bb_id_1')
+    self.assertEqual(created_ts, 1)
+
+  def testPostSlaveBuildToBuildbucketOnMultiBoardsBuild(self):
+    """Test PostSlaveBuildToBuildbucket on builds with muiltiple boards."""
+    content = {'build':{'id':'bb_id_1', 'created_ts':1}}
+    self.PatchObject(buildbucket_lib.BuildbucketClient, 'PutBuildRequest',
+                     return_value=content)
+    slave_config = config_lib.BuildConfig(
+        name='slave',
+        important=True, active_waterfall=waterfall.WATERFALL_INTERNAL,
+        display_label='cq',
+        boards=['board_A', 'board_B'], build_type='paladin')
+
+    stage = self.ConstructStage()
+    buildbucket_id, created_ts = stage.PostSlaveBuildToBuildbucket(
+        'slave', slave_config, 0, 'master_bb_id', 'buildset_tag', dryrun=True)
 
     self.assertEqual(buildbucket_id, 'bb_id_1')
     self.assertEqual(created_ts, 1)

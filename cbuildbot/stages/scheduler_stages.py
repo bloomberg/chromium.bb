@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import json
 import os
 import time
 
@@ -17,7 +18,6 @@ from chromite.lib import constants
 from chromite.lib import config_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
-from chromite.lib import request_build
 from chromite.lib.const import waterfall
 
 
@@ -73,7 +73,7 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
 
   def PostSlaveBuildToBuildbucket(self, build_name, build_config,
                                   master_build_id, master_buildbucket_id,
-                                  dryrun=False):
+                                  buildset_tag, dryrun=False):
     """Send a Put slave build request to Buildbucket.
 
     Args:
@@ -82,36 +82,53 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
       master_build_id: CIDB id of the master scheduling the slave build.
       master_buildbucket_id: buildbucket id of the master scheduling the
                              slave build.
+      buildset_tag: The buildset tag for strong consistent tag queries.
+                    More context: crbug.com/661689
       dryrun: Whether a dryrun, default to False.
-
-    Returns:
-      Tuple:
-        buildbucket_id
-        created_ts
     """
-    bucket = self._GetBuildbucketBucket(build_name, build_config)
+    current_buildername = os.environ.get('BUILDBOT_BUILDERNAME', None)
+    builder_name = BuilderName(
+        build_name, build_config.active_waterfall, current_buildername)
 
-    luci_builder = None
-    if bucket != waterfall.WATERFALL_SWARMING:
-      # If it's not a swarming build, we must explicitly set this to the
-      # waterfall column name.
-      current_buildername = os.environ.get('BUILDBOT_BUILDERNAME', None)
-      luci_builder = BuilderName(
-          build_name, build_config.active_waterfall, current_buildername)
+    # TODO: Find a way to unify these tags with
+    #       remote_try._GetRequestBody
+    tags = ['buildset:%s' % buildset_tag,
+            'build_type:%s' % build_config.build_type,
+            'master:False',
+            'master_config:%s' % self._run.config.name,
+            'cbb_display_label:%s' % build_config.display_label,
+            'cbb_branch:%s' % self._run.manifest_branch,
+            'cbb_config:%s' % build_name,
+            'cbb_master_build_id:%s' % master_build_id,
+            'cbb_master_buildbucket_id:%s' % master_buildbucket_id,
+            'cbb_email:']
 
-    request = request_build.RequestBuild(
-        build_config=build_name,
-        luci_builder=luci_builder,
-        display_label=build_config.display_label,
-        branch=self._run.manifest_branch,
-        master_cidb_id=master_build_id,
-        master_buildbucket_id=master_buildbucket_id,
-        bucket=bucket)
-    result = request.Submit(dryrun=dryrun)
+    if build_config.boards:
+      for board in build_config.boards:
+        tags.append('board:%s' % board)
+
+    body = json.dumps({
+        'bucket': self._GetBuildbucketBucket(build_name, build_config),
+        'parameters_json': json.dumps({
+            'builder_name': builder_name,
+            'properties': {
+                'cbb_config': build_name,
+                'cbb_branch': self._run.manifest_branch,
+                'cbb_master_build_id': master_build_id,
+            }
+        }),
+        'tags': tags
+    })
+
+    content = self.buildbucket_client.PutBuildRequest(body, dryrun)
+
+    buildbucket_id = buildbucket_lib.GetBuildId(content)
+    created_ts = buildbucket_lib.GetBuildCreated_ts(content)
 
     logging.info('Build_name %s buildbucket_id %s created_timestamp %s',
-                 result.build_config, result.buildbucket_id, result.created_ts)
-    return (result.buildbucket_id, result.created_ts)
+                 build_name, buildbucket_id, created_ts)
+
+    return (buildbucket_id, created_ts)
 
   def ScheduleSlaveBuildsViaBuildbucket(self, important_only=False,
                                         dryrun=False):
@@ -134,6 +151,9 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
     # May be None. This is okay.
     master_buildbucket_id = self._run.options.buildbucket_id
 
+    buildset_tag = 'cbuildbot/%s/%s/%s' % (
+        self._run.manifest_branch, self._run.config.name, build_id)
+
     scheduled_important_slave_builds = []
     scheduled_experimental_slave_builds = []
     unscheduled_slave_builds = []
@@ -145,7 +165,7 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
       try:
         buildbucket_id, created_ts = self.PostSlaveBuildToBuildbucket(
             slave_config_name, slave_config, build_id, master_buildbucket_id,
-            dryrun=dryrun)
+            buildset_tag, dryrun=dryrun)
         request_reason = None
 
         if slave_config.important:
