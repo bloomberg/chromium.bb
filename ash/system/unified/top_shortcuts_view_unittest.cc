@@ -26,8 +26,7 @@ class TopShortcutsViewTest : public NoSessionAshTestBase {
     NoSessionAshTestBase::SetUp();
 
     model_ = std::make_unique<UnifiedSystemTrayModel>();
-    controller_ = std::make_unique<UnifiedSystemTrayController>(
-        model_.get(), GetPrimarySystemTray());
+    controller_ = std::make_unique<UnifiedSystemTrayController>(model_.get());
   }
 
   void TearDown() override {

@@ -40,8 +40,7 @@ class UnifiedSystemTrayControllerTest : public AshTestBase,
     base::RunLoop().RunUntilIdle();
 
     model_ = std::make_unique<UnifiedSystemTrayModel>();
-    controller_ = std::make_unique<UnifiedSystemTrayController>(
-        model(), nullptr /* system_tray */);
+    controller_ = std::make_unique<UnifiedSystemTrayController>(model());
     view_.reset(controller_->CreateView());
 
     view_->AddObserver(this);

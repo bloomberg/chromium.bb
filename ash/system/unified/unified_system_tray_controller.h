@@ -21,8 +21,6 @@ namespace ash {
 
 class DetailedViewController;
 class FeaturePodControllerBase;
-class SystemTray;
-class SystemTrayItem;
 class UnifiedBrightnessSliderController;
 class UnifiedVolumeSliderController;
 class UnifiedSystemTrayModel;
@@ -31,10 +29,7 @@ class UnifiedSystemTrayView;
 // Controller class of UnifiedSystemTrayView. Handles events of the view.
 class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
  public:
-  // |system_tray| is used to show detailed views which are still not
-  // implemented on UnifiedSystemTray.
-  UnifiedSystemTrayController(UnifiedSystemTrayModel* model,
-                              SystemTray* system_tray);
+  explicit UnifiedSystemTrayController(UnifiedSystemTrayModel* model);
   ~UnifiedSystemTrayController() override;
 
   // Create the view. The created view is unowned.
@@ -112,11 +107,6 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   // Show the detailed view.
   void ShowDetailedView(std::unique_ptr<DetailedViewController> controller);
 
-  // Show detailed view of SystemTrayItem.
-  // TODO(tetsui): Remove when Unified's own DetailedViewControllers are
-  // implemented.
-  void ShowSystemTrayItemDetailedView(SystemTrayItem* system_tray_item);
-
   // Update how much the view is expanded based on |animation_|.
   void UpdateExpandedAmount();
 
@@ -129,11 +119,6 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
 
   // Model that stores UI specific variables. Unowned.
   UnifiedSystemTrayModel* const model_;
-
-  // Only used to show detailed views which are still not implemented on
-  // UnifiedSystemTray. Unowned.
-  // TODO(tetsui): Remove reference to |system_tray|.
-  SystemTray* const system_tray_;
 
   // Unowned. Owned by Views hierarchy.
   UnifiedSystemTrayView* unified_view_ = nullptr;

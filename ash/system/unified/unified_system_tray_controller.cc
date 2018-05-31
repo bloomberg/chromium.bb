@@ -11,25 +11,19 @@
 #include "ash/shell.h"
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/bluetooth/bluetooth_feature_pod_controller.h"
-#include "ash/system/bluetooth/tray_bluetooth.h"
+#include "ash/system/bluetooth/unified_bluetooth_detailed_view_controller.h"
 #include "ash/system/brightness/unified_brightness_slider_controller.h"
 #include "ash/system/cast/cast_feature_pod_controller.h"
-#include "ash/system/cast/tray_cast.h"
 #include "ash/system/cast/unified_cast_detailed_view_controller.h"
 #include "ash/system/ime/ime_feature_pod_controller.h"
-#include "ash/system/ime/tray_ime_chromeos.h"
 #include "ash/system/ime/unified_ime_detailed_view_controller.h"
 #include "ash/system/network/network_feature_pod_controller.h"
-#include "ash/system/network/tray_network.h"
-#include "ash/system/network/tray_vpn.h"
 #include "ash/system/network/unified_network_detailed_view_controller.h"
 #include "ash/system/network/unified_vpn_detailed_view_controller.h"
 #include "ash/system/network/vpn_feature_pod_controller.h"
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
 #include "ash/system/rotation/rotation_lock_feature_pod_controller.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
-#include "ash/system/tray_accessibility.h"
 #include "ash/system/unified/accessibility_feature_pod_controller.h"
 #include "ash/system/unified/detailed_view_controller.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
@@ -44,6 +38,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -54,48 +49,11 @@ const int kExpandAnimationDurationMs = 500;
 // Threshold in pixel that fully collapses / expands the view through gesture.
 const int kDragThreshold = 200;
 
-// As a hack, we embedded detailed views by holding a reference to old
-// SystemTray. UnifiedSystemTray should not have references to SystemTray and
-// SystemTrayItems, so this class will be removed soon. The right approach to
-// embed a detailed view is to write a subclass of DetailedViewController
-// for each detailed view, and instantiate it in Show*DetailedView() method.
-//
-// TODO(tetsui): Remove this class.
-class SystemTrayItemDetailedViewController : public DetailedViewController {
- public:
-  explicit SystemTrayItemDetailedViewController(
-      SystemTrayItem* system_tray_item)
-      : system_tray_item_(system_tray_item) {}
-
-  views::View* CreateView() override {
-    LoginStatus login_status =
-        Shell::Get()->session_controller()->login_status();
-    return system_tray_item_->CreateDetailedView(login_status);
-  }
-
-  ~SystemTrayItemDetailedViewController() override {
-    // We have to call SystemTrayItem::OnDetailedViewDestoryed() on bubble
-    // close, because typically each SystemTrayItem observes a model and it
-    // calls Update() method of each detailed view.
-    system_tray_item_->OnDetailedViewDestroyed();
-  }
-
- private:
-  // Reference to the SystemTrayItem of the currently shown detailed view.
-  // Unowned.
-  SystemTrayItem* const system_tray_item_;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemTrayItemDetailedViewController);
-};
-
 }  // namespace
 
 UnifiedSystemTrayController::UnifiedSystemTrayController(
-    UnifiedSystemTrayModel* model,
-    SystemTray* system_tray)
-    : model_(model),
-      system_tray_(system_tray),
-      animation_(std::make_unique<gfx::SlideAnimation>(this)) {
+    UnifiedSystemTrayModel* model)
+    : model_(model), animation_(std::make_unique<gfx::SlideAnimation>(this)) {
   animation_->Reset(model->expanded_on_open() ? 1.0 : 0.0);
   animation_->SetSlideDuration(kExpandAnimationDurationMs);
   animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
@@ -223,25 +181,35 @@ void UnifiedSystemTrayController::ShowUserChooserWidget() {
 }
 
 void UnifiedSystemTrayController::ShowNetworkDetailedView() {
+  Shell::Get()->metrics()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_DETAILED_NETWORK_VIEW);
   ShowDetailedView(
       std::make_unique<UnifiedNetworkDetailedViewController>(this));
 }
 
 void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
-  // TODO(tetsui): Implement Bluetooth's own DetailedViewController.
-  ShowSystemTrayItemDetailedView(system_tray_->GetTrayBluetooth());
+  Shell::Get()->metrics()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_DETAILED_BLUETOOTH_VIEW);
+  ShowDetailedView(
+      std::make_unique<UnifiedBluetoothDetailedViewController>(this));
 }
 
 void UnifiedSystemTrayController::ShowCastDetailedView() {
+  Shell::Get()->metrics()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_DETAILED_CAST_VIEW);
   ShowDetailedView(std::make_unique<UnifiedCastDetailedViewController>(this));
 }
 
 void UnifiedSystemTrayController::ShowAccessibilityDetailedView() {
+  Shell::Get()->metrics()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_DETAILED_ACCESSIBILITY);
   ShowDetailedView(
       std::make_unique<UnifiedAccessibilityDetailedViewController>(this));
 }
 
 void UnifiedSystemTrayController::ShowVPNDetailedView() {
+  Shell::Get()->metrics()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_DETAILED_VPN_VIEW);
   ShowDetailedView(std::make_unique<UnifiedVPNDetailedViewController>(this));
 }
 
@@ -300,12 +268,6 @@ void UnifiedSystemTrayController::ShowDetailedView(
     std::unique_ptr<DetailedViewController> controller) {
   unified_view_->SetDetailedView(controller->CreateView());
   detailed_view_controller_ = std::move(controller);
-}
-
-void UnifiedSystemTrayController::ShowSystemTrayItemDetailedView(
-    SystemTrayItem* system_tray_item) {
-  ShowDetailedView(
-      std::make_unique<SystemTrayItemDetailedViewController>(system_tray_item));
 }
 
 void UnifiedSystemTrayController::UpdateExpandedAmount() {

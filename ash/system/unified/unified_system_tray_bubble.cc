@@ -23,9 +23,7 @@ constexpr int kPaddingFromScreenTop = 8;
 
 UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
                                                  bool show_by_click)
-    : controller_(std::make_unique<UnifiedSystemTrayController>(
-          tray->model(),
-          tray->shelf()->GetStatusAreaWidget()->system_tray())),
+    : controller_(std::make_unique<UnifiedSystemTrayController>(tray->model())),
       tray_(tray) {
   if (show_by_click)
     time_shown_by_click_ = base::TimeTicks::Now();
