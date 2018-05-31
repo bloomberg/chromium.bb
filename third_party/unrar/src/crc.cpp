@@ -15,6 +15,7 @@
 #include "rar.hpp"
 
 static uint crc_tables[8][256]; // Tables for Slicing-by-8.
+static bool is_initialized = false;
 
 
 // Build the classic CRC32 lookup table.
@@ -49,10 +50,13 @@ static void InitTables()
 }
 
 
-struct CallInitCRC {CallInitCRC() {InitTables();}} static CallInit32;
-
 uint CRC32(uint StartCRC,const void *Addr,size_t Size)
 {
+  if (!is_initialized) {
+    is_initialized = true;
+    InitTables();
+  }
+
   byte *Data=(byte *)Addr;
 
   // Align Data to 8 for better performance.

@@ -27,3 +27,4 @@ Notable changes from upstream:
 - Pass a file handle to the rar file, instead of trying to open the rar file
   inside the unrar library code. This is done because the unrar library code
   operates inside a sandbox, so it doesn't have the permissions to open files.
+- Remove some static initializers.
