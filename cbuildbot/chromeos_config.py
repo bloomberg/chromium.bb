@@ -1300,7 +1300,7 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'telemetry',
       site_config.templates.default_hw_tests_override,
-      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
+      display_label=config_lib.DISPLAY_LABEL_CHROME_INFORMATIONAL,
       build_type=constants.INCREMENTAL_TYPE,
       uprev=False,
       overlays=constants.PUBLIC_OVERLAYS,
@@ -1366,7 +1366,7 @@ def GeneralTemplates(site_config, ge_build_config):
       'chromium_pfq_informational',
       site_config.templates.external_chromium_pfq,
       site_config.templates.chrome_try,
-      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
+      display_label=config_lib.DISPLAY_LABEL_CHROME_INFORMATIONAL,
       chrome_sdk=False,
       unittests=False,
       description='Informational Chromium Uprev & Build (public)',
