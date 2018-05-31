@@ -101,9 +101,9 @@ struct PaintPropertyTreeBuilderFragmentContext {
   // in the flow thread.
   LayoutUnit logical_top_in_flow_thread;
 
-  // A repeating object paints at multiple places in the flow thread, once in
-  // each fragment. The repeated paintings need to add an adjustment to the
-  // calculated paint offset to paint at the desired place.
+  // A repeating object paints at multiple places, once in each fragment.
+  // The repeated paintings need to add an adjustment to the calculated paint
+  // offset to paint at the desired place.
   LayoutSize repeating_paint_offset_adjustment;
 };
 
@@ -137,10 +137,10 @@ struct PaintPropertyTreeBuilderContext {
 
   PaintLayer* painting_layer = nullptr;
 
-  // In a fragmented context, some objects (e.g. repeating table headers and
-  // footers) and their descendants in paint order) repeatedly paint in all
-  // fragments after the fragment where the object first appears.
-  bool is_repeating_in_flow_thread = false;
+  // In a fragmented context, repeating table headers and footers and their
+  // descendants in paint order repeatedly paint in all fragments after the
+  // fragment where the object first appears.
+  bool is_repeating_table_section = false;
 
   // When printing, fixed-position objects and their descendants need to repeat
   // in each page.
@@ -150,9 +150,9 @@ struct PaintPropertyTreeBuilderContext {
   // ancestor.
   bool has_svg_hidden_container_ancestor = false;
 
-  // The physical bounding box of all appearances of the repeating object
-  // in the flow thread.
-  LayoutRect repeating_bounding_box_in_flow_thread;
+  // The physical bounding box of all appearances of the repeating table section
+  // in the flow thread or the paged LayoutView.
+  LayoutRect repeating_table_section_bounding_box;
 };
 
 // Creates paint property tree nodes for non-local effects in the layout tree.
@@ -193,13 +193,17 @@ class PaintPropertyTreeBuilder {
                      LayoutUnit logical_top_in_flow_thread) const;
   ALWAYS_INLINE void CreateFragmentContextsInFlowThread(
       bool needs_paint_properties);
+  ALWAYS_INLINE bool IsRepeatingInPagedMedia() const;
+  ALWAYS_INLINE bool ObjectIsRepeatingTableSectionInPagedMedia() const;
   ALWAYS_INLINE void CreateFragmentContextsForRepeatingFixedPosition();
-  ALWAYS_INLINE void CreateFragmentDataForRepeatingFixedPosition(
+  ALWAYS_INLINE void
+  CreateFragmentContextsForRepeatingTableSectionInPagedMedia();
+  ALWAYS_INLINE void CreateFragmentDataForRepeatingInPagedMedia(
       bool needs_paint_properties);
   // Returns whether ObjectPaintProperties were allocated or deleted.
   ALWAYS_INLINE bool UpdateFragments();
   ALWAYS_INLINE void UpdatePaintingLayer();
-  ALWAYS_INLINE void UpdateRepeatingPaintOffsetAdjustment();
+  ALWAYS_INLINE void UpdateRepeatingTableSectionPaintOffsetAdjustment();
   ALWAYS_INLINE void UpdateRepeatingTableHeaderPaintOffsetAdjustment();
   ALWAYS_INLINE void UpdateRepeatingTableFooterPaintOffsetAdjustment();
 

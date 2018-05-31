@@ -2046,10 +2046,6 @@ bool LayoutTableSection::GroupShouldRepeat() const {
   if (GetPaginationBreakability() == kAllowAnyBreaks)
     return false;
 
-  // TODO(rhogan): Sections can be self-painting.
-  if (HasSelfPaintingLayer())
-    return false;
-
   // If we don't know the page height yet, just assume we fit.
   if (!IsPageLogicalHeightKnown())
     return true;
