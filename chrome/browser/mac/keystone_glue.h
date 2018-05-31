@@ -74,7 +74,8 @@ extern NSString* const kAutoupdateStatusErrorMessages;
   NSString* url_;
   NSString* version_;
   std::string channel_;  // Logically: dev, beta, or stable.
-  NSString* brandFile_;  // Cached location of the brand file.
+  // Cached location of the brand file.
+  base::scoped_nsobject<NSString> brandFile_;
 
   // And the Keystone registration itself, with the active timer
   KSRegistration* registration_;  // strong
