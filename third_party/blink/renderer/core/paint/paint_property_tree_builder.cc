@@ -252,8 +252,11 @@ static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
   return false;
 }
 
-IntPoint ApplyPaintOffsetTranslation(const LayoutObject& object,
-                                     LayoutPoint& paint_offset) {
+void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
+    base::Optional<IntPoint>& paint_offset_translation) {
+  if (!NeedsPaintOffsetTranslation(object_))
+    return;
+
   // We should use the same subpixel paint offset values for snapping
   // regardless of whether a transform is present. If there is a transform
   // we round the paint offset but keep around the residual fractional
@@ -261,35 +264,21 @@ IntPoint ApplyPaintOffsetTranslation(const LayoutObject& object,
   // called "subpixel accumulation". For more information, see
   // PaintLayer::subpixelAccumulation() and
   // PaintLayerPainter::paintFragmentByApplyingTransform.
-  IntPoint paint_offset_translation = RoundedIntPoint(paint_offset);
+  paint_offset_translation = RoundedIntPoint(context_.current.paint_offset);
   LayoutPoint fractional_paint_offset =
-      LayoutPoint(paint_offset - paint_offset_translation);
+      LayoutPoint(context_.current.paint_offset - *paint_offset_translation);
   if (fractional_paint_offset != LayoutPoint()) {
     // If the object has a non-translation transform, discard the fractional
     // paint offset which can't be transformed by the transform.
     TransformationMatrix matrix;
-    object.StyleRef().ApplyTransform(
+    object_.StyleRef().ApplyTransform(
         matrix, LayoutSize(), ComputedStyle::kExcludeTransformOrigin,
         ComputedStyle::kIncludeMotionPath,
         ComputedStyle::kIncludeIndependentTransformProperties);
     if (!matrix.IsIdentityOrTranslation())
       fractional_paint_offset = LayoutPoint();
   }
-  paint_offset = fractional_paint_offset;
-  return paint_offset_translation;
-}
-
-void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
-    base::Optional<IntPoint>& paint_offset_translation) {
-  if (!NeedsPaintOffsetTranslation(object_))
-    return;
-
-  paint_offset_translation =
-      ApplyPaintOffsetTranslation(object_, context_.current.paint_offset);
-  if (object_.IsLayoutView()) {
-    context_.absolute_position.paint_offset = context_.current.paint_offset;
-    context_.fixed_position.paint_offset = context_.current.paint_offset;
-  }
+  context_.current.paint_offset = fractional_paint_offset;
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
