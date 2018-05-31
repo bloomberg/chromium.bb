@@ -6,9 +6,7 @@
 #define CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_GET_SETTLED_FETCHES_TASK_H_
 
 #include "base/callback_forward.h"
-#include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_task.h"
-#include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "storage/browser/blob/blob_data_handle.h"
 
@@ -37,26 +35,14 @@ class GetSettledFetchesTask : public DatabaseTask {
   void Start() override;
 
  private:
-  void DidOpenCache(base::OnceClosure done_closure,
-                    CacheStorageCacheHandle handle,
-                    blink::mojom::CacheStorageError error);
-
-  void DidGetCompletedRequests(base::OnceClosure done_closure,
-                               const std::vector<std::string>& data,
+  void DidGetCompletedRequests(const std::vector<std::string>& data,
                                ServiceWorkerStatusCode status);
 
-  void GetResponses();
-
   void FillFailedResponse(ServiceWorkerResponse* response,
-                          base::OnceClosure callback);
+                          const base::RepeatingClosure& callback);
 
-  void FillSuccessfulResponse(BackgroundFetchSettledFetch* settled_fetch,
-                              base::OnceClosure callback);
-
-  void DidMatchRequest(ServiceWorkerResponse* response,
-                       base::OnceClosure callback,
-                       blink::mojom::CacheStorageError error,
-                       std::unique_ptr<ServiceWorkerResponse> cache_response);
+  void FillSuccessfulResponse(ServiceWorkerResponse* response,
+                              const base::RepeatingClosure& callback);
 
   void FinishTaskWithErrorCode(blink::mojom::BackgroundFetchError error);
 
@@ -64,15 +50,8 @@ class GetSettledFetchesTask : public DatabaseTask {
   CacheStorageManager* cache_manager_;
   SettledFetchesCallback settled_fetches_callback_;
 
-  // SettledFetchesCallback params.
   std::vector<BackgroundFetchSettledFetch> settled_fetches_;
   bool background_fetch_succeeded_ = true;
-
-  // Storage params.
-  CacheStorageCacheHandle handle_;
-  std::vector<proto::BackgroundFetchCompletedRequest> completed_requests_;
-  blink::mojom::BackgroundFetchError error_ =
-      blink::mojom::BackgroundFetchError::NONE;
 
   base::WeakPtrFactory<GetSettledFetchesTask> weak_factory_;  // Keep as last.
 
