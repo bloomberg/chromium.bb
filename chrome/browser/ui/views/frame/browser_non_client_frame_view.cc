@@ -52,6 +52,7 @@ BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
     g_browser_process->profile_manager()->
         GetProfileAttributesStorage().AddObserver(this);
   }
+  MaybeObserveTabstrip();
 }
 
 BrowserNonClientFrameView::~BrowserNonClientFrameView() {
@@ -68,10 +69,7 @@ int BrowserNonClientFrameView::GetAvatarIconPadding() {
 }
 
 void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {
-  if (browser_view()->tabstrip()) {
-    DCHECK(!tab_strip_observer_.IsObserving(browser_view()->tabstrip()));
-    tab_strip_observer_.Add(browser_view()->tabstrip());
-  }
+  MaybeObserveTabstrip();
   UpdateMinimumSize();
 }
 
@@ -420,6 +418,13 @@ void BrowserNonClientFrameView::OnProfileAvatarChanged(
 void BrowserNonClientFrameView::OnProfileHighResAvatarLoaded(
     const base::FilePath& profile_path) {
   UpdateTaskbarDecoration();
+}
+
+void BrowserNonClientFrameView::MaybeObserveTabstrip() {
+  if (browser_view()->tabstrip()) {
+    DCHECK(!tab_strip_observer_.IsObserving(browser_view()->tabstrip()));
+    tab_strip_observer_.Add(browser_view()->tabstrip());
+  }
 }
 
 const ui::ThemeProvider*

@@ -149,6 +149,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   void OnProfileHighResAvatarLoaded(
       const base::FilePath& profile_path) override;
 
+  void MaybeObserveTabstrip();
+
   // Gets a theme provider that should be non-null even before we're added to a
   // view hierarchy.
   const ui::ThemeProvider* GetThemeProviderForProfile() const;
