@@ -317,9 +317,8 @@ void av1_loop_restoration_precal();
 typedef void (*rest_tile_start_visitor_t)(int tile_row, int tile_col,
                                           void *priv);
 
-// Call on_rest_unit for each loop restoration unit in the frame. At the start
-// of each tile, call on_tile.
-void av1_foreach_rest_unit_in_frame(const struct AV1Common *cm, int plane,
+// Call on_rest_unit for each loop restoration unit in the plane.
+void av1_foreach_rest_unit_in_plane(const struct AV1Common *cm, int plane,
                                     rest_unit_visitor_t on_rest_unit,
                                     void *priv, AV1PixelRect *tile_rect,
                                     int32_t *tmpbuf,
@@ -342,7 +341,19 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
 void av1_loop_restoration_save_boundary_lines(const YV12_BUFFER_CONFIG *frame,
                                               struct AV1Common *cm,
                                               int after_cdef);
-
+void av1_loop_restoration_filter_frame_init(AV1LrStruct *lr_ctxt,
+                                            YV12_BUFFER_CONFIG *frame,
+                                            struct AV1Common *cm,
+                                            int optimized_lr, int num_planes);
+void av1_loop_restoration_copy_planes(AV1LrStruct *loop_rest_ctxt,
+                                      struct AV1Common *cm, int num_planes);
+void av1_foreach_rest_unit_in_row(RestorationTileLimits *limits,
+                                  const AV1PixelRect *tile_rect,
+                                  rest_unit_visitor_t on_rest_unit,
+                                  int row_number, int unit_size, int unit_idx0,
+                                  int hunits_per_tile, void *priv,
+                                  int32_t *tmpbuf,
+                                  RestorationLineBuffers *rlbs);
 AV1PixelRect av1_whole_frame_rect(const struct AV1Common *cm, int is_uv);
 #ifdef __cplusplus
 }  // extern "C"
