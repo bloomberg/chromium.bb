@@ -477,6 +477,35 @@ TEST(WindowServiceClientTest, PointerWatcher) {
                 window_tree_client->PopObservedPointerEvent().event.get()));
 }
 
+TEST(WindowServiceClientTest, MatchesPointerWatcherSet) {
+  WindowServiceTestSetup setup;
+  TestWindowTreeClient* window_tree_client = setup.window_tree_client();
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
+  // Start the pointer watcher only for pointer down/up.
+  setup.client_test_helper()->window_tree()->StartPointerWatcher(false);
+
+  test::EventGenerator event_generator(setup.root());
+  event_generator.MoveMouseTo(50, 50);
+  EXPECT_TRUE(window_tree_client->observed_pointer_events().empty());
+  window_tree_client->ClearInputEvents();
+
+  event_generator.PressLeftButton();
+  // The client should get the event, and |matches_pointer_watcher| should be
+  // true (because it matched the pointer watcher).
+  TestWindowTreeClient::InputEvent press_input =
+      window_tree_client->PopInputEvent();
+  ASSERT_TRUE(press_input.event);
+  EXPECT_EQ("POINTER_DOWN 40,40",
+            LocatedEventToEventTypeAndLocation(press_input.event.get()));
+  EXPECT_TRUE(press_input.matches_pointer_watcher);
+  // Because the event matches a pointer event there should be no observed
+  // pointer events.
+  EXPECT_TRUE(window_tree_client->observed_pointer_events().empty());
+}
+
 TEST(WindowServiceClientTest, Capture) {
   WindowServiceTestSetup setup;
   aura::Window* window = setup.client_test_helper()->NewWindow();
