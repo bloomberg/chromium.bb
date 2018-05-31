@@ -583,17 +583,18 @@ inline LayoutUnit operator-(const LayoutUnit& a) {
   return return_val;
 }
 
-// For returning the remainder after a division with integer results.
+// Returns the remainder after a division with integer results.
+// This calculates the modulo so that:
+//   a = static_cast<int>(a / b) * b + IntMod(a, b).
 inline LayoutUnit IntMod(const LayoutUnit& a, const LayoutUnit& b) {
-  // This calculates the modulo so that: a = static_cast<int>(a / b) * b +
-  // intMod(a, b).
   LayoutUnit return_val;
   return_val.SetRawValue(a.RawValue() % b.RawValue());
   return return_val;
 }
 
-inline LayoutUnit operator%(const LayoutUnit& a, const LayoutUnit& b) {
-  // This calculates the modulo so that: a = (a / b) * b + a % b.
+// Returns the remainder after a division with LayoutUnit results.
+// This calculates the modulo so that: a = (a / b) * b + LayoutMod(a, b).
+inline LayoutUnit LayoutMod(const LayoutUnit& a, const LayoutUnit& b) {
   LayoutUnit return_val;
   long long raw_val =
       (static_cast<long long>(kFixedPointDenominator) * a.RawValue()) %
@@ -602,12 +603,8 @@ inline LayoutUnit operator%(const LayoutUnit& a, const LayoutUnit& b) {
   return return_val;
 }
 
-inline LayoutUnit operator%(const LayoutUnit& a, int b) {
-  return a % LayoutUnit(b);
-}
-
-inline LayoutUnit operator%(int a, const LayoutUnit& b) {
-  return LayoutUnit(a) % b;
+inline LayoutUnit LayoutMod(const LayoutUnit& a, int b) {
+  return LayoutMod(a, LayoutUnit(b));
 }
 
 inline LayoutUnit& operator+=(LayoutUnit& a, const LayoutUnit& b) {
@@ -695,15 +692,6 @@ inline int FloorToInt(LayoutUnit value) {
 
 inline LayoutUnit AbsoluteValue(const LayoutUnit& value) {
   return value.Abs();
-}
-
-inline LayoutUnit LayoutMod(const LayoutUnit& numerator,
-                            const LayoutUnit& denominator) {
-  return numerator % denominator;
-}
-
-inline LayoutUnit LayoutMod(const LayoutUnit& numerator, int denominator) {
-  return numerator % LayoutUnit(denominator);
 }
 
 inline bool IsIntegerValue(const LayoutUnit value) {
