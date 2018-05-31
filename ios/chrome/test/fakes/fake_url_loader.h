@@ -17,6 +17,7 @@
 @property(nonatomic, readonly) ui::PageTransition transition;
 @property(nonatomic, readonly) BOOL rendererInitiated;
 @property(nonatomic, readonly) BOOL inIncognito;
+@property(nonatomic, readonly, copy) NSDictionary* extraHeaders;
 
 @end
 

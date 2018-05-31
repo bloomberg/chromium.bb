@@ -13,6 +13,7 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/search_engines/util.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -239,6 +240,7 @@ const int kLocationAuthorizationStatusCount = 4;
     // call to load.
     web::NavigationManager::WebLoadParams params(url);
     params.transition_type = transition;
+    params.extra_headers = [self variationHeadersForURL:url];
     [self.URLLoader loadURLWithParams:params];
 
     if (google_util::IsGoogleSearchUrl(url)) {
@@ -293,6 +295,26 @@ const int kLocationAuthorizationStatusCount = 4;
 }
 
 #pragma mark - private
+
+// Returns a dictionary with variation headers for qualified URLs. Can be empty.
+- (NSDictionary*)variationHeadersForURL:(const GURL&)URL {
+  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not
+  // affect transmission of experiments coming from the variations server.
+  net::HttpRequestHeaders variation_headers;
+  variations::AppendVariationHeaders(
+      URL,
+      self.browserState->IsOffTheRecord() ? variations::InIncognito::kYes
+                                          : variations::InIncognito::kNo,
+      variations::SignedIn::kNo, &variation_headers);
+  NSMutableDictionary* result = [NSMutableDictionary dictionary];
+  net::HttpRequestHeaders::Iterator header_iterator(variation_headers);
+  while (header_iterator.GetNext()) {
+    NSString* name = base::SysUTF8ToNSString(header_iterator.name());
+    NSString* value = base::SysUTF8ToNSString(header_iterator.value());
+    result[name] = value;
+  }
+  return [result copy];
+}
 
 // Navigate to |query| from omnibox.
 - (void)loadURLForQuery:(NSString*)query {
