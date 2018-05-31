@@ -957,9 +957,23 @@ TEST_F(RenderViewImplScaleFactorTest, UpdateDSFAfterSwapIn) {
   common_params.transition = ui::PAGE_TRANSITION_TYPED;
 
   provisional_frame->Navigate(common_params, request_params);
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(device_scale, view()->GetDeviceScaleFactor());
   EXPECT_EQ(device_scale, view()->webview()->ZoomFactorForDeviceScaleFactor());
+
+  double device_pixel_ratio;
+  base::string16 get_dpr =
+      base::ASCIIToUTF16("Number(window.devicePixelRatio)");
+  EXPECT_TRUE(
+      ExecuteJavaScriptAndReturnNumberValue(get_dpr, &device_pixel_ratio));
+  EXPECT_EQ(device_scale, device_pixel_ratio);
+
+  int width;
+  base::string16 get_width =
+      base::ASCIIToUTF16("Number(document.documentElement.clientWidth)");
+  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_width, &width));
+  EXPECT_EQ(view()->webview()->Size().width, width * device_scale);
 }
 
 // Test that when a parent detaches a remote child after the provisional

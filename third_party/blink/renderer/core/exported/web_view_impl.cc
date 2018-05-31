@@ -2729,10 +2729,8 @@ void WebViewImpl::SetDeviceScaleFactor(float scale_factor) {
 
 void WebViewImpl::SetZoomFactorForDeviceScaleFactor(
     float zoom_factor_for_device_scale_factor) {
-  if (zoom_factor_for_device_scale_factor_ ==
-      zoom_factor_for_device_scale_factor) {
-    return;
-  }
+  // We can't early-return here if these are already equal, because we may
+  // need to propagate the correct zoom factor to newly navigated frames.
   zoom_factor_for_device_scale_factor_ = zoom_factor_for_device_scale_factor;
   if (!layer_tree_view_)
     return;
