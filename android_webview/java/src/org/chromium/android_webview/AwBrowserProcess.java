@@ -31,9 +31,9 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.components.minidump_uploader.CrashFileManager;
-import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.content.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.content_public.browser.ChildProcessCreationParams;
 import org.chromium.policy.CombinedPolicyProvider;
 
 import java.io.File;
@@ -92,9 +92,9 @@ public final class AwBrowserProcess {
         final boolean isExternalService = true;
         final boolean bindToCaller = true;
         final boolean ignoreVisibilityForImportance = true;
-        ChildProcessCreationParams.set(new ChildProcessCreationParams(getWebViewPackageName(),
-                isExternalService, LibraryProcessType.PROCESS_WEBVIEW_CHILD, bindToCaller,
-                ignoreVisibilityForImportance));
+        ChildProcessCreationParams.set(getWebViewPackageName(), isExternalService,
+                LibraryProcessType.PROCESS_WEBVIEW_CHILD, bindToCaller,
+                ignoreVisibilityForImportance);
     }
 
     /**

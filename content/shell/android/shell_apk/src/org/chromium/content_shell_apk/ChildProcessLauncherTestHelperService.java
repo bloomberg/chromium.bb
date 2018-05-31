@@ -20,8 +20,8 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
-import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.content.browser.ChildProcessLauncherHelper;
+import org.chromium.content_public.browser.ChildProcessCreationParams;
 
 /**
  * A Service that assists the ChildProcessLauncherTest that responds to one message, which
@@ -77,9 +77,8 @@ public class ChildProcessLauncherTestHelperService extends Service {
     private void doBindService(final Message msg) {
         String[] commandLine = { "_", "--" + BaseSwitches.RENDERER_WAIT_FOR_JAVA_DEBUGGER };
         final boolean bindToCaller = true;
-        ChildProcessCreationParams.set(new ChildProcessCreationParams(getPackageName(), false,
-                LibraryProcessType.PROCESS_CHILD, bindToCaller,
-                false /* ignoreVisibilityForImportance */));
+        ChildProcessCreationParams.set(getPackageName(), false, LibraryProcessType.PROCESS_CHILD,
+                bindToCaller, false /* ignoreVisibilityForImportance */);
         mProcessLauncher = ChildProcessLauncherTestUtils.startForTesting(true /* sandboxed */,
                 commandLine, new FileDescriptorInfo[0], true /* doSetupConnection */);
 
