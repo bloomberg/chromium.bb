@@ -114,3 +114,7 @@ Current patches:
     Add null check for encryption info.  Sent for upstream approval.
     https://crbug.com/846009 .
 
+  libavformat/mov.c
+    Fix heap overflow bug.  Sent for upstream approval.
+    https://crbug.com/847060 .
+
