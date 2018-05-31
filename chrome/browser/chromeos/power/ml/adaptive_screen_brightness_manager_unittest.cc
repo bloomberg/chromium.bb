@@ -31,7 +31,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/user_activity/user_activity_detector.h"
-#include "ui/events/base_event_utils.cc"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/geometry/point.h"
 
