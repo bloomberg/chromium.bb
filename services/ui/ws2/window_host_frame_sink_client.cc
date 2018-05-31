@@ -22,7 +22,8 @@ void WindowHostFrameSinkClient::OnFirstSurfaceActivation(
 }
 
 void WindowHostFrameSinkClient::OnFrameTokenChanged(uint32_t frame_token) {
-  NOTIMPLEMENTED();
+  // TODO: this needs to call through to WindowTreeClient.
+  // https://crbug.com/848022.
 }
 
 }  // namespace ws2
