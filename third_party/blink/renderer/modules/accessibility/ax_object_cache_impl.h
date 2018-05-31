@@ -189,6 +189,8 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   void ChildrenChanged(AXObject*, Node* node_for_relation_update = nullptr);
 
+  void MaybeNewRelationTarget(Node* node, AXObject* obj);
+
   void HandleActiveDescendantChanged(Node*);
   void HandlePossibleRoleChange(Node*);
   void HandleAriaExpandedChange(Node*);

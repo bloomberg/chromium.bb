@@ -195,6 +195,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaComboBoxDelayAddList) {
+  RunEventTest(FILE_PATH_LITERAL("aria-combo-box-delay-add-list.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaComboBoxDelayShowList) {
+  RunEventTest(FILE_PATH_LITERAL("aria-combo-box-delay-show-list.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaComboBoxNext) {
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-next.html"));
 }
