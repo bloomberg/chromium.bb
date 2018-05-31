@@ -8,9 +8,7 @@ from telemetry import story
 
 class ToughPinchZoomCasesPage(page_module.Page):
 
-  def __init__(self, url, page_set, name=''):
-    if name == '':
-      name = url
+  def __init__(self, url, page_set, name):
     super(ToughPinchZoomCasesPage, self).__init__(
         url=url, page_set=page_set, name=name,
         shared_page_state_class=shared_page_state.SharedDesktopPageState)
@@ -42,6 +40,7 @@ class GoogleSearchPage(ToughPinchZoomCasesPage):
 
   def __init__(self, page_set):
     super(GoogleSearchPage, self).__init__(
+      name='google_search_pinch',
       url='https://www.google.com/#hl=en&q=barack+obama',
       page_set=page_set)
 
@@ -56,6 +55,7 @@ class GmailPage(ToughPinchZoomCasesPage):
 
   def __init__(self, page_set):
     super(GmailPage, self).__init__(
+      name='gmail_pinch',
       url='https://mail.google.com/mail/',
       page_set=page_set)
 
@@ -72,6 +72,7 @@ class GoogleCalendarPage(ToughPinchZoomCasesPage):
 
   def __init__(self, page_set):
     super(GoogleCalendarPage, self).__init__(
+      name='google_calendar_pinch',
       url='https://www.google.com/calendar/',
       page_set=page_set)
 
@@ -85,6 +86,7 @@ class GoogleImageSearchPage(ToughPinchZoomCasesPage):
 
   def __init__(self, page_set):
     super(GoogleImageSearchPage, self).__init__(
+      name='google_image_pinch',
       url='https://www.google.com/search?q=cats&tbm=isch',
       page_set=page_set)
 
@@ -95,6 +97,7 @@ class YoutubePage(ToughPinchZoomCasesPage):
 
   def __init__(self, page_set):
     super(YoutubePage, self).__init__(
+      name='youtube_pinch',
       url='http://www.youtube.com',
       page_set=page_set)
 
@@ -111,8 +114,9 @@ class BlogSpotPage(ToughPinchZoomCasesPage):
 
   def __init__(self, page_set):
     super(BlogSpotPage, self).__init__(
+      name='blogspot_pinch',
       url='http://googlewebmastercentral.blogspot.com/',
-      page_set=page_set, name='Blogger')
+      page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
     super(BlogSpotPage, self).RunNavigateSteps(action_runner)
@@ -125,8 +129,9 @@ class FacebookPage(ToughPinchZoomCasesPage):
 
   def __init__(self, page_set):
     super(FacebookPage, self).__init__(
+      name='facebook_pinch',
       url='http://www.facebook.com/barackobama',
-      page_set=page_set, name='Facebook')
+      page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
     super(FacebookPage, self).RunNavigateSteps(action_runner)
@@ -139,8 +144,9 @@ class LinkedinPage(ToughPinchZoomCasesPage):
 
   def __init__(self, page_set):
     super(LinkedinPage, self).__init__(
+      name='linkedin_pinch',
       url='http://www.linkedin.com/in/linustorvalds',
-      page_set=page_set, name='LinkedIn')
+      page_set=page_set)
 
 
 class TwitterPage(ToughPinchZoomCasesPage):
@@ -149,8 +155,9 @@ class TwitterPage(ToughPinchZoomCasesPage):
 
   def __init__(self, page_set):
     super(TwitterPage, self).__init__(
+      name='twitter_pinch',
       url='https://twitter.com/katyperry',
-      page_set=page_set, name='Twitter')
+      page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
     super(TwitterPage, self).RunNavigateSteps(action_runner)
@@ -162,8 +169,9 @@ class ESPNPage(ToughPinchZoomCasesPage):
 
   def __init__(self, page_set):
     super(ESPNPage, self).__init__(
+      name='espn_pinch',
       url='http://espn.go.com/nba',
-      page_set=page_set, name='ESPN')
+      page_set=page_set)
 
 
 class WeatherDotComPage(ToughPinchZoomCasesPage):
@@ -172,9 +180,10 @@ class WeatherDotComPage(ToughPinchZoomCasesPage):
 
   def __init__(self, page_set):
     super(WeatherDotComPage, self).__init__(
+      name='weather_pinch',
       # pylint: disable=line-too-long
       url='http://www.weather.com/weather/right-now/Mountain+View+CA+94043',
-      page_set=page_set, name='Weather.com')
+      page_set=page_set)
 
 
 class YahooGamePage(ToughPinchZoomCasesPage):
@@ -183,6 +192,7 @@ class YahooGamePage(ToughPinchZoomCasesPage):
 
   def __init__(self, page_set):
     super(YahooGamePage, self).__init__(
+      name='yahoo_games_pinch',
       url='http://games.yahoo.com',
       page_set=page_set)
 
@@ -214,27 +224,38 @@ class ToughPinchZoomCasesPageSet(story.StorySet):
     self.AddStory(ESPNPage(self))
 
     # Why: #1 news worldwide (Alexa global)
-    self.AddStory(ToughPinchZoomCasesPage('http://news.yahoo.com', self))
-
+    self.AddStory(ToughPinchZoomCasesPage(url='http://news.yahoo.com',
+                                          page_set=self,
+                                          name='yahoo_news_pinch'))
     # Why: #2 news worldwide
-    self.AddStory(ToughPinchZoomCasesPage('http://www.cnn.com', self))
+    self.AddStory(ToughPinchZoomCasesPage(url='http://www.cnn.com',
+                                          page_set=self,
+                                          name='cnn_pinch'))
 
     self.AddStory(WeatherDotComPage(self))
 
     # Why: #1 world commerce website by visits; #3 commerce in the US by time
     # spent
-    self.AddStory(ToughPinchZoomCasesPage('http://www.amazon.com', self))
+    self.AddStory(ToughPinchZoomCasesPage(url='http://www.amazon.com',
+                                          page_set=self,
+                                          name='amazon_pinch'))
 
     # Why: #1 commerce website by time spent by users in US
-    self.AddStory(ToughPinchZoomCasesPage('http://www.ebay.com', self))
+    self.AddStory(ToughPinchZoomCasesPage(url='http://www.ebay.com',
+                                          page_set=self,
+                                          name='ebay_pinch'))
 
     self.AddStory(YahooGamePage(self))
 
     # Why: #1 Alexa recreation
-    self.AddStory(ToughPinchZoomCasesPage('http://booking.com', self))
+    self.AddStory(ToughPinchZoomCasesPage(url='http://booking.com',
+                                          page_set=self,
+                                          name='booking_pinch'))
 
     # Why: #1 Alexa sports
-    self.AddStory(ToughPinchZoomCasesPage('http://sports.yahoo.com/', self))
+    self.AddStory(ToughPinchZoomCasesPage(url='http://sports.yahoo.com/',
+                                          page_set=self,
+                                          name='yahoo_sports_pinch'))
 
 
 class AndroidToughPinchZoomCasesPageSet(ToughPinchZoomCasesPageSet):

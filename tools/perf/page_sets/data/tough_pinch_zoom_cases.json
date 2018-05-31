@@ -1,63 +1,57 @@
 {
     "archives": {
-        "Blogger": {
+        "blogspot_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "ESPN": {
+        "espn_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "Facebook": {
+        "facebook_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "LinkedIn": {
+        "linkedin_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "Twitter": {
+        "twitter_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "Weather.com": {
+        "weather_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "http://answers.yahoo.com": {
+        "booking_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "http://booking.com": {
+        "yahoo_games_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "http://games.yahoo.com": {
+        "yahoo_news_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "http://news.yahoo.com": {
+        "yahoo_sports_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "http://sports.yahoo.com/": {
+        "amazon_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "http://www.amazon.com": {
+        "cnn_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "http://www.cnn.com": {
+        "ebay_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "http://www.ebay.com": {
+        "youtube_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "http://www.youtube.com": {
+        "gmail_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "https://mail.google.com/mail/": {
+        "google_search_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "https://plus.google.com/+BarackObama/posts": {
+        "google_calendar_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         },
-        "https://www.google.com/#hl=en&q=barack+obama": {
-            "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
-        },
-        "https://www.google.com/calendar/": {
-            "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
-        },
-        "https://www.google.com/search?q=cats&tbm=isch": {
+        "google_image_pinch": {
             "DEFAULT": "tough_pinch_zoom_cases_000.wprgo"
         }
     },
