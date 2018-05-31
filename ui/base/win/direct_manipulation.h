@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/base/win/window_event_target.h"
-#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace content {
 class DirectManipulationBrowserTest;
@@ -118,6 +118,9 @@ class UI_BASE_EXPORT DirectManipulationHelper {
   // Deactivates Direct Manipulation processing on the passed in |window|.
   void Deactivate();
 
+  // Updates viewport size. Call it when window bounds updated.
+  void SetSize(const gfx::Size& size_in_pixels);
+
   // Reset the fake viewport for gesture end.
   HRESULT ResetViewport(bool need_animtation);
 
@@ -149,6 +152,7 @@ class UI_BASE_EXPORT DirectManipulationHelper {
   HWND window_;
   DWORD view_port_handler_cookie_;
   bool need_poll_events_ = false;
+  gfx::Size viewport_size_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectManipulationHelper);
 };
