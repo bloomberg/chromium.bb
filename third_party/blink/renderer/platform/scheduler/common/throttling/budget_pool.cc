@@ -32,7 +32,7 @@ void BudgetPool::AddQueue(base::TimeTicks now, TaskQueue* queue) {
 
   if (!is_enabled_)
     return;
-  budget_pool_controller_->UpdateQueueThrottlingState(now, queue);
+  budget_pool_controller_->UpdateQueueSchedulingLifecycleState(now, queue);
 }
 
 void BudgetPool::UnregisterQueue(TaskQueue* queue) {
@@ -45,7 +45,7 @@ void BudgetPool::RemoveQueue(base::TimeTicks now, TaskQueue* queue) {
   if (!is_enabled_)
     return;
 
-  budget_pool_controller_->UpdateQueueThrottlingState(now, queue);
+  budget_pool_controller_->UpdateQueueSchedulingLifecycleState(now, queue);
 }
 
 void BudgetPool::DissociateQueue(TaskQueue* queue) {
@@ -71,7 +71,8 @@ void BudgetPool::DisableThrottling(base::sequence_manager::LazyNow* lazy_now) {
   TRACE_EVENT0("renderer.scheduler", "BudgetPool_DisableThrottling");
 
   for (TaskQueue* queue : associated_task_queues_) {
-    budget_pool_controller_->UpdateQueueThrottlingState(lazy_now->Now(), queue);
+    budget_pool_controller_->UpdateQueueSchedulingLifecycleState(
+        lazy_now->Now(), queue);
   }
 
   // TODO(altimin): We need to disable TimeBudgetQueues here or they will
@@ -90,7 +91,7 @@ void BudgetPool::Close() {
 
 void BudgetPool::BlockThrottledQueues(base::TimeTicks now) {
   for (TaskQueue* queue : associated_task_queues_)
-    budget_pool_controller_->UpdateQueueThrottlingState(now, queue);
+    budget_pool_controller_->UpdateQueueSchedulingLifecycleState(now, queue);
 }
 
 }  // namespace scheduler

@@ -154,7 +154,8 @@ void PageSchedulerImpl::SetPageVisible(bool page_visible) {
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
     frame_scheduler->SetPageVisibilityForTracing(page_visibility_);
 
-  UpdateBackgroundThrottlingState(NotificationPolicy::kDoNotNotifyFrames);
+  UpdateBackgroundSchedulingLifecycleState(
+      NotificationPolicy::kDoNotNotifyFrames);
 
   NotifyFrames();
 }
@@ -344,7 +345,7 @@ void PageSchedulerImpl::OnConnectionUpdated() {
 
   if (has_active_connection_ != has_active_connection) {
     has_active_connection_ = has_active_connection;
-    UpdateBackgroundBudgetPoolThrottlingState();
+    UpdateBackgroundBudgetPoolSchedulingLifecycleState();
   }
 }
 
@@ -408,7 +409,7 @@ void PageSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool() {
         lazy_now.Now(), settings.initial_budget.value());
   }
 
-  UpdateBackgroundBudgetPoolThrottlingState();
+  UpdateBackgroundBudgetPoolSchedulingLifecycleState();
 }
 
 void PageSchedulerImpl::OnThrottlingReported(
@@ -431,12 +432,12 @@ void PageSchedulerImpl::OnThrottlingReported(
   delegate_->ReportIntervention(String::FromUTF8(message.c_str()));
 }
 
-void PageSchedulerImpl::UpdateBackgroundThrottlingState(
+void PageSchedulerImpl::UpdateBackgroundSchedulingLifecycleState(
     NotificationPolicy notification_policy) {
   if (page_visibility_ == PageVisibilityState::kVisible) {
     is_throttled_ = false;
     do_throttle_page_callback_.Cancel();
-    UpdateBackgroundBudgetPoolThrottlingState();
+    UpdateBackgroundBudgetPoolSchedulingLifecycleState();
   } else {
     main_thread_scheduler_->ControlTaskRunner()->PostDelayedTask(
         FROM_HERE, do_throttle_page_callback_.GetCallback(),
@@ -450,11 +451,11 @@ void PageSchedulerImpl::DoThrottlePage() {
   do_throttle_page_callback_.Cancel();
   is_throttled_ = true;
 
-  UpdateBackgroundBudgetPoolThrottlingState();
+  UpdateBackgroundBudgetPoolSchedulingLifecycleState();
   NotifyFrames();
 }
 
-void PageSchedulerImpl::UpdateBackgroundBudgetPoolThrottlingState() {
+void PageSchedulerImpl::UpdateBackgroundBudgetPoolSchedulingLifecycleState() {
   if (!background_time_budget_pool_)
     return;
 

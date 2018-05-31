@@ -124,7 +124,7 @@ class ResourceLoadScheduler::TrafficMonitor {
   ~TrafficMonitor();
 
   // Notified when the ThrottlingState is changed.
-  void OnThrottlingStateChanged(FrameScheduler::ThrottlingState);
+  void OnLifecycleStateChanged(scheduler::SchedulingLifecycleState);
 
   // Reports resource request completion.
   void Report(const ResourceLoadScheduler::TrafficReportHints&);
@@ -137,8 +137,8 @@ class ResourceLoadScheduler::TrafficMonitor {
 
   const WeakPersistent<FetchContext> context_;  // NOT OWNED
 
-  FrameScheduler::ThrottlingState current_state_ =
-      FrameScheduler::ThrottlingState::kStopped;
+  scheduler::SchedulingLifecycleState current_state_ =
+      scheduler::SchedulingLifecycleState::kStopped;
 
   size_t total_throttled_request_count_ = 0;
   size_t total_throttled_traffic_bytes_ = 0;
@@ -171,8 +171,8 @@ ResourceLoadScheduler::TrafficMonitor::~TrafficMonitor() {
   ReportAll();
 }
 
-void ResourceLoadScheduler::TrafficMonitor::OnThrottlingStateChanged(
-    FrameScheduler::ThrottlingState state) {
+void ResourceLoadScheduler::TrafficMonitor::OnLifecycleStateChanged(
+    scheduler::SchedulingLifecycleState state) {
   current_state_ = state;
   throttling_state_change_count_++;
 }
@@ -224,8 +224,8 @@ void ResourceLoadScheduler::TrafficMonitor::Report(
        kMaximumReportSize1G, kReportBucketCount));
 
   switch (current_state_) {
-    case FrameScheduler::ThrottlingState::kThrottled:
-    case FrameScheduler::ThrottlingState::kHidden:
+    case scheduler::SchedulingLifecycleState::kThrottled:
+    case scheduler::SchedulingLifecycleState::kHidden:
       if (is_main_frame_) {
         request_count_by_circumstance.Count(
             ToSample(ReportCircumstance::kMainframeThrottled));
@@ -241,7 +241,7 @@ void ResourceLoadScheduler::TrafficMonitor::Report(
       total_throttled_traffic_bytes_ += hints.encoded_data_length();
       total_throttled_decoded_bytes_ += hints.decoded_body_length();
       break;
-    case FrameScheduler::ThrottlingState::kNotThrottled:
+    case scheduler::SchedulingLifecycleState::kNotThrottled:
       if (is_main_frame_) {
         request_count_by_circumstance.Count(
             ToSample(ReportCircumstance::kMainframeNotThrottled));
@@ -261,7 +261,7 @@ void ResourceLoadScheduler::TrafficMonitor::Report(
       total_not_throttled_traffic_bytes_ += hints.encoded_data_length();
       total_not_throttled_decoded_bytes_ += hints.decoded_body_length();
       break;
-    case FrameScheduler::ThrottlingState::kStopped:
+    case scheduler::SchedulingLifecycleState::kStopped:
       break;
   }
 
@@ -396,8 +396,8 @@ ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
       !Platform::Current()->IsRendererSideResourceSchedulerEnabled()) {
     // Initialize TrafficMonitor's state to be |kNotThrottled| so that it
     // reports metrics in a reasonable state group.
-    traffic_monitor_->OnThrottlingStateChanged(
-        FrameScheduler::ThrottlingState::kNotThrottled);
+    traffic_monitor_->OnLifecycleStateChanged(
+        scheduler::SchedulingLifecycleState::kNotThrottled);
     return;
   }
 
@@ -418,7 +418,7 @@ ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
   }
 
   is_enabled_ = true;
-  scheduler_observer_handle_ = scheduler->AddThrottlingObserver(
+  scheduler_observer_handle_ = scheduler->AddLifecycleObserver(
       FrameScheduler::ObserverType::kLoader, this);
 }
 
@@ -602,10 +602,10 @@ bool ResourceLoadScheduler::IsThrottablePriority(
   if (RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled()) {
     // If this scheduler is throttled by the associated FrameScheduler,
     // consider every prioritiy as throttlable.
-    const auto state = frame_scheduler_throttling_state_;
-    if (state == FrameScheduler::ThrottlingState::kHidden ||
-        state == FrameScheduler::ThrottlingState::kThrottled ||
-        state == FrameScheduler::ThrottlingState::kStopped) {
+    const auto state = frame_scheduler_lifecycle_state_;
+    if (state == scheduler::SchedulingLifecycleState::kHidden ||
+        state == scheduler::SchedulingLifecycleState::kThrottled ||
+        state == scheduler::SchedulingLifecycleState::kStopped) {
       return true;
     }
   }
@@ -613,31 +613,31 @@ bool ResourceLoadScheduler::IsThrottablePriority(
   return priority < ResourceLoadPriority::kHigh;
 }
 
-void ResourceLoadScheduler::OnThrottlingStateChanged(
-    FrameScheduler::ThrottlingState state) {
-  if (frame_scheduler_throttling_state_ == state)
+void ResourceLoadScheduler::OnLifecycleStateChanged(
+    scheduler::SchedulingLifecycleState state) {
+  if (frame_scheduler_lifecycle_state_ == state)
     return;
 
   if (traffic_monitor_)
-    traffic_monitor_->OnThrottlingStateChanged(state);
+    traffic_monitor_->OnLifecycleStateChanged(state);
 
-  frame_scheduler_throttling_state_ = state;
+  frame_scheduler_lifecycle_state_ = state;
 
   switch (state) {
-    case FrameScheduler::ThrottlingState::kHidden:
-    case FrameScheduler::ThrottlingState::kThrottled:
+    case scheduler::SchedulingLifecycleState::kHidden:
+    case scheduler::SchedulingLifecycleState::kThrottled:
       if (throttling_history_ == ThrottlingHistory::kInitial)
         throttling_history_ = ThrottlingHistory::kThrottled;
       else if (throttling_history_ == ThrottlingHistory::kNotThrottled)
         throttling_history_ = ThrottlingHistory::kPartiallyThrottled;
       break;
-    case FrameScheduler::ThrottlingState::kNotThrottled:
+    case scheduler::SchedulingLifecycleState::kNotThrottled:
       if (throttling_history_ == ThrottlingHistory::kInitial)
         throttling_history_ = ThrottlingHistory::kNotThrottled;
       else if (throttling_history_ == ThrottlingHistory::kThrottled)
         throttling_history_ = ThrottlingHistory::kPartiallyThrottled;
       break;
-    case FrameScheduler::ThrottlingState::kStopped:
+    case scheduler::SchedulingLifecycleState::kStopped:
       throttling_history_ = ThrottlingHistory::kStopped;
       break;
   }
@@ -688,14 +688,14 @@ void ResourceLoadScheduler::Run(ResourceLoadScheduler::ClientId id,
 size_t ResourceLoadScheduler::GetOutstandingLimit() const {
   size_t limit = kOutstandingUnlimited;
 
-  switch (frame_scheduler_throttling_state_) {
-    case FrameScheduler::ThrottlingState::kHidden:
-    case FrameScheduler::ThrottlingState::kThrottled:
+  switch (frame_scheduler_lifecycle_state_) {
+    case scheduler::SchedulingLifecycleState::kHidden:
+    case scheduler::SchedulingLifecycleState::kThrottled:
       limit = std::min(limit, outstanding_limit_for_throttled_frame_scheduler_);
       break;
-    case FrameScheduler::ThrottlingState::kNotThrottled:
+    case scheduler::SchedulingLifecycleState::kNotThrottled:
       break;
-    case FrameScheduler::ThrottlingState::kStopped:
+    case scheduler::SchedulingLifecycleState::kStopped:
       if (RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled())
         limit = 0;
       break;
