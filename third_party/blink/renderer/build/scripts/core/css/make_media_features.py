@@ -8,10 +8,10 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
+from blinkbuild.name_style_converter import NameStyleConverter
 import media_feature_symbol
 import json5_generator
 import template_expander
-import name_utilities
 
 
 class MakeMediaFeaturesWriter(json5_generator.Writer):
@@ -21,7 +21,7 @@ class MakeMediaFeaturesWriter(json5_generator.Writer):
     }
     filters = {
         'symbol': media_feature_symbol.getMediaFeatureSymbolWithSuffix(''),
-        'upper_first_letter': name_utilities.upper_first_letter,
+        'to_function_name': lambda symbol: NameStyleConverter(symbol).to_function_name(),
     }
 
     def __init__(self, json5_file_path, output_dir):
