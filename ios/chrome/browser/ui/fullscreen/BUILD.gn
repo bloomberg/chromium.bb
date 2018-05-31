@@ -29,7 +29,7 @@ source_set("fullscreen") {
   ]
 }
 
-source_set("features") {
+source_set("feature_flags") {
   sources = [
     "fullscreen_features.h",
     "fullscreen_features.mm",
@@ -84,7 +84,7 @@ source_set("internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
-    ":features",
+    ":feature_flags",
     ":ui",
     "//base",
     "//components/keyed_service/ios",

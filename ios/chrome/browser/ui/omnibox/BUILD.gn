@@ -118,7 +118,7 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/ui/omnibox/popup",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
-    "//ios/chrome/browser/ui/toolbar/public:toolbar_base_feature",
+    "//ios/chrome/browser/ui/toolbar/public:feature_flags",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser",

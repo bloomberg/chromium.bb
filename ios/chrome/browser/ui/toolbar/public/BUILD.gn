@@ -13,7 +13,7 @@ source_set("public") {
     "toolbar_coordinating.h",
   ]
   deps = [
-    ":toolbar_base_feature",
+    ":feature_flags",
     "//base",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/activity_services/requirements",
@@ -26,10 +26,10 @@ source_set("public") {
   ]
 }
 
-source_set("toolbar_base_feature") {
+source_set("feature_flags") {
   sources = [
-    "toolbar_controller_base_feature.h",
-    "toolbar_controller_base_feature.mm",
+    "features.cc",
+    "features.h",
   ]
   deps = [
     "//base",

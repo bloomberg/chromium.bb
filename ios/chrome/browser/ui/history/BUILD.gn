@@ -29,7 +29,7 @@ source_set("history") {
     "legacy_history_entry_item.mm",
   ]
   deps = [
-    ":history_base_feature",
+    ":feature_flags",
     ":history_ui",
     "//base",
     "//base:i18n",
@@ -132,11 +132,11 @@ source_set("history_ui") {
   ]
 }
 
-source_set("history_base_feature") {
+source_set("feature_flags") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "history_base_feature.h",
-    "history_base_feature.mm",
+    "features.cc",
+    "features.h",
   ]
   deps = [
     "//base",

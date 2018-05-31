@@ -23,7 +23,7 @@ source_set("ssl") {
     "ios_ssl_error_handler.mm",
   ]
   deps = [
-    ":features",
+    ":feature_flags",
     "//base",
     "//base:i18n",
     "//components/captive_portal",
@@ -45,7 +45,7 @@ source_set("ssl") {
   ]
 }
 
-source_set("features") {
+source_set("feature_flags") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "captive_portal_features.cc",
@@ -65,10 +65,10 @@ source_set("unit_tests") {
     "ios_ssl_error_handler_unittest.mm",
   ]
   deps = [
+    ":feature_flags",
     ":ssl",
     "//components/security_state/core",
     "//ios/chrome/browser/browser_state:test_support",
-    "//ios/chrome/browser/ssl:features",
     "//ios/chrome/browser/web:test_support",
     "//ios/testing:ios_test_support",
     "//ios/web",
