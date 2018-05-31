@@ -427,6 +427,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   //   - is_idle_, must_suspend_,
   //   - paused_, ended_,
   //   - pending_suspend_resume_cycle_,
+  //   - enter_pip_callback_,
   void UpdatePlayState();
 
   // Methods internal to UpdatePlayState().
@@ -922,6 +923,13 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Keeps track of the SurfaceId for Picture-in-Picture. This is used to
   // route the video to be shown in the Picture-in-Picture window.
   viz::SurfaceId pip_surface_id_;
+
+  // Sets when entering Picture-in-Picture was delayed because no
+  // |pip_surface_id_| was available. This happens when the
+  // PreloadMetadataSuspend optimization is enabled and the player wouldn't
+  // create the surface until playback.
+  base::Optional<blink::WebMediaPlayer::PipWindowOpenedCallback>
+      enter_pip_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

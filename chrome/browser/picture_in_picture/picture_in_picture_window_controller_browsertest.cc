@@ -293,4 +293,30 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(in_picture_in_picture);
 }
 
+// Tests that we can enter Picture-in-Picture when a video is not preloaded,
+// using the metadata optimizations. This test is checking that there are no
+// crashes.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       EnterMetadataPosterOptimisation) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL(
+          "media/picture-in-picture/player_metadata_poster.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents);
+
+  SetUpWindowController(active_web_contents);
+
+  EXPECT_TRUE(
+      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
+
+  base::string16 expected_title = base::ASCIIToUTF16("entered_pip");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+}
+
 #endif  // !defined(OS_LINUX) && !defined(OS_WIN)

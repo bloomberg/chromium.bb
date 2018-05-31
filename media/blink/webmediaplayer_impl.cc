@@ -420,6 +420,13 @@ void WebMediaPlayerImpl::UnregisterContentsLayer(cc::Layer* layer) {
 void WebMediaPlayerImpl::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
   pip_surface_id_ = surface_id;
 
+  // If there was a request to enter Picture-in-Picture while the pipeline was
+  // suspended, this call should trigger Picture-in-Picture.
+  if (enter_pip_callback_) {
+    EnterPictureInPicture(std::move(*enter_pip_callback_));
+    enter_pip_callback_.reset();
+  }
+
   // TODO(726619): Handle the behavior when Picture-in-Picture mode is
   // disabled.
   // The viz::SurfaceId may be updated when the video begins playback or when
@@ -806,7 +813,17 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
 
 void WebMediaPlayerImpl::EnterPictureInPicture(
     blink::WebMediaPlayer::PipWindowOpenedCallback callback) {
-  DCHECK(pip_surface_id_.is_valid());
+  // When the pipeline is suspended, there will be no valid surface. In this
+  // case, resuming the pipeline will auto-trigger Picture-in-Picture.
+  if (!pip_surface_id_.is_valid()) {
+    DCHECK(pipeline_controller_.IsSuspended());
+    enter_pip_callback_ = std::move(callback);
+
+    // This will trigger the pipeline to resume now that the player is pending
+    // to enter in Picture-in-Picture.
+    UpdatePlayState();
+    return;
+  }
 
   // Notifies the browser process that the player should now be in
   // Picture-in-Picture mode.
@@ -2687,6 +2704,11 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   // Combined suspend state.
   result.is_suspended = is_remote || must_suspend || idle_suspended ||
                         background_suspended || can_stay_suspended;
+
+  // When Picture-in-Picture has been triggered, the pipeline needs to be
+  // resumed.
+  if (enter_pip_callback_ && !must_suspend && !is_remote)
+    result.is_suspended = false;
 
   DVLOG(3) << __func__ << ": is_remote=" << is_remote
            << ", must_suspend=" << must_suspend
