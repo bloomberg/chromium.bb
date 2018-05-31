@@ -5232,9 +5232,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device4",
+              "id": "build211-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5264,9 +5264,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device4",
+              "id": "build212-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5298,9 +5298,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device4",
+              "id": "build212-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5330,9 +5330,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device4",
+              "id": "build212-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5364,9 +5364,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device4",
+              "id": "build212-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5396,9 +5396,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device5",
+              "id": "build213-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5430,9 +5430,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device5",
+              "id": "build213-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5462,9 +5462,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device4",
+              "id": "build213-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5496,9 +5496,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device4",
+              "id": "build213-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5528,9 +5528,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device2",
+              "id": "build213-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5562,9 +5562,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device2",
+              "id": "build213-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5594,9 +5594,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device3",
+              "id": "build211-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5628,9 +5628,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device3",
+              "id": "build211-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5660,9 +5660,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device5",
+              "id": "build212-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5694,9 +5694,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device5",
+              "id": "build212-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5726,9 +5726,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device3",
+              "id": "build211-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5760,9 +5760,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device3",
+              "id": "build211-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5792,9 +5792,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device6",
+              "id": "build213-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5826,9 +5826,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device6",
+              "id": "build213-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5858,9 +5858,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device5",
+              "id": "build213-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5892,9 +5892,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device5",
+              "id": "build213-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5924,9 +5924,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device7",
+              "id": "build211-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5958,9 +5958,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device7",
+              "id": "build211-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -5990,9 +5990,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device6",
+              "id": "build212-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6024,9 +6024,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device6",
+              "id": "build212-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6047,9 +6047,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device1",
+              "id": "build212-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6079,9 +6079,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device5",
+              "id": "build212-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6113,9 +6113,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device5",
+              "id": "build212-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6145,9 +6145,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device2",
+              "id": "build212-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6179,9 +6179,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device2",
+              "id": "build212-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6211,9 +6211,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device2",
+              "id": "build212-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6245,9 +6245,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device2",
+              "id": "build212-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6277,9 +6277,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device2",
+              "id": "build213-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6311,9 +6311,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device2",
+              "id": "build213-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6334,9 +6334,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device2",
+              "id": "build211-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6366,9 +6366,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device2",
+              "id": "build212-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6400,9 +6400,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device2",
+              "id": "build212-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6432,9 +6432,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device6",
+              "id": "build213-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6466,9 +6466,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device6",
+              "id": "build213-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6498,9 +6498,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device1",
+              "id": "build213-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6530,9 +6530,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device1",
+              "id": "build213-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6564,9 +6564,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device1",
+              "id": "build213-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6587,9 +6587,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device7",
+              "id": "build212-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6619,9 +6619,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device6",
+              "id": "build212-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6653,9 +6653,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device6",
+              "id": "build212-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6685,9 +6685,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device7",
+              "id": "build212-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6719,9 +6719,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device7",
+              "id": "build212-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6751,9 +6751,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device3",
+              "id": "build212-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6785,9 +6785,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device3",
+              "id": "build212-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6817,9 +6817,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device1",
+              "id": "build212-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6851,9 +6851,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device1",
+              "id": "build212-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6883,9 +6883,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device5",
+              "id": "build212-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6917,9 +6917,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device5",
+              "id": "build212-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6949,9 +6949,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device7",
+              "id": "build211-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -6981,9 +6981,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device6",
+              "id": "build211-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7015,9 +7015,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device6",
+              "id": "build211-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7047,9 +7047,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device4",
+              "id": "build212-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7081,9 +7081,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device4",
+              "id": "build212-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7113,9 +7113,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device4",
+              "id": "build213-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7147,9 +7147,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device4",
+              "id": "build213-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7179,9 +7179,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device6",
+              "id": "build213-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7213,9 +7213,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device6",
+              "id": "build213-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7245,9 +7245,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device5",
+              "id": "build213-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7279,9 +7279,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device5",
+              "id": "build213-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7311,9 +7311,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device4",
+              "id": "build212-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7345,9 +7345,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device4",
+              "id": "build212-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7377,9 +7377,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device6",
+              "id": "build212-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7411,9 +7411,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device6",
+              "id": "build212-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7443,9 +7443,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device3",
+              "id": "build212-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7477,9 +7477,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device3",
+              "id": "build212-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7509,9 +7509,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device6",
+              "id": "build212-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7543,9 +7543,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device6",
+              "id": "build212-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7575,9 +7575,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device5",
+              "id": "build213-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7609,9 +7609,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device5",
+              "id": "build213-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7641,9 +7641,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device1",
+              "id": "build212-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7675,9 +7675,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device1",
+              "id": "build212-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7707,9 +7707,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device7",
+              "id": "build211-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7741,9 +7741,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device7",
+              "id": "build211-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7773,9 +7773,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device3",
+              "id": "build212-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7807,9 +7807,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device3",
+              "id": "build212-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7839,9 +7839,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device6",
+              "id": "build213-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7873,9 +7873,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device6",
+              "id": "build213-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7905,9 +7905,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device2",
+              "id": "build211-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7939,9 +7939,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device2",
+              "id": "build211-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -7971,9 +7971,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device5",
+              "id": "build212-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8005,9 +8005,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device5",
+              "id": "build212-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8037,9 +8037,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device3",
+              "id": "build212-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8071,9 +8071,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device3",
+              "id": "build212-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8103,9 +8103,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device2",
+              "id": "build211-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8137,9 +8137,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device2",
+              "id": "build211-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8169,9 +8169,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device3",
+              "id": "build213-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8203,9 +8203,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device3",
+              "id": "build213-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8235,9 +8235,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device2",
+              "id": "build213-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8269,9 +8269,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device2",
+              "id": "build213-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8301,9 +8301,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device2",
+              "id": "build213-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8335,9 +8335,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device2",
+              "id": "build213-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8367,9 +8367,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device6",
+              "id": "build211-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8401,9 +8401,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device6",
+              "id": "build211-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8433,9 +8433,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device4",
+              "id": "build213-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8467,9 +8467,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device4",
+              "id": "build213-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8499,9 +8499,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device1",
+              "id": "build212-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8533,9 +8533,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device1",
+              "id": "build212-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8565,9 +8565,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device5",
+              "id": "build213-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8599,9 +8599,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device5",
+              "id": "build213-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8631,9 +8631,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device7",
+              "id": "build213-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8665,9 +8665,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device7",
+              "id": "build213-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8697,9 +8697,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device3",
+              "id": "build212-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8731,9 +8731,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device3",
+              "id": "build212-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8763,9 +8763,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device7",
+              "id": "build213-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8797,9 +8797,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device7",
+              "id": "build213-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8829,9 +8829,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device2",
+              "id": "build212-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8863,9 +8863,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device2",
+              "id": "build212-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8895,9 +8895,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device1",
+              "id": "build213-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8929,9 +8929,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device1",
+              "id": "build213-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8961,9 +8961,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device5",
+              "id": "build212-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -8995,9 +8995,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device5",
+              "id": "build212-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9027,9 +9027,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device2",
+              "id": "build212-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9059,9 +9059,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device4",
+              "id": "build211-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9093,9 +9093,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device4",
+              "id": "build211-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9127,9 +9127,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device2",
+              "id": "build212-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9159,9 +9159,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device2",
+              "id": "build212-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9191,9 +9191,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device4",
+              "id": "build211-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9225,9 +9225,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device4",
+              "id": "build211-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9259,9 +9259,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device2",
+              "id": "build212-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9291,9 +9291,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device4",
+              "id": "build212-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9325,9 +9325,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device4",
+              "id": "build212-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9357,9 +9357,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device5",
+              "id": "build213-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9391,9 +9391,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device5",
+              "id": "build213-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9423,9 +9423,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device7",
+              "id": "build212-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9457,9 +9457,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device7",
+              "id": "build212-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9489,9 +9489,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device1",
+              "id": "build211-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9523,9 +9523,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device1",
+              "id": "build211-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9555,9 +9555,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device1",
+              "id": "build212-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9589,9 +9589,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device1",
+              "id": "build212-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9621,9 +9621,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device1",
+              "id": "build212-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9655,9 +9655,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device1",
+              "id": "build212-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9687,9 +9687,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device6",
+              "id": "build211-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9721,9 +9721,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device6",
+              "id": "build211-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9753,9 +9753,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device6",
+              "id": "build212-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9787,9 +9787,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device6",
+              "id": "build212-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9819,9 +9819,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device4",
+              "id": "build213-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9853,9 +9853,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device4",
+              "id": "build213-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9885,9 +9885,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device5",
+              "id": "build212-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9919,9 +9919,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build74-b1--device5",
+              "id": "build212-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9951,9 +9951,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device3",
+              "id": "build213-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -9985,9 +9985,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device3",
+              "id": "build213-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -10017,9 +10017,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device3",
+              "id": "build213-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -10051,9 +10051,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device3",
+              "id": "build213-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -10083,9 +10083,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device6",
+              "id": "build213-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -10117,9 +10117,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device6",
+              "id": "build213-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -10140,9 +10140,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device2",
+              "id": "build211-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -10172,9 +10172,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device5",
+              "id": "build211-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -10204,9 +10204,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device4",
+              "id": "build211-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -10238,9 +10238,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device4",
+              "id": "build211-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -10272,9 +10272,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device5",
+              "id": "build211-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -10304,9 +10304,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build75-b1--device7",
+              "id": "build213-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -10336,9 +10336,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device3",
+              "id": "build211-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -10370,9 +10370,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device3",
+              "id": "build211-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -10402,9 +10402,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device6",
+              "id": "build211-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -10436,9 +10436,9 @@
               "device_os": "MMB29Q",
               "device_os_flavor": "google",
               "device_type": "bullhead",
-              "id": "build73-b1--device6",
+              "id": "build211-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
