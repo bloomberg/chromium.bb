@@ -20,8 +20,8 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 
-constexpr float kTouchToolbarInkDropVisibleOpacity = 0.06f;
-constexpr float kTouchToolbarHighlightVisibleOpacity = 0.08f;
+constexpr float kToolbarInkDropVisibleOpacity = 0.06f;
+constexpr float kToolbarInkDropHighlightVisibleOpacity = 0.08f;
 
 // The below utility functions are templated since we have two different types
 // of buttons on the toolbar (ToolbarButton and AppMenuButton) which don't share
@@ -56,8 +56,8 @@ gfx::Insets GetInkDropInsets(BaseInkDropHostView* host_view) {
   return inkdrop_insets;
 }
 
-// Creates the appropriate ink drop for the calling button. When the touch-
-// optimized UI is not enabled, it uses the default implementation of the
+// Creates the appropriate ink drop for the calling button. When the newer
+// material UI is not enabled, it uses the default implementation of the
 // calling button's base class (the template argument BaseInkDropHostView).
 // Otherwise, it uses an ink drop that shows a highlight on hover that is kept
 // and combined with the ripple when the ripple is shown.
@@ -76,7 +76,7 @@ std::unique_ptr<views::InkDrop> CreateToolbarInkDrop(
 }
 
 // Creates the appropriate ink drop ripple for the calling button. When the
-// touch-optimized UI is not enabled, it uses the default implementation of the
+// newer material UI is not enabled, it uses the default implementation of the
 // calling button's base class (the template argument BaseInkDropHostView).
 // Otherwise, it uses a |FloodFillInkDropRipple|.
 template <class BaseInkDropHostView>
@@ -92,9 +92,10 @@ std::unique_ptr<views::InkDropRipple> CreateToolbarInkDropRipple(
 }
 
 // Creates the appropriate ink drop highlight for the calling button. When the
-// touch-optimized UI is not enabled, it uses the default implementation of the
+// newer material UI is not enabled, it uses the default implementation of the
 // calling button's base class (the template argument BaseInkDropHostView).
-// Otherwise, it uses a kTouchInkDropHighlightSize circular highlight.
+// Otherwise, it uses a circular highlight with the same height as the location
+// bar.
 template <class BaseInkDropHostView>
 std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(
     const BaseInkDropHostView* host_view,
@@ -108,12 +109,12 @@ std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(
   auto highlight = std::make_unique<views::InkDropHighlight>(
       highlight_size, host_view->ink_drop_large_corner_radius(),
       gfx::PointF(center_point), host_view->GetInkDropBaseColor());
-  highlight->set_visible_opacity(kTouchToolbarHighlightVisibleOpacity);
+  highlight->set_visible_opacity(kToolbarInkDropHighlightVisibleOpacity);
   return highlight;
 }
 
 // Creates the appropriate ink drop mask for the calling button. When the
-// touch-optimized UI is not enabled, it uses the default implementation of the
+// newer material UI is not enabled, it uses the default implementation of the
 // calling button's base class (the template argument BaseInkDropHostView).
 // Otherwise, it uses a circular mask that has the same size as that of the
 // highlight, which is needed to make the flood
