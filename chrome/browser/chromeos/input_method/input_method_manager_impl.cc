@@ -502,8 +502,8 @@ void InputMethodManagerImpl::StateImpl::ChangeInputMethod(
   // happens after activating the 3rd party IME.
   // So here to record the 3rd party IME to be activated, and activate it
   // when SetEnabledExtensionImes happens later.
-  if (MethodAwaitsExtensionLoad(descriptor->id()))
-    pending_input_method_id = descriptor->id();
+  if (MethodAwaitsExtensionLoad(input_method_id))
+    pending_input_method_id = input_method_id;
 
   if (descriptor->id() != current_input_method.id()) {
     previous_input_method = current_input_method;
