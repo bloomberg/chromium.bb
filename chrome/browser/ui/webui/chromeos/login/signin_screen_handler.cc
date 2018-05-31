@@ -1229,13 +1229,9 @@ void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
     user_context = UserContext(*user);
   }
   user_context.SetKey(Key(password));
-  // Only save the password for enterprise users. See https://crbug.com/386606.
-  const bool is_enterprise_managed = g_browser_process->platform_part()
-                                         ->browser_policy_connector_chromeos()
-                                         ->IsEnterpriseManaged();
-  if (is_enterprise_managed) {
-    user_context.SetPasswordKey(Key(password));
-  }
+  // Save the user's plaintext password for possible authentication to a
+  // network. See https://crbug.com/386606 for details.
+  user_context.SetPasswordKey(Key(password));
   user_context.SetIsUsingPin(authenticated_by_pin);
   if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY &&
       (user_context.GetUserType() !=
