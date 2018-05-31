@@ -46,7 +46,8 @@ TestScreen::~TestScreen() {
 
 WindowTreeHost* TestScreen::CreateHostForPrimaryDisplay() {
   DCHECK(!host_);
-  if (window_tree_client_) {
+  if (window_tree_client_ &&
+      window_tree_client_->config() == WindowTreeClient::Config::kMash) {
     host_ = WindowTreeClientPrivate(window_tree_client_)
                 .CallWmNewDisplayAdded(GetPrimaryDisplay());
   } else {

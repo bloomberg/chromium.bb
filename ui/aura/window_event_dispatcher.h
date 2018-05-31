@@ -57,7 +57,10 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
                                           public WindowObserver,
                                           public EnvObserver {
  public:
-  explicit WindowEventDispatcher(WindowTreeHost* host);
+  // |are_events_in_pixels| indicates if events are
+  // received in pixels. If |are_events_in_pixels| is false, events are
+  // received in DIPs.
+  WindowEventDispatcher(WindowTreeHost* host, bool are_events_in_pixels);
   ~WindowEventDispatcher() override;
 
   WindowTreeHost* host() { return host_; }
@@ -280,16 +283,18 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
 
   WindowTreeHost* host_;
 
-  Window* mouse_pressed_handler_;
-  Window* mouse_moved_handler_;
-  Window* touchpad_pinch_handler_;
-  Window* event_dispatch_target_;
-  Window* old_dispatch_target_;
+  const bool are_events_in_pixels_;
+
+  Window* mouse_pressed_handler_ = nullptr;
+  Window* mouse_moved_handler_ = nullptr;
+  Window* touchpad_pinch_handler_ = nullptr;
+  Window* event_dispatch_target_ = nullptr;
+  Window* old_dispatch_target_ = nullptr;
 
   ui::FractionOfTimeWithoutUserInputRecorder
       fraction_of_time_without_user_input_recorder_;
 
-  bool synthesize_mouse_move_;
+  bool synthesize_mouse_move_ = false;
 
   // Whether a OnWindowTargetTransformChanging() call didn't have its
   // corresponding OnWindowTransformed() call yet.
@@ -297,7 +302,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
 
   // How many move holds are outstanding. We try to defer dispatching
   // touch/mouse moves while the count is > 0.
-  int move_hold_count_;
+  int move_hold_count_ = 0;
   // The location of |held_move_event_| is in |window_|'s coordinate.
   std::unique_ptr<ui::LocatedEvent> held_move_event_;
 
@@ -305,16 +310,16 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   std::unique_ptr<ui::LocatedEvent> held_repostable_event_;
 
   // Set when dispatching a held event.
-  ui::LocatedEvent* dispatching_held_event_;
+  ui::LocatedEvent* dispatching_held_event_ = nullptr;
 
-  ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
+  ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_{this};
 
   std::unique_ptr<MusMouseLocationUpdater> mus_mouse_location_updater_;
 
   // The default EventTargeter for WindowEventDispatcher generated events.
   std::unique_ptr<WindowTargeter> event_targeter_;
 
-  bool skip_ime_;
+  bool skip_ime_ = false;
 
   // This callback is called when the held move event is dispatched, or when
   // pointer moves are released and there is no held move event.
@@ -325,10 +330,10 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   std::queue<std::unique_ptr<ObserverNotifier>> observer_notifiers_;
 
   // Used to schedule reposting an event.
-  base::WeakPtrFactory<WindowEventDispatcher> repost_event_factory_;
+  base::WeakPtrFactory<WindowEventDispatcher> repost_event_factory_{this};
 
   // Used to schedule DispatchHeldEvents() when |move_hold_count_| goes to 0.
-  base::WeakPtrFactory<WindowEventDispatcher> held_event_factory_;
+  base::WeakPtrFactory<WindowEventDispatcher> held_event_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WindowEventDispatcher);
 };

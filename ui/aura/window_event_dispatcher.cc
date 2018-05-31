@@ -98,19 +98,11 @@ WindowEventDispatcher::ObserverNotifier::~ObserverNotifier() {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowEventDispatcher, public:
 
-WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
+WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host,
+                                             bool are_events_in_pixels)
     : host_(host),
-      mouse_pressed_handler_(NULL),
-      mouse_moved_handler_(NULL),
-      touchpad_pinch_handler_(nullptr),
-      event_dispatch_target_(NULL),
-      old_dispatch_target_(NULL),
-      synthesize_mouse_move_(false),
-      move_hold_count_(0),
-      dispatching_held_event_(nullptr),
-      observer_manager_(this),
-      event_targeter_(new WindowTargeter),
-      skip_ime_(false),
+      are_events_in_pixels_(are_events_in_pixels),
+      event_targeter_(std::make_unique<WindowTargeter>()),
       repost_event_factory_(this),
       held_event_factory_(this) {
   ui::GestureRecognizer::Get()->AddGestureEventHelper(this);
@@ -549,8 +541,10 @@ void WindowEventDispatcher::OnEventProcessingStarted(ui::Event* event) {
   // The held events are already in |window()|'s coordinate system. So it is
   // not necessary to apply the transform to convert from the host's
   // coordinate system to |window()|'s coordinate system.
-  if (event->IsLocatedEvent() && !is_dispatched_held_event(*event))
+  if (event->IsLocatedEvent() && !is_dispatched_held_event(*event) &&
+      are_events_in_pixels_) {
     TransformEventForDeviceScaleFactor(static_cast<ui::LocatedEvent*>(event));
+  }
 
   if (mus_mouse_location_updater_)
     mus_mouse_location_updater_->OnEventProcessingStarted(*event);
