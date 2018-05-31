@@ -6,6 +6,7 @@
 
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
+#include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
@@ -35,18 +36,50 @@ void MarkRequestCompleteTask::Start() {
 }
 
 void MarkRequestCompleteTask::StoreResponse() {
-  ServiceWorkerResponse response;
+  auto response = std::make_unique<ServiceWorkerResponse>();
   bool is_response_valid = data_manager()->FillServiceWorkerResponse(
-      *request_info_, registration_id_.origin(), &response);
+      *request_info_, registration_id_.origin(), response.get());
 
   if (!is_response_valid) {
     // No point in caching the response, just do the request state transition.
+    CreateAndStoreCompletedRequest(/* succeeded = */ false);
+    return;
+  }
+  cache_manager_->OpenCache(
+      registration_id_.origin(), CacheStorageOwner::kBackgroundFetch,
+      registration_id_.unique_id() /* cache_name */,
+      base::BindOnce(&MarkRequestCompleteTask::DidOpenCache,
+                     weak_factory_.GetWeakPtr(), std::move(response)));
+}
+
+void MarkRequestCompleteTask::DidOpenCache(
+    std::unique_ptr<ServiceWorkerResponse> response,
+    CacheStorageCacheHandle handle,
+    blink::mojom::CacheStorageError error) {
+  if (error != blink::mojom::CacheStorageError::kSuccess) {
+    // TODO(crbug.com/780025): Log failures to UMA.
     CreateAndStoreCompletedRequest(false);
     return;
   }
-  // TODO(rayankans): Store the request/response pair in cache storage, and call
-  // `CreateAndStoreActiveRequest` via a callback.
-  CreateAndStoreCompletedRequest(true);
+  DCHECK(handle.value());
+
+  auto request = std::make_unique<ServiceWorkerFetchRequest>(
+      request_info_->fetch_request());
+
+  // We need to keep the handle refcounted while the write is happening,
+  // so it's passed along to the callback.
+  handle.value()->Put(
+      std::move(request), std::move(response),
+      base::BindOnce(&MarkRequestCompleteTask::DidWriteToCache,
+                     weak_factory_.GetWeakPtr(), std::move(handle)));
+}
+
+void MarkRequestCompleteTask::DidWriteToCache(
+    CacheStorageCacheHandle handle,
+    blink::mojom::CacheStorageError error) {
+  // TODO(crbug.com/780025): Log failures to UMA.
+  CreateAndStoreCompletedRequest(
+      /* succeeded = */ error == blink::mojom::CacheStorageError::kSuccess);
 }
 
 void MarkRequestCompleteTask::CreateAndStoreCompletedRequest(bool succeeded) {

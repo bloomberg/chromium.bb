@@ -78,12 +78,21 @@ void DidGetRegistrationUserDataByKeyPrefix(base::Closure quit_closure,
 }
 
 void AnnotateRequestInfoWithFakeDownloadManagerData(
-    BackgroundFetchRequestInfo* request_info) {
-  // Fill |request_info| with a failed result.
-  request_info->SetResult(std::make_unique<BackgroundFetchResult>(
-      base::Time::Now(), BackgroundFetchResult::FailureReason::UNKNOWN));
+    BackgroundFetchRequestInfo* request_info,
+    bool success = false) {
+  DCHECK(request_info);
+
   request_info->PopulateWithResponse(
       std::make_unique<BackgroundFetchResponse>(std::vector<GURL>(1), nullptr));
+
+  if (!success) {
+    // Fill |request_info| with a failed result.
+    request_info->SetResult(std::make_unique<BackgroundFetchResult>(
+        base::Time::Now(), BackgroundFetchResult::FailureReason::UNKNOWN));
+  } else {
+    request_info->SetResult(std::make_unique<BackgroundFetchResult>(
+        base::Time::Now(), base::FilePath(), 42u /* file_size */));
+  }
 }
 
 void GetNumUserData(base::Closure quit_closure,
@@ -135,7 +144,15 @@ class BackgroundFetchTestDataManager : public BackgroundFetchDataManager {
                                    nullptr /* cache_storage_context */),
         browser_context_(browser_context) {}
 
+  bool FillServiceWorkerResponse(const BackgroundFetchRequestInfo& request,
+                                 const url::Origin& origin,
+                                 ServiceWorkerResponse* response) override {
+    return request.IsResultSuccess();
+  }
+
  private:
+  friend class BackgroundFetchDataManagerTest;
+
   void CreateCacheStorageManager() {
     StoragePartition* storage_partition =
         BrowserContext::GetDefaultStoragePartition(browser_context_);
@@ -146,17 +163,17 @@ class BackgroundFetchTestDataManager : public BackgroundFetchDataManager {
     // Wait for ChromeBlobStorageContext to finish initializing.
     base::RunLoop().RunUntilIdle();
 
-    auto mock_quota_manager = base::MakeRefCounted<MockQuotaManager>(
+    mock_quota_manager_ = base::MakeRefCounted<MockQuotaManager>(
         storage_partition->GetPath().empty(), storage_partition->GetPath(),
         base::ThreadTaskRunnerHandle::Get().get(),
         base::MakeRefCounted<MockSpecialStoragePolicy>());
-    mock_quota_manager->SetQuota(GURL("https://example.com/"),
-                                 StorageType::kTemporary, 1024 * 1024 * 100);
+    mock_quota_manager_->SetQuota(GURL("https://example.com/"),
+                                  StorageType::kTemporary, 1024 * 1024 * 100);
 
     cache_manager_ = CacheStorageManager::Create(
         storage_partition->GetPath(), base::ThreadTaskRunnerHandle::Get(),
         base::MakeRefCounted<MockBGFQuotaManagerProxy>(
-            mock_quota_manager.get()));
+            mock_quota_manager_.get()));
     DCHECK(cache_manager_);
 
     cache_manager_->SetBlobParametersForCache(
@@ -170,6 +187,7 @@ class BackgroundFetchTestDataManager : public BackgroundFetchDataManager {
     return cache_manager_.get();
   }
 
+  scoped_refptr<MockQuotaManager> mock_quota_manager_;
   std::unique_ptr<CacheStorageManager> cache_manager_;
   BrowserContext* browser_context_;
 
@@ -422,6 +440,38 @@ class BackgroundFetchDataManagerTest
     return data;
   }
 
+  // Synchronous version of CacheStorageManager::HasCache().
+  bool HasCache(const std::string& cache_name) {
+    bool result = false;
+
+    base::RunLoop run_loop;
+    background_fetch_data_manager_->GetCacheStorageManager()->HasCache(
+        origin(), CacheStorageOwner::kBackgroundFetch, cache_name,
+        base::BindOnce(&BackgroundFetchDataManagerTest::DidFindCache,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       &result));
+    run_loop.Run();
+
+    return result;
+  }
+
+  // Synchronous version of CacheStorageManager::MatchCache().
+  bool MatchCache(const ServiceWorkerFetchRequest& request) {
+    bool result = false;
+    auto request_ptr = std::make_unique<ServiceWorkerFetchRequest>(request);
+
+    base::RunLoop run_loop;
+    background_fetch_data_manager_->GetCacheStorageManager()->MatchCache(
+        origin(), CacheStorageOwner::kBackgroundFetch, kExampleUniqueId,
+        std::move(request_ptr), nullptr /* match_params */,
+        base::BindOnce(&BackgroundFetchDataManagerTest::DidMatchCache,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       &result));
+    run_loop.Run();
+
+    return result;
+  }
+
   // Gets information about the number of background fetch requests by state.
   ResponseStateStats GetRequestStats(int64_t service_worker_registration_id) {
     ResponseStateStats stats;
@@ -542,6 +592,28 @@ class BackgroundFetchDataManagerTest
                          size_t* out_size,
                          size_t size) {
     *out_size = size;
+    std::move(quit_closure).Run();
+  }
+
+  void DidFindCache(base::OnceClosure quit_closure,
+                    bool* out_result,
+                    bool has_cache,
+                    blink::mojom::CacheStorageError error) {
+    DCHECK_EQ(error, blink::mojom::CacheStorageError::kSuccess);
+    *out_result = has_cache;
+    std::move(quit_closure).Run();
+  }
+
+  void DidMatchCache(base::OnceClosure quit_closure,
+                     bool* out_result,
+                     blink::mojom::CacheStorageError error,
+                     std::unique_ptr<ServiceWorkerResponse> response) {
+    if (error == blink::mojom::CacheStorageError::kSuccess) {
+      DCHECK(response);
+      *out_result = true;
+    } else {
+      *out_result = false;
+    }
     std::move(quit_closure).Run();
   }
 
@@ -934,6 +1006,56 @@ TEST_P(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
       GetRequestStats(sw_id),
       (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */,
                           2 /* completed_requests */}));
+}
+
+TEST_P(BackgroundFetchDataManagerTest, WriteToCache) {
+  // This test only applies to persistent storage.
+  if (registration_storage_ ==
+      BackgroundFetchRegistrationStorage::kNonPersistent)
+    return;
+
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  BackgroundFetchRegistrationId registration_id(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+  ServiceWorkerFetchRequest request1;
+  request1.url = GURL(origin().GetURL().spec() + "1");
+  ServiceWorkerFetchRequest request2;
+  request2.url = GURL(origin().GetURL().spec() + "2");
+
+  BackgroundFetchOptions options;
+  blink::mojom::BackgroundFetchError error;
+
+  CreateRegistration(registration_id, {request1, request2}, options, &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  scoped_refptr<BackgroundFetchRequestInfo> request_info;
+  PopNextRequest(registration_id, &request_info);
+  ASSERT_TRUE(request_info);
+
+  AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
+                                                 true /* success */);
+  MarkRequestAsComplete(registration_id, request_info.get());
+
+  EXPECT_TRUE(HasCache(kExampleUniqueId));
+  EXPECT_FALSE(HasCache("foo"));
+
+  EXPECT_TRUE(MatchCache(request1));
+  EXPECT_FALSE(MatchCache(request2));
+
+  PopNextRequest(registration_id, &request_info);
+  ASSERT_TRUE(request_info);
+
+  AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
+                                                 true /* success */);
+  MarkRequestAsComplete(registration_id, request_info.get());
+  EXPECT_TRUE(MatchCache(request1));
+  EXPECT_TRUE(MatchCache(request2));
+
+  RestartDataManagerFromPersistentStorage();
+  EXPECT_TRUE(MatchCache(request1));
+  EXPECT_TRUE(MatchCache(request2));
 }
 
 TEST_P(BackgroundFetchDataManagerTest, GetSettledFetchesForRegistration) {
