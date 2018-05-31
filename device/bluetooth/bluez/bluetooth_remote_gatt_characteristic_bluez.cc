@@ -204,6 +204,25 @@ void BluetoothRemoteGattCharacteristicBlueZ::WriteRemoteCharacteristic(
                      weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
+#if defined(OS_CHROMEOS)
+void BluetoothRemoteGattCharacteristicBlueZ::PrepareWriteRemoteCharacteristic(
+    const std::vector<uint8_t>& value,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  VLOG(1) << "Sending GATT characteristic prepare write request to "
+          << "characteristic: " << GetIdentifier()
+          << ", UUID: " << GetUUID().canonical_value()
+          << ", with value: " << value << ".";
+
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothGattCharacteristicClient()
+      ->PrepareWriteValue(
+          object_path(), value, callback,
+          base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnWriteError,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback));
+}
+#endif
+
 void BluetoothRemoteGattCharacteristicBlueZ::SubscribeToNotifications(
     device::BluetoothRemoteGattDescriptor* ccc_descriptor,
     const base::Closure& callback,

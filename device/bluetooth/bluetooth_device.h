@@ -561,6 +561,20 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   std::vector<BluetoothRemoteGattService*> GetPrimaryServicesByUUID(
       const BluetoothUUID& service_uuid);
 
+#if defined(OS_CHROMEOS)
+  typedef base::Callback<void(device::BluetoothGattService::GattErrorCode)>
+      ExecuteWriteErrorCallback;
+  typedef base::Callback<void(device::BluetoothGattService::GattErrorCode)>
+      AbortWriteErrorCallback;
+  // Executes all the previous prepare writes in a reliable write session.
+  virtual void ExecuteWrite(
+      const base::Closure& callback,
+      const ExecuteWriteErrorCallback& error_callback) = 0;
+  // Aborts all the previous prepare writes in a reliable write session.
+  virtual void AbortWrite(const base::Closure& callback,
+                          const AbortWriteErrorCallback& error_callback) = 0;
+#endif
+
  protected:
   // BluetoothGattConnection is a friend to call Add/RemoveGattConnection.
   friend BluetoothGattConnection;

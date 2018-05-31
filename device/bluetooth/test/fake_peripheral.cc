@@ -338,4 +338,17 @@ void FakePeripheral::DispatchDiscoveryResponse() {
 void FakePeripheral::DisconnectGatt() {
 }
 
+#if defined(OS_CHROMEOS)
+void FakePeripheral::ExecuteWrite(
+    const base::Closure& callback,
+    const ExecuteWriteErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
+void FakePeripheral::AbortWrite(const base::Closure& callback,
+                                const AbortWriteErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+#endif
+
 }  // namespace bluetooth

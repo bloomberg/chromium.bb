@@ -24,6 +24,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/bluez/bluetooth_device_bluez.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_agent_manager_client.h"
@@ -1847,5 +1848,99 @@ TEST_F(BluetoothGattBlueZTest, NotifySessionsMadeInactive) {
   EXPECT_EQ(1U, update_sessions_.size());
   EXPECT_TRUE(update_sessions_[0]->IsActive());
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(BluetoothGattBlueZTest, ReliableWrite) {
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDeviceBlueZ* device = static_cast<BluetoothDeviceBlueZ*>(
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress));
+  ASSERT_TRUE(device);
+
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Expose the fake Heart Rate service. This will asynchronously expose
+  // characteristics.
+  fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  ASSERT_EQ(1, observer.gatt_service_added_count());
+
+  BluetoothRemoteGattService* service =
+      device->GetGattService(observer.last_gatt_service_id());
+
+  // Run the message loop so that the characteristics appear.
+  base::RunLoop().Run();
+
+  // Request to start notifications.
+  service
+      ->GetCharacteristic(fake_bluetooth_gatt_characteristic_client_
+                              ->GetHeartRateMeasurementPath()
+                              .value())
+      ->StartNotifySession(
+          base::Bind(&BluetoothGattBlueZTest::NotifySessionCallback,
+                     base::Unretained(this)),
+          base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                     base::Unretained(this)));
+  base::RunLoop().Run();
+
+  // Obtain writable Heart Rate Control Point characteristic.
+  BluetoothRemoteGattCharacteristic* characteristic =
+      service->GetCharacteristic(fake_bluetooth_gatt_characteristic_client_
+                                     ->GetHeartRateControlPointPath()
+                                     .value());
+  std::vector<uint8_t> write_value = {0x01};
+
+  // Prepare 1000 writes.
+  success_callback_count_ = 0;
+  error_callback_count_ = 0;
+  observer.Reset();
+  for (int i = 0; i < 1000; ++i) {
+    characteristic->PrepareWriteRemoteCharacteristic(
+        write_value,
+        base::Bind(&BluetoothGattBlueZTest::SuccessCallback,
+                   base::Unretained(this)),
+        base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                   base::Unretained(this)));
+  }
+  EXPECT_EQ(1000, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
+
+  // Abort.
+  device->AbortWrite(base::Bind(&BluetoothGattBlueZTest::SuccessCallback,
+                                base::Unretained(this)),
+                     base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                                base::Unretained(this)));
+  EXPECT_EQ(1001, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
+
+  // Prepare another 1000 writes.
+  success_callback_count_ = 0;
+  error_callback_count_ = 0;
+  observer.Reset();
+  for (int i = 0; i < 1000; ++i) {
+    characteristic->PrepareWriteRemoteCharacteristic(
+        write_value,
+        base::Bind(&BluetoothGattBlueZTest::SuccessCallback,
+                   base::Unretained(this)),
+        base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                   base::Unretained(this)));
+  }
+  EXPECT_EQ(1000, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
+
+  // Execute.
+  device->ExecuteWrite(base::Bind(&BluetoothGattBlueZTest::SuccessCallback,
+                                  base::Unretained(this)),
+                       base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                                  base::Unretained(this)));
+  EXPECT_EQ(1001, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(1000, observer.gatt_characteristic_value_changed_count());
+}
+#endif
 
 }  // namespace bluez

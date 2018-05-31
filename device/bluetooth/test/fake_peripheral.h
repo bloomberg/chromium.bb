@@ -113,6 +113,12 @@ class FakePeripheral : public device::BluetoothDevice {
       const GattConnectionCallback& callback,
       const ConnectErrorCallback& error_callback) override;
   bool IsGattServicesDiscoveryComplete() const override;
+#if defined(OS_CHROMEOS)
+  void ExecuteWrite(const base::Closure& callback,
+                    const ExecuteWriteErrorCallback& error_callback) override;
+  void AbortWrite(const base::Closure& callback,
+                  const AbortWriteErrorCallback& error_callback) override;
+#endif
 
  protected:
   void CreateGattConnectionImpl() override;

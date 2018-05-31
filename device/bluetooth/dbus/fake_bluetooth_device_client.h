@@ -109,6 +109,12 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   void GetServiceRecords(const dbus::ObjectPath& object_path,
                          const ServiceRecordsCallback& callback,
                          const ErrorCallback& error_callback) override;
+  void ExecuteWrite(const dbus::ObjectPath& object_path,
+                    const base::Closure& callback,
+                    const ErrorCallback& error_callback) override;
+  void AbortWrite(const dbus::ObjectPath& object_path,
+                  const base::Closure& callback,
+                  const ErrorCallback& error_callback) override;
 
   void SetSimulationIntervalMs(int interval_ms);
 
@@ -185,6 +191,10 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
       const std::vector<std::string>& service_uuids,
       const std::map<std::string, std::vector<uint8_t>>& service_data,
       const std::map<uint16_t, std::vector<uint8_t>>& manufacturer_data);
+
+  // Adds a pending prepare write request to |object_path|.
+  void AddPrepareWriteRequest(const dbus::ObjectPath& object_path,
+                              const std::vector<uint8_t>& value);
 
   static const char kTestPinCode[];
   static const int kTestPassKey;
@@ -364,6 +374,10 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   // Controls the fake behavior to allow more extensive UI testing without
   // having to cycle the discovery simulation.
   bool delay_start_discovery_;
+
+  // Pending prepare write requests.
+  std::vector<std::pair<dbus::ObjectPath, std::vector<uint8_t>>>
+      prepare_write_requests_;
 };
 
 }  // namespace bluez

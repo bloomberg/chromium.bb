@@ -666,6 +666,26 @@ void BluetoothDeviceBlueZ::GetServiceRecords(
                  weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
+#if defined(OS_CHROMEOS)
+void BluetoothDeviceBlueZ::ExecuteWrite(
+    const base::Closure& callback,
+    const ExecuteWriteErrorCallback& error_callback) {
+  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->ExecuteWrite(
+      object_path_, callback,
+      base::Bind(&BluetoothDeviceBlueZ::OnExecuteWriteError,
+                 weak_ptr_factory_.GetWeakPtr(), error_callback));
+}
+
+void BluetoothDeviceBlueZ::AbortWrite(
+    const base::Closure& callback,
+    const AbortWriteErrorCallback& error_callback) {
+  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->AbortWrite(
+      object_path_, callback,
+      base::Bind(&BluetoothDeviceBlueZ::OnAbortWriteError,
+                 weak_ptr_factory_.GetWeakPtr(), error_callback));
+}
+#endif
+
 void BluetoothDeviceBlueZ::UpdateServiceData() {
   bluez::BluetoothDeviceClient::Properties* properties =
       bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
@@ -862,6 +882,30 @@ void BluetoothDeviceBlueZ::OnGetServiceRecordsError(
   }
   error_callback.Run(code);
 }
+
+#if defined(OS_CHROMEOS)
+void BluetoothDeviceBlueZ::OnExecuteWriteError(
+    const ExecuteWriteErrorCallback& error_callback,
+    const std::string& error_name,
+    const std::string& error_message) {
+  BLUETOOTH_LOG(EVENT) << object_path_.value()
+                       << ": Failed to execute write: " << error_name << ": "
+                       << error_message;
+  error_callback.Run(
+      BluetoothGattServiceBlueZ::DBusErrorToServiceError(error_name));
+}
+
+void BluetoothDeviceBlueZ::OnAbortWriteError(
+    const AbortWriteErrorCallback& error_callback,
+    const std::string& error_name,
+    const std::string& error_message) {
+  BLUETOOTH_LOG(EVENT) << object_path_.value()
+                       << ": Failed to abort write: " << error_name << ": "
+                       << error_message;
+  error_callback.Run(
+      BluetoothGattServiceBlueZ::DBusErrorToServiceError(error_name));
+}
+#endif
 
 void BluetoothDeviceBlueZ::ConnectInternal(
     bool after_pairing,

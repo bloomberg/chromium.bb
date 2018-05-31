@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_descriptor_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -257,6 +258,7 @@ void FakeBluetoothGattCharacteristicClient::WriteValue(
   } else if (value[0] == 1) {
     // TODO(jamuraa): make this happen when the callback happens
     calories_burned_ = 0;
+    ScheduleHeartRateMeasurementValueChange();
     completed_callback = callback;
   }
 
@@ -266,6 +268,46 @@ void FakeBluetoothGattCharacteristicClient::WriteValue(
     return;
   }
   completed_callback.Run();
+}
+
+void FakeBluetoothGattCharacteristicClient::PrepareWriteValue(
+    const dbus::ObjectPath& object_path,
+    const std::vector<uint8_t>& value,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  if (!authenticated_) {
+    error_callback.Run(bluetooth_gatt_service::kErrorNotPaired, "Please login");
+    return;
+  }
+
+  if (!authorized_) {
+    error_callback.Run(bluetooth_gatt_service::kErrorNotAuthorized,
+                       "Authorize first");
+    return;
+  }
+
+  if (!IsHeartRateVisible()) {
+    error_callback.Run(kUnknownCharacteristicError, "");
+    return;
+  }
+
+  if (object_path.value() == heart_rate_measurement_path_) {
+    error_callback.Run(bluetooth_gatt_service::kErrorNotSupported,
+                       "Action not supported on this characteristic");
+    return;
+  }
+
+  if (object_path.value() != heart_rate_control_point_path_) {
+    error_callback.Run(bluetooth_gatt_service::kErrorNotPermitted,
+                       "Writes of this value are not allowed");
+    return;
+  }
+
+  DCHECK(heart_rate_control_point_properties_.get());
+  static_cast<FakeBluetoothDeviceClient*>(
+      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient())
+      ->AddPrepareWriteRequest(object_path, value);
+  callback.Run();
 }
 
 void FakeBluetoothGattCharacteristicClient::StartNotify(

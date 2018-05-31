@@ -104,6 +104,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   void Pair(device::BluetoothDevice::PairingDelegate* pairing_delegate,
             const base::Closure& callback,
             const ConnectErrorCallback& error_callback) override;
+#if defined(OS_CHROMEOS)
+  void ExecuteWrite(const base::Closure& callback,
+                    const ExecuteWriteErrorCallback& error_callback) override;
+  void AbortWrite(const base::Closure& callback,
+                  const AbortWriteErrorCallback& error_callback) override;
+#endif
 
   // Returns the complete list of service records discovered for on this
   // device via SDP. If called before discovery is complete, it may return
@@ -202,6 +208,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
       const GetServiceRecordsErrorCallback& error_callback,
       const std::string& error_name,
       const std::string& error_message);
+
+#if defined(OS_CHROMEOS)
+  void OnExecuteWriteError(const ExecuteWriteErrorCallback& error_callback,
+                           const std::string& error_name,
+                           const std::string& error_message);
+
+  void OnAbortWriteError(const AbortWriteErrorCallback& error_callback,
+                         const std::string& error_name,
+                         const std::string& error_message);
+#endif
 
   // Internal method to initiate a connection to this device, and methods called
   // by dbus:: on completion of the D-Bus method call.

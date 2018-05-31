@@ -242,6 +242,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
                                  const ServiceRecordsCallback& callback,
                                  const ErrorCallback& error_callback) = 0;
 
+  // Executes all the privous prepare writes in a reliable write session.
+  virtual void ExecuteWrite(const dbus::ObjectPath& object_path,
+                            const base::Closure& callback,
+                            const ErrorCallback& error_callback) = 0;
+
+  // Aborts all the privous prepare writes in a reliable write session.
+  virtual void AbortWrite(const dbus::ObjectPath& object_path,
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) = 0;
+
   // Creates the instance.
   static BluetoothDeviceClient* Create();
 

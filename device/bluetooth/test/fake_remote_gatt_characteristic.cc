@@ -183,6 +183,15 @@ void FakeRemoteGattCharacteristic::WriteRemoteCharacteristic(
                      value));
 }
 
+#if defined(OS_CHROMEOS)
+void FakeRemoteGattCharacteristic::PrepareWriteRemoteCharacteristic(
+    const std::vector<uint8_t>& value,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+#endif
+
 bool FakeRemoteGattCharacteristic::WriteWithoutResponse(
     base::span<const uint8_t> value) {
   if (properties_ & PROPERTY_WRITE_WITHOUT_RESPONSE) {

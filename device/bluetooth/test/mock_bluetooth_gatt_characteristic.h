@@ -59,6 +59,12 @@ class MockBluetoothGattCharacteristic
                void(const std::vector<uint8_t>&,
                     const base::Closure&,
                     const ErrorCallback&));
+#if defined(OS_CHROMEOS)
+  MOCK_METHOD3(PrepareWriteRemoteCharacteristic,
+               void(const std::vector<uint8_t>&,
+                    const base::Closure&,
+                    const ErrorCallback&));
+#endif
 
   void AddMockDescriptor(
       std::unique_ptr<MockBluetoothGattDescriptor> mock_descriptor);
