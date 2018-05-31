@@ -100,6 +100,7 @@ fuchsia_sdk_pkg("fidl") {
 fuchsia_sdk_pkg("fidl_cpp") {
   public_deps = [
     ":fidl",
+    ":fit",
     ":zx",
   ]
   sources = [
@@ -150,6 +151,12 @@ fuchsia_sdk_pkg("fidl_cpp") {
     "internal/synchronous_proxy.cc",
     "internal/weak_stub_controller.cc",
     "string.cc",
+  ]
+}
+
+fuchsia_sdk_pkg("fit") {
+  sources = [
+    "include/lib/fit/function.h",
   ]
 }
 
