@@ -566,18 +566,15 @@ if (!is_ios) {
     data_deps = [
       ":components_tests_pak",
       "//ui/resources:ui_test_pak",
+
+      # Needed for isolate script to execute.
+      "//testing:run_perf_test",
     ]
 
     data = [
       "$root_out_dir/components_tests_resources.pak",
       "$root_out_dir/ui_test.pak",
       "//components/subresource_filter/core/common/perftests/data",
-
-      # Needed for isolate script to execute.
-      "//testing/scripts/common.py",
-      "//testing/xvfb.py",
-      "//testing/scripts/run_gtest_perf_test.py",
-      "//tools/perf/generate_legacy_perf_dashboard_json.py",
     ]
 
     if (is_android) {

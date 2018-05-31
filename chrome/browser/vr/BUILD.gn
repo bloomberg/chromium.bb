@@ -374,11 +374,8 @@ test("vr_common_perftests") {
   }
 
   # Needed for isolate script to execute
-  data = [
-    "//testing/scripts/common.py",
-    "//testing/xvfb.py",
-    "//testing/scripts/run_gtest_perf_test.py",
-    "//tools/perf/generate_legacy_perf_dashboard_json.py",
+  data_deps = [
+    "//testing:run_perf_test",
   ]
 }
 
