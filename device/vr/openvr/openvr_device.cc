@@ -196,6 +196,7 @@ void OpenVRDevice::OnRequestPresentResult(
     mojom::VRDisplayHost::RequestPresentCallback callback,
     bool result,
     mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
+  OnStartPresenting();
   std::move(callback).Run(result, std::move(transport_options));
 
   if (result) {

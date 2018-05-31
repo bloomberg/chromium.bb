@@ -19,11 +19,8 @@ VRDisplayImpl::VRDisplayImpl(VRDevice* device,
                              mojom::VRServiceClient* service_client,
                              mojom::VRDisplayInfoPtr display_info,
                              mojom::VRDisplayHostPtr display_host,
-                             mojom::VRDisplayClientRequest client_request,
-                             bool in_focused_frame)
-    : binding_(this),
-      device_(static_cast<VRDeviceBase*>(device)),
-      in_focused_frame_(in_focused_frame) {
+                             mojom::VRDisplayClientRequest client_request)
+    : binding_(this), device_(static_cast<VRDeviceBase*>(device)) {
   mojom::VRMagicWindowProviderPtr magic_window_provider;
   binding_.Bind(mojo::MakeRequest(&magic_window_provider));
   service_client->OnDisplayConnected(
@@ -33,22 +30,14 @@ VRDisplayImpl::VRDisplayImpl(VRDevice* device,
 
 VRDisplayImpl::~VRDisplayImpl() = default;
 
-bool VRDisplayImpl::IsPrivilegedOperationAllowed() {
-  return device_->IsAccessAllowed(this) && InFocusedFrame();
-}
-
 void VRDisplayImpl::RequestSession(
     mojom::VRDisplayHost::RequestSessionCallback callback) {
-  if (!IsPrivilegedOperationAllowed()) {
-    std::move(callback).Run(false);
-    return;
-  }
   device_->RequestSession(this, std::move(callback));
 }
 
 // Gets a pose for magic window sessions.
 void VRDisplayImpl::GetPose(GetPoseCallback callback) {
-  if (!device_->IsAccessAllowed(this)) {
+  if (device_->HasExclusiveSession() || restrict_frame_data_) {
     std::move(callback).Run(nullptr);
     return;
   }
@@ -59,7 +48,7 @@ void VRDisplayImpl::GetPose(GetPoseCallback callback) {
 void VRDisplayImpl::GetFrameData(const gfx::Size& frame_size,
                                  display::Display::Rotation rotation,
                                  GetFrameDataCallback callback) {
-  if (!device_->IsAccessAllowed(this)) {
+  if (device_->HasExclusiveSession() || restrict_frame_data_) {
     std::move(callback).Run(nullptr);
     return;
   }
@@ -80,29 +69,27 @@ void VRDisplayImpl::GetFrameData(const gfx::Size& frame_size,
 
 void VRDisplayImpl::RequestHitTest(mojom::XRRayPtr ray,
                                    RequestHitTestCallback callback) {
-  if (!IsPrivilegedOperationAllowed()) {
+  if (restrict_frame_data_) {
     std::move(callback).Run(base::nullopt);
     return;
   }
   device_->RequestHitTest(std::move(ray), std::move(callback));
 }
 
-void VRDisplayImpl::SetListeningForActivate(bool listening) {
-  listening_for_activate_ = listening;
-  device_->OnListeningForActivateChanged(this);
+// XrSessionController
+void VRDisplayImpl::SetFrameDataRestricted(bool frame_data_restricted) {
+  restrict_frame_data_ = frame_data_restricted;
+  if (device_->ShouldPauseTrackingWhenFrameDataRestricted()) {
+    if (restrict_frame_data_) {
+      device_->PauseTracking();
+    } else {
+      device_->ResumeTracking();
+    }
+  }
 }
 
-void VRDisplayImpl::SetInFocusedFrame(bool in_focused_frame) {
-  in_focused_frame_ = in_focused_frame;
-  device_->OnFrameFocusChanged(this);
-}
-
-bool VRDisplayImpl::ListeningForActivate() {
-  return listening_for_activate_;
-}
-
-bool VRDisplayImpl::InFocusedFrame() {
-  return in_focused_frame_;
+void VRDisplayImpl::StopSession() {
+  binding_.Close();
 }
 
 }  // namespace device

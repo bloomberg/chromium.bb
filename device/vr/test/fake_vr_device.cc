@@ -54,7 +54,7 @@ void FakeVRDevice::RequestPresent(
     mojom::VRPresentationProviderRequest request,
     mojom::VRRequestPresentOptionsPtr present_options,
     mojom::VRDisplayHost::RequestPresentCallback callback) {
-  SetIsPresenting();
+  OnStartPresenting();
   std::move(callback).Run(true, mojom::VRDisplayFrameTransportOptions::New());
 }
 

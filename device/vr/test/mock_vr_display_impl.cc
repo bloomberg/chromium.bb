@@ -16,8 +16,9 @@ MockVRDisplayImpl::MockVRDisplayImpl(device::VRDevice* device,
                     std::move(service_client),
                     std::move(display_info),
                     std::move(display_host),
-                    std::move(request),
-                    in_frame_focused) {}
+                    std::move(request)) {
+  SetFrameDataRestricted(!in_frame_focused);
+}
 
 MockVRDisplayImpl::~MockVRDisplayImpl() = default;
 
