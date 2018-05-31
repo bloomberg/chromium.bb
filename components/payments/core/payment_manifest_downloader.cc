@@ -73,6 +73,29 @@ GURL ParseResponseHeader(const net::URLFetcher* source) {
   return GURL();
 }
 
+bool IsValidManifestUrl(const GURL& url) {
+  return url.is_valid() &&
+         (url.SchemeIs(url::kHttpsScheme) ||
+          (url.SchemeIs(url::kHttpScheme) && net::IsLocalhost(url)));
+}
+
+GURL ParseRedirectUrlFromResponseHeader(const net::URLFetcher* source) {
+  // Do not follow net::HTTP_MULTIPLE_CHOICES, net::HTTP_NOT_MODIFIED and
+  // net::HTTP_USE_PROXY redirects.
+  if (source->GetResponseCode() != net::HTTP_MOVED_PERMANENTLY &&
+      source->GetResponseCode() != net::HTTP_FOUND &&
+      source->GetResponseCode() != net::HTTP_SEE_OTHER &&
+      source->GetResponseCode() != net::HTTP_TEMPORARY_REDIRECT &&
+      source->GetResponseCode() != net::HTTP_PERMANENT_REDIRECT) {
+    return GURL();
+  }
+
+  if (!IsValidManifestUrl(source->GetURL()))
+    return GURL();
+
+  return source->GetURL();
+}
+
 std::string ParseResponseContent(const net::URLFetcher* source) {
   std::string content;
   if (source->GetResponseCode() != net::HTTP_OK) {
@@ -99,14 +122,17 @@ void PaymentManifestDownloader::DownloadPaymentMethodManifest(
     const GURL& url,
     PaymentManifestDownloadCallback callback) {
   DCHECK(IsValidManifestUrl(url));
-  InitiateDownload(url, net::URLFetcher::HEAD, std::move(callback));
+  // Restrict number of redirects for efficiency and breaking circle.
+  InitiateDownload(url, net::URLFetcher::HEAD,
+                   /*allowed_number_of_redirects=*/3, std::move(callback));
 }
 
 void PaymentManifestDownloader::DownloadWebAppManifest(
     const GURL& url,
     PaymentManifestDownloadCallback callback) {
   DCHECK(IsValidManifestUrl(url));
-  InitiateDownload(url, net::URLFetcher::GET, std::move(callback));
+  InitiateDownload(url, net::URLFetcher::GET, /*allowed_number_of_redirects=*/0,
+                   std::move(callback));
 }
 
 PaymentManifestDownloader::Download::Download() {}
@@ -122,13 +148,25 @@ void PaymentManifestDownloader::OnURLFetchComplete(
   downloads_.erase(download_it);
 
   if (download->request_type == net::URLFetcher::HEAD) {
+    // Manually follow some type of redirects.
+    if (download->allowed_number_of_redirects > 0) {
+      GURL redirect_url = ParseRedirectUrlFromResponseHeader(source);
+      if (!redirect_url.is_empty()) {
+        InitiateDownload(redirect_url, net::URLFetcher::HEAD,
+                         --download->allowed_number_of_redirects,
+                         std::move(download->callback));
+        return;
+      }
+    }
+
     GURL url = ParseResponseHeader(source);
     if (IsValidManifestUrl(url)) {
       InitiateDownload(url, net::URLFetcher::GET,
+                       /*allowed_number_of_redirects=*/0,
                        std::move(download->callback));
     } else {
-      // If the URL is empty, then ParseResponseHeader() has already printed an
-      // explanation.
+      // If the URL is empty, then ParseResponseHeader() has already printed
+      // an explanation.
       if (!url.is_empty())
         LOG(ERROR) << url << " is not a valid payment method manifest URL.";
       std::move(download->callback).Run(std::string());
@@ -141,6 +179,7 @@ void PaymentManifestDownloader::OnURLFetchComplete(
 void PaymentManifestDownloader::InitiateDownload(
     const GURL& url,
     net::URLFetcher::RequestType request_type,
+    int allowed_number_of_redirects,
     PaymentManifestDownloadCallback callback) {
   DCHECK(IsValidManifestUrl(url));
 
@@ -178,17 +217,12 @@ void PaymentManifestDownloader::InitiateDownload(
   download->request_type = request_type;
   download->fetcher = std::move(fetcher);
   download->callback = std::move(callback);
+  download->allowed_number_of_redirects = allowed_number_of_redirects;
 
   const net::URLFetcher* identifier = download->fetcher.get();
   auto insert_result =
       downloads_.insert(std::make_pair(identifier, std::move(download)));
   DCHECK(insert_result.second);  // Whether the insert has succeeded.
-}
-
-bool PaymentManifestDownloader::IsValidManifestUrl(const GURL& url) {
-  return url.is_valid() &&
-         (url.SchemeIs(url::kHttpsScheme) ||
-          (url.SchemeIs(url::kHttpScheme) && net::IsLocalhost(url)));
 }
 
 }  // namespace payments
