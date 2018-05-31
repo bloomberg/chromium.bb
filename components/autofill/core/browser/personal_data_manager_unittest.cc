@@ -21,6 +21,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/histogram_tester.h"
@@ -4557,9 +4558,8 @@ TEST_F(PersonalDataManagerTest, DeleteDisusedCreditCards_OncePerVersion) {
 }
 
 // Tests that DeleteDisusedCreditCards deletes desired credit cards only.
-// Disabled see crbug.com/848227
 TEST_F(PersonalDataManagerTest,
-       DISABLED_DeleteDisusedCreditCards_OnlyDeleteExpiredDisusedLocalCards) {
+       DeleteDisusedCreditCards_OnlyDeleteExpiredDisusedLocalCards) {
   // Enable the feature.
   base::test::ScopedFeatureList scoped_features;
   scoped_features.InitAndEnableFeature(kAutofillDeleteDisusedCreditCards);
@@ -4585,8 +4585,13 @@ TEST_F(PersonalDataManagerTest,
   // Create a local card expired recently, and last used 400 days ago.
   // It is expected to remain.
   CreditCard credit_card3(base::GenerateGUID(), "https://www.example.com");
+  base::Time expiry_date = now - base::TimeDelta::FromDays(32);
+  base::Time::Exploded exploded;
+  expiry_date.UTCExplode(&exploded);
   test::SetCreditCardInfo(&credit_card3, "Clyde", "4111111111111111" /* Visa */,
-                          "04", "2017", "1");
+                          base::StringPrintf("%02d", exploded.month).c_str(),
+                          base::StringPrintf("%04d", exploded.year).c_str(),
+                          "1");
   credit_card3.set_use_date(now - base::TimeDelta::FromDays(400));
 
   // Create a local card expired 400 days ago, and last used 400 days ago.
