@@ -5851,12 +5851,15 @@ def CMDformat(parser, args):
 
     if opts.full:
       if python_diff_files:
-        cmd = [yapf_tool]
-        if not opts.dry_run and not opts.diff:
-          cmd.append('-i')
-        stdout = RunCommand(cmd + python_diff_files, cwd=top_dir)
-        if opts.diff:
-          sys.stdout.write(stdout)
+        if opts.dry_run or opts.diff:
+          cmd = [yapf_tool, '--diff'] + python_diff_files
+          stdout = RunCommand(cmd, error_ok=True, cwd=top_dir)
+          if opts.diff:
+            sys.stdout.write(stdout)
+          elif len(stdout) > 0:
+            return_value = 2
+        else:
+          RunCommand([yapf_tool, '-i'] + python_diff_files, cwd=top_dir)
     else:
       # TODO(sbc): yapf --lines mode still has some issues.
       # https://github.com/google/yapf/issues/154
