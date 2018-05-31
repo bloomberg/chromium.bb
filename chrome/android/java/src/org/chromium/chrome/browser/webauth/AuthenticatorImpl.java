@@ -67,6 +67,12 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
         onError(AuthenticatorStatus.NOT_IMPLEMENTED);
     }
 
+    @Override
+    public void isUserVerifyingPlatformAuthenticatorAvailable(
+            IsUserVerifyingPlatformAuthenticatorAvailableResponse callback) {
+        callback.call(false);
+    }
+
     /**
      * Callbacks for receiving responses from the internal handlers.
      */

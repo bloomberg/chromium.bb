@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_request_options.h"
+#include "third_party/blink/renderer/modules/credentialmanager/scoped_promise_resolver.h"
 #include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -54,41 +55,6 @@ using MojoPublicKeyCredentialRequestOptions =
 using ::webauth::mojom::blink::GetAssertionAuthenticatorResponsePtr;
 
 enum class RequiredOriginType { kSecure, kSecureAndSameWithAncestors };
-
-// Off-heap wrapper that holds a strong reference to a ScriptPromiseResolver.
-class ScopedPromiseResolver {
-  WTF_MAKE_NONCOPYABLE(ScopedPromiseResolver);
-
- public:
-  explicit ScopedPromiseResolver(ScriptPromiseResolver* resolver)
-      : resolver_(resolver) {}
-
-  ~ScopedPromiseResolver() {
-    if (resolver_)
-      OnConnectionError();
-  }
-
-  // Releases the owned |resolver_|. This is to be called by the Mojo response
-  // callback responsible for resolving the corresponding ScriptPromise
-  //
-  // If this method is not called before |this| goes of scope, it is assumed
-  // that a Mojo connection error has occurred, and the response callback was
-  // never invoked. The Promise will be rejected with an appropriate exception.
-  ScriptPromiseResolver* Release() { return resolver_.Release(); }
-
- private:
-  void OnConnectionError() {
-    // The only anticapted reason for a connection error is that the embedder
-    // does not implement mojom::CredentialManager, or mojom::AuthenticatorImpl,
-    //  so go out on a limb and try to provide an actionable error message.
-    resolver_->Reject(DOMException::Create(
-        kNotSupportedError,
-        "The user agent either does not implement a password store or does "
-        "not support public key credentials."));
-  }
-
-  Persistent<ScriptPromiseResolver> resolver_;
-};
 
 bool IsSameOriginWithAncestors(const Frame* frame) {
   DCHECK(frame);

@@ -8,6 +8,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/credentialmanager/credential_manager_proxy.h"
+#include "third_party/blink/renderer/modules/credentialmanager/scoped_promise_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
@@ -15,6 +17,12 @@ namespace blink {
 namespace {
 // https://www.w3.org/TR/webauthn/#dom-publickeycredential-type-slot:
 constexpr char kPublicKeyCredentialType[] = "public-key";
+
+void OnIsUserVerifyingComplete(
+    std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
+    bool available) {
+  scoped_resolver->Release()->Resolve(available);
+}
 }  // namespace
 
 PublicKeyCredential* PublicKeyCredential::Create(
@@ -38,9 +46,23 @@ PublicKeyCredential::PublicKeyCredential(
 ScriptPromise
 PublicKeyCredential::isUserVerifyingPlatformAuthenticatorAvailable(
     ScriptState* script_state) {
-  return ScriptPromise::RejectWithDOMException(
-      script_state,
-      DOMException::Create(kNotSupportedError, "Operation not implemented."));
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  // Ignore calls if the current realm execution context is no longer valid,
+  // e.g., because the responsible document was detached.
+  DCHECK(resolver->GetExecutionContext());
+  if (resolver->GetExecutionContext()->IsContextDestroyed()) {
+    resolver->Reject();
+    return promise;
+  }
+
+  auto* authenticator =
+      CredentialManagerProxy::From(script_state)->Authenticator();
+  authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(WTF::Bind(
+      &OnIsUserVerifyingComplete,
+      WTF::Passed(std::make_unique<ScopedPromiseResolver>(resolver))));
+  return promise;
 }
 
 void PublicKeyCredential::getClientExtensionResults(

@@ -104,7 +104,7 @@ public class AuthenticatorTest {
 
     /**
      * Verify that the Mojo bridge between Blink and Java is working for
-     * navigator.credentials.create. This test currently expects a
+     * navigator.credentials.get. This test currently expects a
      * "Not Implemented" response. Testing any real response would require
      * setting up or mocking a real APK.
      */
@@ -114,6 +114,21 @@ public class AuthenticatorTest {
     public void testGetPublicKeyCredential() throws Exception {
         mActivityTestRule.loadUrl(mUrl);
         mActivityTestRule.runJavaScriptCodeInCurrentTab("doGetPublicKeyCredential()");
+        Assert.assertEquals("Success", mUpdateWaiter.waitForUpdate());
+    }
+
+    /**
+     * Verify that the Mojo bridge between Blink and Java is working for
+     * PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable.
+     * This test currently expects a "false" response.
+     */
+    @Test
+    @MediumTest
+    @Feature({"WebAuth"})
+    public void testIsUserVerifyingPlatformAuthenticatorAvailable() throws Exception {
+        mActivityTestRule.loadUrl(mUrl);
+        mActivityTestRule.runJavaScriptCodeInCurrentTab(
+                "doIsUserVerifyingPlatformAuthenticatorAvailable()");
         Assert.assertEquals("Success", mUpdateWaiter.waitForUpdate());
     }
 }

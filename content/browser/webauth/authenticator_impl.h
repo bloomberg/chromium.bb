@@ -103,6 +103,8 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
   void GetAssertion(
       webauth::mojom::PublicKeyCredentialRequestOptionsPtr options,
       GetAssertionCallback callback) override;
+  void IsUserVerifyingPlatformAuthenticatorAvailable(
+      IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) override;
 
   // WebContentsObserver:
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
