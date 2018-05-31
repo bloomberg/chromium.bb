@@ -451,9 +451,9 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierErrorSecondaryOk) {
   // Primary verifier returns an error status.
   net::CertVerifyResult primary_result;
   primary_result.verified_cert = cert_chain_1_;
-  primary_result.cert_status = net::CERT_STATUS_REVOKED;
+  primary_result.cert_status = net::CERT_STATUS_DATE_INVALID;
   scoped_refptr<MockCertVerifyProc> verify_proc1 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_REVOKED,
+      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
                                                primary_result);
 
   net::CertVerifyResult secondary_result;
@@ -476,7 +476,7 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierErrorSecondaryOk) {
   EXPECT_TRUE(request);
 
   error = callback.WaitForResult();
-  EXPECT_THAT(error, IsError(net::ERR_CERT_REVOKED));
+  EXPECT_THAT(error, IsError(net::ERR_CERT_DATE_INVALID));
 
   verify_proc2->WaitForVerifyCall();
 
@@ -492,7 +492,7 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierErrorSecondaryOk) {
   ASSERT_TRUE(report.ParseFromString(full_reports[0]));
 
   ASSERT_EQ(1, report.cert_error_size());
-  EXPECT_EQ(chrome_browser_ssl::CertLoggerRequest::ERR_CERT_REVOKED,
+  EXPECT_EQ(chrome_browser_ssl::CertLoggerRequest::ERR_CERT_DATE_INVALID,
             report.cert_error()[0]);
   EXPECT_EQ(0, report.cert_status_size());
 
@@ -524,10 +524,10 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierOkSecondaryError) {
 
   // Trial verifier returns an error status.
   net::CertVerifyResult secondary_result;
-  secondary_result.cert_status = net::CERT_STATUS_REVOKED;
+  secondary_result.cert_status = net::CERT_STATUS_DATE_INVALID;
   secondary_result.verified_cert = cert_chain_1_;
   scoped_refptr<MockCertVerifyProc> verify_proc2 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_REVOKED,
+      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
                                                secondary_result);
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
@@ -568,7 +568,7 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierOkSecondaryError) {
   const chrome_browser_ssl::TrialVerificationInfo& trial_info =
       report.features_info().trial_verification_info();
   ASSERT_EQ(1, trial_info.cert_error_size());
-  EXPECT_EQ(chrome_browser_ssl::CertLoggerRequest::ERR_CERT_REVOKED,
+  EXPECT_EQ(chrome_browser_ssl::CertLoggerRequest::ERR_CERT_DATE_INVALID,
             trial_info.cert_error()[0]);
   EXPECT_EQ(0, trial_info.cert_status_size());
 
@@ -738,9 +738,9 @@ TEST_F(TrialComparisonCertVerifierTest, Coalescing) {
   // Primary verifier returns an error status.
   net::CertVerifyResult primary_result;
   primary_result.verified_cert = cert_chain_1_;
-  primary_result.cert_status = net::CERT_STATUS_REVOKED;
+  primary_result.cert_status = net::CERT_STATUS_DATE_INVALID;
   scoped_refptr<MockCertVerifyProc> verify_proc1 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_REVOKED,
+      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
                                                primary_result);
 
   // Trial verifier has ok status.
@@ -777,9 +777,9 @@ TEST_F(TrialComparisonCertVerifierTest, Coalescing) {
 
   // Both callbacks should be called with same error code.
   error = callback_1.WaitForResult();
-  EXPECT_THAT(error, IsError(net::ERR_CERT_REVOKED));
+  EXPECT_THAT(error, IsError(net::ERR_CERT_DATE_INVALID));
   error = callback_2.WaitForResult();
-  EXPECT_THAT(error, IsError(net::ERR_CERT_REVOKED));
+  EXPECT_THAT(error, IsError(net::ERR_CERT_DATE_INVALID));
 
   // Trial verifier should run.
   verify_proc2->WaitForVerifyCall();
@@ -796,7 +796,7 @@ TEST_F(TrialComparisonCertVerifierTest, Coalescing) {
   ASSERT_TRUE(report.ParseFromString(full_reports[0]));
 
   ASSERT_EQ(1, report.cert_error_size());
-  EXPECT_EQ(chrome_browser_ssl::CertLoggerRequest::ERR_CERT_REVOKED,
+  EXPECT_EQ(chrome_browser_ssl::CertLoggerRequest::ERR_CERT_DATE_INVALID,
             report.cert_error()[0]);
   EXPECT_EQ(0, report.cert_status_size());
 
@@ -826,9 +826,9 @@ TEST_F(TrialComparisonCertVerifierTest, CancelledDuringPrimaryVerification) {
   // Primary verifier returns an error status.
   net::CertVerifyResult primary_result;
   primary_result.verified_cert = cert_chain_1_;
-  primary_result.cert_status = net::CERT_STATUS_REVOKED;
+  primary_result.cert_status = net::CERT_STATUS_DATE_INVALID;
   scoped_refptr<MockCertVerifyProc> verify_proc1 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_REVOKED,
+      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
                                                primary_result);
 
   // Trial verifier has ok status.
@@ -871,7 +871,7 @@ TEST_F(TrialComparisonCertVerifierTest, CancelledDuringPrimaryVerification) {
   ASSERT_TRUE(report.ParseFromString(full_reports[0]));
 
   ASSERT_EQ(1, report.cert_error_size());
-  EXPECT_EQ(chrome_browser_ssl::CertLoggerRequest::ERR_CERT_REVOKED,
+  EXPECT_EQ(chrome_browser_ssl::CertLoggerRequest::ERR_CERT_DATE_INVALID,
             report.cert_error()[0]);
   EXPECT_EQ(0, report.cert_status_size());
 
@@ -899,9 +899,9 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedDuringPrimaryVerification) {
   // Primary verifier returns an error status.
   net::CertVerifyResult primary_result;
   primary_result.verified_cert = cert_chain_1_;
-  primary_result.cert_status = net::CERT_STATUS_REVOKED;
+  primary_result.cert_status = net::CERT_STATUS_DATE_INVALID;
   scoped_refptr<MockCertVerifyProc> verify_proc1 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_REVOKED,
+      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
                                                primary_result);
 
   auto verifier = std::make_unique<TrialComparisonCertVerifier>(
@@ -943,9 +943,9 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedDuringTrialVerification) {
   // Primary verifier returns an error status.
   net::CertVerifyResult primary_result;
   primary_result.verified_cert = cert_chain_1_;
-  primary_result.cert_status = net::CERT_STATUS_REVOKED;
+  primary_result.cert_status = net::CERT_STATUS_DATE_INVALID;
   scoped_refptr<MockCertVerifyProc> verify_proc1 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_REVOKED,
+      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
                                                primary_result);
 
   // Trial verifier has ok status.
@@ -971,7 +971,7 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedDuringTrialVerification) {
 
   // Wait for primary verifier to finish.
   error = callback.WaitForResult();
-  EXPECT_THAT(error, IsError(net::ERR_CERT_REVOKED));
+  EXPECT_THAT(error, IsError(net::ERR_CERT_DATE_INVALID));
 
   // Delete the TrialComparisonCertVerifier.
   verifier.reset();
@@ -1009,10 +1009,10 @@ TEST_F(TrialComparisonCertVerifierTest,
 
   // Trial verifier returns an error status.
   net::CertVerifyResult secondary_result;
-  secondary_result.cert_status = net::CERT_STATUS_REVOKED;
+  secondary_result.cert_status = net::CERT_STATUS_DATE_INVALID;
   secondary_result.verified_cert = cert_chain_1_;
   scoped_refptr<MockCertVerifyProc> verify_proc2 =
-      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_REVOKED,
+      base::MakeRefCounted<MockCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
                                                secondary_result);
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
