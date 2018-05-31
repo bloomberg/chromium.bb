@@ -15,10 +15,12 @@ struct BindSourceInfo;
 
 namespace resource_coordinator {
 
+class CoordinationUnitGraph;
+
 class CoordinationUnitIntrospectorImpl
     : public mojom::CoordinationUnitIntrospector {
  public:
-  CoordinationUnitIntrospectorImpl();
+  explicit CoordinationUnitIntrospectorImpl(CoordinationUnitGraph* graph);
   ~CoordinationUnitIntrospectorImpl() override;
 
   void BindToInterface(
@@ -29,6 +31,7 @@ class CoordinationUnitIntrospectorImpl
   void GetProcessToURLMap(GetProcessToURLMapCallback callback) override;
 
  private:
+  CoordinationUnitGraph* const graph_;
   mojo::BindingSet<mojom::CoordinationUnitIntrospector> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(CoordinationUnitIntrospectorImpl);
