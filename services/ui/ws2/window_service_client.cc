@@ -86,8 +86,10 @@ void WindowServiceClient::SendEventToClient(aura::Window* window,
   // Events should only come to windows connected to displays.
   DCHECK(window->GetHost());
   const int64_t display_id = window->GetHost()->GetDisplayId();
-  // TODO(sky): wire up |matches_pointer_watcher|.
-  const bool matches_pointer_watcher = false;
+  const bool matches_pointer_watcher =
+      pointer_watcher_ && pointer_watcher_->DoesEventMatch(event);
+  if (pointer_watcher_)
+    pointer_watcher_->ClearPendingEvent();
   window_tree_client_->OnWindowInputEvent(
       event_id, TransportIdForWindow(window), display_id, 0u, gfx::PointF(),
       PointerWatcher::CreateEventForClient(event), matches_pointer_watcher);

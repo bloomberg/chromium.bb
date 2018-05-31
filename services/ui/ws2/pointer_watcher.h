@@ -42,21 +42,37 @@ class PointerWatcher : public aura::WindowEventDispatcherObserver {
   // client.
   static std::unique_ptr<Event> CreateEventForClient(const Event& event);
 
-  void set_types_to_watch(TypesToWatch types) { types_to_watch_ = types; }
-
- private:
   // Returns true if |event| matches the types the PointerWatcher has been
   // configured to monitor.
-  bool ShouldSendEventToClient(const ui::Event& event) const;
+  bool DoesEventMatch(const ui::Event& event) const;
 
+  void set_types_to_watch(TypesToWatch types) { types_to_watch_ = types; }
+
+  // See comment above |pending_event_| for details.
+  void ClearPendingEvent();
+
+ private:
   // aura::WindowEventDispatcherObserver:
   void OnWindowEventDispatcherStartedProcessing(
       aura::WindowEventDispatcher* dispatcher,
       const ui::Event& event) override;
+  void OnWindowEventDispatcherFinishedProcessingEvent(
+      aura::WindowEventDispatcher* dispatcher) override;
 
   TypesToWatch types_to_watch_ = TypesToWatch::kUpDown;
 
   WindowServiceClient* client_;
+
+  // Events matching TypesToWatch are processed in two phases:
+  // . In OnWindowEventDispatcherStartedProcessing() if the event should be
+  //   sent to the client, it's stored in |pending_event_|.
+  // . In OnWindowEventDispatcherFinishedProcessingEvent() if |pending_event_|
+  //   is non-null, |pending_event_| is sent to the client.
+  // During event processing if the event targets the client, then
+  // |pending_event_| is reset. This is done to avoid sending the event twice.
+  // WindowTreeClient::OnWindowInputEvent() indicates if the event matched
+  // an observed pointer event.
+  std::unique_ptr<ui::Event> pending_event_;
 
   DISALLOW_COPY_AND_ASSIGN(PointerWatcher);
 };
