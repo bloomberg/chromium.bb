@@ -141,7 +141,7 @@ void FrameCaptionButton::SetImage(CaptionButtonIcon icon,
   } else {
     swap_images_animation_->Reset(1);
   }
-  PreferredSizeChanged();
+
   SchedulePaint();
 }
 
