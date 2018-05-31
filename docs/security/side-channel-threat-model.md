@@ -196,7 +196,8 @@ level.
 With SI, Chrome tends to spawn more renderer processes, which tends to lead to
 greater overall memory usage (conservative estimates seem to be about 10%). On
 many Android devices, it is more than 10%, and this additional cost can be
-prohibitive.
+prohibitive. However, each renderer is smaller and shorter-lived under Site
+Isolation.
 
 ##### Plug-Ins
 
