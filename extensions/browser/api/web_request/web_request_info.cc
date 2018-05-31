@@ -367,6 +367,11 @@ void WebRequestInfo::InitializeWebViewAndFrameData(
     ExtensionApiFrameIdMap::FrameData data;
     bool was_cached = ExtensionApiFrameIdMap::Get()->GetCachedFrameDataOnIO(
         render_process_id, frame_id, &data);
+    // TODO(crbug.com/843762): Investigate when |was_cached| can be false. It
+    // seems we are not tracking all WebContents or that the corresponding
+    // render frame was destroyed. Track where this can occur, this should help
+    // in minimizing IO->UI->IO thread that the web request API performs to
+    // fetch the frame data.
     if (was_cached)
       frame_data = data;
   }

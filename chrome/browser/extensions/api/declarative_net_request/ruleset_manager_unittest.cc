@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/declarative_net_request/dnr_test_base.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
@@ -163,7 +164,8 @@ TEST_P(RulesetManagerTest, MultipleRulesets) {
       ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
           {rule_one}, std::to_string(mask) + "_one", &matcher));
       extension_id_one = last_loaded_extension()->id();
-      manager->AddRuleset(extension_id_one, std::move(matcher));
+      manager->AddRuleset(extension_id_one, std::move(matcher),
+                          URLPatternSet());
     }
     if (mask & kEnableRulesetTwo) {
       ++expected_matcher_count;
@@ -171,7 +173,8 @@ TEST_P(RulesetManagerTest, MultipleRulesets) {
       ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
           {rule_two}, std::to_string(mask) + "_two", &matcher));
       extension_id_two = last_loaded_extension()->id();
-      manager->AddRuleset(extension_id_two, std::move(matcher));
+      manager->AddRuleset(extension_id_two, std::move(matcher),
+                          URLPatternSet());
     }
 
     ASSERT_EQ(expected_matcher_count, manager->GetMatcherCountForTest());
@@ -202,7 +205,8 @@ TEST_P(RulesetManagerTest, IncognitoRequests) {
   std::unique_ptr<RulesetMatcher> matcher;
   ASSERT_NO_FATAL_FAILURE(
       CreateMatcherForRules({rule_one}, "test_extension", &matcher));
-  manager->AddRuleset(last_loaded_extension()->id(), std::move(matcher));
+  manager->AddRuleset(last_loaded_extension()->id(), std::move(matcher),
+                      URLPatternSet());
 
   std::unique_ptr<net::URLRequest> request =
       GetRequestForURL("http://example.com");
@@ -249,7 +253,8 @@ TEST_P(RulesetManagerTest, Redirect) {
   ASSERT_NO_FATAL_FAILURE(
       CreateMatcherForRules({rule}, "test_extension", &matcher,
                             {"*://example.com/*", "*://abc.com/*"}));
-  manager->AddRuleset(last_loaded_extension()->id(), std::move(matcher));
+  manager->AddRuleset(last_loaded_extension()->id(), std::move(matcher),
+                      URLPatternSet());
 
   // Create a request to "example.com" with an empty initiator. It should be
   // redirected to "google.com".
@@ -311,7 +316,7 @@ TEST_P(RulesetManagerTest, ExtensionScheme) {
         std::vector<std::string>({URLPattern::kAllUrlsPattern}),
         true /* has_background_script*/));
     extension_1 = last_loaded_extension();
-    manager->AddRuleset(extension_1->id(), std::move(matcher));
+    manager->AddRuleset(extension_1->id(), std::move(matcher), URLPatternSet());
   }
 
   // Add another extension with a background page which redirects all requests
@@ -328,7 +333,7 @@ TEST_P(RulesetManagerTest, ExtensionScheme) {
         std::vector<std::string>({URLPattern::kAllUrlsPattern}),
         true /* has_background_script*/));
     extension_2 = last_loaded_extension();
-    manager->AddRuleset(extension_2->id(), std::move(matcher));
+    manager->AddRuleset(extension_2->id(), std::move(matcher), URLPatternSet());
   }
 
   EXPECT_EQ(2u, manager->GetMatcherCountForTest());
@@ -367,6 +372,171 @@ TEST_P(RulesetManagerTest, ExtensionScheme) {
   EXPECT_EQ(Action::NONE, manager->EvaluateRequest(
                               WebRequestInfo(request.get()),
                               false /*is_incognito_context*/, &redirect_url));
+}
+
+TEST_P(RulesetManagerTest, PageWhitelistingAPI) {
+  RulesetManager* manager = info_map()->GetRulesetManager();
+  ASSERT_TRUE(manager);
+
+  // Add an extension which blocks all requests except for requests from
+  // http://google.com/whitelist* which are whitelisted.
+  {
+    std::unique_ptr<RulesetMatcher> matcher;
+
+    // This blocks all subresource requests. By default the main-frame resource
+    // type is excluded.
+    TestRule rule1 = CreateGenericRule();
+    rule1.id = kMinValidID;
+    rule1.condition->url_filter = std::string("*");
+
+    // Also block main frame requests.
+    TestRule rule2 = CreateGenericRule();
+    rule2.id = kMinValidID + 1;
+    rule2.condition->url_filter = std::string("*");
+    rule2.condition->resource_types = std::vector<std::string>({"main_frame"});
+
+    ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
+        {rule1, rule2}, "test extension", &matcher,
+        std::vector<std::string>({URLPattern::kAllUrlsPattern}),
+        true /* background_script */));
+
+    URLPatternSet pattern_set(
+        {URLPattern(URLPattern::SCHEME_ALL, "http://google.com/whitelist*")});
+    manager->AddRuleset(last_loaded_extension()->id(), std::move(matcher),
+                        std::move(pattern_set));
+  }
+
+  constexpr int kDummyFrameRoutingId = 2;
+  constexpr int kDummyFrameId = 3;
+  constexpr int kDummyParentFrameId = 1;
+  constexpr int kDummyTabId = 5;
+  constexpr int kDummyWindowId = 7;
+  constexpr char kWhitelistedPageURL[] = "http://google.com/whitelist123";
+
+  struct FrameDataParams {
+    int frame_id;
+    int parent_frame_id;
+    std::string last_committed_main_frame_url;
+    base::Optional<std::string> pending_main_frame_url;
+  };
+  struct TestCase {
+    std::string url;
+    content::ResourceType type;
+    base::Optional<std::string> initiator;
+    int frame_routing_id;
+    base::Optional<FrameDataParams> frame_data_params;
+    bool expect_blocked_with_whitelist;
+  } test_cases[] = {
+      // Main frame requests. Whitelisted based on request url.
+      {kWhitelistedPageURL, content::RESOURCE_TYPE_MAIN_FRAME, base::nullopt,
+       MSG_ROUTING_NONE,
+       FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
+                        ExtensionApiFrameIdMap::kInvalidFrameId,
+                        "http://google.com/xyz", base::nullopt}),
+       false},
+      {"http://google.com/xyz", content::RESOURCE_TYPE_MAIN_FRAME,
+       base::nullopt, MSG_ROUTING_NONE,
+       FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
+                        ExtensionApiFrameIdMap::kInvalidFrameId,
+                        kWhitelistedPageURL, base::nullopt}),
+       true},
+
+      // Non-navigation browser or service worker request. Not whitelisted,
+      // since the request doesn't correspond to a frame.
+      {"http://google.com/xyz", content::RESOURCE_TYPE_SCRIPT, base::nullopt,
+       MSG_ROUTING_NONE, base::nullopt, true},
+
+      // Renderer requests - with no |pending_main_frame_url|. Whitelisted based
+      // on the |last_committed_main_frame_url|.
+      {kWhitelistedPageURL, content::RESOURCE_TYPE_SCRIPT, "http://google.com",
+       kDummyFrameRoutingId,
+       FrameDataParams({kDummyFrameId, kDummyParentFrameId,
+                        "http://google.com/xyz", base::nullopt}),
+       true},
+      {"http://google.com/xyz", content::RESOURCE_TYPE_SCRIPT,
+       "http://google.com", kDummyFrameRoutingId,
+       FrameDataParams({kDummyFrameId, kDummyParentFrameId, kWhitelistedPageURL,
+                        base::nullopt}),
+       false},
+
+      // Renderer requests with |pending_main_frame_url|. This only happens for
+      // main frame subresource requests.
+
+      // Here we'll determine "http://example.com/xyz" to be the main frame url
+      // due to the origin.
+      {"http://example.com/script.js", content::RESOURCE_TYPE_SCRIPT,
+       "http://example.com", kDummyFrameRoutingId,
+       FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
+                        ExtensionApiFrameIdMap::kInvalidFrameId,
+                        kWhitelistedPageURL, "http://example.com/xyz"}),
+       true},
+
+      // Here we'll determine |kWhitelistedPageURL| to be the main
+      // frame url due to the origin.
+      {"http://example.com/script.js", content::RESOURCE_TYPE_SCRIPT,
+       "http://google.com", kDummyFrameRoutingId,
+       FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
+                        ExtensionApiFrameIdMap::kInvalidFrameId,
+                        kWhitelistedPageURL, "http://yahoo.com/xyz"}),
+       false},
+
+      // In these cases both |pending_main_frame_url| and
+      // |last_committed_main_frame_url| will be tested since we won't be able
+      // to determine the correct top level frame url using origin.
+      {"http://example.com/script.js", content::RESOURCE_TYPE_SCRIPT,
+       "http://google.com", kDummyFrameRoutingId,
+       FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
+                        ExtensionApiFrameIdMap::kInvalidFrameId,
+                        "http://google.com/abc", kWhitelistedPageURL}),
+       false},
+      {"http://example.com/script.js", content::RESOURCE_TYPE_SCRIPT,
+       base::nullopt, kDummyFrameRoutingId,
+       FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
+                        ExtensionApiFrameIdMap::kInvalidFrameId,
+                        kWhitelistedPageURL, "http://google.com/abc"}),
+       false},
+      {"http://example.com/script.js", content::RESOURCE_TYPE_SCRIPT,
+       base::nullopt, kDummyFrameRoutingId,
+       FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
+                        ExtensionApiFrameIdMap::kInvalidFrameId,
+                        "http://yahoo.com/abc",
+                        "http://yahoo.com/whitelist123"}),
+       true},
+  };
+
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
+    const TestCase test_case = test_cases[i];
+    SCOPED_TRACE(base::StringPrintf("Testing case number %zu with url %s",
+                                    i + 1, test_case.url.c_str()));
+
+    WebRequestInfo info;
+    info.url = GURL(test_case.url);
+    ASSERT_TRUE(info.url.is_valid());
+    info.type = test_case.type;
+
+    if (test_case.initiator)
+      info.initiator = url::Origin::Create(GURL(*test_case.initiator));
+
+    info.frame_id = test_case.frame_routing_id;
+
+    if (test_case.frame_data_params) {
+      const FrameDataParams& params = *test_case.frame_data_params;
+      info.frame_data = ExtensionApiFrameIdMap::FrameData(
+          params.frame_id, params.parent_frame_id, kDummyTabId, kDummyWindowId,
+          GURL(params.last_committed_main_frame_url));
+      if (params.pending_main_frame_url)
+        info.frame_data->pending_main_frame_url =
+            GURL(*params.pending_main_frame_url);
+    }
+
+    GURL redirect_url;
+    RulesetManager::Action expected_action =
+        test_case.expect_blocked_with_whitelist ? RulesetManager::Action::BLOCK
+                                                : RulesetManager::Action::NONE;
+    EXPECT_EQ(expected_action,
+              manager->EvaluateRequest(info, false /*is_incognito_context*/,
+                                       &redirect_url));
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(,

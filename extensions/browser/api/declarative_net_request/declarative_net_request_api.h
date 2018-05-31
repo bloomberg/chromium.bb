@@ -33,6 +33,8 @@ class DeclarativeNetRequestUpdateWhitelistedPagesFunction
   bool PreRunValidation(std::string* error) override;
 
  private:
+  void OnWhitelistedPagesUpdated();
+
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestUpdateWhitelistedPagesFunction);
 };
 

@@ -39,6 +39,16 @@ bool HasRegisteredRuleset(content::BrowserContext* context,
   return false;
 }
 
+void UpdateWhitelistPagesOnIOThread(const ExtensionId& extension_id,
+                                    URLPatternSet whitelisted_pages,
+                                    InfoMap* info_map) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(info_map);
+
+  info_map->GetRulesetManager()->UpdateWhitelistedPages(
+      extension_id, std::move(whitelisted_pages));
+}
+
 }  // namespace
 
 DeclarativeNetRequestUpdateWhitelistedPagesFunction::
@@ -85,7 +95,27 @@ DeclarativeNetRequestUpdateWhitelistedPagesFunction::UpdateWhitelistedPages(
   // Persist |new_set| as part of preferences.
   prefs->SetDNRWhitelistedPages(extension_id(), new_set);
 
-  return RespondNow(NoArguments());
+  // Update the new whitelist set on the IO thread.
+  base::OnceClosure updated_whitelist_pages_io_task = base::BindOnce(
+      &UpdateWhitelistPagesOnIOThread, extension_id(), std::move(new_set),
+      base::RetainedRef(ExtensionSystem::Get(browser_context())->info_map()));
+
+  base::OnceClosure updated_whitelisted_pages_ui_reply =
+      base::BindOnce(&DeclarativeNetRequestUpdateWhitelistedPagesFunction::
+                         OnWhitelistedPagesUpdated,
+                     this);
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::IO, FROM_HERE,
+      std::move(updated_whitelist_pages_io_task),
+      std::move(updated_whitelisted_pages_ui_reply));
+
+  return RespondLater();
+}
+
+void DeclarativeNetRequestUpdateWhitelistedPagesFunction::
+    OnWhitelistedPagesUpdated() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  Respond(NoArguments());
 }
 
 bool DeclarativeNetRequestUpdateWhitelistedPagesFunction::PreRunValidation(
