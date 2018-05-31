@@ -44,7 +44,7 @@
     if (_bookmarkNode->is_folder()) {
       TableViewBookmarkFolderCell* bookmarkCell =
           base::mac::ObjCCastStrict<TableViewBookmarkFolderCell>(cell);
-      bookmarkCell.folderTitleLabel.text =
+      bookmarkCell.folderTitleTextField.text =
           bookmark_utils_ios::TitleForBookmarkNode(_bookmarkNode);
       bookmarkCell.accessibilityIdentifier =
           bookmark_utils_ios::TitleForBookmarkNode(_bookmarkNode);
