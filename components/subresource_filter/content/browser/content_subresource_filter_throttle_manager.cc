@@ -243,20 +243,16 @@ void ContentSubresourceFilterThrottleManager::OnSubframeNavigationEvaluated(
     LoadPolicy load_policy,
     bool is_ad_subframe) {
   DCHECK(!navigation_handle->IsInMainFrame());
-
-  auto it = ongoing_activation_throttles_.find(navigation_handle);
-  if (it == ongoing_activation_throttles_.end())
+  if (!is_ad_subframe)
     return;
 
-  if (is_ad_subframe) {
-    // TODO(crbug.com/843646): Use an API that NavigationHandle supports rather
-    // than trying to infer what the NavigationHandle is doing.
-    content::RenderFrameHost* starting_rfh =
-        navigation_handle->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
-            navigation_handle->GetFrameTreeNodeId());
-    DCHECK(starting_rfh);
-    ad_frames_.insert(starting_rfh);
-  }
+  // TODO(crbug.com/843646): Use an API that NavigationHandle supports rather
+  // than trying to infer what the NavigationHandle is doing.
+  content::RenderFrameHost* starting_rfh =
+      navigation_handle->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
+          navigation_handle->GetFrameTreeNodeId());
+  DCHECK(starting_rfh);
+  ad_frames_.insert(starting_rfh);
 }
 
 void ContentSubresourceFilterThrottleManager::MaybeAppendNavigationThrottles(
