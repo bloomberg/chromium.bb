@@ -829,8 +829,8 @@ TEST_P(CustomFrameViewAshFrameColorTest, WideFrameInitialColor) {
 
   WideFrameView* wide_frame_view = WideFrameView::Create(widget.get());
   HeaderView* wide_header_view = wide_frame_view->header_view();
-  DefaultFrameHeader* header = static_cast<DefaultFrameHeader*>(
-      wide_header_view->GetFrameHeaderForTest());
+  DefaultFrameHeader* header =
+      static_cast<DefaultFrameHeader*>(wide_header_view->GetFrameHeader());
   EXPECT_EQ(new_active_color, header->active_frame_color_for_testing());
   EXPECT_EQ(new_inactive_color, header->inactive_frame_color_for_testing());
 }

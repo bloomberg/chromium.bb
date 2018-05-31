@@ -23,6 +23,7 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller_test_api.h"
 #include "base/strings/utf_string_conversions.h"
+#include "cc/paint/display_item_list.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
 #include "components/exo/pointer.h"
@@ -31,6 +32,7 @@
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/wm_helper.h"
+#include "third_party/skia/include/utils/SkNoDrawCanvas.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -41,6 +43,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_targeter.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/paint_info.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/shadow_types.h"
@@ -70,6 +73,27 @@ void EnableTabletMode(bool enable) {
   ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
       enable);
 }
+
+// A canvas that just logs when a text blob is drawn.
+class TestCanvas : public SkNoDrawCanvas {
+ public:
+  TestCanvas() : SkNoDrawCanvas(100, 100) {}
+  ~TestCanvas() override {}
+
+  void onDrawTextBlob(const SkTextBlob*,
+                      SkScalar,
+                      SkScalar,
+                      const SkPaint&) override {
+    text_was_drawn_ = true;
+  }
+
+  bool text_was_drawn() const { return text_was_drawn_; }
+
+ private:
+  bool text_was_drawn_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCanvas);
+};
 
 }  // namespace
 
@@ -1053,33 +1077,57 @@ TEST_F(ClientControlledShellSurfaceTest, CaptionButtonModel) {
   EXPECT_TRUE(container->model()->InZoomMode());
 }
 
+// Makes sure that the "extra title" is respected by the window frame. When not
+// set, there should be no text in the window frame, but the window's name
+// should still be set (for overview mode, accessibility, etc.). When the debug
+// text is set, the window frame should paint it.
 TEST_F(ClientControlledShellSurfaceTest, SetExtraTitle) {
   std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(64, 64))));
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(640, 64))));
   std::unique_ptr<Surface> surface(new Surface);
   auto shell_surface =
       exo_test_helper()->CreateClientControlledShellSurface(surface.get());
   surface->Attach(buffer.get());
   surface->Commit();
+  shell_surface->GetWidget()->Show();
 
-  // The window title should include the debugging info, if any, and should only
-  // be shown (in the frame) when there is debugging info. See
-  // https://crbug.com/831383.
+  const base::string16 window_title(base::ASCIIToUTF16("title"));
+  shell_surface->SetTitle(window_title);
   const aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
-  const views::WidgetDelegate* widget_delegate =
-      shell_surface->GetWidget()->widget_delegate();
+  EXPECT_EQ(window_title, window->GetTitle());
+  EXPECT_FALSE(
+      shell_surface->GetWidget()->widget_delegate()->ShouldShowWindowTitle());
 
+  // Paints the frame and returns whether text was drawn. Unforunately the text
+  // is a blob so its actual value can't be detected.
+  auto paint_does_draw_text = [&shell_surface]() {
+    TestCanvas canvas;
+    shell_surface->OnSetFrame(SurfaceFrameType::NORMAL);
+    ash::CustomFrameViewAsh* frame_view = static_cast<ash::CustomFrameViewAsh*>(
+        shell_surface->GetWidget()->non_client_view()->frame_view());
+    frame_view->SetVisible(true);
+    // Paint to a layer so we can pass a root PaintInfo.
+    frame_view->GetHeaderView()->SetPaintToLayer();
+    gfx::Rect bounds(100, 100);
+    auto list = base::MakeRefCounted<cc::DisplayItemList>();
+    frame_view->GetHeaderView()->Paint(views::PaintInfo::CreateRootPaintInfo(
+        ui::PaintContext(list.get(), 1.f, bounds, false), bounds.size()));
+    list->Finalize();
+    list->Raster(&canvas);
+    return canvas.text_was_drawn();
+  };
+
+  EXPECT_FALSE(paint_does_draw_text());
+  EXPECT_FALSE(
+      shell_surface->GetWidget()->widget_delegate()->ShouldShowWindowTitle());
+
+  // Setting the extra title/debug text won't change the window's title, but it
+  // will be drawn by the frame header.
   shell_surface->SetExtraTitle(base::ASCIIToUTF16("extra"));
-  EXPECT_EQ(base::ASCIIToUTF16(" (extra)"), window->GetTitle());
-  EXPECT_TRUE(widget_delegate->ShouldShowWindowTitle());
-
-  shell_surface->SetTitle(base::ASCIIToUTF16("title"));
-  EXPECT_EQ(base::ASCIIToUTF16("title (extra)"), window->GetTitle());
-  EXPECT_TRUE(widget_delegate->ShouldShowWindowTitle());
-
-  shell_surface->SetExtraTitle(base::string16());
-  EXPECT_EQ(base::ASCIIToUTF16("title"), window->GetTitle());
-  EXPECT_FALSE(widget_delegate->ShouldShowWindowTitle());
+  EXPECT_EQ(window_title, window->GetTitle());
+  EXPECT_TRUE(paint_does_draw_text());
+  EXPECT_FALSE(
+      shell_surface->GetWidget()->widget_delegate()->ShouldShowWindowTitle());
 }
 
 TEST_F(ClientControlledShellSurfaceTest, WideFrame) {

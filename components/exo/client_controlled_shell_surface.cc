@@ -472,10 +472,12 @@ void ClientControlledShellSurface::SetExtraTitle(
     const base::string16& extra_title) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetExtraTitle",
                "extra_title", base::UTF16ToUTF8(extra_title));
-  // The extra title is used in the window frame.
-  extra_title_ = extra_title;
-  if (widget_)
-    widget_->UpdateWindowTitle();
+
+  if (!widget_)
+    return;
+
+  GetFrameView()->GetHeaderView()->GetFrameHeader()->SetFrameTextOverride(
+      extra_title);
 }
 
 void ClientControlledShellSurface::SetOrientationLock(

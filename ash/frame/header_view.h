@@ -119,7 +119,7 @@ class ASH_EXPORT HeaderView : public views::View,
   void SetVisibleFraction(double visible_fraction) override;
   std::vector<gfx::Rect> GetVisibleBoundsInScreen() const override;
 
-  FrameHeader* GetFrameHeaderForTest() { return frame_header_.get(); }
+  FrameHeader* GetFrameHeader() { return frame_header_.get(); }
 
  private:
   class HeaderContentView;

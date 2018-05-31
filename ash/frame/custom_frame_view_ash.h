@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/frame/caption_buttons/caption_button_model.h"
+#include "ash/frame/header_view.h"
 #include "ash/public/interfaces/window_style.mojom.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -82,7 +83,7 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   void SetHeaderHeight(base::Optional<int> height);
 
   // Get the view of the header.
-  views::View* GetHeaderView();
+  HeaderView* GetHeaderView();
 
   // Calculate the client bounds for given window bounds.
   gfx::Rect GetClientBoundsForWindowBounds(
