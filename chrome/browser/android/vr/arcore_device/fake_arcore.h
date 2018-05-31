@@ -34,6 +34,8 @@ class FakeARCore : public ARCore {
       const base::span<const float> uvs) override;
   gfx::Transform GetProjectionMatrix(float near, float far) override;
   mojom::VRPosePtr Update() override;
+  void Pause() override;
+  void Resume() override;
 
   bool RequestHitTest(const mojom::XRRayPtr& ray,
                       const gfx::Size& image_size,
@@ -42,6 +44,10 @@ class FakeARCore : public ARCore {
   void SetCameraAspect(float aspect) { camera_aspect_ = aspect; }
 
  private:
+  bool IsOnGlThread() const;
+
+  scoped_refptr<base::SingleThreadTaskRunner> gl_thread_task_runner_;
+
   float camera_aspect_ = 1.0f;
   display::Display::Rotation display_rotation_ =
       display::Display::Rotation::ROTATE_0;

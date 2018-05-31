@@ -13,7 +13,6 @@
 #include "chrome/browser/android/vr/arcore_device/arcore_gl.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_gl_thread.h"
 #include "chrome/browser/android/vr/mailbox_to_surface_bridge.h"
-#include "ui/display/display.h"
 
 using base::android::JavaRef;
 
@@ -72,9 +71,38 @@ ARCoreDevice::ARCoreDevice()
 }
 
 ARCoreDevice::~ARCoreDevice() {
-  if (arcore_gl_thread_) {
+  if (arcore_gl_thread_)
     arcore_gl_thread_->Stop();
-  }
+}
+
+void ARCoreDevice::PauseTracking() {
+  DCHECK(IsOnMainThread());
+
+  if (is_paused_)
+    return;
+
+  is_paused_ = true;
+
+  if (!is_arcore_gl_thread_initialized_)
+    return;
+
+  PostTaskToGlThread(base::BindOnce(
+      &ARCoreGl::Pause, arcore_gl_thread_->GetARCoreGl()->GetWeakPtr()));
+}
+
+void ARCoreDevice::ResumeTracking() {
+  DCHECK(IsOnMainThread());
+
+  if (!is_paused_)
+    return;
+
+  is_paused_ = false;
+
+  if (!is_arcore_gl_thread_initialized_)
+    return;
+
+  PostTaskToGlThread(base::BindOnce(
+      &ARCoreGl::Resume, arcore_gl_thread_->GetARCoreGl()->GetWeakPtr()));
 }
 
 void ARCoreDevice::OnMailboxBridgeReady() {
@@ -91,17 +119,19 @@ void ARCoreDevice::OnMailboxBridgeReady() {
 }
 
 void ARCoreDevice::OnARCoreGlThreadInitialized(bool success) {
+  DCHECK(IsOnMainThread());
+
   if (!success) {
     DLOG(ERROR) << "Failed to initialize ARCoreDevice/GL system!";
     return;
   }
 
   is_arcore_gl_thread_initialized_ = true;
-}
 
-void ARCoreDevice::PostTaskToGlThread(base::OnceClosure task) {
-  arcore_gl_thread_->GetARCoreGl()->GetGlThreadTaskRunner()->PostTask(
-      FROM_HERE, std::move(task));
+  if (!is_paused_) {
+    PostTaskToGlThread(base::BindOnce(
+        &ARCoreGl::Resume, arcore_gl_thread_->GetARCoreGl()->GetWeakPtr()));
+  }
 }
 
 void ARCoreDevice::RequestSession(
@@ -111,6 +141,10 @@ void ARCoreDevice::RequestSession(
   std::move(callback).Run(true);
 }
 
+bool ARCoreDevice::ShouldPauseAndResumeOnFocusChange() {
+  return true;
+}
+
 void ARCoreDevice::OnMagicWindowFrameDataRequest(
     const gfx::Size& frame_size,
     display::Display::Rotation display_rotation,
@@ -118,13 +152,11 @@ void ARCoreDevice::OnMagicWindowFrameDataRequest(
   TRACE_EVENT0("gpu", __FUNCTION__);
   DCHECK(IsOnMainThread());
 
-  // Check if ARCoreGl is ready.
-  // TODO(https://crbug.com/837944): Delay callback until ready.
-  if (!is_arcore_gl_thread_initialized_) {
-    // It is not safe to access arcore_gl_thread_->GetARCoreGl() until we are
-    // sure it has finished initializing / writing to that member variable.
-    // is_initialized_ is set by a callback we pass to the ARCoreGlThread
-    // constructor that is then run back here on the main thread.
+  // TODO(ijamardo): Do we need to queue requests to avoid breaking
+  // applications?
+  // TODO(https://crbug.com/837944): Ensure is_arcore_gl_thread_initialized_
+  // is always true by blocking requestDevice()'s callback until it is true
+  if (is_paused_ || !is_arcore_gl_thread_initialized_) {
     std::move(callback).Run(nullptr);
     return;
   }
@@ -143,6 +175,12 @@ void ARCoreDevice::RequestHitTest(
   PostTaskToGlThread(base::BindOnce(
       &ARCoreGl::RequestHitTest, arcore_gl_thread_->GetARCoreGl()->GetWeakPtr(),
       std::move(ray), CreateMainThreadCallback(std::move(callback))));
+}
+
+void ARCoreDevice::PostTaskToGlThread(base::OnceClosure task) {
+  DCHECK(IsOnMainThread());
+  arcore_gl_thread_->GetARCoreGl()->GetGlThreadTaskRunner()->PostTask(
+      FROM_HERE, std::move(task));
 }
 
 bool ARCoreDevice::IsOnMainThread() {

@@ -83,13 +83,16 @@ bool ARCoreImpl::Initialize() {
     return false;
   }
 
-  ArFrame_create(session.get(), arcore_frame_.receive());
-  if (!arcore_frame_.is_valid()) {
+  internal::ScopedArCoreObject<ArFrame*> frame;
+
+  ArFrame_create(session.get(), frame.receive());
+  if (!frame.is_valid()) {
     DLOG(ERROR) << "ArFrame_create failed";
     return false;
   }
 
-  // Success, we now have a valid session.
+  // Success, we now have a valid session and a valid frame.
+  arcore_frame_ = std::move(frame);
   arcore_session_ = std::move(session);
   return true;
 }
@@ -131,14 +134,6 @@ mojom::VRPosePtr ARCoreImpl::Update() {
   DCHECK(arcore_frame_.is_valid());
 
   ArStatus status;
-  if (!is_tracking_) {
-    status = ArSession_resume(arcore_session_.get());
-    if (status != AR_SUCCESS) {
-      DLOG(ERROR) << "ArSession_resume failed: " << status;
-      return nullptr;
-    }
-    is_tracking_ = true;
-  }
 
   status = ArSession_update(arcore_session_.get(), arcore_frame_.get());
   if (status != AR_SUCCESS) {
@@ -180,6 +175,22 @@ mojom::VRPosePtr ARCoreImpl::Update() {
   pose->position.emplace(pose_raw + 4, pose_raw + 7);
 
   return pose;
+}
+
+void ARCoreImpl::Pause() {
+  DCHECK(IsOnGlThread());
+  DCHECK(arcore_session_.is_valid());
+  ArStatus status = ArSession_pause(arcore_session_.get());
+  DLOG_IF(ERROR, status != AR_SUCCESS)
+      << "ArSession_pause failed: status = " << status;
+}
+
+void ARCoreImpl::Resume() {
+  DCHECK(IsOnGlThread());
+  DCHECK(arcore_session_.is_valid());
+  ArStatus status = ArSession_resume(arcore_session_.get());
+  DLOG_IF(ERROR, status != AR_SUCCESS)
+      << "ArSession_resume failed: status = " << status;
 }
 
 gfx::Transform ARCoreImpl::GetProjectionMatrix(float near, float far) {

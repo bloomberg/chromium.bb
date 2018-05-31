@@ -79,6 +79,8 @@ class ARCoreImpl : public ARCore {
       const base::span<const float> uvs) override;
   gfx::Transform GetProjectionMatrix(float near, float far) override;
   mojom::VRPosePtr Update() override;
+  void Pause() override;
+  void Resume() override;
 
   bool RequestHitTest(const mojom::XRRayPtr& ray,
                       const gfx::Size& image_size,
@@ -104,9 +106,6 @@ class ARCoreImpl : public ARCore {
   // multiple XRSessions.
   internal::ScopedArCoreObject<ArSession*> arcore_session_;
   internal::ScopedArCoreObject<ArFrame*> arcore_frame_;
-
-  // TODO(https://crbug.com/838513): replace this with more sophisticated logic.
-  bool is_tracking_ = false;
 
   // Must be last.
   base::WeakPtrFactory<ARCoreImpl> weak_ptr_factory_;

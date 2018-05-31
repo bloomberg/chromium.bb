@@ -13,21 +13,26 @@
 
 namespace device {
 
-FakeARCore::FakeARCore() = default;
+FakeARCore::FakeARCore()
+    : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+
 FakeARCore::~FakeARCore() = default;
 
 bool FakeARCore::Initialize() {
+  DCHECK(IsOnGlThread());
   return true;
 }
 
 void FakeARCore::SetDisplayGeometry(
     const gfx::Size& frame_size,
     display::Display::Rotation display_rotation) {
+  DCHECK(IsOnGlThread());
   display_rotation_ = display_rotation;
   frame_size_ = frame_size;
 }
 
 void FakeARCore::SetCameraTexture(GLuint texture) {
+  DCHECK(IsOnGlThread());
   // We need a GL_TEXTURE_EXTERNAL_OES to be compatible with the real ARCore.
   // The content doesn't really matter, just create an AHardwareBuffer-backed
   // GLImage and bind it to the texture.
@@ -217,6 +222,7 @@ std::vector<float> FakeARCore::TransformDisplayUvCoords(
 }
 
 gfx::Transform FakeARCore::GetProjectionMatrix(float near, float far) {
+  DCHECK(IsOnGlThread());
   // Get a projection matrix matching the current screen orientation and
   // aspect. Currently, this uses a hardcoded FOV angle for the smaller screen
   // dimension, and adjusts the other angle to preserve the aspect. A better
@@ -248,6 +254,7 @@ gfx::Transform FakeARCore::GetProjectionMatrix(float near, float far) {
 }
 
 mojom::VRPosePtr FakeARCore::Update() {
+  DCHECK(IsOnGlThread());
   // 1m up from the origin, neutral orientation facing forward.
   mojom::VRPosePtr pose = mojom::VRPose::New();
   pose->orientation.emplace(4);
@@ -269,6 +276,18 @@ bool FakeARCore::RequestHitTest(
     std::vector<mojom::XRHitResultPtr>* hit_results) {
   // TODO(https://crbug.com/837834): implement for testing.
   return false;
+}
+
+void FakeARCore::Pause() {
+  DCHECK(IsOnGlThread());
+}
+
+void FakeARCore::Resume() {
+  DCHECK(IsOnGlThread());
+}
+
+bool FakeARCore::IsOnGlThread() const {
+  return gl_thread_task_runner_->BelongsToCurrentThread();
 }
 
 }  // namespace device

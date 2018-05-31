@@ -51,6 +51,8 @@ class ARCoreGl {
   void ProduceFrame(const gfx::Size& frame_size,
                     display::Display::Rotation display_rotation,
                     mojom::VRMagicWindowProvider::GetFrameDataCallback);
+  void Pause();
+  void Resume();
 
   const scoped_refptr<base::SingleThreadTaskRunner>& GetGlThreadTaskRunner() {
     return gl_thread_task_runner_;

@@ -128,7 +128,6 @@ bool ARCoreGl::Initialize() {
 
   if (!arcore_->Initialize()) {
     DLOG(ERROR) << "ARCore failed to initialize";
-
     return false;
   }
 
@@ -136,6 +135,7 @@ bool ARCoreGl::Initialize() {
     DLOG(ERROR) << "ARImageTransport failed to initialize";
     return false;
   }
+
   // Set the texture on ARCore to render the camera.
   arcore_->SetCameraTexture(ar_image_transport_->GetCameraTextureId());
 
@@ -262,6 +262,18 @@ void ARCoreGl::ProcessFrame(
   // hit-test promise resolves immediately prior to the frame for which it is
   // valid.
   std::move(callback).Run(std::move(frame_data));
+}
+
+void ARCoreGl::Pause() {
+  DCHECK(IsOnGlThread());
+  DCHECK(is_initialized_);
+  arcore_->Pause();
+}
+
+void ARCoreGl::Resume() {
+  DCHECK(IsOnGlThread());
+  DCHECK(is_initialized_);
+  arcore_->Resume();
 }
 
 bool ARCoreGl::IsOnGlThread() const {

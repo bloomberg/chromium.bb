@@ -26,6 +26,8 @@ class ARCoreDevice : public VRDeviceBase {
   ~ARCoreDevice() override;
 
   // VRDeviceBase implementation.
+  void PauseTracking() override;
+  void ResumeTracking() override;
   void RequestSession(
       VRDisplayImpl* display,
       mojom::VRDisplayHost::RequestSessionCallback callback) override;
@@ -35,13 +37,16 @@ class ARCoreDevice : public VRDeviceBase {
   }
 
  private:
+  // VRDeviceBase implementation
+  bool ShouldPauseAndResumeOnFocusChange() override;
   void OnMagicWindowFrameDataRequest(
       const gfx::Size& frame_size,
-      display::Display::Rotation frame_rotation,
+      display::Display::Rotation display_rotation,
       mojom::VRMagicWindowProvider::GetFrameDataCallback callback) override;
   void RequestHitTest(
       mojom::XRRayPtr ray,
       mojom::VRMagicWindowProvider::RequestHitTestCallback callback) override;
+
   void OnMailboxBridgeReady();
   void OnARCoreGlThreadInitialized(bool success);
 
@@ -63,11 +68,18 @@ class ARCoreDevice : public VRDeviceBase {
   void PostTaskToGlThread(base::OnceClosure task);
 
   bool IsOnMainThread();
+
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge_;
   std::unique_ptr<ARCoreGlThread> arcore_gl_thread_;
 
   bool is_arcore_gl_thread_initialized_ = false;
+
+  // This object is not paused when it is created. Although it is not
+  // necessarily running during initialization, it is not paused. If it is
+  // paused before initialization completes, then the underlying runtime will
+  // not be resumed.
+  bool is_paused_ = false;
 
   // Must be last.
   base::WeakPtrFactory<ARCoreDevice> weak_ptr_factory_;

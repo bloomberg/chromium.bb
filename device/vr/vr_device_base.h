@@ -64,7 +64,17 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
                   base::Callback<void(bool)> on_handled);
 
  private:
+  // Subclasses should implement these methods if they need to perform
+  // device-specific operations.
   virtual void UpdateListeningForActivate(VRDisplayImpl* display);
+
+  // TODO(https://crbug.com/845283): This method is a temporary solution
+  // until a XR related refactor lands. It allows to keep using the
+  // existing PauseTracking/ResumeTracking while not changing the
+  // existing VR functionality.
+  virtual bool ShouldPauseAndResumeOnFocusChange();
+
+  // TODO(https://crbug.com/842227): Rename methods to HandleOnXXX
   virtual void OnListeningForActivate(bool listening);
   virtual void OnMagicWindowPoseRequest(
       mojom::VRMagicWindowProvider::GetPoseCallback callback);

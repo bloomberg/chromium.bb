@@ -103,6 +103,9 @@ void VRDeviceBase::OnListeningForActivateChanged(VRDisplayImpl* display) {
 
 void VRDeviceBase::OnFrameFocusChanged(VRDisplayImpl* display) {
   UpdateListeningForActivate(display);
+  if (ShouldPauseAndResumeOnFocusChange()) {
+    display->InFocusedFrame() ? ResumeTracking() : PauseTracking();
+  }
 }
 
 void VRDeviceBase::SetVRDisplayInfo(mojom::VRDisplayInfoPtr display_info) {
@@ -123,6 +126,10 @@ void VRDeviceBase::OnActivate(mojom::VRDisplayEventReason reason,
                               base::Callback<void(bool)> on_handled) {
   if (listener_)
     listener_->OnActivate(reason, std::move(on_handled));
+}
+
+bool VRDeviceBase::ShouldPauseAndResumeOnFocusChange() {
+  return false;
 }
 
 void VRDeviceBase::OnListeningForActivate(bool listening) {}
