@@ -50,10 +50,10 @@ class DOMWindowEventQueue final : public EventQueue {
  private:
   explicit DOMWindowEventQueue(ExecutionContext*);
 
-  void PendingEventTimerFired();
+  bool RemoveEvent(Event*);
   void DispatchEvent(Event*);
 
-  Member<DOMWindowEventQueueTimer> pending_event_timer_;
+  Member<ExecutionContext> context_;
   HeapLinkedHashSet<Member<Event>> queued_events_;
   bool is_closed_;
 

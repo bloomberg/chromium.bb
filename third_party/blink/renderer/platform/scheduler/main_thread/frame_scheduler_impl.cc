@@ -293,8 +293,8 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     case TaskType::kInternalMedia:
     case TaskType::kInternalMediaRealTime:
     case TaskType::kInternalUserInteraction:
-      return TaskQueueWithTaskType::Create(PausableTaskQueue(), type);
     case TaskType::kUnthrottled:
+      return TaskQueueWithTaskType::Create(PausableTaskQueue(), type);
     case TaskType::kInternalTest:
     case TaskType::kInternalWebCrypto:
     case TaskType::kInternalIPC:
