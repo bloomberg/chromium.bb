@@ -45,6 +45,10 @@ const base::Feature kAutofillEnforceMinRequiredFieldsForUpload{
     "AutofillEnforceMinRequiredFieldsForUpload",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether the manual fill fallback will be present.
+const base::Feature kAutofillManualFallback{"AutofillManualFallback",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether credit card suggestions are made on insecure pages.
 const base::Feature kAutofillRequireSecureCreditCardContext{
     "AutofillRequireSecureCreditCardContext", base::FEATURE_ENABLED_BY_DEFAULT};

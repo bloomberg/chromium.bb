@@ -56,6 +56,11 @@ const char kAutofillIOSDelayBetweenFieldsDescription[] =
     "Delay between the different fields of a form being autofilled. In "
     "milliseconds.";
 
+const char kAutofillManualFallbackName[] = "Enable autofill manual fallback";
+const char kAutofillManualFallbackDescription[] =
+    "When enabled, it shows the autofill UI with manual fallback when filling "
+    "forms.";
+
 const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[] =
     "Restrict formless form extraction";
 const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[] =

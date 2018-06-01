@@ -329,6 +329,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillCacheQueryResponsesDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillCacheQueryResponses)},
+    {"autofill-manual-fallback", flag_descriptions::kAutofillManualFallbackName,
+     flag_descriptions::kAutofillManualFallbackDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillManualFallback)},
 };
 
 // Add all switches from experimental flags to |command_line|.
