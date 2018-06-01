@@ -58,7 +58,8 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(uint32_t device_id) {
 }  // namespace
 
 ARCoreDevice::ARCoreDevice()
-    : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : VRDeviceBase(VRDeviceId::ARCORE_DEVICE_ID),
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       mailbox_bridge_(std::make_unique<vr::MailboxToSurfaceBridge>()),
       weak_ptr_factory_(this) {
   SetVRDisplayInfo(CreateVRDisplayInfo(GetId()));

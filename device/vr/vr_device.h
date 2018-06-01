@@ -28,6 +28,16 @@ enum class VrViewerType {
   VIEWER_TYPE_COUNT,
 };
 
+// Hardcoded list of ids for each device type.
+enum class VRDeviceId : unsigned int {
+  GVR_DEVICE_ID = 1,
+  OPENVR_DEVICE_ID = 2,
+  OCULUS_DEVICE_ID = 3,
+  ARCORE_DEVICE_ID = 4,
+  ORIENTATION_DEVICE_ID = 5,
+  FAKE_DEVICE_ID = 6,
+};
+
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class XrRuntimeAvailable {
@@ -56,7 +66,6 @@ class DEVICE_VR_EXPORT VRDevice {
  public:
   virtual ~VRDevice() {}
 
-  virtual unsigned int GetId() const = 0;
   virtual void PauseTracking() = 0;
   virtual void ResumeTracking() = 0;
   virtual mojom::VRDisplayInfoPtr GetVRDisplayInfo() = 0;

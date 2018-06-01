@@ -123,14 +123,14 @@ TEST_F(VRDeviceManagerTest, GetNoDevicesTest) {
 }
 
 TEST_F(VRDeviceManagerTest, GetDevicesTest) {
-  device::FakeVRDevice* device1 = new device::FakeVRDevice();
+  device::FakeVRDevice* device1 = new device::FakeVRDevice(1);
   Provider()->AddDevice(base::WrapUnique(device1));
   // VRDeviceManager will query devices as a side effect.
   auto service_1 = BindService();
   // Should have successfully returned one device.
   EXPECT_EQ(device1, DeviceManager()->GetDevice(device1->GetId()));
 
-  device::FakeVRDevice* device2 = new device::FakeVRDevice();
+  device::FakeVRDevice* device2 = new device::FakeVRDevice(2);
   Provider()->AddDevice(base::WrapUnique(device2));
   auto service_2 = BindService();
   // Querying the WebVRDevice index should return the correct device.
@@ -158,7 +158,7 @@ TEST_F(VRDeviceManagerTest, AddRemoveDevices) {
   auto service = BindService();
   EXPECT_EQ(1u, ServiceCount());
   EXPECT_TRUE(Provider()->Initialized());
-  device::FakeVRDevice* device = new device::FakeVRDevice();
+  device::FakeVRDevice* device = new device::FakeVRDevice(1);
   Provider()->AddDevice(base::WrapUnique(device));
   EXPECT_EQ(1, service->GetNumberOfConnectedDisplayHosts());
   Provider()->RemoveDevice(device->GetId());

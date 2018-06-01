@@ -83,15 +83,30 @@ class VROrientationDeviceProviderTest : public testing::Test {
     return init_params;
   }
 
-  base::RepeatingCallback<void(VRDevice*)> DeviceCallbackFailIfCalled() {
-    return base::BindRepeating([](VRDevice* device) { FAIL(); });
+  base::RepeatingCallback<void(unsigned int, VRDevice*)>
+  DeviceAndIdCallbackFailIfCalled() {
+    return base::BindRepeating(
+        [](unsigned int id, VRDevice* device) { FAIL(); });
   };
 
-  base::RepeatingCallback<void(VRDevice*)> DeviceCallbackMustBeCalled(
+  base::RepeatingCallback<void(unsigned int)> DeviceIdCallbackFailIfCalled() {
+    return base::BindRepeating([](unsigned int id) { FAIL(); });
+  };
+
+  base::RepeatingCallback<void(unsigned int, VRDevice*)>
+  DeviceAndIdCallbackMustBeCalled(base::RunLoop* loop) {
+    return base::BindRepeating(
+        [](base::OnceClosure quit_closure, unsigned int id, VRDevice* device) {
+          ASSERT_TRUE(device);
+          std::move(quit_closure).Run();
+        },
+        loop->QuitClosure());
+  };
+
+  base::RepeatingCallback<void(unsigned int)> DeviceIdCallbackMustBeCalled(
       base::RunLoop* loop) {
     return base::BindRepeating(
-        [](base::OnceClosure quit_closure, VRDevice* device) {
-          ASSERT_TRUE(device);
+        [](base::OnceClosure quit_closure, unsigned int id) {
           std::move(quit_closure).Run();
         },
         loop->QuitClosure());
@@ -135,8 +150,8 @@ TEST_F(VROrientationDeviceProviderTest, InitializationCallbackSuccessTest) {
   base::RunLoop wait_for_device;
   base::RunLoop wait_for_init;
 
-  provider_->Initialize(DeviceCallbackMustBeCalled(&wait_for_device),
-                        DeviceCallbackFailIfCalled(),
+  provider_->Initialize(DeviceAndIdCallbackMustBeCalled(&wait_for_device),
+                        DeviceIdCallbackFailIfCalled(),
                         ClosureMustBeCalled(&wait_for_init));
 
   InitializeDevice(FakeInitParams());
@@ -150,8 +165,8 @@ TEST_F(VROrientationDeviceProviderTest, InitializationCallbackSuccessTest) {
 TEST_F(VROrientationDeviceProviderTest, InitializationCallbackFailureTest) {
   base::RunLoop wait_for_init;
 
-  provider_->Initialize(DeviceCallbackFailIfCalled(),
-                        DeviceCallbackFailIfCalled(),
+  provider_->Initialize(DeviceAndIdCallbackFailIfCalled(),
+                        DeviceIdCallbackFailIfCalled(),
                         ClosureMustBeCalled(&wait_for_init));
 
   InitializeDevice(nullptr);
@@ -165,8 +180,8 @@ TEST_F(VROrientationDeviceProviderTest, SecondInitializationSuccessTest) {
   base::RunLoop wait_for_device;
   base::RunLoop wait_for_init;
 
-  provider_->Initialize(DeviceCallbackMustBeCalled(&wait_for_device),
-                        DeviceCallbackFailIfCalled(),
+  provider_->Initialize(DeviceAndIdCallbackMustBeCalled(&wait_for_device),
+                        DeviceIdCallbackFailIfCalled(),
                         ClosureMustBeCalled(&wait_for_init));
 
   InitializeDevice(FakeInitParams());
@@ -180,8 +195,9 @@ TEST_F(VROrientationDeviceProviderTest, SecondInitializationSuccessTest) {
   EXPECT_TRUE(provider_->Initialized());
 
   // If we run initialize again, we should only call add device.
-  provider_->Initialize(DeviceCallbackMustBeCalled(&second_wait_for_device),
-                        DeviceCallbackFailIfCalled(), ClosureFailIfCalled());
+  provider_->Initialize(
+      DeviceAndIdCallbackMustBeCalled(&second_wait_for_device),
+      DeviceIdCallbackFailIfCalled(), ClosureFailIfCalled());
 
   second_wait_for_device.Run();
 }
@@ -189,8 +205,8 @@ TEST_F(VROrientationDeviceProviderTest, SecondInitializationSuccessTest) {
 TEST_F(VROrientationDeviceProviderTest, SecondInitializationFailureTest) {
   base::RunLoop wait_for_init;
 
-  provider_->Initialize(DeviceCallbackFailIfCalled(),
-                        DeviceCallbackFailIfCalled(),
+  provider_->Initialize(DeviceAndIdCallbackFailIfCalled(),
+                        DeviceIdCallbackFailIfCalled(),
                         ClosureMustBeCalled(&wait_for_init));
 
   InitializeDevice(nullptr);
@@ -200,8 +216,8 @@ TEST_F(VROrientationDeviceProviderTest, SecondInitializationFailureTest) {
   EXPECT_TRUE(provider_->Initialized());
 
   // If we call again on a failure, nothing should be called.
-  provider_->Initialize(DeviceCallbackFailIfCalled(),
-                        DeviceCallbackFailIfCalled(), ClosureFailIfCalled());
+  provider_->Initialize(DeviceAndIdCallbackFailIfCalled(),
+                        DeviceIdCallbackFailIfCalled(), ClosureFailIfCalled());
 }
 
 }  // namespace device

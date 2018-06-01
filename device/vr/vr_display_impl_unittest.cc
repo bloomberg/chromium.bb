@@ -29,7 +29,7 @@ class VRDisplayImplTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    device_ = std::make_unique<FakeVRDevice>();
+    device_ = std::make_unique<FakeVRDevice>(1);
     device_->SetPose(mojom::VRPose::New());
     mojom::VRServiceClientPtr proxy;
     client_ = std::make_unique<FakeVRServiceClient>(mojo::MakeRequest(&proxy));

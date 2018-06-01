@@ -52,7 +52,9 @@ display::Display::Rotation GetRotation() {
 VROrientationDevice::VROrientationDevice(
     mojom::SensorProviderPtr* sensor_provider,
     base::OnceClosure ready_callback)
-    : ready_callback_(std::move(ready_callback)), binding_(this) {
+    : VRDeviceBase(VRDeviceId::ORIENTATION_DEVICE_ID),
+      ready_callback_(std::move(ready_callback)),
+      binding_(this) {
   (*sensor_provider)
       ->GetSensor(kOrientationSensorType,
                   base::BindOnce(&VROrientationDevice::SensorReady,

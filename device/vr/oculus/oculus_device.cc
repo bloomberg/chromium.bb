@@ -84,7 +84,8 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(unsigned int id,
 }  // namespace
 
 OculusDevice::OculusDevice(ovrSession session, ovrGraphicsLuid luid)
-    : session_(session),
+    : VRDeviceBase(VRDeviceId::OCULUS_DEVICE_ID),
+      session_(session),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
   SetVRDisplayInfo(CreateVRDisplayInfo(GetId(), session_));

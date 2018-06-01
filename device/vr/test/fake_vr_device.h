@@ -16,7 +16,7 @@ namespace device {
 // TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
 class DEVICE_VR_EXPORT FakeVRDevice : public VRDeviceBase {
  public:
-  FakeVRDevice();
+  FakeVRDevice(unsigned int id);
   ~FakeVRDevice() override;
 
   void RequestPresent(

@@ -51,7 +51,8 @@ class VRDisplay final : public EventTargetWithInlineData,
  public:
   ~VRDisplay() override;
 
-  unsigned displayId() const { return display_id_; }
+  // We hand out at most one VRDisplay, so hardcode displayId to 1.
+  unsigned displayId() const { return 1; }
   const String& displayName() const { return display_name_; }
 
   VRDisplayCapabilities* capabilities() const { return capabilities_; }

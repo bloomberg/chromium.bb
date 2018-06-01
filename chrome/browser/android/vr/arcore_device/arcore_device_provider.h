@@ -12,18 +12,21 @@
 
 namespace device {
 
+class ARCoreDevice;
+
 class ARCoreDeviceProvider : public VRDeviceProvider {
  public:
   ARCoreDeviceProvider();
   ~ARCoreDeviceProvider() override;
   void Initialize(
-      base::RepeatingCallback<void(VRDevice*)> add_device_callback,
-      base::RepeatingCallback<void(VRDevice*)> remove_device_callback,
+      base::RepeatingCallback<void(unsigned int, VRDevice*)>
+          add_device_callback,
+      base::RepeatingCallback<void(unsigned int)> remove_device_callback,
       base::OnceClosure initialization_complete) override;
   bool Initialized() override;
 
  private:
-  std::unique_ptr<VRDevice> arcore_device_;
+  std::unique_ptr<ARCoreDevice> arcore_device_;
   bool initialized_ = false;
   DISALLOW_COPY_AND_ASSIGN(ARCoreDeviceProvider);
 };
