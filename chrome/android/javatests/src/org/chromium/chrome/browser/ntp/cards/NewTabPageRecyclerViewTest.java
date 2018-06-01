@@ -241,7 +241,7 @@ public class NewTabPageRecyclerViewTest {
         assertArrayEquals(new int[] {TEST_CATEGORY}, mSource.getCategories());
 
         // Scroll the status card into view.
-        int cardPosition = getAdapter().getFirstCardPosition();
+        int cardPosition = getAdapter().getFirstPositionForType(ItemViewType.STATUS);
         assertEquals(ItemViewType.STATUS, getAdapter().getItemViewType(cardPosition));
 
         View statusCardView = getViewHolderAtPosition(cardPosition).itemView;
@@ -261,7 +261,7 @@ public class NewTabPageRecyclerViewTest {
         assertArrayEquals(new int[] {TEST_CATEGORY}, mSource.getCategories());
 
         // Scroll the action item into view.
-        int actionItemPosition = getAdapter().getFirstCardPosition() + 1;
+        int actionItemPosition = getAdapter().getFirstPositionForType(ItemViewType.ACTION);
         assertEquals(ItemViewType.ACTION, getAdapter().getItemViewType(actionItemPosition));
         View actionItemView = getViewHolderAtPosition(actionItemPosition).itemView;
 
