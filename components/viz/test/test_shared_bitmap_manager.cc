@@ -14,13 +14,16 @@ namespace viz {
 
 TestSharedBitmapManager::TestSharedBitmapManager() = default;
 
-TestSharedBitmapManager::~TestSharedBitmapManager() = default;
+TestSharedBitmapManager::~TestSharedBitmapManager() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 std::unique_ptr<SharedBitmap> TestSharedBitmapManager::GetSharedBitmapFromId(
     const gfx::Size&,
     ResourceFormat,
     const SharedBitmapId& id) {
-  base::AutoLock lock(lock_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (bitmap_map_.find(id) == bitmap_map_.end())
     return nullptr;
   uint8_t* pixels = static_cast<uint8_t*>(bitmap_map_[id]->memory());
@@ -30,7 +33,6 @@ std::unique_ptr<SharedBitmap> TestSharedBitmapManager::GetSharedBitmapFromId(
 base::UnguessableToken
 TestSharedBitmapManager::GetSharedBitmapTracingGUIDFromId(
     const SharedBitmapId& id) {
-  base::AutoLock lock(lock_);
   if (bitmap_map_.find(id) == bitmap_map_.end())
     return {};
   return bitmap_map_[id]->mapped_id();
@@ -39,6 +41,8 @@ TestSharedBitmapManager::GetSharedBitmapTracingGUIDFromId(
 bool TestSharedBitmapManager::ChildAllocatedSharedBitmap(
     mojo::ScopedSharedBufferHandle buffer,
     const SharedBitmapId& id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // TestSharedBitmapManager is both the client and service side. So the
   // notification here should be about a bitmap that was previously allocated
   // with AllocateSharedBitmap().
@@ -65,6 +69,8 @@ bool TestSharedBitmapManager::ChildAllocatedSharedBitmap(
 
 void TestSharedBitmapManager::ChildDeletedSharedBitmap(
     const SharedBitmapId& id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   notified_set_.erase(id);
   bitmap_map_.erase(id);
   owned_map_.erase(id);
