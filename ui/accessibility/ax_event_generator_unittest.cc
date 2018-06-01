@@ -19,7 +19,7 @@ std::string DumpEvents(AXEventGenerator* generator) {
   std::vector<std::string> event_strs;
   for (auto targeted_event : *generator) {
     const char* event_name;
-    switch (targeted_event.event) {
+    switch (targeted_event.event_params.event) {
       case AXEventGenerator::Event::ACTIVE_DESCENDANT_CHANGED:
         event_name = "ACTIVE_DESCENDANT_CHANGED";
         break;

@@ -405,7 +405,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
     if (!event_target)
       continue;
 
-    FireGeneratedEvent(targeted_event.event, event_target);
+    FireGeneratedEvent(targeted_event.event_params.event, event_target);
   }
   ClearEvents();
 
