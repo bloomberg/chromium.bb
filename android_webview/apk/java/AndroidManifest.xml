@@ -63,7 +63,7 @@
             <meta-data android:name="com.android.webview.WebViewDonorPackage"
                        android:value="{{ donor_package }}" />
         {% endif %}
-        {% set num_sandboxed_services = 20 %}
+        {% set num_sandboxed_services = 40 %}
         <meta-data android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES"
                    android:value="{{ num_sandboxed_services }}" />
         {% for i in range(num_sandboxed_services) %}
