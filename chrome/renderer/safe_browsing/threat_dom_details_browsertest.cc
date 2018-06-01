@@ -7,7 +7,7 @@
 #include <memory>
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"

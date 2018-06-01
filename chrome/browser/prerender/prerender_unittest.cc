@@ -15,7 +15,7 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"

@@ -11,7 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"

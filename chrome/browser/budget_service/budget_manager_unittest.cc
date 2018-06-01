@@ -6,7 +6,7 @@
 #include <string>
 
 #include "base/run_loop.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/budget_service/budget_manager.h"
 #include "chrome/browser/budget_service/budget_manager_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"

@@ -18,7 +18,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
 #include "base/values.h"

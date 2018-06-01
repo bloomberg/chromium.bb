@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/media/router/media_router_factory.h"

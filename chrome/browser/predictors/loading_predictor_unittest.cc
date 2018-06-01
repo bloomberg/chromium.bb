@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/predictors/loading_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"

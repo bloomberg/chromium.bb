@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 
 #include "base/run_loop.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser_commands.h"

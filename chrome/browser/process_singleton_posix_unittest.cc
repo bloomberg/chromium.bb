@@ -27,7 +27,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_timeouts.h"
 #include "base/test/thread_test_helper.h"
 #include "base/threading/thread.h"

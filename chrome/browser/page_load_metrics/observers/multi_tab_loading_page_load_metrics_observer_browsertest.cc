@@ -4,7 +4,7 @@
 
 #include "chrome/browser/page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer.h"
 
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"

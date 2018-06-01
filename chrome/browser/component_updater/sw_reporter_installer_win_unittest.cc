@@ -18,7 +18,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "base/version.h"

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
-#include "base/test/histogram_tester.h"
 #include "chrome/browser/password_manager/auto_signin_first_run_dialog_android.h"
+
+#include "base/macros.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"

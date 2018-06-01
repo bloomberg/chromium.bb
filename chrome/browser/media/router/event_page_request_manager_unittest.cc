@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
 #include "chrome/test/base/testing_profile.h"

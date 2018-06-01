@@ -17,7 +17,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"

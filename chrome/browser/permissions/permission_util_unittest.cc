@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/histogram_tester.h"
+#include "chrome/browser/permissions/permission_util.h"
+
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/test/test_browser_thread_bundle.h"

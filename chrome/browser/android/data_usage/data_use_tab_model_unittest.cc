@@ -18,7 +18,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/data_use_matcher.h"

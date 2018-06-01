@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/android/customtabs/detached_resource_request.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"

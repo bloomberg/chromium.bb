@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"

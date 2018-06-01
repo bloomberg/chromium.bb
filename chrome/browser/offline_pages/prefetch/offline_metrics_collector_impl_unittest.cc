@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"

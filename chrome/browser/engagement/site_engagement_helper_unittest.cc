@@ -5,7 +5,7 @@
 #include "chrome/browser/engagement/site_engagement_helper.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/timer/mock_timer.h"
 #include "base/values.h"
 #include "chrome/browser/engagement/site_engagement_metrics.h"

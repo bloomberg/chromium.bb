@@ -5,7 +5,7 @@
 #include "chrome/browser/net/trial_comparison_cert_verifier.h"
 
 #include "base/run_loop.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"

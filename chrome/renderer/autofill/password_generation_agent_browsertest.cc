@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/renderer/autofill/fake_content_password_manager_driver.h"
 #include "chrome/renderer/autofill/fake_password_manager_client.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 
 #include "base/macros.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"

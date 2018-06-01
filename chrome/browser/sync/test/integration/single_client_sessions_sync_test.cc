@@ -4,7 +4,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_tab_helper.h"

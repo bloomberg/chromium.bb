@@ -14,7 +14,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"

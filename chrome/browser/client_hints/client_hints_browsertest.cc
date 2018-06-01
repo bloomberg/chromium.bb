@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"

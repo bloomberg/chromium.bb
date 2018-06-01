@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/common/favicon_url.h"
 #include "testing/gtest/include/gtest/gtest.h"

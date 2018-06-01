@@ -12,7 +12,7 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/search_provider_logos/logo_service_factory.h"
 #include "chrome/browser/ui/browser.h"

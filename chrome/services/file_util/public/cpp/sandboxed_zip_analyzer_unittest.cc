@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"

@@ -9,7 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/budget_service/budget.pb.h"
 #include "chrome/browser/engagement/site_engagement_score.h"

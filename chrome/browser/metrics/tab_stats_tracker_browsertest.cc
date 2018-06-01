@@ -5,7 +5,7 @@
 #include "chrome/browser/metrics/tab_stats_tracker.h"
 
 #include "base/containers/flat_map.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"

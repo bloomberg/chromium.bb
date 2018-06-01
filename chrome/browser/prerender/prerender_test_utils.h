@@ -18,7 +18,7 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/synchronization/lock.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"

@@ -7,7 +7,7 @@
 #import "base/mac/scoped_nsobject.h"
 #import "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"

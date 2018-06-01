@@ -19,7 +19,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"

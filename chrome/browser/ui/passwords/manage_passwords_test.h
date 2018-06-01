@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/metrics/histogram_samples.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"

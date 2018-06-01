@@ -8,7 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"

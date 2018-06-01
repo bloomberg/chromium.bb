@@ -10,7 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "extensions/common/extension.h"

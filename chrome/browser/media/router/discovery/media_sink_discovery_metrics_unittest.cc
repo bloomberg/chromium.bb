@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/media/router/discovery/media_sink_discovery_metrics.h"
+
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"

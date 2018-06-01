@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/page_load_metrics/observers/ads_page_load_metrics_observer.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
