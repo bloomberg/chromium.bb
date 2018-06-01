@@ -1155,6 +1155,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                      bool should_replace_current_entry,
                                      blink::mojom::CommitResult result);
 
+  // Called by the renderer process when it is done processing a cross-document
+  // commit request.
+  void OnCrossDocumentCommitProcessed(int64_t navigation_id,
+                                      blink::mojom::CommitResult result);
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring

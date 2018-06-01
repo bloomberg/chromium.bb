@@ -323,6 +323,7 @@ TEST_F(CorePageLoadMetricsObserverTest, FailedProvisionalLoad) {
   std::unique_ptr<content::NavigationSimulator> navigation =
       content::NavigationSimulator::CreateRendererInitiated(url, main_rfh());
   navigation->Fail(net::ERR_TIMED_OUT);
+  navigation->AbortCommit();
   content::RenderFrameHostTester::For(navigation->GetFinalRenderFrameHost())
       ->SimulateNavigationStop();
 

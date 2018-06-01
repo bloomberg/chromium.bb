@@ -477,6 +477,25 @@ void NavigationSimulator::Commit() {
     CHECK_EQ(1, num_did_finish_navigation_called_);
 }
 
+void NavigationSimulator::AbortCommit() {
+  CHECK_LE(state_, FAILED)
+      << "NavigationSimulator::AbortCommit cannot be called after "
+         "NavigationSimulator::Commit or  "
+         "NavigationSimulator::CommitErrorPage.";
+  if (state_ < READY_TO_COMMIT) {
+    ReadyToCommit();
+    if (state_ == FINISHED)
+      return;
+  }
+
+  CHECK(render_frame_host_) << "NavigationSimulator::AbortCommit can only be "
+                               "called for navigations that commit.";
+  render_frame_host_->AbortNavigationCommit();
+
+  state_ = FINISHED;
+  CHECK_EQ(1, num_did_finish_navigation_called_);
+}
+
 void NavigationSimulator::Fail(int error_code) {
   CHECK_LE(state_, STARTED) << "NavigationSimulator::Fail can only be "
                                "called once, and cannot be called after "

@@ -571,6 +571,14 @@ void TestRenderFrameHost::PrepareForCommitIfNecessary() {
   }
 }
 
+void TestRenderFrameHost::AbortNavigationCommit() {
+  if (navigation_request_) {
+    RenderFrameHostImpl::OnCrossDocumentCommitProcessed(
+        navigation_request_->navigation_handle()->GetNavigationId(),
+        blink::mojom::CommitResult::Aborted);
+  }
+}
+
 WebBluetoothServiceImpl*
 TestRenderFrameHost::CreateWebBluetoothServiceForTesting() {
   WebBluetoothServiceImpl* service =

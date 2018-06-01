@@ -2796,7 +2796,6 @@ void RenderFrameHostImpl::OnDidStopLoading() {
 
   was_discarded_ = false;
   is_loading_ = false;
-  navigation_request_.reset();
 
   // Only inform the FrameTreeNode of a change in load state if the load state
   // of this RenderFrameHost is being tracked.
@@ -3773,7 +3772,14 @@ void RenderFrameHostImpl::CommitNavigation(
           std::move(url_loader_client_endpoints),
           std::move(subresource_loader_factories),
           std::move(subresource_overrides), std::move(controller),
-          devtools_navigation_token);
+          devtools_navigation_token,
+          navigation_request_
+              ? base::BindOnce(
+                    &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
+                    base::Unretained(this),
+                    navigation_request_->navigation_handle()->GetNavigationId())
+              : content::mojom::FrameNavigationControl::
+                    CommitNavigationCallback());
     }
 
     // |remote_object| is an associated interface ptr, so calls can't be made on
@@ -3832,7 +3838,11 @@ void RenderFrameHostImpl::FailedNavigation(
   } else {
     GetNavigationControl()->CommitFailedNavigation(
         common_params, request_params, has_stale_copy_in_cache, error_code,
-        error_page_content, std::move(subresource_loader_factories));
+        error_page_content, std::move(subresource_loader_factories),
+        base::BindOnce(
+            &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
+            base::Unretained(this),
+            navigation_request_->navigation_handle()->GetNavigationId()));
   }
 
   // An error page is expected to commit, hence why is_loading_ is set to true.
@@ -5015,19 +5025,12 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   if (!ValidateDidCommitParams(validated_params))
     return false;
 
-  if (!navigation_request_) {
-    // The browser has not been notified about the start of the
-    // load in this renderer yet (e.g., for same-document navigations that start
-    // in the renderer). Do it now.
-    // TODO(ahemery): This should never be true for cross-document navigation
-    // apart from race conditions. Move to same navigation specific code when
-    // the full mojo interface is in place.
-    // (https://bugs.chromium.org/p/chromium/issues/detail?id=784904)
-    if (!is_loading()) {
-      bool was_loading = frame_tree_node()->frame_tree()->IsLoading();
-      is_loading_ = true;
-      frame_tree_node()->DidStartLoading(true, was_loading);
-    }
+  // A racy DidStopLoading IPC might have reset the loading state that was set
+  // to true in CommitNavigation. Set it to true now.
+  if (!is_loading()) {
+    bool was_loading = frame_tree_node()->frame_tree()->IsLoading();
+    is_loading_ = true;
+    frame_tree_node()->DidStartLoading(true, was_loading);
   }
 
   if (navigation_request_)
@@ -5074,10 +5077,30 @@ void RenderFrameHostImpl::OnSameDocumentCommitProcessed(
   }
 
   if (result == blink::mojom::CommitResult::Aborted) {
-    // Note: if the commit was successful, navigation_handle_ is reset in
+    // Note: if the commit was successful, navigation_request_ is reset in
     // DidCommitProvisionalLoad.
     same_document_navigation_request_.reset();
   }
+}
+
+void RenderFrameHostImpl::OnCrossDocumentCommitProcessed(
+    int64_t navigation_id,
+    blink::mojom::CommitResult result) {
+  // If the NavigationRequest was deleted, another navigation commit started to
+  // be processed. Let the latest commit go through and stop doing anything.
+  if (!navigation_request_ ||
+      navigation_request_->navigation_handle()->GetNavigationId() !=
+          navigation_id) {
+    return;
+  }
+  DCHECK_NE(blink::mojom::CommitResult::RestartCrossDocument, result);
+
+  // Note: if the commit was successful, navigation_request_ is reset in
+  // DidCommitProvisionalLoad.
+  if (result == blink::mojom::CommitResult::Ok)
+    return;
+
+  navigation_request_.reset();
 }
 
 }  // namespace content

@@ -138,6 +138,7 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
 
     EXPECT_CALL(mock_reloader(), OnAbort()).Times(1);
     navigation->Fail(net::ERR_TIMED_OUT);
+    navigation->AbortCommit();
     content::RenderFrameHostTester::For(navigation->GetFinalRenderFrameHost())
         ->SimulateNavigationStop();
 
