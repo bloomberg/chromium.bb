@@ -8,7 +8,7 @@
 #include <map>
 #include <set>
 
-#include "base/synchronization/lock.h"
+#include "base/sequence_checker.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 
 namespace base {
@@ -34,7 +34,8 @@ class TestSharedBitmapManager : public SharedBitmapManager {
   void ChildDeletedSharedBitmap(const SharedBitmapId& id) override;
 
  private:
-  base::Lock lock_;
+  SEQUENCE_CHECKER(sequence_checker_);
+
   std::map<SharedBitmapId, base::SharedMemory*> bitmap_map_;
   std::map<SharedBitmapId, std::unique_ptr<base::SharedMemory>> owned_map_;
   std::set<SharedBitmapId> notified_set_;
