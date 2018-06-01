@@ -341,6 +341,17 @@ void ToolbarView::ShowTranslateBubble(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ToolbarView, AccessiblePaneView overrides:
+
+bool ToolbarView::SetPaneFocus(views::View* initial_focus) {
+  if (!AccessiblePaneView::SetPaneFocus(initial_focus))
+    return false;
+
+  location_bar_->SetFullKeyboardAcessibilityMode(true);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, views::MenuButtonListener implementation:
 
 void ToolbarView::OnMenuButtonClicked(views::MenuButton* source,
@@ -623,6 +634,11 @@ bool ToolbarView::SetPaneFocusAndFocusDefault() {
     return false;
   browser_->window()->RotatePaneFocus(true);
   return true;
+}
+
+void ToolbarView::RemovePaneFocus() {
+  AccessiblePaneView::RemovePaneFocus();
+  location_bar_->SetFullKeyboardAcessibilityMode(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

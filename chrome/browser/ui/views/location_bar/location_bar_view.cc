@@ -346,6 +346,15 @@ void LocationBarView::SetImeInlineAutocompletion(const base::string16& text) {
   ime_inline_autocomplete_view_->SetVisible(!text.empty());
 }
 
+void LocationBarView::SetFullKeyboardAcessibilityMode(
+    bool full_keyboard_accessibility_mode) {
+  full_keyboard_accessibility_mode_ = full_keyboard_accessibility_mode;
+
+  // If there is not already a focus ring View, we will draw one in OnPaint.
+  if (!focus_ring_)
+    SchedulePaint();
+}
+
 void LocationBarView::SelectAll() {
   omnibox_view_->SelectAll(true);
 }
@@ -1132,7 +1141,11 @@ void LocationBarView::OnFocus() {
 void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
-  if (show_focus_rect_ && omnibox_view_->HasFocus() && !focus_ring_) {
+  // Internally draw a focus ring only if we don't have an external focus ring
+  // View, we are in full keyboard accessibility mode, and we have focus.
+  // TODO(tommycli): Remove this after after Material Refresh is launched.
+  if (!focus_ring_ && full_keyboard_accessibility_mode_ &&
+      omnibox_view_->HasFocus()) {
     static_cast<BackgroundWith1PxBorder*>(background())
         ->PaintFocusRing(canvas, GetNativeTheme(), GetLocalBounds());
   }
