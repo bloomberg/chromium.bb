@@ -11,14 +11,26 @@
 namespace blink {
 
 CustomLayoutConstraints::CustomLayoutConstraints(LayoutUnit fixed_inline_size,
+                                                 LayoutUnit fixed_block_size,
                                                  SerializedScriptValue* data,
                                                  v8::Isolate* isolate)
-    : fixed_inline_size_(fixed_inline_size) {
+    : fixed_inline_size_(fixed_inline_size),
+      fixed_block_size_(fixed_block_size) {
   if (data)
     layout_worklet_world_v8_data_.Set(isolate, data->Deserialize(isolate));
 }
 
 CustomLayoutConstraints::~CustomLayoutConstraints() = default;
+
+double CustomLayoutConstraints::fixedBlockSize(bool& is_null) const {
+  // Check if we've been passed an indefinite block-size.
+  if (fixed_block_size_ < 0.0) {
+    is_null = true;
+    return 0.0;
+  }
+
+  return fixed_block_size_;
+}
 
 ScriptValue CustomLayoutConstraints::data(ScriptState* script_state) const {
   // "data" is *only* exposed to the LayoutWorkletGlobalScope, and we are able
