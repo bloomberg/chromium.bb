@@ -157,7 +157,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
   url_loader_factory_ = blink::WebURLLoaderMockFactory::Create();
   // Mock out clipboard calls so that tests don't mess
   // with each other's copies/pastes when running in parallel.
-  mock_clipboard_host_ = std::make_unique<MockClipboardHost>(nullptr);
+  mock_clipboard_host_ = std::make_unique<MockClipboardHost>();
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);

@@ -17,7 +17,6 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "content/shell/test_runner/layout_test_runtime_flags.h"
-#include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/service_manager/public/cpp/connector.h"
 // FIXME: Including platform_canvas.h here is a layering violation.
 #include "skia/ext/platform_canvas.h"
@@ -30,37 +29,11 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/public/web/web_print_params.h"
-#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace test_runner {
 
 namespace {
-
-class BitmapDataPipeDrainer : public mojo::DataPipeDrainer::Client {
- public:
-  BitmapDataPipeDrainer(mojo::ScopedDataPipeConsumerHandle handle,
-                        base::OnceCallback<void(const SkBitmap&)> callback)
-      : callback_(std::move(callback)), drainer_(this, std::move(handle)) {}
-
-  void OnDataAvailable(const void* data, size_t num_bytes) override {
-    const unsigned char* ptr = static_cast<const unsigned char*>(data);
-    data_.insert(data_.end(), ptr, ptr + num_bytes);
-  }
-
-  void OnDataComplete() override {
-    SkBitmap bitmap;
-    if (!gfx::PNGCodec::Decode(data_.data(), data_.size(), &bitmap))
-      bitmap.reset();
-    std::move(callback_).Run(bitmap);
-    delete this;
-  }
-
- private:
-  base::OnceCallback<void(const SkBitmap&)> callback_;
-  mojo::DataPipeDrainer drainer_;
-  std::vector<unsigned char> data_;
-};
 
 class CaptureCallback : public base::RefCountedThreadSafe<CaptureCallback> {
  public:
@@ -226,14 +199,9 @@ void CopyImageAtAndCapturePixels(
     return;
   }
 
-  blink::mojom::SerializedBlobPtr serialized_blob;
-  clipboard->ReadImage(ui::CLIPBOARD_TYPE_COPY_PASTE, &serialized_blob);
-  blink::mojom::BlobPtr blob(std::move(serialized_blob->blob));
-  mojo::DataPipe pipe;
-  blob->ReadAll(std::move(pipe.producer_handle), nullptr);
-  // Self-destructs after draining the pipe.
-  new BitmapDataPipeDrainer(std::move(pipe.consumer_handle),
-                            std::move(callback));
+  SkBitmap bitmap;
+  clipboard->ReadImage(ui::CLIPBOARD_TYPE_COPY_PASTE, &bitmap);
+  std::move(callback).Run(bitmap);
 }
 
 }  // namespace test_runner

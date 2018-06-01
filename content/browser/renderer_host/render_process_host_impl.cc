@@ -1924,13 +1924,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
         base::Bind(&CreateProcessResourceCoordinator, base::Unretained(this)));
   }
 
-  BrowserContext* browser_context = GetBrowserContext();
-  scoped_refptr<ChromeBlobStorageContext> blob_storage_context =
-      ChromeBlobStorageContext::GetFor(browser_context);
-
   AddUIThreadInterface(registry.get(),
-                       base::BindRepeating(&ClipboardHostImpl::Create,
-                                           std::move(blob_storage_context)));
+                       base::BindRepeating(&ClipboardHostImpl::Create));
 
   media::VideoDecodePerfHistory* video_perf_history =
       GetBrowserContext()->GetVideoDecodePerfHistory();

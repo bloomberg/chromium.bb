@@ -5,27 +5,16 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_CLIPBOARD_HOST_IMPL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_CLIPBOARD_HOST_IMPL_H_
 
-#include <stdint.h>
-
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/browser_associated_interface.h"
-#include "content/public/browser/browser_message_filter.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
 
 class GURL;
-
-namespace gfx {
-class Size;
-}
 
 namespace ui {
 class ScopedClipboardWriter;
@@ -33,22 +22,18 @@ class ScopedClipboardWriter;
 
 namespace content {
 
-class ChromeBlobStorageContext;
 class ClipboardHostImplTest;
 
 class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
  public:
   ~ClipboardHostImpl() override;
 
-  static void Create(
-      scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
-      blink::mojom::ClipboardHostRequest request);
+  static void Create(blink::mojom::ClipboardHostRequest request);
 
  private:
   friend class ClipboardHostImplTest;
 
-  explicit ClipboardHostImpl(
-      scoped_refptr<ChromeBlobStorageContext> blob_storage_context);
+  ClipboardHostImpl();
 
   // content::mojom::ClipboardHost
   void GetSequenceNumber(ui::ClipboardType clipboard_type,
@@ -82,15 +67,13 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
                      const std::string& url,
                      const base::string16& title) override;
   void WriteImage(ui::ClipboardType clipboard_type,
-                  const gfx::Size& size_in_pixels,
-                  mojo::ScopedSharedBufferHandle shared_buffer_handle) override;
+                  const SkBitmap& bitmap) override;
   void CommitWrite(ui::ClipboardType clipboard_type) override;
 #if defined(OS_MACOSX)
   void WriteStringToFindPboard(const base::string16& text) override;
 #endif
 
   ui::Clipboard* clipboard_;  // Not owned
-  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   std::unique_ptr<ui::ScopedClipboardWriter> clipboard_writer_;
 };
 

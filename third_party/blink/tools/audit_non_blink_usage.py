@@ -191,6 +191,10 @@ _CONFIG = [
         'allowed': ['gin::.+'],
     },
     {
+        'paths': ['third_party/blink/renderer/core/clipboard'],
+        'allowed': ['gfx::PNGCodec'],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/css'],
         'allowed': [
             # Internal implementation details for CSS.

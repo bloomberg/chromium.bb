@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/platform/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace blink {
 
@@ -126,12 +127,17 @@ File* DataObjectItem::GetAsFile() const {
 
   DCHECK_EQ(source_, kClipboardSource);
   if (GetType() == kMimeTypeImagePng) {
-    scoped_refptr<BlobDataHandle> blob =
-        SystemClipboard::GetInstance().ReadImage(
-            mojom::ClipboardBuffer::kStandard);
-    if (!blob)
-      return nullptr;
-    return File::Create("image.png", CurrentTimeMS(), std::move(blob));
+    SkBitmap image = SystemClipboard::GetInstance().ReadImage(
+        mojom::ClipboardBuffer::kStandard);
+    std::vector<unsigned char> png_data;
+    if (gfx::PNGCodec::FastEncodeBGRASkBitmap(image, false, &png_data)) {
+      std::unique_ptr<BlobData> data = BlobData::Create();
+      data->SetContentType(kMimeTypeImagePng);
+      data->AppendBytes(png_data.data(), png_data.size());
+      const uint64_t length = data->length();
+      auto blob = BlobDataHandle::Create(std::move(data), length);
+      return File::Create("image.png", CurrentTimeMS(), std::move(blob));
+    }
   }
 
   return nullptr;
