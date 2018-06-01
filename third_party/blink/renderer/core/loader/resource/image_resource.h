@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -176,7 +177,7 @@ class CORE_EXPORT ImageResource final
   };
   PlaceholderOption placeholder_option_;
 
-  double last_flush_time_ = 0.;
+  TimeTicks last_flush_time_;
 
   bool is_during_finish_as_error_ = false;
 

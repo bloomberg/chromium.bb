@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace cc {
 class Layer;
@@ -113,7 +114,7 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
 
   bool geometry_needs_update_;
   bool is_animating_;
-  double start_time_;
+  TimeTicks start_time_;
   UniqueObjectId unique_id_;
 };
 

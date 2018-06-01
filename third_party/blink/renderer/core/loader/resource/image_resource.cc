@@ -57,7 +57,7 @@ namespace {
 // The amount of time to wait before informing the clients that the image has
 // been updated (in seconds). This effectively throttles invalidations that
 // result from new data arriving for this image.
-constexpr double kFlushDelaySeconds = 1.;
+constexpr auto kFlushDelay = TimeDelta::FromSeconds(1);
 
 bool HasServerLoFiResponseHeaders(const ResourceResponse& response) {
   return response.HttpHeaderField("chrome-proxy-content-transform")
@@ -331,26 +331,25 @@ void ImageResource::AppendData(const char* data, size_t length) {
       return;
     }
 
-    // For other cases, only update at |kFlushDelaySeconds| intervals. This
+    // For other cases, only update at |kFlushDelay| intervals. This
     // throttles how frequently we update |m_image| and how frequently we
     // inform the clients which causes an invalidation of this image. In other
-    // words, we only invalidate this image every |kFlushDelaySeconds| seconds
+    // words, we only invalidate this image every |kFlushDelay| seconds
     // while loading.
     if (Loader() && !is_pending_flushing_) {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner =
           Loader()->GetLoadingTaskRunner();
-      double now = WTF::CurrentTimeTicksInSeconds();
-      if (!last_flush_time_)
+      TimeTicks now = CurrentTimeTicks();
+      if (last_flush_time_.is_null())
         last_flush_time_ = now;
 
       DCHECK_LE(last_flush_time_, now);
-      double flush_delay = last_flush_time_ - now + kFlushDelaySeconds;
-      if (flush_delay < 0.)
-        flush_delay = 0.;
+      TimeDelta flush_delay =
+          std::max(TimeDelta(), last_flush_time_ - now + kFlushDelay);
       task_runner->PostDelayedTask(FROM_HERE,
                                    WTF::Bind(&ImageResource::FlushImageIfNeeded,
                                              WrapWeakPersistent(this)),
-                                   TimeDelta::FromSecondsD(flush_delay));
+                                   flush_delay);
       is_pending_flushing_ = true;
     }
   }
@@ -360,7 +359,7 @@ void ImageResource::FlushImageIfNeeded() {
   // We might have already loaded the image fully, in which case we don't need
   // to call |updateImage()|.
   if (IsLoading()) {
-    last_flush_time_ = WTF::CurrentTimeTicksInSeconds();
+    last_flush_time_ = CurrentTimeTicks();
     UpdateImage(Data(), ImageResourceContent::kUpdateImage, false);
   }
   is_pending_flushing_ = false;

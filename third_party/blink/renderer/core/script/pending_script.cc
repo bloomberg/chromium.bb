@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/script/ignore_destructive_write_count_incrementer.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -58,7 +57,6 @@ PendingScript::PendingScript(ScriptElementBase* element,
                              const TextPosition& starting_position)
     : element_(element),
       starting_position_(starting_position),
-      parser_blocking_load_start_time_(0),
       virtual_time_pauser_(CreateWebScopedVirtualTimePauser(element)),
       client_(nullptr),
       original_context_document_(element->GetDocument().ContextDocument()),
@@ -73,7 +71,7 @@ void PendingScript::Dispose() {
   DCHECK(!IsWatchingForLoad());
 
   starting_position_ = TextPosition::BelowRangePosition();
-  parser_blocking_load_start_time_ = 0;
+  parser_blocking_load_start_time_ = TimeTicks();
 
   DisposeInternal();
   element_ = nullptr;
@@ -115,8 +113,8 @@ ScriptElementBase* PendingScript::GetElement() const {
 }
 
 void PendingScript::MarkParserBlockingLoadStartTime() {
-  DCHECK_EQ(parser_blocking_load_start_time_, 0.0);
-  parser_blocking_load_start_time_ = CurrentTimeTicksInSeconds();
+  DCHECK(parser_blocking_load_start_time_.is_null());
+  parser_blocking_load_start_time_ = CurrentTimeTicks();
 }
 
 // https://html.spec.whatwg.org/multipage/scripting.html#execute-the-script-block
@@ -162,7 +160,8 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
   const bool was_canceled = WasCanceled();
   const bool is_external = IsExternal();
   const bool created_during_document_write = WasCreatedDuringDocumentWrite();
-  const double parser_blocking_load_start_time = ParserBlockingLoadStartTime();
+  const TimeTicks parser_blocking_load_start_time =
+      ParserBlockingLoadStartTime();
   const bool is_controlled_by_script_runner = IsControlledByScriptRunner();
   ScriptElementBase* element = element_;
   Dispose();
@@ -182,7 +181,7 @@ void PendingScript::ExecuteScriptBlockInternal(
     bool was_canceled,
     bool is_external,
     bool created_during_document_write,
-    double parser_blocking_load_start_time,
+    TimeTicks parser_blocking_load_start_time,
     bool is_controlled_by_script_runner) {
   Document& element_document = element->GetDocument();
   Document* context_document = element_document.ContextDocument();
@@ -194,17 +193,17 @@ void PendingScript::ExecuteScriptBlockInternal(
     return;
   }
 
-  if (parser_blocking_load_start_time > 0.0) {
+  if (parser_blocking_load_start_time > TimeTicks()) {
     DocumentParserTiming::From(element_document)
         .RecordParserBlockedOnScriptLoadDuration(
-            CurrentTimeTicksInSeconds() - parser_blocking_load_start_time,
+            (CurrentTimeTicks() - parser_blocking_load_start_time).InSecondsF(),
             created_during_document_write);
   }
 
   if (was_canceled)
     return;
 
-  double script_exec_start_time = CurrentTimeTicksInSeconds();
+  TimeTicks script_exec_start_time = CurrentTimeTicks();
 
   {
     if (element->ElementHasDuplicateAttributes()) {
@@ -279,7 +278,7 @@ void PendingScript::ExecuteScriptBlockInternal(
   if (!is_controlled_by_script_runner) {
     DocumentParserTiming::From(element_document)
         .RecordParserBlockedOnScriptExecutionDuration(
-            CurrentTimeTicksInSeconds() - script_exec_start_time,
+            (CurrentTimeTicks() - script_exec_start_time).InSecondsF(),
             created_during_document_write);
   }
 

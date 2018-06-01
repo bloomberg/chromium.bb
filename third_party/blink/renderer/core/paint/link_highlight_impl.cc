@@ -60,7 +60,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
 #include "third_party/blink/renderer/platform/layout_test_support.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect.h"
@@ -82,7 +81,7 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
       is_scrolling_graphics_layer_(false),
       geometry_needs_update_(false),
       is_animating_(false),
-      start_time_(CurrentTimeTicksInSeconds()),
+      start_time_(CurrentTimeTicks()),
       unique_id_(NewUniqueObjectId()) {
   DCHECK(node_);
   DCHECK(owning_web_view);
@@ -304,8 +303,8 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
   is_animating_ = true;
   const float kStartOpacity = 1;
   // FIXME: Should duration be configurable?
-  const float kFadeDuration = 0.1f;
-  const float kMinPreFadeDuration = 0.1f;
+  constexpr auto kFadeDuration = TimeDelta::FromMilliseconds(100);
+  constexpr auto kMinPreFadeDuration = TimeDelta::FromMilliseconds(100);
 
   content_layer_->SetOpacity(kStartOpacity);
 
@@ -319,16 +318,15 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
       CompositorFloatKeyframe(0, kStartOpacity, timing_function));
   // Make sure we have displayed for at least minPreFadeDuration before starting
   // to fade out.
-  float extra_duration_required = std::max(
-      0.f, kMinPreFadeDuration -
-               static_cast<float>(CurrentTimeTicksInSeconds() - start_time_));
-  if (extra_duration_required) {
-    curve->AddKeyframe(CompositorFloatKeyframe(extra_duration_required,
-                                               kStartOpacity, timing_function));
+  TimeDelta extra_duration_required = std::max(
+      TimeDelta(), kMinPreFadeDuration - (CurrentTimeTicks() - start_time_));
+  if (!extra_duration_required.is_zero()) {
+    curve->AddKeyframe(CompositorFloatKeyframe(
+        extra_duration_required.InSecondsF(), kStartOpacity, timing_function));
   }
   // For layout tests we don't fade out.
   curve->AddKeyframe(CompositorFloatKeyframe(
-      kFadeDuration + extra_duration_required,
+      (kFadeDuration + extra_duration_required).InSecondsF(),
       LayoutTestSupport::IsRunningLayoutTest() ? kStartOpacity : 0,
       timing_function));
 

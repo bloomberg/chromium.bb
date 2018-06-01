@@ -546,13 +546,14 @@ void LocalFrame::DidFreeze() {
 void LocalFrame::DidResume() {
   DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   if (GetDocument()) {
-    const double resume_event_start = CurrentTimeTicksInSeconds();
+    const TimeTicks resume_event_start = CurrentTimeTicks();
     GetDocument()->DispatchEvent(Event::Create(EventTypeNames::resume));
-    const double resume_event_end = CurrentTimeTicksInSeconds();
+    const TimeTicks resume_event_end = CurrentTimeTicks();
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, resume_histogram,
         ("DocumentEventTiming.ResumeDuration", 0, 10000000, 50));
-    resume_histogram.Count((resume_event_end - resume_event_start) * 1000000.0);
+    resume_histogram.Count(
+        (resume_event_end - resume_event_start).InMicroseconds());
     // TODO(fmeawad): Move the following logic to the page once we have a
     // PageResourceCoordinator in Blink
     if (auto* frame_resource_coordinator = GetFrameResourceCoordinator()) {
