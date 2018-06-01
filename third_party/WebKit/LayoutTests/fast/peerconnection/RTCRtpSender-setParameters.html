@@ -81,7 +81,7 @@ promise_test(async (t) => {
     new DOMException(
       "getParameters() needs to be called before setParameters().",
       "InvalidStateError"),
-    videoSender.setParameters({}));
+    videoSender.setParameters({ rtcp: {}}));
 }, 'setParameters() fails without getParameters()');
 
 /**
@@ -257,19 +257,12 @@ var readOnlyParameters = [
     },
   },
   {
-    name: "rtcp removed",
-    transform: (p) => { delete p.rtcp; },
-    check: (p) => { return p.rtcp !== undefined; },
-  },
-  {
     name: "rtcp.cname modification",
     transform: (p) => { p.rtcp.cname = "cname"; },
-    check: (p) => { return p.rtcp !== undefined; },
   },
   {
     name: "rtcp.reducedSize modification",
     transform: (p) => { p.rtcp.reducedSize = !p.rtcp.reducedSize; },
-    check: (p) => { return p.rtcp !== undefined; },
   },
 ];
 

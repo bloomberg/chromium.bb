@@ -33,7 +33,6 @@ PASS video setParameters() check for headerExtensions.id modification
 PASS video setParameters() check for headerExtensions.id removed
 PASS video setParameters() check for headerExtensions.encrypted modification
 PASS video setParameters() check for headerExtensions.encrypted removed
-PASS video setParameters() check for rtcp removed
 PASS video setParameters() check for rtcp.cname modification
 PASS video setParameters() check for rtcp.reducedSize modification
 PASS audio setParameters() check for transactionId modification
@@ -66,7 +65,6 @@ PASS audio setParameters() check for headerExtensions.id modification
 PASS audio setParameters() check for headerExtensions.id removed
 PASS audio setParameters() check for headerExtensions.encrypted modification
 PASS audio setParameters() check for headerExtensions.encrypted removed
-PASS audio setParameters() check for rtcp removed
 PASS audio setParameters() check for rtcp.cname modification
 PASS audio setParameters() check for rtcp.reducedSize modification
 PASS setParameters() set low maxBitrate value
