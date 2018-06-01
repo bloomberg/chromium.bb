@@ -2,57 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/assistant/ui/ui_element_container_view.h"
+#include "ash/assistant/ui/main_stage/ui_element_container_view.h"
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "base/callback.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
-#include "ui/gfx/canvas.h"
-#include "ui/views/background.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
-
-namespace {
-
-// Appearance.
-constexpr SkColor kTextBackgroundColor = SkColorSetARGB(0x8A, 0x42, 0x85, 0xF4);
-constexpr int kTextCornerRadiusDip = 16;
-constexpr int kTextPaddingHorizontalDip = 12;
-constexpr int kTextPaddingVerticalDip = 4;
-
-// RoundRectBackground ---------------------------------------------------------
-
-class RoundRectBackground : public views::Background {
- public:
-  RoundRectBackground(SkColor color, int corner_radius)
-      : color_(color), corner_radius_(corner_radius) {}
-
-  ~RoundRectBackground() override = default;
-
-  // views::Background:
-  void Paint(gfx::Canvas* canvas, views::View* view) const override {
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setColor(color_);
-    canvas->DrawRoundRect(view->GetContentsBounds(), corner_radius_, flags);
-  }
-
- private:
-  const SkColor color_;
-  const int corner_radius_;
-
-  DISALLOW_COPY_AND_ASSIGN(RoundRectBackground);
-};
-
-}  // namespace
-
-// UiElementContainerView ------------------------------------------------------
 
 UiElementContainerView::UiElementContainerView(
     AssistantController* assistant_controller)
@@ -170,26 +131,7 @@ void UiElementContainerView::OnTextElementAdded(
     const AssistantTextElement* text_element) {
   DCHECK(!is_processing_ui_element_);
 
-  // Container.
-  views::View* text_container = new views::View();
-  text_container->SetBackground(std::make_unique<RoundRectBackground>(
-      kTextBackgroundColor, kTextCornerRadiusDip));
-  text_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal,
-      gfx::Insets(kTextPaddingVerticalDip, kTextPaddingHorizontalDip)));
-
-  // Label.
-  views::Label* text_view =
-      new views::Label(base::UTF8ToUTF16(text_element->text()));
-  text_view->SetAutoColorReadabilityEnabled(false);
-  text_view->SetEnabledColor(kTextColorPrimary);
-  text_view->SetFontList(text_view->font_list().DeriveWithSizeDelta(4));
-  text_view->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  text_view->SetMultiLine(true);
-
-  text_container->AddChildView(text_view);
-  AddChildView(text_container);
-
+  AddChildView(new AssistantTextElementView(text_element));
   PreferredSizeChanged();
 }
 

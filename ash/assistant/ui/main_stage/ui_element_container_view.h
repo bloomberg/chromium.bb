@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASSISTANT_UI_UI_ELEMENT_CONTAINER_VIEW_H_
-#define ASH_ASSISTANT_UI_UI_ELEMENT_CONTAINER_VIEW_H_
+#ifndef ASH_ASSISTANT_UI_MAIN_STAGE_UI_ELEMENT_CONTAINER_VIEW_H_
+#define ASH_ASSISTANT_UI_MAIN_STAGE_UI_ELEMENT_CONTAINER_VIEW_H_
 
 #include <deque>
 #include <memory>
@@ -73,4 +73,4 @@ class UiElementContainerView : public views::View,
 
 }  // namespace ash
 
-#endif  // ASH_ASSISTANT_UI_UI_ELEMENT_CONTAINER_VIEW_H_
+#endif  // ASH_ASSISTANT_UI_MAIN_STAGE_UI_ELEMENT_CONTAINER_VIEW_H_

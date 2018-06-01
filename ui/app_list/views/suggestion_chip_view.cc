@@ -5,6 +5,7 @@
 #include "ui/app_list/views/suggestion_chip_view.h"
 
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -16,8 +17,8 @@ namespace {
 
 // Colors.
 constexpr SkColor kBackgroundColor = SK_ColorWHITE;
-constexpr SkColor kStrokeColor = SkColorSetRGB(0xDA, 0xDC, 0xE0);  // G Grey 300
-constexpr SkColor kTextColor = SkColorSetRGB(0x3C, 0x40, 0x43);    // G Grey 800
+constexpr SkColor kStrokeColor = SkColorSetA(gfx::kGoogleGrey900, 0x24);
+constexpr SkColor kTextColor = gfx::kGoogleGrey900;
 
 // Dimensions.
 constexpr int kIconMarginDip = 8;
