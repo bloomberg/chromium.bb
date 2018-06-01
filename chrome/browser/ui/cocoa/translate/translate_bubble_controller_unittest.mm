@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/translate/translate_bubble_controller.h"
 
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #import "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

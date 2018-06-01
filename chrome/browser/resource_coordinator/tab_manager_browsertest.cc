@@ -7,7 +7,7 @@
 #include "base/feature_list.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/run_loop.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"

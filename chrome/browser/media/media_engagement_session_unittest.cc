@@ -5,7 +5,7 @@
 #include "chrome/browser/media/media_engagement_session.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/test/base/testing_profile.h"

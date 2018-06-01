@@ -8,7 +8,7 @@
 #include <vector>
 #include "base/macros.h"
 #include "base/metrics/histogram_base.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "services/metrics/public/cpp/ukm_builders.h"

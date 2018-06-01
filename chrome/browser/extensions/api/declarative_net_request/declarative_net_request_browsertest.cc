@@ -18,7 +18,7 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/synchronization/lock.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_browsertest.h"

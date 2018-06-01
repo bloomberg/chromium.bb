@@ -4,7 +4,7 @@
 
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"

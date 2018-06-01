@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 
 #include "base/metrics/statistics_recorder.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"

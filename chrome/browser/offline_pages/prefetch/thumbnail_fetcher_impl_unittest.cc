@@ -5,7 +5,7 @@
 #include "chrome/browser/offline_pages/prefetch/thumbnail_fetcher_impl.h"
 
 #include "base/test/bind_test_util.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "components/ntp_snippets/category_rankers/fake_category_ranker.h"

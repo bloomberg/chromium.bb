@@ -7,7 +7,7 @@
 #include <tuple>
 
 #include "base/run_loop.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/translate/content/common/translate.mojom.h"
 #include "components/translate/content/renderer/translate_helper.h"

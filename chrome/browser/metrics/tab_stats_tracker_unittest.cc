@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/power_monitor_test_base.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"

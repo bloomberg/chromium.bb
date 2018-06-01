@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_bubble_controller.h"
 
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
