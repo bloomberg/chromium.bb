@@ -71,6 +71,7 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
+import org.chromium.chrome.browser.widget.FadingBackgroundView.ScrimParams;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -99,6 +100,9 @@ public class LocationBarLayout
     // Delay triggering the omnibox results upon key press to allow the location bar to repaint
     // with the new characters.
     private static final long OMNIBOX_SUGGESTION_START_DELAY_MS = 30;
+
+    /** Params that control how the location bar interacts with the scrim. */
+    private ScrimParams mScrimParams;
 
     protected ImageView mNavigationButton;
     protected TintedImageButton mSecurityButton;
@@ -1439,6 +1443,7 @@ public class LocationBarLayout
      * @param visible Whether the suggestions list should be visible.
      */
     protected void setSuggestionsListVisibility(final boolean visible) {
+        if (mSuggestionsShown == visible) return;
         mSuggestionsShown = visible;
         if (mSuggestionList != null) {
             final boolean isShowing = mSuggestionList.isShown();
@@ -1964,6 +1969,9 @@ public class LocationBarLayout
         ViewStub overlayStub =
                 (ViewStub) getRootView().findViewById(R.id.omnibox_results_container_stub);
         mOmniboxResultsContainer = (ViewGroup) overlayStub.inflate();
+
+        int topMargin = getResources().getDimensionPixelSize(R.dimen.tab_strip_height);
+        mScrimParams = new ScrimParams(mOmniboxResultsContainer, false, false, topMargin, this);
     }
 
     private void maybeShowOmniboxResultsContainer() {
@@ -2003,7 +2011,6 @@ public class LocationBarLayout
         } else {
             chromeActivity.removeViewObscuringAllTabs(mFadingView);
             updateOmniboxResultsContainerVisibility(false);
-            mFadingView.removeObserver(this);
         }
     }
 
@@ -2015,17 +2022,22 @@ public class LocationBarLayout
      *                        scrim.
      */
     protected void updateFadingBackgroundView(boolean visible, boolean ignoreNtpChecks) {
-        if (mFadingView == null) mFadingView = getRootView().findViewById(R.id.fading_focus_target);
+        if (mFadingView == null) {
+            // Some uses of the location bar do not have a tab backing them (like SearchActivity).
+            if (getCurrentTab() == null) return;
+            mFadingView = getCurrentTab().getActivity().getFadingBackgroundView();
+        }
         NewTabPage ntp = mToolbarDataProvider.getNewTabPageForCurrentTab();
         boolean locationBarShownInNTP = ntp != null && ntp.isLocationBarShownInNTP();
 
-        if (visible && (!locationBarShownInNTP || ignoreNtpChecks)) {
-            mFadingView.addObserver(this);
-            // If the location bar is shown in the NTP, the toolbar will eventually trigger a
-            // fade in.
-            mFadingView.showFadingOverlay();
-        } else {
-            mFadingView.hideFadingOverlay(!locationBarShownInNTP);
+        if (mFadingView != null) {
+            if (visible && (!locationBarShownInNTP || ignoreNtpChecks)) {
+                // If the location bar is shown in the NTP, the toolbar will eventually trigger a
+                // fade in.
+                mFadingView.showFadingOverlay(mScrimParams);
+            } else {
+                mFadingView.hideFadingOverlay(!locationBarShownInNTP);
+            }
         }
     }
 

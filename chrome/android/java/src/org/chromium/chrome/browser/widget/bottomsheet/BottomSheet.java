@@ -1223,7 +1223,8 @@ public class BottomSheet extends FrameLayout
         // If the ratio is close enough to zero, just set it to zero.
         if (MathUtils.areFloatsEqual(peekHalfRatio, 0f)) peekHalfRatio = 0f;
 
-        if (mLastPeekToHalfRatioSent < 1f || peekHalfRatio < 1f) {
+        if (peekHalfRatio != mLastPeekToHalfRatioSent
+                && (mLastPeekToHalfRatioSent < 1f || peekHalfRatio < 1f)) {
             mLastPeekToHalfRatioSent = peekHalfRatio;
             for (BottomSheetObserver o : mObservers) {
                 o.onTransitionPeekToHalf(peekHalfRatio);

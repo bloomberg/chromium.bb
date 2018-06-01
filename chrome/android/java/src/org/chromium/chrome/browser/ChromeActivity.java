@@ -269,6 +269,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private ContextualSuggestionsCoordinator mContextualSuggestionsCoordinator;
     private FadingBackgroundView mFadingBackgroundView;
     private ManualFillingCoordinator mManualFillingController;
+    private float mStatusBarScrimFraction;
+    private int mBaseStatusBarColor;
+    private int mScrimColor;
 
     // Time in ms that it took took us to inflate the initial layout
     private long mInflateInitialLayoutDurationMs;
@@ -859,6 +862,18 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         boolean supportsDarkStatusIcons = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
         View root = getWindow().getDecorView().getRootView();
         if (useModernDesign && supportsDarkStatusIcons) {
+            mBaseStatusBarColor = color;
+
+            if (mScrimColor == 0) {
+                mScrimColor =
+                        ApiCompatibilityUtils.getColor(getResources(), R.color.black_alpha_65);
+            }
+            // Apply a color overlay if the scrim is showing.
+            float scrimColorAlpha = (mScrimColor >>> 24) / 255f;
+            int scrimColorOpaque = mScrimColor & 0xFF000000;
+            statusBarColor = ColorUtils.getColorWithOverlay(
+                    statusBarColor, scrimColorOpaque, mStatusBarScrimFraction * scrimColorAlpha);
+
             int systemUiVisibility = root.getSystemUiVisibility();
             boolean needsDarkStatusBarIcons =
                     !ColorUtils.shouldUseLightForegroundOnBackground(statusBarColor);
@@ -1360,16 +1375,20 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     mCompositorViewHolder.getLayoutManager(), coordinator);
         }
 
+        ViewGroup coordinator = findViewById(R.id.coordinator);
+        mFadingBackgroundView = new FadingBackgroundView(this, (fraction) -> {
+            mStatusBarScrimFraction = fraction;
+            setStatusBarColor(null, mBaseStatusBarColor);
+        }, coordinator);
+
         if (supportsContextualSuggestionsBottomSheet()
                 && FeatureUtilities.isContextualSuggestionsBottomSheetEnabled(isTablet())) {
-            ViewGroup coordinator = (ViewGroup) findViewById(R.id.coordinator);
             getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
             mBottomSheet = coordinator.findViewById(R.id.bottom_sheet);
             mBottomSheet.init(coordinator, this);
 
             ((BottomContainer) findViewById(R.id.bottom_container)).setBottomSheet(mBottomSheet);
 
-            mFadingBackgroundView = (FadingBackgroundView) findViewById(R.id.fading_focus_target);
             mBottomSheetController = new BottomSheetController(this, getTabModelSelector(),
                     getCompositorViewHolder().getLayoutManager(), mFadingBackgroundView,
                     getContextualSearchManager(), mBottomSheet);

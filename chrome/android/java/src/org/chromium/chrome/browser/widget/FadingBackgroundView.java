@@ -7,20 +7,83 @@ package org.chromium.chrome.browser.widget;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
-import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.view.ViewGroup.MarginLayoutParams;
 
-import org.chromium.base.ObserverList;
+import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
+import javax.annotation.Nullable;
+
 /**
- * This view is used to obscure content and bring focus to a foreground view (i.e. the Chrome Home
- * bottom sheet or the omnibox suggestions).
+ * This view is used to obscure content and bring focus to a foreground view (i.e. the bottom sheet
+ * or the omnibox suggestions).
  *
  * If the view is disabled, then its alpha will be set to 0f and it will not receive touch events.
+ *
+ * To use the scrim, {@link #showFadingOverlay(ScrimParams)} must be called to set the params for
+ * how the scrimm will behave. After that, users can either allow the default animation to run or
+ * change the view's alpha manually using {@link #setViewAlpha(float)}.
  */
 public class FadingBackgroundView extends View implements View.OnClickListener {
+    /** Params that define the behavior of the scrim for a single user. */
+    public static class ScrimParams {
+        /**
+         * The top margin of the scrim. This can be used to shrink the scrim to show items at the
+         * top of the screen.
+         */
+        public final int topMargin;
+
+        /** Whether the scrim should affect the status bar color. */
+        public final boolean affectsStatusBar;
+
+        /** The view that the scrim is using to place itself in the hierarchy. */
+        public final View anchorView;
+
+        /** Whether the scrim should show in front of the anchor view. */
+        public final boolean showInFrontOfAnchorView;
+
+        /** An observer for visibility and input related events. */
+        public final FadingViewObserver observer;
+
+        /**
+         * Build a new set of params to control the scrim.
+         * @param anchorView The view that the scrim is using to place itself in the hierarchy.
+         * @param showInFrontOfAnchorView Whether the scrim should show in front of the anchor view.
+         * @param affectsStatusBar Whether the scrim should affect the status bar color.
+         * @param topMargin The top margin of the scrim. This can be used to shrink the scrim to
+         *                  show items at the top of the screen.
+         * @param observer n observer for visibility and input related events.
+         */
+        public ScrimParams(View anchorView, boolean showInFrontOfAnchorView,
+                boolean affectsStatusBar, int topMargin, FadingViewObserver observer) {
+            this.topMargin = topMargin;
+            this.affectsStatusBar = affectsStatusBar;
+            this.anchorView = anchorView;
+            this.showInFrontOfAnchorView = showInFrontOfAnchorView;
+            this.observer = observer;
+        }
+    }
+
+    /**
+     * A delegate to expose functionality that changes the scrim over the status bar. This will only
+     * affect Android versions >= M.
+     */
+    public interface StatusBarScrimDelegate {
+        /**
+         * Set the amount of scrim over the status bar. The implementor may choose to not respect
+         * the value provided to this method.
+         * @param scrimFraction The scrim fraction over the status bar. 0 is completely hidden, 1 is
+         *                      completely shown.
+         */
+        void setStatusBarScrimFraction(float scrimFraction);
+    }
+
     /**
      * An interface for listening to events on the fading view.
      */
@@ -41,8 +104,11 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
     /** The duration for the fading animation. */
     private static final int FADE_DURATION_MS = 250;
 
-    /** List of observers for this view. */
-    private final ObserverList<FadingViewObserver> mObservers = new ObserverList<>();
+    /** A means of changing the statusbar color. */
+    private final StatusBarScrimDelegate mStatusBarScrimDelegate;
+
+    /** The view that the scrim should exist in. */
+    private final ViewGroup mParent;
 
     /** The animator for fading the view out. */
     private ObjectAnimator mOverlayFadeInAnimator;
@@ -53,11 +119,47 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
     /** The active animator (if any). */
     private Animator mOverlayAnimator;
 
-    public FadingBackgroundView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+    /** The current set of params affecting the scrim. */
+    private ScrimParams mActiveParams;
+
+    /**
+     * @param context An Android {@link Context} for creating the view.
+     * @param scrimDelegate A means of changing the scrim over the status bar.
+     * @param parent The {@link ViewGroup} the scrim should exist in.
+     */
+    public FadingBackgroundView(
+            Context context, @Nullable StatusBarScrimDelegate scrimDelegate, ViewGroup parent) {
+        super(context);
+        mStatusBarScrimDelegate = scrimDelegate;
+        mParent = parent;
+
         setAlpha(0.0f);
         setVisibility(View.GONE);
         setOnClickListener(this);
+        setBackgroundColor(ApiCompatibilityUtils.getColor(
+                getResources(), R.color.omnibox_focused_fading_background_color));
+    }
+
+    /**
+     * Place the scrim in the view hierarchy.
+     * @param view The view the scrim should be placed in front of or behind.
+     * @param inFrontOf If true, the scrim is placed in front of the specified view, otherwise it is
+     *                  placed behind it.
+     */
+    private void placeScrimInHierarchy(View view, boolean inFrontOf) {
+        // Climb the view hierarchy until we reach the target parent.
+        while (view.getParent() != mParent) {
+            if (!(view instanceof ViewGroup)) {
+                assert false : "Focused view must be part of the hierarchy!";
+            }
+            view = (View) view.getParent();
+        }
+        UiUtils.removeViewFromParent(this);
+        if (inFrontOf) {
+            UiUtils.insertAfter(mParent, this, view);
+        } else {
+            UiUtils.insertBefore(mParent, this, view);
+        }
     }
 
     /**
@@ -66,11 +168,27 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
      * @param alpha The desired alpha for this view.
      */
     public void setViewAlpha(float alpha) {
+        assert mActiveParams != null : "#showFadingOverlay must be called before setting alpha!";
+
         if (!isEnabled() || MathUtils.areFloatsEqual(alpha, getAlpha())) return;
 
         setAlpha(alpha);
 
         if (mOverlayAnimator != null) mOverlayAnimator.cancel();
+    }
+
+    /**
+     * A notification that the set of params that affect the scrim changed.
+     * @param params The scrim's params.
+     */
+    private void onParamsChanged(ScrimParams params) {
+        mActiveParams = params;
+        if (mActiveParams == null) return;
+        placeScrimInHierarchy(params.anchorView, params.showInFrontOfAnchorView);
+        getLayoutParams().width = LayoutParams.MATCH_PARENT;
+        getLayoutParams().height = LayoutParams.MATCH_PARENT;
+        assert getLayoutParams() instanceof MarginLayoutParams;
+        ((MarginLayoutParams) getLayoutParams()).topMargin = params.topMargin;
     }
 
     @Override
@@ -92,6 +210,11 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
     public void setAlpha(float alpha) {
         super.setAlpha(alpha);
 
+        if (mActiveParams != null && mActiveParams.affectsStatusBar
+                && mStatusBarScrimDelegate != null) {
+            mStatusBarScrimDelegate.setStatusBarScrimFraction(alpha);
+        }
+
         int newVisibility = alpha <= 0f ? View.GONE : View.VISIBLE;
         setVisibility(newVisibility);
     }
@@ -112,19 +235,15 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
     public void onVisibilityChanged(View view, int visibility) {
         super.onVisibilityChanged(view, visibility);
 
-        // This check is added for the exclusive purpose of testing on Android K. Later versions
-        // of Android do not run into the problem of the observer list being null.
-        if (mObservers != null) {
-            for (FadingViewObserver o : mObservers) {
-                o.onFadingViewVisibilityChanged(visibility == View.VISIBLE);
-            }
-        }
+        if (mActiveParams == null || mActiveParams.observer == null) return;
+        mActiveParams.observer.onFadingViewVisibilityChanged(visibility == View.VISIBLE);
     }
 
     /**
      * Triggers a fade in of the omnibox results background creating a new animation if necessary.
      */
-    public void showFadingOverlay() {
+    public void showFadingOverlay(ScrimParams params) {
+        onParamsChanged(params);
         if (mOverlayFadeInAnimator == null) {
             mOverlayFadeInAnimator = ObjectAnimator.ofFloat(this, ALPHA, 1f);
             mOverlayFadeInAnimator.setDuration(FADE_DURATION_MS);
@@ -148,6 +267,7 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
         mOverlayFadeOutAnimator.setFloatValues(getAlpha(), 0f);
         runFadeOverlayAnimation(mOverlayFadeOutAnimator);
         if (!fadeOut) mOverlayFadeOutAnimator.end();
+        onParamsChanged(null);
     }
 
     /**
@@ -164,24 +284,9 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
         mOverlayAnimator.start();
     }
 
-    /**
-     * Adds an observer to this fading view.
-     * @param observer The observer to be added.
-     */
-    public void addObserver(FadingViewObserver observer) {
-        mObservers.addObserver(observer);
-    }
-
-    /**
-     * Removes an observer to this fading view.
-     * @param observer The observer to be removed.
-     */
-    public void removeObserver(FadingViewObserver observer) {
-        mObservers.removeObserver(observer);
-    }
-
     @Override
     public void onClick(View view) {
-        for (FadingViewObserver o : mObservers) o.onFadingViewClick();
+        if (mActiveParams == null || mActiveParams.observer == null) return;
+        mActiveParams.observer.onFadingViewClick();
     }
 }

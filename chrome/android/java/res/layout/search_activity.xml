@@ -8,12 +8,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
 
-    <!-- This view is unnecessary visually, but required for the LocationBarLayout. -->
-    <org.chromium.chrome.browser.searchwidget.SearchActivityFadingBackgroundView
-            android:id="@+id/fading_focus_target"
-            android:layout_width="0dp"
-            android:layout_height="0dp" />
-
     <ViewStub
             android:id="@+id/omnibox_results_container_stub"
             android:layout_width="match_parent"
