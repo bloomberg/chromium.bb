@@ -455,7 +455,7 @@ specialize qw/aom_highbd_lpf_horizontal_4_dual sse2 avx2/;
 
 # Helper functions.
 add_proto qw/void av1_round_shift_array/, "int32_t *arr, int size, int bit";
-specialize "av1_round_shift_array", qw/sse4_1/;
+specialize "av1_round_shift_array", qw/sse4_1 neon/;
 
 #
 # Encoder functions.

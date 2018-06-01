@@ -169,6 +169,7 @@ if(CONFIG_AV1_ENCODER)
         "${AOM_ROOT}/test/av1_fwd_txfm2d_test.cc"
         "${AOM_ROOT}/test/av1_inv_txfm1d_test.cc"
         "${AOM_ROOT}/test/av1_inv_txfm2d_test.cc"
+        "${AOM_ROOT}/test/av1_round_shift_array_test.cc"
         "${AOM_ROOT}/test/av1_wedge_utils_test.cc"
         "${AOM_ROOT}/test/blend_a64_mask_1d_test.cc"
         "${AOM_ROOT}/test/blend_a64_mask_test.cc"

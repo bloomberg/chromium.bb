@@ -282,7 +282,9 @@ list(APPEND AOM_AV1_ENCODER_INTRIN_MSA
             "${AOM_ROOT}/av1/encoder/mips/msa/fdct4x4_msa.c"
             "${AOM_ROOT}/av1/encoder/mips/msa/temporal_filter_msa.c")
 
-list(APPEND AOM_AV1_COMMON_INTRIN_NEON "${AOM_ROOT}/av1/common/arm/cfl_neon.c"
+list(APPEND AOM_AV1_COMMON_INTRIN_NEON
+            "${AOM_ROOT}/av1/common/arm/av1_txfm_neon.c"
+            "${AOM_ROOT}/av1/common/arm/cfl_neon.c"
             "${AOM_ROOT}/av1/common/arm/convolve_neon.c"
             "${AOM_ROOT}/av1/common/arm/convolve_neon.h"
             "${AOM_ROOT}/av1/common/arm/jnt_convolve_neon.c"
