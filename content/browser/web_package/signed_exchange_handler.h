@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
+#include "content/browser/web_package/signed_exchange_prologue.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/completion_callback.h"
@@ -80,7 +81,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
 
  private:
   enum class State {
-    kReadingHeadersLength,
+    kReadingPrologue,
     kReadingHeaders,
     kFetchingCertificate,
     kHeadersCallbackCalled,
@@ -89,7 +90,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
   void SetupBuffers(size_t size);
   void DoHeaderLoop();
   void DidReadHeader(bool completed_syncly, int result);
-  bool ParseHeadersLength();
+  bool ParsePrologue();
   bool ParseHeadersAndFetchCertificate();
   void RunErrorCallback(net::Error);
 
@@ -102,12 +103,12 @@ class CONTENT_EXPORT SignedExchangeHandler {
   base::Optional<SignedExchangeVersion> version_;
   std::unique_ptr<net::SourceStream> source_;
 
-  State state_ = State::kReadingHeadersLength;
+  State state_ = State::kReadingPrologue;
   // Buffer used for header reading.
   scoped_refptr<net::IOBuffer> header_buf_;
   // Wrapper around |header_buf_| to progressively read fixed-size data.
   scoped_refptr<net::DrainableIOBuffer> header_read_buf_;
-  size_t headers_length_ = 0;
+  base::Optional<SignedExchangePrologue> prologue_;
 
   base::Optional<SignedExchangeEnvelope> header_;
 

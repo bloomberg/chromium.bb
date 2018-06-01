@@ -21,18 +21,29 @@ IcuEnvironment* env = new IcuEnvironment();
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size < SignedExchangePrologue::kEncodedLengthInBytes)
     return 0;
-  auto encoded_length =
-      base::make_span(data, SignedExchangePrologue::kEncodedLengthInBytes);
-  size_t header_len =
-      SignedExchangePrologue::ParseEncodedLength(encoded_length);
-  data += SignedExchangePrologue::kEncodedLengthInBytes;
-  size -= SignedExchangePrologue::kEncodedLengthInBytes;
+  auto prologue_bytes =
+      base::make_span(data, SignedExchangePrologue::kEncodedPrologueInBytes);
+  base::Optional<SignedExchangePrologue> prologue =
+      SignedExchangePrologue::Parse(prologue_bytes,
+                                    nullptr /* devtools_proxy */);
+  if (!prologue)
+    return 0;
 
-  // Copy the header into a separate buffer so that out-of-bounds access can be
+  data += SignedExchangePrologue::kEncodedPrologueInBytes;
+  size -= SignedExchangePrologue::kEncodedPrologueInBytes;
+
+  // Copy the headers into separate buffers so that out-of-bounds access can be
   // detected.
-  std::vector<uint8_t> header(data, data + std::min(size, header_len));
+  std::string signature_header_field(
+      reinterpret_cast<const char*>(data),
+      std::min(size, prologue->signature_header_field_length()));
+  data += signature_header_field.size();
+  size -= signature_header_field.size();
+  std::vector<uint8_t> cbor_header(
+      data, data + std::min(size, prologue->cbor_header_length()));
 
-  SignedExchangeEnvelope::Parse(base::make_span(header),
+  SignedExchangeEnvelope::Parse(signature_header_field,
+                                base::make_span(cbor_header),
                                 nullptr /* devtools_proxy */);
   return 0;
 }

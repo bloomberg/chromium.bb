@@ -313,8 +313,9 @@ TEST_P(SignedExchangeHandlerTest, MimeType) {
   EXPECT_EQ(rv, static_cast<int>(expected_payload.size()));
 }
 
-TEST_P(SignedExchangeHandlerTest, ParseError) {
-  const uint8_t data[] = {0x00, 0x00, 0x01, 0x00};
+TEST_P(SignedExchangeHandlerTest, HeaderParseError) {
+  const uint8_t data[] = {'s',  'x',  'g',  '1',  '-',  'b',  '1',  '\0',
+                          0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00};
   source_->AddReadResult(reinterpret_cast<const char*>(data), sizeof(data),
                          net::OK, GetParam());
   WaitForHeader();

@@ -2,23 +2,16 @@ The certificate message files (\*.msg) and the signed exchange files
 (\*.htxg) in this directory are generated using the following commands.
 
 gen-certurl and gen-signedexchange are available in [webpackage repository][1].
-We're using a fork of [this repository][2] that implements the "Implementation
-Checkpoints" of [the signed-exchange spec][3].
+Revision 01e618f6af is used to generate these files.
 
 [1]: https://github.com/WICG/webpackage
-[2]: https://github.com/nyaxt/webpackage
-[3]: https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html
 
 ```
-# Install gen-certurl command from [1]
+# Install gen-certurl command.
 go get github.com/WICG/webpackage/go/signedexchange/cmd/gen-certurl
 
-# Install gen-signedexchange command from [2],
-go get github.com/nyaxt/webpackage/go/signedexchange/cmd/gen-signedexchange
-# and cherry-pick the following changes from [1].
-https://github.com/WICG/webpackage/commit/c173772a4fb3c923d705a319e5e9f2fb1fd569d7
-https://github.com/WICG/webpackage/commit/2635cc5d8fc3177092806ce19826e9cd8f8461c9
-https://github.com/WICG/webpackage/commit/2e88a4422a565221178891f50ed68c71cbcb6086
+# Install gen-signedexchange command.
+go get github.com/WICG/webpackage/go/signedexchange/cmd/gen-signedexchange
 
 # Make dummy OCSP data for cbor certificate chains.
 echo -n OCSP >/tmp/ocsp

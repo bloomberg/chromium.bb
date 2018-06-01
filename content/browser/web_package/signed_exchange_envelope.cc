@@ -261,12 +261,14 @@ bool ParseResponseMap(const cbor::CBORValue& value,
 
 // static
 base::Optional<SignedExchangeEnvelope> SignedExchangeEnvelope::Parse(
-    base::span<const uint8_t> input,
+    base::StringPiece signature_header_field,
+    base::span<const uint8_t> cbor_header,
     SignedExchangeDevToolsProxy* devtools_proxy) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "SignedExchangeEnvelope::Parse");
   cbor::CBORReader::DecoderError error;
-  base::Optional<cbor::CBORValue> value = cbor::CBORReader::Read(input, &error);
+  base::Optional<cbor::CBORValue> value =
+      cbor::CBORReader::Read(cbor_header, &error);
   if (!value.has_value()) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy, "SignedExchangeEnvelope::Parse",
@@ -309,21 +311,13 @@ base::Optional<SignedExchangeEnvelope> SignedExchangeEnvelope::Parse(
     return base::nullopt;
   }
 
-  auto signature_iter = ret.response_headers_.find(kSignature);
-  if (signature_iter == ret.response_headers_.end()) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeEnvelope::Parse",
-        "No signature header found.");
-    return base::nullopt;
-  }
-
   base::Optional<std::vector<SignedExchangeSignatureHeaderField::Signature>>
       signatures = SignedExchangeSignatureHeaderField::ParseSignature(
-          signature_iter->second, devtools_proxy);
+          signature_header_field, devtools_proxy);
   if (!signatures || signatures->empty()) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy, "SignedExchangeEnvelope::Parse",
-        "Failed to parse signature.");
+        "Failed to parse signature header field.");
     return base::nullopt;
   }
 
