@@ -30,6 +30,7 @@
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -863,8 +864,8 @@ void TraceLog::FlushInternal(const TraceLog::OutputCallback& cb,
   {
     AutoLock lock(lock_);
     DCHECK(!flush_task_runner_);
-    flush_task_runner_ = ThreadTaskRunnerHandle::IsSet()
-                             ? ThreadTaskRunnerHandle::Get()
+    flush_task_runner_ = SequencedTaskRunnerHandle::IsSet()
+                             ? SequencedTaskRunnerHandle::Get()
                              : nullptr;
     DCHECK(thread_message_loops_.empty() || flush_task_runner_);
     flush_output_callback_ = cb;
@@ -992,7 +993,7 @@ void TraceLog::FlushCurrentThread(int generation, bool discard_events) {
   // to acquiring a tracing lock. Given that posting a task requires grabbing
   // a scheduler lock, we need to post this task outside tracing lock to avoid
   // deadlocks.
-  scoped_refptr<SingleThreadTaskRunner> cached_flush_task_runner;
+  scoped_refptr<SequencedTaskRunner> cached_flush_task_runner;
   {
     AutoLock lock(lock_);
     cached_flush_task_runner = flush_task_runner_;

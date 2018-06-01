@@ -33,6 +33,11 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTaskRunner
 
   base::SequencedTaskRunner* task_runner() { return task_runner_.get(); }
 
+  // Tests will shut down all task runners in between runs, so we need
+  // to re-create any static instances on each SetUp();
+  void ResetTaskRunnerForTesting(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
+
  private:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
