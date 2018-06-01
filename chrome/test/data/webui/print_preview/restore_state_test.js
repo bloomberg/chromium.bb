@@ -44,6 +44,12 @@ cr.define('restore_state_test', function() {
       assertEquals(
           stickySettings.mediaSize.width_microns,
           page.settings.mediaSize.value.width_microns);
+      assertEquals(
+          stickySettings.vendorOptions.paperType,
+          page.settings.vendorItems.value.paperType);
+      assertEquals(
+          stickySettings.vendorOptions.printArea,
+          page.settings.vendorItems.value.printArea);
 
       [['margins', 'marginsType'], ['color', 'isColorEnabled'],
        ['headerFooter', 'isHeaderFooterEnabled'],
@@ -65,7 +71,8 @@ cr.define('restore_state_test', function() {
 
       nativeLayer.setInitialSettings(initialSettings);
       nativeLayer.setLocalDestinationCapabilities(
-          print_preview_test_utils.getCddTemplate(initialSettings.printerName));
+          print_preview_test_utils.getCddTemplateWithAdvancedSettings(
+              2, initialSettings.printerName));
 
       page = document.createElement('print-preview-app');
       const previewArea = page.$$('print-preview-preview-area');
@@ -97,7 +104,10 @@ cr.define('restore_state_test', function() {
           custom_display_name: 'CUSTOM_SQUARE'
         },
         customMargins: {top: 74, right: 74, bottom: 74, left: 74},
-        vendorOptions: {},
+        vendorOptions: {
+          paperType: 1,
+          printArea: 6,
+        },
         marginsType: 3, /* custom */
         scaling: '90',
         isHeaderFooterEnabled: true,
@@ -128,7 +138,10 @@ cr.define('restore_state_test', function() {
           custom_display_name: 'Letter'
         },
         customMargins: {},
-        vendorOptions: {},
+        vendorOptions: {
+          paperType: 0,
+          printArea: 4,
+        },
         marginsType: 0, /* default */
         scaling: '120',
         isHeaderFooterEnabled: false,
@@ -215,6 +228,15 @@ cr.define('restore_state_test', function() {
           settingName: 'cssBackground',
           key: 'isCssBackgroundEnabled',
           value: true,
+        },
+        {
+          section: 'print-preview-advanced-options-settings',
+          settingName: 'vendorItems',
+          key: 'vendorOptions',
+          value: {
+            paperType: 1,
+            printArea: 6,
+          },
         }
       ];
 
