@@ -11,11 +11,8 @@
 
 namespace viz {
 
-// Layered windows are a legacy way of supporting transparency for HWNDs. With
-// Desktop Window Manager (DWM) HWNDs support transparency natively. DWM is
-// always enabled on Windows 8 and later. However, for Windows 7 (and earlier)
-// DWM might be disabled and layered windows are necessary to guarantee the HWND
-// will support transparency.
+// Checks if an HWND needs to support transparency and should use a layered
+// window.
 VIZ_COMMON_EXPORT bool NeedsToUseLayerWindow(HWND hwnd);
 
 }  // namespace viz
