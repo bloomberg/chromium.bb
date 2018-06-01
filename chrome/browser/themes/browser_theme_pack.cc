@@ -47,7 +47,7 @@ namespace {
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets or if you need themes to recreate their generated
 // images (which are cached).
-const int kThemePackVersion = 48;
+const int kThemePackVersion = 49;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -1215,18 +1215,21 @@ void BrowserThemePack::CreateFrameImages(ImageCache* images) const {
 
   for (size_t i = 0; i < arraysize(kFrameTintMap); ++i) {
     int prs_id = kFrameTintMap[i].key;
+    // If the theme doesn't provide an image, attempt to fall back to one it
+    // does.
     if (!images->count(prs_id)) {
-      if (prs_id == PRS_THEME_FRAME_INCOGNITO_INACTIVE) {
-        // Fall back from inactive incognito to active incognito.
-        prs_id = PRS_THEME_FRAME_INCOGNITO;
-        if (!images->count(prs_id)) {
-          // From there, fall back to the normal frame.
-          prs_id = PRS_THEME_FRAME;
-        }
-      } else if (prs_id == PRS_THEME_FRAME_OVERLAY_INACTIVE) {
-        // Fall back from inactive overlay to overlay, but stop there.
+      // Fall back from inactive overlay to active overlay.
+      if (prs_id == PRS_THEME_FRAME_OVERLAY_INACTIVE)
         prs_id = PRS_THEME_FRAME_OVERLAY;
-      }
+
+      // Fall back from inactive incognito to active incognito.
+      if (prs_id == PRS_THEME_FRAME_INCOGNITO_INACTIVE)
+        prs_id = PRS_THEME_FRAME_INCOGNITO;
+
+      // For all non-overlay images, fall back to PRS_THEME_FRAME as a last
+      // resort.
+      if (!images->count(prs_id) && prs_id != PRS_THEME_FRAME_OVERLAY)
+        prs_id = PRS_THEME_FRAME;
     }
 
     // Note that if the original ID and all the fallbacks are absent, the caller
