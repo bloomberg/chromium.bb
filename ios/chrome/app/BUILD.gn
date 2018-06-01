@@ -2,13 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/ios/rules.gni")
 import("//build/config/mac/base_rules.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
 import("//ios/build/config.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
+import("//ios/third_party/firebase/firebase.gni")
 import("//services/service_manager/public/service_manifest.gni")
+
+buildflag_header("firebase_buildflags") {
+  header = "firebase_buildflags.h"
+  flags = [ "FIREBASE_ENABLED=$ios_enable_firebase_sdk" ]
+}
 
 service_manifest("chrome_browser_manifest_overlay") {
   source = "//ios/chrome/browser/chrome_browser_manifest_overlay.json"
@@ -121,6 +128,7 @@ source_set("app_internal") {
 
   deps = [
     ":app",
+    ":firebase_buildflags",
     ":tests_hook",
     "//base",
     "//components/bookmarks/browser",
@@ -283,6 +291,9 @@ ios_app_bundle("chrome") {
     ":main",
     ":tests_fake_hook",
   ]
+  if (ios_enable_firebase_sdk) {
+    deps += [ "//ios/third_party/firebase" ]
+  }
 
   if (current_toolchain == default_toolchain) {
     if (ios_enable_search_widget_extension) {
