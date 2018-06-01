@@ -1,6 +1,7 @@
 {
   "0": {
     "benchmarks": {
+      "power.desktop": {},
       "smoothness.desktop_tough_pinch_zoom_cases": {},
       "tab_switching.typical_25": {}
     }

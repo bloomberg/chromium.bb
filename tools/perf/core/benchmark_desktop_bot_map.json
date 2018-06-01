@@ -9,6 +9,7 @@
   "1": {
     "benchmarks": {
       "media.mobile": {},
+      "power.desktop": {},
       "smoothness.simple_mobile_sites": {},
       "thread_times.key_hit_test_cases": {}
     }

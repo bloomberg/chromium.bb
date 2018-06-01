@@ -22151,6 +22151,68 @@
       },
       {
         "args": [
+          "power.desktop",
+          "-v",
+          "--upload-results",
+          "--browser=release_x64",
+          "--output-format=histograms"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "power.desktop",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:1616",
+              "id": "build194-b7",
+              "os": "Windows-10",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 1200,
+          "upload_test_results": true
+        }
+      },
+      {
+        "args": [
+          "power.desktop",
+          "-v",
+          "--upload-results",
+          "--browser=reference",
+          "--output-format=histograms",
+          "--max-failures=5",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "power.desktop.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:1616",
+              "id": "build194-b7",
+              "os": "Windows-10",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 1200,
+          "upload_test_results": true
+        }
+      },
+      {
+        "args": [
           "power.idle_platform",
           "-v",
           "--upload-results",
@@ -26056,6 +26118,68 @@
             {
               "gpu": "8086:5912",
               "id": "build118-a7",
+              "os": "Windows-10",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 1200,
+          "upload_test_results": true
+        }
+      },
+      {
+        "args": [
+          "power.desktop",
+          "-v",
+          "--upload-results",
+          "--browser=release_x64",
+          "--output-format=histograms"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "power.desktop",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912",
+              "id": "build117-a7",
+              "os": "Windows-10",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 1200,
+          "upload_test_results": true
+        }
+      },
+      {
+        "args": [
+          "power.desktop",
+          "-v",
+          "--upload-results",
+          "--browser=reference",
+          "--output-format=histograms",
+          "--max-failures=5",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "power.desktop.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912",
+              "id": "build117-a7",
               "os": "Windows-10",
               "pool": "chrome.tests.perf"
             }
@@ -30053,6 +30177,68 @@
       },
       {
         "args": [
+          "power.desktop",
+          "-v",
+          "--upload-results",
+          "--browser=release_x64",
+          "--output-format=histograms"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "power.desktop",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "id": "build202-m7",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 1200,
+          "upload_test_results": true
+        }
+      },
+      {
+        "args": [
+          "power.desktop",
+          "-v",
+          "--upload-results",
+          "--browser=reference",
+          "--output-format=histograms",
+          "--max-failures=5",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "power.desktop.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "id": "build202-m7",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 1200,
+          "upload_test_results": true
+        }
+      },
+      {
+        "args": [
           "power.idle_platform",
           "-v",
           "--upload-results",
@@ -34003,6 +34189,68 @@
             {
               "gpu": "102b:0532",
               "id": "build198-m7",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 1200,
+          "upload_test_results": true
+        }
+      },
+      {
+        "args": [
+          "power.desktop",
+          "-v",
+          "--upload-results",
+          "--browser=release",
+          "--output-format=histograms"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "power.desktop",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "102b:0532",
+              "id": "build197-m7",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 1200,
+          "upload_test_results": true
+        }
+      },
+      {
+        "args": [
+          "power.desktop",
+          "-v",
+          "--upload-results",
+          "--browser=reference",
+          "--output-format=histograms",
+          "--max-failures=5",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "power.desktop.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "102b:0532",
+              "id": "build197-m7",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "chrome.tests.perf"
             }
