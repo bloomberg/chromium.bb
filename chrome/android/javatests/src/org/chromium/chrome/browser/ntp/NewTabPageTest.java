@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
+import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsSection;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
@@ -587,16 +588,22 @@ public class NewTabPageTest {
     @Feature({"NewTabPage"})
     @EnableFeatures(ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
     public void testArticleExpandableHeaderOnMultipleTabs() throws Exception {
+        // Disable the sign-in promo so the header is visible above the fold.
+        SignInPromo.setDisablePromoForTests(true);
+
         // Open a new tab.
         SuggestionsSection firstSection = getArticleSectionOnNewTab();
         SectionHeader firstHeader = firstSection.getHeaderItemForTesting();
         int firstTabId = mActivityTestRule.getActivity().getActivityTab().getId();
+
         // Check header is expanded.
         Assert.assertTrue(firstHeader.isExpandable() && firstHeader.isExpanded());
         Assert.assertTrue(firstSection.getItemCount() > 1);
         Assert.assertTrue(getPreferenceForExpandableHeader());
+
         // Toggle header on the current tab.
         onView(withId(R.id.header_title)).perform(click());
+
         // Check header is collapsed.
         Assert.assertTrue(firstHeader.isExpandable() && !firstHeader.isExpanded());
         Assert.assertEquals(1, firstSection.getItemCount());
@@ -605,6 +612,7 @@ public class NewTabPageTest {
         // Open a second new tab.
         SuggestionsSection secondSection = getArticleSectionOnNewTab();
         SectionHeader secondHeader = secondSection.getHeaderItemForTesting();
+
         // Check header on the second tab is collapsed.
         Assert.assertTrue(secondHeader.isExpandable() && !secondHeader.isExpanded());
         Assert.assertEquals(1, secondSection.getItemCount());
@@ -612,15 +620,20 @@ public class NewTabPageTest {
 
         // Toggle header on the second tab.
         onView(withId(R.id.header_title)).perform(click());
+
         // Check header on the second tab is expanded.
         Assert.assertTrue(secondHeader.isExpandable() && secondHeader.isExpanded());
         Assert.assertTrue(secondSection.getItemCount() > 1);
         Assert.assertTrue(getPreferenceForExpandableHeader());
+
         // Go back to the first tab and check header is expanded.
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), firstTabId);
         Assert.assertTrue(firstHeader.isExpandable() && firstHeader.isExpanded());
         Assert.assertTrue(firstSection.getItemCount() > 1);
         Assert.assertTrue(getPreferenceForExpandableHeader());
+
+        // Reset state.
+        SignInPromo.setDisablePromoForTests(false);
     }
 
     @Test

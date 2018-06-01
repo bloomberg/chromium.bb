@@ -117,9 +117,16 @@ public class NewTabPageAdapter
             mRoot.addChildren(mSiteSection);
         }
 
-        mRoot.addChildren(mSections);
-        if (mSigninPromo != null) mRoot.addChildren(mSigninPromo);
-        mRoot.addChildren(mAllDismissed);
+        if (SuggestionsConfig.scrollToLoad()) {
+            // If scroll-to-load is enabled, show the sign-in promo above suggested content.
+            if (mSigninPromo != null) mRoot.addChildren(mSigninPromo);
+            mRoot.addChildren(mAllDismissed);
+            mRoot.addChildren(mSections);
+        } else {
+            mRoot.addChildren(mSections);
+            if (mSigninPromo != null) mRoot.addChildren(mSigninPromo);
+            mRoot.addChildren(mAllDismissed);
+        }
 
         mFooter = new Footer();
         mRoot.addChildren(mFooter);
