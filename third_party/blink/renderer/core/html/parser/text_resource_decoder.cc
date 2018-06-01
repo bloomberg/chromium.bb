@@ -446,7 +446,7 @@ String TextResourceDecoder::Decode(const char* data, size_t len) {
     codec_ = NewTextCodec(encoding_);
 
   String result = codec_->Decode(
-      data_for_decode, length_for_decode, WTF::kDoNotFlush,
+      data_for_decode, length_for_decode, WTF::FlushBehavior::kDoNotFlush,
       options_.GetContentType() == TextResourceDecoderOptions::kXMLContent &&
           !options_.GetUseLenientXMLDecoding(),
       saw_error_);
@@ -474,7 +474,7 @@ String TextResourceDecoder::Flush() {
     codec_ = NewTextCodec(encoding_);
 
   String result = codec_->Decode(
-      buffer_.data(), buffer_.size(), WTF::kFetchEOF,
+      buffer_.data(), buffer_.size(), WTF::FlushBehavior::kFetchEOF,
       options_.GetContentType() == TextResourceDecoderOptions::kXMLContent &&
           !options_.GetUseLenientXMLDecoding(),
       saw_error_);

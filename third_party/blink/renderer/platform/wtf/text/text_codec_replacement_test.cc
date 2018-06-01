@@ -36,7 +36,8 @@ TEST(TextCodecReplacement, DecodesToFFFD) {
   size_t test_case_size = sizeof(kTestCase) - 1;
 
   const String result =
-      codec->Decode(kTestCase, test_case_size, kDataEOF, false, saw_error);
+      codec->Decode(kTestCase, test_case_size, FlushBehavior::kDataEOF,
+                    false, saw_error);
   EXPECT_TRUE(saw_error);
   ASSERT_EQ(1u, result.length());
   EXPECT_EQ(0xFFFDU, result[0]);

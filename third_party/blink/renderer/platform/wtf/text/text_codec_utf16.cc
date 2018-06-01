@@ -70,7 +70,8 @@ String TextCodecUTF16::Decode(const char* bytes,
                               bool,
                               bool& saw_error) {
   // For compatibility reasons, ignore flush from fetch EOF.
-  const bool really_flush = flush != kDoNotFlush && flush != kFetchEOF;
+  const bool really_flush = flush != FlushBehavior::kDoNotFlush &&
+                            flush != FlushBehavior::kFetchEOF;
 
   if (!length) {
     if (really_flush && (have_lead_byte_ || have_lead_surrogate_)) {

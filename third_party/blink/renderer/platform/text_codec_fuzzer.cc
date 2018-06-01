@@ -16,8 +16,9 @@ using namespace blink;
 // so it must live in the latter directory. Once wtf/ moves into platform/wtf
 // this should move there as well.
 
-WTF::FlushBehavior kFlushBehavior[] = {WTF::kDoNotFlush, WTF::kFetchEOF,
-                                       WTF::kDataEOF};
+WTF::FlushBehavior kFlushBehavior[] = {WTF::FlushBehavior::kDoNotFlush,
+                                       WTF::FlushBehavior::kFetchEOF,
+                                       WTF::FlushBehavior::kDataEOF};
 
 WTF::UnencodableHandling kUnencodableHandlingOptions[] = {
     WTF::kEntitiesForUnencodables, WTF::kURLEncodedEntitiesForUnencodables,

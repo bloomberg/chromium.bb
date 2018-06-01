@@ -51,8 +51,8 @@ String TextEncoding::Decode(const char* data,
   if (!name_)
     return String();
 
-  return NewTextCodec(*this)->Decode(data, length, kDataEOF, stop_on_error,
-                                     saw_error);
+  return NewTextCodec(*this)->Decode(data, length, FlushBehavior::kDataEOF,
+                                     stop_on_error, saw_error);
 }
 
 CString TextEncoding::Encode(const String& string,

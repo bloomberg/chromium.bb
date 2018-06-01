@@ -50,7 +50,8 @@ TEST(TextCodecUTF8, DecodeAscii) {
 
   bool saw_error = false;
   const String& result =
-      codec->Decode(kTestCase, test_case_size, kDataEOF, false, saw_error);
+      codec->Decode(kTestCase, test_case_size, FlushBehavior::kDataEOF,
+                    false, saw_error);
   EXPECT_FALSE(saw_error);
   ASSERT_EQ(test_case_size, result.length());
   for (size_t i = 0; i < test_case_size; ++i) {
@@ -68,7 +69,8 @@ TEST(TextCodecUTF8, DecodeChineseCharacters) {
 
   bool saw_error = false;
   const String& result =
-      codec->Decode(kTestCase, test_case_size, kDataEOF, false, saw_error);
+      codec->Decode(kTestCase, test_case_size, FlushBehavior::kDataEOF,
+                    false, saw_error);
   EXPECT_FALSE(saw_error);
   ASSERT_EQ(2u, result.length());
   EXPECT_EQ(0x6f22U, result[0]);
@@ -80,7 +82,8 @@ TEST(TextCodecUTF8, Decode0xFF) {
   std::unique_ptr<TextCodec> codec(NewTextCodec(encoding));
 
   bool saw_error = false;
-  const String& result = codec->Decode("\xff", 1, kDataEOF, false, saw_error);
+  const String& result =
+      codec->Decode("\xff", 1, FlushBehavior::kDataEOF, false, saw_error);
   EXPECT_TRUE(saw_error);
   ASSERT_EQ(1u, result.length());
   EXPECT_EQ(0xFFFDU, result[0]);

@@ -98,7 +98,8 @@ String TextDecoder::decode(const char* start,
                            const TextDecodeOptions& options,
                            ExceptionState& exception_state) {
   WTF::FlushBehavior flush =
-      options.stream() ? WTF::kDoNotFlush : WTF::kDataEOF;
+      options.stream() ? WTF::FlushBehavior::kDoNotFlush
+                       : WTF::FlushBehavior::kDataEOF;
 
   bool saw_error = false;
   String s = codec_->Decode(start, length, flush, fatal_, saw_error);
@@ -116,7 +117,7 @@ String TextDecoder::decode(const char* start,
       s.Remove(0);
   }
 
-  if (flush)
+  if (flush != WTF::FlushBehavior::kDoNotFlush)
     bom_seen_ = false;
 
   return s;
