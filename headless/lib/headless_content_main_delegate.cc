@@ -208,6 +208,8 @@ void HeadlessContentMainDelegate::InitLogging(
 
 void HeadlessContentMainDelegate::InitCrashReporter(
     const base::CommandLine& command_line) {
+  if (command_line.HasSwitch(::switches::kDisableBreakpad))
+    return;
 #if defined(OS_FUCHSIA)
   // TODO(fuchsia): Implement this when crash reporting/Breakpad are available
   // in Fuchsia. (crbug.com/753619)

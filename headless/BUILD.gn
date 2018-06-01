@@ -433,6 +433,7 @@ component("headless") {
     ":gen_devtools_client_api",
     ":protocol_sources",
     ":version_header",
+    "//base:base_static",
     "//components/cookie_config",
     "//components/security_state/core",
     "//content/public/common",
