@@ -396,8 +396,4 @@ mojom("speech_recognition_error_code") {
   sources = [
     "speech_recognition_error_code.mojom",
   ]
-
-  export_class_attribute = "CONTENT_EXPORT"
-  export_define = "CONTENT_IMPLEMENTATION=1"
-  export_header = "content/common/content_export.h"
 }
