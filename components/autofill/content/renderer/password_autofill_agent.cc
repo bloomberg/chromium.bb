@@ -1631,15 +1631,18 @@ bool PasswordAutofillAgent::ShowManualFallbackSuggestion(
 }
 
 void PasswordAutofillAgent::FrameClosing() {
-  for (auto const& iter : web_input_to_password_info_) {
-    password_to_username_.erase(iter.second.password_field);
-  }
   web_input_to_password_info_.clear();
+  password_to_username_.clear();
+  last_supplied_password_info_iter_ = web_input_to_password_info_.end();
   provisionally_saved_form_.Reset();
   field_value_and_properties_map_.clear();
-  username_detector_cache_.clear();
+  was_username_autofilled_ = false;
+  was_password_autofilled_ = false;
   sent_request_to_store_ = false;
   checked_safe_browsing_reputation_ = false;
+  username_query_prefix_.clear();
+  form_predictions_.clear();
+  username_detector_cache_.clear();
   blacklisted_form_found_ = false;
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   page_passwords_analyser_.Reset();
