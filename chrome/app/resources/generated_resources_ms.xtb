@@ -732,7 +732,6 @@
 <translation id="2114326799768592691">Muat Semula &amp;Bingkai</translation>
 <translation id="2114896190328250491">Foto oleh <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Hantar ke telefon</translation>
-<translation id="2115946962706216358">Gagal menghubungkan mesin kepada domain. Hal ini mungkin berlaku kerana anda telah melebihi bilangan maksimum hubungan mesin yang dibenarkan untuk akaun anda pada pelayan.</translation>
 <translation id="2119349053129246860">Buka dalam <ph name="APP" /></translation>
 <translation id="2121825465123208577">Ubah saiz</translation>
 <translation id="2124930039827422115">{1,plural, =1{Dinilai <ph name="AVERAGE_RATING" /> oleh seorang pengguna.}other{Dinilai <ph name="AVERAGE_RATING" /> oleh # pengguna.}}</translation>
@@ -1003,7 +1002,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="253434972992662860">&amp;Jeda</translation>
 <translation id="2534460670861217804">Proksi HTTP Selamat</translation>
 <translation id="253557089021624350">Kiraan pengekal</translation>
-<translation id="2540384386570049483">Benarkan iklan di tapak ini</translation>
 <translation id="2541423446708352368">Paparkan semua muat turun</translation>
 <translation id="2542049655219295786">Jadual Google</translation>
 <translation id="2544853746127077729">Sijil pengesahan ditolak oleh rangkaian</translation>
@@ -1157,7 +1155,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2739191690716947896">Nyahpepijat</translation>
 <translation id="2739240477418971307">Ubah tetapan kebolehaksesan anda</translation>
 <translation id="2740393541869613458">semak tapak web yang telah dilawati oleh pengguna diselia dan</translation>
-<translation id="2740531572673183784">Ok</translation>
 <translation id="2743387203779672305">Salin ke papan keratan</translation>
 <translation id="2745080116229976798">Subordinasi Layak Microsoft</translation>
 <translation id="2749756011735116528">Log masuk ke <ph name="PRODUCT_NAME" /></translation>
@@ -1480,7 +1477,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="3270965368676314374">Baca, ubah dan padam foto, muzik dan media lain daripada komputer anda</translation>
 <translation id="327147043223061465">Lihat semua kuki dan data tapak</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> ingin menyambung</translation>
-<translation id="327444463633065042">Nama mesin tidak sah</translation>
 <translation id="3274763671541996799">Anda telah menggunakan skrin penuh.</translation>
 <translation id="3275778913554317645">Buka sebagai tetingkap</translation>
 <translation id="3279741024917655738">Tunjukkan video skrin penuh pada</translation>
@@ -1505,7 +1501,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="3305389145870741612">Proses memformat boleh mengambil masa beberapa saat. Sila tunggu.</translation>
 <translation id="3305661444342691068">Buka PDF dalam Pratonton</translation>
 <translation id="3306684685104080068">Dayakan penghantaran ke perkhidmatan berasaskan awan seperti Google Hangouts.</translation>
-<translation id="3307091518408668019">OU Komputer (mis. OU=Chromebook,DC=example,DC=com)</translation>
 <translation id="3308006649705061278">Unit Organisasi (OU)</translation>
 <translation id="3308116878371095290">Halaman ini dihalang daripada menetapkan kuki.</translation>
 <translation id="3308134619352333507">Sembunyikan Butang</translation>
@@ -1566,7 +1561,7 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="3407837288045706722">Untuk mendapatkan lebih banyak tetapan yang berkaitan dengan privasi, keselamatan dan pengumpulan data, lihat <ph name="BEGIN_LINK" />Penyegerakan dan pemperibadian<ph name="END_LINK" /></translation>
 <translation id="3412265149091626468">Lompat ke Pemilihan</translation>
 <translation id="3413122095806433232">Pengeluar CA: <ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">Serlahkan perkara yang ingin anda dengar, kemudian tekan Cari + S. Atau tekan dan tahan Cari atau ketik ikon Pilih untuk Cakap berdekatan imej profil anda, kemudian pilih rantau untuk dibaca dengan lantang.</translation>
+<translation id="3414791204526549759">Serlahkan perkara yang ingin anda dengar, kemudian tekan Cari + S. Atau tekan dan tahan Cari atau ketik ikon Pilih untuk Bercakap berdekatan imej profil anda, kemudian pilih rantau untuk dibaca dengan lantang.</translation>
 <translation id="3414856743105198592">Memformat media mudah alih akan memadamkan semua data. Adakah anda ingin teruskan?</translation>
 <translation id="3414952576877147120">Saiz:</translation>
 <translation id="3420980393175304359">Tukar Orang</translation>
@@ -1871,7 +1866,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="383891835335927981">Tiada tapak yang telah dizum masuk atau keluar</translation>
 <translation id="3839516600093027468">Sentiasa sekat <ph name="HOST" /> daripada melihat papan keratan</translation>
 <translation id="3840053866656739575">Sambungan ke Chromebox anda terputus. Sila bergerak lebih dekat atau periksa peranti anda sementara kami cuba untuk bersambung semula.</translation>
-<translation id="3842132283799370683">Gagal menghubungkan mesin ke domain. Hal ini mungkin disebabkan isu berhubung unit organisasi.</translation>
 <translation id="3842552989725514455">Fon Serif</translation>
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3851428669031642514">Muatkan skrip yang tidak selamat</translation>
@@ -2282,7 +2276,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="4552678318981539154">Beli lagi storan</translation>
 <translation id="4554591392113183336">Sambungan luar ialah versi yang sama atau lebih rendah berbanding yang sedia ada.</translation>
 <translation id="4555769855065597957">Bayang</translation>
-<translation id="4555979468244469039">Nama peranti Chromebook</translation>
 <translation id="4556110439722119938">Penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan disegerakkan ke Akaun Google supaya anda dapat menggunakannya pada semua peranti anda</translation>
 <translation id="4558426062282641716">Kebenaran autolancar diminta</translation>
 <translation id="4562155214028662640">Tambahkan Cap Jari</translation>
@@ -2425,7 +2418,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="4784330909746505604">Persembahan PowerPoint</translation>
 <translation id="4790972063719531840">Hantar data diagnostik dan penggunaan kepada Google secara automatik</translation>
 <translation id="4792711294155034829">&amp;Laporkan Isu...</translation>
-<translation id="479285515899735347">Op! Nampaknya kata laluan anda telah tamat tempoh. Sila perbaharui kata laluan anda pada peranti lain dan cuba lagi.</translation>
 <translation id="479536056609751218">Laman Web, HTML Sahaja</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4801448226354548035">Sembunyikan akaun</translation>
@@ -2473,7 +2465,7 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="4862642413395066333">Menandatangan Respons OCSP</translation>
 <translation id="4864369630010738180">Sedang log masuk...</translation>
 <translation id="486635084936119914">Buka jenis fail tertentu secara automatik selepas memuat turun</translation>
-<translation id="4869142322204669043">Google boleh menggunakan kandungan di tapak yang anda lawati, aktiviti menyemak imbas dan interaksi untuk memperibadikan <ph name="IDS_SHORT_PRODUCT_NAME" /> serta perkhidmatan Google lain seperti Terjemah, Carian dan iklan. Anda boleh menyesuaikan ini pada bila-bila masa dalam Tetapan.</translation>
+<translation id="4869142322204669043">Google boleh menggunakan kandungan di tapak yang anda lawati, aktiviti menyemak imbas dan interaksi untuk memperibadikan <ph name="IDS_SHORT_PRODUCT_NAME" /> serta perkhidmatan Google yang lain seperti Terjemah, Carian dan iklan. Anda boleh menyesuaikan ciri ini pada bila-bila masa dalam Tetapan.</translation>
 <translation id="48704129375571883">Tambah ciri tambahan</translation>
 <translation id="4870903493621965035">Tiada peranti digandingkan</translation>
 <translation id="4871210892959306034">$1 KB</translation>
@@ -3093,7 +3085,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="577322787686508614">Pengendalian baca tidak dibenarkan pada: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Buka apl Fail</translation>
 <translation id="5774515636230743468">Ketara:</translation>
-<translation id="5775834615653774429">Gagal menghubungkan mesin ke domain. Unit organisasi tidak wujud.</translation>
 <translation id="577624874850706961">Cari kuki</translation>
 <translation id="5777468213129569553">Buka Chrome</translation>
 <translation id="5778747455497889540">Di bawah ini ialah kata laluan modul selamat yang dijana secara rawak yang telah diperuntukkan kepada komputer anda:</translation>
@@ -3114,7 +3105,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="5804241973901381774">Kebenaran</translation>
 <translation id="580571955903695899">Aturkan semula mengikut Tajuk</translation>
 <translation id="5807290661599647102">Tetapkan Kunci Skrin</translation>
-<translation id="580926004266167721">Gagal menghubungkan mesin ke domain. Hal ini mungkin kerana keistimewaan untuk akaun anda pada unit organisasi tidak mencukupi.</translation>
 <translation id="580961539202306967">Tanya saya apabila tapak mahu menghantar mesej tolak kepada saya (disyorkan)</translation>
 <translation id="5809725759695043233">Anda mempunyai apl yang dioptimumkan untuk Chromebook</translation>
 <translation id="5814126672212206791">Jenis sambungan</translation>
@@ -3681,7 +3671,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">Malangnya, komputer anda dikonfigurasi dengan ID perkakasan tidak sempurna. Hal ini menghalang OS Chrome daripada mengemas kini kepada pembetulan keselamatan terbaharu dan komputer anda <ph name="BEGIN_BOLD" />mungkin terdedah kepada serangan berniat jahat<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Kesilapan telah berlaku semasa membuka profil anda. Sila log keluar dan log masuk sekali lagi.</translation>
-<translation id="6670647982128220776">Ciri-ciri yang berkaitan dengan penyegerakan dan pemperibadian kini berada di bawah satu kawalan. Tindakan menghidupkan pilihan ini mungkin mengubah tetapan semasa anda.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Adakah anda mahu Google menterjemahkan halaman ini daripada <ph name="SOURCE_LANGUAGE" /> kepada <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Peranti penuding disambung</translation>
@@ -4546,7 +4535,6 @@ Langkah memasang <ph name="APP_NAME" /> akan memuat turun <ph name="DOWNLOAD_SIZ
 <translation id="7984068253310542383">Cerminkan <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">Untuk keselamatan tambahan, <ph name="PRODUCT_NAME" /> akan menyulitkan data anda.</translation>
 <translation id="7986295104073916105">Baca dan ubah tetapan kata laluan yang disimpan</translation>
-<translation id="798749371774946697">Nama mesin terlalu panjang</translation>
 <translation id="7988355189918024273">Dayakan ciri kebolehcapaian</translation>
 <translation id="7994702968232966508">Kaedah EAP</translation>
 <translation id="799547531016638432">Alih keluar pintasan</translation>
@@ -4805,7 +4793,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8400146488506985033">Urus orang</translation>
 <translation id="8410073653152358832">Gunakan telefon ini</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">Ya, hidupkan penyegerakan dan pemperibadian</translation>
 <translation id="8413385045638830869">Tanya dahulu (disyorkan)</translation>
 <translation id="8418445294933751433">&amp;Paparkan sebagai tab</translation>
 <translation id="8419098111404128271">Hasil carian untuk '<ph name="SEARCH_TEXT" />'</translation>
@@ -4850,7 +4837,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8470028084415844044">Hidupkan penyegerakan untuk mendapatkan semua kata laluan anda pada semua peranti anda.</translation>
 <translation id="8470513973197838199">Kata laluan disimpan untuk <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">disokong perkakasan</translation>
-<translation id="8474229360677287535">Tutup semua Tetingkap anda</translation>
 <translation id="8475313423285172237">Program lain pada komputer anda menambah sambungan yang boleh mengubah cara Chrome berfungsi.</translation>
 <translation id="8475647382427415476">Google Drive tidak dapat menyegerakkan "<ph name="FILENAME" />" pada masa ini. Google Drive akan mencuba lagi nanti.</translation>
 <translation id="8477241577829954800">Menggantikan</translation>
@@ -4989,7 +4975,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8688579245973331962">Tidak melihat nama anda?</translation>
 <translation id="8688591111840995413">Kata laluan salah</translation>
 <translation id="8688672835843460752">Tersedia</translation>
-<translation id="8689583087392258564">Gagal menghubungkan mesin ke domain. Unit organisasi tidak sah.</translation>
 <translation id="869257642790614972">Buka semula tab yang terakhir ditutup</translation>
 <translation id="8695825812785969222">Buka &amp;Lokasi...</translation>
 <translation id="8698464937041809063">Lukisan Google</translation>
@@ -5127,7 +5112,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8902667442496790482">Buka tetapan pilih untuk bercakap</translation>
 <translation id="8903921497873541725">Zum masuk</translation>
 <translation id="8904976895050290827">Penyegerakan Chrome</translation>
-<translation id="8909233240676134608">Tidak dapat menghubungkan mesin ke domain. Pelayan tidak menyokong jenis penyulitan Kerberos yang dinyatakan. Tandai "Lagi pilihan" untuk mengakses tetapan penyulitan.</translation>
 <translation id="8909833622202089127">Tapak sedang menjejak lokasi anda</translation>
 <translation id="8910146161325739742">Kongsi skrin anda</translation>
 <translation id="8910222113987937043">Perubahan kepada penanda halaman, sejarah, kata laluan dan tetapan anda yang lain tidak akan disegerakkan ke Akaun Google anda lagi. Namun begitu, data anda yang sedia ada akan terus disimpan dalam Akaun Google anda dan boleh diurus di <ph name="BEGIN_LINK" />Papan Pemuka Google<ph name="END_LINK" />.</translation>
@@ -5313,7 +5297,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9177499212658576372">Anda sedang disambungkan ke rangkaian <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9180380851667544951">Tapak boleh berkongsi skrin anda</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> daripada <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">Gagal menghubungkan mesin kepada domain. Hal ini mungkin berlaku kerana keistimewaan untuk akaun anda pada pelayan tidak mencukupi.</translation>
 <translation id="9188441292293901223">Sila kemas kini telefon anda kepada versi Android yang lebih baharu untuk membuka kunci <ph name="DEVICE_TYPE" /> ini.</translation>
 <translation id="9190063653747922532">L2TP/IPsec + kekunci praperkongsian</translation>
 <translation id="920045321358709304">Cari <ph name="SEARCH_ENGINE" /></translation>

@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">يمكنك حذف البيانات الحالية.</translation>
 <translation id="1146678959555564648">‏إدخال VR</translation>
 <translation id="116280672541001035">المستخدَمة</translation>
+<translation id="1172593791219290334">صفحة بدء التشغيل</translation>
 <translation id="1178581264944972037">تعليق</translation>
 <translation id="1181037720776840403">إزالة</translation>
 <translation id="1197267115302279827">نقل الإشارات المرجعية</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">الإشارات المرجعية وسجل بحث الويب</translation>
 <translation id="1513858653616922153">حذف كلمة المرور</translation>
 <translation id="1516229014686355813">‏تعمل ميزة "البحث بالنقر" على إرسال الكلمة المُحدَّدة والصفحة الحالية كسياق إلى بحث Google. يمكنك إيقافها في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
+<translation id="1521008027388393450">المحتوى الشائع</translation>
 <translation id="1539064842193522527">‏تم فتح الرابط في Chrome</translation>
 <translation id="1549000191223877751">الانتقال إلى نافذة أخرى</translation>
 <translation id="1553358976309200471">‏تحديث Chrome‏</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">البحث في الصفحة</translation>
 <translation id="1832521218263067499">حوادث تتعلق بالأمن</translation>
 <translation id="1853692000353488670">علامة تبويب جديدة للتصفح المتخفي</translation>
+<translation id="1868024384445905608">‏يُنزِّل Chrome الآن الملفات بشكلٍ أسرع.</translation>
 <translation id="1880072593381090678">‏الصفحات الشائعة من Chrome</translation>
+<translation id="1883903952484604915">ملفاتي</translation>
 <translation id="1887786770086287077">‏الوصول إلى الموقع الجغرافي متوقف لهذا الجهاز. يمكنك تفعليه في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">‏سيتم فتح <ph name="APP_NAME" /> في Chrome. بالمتابعة، أنت توافق على <ph name="BEGIN_LINK1" />بنود الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" /> في Chrome.</translation>
 <translation id="189172778771606813">إغلاق لائحة التنقل</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">تشغيل طلب موقع الويب لسطح المكتب</translation>
 <translation id="2045104531052923016">تطبيقات أخرى بحجم <ph name="GIGABYTES" /> غيغابايت</translation>
 <translation id="2063713494490388661">انقر للبحث</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{أخفق تنزيل واحد}zero{أخفق # تنزيل}two{أخفق تنزيلين (#)}few{أخفق # تنزيلات}many{أخفق # تنزيلاً}other{أخفق # تنزيل}}</translation>
+<translation id="2074837478271106772">جارٍ تنزيل <ph name="COUNT" /> من الملفات (<ph name="MEGABYTES" />)</translation>
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="2082238445998314030">النتيجة <ph name="RESULT_NUMBER" /> من <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">‏للحصول على محتوى مخصص اقترحته Google، سجِّلْ الدخول إلى Chrome.</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">مغادرة وضع التصفح المتخفي</translation>
 <translation id="3148434565183091099">‏للحصول على الإشارات المرجعية على جميع أجهزتك، سجِّل الدخول إلى Chrome.</translation>
 <translation id="3157842584138209013">الاطّلاع على مقدار البيانات التي حفظتها من الزر "مزيد من الخيارات"</translation>
+<translation id="3165725985537150202">جارٍ تنزيل الملف (<ph name="MEGABYTES" />)</translation>
 <translation id="3166827708714933426">اختصارات علامات التبويب والنوافذ</translation>
 <translation id="3190152372525844641">‏تشغيل الأذونات لـ Chrome في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> من البيانات المخزنة</translation>
@@ -565,6 +572,7 @@
 <translation id="618555311922999635">لوحة التنقل مفتوحة بالارتفاع الكامل</translation>
 <translation id="6192333916571137726">ملف تحميل</translation>
 <translation id="6192792657125177640">الاستثناءات</translation>
+<translation id="6196868727350051527">تسريع التنزيل</translation>
 <translation id="6210748933810148297">ليس <ph name="EMAIL" />؟</translation>
 <translation id="6216432067784365534">خيارات <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">إلغاء القفل لتصدير كلمات المرور</translation>
@@ -635,6 +643,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">ترجمة</translation>
 <translation id="6846298663435243399">جارٍ التحميل…</translation>
+<translation id="6850409657436465440">لا يزال التنزيل قيد التقدُّم</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> من علامات التبويب المغلقة</translation>
 <translation id="6864459304226931083">تنزيل الصورة</translation>
 <translation id="6865313869410766144">الملء التلقائي من البيانات</translation>
@@ -679,6 +688,7 @@
 <translation id="7189372733857464326">‏انتظار انتهاء تحديث خدمات Google Play</translation>
 <translation id="7189598951263744875">مشاركة...</translation>
 <translation id="7191430249889272776">تم فتح علامة التبويب في الخلفية.</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{هناك تنزيل واحد مُعلَّق}zero{هناك # تنزيل مُعلَّق}two{هناك تنزيلان (#) مُعلَّقان}few{هناك # تنزيلات مُعلَّقة}many{هناك # تنزيلاً مُعلَّقًا}other{هناك # تنزيل مُعلَّق}}</translation>
 <translation id="723171743924126238">تحديد الصور</translation>
 <translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
 <translation id="7250468141469952378">تم اختيار <ph name="ITEM_COUNT" /> عنصراً</translation>
@@ -753,6 +763,7 @@
 <translation id="7882131421121961860">لم يتم العثور على أي سجلّ</translation>
 <translation id="7882806643839505685">السماح بتشغيل الصوت لموقع معين.</translation>
 <translation id="7929962904089429003">فتح القائمة</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{اكتمل تنزيل واحد}zero{اكتمل # تنزيل}two{اكتمل تنزيلان (#)}few{اكتمل # تنزيلات}many{اكتمل # تنزيلاً}other{اكتمل # تنزيل}}</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قديم.</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
 <translation id="7963646190083259054">المورّد:</translation>
@@ -795,6 +806,7 @@
 <translation id="8266862848225348053">موقع التنزيل</translation>
 <translation id="8283853025636624853">تتم المزامنة مع <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">علامات التبويب القياسية</translation>
+<translation id="8313455859591948645">تعديل صفحة بدء التشغيل</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ومواقع أخرى</translation>
 <translation id="8339163506404995330">لن تتم ترجمة الصفحات باللغة <ph name="LANGUAGE" /></translation>
 <translation id="8363501664269050863">لوحة التنقل. يمكنك التمرير للأسفل للإغلاق.</translation>
@@ -883,6 +895,7 @@
 <translation id="9139068048179869749">السؤال قبل السماح للمواقع بإرسال الإشعارات (موصى به)</translation>
 <translation id="9155898266292537608">يمكنك أيضًا البحث بنقرة سريعة على كلمة</translation>
 <translation id="9188680907066685419">تسجيل الخروج من الحساب المُدار</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{جارٍ تنزيل ملف واحد}zero{جارٍ تنزيل # ملف}two{جارٍ تنزيل ملفين (#)}few{جارٍ تنزيل # ملفات}many{جارٍ تنزيل # ملفًا}other{جارٍ تنزيل # ملف}}</translation>
 <translation id="9204836675896933765">ملف واحد متبقٍ</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">صور</translation>

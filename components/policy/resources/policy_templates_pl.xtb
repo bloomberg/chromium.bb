@@ -93,7 +93,7 @@
       część witryny https://example.com/
       Jeśli zasada jest wyłączona, izolacja witryn nie będzie stosowana wprost, a testowe funkcje IsolateOrigins i SitePerProcess będą wyłączone. Użytkownicy będą mogli ręcznie włączyć ustawienie IsolateOrigins.
       Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
-      W przypadku systemu <ph name="PRODUCT_OS_NAME" /> zalecane jest ustawienie zasady dla urządzeń <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> na tę samą wartość. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasadę obowiązującą dla użytkownika.
+      W przypadku systemu <ph name="PRODUCT_OS_NAME" /> zalecane jest ustawienie na tę samą wartość zasady <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> dotyczącej urządzeń. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasadę dotyczącą użytkowników.
 
       UWAGA: ta zasada nie jest stosowana na urządzeniach z Androidem. Aby włączyć funkcję IsolateOrigins w Androidzie, użyj ustawienia zasady IsolateOriginsAndroid.
       </translation>

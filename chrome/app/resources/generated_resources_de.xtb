@@ -633,7 +633,7 @@
 <translation id="1942765061641586207">Bildauflösung</translation>
 <translation id="1944921356641260203">Update gefunden</translation>
 <translation id="1951615167417147110">Eine Seite nach oben blättern</translation>
-<translation id="1954813140452229842">Fehler beim Bereitstellen der Freigabe. Überprüfen Sie Ihre Zugangsdaten und versuchen Sie es noch einmal.</translation>
+<translation id="1954813140452229842">Fehler beim Bereitstellen der Freigabe. Überprüfen Sie Ihre Anmeldedaten und versuchen Sie es noch einmal.</translation>
 <translation id="1956050014111002555">Die Datei enthielt mehrere Zertifikate, von denen keines importiert wurde:</translation>
 <translation id="1956390763342388273">Hierdurch werden alle Dateien aus "<ph name="FOLDER_PATH" />" hochgeladen. Tun Sie dies nur, wenn Sie die Website als vertrauenswürdig einstufen.</translation>
 <translation id="1962233722219655970">Diese Seite verwendet eine Native Client App, die auf Ihrem Computer nicht funktioniert.</translation>
@@ -729,7 +729,6 @@
 <translation id="2114326799768592691">&amp;Frame neu laden</translation>
 <translation id="2114896190328250491">Foto von <ph name="NAME" /></translation>
 <translation id="2115103655317273167">An Smartphone senden</translation>
-<translation id="2115946962706216358">Der Computer konnte der Domain nicht beitreten. Möglicherweise haben Sie bereits die Höchstzahl der verbundenen Computer für Ihr Serverkonto erreicht.</translation>
 <translation id="2119349053129246860">In <ph name="APP" /> öffnen</translation>
 <translation id="2121825465123208577">Größe anpassen</translation>
 <translation id="2124930039827422115">{1,plural, =1{Von 1 Nutzer als <ph name="AVERAGE_RATING" /> bewertet.}other{Von # Nutzern als <ph name="AVERAGE_RATING" /> bewertet.}}</translation>
@@ -1000,7 +999,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="253434972992662860">&amp;Anhalten</translation>
 <translation id="2534460670861217804">Sicherer HTTP-Proxy</translation>
 <translation id="253557089021624350">Keepalive-Zahl</translation>
-<translation id="2540384386570049483">Werbung auf dieser Website zulassen</translation>
 <translation id="2541423446708352368">Alle Downloads anzeigen</translation>
 <translation id="2542049655219295786">Google-Tabelle</translation>
 <translation id="2544853746127077729">Ablehnung des Authentifizierungszertifikats durch das Netzwerk</translation>
@@ -1152,7 +1150,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2739191690716947896">Fehlerbehebung</translation>
 <translation id="2739240477418971307">Einstellungen für Zugänglichkeit ändern</translation>
 <translation id="2740393541869613458">von dem betreuten Nutzer besuchte Websites überprüfen und</translation>
-<translation id="2740531572673183784">OK</translation>
 <translation id="2743387203779672305">In Zwischenablage kopieren</translation>
 <translation id="2745080116229976798">Microsoft - Qualifizierte Unterordnung</translation>
 <translation id="2749756011735116528">In <ph name="PRODUCT_NAME" /> anmelden</translation>
@@ -1475,7 +1472,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3270965368676314374">Fotos, Musik und andere Medien auf Ihrem Computer lesen, ändern und löschen</translation>
 <translation id="327147043223061465">Alle Cookies und Websitedaten anzeigen</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> möchte eine Verbindung herstellen</translation>
-<translation id="327444463633065042">Ungültiger Computername</translation>
 <translation id="3274763671541996799">Sie befinden sich im Vollbildmodus.</translation>
 <translation id="3275778913554317645">In neuem Fenster öffnen</translation>
 <translation id="3279741024917655738">Zeigen von Vollbildvideos ist aktiviert</translation>
@@ -1500,7 +1496,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3305389145870741612">Die Formatierung kann einige Sekunden dauern. Bitte warten...</translation>
 <translation id="3305661444342691068">PDF-Vorschau</translation>
 <translation id="3306684685104080068">Streaming an cloudbasierte Dienste wie Google Hangouts aktivieren.</translation>
-<translation id="3307091518408668019">Computer OU (z. B. OU=Chromebooks, DC=example, DC=com)</translation>
 <translation id="3308006649705061278">Organisationseinheit (OU)</translation>
 <translation id="3308116878371095290">Diese Seite konnte keine Cookies setzen.</translation>
 <translation id="3308134619352333507">Schaltfläche ausblenden</translation>
@@ -1561,7 +1556,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3407837288045706722">Weitere Einstellungen in Verbindung mit Datenschutz, Sicherheit und der Erhebung von Daten finden Sie unter <ph name="BEGIN_LINK" />Synchronisieren und personalisieren<ph name="END_LINK" /></translation>
 <translation id="3412265149091626468">Auswahl anzeigen</translation>
 <translation id="3413122095806433232">Aussteller von Zertifizierungsstellen: <ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">Markieren Sie, was Sie sich vorlesen lassen möchten, und drücken Sie dann die Suchtaste + S. Alternativ können Sie die Suchtaste gedrückt halten oder das Symbol "Vorlesen" in der Nähe Ihres Profilbilds antippen und einen Bereich zum Vorlesen auswählen.</translation>
+<translation id="3414791204526549759">Markieren Sie, was Sie sich vorlesen lassen möchten, und drücken Sie dann die Suchtaste + S. Alternativ können Sie die Suchtaste gedrückt halten oder das Symbol "Vorlesen" in der Nähe Ihres Profilbilds antippen und einen Bereich zum Vorlesen auswählen.</translation>
 <translation id="3414856743105198592">Durch die Formatierung der Wechselmedien werden alle Daten gelöscht. Möchten Sie fortfahren?</translation>
 <translation id="3414952576877147120">Größe:</translation>
 <translation id="3420980393175304359">Person wechseln</translation>
@@ -1866,7 +1861,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="383891835335927981">Keine Websites wurden vergrößert oder verkleinert</translation>
 <translation id="3839516600093027468">Immer verhindern, dass <ph name="HOST" /> die Zwischenablage aufruft</translation>
 <translation id="3840053866656739575">Die Verbindung zur Chromebox wurde unterbrochen. Verringern Sie den Abstand zur Chromebox oder überprüfen Sie Ihr Gerät. Ein erneuter Verbindungsversuch wird gestartet.</translation>
-<translation id="3842132283799370683">Der Computer konnte der Domain nicht beitreten. Möglicherweise bestehen Probleme mit der Organisationseinheit.</translation>
 <translation id="3842552989725514455">Schriftart Serif</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="3851428669031642514">Unsichere Skripts laden</translation>
@@ -2277,7 +2271,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4552678318981539154">Mehr Speicherplatz erwerben</translation>
 <translation id="4554591392113183336">Die Version der externen Erweiterung ist identisch mit der vorhandenen Version oder niedriger als diese.</translation>
 <translation id="4555769855065597957">Schatten</translation>
-<translation id="4555979468244469039">Chromebook-Gerätename</translation>
 <translation id="4556110439722119938">Lesezeichen, Verlauf, Passwörter und andere Einstellungen werden mit Ihrem Google-Konto synchronisiert, damit Sie sie auf allen Ihren Geräten nutzen können.</translation>
 <translation id="4558426062282641716">Berechtigung zum automatischen Start angefordert</translation>
 <translation id="4562155214028662640">Fingerabdruck hinzufügen</translation>
@@ -2420,7 +2413,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4784330909746505604">PowerPoint-Präsentation</translation>
 <translation id="4790972063719531840">Diagnose- und Nutzungsdaten automatisch an Google senden</translation>
 <translation id="4792711294155034829">&amp;Probleme melden...</translation>
-<translation id="479285515899735347">Hoppla! Offenbar ist Ihr Passwort abgelaufen. Bitte erneuern Sie es auf einem anderen Gerät und versuchen Sie es noch einmal.</translation>
 <translation id="479536056609751218">Webseite, nur HTML</translation>
 <translation id="479989351350248267">Suchen</translation>
 <translation id="4801448226354548035">Konten ausblenden</translation>
@@ -3088,7 +3080,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="577322787686508614">Der Lesevorgang ist auf folgendem Gerät nicht erlaubt: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">App "Dateien" öffnen</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5775834615653774429">Der Computer konnte der Domain nicht beitreten. Die Organisationseinheit existiert nicht.</translation>
 <translation id="577624874850706961">Cookies suchen</translation>
 <translation id="5777468213129569553">Chrome öffnen</translation>
 <translation id="5778747455497889540">Hier ist das zufällig generierte Passwort für das Sicherheitsmodul, das Ihrem Computer zugewiesen wurde:</translation>
@@ -3109,7 +3100,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5804241973901381774">Berechtigungen</translation>
 <translation id="580571955903695899">Neu sortieren nach Titel</translation>
 <translation id="5807290661599647102">Displaysperre einrichten</translation>
-<translation id="580926004266167721">Der Computer konnte der Domain nicht beitreten. Möglicherweise verfügt Ihr Konto nicht über die erforderlichen Berechtigungen für die Organisationseinheit.</translation>
 <translation id="580961539202306967">Nachfragen, wenn eine Website mir Push-Nachrichten senden möchte (empfohlen)</translation>
 <translation id="5809725759695043233">Sie haben Apps, die für Chromebooks optimiert sind</translation>
 <translation id="5814126672212206791">Verbindungstyp</translation>
@@ -3676,7 +3666,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">Ihr Computer wurde mit einer ungültigen Hardware-ID konfiguriert. Daher kann Chrome OS keine aktuellen Sicherheitsupdates installieren und Ihr Computer ist <ph name="BEGIN_BOLD" />möglicherweise anfällig für schädliche Angriffe<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Beim Öffnen Ihres Profils ist ein Fehler aufgetreten. Melden Sie sich bitte ab und dann wieder an.</translation>
-<translation id="6670647982128220776">Funktionen zur Synchronisierung und Personalisierung sind jetzt über ein einzelnes Steuerelement verfügbar. Wenn Sie dieses aktivieren, können sich Ihre aktuellen Einstellungen ändern.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Soll Google diese Seite von <ph name="SOURCE_LANGUAGE" /> in <ph name="TARGET_LANGUAGE" /> übersetzen?</translation>
 <translation id="6675665718701918026">Zeigegerät verbunden</translation>
@@ -4545,7 +4534,6 @@ Bei der Installation von "<ph name="APP_NAME" />" werden <ph name="DOWNLOAD_SIZE
 <translation id="7984068253310542383"><ph name="DISPLAY_NAME" /> spiegeln</translation>
 <translation id="7984180109798553540"><ph name="PRODUCT_NAME" /> verschlüsselt Ihre Daten zur Erhöhung der Sicherheit.</translation>
 <translation id="7986295104073916105">Einstellungen für gespeicherte Passwörter aufrufen und ändern</translation>
-<translation id="798749371774946697">Der Computername ist zu lang</translation>
 <translation id="7988355189918024273">Bedienungshilfen aktivieren</translation>
 <translation id="7994702968232966508">EAP-Methode</translation>
 <translation id="799547531016638432">Verknüpfung entfernen</translation>
@@ -4804,7 +4792,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8400146488506985033">Nutzer verwalten</translation>
 <translation id="8410073653152358832">Dieses Telefon verwenden</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">Ja, Synchronisierung und Personalisierung aktivieren</translation>
 <translation id="8413385045638830869">Zuerst fragen (empfohlen)</translation>
 <translation id="8418445294933751433">Al&amp;s Tab anzeigen</translation>
 <translation id="8419098111404128271">Suchergebnisse für "<ph name="SEARCH_TEXT" />"</translation>
@@ -4849,7 +4836,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8470028084415844044">Wenn Sie Ihre Passwörter auf allen Ihren Geräten verfügbar haben möchten, aktivieren Sie die Synchronisierung.</translation>
 <translation id="8470513973197838199">Gespeicherte Passwörter für <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">Hardwaregestützt</translation>
-<translation id="8474229360677287535">Alle Fenster schließen</translation>
 <translation id="8475313423285172237">Ein anderes Programm auf Ihrem Computer hat eine Erweiterung hinzugefügt, die sich möglicherweise auf die Funktionsweise von Chrome auswirkt.</translation>
 <translation id="8475647382427415476">"<ph name="FILENAME" />" konnte nicht in Google Drive synchronisiert werden. Google Drive versucht es später erneut.</translation>
 <translation id="8477241577829954800">Außer Kraft gesetzt</translation>
@@ -4988,7 +4974,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8688579245973331962">Wird Ihr Name nicht angezeigt?</translation>
 <translation id="8688591111840995413">Passwort ungültig</translation>
 <translation id="8688672835843460752">Verfügbar</translation>
-<translation id="8689583087392258564">Der Computer konnte der Domain nicht beitreten. Die Organisationseinheit ist ungültig.</translation>
 <translation id="869257642790614972">Zuletzt geschlossenen Tab öffnen</translation>
 <translation id="8695825812785969222">&amp;Adresse öffnen...</translation>
 <translation id="8698464937041809063">Google-Zeichnung</translation>
@@ -5126,7 +5111,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8902667442496790482">Einstellungen für "Vorlesen" öffnen</translation>
 <translation id="8903921497873541725">Vergrößern</translation>
 <translation id="8904976895050290827">Google Chrome Sync</translation>
-<translation id="8909233240676134608">Der Computer konnte der Domain nicht beitreten. Der Server bietet keine Unterstützung für die angegebenen Kerberos-Verschlüsselungstypen. Unter "Weitere Optionen" finden Sie die Verschlüsselungseinstellungen.</translation>
 <translation id="8909833622202089127">Die Website verfolgt Ihren Standort</translation>
 <translation id="8910146161325739742">Bildschirm freigeben</translation>
 <translation id="8910222113987937043">Änderungen an Ihrem Verlauf sowie an Ihren Lesezeichen, Passwörtern und sonstigen Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert. Bereits in Ihrem Google-Konto gespeicherte Daten bleiben dort erhalten und können über das <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" /> verwaltet werden.</translation>
@@ -5313,7 +5297,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="9177499212658576372">Sie sind derzeit mit dem <ph name="NETWORK_TYPE" />-Netzwerk verbunden.</translation>
 <translation id="9180380851667544951">Die Website kann Ihren Bildschirm freigeben</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> von <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">Der Computer konnte der Domain nicht beitreten. Möglicherweise verfügt Ihr Serverkonto nicht über die erforderlichen Berechtigungen.</translation>
 <translation id="9188441292293901223">Bitte aktualisieren Sie Ihr Telefon auf eine neuere Android-Version, um dieses <ph name="DEVICE_TYPE" /> zu entsperren.</translation>
 <translation id="9190063653747922532">L2TP/IPSec + vorinstallierter Schlüssel</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" />-Suche</translation>

@@ -732,7 +732,6 @@
 <translation id="2114326799768592691">Ricarica &amp;frame</translation>
 <translation id="2114896190328250491">Foto di <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Invia al telefono</translation>
-<translation id="2115946962706216358">Aggiunta della macchina al dominio non riuscita. Ciò potrebbe essere dovuto al superamento del numero massimo di aggiunte delle macchine consentito per il tuo account sul server.</translation>
 <translation id="2119349053129246860">Apri in <ph name="APP" /></translation>
 <translation id="2121825465123208577">Ridimensiona</translation>
 <translation id="2124930039827422115">{1,plural, =1{Un utente ha dato una valutazione di <ph name="AVERAGE_RATING" />.}other{# utenti hanno dato una valutazione di <ph name="AVERAGE_RATING" />.}}</translation>
@@ -1003,7 +1002,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="253434972992662860">&amp;Pausa</translation>
 <translation id="2534460670861217804">Proxy HTTP sicuro</translation>
 <translation id="253557089021624350">Conteggio attività keep-alive</translation>
-<translation id="2540384386570049483">Consenti annunci su questo sito</translation>
 <translation id="2541423446708352368">Mostra tutti i download</translation>
 <translation id="2542049655219295786">Tabella Google</translation>
 <translation id="2544853746127077729">Certificato di autenticazione rifiutato dalla rete</translation>
@@ -1155,7 +1153,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2739191690716947896">Debug</translation>
 <translation id="2739240477418971307">Modifica delle impostazioni di accesibilità</translation>
 <translation id="2740393541869613458">controllare i siti web visitati dall'utente supervisionato e</translation>
-<translation id="2740531572673183784">OK</translation>
 <translation id="2743387203779672305">Copia negli appunti</translation>
 <translation id="2745080116229976798">Subordinazione qualificata Microsoft</translation>
 <translation id="2749756011735116528">Accedi a <ph name="PRODUCT_NAME" /></translation>
@@ -1478,7 +1475,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="3270965368676314374">Leggere, modificare ed eliminare foto, musica e altri contenuti multimediali del computer</translation>
 <translation id="327147043223061465">Mostra tutti i cookie e i dati dei siti</translation>
 <translation id="3271648667212143903">Il sito <ph name="ORIGIN" /> desidera collegarsi</translation>
-<translation id="327444463633065042">Nome della macchina non valido</translation>
 <translation id="3274763671541996799">Sei passato a schermo intero.</translation>
 <translation id="3275778913554317645">Apri come finestra</translation>
 <translation id="3279741024917655738">Mostra video a schermo intero su</translation>
@@ -1503,7 +1499,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="3305389145870741612">La procedura di formattazione può richiedere alcuni secondi. Attendi.</translation>
 <translation id="3305661444342691068">Apri PDF in anteprima</translation>
 <translation id="3306684685104080068">Abilita la trasmissione ai servizi basati sulla cloud quali Google Hangouts.</translation>
-<translation id="3307091518408668019">Computer OU (esempio: OU=Chromebooks,DC=example,DC=com)</translation>
 <translation id="3308006649705061278">Unità organizzativa (OU)</translation>
 <translation id="3308116878371095290">Impostazione dei cookie vietata per questa pagina.</translation>
 <translation id="3308134619352333507">Nascondi pulsante</translation>
@@ -1867,7 +1862,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="383891835335927981">Non è stato aumentato o diminuito lo zoom di alcun sito</translation>
 <translation id="3839516600093027468">Impedisci sempre a <ph name="HOST" /> di leggere gli appunti</translation>
 <translation id="3840053866656739575">Connessione con il Chromebox persa. Avvicinati o controlla il dispositivo mentre cerchiamo di ricollegarlo.</translation>
-<translation id="3842132283799370683">Aggiunta della macchina al dominio non riuscita. Ciò potrebbe essere dovuto a problemi con l'unità organizzativa.</translation>
 <translation id="3842552989725514455">Carattere serif</translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="3851428669031642514">Carica script non sicuri</translation>
@@ -2278,7 +2272,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4552678318981539154">Acquista più spazio di archiviazione</translation>
 <translation id="4554591392113183336">La versione dell'estensione esterna è pari o precedente a quella dell'estensione esistente.</translation>
 <translation id="4555769855065597957">Ombra</translation>
-<translation id="4555979468244469039">Nome della macchina Chromebook</translation>
 <translation id="4556110439722119938">I tuoi preferiti, la cronologia, le password e altre impostazioni verranno sincronizzati con il tuo account Google per consentirti di utilizzarli su tutti i tuoi dispositivi</translation>
 <translation id="4558426062282641716">Autorizzazione di avvio automatico richiesta</translation>
 <translation id="4562155214028662640">Aggiungi impronta digitale</translation>
@@ -2421,7 +2414,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4784330909746505604">Presentazione PowerPoint</translation>
 <translation id="4790972063719531840">Invia automaticamente a Google dati di diagnostica e utilizzo</translation>
 <translation id="4792711294155034829">&amp;Segnala un problema...</translation>
-<translation id="479285515899735347">Spiacenti. Sembra che la password sia scaduta. Rinnovala su un altro computer e riprova.</translation>
 <translation id="479536056609751218">Pagina web, solo HTML</translation>
 <translation id="479989351350248267">ricerca</translation>
 <translation id="4801448226354548035">Nascondi account</translation>
@@ -3088,7 +3080,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="577322787686508614">Lettura non consentita su: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Apri l'applicazione File</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5775834615653774429">Aggiunta della macchina al dominio non riuscita. L'unità organizzativa non esiste.</translation>
 <translation id="577624874850706961">Cerca cookie</translation>
 <translation id="5777468213129569553">Apri Chrome</translation>
 <translation id="5778747455497889540">Di seguito viene indicata la password del modulo per la sicurezza generata in modo casuale che è stata assegnata al tuo computer:</translation>
@@ -3109,7 +3100,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5804241973901381774">Autorizzazioni</translation>
 <translation id="580571955903695899">Riordina per titolo</translation>
 <translation id="5807290661599647102">Imposta un blocco schermo</translation>
-<translation id="580926004266167721">Aggiunta della macchina al dominio non riuscita. Ciò potrebbe essere dovuto a privilegi dell'account per l'unità organizzativa non sufficienti.</translation>
 <translation id="580961539202306967">Chiedimi quando un sito desidera inviarmi messaggi push (consigliato)</translation>
 <translation id="5809725759695043233">Hai app che sono ottimizzate per i Chromebook</translation>
 <translation id="5814126672212206791">Tipo di connessione</translation>
@@ -3676,7 +3666,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6659594942844771486">TAB</translation>
 <translation id="6664237456442406323">Purtroppo il tuo computer è configurato con un ID hardware non valido. Ciò impedisce a Chrome OS di aggiornarsi con le ultime correzioni relative alla sicurezza e il tuo computer <ph name="BEGIN_BOLD" />potrebbe essere vulnerabile ad attacchi dannosi<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Si è verificato un problema durante l'apertura del profilo. Esci e accedi di nuovo.</translation>
-<translation id="6670647982128220776">Le funzioni relative a sincronizzazione e personalizzazione sono ora raggruppate in un'unica opzione di controllo. Attivarla può modificare le attuali impostazioni.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Vuoi che Google traduca la pagina da <ph name="SOURCE_LANGUAGE" /> in <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Dispositivo di puntamento collegato</translation>
@@ -4533,7 +4522,6 @@ L'installazione dell'app <ph name="APP_NAME" /> scaricherà <ph name="DOWNLOAD_S
 <translation id="7984068253310542383">Esegui il mirroring di <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">Per maggiore sicurezza, <ph name="PRODUCT_NAME" /> cripterà i tuoi dati.</translation>
 <translation id="7986295104073916105">Lettura e modifica delle impostazioni relative alle password salvate</translation>
-<translation id="798749371774946697">Nome della macchina troppo lungo</translation>
 <translation id="7988355189918024273">Attiva funzioni di accessibilità</translation>
 <translation id="7994702968232966508">Metodo EAP</translation>
 <translation id="799547531016638432">Rimuovi scorciatoia</translation>
@@ -4791,7 +4779,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8400146488506985033">Gestisci utenti</translation>
 <translation id="8410073653152358832">Utilizza questo telefono</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">Sì, attiva la sincronizzazione e la personalizzazione</translation>
 <translation id="8413385045638830869">Chiedi prima (opzione consigliata)</translation>
 <translation id="8418445294933751433">&amp;Mostra come scheda</translation>
 <translation id="8419098111404128271">Risultati di ricerca per "<ph name="SEARCH_TEXT" />"</translation>
@@ -4836,7 +4823,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8470028084415844044">Attiva la sincronizzazione per trovare tutte le tue password su tutti i dispositivi.</translation>
 <translation id="8470513973197838199">Password salvate per il sito <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">basato sull'hardware</translation>
-<translation id="8474229360677287535">Chiudi tutte le finestre</translation>
 <translation id="8475313423285172237">Un altro programma sul computer ha aggiunto un'estensione che potrebbe modificare il funzionamento di Chrome.</translation>
 <translation id="8475647382427415476">Al momento non è possibile sincronizzare il file "<ph name="FILENAME" />" con Google Drive. Google Drive riproverà più tardi.</translation>
 <translation id="8477241577829954800">Sostituito</translation>
@@ -4975,7 +4961,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8688579245973331962">Non riesci a visualizzare il tuo nome?</translation>
 <translation id="8688591111840995413">Password non valida</translation>
 <translation id="8688672835843460752">Disponibile</translation>
-<translation id="8689583087392258564">Aggiunta della macchina al dominio non riuscita. L'unità organizzativa non è valida.</translation>
 <translation id="869257642790614972">Riapri ultima scheda chiusa</translation>
 <translation id="8695825812785969222">Apri &amp;percorso...</translation>
 <translation id="8698464937041809063">Disegno Google</translation>
@@ -5113,7 +5098,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8902667442496790482">Apri le impostazioni Seleziona per ascoltare</translation>
 <translation id="8903921497873541725">Aumenta lo zoom</translation>
 <translation id="8904976895050290827">Sincronizzazione Google Chrome</translation>
-<translation id="8909233240676134608">Impossibile aggiungere il computer al dominio. Il server non supporta i tipi di crittografia Kerberos specificati. Consulta "Altre opzioni" per le impostazioni di crittografia.</translation>
 <translation id="8909833622202089127">Il sito sta monitorando la tua posizione</translation>
 <translation id="8910146161325739742">Condividi lo schermo</translation>
 <translation id="8910222113987937043">Le modifiche apportate a preferiti, cronologia, password e altre impostazioni non verranno più sincronizzate con il tuo account Google. I dati esistenti rimarranno invece memorizzati nel tuo account Google e potranno essere gestiti su <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
@@ -5299,7 +5283,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9177499212658576372">Al momento sei collegato alla rete <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9180380851667544951">Il sito può condividere lo schermo</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> da <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">Aggiunta della macchina al dominio non riuscita. Ciò potrebbe essere dovuto a privilegi dell'account sul server non sufficienti.</translation>
 <translation id="9188441292293901223">Aggiorna il telefono a una versione più recente di Android per sbloccare questo dispositivo <ph name="DEVICE_TYPE" />.</translation>
 <translation id="9190063653747922532">L2TP/IPSec + chiave precondivisa</translation>
 <translation id="920045321358709304">Cerca su <ph name="SEARCH_ENGINE" /></translation>

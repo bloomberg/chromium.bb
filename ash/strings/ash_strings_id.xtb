@@ -168,6 +168,7 @@
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Perangkat tidak tersambung</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Menyambung...</translation>
+<translation id="4513946894732546136">Masukan</translation>
 <translation id="4527045527269911712">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> sampai penuh</translation>
 <translation id="4544944664594876241">Pintasan untuk mengunci layar telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai gantinya <ph name="OLD_SHORTCUT" />.</translation>
@@ -263,7 +264,7 @@
 <translation id="6723839937902243910">Daya</translation>
 <translation id="6785414152754474415">Baterai sudah terisi <ph name="PERCENTAGE" />% dan masih mengisi.</translation>
 <translation id="6803622936009808957">Tidak dapat menggandakan tampilan karena tidak ditemukan resolusi yang didukung. Memasuki desktop yang diperluas sebagai gantinya.</translation>
-<translation id="6820676911989879663">Berhenti sebentar!</translation>
+<translation id="6820676911989879663">Istirahatlah sebentar</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Aktifkan <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Bergabung dengan lainnya...</translation>

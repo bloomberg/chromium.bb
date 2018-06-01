@@ -620,7 +620,7 @@
 <translation id="1919345977826869612">โฆษณา</translation>
 <translation id="1919814239594435008">อนุญาตปลั๊กอินที่ไม่ได้อยู่ในแซนด์บ็อกซ์</translation>
 <translation id="1921584744613111023"><ph name="DPI" /> dpi</translation>
-<translation id="1924559387127953748">ดูตัวเลือกตัวเลือกเจ๋งๆ ของ Google ใน <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
+<translation id="1924559387127953748">ดูตัวเลือกดีๆ จาก Google ใน <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="192494336144674234">เปิดด้วย</translation>
 <translation id="1925021887439448749">ป้อนที่อยู่เว็บที่กำหนดเอง</translation>
 <translation id="1926339101652878330">การตั้งค่านี้ควบคุมโดยนโยบายองค์กร โปรดสอบถามข้อมูลเพิ่มเติมจากผู้ดูแลระบบ</translation>
@@ -732,7 +732,6 @@
 <translation id="2114326799768592691">โหลดเ&amp;ฟรมซ้ำ</translation>
 <translation id="2114896190328250491">รูปภาพจาก <ph name="NAME" /></translation>
 <translation id="2115103655317273167">ส่งไปที่โทรศัพท์</translation>
-<translation id="2115946962706216358">ไม่สามารถนำเครื่องเข้าร่วมโดเมน อาจเป็นเพราะบัญชีของคุณมีเครื่องที่เข้าร่วมเกินจำนวนที่กำหนดไว้ในเซิร์ฟเวอร์แล้ว</translation>
 <translation id="2119349053129246860">เปิดใน<ph name="APP" /></translation>
 <translation id="2121825465123208577">ปรับขนาด</translation>
 <translation id="2124930039827422115">{1,plural, =1{ได้คะแนน <ph name="AVERAGE_RATING" /> จากผู้ใช้ 1 ราย}other{ได้คะแนน <ph name="AVERAGE_RATING" /> จากผู้ใช้ # ราย}}</translation>
@@ -1003,7 +1002,6 @@
 <translation id="253434972992662860">&amp;หยุดชั่วคราว</translation>
 <translation id="2534460670861217804">พร็อกซี HTTP ที่ปลอดภัย</translation>
 <translation id="253557089021624350">จำนวนที่เชื่อมต่อแบบคงอยู่</translation>
-<translation id="2540384386570049483">อนุญาตโฆษณาในไซต์นี้</translation>
 <translation id="2541423446708352368">แสดงการดาวน์โหลดทั้งหมด</translation>
 <translation id="2542049655219295786">ตารางของ Google</translation>
 <translation id="2544853746127077729">ใบรับรองการตรวจสอบสิทธิ์ได้รับการปฏิเสธจากเครือข่าย</translation>
@@ -1156,7 +1154,6 @@
 <translation id="2739191690716947896">แก้ปัญหา</translation>
 <translation id="2739240477418971307">เปลี่ยนแปลงการตั้งค่าการเข้าถึง</translation>
 <translation id="2740393541869613458">ตรวจสอบเว็บไซต์ที่ผู้ใช้ภายใต้การดูแลได้เข้าชมและ</translation>
-<translation id="2740531572673183784">ตกลง</translation>
 <translation id="2743387203779672305">คัดลอกไว้ที่คลิปบอร์ด</translation>
 <translation id="2745080116229976798">ตัวย่อยที่เหมาะสมของ Microsoft</translation>
 <translation id="2749756011735116528">ลงชื่อเข้าใช้ <ph name="PRODUCT_NAME" /></translation>
@@ -1479,7 +1476,6 @@
 <translation id="3270965368676314374">อ่าน เปลี่ยนแปลง และลบรูปภาพ เพลง และสื่ออื่นๆ จากคอมพิวเตอร์ของคุณ</translation>
 <translation id="327147043223061465">ดูคุกกี้และข้อมูลเว็บไซต์ทั้งหมด</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> ต้องการเชื่อมต่อ</translation>
-<translation id="327444463633065042">ชื่อเครื่องไม่ถูกต้อง</translation>
 <translation id="3274763671541996799">คุณอยู่ในการแสดงแบบเต็มหน้าจอแล้ว</translation>
 <translation id="3275778913554317645">เปิดเป็นหน้าต่าง</translation>
 <translation id="3279741024917655738">เปิดวิดีโอเต็มหน้าจอใน</translation>
@@ -1504,7 +1500,6 @@
 <translation id="3305389145870741612">กระบวนการฟอร์แมตอาจใช้เวลาสองสามวินาที โปรดรอสักครู่</translation>
 <translation id="3305661444342691068">เปิด PDF ในหน้าตัวอย่าง</translation>
 <translation id="3306684685104080068">เปิดใช้การแคสต์ไปยังบริการบนระบบคลาวด์ เช่น Google Hangouts</translation>
-<translation id="3307091518408668019">OU คอมพิวเตอร์ (เช่น OU=Chromebook, DC=example, DC=com)</translation>
 <translation id="3308006649705061278">หน่วยองค์กร (OU)</translation>
 <translation id="3308116878371095290">หน้าเว็บนี้ไม่อนุญาตให้มีการตั้งค่าคุกกี้</translation>
 <translation id="3308134619352333507">ซ่อนปุ่ม</translation>
@@ -1870,7 +1865,6 @@
 <translation id="383891835335927981">ไม่มีการซูมเข้าหรือซูมออกเว็บไซต์ใดๆ</translation>
 <translation id="3839516600093027468">บล็อก <ph name="HOST" /> ไม่ให้ดูคลิปบอร์ดเสมอ</translation>
 <translation id="3840053866656739575">ขาดการเชื่อมต่อกับ Chromebox โปรดเข้าใกล้อุปกรณ์ หรือตรวจสอบอุปกรณ์ของคุณขณะที่เราพยายามเชื่อมต่อใหม่</translation>
-<translation id="3842132283799370683">นำเครื่องเข้าร่วมโดเมนไม่สำเร็จ อาจเป็นเพราะมีปัญหาเกี่ยวกับหน่วยขององค์กร</translation>
 <translation id="3842552989725514455">แบบอักษร Serif</translation>
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3851428669031642514">โหลดสคริปต์ที่ไม่ปลอดภัย</translation>
@@ -2281,7 +2275,6 @@
 <translation id="4552678318981539154">ซื้อพื้นที่เก็บข้อมูลเพิ่ม</translation>
 <translation id="4554591392113183336">ส่วนขยายภายนอกเป็นเวอร์ชันเดียวกันหรือต่ำกว่าเมื่อเปรียบเทียบกับส่วนขยายที่มีอยู่</translation>
 <translation id="4555769855065597957">เงา</translation>
-<translation id="4555979468244469039">ชื่อเครื่อง Chromebook</translation>
 <translation id="4556110439722119938">บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะซิงค์กับบัญชี Google เพื่อให้คุณสามารถใช้ข้อมูลเหล่านี้ได้กับอุปกรณ์ทุกเครื่อง</translation>
 <translation id="4558426062282641716">ขอสิทธิ์การเปิดอัตโนมัติแล้ว</translation>
 <translation id="4562155214028662640">เพิ่มลายนิ้วมือ</translation>
@@ -2424,7 +2417,6 @@
 <translation id="4784330909746505604">งานนำเสนอ PowerPoint</translation>
 <translation id="4790972063719531840">ส่งข้อมูลการวินิจฉัยและการใช้งานไปยัง Google โดยอัตโนมัติ</translation>
 <translation id="4792711294155034829">&amp;รายงานปัญหา...</translation>
-<translation id="479285515899735347">อ๊ะ! ดูเหมือนว่ารหัสผ่านของคุณหมดอายุแล้ว โปรดต่ออายุในอุปกรณ์เครื่องอื่นแล้วลองอีกครั้ง</translation>
 <translation id="479536056609751218">หน้าเว็บ HTML เท่านั้น</translation>
 <translation id="479989351350248267">ค้นหา</translation>
 <translation id="4801448226354548035">ซ่อนบัญชี</translation>
@@ -2472,7 +2464,7 @@
 <translation id="4862642413395066333">การเซ็นชื่อในการตอบสนอง OCSP</translation>
 <translation id="4864369630010738180">กำลังลงชื่อเข้าใช้...</translation>
 <translation id="486635084936119914">เปิดไฟล์บางประเภทโดยอัตโนมัติหลังจากที่ดาวน์โหลดมา</translation>
-<translation id="4869142322204669043">Google อาจใช้เนื้อหาในเว็บไซต์ที่คุณเข้าชมและกิจกรรมการท่องเว็บเพื่อปรับ <ph name="IDS_SHORT_PRODUCT_NAME" /> และบริการอื่นๆ ของ Google เช่น แปลภาษา Search และโฆษณาให้เหมาะกับคุณ ปรับแต่งค่านี้ได้ทุกเมื่อในการตั้งค่า</translation>
+<translation id="4869142322204669043">Google อาจใช้เนื้อหาในเว็บไซต์ที่คุณเข้าชมและกิจกรรมการท่องเว็บเพื่อปรับ <ph name="IDS_SHORT_PRODUCT_NAME" /> และบริการอื่นๆ ของ Google เช่น การแปลภาษา การค้นหา และโฆษณาให้เหมาะกับคุณ ปรับแต่งค่านี้ได้ทุกเมื่อในการตั้งค่า</translation>
 <translation id="48704129375571883">เพิ่มฟีเจอร์</translation>
 <translation id="4870903493621965035">ไม่มีอุปกรณ์ที่จับคู่</translation>
 <translation id="4871210892959306034">$1 KB</translation>
@@ -3092,7 +3084,6 @@
 <translation id="577322787686508614">ไม่อนุญาตให้อ่านใน "<ph name="DEVICE_NAME" />"</translation>
 <translation id="5774295353725270860">เปิดแอปพลิเคชันไฟล์</translation>
 <translation id="5774515636230743468">จัดการ:</translation>
-<translation id="5775834615653774429">นำเครื่องเข้าร่วมโดเมนไม่สำเร็จเพราะไม่มีหน่วยขององค์กร</translation>
 <translation id="577624874850706961">ค้นหาคุกกี้</translation>
 <translation id="5777468213129569553">เปิด Chrome</translation>
 <translation id="5778747455497889540">ด้านล่างนี้คือรหัสผ่านโมดูลความปลอดภัยที่สร้างขึ้นโดยการสุ่มและได้รับการกำหนดให้กับคอมพิวเตอร์ของคุณ:</translation>
@@ -3113,7 +3104,6 @@
 <translation id="5804241973901381774">การอนุญาต</translation>
 <translation id="580571955903695899">จัดลำดับใหม่ตามชื่อ</translation>
 <translation id="5807290661599647102">ตั้งค่าการล็อกหน้าจอ</translation>
-<translation id="580926004266167721">นำเครื่องเข้าร่วมโดเมนไม่สำเร็จ อาจเป็นเพราะบัญชีของคุณมีสิทธิ์ไม่เพียงพอสำหรับหน่วยขององค์กรนั้น</translation>
 <translation id="580961539202306967">ถามฉันเมื่อไซต์ต้องการส่งข้อความพุชให้ฉัน (แนะนำ)</translation>
 <translation id="5809725759695043233">คุณมีแอปที่เหมาะสำหรับ Chromebook</translation>
 <translation id="5814126672212206791">ประเภทการเชื่อมต่อ</translation>
@@ -3680,7 +3670,6 @@
 <translation id="6659594942844771486">แท็บ</translation>
 <translation id="6664237456442406323">น่าเสียดายที่คอมพิวเตอร์ของคุณถูกกำหนดค่าด้วย ID ฮาร์ดแวร์ที่มีรูปแบบที่ไม่ถูกต้อง ซึ่งจะป้องกันไม่ให้ Chrome OS อัปเดตการแก้ใขปัญหาความปลอดภัยล่าสุดได้ และคอมพิวเตอร์ของคุณ <ph name="BEGIN_BOLD" />อาจเสี่ยงต่อการโจมตีที่เป็นอันตราย<ph name="END_BOLD" /></translation>
 <translation id="6664774537677393800">เกิดข้อผิดพลาดขณะเปิดโปรไฟล์ของคุณ โปรดออกจากระบบแล้วลงชื่อเข้าใช้อีกครั้ง</translation>
-<translation id="6670647982128220776">ตอนนี้ฟีเจอร์ที่เกี่ยวกับการซิงค์และการปรับเปลี่ยนในแบบของคุณรวมอยู่ในส่วนควบคุมเดียวแล้ว การเปิดใช้ตัวเลือกนี้อาจเปลี่ยนการตั้งค่าปัจจุบัน</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">คุณต้องการให้ Google แปลหน้านี้จากภาษา<ph name="SOURCE_LANGUAGE" />เป็นภาษา<ph name="TARGET_LANGUAGE" />ไหม</translation>
 <translation id="6675665718701918026">เชื่อมต่ออุปกรณ์ชี้ตำแหน่งแล้ว</translation>
@@ -4546,7 +4535,6 @@
 <translation id="7984068253310542383">มิเรอร์ <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">เพื่อเพิ่มความปลอดภัยให้มากยิ่งขึ้น <ph name="PRODUCT_NAME" /> จะเข้ารหัสข้อมูลของคุณ</translation>
 <translation id="7986295104073916105">อ่านและเปลี่ยนการตั้งค่ารหัสผ่านที่บันทึกไว้</translation>
-<translation id="798749371774946697">ชื่อเครื่องยาวเกินไป</translation>
 <translation id="7988355189918024273">เปิดการใช้งานฟีเจอร์การเข้าถึง</translation>
 <translation id="7994702968232966508">วิธีการ EAP</translation>
 <translation id="799547531016638432">ลบทางลัด</translation>
@@ -4804,7 +4792,6 @@
 <translation id="8400146488506985033">จัดการบุคคล</translation>
 <translation id="8410073653152358832">ใช้โทรศัพท์นี้</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">ใช่ เปิดการซิงค์และการปรับเปลี่ยนในแบบของคุณ</translation>
 <translation id="8413385045638830869">ถามก่อน (แนะนำ)</translation>
 <translation id="8418445294933751433">แ&amp;สดงเป็นแถบ</translation>
 <translation id="8419098111404128271">ผลการค้นหาของ "<ph name="SEARCH_TEXT" />"</translation>
@@ -4849,7 +4836,6 @@
 <translation id="8470028084415844044">เปิดการซิงค์เพื่อรับรหัสผ่านทั้งหมดในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="8470513973197838199">รหัสผ่านที่บันทึกไว้สำหรับ <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">การสนับสนุนฮาร์ดแวร์</translation>
-<translation id="8474229360677287535">ปิดหน้าต่างทั้งหมด</translation>
 <translation id="8475313423285172237">โปรแกรมอื่นในคอมพิวเตอร์ของคุณเพิ่มส่วนขยายที่อาจเปลี่ยนวิธีการทำงานของ Chrome</translation>
 <translation id="8475647382427415476">Google ไดรฟ์ไม่สามารถซิงค์ "<ph name="FILENAME" />" ได้ตอนนี้ Google ไดรฟ์จะลองใหม่ภายหลัง</translation>
 <translation id="8477241577829954800">ถูกแทนที่</translation>
@@ -4988,7 +4974,6 @@
 <translation id="8688579245973331962">หากไม่เห็นชื่อของคุณ</translation>
 <translation id="8688591111840995413">รหัสผ่านไม่ถูกต้อง</translation>
 <translation id="8688672835843460752">มีอยู่</translation>
-<translation id="8689583087392258564">นำเครื่องเข้าร่วมโดเมนไม่สำเร็จเพราะหน่วยขององค์กรไม่ถูกต้อง</translation>
 <translation id="869257642790614972">เปิดแท็บที่ปิดไปล่าสุดอีกครั้ง</translation>
 <translation id="8695825812785969222">เปิด&amp;ตำแหน่ง...</translation>
 <translation id="8698464937041809063">ภาพวาดของ Google</translation>
@@ -5126,7 +5111,6 @@
 <translation id="8902667442496790482">เปิดการตั้งค่าการเลือกเพื่อให้อ่าน</translation>
 <translation id="8903921497873541725">ขยาย</translation>
 <translation id="8904976895050290827">การทำข้อมูลให้ตรงกันของ Chrome</translation>
-<translation id="8909233240676134608">นำเครื่องเข้าร่วมโดเมนไม่สำเร็จ เซิร์ฟเวอร์ไม่รองรับประเภทการเข้ารหัส Kerberos ที่ระบุ โปรดดู "ตัวเลือกเพิ่มเติม" สำหรับการตั้งค่าการเข้ารหัส</translation>
 <translation id="8909833622202089127">เว็บไซต์กำลังติดตามตำแหน่งของคุณ</translation>
 <translation id="8910146161325739742">แชร์หน้าจอของคุณ</translation>
 <translation id="8910222113987937043">การเปลี่ยนแปลงในบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะไม่ซิงค์กับบัญชี Google อีกต่อไป แต่ข้อมูลที่มีอยู่จะยังจัดเก็บไว้ในบัญชี Google และสามารถจัดการได้ใน<ph name="BEGIN_LINK" />แดชบอร์ด Google<ph name="END_LINK" /></translation>
@@ -5312,7 +5296,6 @@
 <translation id="9177499212658576372">ขณะนี้คุณเชื่อมต่อกับเครือข่าย <ph name="NETWORK_TYPE" /></translation>
 <translation id="9180380851667544951">เว็บไซต์แชร์หน้าจอของคุณได้</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> จาก <ph name="DOWNLOAD_DOMAIN" /> เหลือ <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">ไม่สามารถนำเครื่องเข้าร่วมโดเมน อาจเป็นเพราะบัญชีของคุณมีสิทธิ์ไม่เพียงพอในเซิร์ฟเวอร์</translation>
 <translation id="9188441292293901223">โปรดอัปเดตโทรศัพท์เป็น Android เวอร์ชันใหม่กว่าเพื่อปลดล็อก <ph name="DEVICE_TYPE" /> นี้</translation>
 <translation id="9190063653747922532">L2TP/IPsec + คีย์ที่แชร์ล่วงหน้า</translation>
 <translation id="920045321358709304">ค้นหา <ph name="SEARCH_ENGINE" /></translation>

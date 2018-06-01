@@ -732,7 +732,6 @@
 <translation id="2114326799768592691">I-reload ang &amp;Frame</translation>
 <translation id="2114896190328250491">Larawan ni <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Ipadala sa telepono</translation>
-<translation id="2115946962706216358">Hindi naisama ang machine sa domain. Maaaring dahil lumampas na sa maximum na bilang ng mga pinapayagang pagsama ng machine para sa iyong account sa server.</translation>
 <translation id="2119349053129246860">Buksan sa <ph name="APP" /></translation>
 <translation id="2121825465123208577">Baguhin ang laki</translation>
 <translation id="2124930039827422115">{1,plural, =1{Na-rate ng <ph name="AVERAGE_RATING" /> ng isang user.}one{Na-rate ng <ph name="AVERAGE_RATING" /> ng # user.}other{Na-rate ng <ph name="AVERAGE_RATING" /> ng # na user.}}</translation>
@@ -1003,7 +1002,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="253434972992662860">I-&amp;pause</translation>
 <translation id="2534460670861217804">Secure na HTTP Proxy</translation>
 <translation id="253557089021624350">Bilang ng keepalive</translation>
-<translation id="2540384386570049483">Payagan ang mga ad sa site na ito</translation>
 <translation id="2541423446708352368">Ipakita ang lahat ng mga pag-download</translation>
 <translation id="2542049655219295786">Talahanayan ng Google</translation>
 <translation id="2544853746127077729">Tinanggihan ng network ang certificate sa pagpapatunay</translation>
@@ -1156,7 +1154,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="2739191690716947896">I-debug</translation>
 <translation id="2739240477418971307">Baguhin ang iyong mga setting ng accessibility</translation>
 <translation id="2740393541869613458">i-review ang mga website na binisita ng pinangangasiwaang user, at</translation>
-<translation id="2740531572673183784">Ok</translation>
 <translation id="2743387203779672305">Kopyahin sa clipboard</translation>
 <translation id="2745080116229976798">Microsoft Qualified Subordination</translation>
 <translation id="2749756011735116528">Mag-sign in sa <ph name="PRODUCT_NAME" /></translation>
@@ -1479,7 +1476,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="3270965368676314374">Basahin, baguhin at i-delete ang mga larawan, musika at iba pang media sa iyong computer</translation>
 <translation id="327147043223061465">Tingnan ang lahat ng data ng cookies at site</translation>
 <translation id="3271648667212143903">Gustong kumonekta ng <ph name="ORIGIN" /></translation>
-<translation id="327444463633065042">Di-wastong pangalan ng machine</translation>
 <translation id="3274763671541996799">Nag-full screen ka.</translation>
 <translation id="3275778913554317645">Buksan bilang window</translation>
 <translation id="3279741024917655738">Ipakita ang mga fullscreen video sa</translation>
@@ -1504,7 +1500,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="3305389145870741612">Maaaring tumagal nang ilang segundo ang proseso ng pag-format. Mangyaring maghintay.</translation>
 <translation id="3305661444342691068">Buksan ang PDF sa Preview</translation>
 <translation id="3306684685104080068">I-enable ang pagka-cast sa mga cloud-based na serbisyo gaya ng Google Hangouts.</translation>
-<translation id="3307091518408668019">Computer OU (hal. OU=Mga Chromebook,DC=halimbawa,DC=com)</translation>
 <translation id="3308006649705061278">Organizational Unit (OU)</translation>
 <translation id="3308116878371095290">Naharangan ang pahinang ito mula sa pagtatakda ng cookies.</translation>
 <translation id="3308134619352333507">Itago ang Button</translation>
@@ -1870,7 +1865,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="383891835335927981">Walang site na na-zoom in o na-zoom out</translation>
 <translation id="3839516600093027468">Palaging i-block ang <ph name="HOST" /> sa pagtingin sa clipboard</translation>
 <translation id="3840053866656739575">Nawalan ng koneksyon sa iyong Chromebox. Mangyaring mas lumapit o suriin ang iyong device habang sinusubukan naming muling kumonekta.</translation>
-<translation id="3842132283799370683">Hindi naisama ang machine sa domain. Maaaring dahil ito sa mga isyu sa unit ng organisasyon.</translation>
 <translation id="3842552989725514455">Serif font</translation>
 <translation id="385051799172605136">Bumalik</translation>
 <translation id="3851428669031642514">I-load ang mga hindi ligtas na script</translation>
@@ -2281,7 +2275,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="4552678318981539154">Bumili ng higit pang storage</translation>
 <translation id="4554591392113183336">Pareho o mas mababa ang bersyon ng external na extension kumpara sa umiiral nang extension.</translation>
 <translation id="4555769855065597957">Shadow</translation>
-<translation id="4555979468244469039">Pangalan ng Chromebook machine</translation>
 <translation id="4556110439722119938">Masi-sync ang iyong mga bookmark, history, mga password at iba pang mga setting sa iyong Google Account upang magamit mo ang mga ito sa lahat ng iyong device</translation>
 <translation id="4558426062282641716">Hiniling ang pahintulot sa awtomatikong paglulunsad</translation>
 <translation id="4562155214028662640">Magdagdag ng Fingerprint</translation>
@@ -2424,7 +2417,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="4784330909746505604">Presentation ng PowerPoint</translation>
 <translation id="4790972063719531840">Awtomatikong magpadala ng data ng diagnostic at paggamit sa Google.</translation>
 <translation id="4792711294155034829">&amp;Mag-ulat ng Isyu...</translation>
-<translation id="479285515899735347">Oops!  Mukhang nag-expire ang iyong password. Paki-renew ito sa ibang machine at subukang muli.</translation>
 <translation id="479536056609751218">Webpage, HTML Lamang</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4801448226354548035">Itago ang mga account</translation>
@@ -3092,7 +3084,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="577322787686508614">Hindi pinapahintulutan ang read na operation sa: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">App na Buksan ang Mga File</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5775834615653774429">Hindi naisama ang machine sa domain. Walang ganitong unit ng organisasyon.</translation>
 <translation id="577624874850706961">Maghanap ng cookies</translation>
 <translation id="5777468213129569553">Buksan ang Chrome</translation>
 <translation id="5778747455497889540">Nasa ibaba ang random na ginawang password ng secure na module na naitalaga sa iyong computer:</translation>
@@ -3113,7 +3104,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="5804241973901381774">Mga Pahintulot</translation>
 <translation id="580571955903695899">Muling Ayusin ayon sa Pamagat</translation>
 <translation id="5807290661599647102">Magtakda ng Lock ng Screen</translation>
-<translation id="580926004266167721">Hindi naisama ang machine sa domain. Maaaring dahil ito sa mga hindi sapat na pribilehiyo para sa iyong account para sa unit ng organisasyon.</translation>
 <translation id="580961539202306967">Tanungin ako kapag gusto ng isang site na magpadala sa akin ng mga push message (inirerekomenda)</translation>
 <translation id="5809725759695043233">Mayroon kang mga app na na-optimize para sa Mga Chromebook</translation>
 <translation id="5814126672212206791">Uri ng koneksyon</translation>
@@ -3680,7 +3670,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">Sa kasamaang-palad, na-configure ang iyong computer gamit ang isang hardware ID na mali ang pagkakabuo. Pinipigilan nitong mag-update ang Chrome OS upang magkaroon ng mga pinakabagong pag-aayos sa seguridad at <ph name="BEGIN_BOLD" />maaaring mawalan ng proteksyon laban sa mga nakakahamak na pag-atake<ph name="END_BOLD" /> ang iyong computer.</translation>
 <translation id="6664774537677393800">Nagkaproblema sa pagbukas ng iyong profile. Mangyaring mag-sign out at pagkatapos ay muling mag-sign in.</translation>
-<translation id="6670647982128220776">Iisang pagkontrol na lang ang kailangan para sa mga feature na nauugnay sa pag-sync at pag-personalize. Kapag na-on ito, maaaring magbago ang mga kasalukuyan mong setting.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Gusto mo bang i-translate ng Google ang page na ito mula sa <ph name="SOURCE_LANGUAGE" /> patungo sa <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">May nakakonektang pointing device</translation>
@@ -4546,7 +4535,6 @@ Mada-download ang <ph name="DOWNLOAD_SIZE" /> ng data kapag na-install ang <ph n
 <translation id="7984068253310542383">I-mirror ang <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">Para sa karagdagang seguridad, i-e-encrypt ng <ph name="PRODUCT_NAME" /> ang iyong data.</translation>
 <translation id="7986295104073916105">Basahin at baguhin ang mga setting ng naka-save na password</translation>
-<translation id="798749371774946697">Masyadong mahaba ang pangalan ng machine</translation>
 <translation id="7988355189918024273">Paganahin ang mga tampok sa pagiging maa-access</translation>
 <translation id="7994702968232966508">Pamamaraang EAP</translation>
 <translation id="799547531016638432">Alisin ang shortcut</translation>
@@ -4804,7 +4792,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8400146488506985033">Pamahalaan ang mga tao</translation>
 <translation id="8410073653152358832">Gamitin ang teleponong ito</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">Oo, i-on ang pag-sync at pag-personalize</translation>
 <translation id="8413385045638830869">Magtanong muna (inirerekomenda)</translation>
 <translation id="8418445294933751433">&amp;Ipakita bilang tab</translation>
 <translation id="8419098111404128271">Mga resulta ng paghahanap para sa '<ph name="SEARCH_TEXT" />'</translation>
@@ -4850,7 +4837,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8470028084415844044">Para mailagay ang lahat ng iyong password sa lahat ng device mo, i-on ang pag-sync.</translation>
 <translation id="8470513973197838199">Mga naka-save na password para sa <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">na-hardware-back</translation>
-<translation id="8474229360677287535">Isara ang lahat ng iyong Window</translation>
 <translation id="8475313423285172237">Ang isa pang program sa iyong computer ay nagdagdag ng extension na maaaring magpabago sa paraan ng paggana ng Chrome.</translation>
 <translation id="8475647382427415476">Hindi na-sync ng Google Drive ang "<ph name="FILENAME" />" sa ngayon. Susubukang muli ng Google Drive sa ibang pagkakataon.</translation>
 <translation id="8477241577829954800">Humalili</translation>
@@ -4989,7 +4975,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8688579245973331962">Hindi makita ang iyong pangalan?</translation>
 <translation id="8688591111840995413">Hindi magandang password</translation>
 <translation id="8688672835843460752">Available</translation>
-<translation id="8689583087392258564">Hindi naisama ang machine sa domain. Invalid ang unit ng organisasyon.</translation>
 <translation id="869257642790614972">Muling buksan ang huling nakasarang tab</translation>
 <translation id="8695825812785969222">Buksan ang &amp;Lokasyon...</translation>
 <translation id="8698464937041809063">Drawing ng Google</translation>
@@ -5128,7 +5113,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8902667442496790482">Buksan ang mga setting ng Select to Speak</translation>
 <translation id="8903921497873541725">Mag-zoom in</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
-<translation id="8909233240676134608">Hindi maisama ang machine sa domain. Hindi sinusuportahan ng server ang mga natukoy na uri ng Kerberos na pag-encrypt. Tingnan ang "Higit pang opsyon" para sa mga setting ng pag-encrypt.</translation>
 <translation id="8909833622202089127">Sinusubaybayan ng site ang iyong lokasyon</translation>
 <translation id="8910146161325739742">Ibahagi ang iyong screen</translation>
 <translation id="8910222113987937043">Hindi na isi-sync sa Google Account mo ang mga pagbabago sa iyong mga bookmark, history, password at iba pang mga setting. Gayunpaman, mananatiling nakaimbak sa Google Account mo ang iyong kasalukuyang data at mapamamahalaan ito sa <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
@@ -5314,7 +5298,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="9177499212658576372">Kasalukuyan kang nakakonekta sa <ph name="NETWORK_TYPE" /> network.</translation>
 <translation id="9180380851667544951">Maaaring ibahagi ng site ang iyong screen</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> mula sa <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">Hindi naisama ang machine sa domain. Maaaring dahil sa hindi sapat na mga pribilehiyo para sa iyong account sa server.</translation>
 <translation id="9188441292293901223">Paki-update ang iyong telepono sa mas bagong bersyon ng Android upang i-unlock ang <ph name="DEVICE_TYPE" /> na ito.</translation>
 <translation id="9190063653747922532">L2TP/IPsec + paunang nakabahaging key</translation>
 <translation id="920045321358709304">Maghanap sa <ph name="SEARCH_ENGINE" /></translation>

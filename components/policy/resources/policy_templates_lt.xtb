@@ -90,8 +90,8 @@
 <translation id="1372267489642113556">
       Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas
       į kableliais atskirtų verčių sąrašą, vykdys atskirą procesą. Taip pat bus atskiriami
-      šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/ taip pat
-      bus atskiriamas ir padomenis https://foo.example.com/ kaip svetainės
+      šaltiniai, pavadinti pagal subdomenus, pvz., nurodžius https://example.com/ taip pat
+      bus atskiriamas ir subdomenas https://foo.example.com/ kaip svetainės
       https://example.com/ dalis.
       Išjungus politiką nebus taikomas svetainių atskyrimas, o „IsolateOrigins“ ir „SitePerProcess“ bandymai bus išjungti. Naudotojai vis tiek galės neautomatiškai įgalinti „SitePerProcess“.
       Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.

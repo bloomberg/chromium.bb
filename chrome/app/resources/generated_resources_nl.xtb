@@ -732,7 +732,6 @@
 <translation id="2114326799768592691">&amp;Frame opnieuw laden</translation>
 <translation id="2114896190328250491">Foto van <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Verzenden naar telefoon</translation>
-<translation id="2115946962706216358">Kan de computer niet koppelen aan het domein. Dit kan komen omdat het maximumaantal toegestane computerkoppelingen voor je account op de server is overschreden.</translation>
 <translation id="2119349053129246860">Openen in <ph name="APP" /></translation>
 <translation id="2121825465123208577">Formaat aanpassen</translation>
 <translation id="2124930039827422115">{1,plural, =1{Heeft een beoordeling van <ph name="AVERAGE_RATING" /> gekregen van één gebruiker.}other{Heeft een gemiddelde beoordeling van <ph name="AVERAGE_RATING" /> gekregen van # gebruikers.}}</translation>
@@ -1003,7 +1002,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="253434972992662860">&amp;Onderbreken</translation>
 <translation id="2534460670861217804">Beveiligde HTTP-proxy</translation>
 <translation id="253557089021624350">Aantal keepalive-activiteiten</translation>
-<translation id="2540384386570049483">Advertenties op deze site toestaan</translation>
 <translation id="2541423446708352368">Alle downloads weergeven</translation>
 <translation id="2542049655219295786">Google-tabel</translation>
 <translation id="2544853746127077729">Verificatiecertificaat geweigerd door netwerk</translation>
@@ -1156,7 +1154,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2739191690716947896">Foutopsporing</translation>
 <translation id="2739240477418971307">Je toegankelijkheidsinstellingen wijzigen</translation>
 <translation id="2740393541869613458">door de gebruiker met beperkte rechten bezochte websites controleren, en</translation>
-<translation id="2740531572673183784">OK</translation>
 <translation id="2743387203779672305">Kopiëren naar klembord</translation>
 <translation id="2745080116229976798">Gekwalificeerde ondergeschiktheid van Microsoft</translation>
 <translation id="2749756011735116528">Inloggen op <ph name="PRODUCT_NAME" /></translation>
@@ -1479,7 +1476,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="3270965368676314374">Foto's, muziek en andere media van je computer lezen, wijzigen en verwijderen</translation>
 <translation id="327147043223061465">Alle cookies en sitegegevens weergeven</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> wil verbinding maken</translation>
-<translation id="327444463633065042">Ongeldige computernaam</translation>
 <translation id="3274763671541996799">Je hebt de modus voor volledig scherm ingeschakeld.</translation>
 <translation id="3275778913554317645">Openen als venster</translation>
 <translation id="3279741024917655738">Video's op volledig scherm weergeven op</translation>
@@ -1504,7 +1500,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="3305389145870741612">Het formatteren kan enkele seconden duren. Een ogenblik geduld.</translation>
 <translation id="3305661444342691068">Pdf openen in voorbeeldweergave</translation>
 <translation id="3306684685104080068">Casten naar cloud-gebaseerde services zoals Google Hangouts inschakelen.</translation>
-<translation id="3307091518408668019">Computer OU (bijv. OU=Chromebooks,DC=example,DC=com)</translation>
 <translation id="3308006649705061278">Organisatie-eenheid (OU)</translation>
 <translation id="3308116878371095290">Het instellen van cookies door deze pagina is geblokkeerd.</translation>
 <translation id="3308134619352333507">Knop verbergen</translation>
@@ -1565,7 +1560,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="3407837288045706722">Zie <ph name="BEGIN_LINK" />Synchronisatie en personalisatie<ph name="END_LINK" /> voor meer instellingen die zijn gerelateerd aan privacy, beveiliging en gegevensverzameling</translation>
 <translation id="3412265149091626468">Ga naar selectie</translation>
 <translation id="3413122095806433232">CA-uitgevers: <ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">Markeer wat je wilt horen en druk vervolgens op Zoeken + S. Je kunt ook op Zoeken tikken en dit vasthouden of op het pictogram 'Selecteer om uitgesproken te worden' in de buurt van je profielfoto tikken. Selecteer vervolgens een regio om voor te lezen.</translation>
+<translation id="3414791204526549759">Markeer wat je wilt horen en druk vervolgens op Zoeken + S. Je kunt de optie Zoeken ook ingedrukt houden of op het pictogram 'Selecteer om uitgesproken te worden' in de buurt van je profielfoto tikken. Selecteer vervolgens een regio om voor te lezen.</translation>
 <translation id="3414856743105198592">Als je het verwisselbare medium formatteert, worden alle gegevens gewist. Wil je doorgaan?</translation>
 <translation id="3414952576877147120">Grootte:</translation>
 <translation id="3420980393175304359">Van persoon wisselen</translation>
@@ -1870,7 +1865,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="383891835335927981">Er zijn geen sites in- of uitgezoomd</translation>
 <translation id="3839516600093027468"><ph name="HOST" /> altijd blokkeren voor het klembord</translation>
 <translation id="3840053866656739575">Verbinding met je Chromebox verbroken. Kom dichterbij of controleer je apparaat terwijl wij de verbinding proberen te herstellen.</translation>
-<translation id="3842132283799370683">Kan de computer niet koppelen aan het domein. Dit kan komen vanwege problemen met de organisatie-eenheid.</translation>
 <translation id="3842552989725514455">Serif-lettertype</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="3851428669031642514">Onveilige scripts laden</translation>
@@ -2281,7 +2275,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="4552678318981539154">Meer opslagruimte kopen</translation>
 <translation id="4554591392113183336">Externe uitbreiding heeft dezelfde of een lagere versie dan de bestaande.</translation>
 <translation id="4555769855065597957">Schaduw</translation>
-<translation id="4555979468244469039">Computernaam van Chromebook</translation>
 <translation id="4556110439722119938">Je bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden gesynchroniseerd met je Google-account, zodat je ze op al je apparaten kunt gebruiken</translation>
 <translation id="4558426062282641716">Toestemming voor automatisch starten gevraagd</translation>
 <translation id="4562155214028662640">Vingerafdruk toevoegen</translation>
@@ -2424,7 +2417,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="4784330909746505604">PowerPoint-presentatie</translation>
 <translation id="4790972063719531840">Automatisch diagnostische en gebruiksgegevens verzenden naar Google</translation>
 <translation id="4792711294155034829">&amp;Een probleem melden...</translation>
-<translation id="479285515899735347">Het lijkt erop dat je wachtwoord is verlopen. Verleng het op een andere computer en probeer het opnieuw.</translation>
 <translation id="479536056609751218">Webpagina, alleen HTML</translation>
 <translation id="479989351350248267">zoeken</translation>
 <translation id="4801448226354548035">Accounts verbergen</translation>
@@ -2472,7 +2464,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="4862642413395066333">OCSP-antwoorden ondertekenen</translation>
 <translation id="4864369630010738180">Inloggen...</translation>
 <translation id="486635084936119914">Bepaalde bestandstypen na downloaden automatisch openen</translation>
-<translation id="4869142322204669043">Google kan content op sites die je bezoekt en je browseractiviteit en interacties gebruiken om <ph name="IDS_SHORT_PRODUCT_NAME" /> en andere Google-services (zoals Translate, Zoeken en advertenties) te personaliseren. Je kunt deze functies op elke gewenst moment aanpassen in Instellingen.</translation>
+<translation id="4869142322204669043">Google kan content op sites die je bezoekt en je browseractiviteit en interacties gebruiken om <ph name="IDS_SHORT_PRODUCT_NAME" /> en andere Google-services (zoals Translate, Zoeken en advertenties) te personaliseren. Je kunt deze functies op elk gewenst moment aanpassen in Instellingen.</translation>
 <translation id="48704129375571883">Aanvullende functies toevoegen</translation>
 <translation id="4870903493621965035">Geen gekoppelde apparaten</translation>
 <translation id="4871210892959306034">$1  KB</translation>
@@ -3093,7 +3085,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="577322787686508614">Leesbewerking is niet toegestaan op: <ph name="DEVICE_NAME" />.</translation>
 <translation id="5774295353725270860">App Bestanden openen</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5775834615653774429">Kan de computer niet koppelen aan het domein. De organisatie-eenheid bestaat niet.</translation>
 <translation id="577624874850706961">Cookies zoeken</translation>
 <translation id="5777468213129569553">Chrome openen</translation>
 <translation id="5778747455497889540">Hieronder staat het willekeurig gegenereerde wachtwoord voor de beveiligde module dat aan je computer is toegewezen:</translation>
@@ -3114,7 +3105,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="5804241973901381774">Rechten</translation>
 <translation id="580571955903695899">Sorteren op titel</translation>
 <translation id="5807290661599647102">Een schermvergrendeling instellen</translation>
-<translation id="580926004266167721">Kan de computer niet koppelen aan het domein. Dit kan komen omdat je account beschikt over onvoldoende rechten voor de organisatie-eenheid.</translation>
 <translation id="580961539202306967">Vragen als een site mij pushberichten wil sturen (aanbevolen)</translation>
 <translation id="5809725759695043233">Je hebt apps die zijn geoptimaliseerd voor Chromebooks</translation>
 <translation id="5814126672212206791">Verbindingstype</translation>
@@ -3624,7 +3614,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="6584878029876017575">Microsoft-ondertekening van levensduur</translation>
 <translation id="6585283250473596934">Openbare sessie wordt geopend.</translation>
 <translation id="6586451623538375658">Primaire muisknop omwisselen</translation>
-<translation id="6589660129740381104">Ter vereenvoudiging van het beheer van <ph name="IDS_SHORT_PRODUCT_NAME" />, kunnen alle synchronisatie- en personalisatiefuncties nu via één configuratiescherm worden beheerd. Als je deze optie inschakelt, worden je huidige instellingen mogelijk gewijzigd.</translation>
+<translation id="6589660129740381104">Voor eenvoudiger beheer van <ph name="IDS_SHORT_PRODUCT_NAME" />, kunnen alle synchronisatie- en personalisatiefuncties nu via één configuratiescherm worden beheerd. Als je deze optie inschakelt, worden je huidige instellingen mogelijk gewijzigd.</translation>
 <translation id="6589706261477377614">Helderheid van het toetsenbord verhogen</translation>
 <translation id="6590458744723262880">Naam van map wijzigen</translation>
 <translation id="6592267180249644460">WebRTC-logboek vastgelegd op <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
@@ -3681,7 +3671,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="6659594942844771486">Tabblad</translation>
 <translation id="6664237456442406323">Je computer is geconfigureerd met een hardware-ID met een onjuiste notatie. Dit zorgt ervoor dat Chrome OS niet kan worden bijgewerkt met de nieuwste beveiligingsoplossingen, waardoor je computer <ph name="BEGIN_BOLD" />kwetsbaar kan zijn voor schadelijke aanvallen<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Er is iets misgegaan bij het openen van je profiel. Log uit en log vervolgens weer in.</translation>
-<translation id="6670647982128220776">Alle synchronisatie- en personalisatiefuncties kunnen nu via één configuratiescherm worden beheerd. Als je deze optie inschakelt, worden je huidige instellingen mogelijk gewijzigd.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Wil je dat Google deze pagina vertaalt van het <ph name="SOURCE_LANGUAGE" /> naar het <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Aanwijsapparaat verbonden</translation>
@@ -4546,7 +4535,6 @@ Als je <ph name="APP_NAME" /> installeert, wordt er <ph name="DOWNLOAD_SIZE" /> 
 <translation id="7984068253310542383"><ph name="DISPLAY_NAME" /> mirroren</translation>
 <translation id="7984180109798553540">Je wachtwoorden worden voor extra beveiliging door <ph name="PRODUCT_NAME" /> versleuteld.</translation>
 <translation id="7986295104073916105">Instellingen voor opgeslagen wachtwoorden lezen en wijzigen</translation>
-<translation id="798749371774946697">Computernaam te lang</translation>
 <translation id="7988355189918024273">Functies voor toegankelijkheid inschakelen</translation>
 <translation id="7994702968232966508">EAP-methode</translation>
 <translation id="799547531016638432">Snelle link verwijderen</translation>
@@ -4804,7 +4792,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8400146488506985033">Mensen beheren</translation>
 <translation id="8410073653152358832">Deze telefoon gebruiken</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">Ja, schakel synchronisatie en personalisatie in</translation>
 <translation id="8413385045638830869">Eerst vragen (aanbevolen)</translation>
 <translation id="8418445294933751433">Weergeven al&amp;s tabblad</translation>
 <translation id="8419098111404128271">Zoekresultaten voor '<ph name="SEARCH_TEXT" />'</translation>
@@ -4849,7 +4836,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8470028084415844044">Schakel synchronisatie in om al je wachtwoorden op al je apparaten beschikbaar te maken.</translation>
 <translation id="8470513973197838199">Opgeslagen wachtwoorden voor <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">hardware-ondersteund</translation>
-<translation id="8474229360677287535">Al je vensters sluiten</translation>
 <translation id="8475313423285172237">Een ander programma op je computer heeft een extensie toegevoegd die de manier waarop Chrome werkt kan wijzigen.</translation>
 <translation id="8475647382427415476">Google Drive kan '<ph name="FILENAME" />' nu niet synchroniseren. Google Drive probeert het later opnieuw.</translation>
 <translation id="8477241577829954800">Vervangen</translation>
@@ -4988,7 +4974,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8688579245973331962">Staat je naam er niet bij?</translation>
 <translation id="8688591111840995413">Slecht wachtwoord</translation>
 <translation id="8688672835843460752">Beschikbaar</translation>
-<translation id="8689583087392258564">Kan de computer niet koppelen aan het domein. De organisatie-eenheid is ongeldig.</translation>
 <translation id="869257642790614972">Meest recent gesloten tabblad opnieuw openen</translation>
 <translation id="8695825812785969222">&amp;Locatie openen...</translation>
 <translation id="8698464937041809063">Google-tekening</translation>
@@ -5127,7 +5112,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8902667442496790482">Instellingen voor 'Selecteer om uitgesproken te worden' openen</translation>
 <translation id="8903921497873541725">Inzoomen</translation>
 <translation id="8904976895050290827">Chrome-synchronisatie</translation>
-<translation id="8909233240676134608">De computer kan niet worden gekoppeld aan het domein. De server ondersteunt de opgegeven typen Kerberos-versleuteling niet. De instellingen voor versleuteling vind je bij 'Meer opties'.</translation>
 <translation id="8909833622202089127">Site houdt je locatie bij</translation>
 <translation id="8910146161325739742">Je scherm delen</translation>
 <translation id="8910222113987937043">Wijzigingen in je bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden niet meer gesynchroniseerd met je Google-account. Je bestaande gegevens blijven echter opgeslagen in je Google-account en kunnen worden beheerd via <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
@@ -5313,7 +5297,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="9177499212658576372">Je bent momenteel verbonden met het netwerk <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9180380851667544951">Site kan je scherm delen</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> van <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">Kan de computer niet koppelen aan het domein. Dit kan komen omdat je account beschikt over onvoldoende rechten op de server.</translation>
 <translation id="9188441292293901223">Werk je telefoon bij naar een nieuwere versie van Android om dit <ph name="DEVICE_TYPE" /> te ontgrendelen.</translation>
 <translation id="9190063653747922532">L2TP/IPsec + eerder gedeelde sleutel</translation>
 <translation id="920045321358709304">Zoeken op <ph name="SEARCH_ENGINE" /></translation>

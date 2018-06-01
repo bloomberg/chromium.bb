@@ -92,8 +92,8 @@
       într-o listă de valori separate prin virgulă va rula propriul proces. Aceasta va
       izola, de asemenea, originile denumite după subdomenii; de exemplu, specificarea
       https://example.com/ va cauza și izolarea https://foo.example.com/ ca parte a
-      site-ului https://example.com/site.
-      Dacă politica este dezactivată, nu va avea loc o izolare explicită a site-ului, iar testările limitate de IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea activa manual IsolateOrigins.
+      site-ului https://example.com/.
+      Dacă politica este dezactivată, nu va avea loc o izolare explicită a site-ului, iar testările IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea activa manual IsolateOrigins.
       Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
       În <ph name="PRODUCT_OS_NAME" />, se recomandă setarea politicii privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate în cele două politici nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
 

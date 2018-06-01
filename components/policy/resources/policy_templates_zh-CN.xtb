@@ -87,7 +87,7 @@
       如果此政策设为 false，<ph name="PRODUCT_NAME" /> 将禁止使用访客个人资料登录。</translation>
 <translation id="1363275621236827384">允许在 Quirks Server 中查询硬件配置文件</translation>
 <translation id="1372267489642113556">
-      如果启用了此政策，则相关列表中以英文逗号分隔的每个指定来源都会在自己的进程中运行。这也会隔离以子网域命名的来源；例如，指定 https://example.com/ 也会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
+      如果启用了此政策，则以英文逗号分隔的列表中指定的每个来源都会在自己的进程中运行。这也会隔离以子网域命名的来源；例如，指定 https://example.com/ 也会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
       如果停用了此政策，则不会发生明确的网站隔离，IsolateOrigins 和 SitePerProcess 的现场试验也将停用。用户仍可手动启用 IsolateOrigins。
       如果未配置此政策，用户将能够更改此设置。
       倘若您使用的是 <ph name="PRODUCT_OS_NAME" />，我们建议您也将设备政策 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 

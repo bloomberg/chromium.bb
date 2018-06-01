@@ -530,7 +530,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis denne innstillingen ikke angis, kan brukere bestemme om de vil bruke den eller ikke.
 
       Denne innstillingen er fjernet fra <ph name="PRODUCT_NAME" /> 29 og nyere versjoner.</translation>
-<translation id="2438609638493026652">Slår på rapportering av viktige hendelser ved Android appinstallasjoner til Google. Hendelser registreres bare for apper som ble installert på grunn av en regel.
+<translation id="2438609638493026652">Slår på rapportering av viktige hendelser under Android-appinstallasjoner til Google. Hendelser registreres bare for apper som ble installert på grunn av en regel.
 
       Hvis regelen er satt til «True» (sann), blir hendelser loggført.
       Hvis regelen er satt til «False» (usann) eller ikke er angitt, blir ikke hendelser loggført.</translation>

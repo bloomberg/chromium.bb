@@ -732,7 +732,6 @@
 <translation id="2114326799768592691">Ponovo učitaj okvir</translation>
 <translation id="2114896190328250491">Fotografija, <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Pošalji na telefon</translation>
-<translation id="2115946962706216358">Nije uspjelo pridruživanje uređaja domeni. Razlog može biti prekoračenje maksimalnog broja dopuštenih pridruživanja uređaja za vaš račun na poslužitelju.</translation>
 <translation id="2119349053129246860">Otvori u aplikaciji <ph name="APP" /></translation>
 <translation id="2121825465123208577">Promijeni veličinu</translation>
 <translation id="2124930039827422115">{1,plural, =1{Ocjena iznosi <ph name="AVERAGE_RATING" />, na temelju jednog korisnika.}one{Ocjena iznosi <ph name="AVERAGE_RATING" />, na temelju # korisnika.}few{Ocjena iznosi <ph name="AVERAGE_RATING" />, na temelju # korisnika.}other{Ocjena iznosi <ph name="AVERAGE_RATING" />, na temelju # korisnika.}}</translation>
@@ -1003,7 +1002,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="253434972992662860">&amp;Pauziraj</translation>
 <translation id="2534460670861217804">Sigurni HTTP proxy</translation>
 <translation id="253557089021624350">Broj aktivnosti održavanja</translation>
-<translation id="2540384386570049483">Dopusti oglase na ovoj web-lokaciji</translation>
 <translation id="2541423446708352368">Prikaži sva preuzimanja</translation>
 <translation id="2542049655219295786">Googleova tablica</translation>
 <translation id="2544853746127077729">Mreža je odbila certifikat za autentifikaciju</translation>
@@ -1156,7 +1154,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="2739191690716947896">Otkloni pogrešku</translation>
 <translation id="2739240477418971307">promijeniti postavke pristupačnosti</translation>
 <translation id="2740393541869613458">pregledavati web-lokacije koje je nadzirani korisnik posjetio i</translation>
-<translation id="2740531572673183784">U redu</translation>
 <translation id="2743387203779672305">Kopiraj u međuspremnik</translation>
 <translation id="2745080116229976798">Microsoftova kvalificirana podređenost</translation>
 <translation id="2749756011735116528">Prijava na uslugu <ph name="PRODUCT_NAME" /></translation>
@@ -1479,7 +1476,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="3270965368676314374">čitati, mijenjati i brisati fotografije, glazbu i ostale medije s vašeg računala</translation>
 <translation id="327147043223061465">Pogledajte sve kolačiće i podatke o web-lokaciji</translation>
 <translation id="3271648667212143903">Web-lokacija <ph name="ORIGIN" /> želi se povezati</translation>
-<translation id="327444463633065042">Nevažeći naziv uređaja</translation>
 <translation id="3274763671541996799">Prešli ste u način prikaza na cijelom zaslonu.</translation>
 <translation id="3275778913554317645">Otvori kao prozor</translation>
 <translation id="3279741024917655738">Prikaži videozapise preko cijelog zaslona na</translation>
@@ -1504,7 +1500,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="3305389145870741612">Postupak formatiranja može potrajati nekoliko sekundi. Pričekajte.</translation>
 <translation id="3305661444342691068">Otvori PDF u Pregledu</translation>
 <translation id="3306684685104080068">Omogući emitiranje na usluge u oblaku kao što je Google Hangouts.</translation>
-<translation id="3307091518408668019">Računalne organizacijske jedinice (npr. OU=Chromebooks,DC=example,DC=com)</translation>
 <translation id="3308006649705061278">Organizacijska jedinica (OU)</translation>
 <translation id="3308116878371095290">Ova stranica je spriječena u postavljanju kolačića.</translation>
 <translation id="3308134619352333507">Gumb za skrivanje</translation>
@@ -1870,7 +1865,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="383891835335927981">Nijedna web-lokacija nije povećana ili smanjena</translation>
 <translation id="3839516600093027468">Uvijek blokiraj web-lokaciji <ph name="HOST" /> uvid u međuspremnik</translation>
 <translation id="3840053866656739575">Prekinuta je veza s vašim Chromeboxom. Približite se ili provjerite svoj uređaj tijekom pokušaja ponovnog povezivanja.</translation>
-<translation id="3842132283799370683">Nije uspjelo pridruživanje uređaja domeni. Razlog mogu biti poteškoće s organizacijskom jedinicom.</translation>
 <translation id="3842552989725514455">Font Serif</translation>
 <translation id="385051799172605136">Natrag</translation>
 <translation id="3851428669031642514">Učitaj nesigurne skripte</translation>
@@ -2281,7 +2275,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="4552678318981539154">Kupite još prostora za pohranu</translation>
 <translation id="4554591392113183336">Vanjsko proširenje iste je ili starije verzije u odnosu na postojeću.</translation>
 <translation id="4555769855065597957">Sjena</translation>
-<translation id="4555979468244469039">Naziv Chromebook uređaja</translation>
 <translation id="4556110439722119938">Vaše oznake, povijest, zaporke i ostale postavke sinkronizirat će se s vašim Google računom kako biste ih mogli upotrebljavati na svim svojim uređajima.</translation>
 <translation id="4558426062282641716">Zatraženo je dopuštenje za automatsko pokretanje</translation>
 <translation id="4562155214028662640">Dodaj otisak prsta</translation>
@@ -2424,7 +2417,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="4784330909746505604">PowerPointova prezentacija</translation>
 <translation id="4790972063719531840">Automatski šalji Googleu podatke o upotrebi i dijagnostici</translation>
 <translation id="4792711294155034829">&amp;Prijavljivanje problema...</translation>
-<translation id="479285515899735347">Ups! Izgleda da je zaporka istekla. Obnovite je na nekom drugom uređaju i pokušajte ponovo.</translation>
 <translation id="479536056609751218">Web-stranica, samo HTML</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4801448226354548035">Sakrij račune</translation>
@@ -3092,7 +3084,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="577322787686508614">Operacija čitanja nije dopuštena na uređaju: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Aplikacija za otvaranje datoteka</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5775834615653774429">Nije uspjelo pridruživanje uređaja domeni. Organizacijska jedinica ne postoji.</translation>
 <translation id="577624874850706961">Pretraživanje kolačića</translation>
 <translation id="5777468213129569553">Otvori Chrome</translation>
 <translation id="5778747455497889540">U nastavku se nalazi nasumično generirana zaporka sigurnog modula dodijeljena vašem računalu:</translation>
@@ -3113,7 +3104,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="5804241973901381774">Dozvoljeno</translation>
 <translation id="580571955903695899">Poredaj ponovo po naslovu</translation>
 <translation id="5807290661599647102">Postavi Smart Lock</translation>
-<translation id="580926004266167721">Nije uspjelo pridruživanje uređaja domeni. Razlog mogu biti nedovoljna ovlaštenja za vaš račun za organizacijsku jedinicu.</translation>
 <translation id="580961539202306967">Pitaj me kada mi web-lokacija želi slati push poruke (preporučeno)</translation>
 <translation id="5809725759695043233">Imate aplikacije koje su optimizirane za Chromebookove</translation>
 <translation id="5814126672212206791">Vrsta veze</translation>
@@ -3680,7 +3670,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="6659594942844771486">Kartica</translation>
 <translation id="6664237456442406323">Nažalost, vaše je računalo konfigurirano pogrešno oblikovanim ID-om hardvera. To sprječava ažuriranje OS-a Chrome najnovijim sigurnosnim popravcima pa bi vaše računalo <ph name="BEGIN_BOLD" />moglo biti ranjivo na zlonamjerne napade<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Prilikom otvaranja profila dogodila se pogreška. Odjavite se i ponovo prijavite.</translation>
-<translation id="6670647982128220776">Značajke povezane sa sinkronizacijom i prilagodbom sada su pod jednom kontrolom. Ako to uključite, vaše se trenutačne postavke mogu promijeniti.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Želite li da Google prevede ovu stranicu (<ph name="SOURCE_LANGUAGE" /> – <ph name="TARGET_LANGUAGE" />)?</translation>
 <translation id="6675665718701918026">Pokazivački je uređaj povezan</translation>
@@ -4545,7 +4534,6 @@ Instaliranjem aplikacije <ph name="APP_NAME" /> preuzet će se <ph name="DOWNLOA
 <translation id="7984068253310542383">Zrcali <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">Za dodatnu sigurnost, usluga <ph name="PRODUCT_NAME" /> kriptirat će vaše podatke.</translation>
 <translation id="7986295104073916105">čitati i mijenjati postavke spremljenih zaporki</translation>
-<translation id="798749371774946697">Naziv uređaja je predug</translation>
 <translation id="7988355189918024273">Omogući značajke dostupnosti</translation>
 <translation id="7994702968232966508">EAP metoda</translation>
 <translation id="799547531016638432">Uklanjanje prečaca</translation>
@@ -4804,7 +4792,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8400146488506985033">Upravljaj korisnicima</translation>
 <translation id="8410073653152358832">Upotrijebi ovaj telefon</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">Da, uključi sinkronizaciju i prilagodbu</translation>
 <translation id="8413385045638830869">Prvo pitaj (preporučeno)</translation>
 <translation id="8418445294933751433">&amp;Prikaži kao karticu</translation>
 <translation id="8419098111404128271">Rezultati pretraživanja za "<ph name="SEARCH_TEXT" />"</translation>
@@ -4849,7 +4836,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8470028084415844044">Da biste imali sve svoje zaporke na svim svojim uređajima, uključite sinkronizaciju.</translation>
 <translation id="8470513973197838199">Spremljene zaporke za <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">s hardverskom podlogom</translation>
-<translation id="8474229360677287535">Zatvori sve prozore</translation>
 <translation id="8475313423285172237">Drugi program na vašem računalu dodao je proširenje koje može promijeniti način na koji radi Chrome.</translation>
 <translation id="8475647382427415476">Google disk trenutačno nije mogao sinkronizirati datoteku "<ph name="FILENAME" />" i pokušat će ponovo kasnije.</translation>
 <translation id="8477241577829954800">Zamijenjeno</translation>
@@ -4988,7 +4974,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8688579245973331962">Ne vidite svoje ime?</translation>
 <translation id="8688591111840995413">Pogrešna zaporka</translation>
 <translation id="8688672835843460752">Dostupno</translation>
-<translation id="8689583087392258564">Nije uspjelo pridruživanje uređaja domeni. Organizacijska jedinica nije važeća.</translation>
 <translation id="869257642790614972">Ponovno otvori posljednju zatvorenu karticu</translation>
 <translation id="8695825812785969222">Open &amp;Location... (Otvori Lokaciju...)</translation>
 <translation id="8698464937041809063">Googleov crtež</translation>
@@ -5126,7 +5111,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8902667442496790482">Otvorite postavke Odabira za govor</translation>
 <translation id="8903921497873541725">Povećaj</translation>
 <translation id="8904976895050290827">Chrome sinkronizacija</translation>
-<translation id="8909233240676134608">Računalo nije moguće pridružiti domeni. Poslužitelj ne podržava navedene vrste enkripcije Kerberos. Postavke enkripcije potražite u odjeljku "Više opcija".</translation>
 <translation id="8909833622202089127">Web-lokacija prati vašu lokaciju</translation>
 <translation id="8910146161325739742">Dijeljenje zaslona</translation>
 <translation id="8910222113987937043">Promjene vaših oznaka, povijesti, zaporki i drugih postavki više se neće sinkronizirati s vašim Google računom. No vaši podaci ostat će pohranjeni na vašem Google računu i možete upravljati njima na <ph name="BEGIN_LINK" />Google nadzornoj ploči<ph name="END_LINK" />.</translation>
@@ -5312,7 +5296,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="9177499212658576372">Trenutačno ste povezani sa sljedećom vrstom mreže: <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9180380851667544951">Web-lokacija može dijeliti vaš zaslon</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> s domene <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">Nije uspjelo pridruživanje uređaja domeni. Razlog mogu biti nedovoljna ovlaštenja za vaš račun na poslužitelju.</translation>
 <translation id="9188441292293901223">Ažurirajte svoj telefon na najnoviju verziju Androida kako biste otključali ovaj <ph name="DEVICE_TYPE" />.</translation>
 <translation id="9190063653747922532">L2TP/IPsec + unaprijed dijeljeni ključ</translation>
 <translation id="920045321358709304">Pretraži <ph name="SEARCH_ENGINE" /></translation>

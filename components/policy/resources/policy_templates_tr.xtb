@@ -532,7 +532,7 @@
       Bu ayar belirlenmemiş olarak bırakılırsa kullanıcı bu işlevi kullanıp kullanmayacağına karar verebilir.
 
       Bu ayar, <ph name="PRODUCT_NAME" /> 29 ve sonraki sürümlerinde kaldırılmıştır.</translation>
-<translation id="2438609638493026652">Android uygulama yüklemesi sırasında önemli etkinliklerin Google'a bildirilmesini sağlar. Etkinlikler yalnızca yüklemesini politikanın tetiklediği uygulamalar için yakalanır.
+<translation id="2438609638493026652">Android uygulaması yüklemesi sırasında önemli etkinliklerin Google'a bildirilmesini sağlar. Etkinlikler yalnızca yüklemesini politikanın tetiklediği uygulamalar için yakalanır.
 
       Politika true (doğru) değerine ayarlanırsa etkinlikler günlüğe kaydedilir.
       Politika false (yanlış) değerine ayarlanırsa etkinlikler günlüğe kaydedilmez.</translation>
@@ -1146,7 +1146,7 @@ politikayı geçersiz kılamaz.
 <translation id="4309640770189628899">TLS'deki DHE şifre paketlerinin etkinleştirilip etkinleştirilmediği</translation>
 <translation id="4322842393287974810">Sıfır gecikmeyle otomatik başlatılan kiosk uygulamasının <ph name="PRODUCT_OS_NAME" /> sürümünü kontrol etmesine izin ver</translation>
 <translation id="4325690621216251241">Sistem tepsisine çıkış düğmesi ekle</translation>
-<translation id="4332177773549877617">Android uygulama yüklemeleriyle ilgili etkinlikleri günlüğe kaydetme</translation>
+<translation id="4332177773549877617">Android uygulaması yüklemeleriyle ilgili etkinlikleri günlüğe kaydetme</translation>
 <translation id="4346674324214534449">Araya giren reklamların yer aldığı sitelerde reklamların engellenip engellenmeyeceğini ayarlamanıza olanak tanır.
 
       Bu politika 2 değerine ayarlanırsa, araya giren reklamların yer aldığı sitelerde reklamlar engellenir.

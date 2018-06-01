@@ -76,6 +76,7 @@
 <translation id="4730374152663651037">FREQUENTLY USED</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 month left}other{# months left}}</translation>
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="4841881773802181781">Insertion</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 second}other{# seconds}}</translation>
 <translation id="4971687151119236543">Media Previous Track</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
@@ -86,7 +87,7 @@
 <translation id="5266161281976477809">Disclosure triangle</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">&amp;Delete</translation>
-<translation id="5463830097259460683">Emoji &amp; Symbols</translation>
+<translation id="5463830097259460683">Emoji &amp;amp;&amp;amp; Symbols</translation>
 <translation id="5476505524087279545">untick</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> system</translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -118,6 +119,7 @@
 <translation id="6612467943526193239">To exit calibration press Esc.</translation>
 <translation id="6620110761915583480">Save File</translation>
 <translation id="6699343763173986273">Media Next Track</translation>
+<translation id="673773751041746814">Deletion</translation>
 <translation id="6786750046913594791">Close folder</translation>
 <translation id="6808150112686056157">Media Stop</translation>
 <translation id="6845383723252244143">Select Folder</translation>

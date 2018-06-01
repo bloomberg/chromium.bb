@@ -93,11 +93,11 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       izvori, ki jih navedejo poddomene; če na primer navedete https://example.com/,
       bo kot del spletnega mesta https://example.com/ osamljeno tudi spletno mesto
       https://foo.example.com/.
-      Če je pravilnik onemogočen, ne pride do eksplicitne osamitve spletnih mest in preizkusi pravilnikov IsolateOrigins in SitePerProcess so onemogočeni. Uporabniki bodo še vedno lahko ročno omogočili pravilnik IsolateOrigins.
-      Če pravilnik ni konfiguriran, bo uporabnik to nastavitev lahko spremenil.
+      Če je pravilnik onemogočen, ne pride do eksplicitne osamitve spletnih mest in preizkusi pravilnikov IsolateOrigins in SitePerProcess so onemogočeni. Uporabniki bodo lahko še vedno ročno omogočili pravilnik IsolateOrigins.
+      Če pravilnik ni konfiguriran, bo lahko uporabnik to nastavitev spremenil.
       V sistemu <ph name="PRODUCT_OS_NAME" /> je priporočljivo tudi, da nastavite pravilnik za naprave <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> na isto vrednost. Če se vrednosti, nastavljeni z obema pravilnikoma, ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
 
-      OPOMBA: Ta pravilnik se ne uporablja za Android. Če želite IsolateOrigins omogočiti za Android, uporabite nastavitev pravilnika IsolateOriginsAndroid.
+      OPOMBA: ta pravilnik se ne uporablja za Android. Če želite IsolateOrigins omogočiti za Android, uporabite nastavitev pravilnika IsolateOriginsAndroid.
       </translation>
 <translation id="1384459581748403878">Sklic: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Ali naj se omogoči zaupanje zastareli infrastrukturi PKI družbe Symantec Corporation</translation>

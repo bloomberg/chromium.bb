@@ -729,7 +729,6 @@
 <translation id="2114326799768592691">تازه‌سازی قاب</translation>
 <translation id="2114896190328250491">عکس از <ph name="NAME" /></translation>
 <translation id="2115103655317273167">ارسال به تلفن</translation>
-<translation id="2115946962706216358">اتصال دستگاه به دامنه انجام نشد. شاید علت آن تعداد بیش‌ازحد مجاز اتصالات به دستگاه برای حساب شما در سرور باشد.</translation>
 <translation id="2119349053129246860">باز کردن در <ph name="APP" /></translation>
 <translation id="2121825465123208577">تغییر اندازه</translation>
 <translation id="2124930039827422115">{1,plural, =1{یک کاربر رتبه <ph name="AVERAGE_RATING" /> داده است.}one{‏#‏ کاربر رتبه <ph name="AVERAGE_RATING" /> را داده‌اند.}other{‏#‏ کاربر رتبه <ph name="AVERAGE_RATING" /> را داده‌اند.}}</translation>
@@ -1000,7 +999,6 @@
 <translation id="253434972992662860">&amp;توقف موقت</translation>
 <translation id="2534460670861217804">‏پروکسی HTTP امن</translation>
 <translation id="253557089021624350">شمارش استفاده</translation>
-<translation id="2540384386570049483">اجازه دادن به آگهی‌های این سایت</translation>
 <translation id="2541423446708352368">نمایش همه فایل‌های بارگیری‌شده</translation>
 <translation id="2542049655219295786">‏جدول Google </translation>
 <translation id="2544853746127077729">گواهینامه راستی‌آزمایی توسط شبکه رد شد</translation>
@@ -1152,7 +1150,6 @@
 <translation id="2739191690716947896">رفع اشکال</translation>
 <translation id="2739240477418971307">تغییر تنظیمات دسترس‌پذیریتان</translation>
 <translation id="2740393541869613458">وب‌سایت‌های بازدیدشده توسط کاربر نظارت‌شده را بررسی کنید و</translation>
-<translation id="2740531572673183784">تأیید</translation>
 <translation id="2743387203779672305">کپی در بریده‌دان</translation>
 <translation id="2745080116229976798">‏وابستگی مشروط Microsoft</translation>
 <translation id="2749756011735116528">ورود به سیستم <ph name="PRODUCT_NAME" /></translation>
@@ -1475,7 +1472,6 @@
 <translation id="3270965368676314374">خواندن، تغییر و حذف عکس‌ها، موسیقی و سایر رسانه‌ها از رایانه‌تان</translation>
 <translation id="327147043223061465">مشاهده همه کوکی‌ها و داده‌های سایت</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> می‌خواهد مرتبط شود</translation>
-<translation id="327444463633065042">نام دستگاه نامعتبر</translation>
 <translation id="3274763671541996799">شما به حالت تمام صفحه رفته‌اید.</translation>
 <translation id="3275778913554317645">باز کردن به‌عنوان پنجره</translation>
 <translation id="3279741024917655738">نمایش ویدیوهای تمام‌صفحه در</translation>
@@ -1500,7 +1496,6 @@
 <translation id="3305389145870741612">مراحل قالب‌بندی چند ثانیه طول می‌کشد. لطفاً منتظر بمانید.</translation>
 <translation id="3305661444342691068">‏باز کردن PDF در پیش‌نمایش</translation>
 <translation id="3306684685104080068">‏ارسال محتوا را به خدمات مبتنی بر رایانش ابری مانند Google Hangouts فعال کنید.</translation>
-<translation id="3307091518408668019">‏واحد سازمانی رایانه (به‌عنوان مثال OU=دستگاه‌های Chromebook،‏ DC=به‌عنوان مثال، DC=com)</translation>
 <translation id="3308006649705061278">‏واحد سازمانی (OU)</translation>
 <translation id="3308116878371095290">این صفحه نمی‌تواند کوکی‌ها را تنظیم کند.</translation>
 <translation id="3308134619352333507">دکمه پنهان کردن</translation>
@@ -1866,7 +1861,6 @@
 <translation id="383891835335927981">هیچ سایتی بزرگ‌نمایی یا کوچک‌نمایی نشده است</translation>
 <translation id="3839516600093027468">دسترسی <ph name="HOST" /> به بریده‌‌دان همیشه مسدود باشد</translation>
 <translation id="3840053866656739575">‏اتصال Chromebox شما قطع شد. لطفاً نزدیک‌تر بیایید یا همان‌طور که سعی در برقراری مجدد اتصال می‌کنیم، دستگاهتان را بررسی کنید.</translation>
-<translation id="3842132283799370683">اتصال دستگاه به دامنه انجام نشد. شاید علت آن مشکلات واحد سازمانی باشد.</translation>
 <translation id="3842552989725514455">‏قلم Serif</translation>
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="3851428669031642514">بارگیری اسکریپت‌های ناامن</translation>
@@ -2277,7 +2271,6 @@
 <translation id="4552678318981539154">خرید فضای ذخیره بیشتر</translation>
 <translation id="4554591392113183336">برنامه افزودنی خارجی در مقایسه با برنامه کنونی، دارای همان نسخه یا نسخه پایین‌تر است.</translation>
 <translation id="4555769855065597957">سایه</translation>
-<translation id="4555979468244469039">‏نام دستگاه Chromebook</translation>
 <translation id="4556110439722119938">‏نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات در حساب Google شما همگام‌سازی می‌شوند تا بتوانید از آن‌ها در همه دستگاه‌هایتان استفاده کنید.</translation>
 <translation id="4558426062282641716">مجوز راه‌اندازی خودکار لازم است</translation>
 <translation id="4562155214028662640">افزودن اثر انگشت</translation>
@@ -2420,7 +2413,6 @@
 <translation id="4784330909746505604">‏ارائه PowerPoint </translation>
 <translation id="4790972063719531840">‏ارسال خودکار داده‌های تشخیصی و میزان استفاده به Google</translation>
 <translation id="4792711294155034829">&amp;گزارش یک مشکل...</translation>
-<translation id="479285515899735347">وای!  به نظر می‌رسد گذرواژه شما منقضی شده است. لطفاً آن را در دستگاه دیگر تجدید و دوباره امتحان کنید.</translation>
 <translation id="479536056609751218">‏صفحهٔ وب، فقط HTML</translation>
 <translation id="479989351350248267">جستجو</translation>
 <translation id="4801448226354548035">پنهان‌سازی حساب‌ها</translation>
@@ -3088,7 +3080,6 @@
 <translation id="577322787686508614">عملیات خواندن در این دستگاه مجاز نیست: «<ph name="DEVICE_NAME" />».</translation>
 <translation id="5774295353725270860">بازکردن برنامه فایل‌ها</translation>
 <translation id="5774515636230743468">اظهارنامه:</translation>
-<translation id="5775834615653774429">اتصال دستگاه به دامنه انجام نشد. واحد سازمانی وجود ندارد.</translation>
 <translation id="577624874850706961">جستجوی کوکی‌ها</translation>
 <translation id="5777468213129569553">‏باز کردن Chrome</translation>
 <translation id="5778747455497889540">گذرواژه زیر، گذرواژه به‌صورت تصادفی ایجادشده مدول امن است که به رایانه شما اختصاص داده شده است:</translation>
@@ -3109,7 +3100,6 @@
 <translation id="5804241973901381774">مجوزها</translation>
 <translation id="580571955903695899">ترتیب مجدد براساس عنوان</translation>
 <translation id="5807290661599647102">تنظیم «قفل صفحه»</translation>
-<translation id="580926004266167721">اتصال دستگاه به دامنه انجام نشد. شاید علت آن نداشتن امتیازات کافی حساب شما برای واحد سازمانی باشد.</translation>
 <translation id="580961539202306967">وقتی سایتی می‌خواهد پیام‌های فشاری برایم ارسال کند، از من سؤال شود (توصیه می‌شود)</translation>
 <translation id="5809725759695043233">‏برنامه‌هایی دارید که برای دستگاه‌های Chromebook بهینه شده است</translation>
 <translation id="5814126672212206791">نوع اتصال</translation>
@@ -3676,7 +3666,6 @@
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">‏متأسفانه، رایانه شما با یک شناسه سخت‌افزار ناقص پیکربندی شده است. این موضوح سیستم عامل Chrome را از به‌روزرسانی با جدیدترین اصلاحات امنیتی باز می‌دارد که <ph name="BEGIN_BOLD" />می‌تواند رایانه شما را در برابر حملات مخرب آسیب‌پذیر نماید<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">هنگام باز کردن نمایه‌تان مشکلی پیش آمد. لطفاً از سیستم خارج شوید و دوباره به آن وارد شوید.</translation>
-<translation id="6670647982128220776">اکنون قابلیت‌های مربوط به همگام‌سازی و شخصی‌سازی تحت یک گزینه ارائه می‌شوند. روشن کردن این گزینه می‌تواند تنظیمات کنونی‌تان را تغییر دهد.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">‏می‌خواهید Google این صفحه را از <ph name="SOURCE_LANGUAGE" /> به <ph name="TARGET_LANGUAGE" /> ترجمه کند؟</translation>
 <translation id="6675665718701918026">دستگاه نشانگر متصل شد</translation>
@@ -4544,7 +4533,6 @@
 <translation id="7984068253310542383">نمایش <ph name="DISPLAY_NAME" /> روی دستگاه دیگر</translation>
 <translation id="7984180109798553540">برای امنیت بیشتر، <ph name="PRODUCT_NAME" /> داده‌های شما را رمزگذاری می‌کند.</translation>
 <translation id="7986295104073916105">خواندن و تغییر تنظیمات گذرواژه ذخیره شده</translation>
-<translation id="798749371774946697">نام دستگاه خیلی طولانی است</translation>
 <translation id="7988355189918024273">فعالسازی ویژگی‌های دسترسی</translation>
 <translation id="7994702968232966508">‏روش EAP</translation>
 <translation id="799547531016638432">حذف میان‌بر</translation>
@@ -4802,7 +4790,6 @@
 <translation id="8400146488506985033">مدیریت افراد</translation>
 <translation id="8410073653152358832">استفاده از این تلفن</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">بله، همگام‌سازی و شخصی‌سازی روشن شود</translation>
 <translation id="8413385045638830869">ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="8418445294933751433">&amp;نمایش به‌صورت برگه</translation>
 <translation id="8419098111404128271">نتایج جستجو برای «<ph name="SEARCH_TEXT" />»</translation>
@@ -4847,7 +4834,6 @@
 <translation id="8470028084415844044">برای اینکه همه گذرواژه‌هایتان را در همه دستگاه‌ها دریافت کنید، همگام‌سازی را روشن کنید.</translation>
 <translation id="8470513973197838199">گذرواژه‌های ذخیره‌شده برای <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">سخت‌افزار پشتیبانی</translation>
-<translation id="8474229360677287535">بستن همه پنجره‌ها</translation>
 <translation id="8475313423285172237">‏برنامه‌ای دیگر بر روی رایانه شما یک برنامه افزودنی را اضافه کرده است که ممکن است نحوه کارکرد Chrome را تغییر دهد.</translation>
 <translation id="8475647382427415476">‏Google Drive نتوانست در این لحظه «<ph name="FILENAME" />» را همگام‌سازی کند. Google Drive بعداً دوباره امتحان می‌کند.</translation>
 <translation id="8477241577829954800">از دور خارج شده</translation>
@@ -4986,7 +4972,6 @@
 <translation id="8688579245973331962">نامتان را مشاهده نمی‌کنید؟</translation>
 <translation id="8688591111840995413">گذرواژه بد</translation>
 <translation id="8688672835843460752">دردسترس</translation>
-<translation id="8689583087392258564">اتصال دستگاه به دامنه انجام نشد. واحد سازمانی نامعتبر است.</translation>
 <translation id="869257642790614972">باز کردن مجدد آخرین برگه بسته شده</translation>
 <translation id="8695825812785969222">باز کردن &amp;مکان...</translation>
 <translation id="8698464937041809063">‏طراحی Google </translation>
@@ -5124,7 +5109,6 @@
 <translation id="8902667442496790482">باز کردن تنظیمات «انتخاب کنید تا بتوانید صحبت کنید»</translation>
 <translation id="8903921497873541725">بزرگ‌نمایی</translation>
 <translation id="8904976895050290827">‏همگام‌سازی Chrome</translation>
-<translation id="8909233240676134608">‏نمی‌توان دستگاه را به دامنه وصل کرد. این سرور از رمزگذاری‌های Kerberos مشخص‌شده پشتیبانی نمی‌کند. «گزینه‌های بیشتر» را در تنظیمات رمزگذاری بررسی کنید.</translation>
 <translation id="8909833622202089127">سایت درحال ردیابی مکان شما است</translation>
 <translation id="8910146161325739742">اشتراک‌گذاری صفحه</translation>
 <translation id="8910222113987937043">‏تغییرات ایجادشده در نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات شما با حساب Google شما دیگر همگام‌سازی نخواهد شد. بااین‌وجود داده‌های قبلاً ذخیره‌شده در حساب Google شما در آنجا می‌مانند و در <ph name="BEGIN_LINK" />داشبورد Google<ph name="END_LINK" /> می‌توانید آن‌ها را مدیریت کنید.</translation>
@@ -5310,7 +5294,6 @@
 <translation id="9177499212658576372">در حال حاضر به شبکه <ph name="NETWORK_TYPE" /> متصل هستید.</translation>
 <translation id="9180380851667544951">سایت می‌تواند صفحه‌نمایشتان را هم‌رسانی کند</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> از <ph name="DOWNLOAD_DOMAIN" />، <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">اتصال دستگاه به دامنه انجام نشد. شاید علت آن نداشتن امتیازات کافی برای برای حساب شما در سرور باشد.</translation>
 <translation id="9188441292293901223">‏لطفاً تلفنتان را به نسخه جدیدتر Android به‌روزرسانی کنید تا قفل <ph name="DEVICE_TYPE" /> را باز کنید.</translation>
 <translation id="9190063653747922532">‏L2TP/IPSec + کلید از قبل مشترک شده</translation>
 <translation id="920045321358709304">جستجوی <ph name="SEARCH_ENGINE" /></translation>

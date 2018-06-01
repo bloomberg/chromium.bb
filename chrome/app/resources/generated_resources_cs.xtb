@@ -733,7 +733,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2114326799768592691">Znovu načíst &amp;rámec</translation>
 <translation id="2114896190328250491">Autor fotografie: <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Odeslat na telefon</translation>
-<translation id="2115946962706216358">Přidání počítače do domény se nezdařilo. Může to být způsobeno překročením maximálního počtu povolených přidání počítačů pro váš účet na serveru.</translation>
 <translation id="2119349053129246860">Otevřít v aplikaci <ph name="APP" /></translation>
 <translation id="2121825465123208577">Změnit velikost</translation>
 <translation id="2124930039827422115">{1,plural, =1{Hodnocení od jednoho uživatele: <ph name="AVERAGE_RATING" />.}few{Hodnocení od # uživatelů: <ph name="AVERAGE_RATING" />.}many{Hodnocení od # uživatelů: <ph name="AVERAGE_RATING" />.}other{Hodnocení od # uživatelů: <ph name="AVERAGE_RATING" />.}}</translation>
@@ -1004,7 +1003,6 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="253434972992662860">&amp;Pozastavit</translation>
 <translation id="2534460670861217804">Proxy server protokolu HTTPS</translation>
 <translation id="253557089021624350">Aktivity zabraňující ukončení</translation>
-<translation id="2540384386570049483">Povolit reklamy na tomto webu</translation>
 <translation id="2541423446708352368">Zobrazit veškeré stahování</translation>
 <translation id="2542049655219295786">Tabulka Google</translation>
 <translation id="2544853746127077729">Ověřovací certifikát byl sítí odmítnut</translation>
@@ -1157,7 +1155,6 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="2739191690716947896">Ladit</translation>
 <translation id="2739240477418971307">Změnit nastavení přístupnosti</translation>
 <translation id="2740393541869613458">kontrolovat weby, které dozorovaný uživatel navštívil, a</translation>
-<translation id="2740531572673183784">OK</translation>
 <translation id="2743387203779672305">Zkopírovat do schránky</translation>
 <translation id="2745080116229976798">Kvalifikované podřízení Microsoft</translation>
 <translation id="2749756011735116528">Přihlásit se do prohlížeče <ph name="PRODUCT_NAME" /></translation>
@@ -1480,7 +1477,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3270965368676314374">Číst, měnit a mazat fotografie, hudbu a další média v počítači</translation>
 <translation id="327147043223061465">Zobrazit všechny soubory cookie a data webů</translation>
 <translation id="3271648667212143903">Web <ph name="ORIGIN" /> žádá o připojení</translation>
-<translation id="327444463633065042">Neplatný název počítače</translation>
 <translation id="3274763671541996799">Přepnuli jste do režimu celé obrazovky.</translation>
 <translation id="3275778913554317645">Otevřít jako okno</translation>
 <translation id="3279741024917655738">Videa na celou stránku zobrazovat na</translation>
@@ -1505,7 +1501,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3305389145870741612">Proces formátování může trvat několik sekund. Čekejte prosím.</translation>
 <translation id="3305661444342691068">Otevřít soubor PDF v náhledu</translation>
 <translation id="3306684685104080068">Umožněte odesílání do cloudových služeb, jako je například Google Hangouts.</translation>
-<translation id="3307091518408668019">Organizační jednotka počítače (např. OU=Chromebooky,DC=example,DC=com)</translation>
 <translation id="3308006649705061278">Organizační jednotka (OU)</translation>
 <translation id="3308116878371095290">Této stránce bylo zabráněno v nastavení souborů cookie.</translation>
 <translation id="3308134619352333507">Skrýt tlačítko</translation>
@@ -1869,7 +1864,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="383891835335927981">Žádný web nemá nastaveno přiblížení či oddálení zobrazení</translation>
 <translation id="3839516600093027468">Webu <ph name="HOST" /> přístup ke schránce vždy blokovat</translation>
 <translation id="3840053866656739575">Připojení k zařízení Chromebox bylo ztraceno. Zatímco se budeme pokoušet připojení obnovit, přesuňte se blíž, případně zařízení zkontrolujte.</translation>
-<translation id="3842132283799370683">Přidání počítače do domény se nezdařilo. Může to být způsobeno problémy s organizační jednotkou.</translation>
 <translation id="3842552989725514455">Patkové písmo</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3851428669031642514">Načíst nezabezpečené skripty</translation>
@@ -2279,7 +2273,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4552678318981539154">Koupit větší úložiště</translation>
 <translation id="4554591392113183336">Externí rozšíření má stejnou nebo nižší verzi než stávající.</translation>
 <translation id="4555769855065597957">Stín</translation>
-<translation id="4555979468244469039">Název počítače Chromebook</translation>
 <translation id="4556110439722119938">Vaše záložky, historie, hesla a další nastavení budou synchronizována do účtu Google, abyste je mohli používat ve všech svých zařízeních.</translation>
 <translation id="4558426062282641716">Jsou požadována oprávnění k automatickému spuštění</translation>
 <translation id="4562155214028662640">Přidat otisk prstu</translation>
@@ -2422,7 +2415,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4784330909746505604">Prezentace aplikace PowerPoint</translation>
 <translation id="4790972063719531840">Automaticky do Googlu odesílat diagnostické údaje a údaje o využití</translation>
 <translation id="4792711294155034829">&amp;Nahlásit problém...</translation>
-<translation id="479285515899735347">Jejda! Platnost vašeho hesla pravděpodobně vypršela. Obnovte jej na jiném počítači a zkuste to znovu.</translation>
 <translation id="479536056609751218">Webová stránka, pouze HTML</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4801448226354548035">Skrýt účty</translation>
@@ -3089,7 +3081,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="577322787686508614">Operace čtení v zařízení <ph name="DEVICE_NAME" /> není povolena.</translation>
 <translation id="5774295353725270860">Do aplikace Soubory</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5775834615653774429">Přidání počítače do domény se nezdařilo. Organizační jednotka neexistuje.</translation>
 <translation id="577624874850706961">Prohledávat cookie</translation>
 <translation id="5777468213129569553">Spustit Chrome</translation>
 <translation id="5778747455497889540">Níže je náhodně vygenerované heslo modulu zabezpečení, které bylo přiřazeno vašemu počítači:</translation>
@@ -3110,7 +3101,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5804241973901381774">Oprávnění</translation>
 <translation id="580571955903695899">Znovu uspořádat podle názvu</translation>
 <translation id="5807290661599647102">Nastavit zámek obrazovky</translation>
-<translation id="580926004266167721">Přidání počítače do domény se nezdařilo. Může to být způsobeno tím, že váš účet pro organizační jednotku nemá dostetek oprávnění.</translation>
 <translation id="580961539202306967">Zeptat se, když mi chce web odeslat nabízenou zprávu (doporučeno)</translation>
 <translation id="5809725759695043233">Máte aplikace optimalizované pro Chromebooky</translation>
 <translation id="5814126672212206791">Typ připojení</translation>
@@ -3677,7 +3667,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6659594942844771486">Karta</translation>
 <translation id="6664237456442406323">Váš počítač je bohužel nakonfigurován pomocí chybného čísla hardwaru. Systému Chrome OS to zabraňuje získat aktualizace s nejnovějšími bezpečnostními opravami, a počítač tak <ph name="BEGIN_BOLD" />může být zranitelnější vůči škodlivým úrokům<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Při otevírání vašeho profilu se něco pokazilo. Odhlaste se a poté se znovu přihlaste.</translation>
-<translation id="6670647982128220776">Funkce související se synchronizací a personalizací jsou nyní pod jedním ovládacím prvkem. Pokud tuto možnost zapnete, mohou se vaše aktuální nastavení změnit.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Chcete, aby Google tuto stránku přeložil z jazyka <ph name="SOURCE_LANGUAGE" /> do jazyka <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Je připojeno polohovací zařízení</translation>
@@ -4539,7 +4528,6 @@ V zařízení se systémem Chrome OS můžete aktivovat funkce ladění, abyste
 <translation id="7984068253310542383">Zrcadlit obrazovku <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">Pro zvýšení bezpečnosti budou data v prohlížeči <ph name="PRODUCT_NAME" /> zašifrována.</translation>
 <translation id="7986295104073916105">Čtení a změna nastavení uložených hesel</translation>
-<translation id="798749371774946697">Název počítače je příliš dlouhý</translation>
 <translation id="7988355189918024273">Aktivovat funkce usnadnění přístupu</translation>
 <translation id="7994702968232966508">Metoda EAP</translation>
 <translation id="799547531016638432">Odebrat zástupce</translation>
@@ -4797,7 +4785,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8400146488506985033">Správa uživatelů</translation>
 <translation id="8410073653152358832">Použít tento telefon</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">Ano, zapnout synchronizaci a personalizaci</translation>
 <translation id="8413385045638830869">Nejprve se dotázat (doporučeno)</translation>
 <translation id="8418445294933751433">Zobrazit jako kartu</translation>
 <translation id="8419098111404128271">Výsledky vyhledávání pro <ph name="SEARCH_TEXT" /></translation>
@@ -4842,7 +4829,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8470028084415844044">Chcete-li mít všechna hesla na všech svých zařízeních, zapněte synchronizaci.</translation>
 <translation id="8470513973197838199">Uložená hesla z webu <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">hardwarová</translation>
-<translation id="8474229360677287535">Zavřít všechna vaše okna</translation>
 <translation id="8475313423285172237">Jiný program ve vašem počítači nainstaloval rozšíření, které může měnit funkce Chromu.</translation>
 <translation id="8475647382427415476">Soubor <ph name="FILENAME" /> teď nebylo možné synchronizovat. Disk Google to zkusí znovu později.</translation>
 <translation id="8477241577829954800">Nahrazen</translation>
@@ -4981,7 +4967,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8688579245973331962">Nevidíte svoje jméno?</translation>
 <translation id="8688591111840995413">Nesprávné heslo</translation>
 <translation id="8688672835843460752">Dostupné</translation>
-<translation id="8689583087392258564">Přidání počítače do domény se nezdařilo. Organizační jednotka je neplatná.</translation>
 <translation id="869257642790614972">Znovu otevřít naposledy zavřenou kartu</translation>
 <translation id="8695825812785969222">&amp;Otevřít umístění...</translation>
 <translation id="8698464937041809063">Nákres Google</translation>
@@ -5119,7 +5104,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8902667442496790482">Otevřít nastavení poslechu vybraného textu</translation>
 <translation id="8903921497873541725">Přiblížit</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
-<translation id="8909233240676134608">Počítač do domény nelze přidat. Server nepodporuje zadané typy šifrování Kerberos. Zkontrolujte nastavení šifrování v části Další možnosti.</translation>
 <translation id="8909833622202089127">Web sleduje vaši polohu</translation>
 <translation id="8910146161325739742">Sdílení obrazovky</translation>
 <translation id="8910222113987937043">Změny záložek, historie, hesel a dalších nastavení se již nebudou synchronizovat do účtu Google. Vaše existující data v účtu Google uložena zůstanou a lze je spravovat na <ph name="BEGIN_LINK" />Hlavním panelu Google<ph name="END_LINK" />.</translation>
@@ -5305,7 +5289,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9177499212658576372">V současnosti jste připojeni k síti typu <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9180380851667544951">Web může sdílet vaši obrazovku</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> z <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">Přidání počítače do domény se nezdařilo. Může to být způsobeno nedostatečnými oprávněními pro váš účet na serveru.</translation>
 <translation id="9188441292293901223">Chcete-li odemknout toto zařízení <ph name="DEVICE_TYPE" />, aktualizujte svůj telefon na novější verzi platformy Android.</translation>
 <translation id="9190063653747922532">L2TP/IPsec + předsdílený klíč</translation>
 <translation id="920045321358709304">Hledat pomocí vyhledávače <ph name="SEARCH_ENGINE" /></translation>

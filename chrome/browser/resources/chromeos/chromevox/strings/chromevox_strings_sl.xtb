@@ -518,7 +518,7 @@
 <translation id="5263344797180442561">n2</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5291783959063340370">Predmetna</translation>
-<translation id="5302089807023311274">Vnos v bibliografiji</translation>
+<translation id="5302089807023311274">Bibliografski viri</translation>
 <translation id="5304943142864553931">zavihek <ph name="TITLE" /></translation>
 <translation id="5310788376443009632">odstranjeno:</translation>
 <translation id="5320727453979144100">Način zaklepanja je omogočen</translation>
@@ -694,7 +694,7 @@
 <translation id="6787839852456839824">Bližnjične tipke</translation>
 <translation id="6793101435925451627">pol szn</translation>
 <translation id="6833103209700200188">Noga</translation>
-<translation id="6858047746862060282">Prolog</translation>
+<translation id="6858047746862060282">Uvod</translation>
 <translation id="6871161210040114857">Prezrtje razlikovanja velikih in malih črk.</translation>
 <translation id="6877435256196695200">Ni naslednje grafike.</translation>
 <translation id="6897341342232909480">Pomik v levo</translation>
@@ -786,7 +786,7 @@
 <translation id="7625690649919402823">Naslednja tabela</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), <ph name="GRADE" />. raven</translation>
 <translation id="7641134354185483015">Ni prejšnjega naslova na ravni 3.</translation>
-<translation id="7647456547678091388">Napotek</translation>
+<translation id="7647456547678091388">namig</translation>
 <translation id="7659376057562985921">Polje za besedilo z vrednostjo <ph name="VALUE" /> in imenom <ph name="NAME" /></translation>
 <translation id="7663318257180412551">Naslov 2</translation>
 <translation id="7674576868851035240">Naslednja povezava</translation>

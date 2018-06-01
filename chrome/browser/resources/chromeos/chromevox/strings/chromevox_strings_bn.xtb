@@ -9,7 +9,7 @@
 <translation id="1025074108959230262">স্টিকি মোড অক্ষম</translation>
 <translation id="1031961866430398710">তারপর</translation>
 <translation id="1038643060055067718">লাইনের সংখ্যা:</translation>
-<translation id="1038795173450935438">কোনো পৃষ্ঠায় আইটেমগুলির মধ্যে এগিয়ে যেতে অনুসন্ধান + ডান তীরচিহ্ন, বা  পিছনে ফিরে আসতে অনুসন্ধান + বাঁ তীরচিহ্ন টিপুন। পরের লাইনে যেতে, অনুসন্ধান + নিম্নমুখী তীরচিহ্ন টিপুন। পূর্ববর্তী লাইনে যেতে, অনুসন্ধান + উর্ধ্বমুখী তীরচিহ্ন ব্যবহার করুন। আপনি যখন আপনি ক্লিক করতে চান এমন আইটেমে পৌঁছান, তখন অনুসন্ধান + স্পেস টিপুন।</translation>
+<translation id="1038795173450935438">কোনো পৃষ্ঠায় আইটেমগুলির মধ্যে এগিয়ে যেতে সার্চ + ডান তীরচিহ্ন, বা  পিছনে ফিরে আসতে সার্চ + বাঁ তীরচিহ্ন টিপুন। পরের লাইনে যেতে, সার্চ + নিম্নমুখী তীরচিহ্ন টিপুন। পূর্ববর্তী লাইনে যেতে, সার্চ + উর্ধ্বমুখী তীরচিহ্ন ব্যবহার করুন। আপনি যখন আপনি ক্লিক করতে চান এমন আইটেমে পৌঁছান, তখন সার্চ + স্পেস টিপুন।</translation>
 <translation id="1044777062731150180">কোনো শিরোলেখ নেই</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">অবৈধ ইনপুট</translation>
@@ -49,7 +49,7 @@
 <translation id="1346748346194534595">ডানে</translation>
 <translation id="135978014023467274">আপনার ChormeVox, ChromeVox 63 তে আপগ্রেড করা হয়েছে!</translation>
 <translation id="136718599399906424">পরবর্তী সারণী সারি</translation>
-<translation id="1377925789329510816">এটিই সর্বশেষ শিরোনাম। প্রথম শিরোনামে ফিরে যেতে অনুসন্ধান+H টিপুন, অথবা এই পৃষ্ঠার দ্বিতীয় শিরোনামে যেতে অনুসন্ধান+Shift+H টিপুন।</translation>
+<translation id="1377925789329510816">এটিই সর্বশেষ শিরোনাম। প্রথম শিরোনামে ফিরে যেতে সার্চ+H টিপুন, অথবা এই পৃষ্ঠার দ্বিতীয় শিরোনামে যেতে সার্চ+Shift+H টিপুন।</translation>
 <translation id="1383876407941801731">সার্চ করুন</translation>
 <translation id="1385214448885562192">স্বীকার করতে এন্টার বা বাতিল করতে এসকেপ, পরবর্তীর জন্য নিচে এবং পূর্ববর্তীর জন্য উপরে টিপুন৷</translation>
 <translation id="1396114365388024581">tablst</translation>
@@ -59,7 +59,7 @@
 <translation id="1467432559032391204">বামে</translation>
 <translation id="1474557363159888097">কোনো পূর্ববর্তী অ্যাঙ্কর নেই৷</translation>
 <translation id="1480046233931937785">কৃতিত্ব</translation>
-<translation id="1487494366197411587">Chromebook এ বাঁ Shift কী এর ঠিক উপরেই অনুসন্ধান কী।</translation>
+<translation id="1487494366197411587">Chromebook এ বাঁ Shift কী এর ঠিক উপরেই সার্চ কী।</translation>
 <translation id="1499041187027566160">ভলিউম বাড়ান</translation>
 <translation id="1502086903961450562">পূর্ববর্তী গ্রাফিক</translation>
 <translation id="1506187449813838456">পিচ বাড়ান</translation>
@@ -200,7 +200,7 @@
 <translation id="2864481629947106776">আগের লিঙ্ক</translation>
 <translation id="2867808975387772810">বিবলিওগ্রাফি</translation>
 <translation id="2873259058405069099">সারণীর শুরুতে যান</translation>
-<translation id="288178314850623291">নির্দিষ্ট ধরনের উপাদানে যাওয়ার জন্য জাম্প কমান্ডগুলি ব্যবহার করুন। শিরোনামের মধ্যে জাম্প করে অগ্রবর্তী হতে অনুসন্ধান + H, পিছনে জাম্প করতে অনুসন্ধান + Shift + H টিপুন।</translation>
+<translation id="288178314850623291">নির্দিষ্ট ধরনের উপাদানে যাওয়ার জন্য জাম্প কমান্ডগুলি ব্যবহার করুন। শিরোনামের মধ্যে জাম্প করে অগ্রবর্তী হতে সার্চ + H, পিছনে জাম্প করতে সার্চ + Shift + H টিপুন।</translation>
 <translation id="2894654529758326923">তথ্য</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{বাঁ দ্বিতীয় বন্ধনী}one{#টি বাঁ দ্বিতীয় বন্ধনী}other{#টি বাঁ দ্বিতীয় বন্ধনী}}</translation>
 <translation id="2911433807131383493">ChromeVox টিউটোরিয়াল খুলুন</translation>
@@ -373,7 +373,7 @@
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4054936709456751127">sts</translation>
 <translation id="4058278702844053247">একটি পৃষ্ঠা লোড হচ্ছে</translation>
-<translation id="4065205963140826639">‘পরবর্তী’ বোতাম খুঁজতে অনুসন্ধান + ডান তীরচিহ্ন ব্যবহার করে দেখুন, এটা ক্লিক করার জন্য অনুসন্ধান + স্পেস টিপুন।</translation>
+<translation id="4065205963140826639">‘পরবর্তী’ বোতাম খুঁজতে সার্চ + ডান তীরচিহ্ন ব্যবহার করে দেখুন, এটা ক্লিক করার জন্য সার্চ + স্পেস টিপুন।</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{টিলড চিহ্ন}one{#টি টিলড চিহ্ন}other{#টি টিলড চিহ্ন}}</translation>
 <translation id="409334809956508737">পূর্ববর্তী বস্তু</translation>
 <translation id="4099274309791143834">উপমেনুর সাথে</translation>
@@ -437,7 +437,7 @@
 <translation id="4601367666219428522">সারণী <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">পরবর্তী কি টেপা উপেক্ষা করা হচ্ছে</translation>
 <translation id="461613135510474570">বাক্য</translation>
-<translation id="4623097797855662355">বইয়ের শেষ পৃষ্ঠা</translation>
+<translation id="4623097797855662355">বইটির সম্পর্কে</translation>
 <translation id="463135993322337640">নতুন কি আছে তা দেখার জন্য ChromeVox o, n টিপুন</translation>
 <translation id="4647836961514597010">রঙ চয়নকারী</translation>
 <translation id="4652110509054054146">হোম বা এন্ডে যেতে সার্চের সাথে বাঁ অথবা ডান দিকের তীরচিহ্ন টিপুন, কন্ট্রোল হোম অথবা এন্ডের জন্য সার্চ কন্ট্রোলের সাথে বাঁ অথবা ডান দিকের তীরচিহ্ন টিপুন, পেজ আপ ও পেজ ডাউনের জন্য সার্চের সাথে উপরের বা নিচের তীরচিহ্ন টিপুন।</translation>
@@ -469,7 +469,7 @@
 <translation id="4850023505158945298">পূর্ববর্তী অনুরূপ উপাদান৷</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">TTS লগ ইন সক্ষম করুন</translation>
-<translation id="4877261390094455813">একটি অনুসন্ধান ক্যোয়ারী লিখুন৷</translation>
+<translation id="4877261390094455813">একটি সার্চ ক্যোয়ারী লিখুন৷</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">অভ্যন্তরীণ লিঙ্ক</translation>
 <translation id="492295894462528572">মুখবন্ধ</translation>
@@ -585,15 +585,15 @@
 <translation id="5712338278108304766">পরবর্তী সারণী কলাম</translation>
 <translation id="571866080859340309">গোষ্ঠীগুলি অন্বেষণ করা হচ্ছে</translation>
 <translation id="5728409797179002635">কোনো সারণী খুঁজে পাওয়া যায় নি৷</translation>
-<translation id="5732189279857692565">এটি দ্বিতীয় শিরোনাম। সামনে এগোন; অনুসন্ধান+H টিপুন কিংবা অনুসন্ধান+Shift+H টিপুন।</translation>
+<translation id="5732189279857692565">এটি দ্বিতীয় শিরোনাম। সামনে এগোন; সার্চ+H টিপুন কিংবা সার্চ+Shift+H টিপুন।</translation>
 <translation id="5748623122140342504">পূর্ববর্তী স্তর ৫ শিরোনাম</translation>
 <translation id="5750633686117194034">কোন সংশোধক টেপা হয়নি; দয়া করে এক বা একাধিক সংশোধকে টিপুন এবং ধরে থাকুন; একবার হয়ে গেলে আপনার আঙুলগুলি তুলে নিন এবং কীগুলি সেট হয়েছে তা আপনি শুনতে পাবেন৷ বেরিয়ে যেতে ট্যাব টিপুন৷</translation>
 <translation id="5760594853119905566">পরিশিষ্ট</translation>
 <translation id="5788275253279308023">ছদ্মবেশী উইন্ডো <ph name="TITLE" /> ট্যাব</translation>
-<translation id="5806206155699461681">নির্দিষ্ট সাইটগুলি (যেমন Google অনুসন্ধান) স্বতঃবৃদ্ধি করুন৷</translation>
+<translation id="5806206155699461681">নির্দিষ্ট সাইটগুলি (যেমন Google সার্চ) স্বতঃবৃদ্ধি করুন৷</translation>
 <translation id="5819072574982403430">ট্রি আইটেম</translation>
 <translation id="5826479389509458994">সারি <ph name="ROW" /> কলাম <ph name="COL" /></translation>
-<translation id="5847883414085148048">উতসর্গ</translation>
+<translation id="5847883414085148048">উৎসর্গ</translation>
 <translation id="5850707923114094062">পিছনের দিকে প্যান করুন</translation>
 <translation id="5851548754964597211">ট্যাব তালিকা</translation>
 <translation id="5859752971144398932">পৃষ্ঠায় খোজা থেকে বেরিয়ে গিয়েছে হচ্ছে৷</translation>
@@ -825,7 +825,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="8033827949643255796">নির্বাচিত</translation>
 <translation id="8035962149453661158">সর্বোচ্চ:<ph name="X" /></translation>
 <translation id="8037651341025652929">সিদ্ধান্ত</translation>
-<translation id="8042761080832772327">অনুসন্ধান এন্ট্রি, পাঠ্য সম্পাদনা করুন</translation>
+<translation id="8042761080832772327">সার্চ এন্ট্রি, পাঠ্য সম্পাদনা করুন</translation>
 <translation id="8049189770492311300">টাইমার</translation>
 <translation id="8065607967589909823">নির্বাচনটি</translation>
 <translation id="8066678206530322333">ব্যানার</translation>
@@ -869,7 +869,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="8520472399088452386">ঘূর্ণন বোতাম</translation>
 <translation id="8538744478902126321">বর্তমান কক্ষের সারি শিরোলেখে একটি অনুমান করে</translation>
 <translation id="8540054775867439484">শীর্ষে সম্পৃক্ত রয়েছে</translation>
-<translation id="8542271685829952264">সব ChromeVox কমান্ড এবং শর্টকাটগুলি ঘুরে দেখার জন্য, অনুসন্ধান + ফুলস্টপ টিপুন, তারপর মেনুতে নেভিগেট করার জন্য তীরচিহ্ন কীগুলি ব্যবহার করুন, এবং কোনো কমান্ড সক্রিয় করতে Enter ব্যবহার করুন। এখানে ফেরার জন্য অনুসন্ধান+o ও এরপর t টিপুন।</translation>
+<translation id="8542271685829952264">সব ChromeVox কমান্ড এবং শর্টকাটগুলি ঘুরে দেখার জন্য, সার্চ + ফুলস্টপ টিপুন, তারপর মেনুতে নেভিগেট করার জন্য তীরচিহ্ন কীগুলি ব্যবহার করুন, এবং কোনো কমান্ড সক্রিয় করতে Enter ব্যবহার করুন। এখানে ফেরার জন্য সার্চ+o ও এরপর t টিপুন।</translation>
 <translation id="8548973727659841685">চরিত্র</translation>
 <translation id="8561322612995434619">পপ আপ রয়েছে</translation>
 <translation id="8571096049907249734">বহুনির্বাচন</translation>
@@ -934,7 +934,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="9153606228985488238">পিচ <ph name="PERCENT" /> শতাংশ</translation>
 <translation id="9160096769946561184">বর্তমান কলামের শেষে যান</translation>
 <translation id="9173115498289768110"><ph name="PERCENT" /> শতাংশ ভলিউম</translation>
-<translation id="9178973770513562274">ব্রাউজ করতে উপরের বা নীচের তীর চিহ্ন কী ব্যবহার করুন, বা অনুসন্ধান করতে টাইপ করুন৷</translation>
+<translation id="9178973770513562274">ব্রাউজ করতে উপরের বা নীচের তীর চিহ্ন কী ব্যবহার করুন, বা সার্চ করতে টাইপ করুন৷</translation>
 <translation id="9192904702577636854">মার্কি</translation>
 <translation id="9212322457209634662">এরপরে কোনো বিভাগ নেই৷</translation>
 <translation id="923331726185079994">ChromeVox আপডেট হয়েছে</translation>

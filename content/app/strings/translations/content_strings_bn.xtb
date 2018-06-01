@@ -161,7 +161,7 @@
 <translation id="6843725295806269523">নিঃশব্দ</translation>
 <translation id="6853785296079745596">বন্ধ করা পরিচয়লিপিগুলি লুকান</translation>
 <translation id="6885760532393684712">ডিরেক্টরি</translation>
-<translation id="689129560213475294">বইয়ের শেষ পৃষ্ঠা</translation>
+<translation id="689129560213475294">বইটির সম্পর্কে</translation>
 <translation id="6934078000481955284">ব্লক উদ্ধৃতি</translation>
 <translation id="6941933287844615239">মিডিয়া ডাউনলোড করুন</translation>
 <translation id="6989848892321993519">দয়া করে এই পাঠ্যকে ন্যূনতম <ph name="MIN_CHARACTERS" /> অক্ষরের বা তার বেশি দৈর্ঘ্যের করুন (আপনি বর্তমানে ১টি অক্ষর ব্যবহার করেছেন)।</translation>
@@ -190,7 +190,7 @@
 <translation id="7888071071722539607">ইমেল ঠিনাকাটিতে দয়া করে একটি '<ph name="ATSIGN" />' অন্তর্ভুক্ত করুন৷ '<ph name="INVALIDADDRESS" />' এ একটি '<ph name="ATSIGN" />' অনুপস্থিত৷</translation>
 <translation id="7891486169920085145">স্প্লিটার</translation>
 <translation id="795667975304826397">কোনও ফাইল চয়ন করা হয় নি</translation>
-<translation id="8053789581856978548">অনুসন্ধান পাঠ্য ফিল্ড</translation>
+<translation id="8053789581856978548">সার্চ পাঠ্য ফিল্ড</translation>
 <translation id="8057695513531652401">বিজ্ঞপ্তি</translation>
 <translation id="8105797009065549151">নোটের রেফারেন্স</translation>
 <translation id="8115662671911883373">বন্ধ পরিচয়লিপিগুলির প্রদর্শন শুরু করুন</translation>
@@ -204,7 +204,7 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> টি ফাইল</translation>
 <translation id="8451268428117625855">দয়া করে একটি ফাইল নির্বাচন করুন৷</translation>
 <translation id="8461852803063341183">রেডিও বোতাম</translation>
-<translation id="8474886197722836894">উতসর্গ</translation>
+<translation id="8474886197722836894">উৎসর্গ</translation>
 <translation id="8531739829932800271">ত্রুটি-বিচ্যুতি</translation>
 <translation id="8534579021159131403">মিনিট</translation>
 <translation id="8541249477527128034">মিডিয়া নিয়ন্ত্রণ</translation>

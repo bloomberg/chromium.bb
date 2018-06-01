@@ -90,7 +90,7 @@
 <translation id="1372267489642113556">
       Jika kebijakan ini diaktifkan, tiap asal yang diberi nama dalam
       daftar yang dipisahkan koma akan dijalankan dalam prosesnya sendiri. Tindakan ini juga akan mengisolasi
-      asal yang diberi nama oleh subdomains; mis., menentukan https://example.com/ juga
+      asal yang diberi nama oleh subdomain; mis., menentukan https://example.com/ juga
       akan menyebabkan https://foo.example.com/ diisolasi sebagai bagian dari
       situs https://example.com/.
       Jika kebijakan dinonaktifkan, Isolasi Situs eksplisit tidak akan dilakukan dan uji coba kolom IsolateOrigins dan SitePerProcess akan dinonaktifkan. Pengguna tetap dapat mengaktifkan IsolateOrigins secara manual.

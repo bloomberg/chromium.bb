@@ -731,7 +731,6 @@
 <translation id="2114326799768592691">Перезагрузить &amp;фрейм</translation>
 <translation id="2114896190328250491">Фото: <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Отправить на телефон</translation>
-<translation id="2115946962706216358">Не удалось подключить компьютер к домену. Возможно, для вашего аккаунта на сервере превышено допустимое число соединений.</translation>
 <translation id="2119349053129246860">Открыть в приложении "<ph name="APP" />"</translation>
 <translation id="2121825465123208577">Изменить размер</translation>
 <translation id="2124930039827422115">{1,plural, =1{1 пользователь поставил оценку <ph name="AVERAGE_RATING" />.}one{# пользователь поставил оценку <ph name="AVERAGE_RATING" />.}few{# пользователя поставили оценку <ph name="AVERAGE_RATING" />.}many{# пользователей поставили оценку <ph name="AVERAGE_RATING" />.}other{# пользователя поставили оценку <ph name="AVERAGE_RATING" />.}}</translation>
@@ -1002,7 +1001,6 @@
 <translation id="253434972992662860">&amp;Пауза</translation>
 <translation id="2534460670861217804">Безопасный HTTP-прокси</translation>
 <translation id="253557089021624350">Количество соединений keepalive</translation>
-<translation id="2540384386570049483">Разрешить рекламу на этом сайте</translation>
 <translation id="2541423446708352368">Все загрузки</translation>
 <translation id="2542049655219295786">Таблица Google</translation>
 <translation id="2544853746127077729">Сертификат аутентификации отклонен сетью</translation>
@@ -1157,7 +1155,6 @@
 <translation id="2739191690716947896">Отладка</translation>
 <translation id="2739240477418971307">Изменение настроек специальных возможностей</translation>
 <translation id="2740393541869613458">проверка сайтов, посещенных пользователем контролируемого аккаунта, и</translation>
-<translation id="2740531572673183784">ОК</translation>
 <translation id="2743387203779672305">Скопировать в буфер</translation>
 <translation id="2745080116229976798">Квалифицированное подчинение Microsoft</translation>
 <translation id="2749756011735116528">Войти в <ph name="PRODUCT_NAME" /></translation>
@@ -1480,7 +1477,6 @@
 <translation id="3270965368676314374">Доступ к фотографиям, музыке и другим медиафайлам на вашем компьютере, а также их изменение и удаление</translation>
 <translation id="327147043223061465">Все файлы cookie и данные сайта</translation>
 <translation id="3271648667212143903">Сайт <ph name="ORIGIN" /> запрашивает подключение</translation>
-<translation id="327444463633065042">Недействительное имя компьютера</translation>
 <translation id="3274763671541996799">Вы перешли в полноэкранный режим.</translation>
 <translation id="3275778913554317645">Открыть в отдельном окне</translation>
 <translation id="3279741024917655738">Где показывать полноэкранные видео</translation>
@@ -1505,7 +1501,6 @@
 <translation id="3305389145870741612">Форматирование займет несколько секунд. Подождите.</translation>
 <translation id="3305661444342691068">Открыть PDF для просмотра</translation>
 <translation id="3306684685104080068">Включите трансляцию в облачных сервисах, таких как Google Hangouts.</translation>
-<translation id="3307091518408668019">Организационное подразделение компьютера (например, OU=Chromebooks,DC=example,DC=com)</translation>
 <translation id="3308006649705061278">Подразделение (OU)</translation>
 <translation id="3308116878371095290">Попытка сохранить файл cookie заблокирована.</translation>
 <translation id="3308134619352333507">Скрыть кнопку</translation>
@@ -1871,7 +1866,6 @@
 <translation id="383891835335927981">Нет сайтов с измененным масштабом</translation>
 <translation id="3839516600093027468">Никогда не открывать сайту <ph name="HOST" /> доступ к буферу обмена</translation>
 <translation id="3840053866656739575">Соединение с Chromebox потеряно, и мы пытаемся его восстановить. Вы пока можете подойти поближе и проверить устройство.</translation>
-<translation id="3842132283799370683">Не удалось подключить компьютер к домену. Возможно, возникла проблема с организационным подразделением.</translation>
 <translation id="3842552989725514455">Шрифты с засечками</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3851428669031642514">Загрузить небезопасные скрипты</translation>
@@ -2282,7 +2276,6 @@
 <translation id="4552678318981539154">Приобретите дополнительное пространство</translation>
 <translation id="4554591392113183336">Внешнее расширение не новее существующего.</translation>
 <translation id="4555769855065597957">Тень</translation>
-<translation id="4555979468244469039">Имя устройства Chromebook</translation>
 <translation id="4556110439722119938">Пароли, закладки, история и другие параметры будут синхронизированы с аккаунтом Google, чтобы у вас был доступ к ним на любом устройстве.</translation>
 <translation id="4558426062282641716">Требуется разрешение на автозапуск</translation>
 <translation id="4562155214028662640">Добавить отпечаток пальца</translation>
@@ -2425,7 +2418,6 @@
 <translation id="4784330909746505604">Презентация PowerPoint</translation>
 <translation id="4790972063719531840">Автоматически отправлять статистику использования и данные диагностики в Google</translation>
 <translation id="4792711294155034829">Сообщить о &amp;проблеме...</translation>
-<translation id="479285515899735347">Срок действия пароля истек. Обновите пароль на другом устройстве и повторите попытку.</translation>
 <translation id="479536056609751218">Веб-страница, только HTML</translation>
 <translation id="479989351350248267">поиск</translation>
 <translation id="4801448226354548035">Скрыть аккаунты</translation>
@@ -2473,7 +2465,7 @@
 <translation id="4862642413395066333">Подпись ответов OCSP</translation>
 <translation id="4864369630010738180">Вход в систему...</translation>
 <translation id="486635084936119914">Автоматически открывать некоторые типы файлов после скачивания</translation>
-<translation id="4869142322204669043">Для персонализации <ph name="IDS_SHORT_PRODUCT_NAME" /> и других сервисов Google, таких как Переводчик, Поиск и Google Ads, могут использоваться данные с сайтов, которые вы посещаете, а также история просмотров и ваших действий в браузере. Изменить эти параметры можно в любое время в настройках.</translation>
+<translation id="4869142322204669043">Для персонализации <ph name="IDS_SHORT_PRODUCT_NAME" /> и других сервисов Google, таких как Переводчик, Поиск и Google Ads, могут использоваться данные с сайтов, которые вы посещаете, а также история просмотров и действий в браузере. Изменить эти параметры можно в любое время в настройках.</translation>
 <translation id="48704129375571883">Добавить ещё функции</translation>
 <translation id="4870903493621965035">Нет подключенных устройств</translation>
 <translation id="4871210892959306034">$1 кБ</translation>
@@ -3093,7 +3085,6 @@
 <translation id="577322787686508614">Чтение данных на устройстве <ph name="DEVICE_NAME" /> запрещено.</translation>
 <translation id="5774295353725270860">Открыть приложение "Файлы"</translation>
 <translation id="5774515636230743468">Манифест:</translation>
-<translation id="5775834615653774429">Не удалось подключить компьютер к домену. Организационное подразделение не существует.</translation>
 <translation id="577624874850706961">Поиск файлов cookie</translation>
 <translation id="5777468213129569553">Запустить Chrome</translation>
 <translation id="5778747455497889540">Безопасный модуль случайным образом сгенерировал для компьютера следующий пароль:</translation>
@@ -3114,7 +3105,6 @@
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="580571955903695899">Упорядочить по заголовкам</translation>
 <translation id="5807290661599647102">Включить блокировку экрана</translation>
-<translation id="580926004266167721">Не удалось подключить компьютер к домену. Возможно, у вашего аккаунта недостаточно прав доступа к организационному подразделению.</translation>
 <translation id="580961539202306967">Спрашивать, если сайт собирается отправлять push-сообщения (рекомендуется)</translation>
 <translation id="5809725759695043233">У вас есть приложения, оптимизированные для устройств Chromebook</translation>
 <translation id="5814126672212206791">Тип подключения</translation>
@@ -3681,7 +3671,6 @@
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="6664237456442406323">К сожалению, в настройках компьютера указан недействительный аппаратный код. Chrome OS не сможет устанавливать обновления для системы безопасности, и ваш компьютер <ph name="BEGIN_BOLD" />может подвергаться атакам вредоносных сайтов<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Не удалось открыть профиль. Попробуйте выйти из аккаунта и войти снова.</translation>
-<translation id="6670647982128220776">Централизованное управление функциями, связанными с синхронизацией и персонализацией. При включении этого параметра могут измениться текущие настройки.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Вы хотите, чтобы Google сделал перевод страницы: <ph name="SOURCE_LANGUAGE" /> &gt;&gt; <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Подключено дополнительное устройство</translation>
@@ -4547,7 +4536,6 @@
 <translation id="7984068253310542383">Дублировать изображение с экрана <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">В целях повышения безопасности <ph name="PRODUCT_NAME" /> шифрует ваши данные.</translation>
 <translation id="7986295104073916105">Чтение и изменение настроек пароля</translation>
-<translation id="798749371774946697">Слишком длинное имя компьютера</translation>
 <translation id="7988355189918024273">Включить функции для людей с ограниченными возможностями</translation>
 <translation id="7994702968232966508">Метод EAP</translation>
 <translation id="799547531016638432">Удалить ярлык</translation>
@@ -4805,7 +4793,6 @@
 <translation id="8400146488506985033">Управлять пользователями</translation>
 <translation id="8410073653152358832">Использовать этот телефон</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">Да, включить синхронизацию и персонализацию</translation>
 <translation id="8413385045638830869">Всегда спрашивать (рекомендуется)</translation>
 <translation id="8418445294933751433">&amp;Показать как вкладку</translation>
 <translation id="8419098111404128271">Результаты поиска по запросу "<ph name="SEARCH_TEXT" />"</translation>
@@ -4850,7 +4837,6 @@
 <translation id="8470028084415844044">Чтобы получить доступ к паролям на всех своих устройствах, включите синхронизацию.</translation>
 <translation id="8470513973197838199">Сохраненные пароли для <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">требуется оборудование</translation>
-<translation id="8474229360677287535">Закрыть все окна</translation>
 <translation id="8475313423285172237">Одна из программ на вашем компьютере установила расширение, которое может влиять на работу Chrome.</translation>
 <translation id="8475647382427415476">Не удалось синхронизировать <ph name="FILENAME" /> с Google Диском. Система повторит попытку позже.</translation>
 <translation id="8477241577829954800">Заменен</translation>
@@ -4989,7 +4975,6 @@
 <translation id="8688579245973331962">Не нашли свое имя?</translation>
 <translation id="8688591111840995413">Неверный пароль</translation>
 <translation id="8688672835843460752">Свободно</translation>
-<translation id="8689583087392258564">Не удалось подключить компьютер к домену. Организационное подразделение недействительно.</translation>
 <translation id="869257642790614972">Открыть последнюю закрытую вкладку</translation>
 <translation id="8695825812785969222">Открыть &amp;адрес...</translation>
 <translation id="8698464937041809063">Рисунок Google</translation>
@@ -5127,7 +5112,6 @@
 <translation id="8902667442496790482">Открыть настройки озвучивания при нажатии</translation>
 <translation id="8903921497873541725">Увеличить</translation>
 <translation id="8904976895050290827">Синхронизация Chrome</translation>
-<translation id="8909233240676134608">Не удалось подключить компьютер к домену. Сервер не поддерживает выбранные типы шифрования Kerberos. В настройках шифрования установите флажок "Другие параметры".</translation>
 <translation id="8909833622202089127">Сайт отслеживает ваше местоположение</translation>
 <translation id="8910146161325739742">Откройте доступ к экрану</translation>
 <translation id="8910222113987937043">Изменения, связанные с закладками, историей, паролями и настройками, больше не будут синхронизироваться с вашим аккаунтом Google. Тем не менее, данные в аккаунте Google сохранятся. Вы можете просмотреть и изменить их в <ph name="BEGIN_LINK" />Личном кабинете Google<ph name="END_LINK" />.</translation>
@@ -5313,7 +5297,6 @@
 <translation id="9177499212658576372">Вы подключены к сети <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9180380851667544951">Сайт может открыть доступ к вашему экрану</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> с <ph name="DOWNLOAD_DOMAIN" />, ещё <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">Не удалось подключить компьютер к домену. Возможно, у вашего аккаунта на сервере недостаточно прав.</translation>
 <translation id="9188441292293901223">Чтобы разблокировать <ph name="DEVICE_TYPE" />, установите последнюю версию Android на телефоне.</translation>
 <translation id="9190063653747922532">L2TP/IPsec + общий ключ</translation>
 <translation id="920045321358709304">Искать в <ph name="SEARCH_ENGINE" /></translation>

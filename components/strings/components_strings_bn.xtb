@@ -263,12 +263,13 @@
 <translation id="277133753123645258">শিপিংয়ের পদ্ধতি</translation>
 <translation id="277499241957683684">ডিভাইস রেকর্ড অনুপস্থিত</translation>
 <translation id="2781030394888168909">MacOS এক্সপোর্ট করুন</translation>
+<translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">সংযোগ পুনঃসেট করা হয়েছে৷</translation>
 <translation id="2788784517760473862">ক্রেডিট কার্ড গ্রহণ করা হয়</translation>
 <translation id="2794233252405721443">সাইট অবরুদ্ধ করা হয়েছে</translation>
 <translation id="2799020568854403057">যে সাইট খুলতে চলেছেন সেটিতে ক্ষতিকারক অ্যাপ আছে</translation>
 <translation id="2803306138276472711">Google নিরাপদ ব্রাউজিং সাম্প্রতিক <ph name="SITE" /> এ <ph name="BEGIN_LINK" />ম্যালওয়্যার শনাক্ত করেছে<ph name="END_LINK" />। যেসব ওয়েবসাইট সাধারণত নিরাপদ থাকে, সেগুলি কখনও কখনও ম্যালওয়্যার দ্বারা আক্রান্ত হয়।</translation>
-<translation id="2824775600643448204">ঠিকানা এবং অনুসন্ধান দণ্ড</translation>
+<translation id="2824775600643448204">ঠিকানা এবং সার্চ দণ্ড</translation>
 <translation id="2826760142808435982"><ph name="CIPHER" /> ব্যবহার করে এই সংযোগটি এনক্রিপ্টেড এবং প্রমাণীকৃত করা হয়েছে এবং কী এক্সচেঞ্জ প্রক্রিয়া হিসাবে <ph name="KX" /> ব্যবহার করে৷</translation>
 <translation id="2835170189407361413">ফর্ম সাফ করুন</translation>
 <translation id="2851634818064021665">এই সাইট দেখার জন্য আপনার অনুমতির প্রয়োজন</translation>
@@ -314,7 +315,7 @@
 <translation id="3154506275960390542">এই পৃষ্ঠাতে একটি ফর্ম আছে যেটি জমা দেওয়া নিরাপদ নাও হতে পারে। আপনার পাঠানো ডেটা সার্ভারে পৌঁছানোর আগে অন্যরা সেটি দেখতে পেতে পারেন, অথবা কেউ সেটি পরিবর্তন করে দিতে পারেন যাতে আপনার ডেটা সঠিকভাবে সার্ভারে না পৌঁছায়।</translation>
 <translation id="3157931365184549694">পুনরুদ্ধার করুন</translation>
 <translation id="3162559335345991374">আপনি যে Wi-Fiটি ব্যবহার করছেন সেটির জন্য অপনাকে এটির লগ ইন পৃষ্ঠাতে যেতে হতে পরে৷</translation>
-<translation id="3167968892399408617">ছদ্মবেশী ট্যাবগুলিতে আপনি যে পৃষ্ঠাগুলি দেখেন সেগুলি আপনার সব ছদ্মবেশী ট্যাব বন্ধ করে দেওয়ার পর ব্রাউজারের ইতিহাস, কুকি স্টোর বা অনুসন্ধান ইতিহাসে থাকবে না। আপনি ডাউনলোড করেছেন এমন ফাইল বা বুকমার্ক তৈরি করছেন এমন সবগুলি রেখে দেওয়া হবে।</translation>
+<translation id="3167968892399408617">ছদ্মবেশী ট্যাবগুলিতে আপনি যে পৃষ্ঠাগুলি দেখেন সেগুলি আপনার সব ছদ্মবেশী ট্যাব বন্ধ করে দেওয়ার পর ব্রাউজারের ইতিহাস, কুকি স্টোর বা সার্চ ইতিহাসে থাকবে না। আপনি ডাউনলোড করেছেন এমন ফাইল বা বুকমার্ক তৈরি করছেন এমন সবগুলি রেখে দেওয়া হবে।</translation>
 <translation id="3169472444629675720">আবিষ্কার করুন</translation>
 <translation id="3174168572213147020">দ্বীপ</translation>
 <translation id="3176929007561373547">প্রক্সী সার্ভার কাজ করছে কি না, তা নিশ্চিত করতে আপনার প্রক্সী সেটিংস পরীক্ষা করুন
@@ -337,7 +338,7 @@
 <translation id="3282497668470633863">কার্ডে থাকা নাম যোগ করুন</translation>
 <translation id="3287510313208355388">যখন অনলাইন হবেন তখন ডাউনলোড করবেন</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> নীতি সম্পর্কে আরও জানুন</translation>
-<translation id="3303855915957856445">কোনো অনুসন্ধান ফলাফল পাওয়া যায়নি</translation>
+<translation id="3303855915957856445">কোনো সার্চ ফলাফল পাওয়া যায়নি</translation>
 <translation id="3305707030755673451">আপনার ডেটা আপনার সিঙ্ক পাসফ্রেজ দিয়ে <ph name="TIME" /> এ এনক্রিপ্ট করা হয়েছে। সিঙ্ক শুরু করার জন্য এটি লিখুন।</translation>
 <translation id="3320021301628644560">বিলিংয়ের ঠিকানা যোগ করুন</translation>
 <translation id="3338095232262050444">সুরক্ষিত</translation>
@@ -606,7 +607,7 @@
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />সফ্টওয়্যারটি সাময়িকভাবে নিষ্ক্রিয় করার জন্য এই পদক্ষেপগুলি অনুসরণ করুন যাতে আপনি ওয়েবে যেতে পারেন। আপনার প্রশাসকের অধিকার প্রয়োজন হবে।<ph name="END_PARAGRAPH" />
 
     <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />শুরু করুন<ph name="END_BOLD" /> এ ক্লিক করুন, এবং তারপর <ph name="BEGIN_BOLD" />"স্থানীয় পরিষেবা দেখুন"<ph name="END_BOLD" /> অনুসন্ধান করে বেছে নিন
+    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />শুরু করুন<ph name="END_BOLD" /> এ ক্লিক করুন, এবং তারপর <ph name="BEGIN_BOLD" />"স্থানীয় পরিষেবা দেখুন"<ph name="END_BOLD" /> সার্চ করে বেছে নিন
     <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" /> বেছে নিন
     <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />শুরু করার ধরন<ph name="END_BOLD" /> এর অধীনে <ph name="BEGIN_BOLD" />অক্ষম করুন <ph name="END_BOLD" /> বেছে নিন
     <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />পরিষেবা স্থিতির<ph name="END_BOLD" /> অধীনে <ph name="BEGIN_BOLD" />বন্ধ করুন <ph name="END_BOLD" /> এ ক্লিক করুন
@@ -778,7 +779,7 @@
 <translation id="6604181099783169992">মোশন বা হাল্কা সেন্সর</translation>
 <translation id="6624427990725312378">পরিচিতির তথ্য</translation>
 <translation id="6626291197371920147">বৈধ কার্ড নম্বর যোগ করুন</translation>
-<translation id="6628463337424475685"><ph name="ENGINE" /> অনুসন্ধান</translation>
+<translation id="6628463337424475685"><ph name="ENGINE" /> সার্চ</translation>
 <translation id="6630809736994426279"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> এ যে আক্রমণকারীরা এই মুহূর্তে সক্রিয় আছে, তারা আপনার Mac এ এমন বিপজ্জনক প্রোগ্রাম ইনস্টল করে দিতে পারে যেগুলি আপনার তথ্যের (যেমন ফটো, পাসওয়ার্ড, মেসেজ এবং ক্রেডিট কার্ড) ক্ষতি করতে বা সেগুলি চুরি করতে পারে। <ph name="BEGIN_LEARN_MORE_LINK" />আরও জানুন<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6644283850729428850">এই নীতিটি অসমর্থিত হয়েছে৷</translation>
 <translation id="6657585470893396449">পাসওয়ার্ড</translation>
@@ -857,6 +858,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">কার্ড নিশ্চিত করুন</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;আপনার Windows কম্পিউটারে Superfish সফ্টওয়্যারটি ইনস্টল করা থাকলে এই সমস্যাটি হবে।&lt;/p&gt;
+      &lt;p&gt;ইন্টারনেটে কানেক্ট করার জন্য এই সফ্টওয়্যারটি সাময়িকভাবে বন্ধ রাখতে এই ধাপগুলি অনুসরণ করুন। এর জন্য অ্যাডমিনিস্ট্রেটরের সুবিধা থাকতে হবে।&lt;/p&gt;
+      &lt;ol&gt;
+      &lt;li&gt;প্রথমে&lt;strong&gt;শুরু করুন&lt;/strong&gt;বোতামে ক্লিক করুন, তারপর &lt;strong&gt;"স্থানীয় পরিষেবা দেখুন"&lt;/strong&gt; বিকল্পটি বেছে নিন
+      &lt;li&gt;&lt;strong&gt;VisualDiscovery&lt;/strong&gt; বেছে নিন
+      &lt;li&gt;&lt;strong&gt;স্টার্ট-আপের ধরন&lt;/strong&gt;, বিকল্পে গিয়ে&lt;strong&gt;বন্ধ আছে&lt;/strong&gt; বিকল্পটি বেছে নিন
+      &lt;li&gt;&lt;strong&gt;পরিষেবার স্ট্যাটাসে&lt;/strong&gt; গিয়ে, &lt;strong&gt;থামান&lt;/strong&gt; বোতামে ক্লিক করুন
+      &lt;li&gt;&lt;strong&gt;প্রয়োগ করুন&lt;/strong&gt;-এ ক্লিক করে, &lt;strong&gt;ঠিক আছে&lt;/strong&gt;বোতামে ক্লিক করুন
+      &lt;li&gt;কম্পিউটার থেকে সফ্টওয়্যারটি স্থায়ীভাবে সরিয়ে দেওয়ার পদ্ধতি জানতে &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome সহায়তা কেন্দ্রে&lt;/a&gt; যান
+      &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">প্রোফাইল পথ</translation>
 <translation id="7437289804838430631">পরিচিতির তথ্য যোগ করুন</translation>
 <translation id="7441627299479586546">ভুল বিষয় বিশিষ্ট নীতি</translation>

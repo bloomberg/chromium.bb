@@ -522,7 +522,7 @@
       Als je deze instelling niet instelt, kan de gebruiker bepalen of de functie wordt gebruikt.
 
       Deze instelling is verwijderd uit <ph name="PRODUCT_NAME" /> 29 en hogere versies.</translation>
-<translation id="2438609638493026652">Hiermee schakel je de rapportage van belangrijke gebeurtenissen tijdens de installatie van Android-apps aan Google in. Gebeurtenissen worden alleen geregistreerd voor apps waarvan de installatie via beleid is geactiveerd.
+<translation id="2438609638493026652">Hiermee schakel je de rapportage aan Google in van belangrijke gebeurtenissen tijdens de installatie van Android-apps. Gebeurtenissen worden alleen geregistreerd voor apps waarvan de installatie via beleid is geactiveerd.
 
       Als het beleid is ingesteld op True (Waar), worden gebeurtenissen geregistreerd.
       Als het beleid is ingesteld op False (Onwaar) of niet is ingesteld, worden gebeurtenissen niet geregistreerd.</translation>
