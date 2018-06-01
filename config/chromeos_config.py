@@ -1901,6 +1901,9 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       builder_class_name='clang_tidy_builders.ClangTidyBuilder',
       useflags=append_useflags(['clang_tidy']),
       boards=['grunt'],
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      # Weekly on Sunday 3 AM UTC
+      schedule='0 0 3 * * 0 *',
   )
 
 
@@ -1981,6 +1984,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       manifest_version=False,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Pre-CQ',
+      schedule='with 3m interval',
   )
 
 
@@ -2448,6 +2452,7 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       config_lib.CONFIG_TYPE_FULL,
       active_builders,
       active_waterfall=waterfall.WATERFALL_SWARMING,
+      schedule='0 */3 * * *',
   )
 
 
@@ -3139,6 +3144,8 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
       active_waterfall=waterfall.WATERFALL_SWARMING,
+      # Every 3 hours.
+      schedule='0 */3 * * *',
   )
 
   site_config.Add(
@@ -3148,6 +3155,8 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
       boards=['amd64-generic'],
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      schedule='with 30m interval',
   )
 
   site_config.Add(
@@ -3162,6 +3171,8 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
       active_waterfall=waterfall.WATERFALL_SWARMING,
+      # Once every day. 3 PM UTC is 7 AM PST (no daylight savings).
+      schedule='0 15 * * *',
   )
 
   site_config.Add(
@@ -3181,6 +3192,8 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
       active_waterfall=waterfall.WATERFALL_SWARMING,
+      # Every 3 hours.
+      schedule='0 */3 * * *',
   )
 
   site_config.Add(
@@ -3193,6 +3206,8 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       boards=[
           'amd64-generic',
       ],
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      schedule='with 30m interval',
   )
 
   _chrome_perf_boards = frozenset([
@@ -3235,7 +3250,22 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       important=False,
       internal=False,
       manifest_repo_url=site_config.params['MANIFEST_URL'],
-      overlays=constants.PUBLIC_OVERLAYS)
+      overlays=constants.PUBLIC_OVERLAYS,
+  )
+
+  site_config.ApplyForBoards(
+      'tot-chromium-pfq-informational',
+      ['amd64-generic', 'daisy'],
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      schedule='with 30m interval',
+  )
+
+  site_config.ApplyForBoards(
+      'tot-chrome-pfq-informational',
+      ['caroline', 'eve', 'peach_pit', 'tricky', 'veyron_minnie',],
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      schedule='with 30m interval',
+  )
 
   _telemetry_boards = frozenset([
       'amd64-generic',
@@ -3248,6 +3278,11 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       _telemetry_boards,
       internal_board_configs,
       site_config.templates.telemetry,
+  )
+
+  site_config['amd64-generic-telemetry'].apply(
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      schedule='with 30m interval',
   )
 
 
@@ -3415,6 +3450,11 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
         site_config.templates.no_vmtest_builder,
         active_waterfall=waterfall.WATERFALL_SWARMING,
     )
+
+  site_config['link-depthcharge-full-firmware'].apply(
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      schedule='with 12h interval',
+  )
 
 
 def FactoryBuilders(site_config, boards_dict, ge_build_config):
@@ -3950,6 +3990,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       description='Build the SDK and all the cross-compilers',
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Continuous',
+      schedule='with 30m interval',
   )
 
   site_config.AddWithoutTemplate(
@@ -3965,6 +4006,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       builder_class_name='alert_builders.SomDispatcherBuilder',
       active_waterfall=constants.WATERFALL_SWARMING,
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+      schedule='with 3m interval',
   )
 
   site_config.AddWithoutTemplate(
@@ -3981,6 +4023,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       builder_class_name='config_builders.UpdateConfigBuilder',
       active_waterfall=constants.WATERFALL_SWARMING,
       binhost_test=True,
+      schedule='@hourly',
   )
 
   site_config.AddWithoutTemplate(
@@ -4033,8 +4076,10 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       builder_class_name='test_builders.VMInformationalBuilder',
       vm_tests=getInfoVMTest(),
       vm_tests_override=getInfoVMTest(),
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       vm_test_report_to_dashboards=True,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      # 3 PM UTC is 7 AM PST (no daylight savings).
+      schedule='0 15 * * *',
   )
 
   # Create our unittest stress build configs (used for tryjobs only)
@@ -4105,6 +4150,14 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       description='Build Chromium OS infra Go binaries',
       doc='https://goto.google.com/cros-infra-go-packaging',
       active_waterfall=waterfall.WATERFALL_SWARMING,
+      schedule='triggered',
+      triggered_gitiles=[[
+          'https://chromium.googlesource.com/chromiumos/infra/lucifer',
+          ['refs/heads/master']
+      ], [
+          'https://chromium.googlesource.com/chromiumos/infra/skylab_inventory',
+          ['refs/heads/master'],
+      ]],
   )
 
 
@@ -4181,6 +4234,8 @@ def TryjobMirrors(site_config):
         uprev=True,
         active_waterfall=waterfall.WATERFALL_SWARMING,
         gs_path=config_lib.GS_PATH_DEFAULT,
+        schedule=None,
+        triggered_gitiles=None,
     )
 
     # Force uprev. This is so patched in changes are always built.
