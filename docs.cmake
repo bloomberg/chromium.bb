@@ -105,6 +105,14 @@ if(CONFIG_AV1_DECODER)
       "Lightfield decoder example.")
 endif()
 
+if(CONFIG_AV1_DECODER AND CONFIG_AV1_ENCODER)
+  set(AOM_DOXYGEN_EXAMPLE_SOURCES ${AOM_DOXYGEN_EXAMPLE_SOURCES}
+      "${AOM_ROOT}/examples/lightfield_bitstream_parsing.c")
+
+  set(AOM_DOXYGEN_EXAMPLE_DESCRIPTIONS ${AOM_DOXYGEN_EXAMPLE_DESCRIPTIONS}
+      "Lightfield bitstream parsing example.")
+endif()
+
 # Iterates over list named by $list_name and appends each item to $AOM_DOXYFILE
 # as values assigned to $var_name with no line breaks between list items.
 # Appends a new line after the entire config variable is expanded.

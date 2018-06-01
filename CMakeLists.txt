@@ -473,6 +473,16 @@ if(ENABLE_EXAMPLES AND CONFIG_AV1_DECODER)
   list(APPEND AOM_APP_TARGETS lightfield_decoder)
 endif()
 
+if(ENABLE_EXAMPLES AND CONFIG_AV1_ENCODER AND CONFIG_AV1_DECODER)
+  add_executable(lightfield_bitstream_parsing
+                 "${AOM_ROOT}/examples/lightfield_bitstream_parsing.c"
+                 $<TARGET_OBJECTS:aom_common_app_util>
+                 $<TARGET_OBJECTS:aom_encoder_app_util>
+                 $<TARGET_OBJECTS:aom_decoder_app_util>)
+  list(APPEND AOM_EXAMPLE_TARGETS lightfield_bitstream_parsing)
+  list(APPEND AOM_APP_TARGETS lightfield_bitstream_parsing)
+endif()
+
 foreach(aom_app ${AOM_APP_TARGETS})
   target_link_libraries(${aom_app} ${AOM_LIB_LINK_TYPE} aom)
 endforeach()
