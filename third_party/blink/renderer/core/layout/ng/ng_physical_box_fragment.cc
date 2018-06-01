@@ -215,8 +215,9 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
   }
 }
 
-NGPhysicalOffsetRect NGPhysicalBoxFragment::VisualRectWithContents() const {
-  if (HasOverflowClip() || Style().HasMask())
+NGPhysicalOffsetRect NGPhysicalBoxFragment::VisualRectWithContents(
+    bool clip_overflow) const {
+  if ((clip_overflow && HasOverflowClip()) || Style().HasMask())
     return SelfVisualRect();
 
   NGPhysicalOffsetRect visual_rect = SelfVisualRect();

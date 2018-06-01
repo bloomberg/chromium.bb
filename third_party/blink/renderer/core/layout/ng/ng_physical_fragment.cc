@@ -317,10 +317,12 @@ NGPhysicalOffsetRect NGPhysicalFragment::SelfVisualRect() const {
   return {{}, Size()};
 }
 
-NGPhysicalOffsetRect NGPhysicalFragment::VisualRectWithContents() const {
+NGPhysicalOffsetRect NGPhysicalFragment::VisualRectWithContents(
+    bool clip_overflow) const {
   switch (Type()) {
     case NGPhysicalFragment::kFragmentBox:
-      return ToNGPhysicalBoxFragment(*this).VisualRectWithContents();
+      return ToNGPhysicalBoxFragment(*this).VisualRectWithContents(
+          clip_overflow);
     case NGPhysicalFragment::kFragmentText:
       return ToNGPhysicalTextFragment(*this).SelfVisualRect();
     case NGPhysicalFragment::kFragmentLineBox:
@@ -442,7 +444,7 @@ String NGPhysicalFragment::DumpFragmentTree(DumpFlags flags,
 
 #ifndef NDEBUG
 void NGPhysicalFragment::ShowFragmentTree() const {
-  DumpFlags dump_flags = DumpAll & ~DumpOverflow;
+  DumpFlags dump_flags = DumpAll;  //& ~DumpOverflow;
   LOG(INFO) << "\n" << DumpFragmentTree(dump_flags).Utf8().data();
 }
 #endif  // !NDEBUG

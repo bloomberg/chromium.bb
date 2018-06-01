@@ -173,7 +173,7 @@ class CORE_EXPORT NGPhysicalFragment
   NGPhysicalOffsetRect SelfVisualRect() const;
 
   // VisualRect of itself including contents, in the local coordinate.
-  NGPhysicalOffsetRect VisualRectWithContents() const;
+  NGPhysicalOffsetRect VisualRectWithContents(bool clip_overflow = true) const;
 
   // Scrollable overflow. including contents, in the local coordinate.
   NGPhysicalOffsetRect ScrollableOverflow() const;

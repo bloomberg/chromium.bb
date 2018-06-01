@@ -76,7 +76,11 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   bool HasSelfPaintingLayer() const;
   LayoutRect VisualRect() const override { return visual_rect_; }
   void SetVisualRect(const LayoutRect& rect) { visual_rect_ = rect; }
+  // CSS ink overflow https://www.w3.org/TR/css-overflow-3/#ink
+  // Encloses all pixels painted by self + children.
   LayoutRect VisualOverflowRect() const;
+  // Union of children's ink overflows.
+  LayoutRect VisualContentsRect() const;
 
   LayoutRect PartialInvalidationRect() const override;
 
