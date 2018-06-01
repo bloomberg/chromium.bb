@@ -494,6 +494,7 @@ OfflinePageRequestHandler::OfflinePageRequestHandler(
     Delegate* delegate)
     : url_(url),
       delegate_(delegate),
+      network_state_(NetworkState::CONNECTED_NETWORK),
       candidate_index_(0),
       has_range_header_(false),
       weak_ptr_factory_(this) {
@@ -505,8 +506,6 @@ OfflinePageRequestHandler::OfflinePageRequestHandler(
 
   if (extra_request_headers.HasHeader(net::HttpRequestHeaders::kRange))
     has_range_header_ = true;
-
-  network_state_ = GetNetworkState();
 }
 
 OfflinePageRequestHandler::~OfflinePageRequestHandler() {}
@@ -550,6 +549,7 @@ void OfflinePageRequestHandler::Start() {
 }
 
 void OfflinePageRequestHandler::StartAsync() {
+  network_state_ = GetNetworkState();
   if (network_state_ == NetworkState::CONNECTED_NETWORK) {
     delegate_->FallbackToDefault();
     return;
@@ -1023,7 +1023,11 @@ void OfflinePageRequestHandler::DidComputeActualDigestForServing(
   bool mismatch = actual_digest != GetCurrentOfflinePage().digest;
   ReportIntentDataChangedAfterValidation(mismatch);
   if (mismatch) {
-    delegate_->SetOfflinePageNavigationUIData(false /*is_offline_page*/);
+    // Note: Do not call delegate_->SetOfflinePageNavigationUIData to clear
+    // the offline bit since SetOfflinePageNavigationUIData is supposed to
+    // be called before the response is being received. Furthermore, there is
+    // no need to clear the offline bit since the error code should already
+    // indicate that the offline page is not loaded.
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(&ClearOfflinePageData, delegate_->GetWebContentsGetter()));

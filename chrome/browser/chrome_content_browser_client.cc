@@ -216,6 +216,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
@@ -463,6 +464,10 @@
 
 #if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
 #include "chrome/services/file_util/public/mojom/constants.mojom.h"
+#endif
+
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/offline_page_url_loader_request_interceptor.h"
 #endif
 
 using base::FileDescriptor;
@@ -4154,6 +4159,20 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
 #else
   return false;
 #endif
+}
+
+std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
+ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
+    content::NavigationUIData* navigation_ui_data,
+    int frame_tree_node_id) {
+  std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
+      interceptors;
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  interceptors.push_back(
+      std::make_unique<offline_pages::OfflinePageURLLoaderRequestInterceptor>(
+          navigation_ui_data, frame_tree_node_id));
+#endif
+  return interceptors;
 }
 
 void ChromeContentBrowserClient::WillCreateWebSocket(

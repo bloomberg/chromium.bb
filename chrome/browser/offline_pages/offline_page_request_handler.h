@@ -136,8 +136,10 @@ class OfflinePageRequestHandler {
   // All methods are called from IO thread.
   class Delegate {
    public:
-    using WebContentsGetter = base::Callback<content::WebContents*(void)>;
-    using TabIdGetter = base::Callback<bool(content::WebContents*, int*)>;
+    using WebContentsGetter =
+        base::RepeatingCallback<content::WebContents*(void)>;
+    using TabIdGetter =
+        base::RepeatingCallback<bool(content::WebContents*, int*)>;
 
     // Falls back to the default handling in the case that the offline content
     // can't be found and served.
@@ -156,6 +158,9 @@ class OfflinePageRequestHandler {
     virtual void NotifyReadRawDataComplete(int bytes_read) = 0;
 
     // Sets |is_offline_page| flag in NavigationUIData.
+    // Note: this should be called before the response data is being constructed
+    // and returned because NavigationUIData may be disposed right after the
+    // response data is received.
     virtual void SetOfflinePageNavigationUIData(bool is_offline_page) = 0;
 
     // Returns true if the preview is allowed.
