@@ -9,13 +9,8 @@
 
 namespace device {
 
-unsigned int VRDeviceBase::next_id_ = 1;
-
-VRDeviceBase::VRDeviceBase() : id_(next_id_) {
-  // Prevent wraparound. Devices with this ID will be treated as invalid.
-  if (next_id_ != VR_DEVICE_LAST_ID)
-    next_id_++;
-}
+VRDeviceBase::VRDeviceBase(VRDeviceId id)
+    : id_(static_cast<unsigned int>(id)) {}
 
 VRDeviceBase::~VRDeviceBase() = default;
 

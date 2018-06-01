@@ -6,7 +6,8 @@
 
 namespace device {
 
-FakeVRDevice::FakeVRDevice() : VRDeviceBase() {
+FakeVRDevice::FakeVRDevice(unsigned int id)
+    : VRDeviceBase(static_cast<VRDeviceId>(id)) {
   SetVRDisplayInfo(InitBasicDevice());
 }
 

@@ -116,7 +116,8 @@ static void SampleGamepad(unsigned index,
     gamepad.SetIndex(index);
     gamepad.SetMapping(device_gamepad.mapping);
     gamepad.SetVibrationActuator(device_gamepad.vibration_actuator);
-    gamepad.SetDisplayId(device_gamepad.display_id);
+    // Re-map display ids, since we will hand out at most one VRDisplay.
+    gamepad.SetDisplayId(device_gamepad.display_id ? 1 : 0);
   } else if (!gamepad.vibrationActuator() &&
              device_gamepad.vibration_actuator.not_null) {
     // Some gamepads require additional steps to determine haptics capability.

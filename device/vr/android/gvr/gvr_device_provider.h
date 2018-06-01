@@ -20,9 +20,11 @@ class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
   GvrDeviceProvider();
   ~GvrDeviceProvider() override;
 
-  void Initialize(base::Callback<void(VRDevice*)> add_device_callback,
-                  base::Callback<void(VRDevice*)> remove_device_callback,
-                  base::OnceClosure initialization_complete) override;
+  void Initialize(
+      base::RepeatingCallback<void(unsigned int, VRDevice*)>
+          add_device_callback,
+      base::RepeatingCallback<void(unsigned int)> remove_device_callback,
+      base::OnceClosure initialization_complete) override;
 
   bool Initialized() override;
 

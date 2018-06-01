@@ -57,7 +57,7 @@ class VR_EXPORT VRDeviceManager {
                            ProviderList fallback_providers);
 
   // Used by tests to check on device state.
-  device::VRDevice* GetDevice(unsigned int index);
+  device::VRDevice* GetDevice(unsigned int id);
 
   size_t NumberOfConnectedServices();
 
@@ -66,15 +66,16 @@ class VR_EXPORT VRDeviceManager {
   void OnProviderInitialized();
   bool AreAllProvidersInitialized();
 
-  void AddDevice(bool is_fallback, device::VRDevice* device);
-  void RemoveDevice(device::VRDevice* device);
+  void AddDevice(bool is_fallback, unsigned int id, device::VRDevice* device);
+  void RemoveDevice(unsigned int id);
 
   ProviderList providers_;
   ProviderList fallback_providers_;
 
   // VRDevices are owned by their providers, each correspond to a
   // BrowserXrDevice that is owned by VRDeviceManager.
-  using DeviceMap = std::map<unsigned int, std::unique_ptr<BrowserXrDevice>>;
+  using DeviceMap =
+      base::small_map<std::map<unsigned int, std::unique_ptr<BrowserXrDevice>>>;
   DeviceMap devices_;
 
   bool providers_initialized_ = false;

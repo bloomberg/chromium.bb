@@ -20,8 +20,9 @@ class VRDeviceProvider {
 
   // If the VR API requires initialization that should happen here.
   virtual void Initialize(
-      base::Callback<void(VRDevice*)> add_device_callback,
-      base::Callback<void(VRDevice*)> remove_device_callback,
+      base::RepeatingCallback<void(unsigned int, VRDevice*)>
+          add_device_callback,
+      base::RepeatingCallback<void(unsigned int)> remove_device_callback,
       base::OnceClosure initialization_complete) = 0;
 
   // Returns true if initialization is complete.

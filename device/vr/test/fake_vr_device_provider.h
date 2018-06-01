@@ -24,16 +24,18 @@ class DEVICE_VR_EXPORT FakeVRDeviceProvider : public VRDeviceProvider {
   void AddDevice(std::unique_ptr<VRDevice> device);
   void RemoveDevice(unsigned int device_id);
 
-  void Initialize(base::Callback<void(VRDevice*)> add_device_callback,
-                  base::Callback<void(VRDevice*)> remove_device_callback,
-                  base::OnceClosure initialization_complete) override;
+  void Initialize(
+      base::RepeatingCallback<void(unsigned int, VRDevice*)>
+          add_device_callback,
+      base::RepeatingCallback<void(unsigned int)> remove_device_callback,
+      base::OnceClosure initialization_complete) override;
   bool Initialized() override;
 
  private:
   std::vector<std::unique_ptr<VRDevice>> devices_;
   bool initialized_;
-  base::Callback<void(VRDevice*)> add_device_callback_;
-  base::Callback<void(VRDevice*)> remove_device_callback_;
+  base::RepeatingCallback<void(unsigned int, VRDevice*)> add_device_callback_;
+  base::RepeatingCallback<void(unsigned int)> remove_device_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeVRDeviceProvider);
 };

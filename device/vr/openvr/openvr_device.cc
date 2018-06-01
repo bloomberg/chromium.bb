@@ -145,7 +145,8 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(vr::IVRSystem* vr_system,
 }  // namespace
 
 OpenVRDevice::OpenVRDevice(vr::IVRSystem* vr)
-    : vr_system_(vr),
+    : VRDeviceBase(VRDeviceId::OPENVR_DEVICE_ID),
+      vr_system_(vr),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
   DCHECK(vr_system_);

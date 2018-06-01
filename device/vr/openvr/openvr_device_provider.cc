@@ -37,12 +37,12 @@ OpenVRDeviceProvider::~OpenVRDeviceProvider() {
 }
 
 void OpenVRDeviceProvider::Initialize(
-    base::Callback<void(VRDevice*)> add_device_callback,
-    base::Callback<void(VRDevice*)> remove_device_callback,
+    base::RepeatingCallback<void(unsigned int, VRDevice*)> add_device_callback,
+    base::RepeatingCallback<void(unsigned int)> remove_device_callback,
     base::OnceClosure initialization_complete) {
   CreateDevice();
   if (device_)
-    add_device_callback.Run(device_.get());
+    add_device_callback.Run(device_->GetId(), device_.get());
   initialized_ = true;
   std::move(initialization_complete).Run();
 }

@@ -19,11 +19,10 @@ namespace device {
 // TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
 class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
  public:
-  VRDeviceBase();
+  explicit VRDeviceBase(VRDeviceId id);
   ~VRDeviceBase() override;
 
   // VRDevice Implementation
-  unsigned int GetId() const override;
   void PauseTracking() override;
   void ResumeTracking() override;
   void OnExitPresent() override;
@@ -52,6 +51,7 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
   virtual void RequestHitTest(
       mojom::XRRayPtr ray,
       mojom::VRMagicWindowProvider::RequestHitTestCallback callback);
+  unsigned int GetId() const;
 
   bool HasExclusiveSession();
 
@@ -87,7 +87,6 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
   bool presenting_ = false;
 
   unsigned int id_;
-  static unsigned int next_id_;
   bool magic_window_enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(VRDeviceBase);

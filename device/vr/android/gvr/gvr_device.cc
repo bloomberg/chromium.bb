@@ -142,7 +142,8 @@ std::unique_ptr<GvrDevice> GvrDevice::Create() {
   return device;
 }
 
-GvrDevice::GvrDevice() : weak_ptr_factory_(this) {
+GvrDevice::GvrDevice()
+    : VRDeviceBase(VRDeviceId::GVR_DEVICE_ID), weak_ptr_factory_(this) {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider || delegate_provider->ShouldDisableGvrDevice())
     return;

@@ -136,13 +136,11 @@ void VRDeviceManager::RemoveService(VRServiceImpl* service) {
   }
 }
 
-void VRDeviceManager::AddDevice(bool is_fallback, device::VRDevice* device) {
+void VRDeviceManager::AddDevice(bool is_fallback,
+                                unsigned int id,
+                                device::VRDevice* device) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(devices_.find(device->GetId()) == devices_.end());
-  // Ignore any devices with VR_DEVICE_LAST_ID, which is used to prevent
-  // wraparound of device ids.
-  if (device->GetId() == device::VR_DEVICE_LAST_ID)
-    return;
+  DCHECK(devices_.find(id) == devices_.end());
 
   // If we were previously using a fallback device, remove it.
   // TODO(offenwanger): This has the potential to cause device change events to
@@ -154,20 +152,17 @@ void VRDeviceManager::AddDevice(bool is_fallback, device::VRDevice* device) {
       service->RemoveDevice(device);
   }
 
-  devices_[device->GetId()] =
-      std::make_unique<BrowserXrDevice>(device, is_fallback);
+  devices_[id] = std::make_unique<BrowserXrDevice>(device, is_fallback);
   if (!is_fallback || devices_.size() == 1) {
-    BrowserXrDevice* device_to_add = devices_[device->GetId()].get();
+    BrowserXrDevice* device_to_add = devices_[id].get();
     for (VRServiceImpl* service : services_)
       service->ConnectDevice(device_to_add);
   }
 }
 
-void VRDeviceManager::RemoveDevice(device::VRDevice* device) {
+void VRDeviceManager::RemoveDevice(unsigned int id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (device->GetId() == device::VR_DEVICE_LAST_ID)
-    return;
-  auto it = devices_.find(device->GetId());
+  auto it = devices_.find(id);
   DCHECK(it != devices_.end());
 
   for (VRServiceImpl* service : services_)
@@ -188,13 +183,13 @@ void VRDeviceManager::RecordVrStartupHistograms() {
 #endif
 }
 
-device::VRDevice* VRDeviceManager::GetDevice(unsigned int index) {
+device::VRDevice* VRDeviceManager::GetDevice(unsigned int id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (index == 0)
+  if (id == 0)
     return nullptr;
 
-  DeviceMap::iterator iter = devices_.find(index);
+  DeviceMap::iterator iter = devices_.find(id);
   if (iter == devices_.end())
     return nullptr;
 
