@@ -154,11 +154,6 @@ def _ProcessResources(config, tmp_paths, repo):
 
     res_path = os.path.join(tmp_paths['imported_clients'], client_dir, 'res')
     if not os.path.isdir(res_path):
-      # We declare the libraries in GN as `android_java_prebuilt` and add to
-      # each an `android_resources` target. So we need to the resources
-      # directory to exist.
-      os.makedirs(res_path)
-      open(os.path.join(res_path, '.gitkeep'), 'a').close()
       continue
 
     for res_type in os.listdir(res_path):
