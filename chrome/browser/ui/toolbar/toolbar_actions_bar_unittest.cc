@@ -494,6 +494,8 @@ TEST_P(ToolbarActionsBarUnitTest, TestActionFrameBounds) {
 
 TEST_P(ToolbarActionsBarUnitTest, TestStartAndEndIndexes) {
   const int icon_width = toolbar_actions_bar()->GetViewSize().width();
+  const int resize_handle_size =
+      toolbar_actions_bar()->platform_settings().item_spacing;
 
   for (int i = 0; i < 3; ++i) {
     CreateAndAddExtension(base::StringPrintf("extension %d", i),
@@ -509,7 +511,7 @@ TEST_P(ToolbarActionsBarUnitTest, TestStartAndEndIndexes) {
   EXPECT_FALSE(toolbar_actions_bar()->NeedsOverflow());
 
   // Shrink the width of the view to be a little over enough for one icon.
-  browser_action_test_util()->SetWidth(icon_width + 2);
+  browser_action_test_util()->SetWidth(icon_width + 2 + resize_handle_size);
   // Tricky: GetIconCount() is what we use to determine our preferred size,
   // stored pref size, etc, and should not be affected by a minimum size that is
   // too small to show everything. It should remain constant.
@@ -532,9 +534,12 @@ TEST_P(ToolbarActionsBarUnitTest, TestStartAndEndIndexes) {
   EXPECT_EQ(3u, overflow_bar()->GetEndIndexInBounds());
   EXPECT_TRUE(toolbar_actions_bar()->NeedsOverflow());
 
-  // Set the width back to the preferred width. All should be back to normal.
+  // Set the width back to the preferred width (with resize handle). All should
+  // be back to normal.
+  // TODO(pbos): Set the full width in a less contrived way when
+  // ToolbarActionsBar and BrowserActionsContainer merge.
   browser_action_test_util()->SetWidth(
-      toolbar_actions_bar()->GetFullSize().width());
+      toolbar_actions_bar()->GetFullSize().width() + resize_handle_size);
   EXPECT_EQ(3u, toolbar_actions_bar()->GetIconCount());
   EXPECT_EQ(0u, toolbar_actions_bar()->GetStartIndexInBounds());
   EXPECT_EQ(3u, toolbar_actions_bar()->GetEndIndexInBounds());
