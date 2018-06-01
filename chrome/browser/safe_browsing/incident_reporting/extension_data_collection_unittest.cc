@@ -59,7 +59,7 @@ class ExtensionTestingProfile : public TestingProfile {
 
  private:
   TestingProfile* profile_;
-  ExtensionService* extension_service_;
+  extensions::ExtensionService* extension_service_;
   extensions::ExtensionPrefs* extension_prefs_;
 };
 
