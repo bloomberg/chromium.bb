@@ -47,12 +47,12 @@ using ClearStorageResult = ClearStorageTask::ClearStorageResult;
 
 namespace {
 
-void WrapInMultipleItemsCallback(const MultipleOfflineIdCallback& callback,
+void WrapInMultipleItemsCallback(MultipleOfflineIdCallback callback,
                                  const MultipleOfflinePageItemResult& pages) {
   std::vector<int64_t> results;
   for (const auto& page : pages)
     results.push_back(page.offline_id);
-  callback.Run(results);
+  std::move(callback).Run(results);
 }
 
 SavePageResult ArchiverResultToSavePageResult(ArchiverResult archiver_result) {
@@ -277,22 +277,22 @@ void OfflinePageModelTaskified::MarkPageAccessed(int64_t offline_id) {
 
 void OfflinePageModelTaskified::DeletePagesByOfflineId(
     const std::vector<int64_t>& offline_ids,
-    const DeletePageCallback& callback) {
+    DeletePageCallback callback) {
   auto task = DeletePageTask::CreateTaskMatchingOfflineIds(
       store_.get(),
       base::BindOnce(&OfflinePageModelTaskified::OnDeleteDone,
-                     weak_ptr_factory_.GetWeakPtr(), callback),
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
       offline_ids);
   task_queue_.AddTask(std::move(task));
 }
 
 void OfflinePageModelTaskified::DeletePagesByClientIds(
     const std::vector<ClientId>& client_ids,
-    const DeletePageCallback& callback) {
+    DeletePageCallback callback) {
   auto task = DeletePageTask::CreateTaskMatchingClientIds(
       store_.get(),
       base::BindOnce(&OfflinePageModelTaskified::OnDeleteDone,
-                     weak_ptr_factory_.GetWeakPtr(), callback),
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
       client_ids);
   task_queue_.AddTask(std::move(task));
 }
@@ -300,22 +300,22 @@ void OfflinePageModelTaskified::DeletePagesByClientIds(
 void OfflinePageModelTaskified::DeletePagesByClientIdsAndOrigin(
     const std::vector<ClientId>& client_ids,
     const std::string& origin,
-    const DeletePageCallback& callback) {
+    DeletePageCallback callback) {
   auto task = DeletePageTask::CreateTaskMatchingClientIdsAndOrigin(
       store_.get(),
       base::BindOnce(&OfflinePageModelTaskified::OnDeleteDone,
-                     weak_ptr_factory_.GetWeakPtr(), callback),
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
       client_ids, origin);
   task_queue_.AddTask(std::move(task));
 }
 
 void OfflinePageModelTaskified::DeleteCachedPagesByURLPredicate(
     const UrlPredicate& predicate,
-    const DeletePageCallback& callback) {
+    DeletePageCallback callback) {
   auto task = DeletePageTask::CreateTaskMatchingUrlPredicateForCachedPages(
       store_.get(),
       base::BindOnce(&OfflinePageModelTaskified::OnDeleteDone,
-                     weak_ptr_factory_.GetWeakPtr(), callback),
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
       policy_controller_.get(), predicate);
   task_queue_.AddTask(std::move(task));
 }
@@ -405,12 +405,13 @@ void OfflinePageModelTaskified::GetPageBySizeAndDigest(
 
 void OfflinePageModelTaskified::GetOfflineIdsForClientId(
     const ClientId& client_id,
-    const MultipleOfflineIdCallback& callback) {
+    MultipleOfflineIdCallback callback) {
   // We're currently getting offline IDs by querying offline items based on
   // client ids, and then extract the offline IDs from the items. This is fine
   // since we're not expecting many pages with the same client ID.
   auto task = GetPagesTask::CreateTaskMatchingClientIds(
-      store_.get(), base::Bind(&WrapInMultipleItemsCallback, callback),
+      store_.get(),
+      base::BindOnce(&WrapInMultipleItemsCallback, std::move(callback)),
       {client_id});
   task_queue_.AddTask(std::move(task));
 }
@@ -651,7 +652,7 @@ void OfflinePageModelTaskified::OnAddPageDone(const OfflinePageItem& page,
 }
 
 void OfflinePageModelTaskified::OnDeleteDone(
-    const DeletePageCallback& callback,
+    DeletePageCallback callback,
     DeletePageResult result,
     const std::vector<OfflinePageModel::DeletedPageInfo>& infos) {
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.DeletePageResult", result,
@@ -679,7 +680,7 @@ void OfflinePageModelTaskified::OnDeleteDone(
                      download_manager_.get(), system_download_ids));
 
   if (!callback.is_null())
-    callback.Run(result);
+    std::move(callback).Run(result);
 }
 
 void OfflinePageModelTaskified::OnStoreThumbnailDone(
@@ -799,7 +800,8 @@ void OfflinePageModelTaskified::RemovePagesMatchingUrlAndNamespace(
   auto task = DeletePageTask::CreateTaskDeletingForPageLimit(
       store_.get(),
       base::BindOnce(&OfflinePageModelTaskified::OnDeleteDone,
-                     weak_ptr_factory_.GetWeakPtr(), base::DoNothing()),
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::DoNothing::Once<DeletePageResult>()),
       policy_controller_.get(), page);
   task_queue_.AddTask(std::move(task));
 }

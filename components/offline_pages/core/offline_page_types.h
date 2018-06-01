@@ -96,16 +96,15 @@ typedef std::vector<OfflinePageItem> MultipleOfflinePageItemResult;
 // TODO(carlosk): All or most of these should use base::OnceCallback.
 typedef base::OnceCallback<void(SavePageResult, int64_t)> SavePageCallback;
 typedef base::OnceCallback<void(AddPageResult, int64_t)> AddPageCallback;
-typedef base::Callback<void(DeletePageResult)> DeletePageCallback;
-typedef base::Callback<void(bool)> HasPagesCallback;
-typedef base::Callback<void(const MultipleOfflineIdResult&)>
+typedef base::OnceCallback<void(DeletePageResult)> DeletePageCallback;
+typedef base::OnceCallback<void(const MultipleOfflineIdResult&)>
     MultipleOfflineIdCallback;
 typedef base::OnceCallback<void(const OfflinePageItem*)>
     SingleOfflinePageItemCallback;
 typedef base::OnceCallback<void(const MultipleOfflinePageItemResult&)>
     MultipleOfflinePageItemCallback;
-typedef base::Callback<bool(const GURL&)> UrlPredicate;
-typedef base::Callback<void(int64_t)> SizeInBytesCallback;
+typedef base::RepeatingCallback<bool(const GURL&)> UrlPredicate;
+typedef base::OnceCallback<void(int64_t)> SizeInBytesCallback;
 typedef base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)>
     GetThumbnailCallback;
 typedef base::OnceCallback<void(bool)> CleanupThumbnailsCallback;

@@ -35,8 +35,8 @@ class MockOfflinePageModel : public offline_pages::StubOfflinePageModel {
  public:
   void DeleteCachedPagesByURLPredicate(
       const offline_pages::UrlPredicate& predicate,
-      const offline_pages::DeletePageCallback& callback) override {
-    callback.Run(DeletePageResult::SUCCESS);
+      offline_pages::DeletePageCallback callback) override {
+    std::move(callback).Run(DeletePageResult::SUCCESS);
   }
 };
 

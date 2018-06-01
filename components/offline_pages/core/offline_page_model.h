@@ -153,23 +153,22 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
 
   // Deletes pages based on |offline_ids|.
   virtual void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
-                                      const DeletePageCallback& callback) = 0;
+                                      DeletePageCallback callback) = 0;
 
   // Deletes all pages associated with any of |client_ids|.
   virtual void DeletePagesByClientIds(const std::vector<ClientId>& client_ids,
-                                      const DeletePageCallback& callback) = 0;
+                                      DeletePageCallback callback) = 0;
 
   // Deletes all pages associated with any of the |client_ids| provided the page
   // also was created by origin.
   virtual void DeletePagesByClientIdsAndOrigin(
       const std::vector<ClientId>& client_ids,
       const std::string& origin,
-      const DeletePageCallback& callback) = 0;
+      DeletePageCallback callback) = 0;
 
   // Deletes cached offline pages matching the URL predicate.
-  virtual void DeleteCachedPagesByURLPredicate(
-      const UrlPredicate& predicate,
-      const DeletePageCallback& callback) = 0;
+  virtual void DeleteCachedPagesByURLPredicate(const UrlPredicate& predicate,
+                                               DeletePageCallback callback) = 0;
 
   // Gets all offline pages.
   virtual void GetAllPages(MultipleOfflinePageItemCallback callback) = 0;
@@ -220,9 +219,8 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
       SingleOfflinePageItemCallback callback) = 0;
 
   // Gets all offline ids where the offline page has the matching client id.
-  virtual void GetOfflineIdsForClientId(
-      const ClientId& client_id,
-      const MultipleOfflineIdCallback& callback) = 0;
+  virtual void GetOfflineIdsForClientId(const ClientId& client_id,
+                                        MultipleOfflineIdCallback callback) = 0;
 
   // Stores a new page thumbnail in the page_thumbnails table.
   virtual void StoreThumbnail(const OfflinePageThumbnail& thumb) = 0;

@@ -28,25 +28,25 @@ void StubOfflinePageModel::AddPage(const OfflinePageItem& page,
 void StubOfflinePageModel::MarkPageAccessed(int64_t offline_id) {}
 void StubOfflinePageModel::DeletePagesByOfflineId(
     const std::vector<int64_t>& offline_ids,
-    const DeletePageCallback& callback) {}
+    DeletePageCallback callback) {}
 void StubOfflinePageModel::DeletePagesByClientIds(
     const std::vector<ClientId>& client_ids,
-    const DeletePageCallback& callback) {}
+    DeletePageCallback callback) {}
 void StubOfflinePageModel::DeletePagesByClientIdsAndOrigin(
     const std::vector<ClientId>& client_ids,
     const std::string& origin,
-    const DeletePageCallback& callback) {}
+    DeletePageCallback callback) {}
 void StubOfflinePageModel::GetPagesByClientIds(
     const std::vector<ClientId>& client_ids,
     MultipleOfflinePageItemCallback callback) {}
 void StubOfflinePageModel::DeleteCachedPagesByURLPredicate(
     const UrlPredicate& predicate,
-    const DeletePageCallback& callback) {}
+    DeletePageCallback callback) {}
 void StubOfflinePageModel::GetAllPages(
     MultipleOfflinePageItemCallback callback) {}
 void StubOfflinePageModel::GetOfflineIdsForClientId(
     const ClientId& client_id,
-    const MultipleOfflineIdCallback& callback) {}
+    MultipleOfflineIdCallback callback) {}
 void StubOfflinePageModel::GetPageByOfflineId(
     int64_t offline_id,
     SingleOfflinePageItemCallback callback) {}

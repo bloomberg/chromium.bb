@@ -151,7 +151,7 @@ class OfflinePageUtils {
   // means no callback should be expected.
   static bool GetCachedOfflinePageSizeBetween(
       content::BrowserContext* browser_context,
-      const SizeInBytesCallback& callback,
+      SizeInBytesCallback callback,
       const base::Time& begin_time,
       const base::Time& end_time);
 

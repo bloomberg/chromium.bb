@@ -98,9 +98,9 @@ class MockOfflinePageModel : public StubOfflinePageModel {
   }
 
   void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
-                              const DeletePageCallback& callback) override {
+                              DeletePageCallback callback) override {
     mock_deleting_ = true;
-    callback.Run(DeletePageResult::SUCCESS);
+    std::move(callback).Run(DeletePageResult::SUCCESS);
   }
 
   bool mock_saving() const { return mock_saving_; }
