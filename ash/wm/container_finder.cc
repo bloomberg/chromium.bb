@@ -21,10 +21,10 @@ namespace ash {
 namespace wm {
 namespace {
 
-aura::Window* FindContainerRoot(const gfx::Rect& bounds) {
-  if (bounds == gfx::Rect())
+aura::Window* FindContainerRoot(const gfx::Rect& bounds_in_screen) {
+  if (bounds_in_screen == gfx::Rect())
     return Shell::GetRootWindowForNewWindows();
-  return GetRootWindowMatching(bounds);
+  return GetRootWindowMatching(bounds_in_screen);
 }
 
 bool HasTransientParentWindow(const aura::Window* window) {
@@ -73,14 +73,15 @@ aura::Window* GetContainerForWindow(aura::Window* window) {
   return parent;
 }
 
-aura::Window* GetDefaultParent(aura::Window* window, const gfx::Rect& bounds) {
+aura::Window* GetDefaultParent(aura::Window* window,
+                               const gfx::Rect& bounds_in_screen) {
   aura::Window* target_root = nullptr;
   aura::Window* transient_parent = ::wm::GetTransientParent(window);
   if (transient_parent) {
     // Transient window should use the same root as its transient parent.
     target_root = transient_parent->GetRootWindow();
   } else {
-    target_root = FindContainerRoot(bounds);
+    target_root = FindContainerRoot(bounds_in_screen);
   }
 
   switch (window->type()) {

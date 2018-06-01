@@ -26,7 +26,7 @@ ASH_EXPORT aura::Window* GetContainerForWindow(aura::Window* window);
 // Returns the parent to add |window| to. This is generally used when a window
 // is moved from one root to another.
 ASH_EXPORT aura::Window* GetDefaultParent(aura::Window* window,
-                                          const gfx::Rect& bounds);
+                                          const gfx::Rect& bounds_in_screen);
 
 // Returns the list of containers that match |container_id| in all root windows.
 // If |priority_root| is non-null, the container in |priority_root| is placed at

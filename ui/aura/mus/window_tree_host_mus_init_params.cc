@@ -27,6 +27,7 @@ WindowTreeHostMusInitParams CreateInitParamsForTopLevel(
     std::map<std::string, std::vector<uint8_t>> properties) {
   WindowTreeHostMusInitParams params;
   params.window_tree_client = window_tree_client;
+  // TODO(jamescook): This seems wrong. Use display id from |properties|?
   params.display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   // Pass |properties| to CreateWindowPortForTopLevel() so that |properties|
   // are passed to the server *and* pass |properties| to the WindowTreeHostMus

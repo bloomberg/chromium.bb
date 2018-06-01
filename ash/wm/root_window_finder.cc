@@ -15,9 +15,9 @@
 namespace ash {
 namespace wm {
 
-aura::Window* GetRootWindowAt(const gfx::Point& point) {
+aura::Window* GetRootWindowAt(const gfx::Point& point_in_screen) {
   const display::Display& display =
-      display::Screen::GetScreen()->GetDisplayNearestPoint(point);
+      display::Screen::GetScreen()->GetDisplayNearestPoint(point_in_screen);
   DCHECK(display.is_valid());
   RootWindowController* root_window_controller =
       Shell::GetRootWindowControllerWithDisplayId(display.id());
@@ -25,9 +25,9 @@ aura::Window* GetRootWindowAt(const gfx::Point& point) {
                                 : nullptr;
 }
 
-aura::Window* GetRootWindowMatching(const gfx::Rect& rect) {
+aura::Window* GetRootWindowMatching(const gfx::Rect& rect_in_screen) {
   const display::Display& display =
-      display::Screen::GetScreen()->GetDisplayMatching(rect);
+      display::Screen::GetScreen()->GetDisplayMatching(rect_in_screen);
   RootWindowController* root_window_controller =
       Shell::GetRootWindowControllerWithDisplayId(display.id());
   return root_window_controller ? root_window_controller->GetRootWindow()

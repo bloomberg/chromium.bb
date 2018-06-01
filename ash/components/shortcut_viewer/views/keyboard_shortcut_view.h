@@ -35,11 +35,12 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   // 1. Show the window if it is not open.
   // 2. Activate the window if it is open but not active.
   // 3. Close the window if it is open and active.
-  static views::Widget* Toggle(gfx::NativeWindow context);
+  static views::Widget* Toggle();
 
   // views::View:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void Layout() override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // search_box::SearchBoxViewDelegate:
   void QueryChanged(search_box::SearchBoxViewBase* sender) override;

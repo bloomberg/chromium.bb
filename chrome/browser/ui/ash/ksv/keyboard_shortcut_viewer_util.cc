@@ -7,7 +7,6 @@
 #include "ash/components/shortcut_viewer/public/mojom/constants.mojom.h"
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_view.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/shell.h"
 #include "base/command_line.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -21,10 +20,7 @@ void ShowKeyboardShortcutViewer() {
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
     connector->StartService(shortcut_viewer::mojom::kServiceName);
   } else {
-    // TODO(https://crbug.com/833673): Remove the dependency on aura::Window.
-    keyboard_shortcut_viewer::KeyboardShortcutView::Toggle(
-        ash::Shell::HasInstance() ? ash::Shell::GetRootWindowForNewWindows()
-                                  : nullptr);
+    keyboard_shortcut_viewer::KeyboardShortcutView::Toggle();
   }
 }
 

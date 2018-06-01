@@ -13,6 +13,7 @@
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
@@ -125,6 +126,20 @@ class ModalWindow : public views::WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(ModalWindow);
 };
 
+class WindowWithPreferredSize : public views::WidgetDelegateView {
+ public:
+  WindowWithPreferredSize() = default;
+  ~WindowWithPreferredSize() override = default;
+
+  // views::WidgetDelegate:
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(400, 300);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WindowWithPreferredSize);
+};
+
 class SimpleMenuDelegate : public ui::SimpleMenuModel::Delegate {
  public:
   SimpleMenuDelegate() = default;
@@ -231,6 +246,28 @@ TEST_F(ShellTest, CreateWindow) {
   TestCreateWindow(views::Widget::InitParams::TYPE_POPUP,
                    true,  // always_on_top
                    GetAlwaysOnTopContainer());
+}
+
+// Verifies that a window with a preferred size is created centered on the
+// default display for new windows. Mojo apps like shortcut_viewer rely on this
+// behavior.
+TEST_F(ShellTest, CreateWindowWithPreferredSize) {
+  UpdateDisplay("1024x768,800x600");
+
+  aura::Window* secondary_root = Shell::GetAllRootWindows()[1];
+  ScopedRootWindowForNewWindows scoped_root(secondary_root);
+
+  views::Widget::InitParams params;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  // Don't specify bounds, parent or context.
+  params.delegate = new WindowWithPreferredSize;
+  views::Widget widget;
+  widget.Init(params);
+
+  // Widget is centered on secondary display.
+  EXPECT_EQ(secondary_root, widget.GetNativeWindow()->GetRootWindow());
+  EXPECT_EQ(GetSecondaryDisplay().work_area().CenterPoint(),
+            widget.GetRestoredBounds().CenterPoint());
 }
 
 TEST_F(ShellTest, ChangeAlwaysOnTop) {
