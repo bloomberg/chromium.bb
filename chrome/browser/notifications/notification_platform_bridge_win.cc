@@ -587,20 +587,24 @@ class NotificationPlatformBridgeWinImpl
     bool shortcut_installed =
         InstallUtil::IsStartMenuShortcutWithActivatorGuidInstalled();
 
-    if (!shortcut_installed) {
-      LogSetReadyCallbackStatus(
-          SetReadyCallbackStatus::SHORTCUT_MISCONFIGURATION);
-    } else if (!activator_registered) {
-      LogSetReadyCallbackStatus(
-          SetReadyCallbackStatus::COM_SERVER_MISCONFIGURATION);
-    } else if (!com_functions_initialized_) {
-      LogSetReadyCallbackStatus(SetReadyCallbackStatus::COM_NOT_INITIALIZED);
-    } else {
-      LogSetReadyCallbackStatus(SetReadyCallbackStatus::SUCCESS);
-    }
-
+    int status = static_cast<int>(SetReadyCallbackStatus::SUCCESS);
     bool enabled = com_functions_initialized_ && activator_registered &&
                    shortcut_installed;
+
+    if (!enabled) {
+      if (!shortcut_installed) {
+        status |=
+            static_cast<int>(SetReadyCallbackStatus::SHORTCUT_MISCONFIGURATION);
+      }
+      if (!activator_registered) {
+        status |= static_cast<int>(
+            SetReadyCallbackStatus::COM_SERVER_MISCONFIGURATION);
+      }
+      if (!com_functions_initialized_)
+        status |= static_cast<int>(SetReadyCallbackStatus::COM_NOT_INITIALIZED);
+    }
+
+    LogSetReadyCallbackStatus(static_cast<SetReadyCallbackStatus>(status));
 
     bool success = content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,

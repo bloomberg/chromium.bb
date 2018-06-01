@@ -48728,10 +48728,26 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="WindowsNotificationSetReadyCallbackStatus">
+  <obsolete>
+    Removed from code May 2018. Replaced with
+    WindowsNotificationSetReadyCallbackStatus2.
+  </obsolete>
   <int value="0" label="SUCCESS"/>
   <int value="1" label="COM_NOT_INITIALIZED"/>
   <int value="2" label="COM_SERVER_MISCONFIGURATION"/>
   <int value="3" label="SHORTCUT_MISCONFIGURATION"/>
+</enum>
+
+<enum name="WindowsNotificationSetReadyCallbackStatus2">
+  <int value="0" label="Success"/>
+  <int value="1" label="Misconfig - Shortcut"/>
+  <int value="2" label="Misconfig - ComServer"/>
+  <int value="3" label="Misconfig - Shortcut and ComServer"/>
+  <int value="4" label="Misconfig - ComInitialization"/>
+  <int value="5" label="Misconfig - Shortcut and ComInitialization"/>
+  <int value="6" label="Misconfig - ComServer and ComInitialization"/>
+  <int value="7"
+      label="Misconfig - Shortcut and ComServer and ComInitialization"/>
 </enum>
 
 <enum name="WindowsNotificationUserManagerShowupStatus">
