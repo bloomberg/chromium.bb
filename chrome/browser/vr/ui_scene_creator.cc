@@ -1436,7 +1436,7 @@ void UiSceneCreator::CreateContentQuad() {
   indicator_fg->SetCornerRadii(
       {0, 0, kContentCornerRadius, kContentCornerRadius});
   // Start at content width; size is later updated in a content callback.
-  indicator_fg->SetSize(kContentWidth, kContentCornerRadius);
+  indicator_fg->SetSize(kContentWidth, kLoadingIndicatorHeight);
   VR_BIND_COLOR(model_, indicator_fg.get(),
                 &ColorScheme::loading_indicator_foreground, &Rect::SetColor);
   indicator_fg->AddBinding(std::make_unique<Binding<float>>(
@@ -1452,7 +1452,7 @@ void UiSceneCreator::CreateContentQuad() {
   // of adding a UI framework capability.
   main_content->set_on_size_changed_callback(base::BindRepeating(
       [](Rect* rect, const gfx::SizeF& size) {
-        rect->SetSize(size.width(), kContentCornerRadius);
+        rect->SetSize(size.width(), kLoadingIndicatorHeight);
       },
       base::Unretained(indicator_fg.get())));
 
