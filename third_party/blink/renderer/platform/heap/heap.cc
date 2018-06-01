@@ -275,7 +275,9 @@ void ThreadHeap::MarkNotFullyConstructedObjects(Visitor* visitor) {
 
 void ThreadHeap::InvokeEphemeronCallbacks(Visitor* visitor) {
   // Mark any strong pointers that have now become reachable in ephemeron maps.
-  TRACE_EVENT0("blink_gc", "ThreadHeap::InvokeEphemeronCallbacks");
+  ThreadHeapStatsCollector::Scope stats_scope(
+      stats_collector(),
+      ThreadHeapStatsCollector::kMarkInvokeEphemeronCallbacks);
 
   // Avoid supporting a subtle scheme that allows insertion while iterating
   // by just creating temporary lists for iteration and sinking.
@@ -303,8 +305,9 @@ bool ThreadHeap::AdvanceMarkingStackProcessing(Visitor* visitor,
   do {
     {
       // Iteratively mark all objects that are reachable from the objects
-      // currently pushed onto the marking stack.
-      TRACE_EVENT0("blink_gc", "ThreadHeap::processMarkingStackSingleThreaded");
+      // currently pushed onto the marking worklist.
+      ThreadHeapStatsCollector::Scope stats_scope(
+          stats_collector(), ThreadHeapStatsCollector::kMarkProcessWorklist);
       MarkingItem item;
       while (marking_worklist_->Pop(WorklistTaskId::MainThread, &item)) {
         item.callback(visitor, item.object);
@@ -325,8 +328,8 @@ bool ThreadHeap::AdvanceMarkingStackProcessing(Visitor* visitor,
 }
 
 void ThreadHeap::WeakProcessing(Visitor* visitor) {
-  TRACE_EVENT0("blink_gc", "ThreadHeap::WeakProcessing");
-  double start_time = WTF::CurrentTimeTicksInMilliseconds();
+  ThreadHeapStatsCollector::Scope stats_scope(
+      stats_collector(), ThreadHeapStatsCollector::kMarkWeakProcessing);
 
   // Weak processing may access unmarked objects but are forbidden from
   // ressurecting them.
@@ -340,13 +343,6 @@ void ThreadHeap::WeakProcessing(Visitor* visitor) {
   }
   // Weak callbacks should not add any new objects for marking.
   DCHECK(marking_worklist_->IsGlobalEmpty());
-
-  double time_for_weak_processing =
-      WTF::CurrentTimeTicksInMilliseconds() - start_time;
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, weak_processing_time_histogram,
-      ("BlinkGC.TimeForGlobalWeakProcessing", 1, 10 * 1000, 50));
-  weak_processing_time_histogram.Count(time_for_weak_processing);
 }
 
 void ThreadHeap::VerifyMarking() {
@@ -448,14 +444,16 @@ size_t ThreadHeap::ObjectPayloadSizeForTesting() {
 }
 
 void ThreadHeap::VisitPersistentRoots(Visitor* visitor) {
+  ThreadHeapStatsCollector::Scope stats_scope(
+      stats_collector(), ThreadHeapStatsCollector::kVisitPersistentRoots);
   DCHECK(thread_state_->InAtomicMarkingPause());
-  TRACE_EVENT0("blink_gc", "ThreadHeap::visitPersistentRoots");
   thread_state_->VisitPersistents(visitor);
 }
 
 void ThreadHeap::VisitStackRoots(MarkingVisitor* visitor) {
+  ThreadHeapStatsCollector::Scope stats_scope(
+      stats_collector(), ThreadHeapStatsCollector::kVisitStackRoots);
   DCHECK(thread_state_->InAtomicMarkingPause());
-  TRACE_EVENT0("blink_gc", "ThreadHeap::visitStackRoots");
   address_cache_->FlushIfDirty();
   address_cache_->EnableLookup();
   thread_state_->VisitStack(visitor);

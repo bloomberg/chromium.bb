@@ -27,6 +27,9 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
  public:
   // These ids will form human readable names when used in Scopes.
   enum Id {
+    kAtomicPhase,
+    kAtomicPhaseCompaction,
+    kAtomicPhaseMarking,
     kCompleteSweep,
     kEagerSweep,
     kIncrementalMarkingStartMarking,
@@ -36,10 +39,14 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     kInvokePreFinalizers,
     kLazySweepInIdle,
     kLazySweepOnAllocation,
-    kAtomicPhase,
-    kAtomicPhaseCompaction,
-    kAtomicPhaseMarking,
+    kMarkInvokeEphemeronCallbacks,
+    kMarkProcessWorklist,
+    kMarkWeakProcessing,
+    kVisitCrossThreadPersistents,
     kVisitDOMWrappers,
+    kVisitPersistentRoots,
+    kVisitPersistents,
+    kVisitStackRoots,
     kNumScopeIds,
   };
 
@@ -69,8 +76,22 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
         return "BlinkGC.LazySweepInIdle";
       case Id::kLazySweepOnAllocation:
         return "BlinkGC.LazySweepOnAllocation";
+      case Id::kMarkInvokeEphemeronCallbacks:
+        return "BlinkGC.MarkInvokeEphemeronCallbacks";
+      case Id::kMarkProcessWorklist:
+        return "BlinkGC.MarkProcessWorklist";
+      case Id::kMarkWeakProcessing:
+        return "BlinkGC.MarkWeakProcessing";
+      case Id::kVisitCrossThreadPersistents:
+        return "BlinkGC.VisitCrossThreadPersistents";
       case Id::kVisitDOMWrappers:
         return "BlinkGC.VisitDOMWrappers";
+      case Id::kVisitPersistentRoots:
+        return "BlinkGC.VisitPersistentRoots";
+      case Id::kVisitPersistents:
+        return "BlinkGC.VisitPersistents";
+      case Id::kVisitStackRoots:
+        return "BlinkGC.VisitStackRoots";
       case Id::kNumScopeIds:
         break;
     }
@@ -87,16 +108,19 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   // the corresponding ThreadHeapStatsCollector.
   template <TraceDefaultBehavior default_behavior = kDisabled>
   class PLATFORM_EXPORT InternalScope {
+    DISALLOW_NEW();
+    DISALLOW_COPY_AND_ASSIGN(InternalScope);
+
    public:
     template <typename... Args>
-    InternalScope(ThreadHeapStatsCollector* tracer, Id id, Args... args)
+    inline InternalScope(ThreadHeapStatsCollector* tracer, Id id, Args... args)
         : tracer_(tracer),
           start_time_(WTF::CurrentTimeTicksInMilliseconds()),
           id_(id) {
       StartTrace(args...);
     }
 
-    ~InternalScope() {
+    inline ~InternalScope() {
       TRACE_EVENT_END0(TraceCategory(), ToString(id_));
       tracer_->IncreaseScopeTime(
           id_, WTF::CurrentTimeTicksInMilliseconds() - start_time_);
