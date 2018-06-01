@@ -85,6 +85,10 @@ cr.define('print_preview_test_utils', function() {
   }
 
   /**
+   * Gets a CDD template and adds some dummy vendor capabilities. For select
+   * capabilities, the values of these options are arbitrary. These values are
+   * provided and read by the destination, so there are no fixed options like
+   * there are for margins or color.
    * @param {number} numSettings
    * @param {string} printerId
    * @param {string=} opt_printerName Defaults to an empty string.
@@ -99,7 +103,7 @@ cr.define('print_preview_test_utils', function() {
 
     template.capabilities.printer.vendor_capability = [{
       display_name: 'Print Area',
-      id: 'Print Area',
+      id: 'printArea',
       type: 'SELECT',
       select_cap: {
         option: [
@@ -116,7 +120,7 @@ cr.define('print_preview_test_utils', function() {
     // Add new capability.
     template.capabilities.printer.vendor_capability.push({
       display_name: 'Paper Type',
-      id: 'Paper Type',
+      id: 'paperType',
       type: 'SELECT',
       select_cap: {
         option: [
@@ -126,6 +130,19 @@ cr.define('print_preview_test_utils', function() {
         ]
       }
     });
+
+    if (numSettings < 3)
+      return template;
+
+    template.capabilities.printer.vendor_capability.push({
+      display_name: 'Watermark',
+      id: 'watermark',
+      type: 'TYPED_VALUE',
+      typed_value_cap: {
+        default: '',
+      }
+    });
+
     return template;
   }
 
