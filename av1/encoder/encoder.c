@@ -262,10 +262,11 @@ static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
   if (cm->options && !cm->options->ext_partition) return BLOCK_64X64;
 #endif
 
-  // When superres is on 'cm->width / height' can change between calls, so we
-  // don't apply this heuristic there.
-  // Also, this heuristic gives compression gain for speed >= 2 only.
-  if (cpi->oxcf.superres_mode == SUPERRES_NONE && cpi->oxcf.speed >= 2) {
+  // When superres / resize is on, 'cm->width / height' can change between
+  // calls, so we don't apply this heuristic there. Also, this heuristic gives
+  // compression gain for speed >= 2 only.
+  if (cpi->oxcf.superres_mode == SUPERRES_NONE &&
+      cpi->oxcf.resize_mode == RESIZE_NONE && cpi->oxcf.speed >= 2) {
     return (cm->width >= 480 && cm->height >= 360) ? BLOCK_128X128
                                                    : BLOCK_64X64;
   }
