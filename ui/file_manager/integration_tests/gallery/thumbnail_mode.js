@@ -5,10 +5,17 @@
 /**
  * Additional test image entry.
  */
-ENTRIES.image4 = new TestEntryInfo(
-      EntryType.FILE, 'image3.jpg', 'image4.jpg',
-      'image/jpeg', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
-      'image3.jpg', '3 KB', 'JPEG image');
+ENTRIES.image4 = new TestEntryInfo({
+  type: EntryType.FILE,
+  sourceFileName: 'image3.jpg',
+  targetPath: 'image4.jpg',
+  mimeType: 'image/jpeg',
+  sharedOption: SharedOption.NONE,
+  lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
+  nameText: 'image3.jpg',
+  sizeText: '3 KB',
+  typeText: 'JPEG image'
+});
 
 /**
  * Renames an image in thumbnail mode and confirms that thumbnail of renamed
