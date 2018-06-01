@@ -17,8 +17,6 @@
 
 namespace cryptauth {
 
-class CryptAuthService;
-
 // An authenticated bi-directional channel for exchanging messages with remote
 // devices. |SecureChannel| manages a |Connection| by initializing it and
 // authenticating it via a security handshake once the connection has occurred.
@@ -78,15 +76,13 @@ class SecureChannel : public ConnectionObserver {
   class Factory {
    public:
     static std::unique_ptr<SecureChannel> NewInstance(
-        std::unique_ptr<Connection> connection,
-        CryptAuthService* cryptauth_service);
+        std::unique_ptr<Connection> connection);
 
     static void SetInstanceForTesting(Factory* factory);
 
    protected:
     virtual std::unique_ptr<SecureChannel> BuildInstance(
-        std::unique_ptr<Connection> connection,
-        CryptAuthService* cryptauth_service);
+        std::unique_ptr<Connection> connection);
 
    private:
     static Factory* factory_instance_;
@@ -123,8 +119,7 @@ class SecureChannel : public ConnectionObserver {
   void OnGattCharacteristicsNotAvailable() override;
 
  protected:
-  SecureChannel(std::unique_ptr<Connection> connection,
-                CryptAuthService* cryptauth_service);
+  SecureChannel(std::unique_ptr<Connection> connection);
 
   void NotifyGattCharacteristicsNotAvailable();
 
@@ -160,7 +155,6 @@ class SecureChannel : public ConnectionObserver {
       std::unique_ptr<SecureContext> secure_context);
 
   std::unique_ptr<Connection> connection_;
-  CryptAuthService* cryptauth_service_;  // Outlives this instance.
   std::unique_ptr<Authenticator> authenticator_;
   std::unique_ptr<SecureContext> secure_context_;
   base::queue<std::unique_ptr<PendingMessage>> queued_messages_;

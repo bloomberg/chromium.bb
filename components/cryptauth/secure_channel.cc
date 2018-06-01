@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
-#include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/secure_message_delegate_impl.h"
 #include "components/cryptauth/wire_message.h"
 
@@ -20,13 +19,11 @@ SecureChannel::Factory* SecureChannel::Factory::factory_instance_ = nullptr;
 
 // static
 std::unique_ptr<SecureChannel> SecureChannel::Factory::NewInstance(
-    std::unique_ptr<Connection> connection,
-    CryptAuthService* cryptauth_service) {
+    std::unique_ptr<Connection> connection) {
   if (!factory_instance_) {
     factory_instance_ = new Factory();
   }
-  return factory_instance_->BuildInstance(std::move(connection),
-                                          cryptauth_service);
+  return factory_instance_->BuildInstance(std::move(connection));
 }
 
 // static
@@ -35,10 +32,8 @@ void SecureChannel::Factory::SetInstanceForTesting(Factory* factory) {
 }
 
 std::unique_ptr<SecureChannel> SecureChannel::Factory::BuildInstance(
-    std::unique_ptr<Connection> connection,
-    CryptAuthService* cryptauth_service) {
-  return base::WrapUnique(
-      new SecureChannel(std::move(connection), cryptauth_service));
+    std::unique_ptr<Connection> connection) {
+  return base::WrapUnique(new SecureChannel(std::move(connection)));
 }
 
 // static
@@ -68,11 +63,9 @@ SecureChannel::PendingMessage::PendingMessage(const std::string& feature,
 
 SecureChannel::PendingMessage::~PendingMessage() {}
 
-SecureChannel::SecureChannel(std::unique_ptr<Connection> connection,
-                             CryptAuthService* cryptauth_service)
+SecureChannel::SecureChannel(std::unique_ptr<Connection> connection)
     : status_(Status::DISCONNECTED),
       connection_(std::move(connection)),
-      cryptauth_service_(cryptauth_service),
       weak_ptr_factory_(this) {
   connection_->AddObserver(this);
 }

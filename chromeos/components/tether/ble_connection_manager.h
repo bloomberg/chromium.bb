@@ -22,10 +22,6 @@
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "components/cryptauth/secure_channel.h"
 
-namespace cryptauth {
-class CryptAuthService;
-}  // namespace cryptauth
-
 namespace device {
 class BluetoothAdapter;
 class BluetoothDevice;
@@ -105,7 +101,6 @@ class BleConnectionManager : public BleScanner::Observer {
   };
 
   BleConnectionManager(
-      cryptauth::CryptAuthService* cryptauth_service,
       scoped_refptr<device::BluetoothAdapter> adapter,
       BleAdvertisementDeviceQueue* ble_advertisement_device_queue,
       BleAdvertiser* ble_advertiser,
@@ -252,7 +247,6 @@ class BleConnectionManager : public BleScanner::Observer {
   void RecordStartScanToConnectionDuration(const std::string device_id);
   void RecordConnectionToAuthenticationDuration(const std::string device_id);
 
-  cryptauth::CryptAuthService* cryptauth_service_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
   BleAdvertisementDeviceQueue* ble_advertisement_device_queue_;
   BleAdvertiser* ble_advertiser_;

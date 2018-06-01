@@ -11,7 +11,6 @@
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/timer_factory.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
-#include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/remote_device_ref.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
@@ -215,14 +214,12 @@ void BleConnectionManager::ConnectionMetadata::
 }
 
 BleConnectionManager::BleConnectionManager(
-    cryptauth::CryptAuthService* cryptauth_service,
     scoped_refptr<device::BluetoothAdapter> adapter,
     BleAdvertisementDeviceQueue* ble_advertisement_device_queue,
     BleAdvertiser* ble_advertiser,
     BleScanner* ble_scanner,
     AdHocBleAdvertiser* ad_hoc_ble_advertisement)
-    : cryptauth_service_(cryptauth_service),
-      adapter_(adapter),
+    : adapter_(adapter),
       ble_advertisement_device_queue_(ble_advertisement_device_queue),
       ble_advertiser_(ble_advertiser),
       ble_scanner_(ble_scanner),
@@ -391,8 +388,7 @@ void BleConnectionManager::OnReceivedAdvertisementFromDevice(
           remote_device, adapter_, device::BluetoothUUID(kGattServerUuid),
           bluetooth_device, false /* should_set_low_connection_latency */);
   std::unique_ptr<cryptauth::SecureChannel> secure_channel =
-      cryptauth::SecureChannel::Factory::NewInstance(std::move(connection),
-                                                     cryptauth_service_);
+      cryptauth::SecureChannel::Factory::NewInstance(std::move(connection));
   connection_metadata->SetSecureChannel(std::move(secure_channel));
 
   UpdateConnectionAttempts();

@@ -12,9 +12,8 @@ FakeSecureChannel::SentMessage::SentMessage(const std::string& feature,
                                             const std::string& payload)
     : feature(feature), payload(payload) {}
 
-FakeSecureChannel::FakeSecureChannel(std::unique_ptr<Connection> connection,
-                                     CryptAuthService* cryptauth_service)
-    : SecureChannel(std::move(connection), cryptauth_service) {}
+FakeSecureChannel::FakeSecureChannel(std::unique_ptr<Connection> connection)
+    : SecureChannel(std::move(connection)) {}
 
 FakeSecureChannel::~FakeSecureChannel() {}
 

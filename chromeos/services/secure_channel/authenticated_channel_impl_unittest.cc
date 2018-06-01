@@ -38,8 +38,7 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
 
   void SetUp() override {
     auto fake_secure_channel = std::make_unique<cryptauth::FakeSecureChannel>(
-        std::make_unique<cryptauth::FakeConnection>(test_device_),
-        nullptr /* cryptauth_service */);
+        std::make_unique<cryptauth::FakeConnection>(test_device_));
     fake_secure_channel->ChangeStatus(
         cryptauth::SecureChannel::Status::AUTHENTICATED);
     fake_secure_channel_ = fake_secure_channel.get();

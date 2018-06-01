@@ -106,7 +106,6 @@ AsynchronousShutdownObjectContainerImpl::
           remote_beacon_seed_fetcher_.get(),
           ble_synchronizer_.get())),
       ble_connection_manager_(std::make_unique<BleConnectionManager>(
-          cryptauth_service,
           adapter,
           ble_advertisement_device_queue_.get(),
           ble_advertiser_.get(),
