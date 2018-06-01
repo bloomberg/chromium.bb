@@ -31,22 +31,21 @@ enum Process {
 enum Thread {
   UNKNOWN_THREAD = 0;
 
-  // Browser process threads from content/public/browser/browser_thread.h,
-  // some of which occur in other processes as well.
-  UI_THREAD = 1;
+  // The 'main thread' in various processes. In browser process, this is
+  // sometimes also called the 'ui thread'.
+  MAIN_THREAD = 1;
+
   FILE_THREAD = 2;                // Deprecated.
   FILE_USER_BLOCKING_THREAD = 3;  // Deprecated.
   PROCESS_LAUNCHER_THREAD = 4;    // Deprecated.
   CACHE_THREAD = 5;               // Deprecated.
+
   IO_THREAD = 6;
-  DB_THREAD = 7;  // Deprecated.
 
-  // GPU process thread.
-  GPU_MAIN_THREAD = 8;
-
-  // Renderer process threads.
-  RENDER_THREAD = 9;
-  UTILITY_THREAD = 10;
+  DB_THREAD = 7;        // Deprecated.
+  GPU_MAIN_THREAD = 8;  // Deprecated.
+  RENDER_THREAD = 9;    // Deprecated.
+  UTILITY_THREAD = 10;  // Deprecated.
 
   // Compositor thread (can be in both renderer and gpu processes).
   COMPOSITOR_THREAD = 11;
