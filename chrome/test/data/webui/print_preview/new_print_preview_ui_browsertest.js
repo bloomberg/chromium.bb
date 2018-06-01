@@ -752,3 +752,39 @@ TEST_F('PrintPreviewDestinationItemTest', 'QueryName', function() {
 TEST_F('PrintPreviewDestinationItemTest', 'QueryDescription', function() {
   this.runMochaTest(destination_item_test.TestNames.QueryDescription);
 });
+
+PrintPreviewAdvancedItemTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/advanced_settings_item.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'print_preview_test_utils.js',
+      'advanced_item_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return advanced_item_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewAdvancedItemTest', 'DisplaySelect', function() {
+  this.runMochaTest(advanced_item_test.TestNames.DisplaySelect);
+});
+
+TEST_F('PrintPreviewAdvancedItemTest', 'DisplayInput', function() {
+  this.runMochaTest(advanced_item_test.TestNames.DisplayInput);
+});
+
+TEST_F('PrintPreviewAdvancedItemTest', 'QueryName', function() {
+  this.runMochaTest(advanced_item_test.TestNames.QueryName);
+});
+
+TEST_F('PrintPreviewAdvancedItemTest', 'QueryOption', function() {
+  this.runMochaTest(advanced_item_test.TestNames.QueryOption);
+});
