@@ -15,6 +15,7 @@
 // <include src="saml_interstitial.js">
 // <include src="throbber_notice.js">
 // <include src="navigation_bar.js">
+// <include src="network_select_login.js">
 // <include src="unrecoverable_cryptohome_error_card.js">
 // <include src="update_required_card.js">
 // <include src="offline_ad_login.js">

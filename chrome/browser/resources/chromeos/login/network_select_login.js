@@ -38,6 +38,37 @@ Polymer({
     this.$.networkSelect.focus();
   },
 
+  /** Call after strings are loaded to set CrOncStrings for cr-network-select */
+  setCrOncStrings: function() {
+    CrOncStrings = {
+      OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
+      OncTypeEthernet: loadTimeData.getString('OncTypeEthernet'),
+      OncTypeTether: loadTimeData.getString('OncTypeTether'),
+      OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
+      OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
+      OncTypeWiMAX: loadTimeData.getString('OncTypeWiMAX'),
+      networkListItemConnected:
+          loadTimeData.getString('networkListItemConnected'),
+      networkListItemConnecting:
+          loadTimeData.getString('networkListItemConnecting'),
+      networkListItemConnectingTo:
+          loadTimeData.getString('networkListItemConnectingTo'),
+      networkListItemInitializing:
+          loadTimeData.getString('networkListItemInitializing'),
+      networkListItemScanning:
+          loadTimeData.getString('networkListItemScanning'),
+      networkListItemNotConnected:
+          loadTimeData.getString('networkListItemNotConnected'),
+      networkListItemNoNetwork:
+          loadTimeData.getString('networkListItemNoNetwork'),
+      vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
+
+      // Additional strings for custom items.
+      addWiFiNetworkMenuName: loadTimeData.getString('addWiFiNetworkMenuName'),
+      proxySettingsMenuName: loadTimeData.getString('proxySettingsMenuName'),
+    };
+  },
+
   /**
    * Returns custom items for network selector. Shows 'Proxy settings' only
    * when connected to a network.

@@ -66,7 +66,6 @@ OobeWebUITest.prototype = {
 
     var requiredOwnedAriaRoleMissingSelectors = [
       '#networks-list-dropdown-container',
-      '#offline-networks-list-dropdown-container',
       '#supervised-user-creation-image-grid',
       'body > .decorated',
     ];

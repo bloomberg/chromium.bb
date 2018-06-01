@@ -104,23 +104,9 @@
                    show-with-ui-state-supervised
                    show-with-ui-state-kiosk-mode
                    show-with-ui-state-auto-enrollment-error">
-          <div id="offline-network-control" class="error-message-paragraph">
-            <label id="offline-networks-list-dropdown-label1"
-                i18n-content="selectNetwork"
-                class="offline-network-list-label
-                       show-with-error-state-offline
-                       show-with-error-state-proxy
-                       show-with-error-state-auth-timeout
-                       show-with-error-state-kiosk-online"></label>
-            <label id="offline-networks-list-dropdown-label2"
-                i18n-content="selectAnotherNetwork"
-                class="offline-network-list-label
-                       show-with-error-state-portal">
-            </label>
-            <div class="menu-area">
-              <div id="offline-networks-list" class="menu-control"></div>
-            </div>
-          </div>
+          <network-select-login id="offline-network-control"
+              class="layout vertical flex">
+          </network-select-login>
         </div>
         <div id="local-state-error-body"
             class="show-with-ui-state-local-state-error">
