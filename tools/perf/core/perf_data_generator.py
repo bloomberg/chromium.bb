@@ -936,6 +936,36 @@ def validate_tests(waterfall, waterfall_file, benchmark_file):
 #     assumed to be true.
 NEW_PERF_RECIPE_FYI_TESTERS = {
   'testers' : {
+    'OBBS Mac 10.12 Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=benchmark_desktop_bot_map.json',
+          ],
+          'num_shards': 26
+        },
+        {
+          'isolate': 'net_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'views_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        }
+      ],
+      'platform': 'mac',
+      'dimension': {
+        'pool': 'Chrome-perf-fyi',
+        'os': 'Mac-10.12',
+        'gpu': '8086:0a2e'
+      },
+      'device_ids': [
+      ],
+    },
     'One Buildbot Step Test Builder': {
       'tests': [
         {
