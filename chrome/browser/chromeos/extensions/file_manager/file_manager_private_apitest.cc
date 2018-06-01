@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/test/base/testing_profile.h"
@@ -22,6 +24,7 @@
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "components/drive/file_change.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/install_warning.h"
 #include "google_apis/drive/test_util.h"
@@ -211,6 +214,8 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
         .WillRepeatedly(ReturnRef(volumes_));
     EXPECT_CALL(*disk_mount_manager_mock_, mount_points())
         .WillRepeatedly(ReturnRef(mount_points_));
+    ON_CALL(*disk_mount_manager_mock_, MountPath(_, _, _, _, _, _))
+        .WillByDefault(Invoke(this, &FileManagerPrivateApiTest::SshfsMount));
   }
 
   // ExtensionApiTest override
@@ -307,6 +312,21 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
       const std::string& source_path) {
     auto volume_it = volumes_.find(source_path);
     return (volume_it == volumes_.end()) ? nullptr : volume_it->second.get();
+  }
+
+  void SshfsMount(const std::string& source_path,
+                  const std::string& source_format,
+                  const std::string& mount_label,
+                  const std::vector<std::string>& mount_options,
+                  chromeos::MountType type,
+                  chromeos::MountAccessMode access_mode) {
+    disk_mount_manager_mock_->NotifyMountEvent(
+        chromeos::disks::DiskMountManager::MountEvent::MOUNTING,
+        chromeos::MountError::MOUNT_ERROR_NONE,
+        chromeos::disks::DiskMountManager::MountPointInfo(
+            source_path, "/media/fuse/" + mount_label,
+            chromeos::MountType::MOUNT_TYPE_NETWORK_STORAGE,
+            chromeos::disks::MountCondition::MOUNT_CONDITION_NONE));
   }
 
  protected:
@@ -485,6 +505,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kCrostini, features::kExperimentalCrostiniUI}, {});
+  crostini::CrostiniManager::GetInstance()->set_skip_restart_for_testing();
+
+  // Profile must be signed in with email for crostini.
+  SigninManagerFactory::GetForProfileIfExists(browser()->profile())
+      ->SetAuthenticatedAccountInfo("12345", "testuser@gmail.com");
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/crostini_test"));
 }

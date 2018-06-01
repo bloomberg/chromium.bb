@@ -144,6 +144,13 @@ void MockDiskMountManager::NotifyDeviceRemoveEvents() {
   NotifyDiskChanged(DISK_REMOVED, disk);
 }
 
+void MockDiskMountManager::NotifyMountEvent(MountEvent event,
+                                            MountError error_code,
+                                            const MountPointInfo& mount_info) {
+  for (auto& observer : observers_)
+    observer.OnMountEvent(event, error_code, mount_info);
+}
+
 void MockDiskMountManager::SetupDefaultReplies() {
   EXPECT_CALL(*this, AddObserver(_))
       .Times(AnyNumber());

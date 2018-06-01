@@ -10,4 +10,8 @@ chrome.test.runTests([
           chrome.test.assertTrue(enabled);
         }));
   },
+  function testMountCrostiniContainer() {
+    chrome.fileManagerPrivate.mountCrostiniContainer(
+        chrome.test.callbackPass(() => {}));
+  }
 ]);
