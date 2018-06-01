@@ -21,7 +21,7 @@
 	<key>LSFileQuarantineEnabled</key>
 	<true/>
 	<key>LSMinimumSystemVersion</key>
-	<string>${MACOSX_DEPLOYMENT_TARGET}</string>
+	<string>${CHROMIUM_MIN_SYSTEM_VERSION}</string>
 	<key>LSUIElement</key>
 	<string>1</string>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>

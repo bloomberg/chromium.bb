@@ -7,9 +7,22 @@ import("//build/config/mac/mac_sdk_overrides.gni")
 import("//build/toolchain/toolchain.gni")
 
 declare_args() {
-  # Minimum supported version of macOS. Must be of the form x.x.x for
-  # Info.plist files.
+  # The MACOSX_DEPLOYMENT_TARGET variable used when compiling. This partially
+  # controls the minimum supported version of macOS for Chromium by
+  # affecting the symbol availability rules. This may differ from
+  # mac_min_system_version when dropping support for older macOSes but where
+  # additional code changes are required to be compliant with the availability
+  # rules.
+  # Must be of the form x.x.x for Info.plist files.
   mac_deployment_target = "10.9.0"
+
+  # The value of the LSMinimmumSystemVersion in Info.plist files. This partially
+  # controls the minimum supported version of macOS for Chromium by
+  # affecting the Info.plist. This may differ from mac_deployment_target when
+  # dropping support for older macOSes. This should be greater than or equal to
+  # the mac_deployment_target version.
+  # Must be of the form x.x.x for Info.plist files.
+  mac_min_system_version = "10.10.0"
 
   # Path to a specific version of the Mac SDK, not including a slash at the end.
   # If empty, the path to the lowest version greater than or equal to
