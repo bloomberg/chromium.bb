@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef API_SCREEN_CONNECTION_CLIENT_H_
-#define API_SCREEN_CONNECTION_CLIENT_H_
+#ifndef API_PUBLIC_SCREEN_CONNECTION_CLIENT_H_
+#define API_PUBLIC_SCREEN_CONNECTION_CLIENT_H_
 
 namespace openscreen {
 
@@ -17,4 +17,4 @@ class ScreenConnectionClient {
 
 }  // namespace openscreen
 
-#endif  // API_SCREEN_CONNECTION_CLIENT_H_
+#endif  // API_PUBLIC_SCREEN_CONNECTION_CLIENT_H_

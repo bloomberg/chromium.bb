@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "api/network_service_manager.h"
+#include "api/public/network_service_manager.h"
 
 #include <utility>
 
-#include "api/mdns_screen_listener.h"
-#include "api/mdns_screen_publisher.h"
-#include "api/screen_connection_client.h"
-#include "api/screen_connection_server.h"
+#include "api/public/mdns_screen_listener.h"
+#include "api/public/mdns_screen_publisher.h"
+#include "api/public/screen_connection_client.h"
+#include "api/public/screen_connection_server.h"
 
 namespace {
 

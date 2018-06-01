@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "api/mdns_screen_listener.h"
+#include "api/public/mdns_screen_listener.h"
 
 namespace openscreen {
 
-MdnsScreenListener::MdnsScreenListener(MdnsScreenListenerConfig config) : config_(config) {}
+MdnsScreenListener::MdnsScreenListener(MdnsScreenListenerConfig config)
+    : config_(config) {}
 
 MdnsScreenListener::~MdnsScreenListener() = default;
 

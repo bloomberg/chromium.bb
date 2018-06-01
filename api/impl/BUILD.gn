@@ -1,0 +1,18 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("impl") {
+  sources = [
+    "screen_list.cc",
+    "screen_list.h",
+    "screen_listener_impl.cc",
+    "screen_listener_impl.h",
+  ]
+
+  deps = [
+    "../public:api",
+    "//base",
+    "//platform",
+  ]
+}

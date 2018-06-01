@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef API_MDNS_SCREEN_LISTENER_H_
-#define API_MDNS_SCREEN_LISTENER_H_
+#ifndef API_PUBLIC_MDNS_SCREEN_LISTENER_H_
+#define API_PUBLIC_MDNS_SCREEN_LISTENER_H_
 
-#include "api/screen_listener.h"
+#include "api/public/screen_listener.h"
 
 namespace openscreen {
 
@@ -27,4 +27,4 @@ class MdnsScreenListener : public ScreenListener {
 
 }  // namespace openscreen
 
-#endif  // API_MDNS_SCREEN_LISTENER_H_
+#endif  // API_PUBLIC_MDNS_SCREEN_LISTENER_H_

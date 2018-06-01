@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef API_SCREEN_LISTENER_H_
-#define API_SCREEN_LISTENER_H_
+#ifndef API_PUBLIC_SCREEN_LISTENER_H_
+#define API_PUBLIC_SCREEN_LISTENER_H_
 
 #include <cstdint>
+#include <ostream>
 #include <string>
 #include <vector>
 
-#include "base/ip_address.h"
+#include "api/public/screen_info.h"
 
 namespace openscreen {
 
@@ -19,23 +20,27 @@ enum class ScreenListenerState {
   kRunning,
   kStopping,
   kSearching,
-  kSuspended
+  kSuspended,
 };
 
 // TODO: Add additional error types, as implementations progress.
 enum class ScreenListenerError {
-  kNone = 0
+  kNone = 0,
 };
 
 // Used to report an error from a ScreenListener implementation.
 struct ScreenListenerErrorInfo {
  public:
   ScreenListenerErrorInfo();
-  ScreenListenerErrorInfo(ScreenListenerError error, const std::string& message);
+  ScreenListenerErrorInfo(ScreenListenerError error,
+                          const std::string& message);
+  ScreenListenerErrorInfo(const ScreenListenerErrorInfo& other);
   ~ScreenListenerErrorInfo();
 
-  const ScreenListenerError error;
-  const std::string message;
+  ScreenListenerErrorInfo& operator=(const ScreenListenerErrorInfo& other);
+
+  ScreenListenerError error;
+  std::string message;
 };
 
 // Microseconds after the epoch.
@@ -62,44 +67,24 @@ struct ScreenListenerMetrics {
   uint64_t num_bytes_received = 0;
 
   // The maximum number of screens discovered over the timestamp range.  The
-  // latter two fields break this down by screens advertising ipv4 and ipv6 endpoints.
+  // latter two fields break this down by screens advertising ipv4 and ipv6
+  // endpoints.
   size_t num_screens = 0;
   size_t num_ipv4_screens = 0;
   size_t num_ipv6_screens = 0;
 };
 
-// Holds information about a screen discovered by a ScreenListener.
-struct ScreenInfo {
-  explicit ScreenInfo(const std::string& screen_id);
-  ~ScreenInfo();
-
-  // Identifier uniquely identifying the screen among all screens discovered by
-  // this instance of library.
-  std::string screen_id;
-
-  // User visible name of the screen in UTF-8.
-  std::string friendly_name;
-
-  // The network interface that the screen was discovered on.
-  std::string network_interface;
-
-  // The network endpoint to create a new connection to the screen.
-  // At least one of these two must be set.
-  IPv4Endpoint ipv4_endpoint;
-  IPv6Endpoint ipv6_endpoint;
-};
-
-// Observer invoked when the set of screens discovered by the library has
-// changed.
 class ScreenListenerObserver {
  public:
-  // Called when the state becomes RUNNING.
+  virtual ~ScreenListenerObserver() = default;
+
+  // Called when the state becomes kRunning.
   virtual void OnStarted() = 0;
-  // Called when the state becomes STOPPED.
+  // Called when the state becomes kStopped.
   virtual void OnStopped() = 0;
-  // Called when the state becomes SUSPENDED.
+  // Called when the state becomes kSuspended.
   virtual void OnSuspended() = 0;
-  // Called when the state becomes SEARCHING.
+  // Called when the state becomes kSearching.
   virtual void OnSearching() = 0;
 
   // Notifications to changes to the listener's screen list.
@@ -122,34 +107,34 @@ class ScreenListener {
   virtual ~ScreenListener();
 
   // Starts listening for screens using the config object.
-  // Returns true if state() == STOPPED and the service will be started,
-  // false otherwise.
+  // Returns true if state() == kStopped and the service will be started, false
+  // otherwise.
   virtual bool Start() = 0;
 
-  // Starts the listener in SUSPENDED mode.  This could be used to enable
+  // Starts the listener in kSuspended mode.  This could be used to enable
   // immediate search via SearchNow() in the future.
-  // Returns true if state() == STOPPED and the service will be started,
-  // false otherwise.
+  // Returns true if state() == kStopped and the service will be started, false
+  // otherwise.
   virtual bool StartAndSuspend() = 0;
 
   // Stops listening and cancels any search in progress.
-  // Returns true if state() != STOPPED.
+  // Returns true if state() != (kStopped|kStopping).
   virtual bool Stop() = 0;
 
   // Suspends background listening. For example, the tab wanting screen
   // availability might go in the background, meaning we can suspend listening
   // to save power.
-  // Returns true if state() == (RUNNING|SEARCHING|STARTING), meaning the
+  // Returns true if state() == (kRunning|kSearching|kStarting), meaning the
   // suspension will take effect.
   virtual bool Suspend() = 0;
 
-  // Resumes listening.  Returns true if state() == SUSPENDED.
+  // Resumes listening.  Returns true if state() == (kSuspended|kSearching).
   virtual bool Resume() = 0;
 
   // Asks the listener to search for screens now, even if the listener is
   // is currently suspended.  If a background search is already in
-  // progress, this has no effect.  Returns true if state() !=
-  // (STOPPED|STARTING).
+  // progress, this has no effect.  Returns true if state() ==
+  // (kRunning|kSuspended).
   virtual bool SearchNow() = 0;
 
   // Returns the current state of the listener.
@@ -162,7 +147,7 @@ class ScreenListener {
   void SetObserver(ScreenListenerObserver* observer) { observer_ = observer; }
 
   // Returns the current list of screens known to the ScreenListener.
-  const std::vector<ScreenInfo>& GetScreens() const { return screens_; }
+  virtual const std::vector<ScreenInfo>& GetScreens() const = 0;
 
  protected:
   ScreenListener();
@@ -170,11 +155,10 @@ class ScreenListener {
   ScreenListenerState state_ = ScreenListenerState::kStopped;
   ScreenListenerErrorInfo last_error_;
   ScreenListenerObserver* observer_ = nullptr;
-  std::vector<ScreenInfo> screens_;
 
   // TODO: Add DISALLOW_COPY_AND_ASSIGN when macro is available
 };
 
 }  // namespace openscreen
 
-#endif  // API_SCREEN_LISTENER_H_
+#endif  // API_PUBLIC_SCREEN_LISTENER_H_

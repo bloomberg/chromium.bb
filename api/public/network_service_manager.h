@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef API_NETWORK_SERVICE_MANAGERH_
-#define API_NETWORK_SERVICE_MANAGER_H_
+#ifndef API_PUBLIC_NETWORK_SERVICE_MANAGERH_
+#define API_PUBLIC_NETWORK_SERVICE_MANAGER_H_
 
 #include <memory>
 
@@ -73,4 +73,4 @@ class NetworkServiceManager final {
 
 }  // namespace openscreen
 
-#endif  // API_NETWORK_SERVICE_MANAGER_H_
+#endif  // API_PUBLIC_NETWORK_SERVICE_MANAGER_H_

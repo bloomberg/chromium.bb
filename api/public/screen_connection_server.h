@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef API_MDNS_SCREEN_PUBLISHER_H_
-#define API_MDNS_SCREEN_PUBLISHER_H_
+#ifndef API_PUBLIC_SCREEN_CONNECTION_SERVER_H_
+#define API_PUBLIC_SCREEN_CONNECTION_SERVER_H_
 
 namespace openscreen {
 
-class MdnsScreenPublisher {
+class ScreenConnectionServer {
  public:
-  MdnsScreenPublisher() = default;
-  ~MdnsScreenPublisher() = default;
+  ScreenConnectionServer() = default;
+  ~ScreenConnectionServer() = default;
 
   // TODO: Implement
 };
 
 }  // namespace openscreen
 
-#endif  // API_MDNS_SCREEN_PUBLISHER_H_
+#endif  // API_PUBLIC_SCREEN_CONNECTION_SERVER_H_

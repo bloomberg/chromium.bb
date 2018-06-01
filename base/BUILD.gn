@@ -13,7 +13,9 @@ source_set("base") {
 source_set("base_unittests") {
   testonly = true
 
-  sources = [ "ip_address_unittest.cc" ]
+  sources = [
+    "ip_address_unittest.cc",
+  ]
 
   deps = [
     ":base",
