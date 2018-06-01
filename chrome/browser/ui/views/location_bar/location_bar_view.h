@@ -189,6 +189,11 @@ class LocationBarView : public LocationBar,
   // comments on |ime_inline_autocomplete_view_|.
   void SetImeInlineAutocompletion(const base::string16& text);
 
+  // Paints a custom focus ring on platforms that normally do not show focus
+  // rings if |full_keyboard_accessibility_mode| is set to true.
+  // TODO(tommycli): Remove this after after Material Refresh is launched.
+  void SetFullKeyboardAcessibilityMode(bool full_keyboard_accessibility_mode);
+
   // Select all of the text. Needed when the user tabs through controls
   // in the toolbar in full keyboard accessibility mode.
   virtual void SelectAll();
@@ -468,9 +473,11 @@ class LocationBarView : public LocationBar,
   // The theme tint. Updated based on the profile and theme settings.
   OmniboxTint tint_;
 
-  // True if we should show a focus rect while the location entry field is
-  // focused. Used when the toolbar is in full keyboard accessibility mode.
-  bool show_focus_rect_ = false;
+  // True if we are in full keyboard accessibility mode. This causes us to show
+  // an internally drawn focus ring on platforms that normally don't display any
+  // focus rings. This custom ring is only drawn if |focus_ring_| is nullptr.
+  // TODO(tommycli): Remove this after after Material Refresh is launched.
+  bool full_keyboard_accessibility_mode_ = false;
 
   // Tracks this preference to determine whether bookmark editing is allowed.
   BooleanPrefMember edit_bookmarks_enabled_;
