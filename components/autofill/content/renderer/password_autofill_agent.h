@@ -343,10 +343,12 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // True indicates that user debug information should be logged.
   bool logging_state_active_;
 
-  // True indicates that the username field was autofilled, false otherwise.
-  bool was_username_autofilled_;
-  // True indicates that the password field was autofilled, false otherwise.
-  bool was_password_autofilled_;
+  // Indicates whether the field is filled, previewed, or not filled by
+  // autofill.
+  blink::WebAutofillState username_autofill_state_;
+  // Indicates whether the field is filled, previewed, or not filled by
+  // autofill.
+  blink::WebAutofillState password_autofill_state_;
 
   // True indicates that a request for credentials has been sent to the store.
   bool sent_request_to_store_;

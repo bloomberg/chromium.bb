@@ -292,7 +292,7 @@ void HTMLTextAreaElement::SubtreeHasChanged() {
   UpdateValue();
   CheckIfValueWasReverted(value());
   SetNeedsValidityCheck();
-  SetAutofilled(false);
+  SetAutofillState(WebAutofillState::kNotFilled);
   UpdatePlaceholderVisibility();
 
   if (!IsFocused())

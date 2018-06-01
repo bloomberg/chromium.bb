@@ -1123,7 +1123,7 @@ void HTMLInputElement::setValue(const String& value,
 
   // Set autofilled to false, as the value might have been set by the website.
   // If the field was autofilled, it'll be set to true from that method.
-  SetAutofilled(false);
+  SetAutofillState(WebAutofillState::kNotFilled);
 
   EventQueueScope scope;
   String sanitized_value = SanitizeValue(value);
@@ -1226,7 +1226,7 @@ void HTMLInputElement::SetValueFromRenderer(const String& value) {
   SetNeedsValidityCheck();
 
   // Clear autofill flag (and yellow background) on user edit.
-  SetAutofilled(false);
+  SetAutofillState(WebAutofillState::kNotFilled);
 }
 
 EventDispatchHandlingState* HTMLInputElement::PreDispatchEventHandler(

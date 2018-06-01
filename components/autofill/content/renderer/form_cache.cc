@@ -31,6 +31,7 @@
 #include "third_party/blink/public/web/web_select_element.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using blink::WebAutofillState;
 using blink::WebConsoleMessage;
 using blink::WebDocument;
 using blink::WebElement;
@@ -288,7 +289,7 @@ bool FormCache::ClearSectionWithElement(const WebFormControlElement& element) {
     if (control_element.AutofillSection() != element.AutofillSection())
       continue;
 
-    control_element.SetAutofilled(false);
+    control_element.SetAutofillState(WebAutofillState::kNotFilled);
 
     WebInputElement* input_element = ToWebInputElement(&control_element);
     if (form_util::IsTextInput(input_element) ||

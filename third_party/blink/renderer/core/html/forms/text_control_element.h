@@ -135,6 +135,8 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
 
   void SelectionChanged(bool user_triggered);
   bool LastChangeWasUserEdit() const;
+  // This is only used in tests, to fake the user's action
+  void SetLastChangeWasUserEditForTest() { last_change_was_user_edit_ = true; }
   virtual void SetInnerEditorValue(const String&);
   String InnerEditorValue() const;
   Node* CreatePlaceholderBreakElement() const;

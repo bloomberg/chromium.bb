@@ -66,6 +66,10 @@ const char kAutofillDynamicFormsName[] = "Autofill Dynamic Forms";
 const char kAutofillDynamicFormsDescription[] =
     "Allows autofill to fill dynamically changing forms";
 
+const char kAutofillPrefilledFieldsName[] = "Autofill Prefilled Fields";
+const char kAutofillPrefilledFieldsDescription[] =
+    "Allows autofill to fill fields previously filled by the website";
+
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[] =
     "Autofill Enforce Min Required Fields For Heuristics";
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[] =

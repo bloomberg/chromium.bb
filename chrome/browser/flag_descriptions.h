@@ -78,6 +78,9 @@ extern const char kAutofillEnforceMinRequiredFieldsForQueryDescription[];
 extern const char kAutofillEnforceMinRequiredFieldsForUploadName[];
 extern const char kAutofillEnforceMinRequiredFieldsForUploadDescription[];
 
+extern const char kAutofillPrefilledFieldsName[];
+extern const char kAutofillPrefilledFieldsDescription[];
+
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
 

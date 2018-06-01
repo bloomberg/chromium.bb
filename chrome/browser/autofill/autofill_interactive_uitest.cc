@@ -70,6 +70,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/events/keycodes/dom_us_layout_data.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -455,6 +456,57 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
     ExpectFieldValue("phone", "15125551234");
   }
 
+  void ExpectClearedForm() {
+    ExpectFieldValue("firstname", "");
+    ExpectFieldValue("lastname", "");
+    ExpectFieldValue("address1", "");
+    ExpectFieldValue("address2", "");
+    ExpectFieldValue("city", "");
+    ExpectFieldValue("state", "");
+    ExpectFieldValue("zip", "");
+    ExpectFieldValue("country", "");
+    ExpectFieldValue("phone", "");
+  }
+
+  void FillElementWithValue(const std::string& element_name,
+                            const std::string& value) {
+    FocusFieldByName(element_name);
+
+    for (base::char16 character : value) {
+      ui::DomKey dom_key = ui::DomKey::FromCharacter(character);
+      const ui::PrintableCodeEntry* code_entry = std::find_if(
+          std::begin(ui::kPrintableCodeMap), std::end(ui::kPrintableCodeMap),
+          [character](const ui::PrintableCodeEntry& entry) {
+            return entry.character[0] == character ||
+                   entry.character[1] == character;
+          });
+      ASSERT_TRUE(code_entry != std::end(ui::kPrintableCodeMap));
+      bool shift = code_entry->character[1] == character;
+      ui::DomCode dom_code = code_entry->dom_code;
+      content::SimulateKeyPress(GetWebContents(), dom_key, dom_code,
+                                ui::DomCodeToUsLayoutKeyboardCode(dom_code),
+                                false, shift, false, false);
+    }
+  }
+
+  void DeleteElementValue(const std::string& element_name) {
+    std::string value;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        GetWebContents(),
+        "window.domAutomationController.send("
+        "    document.getElementById('" +
+            element_name + "').value);",
+        &value));
+    FocusFieldByName(element_name);
+    ui::DomKey key = ui::DomKey::BACKSPACE;
+    ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
+    ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
+    int value_size = value.size();
+    while (value_size--)
+      content::SimulateKeyPress(GetWebContents(), key, code, key_code, false,
+                                false, false, false);
+  }
+
   void SendKeyToPageAndWait(ui::DomKey key) {
     ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
     ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
@@ -621,6 +673,227 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, BasicFormFill) {
 
   // Invoke Autofill.
   TryBasicFormFill();
+}
+// Test that autofill doesn't refill a field initially modified by the user.
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, ModifyFieldAndFill) {
+  CreateTestProfile();
+
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestFormString)));
+
+  // Modify a field.
+  FillElementWithValue("city", "Montreal");
+  ExpectFieldValue("city", "Montreal");
+
+  // Fill
+  FocusFirstNameField();
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+
+  ExpectFieldValue("firstname", "Milton");
+  ExpectFieldValue("lastname", "Waddams");  // Modified by the user.
+  ExpectFieldValue("address1", "4120 Freidrich Lane");
+  ExpectFieldValue("address2", "Basement");
+  ExpectFieldValue("city", "Montreal");
+  ExpectFieldValue("state", "TX");
+  ExpectFieldValue("zip", "78744");
+  ExpectFieldValue("country", "US");
+  ExpectFieldValue("phone", "15125551234");
+}
+
+// Test that autofill works when the website prefills the form.
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, PrefillFormAndFill) {
+  const char kPrefillScript[] =
+      "<script>"
+      "document.getElementById('firstname').value = 'Seb';"
+      "document.getElementById('lastname').value = 'Bell';"
+      "document.getElementById('address1').value = '3243 Notre-Dame Ouest';"
+      "document.getElementById('address2').value = 'apt 843';"
+      "document.getElementById('city').value = 'Montreal';"
+      "document.getElementById('zip').value = 'H5D 4D3';"
+      "document.getElementById('phone').value = '15142223344';"
+      "</script>";
+
+  // Load the test page and prefill it with the above script.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(),
+      GURL(std::string(kDataURIPrefix) + kTestFormString + kPrefillScript)));
+
+  CreateTestProfile();
+
+  // We need to delete the prefilled value and then trigger the autofill.
+  DeleteElementValue("firstname");
+  ExpectFieldValue("firstname", "");
+
+  // Fill
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+
+  ExpectFilledTestForm();
+}
+
+// Test that autofill doesn't refill a field modified by the user.
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
+                       FillChangeSecondFieldRefillAndClearFirstFill) {
+  CreateTestProfile();
+
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestFormString)));
+
+  // Basic Fill
+  FocusFirstNameField();
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+  ExpectFilledTestForm();
+
+  // Change the last name.
+  FocusFieldByName("lastname");
+  SendKeyToPageAndWait(ui::DomKey::BACKSPACE);
+  SendKeyToPageAndWait(ui::DomKey::BACKSPACE);
+
+  ExpectFieldValue("firstname", "Milton");
+  ExpectFieldValue("lastname", "Wadda");  // Modified by the user.
+  ExpectFieldValue("address1", "4120 Freidrich Lane");
+  ExpectFieldValue("address2", "Basement");
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("state", "TX");
+  ExpectFieldValue("zip", "78744");
+  ExpectFieldValue("country", "US");
+  ExpectFieldValue("phone", "15125551234");
+
+  // Fill again by focusing on the first field.
+  FocusFirstNameField();
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+
+  ExpectFieldValue("firstname", "Milton");
+  ExpectFieldValue("lastname",
+                   "Wadda");  // Modified by the user, should not be autofilled.
+  ExpectFieldValue("address1", "4120 Freidrich Lane");
+  ExpectFieldValue("address2", "Basement");
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("state", "TX");
+  ExpectFieldValue("zip", "78744");
+  ExpectFieldValue("country", "US");
+  ExpectFieldValue("phone", "15125551234");
+
+  // Clear everything except last name by selecting 'clear' on the first field.
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToDataListPopup(ui::DomKey::ARROW_DOWN);  // clear
+  SendKeyToDataListPopup(ui::DomKey::ENTER);
+
+  ExpectFieldValue("firstname", "");
+  ExpectFieldValue("lastname",
+                   "Wadda");  // Modified by the user, should not be autofilled.
+  ExpectFieldValue("address1", "");
+  ExpectFieldValue("address2", "");
+  ExpectFieldValue("city", "");
+  ExpectFieldValue("state", "");
+  ExpectFieldValue("zip", "");
+  ExpectFieldValue("country", "");
+  ExpectFieldValue("phone", "");
+}
+
+// Test that multiple autofillings work.
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
+                       FillChangeSecondFieldRefillAndClearSecondField) {
+  CreateTestProfile();
+
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestFormString)));
+
+  // Basic fill.
+  FocusFirstNameField();
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+
+  ExpectFilledTestForm();
+
+  // Change the last name.
+  FocusFieldByName("lastname");
+  SendKeyToPageAndWait(ui::DomKey::BACKSPACE);
+  SendKeyToPageAndWait(ui::DomKey::BACKSPACE);
+
+  ExpectFieldValue("firstname", "Milton");
+  ExpectFieldValue("lastname", "Wadda");  // Modified by the user.
+  ExpectFieldValue("address1", "4120 Freidrich Lane");
+  ExpectFieldValue("address2", "Basement");
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("state", "TX");
+  ExpectFieldValue("zip", "78744");
+  ExpectFieldValue("country", "US");
+  ExpectFieldValue("phone", "15125551234");
+
+  // Autofill the last name.
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+
+  ExpectFilledTestForm();
+
+  // Clear everything by selecting 'clear' on the second field.
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToDataListPopup(ui::DomKey::ARROW_DOWN);  // clear
+  SendKeyToDataListPopup(ui::DomKey::ENTER);
+
+  ExpectClearedForm();
+}
+
+// Test that multiple autofillings work.
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
+                       FillChangeSecondFieldRefillSecondFieldClearFirst) {
+  CreateTestProfile();
+
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestFormString)));
+
+  // Basic fill.
+  FocusFirstNameField();
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+  ExpectFilledTestForm();
+
+  // Change the last name.
+  FocusFieldByName("lastname");
+  SendKeyToPageAndWait(ui::DomKey::BACKSPACE);
+  SendKeyToPageAndWait(ui::DomKey::BACKSPACE);
+
+  ExpectFieldValue("firstname", "Milton");
+  ExpectFieldValue("lastname", "Wadda");  // Modified by the user.
+  ExpectFieldValue("address2", "Basement");
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("state", "TX");
+  ExpectFieldValue("zip", "78744");
+  ExpectFieldValue("country", "US");
+  ExpectFieldValue("phone", "15125551234");
+
+  // Autofill the last name.
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+
+  ExpectFilledTestForm();
+
+  // Clear everything by selecting 'clear' on the first field.
+  FocusFirstNameField();
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToDataListPopup(ui::DomKey::ARROW_DOWN);  // clear
+  SendKeyToDataListPopup(ui::DomKey::ENTER);
+
+  ExpectClearedForm();
 }
 
 // Test that form filling can be initiated by pressing the down arrow.

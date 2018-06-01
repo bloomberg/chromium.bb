@@ -45,6 +45,7 @@
 #include "third_party/blink/public/web/web_select_element.h"
 
 using autofill::FormFieldData;
+using blink::WebAutofillState;
 using blink::WebDocument;
 using blink::WebElement;
 using blink::WebElementCollection;
@@ -855,16 +856,22 @@ void ForEachMatchingFormFieldCommon(
     CR_DEFINE_STATIC_LOCAL(WebString, kValue, ("value"));
     CR_DEFINE_STATIC_LOCAL(WebString, kPlaceholder, ("placeholder"));
 
+    if (!is_initiating_element &&
+        element->GetAutofillState() == WebAutofillState::kAutofilled)
+      continue;
+
     if (!force_override && !is_initiating_element &&
-        // A text field, with a non-empty value that is NOT the value of the
-        // input field's "value" or "placeholder" attribute, is skipped.
-        // Some sites fill the fields with formatting string. To tell the
-        // difference between the values entered by the user and the site, we'll
-        // sanitize the value. If the sanitized value is empty, it means that
-        // the site has filled the field, in this case, the field is not
-        // skipped.
+        // A text field, with a non-empty value that is entered by the user,
+        // and is NOT the value of the input field's "value" or "placeholder"
+        // attribute, is skipped. Some sites fill the fields with formatting
+        // string. To tell the difference between the values entered by the user
+        // and the site, we'll sanitize the value. If the sanitized value is
+        // empty, it means that the site has filled the field, in this case, the
+        // field is not skipped.
         (IsAutofillableInputElement(input_element) ||
          IsTextAreaElement(*element)) &&
+        (element->IsEnteredByUser() ||
+         !base::FeatureList::IsEnabled(features::kAutofillPrefilledFields)) &&
         !SanitizedFieldIsEmpty(element->Value().Utf16()) &&
         (!element->HasAttribute(kValue) ||
          element->GetAttribute(kValue) != element->Value()) &&
@@ -953,7 +960,7 @@ void FillFormField(const FormFieldData& data,
   if (!field->GetDocument().GetFrame())
     return;
 
-  field->SetAutofilled(true);
+  field->SetAutofillState(WebAutofillState::kAutofilled);
   field->SetAutofillSection(WebString::FromUTF8(data.section));
 
   if (is_initiating_node &&
@@ -987,10 +994,10 @@ void PreviewFormField(const FormFieldData& data,
     // returns the default maxlength value.
     input_element->SetSuggestedValue(blink::WebString::FromUTF16(
         data.value.substr(0, input_element->MaxLength())));
-    input_element->SetAutofilled(true);
+    input_element->SetAutofillState(WebAutofillState::kPreviewed);
   } else if (IsTextAreaElement(*field) || IsSelectElement(*field)) {
     field->SetSuggestedValue(blink::WebString::FromUTF16(data.value));
-    field->SetAutofilled(true);
+    field->SetAutofillState(WebAutofillState::kPreviewed);
   }
 
   if (is_initiating_node &&
@@ -1516,6 +1523,7 @@ void WebFormControlElementToFormField(
   if (IsAutofillableInputElement(input_element) ||
       IsTextAreaElement(element) ||
       IsSelectElement(element)) {
+    // The browser doesn't need to differentiate between preview and autofill.
     field->is_autofilled = element.IsAutofilled();
     field->is_focusable = IsWebElementVisible(element);
     field->should_autocomplete = element.AutoComplete();
@@ -1858,7 +1866,7 @@ void PreviewForm(const FormData& form, const WebFormControlElement& element) {
 }
 
 bool ClearPreviewedFormWithElement(const WebFormControlElement& element,
-                                   bool was_autofilled) {
+                                   blink::WebAutofillState old_autofill_state) {
   WebFormElement form_element = element.Form();
   std::vector<WebFormControlElement> control_elements;
   if (form_element.IsNull()) {
@@ -1885,9 +1893,8 @@ bool ClearPreviewedFormWithElement(const WebFormControlElement& element,
         !IsSelectElement(control_element))
       continue;
 
-    // If the element is not auto-filled, we did not preview it,
-    // so there is nothing to reset.
-    if (!control_element.IsAutofilled())
+    // Only clear previewed fields.
+    if (control_element.GetAutofillState() != WebAutofillState::kPreviewed)
       continue;
 
     if ((IsTextInput(input_element) || IsMonthInput(input_element) ||
@@ -1903,18 +1910,19 @@ bool ClearPreviewedFormWithElement(const WebFormControlElement& element,
       control_element.SetSuggestedValue(WebString());
       bool is_initiating_node = (element == control_element);
       if (is_initiating_node) {
-        control_element.SetAutofilled(was_autofilled);
         // Clearing the suggested value in the focused node (above) can cause
         // selection to be lost. We force selection range to restore the text
         // cursor.
         int length = control_element.Value().length();
         control_element.SetSelectionRange(length, length);
+        control_element.SetAutofillState(old_autofill_state);
+
       } else {
-        control_element.SetAutofilled(false);
+        control_element.SetAutofillState(WebAutofillState::kNotFilled);
       }
     } else if (IsSelectElement(control_element)) {
       control_element.SetSuggestedValue(WebString());
-      control_element.SetAutofilled(false);
+      control_element.SetAutofillState(WebAutofillState::kNotFilled);
     }
   }
 

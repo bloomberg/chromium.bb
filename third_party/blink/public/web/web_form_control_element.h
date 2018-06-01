@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FORM_CONTROL_ELEMENT_H_
 
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_autofill_state.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_form_element.h"
 
@@ -61,8 +62,12 @@ class BLINK_EXPORT WebFormControlElement : public WebElement {
   // that have been a password in the past.
   WebString FormControlTypeForAutofill() const;
 
+  enum WebAutofillState GetAutofillState() const;
   bool IsAutofilled() const;
-  void SetAutofilled(bool);
+  void SetAutofillState(enum WebAutofillState);
+  bool IsEnteredByUser() const;
+  // This is only used for simulating the user's action in tests.
+  void SetIsEnteredByUserForTest();
 
   // The autofill section to which this element belongs (e.g. billing address,
   // shipping address, .. .)

@@ -34,6 +34,8 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/gfx/geometry/rect.h"
 
+using blink::WebAutofillState;
+
 namespace autofill {
 
 namespace {
@@ -380,7 +382,7 @@ void PasswordGenerationAgent::GeneratedPasswordAccepted(
     // frame.
     if (!render_frame())
       return;
-    password_element.SetAutofilled(true);
+    password_element.SetAutofillState(WebAutofillState::kAutofilled);
     // Advance focus to the next input field. We assume password fields in
     // an account creation form are always adjacent.
     render_frame()->GetRenderView()->GetWebView()->AdvanceFocus(false);
@@ -652,7 +654,7 @@ void PasswordGenerationAgent::PasswordNoLongerGenerated() {
   generation_element_.SetShouldRevealPassword(false);
   for (blink::WebInputElement& password :
        generation_form_data_->password_elements)
-    password.SetAutofilled(false);
+    password.SetAutofillState(WebAutofillState::kNotFilled);
   password_generation::LogPasswordGenerationEvent(
       password_generation::PASSWORD_DELETED);
   CopyElementValueToOtherInputElements(
@@ -670,7 +672,8 @@ void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
 void PasswordGenerationAgent::UserSelectedManualGenerationOption() {
   if (SetUpUserTriggeredGeneration()) {
     last_focused_password_element_.SetAutofillValue(blink::WebString());
-    last_focused_password_element_.SetAutofilled(false);
+    last_focused_password_element_.SetAutofillState(
+        WebAutofillState::kNotFilled);
     ShowGenerationPopup();
   }
 }
