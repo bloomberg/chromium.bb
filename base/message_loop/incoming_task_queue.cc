@@ -179,9 +179,11 @@ void IncomingTaskQueue::TriageQueue::Clear() {
 void IncomingTaskQueue::TriageQueue::ReloadFromIncomingQueueIfEmpty() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(outer_->sequence_checker_);
   if (queue_.empty()) {
-    // TODO(robliao): Since these high resolution tasks aren't yet in the
-    // delayed queue, they technically shouldn't trigger high resolution timers
-    // until they are.
+    // Incrementing the high resolution task count now will have the impact of
+    // triggering the high resolution timer before these tasks arrive in the
+    // delayed queue. This is fine as this loop will remain awake anyways until
+    // the triage queue is empty and has placed any delayed tasks in the delayed
+    // queue.
     outer_->pending_high_res_tasks_ += outer_->ReloadWorkQueue(&queue_);
   }
 }
