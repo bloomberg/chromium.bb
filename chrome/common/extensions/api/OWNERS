@@ -14,7 +14,6 @@ per-file automation*.idl=aboxhall@chromium.org
 per-file automation*.idl=dmazzoni@chromium.org
 per-file automation*.idl=dtseng@chromium.org
 per-file automation*.idl=nektar@chromium.org
-per-file file_manager_private*.idl=fukino@chromium.org
-per-file file_manager_private*.idl=yamaguchi@chromium.org
+per-file file_manager_private*.idl=file://ui/file_manager/OWNERS
 
 # COMPONENT: Platform>Extensions>API
