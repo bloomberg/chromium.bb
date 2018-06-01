@@ -41,7 +41,7 @@ class EnqueueOrderGenerator {
   }
 
  private:
-  std::atomic_uint64_t enqueue_order_;
+  std::atomic<EnqueueOrder> enqueue_order_;
 };
 
 }  // namespace internal
