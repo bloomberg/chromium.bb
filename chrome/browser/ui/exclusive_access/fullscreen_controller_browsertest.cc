@@ -47,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, FullscreenOnFileURL) {
 //
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, KeyboardLockWithEscLocked) {
   EnterActiveTabFullscreen();
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -57,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, KeyboardLockWithEscLocked) {
 
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, KeyboardLockWithEscUnlocked) {
   EnterActiveTabFullscreen();
-  RequestKeyboardLock(/*esc_key_locked=*/false);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/false));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
       base::FilePath(kEmptyFile)));
   AddTabAtIndex(0, file_url, PAGE_TRANSITION_TYPED);
   EnterActiveTabFullscreen();
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
       base::FilePath(kEmptyFile)));
   AddTabAtIndex(0, file_url, PAGE_TRANSITION_TYPED);
   EnterActiveTabFullscreen();
-  RequestKeyboardLock(/*esc_key_locked=*/false);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/false));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
 
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        KeyboardLockNotLockedInWindowMode) {
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   ASSERT_FALSE(GetExclusiveAccessManager()
                    ->keyboard_lock_controller()
                    ->IsKeyboardLockActive());
@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        KeyboardLockExitsOnEscPressWhenEscNotLocked) {
   EnterActiveTabFullscreen();
-  RequestKeyboardLock(/*esc_key_locked=*/false);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/false));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        KeyboardLockDoesNotExitOnEscPressWhenEscIsLocked) {
   EnterActiveTabFullscreen();
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        KeyboardLockNotLockedInExtensionFullscreenMode) {
   EnterExtensionInitiatedFullscreen();
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   ASSERT_FALSE(GetExclusiveAccessManager()
                    ->keyboard_lock_controller()
                    ->IsKeyboardLockActive());
@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
 
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        KeyboardLockNotLockedAfterFullscreenTransition) {
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   EnterActiveTabFullscreen();
   ASSERT_FALSE(GetExclusiveAccessManager()
                    ->keyboard_lock_controller()
@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        KeyboardLockBubbleHideCallbackUnlock) {
   EnterActiveTabFullscreen();
   keyboard_lock_bubble_hide_reason_recorder_.clear();
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   ASSERT_EQ(0ul, keyboard_lock_bubble_hide_reason_recorder_.size());
 
   CancelKeyboardLock();
@@ -178,12 +178,12 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, FastKeyboardLockUnlockRelock) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner.get());
 
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   // Shorter than |ExclusiveAccessBubble::kInitialDelayMs|.
   task_runner->FastForwardBy(
       base::TimeDelta::FromMilliseconds(InitialBubbleDelayMs() / 2));
   CancelKeyboardLock();
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -197,12 +197,12 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, SlowKeyboardLockUnlockRelock) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner.get());
 
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   // Longer than |ExclusiveAccessBubble::kInitialDelayMs|.
   task_runner->FastForwardBy(
       base::TimeDelta::FromMilliseconds(InitialBubbleDelayMs() + 20));
   CancelKeyboardLock();
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -224,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
   // Set the window to a known value for testing.
   SetEscRepeatWindowLength(base::TimeDelta::FromSeconds(1));
 
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -272,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
   // Set the window to a known value for testing.
   SetEscRepeatWindowLength(base::TimeDelta::FromSeconds(1));
 
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -313,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, KeyboardLockAfterMouseLock) {
   ASSERT_TRUE(
       GetExclusiveAccessManager()->mouse_lock_controller()->IsMouseLocked());
 
-  RequestKeyboardLock(/*esc_key_locked=*/false);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/false));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -331,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
   ASSERT_TRUE(
       GetExclusiveAccessManager()->mouse_lock_controller()->IsMouseLocked());
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -344,7 +344,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
   EnterActiveTabFullscreen();
   keyboard_lock_bubble_hide_reason_recorder_.clear();
 
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -352,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
             GetExclusiveAccessBubbleType());
   ASSERT_EQ(0ul, keyboard_lock_bubble_hide_reason_recorder_.size());
 
-  RequestKeyboardLock(/*esc_key_locked=*/false);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/false));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
             keyboard_lock_bubble_hide_reason_recorder_[0]);
   keyboard_lock_bubble_hide_reason_recorder_.clear();
 
-  RequestKeyboardLock(/*esc_key_locked=*/false);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/false));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -371,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
             GetExclusiveAccessBubbleType());
   ASSERT_EQ(0ul, keyboard_lock_bubble_hide_reason_recorder_.size());
 
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -382,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
             keyboard_lock_bubble_hide_reason_recorder_[0]);
   keyboard_lock_bubble_hide_reason_recorder_.clear();
 
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -511,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, SlowMouseLockUnlockRelock) {
 
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, MouseLockAfterKeyboardLock) {
   EnterActiveTabFullscreen();
-  RequestKeyboardLock(/*esc_key_locked=*/false);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/false));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());
@@ -529,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, MouseLockAfterKeyboardLock) {
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        MouseLockAfterKeyboardLockWithEscLocked) {
   EnterActiveTabFullscreen();
-  RequestKeyboardLock(/*esc_key_locked=*/true);
+  ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/true));
   ASSERT_TRUE(GetExclusiveAccessManager()
                   ->keyboard_lock_controller()
                   ->IsKeyboardLockActive());

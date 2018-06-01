@@ -85,12 +85,6 @@ class KeyboardLockController : public ExclusiveAccessControllerBase {
   // repeated ESC keypresses.
   void RecordForcedBubbleReshowsHistogram();
 
-  // TODO(joedow): Remove this bool and initiate keyboard lock from javascript
-  // once all platforms have been implemented.
-  // If true, does not call into the WebContents to lock the keyboard.
-  // Used for testing to abstract away platform differences for keyboard lock.
-  bool fake_keyboard_lock_for_test_ = false;
-
   // Called after the bubble is hidden in tests, if set.
   ExclusiveAccessBubbleHideCallbackForTest bubble_hide_callback_for_test_;
 

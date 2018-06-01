@@ -11,11 +11,13 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -486,6 +488,15 @@ RenderWidgetHost* GetMouseLockWidget(WebContents* web_contents);
 
 // Returns the RenderWidgetHost that holds the keyboard lock.
 RenderWidgetHost* GetKeyboardLockWidget(WebContents* web_contents);
+
+// Allows tests to drive keyboard lock functionality without requiring access
+// to the RenderWidgetHostImpl header or setting up an HTTP test server.
+// |codes| represents the set of keys to lock.  If |codes| has no value, then
+// all keys will be considered locked.  If |codes| has a value, then at least
+// one key must be specified.
+bool RequestKeyboardLock(WebContents* web_contents,
+                         base::Optional<base::flat_set<ui::DomCode>> codes);
+void CancelKeyboardLock(WebContents* web_contents);
 
 // Returns true if inner |interstitial_page| is connected to an outer
 // WebContents.

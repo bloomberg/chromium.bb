@@ -155,8 +155,7 @@ void KeyboardLockController::LostKeyboardLock() {
 
 void KeyboardLockController::LockKeyboard(content::WebContents* web_contents,
                                           bool esc_key_locked) {
-  if (fake_keyboard_lock_for_test_ ||
-      web_contents->GotResponseToKeyboardLockRequest(true)) {
+  if (web_contents->GotResponseToKeyboardLockRequest(true)) {
     KeyboardLockState new_lock_state =
         esc_key_locked ? KeyboardLockState::kLockedWithEsc
                        : KeyboardLockState::kLockedWithoutEsc;
@@ -185,10 +184,7 @@ void KeyboardLockController::UnlockKeyboard() {
   RecordForcedBubbleReshowsHistogram();
   keyboard_lock_state_ = KeyboardLockState::kUnlocked;
 
-  if (!fake_keyboard_lock_for_test_) {
-    exclusive_access_tab()->GotResponseToKeyboardLockRequest(false);
-  }
-
+  exclusive_access_tab()->GotResponseToKeyboardLockRequest(false);
   SetTabWithExclusiveAccess(nullptr);
   exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent(
       ExclusiveAccessBubbleHideCallback());

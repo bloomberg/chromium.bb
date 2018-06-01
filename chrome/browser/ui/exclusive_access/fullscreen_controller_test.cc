@@ -9,6 +9,8 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
+#include "base/optional.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -21,8 +23,11 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using content::WebContents;
@@ -34,7 +39,12 @@ const char FullscreenControllerTest::kFullscreenMouseLockHTML[] =
     "/fullscreen_mouselock/fullscreen_mouselock.html";
 
 FullscreenControllerTest::FullscreenControllerTest() : weak_ptr_factory_(this) {
-  scoped_feature_list_.InitAndEnableFeature(features::kKeyboardLockAPI);
+  // Ensure the KeyboardLockAPI is enabled and system keyboard lock is disabled.
+  // It is important to disable system keyboard lock as low-level test utilities
+  // may install a keyboard hook to listen for keyboard events and having an
+  // active system hook may cause issues with that mechanism.
+  scoped_feature_list_.InitWithFeatures({features::kKeyboardLockAPI},
+                                        {features::kSystemKeyboardLock});
 }
 
 FullscreenControllerTest::~FullscreenControllerTest() = default;
@@ -64,13 +74,22 @@ void FullscreenControllerTest::TearDownOnMainThread() {
       base::RepeatingCallback<void(ExclusiveAccessBubbleHideReason)>();
 }
 
-void FullscreenControllerTest::RequestKeyboardLock(bool esc_key_locked) {
+bool FullscreenControllerTest::RequestKeyboardLock(bool esc_key_locked) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  KeyboardLockController* keyboard_lock_controller =
-      GetExclusiveAccessManager()->keyboard_lock_controller();
-  keyboard_lock_controller->fake_keyboard_lock_for_test_ = true;
-  browser()->RequestKeyboardLock(tab, esc_key_locked);
-  keyboard_lock_controller->fake_keyboard_lock_for_test_ = false;
+
+  // If the caller defines |esc_key_locked| as true then we create a set of
+  // locked keys which includes the escape key, this will require the user/test
+  // to press and hold escape to exit fullscreen.  If |esc_key_locked| is false,
+  // then we create a set of keys that does not include escape (we arbitrarily
+  // chose the 'a' key) which means the user/test can just press escape to exit
+  // fullscreen.
+  base::Optional<base::flat_set<ui::DomCode>> codes;
+  if (esc_key_locked)
+    codes = base::flat_set<ui::DomCode>({ui::DomCode::ESCAPE});
+  else
+    codes = base::flat_set<ui::DomCode>({ui::DomCode::US_A});
+
+  return content::RequestKeyboardLock(tab, std::move(codes));
 }
 
 void FullscreenControllerTest::RequestToLockMouse(
@@ -103,7 +122,7 @@ ExclusiveAccessManager* FullscreenControllerTest::GetExclusiveAccessManager() {
 
 void FullscreenControllerTest::CancelKeyboardLock() {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  browser()->CancelKeyboardLockRequest(tab);
+  content::CancelKeyboardLock(tab);
 }
 
 void FullscreenControllerTest::LostMouseLock() {
