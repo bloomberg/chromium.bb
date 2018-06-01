@@ -7,6 +7,7 @@
 #include "components/renderer_context_menu/views/toolkit_delegate_views.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
+#include "ui/views/widget/widget.h"
 
 class ToolkitDelegateViewsMac : public ToolkitDelegateViews {
  public:
@@ -46,6 +47,8 @@ void RenderViewContextMenuMacViews::Show() {
   gfx::Point menu_point = gfx::ScreenPointFromNSPoint(
       ui::ConvertPointFromWindowToScreen([parent_view_ window], position));
 
+  views::Widget* owner =
+      views::Widget::GetTopLevelWidgetForNativeView(parent_view_);
   static_cast<ToolkitDelegateViews*>(toolkit_delegate())
-      ->RunMenuAt(nullptr, menu_point, params().source_type);
+      ->RunMenuAt(owner, menu_point, params().source_type);
 }
