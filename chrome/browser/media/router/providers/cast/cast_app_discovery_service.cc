@@ -160,6 +160,10 @@ void CastAppDiscoveryServiceImpl::OnSinkAddedOrUpdated(
     return;
 
   const MediaSink::Id& sink_id = sink.sink().id();
+
+  // Any queries that currently contains this sink should be updated.
+  UpdateSinkQueries(availability_tracker_.GetSupportedSources(sink_id));
+
   for (const std::string& app_id : availability_tracker_.GetRegisteredApps()) {
     auto availability = availability_tracker_.GetAvailability(sink_id, app_id);
     if (availability.first != cast_channel::GetAppAvailabilityResult::kUnknown)

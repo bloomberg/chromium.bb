@@ -95,6 +95,7 @@ class MediaSinkInternal {
 
   // Must only be called if the sink is a Cast sink.
   const CastSinkExtraData& cast_data() const;
+  CastSinkExtraData& cast_data();
 
   bool is_dial_sink() const { return sink_type_ == SinkType::DIAL; }
   bool is_cast_sink() const { return sink_type_ == SinkType::CAST; }

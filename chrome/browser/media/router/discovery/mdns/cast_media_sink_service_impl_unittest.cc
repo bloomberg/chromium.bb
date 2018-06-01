@@ -94,6 +94,11 @@ class CastMediaSinkServiceImplTest : public ::testing::Test {
     media_sink_service_impl_.RemoveObserver(&observer_);
   }
 
+  void OpenChannels(const std::vector<MediaSinkInternal>& cast_sinks,
+                    CastMediaSinkServiceImpl::SinkSource sink_source) {
+    media_sink_service_impl_.OpenChannels(cast_sinks, sink_source);
+  }
+
  protected:
   void ExpectOpenSocketInternal(cast_channel::CastSocket* socket) {
     EXPECT_CALL(*mock_cast_socket_service_,
@@ -454,6 +459,44 @@ TEST_F(CastMediaSinkServiceImplTest, OpenChannelNewIPSameSink) {
   auto sink_it = current_sinks.find(cast_sink1.sink().id());
   ASSERT_TRUE(sink_it != current_sinks.end());
   EXPECT_EQ(cast_sink1, sink_it->second);
+}
+
+TEST_F(CastMediaSinkServiceImplTest, OpenChannelUpdatedSinkSameIP) {
+  MediaSinkInternal cast_sink = CreateCastSink(1);
+  net::IPEndPoint ip_endpoint = cast_sink.cast_data().ip_endpoint;
+
+  cast_channel::MockCastSocket socket;
+  socket.set_id(1);
+
+  base::SimpleTestClock clock;
+  base::Time start_time = base::Time::Now();
+  clock.SetNow(start_time);
+  media_sink_service_impl_.SetClockForTest(&clock);
+
+  EXPECT_CALL(*mock_cast_socket_service_, OpenSocketInternal(ip_endpoint, _, _))
+      .WillRepeatedly(
+          Invoke([&](const auto& ip_endpoint, auto* net_log, auto open_cb) {
+            std::move(open_cb).Run(&socket);
+          }));
+  std::vector<MediaSinkInternal> sinks = {cast_sink};
+  OpenChannels(sinks, CastMediaSinkServiceImpl::SinkSource::kMdns);
+
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(1u, media_sink_service_impl_.GetSinks().size());
+
+  cast_sink.sink().set_name("Updated name");
+  std::vector<MediaSinkInternal> updated_sinks = {cast_sink};
+
+  EXPECT_CALL(*mock_cast_socket_service_, OpenSocketInternal(_, _, _)).Times(0);
+  EXPECT_CALL(observer_, OnSinkAddedOrUpdated(cast_sink));
+  OpenChannels(updated_sinks, CastMediaSinkServiceImpl::SinkSource::kMdns);
+
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
+  const auto& current_sinks = media_sink_service_impl_.GetSinks();
+  EXPECT_EQ(1u, current_sinks.size());
+  auto sink_it = current_sinks.find(cast_sink.sink().id());
+  ASSERT_TRUE(sink_it != current_sinks.end());
+  EXPECT_EQ(cast_sink, sink_it->second);
 }
 
 TEST_F(CastMediaSinkServiceImplTest, TestOnChannelOpenFailed) {
