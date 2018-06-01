@@ -17,11 +17,14 @@
 // Designated initializer. Initializes with |proposedFrame| and |client| for
 // |suggestion|. Its width will be adjusted according to the length of
 // |suggestion| and width in |proposedFrame| is ignored.
+// |userInteractionEnabled| is a boolean that denotes whether user interaction
+// is enabled on the suggestion.
 - (id)initWithSuggestion:(FormSuggestion*)suggestion
-           proposedFrame:(CGRect)proposedFrame
-                   index:(NSUInteger)index
-          numSuggestions:(NSUInteger)numSuggestions
-                  client:(id<FormSuggestionViewClient>)client;
+             proposedFrame:(CGRect)proposedFrame
+                     index:(NSUInteger)index
+    userInteractionEnabled:(BOOL)userInteractionEnabled
+            numSuggestions:(NSUInteger)numSuggestions
+                    client:(id<FormSuggestionViewClient>)client;
 
 @end
 

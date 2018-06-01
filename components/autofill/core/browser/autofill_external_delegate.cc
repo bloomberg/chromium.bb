@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
@@ -355,8 +356,22 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   // include a hint for keyboard accessory.
   suggestions->push_back(Suggestion(GetSettingsSuggestionValue()));
   suggestions->back().frontend_id = POPUP_ITEM_ID_AUTOFILL_OPTIONS;
+  // On Android and Desktop, Google Pay branding is shown along with Settings.
+  // So Google Pay Icon is just attached to an existing menu item.
   if (is_all_server_suggestions)
     suggestions->back().icon = base::ASCIIToUTF16("googlePay");
+
+// On iOS, GooglePayIcon comes at the begining and hence prepended to the list.
+#if defined(OS_IOS)
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillDownstreamUseGooglePayBrandingOniOS) &&
+      is_all_server_suggestions) {
+    Suggestion googlepay_icon;
+    googlepay_icon.icon = base::ASCIIToUTF16("googlePay");
+    googlepay_icon.frontend_id = POPUP_ITEM_ID_GOOGLE_PAY_BRANDING;
+    suggestions->insert(suggestions->begin(), googlepay_icon);
+  }
+#endif
 
 #if defined(OS_ANDROID)
   if (IsKeyboardAccessoryEnabled()) {

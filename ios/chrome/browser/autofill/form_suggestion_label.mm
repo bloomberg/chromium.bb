@@ -75,19 +75,22 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
   // Client of this view.
   __weak id<FormSuggestionViewClient> client_;
   FormSuggestion* suggestion_;
+  BOOL userInteractionEnabled_;
 }
 
 - (id)initWithSuggestion:(FormSuggestion*)suggestion
-           proposedFrame:(CGRect)proposedFrame
-                   index:(NSUInteger)index
-          numSuggestions:(NSUInteger)numSuggestions
-                  client:(id<FormSuggestionViewClient>)client {
+             proposedFrame:(CGRect)proposedFrame
+                     index:(NSUInteger)index
+    userInteractionEnabled:(BOOL)userInteractionEnabled
+            numSuggestions:(NSUInteger)numSuggestions
+                    client:(id<FormSuggestionViewClient>)client {
   // TODO(jimblackler): implement sizeThatFits: and layoutSubviews, and perform
   // layout in those methods instead of in the designated initializer.
   self = [super initWithFrame:CGRectZero];
   if (self) {
     suggestion_ = suggestion;
     client_ = client;
+    userInteractionEnabled_ = userInteractionEnabled;
 
     const CGFloat frameHeight = CGRectGetHeight(proposedFrame);
     CGFloat currentX = kBorderWidth;
@@ -131,7 +134,9 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
 
     self.frame = CGRectMake(proposedFrame.origin.x, proposedFrame.origin.y,
                             currentX, proposedFrame.size.height);
-    [self setBackgroundColor:UIColorFromRGB(kBackgroundNormalColor)];
+    if (userInteractionEnabled_) {
+      [self setBackgroundColor:UIColorFromRGB(kBackgroundNormalColor)];
+    }
     [[self layer] setCornerRadius:kCornerRadius];
 
     [self setClipsToBounds:YES];
@@ -158,16 +163,22 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
 #pragma mark UIResponder
 
 - (void)touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event {
-  [self setBackgroundColor:UIColorFromRGB(kBackgroundPressedColor)];
+  if (userInteractionEnabled_) {
+    [self setBackgroundColor:UIColorFromRGB(kBackgroundPressedColor)];
+  }
 }
 
 - (void)touchesCancelled:(NSSet*)touches withEvent:(UIEvent*)event {
-  [self setBackgroundColor:UIColorFromRGB(kBackgroundNormalColor)];
+  if (userInteractionEnabled_) {
+    [self setBackgroundColor:UIColorFromRGB(kBackgroundNormalColor)];
+  }
 }
 
 - (void)touchesEnded:(NSSet*)touches withEvent:(UIEvent*)event {
-  [self setBackgroundColor:UIColorFromRGB(kBackgroundNormalColor)];
-  [client_ didSelectSuggestion:suggestion_];
+  if (userInteractionEnabled_) {
+    [self setBackgroundColor:UIColorFromRGB(kBackgroundNormalColor)];
+    [client_ didSelectSuggestion:suggestion_];
+  }
 }
 
 @end

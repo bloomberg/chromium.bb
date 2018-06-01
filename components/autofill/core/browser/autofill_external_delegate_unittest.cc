@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/suggestion_test_helpers.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -34,6 +35,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 
+using autofill::features::kAutofillDownstreamUseGooglePayBrandingOniOS;
 using base::ASCIIToUTF16;
 using testing::_;
 
@@ -745,6 +747,53 @@ TEST_F(AutofillExternalDelegateUnitTest, ShouldShowGooglePayIcon) {
   // This should call ShowAutofillPopup.
   external_delegate_->OnSuggestionsReturned(kQueryId, autofill_item, true);
 }
+
+#if defined(OS_IOS)
+TEST_F(AutofillExternalDelegateUnitTest, ShouldShowGooglePayIconOniOS) {
+  // Turn on feature flag.
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillDownstreamUseGooglePayBrandingOniOS);
+  IssueOnQuery(kQueryId);
+
+  auto element_icons =
+      testing::ElementsAre(base::ASCIIToUTF16("googlePay"), base::string16(),
+                           base::string16(), base::ASCIIToUTF16("googlePay"));
+  EXPECT_CALL(
+      autofill_client_,
+      ShowAutofillPopup(_, _, SuggestionVectorIconsAre(element_icons), _));
+
+  std::vector<Suggestion> autofill_item;
+  autofill_item.push_back(Suggestion());
+  autofill_item[0].frontend_id = kAutofillProfileId;
+
+  // This should call ShowAutofillPopup.
+  external_delegate_->OnSuggestionsReturned(kQueryId, autofill_item, true);
+}
+
+TEST_F(AutofillExternalDelegateUnitTest,
+       ShouldNotShowGooglePayIconOniOSIfExperimentOff) {
+  // Turn on feature flag.
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndDisableFeature(
+      kAutofillDownstreamUseGooglePayBrandingOniOS);
+  IssueOnQuery(kQueryId);
+
+  auto element_icons = testing::ElementsAre(
+      base::string16(), base::string16(),
+      base::string16() /* Autofill setting item does not have icon. */);
+  EXPECT_CALL(
+      autofill_client_,
+      ShowAutofillPopup(_, _, SuggestionVectorIconsAre(element_icons), _));
+
+  std::vector<Suggestion> autofill_item;
+  autofill_item.push_back(Suggestion());
+  autofill_item[0].frontend_id = kAutofillProfileId;
+
+  // This should call ShowAutofillPopup.
+  external_delegate_->OnSuggestionsReturned(kQueryId, autofill_item, false);
+}
+#endif  // defined(OS_IOS)
 
 TEST_F(AutofillExternalDelegateUnitTest,
        ShouldNotShowGooglePayIconIfSuggestionsContainLocalCards) {
