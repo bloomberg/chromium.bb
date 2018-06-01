@@ -2077,14 +2077,14 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_VideoDecoder_Decode,
                      int32_t /* decode_id */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoDecoder_DecodeReply,
                      uint32_t /* shm_id */)
-IPC_MESSAGE_CONTROL4(PpapiPluginMsg_VideoDecoder_RequestTextures,
+IPC_MESSAGE_CONTROL3(PpapiPluginMsg_VideoDecoder_RequestTextures,
                      uint32_t /* num_textures */,
                      PP_Size /* size */,
-                     uint32_t /* texture_target */,
-                     std::vector<gpu::Mailbox> /* mailboxes*/)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_VideoDecoder_AssignTextures,
+                     uint32_t /* texture_target */)
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_VideoDecoder_AssignTextures,
                      PP_Size /* size */,
-                     std::vector<uint32_t> /* texture_ids */)
+                     std::vector<uint32_t> /* texture_ids */,
+                     std::vector<gpu::Mailbox> /* mailboxes */)
 IPC_MESSAGE_CONTROL3(PpapiPluginMsg_VideoDecoder_PictureReady,
                      int32_t /* decode_id */,
                      uint32_t /* texture_id */,

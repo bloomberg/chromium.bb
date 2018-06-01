@@ -373,14 +373,13 @@ void VideoDecoderResource::OnPluginMsgRequestTextures(
     const ResourceMessageReplyParams& params,
     uint32_t num_textures,
     const PP_Size& size,
-    uint32_t texture_target,
-    const std::vector<gpu::Mailbox>& mailboxes) {
+    uint32_t texture_target) {
   DCHECK(num_textures);
   DCHECK(num_textures >= min_picture_count_);
-  DCHECK(mailboxes.empty() || mailboxes.size() == num_textures);
   std::vector<uint32_t> texture_ids(num_textures);
+  std::vector<gpu::Mailbox> mailboxes(num_textures);
   if (gles2_impl_) {
-    gles2_impl_->GenTextures(num_textures, &texture_ids.front());
+    gles2_impl_->GenTextures(num_textures, texture_ids.data());
     for (uint32_t i = 0; i < num_textures; ++i) {
       gles2_impl_->ActiveTexture(GL_TEXTURE0);
       gles2_impl_->BindTexture(texture_target, texture_ids[i]);
@@ -404,10 +403,9 @@ void VideoDecoderResource::OnPluginMsgRequestTextures(
                                 GL_UNSIGNED_BYTE,
                                 NULL);
       }
-      if (!mailboxes.empty()) {
-        gles2_impl_->ProduceTextureDirectCHROMIUM(
-            texture_ids[i], reinterpret_cast<const GLbyte*>(mailboxes[i].name));
-      }
+      gles2_impl_->GenMailboxCHROMIUM(mailboxes[i].name);
+      gles2_impl_->ProduceTextureDirectCHROMIUM(texture_ids[i],
+                                                mailboxes[i].name);
 
       textures_.insert(
           std::make_pair(texture_ids[i], Texture(texture_target, size)));
@@ -423,7 +421,8 @@ void VideoDecoderResource::OnPluginMsgRequestTextures(
     }
   }
 
-  Post(RENDERER, PpapiHostMsg_VideoDecoder_AssignTextures(size, texture_ids));
+  Post(RENDERER, PpapiHostMsg_VideoDecoder_AssignTextures(
+                     size, std::move(texture_ids), std::move(mailboxes)));
 }
 
 void VideoDecoderResource::OnPluginMsgPictureReady(

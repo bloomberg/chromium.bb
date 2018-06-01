@@ -14,7 +14,6 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/pp_codecs.h"
@@ -92,8 +91,6 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
   TextureIdSet available_textures_;
   // Track textures that are no longer needed (these are plugin ids.)
   TextureIdSet textures_to_dismiss_;
-  // Mailboxes for pending texture requests, to write to plugin's textures.
-  std::vector<gpu::Mailbox> pending_texture_mailboxes_;
 
   // Queue of completed decode ids, for notifying the host.
   using CompletedDecodeQueue = base::queue<uint32_t>;

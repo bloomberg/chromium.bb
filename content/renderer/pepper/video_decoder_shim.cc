@@ -929,20 +929,20 @@ void VideoDecoderShim::AssignPictureBuffers(
     NOTREACHED();
     return;
   }
-  DCHECK_EQ(buffers.size(), pending_texture_mailboxes_.size());
+  std::vector<gpu::Mailbox> mailboxes = host_->TakeMailboxes();
+  DCHECK_EQ(buffers.size(), mailboxes.size());
   GLuint num_textures = base::checked_cast<GLuint>(buffers.size());
   std::vector<uint32_t> local_texture_ids(num_textures);
   gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
   for (uint32_t i = 0; i < num_textures; i++) {
     DCHECK_EQ(1u, buffers[i].client_texture_ids().size());
-    local_texture_ids[i] = gles2->CreateAndConsumeTextureCHROMIUM(
-        pending_texture_mailboxes_[i].name);
+    local_texture_ids[i] =
+        gles2->CreateAndConsumeTextureCHROMIUM(mailboxes[i].name);
     // Map the plugin texture id to the local texture id.
     uint32_t plugin_texture_id = buffers[i].client_texture_ids()[0];
     texture_id_map_[plugin_texture_id] = local_texture_ids[i];
     available_textures_.insert(plugin_texture_id);
   }
-  pending_texture_mailboxes_.clear();
   SendPictures();
 }
 
@@ -1026,13 +1026,9 @@ void VideoDecoderShim::OnOutputComplete(std::unique_ptr<PendingFrame> frame) {
       available_textures_.clear();
       FlushCommandBuffer();
 
-      DCHECK(pending_texture_mailboxes_.empty());
-      for (uint32_t i = 0; i < texture_pool_size_; i++)
-        pending_texture_mailboxes_.push_back(gpu::Mailbox::Generate());
-
-      host_->RequestTextures(texture_pool_size_,
-                             frame->video_frame->coded_size(), GL_TEXTURE_2D,
-                             pending_texture_mailboxes_);
+      host_->ProvidePictureBuffers(texture_pool_size_, media::PIXEL_FORMAT_ARGB,
+                                   1, frame->video_frame->coded_size(),
+                                   GL_TEXTURE_2D);
       texture_size_ = frame->video_frame->coded_size();
     }
 
