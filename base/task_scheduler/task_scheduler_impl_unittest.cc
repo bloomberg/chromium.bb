@@ -663,6 +663,10 @@ void VerifyHasStringOnStack(const std::string& query) {
 // Many POSIX bots flakily crash on |debug::StackTrace().ToString()|,
 // https://crbug.com/840429.
 #define MAYBE_IdentifiableStacks DISABLED_IdentifiableStacks
+#elif defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+// Hangs on WinASan (grabbing StackTrace() too slow?),
+// https://crbug.com/845010#c7.
+#define MAYBE_IdentifiableStacks DISABLED_IdentifiableStacks
 #else
 #define MAYBE_IdentifiableStacks IdentifiableStacks
 #endif
