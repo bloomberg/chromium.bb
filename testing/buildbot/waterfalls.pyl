@@ -514,15 +514,36 @@
         'test_suites': {
           'gtest_tests': 'chromium_win_clang_gtests',
         },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Windows-10',
+            },
+          ],
+        },
       },
       'CrWinAsan(dll)': {
         'test_suites': {
           'gtest_tests': 'chromium_win_clang_gtests',
         },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Windows-10',
+            },
+          ],
+        },
       },
       'CrWinAsanCov': {
         'test_suites': {
           'gtest_tests': 'chromium_win_clang_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Windows-10',
+            },
+          ],
         },
       },
       'CrWinClangLLD': {
