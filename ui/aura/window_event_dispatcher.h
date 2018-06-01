@@ -312,7 +312,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // Set when dispatching a held event.
   ui::LocatedEvent* dispatching_held_event_ = nullptr;
 
-  ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_{this};
+  ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
 
   std::unique_ptr<MusMouseLocationUpdater> mus_mouse_location_updater_;
 
