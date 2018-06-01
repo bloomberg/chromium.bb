@@ -2221,10 +2221,11 @@ void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(),
                "bindings flags", bindings_flags);
 
+  int webui_bindings = bindings_flags & kWebUIBindingsPolicyMask;
+
   // Ensure we aren't granting WebUI bindings to a process that has already
   // been used for non-privileged views.
-  if (bindings_flags & BINDINGS_POLICY_WEB_UI &&
-      GetProcess()->HasConnection() &&
+  if (webui_bindings && GetProcess()->HasConnection() &&
       !ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           GetProcess()->GetID())) {
     // This process has no bindings yet. Make sure it does not have more
@@ -2236,9 +2237,9 @@ void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
       return;
   }
 
-  if (bindings_flags & BINDINGS_POLICY_WEB_UI) {
+  if (webui_bindings) {
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantWebUIBindings(
-        GetProcess()->GetID());
+        GetProcess()->GetID(), webui_bindings);
   }
 
   enabled_bindings_ |= bindings_flags;
@@ -3649,7 +3650,7 @@ void RenderFrameHostImpl::CommitNavigation(
       if (std::find(schemes.begin(), schemes.end(), scheme) != schemes.end()) {
         network::mojom::URLLoaderFactoryPtr factory_for_webui =
             CreateWebUIURLLoaderBinding(this, scheme);
-        if (enabled_bindings_ & BINDINGS_POLICY_WEB_UI) {
+        if (enabled_bindings_ & kWebUIBindingsPolicyMask) {
           // If the renderer has webui bindings, then don't give it access to
           // network loader for security reasons.
           default_factory_info = factory_for_webui.PassInterface();

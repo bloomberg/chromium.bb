@@ -968,11 +968,11 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MemoryPressureLoadsNotAllTabs) {
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWebUI) {
-  const GURL webui_url("chrome://omnibox");
+  const GURL webui_url(chrome::kChromeUIOmniboxURL);
   ui_test_utils::NavigateToURL(browser(), webui_url);
   content::WebContents* old_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(content::BINDINGS_POLICY_WEB_UI,
+  EXPECT_EQ(content::BINDINGS_POLICY_MOJO_WEB_UI,
             old_tab->GetMainFrame()->GetEnabledBindings());
 
   Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
@@ -980,7 +980,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWebUI) {
   content::WebContents* new_tab =
       new_browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(webui_url, new_tab->GetURL());
-  EXPECT_EQ(content::BINDINGS_POLICY_WEB_UI,
+  EXPECT_EQ(content::BINDINGS_POLICY_MOJO_WEB_UI,
             new_tab->GetMainFrame()->GetEnabledBindings());
 }
 

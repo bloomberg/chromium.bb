@@ -97,7 +97,7 @@ class WEB_DIALOGS_EXPORT MojoWebDialogUI : public WebDialogUIBase,
   // content::WebUIController:
   void RenderFrameCreated(
       content::RenderFrameHost* render_frame_host) override {
-    MojoWebUIControllerBase::RenderFrameCreated(render_frame_host);
+    content::WebUIController::RenderFrameCreated(render_frame_host);
     HandleRenderFrameCreated(render_frame_host);
   }
 

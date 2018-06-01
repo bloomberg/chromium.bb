@@ -18,26 +18,20 @@
 
 namespace ui {
 
-class MojoWebUIControllerBase : public content::WebUIController {
- public:
-  explicit MojoWebUIControllerBase(content::WebUI* contents);
-  ~MojoWebUIControllerBase() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MojoWebUIControllerBase);
-};
-
-// MojoWebUIController is intended for web ui pages that use mojo. It is
+// MojoWebUIController is intended for WebUI pages that use Mojo. It is
 // expected that subclasses will do two things:
 // . In the constructor invoke AddMojoResourcePath() to register the bindings
 //   files, eg:
-//     AddMojoResourcePath("chrome/browser/ui/webui/omnibox/omnibox.mojom",
-//                         IDR_OMNIBOX_MOJO_JS);
+//     AddResourcePath("chrome/browser/ui/webui/omnibox/omnibox.mojom",
+//                     IDR_OMNIBOX_MOJO_JS);
 // . Call AddHandlerToRegistry for all Mojo Interfaces it wishes to handle.
-class MojoWebUIController : public MojoWebUIControllerBase,
+class MojoWebUIController : public content::WebUIController,
                             public content::WebContentsObserver {
  public:
-  explicit MojoWebUIController(content::WebUI* contents);
+  // By default MojoWebUIControllers do not have normal WebUI bindings. Pass
+  // |enable_chrome_send| as true if these are needed.
+  explicit MojoWebUIController(content::WebUI* contents,
+                               bool enable_chrome_send = false);
   ~MojoWebUIController() override;
 
   // content::WebContentsObserver implementation.
