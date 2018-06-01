@@ -3,21 +3,18 @@
 <body>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../../http/tests/resources/sensor-helpers.js"></script>
 <script src="../resources/device-orientation-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/device/public/mojom/sensor_provider.mojom.js"></script>
 <script>
 'use strict';
 
-async_test(test => {
-  assertTestRunner();
-  var orientationData = generateOrientationData(1.1, 2.2, 3.3, true);
+sensor_test(async sensor => {
+  const orientationData = generateOrientationData(1.1, 2.2, 3.3, true);
 
-  var listener = test.step_func(event => {
-    checkOrientation(event, orientationData);
-    test.done();
-  });
-
-  setMockOrientation(orientationData);
-  window.addEventListener('deviceorientationabsolute', listener);
+  setMockOrientationData(sensor, orientationData);
+  return waitForOrientation(orientationData);
 }, 'Tests basic operation of deviceorientationabsolute event using mock data.');
 </script>
 </body>
