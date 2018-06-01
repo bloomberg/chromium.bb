@@ -218,26 +218,6 @@
         },
         'os_type': 'android',
       },
-      'KitKat Phone Tester (rel)': {
-        'additional_compile_targets': [
-          'cronet_test_instrumentation_apk',
-          'monochrome_static_initializers',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-          'junit_tests': 'chromium_junit_tests',
-          'isolated_scripts': 'monochrome_apk_checker_isolated_script',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-            },
-          ],
-        },
-        'os_type': 'android',
-      },
       'KitKat Tablet Tester': {
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
@@ -298,24 +278,6 @@
             },
           ],
           'hard_timeout': 960,
-        },
-        'os_type': 'android',
-      },
-      'Marshmallow Phone Tester (rel)': {
-        'additional_compile_targets': [
-          'monochrome_static_initializers',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-          'isolated_scripts': 'marshmallow_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'MMB29Q',
-              'device_type': 'bullhead',
-            },
-          ],
         },
         'os_type': 'android',
       },
@@ -587,7 +549,7 @@
         'additional_compile_targets': [
           'all',
         ],
-        # This mirrors 'KitKat Phone Tester (rel)'.
+        # This mirrors 'android-kitkat-arm-rel'.
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
           'junit_tests': 'chromium_junit_tests',

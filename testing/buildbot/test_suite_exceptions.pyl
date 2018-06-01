@@ -26,7 +26,6 @@
       # On chromium.android, these do not need to run prior to M.
       'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
-      'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
       # They should be running here, though, once stabilized.
       'Nougat Phone Tester chromium.android',
@@ -102,11 +101,6 @@
           'hard_timeout': 600,
         },
       },
-      'Marshmallow Phone Tester (rel)': {
-        'swarming': {
-          'hard_timeout': 960,
-        },
-      },
       'Marshmallow Tablet Tester': {
         'swarming': {
           'hard_timeout': 600,
@@ -146,16 +140,6 @@
       'KitKat Phone Tester (dbg)': {
         'swarming': {
           'hard_timeout': 180,
-        },
-      },
-      'KitKat Phone Tester (rel)': {
-        'swarming': {
-          'hard_timeout': 180,
-        },
-      },
-      'Marshmallow Phone Tester (rel)': {
-        'swarming': {
-          'hard_timeout': 960,
         },
       },
       # chromium.android.fyi
@@ -408,11 +392,6 @@
           'shards': 20,
         },
       },
-      'KitKat Phone Tester (rel)': {
-        'swarming': {
-          'shards': 12,
-        },
-      },
       'KitKat Tablet Tester': {
         'swarming': {
           'hard_timeout': 2400,
@@ -436,11 +415,6 @@
           'hard_timeout': 1200,
           'shards': 14,
         },
-      },
-      'Marshmallow Phone Tester (rel)': {
-        # TODO(crbug.com/731759): Enable this once we're confident that it
-        # passes.
-        'experiment_percentage': 100,
       },
       'Marshmallow Tablet Tester': {
         'swarming': {
@@ -508,15 +482,6 @@
           'hard_timeout': 1200,
         },
       },
-      'KitKat Phone Tester (rel)': {
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
-          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
-        ],
-        'swarming': {
-          'hard_timeout': 1920,
-        },
-      },
       'Lollipop Phone Tester': {
         'args': [
           '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
@@ -531,15 +496,6 @@
           '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
           '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
         ],
-      },
-      'Marshmallow Phone Tester (rel)': {
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
-          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
-        ],
-        'swarming': {
-          'hard_timeout': 1200,
-        },
       },
     },
   },
@@ -662,11 +618,6 @@
           'hard_timeout': 600,
         },
       },
-      'Marshmallow Phone Tester (rel)': {
-        'swarming': {
-          'hard_timeout': 960,
-        },
-      },
       'Marshmallow Tablet Tester': {
         'swarming': {
           'hard_timeout': 600,
@@ -703,11 +654,6 @@
         },
       },
       'Marshmallow 64 bit Tester': {
-        'swarming': {
-          'hard_timeout': 960,
-        },
-      },
-      'Marshmallow Phone Tester (rel)': {
         'swarming': {
           'hard_timeout': 960,
         },
@@ -781,12 +727,6 @@
         },
       },
       'Marshmallow 64 bit Tester': {
-        'swarming': {
-          'hard_timeout': 1200,
-          'shards': 6,
-        },
-      },
-      'Marshmallow Phone Tester (rel)': {
         'swarming': {
           'hard_timeout': 1200,
           'shards': 6,
@@ -1144,11 +1084,6 @@
           'hard_timeout': 120,
         },
       },
-      'Marshmallow Phone Tester (rel)': {
-        'swarming': {
-          'hard_timeout': 960,
-        },
-      },
       'Marshmallow Tablet Tester': {
         'swarming': {
           'hard_timeout': 120,
@@ -1383,11 +1318,6 @@
       'Marshmallow 64 bit Tester': {
         'swarming': {
           'hard_timeout': 960,
-        },
-      },
-      'Marshmallow Phone Tester (rel)': {
-        'swarming': {
-          'hard_timeout': 120,
         },
       },
       # chromium.android.fyi
@@ -2118,11 +2048,6 @@
           'hard_timeout': 180,
         },
       },
-      'KitKat Phone Tester (rel)': {
-        'swarming': {
-          'hard_timeout': 180,
-        },
-      },
       'KitKat Tablet Tester': {
         'swarming': {
           'hard_timeout': 120,
@@ -2206,36 +2131,6 @@
         },
       },
       'android-marshmallow-arm64-rel': {
-        'args': [
-          '--browser=android-chromium',
-          '--device=android',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'temp_band': '<30',
-            },
-          ],
-          'hard_timeout': 1500,
-          'shards': 15,
-        },
-      },
-      'KitKat Phone Tester (rel)': {
-        'args': [
-          '--browser=android-chromium',
-          '--device=android',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'temp_band': '<30',
-            },
-          ],
-          'hard_timeout': 1500,
-          'shards': 15,
-        },
-      },
-      'Marshmallow Phone Tester (rel)': {
         'args': [
           '--browser=android-chromium',
           '--device=android',
@@ -2426,12 +2321,6 @@
           'shards': 2,
         },
       },
-      'Marshmallow Phone Tester (rel)': {
-        'swarming': {
-          'hard_timeout': 960,
-          'shards': 2,
-        },
-      },
       'Marshmallow Tablet Tester': {
         'swarming': {
           'hard_timeout': 1200,
@@ -2534,11 +2423,6 @@
           'hard_timeout': 300,
         },
       },
-      'Marshmallow Phone Tester (rel)': {
-        'swarming': {
-          'hard_timeout': 960,
-        },
-      },
       'Marshmallow Tablet Tester': {
         'swarming': {
           'hard_timeout': 300,
@@ -2569,11 +2453,6 @@
       'Lollipop Tablet Tester': {
         'swarming': {
           'hard_timeout': 300,
-        },
-      },
-      'Marshmallow Phone Tester (rel)': {
-        'swarming': {
-          'hard_timeout': 960,
         },
       },
       'Marshmallow Tablet Tester': {
@@ -2897,7 +2776,6 @@
       # chromium.android
       'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
-      'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
       'Nougat Phone Tester chromium.android',
       # chromium.android.fyi
@@ -2939,12 +2817,6 @@
         },
       },
       'Marshmallow 64 bit Tester': {
-        'swarming': {
-          'hard_timeout': 1200,
-          'shards': 8,
-        },
-      },
-      'Marshmallow Phone Tester (rel)': {
         'swarming': {
           'hard_timeout': 1200,
           'shards': 8,
