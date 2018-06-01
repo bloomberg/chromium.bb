@@ -33,7 +33,7 @@ struct StructTraits<url::mojom::blink::Origin::DataView,
   static bool Read(url::mojom::blink::Origin::DataView data,
                    scoped_refptr<const ::blink::SecurityOrigin>* out) {
     if (data.unique()) {
-      *out = ::blink::SecurityOrigin::CreateUnique();
+      *out = ::blink::SecurityOrigin::CreateUniqueOpaque();
     } else {
       WTF::String scheme;
       WTF::String host;

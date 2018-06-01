@@ -6097,7 +6097,7 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
     // No source for a security context.
     // This can occur via document.implementation.createDocument().
     cookie_url_ = KURL(g_empty_string);
-    SetSecurityOrigin(SecurityOrigin::CreateUnique());
+    SetSecurityOrigin(SecurityOrigin::CreateUniqueOpaque());
     InitContentSecurityPolicy();
     ApplyFeaturePolicy({});
     return;
@@ -6128,7 +6128,7 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
   if (IsSandboxed(kSandboxOrigin)) {
     cookie_url_ = url_;
     scoped_refptr<SecurityOrigin> security_origin =
-        SecurityOrigin::CreateUnique();
+        SecurityOrigin::CreateUniqueOpaque();
     // If we're supposed to inherit our security origin from our
     // owner, but we're also sandboxed, the only things we inherit are
     // the origin's potential trustworthiness and the ability to

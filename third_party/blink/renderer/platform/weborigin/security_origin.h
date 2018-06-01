@@ -59,10 +59,6 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // Creates a new opaque SecurityOrigin that is guaranteed to be cross-origin
   // to all currently existing SecurityOrigins.
   static scoped_refptr<SecurityOrigin> CreateUniqueOpaque();
-  // Deprecated alias for CreateOpaque().
-  static scoped_refptr<SecurityOrigin> CreateUnique() {
-    return CreateUniqueOpaque();
-  }
 
   static scoped_refptr<SecurityOrigin> CreateFromString(const String&);
   static scoped_refptr<SecurityOrigin> Create(const String& protocol,

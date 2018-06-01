@@ -140,7 +140,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   // This method is intended to be overridden by specific frame classes.
   virtual scoped_refptr<const SecurityOrigin> GetOriginForFeaturePolicy()
       const {
-    return SecurityOrigin::CreateUnique();
+    return SecurityOrigin::CreateUniqueOpaque();
   }
 
   // Return a feature policy container policy for this frame, based on the

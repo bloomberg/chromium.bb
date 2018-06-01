@@ -724,7 +724,7 @@ bool DocumentThreadableLoader::RedirectReceived(
     scoped_refptr<const SecurityOrigin> new_origin =
         SecurityOrigin::Create(new_url);
     if (!original_origin->IsSameSchemeHostPort(new_origin.get()))
-      security_origin_ = SecurityOrigin::CreateUnique();
+      security_origin_ = SecurityOrigin::CreateUniqueOpaque();
   }
 
   // Set |cors_flag_| so that further logic (corresponds to the main fetch in

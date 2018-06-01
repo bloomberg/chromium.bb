@@ -248,7 +248,7 @@ WebRemoteFrameImpl* CreateRemoteChild(
       ParsedFeaturePolicy(), client, nullptr));
   client->Bind(frame, std::move(owned_client));
   if (!security_origin)
-    security_origin = SecurityOrigin::CreateUnique();
+    security_origin = SecurityOrigin::CreateUniqueOpaque();
   frame->GetFrame()->GetSecurityContext()->SetReplicatedOrigin(
       std::move(security_origin));
   return frame;
@@ -332,7 +332,7 @@ WebViewImpl* WebViewHelper::InitializeRemote(
   web_remote_frame_client->Bind(frame,
                                 std::move(owned_web_remote_frame_client));
   if (!security_origin)
-    security_origin = SecurityOrigin::CreateUnique();
+    security_origin = SecurityOrigin::CreateUniqueOpaque();
   frame->GetFrame()->GetSecurityContext()->SetReplicatedOrigin(
       std::move(security_origin));
   return web_view_;

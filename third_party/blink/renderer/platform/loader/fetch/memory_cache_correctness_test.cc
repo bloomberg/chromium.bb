@@ -108,7 +108,7 @@ class MemoryCacheCorrectnessTest : public testing::Test {
 
     MockFetchContext* context =
         MockFetchContext::Create(MockFetchContext::kShouldNotLoadNewResource);
-    security_origin_ = SecurityOrigin::CreateUnique();
+    security_origin_ = SecurityOrigin::CreateUniqueOpaque();
     context->SetSecurityOrigin(security_origin_);
 
     fetcher_ = ResourceFetcher::Create(context);

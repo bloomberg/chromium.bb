@@ -44,7 +44,7 @@ WorkletGlobalScope::WorkletGlobalScope(
   // |url_| is the inheritedAPIBaseURL passed from the parent Document.
 
   // Step 3: "Let origin be a unique opaque origin."
-  SetSecurityOrigin(SecurityOrigin::CreateUnique());
+  SetSecurityOrigin(SecurityOrigin::CreateUniqueOpaque());
 
   // Step 5: "Let inheritedReferrerPolicy be outsideSettings's referrer policy."
   SetReferrerPolicy(creation_params->referrer_policy);

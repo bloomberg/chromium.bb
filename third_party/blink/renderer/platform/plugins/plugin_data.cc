@@ -83,8 +83,8 @@ void PluginData::Trace(blink::Visitor* visitor) {
 // static
 void PluginData::RefreshBrowserSidePluginCache() {
   PluginListBuilder builder(nullptr);
-  Platform::Current()->GetPluginList(true, WebSecurityOrigin::CreateUnique(),
-                                     &builder);
+  Platform::Current()->GetPluginList(
+      true, WebSecurityOrigin::CreateUniqueOpaque(), &builder);
 }
 
 void PluginData::UpdatePluginList(const SecurityOrigin* main_frame_origin) {

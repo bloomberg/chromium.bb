@@ -45,8 +45,8 @@ WebSecurityOrigin WebSecurityOrigin::Create(const WebURL& url) {
   return WebSecurityOrigin(SecurityOrigin::Create(url));
 }
 
-WebSecurityOrigin WebSecurityOrigin::CreateUnique() {
-  return WebSecurityOrigin(SecurityOrigin::CreateUnique());
+WebSecurityOrigin WebSecurityOrigin::CreateUniqueOpaque() {
+  return WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque());
 }
 
 void WebSecurityOrigin::Reset() {

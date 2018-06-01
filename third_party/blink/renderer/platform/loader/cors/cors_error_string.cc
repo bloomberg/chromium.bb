@@ -29,7 +29,7 @@ bool IsInterestingStatusCode(int status_code) {
 ErrorParameter CreateWrongParameter(network::mojom::CORSError error) {
   return ErrorParameter(
       error, GetInvalidURL(), GetInvalidURL(), 0 /* status_code */,
-      HTTPHeaderMap(), *SecurityOrigin::CreateUnique(),
+      HTTPHeaderMap(), *SecurityOrigin::CreateUniqueOpaque(),
       WebURLRequest::kRequestContextUnspecified, String(), true);
 }
 
@@ -63,7 +63,7 @@ ErrorParameter ErrorParameter::CreateForDisallowedByMode(
     const KURL& request_url) {
   return ErrorParameter(network::mojom::CORSError::kDisallowedByMode,
                         request_url, GetInvalidURL(), 0 /* status_code */,
-                        HTTPHeaderMap(), *SecurityOrigin::CreateUnique(),
+                        HTTPHeaderMap(), *SecurityOrigin::CreateUniqueOpaque(),
                         WebURLRequest::kRequestContextUnspecified, String(),
                         false);
 }
@@ -115,17 +115,18 @@ ErrorParameter ErrorParameter::CreateForPreflightStatusCheck(
     int response_status_code) {
   return ErrorParameter(network::mojom::CORSError::kPreflightInvalidStatus,
                         GetInvalidURL(), GetInvalidURL(), response_status_code,
-                        HTTPHeaderMap(), *SecurityOrigin::CreateUnique(),
+                        HTTPHeaderMap(), *SecurityOrigin::CreateUniqueOpaque(),
                         WebURLRequest::kRequestContextUnspecified, String(),
                         false);
 }
 
 // static
 ErrorParameter ErrorParameter::CreateForDisallowedRedirect() {
-  return ErrorParameter(
-      network::mojom::CORSError::kPreflightDisallowedRedirect, GetInvalidURL(),
-      GetInvalidURL(), 0, HTTPHeaderMap(), *SecurityOrigin::CreateUnique(),
-      WebURLRequest::kRequestContextUnspecified, String(), false);
+  return ErrorParameter(network::mojom::CORSError::kPreflightDisallowedRedirect,
+                        GetInvalidURL(), GetInvalidURL(), 0, HTTPHeaderMap(),
+                        *SecurityOrigin::CreateUniqueOpaque(),
+                        WebURLRequest::kRequestContextUnspecified, String(),
+                        false);
 }
 
 // static
@@ -137,7 +138,7 @@ ErrorParameter ErrorParameter::CreateForExternalPreflightCheck(
     case network::mojom::CORSError::kPreflightInvalidAllowExternal:
       return ErrorParameter(
           error, GetInvalidURL(), GetInvalidURL(), 0 /* status_code */,
-          response_header_map, *SecurityOrigin::CreateUnique(),
+          response_header_map, *SecurityOrigin::CreateUniqueOpaque(),
           WebURLRequest::kRequestContextUnspecified, String(), false);
     default:
       NOTREACHED();
@@ -156,7 +157,7 @@ ErrorParameter ErrorParameter::CreateForPreflightResponseCheck(
     case network::mojom::CORSError::kHeaderDisallowedByPreflightResponse:
       return ErrorParameter(
           error, GetInvalidURL(), GetInvalidURL(), 0 /* status_code */,
-          HTTPHeaderMap(), *SecurityOrigin::CreateUnique(),
+          HTTPHeaderMap(), *SecurityOrigin::CreateUniqueOpaque(),
           WebURLRequest::kRequestContextUnspecified, hint, false);
     default:
       NOTREACHED();
@@ -174,7 +175,7 @@ ErrorParameter ErrorParameter::CreateForRedirectCheck(
     case network::mojom::CORSError::kRedirectContainsCredentials:
       return ErrorParameter(
           error, request_url, redirect_url, 0 /* status_code */,
-          HTTPHeaderMap(), *SecurityOrigin::CreateUnique(),
+          HTTPHeaderMap(), *SecurityOrigin::CreateUniqueOpaque(),
           WebURLRequest::kRequestContextUnspecified, String(), false);
     default:
       NOTREACHED();

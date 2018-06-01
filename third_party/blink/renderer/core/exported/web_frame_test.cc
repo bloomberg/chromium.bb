@@ -9712,7 +9712,7 @@ TEST_F(WebFrameSwapTest, SetTimeoutAfterSwap) {
   WebFrame* target_frame = MainFrame()->FirstChild();
   target_frame->Swap(remote_frame);
   remote_frame->SetReplicatedOrigin(
-      WebSecurityOrigin(SecurityOrigin::CreateUnique()), false);
+      WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
 
   // Invoking setTimeout should throw a security error.
   {
@@ -9794,7 +9794,7 @@ TEST_F(WebFrameSwapTest, RemoteWindowNamedAccess) {
   WebRemoteFrame* remote_frame = FrameTestHelpers::CreateRemote();
   LastChild(MainFrame())->Swap(remote_frame);
   remote_frame->SetReplicatedOrigin(
-      WebSecurityOrigin(SecurityOrigin::CreateUnique()), false);
+      WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
   v8::Local<v8::Value> remote_window_property =
       MainFrame()->ExecuteScriptAndReturnValue(
           WebScriptSource("window[2].foo"));
@@ -9824,7 +9824,7 @@ TEST_F(WebFrameSwapTest, FramesOfRemoteParentAreIndexable) {
   WebRemoteFrame* remote_parent_frame = FrameTestHelpers::CreateRemote();
   MainFrame()->Swap(remote_parent_frame);
   remote_parent_frame->SetReplicatedOrigin(
-      WebSecurityOrigin(SecurityOrigin::CreateUnique()), false);
+      WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
 
   WebLocalFrame* child_frame =
       FrameTestHelpers::CreateLocalChild(*remote_parent_frame);
@@ -9852,7 +9852,7 @@ TEST_F(WebFrameSwapTest, FrameElementInFramesWithRemoteParent) {
   WebRemoteFrame* remote_parent_frame = FrameTestHelpers::CreateRemote();
   MainFrame()->Swap(remote_parent_frame);
   remote_parent_frame->SetReplicatedOrigin(
-      WebSecurityOrigin(SecurityOrigin::CreateUnique()), false);
+      WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
 
   WebLocalFrame* child_frame =
       FrameTestHelpers::CreateLocalChild(*remote_parent_frame);
@@ -9981,7 +9981,7 @@ TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame) {
   WebRemoteFrame* remote_frame = FrameTestHelpers::CreateRemote(&remote_client);
   MainFrame()->FirstChild()->Swap(remote_frame);
   remote_frame->SetReplicatedOrigin(
-      WebSecurityOrigin(SecurityOrigin::CreateUnique()), false);
+      WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
 
   ASSERT_TRUE(MainFrame()->FirstChild()->IsWebRemoteFrame());
   LocalDOMWindow* main_window =
