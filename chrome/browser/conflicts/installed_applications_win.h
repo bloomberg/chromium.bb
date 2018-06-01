@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/win/windows_types.h"
@@ -78,6 +79,8 @@ class InstalledApplications {
   explicit InstalledApplications(std::unique_ptr<MsiUtil> msi_util);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(InstalledApplicationsTest, NoDuplicates);
+
   // If the registry key references a valid installed application, this function
   // adds an entry to |applications_| with its list of files or installation
   // directory to their associated vector.
