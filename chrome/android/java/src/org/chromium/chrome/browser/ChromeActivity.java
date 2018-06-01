@@ -138,6 +138,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.webapps.AddToHomescreenManager;
@@ -164,6 +165,7 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
+import org.chromium.ui.display.DisplayUtil;
 import org.chromium.ui.widget.Toast;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
@@ -275,6 +277,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private int mUiMode;
     private int mDensityDpi;
     private int mScreenWidthDp;
+    private int mScreenHeightDp;
     private Runnable mRecordMultiWindowModeScreenWidthRunnable;
 
     private final DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
@@ -1071,6 +1074,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             if (intentTimestamp != -1) {
                 recordIntentToCreationTime(getOnCreateTimestampMs() - intentTimestamp);
             }
+
+            recordDisplayDimensions();
         });
 
         DeferredStartupHandler.getInstance().addDeferredTask(() -> {
@@ -1101,7 +1106,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // If the Activity was launched in multi-window mode, record a user action and the screen
         // width.
         recordMultiWindowModeChangedUserAction(true);
-        recordMultiWindowModeScreenWidth();
+        recordMultiWindowModeScreenSize(true, true);
     }
 
     /**
@@ -1148,6 +1153,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mDensityDpi = getResources().getDisplayMetrics().densityDpi;
         }
         mScreenWidthDp = config.screenWidthDp;
+        mScreenHeightDp = config.screenHeightDp;
     }
 
     @Override
@@ -1827,8 +1833,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             }
         }
 
-        if (newConfig.screenWidthDp != mScreenWidthDp) {
+        boolean widthChanged = newConfig.screenWidthDp != mScreenWidthDp;
+        boolean heightChanged = newConfig.screenHeightDp != mScreenHeightDp;
+        if (widthChanged || heightChanged) {
             mScreenWidthDp = newConfig.screenWidthDp;
+            mScreenHeightDp = newConfig.screenHeightDp;
             final Activity activity = this;
 
             if (mRecordMultiWindowModeScreenWidthRunnable != null) {
@@ -1842,7 +1851,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mRecordMultiWindowModeScreenWidthRunnable = () -> {
                 mRecordMultiWindowModeScreenWidthRunnable = null;
                 if (MultiWindowUtils.getInstance().isInMultiWindowMode(activity)) {
-                    recordMultiWindowModeScreenWidth();
+                    recordMultiWindowModeScreenSize(widthChanged, heightChanged);
                 }
             };
             mHandler.postDelayed(mRecordMultiWindowModeScreenWidthRunnable,
@@ -2309,11 +2318,22 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
-     * Records UMA histograms for the current screen width. Should only be called when the activity
+     * Records UMA histograms for the current screen size. Should only be called when the activity
      * is in Android N multi-window mode.
+     * @param widthChanged Whether the screen width changed since this method was last called.
+     * @param heightChanged Whether the screen height changed since this method was last called.
      */
-    protected void recordMultiWindowModeScreenWidth() {
-        if (!isTablet()) return;
+    protected void recordMultiWindowModeScreenSize(boolean widthChanged, boolean heightChanged) {
+        if (widthChanged) {
+            RecordHistogram.recordSparseSlowlyHistogram("Android.MultiWindowMode.ScreenWidth",
+                    MathUtils.clamp(mScreenWidthDp, 200, 1200));
+        }
+        if (heightChanged) {
+            RecordHistogram.recordSparseSlowlyHistogram("Android.MultiWindowMode.ScreenHeight",
+                    MathUtils.clamp(mScreenHeightDp, 200, 1200));
+        }
+
+        if (!isTablet() || !widthChanged) return;
 
         RecordHistogram.recordBooleanHistogram(
                 "Android.MultiWindowMode.IsTabletScreenWidthBelow600",
@@ -2323,6 +2343,22 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             RecordHistogram.recordLinearCountHistogram("Android.MultiWindowMode.TabletScreenWidth",
                     mScreenWidthDp, 1, DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP, 50);
         }
+    }
+
+    /**
+     * Records histograms related to display dimensions.
+     */
+    private void recordDisplayDimensions() {
+        DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(this);
+        int displayWidth = DisplayUtil.pxToDp(display, display.getDisplayWidth());
+        int displayHeight = DisplayUtil.pxToDp(display, display.getDisplayHeight());
+        int largestDisplaySize = displayWidth > displayHeight ? displayWidth : displayHeight;
+        int smallestDisplaySize = displayWidth < displayHeight ? displayWidth : displayHeight;
+
+        RecordHistogram.recordSparseSlowlyHistogram("Android.DeviceSize.SmallestDisplaySize",
+                MathUtils.clamp(smallestDisplaySize, 0, 1000));
+        RecordHistogram.recordSparseSlowlyHistogram("Android.DeviceSize.LargestDisplaySize",
+                MathUtils.clamp(largestDisplaySize, 200, 1200));
     }
 
     @Override
