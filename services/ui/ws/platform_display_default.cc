@@ -252,8 +252,9 @@ void PlatformDisplayDefault::OnAcceleratedWidgetAvailable(
       std::make_unique<CompositorFrameSinkClientBinding>(
           frame_generator_.get(),
           std::move(compositor_frame_sink_client_request),
-          std::move(compositor_frame_sink), std::move(display_private));
-  frame_generator_->Bind(std::move(frame_sink_client_binding));
+          std::move(compositor_frame_sink));
+  frame_generator_->Bind(std::move(frame_sink_client_binding),
+                         std::move(display_private));
   frame_generator_->OnWindowSizeChanged(root_window_->bounds().size());
   frame_generator_->SetDeviceScaleFactor(metrics_.device_scale_factor);
 }

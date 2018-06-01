@@ -23,6 +23,7 @@ class PrefServiceSyncable;
 
 namespace content {
 class BlinkTestController;
+class VizProcessTransportFactory;
 }
 
 namespace display {
@@ -99,6 +100,9 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
   friend class viz::HostFrameSinkManager;
   // Allow for layout test pixel dumps.
   friend class content::BlinkTestController;
+  // For preventing frame swaps of wrong size during resize on Windows.
+  // (https://crbug.com/811945)
+  friend class content::VizProcessTransportFactory;
   // END ALLOWED USAGE.
 
   // BEGIN USAGE THAT NEEDS TO BE FIXED.

@@ -125,6 +125,10 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
   virtual void ResizeDisplay(ui::Compositor* compositor,
                              const gfx::Size& size) = 0;
 
+  // Attempts to immediately swap a frame with the current size if possible,
+  // then will no longer swap until ResizeDisplay() is called.
+  virtual void DisableSwapUntilResize(ui::Compositor* compositor) = 0;
+
   // Sets the color matrix used to transform how all output is drawn to the
   // display underlying this ui::Compositor.
   virtual void SetDisplayColorMatrix(ui::Compositor* compositor,

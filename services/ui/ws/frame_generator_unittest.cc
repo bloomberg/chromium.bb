@@ -5,6 +5,7 @@
 #include "services/ui/ws/frame_generator.h"
 
 #include "base/macros.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/test/begin_frame_args_test.h"
@@ -145,7 +146,10 @@ class FrameGeneratorTest : public testing::Test {
     // FrameGenerator does not request BeginFrames right after creation.
     EXPECT_EQ(0, NumberOfFramesReceived());
     client_binding->SetBeginFrameSource(begin_frame_source_.get());
-    frame_generator_->Bind(std::move(client_binding));
+    viz::mojom::DisplayPrivateAssociatedPtr display_private;
+    mojo::MakeRequestAssociatedWithDedicatedPipe(&display_private);
+    frame_generator_->Bind(std::move(client_binding),
+                           std::move(display_private));
   };
 
   // InitWithSurfaceInfo creates a TestClientBinding and binds it to
@@ -188,6 +192,7 @@ class FrameGeneratorTest : public testing::Test {
   TestClientBinding* binding() { return binding_; }
 
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<viz::FakeExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<FrameGenerator> frame_generator_;
   TestClientBinding* binding_ = nullptr;

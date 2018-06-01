@@ -10,10 +10,8 @@ namespace ws {
 CompositorFrameSinkClientBinding::CompositorFrameSinkClientBinding(
     viz::mojom::CompositorFrameSinkClient* sink_client,
     viz::mojom::CompositorFrameSinkClientRequest sink_client_request,
-    viz::mojom::CompositorFrameSinkAssociatedPtr compositor_frame_sink,
-    viz::mojom::DisplayPrivateAssociatedPtr display_private)
+    viz::mojom::CompositorFrameSinkAssociatedPtr compositor_frame_sink)
     : binding_(sink_client, std::move(sink_client_request)),
-      display_private_(std::move(display_private)),
       compositor_frame_sink_(std::move(compositor_frame_sink)) {}
 
 CompositorFrameSinkClientBinding::~CompositorFrameSinkClientBinding() = default;
