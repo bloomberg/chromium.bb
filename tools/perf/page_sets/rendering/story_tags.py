@@ -17,6 +17,8 @@ SYNC_SCROLL = Tag(
     'sync_scroll', 'Story tests rendering with synchronous scrolling.')
 FASTPATH = Tag(
     'fastpath', 'Fast path stories.')
+REQUIRED_WEBGL = Tag(
+    'required_webgl', 'Stories that are skipped if no webgl support')
 
 
 def _ExtractAllTags():

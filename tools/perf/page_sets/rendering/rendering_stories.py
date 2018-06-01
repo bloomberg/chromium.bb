@@ -4,12 +4,12 @@
 
 import os
 
+from page_sets.rendering import rendering_shared_state as shared_state
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
 from page_sets.system_health import platforms
 
 from telemetry import story
-from telemetry.page import shared_page_state
 
 from py_utils import discover
 
@@ -24,11 +24,11 @@ class RenderingStorySet(story.StorySet):
     assert platform in platforms.ALL_PLATFORMS
 
     if platform == platforms.MOBILE:
-      shared_page_state_class = shared_page_state.SharedMobilePageState
+      shared_page_state_class = shared_state.MobileRenderingSharedState
     elif platform == platforms.DESKTOP:
-      shared_page_state_class = shared_page_state.SharedDesktopPageState
+      shared_page_state_class = shared_state.DesktopRenderingSharedState
     else:
-      shared_page_state_class = shared_page_state.SharedPageState
+      shared_page_state_class = shared_state.RenderingSharedState
 
     self.scroll_forever = scroll_forever
 
