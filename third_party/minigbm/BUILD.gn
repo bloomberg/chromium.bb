@@ -87,8 +87,7 @@ if (!use_system_minigbm) {
       "src/udl.c",
       "src/vc4.c",
       "src/vgem.c",
-      "src/virtio_dumb.c",
-      "src/virtio_virgl.c",
+      "src/virtio_gpu.c",
     ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
