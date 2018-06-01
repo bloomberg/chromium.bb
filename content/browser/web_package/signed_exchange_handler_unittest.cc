@@ -337,7 +337,7 @@ TEST_P(SignedExchangeHandlerTest, TruncatedInHeader) {
 
 TEST_P(SignedExchangeHandlerTest, CertSha256Mismatch) {
   // The certificate is for "127.0.0.1". And the SHA 256 hash of the certificate
-  // is different from the certSha256 of the signature in the htxg file. So the
+  // is different from the cert-sha256 of the signature in the htxg file. So the
   // certification verification must fail.
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),

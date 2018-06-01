@@ -62,18 +62,19 @@ TEST(SignedExchangeSignatureVerifier, EncodeCanonicalExchangeHeaders) {
 const uint64_t kSignatureHeaderDate = 1517892341;
 const uint64_t kSignatureHeaderExpires = 1517895941;
 
+// See content/testdata/htxg/README on how to generate this data.
 // clang-format off
 constexpr char kSignatureHeaderRSA[] =
-    "sig; "
-    "sig=*RhjjWuXi87riQUu90taBHFJgTo8XBhiCe9qTJMP7/XVPu2diRGipo06HoGsyXkidHiiW"
-    "743JgoNmO7CjfeVXLXQgKDxtGidATtPsVadAT4JpBDZJWSUg5qAbWcASXjyO38Uhq9gJkeu4w"
-    "1MRMGkvpgVXNjYhi5/9NUer1xEUuJh5UbIDhGrfMihwj+c30nW+qz0n5lCrYonk+Sc0jGcLgc"
-    "aDLptqRhOG5S+avwKmbQoqtD0JSc/53L5xXjppyvSA2fRmoDlqVQpX4uzRKq9cny7fZ3qgpZ/"
-    "YOCuT7wMj7oVEur175QLe2F8ktKH9arSEiquhFJxBIIIXza8PJnmL5w;"
-    "validityUrl=\"https://example.com/resource.validity.msg\"; "
+    "label; "
+    "sig=*C0Oh9FEKos7Vk1bLyMazdZpgBTpPhIgnY3CDqyECut1HdMP2Ye8kxZXkT9BLQSv48leG"
+    "NS/hePxRtwJJybWMan/hFMhcz+s8aHxLT6E2e87iI9tNh29NPGGFVgiJ+hljSH/QAPP8sFIBb"
+    "pD/VGWy6NgpsSHft8DVlqhloBZMR9MUPXe36tdaOf5krUbY76Daj5kVQ0LZxrZhbzb97Bstvg"
+    "gVnTQe/RV1ElOql/xhYvsYxNgM0+Bkmu2hSWFMlLHMQ29LhMHS7oYUfuqqP2qhBj7VEArgDsC"
+    "hQ1W5r8K4WaI9krdvG3UsXlFufKbqGIQ2zKbeUWJUHoelkjb/ixBhwg==*; "
+    "validity-url=\"https://example.com/resource.validity.msg\"; "
     "integrity=\"mi\"; "
-    "certUrl=\"https://example.com/cert.msg\"; "
-    "certSha256=*3wfzkF4oKGUwoQ0rE7U11FIdcA/8biGzlaACeRQQH6k; "
+    "cert-url=\"https://example.com/cert.msg\"; "
+    "cert-sha256=*tJGJP8ej7KCEW8VnVK3bKwpBza/oLrtWA75z5ZPptuc=*; "
     "date=1517892341; expires=1517895941";
 // clang-format on
 
@@ -81,12 +82,12 @@ constexpr char kSignatureHeaderRSA[] =
 // clang-format off
 constexpr char kSignatureHeaderECDSAP256[] =
     "label; "
-    "sig=*MEYCIQDQYQAHAlpznkP/btvuNnvGY5ycO+NOOTFXsoBjF22UhAIhAMyzyMikudaQeIPYB"
-    "fh2JdqZVBwgsQ6a3Cn8lFA0XYGW; "
-    "validityUrl=\"https://example.com/resource.validity.msg\"; "
+    "sig=*MEUCIQCycBCSrsmT04lZBFklDiAdp2UkMoLhLKLv/79a39qqbgIgNI8ApHxPUPuXiko7"
+    "IPehUcU9i+jHGEYO3f0fKFn3dIg=*; "
+    "validity-url=\"https://example.com/resource.validity.msg\"; "
     "integrity=\"mi\"; "
-    "certUrl=\"https://example.com/cert.msg\"; "
-    "certSha256=*CfDj40tr5B7oo6IaWwQF2L1uDgsHH0fA2YOCB7E0tAQ; "
+    "cert-url=\"https://example.com/cert.msg\"; "
+    "cert-sha256=*CfDj40tr5B7oo6IaWwQF2L1uDgsHH0fA2YOCB7E0tAQ=*; "
     "date=1517892341; expires=1517895941";
 // clang-format on
 
@@ -94,12 +95,12 @@ constexpr char kSignatureHeaderECDSAP256[] =
 // clang-format off
 constexpr char kSignatureHeaderECDSAP384[] =
     "label; "
-    "sig=*MGQCMDtOqWBsWjx1+WZta9tBpuuMJMLMwp8/eHu+PwNw95qCMMjD1xJiLIm0HUtFzdzSC"
-    "wIwVxSUD9IB2t4JIHz6IJPddqR1ex38kkSvOYSmFEwqVPRM1sqAcEtvwdpSU+cLJYbS; "
-    "validityUrl=\"https://example.com/resource.validity.msg\"; "
+    "sig=*MGUCMQCIdT4ipb0lb8AW+oxxXlv1F8kdhwoL9jsOJww2C3zTCM71Zsvu7U/BxcBCT5H7I"
+    "mkCMEatuNz+wa0q6pg2Zr3lYZ8Jy4xZbDJHVILmBqGMKxUVDGT3aw8/yJXPLPgSU6f6ZQ==*; "
+    "validity-url=\"https://example.com/resource.validity.msg\"; "
     "integrity=\"mi\"; "
-    "certUrl=\"https://example.com/cert.msg\"; "
-    "certSha256=*8X8y8nj8vDJHSSa0cxn+TCu+8zGpIJfbdzAnd5cW+jA; "
+    "cert-url=\"https://example.com/cert.msg\"; "
+    "cert-sha256=*8X8y8nj8vDJHSSa0cxn+TCu+8zGpIJfbdzAnd5cW+jA=*; "
     "date=1517892341; expires=1517895941";
 // clang-format on
 
@@ -112,38 +113,37 @@ constexpr char kSignatureHeaderInvalidExpires[] =
     "743JgoNmO7CjfeVXLXQgKDxtGidATtPsVadAT4JpBDZJWSUg5qAbWcASXjyO38Uhq9gJkeu4w"
     "1MRMGkvpgVXNjYhi5/9NUer1xEUuJh5UbIDhGrfMihwj+c30nW+qz0n5lCrYonk+Sc0jGcLgc"
     "aDLptqRhOG5S+avwKmbQoqtD0JSc/53L5xXjppyvSA2fRmoDlqVQpX4uzRKq9cny7fZ3qgpZ/"
-    "YOCuT7wMj7oVEur175QLe2F8ktKH9arSEiquhFJxBIIIXza8PJnmL5w;"
-    "validityUrl=\"https://example.com/resource.validity.msg\"; "
+    "YOCuT7wMj7oVEur175QLe2F8ktKH9arSEiquhFJxBIIIXza8PJnmL5w==*;"
+    "validity-url=\"https://example.com/resource.validity.msg\"; "
     "integrity=\"mi\"; "
-    "certUrl=\"https://example.com/cert.msg\"; "
-    "certSha256=*3wfzkF4oKGUwoQ0rE7U11FIdcA/8biGzlaACeRQQH6k; "
+    "cert-url=\"https://example.com/cert.msg\"; "
+    "cert-sha256=*3wfzkF4oKGUwoQ0rE7U11FIdcA/8biGzlaACeRQQH6k=*; "
     "date=1517892341; expires=1518497142";
 // clang-format on
 
 constexpr char kCertPEMRSA[] = R"(
 -----BEGIN CERTIFICATE-----
-MIID9zCCAt+gAwIBAgIUde2ndSB4271TAGDk0Ft+WuCCGnMwDQYJKoZIhvcNAQEL
-BQAwUDELMAkGA1UEBhMCSlAxEjAQBgNVBAgTCU1pbmF0by1rdTEOMAwGA1UEBxMF
-VG9reW8xEDAOBgNVBAoTB1Rlc3QgQ0ExCzAJBgNVBAsTAkNBMB4XDTE4MDIwNTA0
-NDUwMFoXDTE5MDIwNTA0NDUwMFowbzELMAkGA1UEBhMCSlAxEjAQBgNVBAgTCU1p
-bmF0by1rdTEOMAwGA1UEBxMFVG9reW8xFDASBgNVBAoTC2V4YW1wbGUuY29tMRIw
-EAYDVQQLEwl3ZWJzZXJ2ZXIxEjAQBgNVBAMTCWxvY2FsaG9zdDCCASIwDQYJKoZI
-hvcNAQEBBQADggEPADCCAQoCggEBAJv0UV5pK/XMtmHuDHUSvU+mNghsDQsKYSeB
-r/CySBIbLWtkeC7oxuYT2R+Mz4vVs0WQ1f3F/e3HIIQxWmy5VYErER13c53yeCNF
-fcBkwpuCZKEO1BURX+WgjYPnzLYX1xDnpBM++TuEZKdxzUVjs/jQjMNB8sbRYzng
-IIbA4HiRUtPvnGjLmY0HxZyskb52yeTWg40jWPdLaC8GMEZXGKynAnGEMl3c/dVw
-8+nKS1VVe6k32Ubfl1NlaqbOXi0xHHMUhLY/l8Lu49E0ivPS7BWL/0nMR9EAmu+I
-AgK9OD7VRoMA0LEKBzIQUEuK70JxLkV7GNvrtnOX83+EwwdfBdUCAwEAAaOBqTCB
-pjAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMC
-MAwGA1UdEwEB/wQCMAAwHQYDVR0OBBYEFDzp/0BrXKIfDGe3KfJLyBH8azW2MB8G
-A1UdIwQYMBaAFNAPhK4UBktJcx6TIk5QKwZPit4ZMCcGA1UdEQQgMB6CC2V4YW1w
-bGUuY29tgg93d3cuZXhhbXBsZS5jb20wDQYJKoZIhvcNAQELBQADggEBAKSQbsOW
-IX2JDv+Vg1lvbOFx+JqwdhvYTkOF4Z9YbRtlqEIZbc8KWjAOzDB1xVJxhSjD+f8+
-vrj7YN/ggCQk6DzuF4lkztBDO95Fxmx4EeIKdKt83WP09Os/2yIOKToOnHkmauBB
-ijY8oxNs+XxKrPX7DN5QQQhiTsZcL625fcnIwPb0DeeuCT7bJYPv8OojMDTR1uDt
-SQ53HYt0aLun+Br3lCwW8cnpxuezJhg0gNezYp/8gC4kByqoT26atpls08eWUdFD
-U0/55zFz2OzNoAHaoBzMRxn4ZSc3+lxl0K1+cCP8ivhwkxdz/vhz5RfOjpSinxqt
-wYxI2+BLS6X5NpI=
+MIIDyTCCArGgAwIBAgIBBDANBgkqhkiG9w0BAQsFADBjMQswCQYDVQQGEwJVUzET
+MBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNTW91bnRhaW4gVmlldzEQMA4G
+A1UECgwHVGVzdCBDQTEVMBMGA1UEAwwMVGVzdCBSb290IENBMB4XDTE3MDYwNTE3
+MTA0NloXDTI3MDYwMzE3MTA0NlowYDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNh
+bGlmb3JuaWExFjAUBgNVBAcMDU1vdW50YWluIFZpZXcxEDAOBgNVBAoMB1Rlc3Qg
+Q0ExEjAQBgNVBAMMCTEyNy4wLjAuMTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCC
+AQoCggEBANOUHzO0uxUyd3rYUArq33olXC0N1AYNM0wFTjUqUrElLiX48+5hERkG
+hGwC8VG5Zr/2Jw/wtarLiDjg2OfPdwyMp3S7MBTgvXWZ989MUHpx6b0cWM298iOg
+/VeinMphFLDfPDHFWZ7RXBqfk6MGLhI5GgvoooYw2jUmP+elnoizIL/OB08sIYra
+AVrwasoRd+yOmyvQnzw3mZNKpWjeX7NhZCg2nG8B8u78agwAYVWupHnJS2GwhLzy
+19AxU/HmaI9kyyMGmRtbRZ0roCyMDOgEEcWUSYNRP33KLi31uKYqOSblvzmC7kA7
+k5yca3VXlgqg4gnjr9tbOMzMcpeqeaMCAwEAAaOBijCBhzAMBgNVHRMBAf8EAjAA
+MB0GA1UdDgQWBBQYDOtRudM2qckEr/kvFPCZZtJ21DAfBgNVHSMEGDAWgBSbJguK
+mKm7HbkfHOMaQDPtjheIqzAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIw
+GAYDVR0RBBEwD4INKi5leGFtcGxlLm9yZzANBgkqhkiG9w0BAQsFAAOCAQEAvXK0
+UF19i7JkSSdomQwB18WRFaKG8VZpSFsKbEECPRHoxktMl/Pd04wk+W0fZFq433j3
+4D+cjTB6OxAVdPIPSex8U40fYMl9C13K1tejf4o/+rcLxEDdVfv7PUkogrliXzSE
+MCYdcTwruV7hjC2/Ib0t/kdxblRt4dD2I1jdntsFy/VfET/m0J2qRhJWlfYEzCFe
+Hn8H/PZIiIsso5pm2RodTqi9w4/+1r8Yyfmk8TF+EoWDYtbZ+ScgtCH5fldS+onI
+hHgjz/tniqjbY0MRFr9ZxrohmtgOBOvROEKH06c92oOmj2ahyFpM/yU9PL/JvNmF
+SaMW1eOzjHemIWKTMw==
 -----END CERTIFICATE-----)";
 
 constexpr char kCertPEMECDSAP256[] = R"(
@@ -283,12 +283,12 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyRSA) {
 
   SignedExchangeEnvelope header;
   header.set_request_method("GET");
-  header.set_request_url(GURL("https://example.com/index.html"));
+  header.set_request_url(GURL("https://test.example.org/test/"));
   header.set_response_code(net::HTTP_OK);
   header.AddResponseHeader("content-type", "text/html; charset=utf-8");
   header.AddResponseHeader("content-encoding", "mi-sha256");
   header.AddResponseHeader(
-      "mi", "mi-sha256=4ld4G-h-sQSoLBD39ndIO15O_82NXSzq9UMFEYI02JQ");
+      "mi", "mi-sha256=wmp4dRMYgxP3tSMCwV_I0CWOCiHZpAihKZk19bsN9RI");
   header.SetSignatureForTesting((*signature)[0]);
 
   TestVerifierGivenValidInput(header, certlist[0]);

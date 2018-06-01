@@ -22,11 +22,11 @@ namespace {
 const char kSignatureString[] =
     "sig1;"
     " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
-    "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY;"
+    "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
     " integrity=\"mi\";"
-    " validityUrl=\"https://example.com/resource.validity.1511128380\";"
-    " certUrl=\"https://example.com/oldcerts\";"
-    " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
+    " validity-url=\"https://example.com/resource.validity.1511128380\";"
+    " cert-url=\"https://example.com/oldcerts\";"
+    " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
     " date=1511128380; expires=1511733180";
 
 cbor::CBORValue CBORByteString(const char* str) {
