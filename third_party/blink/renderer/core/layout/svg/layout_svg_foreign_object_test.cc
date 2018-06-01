@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
@@ -281,6 +282,12 @@ TEST_F(LayoutSVGForeignObjectTest,
   EXPECT_EQ(foreignObject, GetDocument().ElementFromPoint(201, 201));
   EXPECT_EQ(target, GetDocument().ElementFromPoint(206, 206));
   EXPECT_EQ(foreignObject, GetDocument().ElementFromPoint(205, 255));
+
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestResult result(request, LayoutPoint(206, 206));
+  GetDocument().GetLayoutView()->Layer()->HitTest(result);
+  EXPECT_EQ(target, result.InnerNode());
+  EXPECT_EQ(LayoutPoint(206, 206), result.PointInInnerNodeFrame());
 }
 
 TEST_F(LayoutSVGForeignObjectTest,
@@ -308,6 +315,12 @@ TEST_F(LayoutSVGForeignObjectTest,
   EXPECT_EQ(foreignObject, GetDocument().ElementFromPoint(231, 201));
   EXPECT_EQ(target, GetDocument().ElementFromPoint(236, 206));
   EXPECT_EQ(foreignObject, GetDocument().ElementFromPoint(235, 255));
+
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestResult result(request, LayoutPoint(236, 206));
+  GetDocument().GetLayoutView()->Layer()->HitTest(result);
+  EXPECT_EQ(target, result.InnerNode());
+  EXPECT_EQ(LayoutPoint(236, 206), result.PointInInnerNodeFrame());
 }
 
 }  // namespace blink

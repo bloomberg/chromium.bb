@@ -141,7 +141,17 @@ bool LayoutSVGForeignObject::NodeAtFloatPoint(HitTestResult& result,
     HitTestResult layer_result(result.GetHitTestRequest(),
                                point_in_foreign_object);
     bool retval = Layer()->HitTest(layer_result);
+
+    // Preserve the "point in inner node frame" from the original request,
+    // since |layer_result| is a hit test rooted at the <foreignObject> element,
+    // not the frame, due to the constructor above using
+    // |point_in_foreign_object| as its "point in inner node frame".
+    // TODO(chrishtr): refactor the PaintLayer and HitTestResults code around
+    // this, to better support hit tests that don't start at frame boundaries.
+    LayoutPoint original_point_in_inner_node_frame =
+        result.PointInInnerNodeFrame();
     result = layer_result;
+    result.SetPointInInnerNodeFrame(original_point_in_inner_node_frame);
     return retval;
   }
 
