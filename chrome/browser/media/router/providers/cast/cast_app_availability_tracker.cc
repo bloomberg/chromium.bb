@@ -75,26 +75,31 @@ std::vector<CastMediaSource> CastAppAvailabilityTracker::UpdateAppAvailability(
 
 std::vector<CastMediaSource> CastAppAvailabilityTracker::RemoveResultsForSink(
     const MediaSink::Id& sink_id) {
+  auto affected_sources = GetSupportedSources(sink_id);
+  app_availabilities_.erase(sink_id);
+  return affected_sources;
+}
+
+std::vector<CastMediaSource> CastAppAvailabilityTracker::GetSupportedSources(
+    const MediaSink::Id& sink_id) const {
   auto it = app_availabilities_.find(sink_id);
   if (it == app_availabilities_.end())
     return std::vector<CastMediaSource>();
 
-  // Find all app IDs that were available on the sink.
-  std::vector<std::string> affected_app_ids;
+  // Find all app IDs that are available on the sink.
+  std::vector<std::string> supported_app_ids;
   for (const auto& availability : it->second) {
     if (availability.second.first == GetAppAvailabilityResult::kAvailable)
-      affected_app_ids.push_back(availability.first);
+      supported_app_ids.push_back(availability.first);
   }
 
-  // Find all registered sources whose query results need to be updated.
-  std::vector<CastMediaSource> affected_sources;
+  // Find all registered sources whose query results contains the sink ID.
+  std::vector<CastMediaSource> sources;
   for (const auto& source : registered_sources_) {
-    if (source.second.ContainsAnyAppFrom(affected_app_ids))
-      affected_sources.push_back(source.second);
+    if (source.second.ContainsAnyAppFrom(supported_app_ids))
+      sources.push_back(source.second);
   }
-
-  app_availabilities_.erase(it);
-  return affected_sources;
+  return sources;
 }
 
 CastAppAvailabilityTracker::AppAvailability

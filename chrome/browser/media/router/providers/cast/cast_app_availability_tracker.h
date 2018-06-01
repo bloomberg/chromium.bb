@@ -82,6 +82,10 @@ class CastAppAvailabilityTracker {
   std::vector<CastMediaSource> RemoveResultsForSink(
       const MediaSink::Id& sink_id);
 
+  // Returns a list of registered CastMediaSources supported by |sink_id|.
+  std::vector<CastMediaSource> GetSupportedSources(
+      const MediaSink::Id& sink_id) const;
+
   // Returns the availability for |app_id| on |sink_id| and the time at
   // which the availability was determined. If availability is kUnknown, then
   // the time may be null (e.g. if an availability request was never sent).

@@ -116,6 +116,34 @@ TEST_F(CastAppDiscoveryServiceTest, StartObservingMediaSinks) {
   RemoveSink(sink1);
 }
 
+TEST_F(CastAppDiscoveryServiceTest, SinkQueryUpdatedOnSinkUpdate) {
+  auto subscription1 = StartObservingMediaSinksInitially(source_a_1_);
+
+  // Adding a sink after app registered causes app availability request to be
+  // sent.
+  MediaSinkInternal sink1 = CreateCastSink(1);
+  cast_channel::GetAppAvailabilityCallback cb;
+  EXPECT_CALL(message_handler_, DoRequestAppAvailability(_, "AAAAAAAA", _))
+      .WillOnce(
+          Invoke([&cb](cast_channel::CastSocket*, const std::string&,
+                       cast_channel::GetAppAvailabilityCallback& callback) {
+            cb = std::move(callback);
+          }));
+
+  AddOrUpdateSink(sink1);
+
+  // Query now includes |sink1|.
+  std::vector<MediaSinkInternal> sinks_1 = {sink1};
+  EXPECT_CALL(*this, OnSinkQueryUpdated(source_a_1_.source_id(), sinks_1));
+  std::move(cb).Run("AAAAAAAA", GetAppAvailabilityResult::kAvailable);
+
+  // Updating |sink1| causes |source_a_1_| query to be updated.
+  sink1.sink().set_name("Updated name");
+  sinks_1 = {sink1};
+  EXPECT_CALL(*this, OnSinkQueryUpdated(source_a_1_.source_id(), sinks_1));
+  AddOrUpdateSink(sink1);
+}
+
 TEST_F(CastAppDiscoveryServiceTest, Refresh) {
   auto subscription1 = StartObservingMediaSinksInitially(source_a_1_);
   auto subscription2 = StartObservingMediaSinksInitially(source_b_1_);

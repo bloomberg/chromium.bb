@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/media_router/cast_modes_with_media_sources.h"
 
+#include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,7 +24,8 @@ TEST(MediaRouterCastModesWithMediaSourcesTest, AddAndRemoveSources) {
   const CastModeSet castModeSetPresentationAndTab(
       {MediaCastMode::PRESENTATION, MediaCastMode::TAB_MIRROR});
 
-  CastModesWithMediaSources sources;
+  CastModesWithMediaSources sources(
+      MediaSink("sinkId", "name", SinkIconType::GENERIC));
   EXPECT_TRUE(sources.IsEmpty());
   EXPECT_EQ(sources.GetCastModes(), castModeSetEmpty);
 

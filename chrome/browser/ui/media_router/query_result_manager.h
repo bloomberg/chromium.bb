@@ -165,7 +165,7 @@ class QueryResultManager {
   std::map<MediaCastMode, std::vector<MediaSource>> cast_mode_sources_;
 
   // Holds all known sinks along with the cast modes and sources they support.
-  std::map<MediaSink, CastModesWithMediaSources, MediaSink::Compare> all_sinks_;
+  std::map<MediaSink::Id, CastModesWithMediaSources> all_sinks_;
 
   // Registered observers.
   base::ObserverList<Observer> observers_;

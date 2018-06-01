@@ -89,13 +89,6 @@ class MediaSink {
   bool CompareUsingCollator(const MediaSink& other,
                             const icu::Collator* collator) const;
 
-  // For storing in sets and in maps as keys.
-  struct Compare {
-    bool operator()(const MediaSink& sink1, const MediaSink& sink2) const {
-      return sink1.id() < sink2.id();
-    }
-  };
-
  private:
   // Unique identifier for the MediaSink.
   MediaSink::Id sink_id_;

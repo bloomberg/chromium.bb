@@ -9,17 +9,23 @@
 #include <unordered_set>
 
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
+#include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source.h"
 
 namespace media_router {
 
 // Contains information on cast modes and the sources associated with them.
 // Each cast mode contained has at least one source.
+// TODO(imcheng): Move this into QueryResultManager as this class is only used
+// there.
 class CastModesWithMediaSources {
  public:
-  CastModesWithMediaSources();
+  explicit CastModesWithMediaSources(const MediaSink& sink);
   CastModesWithMediaSources(CastModesWithMediaSources&& other);
   ~CastModesWithMediaSources();
+
+  const MediaSink& sink() const { return sink_; }
+  void set_sink(const MediaSink& sink) { sink_ = sink; }
 
   // Adds a source for the cast mode.
   void AddSource(MediaCastMode cast_mode, const MediaSource& source);
@@ -38,6 +44,7 @@ class CastModesWithMediaSources {
   bool IsEmpty() const;
 
  private:
+  MediaSink sink_;
   std::map<MediaCastMode, std::unordered_set<MediaSource, MediaSource::Hash>>
       cast_modes_;
 
