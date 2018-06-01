@@ -159,7 +159,6 @@ api::automation::EventType ToAutomationEvent(
     // Map these into generic attribute changes (not necessarily aria related,
     // but mapping for backward compat).
     case ui::AXEventGenerator::Event::COLLAPSED:
-    case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
     case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
     case ui::AXEventGenerator::Event::EXPANDED:
     case ui::AXEventGenerator::Event::LIVE_REGION_NODE_CHANGED:
@@ -169,6 +168,7 @@ api::automation::EventType ToAutomationEvent(
     case ui::AXEventGenerator::Event::STATE_CHANGED:
       return api::automation::EVENT_TYPE_ARIAATTRIBUTECHANGED;
 
+    case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
     case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
       return api::automation::EVENT_TYPE_NONE;
   }
@@ -198,6 +198,7 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     const std::vector<ExtensionMsg_AccessibilityEventParams>& events,
     bool is_active_profile) {
   for (const auto& params : events) {
+    set_event_from(params.event_from);
     deleted_node_ids_.clear();
 
     if (!tree_.Unserialize(params.update))
@@ -221,10 +222,11 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
   // Send auto-generated AXEventGenerator events.
   for (auto targeted_event : *this) {
     api::automation::EventType event_type =
-        ToAutomationEvent(targeted_event.event);
+        ToAutomationEvent(targeted_event.event_params.event);
     if (IsEventTypeHandledByAXEventGenerator(event_type)) {
       ExtensionMsg_AccessibilityEventParams generated_params;
       generated_params.tree_id = tree_id_;
+      generated_params.event_from = targeted_event.event_params.event_from;
       owner_->SendAutomationEvent(generated_params, targeted_event.node->id(),
                                   event_type);
     }

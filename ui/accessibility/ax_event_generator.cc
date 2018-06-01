@@ -10,12 +10,25 @@
 
 namespace ui {
 
-AXEventGenerator::TargetedEvent::TargetedEvent(ui::AXNode* node, Event event)
-    : node(node), event(event) {}
+AXEventGenerator::EventParams::EventParams(Event event,
+                                           ax::mojom::EventFrom event_from)
+    : event(event), event_from(event_from) {}
+
+AXEventGenerator::TargetedEvent::TargetedEvent(ui::AXNode* node,
+                                               const EventParams& event_params)
+    : node(node), event_params(event_params) {}
+
+bool AXEventGenerator::EventParams::operator==(const EventParams& rhs) {
+  return rhs.event == event;
+}
+
+bool AXEventGenerator::EventParams::operator<(const EventParams& rhs) const {
+  return event < rhs.event;
+}
 
 AXEventGenerator::Iterator::Iterator(
-    const std::map<AXNode*, std::set<Event>>& map,
-    const std::map<AXNode*, std::set<Event>>::const_iterator& head)
+    const std::map<AXNode*, std::set<EventParams>>& map,
+    const std::map<AXNode*, std::set<EventParams>>::const_iterator& head)
     : map_(map), map_iter_(head) {
   if (map_iter_ != map.end())
     set_iter_ = map_iter_->second.begin();
@@ -87,12 +100,16 @@ void AXEventGenerator::AddEvent(ui::AXNode* node,
   // A newly created live region or alert should not *also* fire a
   // live region changed event.
   if (event == Event::LIVE_REGION_CHANGED &&
-      (base::ContainsKey(tree_events_[node], Event::ALERT) ||
-       base::ContainsKey(tree_events_[node], Event::LIVE_REGION_CREATED))) {
+      (base::ContainsKey(
+           tree_events_[node],
+           EventParams(Event::ALERT, ax::mojom::EventFrom::kNone)) ||
+       base::ContainsKey(tree_events_[node],
+                         EventParams(Event::LIVE_REGION_CREATED,
+                                     ax::mojom::EventFrom::kNone)))) {
     return;
   }
 
-  tree_events_[node].insert(event);
+  tree_events_[node].insert(EventParams(event, event_from_));
 }
 
 void AXEventGenerator::OnNodeDataWillChange(AXTree* tree,
@@ -107,7 +124,8 @@ void AXEventGenerator::OnNodeDataWillChange(AXTree* tree,
   if (new_node_data.child_ids != old_node_data.child_ids &&
       new_node_data.role != ax::mojom::Role::kStaticText) {
     AXNode* node = tree_->GetFromId(new_node_data.id);
-    tree_events_[node].insert(Event::CHILDREN_CHANGED);
+    tree_events_[node].insert(
+        EventParams(Event::CHILDREN_CHANGED, ax::mojom::EventFrom::kNone));
   }
 }
 
