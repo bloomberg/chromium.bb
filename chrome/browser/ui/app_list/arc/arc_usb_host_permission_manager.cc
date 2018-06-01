@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_dialog.h"
 #include "chrome/browser/ui/app_list/arc/arc_usb_host_permission_manager_factory.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/usb/usb_host_bridge.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 
@@ -210,6 +211,10 @@ void ArcUsbHostPermissionManager::RestorePermissionFromChromePrefs() {
 void ArcUsbHostPermissionManager::RequestUsbScanDeviceListPermission(
     const std::string& package_name,
     ArcUsbHostUiDelegate::RequestPermissionCallback callback) {
+  // Grants Arc USB permission for |package_name| in Arc kiosk mode.
+  if (IsArcKioskMode())
+    UpdateArcUsbScanDeviceListPermission(package_name, true /*allowed*/);
+
   if (HasUsbScanDeviceListPermission(package_name)) {
     std::move(callback).Run(true);
     return;
@@ -240,6 +245,13 @@ void ArcUsbHostPermissionManager::RequestUsbAccessPermission(
           vendor_id, product_id, manufacturer_string, product_string,
           serial_number, true /*always_include_manufacturer*/),
       serial_number, vendor_id, product_id);
+
+  // Grants Arc USB permission for |package_name| in Arc kiosk mode.
+  if (IsArcKioskMode()) {
+    UpdateArcUsbAccessPermission(package_name, usb_device_entry,
+                                 true /*allowed*/);
+  }
+
   if (HasUsbAccessPermission(package_name, usb_device_entry)) {
     std::move(callback).Run(true);
     return;
@@ -407,6 +419,7 @@ void ArcUsbHostPermissionManager::ClearPermissionRequests() {
   pending_requests_.clear();
   current_requesting_package_.clear();
   current_requesting_guid_.clear();
+  is_permission_dialog_visible_ = false;
 }
 
 void ArcUsbHostPermissionManager::OnUsbPermissionReceived(
