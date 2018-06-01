@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/display/screen_orientation_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -79,6 +80,11 @@ void TrayRotationLockTest::OnTrayViewDestroyed() {
 
 void TrayRotationLockTest::SetUpForStatusAreaWidget(
     StatusAreaWidget* status_area_widget) {
+  // TODO(tetsui): Remove after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   tray_.reset(new TrayRotationLock(status_area_widget->system_tray()));
   tray_view_.reset(
       tray_->CreateTrayView(StatusAreaWidgetTestHelper::GetUserLoginStatus()));
@@ -110,12 +116,22 @@ void TrayRotationLockTest::TearDown() {
 // Tests that when the tray view is initially created, that it is created
 // not visible.
 TEST_F(TrayRotationLockTest, CreateTrayView) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   EXPECT_FALSE(tray_view()->visible());
 }
 
 // Tests that when the tray view is created, while TabletMode is active, that
 // it must be visible, and becomes invisible exiting TabletMode.
 TEST_F(TrayRotationLockTest, CreateTrayViewDuringTabletMode) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   TearDownViews();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   SetUpForStatusAreaWidget(StatusAreaWidgetTestHelper::GetStatusAreaWidget());
@@ -127,6 +143,11 @@ TEST_F(TrayRotationLockTest, CreateTrayViewDuringTabletMode) {
 // Tests that the enabling of TabletMode affects a previously created tray
 // view, changing the visibility.
 TEST_F(TrayRotationLockTest, TrayViewVisibilityChangesDuringTabletMode) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   ASSERT_FALSE(tray_view()->visible());
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   Shell::Get()->screen_orientation_controller()->ToggleUserRotationLock();
@@ -138,6 +159,11 @@ TEST_F(TrayRotationLockTest, TrayViewVisibilityChangesDuringTabletMode) {
 // Tests that when the tray view is created for a secondary display, that it is
 // not visible, and that TabletMode does not affect visibility.
 TEST_F(TrayRotationLockTest, CreateSecondaryTrayView) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   UpdateDisplay("400x400,200x200");
 
   SetUpForStatusAreaWidget(
@@ -154,12 +180,22 @@ TEST_F(TrayRotationLockTest, CreateSecondaryTrayView) {
 // Tests that when the default view is initially created, that it is created
 // not visible.
 TEST_F(TrayRotationLockTest, CreateDefaultView) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   EXPECT_FALSE(default_view()->visible());
 }
 
 // Tests that when the default view is created, while TabletMode is active,
 // that it is visible.
 TEST_F(TrayRotationLockTest, CreateDefaultViewDuringTabletMode) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   TearDownViews();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   SetUpForStatusAreaWidget(StatusAreaWidgetTestHelper::GetStatusAreaWidget());
@@ -171,6 +207,11 @@ TEST_F(TrayRotationLockTest, CreateDefaultViewDuringTabletMode) {
 // Tests that the enabling of TabletMode affects a previously created default
 // view, changing the visibility.
 TEST_F(TrayRotationLockTest, DefaultViewVisibilityChangesDuringTabletMode) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_TRUE(default_view()->visible());
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
@@ -180,6 +221,11 @@ TEST_F(TrayRotationLockTest, DefaultViewVisibilityChangesDuringTabletMode) {
 // Tests that no default view is created when the target is a secondary
 // display.
 TEST_F(TrayRotationLockTest, CreateSecondaryDefaultView) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   UpdateDisplay("400x400,200x200");
 
   TearDownViews();
@@ -191,6 +237,11 @@ TEST_F(TrayRotationLockTest, CreateSecondaryDefaultView) {
 // Tests that activating the default view causes the display to have its
 // rotation locked.
 TEST_F(TrayRotationLockTest, PerformActionOnDefaultView) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   TabletModeController* tablet_mode_controller =
       Shell::Get()->tablet_mode_controller();
   ScreenOrientationController* screen_orientation_controller =
@@ -211,6 +262,11 @@ TEST_F(TrayRotationLockTest, PerformActionOnDefaultView) {
 // Tests that when the tray is created without the internal display being known,
 // that it will still display correctly once the internal display is known.
 TEST_F(TrayRotationLockTest, InternalDisplayNotAvailableAtCreation) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   int64_t internal_display_id = display::Display::InternalDisplayId();
   TearDownViews();
   display::Display::SetInternalDisplayId(display::kInvalidDisplayId);
@@ -231,6 +287,11 @@ TEST_F(TrayRotationLockTest, InternalDisplayNotAvailableAtCreation) {
 // Tests that when the tray view is deleted, while TrayRotationLock has not been
 // deleted, that updates to the rotation lock state do not crash.
 TEST_F(TrayRotationLockTest, LockUpdatedDuringDesctruction) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   OnTrayViewDestroyed();
   Shell::Get()->screen_orientation_controller()->ToggleUserRotationLock();

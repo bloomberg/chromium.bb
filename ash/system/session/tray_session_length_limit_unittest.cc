@@ -4,6 +4,7 @@
 
 #include "ash/system/session/tray_session_length_limit.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/label_tray_view.h"
@@ -36,6 +37,11 @@ class TraySessionLengthLimitTest : public AshTestBase {
 };
 
 TEST_F(TraySessionLengthLimitTest, Visibility) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* system_tray = GetPrimarySystemTray();
 
   // By default there is no session length limit item.

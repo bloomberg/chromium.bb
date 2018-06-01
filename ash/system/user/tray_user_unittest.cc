@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
@@ -130,6 +131,11 @@ void TrayUserTest::ClickUserItem(ui::test::EventGenerator* generator) {
 
 // Make sure that we show items for all users in the tray accordingly.
 TEST_F(TrayUserTest, CheckTrayItemSize) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   InitializeParameters(1, false);
   tray_user()->UpdateAfterLoginStatusChangeForTest(LoginStatus::GUEST);
   gfx::Size size = tray_user()->GetLayoutSizeForTest();
@@ -141,6 +147,11 @@ TEST_F(TrayUserTest, CheckTrayItemSize) {
 
 // Make sure that in single user mode the user panel cannot be activated.
 TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   InitializeParameters(1, false);
 
   // Move the mouse over the status area and click to open the status menu.
@@ -160,6 +171,11 @@ TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
 }
 
 TEST_F(TrayUserTest, AccessibleLabelContainsSingleUserInfo) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   InitializeParameters(1, false);
   ui::test::EventGenerator& generator = GetEventGenerator();
   ShowTrayMenu(&generator);
@@ -175,6 +191,11 @@ TEST_F(TrayUserTest, AccessibleLabelContainsSingleUserInfo) {
 }
 
 TEST_F(TrayUserTest, AccessibleLabelContainsMultiUserInfo) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   InitializeParameters(1, true);
   ui::test::EventGenerator& generator = GetEventGenerator();
   ShowTrayMenu(&generator);
@@ -194,6 +215,11 @@ TEST_F(TrayUserTest, AccessibleLabelContainsMultiUserInfo) {
 // Note: the mouse watcher (for automatic closing upon leave) cannot be tested
 // here since it does not work with the event system in unit tests.
 TEST_F(TrayUserTest, MultiUserModeDoesNotAllowToAddUser) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   // Sign in more than one user.
   InitializeParameters(2, true);
 
@@ -234,6 +260,11 @@ TEST_F(TrayUserTest, MultiUserModeDoesNotAllowToAddUser) {
 
 // Make sure that user changing gets properly executed.
 TEST_F(TrayUserTest, MultiUserModeButtonClicks) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   // Have two users.
   InitializeParameters(2, true);
   ui::test::EventGenerator& generator = GetEventGenerator();
@@ -265,6 +296,11 @@ TEST_F(TrayUserTest, MultiUserModeButtonClicks) {
 
 // Test SessionController updates avatar image.
 TEST_F(TrayUserTest, AvatarChange) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   InitializeParameters(1, false);
 
   // Expect empty avatar initially (that is how the test sets up).

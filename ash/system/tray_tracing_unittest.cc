@@ -4,6 +4,7 @@
 
 #include "ash/system/tray_tracing.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
@@ -17,6 +18,11 @@ using TrayTracingTest = AshTestBase;
 
 // Tests that the icon becomes visible when the tray controller toggles it.
 TEST_F(TrayTracingTest, Visibility) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   TrayTracing* tray_tracing = SystemTrayTestApi(tray).tray_tracing();
 

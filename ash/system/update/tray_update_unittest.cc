@@ -4,6 +4,7 @@
 
 #include "ash/system/update/tray_update.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/update.mojom.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
@@ -20,6 +21,11 @@ using TrayUpdateTest = AshTestBase;
 // Tests that the update icon becomes visible when an update becomes
 // available.
 TEST_F(TrayUpdateTest, VisibilityAfterUpdate) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   TrayUpdate* tray_update = tray->tray_update();
 
@@ -39,6 +45,11 @@ TEST_F(TrayUpdateTest, VisibilityAfterUpdate) {
 }
 
 TEST_F(TrayUpdateTest, VisibilityAfterFlashUpdate) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   TrayUpdate* tray_update = tray->tray_update();
 
@@ -60,6 +71,11 @@ TEST_F(TrayUpdateTest, VisibilityAfterFlashUpdate) {
 // Tests that the update icon's visibility after an update becomes
 // available for downloading over cellular connection.
 TEST_F(TrayUpdateTest, VisibilityAfterUpdateOverCellularAvailable) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   TrayUpdate* tray_update = tray->tray_update();
 

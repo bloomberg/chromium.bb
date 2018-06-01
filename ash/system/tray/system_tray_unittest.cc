@@ -13,6 +13,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/ash_view_ids.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -416,6 +417,11 @@ TEST_F(SystemTrayTest, DISABLED_SwipingOnSystemTrayBubble) {
 // Tests that press the search key can toggle the launcher when all the windows
 // are minimized after open the system tray bubble in tablet mode.
 TEST_F(SystemTrayTest, ToggleAppListAfterOpenSystemTrayBubbleInTabletMode) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   EXPECT_FALSE(wm::GetActiveWindow());
   SystemTray* system_tray = GetPrimarySystemTray();
 
@@ -445,6 +451,11 @@ TEST_F(SystemTrayTest, ToggleAppListAfterOpenSystemTrayBubbleInTabletMode) {
 // Verifies only the visible default views are recorded in the
 // "Ash.SystemMenu.DefaultView.VisibleItems" histogram.
 TEST_F(SystemTrayTest, OnlyVisibleItemsRecorded) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -486,6 +497,11 @@ TEST_F(SystemTrayTest, OnlyVisibleItemsRecorded) {
 // Verifies a visible UMA_NOT_RECORDED default view is not recorded in the
 // "Ash.SystemMenu.DefaultView.VisibleItems" histogram.
 TEST_F(SystemTrayTest, NotRecordedtemsAreNotRecorded) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -507,6 +523,11 @@ TEST_F(SystemTrayTest, NotRecordedtemsAreNotRecorded) {
 // Verifies null default views are not recorded in the
 // "Ash.SystemMenu.DefaultView.VisibleItems" histogram.
 TEST_F(SystemTrayTest, NullDefaultViewIsNotRecorded) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -529,6 +550,11 @@ TEST_F(SystemTrayTest, NullDefaultViewIsNotRecorded) {
 // Verifies visible detailed views are not recorded in the
 // "Ash.SystemMenu.DefaultView.VisibleItems" histogram.
 TEST_F(SystemTrayTest, VisibleDetailedViewsIsNotRecorded) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -550,6 +576,11 @@ TEST_F(SystemTrayTest, VisibleDetailedViewsIsNotRecorded) {
 // Verifies visible default views are not recorded for menu re-shows in the
 // "Ash.SystemMenu.DefaultView.VisibleItems" histogram.
 TEST_F(SystemTrayTest, VisibleDefaultViewIsNotRecordedOnReshow) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -579,6 +610,11 @@ TEST_F(SystemTrayTest, VisibleDefaultViewIsNotRecordedOnReshow) {
 }
 
 TEST_F(SystemTrayTest, SystemTrayDefaultView) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -594,6 +630,11 @@ TEST_F(SystemTrayTest, SystemTrayDefaultView) {
 // Make sure the opening system tray bubble will not deactivate the
 // other window. crbug.com/120680.
 TEST_F(SystemTrayTest, Activation) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
       nullptr, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 100, 100)));
@@ -627,6 +668,11 @@ TEST_F(SystemTrayTest, Activation) {
 // activated, and does not crash regardless of the initial activation state.
 // Regression test for crbug.com/704432 .
 TEST_F(SystemTrayTest, CloseOnActivation) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
 
   // Show the system bubble.
@@ -661,6 +707,11 @@ TEST_F(SystemTrayTest, CloseOnActivation) {
 
 // Opening and closing the bubble should change the coloring of the tray.
 TEST_F(SystemTrayTest, SystemTrayColoring) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
   // At the beginning the tray coloring is not active.
@@ -680,6 +731,11 @@ TEST_F(SystemTrayTest, SystemTrayColoring) {
 // Closing the system bubble through an alignment change should change the
 // system tray coloring back to normal.
 TEST_F(SystemTrayTest, SystemTrayColoringAfterAlignmentChange) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
   Shelf* shelf = GetPrimaryShelf();
@@ -701,6 +757,11 @@ TEST_F(SystemTrayTest, SystemTrayColoringAfterAlignmentChange) {
 }
 
 TEST_F(SystemTrayTest, SystemTrayTestItems) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -737,6 +798,11 @@ TEST_F(SystemTrayTest, SystemTrayTestItems) {
 }
 
 TEST_F(SystemTrayTest, SystemTrayNoViewItems) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -750,6 +816,11 @@ TEST_F(SystemTrayTest, SystemTrayNoViewItems) {
 }
 
 TEST_F(SystemTrayTest, TrayWidgetAutoResizes) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -820,6 +891,11 @@ TEST_F(SystemTrayTest, DISABLED_BubbleCreationTypesTest) {
 // Tests that the tray view is laid out properly and is fully contained within
 // the shelf widget.
 TEST_F(SystemTrayTest, TrayBoundsInWidget) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   Shelf* shelf = GetPrimaryShelf();
   StatusAreaWidget* widget = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
   SystemTray* tray = GetPrimarySystemTray();
@@ -852,6 +928,11 @@ TEST_F(SystemTrayTest, TrayBoundsInWidget) {
 }
 
 TEST_F(SystemTrayTest, PersistentBubble) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -908,6 +989,11 @@ TEST_F(SystemTrayTest, PersistentBubble) {
 // With a system modal dialog, the bubble should be created with a LOCKED login
 // status.
 TEST_F(SystemTrayTest, WithSystemModal) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   // The accessiblity item is created and is visible either way.
   Shell::Get()->accessibility_controller()->SetVirtualKeyboardEnabled(true);
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
@@ -950,6 +1036,11 @@ TEST_F(SystemTrayTest, WithSystemModal) {
 // Tests that if SetVisible(true) is called while animating to hidden that the
 // tray becomes visible, and stops animating to hidden.
 TEST_F(SystemTrayTest, SetVisibleDuringHideAnimation) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->visible());
 
@@ -968,6 +1059,11 @@ TEST_F(SystemTrayTest, SetVisibleDuringHideAnimation) {
 }
 
 TEST_F(SystemTrayTest, SystemTrayHeightWithBubble) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   NotificationTray* notification_tray =
       StatusAreaWidgetTestHelper::GetStatusAreaWidget()->notification_tray();
@@ -995,6 +1091,11 @@ TEST_F(SystemTrayTest, SeparatorThickness) {
 // System tray is not activated by default. If it is opened by user click on
 // system tray, it should be activated when user presses tab key.
 TEST_F(SystemTrayTest, KeyboardNavigationWithOtherWindow) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
       nullptr, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 100, 100)));
   EXPECT_TRUE(widget->IsActive());
@@ -1060,6 +1161,11 @@ TEST_F(SystemTrayTest, KeyboardNavigationWithOtherWindow) {
 // ViewsDelegate if it's not handled by the tray. It closes the tray if
 // ViewsDelegate returns CLOSE_MENU.
 TEST_F(SystemTrayTest, AcceleratorController) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   // Register A key as an accelerator which closes the menu.
   ui::Accelerator accelerator(ui::VKEY_A, ui::EF_NONE);
   AshTestViewsDelegate* views_delegate =
@@ -1091,6 +1197,11 @@ TEST_F(SystemTrayTest, AcceleratorController) {
 // key event and the tray shouldn't consume key event, i.e. RerouteEventHandler
 // in TrayBubbleView should not reroute key events to the tray in this case.
 TEST_F(SystemTrayTest, ActiveChildWidget) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   tray->ShowDefaultView(BUBBLE_CREATE_NEW, true /* show_by_click */);
 
