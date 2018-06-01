@@ -17,8 +17,7 @@ def _LintWPT(input_api, output_api):
         'blinkpy', 'third_party', 'wpt', 'wpt', 'wpt')
 
     paths_in_wpt = []
-    for f in input_api.AffectedFiles():
-        abs_path = f.AbsoluteLocalPath()
+    for abs_path in input_api.AbsoluteLocalPaths():
         if abs_path.endswith(input_api.os_path.relpath(abs_path, wpt_path)):
             paths_in_wpt.append(abs_path)
 
