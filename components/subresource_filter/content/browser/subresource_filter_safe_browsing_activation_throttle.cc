@@ -177,7 +177,7 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   SubresourceFilterObserverManager::FromWebContents(
       navigation_handle()->GetWebContents())
       ->NotifyPageActivationComputed(
-          navigation_handle(), activation_decision,
+          navigation_handle(),
           matched_configuration.GetActivationState(activation_level));
 }
 

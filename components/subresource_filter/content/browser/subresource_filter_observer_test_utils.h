@@ -15,7 +15,7 @@
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
-#include "components/subresource_filter/core/common/activation_decision.h"
+#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/load_policy.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
@@ -44,7 +44,6 @@ class TestSubresourceFilterObserver : public SubresourceFilterObserver,
       const safe_browsing::ThreatMetadata& threat_metadata) override;
   void OnPageActivationComputed(
       content::NavigationHandle* navigation_handle,
-      ActivationDecision activation_decision,
       const ActivationState& activation_state) override;
   void OnSubframeNavigationEvaluated(
       content::NavigationHandle* navigation_handle,
@@ -55,11 +54,10 @@ class TestSubresourceFilterObserver : public SubresourceFilterObserver,
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  base::Optional<ActivationDecision> GetPageActivation(const GURL& url) const;
+  base::Optional<ActivationLevel> GetPageActivation(const GURL& url) const;
   base::Optional<LoadPolicy> GetSubframeLoadPolicy(const GURL& url) const;
   base::Optional<bool> GetIsAdSubframe(const GURL& url) const;
-  base::Optional<ActivationDecision> GetPageActivationForLastCommittedLoad()
-      const;
+  base::Optional<ActivationLevel> GetPageActivationForLastCommittedLoad() const;
 
   using SafeBrowsingCheck =
       std::pair<safe_browsing::SBThreatType, safe_browsing::ThreatMetadata>;
@@ -69,11 +67,11 @@ class TestSubresourceFilterObserver : public SubresourceFilterObserver,
  private:
   std::map<GURL, LoadPolicy> subframe_load_evaluations_;
   std::map<GURL, bool> ad_subframe_evaluations_;
-  std::map<GURL, ActivationDecision> page_activations_;
+  std::map<GURL, ActivationLevel> page_activations_;
   std::map<GURL, SafeBrowsingCheck> safe_browsing_checks_;
 
-  std::map<content::NavigationHandle*, ActivationDecision> pending_activations_;
-  base::Optional<ActivationDecision> last_committed_activation_;
+  std::map<content::NavigationHandle*, ActivationLevel> pending_activations_;
+  base::Optional<ActivationLevel> last_committed_activation_;
 
   ScopedObserver<SubresourceFilterObserverManager, SubresourceFilterObserver>
       scoped_observer_;

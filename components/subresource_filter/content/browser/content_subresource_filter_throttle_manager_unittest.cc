@@ -98,8 +98,7 @@ class MockPageStateActivationThrottle : public content::NavigationThrottle {
         // The throttle manager does not use the activation decision.
         SubresourceFilterObserverManager::FromWebContents(
             navigation_handle()->GetWebContents())
-            ->NotifyPageActivationComputed(
-                navigation_handle(), ActivationDecision::UNKNOWN, it->second);
+            ->NotifyPageActivationComputed(navigation_handle(), it->second);
       }
     }
     return content::NavigationThrottle::PROCEED;

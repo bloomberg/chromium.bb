@@ -41,11 +41,9 @@ void SubresourceFilterObserverManager::NotifySafeBrowsingCheckComplete(
 
 void SubresourceFilterObserverManager::NotifyPageActivationComputed(
     content::NavigationHandle* navigation_handle,
-    ActivationDecision activation_decision,
     const ActivationState& activation_state) {
   for (auto& observer : observers_) {
-    observer.OnPageActivationComputed(navigation_handle, activation_decision,
-                                      activation_state);
+    observer.OnPageActivationComputed(navigation_handle, activation_state);
   }
 }
 
