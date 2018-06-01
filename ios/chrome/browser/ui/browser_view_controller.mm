@@ -124,7 +124,8 @@
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/browser_view_controller_helper.h"
-#import "ios/chrome/browser/ui/bubble/bubble_util.h"
+#import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
+#import "ios/chrome/browser/ui/bubble/bubble_presenter_delegate.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -414,6 +415,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 @interface BrowserViewController ()<ActivityServicePresentation,
                                     AppRatingPromptDelegate,
+                                    BubblePresenterDelegate,
                                     CaptivePortalDetectorTabHelperDelegate,
                                     CRWNativeContentProvider,
                                     CRWWebStateDelegate,
@@ -685,19 +687,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Coordinator for the popup menus.
 @property(nonatomic, strong) PopupMenuCoordinator* popupMenuCoordinator;
 
-// Used to display the bottom toolbar tip in-product help promotion bubble.
-// |nil| if the tip bubble has not yet been presented. Once the bubble is
-// dismissed, it remains allocated so that |userEngaged| remains accessible.
-@property(nonatomic, strong)
-    BubbleViewControllerPresenter* bottomToolbarTipBubblePresenter;
-// Used to display the new tab tip in-product help promotion bubble. |nil| if
-// the new tab tip bubble has not yet been presented. Once the bubble is
-// dismissed, it remains allocated so that |userEngaged| remains accessible.
-@property(nonatomic, strong)
-    BubbleViewControllerPresenter* tabTipBubblePresenter;
-// Used to display the new incognito tab tip in-product help promotion bubble.
-@property(nonatomic, strong)
-    BubbleViewControllerPresenter* incognitoTabTipBubblePresenter;
+@property(nonatomic, strong) BubblePresenter* bubblePresenter;
 
 // Primary toolbar.
 @property(nonatomic, strong) id<PrimaryToolbarCoordinator>
@@ -790,8 +780,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // TODO(crbug.com/522721): Support size changes for all popups and modal
 // dialogs.
 - (void)dismissPopups;
-// Returns whether |tab| is scrolled to the top.
-- (BOOL)isTabScrolledToTop:(Tab*)tab;
 // Returns the footer view if one exists (e.g. the voice search bar).
 - (UIView*)footerView;
 // Returns web contents frame without including primary toolbar.
@@ -810,44 +798,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // -------------------------------
 // Dismisses the "rate this app" dialog.
 - (void)dismissRateThisAppDialog;
-
-// Bubble Views
-// ------------
-// Returns a bubble associated with an in-product help promotion if
-// it is valid to show the promotion and |nil| otherwise. |feature| is the
-// base::Feature object associated with the given promotion. |direction| is the
-// direction the bubble's arrow is pointing. |alignment| is the alignment of the
-// arrow on the button. |text| is the text displayed by the bubble. This method
-// requires that |self.browserState| is not NULL.
-- (BubbleViewControllerPresenter*)
-bubblePresenterForFeature:(const base::Feature&)feature
-                direction:(BubbleArrowDirection)direction
-                alignment:(BubbleAlignment)alignment
-                     text:(NSString*)text;
-
-// Waits to present a bubble associated with the new tab tip in-product help
-// promotion until the feature engagement tracker database is fully initialized.
-// Does not present the bubble if |tabTipBubblePresenter.userEngaged| is |YES|
-// to prevent resetting |tabTipBubblePresenter| and affecting the value of
-// |userEngaged|. Does not present the bubble if the feature engagement tracker
-// determines it is not valid to present it. This method requires that
-// |self.browserState| is not NULL.
-- (void)presentNewTabTipBubbleOnInitialized;
-// Optionally presents a bubble associated with the new tab tip in-product help
-// promotion. If the feature engagement tracker determines it is valid to show
-// the new tab tip, then it initializes |tabTipBubblePresenter| and presents
-// the bubble. If it is not valid to show the new tab tip,
-// |tabTipBubblePresenter| is set to |nil| and no bubble is shown. This method
-// requires that |self.browserState| is not NULL.
-- (void)presentNewTabTipBubble;
-// Waits to present a bubble associated with the new incognito tab tip
-// in-product help promotion until the feature engagement tracker database is
-// fully initialized. This method requires that |self.browserState| is
-// not NULL.
-- (void)presentNewIncognitoTabTipBubbleOnInitialized;
-// Presents a bubble associated with the new incognito tab tip in-product help
-// promotion. This method requires that |self.browserState| is not NULL.
-- (void)presentNewIncognitoTabTipBubble;
 
 // Find Bar UI
 // -----------
@@ -966,9 +916,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 @synthesize tabStripCoordinator = _tabStripCoordinator;
 @synthesize tabStripView = _tabStripView;
 @synthesize popupMenuCoordinator = _popupMenuCoordinator;
-@synthesize bottomToolbarTipBubblePresenter = _bottomToolbarTipBubblePresenter;
-@synthesize tabTipBubblePresenter = _tabTipBubblePresenter;
-@synthesize incognitoTabTipBubblePresenter = _incognitoTabTipBubblePresenter;
+@synthesize bubblePresenter = _bubblePresenter;
 @synthesize primaryToolbarCoordinator = _primaryToolbarCoordinator;
 @synthesize secondaryToolbarCoordinator = _secondaryToolbarCoordinator;
 @synthesize primaryToolbarOffsetConstraint = _primaryToolbarOffsetConstraint;
@@ -1391,6 +1339,18 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   return NO;
 }
 
+- (BubblePresenter*)bubblePresenter {
+  if (!_bubblePresenter) {
+    _bubblePresenter =
+        [[BubblePresenter alloc] initWithBrowserState:self.browserState
+                                             delegate:self
+                                   rootViewController:self];
+    _bubblePresenter.dispatcher = self.dispatcher;
+    self.popupMenuCoordinator.bubblePresenter = _bubblePresenter;
+  }
+  return _bubblePresenter;
+}
+
 #pragma mark - Public methods
 
 - (void)setPrimary:(BOOL)primary {
@@ -1408,15 +1368,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (void)userEnteredTabSwitcher {
-  if ([self.tabTipBubblePresenter isUserEngaged]) {
+  if ([self.bubblePresenter.tabTipBubblePresenter isUserEngaged]) {
     base::RecordAction(UserMetricsAction("NewTabTipTargetSelected"));
   }
 }
 
 - (void)presentBubblesIfEligible {
-  [self presentNewTabTipBubbleOnInitialized];
-  [self presentNewIncognitoTabTipBubbleOnInitialized];
-  [self presentBottomToolbarTipBubbleOnInitialized];
+  [self.bubblePresenter presentBubblesIfEligible];
 }
 
 - (void)browserStateDestroyed {
@@ -1517,8 +1475,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
   [_dialogPresenter cancelAllDialogs];
   [self.dispatcher hidePageInfo];
-  [self.tabTipBubblePresenter dismissAnimated:NO];
-  [self.incognitoTabTipBubblePresenter dismissAnimated:NO];
+  [self.bubblePresenter dismissBubbles];
   if (_voiceSearchController)
     _voiceSearchController->DismissMicPermissionsHelp();
 
@@ -1854,7 +1811,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Update the tab strip visibility.
   if (self.tabStripView) {
     [self showTabStripView:self.tabStripView];
-    self.tabStripView.hidden = ![self canShowTabStrip];
+    [self.tabStripCoordinator hideTabStrip:![self canShowTabStrip]];
     _fakeStatusBarView.hidden = ![self canShowTabStrip];
     [self addConstraintsToPrimaryToolbar];
   }
@@ -2354,8 +2311,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     self.popupMenuCoordinator = [[PopupMenuCoordinator alloc]
         initWithBaseViewController:self
                       browserState:self.browserState];
-    self.popupMenuCoordinator.incognitoTabTipPresenter =
-        self.incognitoTabTipBubblePresenter;
+    self.popupMenuCoordinator.bubblePresenter = self.bubblePresenter;
     self.popupMenuCoordinator.dispatcher = _dispatcher;
     self.popupMenuCoordinator.webStateList = [_model webStateList];
     self.popupMenuCoordinator.UIUpdater = _toolbarCoordinatorAdaptor;
@@ -2597,21 +2553,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [self.dispatcher dismissToolsMenu];
     [_tabHistoryCoordinator dismissHistoryPopup];
   }
-  [self.tabTipBubblePresenter dismissAnimated:NO];
-  [self.incognitoTabTipBubblePresenter dismissAnimated:NO];
-}
-
-- (BOOL)isTabScrolledToTop:(Tab*)tab {
-  CGPoint scrollOffset =
-      tab.webState->GetWebViewProxy().scrollViewProxy.contentOffset;
-
-  // If there is a native controller, use the native controller's scroll offset.
-  id nativeController = [self nativeControllerForTab:tab];
-  if ([nativeController conformsToProtocol:@protocol(CRWNativeContent)] &&
-      [nativeController respondsToSelector:@selector(scrollOffset)]) {
-    scrollOffset = [nativeController scrollOffset];
-  }
-  return CGPointEqualToPoint(scrollOffset, CGPointZero);
+  [self.bubblePresenter dismissBubbles];
 }
 
 - (UIView*)footerView {
@@ -2717,265 +2659,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [_rateThisAppDialog dismiss];
     _rateThisAppDialog = nil;
   }
-}
-
-#pragma mark - Private Methods: Bubble views
-
-- (BubbleViewControllerPresenter*)
-bubblePresenterForFeature:(const base::Feature&)feature
-                direction:(BubbleArrowDirection)direction
-                alignment:(BubbleAlignment)alignment
-                     text:(NSString*)text {
-  DCHECK(self.browserState);
-  if (!feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
-           ->ShouldTriggerHelpUI(feature)) {
-    return nil;
-  }
-  // Capture |weakSelf| instead of the feature engagement tracker object
-  // because |weakSelf| will safely become |nil| if it is deallocated, whereas
-  // the feature engagement tracker will remain pointing to invalid memory if
-  // its owner (the ChromeBrowserState) is deallocated.
-  __weak BrowserViewController* weakSelf = self;
-  void (^dismissalCallback)(void) = ^{
-    BrowserViewController* strongSelf = weakSelf;
-    if (strongSelf) {
-      feature_engagement::TrackerFactory::GetForBrowserState(
-          strongSelf.browserState)
-          ->Dismissed(feature);
-    }
-  };
-
-  BubbleViewControllerPresenter* bubbleViewControllerPresenter =
-      [[BubbleViewControllerPresenter alloc] initWithText:text
-                                           arrowDirection:direction
-                                                alignment:alignment
-                                        dismissalCallback:dismissalCallback];
-
-  return bubbleViewControllerPresenter;
-}
-
-// Waits to present a bubble associated with the bottom toolbar tip in-product
-// help promotion until the feature engagement tracker database is fully
-// initialized. This method requires that |self.browserState| is not NULL.
-- (void)presentBottomToolbarTipBubbleOnInitialized {
-  DCHECK(self.browserState);
-  // If the tip bubble has already been presented and the user is still
-  // considered engaged, it can't be overwritten or set to |nil| or else it will
-  // reset the |userEngaged| property. Once the user is not engaged, the bubble
-  // can be safely overwritten or set to |nil|.
-  if (!self.bottomToolbarTipBubblePresenter.isUserEngaged) {
-    __weak BrowserViewController* weakSelf = self;
-    void (^onInitializedBlock)(bool) = ^(bool successfullyLoaded) {
-      if (!successfullyLoaded)
-        return;
-      [weakSelf presentBottomToolbarTipBubble];
-    };
-
-    // Because the new tab tip occurs on startup, the feature engagement
-    // tracker's database is not guaranteed to be loaded by this time. For the
-    // bubble to appear properly, a callback is used to guarantee the event data
-    // is loaded before the check to see if the promotion should be displayed.
-    feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
-        ->AddOnInitializedCallback(base::BindBlockArc(onInitializedBlock));
-  }
-}
-
-// Presents a bubble associated with the bottom toolbar tip in-product help
-// promotion. This method requires that |self.browserState| is not NULL.
-- (void)presentBottomToolbarTipBubble {
-  if (!IsSplitToolbarMode())
-    return;
-
-  DCHECK(self.browserState);
-  // If the BVC is not visible, do not present the bubble.
-  if (!self.viewVisible)
-    return;
-  // Do not present the bubble if there is no current tab.
-  Tab* currentTab = [self.tabModel currentTab];
-  if (!currentTab)
-    return;
-
-  // Do not present the bubble if the tab is not scrolled to the top.
-  if (![self isTabScrolledToTop:currentTab])
-    return;
-
-  BubbleArrowDirection arrowDirection = BubbleArrowDirectionDown;
-  NSString* text = l10n_util::GetNSStringWithFixup(
-      IDS_IOS_BOTTOM_TOOLBAR_IPH_PROMOTION_TEXT);
-  UILayoutGuide* guide =
-      [NamedGuide guideWithName:kSearchButtonGuide view:self.view];
-  DCHECK(guide);
-  CGPoint anchorPoint =
-      bubble_util::AnchorPoint(guide.layoutFrame, arrowDirection);
-  CGPoint tipAnchor = [guide.owningView convertPoint:anchorPoint
-                                              toView:guide.owningView.window];
-
-  // If the feature engagement tracker does not consider it valid to display
-  // the new tab tip, then end early to prevent the potential reassignment
-  // of the existing |bottomToolbarTipBubblePresenter| to nil.
-  BubbleViewControllerPresenter* presenter = [self
-      bubblePresenterForFeature:feature_engagement::kIPHBottomToolbarTipFeature
-                      direction:arrowDirection
-                      alignment:BubbleAlignmentCenter
-                           text:text];
-  if (!presenter)
-    return;
-
-  self.bottomToolbarTipBubblePresenter = presenter;
-
-  [self.bottomToolbarTipBubblePresenter presentInViewController:self
-                                                           view:self.view
-                                                    anchorPoint:tipAnchor];
-}
-
-- (void)presentNewTabTipBubbleOnInitialized {
-  DCHECK(self.browserState);
-  // If the tab tip bubble has already been presented and the user is still
-  // considered engaged, it can't be overwritten or set to |nil| or else it will
-  // reset the |userEngaged| property. Once the user is not engaged, the bubble
-  // can be safely overwritten or set to |nil|.
-  if (!self.tabTipBubblePresenter.isUserEngaged) {
-    __weak BrowserViewController* weakSelf = self;
-    void (^onInitializedBlock)(bool) = ^(bool successfullyLoaded) {
-      if (!successfullyLoaded)
-        return;
-      [weakSelf presentNewTabTipBubble];
-    };
-
-    // Because the new tab tip occurs on startup, the feature engagement
-    // tracker's database is not guaranteed to be loaded by this time. For the
-    // bubble to appear properly, a callback is used to guarantee the event data
-    // is loaded before the check to see if the promotion should be displayed.
-    feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
-        ->AddOnInitializedCallback(base::BindBlockArc(onInitializedBlock));
-  }
-}
-
-- (void)presentNewTabTipBubble {
-  DCHECK(self.browserState);
-  // If the BVC is not visible, do not present the bubble.
-  if (!self.viewVisible)
-    return;
-  // Do not present the bubble if there is no current tab or if the current tab
-  // is the NTP.
-  Tab* currentTab = [self.tabModel currentTab];
-  if (!currentTab)
-    return;
-  if (currentTab.webState->GetVisibleURL() == kChromeUINewTabURL)
-    return;
-
-  // Do not present the bubble if the tab is not scrolled to the top.
-  if (![self isTabScrolledToTop:currentTab])
-    return;
-
-  BubbleArrowDirection arrowDirection =
-      (IsUIRefreshPhase1Enabled() && IsSplitToolbarMode())
-          ? BubbleArrowDirectionDown
-          : BubbleArrowDirectionUp;
-  NSString* text =
-      l10n_util::GetNSStringWithFixup(IDS_IOS_NEW_TAB_IPH_PROMOTION_TEXT);
-  CGPoint tabSwitcherAnchor;
-  if (IsIPadIdiom()) {
-    tabSwitcherAnchor = [self.tabStripCoordinator
-        anchorPointForTabSwitcherButton:arrowDirection];
-  } else {
-    UILayoutGuide* guide =
-        [NamedGuide guideWithName:kTabSwitcherGuide view:self.view];
-    DCHECK(guide);
-    CGPoint anchorPoint =
-        bubble_util::AnchorPoint(guide.layoutFrame, arrowDirection);
-    tabSwitcherAnchor = [guide.owningView convertPoint:anchorPoint
-                                                toView:guide.owningView.window];
-  }
-
-  // If the feature engagement tracker does not consider it valid to display
-  // the new tab tip, then end early to prevent the potential reassignment
-  // of the existing |tabTipBubblePresenter| to nil.
-  BubbleViewControllerPresenter* presenter =
-      [self bubblePresenterForFeature:feature_engagement::kIPHNewTabTipFeature
-                            direction:arrowDirection
-                            alignment:BubbleAlignmentTrailing
-                                 text:text];
-  if (!presenter)
-    return;
-
-  self.tabTipBubblePresenter = presenter;
-
-  [self.tabTipBubblePresenter presentInViewController:self
-                                                 view:self.view
-                                          anchorPoint:tabSwitcherAnchor];
-}
-
-- (void)presentNewIncognitoTabTipBubbleOnInitialized {
-  DCHECK(self.browserState);
-  // Do not override |incognitoTabtipBubblePresenter| or set it to nil if the
-  // user is still considered engaged.
-  if (!self.incognitoTabTipBubblePresenter.isUserEngaged) {
-    __weak BrowserViewController* weakSelf = self;
-    void (^onInitializedBlock)(bool) = ^(bool successfullyLoaded) {
-      if (!successfullyLoaded)
-        return;
-      [weakSelf presentNewIncognitoTabTipBubble];
-    };
-
-    // Use a callback in case the new incognito tab tip should be shown on
-    // startup. This ensures that the tracker's database will be fully loaded
-    // before checking if the promotion should be displayed.
-    feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
-        ->AddOnInitializedCallback(base::BindBlockArc(onInitializedBlock));
-  }
-}
-
-- (void)presentNewIncognitoTabTipBubble {
-  DCHECK(self.browserState);
-  // If the BVC is not visible, do not present the bubble.
-  if (!self.viewVisible)
-    return;
-
-  // Do not present the bubble if there is no current tab.
-  Tab* currentTab = [self.tabModel currentTab];
-  if (!currentTab)
-    return;
-
-  // Do not present the bubble if the tab is not scrolled to the top.
-  if (![self isTabScrolledToTop:currentTab])
-    return;
-
-  BubbleArrowDirection arrowDirection =
-      (IsUIRefreshPhase1Enabled() && IsSplitToolbarMode())
-          ? BubbleArrowDirectionDown
-          : BubbleArrowDirectionUp;
-  NSString* text = l10n_util::GetNSStringWithFixup(
-      IDS_IOS_NEW_INCOGNITO_TAB_IPH_PROMOTION_TEXT);
-  CGPoint toolsButtonAnchor;
-  UILayoutGuide* guide =
-      [NamedGuide guideWithName:kToolsMenuGuide view:self.view];
-  DCHECK(guide);
-  CGPoint anchorPoint =
-      bubble_util::AnchorPoint(guide.layoutFrame, arrowDirection);
-  toolsButtonAnchor = [guide.owningView convertPoint:anchorPoint
-                                              toView:guide.owningView.window];
-
-  // If the feature engagement tracker does not consider it valid to display
-  // the incognito tab tip, then end early to prevent the potential reassignment
-  // of the existing |incognitoTabTipBubblePresenter| to nil.
-  BubbleViewControllerPresenter* presenter =
-      [self bubblePresenterForFeature:feature_engagement::
-                                          kIPHNewIncognitoTabTipFeature
-                            direction:arrowDirection
-                            alignment:BubbleAlignmentTrailing
-                                 text:text];
-  if (!presenter)
-    return;
-
-  self.incognitoTabTipBubblePresenter = presenter;
-  self.popupMenuCoordinator.incognitoTabTipPresenter = presenter;
-
-  [self.incognitoTabTipBubblePresenter
-      presentInViewController:self
-                         view:self.view
-                  anchorPoint:toolsButtonAnchor];
-  [self.dispatcher triggerToolsMenuButtonAnimation];
 }
 
 #pragma mark - Private Methods: Find Bar UI
@@ -3421,6 +3104,35 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 #pragma mark - ** Protocol Implementations and Helpers **
+
+#pragma mark - BubblePresenterDelegate
+
+- (web::WebState*)currentWebStateForBubblePresenter:
+    (BubblePresenter*)bubblePresenter {
+  DCHECK(bubblePresenter == self.bubblePresenter);
+  return self.currentWebState;
+}
+
+- (BOOL)rootViewVisibleForBubblePresenter:(BubblePresenter*)bubblePresenter {
+  DCHECK(bubblePresenter == self.bubblePresenter);
+  return self.viewVisible;
+}
+
+- (BOOL)isTabScrolledToTopForBubblePresenter:(BubblePresenter*)bubblePresenter {
+  DCHECK(bubblePresenter == self.bubblePresenter);
+  CGPoint scrollOffset =
+      self.currentWebState->GetWebViewProxy().scrollViewProxy.contentOffset;
+
+  // If there is a native controller, use the native controller's scroll offset.
+  id nativeController =
+      [self nativeControllerForTab:[self.tabModel currentTab]];
+  if ([nativeController conformsToProtocol:@protocol(CRWNativeContent)] &&
+      [nativeController respondsToSelector:@selector(scrollOffset)]) {
+    scrollOffset = [nativeController scrollOffset];
+  }
+
+  return CGPointEqualToPoint(scrollOffset, CGPointZero);
+}
 
 #pragma mark - SnapshotGeneratorDelegate methods
 
@@ -4774,9 +4486,11 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
   [configuration setUserAgentType:self.userAgentType];
 
-  if (self.incognitoTabTipBubblePresenter.triggerFollowUpAction) {
+  if (self.bubblePresenter.incognitoTabTipBubblePresenter
+          .triggerFollowUpAction) {
     [configuration setHighlightNewIncognitoTabCell:YES];
-    [self.incognitoTabTipBubblePresenter setTriggerFollowUpAction:NO];
+    self.bubblePresenter.incognitoTabTipBubblePresenter.triggerFollowUpAction =
+        NO;
   }
 
   return configuration;
@@ -5167,7 +4881,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
   switch (type) {
     case PopupMenuCommandTypeToolsMenu:
-      if (self.incognitoTabTipBubblePresenter.isUserEngaged) {
+      if (self.bubblePresenter.incognitoTabTipBubblePresenter.isUserEngaged) {
         base::RecordAction(
             UserMetricsAction("NewIncognitoTabTipTargetSelected"));
       }

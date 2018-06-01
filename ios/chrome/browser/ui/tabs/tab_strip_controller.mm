@@ -27,7 +27,6 @@
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view.h"
-#import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -517,6 +516,17 @@ NSString* StringForItemCount(long count) {
   [_tabModel removeObserver:self];
 }
 
+- (void)hideTabStrip:(BOOL)hidden {
+  self.view.hidden = hidden;
+  if (!hidden) {
+    NamedGuide* tabSwitcherGuide =
+        [NamedGuide guideWithName:kTabStripTabSwitcherGuide view:self.view];
+    tabSwitcherGuide.constrainedView = _tabSwitcherButton;
+  }
+}
+
+#pragma mark - Private
+
 - (void)initializeTabArrayFromTabModel {
   DCHECK(_tabModel);
   WebStateList* webStateList = _tabModel.webStateList;
@@ -735,17 +745,6 @@ NSString* StringForItemCount(long count) {
 
 - (NSUInteger)modelIndexForTabView:(TabView*)view {
   return [self modelIndexForIndex:[_tabArray indexOfObject:view]];
-}
-
-#pragma mark -
-#pragma mark BubbleViewAnchorPointProvider methods
-
-- (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
-  CGPoint anchorPoint =
-      bubble_util::AnchorPoint(_tabSwitcherButton.imageView.frame, direction);
-  return [_tabSwitcherButton.imageView.superview
-      convertPoint:anchorPoint
-            toView:_tabSwitcherButton.imageView.window];
 }
 
 #pragma mark -
@@ -1179,9 +1178,6 @@ NSString* StringForItemCount(long count) {
 - (void)handleTabSwitcherLongPress:(UILongPressGestureRecognizer*)gesture {
   if (gesture.state != UIGestureRecognizerStateBegan)
     return;
-  NamedGuide* tabSwitcherGuide =
-      [NamedGuide guideWithName:kTabStripTabSwitcherGuide view:self.view];
-  tabSwitcherGuide.constrainedView = _tabSwitcherButton;
   [self.dispatcher showTabStripTabGridButtonPopup];
 }
 

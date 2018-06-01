@@ -99,10 +99,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // Called when the user explicitly opens the tab switcher.
 - (void)userEnteredTabSwitcher;
 
-// Presents either the new tab tip or incognito tab tip in-product help bubbles
-// if the the user is in a valid state to see one of them. At most one bubble
-// will be shown. If the feature engagement tracker determines it is not valid
-// to see one of the bubbles, that bubble will not be shown.
+// Presents either in-product help bubbles if the the user is in a valid state
+// to see one of them. At most one bubble will be shown. If the feature
+// engagement tracker determines it is not valid to see one of the bubbles, that
+// bubble will not be shown.
 - (void)presentBubblesIfEligible;
 
 // Called when the browser state provided to this instance is being destroyed.

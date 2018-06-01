@@ -9,7 +9,7 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-@class BubbleViewControllerPresenter;
+@class BubblePresenter;
 @class CommandDispatcher;
 @protocol PopupMenuUIUpdating;
 class WebStateList;
@@ -24,8 +24,7 @@ class WebStateList;
 // UI updater.
 @property(nonatomic, weak) id<PopupMenuUIUpdating> UIUpdater;
 // Bubble view presenter for the incognito tip.
-@property(nonatomic, weak)
-    BubbleViewControllerPresenter* incognitoTabTipPresenter;
+@property(nonatomic, weak) BubblePresenter* bubblePresenter;
 
 // Returns whether this coordinator is showing a popup menu.
 - (BOOL)isShowingPopupMenu;

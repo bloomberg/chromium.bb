@@ -62,6 +62,10 @@
   return [self.tabStripController placeholderView];
 }
 
+- (void)hideTabStrip:(BOOL)hidden {
+  [self.tabStripController hideTabStrip:hidden];
+}
+
 #pragma mark - ChromeCoordinator
 
 - (void)start {
@@ -87,12 +91,6 @@
   self.dispatcher = nil;
   self.tabModel = nil;
   self.presentationProvider = nil;
-}
-
-#pragma mark - BubbleViewAnchorPointProvider methods
-
-- (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
-  return [self.tabStripController anchorPointForTabSwitcherButton:direction];
 }
 
 @end
