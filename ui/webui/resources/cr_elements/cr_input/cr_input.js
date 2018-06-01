@@ -43,7 +43,14 @@ Polymer({
       observer: 'placeholderChanged_',
     },
 
+    readonly: Boolean,
+
     tabIndex: String,
+
+    type: {
+      type: String,
+      value: 'text',  // Only 'text' and 'password' are currently supported.
+    },
 
     value: {
       type: String,
@@ -61,10 +68,16 @@ Polymer({
     'input.change': 'onInputChange_',
   },
 
+  /** @return {!HTMLInputElement} */
+  get inputElement() {
+    return this.$.input;
+  },
+
   /** @private */
   disabledChanged_: function() {
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
-    this.$.input.blur();  // In case input was focused when disabled changes.
+    // In case input was focused when disabled changes.
+    this.inputElement.blur();
   },
 
   /**
@@ -75,9 +88,14 @@ Polymer({
    */
   placeholderChanged_: function() {
     if (this.placeholder || this.placeholder == '')
-      this.$.input.setAttribute('placeholder', this.placeholder);
+      this.inputElement.setAttribute('placeholder', this.placeholder);
     else
-      this.$.input.removeAttribute('placeholder');
+      this.inputElement.removeAttribute('placeholder');
+  },
+
+  focus: function() {
+    if (this.shadowRoot.activeElement != this.inputElement)
+      this.inputElement.focus();
   },
 
   /**
@@ -89,5 +107,5 @@ Polymer({
    */
   onInputChange_: function(e) {
     this.fire('change', {sourceEvent: e});
-  }
+  },
 });
