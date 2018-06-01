@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
 
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker.h"
+#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
 
@@ -16,13 +17,15 @@ void ModuleTreeLinkerRegistry::Trace(blink::Visitor* visitor) {
 
 ModuleTreeLinker* ModuleTreeLinkerRegistry::Fetch(
     const KURL& url,
+    SettingsObject* fetch_client_settings_object,
     const KURL& base_url,
     WebURLRequest::RequestContext destination,
     const ScriptFetchOptions& options,
     Modulator* modulator,
     ModuleTreeClient* client) {
-  ModuleTreeLinker* fetcher = ModuleTreeLinker::Fetch(
-      url, base_url, destination, options, modulator, this, client);
+  ModuleTreeLinker* fetcher =
+      ModuleTreeLinker::Fetch(url, fetch_client_settings_object, base_url,
+                              destination, options, modulator, this, client);
   DCHECK(fetcher->IsFetching());
   active_tree_linkers_.insert(fetcher);
   return fetcher;
@@ -30,11 +33,13 @@ ModuleTreeLinker* ModuleTreeLinkerRegistry::Fetch(
 
 ModuleTreeLinker* ModuleTreeLinkerRegistry::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
+    SettingsObject* fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     Modulator* modulator,
     ModuleTreeClient* client) {
   ModuleTreeLinker* fetcher = ModuleTreeLinker::FetchDescendantsForInlineScript(
-      module_script, destination, modulator, this, client);
+      module_script, fetch_client_settings_object, destination, modulator, this,
+      client);
   DCHECK(fetcher->IsFetching());
   active_tree_linkers_.insert(fetcher);
   return fetcher;

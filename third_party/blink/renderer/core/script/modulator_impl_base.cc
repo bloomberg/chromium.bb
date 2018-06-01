@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/script/module_map.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/script_module_resolver_impl.h"
+#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 
 namespace blink {
@@ -39,19 +40,12 @@ ModulatorImplBase::ModulatorImplBase(scoped_refptr<ScriptState> script_state)
 
 ModulatorImplBase::~ModulatorImplBase() {}
 
-ReferrerPolicy ModulatorImplBase::GetReferrerPolicy() {
-  return GetExecutionContext()->GetReferrerPolicy();
-}
-
-const SecurityOrigin* ModulatorImplBase::GetSecurityOriginForFetch() {
-  return GetExecutionContext()->GetSecurityOrigin();
-}
-
 // [fetch-a-module-script-tree]
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
 // [fetch-a-module-worker-script-tree]
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
 void ModulatorImplBase::FetchTree(const KURL& url,
+                                  SettingsObject* fetch_client_settings_object,
                                   WebURLRequest::RequestContext destination,
                                   const ScriptFetchOptions& options,
                                   ModuleTreeClient* client) {
@@ -68,8 +62,9 @@ void ModulatorImplBase::FetchTree(const KURL& url,
   // of this algorithm specified custom perform the fetch steps, pass those
   // along as well.</spec>
 
-  tree_linker_registry_->Fetch(url, GetExecutionContext()->BaseURL(),
-                               destination, options, this, client);
+  tree_linker_registry_->Fetch(url, fetch_client_settings_object,
+                               GetExecutionContext()->BaseURL(), destination,
+                               options, this, client);
 
   // <spec label="fetch-a-module-script-tree" step="3">When the internal module
   // script graph fetching procedure asynchronously completes with result,
@@ -84,23 +79,29 @@ void ModulatorImplBase::FetchTree(const KURL& url,
 
 void ModulatorImplBase::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
+    SettingsObject* fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     ModuleTreeClient* client) {
   tree_linker_registry_->FetchDescendantsForInlineScript(
-      module_script, destination, this, client);
+      module_script, fetch_client_settings_object, destination, this, client);
 }
 
-void ModulatorImplBase::FetchSingle(const ModuleScriptFetchRequest& request,
-                                    ModuleGraphLevel level,
-                                    SingleModuleClient* client) {
-  map_->FetchSingleModuleScript(request, level, client);
+void ModulatorImplBase::FetchSingle(
+    const ModuleScriptFetchRequest& request,
+    SettingsObject* fetch_client_settings_object,
+    ModuleGraphLevel level,
+    SingleModuleClient* client) {
+  map_->FetchSingleModuleScript(request, fetch_client_settings_object, level,
+                                client);
 }
 
 void ModulatorImplBase::FetchNewSingleModule(
     const ModuleScriptFetchRequest& request,
+    SettingsObject* fetch_client_settings_object,
     ModuleGraphLevel level,
     ModuleScriptLoaderClient* client) {
-  loader_registry_->Fetch(request, level, this, client);
+  loader_registry_->Fetch(request, fetch_client_settings_object, level, this,
+                          client);
 }
 
 ModuleScript* ModulatorImplBase::GetFetchedModuleScript(const KURL& url) {

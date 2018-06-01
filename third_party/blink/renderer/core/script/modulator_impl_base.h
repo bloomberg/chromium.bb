@@ -47,23 +47,25 @@ class ModulatorImplBase : public Modulator {
   base::SingleThreadTaskRunner* TaskRunner() override {
     return task_runner_.get();
   }
-  ReferrerPolicy GetReferrerPolicy() override;
-  const SecurityOrigin* GetSecurityOriginForFetch() override;
 
   void FetchTree(const KURL&,
+                 SettingsObject* fetch_client_settings_object,
                  WebURLRequest::RequestContext destination,
                  const ScriptFetchOptions&,
                  ModuleTreeClient*) override;
   void FetchDescendantsForInlineScript(
       ModuleScript*,
+      SettingsObject* fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       ModuleTreeClient*) override;
   void FetchSingle(const ModuleScriptFetchRequest&,
+                   SettingsObject* fetch_client_settings_object,
                    ModuleGraphLevel,
                    SingleModuleClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
   bool HasValidContext() override;
   void FetchNewSingleModule(const ModuleScriptFetchRequest&,
+                            SettingsObject* fetch_client_settings_object,
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
   void ResolveDynamically(const String& specifier,

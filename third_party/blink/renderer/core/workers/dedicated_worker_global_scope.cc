@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_thread.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -72,8 +73,13 @@ void DedicatedWorkerGlobalScope::ImportModuleScript(
   // Step 13: "... Fetch a module worker script graph given url, outside
   // settings, destination, the value of the credentials member of options, and
   // inside settings."
-  FetchModuleScript(module_url_record, destination, credentials_mode,
-                    new WorkerModuleTreeClient(modulator));
+  // TODO(nhiroki): Currently we specify inside settings' referrer policy and
+  // security origin here. These should be replaced with outside settings'
+  // referrer policy and security origin (https://crbug.com/842553).
+  SettingsObject* outside_settings_object =
+      SettingsObject::Create(GetSecurityOrigin(), GetReferrerPolicy());
+  FetchModuleScript(module_url_record, outside_settings_object, destination,
+                    credentials_mode, new WorkerModuleTreeClient(modulator));
 }
 
 void DedicatedWorkerGlobalScope::postMessage(

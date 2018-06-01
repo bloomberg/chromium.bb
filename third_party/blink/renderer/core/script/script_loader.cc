@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/core/script/script_runner.h"
+#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -366,6 +367,9 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // object's environment settings object.</spec>
   //
   // Note: We use |element_document| as "settings object" in the steps below.
+  SettingsObject* settings_object =
+      SettingsObject::Create(element_document.GetSecurityOrigin(),
+                             element_document.GetReferrerPolicy());
 
   // <spec step="23">If the element has a src content attribute, then:</spec>
   if (element_->HasSourceAttribute()) {
@@ -434,7 +438,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       // options.</spec>
       Modulator* modulator = Modulator::From(
           ToScriptStateForMainWorld(context_document->GetFrame()));
-      FetchModuleScriptTree(url, modulator, options);
+      FetchModuleScriptTree(url, settings_object, modulator, options);
     }
     // <spec step="23.6">When the chosen algorithm asynchronously completes, set
     // the script's script to the result. At that time, the script is ready.
@@ -519,8 +523,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         // script is ready.</spec>
         auto* module_tree_client = ModulePendingScriptTreeClient::Create();
         modulator->FetchDescendantsForInlineScript(
-            module_script, WebURLRequest::kRequestContextScript,
-            module_tree_client);
+            module_script, settings_object,
+            WebURLRequest::kRequestContextScript, module_tree_client);
         prepared_pending_script_ = ModulePendingScript::Create(
             element_, module_tree_client, is_external_script_);
         break;
@@ -696,6 +700,7 @@ void ScriptLoader::FetchClassicScript(const KURL& url,
 }
 
 void ScriptLoader::FetchModuleScriptTree(const KURL& url,
+                                         SettingsObject* settings_object,
                                          Modulator* modulator,
                                          const ScriptFetchOptions& options) {
   // <spec
@@ -705,7 +710,8 @@ void ScriptLoader::FetchModuleScriptTree(const KURL& url,
   // Fetch a module script graph given url, settings object, "script", and
   // options.</spec>
   auto* module_tree_client = ModulePendingScriptTreeClient::Create();
-  modulator->FetchTree(url, WebURLRequest::kRequestContextScript, options,
+  modulator->FetchTree(url, settings_object,
+                       WebURLRequest::kRequestContextScript, options,
                        module_tree_client);
   prepared_pending_script_ = ModulePendingScript::Create(
       element_, module_tree_client, is_external_script_);

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -120,10 +121,10 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
  private:
   // Implements Modulator:
 
-  ReferrerPolicy GetReferrerPolicy() override { return kReferrerPolicyDefault; }
   ScriptState* GetScriptState() override { return script_state_.get(); }
 
   void FetchSingle(const ModuleScriptFetchRequest& request,
+                   SettingsObject*,
                    ModuleGraphLevel,
                    SingleModuleClient* client) override {
     EXPECT_FALSE(pending_clients_.Contains(request.Url()));
@@ -183,6 +184,10 @@ class ModuleTreeLinkerTest : public PageTestBase {
   void SetUp() override;
 
   ModuleTreeLinkerTestModulator* GetModulator() { return modulator_.Get(); }
+  SettingsObject* CreateFetchClientSettingsObject() {
+    return SettingsObject::Create(GetDocument().GetSecurityOrigin(),
+                                  GetDocument().GetReferrerPolicy());
+  }
 
  protected:
   Persistent<ModuleTreeLinkerTestModulator> modulator_;
@@ -200,8 +205,9 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeNoDeps) {
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(url, NullURL(), WebURLRequest::kRequestContextScript,
-                  ScriptFetchOptions(), GetModulator(), client);
+  registry->Fetch(url, CreateFetchClientSettingsObject(), NullURL(),
+                  WebURLRequest::kRequestContextScript, ScriptFetchOptions(),
+                  GetModulator(), client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -220,8 +226,9 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeInstantiationFailure) {
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(url, NullURL(), WebURLRequest::kRequestContextScript,
-                  ScriptFetchOptions(), GetModulator(), client);
+  registry->Fetch(url, CreateFetchClientSettingsObject(), NullURL(),
+                  WebURLRequest::kRequestContextScript, ScriptFetchOptions(),
+                  GetModulator(), client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -244,8 +251,9 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWithSingleDependency) {
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(url, NullURL(), WebURLRequest::kRequestContextScript,
-                  ScriptFetchOptions(), GetModulator(), client);
+  registry->Fetch(url, CreateFetchClientSettingsObject(), NullURL(),
+                  WebURLRequest::kRequestContextScript, ScriptFetchOptions(),
+                  GetModulator(), client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -269,8 +277,9 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps) {
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(url, NullURL(), WebURLRequest::kRequestContextScript,
-                  ScriptFetchOptions(), GetModulator(), client);
+  registry->Fetch(url, CreateFetchClientSettingsObject(), NullURL(),
+                  WebURLRequest::kRequestContextScript, ScriptFetchOptions(),
+                  GetModulator(), client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -307,8 +316,9 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps1Fail) {
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(url, NullURL(), WebURLRequest::kRequestContextScript,
-                  ScriptFetchOptions(), GetModulator(), client);
+  registry->Fetch(url, CreateFetchClientSettingsObject(), NullURL(),
+                  WebURLRequest::kRequestContextScript, ScriptFetchOptions(),
+                  GetModulator(), client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -364,8 +374,9 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyTree) {
 
   KURL url("http://example.com/depth1.js");
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(url, NullURL(), WebURLRequest::kRequestContextScript,
-                  ScriptFetchOptions(), GetModulator(), client);
+  registry->Fetch(url, CreateFetchClientSettingsObject(), NullURL(),
+                  WebURLRequest::kRequestContextScript, ScriptFetchOptions(),
+                  GetModulator(), client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -388,8 +399,9 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyOfCyclicGraph) {
 
   KURL url("http://example.com/a.js");
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(url, NullURL(), WebURLRequest::kRequestContextScript,
-                  ScriptFetchOptions(), GetModulator(), client);
+  registry->Fetch(url, CreateFetchClientSettingsObject(), NullURL(),
+                  WebURLRequest::kRequestContextScript, ScriptFetchOptions(),
+                  GetModulator(), client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";

@@ -42,9 +42,8 @@ namespace blink {
 
 class ScriptElementBase;
 class Script;
-
 class ScriptResource;
-
+class SettingsObject;
 class Modulator;
 
 class CORE_EXPORT ScriptLoader final
@@ -130,6 +129,7 @@ class CORE_EXPORT ScriptLoader final
                           const WTF::TextEncoding&);
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
   void FetchModuleScriptTree(const KURL&,
+                             SettingsObject*,
                              Modulator*,
                              const ScriptFetchOptions&);
 

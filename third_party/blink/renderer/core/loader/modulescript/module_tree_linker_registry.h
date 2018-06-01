@@ -19,6 +19,7 @@ class ModuleTreeClient;
 class ModuleTreeLinker;
 class ModuleScript;
 class ScriptFetchOptions;
+class SettingsObject;
 
 // ModuleTreeLinkerRegistry keeps active ModuleTreeLinkers alive.
 class CORE_EXPORT ModuleTreeLinkerRegistry
@@ -34,6 +35,7 @@ class CORE_EXPORT ModuleTreeLinkerRegistry
   }
 
   ModuleTreeLinker* Fetch(const KURL&,
+                          SettingsObject* fetch_client_settings_object,
                           const KURL& base_url,
                           WebURLRequest::RequestContext destination,
                           const ScriptFetchOptions&,
@@ -41,6 +43,7 @@ class CORE_EXPORT ModuleTreeLinkerRegistry
                           ModuleTreeClient*);
   ModuleTreeLinker* FetchDescendantsForInlineScript(
       ModuleScript*,
+      SettingsObject* fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       Modulator*,
       ModuleTreeClient*);
