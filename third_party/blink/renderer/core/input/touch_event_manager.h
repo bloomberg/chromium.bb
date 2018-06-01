@@ -22,6 +22,7 @@ namespace blink {
 
 class LocalFrame;
 class Document;
+class Touch;
 
 // This class takes care of dispatching all touch events and
 // maintaining related states.

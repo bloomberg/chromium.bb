@@ -181,8 +181,6 @@ class StyleResolver;
 class StylePropertyMapReadOnly;
 class StyleSheetList;
 class TextAutosizer;
-class Touch;
-class TouchList;
 class TransformSource;
 class TreeWalker;
 class V8NodeFilter;
@@ -1165,8 +1163,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void LoadPluginsSoon();
   // This calls checkCompleted() sync and thus can cause JavaScript execution.
   void DecrementLoadEventDelayCountAndCheckLoadEvent();
-
-  TouchList* createTouchList(HeapVector<Member<Touch>>&) const;
 
   const DocumentTiming& GetTiming() const { return document_timing_; }
 
