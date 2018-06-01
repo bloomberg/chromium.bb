@@ -337,14 +337,6 @@ inline size_t lowestCommonMultiple(size_t a, size_t b) {
   return a && b ? a / greatestCommonDivisor(a, b) * b : 0;
 }
 
-#ifndef UINT64_C
-#if defined(COMPILER_MSVC)
-#define UINT64_C(c) c##ui64
-#else
-#define UINT64_C(c) c##ull
-#endif
-#endif
-
 // Calculate d % 2^{64}.
 inline void doubleToInteger(double d, unsigned long long& value) {
   if (std::isnan(d) || std::isinf(d)) {
