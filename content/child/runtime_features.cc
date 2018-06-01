@@ -233,12 +233,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnableScrollAnchorSerialization(true);
 
   WebRuntimeFeatures::EnableFeatureFromString(
-      "SlimmingPaintV175",
-      base::FeatureList::IsEnabled(features::kSlimmingPaintV175) ||
-          command_line.HasSwitch(switches::kEnableSlimmingPaintV175) ||
-          enableExperimentalWebPlatformFeatures);
-
-  WebRuntimeFeatures::EnableFeatureFromString(
       "BlinkGenPropertyTrees",
       command_line.HasSwitch(switches::kEnableBlinkGenPropertyTrees));
 
