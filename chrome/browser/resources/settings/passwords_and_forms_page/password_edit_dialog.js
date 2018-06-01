@@ -39,7 +39,7 @@ Polymer({
    */
   onInputFocus_: function(event) {
     const inputElement =
-        /** @type {!CrInputElement} */ (Polymer.dom(event).localTarget)
+        /** @type {!PaperInputElement} */ (Polymer.dom(event).localTarget)
             .inputElement;
     inputElement.setSelectionRange(0, 0);
     inputElement.focus();
