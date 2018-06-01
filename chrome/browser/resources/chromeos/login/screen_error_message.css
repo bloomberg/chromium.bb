@@ -63,12 +63,8 @@ oobe-dialog .error-icon {
 }
 
 #offline-network-control {
-  -webkit-align-items: center;
-  display: -webkit-flex;
-}
-
-.offline-network-list-label {
-  -webkit-margin-end: 10px;
+  height: 200px;
+  margin-bottom: 20px;
 }
 
 .button-spacer {

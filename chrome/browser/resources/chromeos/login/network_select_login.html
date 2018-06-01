@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_select.html">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 
 <dom-module id="network-select-login">
   <style>
@@ -18,7 +19,7 @@
         on-network-item-selected="onNetworkListNetworkItemSelected_"
         on-custom-item-selected="onNetworkListCustomItemSelected_"
         custom-items="[[getNetworkCustomItems_(isConnected)]]"
-        no-bottom-scroll-border
+        no-bottom-scroll-border="[[noBottomScrollBorder]]"
         class="focus-on-show">
     </cr-network-select>
   </template>

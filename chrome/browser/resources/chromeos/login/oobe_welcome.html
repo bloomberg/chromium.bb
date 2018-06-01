@@ -2,7 +2,6 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
@@ -329,7 +328,7 @@
       </div>
       <div class="footer layout vertical">
         <network-select-login id="networkSelectLogin"
-            is-connected="{{isConnected_}}">
+            is-connected="{{isConnected_}}" no-bottom-scroll-border>
         </network-select-login>
       </div>
       <div class="bottom-buttons layout horizontal justified">
