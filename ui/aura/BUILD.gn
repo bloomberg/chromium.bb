@@ -207,10 +207,14 @@ jumbo_component("aura") {
   }
 
   if (use_ozone) {
-    deps += [ "//ui/ozone" ]
+    deps += [
+      "//ui/events/ozone:events_ozone_layout",
+      "//ui/ozone",
+    ]
     sources += [
       "mus/platform_event_source_mus_ozone.cc",
       "mus/platform_event_source_mus_ozone.h",
+      "window_tree_host_platform_ozone.cc",
     ]
   }
 

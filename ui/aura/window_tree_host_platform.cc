@@ -152,11 +152,13 @@ bool WindowTreeHostPlatform::IsKeyLocked(ui::DomCode dom_code) {
   return keyboard_hook_ && keyboard_hook_->IsKeyLocked(dom_code);
 }
 
+#if !defined(USE_OZONE)
 base::flat_map<std::string, std::string>
 WindowTreeHostPlatform::GetKeyboardLayoutMap() {
   NOTIMPLEMENTED();
   return {};
 }
+#endif
 
 void WindowTreeHostPlatform::SetCursorNative(gfx::NativeCursor cursor) {
   if (cursor == current_cursor_)
