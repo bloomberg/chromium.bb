@@ -26,7 +26,10 @@ UnifiedSliderBubbleController::~UnifiedSliderBubbleController() {
   DCHECK(CrasAudioHandler::IsInitialized());
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
   tray_->model()->RemoveObserver(this);
-  CloseBubble();
+  autoclose_.Stop();
+  slider_controller_.reset();
+  if (bubble_widget_)
+    bubble_widget_->CloseNow();
 }
 
 void UnifiedSliderBubbleController::CloseBubble() {
@@ -80,6 +83,8 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
   // If the bubble already exists, update the content of the bubble and extend
   // the autoclose timer.
   if (bubble_widget_) {
+    DCHECK(bubble_view_);
+
     if (slider_type_ != slider_type) {
       bubble_view_->RemoveAllChildViews(true);
 
@@ -96,7 +101,7 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
     return;
   }
 
-  DCHECK(bubble_view_);
+  DCHECK(!bubble_view_);
 
   slider_type_ = slider_type;
   CreateSliderController();
