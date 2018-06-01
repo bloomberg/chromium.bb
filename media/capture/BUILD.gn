@@ -252,6 +252,7 @@ component("capture_lib") {
       "//chromeos:chromeos",
       "//media/capture/video/chromeos/mojo:cros_camera",
       "//mojo/edk",
+      "//third_party/libdrm",
       "//third_party/libsync",
     ]
   }

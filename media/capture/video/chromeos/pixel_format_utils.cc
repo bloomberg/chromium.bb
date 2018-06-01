@@ -4,7 +4,7 @@
 
 #include "media/capture/video/chromeos/pixel_format_utils.h"
 
-#include <libdrm/drm_fourcc.h>
+#include <drm_fourcc.h>
 
 namespace media {
 
