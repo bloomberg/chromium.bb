@@ -55,6 +55,7 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
           [FaviconAttributes attributesWithImage:favicon];
       [favicon_cache_ setObject:attributes forKey:key];
       block(attributes);
+      return;
     }
     DCHECK(result.fallback_icon_style);
     FaviconAttributes* attributes = [FaviconAttributes
