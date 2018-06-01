@@ -123,14 +123,16 @@ LayoutUnit NGLayoutOpportunity::ComputeLineLeftOffset(
   // increasing the line_left when an exclusion intersects.
   LayoutUnit line_left = space.BfcOffset().line_offset;
   for (auto& exclusion : shape_exclusions->line_left_shapes) {
+    if (!IntersectsExclusion(*exclusion, bfc_block_offset, line_block_size))
+      continue;
+
     if (exclusion->shape_data) {
       LineSegment segment =
           ExcludedSegment(*exclusion, bfc_block_offset, line_block_size);
       if (segment.is_valid)
         line_left = std::max(line_left, segment.logical_right);
     } else {
-      if (IntersectsExclusion(*exclusion, bfc_block_offset, line_block_size))
-        line_left = std::max(line_left, exclusion->rect.LineEndOffset());
+      line_left = std::max(line_left, exclusion->rect.LineEndOffset());
     }
   }
 
@@ -155,14 +157,16 @@ LayoutUnit NGLayoutOpportunity::ComputeLineRightOffset(
   // We rebuild this offset from the line-right end, checking each exclusion and
   // reducing the line_right when an exclusion intersects.
   for (auto& exclusion : shape_exclusions->line_right_shapes) {
+    if (!IntersectsExclusion(*exclusion, bfc_block_offset, line_block_size))
+      continue;
+
     if (exclusion->shape_data) {
       LineSegment segment =
           ExcludedSegment(*exclusion, bfc_block_offset, line_block_size);
       if (segment.is_valid)
         line_right = std::min(line_right, segment.logical_left);
     } else {
-      if (IntersectsExclusion(*exclusion, bfc_block_offset, line_block_size))
-        line_right = std::min(line_right, exclusion->rect.LineStartOffset());
+      line_right = std::min(line_right, exclusion->rect.LineStartOffset());
     }
   }
 

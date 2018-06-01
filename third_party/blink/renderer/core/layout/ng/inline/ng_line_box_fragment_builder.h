@@ -32,7 +32,6 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   void Reset();
 
   LayoutUnit LineHeight() const;
-  LayoutUnit ComputeBlockSize() const;
 
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
   void SetMetrics(const NGLineHeightMetrics&);

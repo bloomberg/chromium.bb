@@ -698,7 +698,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
     // We now can check the block-size of the fragment, and it fits within the
     // opportunity.
-    LayoutUnit block_size = container_builder_.ComputeBlockSize();
+    LayoutUnit line_height = container_builder_.LineHeight();
 
     // Now that we have the block-size of the line, we can re-test the layout
     // opportunity to see if we fit into the (potentially) non-rectangular
@@ -710,17 +710,17 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     if (UNLIKELY(opportunity.HasShapeExclusions())) {
       NGLineLayoutOpportunity line_opportunity_with_height =
           opportunity.ComputeLineLayoutOpportunity(ConstraintSpace(),
-                                                   block_size, block_delta);
+                                                   line_height, block_delta);
 
       if (line_opportunity_with_height.AvailableInlineSize() !=
           line_opportunity.AvailableInlineSize()) {
-        line_block_size = block_size;
+        line_block_size = line_height;
         continue;
       }
     }
 
     // Check if the line will fit in the current opportunity.
-    if (block_size + block_delta > opportunity.rect.BlockSize()) {
+    if (line_height + block_delta > opportunity.rect.BlockSize()) {
       block_delta = LayoutUnit();
       line_block_size = LayoutUnit();
       ++opportunities_it;
@@ -730,8 +730,6 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     if (opportunity.rect.BlockStartOffset() >
         ConstraintSpace().BfcOffset().block_offset)
       container_builder_.SetIsPushedByFloats();
-
-    LayoutUnit line_height = container_builder_.LineHeight();
 
     // Success!
     positioned_floats_.AppendVector(positioned_floats);
