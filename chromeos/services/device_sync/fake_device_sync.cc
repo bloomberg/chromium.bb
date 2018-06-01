@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "chromeos/services/device_sync/fake_device_sync.h"
 
 #include "base/memory/ptr_util.h"

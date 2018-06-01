@@ -6,6 +6,8 @@
 #define CHROMEOS_SERVICES_DEVICE_SYNC_PUBLIC_CPP_DEVICE_SYNC_CLIENT_IMPL_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"

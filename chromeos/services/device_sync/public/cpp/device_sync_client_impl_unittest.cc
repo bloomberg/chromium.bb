@@ -5,6 +5,8 @@
 #include "chromeos/services/device_sync/public/cpp/device_sync_client_impl.h"
 
 #include <algorithm>
+#include <tuple>
+#include <utility>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
@@ -49,7 +51,8 @@ const cryptauth::GcmDeviceInfo& GetTestGcmDeviceInfo() {
 
 class FakeDeviceSyncImplFactory : public DeviceSyncImpl::Factory {
  public:
-  FakeDeviceSyncImplFactory(std::unique_ptr<FakeDeviceSync> fake_device_sync)
+  explicit FakeDeviceSyncImplFactory(
+      std::unique_ptr<FakeDeviceSync> fake_device_sync)
       : fake_device_sync_(std::move(fake_device_sync)) {}
 
   ~FakeDeviceSyncImplFactory() override = default;
