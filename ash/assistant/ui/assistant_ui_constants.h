@@ -6,6 +6,7 @@
 #define ASH_ASSISTANT_UI_ASSISTANT_UI_CONSTANTS_H_
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 
 namespace ash {
 
@@ -15,8 +16,8 @@ constexpr int kPreferredWidthDip = 640;
 constexpr int kSpacingDip = 8;
 
 // Typography.
-constexpr SkColor kTextColorHint = SkColorSetA(SK_ColorBLACK, 0x42);
-constexpr SkColor kTextColorPrimary = SkColorSetA(SK_ColorBLACK, 0xDE);
+constexpr SkColor kTextColorHint = gfx::kGoogleGrey500;
+constexpr SkColor kTextColorPrimary = gfx::kGoogleGrey900;
 
 }  // namespace ash
 
