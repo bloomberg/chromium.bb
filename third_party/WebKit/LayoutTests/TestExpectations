@@ -4822,3 +4822,6 @@ crbug.com/848334 external/wpt/fullscreen/api/document-exit-fullscreen-nested-in-
 # Sheriff 2018-05-31
 crbug.com/848354 [ Linux ] plugins/fullscreen-plugins-dont-reload.html [ Skip ]
 crbug.com/848398 [ Linux Mac ] http/tests/devtools/oopif/oopif-performance-cpu-profiles.js [ Pass Timeout Failure ]
+
+# Sheriff 2018-06-01
+crbug.com/848851 virtual/exotic-color-space/images/image-hover-display-alt.html [ Failure Pass ]
