@@ -9,6 +9,7 @@
   await TestRunner.showPanel('console');
 
   // Show all messages, including verbose.
+  Console.ConsoleView.instance()._setImmediatelyFilterMessagesForTest();
   Console.ConsoleView.instance()._filter._currentFilter.levelsMask = Console.ConsoleFilter.allLevelsFilterValue();
 
   for (var i = 0; i < 5; i++) {
@@ -16,7 +17,7 @@
     addViolationMessage('Error-level violation', `script${i}.js`, SDK.ConsoleMessage.MessageLevel.Error);
     addConsoleAPIMessage('ConsoleAPI log', `script${i}.js`);
     await ConsoleTestRunner.evaluateInConsolePromise(`'evaluated command'`);
-    await TestRunner.evaluateInPagePromise(`Promise.reject()`);
+    await ConsoleTestRunner.evaluateInConsolePromise(`produce_reference_error`);
   }
 
   ConsoleTestRunner.dumpConsoleMessages();

@@ -4667,9 +4667,6 @@ crbug.com/816914 [ Mac ] fast/canvas/canvas-drawImage-live-video.html [ Failure 
 crbug.com/816766 [ Mac ] fast/dom/Window/window-focus-self.html [ Failure Pass ]
 crbug.com/817167 http/tests/devtools/oopif/oopif-cookies-refresh.js [ Failure Timeout Pass ]
 
-# Sheriff 2018-03-01
-crbug.com/817678 [ Win ] http/tests/devtools/console/console-group-similar.js [ Failure Pass ]
-
 # Sheriff 2018-03-02
 crbug.com/818107 [ Android ] presentation/presentationconnectionavailableevent-ctor-mock.html [ Failure Crash ]
 crbug.com/818076 http/tests/devtools/oopif/oopif-elements-navigate-in.js [ Failure Pass ]
