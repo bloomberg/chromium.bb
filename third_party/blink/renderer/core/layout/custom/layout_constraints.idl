@@ -11,7 +11,7 @@
 ]
 interface LayoutConstraints {
   readonly attribute double fixedInlineSize;
-  // readonly attribute double? fixedBlockSize;
+  readonly attribute double? fixedBlockSize;
 
   // readonly attribute double availableInlineSize;
   // readonly attribute double availableBlockSize;

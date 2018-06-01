@@ -24,6 +24,24 @@
 
 namespace blink {
 
+namespace {
+
+bool IsLogicalHeightDefinite(const LayoutCustom& layout_custom) {
+  if (layout_custom.HasOverrideLogicalHeight())
+    return true;
+
+  // In quirks mode the document and body element stretch to the viewport.
+  if (layout_custom.StretchesToViewport())
+    return true;
+
+  if (layout_custom.HasDefiniteLogicalHeight())
+    return true;
+
+  return false;
+}
+
+}  // namespace
+
 CSSLayoutDefinition::CSSLayoutDefinition(
     ScriptState* script_state,
     v8::Local<v8::Function> constructor,
@@ -93,8 +111,17 @@ bool CSSLayoutDefinition::Instance::Layout(
       return false;
   }
 
+  LayoutUnit fixed_block_size(-1);
+  if (IsLogicalHeightDefinite(layout_custom)) {
+    LayoutBox::LogicalExtentComputedValues computed_values;
+    layout_custom.ComputeLogicalHeight(LayoutUnit(-1), LayoutUnit(),
+                                       computed_values);
+    fixed_block_size = computed_values.extent_;
+  }
+
   CustomLayoutConstraints* constraints = new CustomLayoutConstraints(
-      layout_custom.LogicalWidth(), layout_custom.GetConstraintData(), isolate);
+      layout_custom.LogicalWidth(), fixed_block_size,
+      layout_custom.GetConstraintData(), isolate);
 
   // TODO(ikilpatrick): Instead of creating a new style_map each time here,
   // store on LayoutCustom, and update when the style changes.

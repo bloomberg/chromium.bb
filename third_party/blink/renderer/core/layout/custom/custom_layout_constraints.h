@@ -23,18 +23,21 @@ class CustomLayoutConstraints : public ScriptWrappable {
 
  public:
   CustomLayoutConstraints(LayoutUnit fixed_inline_size,
+                          LayoutUnit fixed_block_size,
                           SerializedScriptValue* data,
                           v8::Isolate*);
   ~CustomLayoutConstraints() override;
 
   // LayoutConstraints.idl
   double fixedInlineSize() const { return fixed_inline_size_; }
+  double fixedBlockSize(bool& is_null) const;
   ScriptValue data(ScriptState*) const;
 
   void Trace(blink::Visitor*) override;
 
  private:
   double fixed_inline_size_;
+  double fixed_block_size_;
   TraceWrapperV8Reference<v8::Value> layout_worklet_world_v8_data_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomLayoutConstraints);
