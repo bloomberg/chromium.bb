@@ -6,11 +6,11 @@
 
 #include <ostream>
 
-static SessionID::id_type next_id = 1;
+#include "components/sessions/core/session_id_generator.h"
 
 // static
 SessionID SessionID::NewUnique() {
-  return SessionID(next_id++);
+  return sessions::SessionIdGenerator::GetInstance()->NewUnique();
 }
 
 std::ostream& operator<<(std::ostream& out, SessionID id) {

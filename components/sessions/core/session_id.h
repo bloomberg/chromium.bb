@@ -17,8 +17,8 @@ class SESSIONS_EXPORT SessionID {
  public:
   typedef int32_t id_type;
 
-  // Creates a new instance representing an ID that has never been used in the
-  // current session. The same value may be instantiated in future sessions.
+  // Creates a new instance representing an ID that has never been used before
+  // locally (even across browser restarts).
   static SessionID NewUnique();
 
   // Special value representing a null-like, invalid ID. It's the only value

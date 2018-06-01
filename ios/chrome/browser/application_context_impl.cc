@@ -29,6 +29,7 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/sessions/core/session_id_generator.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/ukm/ukm_service.h"
 #include "components/update_client/configurator.h"
@@ -107,6 +108,7 @@ void ApplicationContextImpl::StartTearDown() {
 
   if (local_state_) {
     local_state_->CommitPendingWrite();
+    sessions::SessionIdGenerator::GetInstance()->Shutdown();
   }
 
   if (network_context_) {
@@ -336,6 +338,8 @@ void ApplicationContextImpl::CreateLocalState() {
   local_state_ = ::CreateLocalState(
       local_state_path, local_state_task_runner_.get(), pref_registry);
   DCHECK(local_state_);
+
+  sessions::SessionIdGenerator::GetInstance()->Init(local_state_.get());
 
   net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(
       net::HttpNetworkSession::NORMAL_SOCKET_POOL,

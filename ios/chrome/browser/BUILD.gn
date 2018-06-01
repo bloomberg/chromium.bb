@@ -176,6 +176,7 @@ source_set("browser_impl") {
     "//components/open_from_clipboard",
     "//components/prefs",
     "//components/rappor",
+    "//components/sessions",
     "//components/translate/core/browser",
     "//components/ukm",
     "//components/update_client",

@@ -48,6 +48,7 @@ source_set("browser_prefs") {
     "//components/proxy_config",
     "//components/rappor",
     "//components/search_engines",
+    "//components/sessions",
     "//components/signin/core/browser",
     "//components/strings",
     "//components/sync",

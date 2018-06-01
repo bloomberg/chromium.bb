@@ -48,6 +48,7 @@ source_set("app_shell_lib") {
     "//components/network_session_configurator/common",
     "//components/pref_registry",
     "//components/prefs",
+    "//components/sessions",
     "//components/storage_monitor",
     "//components/update_client",
     "//components/user_prefs",
