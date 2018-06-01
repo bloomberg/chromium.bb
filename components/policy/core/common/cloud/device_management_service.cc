@@ -93,8 +93,9 @@ bool IsConnectionError(const net::URLRequestStatus status) {
 }
 
 bool IsProtobufMimeType(const net::URLFetcher* fetcher) {
-  return fetcher->GetResponseHeaders()->HasHeaderValue(
-      "content-type", "application/x-protobuffer");
+  std::string mime_type;
+  return fetcher->GetResponseHeaders()->GetMimeType(&mime_type) &&
+         mime_type == "application/x-protobuffer";
 }
 
 bool FailedWithProxy(const net::URLFetcher* fetcher) {
