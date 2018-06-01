@@ -48,6 +48,10 @@ class MockRendererPpapiHost : public RendererPpapiHost {
       bool should_close_source) override;
   base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
       const base::SharedMemoryHandle& handle) override;
+  base::UnsafeSharedMemoryRegion ShareUnsafeSharedMemoryRegionWithRemote(
+      const base::UnsafeSharedMemoryRegion& region) override;
+  base::ReadOnlySharedMemoryRegion ShareReadOnlySharedMemoryRegionWithRemote(
+      const base::ReadOnlySharedMemoryRegion& region) override;
   bool IsRunningInProcess() const override;
   std::string GetPluginName() const override;
   void SetToExternalPluginHost() override;

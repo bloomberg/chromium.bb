@@ -58,6 +58,14 @@ class FakeRendererPpapiHost : public content::RendererPpapiHost {
       const base::SharedMemoryHandle& handle) override {
     return base::SharedMemoryHandle();
   }
+  base::UnsafeSharedMemoryRegion ShareUnsafeSharedMemoryRegionWithRemote(
+      const base::UnsafeSharedMemoryRegion& region) override {
+    return base::UnsafeSharedMemoryRegion();
+  }
+  base::ReadOnlySharedMemoryRegion ShareReadOnlySharedMemoryRegionWithRemote(
+      const base::ReadOnlySharedMemoryRegion& region) override {
+    return base::ReadOnlySharedMemoryRegion();
+  }
   bool IsRunningInProcess() const override { return false; }
   std::string GetPluginName() const override { return std::string(); }
   void SetToExternalPluginHost() override {}

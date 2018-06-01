@@ -64,6 +64,12 @@ class PpapiDispatcher : public proxy::PluginDispatcher::PluginDelegate,
   base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
       const base::SharedMemoryHandle& handle,
       base::ProcessId remote_pid) override;
+  base::UnsafeSharedMemoryRegion ShareUnsafeSharedMemoryRegionWithRemote(
+      const base::UnsafeSharedMemoryRegion& region,
+      base::ProcessId remote_pid) override;
+  base::ReadOnlySharedMemoryRegion ShareReadOnlySharedMemoryRegionWithRemote(
+      const base::ReadOnlySharedMemoryRegion& region,
+      base::ProcessId remote_pid) override;
   std::set<PP_Instance>* GetGloballySeenInstanceIDSet() override;
   uint32_t Register(proxy::PluginDispatcher* plugin_dispatcher) override;
   void Unregister(uint32_t plugin_dispatcher_id) override;

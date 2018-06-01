@@ -9,7 +9,9 @@
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "ipc/ipc_listener.h"
@@ -63,6 +65,14 @@ class PPAPI_PROXY_EXPORT ProxyChannel
     virtual base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
         const base::SharedMemoryHandle& handle,
         base::ProcessId remote_pid) = 0;
+    virtual base::UnsafeSharedMemoryRegion
+    ShareUnsafeSharedMemoryRegionWithRemote(
+        const base::UnsafeSharedMemoryRegion& region,
+        base::ProcessId remote_pid) = 0;
+    virtual base::ReadOnlySharedMemoryRegion
+    ShareReadOnlySharedMemoryRegionWithRemote(
+        const base::ReadOnlySharedMemoryRegion& region,
+        base::ProcessId remote_pid) = 0;
   };
 
   ~ProxyChannel() override;
@@ -90,6 +100,10 @@ class PPAPI_PROXY_EXPORT ProxyChannel
   // is not closed by this operation.
   base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
       const base::SharedMemoryHandle& handle);
+  base::UnsafeSharedMemoryRegion ShareUnsafeSharedMemoryRegionWithRemote(
+      const base::UnsafeSharedMemoryRegion& region);
+  base::ReadOnlySharedMemoryRegion ShareReadOnlySharedMemoryRegionWithRemote(
+      const base::ReadOnlySharedMemoryRegion& region);
 
   // IPC::Sender implementation.
   bool Send(IPC::Message* msg) override;

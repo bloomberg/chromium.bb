@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef PPAPI_PROXY_PPAPI_PROXY_TEST_H_
+#define PPAPI_PROXY_PPAPI_PROXY_TEST_H_
+
 #include <stdint.h>
 
 #include <map>
@@ -147,6 +150,12 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
     base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
         const base::SharedMemoryHandle& handle,
         base::ProcessId remote_pid) override;
+    base::UnsafeSharedMemoryRegion ShareUnsafeSharedMemoryRegionWithRemote(
+        const base::UnsafeSharedMemoryRegion& region,
+        base::ProcessId remote_pid) override;
+    base::ReadOnlySharedMemoryRegion ShareReadOnlySharedMemoryRegionWithRemote(
+        const base::ReadOnlySharedMemoryRegion& region,
+        base::ProcessId remote_pid) override;
 
     // PluginDispatcher::PluginDelegate implementation.
     std::set<PP_Instance>* GetGloballySeenInstanceIDSet() override;
@@ -290,6 +299,12 @@ class HostProxyTestHarness : public ProxyTestHarnessBase {
     base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
         const base::SharedMemoryHandle& handle,
         base::ProcessId remote_pid) override;
+    base::UnsafeSharedMemoryRegion ShareUnsafeSharedMemoryRegionWithRemote(
+        const base::UnsafeSharedMemoryRegion& region,
+        base::ProcessId remote_pid) override;
+    base::ReadOnlySharedMemoryRegion ShareReadOnlySharedMemoryRegionWithRemote(
+        const base::ReadOnlySharedMemoryRegion& region,
+        base::ProcessId remote_pid) override;
 
    private:
     base::SingleThreadTaskRunner* ipc_task_runner_;  // Weak
@@ -383,3 +398,5 @@ class TwoWayTest : public testing::Test {
 
 }  // namespace proxy
 }  // namespace ppapi
+
+#endif  // PPAPI_PROXY_PPAPI_PROXY_TEST_H_

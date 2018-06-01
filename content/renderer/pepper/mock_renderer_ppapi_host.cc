@@ -85,6 +85,20 @@ MockRendererPpapiHost::ShareSharedMemoryHandleWithRemote(
   return base::SharedMemoryHandle();
 }
 
+base::UnsafeSharedMemoryRegion
+MockRendererPpapiHost::ShareUnsafeSharedMemoryRegionWithRemote(
+    const base::UnsafeSharedMemoryRegion& region) {
+  NOTIMPLEMENTED();
+  return base::UnsafeSharedMemoryRegion();
+}
+
+base::ReadOnlySharedMemoryRegion
+MockRendererPpapiHost::ShareReadOnlySharedMemoryRegionWithRemote(
+    const base::ReadOnlySharedMemoryRegion& region) {
+  NOTIMPLEMENTED();
+  return base::ReadOnlySharedMemoryRegion();
+}
+
 bool MockRendererPpapiHost::IsRunningInProcess() const { return false; }
 
 std::string MockRendererPpapiHost::GetPluginName() const {
