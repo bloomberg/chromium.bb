@@ -70,8 +70,9 @@ OomInterventionTabHelper::OomInterventionTabHelper(
       decider_(OomInterventionDecider::GetForBrowserContext(
           web_contents->GetBrowserContext())),
       binding_(this),
+      scoped_observer_(this),
       weak_ptr_factory_(this) {
-  OutOfMemoryReporter::FromWebContents(web_contents)->AddObserver(this);
+  scoped_observer_.Add(breakpad::CrashDumpManager::GetInstance());
   shared_metrics_buffer_ = base::UnsafeSharedMemoryRegion::Create(
       sizeof(blink::OomInterventionMetrics));
   metrics_mapping_ = shared_metrics_buffer_.Map();
@@ -110,7 +111,6 @@ void OomInterventionTabHelper::DeclineInterventionSticky() {
 }
 
 void OomInterventionTabHelper::WebContentsDestroyed() {
-  OutOfMemoryReporter::FromWebContents(web_contents())->RemoveObserver(this);
   StopMonitoring();
 }
 
@@ -196,9 +196,14 @@ void OomInterventionTabHelper::OnVisibilityChanged(
   }
 }
 
-void OomInterventionTabHelper::OnForegroundOOMDetected(
-    const GURL& url,
-    ukm::SourceId source_id) {
+void OomInterventionTabHelper::OnCrashDumpProcessed(
+    const breakpad::CrashDumpManager::CrashDumpDetails& details) {
+  if (details.process_host_id !=
+      web_contents()->GetMainFrame()->GetProcess()->GetID())
+    return;
+  if (!breakpad::CrashDumpManager::IsForegroundOom(details))
+    return;
+
   DCHECK(IsLastVisibleWebContents(web_contents()));
   if (near_oom_detected_time_) {
     base::TimeDelta elapsed_time =
