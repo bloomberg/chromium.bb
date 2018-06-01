@@ -82,7 +82,7 @@ void LoadApp(content::BrowserContext* context,
   app_state->app_launch_ordinal = app_sorting->GetAppLaunchOrdinal(id);
   app_state->page_ordinal = app_sorting->GetPageOrdinal(id);
   app_state->launch_type = extensions::GetLaunchTypePrefValue(prefs, id);
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(context)->extension_service();
   const extensions::Extension* extension = service->GetInstalledExtension(id);
   // GetInstalledExtension(id) returns null if |id| is for a pending extension.
