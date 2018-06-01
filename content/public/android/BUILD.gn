@@ -41,7 +41,7 @@ action("generate_sandboxed_service_srcjar") {
   args = [
     "--depfile",
     rebase_path(depfile, root_build_dir),
-    "20",
+    "40",
     _rebased_srcjar_path,
   ]
   outputs = [

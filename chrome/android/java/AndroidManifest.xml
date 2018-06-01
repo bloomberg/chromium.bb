@@ -1021,7 +1021,7 @@ by a child template that "extends" this file.
 
         <!-- NOTE: If you change the value of "android:process" for the below services,
              you also need to update kHelperProcessExecutableName in chrome_constants.cc. -->
-        {% set num_sandboxed_services = 20 %}
+        {% set num_sandboxed_services = 40 %}
         <meta-data android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES"
             android:value="{{ num_sandboxed_services }}"/>
 
