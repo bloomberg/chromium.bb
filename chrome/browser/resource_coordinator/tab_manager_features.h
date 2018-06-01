@@ -14,6 +14,7 @@ namespace features {
 
 extern const base::Feature kCustomizedTabLoadTimeout;
 extern const base::Feature kProactiveTabFreezeAndDiscard;
+extern const base::Feature kSiteCharacteristicsDatabase;
 extern const base::Feature kStaggeredBackgroundTabOpening;
 extern const base::Feature kStaggeredBackgroundTabOpeningExperiment;
 extern const base::Feature kTabRanker;
@@ -32,15 +33,16 @@ extern const char kProactiveTabFreezeAndDiscard_HighLoadedTabCountParam[];
 extern const char kProactiveTabFreezeAndDiscard_LowOccludedTimeoutParam[];
 extern const char kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutParam[];
 extern const char kProactiveTabFreezeAndDiscard_HighOccludedTimeoutParam[];
-extern const char
-    kProactiveTabFreezeAndDiscard_FaviconUpdateObservationWindow[];
-extern const char kProactiveTabFreezeAndDiscard_TitleUpdateObservationWindow[];
-extern const char kProactiveTabFreezeAndDiscard_AudioUsageObservationWindow[];
-extern const char
-    kProactiveTabFreezeAndDiscard_NotificationsUsageObservationWindow[];
 extern const char kProactiveTabFreezeAndDiscard_FreezeTimeout[];
 
-// Default values of parameters related to proactive discarding.
+// Variations parameter names related to the site characteristics database.
+// See ProactiveTabFreezeAndDiscardsParams for details.
+extern const char kSiteCharacteristicsDb_FaviconUpdateObservationWindow[];
+extern const char kSiteCharacteristicsDb_TitleUpdateObservationWindow[];
+extern const char kSiteCharacteristicsDb_AudioUsageObservationWindow[];
+extern const char kSiteCharacteristicsDb_NotificationsUsageObservationWindow[];
+
+// Default values of parameters related to the site characteristics database.
 // See ProactiveTabFreezeAndDiscardsParams for details.
 extern const bool kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardDefault;
 extern const uint32_t kProactiveTabFreezeAndDiscard_LowLoadedTabCountDefault;
@@ -54,17 +56,20 @@ extern const base::TimeDelta
 extern const base::TimeDelta
     kProactiveTabFreezeAndDiscard_HighOccludedTimeoutDefault;
 extern const base::TimeDelta
-    kProactiveTabFreezeAndDiscard_FaviconUpdateObservationWindow_Default;
-extern const base::TimeDelta
-    kProactiveTabFreezeAndDiscard_TitleUpdateObservationWindow_Default;
-extern const base::TimeDelta
-    kProactiveTabFreezeAndDiscard_AudioUsageObservationWindow_Default;
-extern const base::TimeDelta
-    kProactiveTabFreezeAndDiscard_NotificationsUsageObservationWindow_Default;
-extern const base::TimeDelta
     kProactiveTabFreezeAndDiscard_FreezeTimeout_Default;
 
-// Parameters used by the proactive tab freezing and discarding feature.
+// Default values of parameters related to the site characteristics database.
+// See SiteCharacteristicsDatabaseParams for details.
+extern const base::TimeDelta
+    kSiteCharacteristicsDb_FaviconUpdateObservationWindow_Default;
+extern const base::TimeDelta
+    kSiteCharacteristicsDb_TitleUpdateObservationWindow_Default;
+extern const base::TimeDelta
+    kSiteCharacteristicsDb_AudioUsageObservationWindow_Default;
+extern const base::TimeDelta
+    kSiteCharacteristicsDb_NotificationsUsageObservationWindow_Default;
+
+// Parameters used by the proactive tab discarding feature.
 //
 // Proactive discarding has 5 key parameters:
 //
@@ -90,16 +95,6 @@ extern const base::TimeDelta
 // count states. When in the low state the timeout is effectively infinite (no
 // proactive discarding will occur), and when in the excessive state the timeout
 // is zero (discarding will occur immediately).
-//
-// Proactive tab discarding decisions are also based on whether or not a tab
-// might use some features, a feature is considered as unused if it hasn't been
-// used for a sufficiently long period of time while the tab was backgrounded.
-// There's currently 4 features we're interested in:
-//
-// - Favicon update
-// - Title update
-// - Audio usage
-// - Notifications usage
 //
 // This logic is independent of urgent discarding, which may embark when things
 // are sufficiently bad. Similarly, manual or extension driven discards can
@@ -140,6 +135,26 @@ struct ProactiveTabFreezeAndDiscardParams {
   // Amount of time a tab must be occluded before eligible for proactive
   // discard when the tab count state is HIGH.
   base::TimeDelta high_occluded_timeout;
+  // Amount of time a tab must be occluded before it is frozen.
+  base::TimeDelta freeze_timeout;
+};
+
+// Parameters used by the site characteristics database.
+//
+// The site characteristics database tracks tab usage of a some features, a tab,
+// a feature is considered as unused if it hasn't been used for a sufficiently
+// long period of time while the tab was backgrounded. There's currently 4
+// features we're interested in:
+//
+// - Favicon update
+// - Title update
+// - Audio usage
+// - Notifications usage
+struct SiteCharacteristicsDatabaseParams {
+  SiteCharacteristicsDatabaseParams();
+  SiteCharacteristicsDatabaseParams(
+      const SiteCharacteristicsDatabaseParams& rhs);
+
   // Minimum observation window before considering that this website doesn't
   // update its favicon while in background.
   base::TimeDelta favicon_update_observation_window;
@@ -152,8 +167,6 @@ struct ProactiveTabFreezeAndDiscardParams {
   // Minimum observation window before considering that this website doesn't
   // use notifications while in background.
   base::TimeDelta notifications_usage_observation_window;
-  // Amount of time a tab must be occluded before it is frozen.
-  base::TimeDelta freeze_timeout;
 };
 
 // Gets parameters for the proactive tab discarding feature. This does no
@@ -169,6 +182,16 @@ const ProactiveTabFreezeAndDiscardParams&
 GetStaticProactiveTabFreezeAndDiscardParams();
 
 base::TimeDelta GetTabLoadTimeout(const base::TimeDelta& default_timeout);
+
+// Gets parameters for the site characteristics database feature. This does no
+// parameter validation, and sets the default values if the feature is not
+// enabled.
+SiteCharacteristicsDatabaseParams GetSiteCharacteristicsDatabaseParams();
+
+// Return a static SiteCharacteristicsDatabaseParams object that can be used by
+// all the classes that need one.
+const SiteCharacteristicsDatabaseParams&
+GetStaticSiteCharacteristicsDatabaseParams();
 
 }  // namespace resource_coordinator
 

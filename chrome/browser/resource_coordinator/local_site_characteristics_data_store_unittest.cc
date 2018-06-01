@@ -46,7 +46,7 @@ class LocalSiteCharacteristicsDataStoreTest : public ::testing::Test {
   LocalSiteCharacteristicsDataStoreTest()
       : scoped_set_tick_clock_for_testing_(&test_clock_) {
     scoped_feature_list_.InitAndEnableFeature(
-        features::kProactiveTabFreezeAndDiscard);
+        features::kSiteCharacteristicsDatabase);
     data_store_ =
         std::make_unique<LocalSiteCharacteristicsDataStore>(&profile_);
     test_clock_.SetNowTicks(base::TimeTicks::UnixEpoch());

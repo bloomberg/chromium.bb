@@ -19,7 +19,7 @@ namespace resource_coordinator {
 // static
 SiteCharacteristicsDataStore*
 LocalSiteCharacteristicsDataStoreFactory::GetForProfile(Profile* profile) {
-  if (base::FeatureList::IsEnabled(features::kProactiveTabFreezeAndDiscard)) {
+  if (base::FeatureList::IsEnabled(features::kSiteCharacteristicsDatabase)) {
     return static_cast<SiteCharacteristicsDataStore*>(
         GetInstance()->GetServiceForBrowserContext(profile, true));
   }

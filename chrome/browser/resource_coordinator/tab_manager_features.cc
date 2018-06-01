@@ -27,6 +27,10 @@ const base::Feature kCustomizedTabLoadTimeout{
 const base::Feature kProactiveTabFreezeAndDiscard{
     "ProactiveTabFreezeAndDiscard", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the site characteristics database.
+const base::Feature kSiteCharacteristicsDatabase{
+    "SiteCharacteristicsDatabase", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables delaying the navigation of background tabs in order to improve
 // foreground tab's user experience.
 const base::Feature kStaggeredBackgroundTabOpening{
@@ -86,15 +90,17 @@ const char kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutParam[] =
     "ModerateOccludedTimeoutSeconds";
 const char kProactiveTabFreezeAndDiscard_HighOccludedTimeoutParam[] =
     "HighOccludedTimeoutSeconds";
-const char kProactiveTabFreezeAndDiscard_FaviconUpdateObservationWindow[] =
-    "FaviconUpdateObservationWindow";
-const char kProactiveTabFreezeAndDiscard_TitleUpdateObservationWindow[] =
-    "TitleUpdateObservationWindow";
-const char kProactiveTabFreezeAndDiscard_AudioUsageObservationWindow[] =
-    "AudioUsageObservationWindow";
-const char kProactiveTabFreezeAndDiscard_NotificationsUsageObservationWindow[] =
-    "NotificationsUsageObservationWindow";
 const char kProactiveTabFreezeAndDiscard_FreezeTimeout[] = "FreezeTimeout";
+
+// Field-trial parameter names for the site characteristics database.
+const char kSiteCharacteristicsDb_FaviconUpdateObservationWindow[] =
+    "FaviconUpdateObservationWindow";
+const char kSiteCharacteristicsDb_TitleUpdateObservationWindow[] =
+    "TitleUpdateObservationWindow";
+const char kSiteCharacteristicsDb_AudioUsageObservationWindow[] =
+    "AudioUsageObservationWindow";
+const char kSiteCharacteristicsDb_NotificationsUsageObservationWindow[] =
+    "NotificationsUsageObservationWindow";
 
 // Default values for ProactiveTabFreezeAndDiscardParams.
 const bool kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardDefault =
@@ -123,27 +129,35 @@ const base::TimeDelta
         base::TimeDelta::FromHours(1);
 const base::TimeDelta kProactiveTabFreezeAndDiscard_HighOccludedTimeoutDefault =
     base::TimeDelta::FromMinutes(10);
+const base::TimeDelta kProactiveTabFreezeAndDiscard_FreezeTimeout_Default =
+    base::TimeDelta::FromMinutes(10);
+
+// Default values for SiteCharacteristicsDatabaseParams.
+//
 // Observations windows have a default value of 2 hours, 95% of backgrounded
 // tabs don't use any of these features in this time window.
 const base::TimeDelta
-    kProactiveTabFreezeAndDiscard_FaviconUpdateObservationWindow_Default =
+    kSiteCharacteristicsDb_FaviconUpdateObservationWindow_Default =
         base::TimeDelta::FromHours(2);
 const base::TimeDelta
-    kProactiveTabFreezeAndDiscard_TitleUpdateObservationWindow_Default =
+    kSiteCharacteristicsDb_TitleUpdateObservationWindow_Default =
         base::TimeDelta::FromHours(2);
 const base::TimeDelta
-    kProactiveTabFreezeAndDiscard_AudioUsageObservationWindow_Default =
+    kSiteCharacteristicsDb_AudioUsageObservationWindow_Default =
         base::TimeDelta::FromHours(2);
 const base::TimeDelta
-    kProactiveTabFreezeAndDiscard_NotificationsUsageObservationWindow_Default =
+    kSiteCharacteristicsDb_NotificationsUsageObservationWindow_Default =
         base::TimeDelta::FromHours(2);
-const base::TimeDelta kProactiveTabFreezeAndDiscard_FreezeTimeout_Default =
-    base::TimeDelta::FromMinutes(10);
 
 ProactiveTabFreezeAndDiscardParams::ProactiveTabFreezeAndDiscardParams() =
     default;
 ProactiveTabFreezeAndDiscardParams::ProactiveTabFreezeAndDiscardParams(
     const ProactiveTabFreezeAndDiscardParams& rhs) = default;
+
+SiteCharacteristicsDatabaseParams::SiteCharacteristicsDatabaseParams() =
+    default;
+SiteCharacteristicsDatabaseParams::SiteCharacteristicsDatabaseParams(
+    const SiteCharacteristicsDatabaseParams& rhs) = default;
 
 ProactiveTabFreezeAndDiscardParams GetProactiveTabFreezeAndDiscardParams(
     int memory_in_gb) {
@@ -189,34 +203,6 @@ ProactiveTabFreezeAndDiscardParams GetProactiveTabFreezeAndDiscardParams(
           kProactiveTabFreezeAndDiscard_HighOccludedTimeoutDefault
               .InSeconds()));
 
-  params.favicon_update_observation_window =
-      base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
-          features::kProactiveTabFreezeAndDiscard,
-          kProactiveTabFreezeAndDiscard_FaviconUpdateObservationWindow,
-          kProactiveTabFreezeAndDiscard_FaviconUpdateObservationWindow_Default
-              .InSeconds()));
-
-  params.title_update_observation_window =
-      base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
-          features::kProactiveTabFreezeAndDiscard,
-          kProactiveTabFreezeAndDiscard_TitleUpdateObservationWindow,
-          kProactiveTabFreezeAndDiscard_TitleUpdateObservationWindow_Default
-              .InSeconds()));
-
-  params.audio_usage_observation_window =
-      base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
-          features::kProactiveTabFreezeAndDiscard,
-          kProactiveTabFreezeAndDiscard_AudioUsageObservationWindow,
-          kProactiveTabFreezeAndDiscard_AudioUsageObservationWindow_Default
-              .InSeconds()));
-
-  params.notifications_usage_observation_window =
-      base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
-          features::kProactiveTabFreezeAndDiscard,
-          kProactiveTabFreezeAndDiscard_NotificationsUsageObservationWindow,
-          kProactiveTabFreezeAndDiscard_NotificationsUsageObservationWindow_Default
-              .InSeconds()));
-
   params.freeze_timeout =
       base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
           features::kProactiveTabFreezeAndDiscard,
@@ -242,6 +228,47 @@ base::TimeDelta GetTabLoadTimeout(const base::TimeDelta& default_timeout) {
     return default_timeout;
 
   return base::TimeDelta::FromMilliseconds(timeout_in_ms);
+}
+
+SiteCharacteristicsDatabaseParams GetSiteCharacteristicsDatabaseParams() {
+  SiteCharacteristicsDatabaseParams params = {};
+
+  params.favicon_update_observation_window =
+      base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+          features::kSiteCharacteristicsDatabase,
+          kSiteCharacteristicsDb_FaviconUpdateObservationWindow,
+          kSiteCharacteristicsDb_FaviconUpdateObservationWindow_Default
+              .InSeconds()));
+
+  params.title_update_observation_window =
+      base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+          features::kSiteCharacteristicsDatabase,
+          kSiteCharacteristicsDb_TitleUpdateObservationWindow,
+          kSiteCharacteristicsDb_TitleUpdateObservationWindow_Default
+              .InSeconds()));
+
+  params.audio_usage_observation_window =
+      base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+          features::kSiteCharacteristicsDatabase,
+          kSiteCharacteristicsDb_AudioUsageObservationWindow,
+          kSiteCharacteristicsDb_AudioUsageObservationWindow_Default
+              .InSeconds()));
+
+  params.notifications_usage_observation_window =
+      base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+          features::kSiteCharacteristicsDatabase,
+          kSiteCharacteristicsDb_NotificationsUsageObservationWindow,
+          kSiteCharacteristicsDb_NotificationsUsageObservationWindow_Default
+              .InSeconds()));
+
+  return params;
+}
+
+const SiteCharacteristicsDatabaseParams&
+GetStaticSiteCharacteristicsDatabaseParams() {
+  static base::NoDestructor<SiteCharacteristicsDatabaseParams> params(
+      GetSiteCharacteristicsDatabaseParams());
+  return *params;
 }
 
 }  // namespace resource_coordinator
