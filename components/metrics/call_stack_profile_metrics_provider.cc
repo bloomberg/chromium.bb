@@ -366,7 +366,7 @@ Thread ToExecutionContextThread(CallStackProfileParams::Thread thread) {
     case CallStackProfileParams::UNKNOWN_THREAD:
       return UNKNOWN_THREAD;
     case CallStackProfileParams::MAIN_THREAD:
-      return UI_THREAD;
+      return MAIN_THREAD;
     case CallStackProfileParams::IO_THREAD:
       return IO_THREAD;
     case CallStackProfileParams::COMPOSITOR_THREAD:
@@ -403,11 +403,9 @@ SampledProfile::TriggerEvent ToSampledProfileTriggerEvent(
 const base::Feature CallStackProfileMetricsProvider::kEnableReporting = {
     "SamplingProfilerReporting", base::FEATURE_DISABLED_BY_DEFAULT};
 
-CallStackProfileMetricsProvider::CallStackProfileMetricsProvider() {
-}
+CallStackProfileMetricsProvider::CallStackProfileMetricsProvider() {}
 
-CallStackProfileMetricsProvider::~CallStackProfileMetricsProvider() {
-}
+CallStackProfileMetricsProvider::~CallStackProfileMetricsProvider() {}
 
 StackSamplingProfiler::CompletedCallback
 CallStackProfileMetricsProvider::GetProfilerCallbackForBrowserProcess(

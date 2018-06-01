@@ -182,6 +182,7 @@ message OmniboxEventProto {
     CLIPBOARD_URL = 14;  // Suggestion coming from clipboard (iOS only).
     PHYSICAL_WEB = 15;   // Suggestions triggered by URLs broadcast by nearby
                          // devices (iOS and Android).
+    DOCUMENT = 16;       // Suggestions for documents in a cloud corpus.
   }
 
   // The result set displayed on the completion popup
@@ -252,6 +253,8 @@ message OmniboxEventProto {
       PHYSICAL_WEB = 25;             // A Physical Web nearby URL.
       PHYSICAL_WEB_OVERFLOW = 26;    // An item representing multiple Physical
                                      // Web nearby URLs.
+      DOCUMENT = 27;                 // An item representing a cloud document
+                                     // suggestion.
     }
     optional ResultType result_type = 2;
 
