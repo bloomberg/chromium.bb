@@ -215,7 +215,8 @@ class SignedExchangeCertFetcherTest : public testing::Test {
     network::ResourceResponseHead resource_response;
     resource_response.headers =
         base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
-
+    resource_response.headers->AddHeader(
+        "Content-Type: application/cert-chain+cbor");
     mock_loader_factory_.client_ptr()->OnReceiveResponse(
         resource_response, nullptr /* downloaded_file */);
   }
@@ -441,6 +442,22 @@ TEST_F(SignedExchangeCertFetcherTest, Abort_404) {
   network::ResourceResponseHead resource_response;
   resource_response.headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 404 Not Found");
+  mock_loader_factory_.client_ptr()->OnReceiveResponse(
+      resource_response, nullptr /* downloaded_file */);
+  RunUntilIdle();
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_FALSE(cert_result_);
+}
+
+TEST_F(SignedExchangeCertFetcherTest, WrongContentType) {
+  std::unique_ptr<SignedExchangeCertFetcher> fetcher =
+      CreateFetcherAndStart(false /* force_fetch */);
+  network::ResourceResponseHead resource_response;
+  resource_response.headers =
+      base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
+  resource_response.headers->AddHeader(
+      "Content-Type: application/octet-stream");
   mock_loader_factory_.client_ptr()->OnReceiveResponse(
       resource_response, nullptr /* downloaded_file */);
   RunUntilIdle();
