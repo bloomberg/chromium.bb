@@ -193,10 +193,8 @@ void LayoutTestContentBrowserClient::ExposeInterfacesToRenderer(
 
 void LayoutTestContentBrowserClient::BindClipboardHost(
     blink::mojom::ClipboardHostRequest request) {
-  if (!mock_clipboard_host_) {
-    mock_clipboard_host_ =
-        std::make_unique<MockClipboardHost>(browser_context());
-  }
+  if (!mock_clipboard_host_)
+    mock_clipboard_host_ = std::make_unique<MockClipboardHost>();
   mock_clipboard_host_->Bind(std::move(request));
 }
 

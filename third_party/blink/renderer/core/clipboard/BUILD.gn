@@ -22,4 +22,8 @@ blink_core_sources("clipboard") {
     "system_clipboard.cc",
     "system_clipboard.h",
   ]
+
+  deps = [
+    "//ui/gfx/codec",
+  ]
 }

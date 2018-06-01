@@ -14,13 +14,9 @@
 
 namespace content {
 
-class BrowserContext;
-
 class MockClipboardHost : public blink::mojom::ClipboardHost {
  public:
-  // |browser_context| could be null, in which case reading images
-  // is not supported.
-  explicit MockClipboardHost(BrowserContext* browser_context);
+  MockClipboardHost();
   ~MockClipboardHost() override;
 
   void Bind(blink::mojom::ClipboardHostRequest request);
@@ -59,14 +55,12 @@ class MockClipboardHost : public blink::mojom::ClipboardHost {
                      const std::string& url,
                      const base::string16& title) override;
   void WriteImage(ui::ClipboardType clipboard_type,
-                  const gfx::Size& size_in_pixels,
-                  mojo::ScopedSharedBufferHandle shared_buffer_handle) override;
+                  const SkBitmap& bitmap) override;
   void CommitWrite(ui::ClipboardType clipboard_type) override;
 #if defined(OS_MACOSX)
   void WriteStringToFindPboard(const base::string16& text) override;
 #endif
 
-  BrowserContext* browser_context_;
   mojo::BindingSet<blink::mojom::ClipboardHost> bindings_;
   uint64_t sequence_number_ = 0;
   base::string16 plain_text_;

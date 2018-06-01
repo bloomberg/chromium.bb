@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_SYSTEM_CLIPBOARD_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_SYSTEM_CLIPBOARD_H_
 
-#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -13,7 +12,6 @@
 
 namespace blink {
 
-class BlobDataHandle;
 class DataObject;
 class Image;
 class KURL;
@@ -51,7 +49,7 @@ class CORE_EXPORT SystemClipboard {
 
   String ReadRTF();
 
-  scoped_refptr<BlobDataHandle> ReadImage(mojom::ClipboardBuffer);
+  SkBitmap ReadImage(mojom::ClipboardBuffer);
   void WriteImage(Image*, const KURL&, const String& title);
 
   String ReadCustomData(const String& type);

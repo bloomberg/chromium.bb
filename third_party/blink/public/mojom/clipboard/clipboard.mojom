@@ -5,8 +5,7 @@
 module blink.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
-import "third_party/blink/public/mojom/blob/serialized_blob.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "skia/public/interfaces/bitmap.mojom";
 import "url/mojom/url.mojom";
 
 enum ClipboardFormat {
@@ -27,68 +26,62 @@ enum ClipboardBuffer {
 
 interface ClipboardHost {
   [Sync]
-  GetSequenceNumber(blink.mojom.ClipboardBuffer buffer) => (uint64 result);
+  GetSequenceNumber(ClipboardBuffer buffer) => (uint64 result);
 
   [Sync]
-  IsFormatAvailable(blink.mojom.ClipboardFormat format,
-                    blink.mojom.ClipboardBuffer buffer) => (bool result);
+  IsFormatAvailable(ClipboardFormat format,
+                    ClipboardBuffer buffer) => (bool result);
 
   [Sync]
-  ReadAvailableTypes(blink.mojom.ClipboardBuffer buffer) =>
+  ReadAvailableTypes(ClipboardBuffer buffer) =>
       (array<mojo_base.mojom.String16> types, bool result);
 
   [Sync]
-  ReadText(blink.mojom.ClipboardBuffer buffer) =>
+  ReadText(ClipboardBuffer buffer) => (mojo_base.mojom.BigString16 result);
+
+  [Sync]
+  ReadHtml(ClipboardBuffer buffer) => (mojo_base.mojom.BigString16 markup,
+                                      url.mojom.Url url,
+                                      uint32 fragment_start,
+                                      uint32 fragment_end);
+
+  [Sync]
+  ReadRtf(ClipboardBuffer buffer) => (string result);
+
+  [Sync]
+  ReadImage(ClipboardBuffer buffer) => (skia.mojom.Bitmap? image);
+
+  [Sync]
+  ReadCustomData(ClipboardBuffer buffer, mojo_base.mojom.String16 type) =>
       (mojo_base.mojom.BigString16 result);
-
-  [Sync]
-  ReadHtml(blink.mojom.ClipboardBuffer buffer) =>
-      (mojo_base.mojom.BigString16 markup,
-       url.mojom.Url url,
-       uint32 fragment_start,
-       uint32 fragment_end);
-
-  [Sync]
-  ReadRtf(blink.mojom.ClipboardBuffer buffer) => (string result);
-
-  [Sync]
-  ReadImage(blink.mojom.ClipboardBuffer buffer) => (SerializedBlob? blob);
-
-  [Sync]
-  ReadCustomData(blink.mojom.ClipboardBuffer buffer,
-                 mojo_base.mojom.String16 type) =>
-                     (mojo_base.mojom.BigString16 result);
 
   // Writing to the clipboard via IPC is a two-phase operation. First, the
   // sender sends the different types of data it'd like to write to the
   // receiver. Then, it sends a commit message to commit the data to the system
   // clipboard.
-  WriteText(blink.mojom.ClipboardBuffer buffer,
-            mojo_base.mojom.BigString16 text);
+  WriteText(ClipboardBuffer buffer, mojo_base.mojom.BigString16 text);
 
-  WriteHtml(blink.mojom.ClipboardBuffer buffer,
+  WriteHtml(ClipboardBuffer buffer,
             mojo_base.mojom.BigString16 markup,
             url.mojom.Url url);
 
-  WriteSmartPasteMarker(blink.mojom.ClipboardBuffer buffer);
+  WriteSmartPasteMarker(ClipboardBuffer buffer);
 
   WriteCustomData(
-      blink.mojom.ClipboardBuffer buffer,
+      ClipboardBuffer buffer,
       map<mojo_base.mojom.String16, mojo_base.mojom.BigString16> data);
 
   // TODO(dcheng): The |url| parameter should really be a GURL, but <canvas>'s
   // copy as image tries to set very long data: URLs on the clipboard. Using
   // GURL causes the browser to kill the renderer for sending a bad IPC (GURLs
   // bigger than 2 megabytes are considered to be bad). https://crbug.com/459822
-  WriteBookmark(blink.mojom.ClipboardBuffer buffer,
+  WriteBookmark(ClipboardBuffer buffer,
                 string url,
                 mojo_base.mojom.String16 title);
 
-  WriteImage(blink.mojom.ClipboardBuffer buffer,
-             gfx.mojom.Size size_in_pixels,
-             handle<shared_buffer> shared_buffer_handle);
+  WriteImage(ClipboardBuffer buffer, skia.mojom.Bitmap image);
 
-  CommitWrite(blink.mojom.ClipboardBuffer buffer);
+  CommitWrite(ClipboardBuffer buffer);
 
   [EnableIf=is_mac]
   WriteStringToFindPboard(mojo_base.mojom.String16 text);
