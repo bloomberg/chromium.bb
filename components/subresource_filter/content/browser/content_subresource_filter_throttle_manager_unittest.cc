@@ -14,7 +14,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"

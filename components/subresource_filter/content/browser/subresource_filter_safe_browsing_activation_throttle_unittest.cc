@@ -14,7 +14,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "components/safe_browsing/db/test_database_manager.h"
