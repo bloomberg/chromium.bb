@@ -98,6 +98,8 @@ class CORE_EXPORT NGLayoutInputNode {
 
   const ComputedStyle& Style() const;
 
+  bool ShouldApplySizeContainment() const;
+
   String ToString() const;
 
   explicit operator bool() const { return box_ != nullptr; }

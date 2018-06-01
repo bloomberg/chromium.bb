@@ -810,7 +810,7 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
     return false;
 
   const ComputedStyle* style = object->Style();
-  if (style->ContainsLayout() && style->ContainsSize())
+  if (style->ContainsLayout() && object->ShouldApplySizeContainment())
     return true;
 
   if (!object->HasOverflowClip())

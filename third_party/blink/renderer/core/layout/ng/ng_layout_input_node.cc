@@ -191,6 +191,10 @@ const ComputedStyle& NGLayoutInputNode::Style() const {
   return box_->StyleRef();
 }
 
+bool NGLayoutInputNode::ShouldApplySizeContainment() const {
+  return box_->ShouldApplySizeContainment();
+}
+
 String NGLayoutInputNode::ToString() const {
   return IsInline() ? ToNGInlineNode(*this).ToString()
                     : ToNGBlockNode(*this).ToString();
