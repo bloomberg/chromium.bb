@@ -61,6 +61,7 @@
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
+#include "components/language/core/common/language_experiments.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/network_session_configurator/common/network_features.h"
@@ -1127,6 +1128,23 @@ const FeatureEntry::FeatureVariation kSimplifyHttpsIndicatorVariations[] = {
     {"(show Lock icon for all HTTPS pages)", kSimplifyHttpsIndicatorBothToLock,
      arraysize(kSimplifyHttpsIndicatorBothToLock), nullptr}};
 
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kTranslateForceTriggerOnEnglishHeuristic[] = {
+    {language::kOverrideModelKey, language::kOverrideModelHeuristicValue},
+    {language::kEnforceRankerKey, "false"}};
+const FeatureEntry::FeatureParam kTranslateForceTriggerOnEnglishGeo[] = {
+    {language::kOverrideModelKey, language::kOverrideModelGeoValue},
+    {language::kEnforceRankerKey, "false"}};
+const FeatureEntry::FeatureVariation
+    kTranslateForceTriggerOnEnglishVariations[] = {
+        {"(Heuristic model without Ranker)",
+         kTranslateForceTriggerOnEnglishHeuristic,
+         arraysize(kTranslateForceTriggerOnEnglishHeuristic), nullptr},
+        {"(Geo model without Ranker)", kTranslateForceTriggerOnEnglishGeo,
+         arraysize(kTranslateForceTriggerOnEnglishGeo), nullptr},
+};
+#endif  // defined(OS_ANDROID)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -1800,6 +1818,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPullToRefreshEffectName,
      flag_descriptions::kPullToRefreshEffectDescription, kOsAndroid,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisablePullToRefreshEffect)},
+    {"translate-force-trigger-on-english",
+     flag_descriptions::kTranslateForceTriggerOnEnglishName,
+     flag_descriptions::kTranslateForceTriggerOnEnglishDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         language::kOverrideTranslateTriggerInIndia,
+         kTranslateForceTriggerOnEnglishVariations,
+         language::kOverrideTranslateTriggerInIndia.name)},
 #endif  // OS_ANDROID
     {"translate-ranker-enforcement",
      flag_descriptions::kTranslateRankerEnforcementName,

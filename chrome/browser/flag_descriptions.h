@@ -1055,6 +1055,9 @@ extern const char kTraceUploadUrlChoiceEmloading[];
 extern const char kTraceUploadUrlChoiceQa[];
 extern const char kTraceUploadUrlChoiceTesting[];
 
+extern const char kTranslateForceTriggerOnEnglishName[];
+extern const char kTranslateForceTriggerOnEnglishDescription[];
+
 extern const char kTranslateRankerEnforcementName[];
 extern const char kTranslateRankerEnforcementDescription[];
 

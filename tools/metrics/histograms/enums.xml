@@ -26933,7 +26933,9 @@ from previous Chrome versions.
   <int value="-1555510175" label="PasswordImport:enabled"/>
   <int value="-1553477903" label="ash-disable-text-filtering-in-overview-mode"/>
   <int value="-1549871007" label="OneGoogleBarOnLocalNtp:disabled"/>
+  <int value="-1547247328" label="OverrideTranslateTriggerInIndia:disabled"/>
   <int value="-1546903171" label="enable-touch-drag-drop"/>
+  <int value="-1546029755" label="OverrideTranslateTriggerInIndia:enabled"/>
   <int value="-1545595496" label="RendererSideResourceScheduler:enabled"/>
   <int value="-1544248549" label="ArcUseAuthEndpoint:enabled"/>
   <int value="-1543316040"
@@ -27950,6 +27952,7 @@ from previous Chrome versions.
   <int value="736911267" label="ExperimentalCrostiniUI:disabled"/>
   <int value="737421745" label="enable-accessibility-object-model"/>
   <int value="738868972" label="GdiTextPrinting:disabled"/>
+  <int value="745783589" label="translate-force-trigger-on-english"/>
   <int value="745868416" label="disable-system-timezone-automatic-detection"/>
   <int value="746944193" label="enable-automatic-password-saving:disabled"/>
   <int value="747847237" label="PhysicalWeb:enabled"/>
