@@ -302,13 +302,8 @@ cr.define('cr.ui.Oobe', function() {
      * @private
      */
     setMDMode_: function() {
-      if (loadTimeData.getString('newOobeUI') == 'on') {
-        $('oobe').setAttribute('md-mode', 'true');
-        $('popup-overlay').setAttribute('md-mode', 'true');
-      } else {
-        $('oobe').removeAttribute('md-mode');
-        $('popup-overlay').removeAttribute('md-mode');
-      }
+      $('oobe').setAttribute('md-mode', 'true');
+      $('popup-overlay').setAttribute('md-mode', 'true');
     },
   };
 });

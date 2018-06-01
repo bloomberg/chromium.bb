@@ -205,9 +205,9 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
      * @private
      */
     setMDMode_: function() {
-      var useMDOobe = (loadTimeData.getString('newOobeUI') == 'on');
-      $('oobe-hid-detection-md').hidden = !useMDOobe;
-      $('oobe-hid-detection').hidden = useMDOobe;
+      $('oobe-hid-detection-md').hidden = false;
+      // TODO(stevenjb): Remove oobe-hid-detection. https://crbug.com/647411.
+      $('oobe-hid-detection').hidden = true;
     },
   };
 });

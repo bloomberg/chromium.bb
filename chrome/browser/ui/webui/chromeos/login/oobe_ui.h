@@ -183,10 +183,6 @@ class OobeUI : public content::WebUIController,
     return network_state_informer_.get();
   }
 
-  // Does ReloadContent() if needed (for example, if material design mode has
-  // changed).
-  void UpdateLocalizedStringsIfNeeded();
-
   // Re-evaluate OOBE display placement.
   void OnDisplayConfigurationChanged();
 
@@ -249,10 +245,6 @@ class OobeUI : public content::WebUIController,
   // Flag that indicates whether JS part is fully loaded and ready to accept
   // calls.
   bool ready_ = false;
-
-  // This flag stores material-design mode (on/off) of currently displayed UI.
-  // If different version of UI is required, UI is updated.
-  bool oobe_ui_md_mode_ = false;
 
   // Callbacks to notify when JS part is fully loaded and ready to accept calls.
   std::vector<base::Closure> ready_callbacks_;

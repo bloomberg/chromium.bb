@@ -169,17 +169,7 @@ login.createScreen('ResetScreen', 'reset', function() {
      * Returns a control which should receive an initial focus.
      */
     get defaultControl() {
-      // choose
-      if (this.isMDMode_())
-        return $('oobe-reset-md');
-      if (this.context.get(
-              CONTEXT_KEY_SCREEN_STATE,
-              this.RESET_SCREEN_STATE.RESTART_REQUIRED) ==
-          this.RESET_SCREEN_STATE.RESTART_REQUIRED)
-        return $('reset-restart-button');
-      if (this.context.get(CONTEXT_KEY_IS_CONFIRMATIONAL_VIEW, false))
-        return $('reset-confirm-commit');
-      return $('reset-toconfirm-button');
+      return $('oobe-reset-md');
     },
 
     /**
@@ -200,26 +190,14 @@ login.createScreen('ResetScreen', 'reset', function() {
      * @private
      */
     setMDMode_: function() {
-      var useMDOobe = this.isMDMode_();
-      $('oobe-reset-md').hidden = !useMDOobe;
-      $('reset-confirm-overlay-md').hidden = !useMDOobe;
-      $('oobe-reset').hidden = useMDOobe;
-      $('reset-confirm-overlay').hidden = useMDOobe;
-      if (useMDOobe) {
-        $('reset').setAttribute('md-mode', 'true');
-        $('overlay-reset').setAttribute('md-mode', 'true');
-      } else {
-        $('reset').removeAttribute('md-mode');
-        $('overlay-reset').removeAttribute('md-mode');
-      }
-    },
+      $('oobe-reset-md').hidden = false;
+      $('reset-confirm-overlay-md').hidden = false;
+      // TODO(stevenjb): Remove oobe-reset + overlay. https://crbug.com/647411.
+      $('oobe-reset').hidden = true;
+      $('reset-confirm-overlay').hidden = true;
 
-    /**
-     * Returns if material-design flag is used.
-     * @private
-     */
-    isMDMode_: function() {
-      return loadTimeData.getString('newOobeUI') == 'on';
+      $('reset').setAttribute('md-mode', 'true');
+      $('overlay-reset').setAttribute('md-mode', 'true');
     },
 
     /**

@@ -254,11 +254,7 @@ login.createScreen('EulaScreen', 'eula', function() {
      * Returns a control which should receive an initial focus.
      */
     get defaultControl() {
-      if (loadTimeData.getString('newOobeUI') == 'on')
-        return $('oobe-eula-md');
-
-      return $('accept-button').disabled ? $('back-button') :
-                                           $('accept-button');
+      return $('oobe-eula-md');
     },
 
     enableKeyboardFlow: function() {
@@ -278,9 +274,9 @@ login.createScreen('EulaScreen', 'eula', function() {
      * @private
      */
     setMDMode_: function() {
-      var useMDOobe = (loadTimeData.getString('newOobeUI') == 'on');
-      $('oobe-eula-md').hidden = !useMDOobe;
-      $('oobe-eula').hidden = useMDOobe;
+      $('oobe-eula-md').hidden = false;
+      // TODO(stevenjb): Remove oobe-eula. https://crbug.com/647411.
+      $('oobe-eula').hidden = true;
     },
 
     /**
@@ -320,18 +316,7 @@ login.createScreen('EulaScreen', 'eula', function() {
      * @param {text} password TPM password to be shown.
      */
     setTpmPassword: function(password) {
-      if (loadTimeData.getString('newOobeUI') == 'on') {
-        $('oobe-eula-md').password = password;
-      } else {
-        $('tpm-busy').hidden = true;
-        if (password.length) {
-          $('tpm-password').textContent = password;
-          $('tpm-password').hidden = false;
-        } else {
-          $('tpm-desc').hidden = true;
-          $('tpm-desc-powerwash').hidden = false;
-        }
-      }
+      $('oobe-eula-md').password = password;
     },
 
     /**

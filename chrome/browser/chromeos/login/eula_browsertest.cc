@@ -134,9 +134,7 @@ class EulaTest : public OobeBaseTest {
     constexpr char kUniqueEulaWebviewName[] = "unique-eula-webview-name";
     JS().Evaluate(base::StringPrintf(
         "(function(){"
-        "  var isMd = (loadTimeData.getString('newOobeUI') == 'on');"
-        "  var eulaWebView = isMd ? $('oobe-eula-md').$.crosEulaFrame : "
-        "                           $('cros-eula-frame');"
+        "  var eulaWebView = $('oobe-eula-md').$.crosEulaFrame;"
         "  eulaWebView.name = '%s';"
         "})();",
         kUniqueEulaWebviewName));
