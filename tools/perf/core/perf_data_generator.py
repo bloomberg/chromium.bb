@@ -372,58 +372,6 @@ def get_waterfall_config():
       }
     ])
 
-  waterfall = add_tester(
-    waterfall, 'Mac 10.12 Perf', 'chromium-rel-mac12',
-    'mac',
-    swarming=[
-      {
-       'os': 'Mac-10.12',
-       'gpu': '8086:0a2e',
-       'pool': 'Chrome-perf',
-       'device_ids': [
-           'build158-m1', 'build159-m1', 'build160-m1',
-           'build161-m1', 'build162-m1'],
-       'perf_tests': [
-         ('net_perftests', 'build159-m1'),
-         ('views_perftests', 'build160-m1'),
-       ]
-      }
-    ])
-  waterfall = add_tester(
-    waterfall, 'Mac Pro 10.11 Perf',
-    'chromium-rel-mac11-pro', 'mac',
-    swarming=[
-      {
-       'gpu': '1002:6821',
-       'os': 'Mac-10.11',
-       'pool': 'chrome.tests.perf',
-       'device_ids': [
-           'build205-b7', 'build206-b7',
-           'build207-b7', 'build208-b7', 'build209-b7'
-          ],
-       'perf_tests': [
-         ('performance_browser_tests', 'build209-b7')
-       ]
-      }
-    ])
-  waterfall = add_tester(
-    waterfall, 'Mac Air 10.11 Perf',
-    'chromium-rel-mac11-air', 'mac',
-    swarming=[
-      {
-       'gpu': '8086:1626',
-       'os': 'Mac-10.11',
-       'pool': 'Chrome-perf',
-       'device_ids': [
-           'build123-b1', 'build124-b1',
-           'build125-b1', 'build126-b1', 'build127-b1'
-          ],
-       'perf_tests': [
-         ('performance_browser_tests', 'build126-b1')
-       ]
-      }
-    ])
-
   return waterfall
 
 
@@ -849,10 +797,28 @@ def get_all_benchmarks_metadata(metadata):
         emails, decorators.GetComponent(benchmark), False)
   return metadata
 
+# With migration to new recipe tests are now listed in the shard maps
+# that live in tools/perf/core.  We need to verify off of that list.
+def get_tests_in_performance_test_suite():
+  tests = sets.Set()
+  add_benchmarks_from_sharding_map(tests, "benchmark_desktop_bot_map.json")
+  add_benchmarks_from_sharding_map(tests, "benchmark_android_bot_map.json")
+  return tests
+
+
+def add_benchmarks_from_sharding_map(tests, shard_map_name):
+  path = os.path.join(os.path.dirname(__file__), shard_map_name)
+  if os.path.exists(path):
+    with open(path) as f:
+      sharding_map = json.load(f)
+    for _, benchmarks in sharding_map.iteritems():
+      for benchmark, _ in benchmarks['benchmarks'].iteritems():
+        tests.add(benchmark)
+
 
 def verify_all_tests_in_benchmark_csv(tests, benchmark_metadata):
   benchmark_names = sets.Set(benchmark_metadata)
-  test_names = sets.Set()
+  test_names = get_tests_in_performance_test_suite()
   for t in tests:
     scripts = []
     if 'isolated_scripts' in tests[t]:
@@ -970,36 +936,6 @@ def validate_tests(waterfall, waterfall_file, benchmark_file):
 #     assumed to be true.
 NEW_PERF_RECIPE_FYI_TESTERS = {
   'testers' : {
-    'Mac 10.13 Laptop High End': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'extra_args': [
-            '--run-ref-build',
-            '--test-shard-map-filename=benchmark_desktop_bot_map.json',
-          ],
-          'num_shards': 26
-        },
-        {
-          'isolate': 'net_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'views_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'mac',
-      'dimension': {
-        'pool': 'chrome.tests.perf-fyi',
-        'os': 'Mac-10.13',
-        'gpu': '1002:6821'
-      },
-      'device_ids': [
-      ],
-    },
     'One Buildbot Step Test Builder': {
       'tests': [
         {
@@ -1113,6 +1049,11 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'isolate': 'load_library_perf_tests',
           'num_shards': 1,
           'telemetry': False,
+        },
+        {
+          'isolate': 'performance_browser_tests',
+          'num_shards': 1,
+          'telemetry': False,
         }
       ],
       'platform': 'mac',
@@ -1162,7 +1103,42 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         'pool': 'chrome.tests.perf',
       },
       'device_ids': [],
-    }
+    },
+    'mac-10_13_laptop_high_end-perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=benchmark_desktop_bot_map.json',
+          ],
+          'num_shards': 26
+        },
+        {
+          'isolate': 'net_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'views_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'media_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        }
+      ],
+      'platform': 'mac',
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Mac-10.13',
+        'gpu': '1002:6821'
+      },
+      'device_ids': [
+      ],
+    },
   }
 }
 def add_common_test_properties(test_entry, tester_config, test_spec):
