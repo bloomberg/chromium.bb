@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "components/prefs/pref_service.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace {
 
@@ -149,7 +150,13 @@ std::string CryptohomeIdForProfile(Profile* profile) {
 std::string ContainerUserNameForProfile(Profile* profile) {
   // Get rid of the @domain.name in the profile user name (an email address).
   std::string container_username = profile->GetProfileUserName();
-  return container_username.substr(0, container_username.find('@'));
+  if (container_username.find('@') != std::string::npos) {
+    // gaia::CanonicalizeEmail CHECKs its argument contains'@'.
+    container_username = gaia::CanonicalizeEmail(container_username);
+    // |container_username| may have changed, so we have to find again.
+    return container_username.substr(0, container_username.find('@'));
+  }
+  return container_username;
 }
 
 std::string AppNameFromCrostiniAppId(const std::string& id) {
