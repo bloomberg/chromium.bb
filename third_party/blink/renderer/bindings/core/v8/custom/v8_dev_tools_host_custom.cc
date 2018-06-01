@@ -82,6 +82,7 @@ static bool PopulateContextMenuItems(v8::Isolate* isolate,
     if (!type->IsString())
       continue;
     String type_string = ToCoreStringWithNullCheck(type.As<v8::String>());
+    items.reserve(items.size() + 1);
     items.emplace_back();
     WebMenuItemInfo& item_info = items[items.size() - 1];
     if (type_string == "separator") {
