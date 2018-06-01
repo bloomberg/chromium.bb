@@ -307,6 +307,8 @@ blink_core_sources("editing") {
     "text_granularity.h",
     "text_offset_mapping.cc",
     "text_offset_mapping.h",
+    "text_segments.cc",
+    "text_segments.h",
     "visible_position.cc",
     "visible_position.h",
     "visible_selection.cc",

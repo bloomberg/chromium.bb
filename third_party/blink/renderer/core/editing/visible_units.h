@@ -283,13 +283,6 @@ Position PreviousBoundary(const VisiblePosition&, BoundarySearchFunction);
 PositionInFlatTree PreviousBoundary(const VisiblePositionInFlatTree&,
                                     BoundarySearchFunction);
 
-// Returns a boundary position after position or |position|. A boundary is
-// defined by |find_function|.
-// Note: |position| cannot be null position.
-PositionInFlatTree FindBoundaryForward(
-    const PositionInFlatTree& position,
-    std::function<int(const UChar*, int length, int offset)> find_function);
-
 CORE_EXPORT PositionWithAffinity
 AdjustForwardPositionToAvoidCrossingEditingBoundaries(
     const PositionWithAffinity&,

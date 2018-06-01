@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/editing/position_iterator.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
-#include "third_party/blink/renderer/core/editing/text_offset_mapping.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -556,26 +555,6 @@ PositionInFlatTree PreviousBoundary(
     const VisiblePositionInFlatTree& visible_position,
     BoundarySearchFunction search_function) {
   return PreviousBoundaryAlgorithm(visible_position, search_function);
-}
-
-// Note: This function is used for finding word and sentence boundary.
-PositionInFlatTree FindBoundaryForward(
-    const PositionInFlatTree& position,
-    std::function<int(const UChar*, int length, int offset)> find_forward) {
-  DCHECK(position.IsNotNull());
-  PositionInFlatTree last_position = position;
-  for (const auto& inline_contents :
-       TextOffsetMapping::ForwardRangeOf(position)) {
-    const TextOffsetMapping mapping(inline_contents);
-    const String text = mapping.GetText();
-    const int offset =
-        last_position == position ? mapping.ComputeTextOffset(position) : 0;
-    const int result = find_forward(text.Characters16(), text.length(), offset);
-    if (offset < result)
-      return mapping.GetPositionAfter(result);
-    last_position = mapping.GetRange().EndPosition();
-  }
-  return last_position;
 }
 
 // ---------
