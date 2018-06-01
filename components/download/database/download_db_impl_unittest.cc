@@ -31,9 +31,7 @@ DownloadDBEntry CreateDownloadDBEntry() {
 }
 
 std::string GetKey(const std::string& guid) {
-  return DownloadNamespaceToString(
-             DownloadNamespace::NAMESPACE_BROWSER_DOWNLOAD) +
-         "," + guid;
+  return "1," + guid;
 }
 
 }  // namespace
@@ -67,7 +65,7 @@ class DownloadDBTest : public testing::Test {
     DownloadDBEntry second = CreateDownloadDBEntry();
     DownloadDBEntry third = CreateDownloadDBEntry();
     db_entries_.insert(
-        std::make_pair("unknown," + first.GetGuid(),
+        std::make_pair("0," + first.GetGuid(),
                        DownloadDBConversions::DownloadDBEntryToProto(first)));
     db_entries_.insert(
         std::make_pair(GetKey(second.GetGuid()),

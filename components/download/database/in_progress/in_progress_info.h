@@ -30,17 +30,8 @@ struct InProgressInfo {
   // The url chain.
   std::vector<GURL> url_chain;
 
-  // Referrer url.
-  GURL referrer_url;
-
   // Site url.
   GURL site_url;
-
-  // Tab url.
-  GURL tab_url;
-
-  // Tab referrer url.
-  GURL tab_referrer_url;
 
   // If the entity body of unsuccessful HTTP response, like HTTP 404, will be
   // downloaded.
@@ -61,12 +52,6 @@ struct InProgressInfo {
   // The total number of bytes in the download.
   int64_t total_bytes = 0;
 
-  // Mime type.
-  std::string mime_type;
-
-  // Original mime type before all redirections.
-  std::string original_mime_type;
-
   //  destination info  --------------------------------------------------------
 
   // The current path to the download (potentially different from final if
@@ -78,9 +63,6 @@ struct InProgressInfo {
 
   // The number of bytes received (so far).
   int64_t received_bytes = 0;
-
-  // The time when the download started.
-  base::Time start_time;
 
   // The time when the download completed.
   base::Time end_time;
@@ -111,11 +93,14 @@ struct InProgressInfo {
   // Whether this download is paused.
   bool paused = false;
 
-  // Count for how many (extra) bytes were used (including resumption).
-  int64_t bytes_wasted = 0;
-
   // Whether the download is initiated on a metered network
   bool metered = false;
+
+  // Represents the origin information for this download. Used by offline pages.
+  std::string request_origin;
+
+  // Count for how many (extra) bytes were used (including resumption).
+  int64_t bytes_wasted = 0;
 };
 
 }  // namespace download
