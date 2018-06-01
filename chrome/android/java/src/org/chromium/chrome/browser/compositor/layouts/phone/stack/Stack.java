@@ -1570,6 +1570,12 @@ public abstract class Stack {
     }
 
     /**
+     * Computes the index that should be assumed to be the currently centered tab, for purposes of
+     * prioritizing which thumbnails to render.
+     */
+    abstract protected int computeReferenceIndex();
+
+    /**
      * ComputeTabPosition pass 6:
      * Updates the visibility sorting value to use to figure out which thumbnails to load.
      *
@@ -1577,14 +1583,7 @@ public abstract class Stack {
      */
     private void computeTabVisibilitySortingHelper(RectF stackRect) {
         int referenceIndex = mReferenceOrderIndex;
-        if (referenceIndex == -1) {
-            int centerIndex =
-                    getTabIndexAtPositon(mLayout.getWidth() / 2.0f, mLayout.getHeight() / 2.0f);
-            // Alter the center to take into account the scrolling direction.
-            if (mCurrentScrollDirection > 0) centerIndex++;
-            if (mCurrentScrollDirection < 0) centerIndex--;
-            referenceIndex = MathUtils.clamp(centerIndex, 0, mStackTabs.length - 1);
-        }
+        if (referenceIndex == -1) referenceIndex = computeReferenceIndex();
 
         final float width = mLayout.getWidth();
         final float height = mLayout.getHeight();
