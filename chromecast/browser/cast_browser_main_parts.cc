@@ -92,8 +92,11 @@
 #include "chromecast/browser/cast_display_configurator.h"
 #include "chromecast/graphics/accessibility/accessibility_manager.h"
 #include "chromecast/graphics/cast_screen.h"
+#include "chromecast/graphics/cast_window_manager_aura.h"
 #include "components/viz/service/display/overlay_strategy_underlay_cast.h"  // nogncheck
 #include "ui/display/screen.h"
+#else
+#include "chromecast/graphics/cast_window_manager_default.h"
 #endif
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
@@ -526,16 +529,15 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 #endif
 
 #if defined(USE_AURA)
-  cast_browser_process_->SetAccessibilityManager(
-      std::make_unique<AccessibilityManager>());
-  window_manager_ = CastWindowManager::Create(
-      CAST_IS_DEBUG_BUILD() ||
-          GetSwitchValueBoolean(switches::kEnableInput, false),
-      cast_browser_process_->accessibility_manager());
-#else
-  window_manager_ = CastWindowManager::Create(
+  window_manager_ = std::make_unique<CastWindowManagerAura>(
       CAST_IS_DEBUG_BUILD() ||
       GetSwitchValueBoolean(switches::kEnableInput, false));
+  window_manager_->Setup();
+  cast_browser_process_->SetAccessibilityManager(
+      std::make_unique<AccessibilityManager>(
+          window_manager_->window_tree_host()));
+#else
+  window_manager_ = std::make_unique<CastWindowManagerDefault>();
 #endif
 
   cast_browser_process_->SetCastService(

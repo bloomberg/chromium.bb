@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/graphics/cast_window_manager.h"
+#include "chromecast/graphics/cast_window_manager_aura.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/progress_bar.h"
@@ -14,8 +14,8 @@ namespace test {
 using CastViewsTest = aura::test::AuraTestBase;
 
 TEST_F(CastViewsTest, ProgressBar) {
-  std::unique_ptr<CastWindowManager> window_manager(CastWindowManager::Create(
-      true /* enable input */, nullptr /* accessibility manager */));
+  std::unique_ptr<CastWindowManager> window_manager =
+      std::make_unique<CastWindowManagerAura>(true /* enable input */);
   gfx::Rect bounds = window_manager->GetRootWindow()->bounds();
 
   views::ProgressBar* progress_bar = new views::ProgressBar(bounds.height());

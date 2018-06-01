@@ -11,11 +11,8 @@
 #include "chromecast/graphics/accessibility/accessibility_focus_ring_controller.h"
 
 namespace aura {
-class Window;
+class WindowTreeHost;
 }  // namespace aura
-namespace wm {
-class ActivationClient;
-}  // namespace wm
 
 namespace chromecast {
 
@@ -25,11 +22,8 @@ class FocusRingController;
 // to the responsible party.
 class AccessibilityManager {
  public:
-  AccessibilityManager();
+  explicit AccessibilityManager(aura::WindowTreeHost* window_tree_host);
   ~AccessibilityManager();
-
-  void Setup(aura::Window* root_window,
-             wm::ActivationClient* activation_client);
 
   // Sets the focus ring color.
   void SetFocusRingColor(SkColor color);
