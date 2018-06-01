@@ -86,8 +86,8 @@ std::vector<ArcProcess> GetArcSystemProcessList() {
         const std::string& process_name = entry.cmd_line_args()[0];
         // The is_focused and last_activity_time is not needed thus mocked
         ret_processes.emplace_back(child_nspid, child_pid, process_name,
-                                   mojom::ProcessState::PERSISTENT, kNotFocused,
-                                   kNoActivityTimeInfo);
+                                   mojom::ProcessStateDeprecated::PERSISTENT,
+                                   kNotFocused, kNoActivityTimeInfo);
       }
     }
   }
@@ -142,7 +142,7 @@ void UpdateNspidToPidMap(
 
 std::vector<ArcProcess> FilterProcessList(
     const ArcProcessService::NSPidToPidMap& pid_map,
-    std::vector<mojom::RunningAppProcessInfoPtr> processes) {
+    std::vector<mojom::RunningAppProcessInfoDeprecatedPtr> processes) {
   std::vector<ArcProcess> ret_processes;
   for (const auto& entry : processes) {
     const auto it = pid_map.find(entry->pid);
@@ -169,7 +169,7 @@ std::vector<ArcProcess> FilterProcessList(
 
 std::vector<ArcProcess> UpdateAndReturnProcessList(
     scoped_refptr<ArcProcessService::NSPidToPidMap> nspid_map,
-    std::vector<mojom::RunningAppProcessInfoPtr> processes) {
+    std::vector<mojom::RunningAppProcessInfoDeprecatedPtr> processes) {
   ArcProcessService::NSPidToPidMap& pid_map = *nspid_map;
   // Cleanup dead pids in the cache |pid_map|.
   std::unordered_set<ProcessId> nspid_to_remove;
@@ -279,11 +279,11 @@ bool ArcProcessService::RequestAppProcessList(
     return false;
 
   mojom::ProcessInstance* process_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service_->process(), RequestProcessList);
+      arc_bridge_service_->process(), RequestProcessListDeprecated);
   if (!process_instance)
     return false;
 
-  process_instance->RequestProcessList(
+  process_instance->RequestProcessListDeprecated(
       base::BindOnce(&ArcProcessService::OnReceiveProcessList,
                      weak_ptr_factory_.GetWeakPtr(), callback));
   return true;
@@ -291,13 +291,13 @@ bool ArcProcessService::RequestAppProcessList(
 
 void ArcProcessService::OnReceiveProcessList(
     const RequestProcessListCallback& callback,
-    std::vector<mojom::RunningAppProcessInfoPtr> instance_processes) {
+    std::vector<mojom::RunningAppProcessInfoDeprecatedPtr> processes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
       base::Bind(&UpdateAndReturnProcessList, nspid_to_pid_,
-                 base::Passed(&instance_processes)),
+                 base::Passed(&processes)),
       callback);
 }
 

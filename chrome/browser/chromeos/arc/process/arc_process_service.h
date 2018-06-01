@@ -104,7 +104,7 @@ class ArcProcessService : public KeyedService,
  private:
   void OnReceiveProcessList(
       const RequestProcessListCallback& callback,
-      std::vector<mojom::RunningAppProcessInfoPtr> instance_processes);
+      std::vector<mojom::RunningAppProcessInfoDeprecatedPtr> processes);
 
   // ConnectionObserver<mojom::ProcessInstance> overrides.
   void OnConnectionReady() override;
