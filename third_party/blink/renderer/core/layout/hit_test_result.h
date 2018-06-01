@@ -115,6 +115,9 @@ class CORE_EXPORT HitTestResult {
   const LayoutPoint& PointInInnerNodeFrame() const {
     return point_in_inner_node_frame_;
   }
+  void SetPointInInnerNodeFrame(const LayoutPoint& point) {
+    point_in_inner_node_frame_ = point;
+  }
   IntPoint RoundedPointInInnerNodeFrame() const {
     return RoundedIntPoint(PointInInnerNodeFrame());
   }
