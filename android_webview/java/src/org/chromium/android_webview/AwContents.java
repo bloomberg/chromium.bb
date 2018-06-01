@@ -79,6 +79,7 @@ import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.SmartClipProvider;
+import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.browser.WebContentsInternals;
@@ -315,6 +316,7 @@ public class AwContents implements SmartClipProvider {
     private AwViewAndroidDelegate mViewAndroidDelegate;
     private WindowAndroidWrapper mWindowAndroid;
     private WebContents mWebContents;
+    private ViewEventSink mViewEventSink;
     private WebContentsInternalsHolder mWebContentsInternalsHolder;
     private NavigationController mNavigationController;
     private final AwContentsClient mContentsClient;
@@ -877,7 +879,8 @@ public class AwContents implements SmartClipProvider {
             WindowAndroid windowAndroid) {
         mContentViewCore = ContentViewCore.create(mContext, PRODUCT_VERSION, webContents,
                 viewDelegate, internalDispatcher, windowAndroid);
-        mContentViewCore.setHideKeyboardOnBlur(false);
+        mViewEventSink = ViewEventSink.from(mWebContents);
+        mViewEventSink.setHideKeyboardOnBlur(false);
         SelectionPopupController controller = SelectionPopupController.fromWebContents(webContents);
         controller.setActionModeCallback(new AwActionModeCallback(mContext, this, webContents));
         if (mAutofillProvider != null) {
@@ -3436,7 +3439,7 @@ public class AwContents implements SmartClipProvider {
         @Override
         public void onConfigurationChanged(Configuration newConfig) {
             if (!isDestroyedOrNoOperation(NO_WARN)) {
-                mContentViewCore.onConfigurationChanged(newConfig);
+                mViewEventSink.onConfigurationChanged(newConfig);
                 mInternalAccessAdapter.super_onConfigurationChanged(newConfig);
             }
         }
@@ -3450,7 +3453,7 @@ public class AwContents implements SmartClipProvider {
             }
             mIsAttachedToWindow = true;
 
-            mContentViewCore.onAttachedToWindow();
+            mViewEventSink.onAttachedToWindow();
             nativeOnAttachedToWindow(mNativeAwContents, mContainerView.getWidth(),
                     mContainerView.getHeight());
             updateHardwareAcceleratedFeaturesToggle();
@@ -3476,7 +3479,7 @@ public class AwContents implements SmartClipProvider {
             hideAutofillPopup();
             nativeOnDetachedFromWindow(mNativeAwContents);
 
-            mContentViewCore.onDetachedFromWindow();
+            mViewEventSink.onDetachedFromWindow();
             updateHardwareAcceleratedFeaturesToggle();
             postUpdateContentViewCoreVisibility();
             mCurrentFunctor.onDetachedFromWindow();
@@ -3494,14 +3497,14 @@ public class AwContents implements SmartClipProvider {
         public void onWindowFocusChanged(boolean hasWindowFocus) {
             if (isDestroyedOrNoOperation(NO_WARN)) return;
             mWindowFocused = hasWindowFocus;
-            mContentViewCore.onWindowFocusChanged(hasWindowFocus);
+            mViewEventSink.onWindowFocusChanged(hasWindowFocus);
         }
 
         @Override
         public void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
             if (isDestroyedOrNoOperation(NO_WARN)) return;
             mContainerViewFocused = focused;
-            mContentViewCore.onViewFocusChanged(focused);
+            mViewEventSink.onViewFocusChanged(focused);
         }
 
         @Override

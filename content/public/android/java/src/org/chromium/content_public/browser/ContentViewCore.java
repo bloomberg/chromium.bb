@@ -5,7 +5,6 @@
 package org.chromium.content_public.browser;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -93,50 +92,4 @@ public interface ContentViewCore {
      * onDetachedFromWindow() which is guaranteed to be called in Android WebView.
      */
     void destroy();
-
-    /**
-     * @see View#onAttachedToWindow()
-     */
-    void onAttachedToWindow();
-
-    /**
-     * @see View#onDetachedFromWindow()
-     */
-    void onDetachedFromWindow();
-
-    /**
-     * @see View#onConfigurationChanged(Configuration)
-     */
-    void onConfigurationChanged(Configuration newConfig);
-
-    /**
-     * @see View#onWindowFocusChanged(boolean)
-     */
-    void onWindowFocusChanged(boolean hasWindowFocus);
-
-    /**
-     * When the activity pauses, the content should lose focus.
-     * TODO(mthiesse): See crbug.com/686232 for context. Desktop platforms use keyboard focus to
-     * trigger blur/focus, and the equivalent to this on Android is Window focus. However, we don't
-     * use Window focus because of the complexity around popups stealing Window focus.
-     */
-    void onPause();
-
-    /**
-     * When the activity resumes, the View#onFocusChanged may not be called, so we should restore
-     * the View focus state.
-     */
-    void onResume();
-
-    /**
-     * Called when view-level focus for the container view has changed.
-     * @param gainFocus {@code true} if the focus is gained, otherwise {@code false}.
-     */
-    void onViewFocusChanged(boolean gainFocus);
-
-    /**
-     * Sets whether the keyboard should be hidden when losing input focus.
-     * @param hideKeyboardOnBlur {@code true} if we should hide soft keyboard when losing focus.
-     */
-    void setHideKeyboardOnBlur(boolean hideKeyboardOnBlur);
 }
