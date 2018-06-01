@@ -51,7 +51,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
 
   void PaintTextClipMask(GraphicsContext&,
                          const IntRect& mask_rect,
-                         const LayoutPoint& paint_offset) override;
+                         const LayoutPoint& paint_offset,
+                         bool object_has_multiple_boxes) override;
   LayoutRect AdjustForScrolledContent(const PaintInfo&,
                                       const BoxPainterBase::FillLayerInfo&,
                                       const LayoutRect&) override;

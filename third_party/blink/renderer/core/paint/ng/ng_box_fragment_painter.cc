@@ -154,7 +154,7 @@ void NGBoxFragmentPainter::PaintObject(
     // TODO(eae): style.HasBoxDecorationBackground isn't good enough, it needs
     // to check the object as some objects may have box decoration background
     // other than from their own style.
-    // TODO(eae): This should not be needed both here and in PaintInlineBox.
+    // TODO(eae): We can probably get rid of suppress_box_decoration_background.
     if (!suppress_box_decoration_background && is_visible &&
         style.HasBoxDecorationBackground())
       PaintBoxDecorationBackground(paint_info, paint_offset);
@@ -739,7 +739,8 @@ bool NGBoxFragmentPainter::IntersectsPaintRect(
 
 void NGBoxFragmentPainter::PaintTextClipMask(GraphicsContext& context,
                                              const IntRect& mask_rect,
-                                             const LayoutPoint& paint_offset) {
+                                             const LayoutPoint& paint_offset,
+                                             bool object_has_multiple_boxes) {
   PaintInfo paint_info(context, mask_rect, PaintPhase::kTextClip,
                        kGlobalPaintNormalPhase, 0);
   const LayoutSize local_offset = box_fragment_.Offset().ToLayoutSize();
