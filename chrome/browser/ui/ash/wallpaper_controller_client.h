@@ -44,11 +44,14 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
       bool preview_mode,
       ash::mojom::WallpaperController::SetOnlineWallpaperIfExistsCallback
           callback);
-  void SetOnlineWallpaperFromData(const AccountId& account_id,
-                                  const std::string& image_data,
-                                  const std::string& url,
-                                  ash::WallpaperLayout layout,
-                                  bool preview_mode);
+  void SetOnlineWallpaperFromData(
+      const AccountId& account_id,
+      const std::string& image_data,
+      const std::string& url,
+      ash::WallpaperLayout layout,
+      bool preview_mode,
+      ash::mojom::WallpaperController::SetOnlineWallpaperFromDataCallback
+          callback);
   void SetDefaultWallpaper(const AccountId& account_id, bool show_wallpaper);
   void SetCustomizedDefaultWallpaperPaths(
       const base::FilePath& customized_default_small_path,

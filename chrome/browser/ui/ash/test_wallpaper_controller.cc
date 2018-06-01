@@ -63,7 +63,8 @@ void TestWallpaperController::SetOnlineWallpaperFromData(
     const std::string& image_data,
     const std::string& url,
     ash::WallpaperLayout layout,
-    bool preview_mode) {
+    bool preview_mode,
+    SetOnlineWallpaperFromDataCallback callback) {
   NOTIMPLEMENTED();
 }
 

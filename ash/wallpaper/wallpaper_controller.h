@@ -53,7 +53,7 @@ class WallpaperWindowStateManager;
 using CustomWallpaperElement = std::pair<base::FilePath, gfx::ImageSkia>;
 using CustomWallpaperMap = std::map<AccountId, CustomWallpaperElement>;
 
-using LoadedCallback = base::Callback<void(const gfx::ImageSkia& image)>;
+using LoadedCallback = base::OnceCallback<void(const gfx::ImageSkia& image)>;
 
 // Controls the desktop background wallpaper:
 //   - Sets a wallpaper image and layout;
@@ -295,11 +295,13 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
       WallpaperLayout layout,
       bool preview_mode,
       SetOnlineWallpaperIfExistsCallback callback) override;
-  void SetOnlineWallpaperFromData(mojom::WallpaperUserInfoPtr user_info,
-                                  const std::string& image_data,
-                                  const std::string& url,
-                                  WallpaperLayout layout,
-                                  bool preview_mode) override;
+  void SetOnlineWallpaperFromData(
+      mojom::WallpaperUserInfoPtr user_info,
+      const std::string& image_data,
+      const std::string& url,
+      WallpaperLayout layout,
+      bool preview_mode,
+      SetOnlineWallpaperFromDataCallback callback) override;
   void SetDefaultWallpaper(mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id,
                            bool show_wallpaper) override;
@@ -427,6 +429,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // if |params.account_id| is the active user.
   void OnOnlineWallpaperDecoded(const OnlineWallpaperParams& params,
                                 bool save_file,
+                                SetOnlineWallpaperFromDataCallback callback,
                                 const gfx::ImageSkia& image);
 
   // Implementation of |SetOnlineWallpaper|. Shows the wallpaper on screen if

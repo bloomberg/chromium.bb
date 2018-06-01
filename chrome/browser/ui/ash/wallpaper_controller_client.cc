@@ -212,13 +212,16 @@ void WallpaperControllerClient::SetOnlineWallpaperFromData(
     const std::string& image_data,
     const std::string& url,
     ash::WallpaperLayout layout,
-    bool preview_mode) {
+    bool preview_mode,
+    ash::mojom::WallpaperController::SetOnlineWallpaperFromDataCallback
+        callback) {
   ash::mojom::WallpaperUserInfoPtr user_info =
       AccountIdToWallpaperUserInfo(account_id);
   if (!user_info)
     return;
   wallpaper_controller_->SetOnlineWallpaperFromData(
-      std::move(user_info), image_data, url, layout, preview_mode);
+      std::move(user_info), image_data, url, layout, preview_mode,
+      std::move(callback));
 }
 
 void WallpaperControllerClient::SetDefaultWallpaper(const AccountId& account_id,
