@@ -5,9 +5,9 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 
 #include <algorithm>
+#include <memory>
 #include <tuple>
 
-#include "base/optional.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -129,6 +129,51 @@ class LazyLoadFramesTest : public SimTest,
         std::get<WebEffectiveConnectionType>(GetParam()))];
   }
 
+  // Convenience function to load a page with a cross origin frame far down the
+  // page such that it's not near the viewport.
+  std::unique_ptr<SimRequest> LoadPageWithCrossOriginFrameFarFromViewport() {
+    SimRequest main_resource("https://example.com/", "text/html");
+    std::unique_ptr<SimRequest> child_frame_resource;
+
+    if (!RuntimeEnabledFeatures::LazyFrameLoadingEnabled()) {
+      // This SimRequest needs to be created now if the frame won't actually be
+      // lazily loaded. Otherwise, it'll be defined later to ensure that the
+      // subframe resource isn't requested until the page is scrolled down.
+      child_frame_resource.reset(
+          new SimRequest("https://crossorigin.com/subframe.html", "text/html"));
+    }
+
+    LoadURL("https://example.com/");
+
+    main_resource.Complete(String::Format(
+        R"HTML(
+          <body onload='console.log("main body onload");'>
+          <div style='height: %dpx;'></div>
+          <iframe src='https://crossorigin.com/subframe.html'
+               style='width: 400px; height: 400px;'
+               onload='console.log("child frame element onload");'></iframe>
+          </body>)HTML",
+        kViewportHeight + GetLoadingDistanceThreshold() + 100));
+
+    Compositor().BeginFrame();
+    test::RunPendingTasks();
+
+    // If the child frame is being lazy loaded, then the body's load event
+    // should have already fired.
+    EXPECT_EQ(RuntimeEnabledFeatures::LazyFrameLoadingEnabled(),
+              ConsoleMessages().Contains("main body onload"));
+    EXPECT_FALSE(ConsoleMessages().Contains("child frame element onload"));
+
+    ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
+
+    if (!child_frame_resource) {
+      child_frame_resource.reset(
+          new SimRequest("https://crossorigin.com/subframe.html", "text/html"));
+    }
+
+    return child_frame_resource;
+  }
+
  private:
   ScopedLazyFrameLoadingForTest scoped_lazy_frame_loading_for_test_;
   ScopedLazyFrameVisibleLoadTimeMetricsForTest
@@ -137,7 +182,7 @@ class LazyLoadFramesTest : public SimTest,
   HistogramTester histogram_tester_;
 };
 
-TEST_P(LazyLoadFramesTest, SameOriginFrameIsNotDeferred) {
+TEST_P(LazyLoadFramesTest, SameOriginFrame) {
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest child_frame_resource("https://example.com/subframe.html",
                                   "text/html");
@@ -154,6 +199,9 @@ TEST_P(LazyLoadFramesTest, SameOriginFrameIsNotDeferred) {
         </body>)HTML",
       kViewportHeight + GetLoadingDistanceThreshold() + 100));
 
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
   child_frame_resource.Complete("");
 
   Compositor().BeginFrame();
@@ -163,9 +211,11 @@ TEST_P(LazyLoadFramesTest, SameOriginFrameIsNotDeferred) {
   EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
 
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
 }
 
-TEST_P(LazyLoadFramesTest, AboveTheFoldFrameIsNotDeferred) {
+TEST_P(LazyLoadFramesTest, AboveTheFoldFrame) {
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest child_frame_resource("https://crossorigin.com/subframe.html",
                                   "text/html");
@@ -197,9 +247,11 @@ TEST_P(LazyLoadFramesTest, AboveTheFoldFrameIsNotDeferred) {
   EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
 
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(1, 0);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
 }
 
-TEST_P(LazyLoadFramesTest, BelowTheFoldButNearViewportFrameIsNotDeferred) {
+TEST_P(LazyLoadFramesTest, BelowTheFoldButNearViewportFrame) {
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest child_frame_resource("https://crossorigin.com/subframe.html",
                                   "text/html");
@@ -240,9 +292,14 @@ TEST_P(LazyLoadFramesTest, BelowTheFoldButNearViewportFrameIsNotDeferred) {
   test::RunPendingTasks();
 
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 1);
+
+  // The frame finished loading before it became visible, so there should be no
+  // samples in the VisibleBeforeLoaded histogram.
+  histogram_tester()->ExpectTotalCount(
+      "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
 }
 
-TEST_P(LazyLoadFramesTest, HiddenAndTinyFramesAreNotDeferred) {
+TEST_P(LazyLoadFramesTest, HiddenAndTinyFrames) {
   SimRequest main_resource("https://example.com/", "text/html");
 
   SimRequest display_none_frame_resource(
@@ -279,16 +336,16 @@ TEST_P(LazyLoadFramesTest, HiddenAndTinyFramesAreNotDeferred) {
              style='width: 4px; height: 4px;'
              onload='console.log("tiny element onload");'></iframe>
         <iframe src='https://crossorigin.com/tiny_width.html'
-             style='width: 0px; height: 200px;'
+             style='width: 0px; height: 50px;'
              onload='console.log("tiny width element onload");'></iframe>
         <iframe src='https://crossorigin.com/tiny_height.html'
-             style='width: 200px; height: 0px;'
+             style='width: 50px; height: 0px;'
              onload='console.log("tiny height element onload");'></iframe>
         <iframe src='https://crossorigin.com/off_screen_left.html'
-             style='position:relative;right:9000px;width:200px;height:200px;'
+             style='position:relative;right:9000px;width:50px;height:50px;'
              onload='console.log("off screen left element onload");'></iframe>
         <iframe src='https://crossorigin.com/off_screen_top.html'
-             style='position:relative;bottom:9000px;width:200px;height:200px;'
+             style='position:relative;bottom:9000px;width:50px;height:50px;'
              onload='console.log("off screen top element onload");'></iframe>
         </body>
       )HTML",
@@ -315,95 +372,46 @@ TEST_P(LazyLoadFramesTest, HiddenAndTinyFramesAreNotDeferred) {
   EXPECT_TRUE(ConsoleMessages().Contains("off screen left element onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("off screen top element onload"));
 
+  ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
+
+  // Scroll down to where the hidden frames are.
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, kViewportHeight + GetLoadingDistanceThreshold()),
+      kProgrammaticScroll);
+
   // All of the frames on the page are hidden or tiny, so no visible load time
   // samples should have been recorded for them.
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
 }
 
-TEST_P(LazyLoadFramesTest, CrossOriginFrameIsDeferredUntilNearViewport) {
-  SimRequest main_resource("https://example.com/", "text/html");
-  base::Optional<SimRequest> child_frame_resource;
-  base::Optional<SimRequest> nested_child_frame_resource;
+TEST_P(LazyLoadFramesTest, LoadCrossOriginFrameFarFromViewport) {
+  std::unique_ptr<SimRequest> child_frame_resource =
+      LoadPageWithCrossOriginFrameFarFromViewport();
 
-  if (std::get<LazyFrameLoadingFeatureStatus>(GetParam()) !=
-      LazyFrameLoadingFeatureStatus::kEnabled) {
-    // These SimRequests need to be defined now if the frames won't actually be
-    // lazily loaded. Otherwise, they'll be defined later to ensure that the
-    // subframe resources aren't requested until the page is scrolled down.
-    child_frame_resource.emplace("https://crossorigin.com/subframe.html",
-                                 "text/html");
-    nested_child_frame_resource.emplace("https://test.com/", "text/html");
+  if (RuntimeEnabledFeatures::LazyFrameLoadingEnabled()) {
+    // If LazyFrameLoading is enabled, then scroll down near the child frame to
+    // cause the child frame to start loading.
+    GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+        ScrollOffset(0, 150), kProgrammaticScroll);
+
+    Compositor().BeginFrame();
+    test::RunPendingTasks();
   }
 
-  LoadURL("https://example.com/");
-
-  main_resource.Complete(String::Format(
-      R"HTML(
-        <body onload='console.log("main body onload");'>
-        <div style='height: %dpx;'></div>
-        <iframe src='https://crossorigin.com/subframe.html'
-             style='width: 400px; height: 400px;'
-             onload='console.log("child frame element onload");'></iframe>
-        </body>)HTML",
-      kViewportHeight + GetLoadingDistanceThreshold() + 100));
-
-  Compositor().BeginFrame();
-  test::RunPendingTasks();
-
-  // If the child frame is being lazy loaded, then the body's load event should
-  // have already fired.
-  EXPECT_EQ(std::get<LazyFrameLoadingFeatureStatus>(GetParam()) ==
-                LazyFrameLoadingFeatureStatus::kEnabled,
-            ConsoleMessages().Contains("main body onload"));
-  EXPECT_FALSE(ConsoleMessages().Contains("child frame element onload"));
-
-  ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
-
-  if (!child_frame_resource.has_value()) {
-    child_frame_resource.emplace("https://crossorigin.com/subframe.html",
-                                 "text/html");
-  }
-
-  // Scroll down near the child frame. This should cause the child frame to get
-  // loaded.
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 150), kProgrammaticScroll);
-
-  Compositor().BeginFrame();
-  test::RunPendingTasks();
-
   EXPECT_FALSE(ConsoleMessages().Contains("child frame element onload"));
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
 
-  if (!nested_child_frame_resource.has_value())
-    nested_child_frame_resource.emplace("https://test.com/", "text/html");
-
-  // There's another nested cross origin iframe inside the first child frame,
-  // partway down such that it's not near the viewport. It should still be
-  // loaded immediately, and not deferred, since it's nested inside a frame that
-  // was previously deferred.
-  child_frame_resource->Complete(
-      "<div style='height: 200px;'></div>"
-      "<iframe src='https://test.com/' style='width: 200px; height: 200px;'>"
-      "</iframe>");
-
-  Compositor().BeginFrame();
-  test::RunPendingTasks();
-
-  EXPECT_FALSE(ConsoleMessages().Contains("child frame element onload"));
-  ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
-
-  test::RunPendingTasks();
-  nested_child_frame_resource->Complete("");
+  child_frame_resource->Complete("");
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
 
   EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
-
-  // The child frame isn't visible yet, so no visible load time samples should
-  // have been recorded yet.
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
 
   // Scroll down so that the child frame is visible.
@@ -414,10 +422,97 @@ TEST_P(LazyLoadFramesTest, CrossOriginFrameIsDeferredUntilNearViewport) {
   Compositor().BeginFrame();
   test::RunPendingTasks();
 
+  EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 1);
+
+  histogram_tester()->ExpectTotalCount(
+      "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
 }
 
-TEST_P(LazyLoadFramesTest, AboutBlankNavigationIsNotDeferred) {
+TEST_P(LazyLoadFramesTest,
+       CrossOriginFrameFarFromViewportBecomesVisibleBeforeFinishedLoading) {
+  std::unique_ptr<SimRequest> child_frame_resource =
+      LoadPageWithCrossOriginFrameFarFromViewport();
+
+  // Scroll down so that the child frame is visible.
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, GetLoadingDistanceThreshold() + 150),
+      kProgrammaticScroll);
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_FALSE(ConsoleMessages().Contains("child frame element onload"));
+  ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
+
+  if (RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled()) {
+    // Even though the child frame hasn't loaded yet, a sample should still have
+    // been recorded for VisibleBeforeLoaded.
+    histogram_tester()->ExpectUniqueSample(
+        "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold",
+        static_cast<int>(std::get<WebEffectiveConnectionType>(GetParam())), 1);
+  } else {
+    histogram_tester()->ExpectTotalCount(
+        "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
+  }
+
+  child_frame_resource->Complete("");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
+  ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 1);
+
+  // The samples recorded for VisibleBeforeLoaded should be unchanged.
+  histogram_tester()->ExpectTotalCount(
+      "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold",
+      RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled() ? 1 : 0);
+}
+
+TEST_P(LazyLoadFramesTest, NestedFrameInCrossOriginFrameFarFromViewport) {
+  std::unique_ptr<SimRequest> child_frame_resource =
+      LoadPageWithCrossOriginFrameFarFromViewport();
+
+  if (RuntimeEnabledFeatures::LazyFrameLoadingEnabled()) {
+    // If LazyFrameLoading is enabled, then scroll down near the child frame to
+    // cause the child frame to start loading.
+    GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+        ScrollOffset(0, 150), kProgrammaticScroll);
+
+    Compositor().BeginFrame();
+    test::RunPendingTasks();
+  }
+
+  // There's another nested cross origin iframe inside the first child frame,
+  // even further down such that it's not near the viewport. It should start
+  // loading immediately, even if LazyFrameLoading is enabled, since it's nested
+  // inside a frame that was previously deferred.
+  SimRequest nested_frame_resource("https://test.com/", "text/html");
+  child_frame_resource->Complete(String::Format(
+      "<div style='height: %dpx;'></div>"
+      "<iframe src='https://test.com/' style='width: 200px; height: 200px;'>"
+      "</iframe>",
+      kViewportHeight + GetLoadingDistanceThreshold() + 100));
+
+  nested_frame_resource.Complete("");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
+
+  // The child frame isn't visible, so no visible load time samples should have
+  // been recorded.
+  ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
+}
+
+TEST_P(LazyLoadFramesTest, AboutBlankChildFrameNavigation) {
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest child_frame_resource("https://crossorigin.com/subframe.html",
                                   "text/html");
@@ -460,9 +555,11 @@ TEST_P(LazyLoadFramesTest, AboutBlankNavigationIsNotDeferred) {
                                            "child frame element onload")));
 
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
 }
 
-TEST_P(LazyLoadFramesTest, JavascriptStringUrlIsNotDeferred) {
+TEST_P(LazyLoadFramesTest, JavascriptStringFrameUrl) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
 
@@ -481,7 +578,10 @@ TEST_P(LazyLoadFramesTest, JavascriptStringUrlIsNotDeferred) {
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
+
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
 }
 
 INSTANTIATE_TEST_CASE_P(

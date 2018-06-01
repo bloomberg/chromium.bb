@@ -532,6 +532,23 @@ void HTMLFrameOwnerElement::RecordMetricsOnVisibilityChanged(
   time_when_first_visible_ = CurrentTimeTicks();
   RecordVisibilityMetricsIfLoadedAndVisible();
 
+  // On slow networks, iframes might not finish loading by the time the user
+  // leaves the page, so the visible load time metrics samples won't represent
+  // the slowest frames. To remedy this, record how often below the fold
+  // lazyload-eligible frames become visible before they've finished loading.
+  // This isn't recorded for above the fold frames since basically every above
+  // the fold frame would be visible before they finish loading.
+  if (time_when_first_load_finished_.is_null() &&
+      !is_initially_above_the_fold_ && GetDocument().GetFrame()) {
+    // Note: If the WebEffectiveConnectionType enum ever gets out of sync with
+    // net::EffectiveConnectionType, then this will have to be updated to record
+    // the sample in terms of net::EffectiveConnectionType instead of
+    // WebEffectiveConnectionType.
+    UMA_HISTOGRAM_ENUMERATION(
+        "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold",
+        GetDocument().GetFrame()->Client()->GetEffectiveConnectionType());
+  }
+
   lazy_load_visibility_metrics_observer_->disconnect();
   lazy_load_visibility_metrics_observer_.Clear();
 }
