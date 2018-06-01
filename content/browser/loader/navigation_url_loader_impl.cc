@@ -59,6 +59,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_content_disposition.h"
+#include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
@@ -689,7 +690,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // so let it just follow the redirect.
     if (url_loader_) {
       DCHECK(!redirect_info_.new_url.is_empty());
-      url_loader_->FollowRedirect();
+      url_loader_->FollowRedirect(
+          std::move(url_loader_modified_request_headers_));
       return;
     }
 
@@ -795,12 +797,13 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         base::ThreadTaskRunnerHandle::Get());
   }
 
-  void FollowRedirect() {
+  void FollowRedirect(
+      const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!redirect_info_.new_url.is_empty());
 
     if (!IsLoaderInterceptionEnabled()) {
-      url_loader_->FollowRedirect();
+      url_loader_->FollowRedirect(modified_request_headers);
       return;
     }
 
@@ -817,7 +820,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     bool should_clear_upload = false;
     net::RedirectUtil::UpdateHttpRequest(
         resource_request_->url, resource_request_->method, redirect_info_,
-        &resource_request_->headers, &should_clear_upload);
+        modified_request_headers, &resource_request_->headers,
+        &should_clear_upload);
     if (should_clear_upload) {
       // The request body is no longer applicable.
       resource_request_->request_body = nullptr;
@@ -830,6 +834,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     resource_request_->referrer = GURL(redirect_info_.new_referrer);
     resource_request_->referrer_policy = redirect_info_.new_referrer_policy;
     url_chain_.push_back(redirect_info_.new_url);
+
+    // Need to cache modified headers for |url_loader_| since it doesn't use
+    // |resource_request_| during redirect.
+    url_loader_modified_request_headers_ = modified_request_headers;
 
     Restart();
   }
@@ -1144,6 +1152,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   std::unique_ptr<ThrottlingURLLoader> url_loader_;
 
+  // Caches the modified request headers provided by clients during redirect,
+  // will be consumed by next |url_loader_->FollowRedirect()|.
+  base::Optional<net::HttpRequestHeaders> url_loader_modified_request_headers_;
+
   BlobHandles blob_handles_;
   std::vector<GURL> url_chain_;
 
@@ -1359,11 +1371,13 @@ NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {
                             request_controller_.release());
 }
 
-void NavigationURLLoaderImpl::FollowRedirect() {
+void NavigationURLLoaderImpl::FollowRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&URLLoaderRequestController::FollowRedirect,
-                     base::Unretained(request_controller_.get())));
+                     base::Unretained(request_controller_.get()),
+                     modified_request_headers));
 }
 
 void NavigationURLLoaderImpl::ProceedWithResponse() {}

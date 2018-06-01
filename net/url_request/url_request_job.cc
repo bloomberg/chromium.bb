@@ -243,7 +243,8 @@ void URLRequestJob::ContinueDespiteLastError() {
   NOTREACHED();
 }
 
-void URLRequestJob::FollowDeferredRedirect() {
+void URLRequestJob::FollowDeferredRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   // OnReceivedRedirect must have been called.
   DCHECK(deferred_redirect_info_);
 
@@ -251,7 +252,7 @@ void URLRequestJob::FollowDeferredRedirect() {
   // pass along a reference to |deferred_redirect_info_|.
   base::Optional<RedirectInfo> redirect_info =
       std::move(deferred_redirect_info_);
-  FollowRedirect(*redirect_info);
+  FollowRedirect(*redirect_info, modified_request_headers);
 }
 
 int64_t URLRequestJob::prefilter_bytes_read() const {
@@ -427,7 +428,8 @@ void URLRequestJob::NotifyHeadersComplete() {
     if (defer_redirect) {
       deferred_redirect_info_ = std::move(redirect_info);
     } else {
-      FollowRedirect(redirect_info);
+      FollowRedirect(redirect_info,
+                     base::nullopt /* modified_request_headers */);
     }
     return;
   }
@@ -679,8 +681,10 @@ int URLRequestJob::CanFollowRedirect(const GURL& new_url) {
   return OK;
 }
 
-void URLRequestJob::FollowRedirect(const RedirectInfo& redirect_info) {
-  request_->Redirect(redirect_info);
+void URLRequestJob::FollowRedirect(
+    const RedirectInfo& redirect_info,
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+  request_->Redirect(redirect_info, modified_request_headers);
 }
 
 void URLRequestJob::GatherRawReadStats(int bytes_read) {

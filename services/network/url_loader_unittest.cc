@@ -1479,6 +1479,50 @@ TEST_F(URLLoaderTest, SSLInfoOnComplete) {
             client()->completion_status().ssl_info.value().cert_status);
 }
 
+// Make sure the client can modify headers during a redirect.
+TEST_F(URLLoaderTest, RedirectModifiedHeaders) {
+  ResourceRequest request = CreateResourceRequest(
+      "GET", test_server()->GetURL("/redirect307-to-echo"));
+  request.headers.AddHeadersFromString("Header1: Value1\r\nHeader2: Value2");
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
+
+  client()->RunUntilRedirectReceived();
+
+  // Initial request should only have initial headers.
+  const auto& request_headers1 = sent_request().headers;
+  EXPECT_EQ("Value1", request_headers1.find("Header1")->second);
+  EXPECT_EQ("Value2", request_headers1.find("Header2")->second);
+  EXPECT_EQ(request_headers1.end(), request_headers1.find("Header3"));
+
+  // Overwrite Header2 and add Header3.
+  net::HttpRequestHeaders redirect_headers;
+  redirect_headers.SetHeader("Header2", "");
+  redirect_headers.SetHeader("Header3", "Value3");
+  loader->FollowRedirect(redirect_headers);
+
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  // Redirected request should also have modified headers.
+  const auto& request_headers2 = sent_request().headers;
+  EXPECT_EQ("Value1", request_headers2.find("Header1")->second);
+  EXPECT_EQ("", request_headers2.find("Header2")->second);
+  EXPECT_EQ("Value3", request_headers2.find("Header3")->second);
+}
+
 // A mock URLRequestJob which simulates an HTTPS request with a certificate
 // error.
 class MockHTTPSURLRequestJob : public net::URLRequestTestJob {

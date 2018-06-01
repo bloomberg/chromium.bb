@@ -845,12 +845,13 @@ void URLRequest::NotifyResponseStarted(const URLRequestStatus& status) {
   }
 }
 
-void URLRequest::FollowDeferredRedirect() {
+void URLRequest::FollowDeferredRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   DCHECK(job_.get());
   DCHECK(status_.is_success());
 
   status_ = URLRequestStatus::FromError(ERR_IO_PENDING);
-  job_->FollowDeferredRedirect();
+  job_->FollowDeferredRedirect(modified_request_headers);
 }
 
 void URLRequest::SetAuth(const AuthCredentials& credentials) {
@@ -913,7 +914,9 @@ void URLRequest::PrepareToRestart() {
   proxy_server_ = ProxyServer();
 }
 
-void URLRequest::Redirect(const RedirectInfo& redirect_info) {
+void URLRequest::Redirect(
+    const RedirectInfo& redirect_info,
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   // This method always succeeds. Whether |job_| is allowed to redirect to
   // |redirect_info| is checked in URLRequestJob::CanFollowRedirect, before
   // NotifyReceivedRedirect. This means the delegate can assume that, if it
@@ -936,6 +939,7 @@ void URLRequest::Redirect(const RedirectInfo& redirect_info) {
 
   bool clear_body = false;
   net::RedirectUtil::UpdateHttpRequest(url(), method_, redirect_info,
+                                       modified_request_headers,
                                        &extra_request_headers_, &clear_body);
   if (clear_body)
     upload_data_stream_.reset();

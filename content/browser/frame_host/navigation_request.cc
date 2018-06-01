@@ -1391,7 +1391,7 @@ void NavigationRequest::OnRedirectChecksComplete(
 
   RenderFrameDevToolsAgentHost::OnNavigationRequestWillBeSent(*this);
 
-  loader_->FollowRedirect();
+  loader_->FollowRedirect(base::nullopt);
 }
 
 void NavigationRequest::OnFailureChecksComplete(
