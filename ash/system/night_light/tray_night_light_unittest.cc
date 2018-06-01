@@ -4,6 +4,7 @@
 
 #include "ash/system/night_light/tray_night_light.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
@@ -44,6 +45,11 @@ class TrayNightLightTest : public NoSessionAshTestBase {
 // Tests that when NightLight is active, its tray icon in the System Tray is
 // visible.
 TEST_F(TrayNightLightTest, TestNightLightTrayVisibility) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   TrayNightLight* tray_night_light = tray->tray_night_light();
   NightLightController* controller = Shell::Get()->night_light_controller();

@@ -4,6 +4,7 @@
 
 #include "ash/system/screen_security/screen_tray_item.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/system/screen_security/screen_capture_tray_item.h"
 #include "ash/system/screen_security/screen_share_tray_item.h"
@@ -70,6 +71,12 @@ class ScreenCaptureTest : public ScreenTrayItemTest {
 
   void SetUp() override {
     ScreenTrayItemTest::SetUp();
+
+    // TODO(tetsui): Remove after UnifiedSystemTray launch.
+    // https://crbug.com/847104
+    if (features::IsSystemTrayUnifiedEnabled())
+      return;
+
     // This tray item is owned by its parent system tray view and will
     // be deleted automatically when its parent is destroyed in AshTestBase.
     ScreenTrayItem* item = new ScreenCaptureTrayItem(GetPrimarySystemTray());
@@ -88,6 +95,12 @@ class ScreenShareTest : public ScreenTrayItemTest {
 
   void SetUp() override {
     ScreenTrayItemTest::SetUp();
+
+    // TODO(tetsui): Remove after UnifiedSystemTray launch.
+    // https://crbug.com/847104
+    if (features::IsSystemTrayUnifiedEnabled())
+      return;
+
     // This tray item is owned by its parent system tray view and will
     // be deleted automatically when its parent is destroyed in AshTestBase.
     ScreenTrayItem* item = new ScreenShareTrayItem(GetPrimarySystemTray());
@@ -113,10 +126,20 @@ void TestStartAndStop(ScreenTrayItemTest* test) {
 }
 
 TEST_F(ScreenCaptureTest, StartAndStop) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   TestStartAndStop(this);
 }
 
 TEST_F(ScreenShareTest, StartAndStop) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   TestStartAndStop(this);
 }
 
@@ -141,6 +164,11 @@ void TestNotificationStartAndStop(
 }
 
 TEST_F(ScreenCaptureTest, NotificationStartAndStop) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   base::RepeatingClosure start_function = base::BindRepeating(
       &SystemTrayNotifier::NotifyScreenCaptureStart,
       base::Unretained(Shell::Get()->system_tray_notifier()),
@@ -157,6 +185,11 @@ TEST_F(ScreenCaptureTest, NotificationStartAndStop) {
 }
 
 TEST_F(ScreenShareTest, NotificationStartAndStop) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   base::RepeatingClosure start_function = base::BindRepeating(
       &SystemTrayNotifier::NotifyScreenShareStart,
       base::Unretained(Shell::Get()->system_tray_notifier()),
@@ -200,10 +233,20 @@ void TestSystemTrayInteraction(ScreenTrayItemTest* test) {
 }
 
 TEST_F(ScreenCaptureTest, SystemTrayInteraction) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   TestSystemTrayInteraction(this);
 }
 
 TEST_F(ScreenShareTest, SystemTrayInteraction) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   TestSystemTrayInteraction(this);
 }
 

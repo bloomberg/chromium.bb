@@ -5,6 +5,7 @@
 #include "ash/system/tray_accessibility.h"
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -40,6 +41,12 @@ class TrayAccessibilityTest : public AshTestBase {
   // testing::Test:
   void SetUp() override {
     AshTestBase::SetUp();
+
+    // TODO(tetsui): Remove after UnifiedSystemTray launch.
+    // https://crbug.com/847104
+    if (features::IsSystemTrayUnifiedEnabled())
+      return;
+
     tray_item_ = SystemTrayTestApi(Shell::Get()->GetPrimarySystemTray())
                      .tray_accessibility();
   }
@@ -126,6 +133,11 @@ class TrayAccessibilityTest : public AshTestBase {
 
 // Tests that the icon becomes visible when the tray menu toggles a feature.
 TEST_F(TrayAccessibilityTest, VisibilityFromMenu) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   // By default the icon isn't visible.
   EXPECT_FALSE(tray_item_->tray_view()->visible());
 
@@ -140,6 +152,11 @@ TEST_F(TrayAccessibilityTest, VisibilityFromMenu) {
 
 // Tests that the icon becomes visible when webui settings toggles a feature.
 TEST_F(TrayAccessibilityTest, VisibilityFromSettings) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   // By default the icon isn't visible.
   EXPECT_FALSE(tray_item_->tray_view()->visible());
 
@@ -153,6 +170,11 @@ TEST_F(TrayAccessibilityTest, VisibilityFromSettings) {
 }
 
 TEST_F(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   // Except help & settings, others should be kept the same
   // in LOGIN | NOT LOGIN | LOCKED. https://crbug.com/632107.
   EXPECT_TRUE(CreateDetailedMenu());
@@ -221,6 +243,12 @@ class TrayAccessibilityLoginScreenTest : public NoSessionAshTestBase {
   // NoSessionAshTestBase:
   void SetUp() override {
     NoSessionAshTestBase::SetUp();
+
+    // TODO(tetsui): Remove after UnifiedSystemTray launch.
+    // https://crbug.com/847104
+    if (features::IsSystemTrayUnifiedEnabled())
+      return;
+
     tray_item_ = SystemTrayTestApi(Shell::Get()->GetPrimarySystemTray())
                      .tray_accessibility();
   }
@@ -246,6 +274,11 @@ class TrayAccessibilityLoginScreenTest : public NoSessionAshTestBase {
 };
 
 TEST_F(TrayAccessibilityLoginScreenTest, LoginStatus) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   // By default the icon is not visible at the login screen.
   views::View* tray_icon = tray_item_->tray_view();
   EXPECT_FALSE(tray_icon->visible());

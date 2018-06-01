@@ -5,6 +5,7 @@
 #include "ash/system/network/tray_network.h"
 
 #include "ash/login_status.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/system/network/network_list.h"
@@ -59,6 +60,11 @@ class TrayNetworkTest : public AshTestBase {
 
 // Verifies that the network views can be created.
 TEST_F(TrayNetworkTest, Basics) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   // Open the system tray menu.
   SystemTray* system_tray = GetPrimarySystemTray();
   system_tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
@@ -79,6 +85,11 @@ TEST_F(TrayNetworkTest, Basics) {
 // Open network info bubble and close network detailed view. Confirm that it
 // doesn't crash.
 TEST_F(TrayNetworkTest, NetworkInfoBubble) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   // Open the system tray menu.
   SystemTray* system_tray = GetPrimarySystemTray();
   system_tray->ShowDefaultView(BUBBLE_CREATE_NEW, true /* show_by_click */);

@@ -5,6 +5,7 @@
 #include "ash/system/supervised/tray_supervised_user.h"
 
 #include "ash/login_status.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
@@ -24,6 +25,11 @@ using TraySupervisedUserTest = NoSessionAshTestBase;
 
 // Verifies an item is created for a supervised user.
 TEST_F(TraySupervisedUserTest, CreateDefaultView) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   TraySupervisedUser* tray =
       SystemTrayTestApi(GetPrimarySystemTray()).tray_supervised_user();
   SessionController* session = Shell::Get()->session_controller();

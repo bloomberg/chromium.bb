@@ -4,6 +4,7 @@
 
 #include "ash/system/enterprise/tray_enterprise.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/system/tray/label_tray_view.h"
 #include "ash/system/tray/system_tray.h"
@@ -16,6 +17,11 @@ namespace ash {
 using TrayEnterpriseTest = AshTestBase;
 
 TEST_F(TrayEnterpriseTest, ItemVisible) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* system_tray = GetPrimarySystemTray();
   TrayEnterprise* tray_enterprise =
       SystemTrayTestApi(system_tray).tray_enterprise();
@@ -37,6 +43,11 @@ TEST_F(TrayEnterpriseTest, ItemVisible) {
 }
 
 TEST_F(TrayEnterpriseTest, ItemVisibleForActiveDirectory) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* system_tray = GetPrimarySystemTray();
   TrayEnterprise* tray_enterprise =
       SystemTrayTestApi(system_tray).tray_enterprise();
