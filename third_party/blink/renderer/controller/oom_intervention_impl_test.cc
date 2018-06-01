@@ -23,6 +23,10 @@ namespace blink {
 
 namespace {
 
+const uint64_t kTestBlinkThreshold = 80 * 1024;
+const uint64_t kTestPMFThreshold = 160 * 1024;
+const uint64_t kTestSwapThreshold = 500 * 1024;
+
 class MockOomInterventionHost : public mojom::blink::OomInterventionHost {
  public:
   MockOomInterventionHost(mojom::blink::OomInterventionHostRequest request)
@@ -35,43 +39,119 @@ class MockOomInterventionHost : public mojom::blink::OomInterventionHost {
   mojo::Binding<mojom::blink::OomInterventionHost> binding_;
 };
 
+// Mock intervention class that has custom method for fetching metrics.
+class MockOomInterventionImpl : public OomInterventionImpl {
+ public:
+  MockOomInterventionImpl() {}
+  ~MockOomInterventionImpl() override {}
+
+  // If metrics are set by calling this method, then GetCurrentMemoryMetrics()
+  // will return the given metrics, else it will calculate metrics from
+  // providers.
+  void SetMetrics(OomInterventionMetrics metrics) {
+    metrics_ = std::make_unique<OomInterventionMetrics>();
+    *metrics_ = metrics;
+  }
+
+ private:
+  OomInterventionMetrics GetCurrentMemoryMetrics() override {
+    if (metrics_)
+      return *metrics_;
+    return OomInterventionImpl::GetCurrentMemoryMetrics();
+  }
+
+  std::unique_ptr<OomInterventionMetrics> metrics_;
+};
+
 }  // namespace
 
 class OomInterventionImplTest : public testing::Test {
  public:
-  uint64_t MockMemoryWorkloadCalculator() { return memory_workload_; }
+  void SetUp() override {
+    intervention_ = std::make_unique<MockOomInterventionImpl>();
+  }
+
+  Page* DetectOnceOnBlankPage() {
+    WebViewImpl* web_view = web_view_helper_.InitializeAndLoad("about::blank");
+    Page* page = web_view->MainFrameImpl()->GetFrame()->GetPage();
+    EXPECT_FALSE(page->Paused());
+    mojom::blink::OomInterventionHostPtr host_ptr;
+    MockOomInterventionHost mock_host(mojo::MakeRequest(&host_ptr));
+    base::UnsafeSharedMemoryRegion shm =
+        base::UnsafeSharedMemoryRegion::Create(sizeof(OomInterventionMetrics));
+
+    mojom::blink::DetectionArgsPtr args(mojom::blink::DetectionArgs::New());
+    args->blink_workload_threshold = kTestBlinkThreshold;
+    args->private_footprint_threshold = kTestPMFThreshold;
+    args->swap_threshold = kTestSwapThreshold;
+
+    intervention_->StartDetection(std::move(host_ptr), std::move(shm),
+                                  std::move(args),
+                                  true /*trigger_intervention*/);
+    test::RunDelayedTasks(TimeDelta::FromSeconds(1));
+    return page;
+  }
 
  protected:
-  uint64_t memory_workload_ = 0;
+  std::unique_ptr<MockOomInterventionImpl> intervention_;
   FrameTestHelpers::WebViewHelper web_view_helper_;
 };
 
-TEST_F(OomInterventionImplTest, DetectedAndDeclined) {
-  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad("about::blank");
-  Page* page = web_view->MainFrameImpl()->GetFrame()->GetPage();
+TEST_F(OomInterventionImplTest, NoDetectionOnBelowThreshold) {
+  OomInterventionMetrics mock_metrics = {};
+  // Set value less than the threshold to not trigger intervention.
+  mock_metrics.current_blink_usage_kb = (kTestBlinkThreshold / 1024) - 1;
+  mock_metrics.current_private_footprint_kb = (kTestPMFThreshold / 1024) - 1;
+  mock_metrics.current_swap_kb = (kTestSwapThreshold / 1024) - 1;
+  intervention_->SetMetrics(mock_metrics);
+
+  Page* page = DetectOnceOnBlankPage();
+
   EXPECT_FALSE(page->Paused());
+}
 
-  auto intervention = std::make_unique<OomInterventionImpl>(
-      WTF::BindRepeating(&OomInterventionImplTest::MockMemoryWorkloadCalculator,
-                         WTF::Unretained(this)));
-  EXPECT_FALSE(page->Paused());
+TEST_F(OomInterventionImplTest, BlinkThresholdDetection) {
+  OomInterventionMetrics mock_metrics = {};
+  // Set value more than the threshold to not trigger intervention.
+  mock_metrics.current_blink_usage_kb = (kTestBlinkThreshold / 1024) + 1;
+  mock_metrics.current_private_footprint_kb = (kTestPMFThreshold / 1024) - 1;
+  mock_metrics.current_swap_kb = (kTestSwapThreshold / 1024) - 1;
+  intervention_->SetMetrics(mock_metrics);
 
-  // Assign an arbitrary threshold and report workload bigger than the
-  // threshold.
-  uint64_t threshold = 80;
-  intervention->memory_workload_threshold_ = threshold;
-  memory_workload_ = threshold + 1;
+  Page* page = DetectOnceOnBlankPage();
 
-  mojom::blink::OomInterventionHostPtr host_ptr;
-  MockOomInterventionHost mock_host(mojo::MakeRequest(&host_ptr));
-  base::UnsafeSharedMemoryRegion shm =
-      base::UnsafeSharedMemoryRegion::Create(sizeof(OomInterventionMetrics));
-  intervention->StartDetection(std::move(host_ptr), std::move(shm), threshold,
-                               true /*trigger_intervention*/);
-  test::RunDelayedTasks(TimeDelta::FromSeconds(1));
   EXPECT_TRUE(page->Paused());
+  intervention_.reset();
+  EXPECT_FALSE(page->Paused());
+}
 
-  intervention.reset();
+TEST_F(OomInterventionImplTest, PmfThresholdDetection) {
+  OomInterventionMetrics mock_metrics = {};
+  mock_metrics.current_blink_usage_kb = (kTestBlinkThreshold / 1024) - 1;
+  // Set value more than the threshold to not trigger intervention.
+  mock_metrics.current_private_footprint_kb = (kTestPMFThreshold / 1024) + 1;
+  mock_metrics.current_swap_kb = (kTestSwapThreshold / 1024) - 1;
+  intervention_->SetMetrics(mock_metrics);
+
+  Page* page = DetectOnceOnBlankPage();
+
+  EXPECT_TRUE(page->Paused());
+  intervention_.reset();
+  EXPECT_FALSE(page->Paused());
+}
+
+TEST_F(OomInterventionImplTest, SwapThresholdDetection) {
+  OomInterventionMetrics mock_metrics = {};
+  mock_metrics.current_blink_usage_kb = (kTestBlinkThreshold / 1024) - 1;
+  mock_metrics.current_private_footprint_kb = (kTestPMFThreshold / 1024) - 1;
+  // Set value more than the threshold to not trigger intervention.
+  mock_metrics.current_swap_kb = (kTestSwapThreshold / 1024) + 1;
+  intervention_->SetMetrics(mock_metrics);
+
+  Page* page = DetectOnceOnBlankPage();
+
+  EXPECT_TRUE(page->Paused());
+  intervention_.reset();
   EXPECT_FALSE(page->Paused());
 }
 
@@ -92,28 +172,24 @@ TEST_F(OomInterventionImplTest, CalculatePMFAndSwap) {
   base::File status_file(status_path,
                          base::File::FLAG_OPEN | base::File::FLAG_READ);
 
-  auto intervention = std::make_unique<OomInterventionImpl>(
-      WTF::BindRepeating(&OomInterventionImplTest::MockMemoryWorkloadCalculator,
-                         WTF::Unretained(this)));
-  intervention->statm_fd_.reset(statm_file.TakePlatformFile());
-  intervention->status_fd_.reset(status_file.TakePlatformFile());
+  intervention_->statm_fd_.reset(statm_file.TakePlatformFile());
+  intervention_->status_fd_.reset(status_file.TakePlatformFile());
 
   mojom::blink::OomInterventionHostPtr host_ptr;
   MockOomInterventionHost mock_host(mojo::MakeRequest(&host_ptr));
   base::UnsafeSharedMemoryRegion shm =
       base::UnsafeSharedMemoryRegion::Create(sizeof(OomInterventionMetrics));
-  uint64_t threshold = 80;
-  intervention->memory_workload_threshold_ = threshold;
-  memory_workload_ = threshold - 1;
-  intervention->StartDetection(std::move(host_ptr), std::move(shm), threshold,
-                               false /*trigger_intervention*/);
+  mojom::blink::DetectionArgsPtr args(mojom::blink::DetectionArgs::New());
+  intervention_->StartDetection(std::move(host_ptr), std::move(shm),
+                                std::move(args),
+                                false /*trigger_intervention*/);
 
-  intervention->Check(nullptr);
+  intervention_->Check(nullptr);
   OomInterventionMetrics* metrics = static_cast<OomInterventionMetrics*>(
-      intervention->shared_metrics_buffer_.memory());
+      intervention_->shared_metrics_buffer_.memory());
   uint64_t swap_kb = 10;
-  uint64_t pmf_kb = (40 - 25) * getpagesize() / 1024 + swap_kb;
-  EXPECT_EQ(pmf_kb, metrics->current_private_footprint_kb);
+  uint64_t private_footprint_kb = (40 - 25) * getpagesize() / 1024 + swap_kb;
+  EXPECT_EQ(private_footprint_kb, metrics->current_private_footprint_kb);
   EXPECT_EQ(swap_kb, metrics->current_swap_kb);
 }
 

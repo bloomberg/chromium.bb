@@ -28,10 +28,8 @@ class OomInterventionConfig {
   // The threshold for swap size in the system to start monitoring.
   uint64_t swapfree_threshold() const { return swapfree_threshold_; }
 
-  // The threshold for renderer workload to trigger intervention.
-  uint64_t renderer_workload_threshold() const {
-    return renderer_workload_threshold_;
-  }
+  // The arguments for detecting near OOM situation in renderer.
+  blink::mojom::DetectionArgsPtr GetRendererOomDetectionArgs() const;
 
  private:
   OomInterventionConfig();
@@ -44,7 +42,8 @@ class OomInterventionConfig {
   bool should_detect_in_renderer_ = false;
 
   uint64_t swapfree_threshold_ = 0;
-  uint64_t renderer_workload_threshold_ = 0;
+
+  blink::mojom::DetectionArgsPtr renderer_detection_args_;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_OOM_INTERVENTION_OOM_INTERVENTION_CONFIG_H_

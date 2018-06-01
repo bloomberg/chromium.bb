@@ -16,8 +16,15 @@ const char kUseComponentCallbacks[] = "use_component_callbacks";
 const char kSwapFreeThresholdRatioParamName[] = "swap_free_threshold_ratio";
 const char kRendererWorkloadThresholdDeprecated[] =
     "renderer_workload_threshold";
+
 const char kRendererWorkloadThresholdPercentage[] =
     "renderer_workload_threshold_percentage";
+const char kRendererPMFThresholdPercentage[] =
+    "renderer_pmf_threshold_percentage";
+const char kRendererSwapThresholdPercentage[] =
+    "renderer_swap_threshold_percentage";
+const char kRendererVirtualMemThresholdPercentage[] =
+    "renderer_virtual_mem_threshold_percentage";
 
 // Default SwapFree/SwapTotal ratio for detecting near-OOM situation.
 // TODO(bashi): Confirm that this is appropriate.
@@ -36,31 +43,39 @@ bool GetThresholdParam(const char* param,
   if (!base::StringToUint64(str, &value))
     return false;
   *threshold = value * ram_size / 100;
-  return true;
+  return *threshold > 0;
 }
 
-bool GetRendererMemoryThreshold(uint64_t* threshold) {
-  const uint64_t kDefaultMemoryWorkloadThresholdPercent = 16;
+bool GetRendererMemoryThresholds(blink::mojom::DetectionArgsPtr* args) {
   static size_t kRAMSize = base::SysInfo::AmountOfPhysicalMemory();
-  *threshold = 0;
 
-  if (GetThresholdParam(kRendererWorkloadThresholdPercentage, kRAMSize,
-                        threshold)) {
+  bool has_blink =
+      GetThresholdParam(kRendererWorkloadThresholdPercentage, kRAMSize,
+                        &(*args)->blink_workload_threshold);
+  bool has_pmf = GetThresholdParam(kRendererPMFThresholdPercentage, kRAMSize,
+                                   &(*args)->private_footprint_threshold);
+  bool has_swap = GetThresholdParam(kRendererSwapThresholdPercentage, kRAMSize,
+                                    &(*args)->swap_threshold);
+  bool has_vm_size = GetThresholdParam(kRendererVirtualMemThresholdPercentage,
+                                       kRAMSize, &(*args)->swap_threshold);
+  if (has_blink || has_pmf || has_swap || has_vm_size)
+    return true;
+
+  // Check for old trigger param. If the old trigger param is set, then enable
+  // intervention only on 512MB devices.
+  if (kRAMSize > 512 * 1024 * 1024)
+    return false;
+  std::string threshold_str = base::GetFieldTrialParamValueByFeature(
+      features::kOomIntervention, kRendererWorkloadThresholdDeprecated);
+  uint64_t threshold = 0;
+  if (base::StringToUint64(threshold_str, &threshold) && threshold > 0) {
+    (*args)->blink_workload_threshold = threshold;
     return true;
   }
 
-  // If the old trigger param is set, then enable intervention only on 512MB
-  // devices.
-  if (kRAMSize > 512 * 1024 * 1024)
-    return false;
-
-  std::string threshold_str = base::GetFieldTrialParamValueByFeature(
-      features::kOomIntervention, kRendererWorkloadThresholdDeprecated);
-  if (base::StringToUint64(threshold_str, threshold))
-    return true;
-
-  *threshold = kDefaultMemoryWorkloadThresholdPercent * kRAMSize / 100;
-  return true;
+  // If no param is set then the intervention is enabled. No default param is
+  // assumed.
+  return false;
 }
 
 bool GetSwapFreeThreshold(uint64_t* threshold) {
@@ -84,7 +99,8 @@ bool GetSwapFreeThreshold(uint64_t* threshold) {
 
 OomInterventionConfig::OomInterventionConfig()
     : is_intervention_enabled_(
-          base::FeatureList::IsEnabled(features::kOomIntervention)) {
+          base::FeatureList::IsEnabled(features::kOomIntervention)),
+      renderer_detection_args_(blink::mojom::DetectionArgs::New()) {
   if (!is_intervention_enabled_)
     return;
 
@@ -99,7 +115,7 @@ OomInterventionConfig::OomInterventionConfig()
   // Enable intervention only if at least one threshold is set for detection
   // in each process.
   if (!GetSwapFreeThreshold(&swapfree_threshold_) ||
-      !GetRendererMemoryThreshold(&renderer_workload_threshold_)) {
+      !GetRendererMemoryThresholds(&renderer_detection_args_)) {
     is_intervention_enabled_ = false;
   }
 }
@@ -108,4 +124,9 @@ OomInterventionConfig::OomInterventionConfig()
 const OomInterventionConfig* OomInterventionConfig::GetInstance() {
   static OomInterventionConfig* config = new OomInterventionConfig();
   return config;
+}
+
+blink::mojom::DetectionArgsPtr
+OomInterventionConfig::GetRendererOomDetectionArgs() const {
+  return renderer_detection_args_.Clone();
 }

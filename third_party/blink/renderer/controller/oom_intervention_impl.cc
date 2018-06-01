@@ -9,7 +9,6 @@
 #include <unistd.h>
 
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "third_party/blink/common/oom_intervention/oom_intervention_types.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -84,27 +83,21 @@ uint64_t BlinkMemoryWorkloadCaculator() {
 
 // static
 void OomInterventionImpl::Create(mojom::blink::OomInterventionRequest request) {
-  mojo::MakeStrongBinding(
-      std::make_unique<OomInterventionImpl>(
-          WTF::BindRepeating(&BlinkMemoryWorkloadCaculator)),
-      std::move(request));
+  mojo::MakeStrongBinding(std::make_unique<OomInterventionImpl>(),
+                          std::move(request));
 }
 
-OomInterventionImpl::OomInterventionImpl(
-    MemoryWorkloadCaculator workload_calculator)
-    : workload_calculator_(std::move(workload_calculator)),
-      timer_(Platform::Current()->MainThread()->GetTaskRunner(),
+OomInterventionImpl::OomInterventionImpl()
+    : timer_(Platform::Current()->MainThread()->GetTaskRunner(),
              this,
-             &OomInterventionImpl::Check) {
-  DCHECK(workload_calculator_);
-}
+             &OomInterventionImpl::Check) {}
 
 OomInterventionImpl::~OomInterventionImpl() {}
 
 void OomInterventionImpl::StartDetection(
     mojom::blink::OomInterventionHostPtr host,
     base::UnsafeSharedMemoryRegion shared_metrics_buffer,
-    uint64_t memory_workload_threshold,
+    mojom::blink::DetectionArgsPtr detection_args,
     bool trigger_intervention) {
   host_ = std::move(host);
   shared_metrics_buffer_ = shared_metrics_buffer.Map();
@@ -121,18 +114,43 @@ void OomInterventionImpl::StartDetection(
   if (!statm_fd_.is_valid() || !status_fd_.is_valid())
     return;
 
-  memory_workload_threshold_ = memory_workload_threshold;
+  detection_args_ = std::move(detection_args);
   trigger_intervention_ = trigger_intervention;
 
   timer_.Start(TimeDelta(), TimeDelta::FromSeconds(1), FROM_HERE);
 }
 
+OomInterventionMetrics OomInterventionImpl::GetCurrentMemoryMetrics() {
+  OomInterventionMetrics metrics = {};
+  metrics.current_blink_usage_kb = BlinkMemoryWorkloadCaculator();
+  uint64_t private_footprint, swap;
+  if (CalculateProcessMemoryFootprint(statm_fd_.get(), status_fd_.get(),
+                                      &private_footprint, &swap)) {
+    metrics.current_private_footprint_kb = private_footprint / 1024;
+    metrics.current_swap_kb = swap / 1024;
+  }
+  return metrics;
+}
+
 void OomInterventionImpl::Check(TimerBase*) {
   DCHECK(host_);
-  DCHECK_GT(memory_workload_threshold_, 0UL);
+  DCHECK(statm_fd_.is_valid());
+  DCHECK(status_fd_.is_valid());
 
-  uint64_t workload = workload_calculator_.Run();
-  if (workload > memory_workload_threshold_) {
+  OomInterventionMetrics current_memory = GetCurrentMemoryMetrics();
+  bool oom_detected = false;
+
+  oom_detected |= detection_args_->blink_workload_threshold > 0 &&
+                  current_memory.current_blink_usage_kb * 1024 >
+                      detection_args_->blink_workload_threshold;
+  oom_detected |= detection_args_->private_footprint_threshold > 0 &&
+                  current_memory.current_private_footprint_kb * 1024 >
+                      detection_args_->private_footprint_threshold;
+  oom_detected |=
+      detection_args_->swap_threshold > 0 &&
+      current_memory.current_swap_kb * 1024 > detection_args_->swap_threshold;
+
+  if (oom_detected) {
     host_->OnHighMemoryUsage(trigger_intervention_);
 
     if (trigger_intervention_) {
@@ -142,18 +160,9 @@ void OomInterventionImpl::Check(TimerBase*) {
     }
   }
 
-  // Write memory metrics to shared buffer accesible by browser.
   OomInterventionMetrics* metrics_shared =
       static_cast<OomInterventionMetrics*>(shared_metrics_buffer_.memory());
-  metrics_shared->current_blink_usage_kb = workload / 1024;
-  DCHECK(statm_fd_.is_valid());
-  DCHECK(status_fd_.is_valid());
-  uint64_t private_footprint, swap;
-  if (CalculateProcessMemoryFootprint(statm_fd_.get(), status_fd_.get(),
-                                      &private_footprint, &swap)) {
-    metrics_shared->current_private_footprint_kb = private_footprint / 1024;
-    metrics_shared->current_swap_kb = swap / 1024;
-  }
+  memcpy(metrics_shared, &current_memory, sizeof(OomInterventionMetrics));
 }
 
 }  // namespace blink
