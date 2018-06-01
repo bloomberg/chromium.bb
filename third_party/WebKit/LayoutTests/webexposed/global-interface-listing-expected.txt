@@ -1642,7 +1642,6 @@ interface Document : Node
     method createProcessingInstruction
     method createRange
     method createTextNode
-    method createTouchList
     method createTreeWalker
     method elementFromPoint
     method elementsFromPoint

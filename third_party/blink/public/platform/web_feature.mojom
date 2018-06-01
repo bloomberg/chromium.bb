@@ -1836,7 +1836,6 @@ enum WebFeature {
   kAnimationWorkletRegisterAnimator = 2365,
   kWorkletAnimationConstructor = 2366,
   kScrollTimelineConstructor = 2367,
-  kV8Document_CreateTouchList_Method = 2368,
   kAsyncClipboardAPIRead = 2369,
   kAsyncClipboardAPIWrite = 2370,
   kAsyncClipboardAPIReadText = 2371,

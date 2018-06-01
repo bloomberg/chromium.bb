@@ -167,8 +167,6 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     attribute EventHandler onpointerlockerror;
     [MeasureAs=DocumentExitPointerLock] void exitPointerLock();
 
-    [OriginTrialEnabled=TouchEventFeatureDetection, DeprecateAs=V8Document_CreateTouchList_Method] TouchList createTouchList(Touch... touches);
-
     // Custom Elements
     // https://w3c.github.io/webcomponents/spec/custom/#extensions-to-document-interface-to-register
     // FIXME: The registerElement return type should be Function.

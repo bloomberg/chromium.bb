@@ -6684,10 +6684,6 @@ void Document::CancelIdleCallback(int id) {
   scripted_idle_task_controller_->CancelCallback(id);
 }
 
-TouchList* Document::createTouchList(HeapVector<Member<Touch>>& touches) const {
-  return TouchList::Adopt(touches);
-}
-
 DocumentLoader* Document::Loader() const {
   if (!frame_)
     return nullptr;
