@@ -9,10 +9,12 @@
 #include <set>
 #include <utility>
 
+#include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/display/screen_ash.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
+#include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/shell_port.h"
@@ -24,6 +26,8 @@
 #include "ash/test_shell_delegate.h"
 #include "ash/window_manager.h"
 #include "ash/window_manager_service.h"
+#include "ash/ws/window_service_owner.h"
+#include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -34,6 +38,13 @@
 #include "components/prefs/testing_pref_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/ui/ws2/window_service.h"
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -58,6 +69,88 @@
 #include "ui/wm/core/wm_state.h"
 
 namespace ash {
+
+// TODO(sky): refactor and move to services.
+class TestConnector : public service_manager::mojom::Connector {
+ public:
+  TestConnector() : test_user_id_(base::GenerateGUID()) {}
+
+  ~TestConnector() override = default;
+
+  service_manager::mojom::ServiceRequest GenerateServiceRequest() {
+    return mojo::MakeRequest(&service_ptr_);
+  }
+
+  void Start() {
+    service_ptr_->OnStart(
+        service_manager::Identity("TestConnectorFactory", test_user_id_),
+        base::BindOnce(&TestConnector::OnStartCallback,
+                       base::Unretained(this)));
+  }
+
+ private:
+  void OnStartCallback(
+      service_manager::mojom::ConnectorRequest request,
+      service_manager::mojom::ServiceControlAssociatedRequest control_request) {
+  }
+
+  // mojom::Connector implementation:
+  void BindInterface(const service_manager::Identity& target,
+                     const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe,
+                     BindInterfaceCallback callback) override {
+    service_manager::mojom::ServicePtr* service_ptr = &service_ptr_;
+    // If you hit the DCHECK below, you need to add a call to AddService() in
+    // your test for the reported service.
+    DCHECK(service_ptr) << "Binding interface for unregistered service "
+                        << target.name();
+    (*service_ptr)
+        ->OnBindInterface(service_manager::BindSourceInfo(
+                              service_manager::Identity("TestConnectorFactory",
+                                                        test_user_id_),
+                              service_manager::CapabilitySet()),
+                          interface_name, std::move(interface_pipe),
+                          base::DoNothing());
+    std::move(callback).Run(service_manager::mojom::ConnectResult::SUCCEEDED,
+                            service_manager::Identity());
+  }
+
+  void StartService(const service_manager::Identity& target,
+                    StartServiceCallback callback) override {
+    NOTREACHED();
+  }
+
+  void QueryService(const service_manager::Identity& target,
+                    QueryServiceCallback callback) override {
+    NOTREACHED();
+  }
+
+  void StartServiceWithProcess(
+      const service_manager::Identity& identity,
+      mojo::ScopedMessagePipeHandle service,
+      service_manager::mojom::PIDReceiverRequest pid_receiver_request,
+      StartServiceWithProcessCallback callback) override {
+    NOTREACHED();
+  }
+
+  void Clone(service_manager::mojom::ConnectorRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+  void FilterInterfaces(
+      const std::string& spec,
+      const service_manager::Identity& source,
+      service_manager::mojom::InterfaceProviderRequest source_request,
+      service_manager::mojom::InterfaceProviderPtr target) override {
+    NOTREACHED();
+  }
+
+  const std::string test_user_id_;
+  mojo::BindingSet<service_manager::mojom::Connector> bindings_;
+  service_manager::mojom::ServicePtr service_ptr_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestConnector);
+};
 
 // static
 Config AshTestHelper::config_ = Config::CLASSIC;
@@ -193,6 +286,9 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
       .DisableDisplayAnimator();
 
   app_list_test_helper_ = std::make_unique<AppListTestHelper>();
+
+  if (config_ == Config::CLASSIC)
+    CreateWindowService();
 }
 
 void AshTestHelper::TearDown() {
@@ -267,6 +363,19 @@ aura::Window* AshTestHelper::CurrentContext() {
 
 display::Display AshTestHelper::GetSecondaryDisplay() {
   return Shell::Get()->display_manager()->GetSecondaryDisplay();
+}
+
+void AshTestHelper::CreateWindowService() {
+  test_connector_ = std::make_unique<TestConnector>();
+  Shell::Get()->window_service_owner()->BindWindowService(
+      test_connector_->GenerateServiceRequest());
+  test_connector_->Start();
+  // WindowService::OnStart() is not immediately called (it happens async over
+  // mojo). If this becomes a problem we could run the MessageLoop here.
+  // Surprisingly running the MessageLooop results in some test failures. These
+  // failures seem to be because spinning the messageloop causes some timers to
+  // fire (perhaps animations too) the results in a slightly different Shell
+  // state.
 }
 
 void AshTestHelper::CreateMashWindowManager() {

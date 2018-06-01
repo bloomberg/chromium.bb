@@ -40,4 +40,18 @@ bool ImmersiveFullscreenControllerTestApi::IsTopEdgeHoverTimerRunning() const {
   return immersive_fullscreen_controller_->top_edge_hover_timer_.IsRunning();
 }
 
+ImmersiveFullscreenControllerTestApi::GlobalAnimationDisabler::
+    GlobalAnimationDisabler() {
+  // Nesting isn't supported.
+  DCHECK(
+      !ImmersiveFullscreenController::value_for_animations_disabled_for_test_);
+  ImmersiveFullscreenController::value_for_animations_disabled_for_test_ = true;
+}
+
+ImmersiveFullscreenControllerTestApi::GlobalAnimationDisabler::
+    ~GlobalAnimationDisabler() {
+  ImmersiveFullscreenController::value_for_animations_disabled_for_test_ =
+      false;
+}
+
 }  // namespace ash

@@ -61,6 +61,10 @@ const int ImmersiveFullscreenController::kImmersiveFullscreenTopEdgeInset = 8;
 // static
 const int ImmersiveFullscreenController::kMouseRevealBoundsHeight = 3;
 
+// static
+bool ImmersiveFullscreenController::value_for_animations_disabled_for_test_ =
+    false;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 ImmersiveFullscreenController::ImmersiveFullscreenController()
@@ -74,7 +78,7 @@ ImmersiveFullscreenController::ImmersiveFullscreenController()
       mouse_x_when_hit_top_in_screen_(-1),
       gesture_begun_(false),
       animation_(new gfx::SlideAnimation(this)),
-      animations_disabled_for_test_(false),
+      animations_disabled_for_test_(value_for_animations_disabled_for_test_),
       weak_ptr_factory_(this) {}
 
 ImmersiveFullscreenController::~ImmersiveFullscreenController() {
