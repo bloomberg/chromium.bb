@@ -344,12 +344,19 @@ void ThreadState::VisitStack(MarkingVisitor* visitor) {
 
 void ThreadState::VisitPersistents(Visitor* visitor) {
   {
+    ThreadHeapStatsCollector::Scope stats_scope(
+        Heap().stats_collector(),
+        ThreadHeapStatsCollector::kVisitCrossThreadPersistents);
     // See ProcessHeap::CrossThreadPersistentMutex().
     RecursiveMutexLocker persistent_lock(
         ProcessHeap::CrossThreadPersistentMutex());
     ProcessHeap::GetCrossThreadPersistentRegion().TracePersistentNodes(visitor);
   }
-  persistent_region_->TracePersistentNodes(visitor);
+  {
+    ThreadHeapStatsCollector::Scope stats_scope(
+        Heap().stats_collector(), ThreadHeapStatsCollector::kVisitPersistents);
+    persistent_region_->TracePersistentNodes(visitor);
+  }
   if (trace_dom_wrappers_) {
     ThreadHeapStatsCollector::Scope stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kVisitDOMWrappers);
@@ -1024,6 +1031,11 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
       ("BlinkGC.ObjectSizeFreedByHeapCompaction", 1, 4 * 1024 * 1024, 50));
   object_size_freed_by_heap_compaction.Count(event.compaction_freed_bytes /
                                              1024);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, weak_processing_time_histogram,
+      ("BlinkGC.TimeForGlobalWeakProcessing", 1, 10 * 1000, 50));
+  weak_processing_time_histogram.Count(
+      event.scope_data[ThreadHeapStatsCollector::kMarkWeakProcessing]);
 }
 
 }  // namespace
