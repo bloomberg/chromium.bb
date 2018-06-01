@@ -435,8 +435,6 @@ void DrawingBuffer::FinishPrepareTransferableResourceGpu(
   // Put colorBufferForMailbox into its mailbox, and populate its
   // produceSyncToken with that point.
   {
-    gl_->ProduceTextureDirectCHROMIUM(color_buffer_for_mailbox->texture_id,
-                                      color_buffer_for_mailbox->mailbox.name);
     // It's critical to order the execution of this context's work relative
     // to other contexts, in particular the compositor. Previously this
     // used to be a Flush, and there was a bug that we didn't flush before
@@ -629,7 +627,9 @@ DrawingBuffer::ColorBuffer::ColorBuffer(
       texture_id(texture_id),
       image_id(image_id),
       gpu_memory_buffer(std::move(gpu_memory_buffer)) {
-  drawing_buffer->ContextGL()->GenMailboxCHROMIUM(mailbox.name);
+  gpu::gles2::GLES2Interface* gl = drawing_buffer->ContextGL();
+  gl->GenMailboxCHROMIUM(mailbox.name);
+  gl->ProduceTextureDirectCHROMIUM(texture_id, mailbox.name);
 }
 
 DrawingBuffer::ColorBuffer::~ColorBuffer() {
@@ -829,17 +829,20 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
     mailbox = front_color_buffer_->mailbox;
     produce_sync_token = front_color_buffer_->produce_sync_token;
   } else {
-    src_gl->GenMailboxCHROMIUM(mailbox.name);
     if (premultiplied_alpha_false_texture_) {
       // If this texture exists, then it holds the rendering results at this
       // point, rather than back_color_buffer_. back_color_buffer_ receives the
       // contents of this texture later, premultiplying alpha into the color
-      // channels.
-      src_gl->ProduceTextureDirectCHROMIUM(premultiplied_alpha_false_texture_,
-                                           mailbox.name);
+      // channels. We lazily produce a mailbox for it.
+      if (premultiplied_alpha_false_mailbox_.IsZero()) {
+        src_gl->GenMailboxCHROMIUM(premultiplied_alpha_false_mailbox_.name);
+        src_gl->ProduceTextureDirectCHROMIUM(
+            premultiplied_alpha_false_texture_,
+            premultiplied_alpha_false_mailbox_.name);
+      }
+      mailbox = premultiplied_alpha_false_mailbox_;
     } else {
-      src_gl->ProduceTextureDirectCHROMIUM(back_color_buffer_->texture_id,
-                                           mailbox.name);
+      mailbox = back_color_buffer_->mailbox;
     }
     src_gl->GenUnverifiedSyncTokenCHROMIUM(produce_sync_token.GetData());
   }
@@ -930,8 +933,10 @@ void DrawingBuffer::BeginDestruction() {
   if (depth_stencil_buffer_)
     gl_->DeleteRenderbuffers(1, &depth_stencil_buffer_);
 
-  if (premultiplied_alpha_false_texture_)
+  if (premultiplied_alpha_false_texture_) {
     gl_->DeleteTextures(1, &premultiplied_alpha_false_texture_);
+    premultiplied_alpha_false_mailbox_.SetZero();
+  }
 
   size_ = IntSize();
 
@@ -965,6 +970,7 @@ bool DrawingBuffer::ResizeDefaultFramebuffer(const IntSize& size) {
     // TODO(kbr): unify with code in CreateColorBuffer.
     if (premultiplied_alpha_false_texture_) {
       gl_->DeleteTextures(1, &premultiplied_alpha_false_texture_);
+      premultiplied_alpha_false_mailbox_.SetZero();
       premultiplied_alpha_false_texture_ = 0;
     }
     gl_->GenTextures(1, &premultiplied_alpha_false_texture_);
