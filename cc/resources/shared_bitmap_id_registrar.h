@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/cc_export.h"
-#include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/resources/shared_bitmap.h"
 
 namespace cc {
 class CrossThreadSharedBitmap;

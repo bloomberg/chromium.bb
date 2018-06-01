@@ -6,7 +6,7 @@
 #define COMPONENTS_VIZ_CLIENT_SHARED_BITMAP_REPORTER_H_
 
 #include "components/viz/client/viz_client_export.h"
-#include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/resources/shared_bitmap.h"
 #include "mojo/public/cpp/system/buffer.h"
 
 namespace viz {

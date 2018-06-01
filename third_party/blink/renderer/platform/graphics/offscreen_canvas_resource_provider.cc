@@ -6,8 +6,8 @@
 
 #include "base/memory/shared_memory.h"
 #include "base/numerics/checked_math.h"
-#include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
+#include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
