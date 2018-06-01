@@ -31,18 +31,18 @@ class ScriptingPermissionsModifier {
                                const scoped_refptr<const Extension>& extension);
   ~ScriptingPermissionsModifier();
 
-  // Sets whether the extension should be allowed to execute on all urls without
-  // explicit user consent. Used when the features::kRuntimeHostPermissions
-  // feature is enabled.
+  // Sets whether Chrome should withhold <all_urls>-style permissions from the
+  // extension. Used when the features::kRuntimeHostPermissions feature is
+  // enabled.
   // This may only be called for extensions that can be affected (i.e., for
   // which CanAffectExtension() returns true). Anything else will DCHECK.
-  void SetAllowedOnAllUrls(bool allowed);
+  void SetWithholdAllUrls(bool withhold);
 
-  // Returns whether the extension is allowed to execute scripts on all urls
-  // without user consent.
+  // Returns whether Chrome has withheld <all_urls>-style permissions from the
+  // extension.
   // This may only be called for extensions that can be affected (i.e., for
   // which CanAffectExtension() returns true). Anything else will DCHECK.
-  bool IsAllowedOnAllUrls() const;
+  bool HasWithheldAllUrls() const;
 
   // Returns true if the associated extension can be affected by
   // features::kRuntimeHostPermissions.

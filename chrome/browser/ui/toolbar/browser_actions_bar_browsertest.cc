@@ -746,7 +746,7 @@ class BrowserActionsBarUiBrowserTest
     extension_ = LoadExtension(extension_dir_.UnpackedPath());
     ASSERT_TRUE(extension_);
     extensions::ScriptingPermissionsModifier(profile(), extension_)
-        .SetAllowedOnAllUrls(false);
+        .SetWithholdAllUrls(true);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

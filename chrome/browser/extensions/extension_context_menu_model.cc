@@ -374,7 +374,7 @@ ExtensionContextMenuModel::GetCurrentPageAccess(
     content::WebContents* web_contents) const {
   ScriptingPermissionsModifier modifier(profile_, extension);
   DCHECK(modifier.CanAffectExtension());
-  if (modifier.IsAllowedOnAllUrls())
+  if (!modifier.HasWithheldAllUrls())
     return PAGE_ACCESS_RUN_ON_ALL_SITES;
   if (modifier.HasGrantedHostPermission(
           GetActiveWebContents()->GetLastCommittedURL()))
@@ -428,18 +428,18 @@ void ExtensionContextMenuModel::HandlePageAccessCommand(
   switch (command_id) {
     case PAGE_ACCESS_RUN_ON_CLICK:
       if (current_access == PAGE_ACCESS_RUN_ON_ALL_SITES)
-        modifier.SetAllowedOnAllUrls(false);
+        modifier.SetWithholdAllUrls(true);
       if (modifier.HasGrantedHostPermission(url))
         modifier.RemoveGrantedHostPermission(url);
       break;
     case PAGE_ACCESS_RUN_ON_SITE:
       if (current_access == PAGE_ACCESS_RUN_ON_ALL_SITES)
-        modifier.SetAllowedOnAllUrls(false);
+        modifier.SetWithholdAllUrls(true);
       if (!modifier.HasGrantedHostPermission(url))
         modifier.GrantHostPermission(url);
       break;
     case PAGE_ACCESS_RUN_ON_ALL_SITES:
-      modifier.SetAllowedOnAllUrls(true);
+      modifier.SetWithholdAllUrls(false);
       break;
     default:
       NOTREACHED();

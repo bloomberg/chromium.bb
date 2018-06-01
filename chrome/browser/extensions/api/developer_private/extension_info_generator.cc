@@ -535,7 +535,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
       browser_context_, base::WrapRefCounted(&extension));
   info->run_on_all_urls.is_enabled = permissions_modifier.CanAffectExtension();
   info->run_on_all_urls.is_active = info->run_on_all_urls.is_enabled &&
-                                    permissions_modifier.IsAllowedOnAllUrls();
+                                    !permissions_modifier.HasWithheldAllUrls();
 
   // Runtime warnings.
   std::vector<std::string> warnings =

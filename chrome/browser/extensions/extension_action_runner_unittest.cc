@@ -118,7 +118,7 @@ const Extension* ExtensionActionRunnerUnitTest::AddExtension() {
   PermissionsUpdater(profile()).InitializePermissions(extension_.get());
 
   ScriptingPermissionsModifier(profile(), extension_.get())
-      .SetAllowedOnAllUrls(false);
+      .SetWithholdAllUrls(true);
   return extension_.get();
 }
 
@@ -354,7 +354,7 @@ TEST_F(ExtensionActionRunnerUnitTest, ActiveScriptsCanHaveAllUrlsPref) {
 
   // Enable the extension on all urls.
   ScriptingPermissionsModifier permissions_modifier(profile(), extension);
-  permissions_modifier.SetAllowedOnAllUrls(true);
+  permissions_modifier.SetWithholdAllUrls(false);
 
   EXPECT_FALSE(RequiresUserConsent(extension));
   // This should carry across navigations, and websites.
@@ -362,7 +362,7 @@ TEST_F(ExtensionActionRunnerUnitTest, ActiveScriptsCanHaveAllUrlsPref) {
   EXPECT_FALSE(RequiresUserConsent(extension));
 
   // Turning off the preference should have instant effect.
-  permissions_modifier.SetAllowedOnAllUrls(false);
+  permissions_modifier.SetWithholdAllUrls(true);
   EXPECT_TRUE(RequiresUserConsent(extension));
 
   // And should also persist across navigations and websites.

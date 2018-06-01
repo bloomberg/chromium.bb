@@ -870,7 +870,7 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
     ScriptingPermissionsModifier modifier(browser_context(), extension);
     if (!modifier.CanAffectExtension())
       return RespondNow(Error(kCannotChangeHostPermissions));
-    modifier.SetAllowedOnAllUrls(*update.run_on_all_urls);
+    modifier.SetWithholdAllUrls(!(*update.run_on_all_urls));
   }
 
   return RespondNow(NoArguments());

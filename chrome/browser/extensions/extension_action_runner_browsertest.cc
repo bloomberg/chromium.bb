@@ -173,7 +173,7 @@ const Extension* ExtensionActionRunnerBrowserTest::CreateExtension(
     ScriptingPermissionsModifier modifier(profile(), extension);
     if (withhold_permissions == WITHHOLD_PERMISSIONS &&
         modifier.CanAffectExtension()) {
-      modifier.SetAllowedOnAllUrls(false);
+      modifier.SetWithholdAllUrls(true);
     }
   }
 
@@ -435,7 +435,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
 
   // Enable the extension to run on all urls.
   ScriptingPermissionsModifier modifier(profile(), extension);
-  modifier.SetAllowedOnAllUrls(true);
+  modifier.SetWithholdAllUrls(false);
   EXPECT_TRUE(RunAllPendingInRenderer(web_contents));
 
   // Navigate again - this time, the extension should execute immediately (and
@@ -447,7 +447,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
 
   // Revoke all urls permissions.
   inject_success_listener.Reset();
-  modifier.SetAllowedOnAllUrls(false);
+  modifier.SetWithholdAllUrls(true);
   EXPECT_TRUE(RunAllPendingInRenderer(web_contents));
 
   // Re-navigate; the extension should again need permission to run.
@@ -466,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("blocked_actions/content_scripts"));
   ASSERT_TRUE(extension);
-  ScriptingPermissionsModifier(profile(), extension).SetAllowedOnAllUrls(false);
+  ScriptingPermissionsModifier(profile(), extension).SetWithholdAllUrls(true);
 
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* web_contents =

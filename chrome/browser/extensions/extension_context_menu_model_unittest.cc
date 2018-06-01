@@ -623,7 +623,7 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   const Extension* extension =
       AddExtensionWithHostPermission("extension", manifest_keys::kBrowserAction,
                                      Manifest::INTERNAL, "*://*/*");
-  ScriptingPermissionsModifier(profile(), extension).SetAllowedOnAllUrls(false);
+  ScriptingPermissionsModifier(profile(), extension).SetWithholdAllUrls(true);
   EXPECT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
 
   const GURL kActiveUrl("http://www.example.com/");
