@@ -256,6 +256,10 @@ const base::Feature kOriginManifest{"OriginManifest",
 const base::Feature kOriginTrials{"OriginTrials",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Blink PageLifecycle feature. See https://crbug.com/775194
+const base::Feature kPageLifecycle{"PageLifecycle",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Whether document level event listeners should default 'passive' to true.
 const base::Feature kPassiveDocumentEventListeners{
     "PassiveDocumentEventListeners", base::FEATURE_ENABLED_BY_DEFAULT};

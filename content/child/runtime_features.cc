@@ -441,6 +441,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnableExperimentalProductivityFeatures(true);
   }
 
+  if (base::FeatureList::IsEnabled(features::kPageLifecycle))
+    WebRuntimeFeatures::EnablePageLifecycle(true);
+
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kDisplayCutoutAPI))
     WebRuntimeFeatures::EnableDisplayCutoutAPI(true);

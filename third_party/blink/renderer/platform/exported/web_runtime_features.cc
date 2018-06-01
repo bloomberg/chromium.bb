@@ -252,6 +252,10 @@ void WebRuntimeFeatures::EnableOverflowIconsForMediaControls(bool enable) {
   RuntimeEnabledFeatures::SetOverflowIconsForMediaControlsEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnablePageLifecycle(bool enable) {
+  RuntimeEnabledFeatures::SetPageLifecycleEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnablePagePopup(bool enable) {
   RuntimeEnabledFeatures::SetPagePopupEnabled(enable);
 }
