@@ -6,24 +6,19 @@ from telemetry.page import shared_page_state
 from telemetry import story
 
 
-class SimplePage(page_module.Page):
+class SimpleScrollPage(page_module.Page):
 
-  def __init__(self, url, page_set):
-    super(SimplePage, self).__init__(
+  def __init__(self, name, url, page_set):
+    super(SimpleScrollPage, self).__init__(
+        name=name,
         url=url,
         page_set=page_set,
-        shared_page_state_class=shared_page_state.Shared10InchTabletPageState,
-        name=url)
+        shared_page_state_class=shared_page_state.Shared10InchTabletPageState)
 
   def RunNavigateSteps(self, action_runner):
-    super(SimplePage, self).RunNavigateSteps(action_runner)
+    super(SimpleScrollPage, self).RunNavigateSteps(action_runner)
     # TODO(epenner): Remove this wait (http://crbug.com/366933)
     action_runner.Wait(5)
-
-class SimpleScrollPage(SimplePage):
-
-  def __init__(self, url, page_set):
-    super(SimpleScrollPage, self).__init__(url=url, page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
     # Make the scroll longer to reduce noise.
@@ -41,11 +36,13 @@ class SimpleMobileSitesPageSet(story.StorySet):
 
     scroll_page_list = [
       # Why: Scrolls moderately complex pages (up to 60 layers)
-      'http://www.ebay.co.uk/',
-      'https://www.flickr.com/',
-      'http://www.nyc.gov',
-      'http://m.nytimes.com/'
+      ('ebay_scroll', 'http://www.ebay.co.uk/'),
+      ('flickr_scroll', 'https://www.flickr.com/'),
+      ('nyc_gov_scroll', 'http://www.nyc.gov'),
+      ('nytimes_scroll', 'http://m.nytimes.com/')
     ]
 
-    for url in scroll_page_list:
-      self.AddStory(SimpleScrollPage(url, self))
+    for name,url in scroll_page_list:
+      self.AddStory(SimpleScrollPage(name=name,
+                                     url=url,
+                                     page_set=self))

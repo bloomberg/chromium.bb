@@ -1,24 +1,15 @@
 {
     "archives": {
-        "http://m.nytimes.com/": {
+        "nytimes_scroll": {
             "DEFAULT": "simple_mobile_sites_002.wprgo"
         },
-        "http://m.us.wsj.com/": {
+        "ebay_scroll": {
             "DEFAULT": "simple_mobile_sites_002.wprgo"
         },
-        "http://www.apple.com/mac/": {
+        "nyc_gov_scroll": {
             "DEFAULT": "simple_mobile_sites_002.wprgo"
         },
-        "http://www.ebay.co.uk/": {
-            "DEFAULT": "simple_mobile_sites_002.wprgo"
-        },
-        "http://www.nyc.gov": {
-            "DEFAULT": "simple_mobile_sites_002.wprgo"
-        },
-        "https://www.flickr.com/": {
-            "DEFAULT": "simple_mobile_sites_002.wprgo"
-        },
-        "https://www.yahoo.com/": {
+        "flickr_scroll": {
             "DEFAULT": "simple_mobile_sites_002.wprgo"
         }
     },
