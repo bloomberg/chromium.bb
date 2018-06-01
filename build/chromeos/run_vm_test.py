@@ -98,6 +98,16 @@ def vm_test(args):
 
   runtime_files = read_runtime_files(
       args.runtime_deps_path, args.path_to_outdir)
+  if args.vpython_dir:
+    # --vpython-dir is relative to the out dir, but --files expects paths
+    # relative to src dir, so fix the path up a bit.
+    runtime_files.append(
+        os.path.relpath(
+            os.path.abspath(os.path.join(args.path_to_outdir,
+                                         args.vpython_dir)),
+            CHROMIUM_SRC_PATH))
+    runtime_files.append('.vpython')
+
   # If we're pushing files, we need to set the cwd.
   if runtime_files:
       cros_run_vm_test_cmd.extend(
@@ -127,12 +137,39 @@ def vm_test(args):
         '--build-dir', os.path.relpath(args.path_to_outdir, CHROMIUM_SRC_PATH),
     ]
   else:
+    pre_test_cmds = [
+        # /home is mounted with "noexec" in the VM, but some of our tools
+        # and tests use the home dir as a workspace (eg: vpython downloads
+        # python binaries to ~/.vpython-root). /tmp doesn't have this
+        # restriction, so change the location of the home dir for the
+        # duration of the test.
+        'export HOME=/tmp', '\;',
+    ]
+    if args.vpython_dir:
+      vpython_spec_path = os.path.relpath(
+          os.path.join(CHROMIUM_SRC_PATH, '.vpython'),
+          args.path_to_outdir)
+      pre_test_cmds += [
+          # Backslash is needed to prevent $PATH from getting prematurely
+          # executed on the host.
+          'export PATH=\$PATH:\$PWD/%s' % args.vpython_dir, '\;',
+          # Initialize the vpython cache. This can take 10-20s, and some tests
+          # can't afford to wait that long on the first invocation.
+          'vpython', '-vpython-spec', vpython_spec_path, '-vpython-tool',
+          'install', '\;',
+      ]
     cros_run_vm_test_cmd += [
         '--cmd',
         '--',
+        # Wrap the cmd to run in the VM around quotes (") so that the
+        # interpreter on the host doesn't stop at any ";" or "&&" tokens in the
+        # cmd.
+        '"',
+    ] + pre_test_cmds + [
         './' + args.test_exe,
         '--test-launcher-shard-index=%d' % args.test_launcher_shard_index,
         '--test-launcher-total-shards=%d' % args.test_launcher_total_shards,
+        '"',
     ]
 
   if args.test_launcher_summary_output and not is_sanity_test:
@@ -222,6 +259,13 @@ def main():
       '--test-launcher-total-shards',
       type=int, default=os.environ.get('GTEST_TOTAL_SHARDS', 1),
       help='Total number of external shards.')
+  vm_test_parser.add_argument(
+      '--vpython-dir', type=str,
+      help='Location on host of a directory containing a vpython binary to '
+           'deploy to the VM before the test starts. The location of this dir '
+           'will be added onto PATH in the VM. WARNING: The arch of the VM '
+           'might not match the arch of the host, so avoid using "${platform}" '
+           'when downloading vpython via CIPD.')
   args = parser.parse_args()
 
   logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARN)
