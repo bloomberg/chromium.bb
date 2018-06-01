@@ -112,7 +112,7 @@ public class OptionalShareTargetsManager {
         sStateChangeTask = new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
-                if (!sPendingShareActivities.isEmpty()) return null;
+                if (!sPendingShareActivities.isEmpty() || sEnabledComponents == null) return null;
                 for (int i = 0; i < sEnabledComponents.size(); i++) {
                     triggeringActivity.getPackageManager().setComponentEnabledSetting(
                             sEnabledComponents.get(i),
