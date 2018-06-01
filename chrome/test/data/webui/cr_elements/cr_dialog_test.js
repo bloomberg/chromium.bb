@@ -11,6 +11,34 @@ suite('cr-dialog', function() {
     PolymerTest.clearBody();
   });
 
+  test('close event bubbles', function() {
+    document.body.innerHTML = `
+      <cr-dialog>
+        <div slot="title">title</div>
+        <div slot="body">body</div>
+      </cr-dialog>`;
+
+    const dialog = document.body.querySelector('cr-dialog');
+    dialog.showModal();
+    const whenFired = test_util.eventToPromise('close', dialog);
+    dialog.close();
+    return whenFired;
+  });
+
+  test('cancel event bubbles', function() {
+    document.body.innerHTML = `
+      <cr-dialog>
+        <div slot="title">title</div>
+        <div slot="body">body</div>
+      </cr-dialog>`;
+
+    const dialog = document.body.querySelector('cr-dialog');
+    dialog.showModal();
+    const whenFired = test_util.eventToPromise('cancel', dialog);
+    dialog.cancel();
+    return whenFired;
+  });
+
   test('focuses title on show', function() {
     document.body.innerHTML = `
       <cr-dialog>
