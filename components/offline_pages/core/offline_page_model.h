@@ -29,18 +29,6 @@ struct ClientId;
 // Service for saving pages offline, storing the offline copy and metadata, and
 // retrieving them upon request.
 //
-// Example usage:
-//   class ArchiverImpl : public OfflinePageArchiver {
-//     // This is a class that knows how to create archiver
-//     void CreateArchiver(...) override;
-//     ...
-//   }
-//
-//   // In code using the OfflinePagesModel to save a page:
-//   std::unique_ptr<ArchiverImpl> archiver(new ArchiverImpl());
-//   // Callback is of type SavePageCallback.
-//   model->SavePage(url, std::move(archiver), callback);
-//
 // TODO(fgorski): Things to describe:
 // * how to cancel requests and what to expect
 class OfflinePageModel : public base::SupportsUserData, public KeyedService {
@@ -137,14 +125,26 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
   // Attempts to save a page offline per |save_page_params|. Requires that the
   // model is loaded.  Generates a new offline id or uses the proposed offline
   // id in |save_page_params| and returns it.
+  //
+  // Example usage:
+  //   class ArchiverImpl : public OfflinePageArchiver {
+  //     // This is a class that knows how to create archiver
+  //     void CreateArchiver(...) override;
+  //     ...
+  //   }
+  //
+  //   // In code using the OfflinePagesModel to save a page:
+  //   std::unique_ptr<ArchiverImpl> archiver(new ArchiverImpl());
+  //   // Callback is of type SavePageCallback.
+  //   model->SavePage(url, std::move(archiver), std::move(callback));
   virtual void SavePage(const SavePageParams& save_page_params,
                         std::unique_ptr<OfflinePageArchiver> archiver,
                         content::WebContents* web_contents,
-                        const SavePageCallback& callback) = 0;
+                        SavePageCallback callback) = 0;
 
   // Adds a page entry to the metadata store.
   virtual void AddPage(const OfflinePageItem& page,
-                       const AddPageCallback& callback) = 0;
+                       AddPageCallback callback) = 0;
 
   // Marks that the offline page related to the passed |offline_id| has been
   // accessed. Its access info, including last access time and access count,

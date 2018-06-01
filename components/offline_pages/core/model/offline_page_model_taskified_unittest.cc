@@ -111,7 +111,7 @@ class OfflinePageModelTaskifiedTest : public testing::Test,
                             const GURL& original_url,
                             const std::string& request_origin,
                             std::unique_ptr<OfflinePageArchiver> archiver,
-                            const SavePageCallback& callback);
+                            SavePageCallback callback);
   int64_t SavePageWithExpectedResult(
       const GURL& url,
       const ClientId& client_id,
@@ -283,14 +283,15 @@ void OfflinePageModelTaskifiedTest::SavePageWithCallback(
     const GURL& original_url,
     const std::string& request_origin,
     std::unique_ptr<OfflinePageArchiver> archiver,
-    const SavePageCallback& callback) {
+    SavePageCallback callback) {
   OfflinePageModel::SavePageParams save_page_params;
   save_page_params.url = url;
   save_page_params.client_id = client_id;
   save_page_params.original_url = original_url;
   save_page_params.request_origin = request_origin;
   save_page_params.is_background = false;
-  model()->SavePage(save_page_params, std::move(archiver), nullptr, callback);
+  model()->SavePage(save_page_params, std::move(archiver), nullptr,
+                    std::move(callback));
   PumpLoop();
 }
 

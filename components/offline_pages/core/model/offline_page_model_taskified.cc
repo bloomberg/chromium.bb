@@ -223,18 +223,18 @@ void OfflinePageModelTaskified::SavePage(
     const SavePageParams& save_page_params,
     std::unique_ptr<OfflinePageArchiver> archiver,
     content::WebContents* web_contents,
-    const SavePageCallback& callback) {
+    SavePageCallback callback) {
   // Skip saving the page that is not intended to be saved, like local file
   // page.
   if (!OfflinePageModel::CanSaveURL(save_page_params.url)) {
-    InformSavePageDone(callback, SavePageResult::SKIPPED,
+    InformSavePageDone(std::move(callback), SavePageResult::SKIPPED,
                        save_page_params.client_id, kInvalidOfflineId);
     return;
   }
 
   // The web contents is not available if archiver is not created and passed.
   if (!archiver) {
-    InformSavePageDone(callback, SavePageResult::CONTENT_UNAVAILABLE,
+    InformSavePageDone(std::move(callback), SavePageResult::CONTENT_UNAVAILABLE,
                        save_page_params.client_id, kInvalidOfflineId);
     return;
   }
@@ -253,18 +253,19 @@ void OfflinePageModelTaskified::SavePage(
   archiver->CreateArchive(
       GetInternalArchiveDirectory(save_page_params.client_id.name_space),
       create_archive_params, web_contents,
-      base::Bind(&OfflinePageModelTaskified::OnCreateArchiveDone,
-                 weak_ptr_factory_.GetWeakPtr(), save_page_params, offline_id,
-                 GetCurrentTime(), callback));
+      base::BindOnce(&OfflinePageModelTaskified::OnCreateArchiveDone,
+                     weak_ptr_factory_.GetWeakPtr(), save_page_params,
+                     offline_id, GetCurrentTime(), std::move(callback)));
   pending_archivers_.push_back(std::move(archiver));
 }
 
 void OfflinePageModelTaskified::AddPage(const OfflinePageItem& page,
-                                        const AddPageCallback& callback) {
+                                        AddPageCallback callback) {
   auto task = std::make_unique<AddPageTask>(
       store_.get(), page,
       base::BindOnce(&OfflinePageModelTaskified::OnAddPageDone,
-                     weak_ptr_factory_.GetWeakPtr(), page, callback));
+                     weak_ptr_factory_.GetWeakPtr(), page,
+                     std::move(callback)));
   task_queue_.AddTask(std::move(task));
 }
 
@@ -461,11 +462,10 @@ OfflineEventLogger* OfflinePageModelTaskified::GetLogger() {
   return &offline_event_logger_;
 }
 
-void OfflinePageModelTaskified::InformSavePageDone(
-    const SavePageCallback& callback,
-    SavePageResult result,
-    const ClientId& client_id,
-    int64_t offline_id) {
+void OfflinePageModelTaskified::InformSavePageDone(SavePageCallback callback,
+                                                   SavePageResult result,
+                                                   const ClientId& client_id,
+                                                   int64_t offline_id) {
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.SavePageCount",
                             model_utils::ToNamespaceEnum(client_id.name_space),
                             OfflinePagesNamespaceEnumeration::RESULT_COUNT);
@@ -481,14 +481,14 @@ void OfflinePageModelTaskified::InformSavePageDone(
   if (result == SavePageResult::ARCHIVE_CREATION_FAILED)
     CreateArchivesDirectoryIfNeeded();
   if (!callback.is_null())
-    callback.Run(result, offline_id);
+    std::move(callback).Run(result, offline_id);
 }
 
 void OfflinePageModelTaskified::OnCreateArchiveDone(
     const SavePageParams& save_page_params,
     int64_t offline_id,
     const base::Time& start_time,
-    const SavePageCallback& callback,
+    SavePageCallback callback,
     OfflinePageArchiver* archiver,
     ArchiverResult archiver_result,
     const GURL& saved_url,
@@ -498,14 +498,15 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
     const std::string& file_hash) {
   if (archiver_result != ArchiverResult::SUCCESSFULLY_CREATED) {
     SavePageResult result = ArchiverResultToSavePageResult(archiver_result);
-    InformSavePageDone(callback, result, save_page_params.client_id,
+    InformSavePageDone(std::move(callback), result, save_page_params.client_id,
                        offline_id);
     ErasePendingArchiver(archiver);
     return;
   }
   if (save_page_params.url != saved_url) {
     DVLOG(1) << "Saved URL does not match requested URL.";
-    InformSavePageDone(callback, SavePageResult::ARCHIVE_CREATION_FAILED,
+    InformSavePageDone(std::move(callback),
+                       SavePageResult::ARCHIVE_CREATION_FAILED,
                        save_page_params.client_id, offline_id);
     ErasePendingArchiver(archiver);
     return;
@@ -529,14 +530,15 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
       policy_controller_->IsUserRequestedDownload(
           offline_page.client_id.name_space)) {
     // If the user intentionally downloaded the page, move it to a public place.
-    PublishArchive(offline_page, callback, archiver);
+    PublishArchive(offline_page, std::move(callback), archiver);
   } else {
     // For pages that we download on the user's behalf, we keep them in an
     // internal chrome directory, and add them here to the OfflinePageModel
     // database.
     AddPage(offline_page,
-            base::Bind(&OfflinePageModelTaskified::OnAddPageForSavePageDone,
-                       weak_ptr_factory_.GetWeakPtr(), callback, offline_page));
+            base::BindOnce(&OfflinePageModelTaskified::OnAddPageForSavePageDone,
+                           weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                           offline_page));
   }
   ErasePendingArchiver(archiver);
 }
@@ -552,21 +554,22 @@ void OfflinePageModelTaskified::ErasePendingArchiver(
 
 void OfflinePageModelTaskified::PublishArchive(
     const OfflinePageItem& offline_page,
-    const SavePageCallback& save_page_callback,
+    SavePageCallback save_page_callback,
     OfflinePageArchiver* archiver) {
   archiver->PublishArchive(
       offline_page, task_runner_, archive_manager_->GetPublicArchivesDir(),
       download_manager_.get(),
       base::BindOnce(&OfflinePageModelTaskified::PublishArchiveDone,
-                     weak_ptr_factory_.GetWeakPtr(), save_page_callback));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(save_page_callback)));
 }
 
 void OfflinePageModelTaskified::PublishArchiveDone(
-    const SavePageCallback& save_page_callback,
+    SavePageCallback save_page_callback,
     const OfflinePageItem& offline_page,
     PublishArchiveResult* move_results) {
   if (move_results->move_result != SavePageResult::SUCCESS) {
-    save_page_callback.Run(move_results->move_result, 0LL);
+    std::move(save_page_callback).Run(move_results->move_result, 0LL);
     return;
   }
   OfflinePageItem page = offline_page;
@@ -574,8 +577,9 @@ void OfflinePageModelTaskified::PublishArchiveDone(
   page.system_download_id = move_results->download_id;
 
   AddPage(page,
-          base::Bind(&OfflinePageModelTaskified::OnAddPageForSavePageDone,
-                     weak_ptr_factory_.GetWeakPtr(), save_page_callback, page));
+          base::BindOnce(&OfflinePageModelTaskified::OnAddPageForSavePageDone,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         std::move(save_page_callback), page));
 }
 
 void OfflinePageModelTaskified::PublishInternalArchive(
@@ -613,14 +617,14 @@ void OfflinePageModelTaskified::PublishInternalArchiveDone(
 }
 
 void OfflinePageModelTaskified::OnAddPageForSavePageDone(
-    const SavePageCallback& callback,
+    SavePageCallback callback,
     const OfflinePageItem& page_attempted,
     AddPageResult add_page_result,
     int64_t offline_id) {
   SavePageResult save_page_result =
       AddPageResultToSavePageResult(add_page_result);
-  InformSavePageDone(callback, save_page_result, page_attempted.client_id,
-                     offline_id);
+  InformSavePageDone(std::move(callback), save_page_result,
+                     page_attempted.client_id, offline_id);
   if (save_page_result == SavePageResult::SUCCESS) {
     ReportPageHistogramAfterSuccessfulSaving(page_attempted, GetCurrentTime());
     // TODO(romax): Just keep the same with logic in OPMImpl (which was wrong).
@@ -637,9 +641,9 @@ void OfflinePageModelTaskified::OnAddPageForSavePageDone(
 }
 
 void OfflinePageModelTaskified::OnAddPageDone(const OfflinePageItem& page,
-                                              const AddPageCallback& callback,
+                                              AddPageCallback callback,
                                               AddPageResult result) {
-  callback.Run(result, page.offline_id);
+  std::move(callback).Run(result, page.offline_id);
   if (result == AddPageResult::SUCCESS) {
     for (Observer& observer : observers_)
       observer.OfflinePageAdded(this, page);

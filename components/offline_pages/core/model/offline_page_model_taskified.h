@@ -82,9 +82,8 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   void SavePage(const SavePageParams& save_page_params,
                 std::unique_ptr<OfflinePageArchiver> archiver,
                 content::WebContents* web_contents,
-                const SavePageCallback& callback) override;
-  void AddPage(const OfflinePageItem& page,
-               const AddPageCallback& callback) override;
+                SavePageCallback callback) override;
+  void AddPage(const OfflinePageItem& page, AddPageCallback callback) override;
   void MarkPageAccessed(int64_t offline_id) override;
 
   void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
@@ -164,18 +163,18 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   friend class OfflinePageModelTaskifiedTest;
 
   // Callbacks for saving pages.
-  void InformSavePageDone(const SavePageCallback& calback,
+  void InformSavePageDone(SavePageCallback calback,
                           SavePageResult result,
                           const ClientId& client_id,
                           int64_t offline_id);
-  void OnAddPageForSavePageDone(const SavePageCallback& callback,
+  void OnAddPageForSavePageDone(SavePageCallback callback,
                                 const OfflinePageItem& page_attempted,
                                 AddPageResult add_page_result,
                                 int64_t offline_id);
   void OnCreateArchiveDone(const SavePageParams& save_page_params,
                            int64_t offline_id,
                            const base::Time& start_time,
-                           const SavePageCallback& callback,
+                           SavePageCallback callback,
                            OfflinePageArchiver* archiver,
                            OfflinePageArchiver::ArchiverResult archiver_result,
                            const GURL& saved_url,
@@ -186,7 +185,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
 
   // Callback for adding pages.
   void OnAddPageDone(const OfflinePageItem& page,
-                     const AddPageCallback& callback,
+                     AddPageCallback callback,
                      AddPageResult result);
 
   // Callbacks for deleting pages.
@@ -216,11 +215,11 @@ class OfflinePageModelTaskified : public OfflinePageModel,
 
   // Methods for publishing the page to the public directory.
   void PublishArchive(const OfflinePageItem& offline_page,
-                      const SavePageCallback& callback,
+                      SavePageCallback callback,
                       OfflinePageArchiver* archiver);
 
   // Callback for when PublishArchive has completd.
-  void PublishArchiveDone(const SavePageCallback& save_page_callback,
+  void PublishArchiveDone(SavePageCallback save_page_callback,
                           const OfflinePageItem& offline_page,
                           PublishArchiveResult* archive_result);
 

@@ -67,9 +67,9 @@ class MockOfflinePageModel : public StubOfflinePageModel {
   void SavePage(const SavePageParams& save_page_params,
                 std::unique_ptr<OfflinePageArchiver> archiver,
                 content::WebContents* web_contents,
-                const SavePageCallback& callback) override {
+                SavePageCallback callback) override {
     mock_saving_ = true;
-    save_page_callback_ = callback;
+    save_page_callback_ = std::move(callback);
     save_page_params_ = save_page_params;
   }
 
@@ -77,7 +77,7 @@ class MockOfflinePageModel : public StubOfflinePageModel {
     DCHECK(mock_saving_);
     mock_saving_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(save_page_callback_,
+        FROM_HERE, base::BindOnce(std::move(save_page_callback_),
                                   SavePageResult::ARCHIVE_CREATION_FAILED, 0));
   }
 
@@ -85,15 +85,15 @@ class MockOfflinePageModel : public StubOfflinePageModel {
     DCHECK(mock_saving_);
     mock_saving_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(save_page_callback_, SavePageResult::SUCCESS, 123456));
+        FROM_HERE, base::BindOnce(std::move(save_page_callback_),
+                                  SavePageResult::SUCCESS, 123456));
   }
 
   void CompleteSavingAsAlreadyExists() {
     DCHECK(mock_saving_);
     mock_saving_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(save_page_callback_,
+        FROM_HERE, base::BindOnce(std::move(save_page_callback_),
                                   SavePageResult::ALREADY_EXISTS, 123456));
   }
 
