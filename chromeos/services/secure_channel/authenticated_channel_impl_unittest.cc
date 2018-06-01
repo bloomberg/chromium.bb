@@ -14,7 +14,7 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/services/secure_channel/fake_authenticated_channel.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/fake_authenticated_channel.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/fake_secure_channel.h"
