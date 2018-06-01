@@ -188,6 +188,14 @@ void FeaturePodButton::SetVisible(bool visible) {
   View::SetVisible(visible);
 }
 
+bool FeaturePodButton::HasFocus() const {
+  return icon_button_->HasFocus() || label_button_->HasFocus();
+}
+
+void FeaturePodButton::RequestFocus() {
+  label_button_->RequestFocus();
+}
+
 void FeaturePodButton::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   if (sender == label_button_) {

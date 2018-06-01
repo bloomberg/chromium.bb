@@ -108,6 +108,8 @@ class ASH_EXPORT FeaturePodButton : public views::View,
 
   // views::View:
   void SetVisible(bool visible) override;
+  bool HasFocus() const override;
+  void RequestFocus() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

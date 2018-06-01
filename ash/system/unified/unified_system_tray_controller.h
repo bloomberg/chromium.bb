@@ -72,9 +72,10 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
 
   // If you want to add a new detailed view, add here.
 
-  // Show the main view back from a detailed view. Called from a detailed view
-  // controller.
-  void TransitionToMainView();
+  // Show the main view back from a detailed view. If |restore_focus| is true,
+  // it restores previous keyboard focus in the main view. Called from a
+  // detailed view controller.
+  void TransitionToMainView(bool restore_focus);
 
   // Close the bubble. Called from a detailed view controller.
   void CloseBubble();

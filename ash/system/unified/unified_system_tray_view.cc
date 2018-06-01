@@ -171,6 +171,14 @@ void UnifiedSystemTrayView::ResetDetailedView() {
   system_tray_container_->SetVisible(true);
 }
 
+void UnifiedSystemTrayView::SaveFeaturePodFocus() {
+  feature_pods_container_->SaveFocus();
+}
+
+void UnifiedSystemTrayView::RestoreFeaturePodFocus() {
+  feature_pods_container_->RestoreFocus();
+}
+
 void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
   DCHECK(0.0 <= expanded_amount && expanded_amount <= 1.0);
   if (expanded_amount == 1.0 || expanded_amount == 0.0)

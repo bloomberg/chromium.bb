@@ -64,6 +64,10 @@ class UnifiedSystemTrayView : public views::View {
   // It deletes |detailed_view| and children.
   void ResetDetailedView();
 
+  // Save and restore keyboard focus of feature pod.
+  void SaveFeaturePodFocus();
+  void RestoreFeaturePodFocus();
+
   // Change the expanded state. 0.0 if collapsed, and 1.0 if expanded.
   // Otherwise, it shows intermediate state.
   void SetExpandedAmount(double expanded_amount);
