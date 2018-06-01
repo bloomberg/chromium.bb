@@ -78,7 +78,7 @@ class BackgroundApplicationListModel::Application
 };
 
 namespace {
-void GetServiceApplications(ExtensionService* service,
+void GetServiceApplications(extensions::ExtensionService* service,
                             ExtensionList* applications_result) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(service->profile());
   const ExtensionSet& enabled_extensions = registry->enabled_extensions();
@@ -283,8 +283,8 @@ void BackgroundApplicationListModel::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(profile_)->
-      extension_service();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (!service || !service->is_ready())
     return;
 
@@ -381,8 +381,8 @@ void BackgroundApplicationListModel::RemoveObserver(Observer* observer) {
 // differs from the old list, it generates OnApplicationListChanged events for
 // each observer.
 void BackgroundApplicationListModel::Update() {
-  ExtensionService* service = extensions::ExtensionSystem::Get(profile_)->
-      extension_service();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
 
   // Discover current background applications, compare with previous list, which
   // is consistently sorted, and notify observers if they differ.

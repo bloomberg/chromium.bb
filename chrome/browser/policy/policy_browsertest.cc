@@ -824,7 +824,7 @@ class PolicyTest : public InProcessBrowserTest {
   }
 #endif  // defined(OS_CHROMEOS)
 
-  ExtensionService* extension_service() {
+  extensions::ExtensionService* extension_service() {
     extensions::ExtensionSystem* system =
         extensions::ExtensionSystem::Get(browser()->profile());
     return system->extension_service();
@@ -1742,7 +1742,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSelective) {
   // Verifies that blacklisted extensions can't be installed.
-  ExtensionService* service = extension_service();
+  extensions::ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
   ASSERT_FALSE(service->GetExtensionById(kSimpleWithIconCrxId, true));
   base::ListValue blacklist;
@@ -1773,7 +1773,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklist_BookmarkApp) {
   ASSERT_TRUE(bookmark_app);
   EXPECT_TRUE(InstallExtension(kGoodCrxName));
 
-  ExtensionService* service = extension_service();
+  extensions::ExtensionService* service = extension_service();
   EXPECT_TRUE(service->IsExtensionEnabled(kGoodCrxId));
   EXPECT_TRUE(service->IsExtensionEnabled(bookmark_app->id()));
 
@@ -1796,7 +1796,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes_BookmarkApp) {
   ASSERT_TRUE(bookmark_app);
   EXPECT_TRUE(InstallExtension(kGoodCrxName));
 
-  ExtensionService* service = extension_service();
+  extensions::ExtensionService* service = extension_service();
   EXPECT_TRUE(service->IsExtensionEnabled(kGoodCrxId));
   EXPECT_TRUE(service->IsExtensionEnabled(bookmark_app->id()));
 
@@ -1820,7 +1820,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionSettings_BookmarkApp) {
   ASSERT_TRUE(bookmark_app);
   EXPECT_TRUE(InstallExtension(kGoodCrxName));
 
-  ExtensionService* service = extension_service();
+  extensions::ExtensionService* service = extension_service();
   EXPECT_TRUE(service->IsExtensionEnabled(kGoodCrxId));
   EXPECT_TRUE(service->IsExtensionEnabled(bookmark_app->id()));
 
@@ -1875,7 +1875,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionSettings_BookmarkApp) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallBlacklistWildcard) {
   // Verify that a wildcard blacklist takes effect.
   EXPECT_TRUE(InstallExtension(kSimpleWithIconCrxName));
-  ExtensionService* service = extension_service();
+  extensions::ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
   ASSERT_TRUE(service->GetExtensionById(kSimpleWithIconCrxId, true));
   base::ListValue blacklist;
@@ -1925,7 +1925,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSharedModules) {
   extensions::ScopedCurrentChannel channel(version_info::Channel::DEV);
 
   // Verify that the extensions are not installed initially.
-  ExtensionService* service = extension_service();
+  extensions::ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kImporterId, true));
   ASSERT_FALSE(service->GetExtensionById(kSharedModuleId, true));
 
@@ -1986,7 +1986,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSharedModules) {
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallWhitelist) {
   // Verifies that the whitelist can open exceptions to the blacklist.
-  ExtensionService* service = extension_service();
+  extensions::ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
   ASSERT_FALSE(service->GetExtensionById(kSimpleWithIconCrxId, true));
   base::ListValue blacklist;
@@ -2017,7 +2017,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   // Verifies that extensions that are force-installed by policies are
   // installed and can't be uninstalled.
 
-  ExtensionService* service = extension_service();
+  extensions::ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
 
   // Extensions that are force-installed come from an update URL, which defaults
@@ -2143,7 +2143,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
   // Verifies the ExtensionInstallForcelist policy with an empty (defaulted)
   // "update" URL.
 
-  ExtensionService* service = extension_service();
+  extensions::ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
 
   base::FilePath test_path;
@@ -2186,7 +2186,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionRecommendedInstallationMode) {
   base::win::SetDomainStateForTesting(true);
 #endif
 
-  ExtensionService* service = extension_service();
+  extensions::ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
 
   base::FilePath path =
@@ -2227,7 +2227,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionRecommendedInstallationMode) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes) {
   // Verifies that extensions are blocked if policy specifies an allowed types
   // list and the extension's type is not on that list.
-  ExtensionService* service = extension_service();
+  extensions::ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
   ASSERT_FALSE(service->GetExtensionById(kHostedAppCrxId, true));
 
@@ -2310,7 +2310,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
 // by policy will get disabled, and will be auto-updated and/or re-enabled upon
 // policy changes as well as regular auto-updater scheduled updates.
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
-  ExtensionService* service = extension_service();
+  extensions::ExtensionService* service = extension_service();
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(browser()->profile());
   extensions::ExtensionPrefs* extension_prefs =
@@ -2380,7 +2380,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
 // Similar to ExtensionMinimumVersionRequired test, but with different settings
 // and orders.
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
-  ExtensionService* service = extension_service();
+  extensions::ExtensionService* service = extension_service();
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(browser()->profile());
   extensions::ExtensionPrefs* extension_prefs =

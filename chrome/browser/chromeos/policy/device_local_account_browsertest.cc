@@ -1118,7 +1118,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
   // Verify that the hosted app was installed.
   Profile* profile = GetProfileForTest();
   ASSERT_TRUE(profile);
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   EXPECT_TRUE(extension_service->GetExtensionById(kHostedAppID, true));
 
@@ -1196,7 +1196,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
   // Verify that the hosted app was installed.
   Profile* profile = GetProfileForTest();
   ASSERT_TRUE(profile);
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   EXPECT_TRUE(extension_service->GetExtensionById(kHostedAppID, true));
 
@@ -2262,7 +2262,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
   // Verify that the app was installed.
   Profile* profile = GetProfileForTest();
   ASSERT_TRUE(profile);
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   EXPECT_TRUE(extension_service->GetExtensionById(kShowManagedStorageID, true));
 
