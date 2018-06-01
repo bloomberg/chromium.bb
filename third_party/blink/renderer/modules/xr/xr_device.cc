@@ -81,7 +81,12 @@ const char* XRDevice::checkSessionSupport(
   } else {
     // TODO(https://crbug.com/828321): Remove this check when properly
     // supporting multiple VRDevice registration.
-    DCHECK(!supports_ar_);
+    if (supports_ar_) {
+      // We don't expect to get an AR-capable device, but it can happen in
+      // layout tests, due to mojo mocking. For now just reject the session
+      // request.
+      return kSessionNotSupported;
+    }
     // TODO(https://crbug.com/828321): Check that VR is supported.
   }
 
