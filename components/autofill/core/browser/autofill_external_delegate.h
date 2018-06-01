@@ -147,10 +147,6 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // Does the popup include any Autofill profile or credit card suggestions?
   bool has_autofill_suggestions_;
 
-  // Have we already shown Autofill suggestions for the field the user is
-  // currently editing?  Used to keep track of state for metrics logging.
-  bool has_shown_popup_for_current_edit_;
-
   bool should_show_scan_credit_card_;
   PopupType popup_type_;
 

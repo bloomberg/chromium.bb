@@ -46,7 +46,6 @@ AutofillExternalDelegate::AutofillExternalDelegate(AutofillManager* manager,
       driver_(driver),
       query_id_(0),
       has_autofill_suggestions_(false),
-      has_shown_popup_for_current_edit_(false),
       should_show_scan_credit_card_(false),
       popup_type_(PopupType::kUnspecified),
       should_show_cc_signin_promo_(false),
@@ -104,11 +103,6 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     scan_credit_card.frontend_id = POPUP_ITEM_ID_SCAN_CREDIT_CARD;
     scan_credit_card.icon = base::ASCIIToUTF16("scanCreditCardIcon");
     suggestions.push_back(scan_credit_card);
-
-    if (!has_shown_popup_for_current_edit_) {
-      AutofillMetrics::LogScanCreditCardPromptMetric(
-          AutofillMetrics::SCAN_CARD_ITEM_SHOWN);
-    }
   }
 
   // Only include "Autofill Options" special menu item if we have Autofill
@@ -185,10 +179,13 @@ void AutofillExternalDelegate::SetCurrentDataListValues(
 }
 
 void AutofillExternalDelegate::OnPopupShown() {
-  manager_->DidShowSuggestions(
-      has_autofill_suggestions_ && !has_shown_popup_for_current_edit_,
-      query_form_, query_field_);
-  has_shown_popup_for_current_edit_ |= has_autofill_suggestions_;
+  manager_->DidShowSuggestions(has_autofill_suggestions_, query_form_,
+                               query_field_);
+
+  if (should_show_scan_credit_card_) {
+    AutofillMetrics::LogScanCreditCardPromptMetric(
+        AutofillMetrics::SCAN_CARD_ITEM_SHOWN);
+  }
 }
 
 void AutofillExternalDelegate::OnPopupHidden() {
@@ -270,8 +267,6 @@ bool AutofillExternalDelegate::RemoveSuggestion(const base::string16& value,
 
 void AutofillExternalDelegate::DidEndTextFieldEditing() {
   manager_->client()->HideAutofillPopup();
-
-  has_shown_popup_for_current_edit_ = false;
 }
 
 void AutofillExternalDelegate::ClearPreviewedForm() {

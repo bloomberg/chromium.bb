@@ -866,7 +866,7 @@ void AutofillManager::OnDidFillAutofillFormData(const FormData& form,
   UpdateInitialInteractionTimestamp(timestamp);
 }
 
-void AutofillManager::DidShowSuggestions(bool is_new_popup,
+void AutofillManager::DidShowSuggestions(bool has_autofill_suggestions,
                                          const FormData& form,
                                          const FormFieldData& field) {
   if (test_delegate_)
@@ -876,7 +876,7 @@ void AutofillManager::DidShowSuggestions(bool is_new_popup,
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
 
-  if (is_new_popup) {
+  if (has_autofill_suggestions) {
     AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::SUGGESTIONS_SHOWN,
                                             autofill_field->Type().group());
 

@@ -618,7 +618,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ScanCreditCardPromptMetricsTest) {
     base::HistogramTester histogram;
     IssueOnQuery(kQueryId);
     IssueOnSuggestionsReturned();
-    external_delegate_->OnPopupHidden();
+    external_delegate_->OnPopupShown();
     histogram.ExpectUniqueSample("Autofill.ScanCreditCardPrompt",
                                  AutofillMetrics::SCAN_CARD_ITEM_SHOWN, 1);
   }
@@ -629,6 +629,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ScanCreditCardPromptMetricsTest) {
     base::HistogramTester histogram;
     IssueOnQuery(kQueryId);
     IssueOnSuggestionsReturned();
+    external_delegate_->OnPopupShown();
     external_delegate_->DidAcceptSuggestion(base::string16(),
                                             POPUP_ITEM_ID_SCAN_CREDIT_CARD,
                                             0);
@@ -647,6 +648,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ScanCreditCardPromptMetricsTest) {
     base::HistogramTester histogram;
     IssueOnQuery(kQueryId);
     IssueOnSuggestionsReturned();
+    external_delegate_->OnPopupShown();
     external_delegate_->DidAcceptSuggestion(base::string16(),
                                             POPUP_ITEM_ID_CLEAR_FORM,
                                             0);
@@ -665,9 +667,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ScanCreditCardPromptMetricsTest) {
     base::HistogramTester histogram;
     IssueOnQuery(kQueryId);
     IssueOnSuggestionsReturned();
-    external_delegate_->DidAcceptSuggestion(base::string16(),
-                                            POPUP_ITEM_ID_CLEAR_FORM,
-                                            0);
+    external_delegate_->OnPopupShown();
     histogram.ExpectTotalCount("Autofill.ScanCreditCardPrompt", 0);
   }
 }
