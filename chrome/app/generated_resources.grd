@@ -10156,9 +10156,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_ALWAYS_ALLOW_ADS" desc="Explanation associated with a toggle to allow ads after ads have been blocked on the page. To be used on pages where the ad blocking UI is governed by a persistent permissions-based whitelist.">
       Always allow ads on this site
     </message>
-    <message name="IDS_ALLOW_ADS" desc="Explanation associated with a toggle to allow ads after ads have been blocked on the page. To be used on pages where the ad blocking UI is governed by a per-tab whitelist.">
-      Allow ads on this site
-    </message>
     <message name="IDS_BLOCKED_ADS_INFOBAR_MESSAGE" desc="The mini infobar message shown to users on Android when Chrome has blocked ads on the site because the site tends to show intrusive ads. Will be presented as a sentence, next to a Details link to expand the infobar.">
       Ads blocked.
     </message>

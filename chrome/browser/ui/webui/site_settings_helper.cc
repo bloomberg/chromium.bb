@@ -161,7 +161,7 @@ SiteSettingSource CalculateSiteSettingSource(
 
   if (content_type == CONTENT_SETTINGS_TYPE_ADS &&
       base::FeatureList::IsEnabled(
-          subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI)) {
+          subresource_filter::kSafeBrowsingSubresourceFilter)) {
     HostContentSettingsMap* map =
         HostContentSettingsMapFactory::GetForProfile(profile);
     if (map->GetWebsiteSetting(origin, GURL(), CONTENT_SETTINGS_TYPE_ADS_DATA,

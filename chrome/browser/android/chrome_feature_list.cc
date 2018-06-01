@@ -148,7 +148,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &password_manager::features::kPasswordSearchMobile,
     &password_manager::features::kPasswordsKeyboardAccessory,
     &signin::kUnifiedConsent,
-    &subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI,
+    &subresource_filter::kSafeBrowsingSubresourceFilter,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {

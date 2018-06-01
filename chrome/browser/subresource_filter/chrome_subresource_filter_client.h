@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_SUBRESOURCE_FILTER_CHROME_SUBRESOURCE_FILTER_CLIENT_H_
 
 #include <memory>
-#include <set>
-#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -136,14 +134,8 @@ class ChromeSubresourceFilterClient
   static void LogAction(SubresourceFilterAction action);
 
  private:
-  // TODO(csharrison): Remove this once the experimental UI flag is either
-  // removed or merged with the top-level subresource filter flag.
-  void WhitelistInCurrentWebContents(const GURL& url);
-
   void WhitelistByContentSettings(const GURL& url);
   void ShowUI(const GURL& url);
-
-  std::set<std::string> whitelisted_hosts_;
 
   std::unique_ptr<subresource_filter::ContentSubresourceFilterThrottleManager>
       throttle_manager_;
