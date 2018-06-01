@@ -2275,6 +2275,9 @@ void PaintPropertyTreeBuilder::
   const auto& bounding_box = context_.repeating_table_section_bounding_box;
   int first_page = floorf(bounding_box.Y() / page_height);
   int last_page = ceilf(bounding_box.MaxY() / page_height) - 1;
+  if (first_page >= last_page)
+    return;
+
   context_.fragments.resize(last_page - first_page + 1);
   for (int page = first_page; page <= last_page; page++) {
     if (page > first_page)
