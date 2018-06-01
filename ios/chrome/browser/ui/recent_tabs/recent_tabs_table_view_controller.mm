@@ -26,6 +26,8 @@
 #include "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
+#import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
@@ -665,17 +667,17 @@ const int kRelativeTimeMaxHours = 4;
   TableViewURLCell* URLCell = base::mac::ObjCCastStrict<TableViewURLCell>(cell);
 
   NSString* itemIdentifier = URLItem.uniqueIdentifier;
-  UIImage* cachedFavicon = [self.imageDataSource
+  FaviconAttributes* cachedAttributes = [self.imageDataSource
       faviconForURL:URLItem.URL
-         completion:^(UIImage* favicon) {
+         completion:^(FaviconAttributes* attributes) {
            // Only set favicon if the cell hasn't been reused.
            if ([URLCell.cellUniqueIdentifier isEqualToString:itemIdentifier]) {
-             DCHECK(favicon);
-             URLCell.faviconView.image = favicon;
+             DCHECK(attributes);
+             [URLCell.faviconView configureWithAttributes:attributes];
            }
          }];
-  DCHECK(cachedFavicon);
-  URLCell.faviconView.image = cachedFavicon;
+  DCHECK(cachedAttributes);
+  [URLCell.faviconView configureWithAttributes:cachedAttributes];
 }
 
 #pragma mark - Distant Sessions helpers

@@ -41,7 +41,7 @@
   cell.URLLabel.text = self.detailText;
   cell.metadataLabel.text = self.timeText;
   cell.metadataLabel.hidden = ([self.timeText length] == 0);
-  cell.faviconView.backgroundColor = styler.tableViewBackgroundColor;
+  cell.faviconContainerView.backgroundColor = styler.tableViewBackgroundColor;
   cell.titleLabel.backgroundColor = styler.tableViewBackgroundColor;
   cell.URLLabel.backgroundColor = styler.tableViewBackgroundColor;
   cell.metadataLabel.backgroundColor = styler.tableViewBackgroundColor;

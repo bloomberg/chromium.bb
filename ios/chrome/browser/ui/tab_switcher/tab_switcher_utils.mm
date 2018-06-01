@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 
@@ -59,6 +60,11 @@ BacktrackOperation BacktrackOperationInCostMatrix(
   return SUBSTITUTION;
 }
 
+// Desired width and height of favicon.
+const CGFloat kfaviconWidthHeight = 24;
+// Minimum favicon pixel size to retrieve.
+const CGFloat kfaviconMinWidthHeight = 16;
+
 }  // namespace
 
 void TabSwitcherGetFavicon(GURL const& url,
@@ -81,13 +87,13 @@ void TabSwitcherGetFavicon(GURL const& url,
       dispatch_async(dispatch_get_main_queue(), ^{
         // |UIImage initWithData:| may return nil.
         if (image) {
-          block(image);
+          block([FaviconAttributes attributesWithImage:image]);
         } else {
-          block(DefaultFaviconImage());
+          block([FaviconAttributes attributesWithImage:DefaultFaviconImage()]);
         }
       });
     });
-    block(DefaultFaviconImage());
+    block([FaviconAttributes attributesWithImage:DefaultFaviconImage()]);
     return;
   }
 
@@ -95,17 +101,14 @@ void TabSwitcherGetFavicon(GURL const& url,
   FaviconLoader* loader =
       IOSChromeFaviconLoaderFactory::GetForBrowserState(browser_state);
   if (loader) {
-    UIImage* image = loader->ImageForURL(
-        url,
-        {favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
-         favicon_base::IconType::kTouchPrecomposedIcon},
-        block);
-    DCHECK(image);
-    block(image);
+    FaviconAttributes* attr = loader->FaviconForUrl(url, kfaviconMinWidthHeight,
+                                                    kfaviconWidthHeight, block);
+    DCHECK(attr);
+    block(attr);
     return;
   }
   // Finally returns a default image.
-  block(DefaultFaviconImage());
+  block([FaviconAttributes attributesWithImage:DefaultFaviconImage()]);
 }
 
 void TabSwitcherMinimalReplacementOperations(std::vector<size_t> const& initial,

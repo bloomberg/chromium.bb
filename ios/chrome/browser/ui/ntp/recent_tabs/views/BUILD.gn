@@ -39,6 +39,7 @@ source_set("views") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/fancy_ui",
+    "//ios/chrome/browser/ui/favicon:favicon_ui",
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/settings/sync_utils",
     "//ios/chrome/browser/ui/tab_switcher:utils",

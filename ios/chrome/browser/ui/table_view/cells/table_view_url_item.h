@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
 class GURL;
+@class FaviconViewNew;
 
 // TableViewURLItem contains the model data for a TableViewURLCell.
 @interface TableViewURLItem : TableViewItem
@@ -30,7 +31,7 @@ class GURL;
 
 // The imageview that is displayed on the leading edge of the cell.  This
 // contains a favicon composited on top of an off-white background.
-@property(nonatomic, readonly, strong) UIImageView* faviconView;
+@property(nonatomic, readonly, strong) FaviconViewNew* faviconView;
 
 // Container View for the faviconView.
 @property(nonatomic, readonly, strong) UIImageView* faviconContainerView;

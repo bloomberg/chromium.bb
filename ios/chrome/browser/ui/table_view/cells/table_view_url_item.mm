@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
@@ -53,7 +54,6 @@ const CGFloat kFaviconContainerWidth = 28;
   cell.metadataLabel.hidden = ([self.metadata length] == 0);
 
   cell.cellUniqueIdentifier = self.uniqueIdentifier;
-  cell.faviconView.backgroundColor = styler.tableViewBackgroundColor;
   cell.faviconContainerView.backgroundColor = styler.tableViewBackgroundColor;
   cell.titleLabel.backgroundColor = styler.tableViewBackgroundColor;
   cell.URLLabel.backgroundColor = styler.tableViewBackgroundColor;
@@ -81,7 +81,7 @@ const CGFloat kFaviconContainerWidth = 28;
     _faviconContainerView = [[UIImageView alloc]
         initWithImage:[UIImage
                           imageNamed:@"table_view_cell_favicon_background"]];
-    _faviconView = [[UIImageView alloc] init];
+    _faviconView = [[FaviconViewNew alloc] init];
     _faviconView.contentMode = UIViewContentModeScaleAspectFit;
     _faviconView.clipsToBounds = YES;
     [_faviconContainerView addSubview:_faviconView];
@@ -165,7 +165,7 @@ const CGFloat kFaviconContainerWidth = 28;
 
 - (void)prepareForReuse {
   [super prepareForReuse];
-  self.faviconView.image = nil;
+  [self.faviconView configureWithAttributes:nil];
 }
 
 @end

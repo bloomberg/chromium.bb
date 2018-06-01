@@ -9,6 +9,8 @@
 #include "components/grit/components_scaled_resources.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
+#import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/views_utils.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -29,7 +31,7 @@ const CGFloat kDesiredHeight = 48;
 }  // namespace
 
 @interface SessionTabDataView () {
-  UIImageView* _favicon;
+  FaviconViewNew* _favicon;
   UILabel* _label;
 }
 @end
@@ -39,7 +41,7 @@ const CGFloat kDesiredHeight = 48;
 - (instancetype)initWithFrame:(CGRect)aRect {
   self = [super initWithFrame:aRect];
   if (self) {
-    _favicon = [[UIImageView alloc] initWithImage:nil];
+    _favicon = [[FaviconViewNew alloc] init];
     [_favicon setTranslatesAutoresizingMaskIntoConstraints:NO];
 
     _label = [[UILabel alloc] initWithFrame:CGRectZero];
@@ -104,8 +106,8 @@ const CGFloat kDesiredHeight = 48;
   DCHECK(browserState);
   [_label setText:text];
   self.accessibilityLabel = [_label accessibilityLabel];
-  TabSwitcherGetFavicon(url, browserState, ^(UIImage* newIcon) {
-    [_favicon setImage:newIcon];
+  TabSwitcherGetFavicon(url, browserState, ^(FaviconAttributes* attributes) {
+    [_favicon configureWithAttributes:attributes];
   });
 }
 
@@ -132,8 +134,7 @@ const CGFloat kDesiredHeight = 48;
     }
     case sessions::TabRestoreService::WINDOW: {
       // We only handle the TAB type.
-      [_label setText:@"Window type - NOTIMPLEMENTED"];
-      [_favicon setImage:[UIImage imageNamed:@"tools_bookmark"]];
+      NOTREACHED() << "TabRestoreService WINDOW session type is invalid.";
       break;
     }
   }
