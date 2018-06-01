@@ -123,11 +123,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   }
 
   auto context_provider_no_support = viz::TestContextProvider::Create();
+  context_provider_no_support->BindToCurrentThread();
   CHECK(!context_provider_no_support->GrContext()->supportsDistanceFieldText());
   Raster(context_provider_no_support, font_manager.strike_client(), data, size);
 
   auto context_provider_with_support = viz::TestContextProvider::Create(
       std::string("GL_OES_standard_derivatives"));
+  context_provider_with_support->BindToCurrentThread();
   CHECK(
       context_provider_with_support->GrContext()->supportsDistanceFieldText());
   Raster(context_provider_with_support, font_manager.strike_client(), data,
