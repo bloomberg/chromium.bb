@@ -154,9 +154,6 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   base::PlatformThread::SetName("CrRendererMain");
 
-  bool no_sandbox =
-      command_line.HasSwitch(service_manager::switches::kNoSandbox);
-
 #if defined(OS_ANDROID)
   // If we have any pending LibraryLoader histograms, record them.
   base::android::RecordLibraryLoaderRendererHistograms();
@@ -189,21 +186,26 @@ int RendererMain(const MainFunctionParams& parameters) {
   InitializeWebRtcModule();
 
   {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-    // TODO(markus): Check if it is OK to unconditionally move this
-    // instruction down.
-    auto render_process = RenderProcessImpl::Create();
-    RenderThreadImpl::Create(std::move(main_message_loop),
-                             std::move(main_thread_scheduler));
-#endif
     bool run_loop = true;
-    if (!no_sandbox)
+    bool need_sandbox =
+        !command_line.HasSwitch(service_manager::switches::kNoSandbox);
+
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
+    // Sandbox is enabled before RenderProcess initialization on all platforms,
+    // except Windows and Mac.
+    // TODO(markus): Check if it is OK to remove ifdefs for Windows and Mac.
+    if (need_sandbox) {
       run_loop = platform.EnableSandbox();
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+      need_sandbox = false;
+    }
+#endif
+
     auto render_process = RenderProcessImpl::Create();
     RenderThreadImpl::Create(std::move(main_message_loop),
                              std::move(main_thread_scheduler));
-#endif
+
+    if (need_sandbox)
+      run_loop = platform.EnableSandbox();
 
     base::HighResolutionTimerManager hi_res_timer_manager;
 
