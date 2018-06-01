@@ -7,7 +7,17 @@
 
 #import <UIKit/UIKit.h>
 
-@interface TableViewPresentationController : UIPresentationController
+#import "ios/chrome/browser/ui/table_view/table_view_modal_presenting.h"
+
+@protocol TableViewPresentationControllerDelegate;
+
+@interface TableViewPresentationController
+    : UIPresentationController<TableViewModalPresenting>
+
+// This controller's delegate.
+@property(nonatomic, weak) id<TableViewPresentationControllerDelegate>
+    modalDelegate;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TABLE_VIEW_TABLE_VIEW_PRESENTATION_CONTROLLER_H_

@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -28,6 +29,9 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
+#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_delegate.h"
+#import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
+#import "ios/chrome/browser/ui/table_view/table_view_presentation_controller_delegate.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/form_sheet_navigation_controller.h"
@@ -46,7 +50,8 @@ using bookmarks::BookmarkNode;
 
 @interface BookmarkInteractionController ()<
     BookmarkEditViewControllerDelegate,
-    BookmarkHomeViewControllerDelegate> {
+    BookmarkHomeViewControllerDelegate,
+    TableViewPresentationControllerDelegate> {
   // The browser state of the current user.
   ios::ChromeBrowserState* _currentBrowserState;  // weak
 
@@ -74,8 +79,19 @@ using bookmarks::BookmarkNode;
 
 @property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
 
+// The transitioning delegate that is used when presenting
+// |self.bookmarkBrowser|.
 @property(nonatomic, strong)
     BookmarkTransitioningDelegate* bookmarkTransitioningDelegate;
+
+// The UINavigationController subclass that is used to wrap
+// |self.bookmarkBrowser|.
+@property(nonatomic, strong)
+    TableViewNavigationController* bookmarkNavigationController;
+
+// The delegate provided to |self.bookmarkNavigationController|.
+@property(nonatomic, strong)
+    TableViewNavigationControllerDelegate* bookmarkNavigationControllerDelegate;
 
 // Builds a controller and brings it on screen.
 - (void)presentBookmarkForBookmarkedTab:(Tab*)tab;
@@ -96,6 +112,9 @@ using bookmarks::BookmarkNode;
 @synthesize bookmarkBrowser = _bookmarkBrowser;
 @synthesize bookmarkEditor = _bookmarkEditor;
 @synthesize bookmarkModel = _bookmarkModel;
+@synthesize bookmarkNavigationController = _bookmarkNavigationController;
+@synthesize bookmarkNavigationControllerDelegate =
+    _bookmarkNavigationControllerDelegate;
 @synthesize bookmarkTransitioningDelegate = _bookmarkTransitioningDelegate;
 @synthesize mediator = _mediator;
 @synthesize dispatcher = _dispatcher;
@@ -197,11 +216,15 @@ using bookmarks::BookmarkNode;
     TableViewNavigationController* navController =
         [[TableViewNavigationController alloc]
             initWithTable:self.bookmarkBrowser];
+    self.bookmarkNavigationController = navController;
     if (replacementViewControllers) {
       [navController setViewControllers:replacementViewControllers];
     }
 
     navController.toolbarHidden = YES;
+    self.bookmarkNavigationControllerDelegate =
+        [[TableViewNavigationControllerDelegate alloc] init];
+    navController.delegate = self.bookmarkNavigationControllerDelegate;
     self.bookmarkTransitioningDelegate =
         [[BookmarkTransitioningDelegate alloc] init];
     navController.transitioningDelegate = self.bookmarkTransitioningDelegate;
@@ -209,6 +232,13 @@ using bookmarks::BookmarkNode;
     [_parentController presentViewController:navController
                                     animated:YES
                                   completion:nil];
+
+    TableViewPresentationController* presentationController =
+        base::mac::ObjCCastStrict<TableViewPresentationController>(
+            navController.presentationController);
+    self.bookmarkNavigationControllerDelegate.modalController =
+        presentationController;
+    presentationController.modalDelegate = self;
   } else {
     FormSheetNavigationController* navController =
         [[FormSheetNavigationController alloc]
@@ -253,6 +283,8 @@ using bookmarks::BookmarkNode;
                            self.bookmarkBrowser.homeDelegate = nil;
                            self.bookmarkBrowser = nil;
                            self.bookmarkTransitioningDelegate = nil;
+                           self.bookmarkNavigationController = nil;
+                           self.bookmarkNavigationControllerDelegate = nil;
 
                            if (!openUrlsAfterDismissal) {
                              return;
@@ -362,6 +394,27 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
       [self openURLInNewTab:url inIncognito:inIncognito inBackground:YES];
     }
   }  // end for
+}
+
+#pragma mark - TableViewPresentationControllerDelegate
+
+- (BOOL)presentationControllerShouldDismissOnTouchOutside:
+    (TableViewPresentationController*)controller {
+  BOOL shouldDismissOnTouchOutside = YES;
+
+  ChromeTableViewController* tableViewController =
+      base::mac::ObjCCast<ChromeTableViewController>(
+          self.bookmarkNavigationController.topViewController);
+  if (tableViewController) {
+    shouldDismissOnTouchOutside =
+        [tableViewController shouldBeDismissedOnTouchOutside];
+  }
+  return shouldDismissOnTouchOutside;
+}
+
+- (void)presentationControllerWillDismiss:
+    (TableViewPresentationController*)controller {
+  [self dismissBookmarkModalControllerAnimated:YES];
 }
 
 #pragma mark - Private
