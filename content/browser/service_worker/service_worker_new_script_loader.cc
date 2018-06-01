@@ -96,6 +96,8 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
           is_main_script, registration->update_via_cache()))
     resource_request.load_flags |= net::LOAD_BYPASS_CACHE;
 
+  resource_request.headers.SetHeader("Service-Worker", "script");
+
   // Create response readers only when we have to do the byte-for-byte check.
   std::unique_ptr<ServiceWorkerResponseReader> compare_reader;
   std::unique_ptr<ServiceWorkerResponseReader> copy_reader;
