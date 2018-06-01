@@ -292,9 +292,11 @@ void OomInterventionTabHelper::StartDetectionInRenderer() {
   DCHECK(!binding_.is_bound());
   blink::mojom::OomInterventionHostPtr host;
   binding_.Bind(mojo::MakeRequest(&host));
+  blink::mojom::DetectionArgsPtr detection_args =
+      config->GetRendererOomDetectionArgs();
   intervention_->StartDetection(
       std::move(host), shared_metrics_buffer_.Duplicate(),
-      config->renderer_workload_threshold(), trigger_intervention);
+      std::move(detection_args), trigger_intervention);
 }
 
 void OomInterventionTabHelper::OnNearOomDetected() {

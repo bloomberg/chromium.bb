@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CONTROLLER_OOM_INTERVENTION_IMPL_H_
 
 #include "base/files/scoped_file.h"
+#include "third_party/blink/common/oom_intervention/oom_intervention_types.h"
 #include "third_party/blink/public/platform/oom_intervention.mojom-blink.h"
 #include "third_party/blink/renderer/controller/controller_export.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
@@ -22,16 +23,18 @@ class CONTROLLER_EXPORT OomInterventionImpl
  public:
   static void Create(mojom::blink::OomInterventionRequest);
 
-  using MemoryWorkloadCaculator = base::RepeatingCallback<uint64_t()>;
-
-  explicit OomInterventionImpl(MemoryWorkloadCaculator);
+  OomInterventionImpl();
   ~OomInterventionImpl() override;
 
   // mojom::blink::OomIntervention:
   void StartDetection(mojom::blink::OomInterventionHostPtr,
                       base::UnsafeSharedMemoryRegion shared_metrics_buffer,
-                      uint64_t memory_workload_threshold,
+                      mojom::blink::DetectionArgsPtr detection_args,
                       bool trigger_intervention) override;
+
+ protected:
+  // Overridden by test.
+  virtual OomInterventionMetrics GetCurrentMemoryMetrics();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OomInterventionImplTest, DetectedAndDeclined);
@@ -39,16 +42,14 @@ class CONTROLLER_EXPORT OomInterventionImpl
 
   void Check(TimerBase*);
 
-  uint64_t memory_workload_threshold_ = 0;
-
   // The file descriptor to current process proc files. The files are kept open
   // when detection is on to reduce measurement overhead.
   base::ScopedFD statm_fd_;
   base::ScopedFD status_fd_;
 
+  mojom::blink::DetectionArgsPtr detection_args_;
   base::WritableSharedMemoryMapping shared_metrics_buffer_;
 
-  MemoryWorkloadCaculator workload_calculator_;
   mojom::blink::OomInterventionHostPtr host_;
   bool trigger_intervention_ = false;
   TaskRunnerTimer<OomInterventionImpl> timer_;
