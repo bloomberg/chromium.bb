@@ -4,14 +4,32 @@
 
 package org.chromium.chrome.browser.compositor.layouts.phone.stack;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.content.Context;
+import android.support.annotation.IntDef;
 
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimator.AnimatorUpdateListener;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayoutBase;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * The non-overlapping tab stack we use when the HorizontalTabSwitcherAndroid flag is enabled.
  */
 public class NonOverlappingStack extends Stack {
+    @IntDef({SWITCH_DIRECTION_LEFT, SWITCH_DIRECTION_RIGHT})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SwitchDirection {}
+    public static final int SWITCH_DIRECTION_LEFT = 0;
+    public static final int SWITCH_DIRECTION_RIGHT = 1;
+
     /**
      * The scale the tabs should be shown at when there's exactly one tab open.
      */
@@ -26,6 +44,22 @@ public class NonOverlappingStack extends Stack {
      * The percentage of the screen that defines the spacing between tabs by default (no pinch).
      */
     private static final float SPACING_SCREEN = 1.0f;
+
+    /**
+     * Controls how far we slide over the (up to) three visible tabs for the switch away and switch
+     * to animations (multiple of mSpacing).
+     */
+    private static final float SWITCH_ANIMATION_SPACING_MULTIPLE = 2.5f;
+
+    /**
+     * Duration of the switch away animation (in milliseconds).
+     */
+    private static final int SWITCH_AWAY_ANIMATION_DURATION = 250;
+
+    /**
+     * Duration of the switch to animation (in milliseconds).
+     */
+    private static final int SWITCH_TO_ANIMATION_DURATION = 250;
 
     /**
      * Adjustment to add a fixed amount of space between the tabs that's not based on a percentage
@@ -58,6 +92,19 @@ public class NonOverlappingStack extends Stack {
      * ViewConfiguration.
      */
     private static final float FRICTION_MULTIPLIER = 0.2f;
+
+    /**
+     * Used to prevent mScrollOffset from being changed as a result of clamping during the switch
+     * away/switch to animations.
+     */
+    private boolean mSuppressScrollClamping;
+
+    /**
+     * Whether or not the current stack has been "switched away" by having runSwitchAwayAnimation()
+     * called. Calling runSwitchToAnimation() resets this back to false. Checking this variable lets
+     * us avoid re-playing animations if they're triggered multiple times.
+     */
+    private boolean mSwitchedAway;
 
     /**
      * @param layout The parent layout.
@@ -163,6 +210,12 @@ public class NonOverlappingStack extends Stack {
     }
 
     @Override
+    protected float getMinScroll(boolean allowUnderScroll) {
+        if (mSuppressScrollClamping) return -Float.MAX_VALUE;
+        return super.getMinScroll(allowUnderScroll);
+    }
+
+    @Override
     protected int computeSpacing(int layoutTabCount) {
         return (int) Math.round(
                 getScrollDimensionSize() * getScaleAmount() + EXTRA_SPACE_BETWEEN_TABS_DP);
@@ -207,5 +260,120 @@ public class NonOverlappingStack extends Stack {
         // a result of changing the scale.
         if (getNonDyingTabCount() > 1) return super.getMaxTabHeight();
         return (SCALE_FRACTION_MULTIPLE_TABS / SCALE_FRACTION_SINGLE_TAB) * super.getMaxTabHeight();
+    }
+
+    /**
+     * Animates the (up to 3) visible tabs sliding off screen.
+     * @param direction Whether the tabs should slide off the left or right side of the screen.
+     */
+    public void runSwitchAwayAnimation(@SwitchDirection int direction) {
+        if (mStackTabs == null || mSwitchedAway) {
+            mSwitchedAway = true;
+            mLayout.onSwitchAwayFinished();
+            return;
+        }
+
+        mSwitchedAway = true;
+
+        mSuppressScrollClamping = true;
+
+        CompositorAnimationHandler handler = mLayout.getAnimationHandler();
+        Collection<Animator> animationList = new ArrayList<>();
+
+        int centeredTab = Math.round(-mScrollOffset / mSpacing);
+        for (int i = centeredTab - 1; i <= centeredTab + 1; i++) {
+            if (i < 0 || i >= mStackTabs.length) continue;
+            StackTab tab = mStackTabs[i];
+
+            float endOffset;
+            if (direction == SWITCH_DIRECTION_LEFT) {
+                endOffset = -SWITCH_ANIMATION_SPACING_MULTIPLE * mSpacing + tab.getScrollOffset();
+            } else {
+                endOffset = SWITCH_ANIMATION_SPACING_MULTIPLE * mSpacing + tab.getScrollOffset();
+            }
+
+            CompositorAnimator animation =
+                    CompositorAnimator.ofFloatProperty(handler, tab, StackTab.SCROLL_OFFSET,
+                            tab.getScrollOffset(), endOffset, SWITCH_AWAY_ANIMATION_DURATION);
+            // TODO(https://crbug.com/848475) Fix StackLayoutBase and Stack so the animation works
+            // properly without this listener.
+            animation.addUpdateListener(new AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(CompositorAnimator animation) {
+                    requestUpdate();
+                }
+            });
+            animationList.add(animation);
+        }
+
+        AnimatorSet set = new AnimatorSet();
+        set.playTogether(animationList);
+        set.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator a) {
+                // If the user pressed the incognito button with one finger while dragging the stack
+                // with another, we might not be centered on a tab. We therefore need to enforce
+                // this after the animation finishes to avoid odd behavior if/when the user returns
+                // to this stack.
+
+                mScrollOffset = Math.round(mScrollOffset / mSpacing) * mSpacing;
+                forceScrollStop();
+                mLayout.onSwitchAwayFinished();
+            }
+        });
+        set.start();
+    }
+
+    /**
+     * Animates the (up to 3) tabs were slid off the screen by runSwitchAwayAnimation() back onto
+     * the screen.
+     * @param direction Whether the tabs should slide in from the left or right side of the screen.
+     */
+    public void runSwitchToAnimation(@SwitchDirection int direction) {
+        if (mStackTabs == null || !mSwitchedAway) {
+            mSwitchedAway = false;
+            mLayout.onSwitchToFinished();
+            return;
+        }
+
+        mSwitchedAway = false;
+
+        CompositorAnimationHandler handler = mLayout.getAnimationHandler();
+        Collection<Animator> animationList = new ArrayList<>();
+
+        int centeredTab = Math.round(-mScrollOffset / mSpacing);
+        for (int i = centeredTab - 1; i <= centeredTab + 1; i++) {
+            if (i < 0 || i >= mStackTabs.length) continue;
+            StackTab tab = mStackTabs[i];
+
+            float startOffset;
+            if (direction == SWITCH_DIRECTION_LEFT) {
+                startOffset = SWITCH_ANIMATION_SPACING_MULTIPLE * mSpacing + tab.getScrollOffset();
+            } else {
+                startOffset = -SWITCH_ANIMATION_SPACING_MULTIPLE * mSpacing + tab.getScrollOffset();
+            }
+
+            CompositorAnimator animation =
+                    CompositorAnimator.ofFloatProperty(handler, tab, StackTab.SCROLL_OFFSET,
+                            startOffset, i * mSpacing, SWITCH_TO_ANIMATION_DURATION);
+            animation.addUpdateListener(new AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(CompositorAnimator animation) {
+                    requestUpdate();
+                }
+            });
+            animationList.add(animation);
+        }
+
+        AnimatorSet set = new AnimatorSet();
+        set.playTogether(animationList);
+        set.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator a) {
+                mSuppressScrollClamping = false;
+                mLayout.onSwitchToFinished();
+            }
+        });
+        set.start();
     }
 }
