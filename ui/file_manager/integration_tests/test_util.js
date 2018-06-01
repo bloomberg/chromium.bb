@@ -225,38 +225,67 @@ var RootPath = Object.seal({
 });
 
 /**
+ *
+ * @record
+ * @struct
+ */
+function TestEntryInfoOptions() {}
+
+/**
+ * @type {EntryType} Entry type.
+ */
+TestEntryInfoOptions.prototype.type;
+
+/**
+ * @type {string|undefined} Source file name that provides file contents.
+ */
+TestEntryInfoOptions.prototype.sourceFileName;
+/**
+ * @type {string} Name of entry on the test file system.
+ */
+TestEntryInfoOptions.prototype.targetPath;
+/**
+ * @type {string|undefined} Mime type.
+ */
+TestEntryInfoOptions.prototype.mimeType;
+/**
+ * @type {SharedOption} Shared option.
+ */
+TestEntryInfoOptions.prototype.sharedOption;
+/**
+ * @type {string} Last modified time as a text to be shown in the last modified
+ *     column.
+ */
+TestEntryInfoOptions.prototype.lastModifiedTime;
+/**
+ * @type {string} File name to be shown in the name column.
+ */
+TestEntryInfoOptions.prototype.nameText;
+/**
+ * @type {string} Size text to be shown in the size column.
+ */
+TestEntryInfoOptions.prototype.sizeText;
+/**
+ * @type {string} Type name to be shown in the type column.
+ */
+TestEntryInfoOptions.prototype.typeText;
+
+
+/**
  * File system entry information for tests.
  *
- * @param {EntryType} type Entry type.
- * @param {string} sourceFileName Source file name that provides file contents.
- * @param {string} targetName Name of entry on the test file system.
- * @param {string} mimeType Mime type.
- * @param {SharedOption} sharedOption Shared option.
- * @param {string} lastModifiedTime Last modified time as a text to be shown in
- *     the last modified column.
- * @param {string} nameText File name to be shown in the name column.
- * @param {string} sizeText Size text to be shown in the size column.
- * @param {string} typeText Type name to be shown in the type column.
- * @constructor
+ * @param {TestEntryInfoOptions} options Parameters to create the TestEntryInfo.
  */
-function TestEntryInfo(type,
-                       sourceFileName,
-                       targetPath,
-                       mimeType,
-                       sharedOption,
-                       lastModifiedTime,
-                       nameText,
-                       sizeText,
-                       typeText) {
-  this.type = type;
-  this.sourceFileName = sourceFileName || '';
-  this.targetPath = targetPath;
-  this.mimeType = mimeType || '';
-  this.sharedOption = sharedOption;
-  this.lastModifiedTime = lastModifiedTime;
-  this.nameText = nameText;
-  this.sizeText = sizeText;
-  this.typeText = typeText;
+function TestEntryInfo(options) {
+  this.type = options.type;
+  this.sourceFileName = options.sourceFileName || '';
+  this.targetPath = options.targetPath;
+  this.mimeType = options.mimeType || '';
+  this.sharedOption = options.sharedOption;
+  this.lastModifiedTime = options.lastModifiedTime;
+  this.nameText = options.nameText;
+  this.sizeText = options.sizeText;
+  this.typeText = options.typeText;
   Object.freeze(this);
 }
 
@@ -277,104 +306,235 @@ TestEntryInfo.prototype.getExpectedRow = function() {
  * @const
  */
 var ENTRIES = {
-  hello: new TestEntryInfo(
-      EntryType.FILE, 'text.txt', 'hello.txt',
-      'text/plain', SharedOption.NONE, 'Sep 4, 1998, 12:34 PM',
-      'hello.txt', '51 bytes', 'Plain text'),
+  hello: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: 'hello.txt',
+    mimeType: 'text/plain',
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'hello.txt',
+    sizeText: '51 bytes',
+    typeText: 'Plain text'
+  }),
 
-  world: new TestEntryInfo(
-      EntryType.FILE, 'video.ogv', 'world.ogv',
-      'video/ogg', SharedOption.NONE, 'Jul 4, 2012, 10:35 AM',
-      'world.ogv', '59 KB', 'OGG video'),
+  world: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'video.ogv',
+    targetPath: 'world.ogv',
+    mimeType: 'video/ogg',
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Jul 4, 2012, 10:35 AM',
+    nameText: 'world.ogv',
+    sizeText: '59 KB',
+    typeText: 'OGG video'
+  }),
 
-  unsupported: new TestEntryInfo(
-      EntryType.FILE, 'random.bin', 'unsupported.foo',
-      'application/x-foo', SharedOption.NONE, 'Jul 4, 2012, 10:36 AM',
-      'unsupported.foo', '8 KB', 'FOO file'),
+  unsupported: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'random.bin',
+    targetPath: 'unsupported.foo',
+    mimeType: 'application/x-foo',
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Jul 4, 2012, 10:36 AM',
+    nameText: 'unsupported.foo',
+    sizeText: '8 KB',
+    typeText: 'FOO file'
+  }),
 
-  desktop: new TestEntryInfo(
-      EntryType.FILE, 'image.png', 'My Desktop Background.png',
-      'image/png', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
-      'My Desktop Background.png', '272 bytes', 'PNG image'),
+  desktop: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'image.png',
+    targetPath: 'My Desktop Background.png',
+    mimeType: 'image/png',
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
+    nameText: 'My Desktop Background.png',
+    sizeText: '272 bytes',
+    typeText: 'PNG image'
+  }),
 
   // An image file without an extension, to confirm that file type detection
   // using mime types works fine.
-  image2: new TestEntryInfo(
-      EntryType.FILE, 'image2.png', 'image2',
-      'image/png', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
-      'image2', '4 KB', 'PNG image'),
+  image2: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'image2.png',
+    targetPath: 'image2',
+    mimeType: 'image/png',
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
+    nameText: 'image2',
+    sizeText: '4 KB',
+    typeText: 'PNG image'
+  }),
 
-  image3: new TestEntryInfo(
-      EntryType.FILE, 'image3.jpg', 'image3.jpg',
-      'image/jpeg', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
-      'image3.jpg', '3 KB', 'JPEG image'),
+  image3: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'image3.jpg',
+    targetPath: 'image3.jpg',
+    mimeType: 'image/jpeg',
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
+    nameText: 'image3.jpg',
+    sizeText: '3 KB',
+    typeText: 'JPEG image'
+  }),
 
   // An ogg file without a mime type, to confirm that file type detection using
   // file extensions works fine.
-  beautiful: new TestEntryInfo(
-      EntryType.FILE, 'music.ogg', 'Beautiful Song.ogg',
-      null, SharedOption.NONE, 'Nov 12, 2086, 12:00 PM',
-      'Beautiful Song.ogg', '14 KB', 'OGG audio'),
+  beautiful: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'music.ogg',
+    targetPath: 'Beautiful Song.ogg',
+    mimeType: null,
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Nov 12, 2086, 12:00 PM',
+    nameText: 'Beautiful Song.ogg',
+    sizeText: '14 KB',
+    typeText: 'OGG audio'
+  }),
 
-  photos: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'photos',
-      null, SharedOption.NONE, 'Jan 1, 1980, 11:59 PM',
-      'photos', '--', 'Folder'),
+  photos: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    sourceFileName: null,
+    targetPath: 'photos',
+    mimeType: null,
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
+    nameText: 'photos',
+    sizeText: '--',
+    typeText: 'Folder'
+  }),
 
-  testDocument: new TestEntryInfo(
-      EntryType.FILE, null, 'Test Document',
-      'application/vnd.google-apps.document',
-      SharedOption.NONE, 'Apr 10, 2013, 4:20 PM',
-      'Test Document.gdoc', '--', 'Google document'),
+  testDocument: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: null,
+    targetPath: 'Test Document',
+    mimeType: 'application/vnd.google-apps.document',
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Apr 10, 2013, 4:20 PM',
+    nameText: 'Test Document.gdoc',
+    sizeText: '--',
+    typeText: 'Google document'
+  }),
 
-  testSharedDocument: new TestEntryInfo(
-      EntryType.FILE, null, 'Test Shared Document',
-      'application/vnd.google-apps.document',
-      SharedOption.SHARED, 'Mar 20, 2013, 10:40 PM',
-      'Test Shared Document.gdoc', '--', 'Google document'),
+  testSharedDocument: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: null,
+    targetPath: 'Test Shared Document',
+    mimeType: 'application/vnd.google-apps.document',
+    sharedOption: SharedOption.SHARED,
+    lastModifiedTime: 'Mar 20, 2013, 10:40 PM',
+    nameText: 'Test Shared Document.gdoc',
+    sizeText: '--',
+    typeText: 'Google document'
+  }),
 
-  newlyAdded: new TestEntryInfo(
-      EntryType.FILE, 'music.ogg', 'newly added file.ogg',
-      'audio/ogg', SharedOption.NONE, 'Sep 4, 1998, 12:00 AM',
-      'newly added file.ogg', '14 KB', 'OGG audio'),
+  newlyAdded: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'music.ogg',
+    targetPath: 'newly added file.ogg',
+    mimeType: 'audio/ogg',
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Sep 4, 1998, 12:00 AM',
+    nameText: 'newly added file.ogg',
+    sizeText: '14 KB',
+    typeText: 'OGG audio'
+  }),
 
-  directoryA: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'A',
-      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
-      'A', '--', 'Folder'),
+  directoryA: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    sourceFileName: null,
+    targetPath: 'A',
+    mimeType: null,
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'A',
+    sizeText: '--',
+    typeText: 'Folder'
+  }),
 
-  directoryB: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'A/B',
-      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
-      'B', '--', 'Folder'),
+  directoryB: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    sourceFileName: null,
+    targetPath: 'A/B',
+    mimeType: null,
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'B',
+    sizeText: '--',
+    typeText: 'Folder'
+  }),
 
-  directoryC: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'A/B/C',
-      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
-      'C', '--', 'Folder'),
+  directoryC: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    sourceFileName: null,
+    targetPath: 'A/B/C',
+    mimeType: null,
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'C',
+    sizeText: '--',
+    typeText: 'Folder'
+  }),
 
-  directoryD: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'D',
-      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
-      'D', '--', 'Folder'),
+  directoryD: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    sourceFileName: null,
+    targetPath: 'D',
+    mimeType: null,
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'D',
+    sizeText: '--',
+    typeText: 'Folder'
+  }),
 
-  directoryE: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'D/E',
-      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
-      'E', '--', 'Folder'),
+  directoryE: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    sourceFileName: null,
+    targetPath: 'D/E',
+    mimeType: null,
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'E',
+    sizeText: '--',
+    typeText: 'Folder'
+  }),
 
-  directoryF: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'D/E/F',
-      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
-      'F', '--', 'Folder'),
+  directoryF: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    sourceFileName: null,
+    targetPath: 'D/E/F',
+    mimeType: null,
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'F',
+    sizeText: '--',
+    typeText: 'Folder'
+  }),
 
-  zipArchive: new TestEntryInfo(
-      EntryType.FILE, 'archive.zip', 'archive.zip',
-      'application/x-zip', SharedOption.NONE, 'Jan 1, 2014, 1:00 AM',
-      'archive.zip', '533 bytes', 'Zip archive'),
+  zipArchive: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'archive.zip',
+    targetPath: 'archive.zip',
+    mimeType: 'application/x-zip',
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Jan 1, 2014, 1:00 AM',
+    nameText: 'archive.zip',
+    sizeText: '533 bytes',
+    typeText: 'Zip archive'
+  }),
 
-  hiddenFile: new TestEntryInfo(
-    EntryType.FILE, 'text.txt', '.hiddenfile.txt',
-    'text/plain', SharedOption.NONE, 'Sep 30, 2014, 3:30 PM',
-    '.hiddenfile.txt', '51 bytes', 'Plain text')
+  hiddenFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: '.hiddenfile.txt',
+    mimeType: 'text/plain',
+    sharedOption: SharedOption.NONE,
+    lastModifiedTime: 'Sep 30, 2014, 3:30 PM',
+    nameText: '.hiddenfile.txt',
+    sizeText: '51 bytes',
+    typeText: 'Plain text'
+  })
 };

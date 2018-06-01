@@ -13,11 +13,17 @@ function setupForDirectoryTreeContextMenuTest() {
     windowId = results.windowId;
 
     // Add destination directory.
-    return new addEntries(['local'], [
-      new TestEntryInfo(
-          EntryType.DIRECTORY, null, 'destination', null, SharedOption.NONE,
-          'Jan 1, 1980, 11:59 PM', 'destination', '--', 'Folder')
-    ]);
+    return new addEntries(['local'], [new TestEntryInfo({
+                            type: EntryType.DIRECTORY,
+                            sourceFileName: null,
+                            targetPath: 'destination',
+                            mimeType: null,
+                            sharedOption: SharedOption.NONE,
+                            lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
+                            nameText: 'destination',
+                            sizeText: '--',
+                            typeText: 'Folder'
+                          })]);
   }).then(function() {
     return windowId;
   });
@@ -31,12 +37,18 @@ var ITEMS_IN_DEST_DIR_BEFORE_PASTE = TestEntryInfo.getExpectedRows([]);
 /**
  * @const
  */
-var ITEMS_IN_DEST_DIR_AFTER_PASTE = TestEntryInfo.getExpectedRows([
-  new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'photos',
-      null, SharedOption.NONE, 'Jan 1, 1980, 11:59 PM',
-      'photos', '--', 'Folder')
-]);
+var ITEMS_IN_DEST_DIR_AFTER_PASTE =
+    TestEntryInfo.getExpectedRows([new TestEntryInfo({
+      type: EntryType.DIRECTORY,
+      sourceFileName: null,
+      targetPath: 'photos',
+      mimeType: null,
+      sharedOption: SharedOption.NONE,
+      lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
+      nameText: 'photos',
+      sizeText: '--',
+      typeText: 'Folder'
+    })]);
 
 /**
  * Expands tree item.
