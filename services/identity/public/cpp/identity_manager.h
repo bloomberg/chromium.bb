@@ -50,6 +50,7 @@ class IdentityManager : public SigninManagerBase::Observer,
 #if !defined(OS_CHROMEOS)
                         public SigninManager::DiagnosticsClient,
 #endif
+                        public ProfileOAuth2TokenService::DiagnosticsClient,
                         public OAuth2TokenService::DiagnosticsObserver {
  public:
   class Observer {
@@ -71,6 +72,25 @@ class IdentityManager : public SigninManagerBase::Observer,
 
     // TODO(blundell): Eventually we might need a callback for failure to log in
     // to the primary account.
+
+    // Called when a new refresh token is associated with |account_info|.
+    // |is_valid| indicates whether the new refresh token is valid.
+    // NOTE: On a signin event, the ordering of this callback wrt the
+    // OnPrimaryAccountSet() callback is undefined. If you as a client are
+    // interested in both callbacks, PrimaryAccountAccessTokenFetcher will
+    // likely meet your needs. Otherwise, if this lack of ordering is
+    // problematic for your use case, please contact blundell@chromium.org.
+    virtual void OnRefreshTokenUpdatedForAccount(
+        const AccountInfo& account_info,
+        bool is_valid) {}
+
+    // Called when the refresh token previously associated with |account_info|
+    // has been removed.
+    // NOTE: On a signout event, the ordering of this callback wrt the
+    // OnPrimaryAccountCleared() callback is undefined.If this lack of ordering
+    // is problematic for your use case, please contact blundell@chromium.org.
+    virtual void OnRefreshTokenRemovedForAccount(
+        const AccountInfo& account_info) {}
   };
 
   // Observer interface for classes that want to monitor status of various
@@ -165,6 +185,11 @@ class IdentityManager : public SigninManagerBase::Observer,
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
   void GoogleSignedOut(const AccountInfo& account_info) override;
+
+  // ProfileOAuth2TokenService::DiagnosticsClient:
+  void WillFireOnRefreshTokenAvailable(const std::string& account_id,
+                                       bool is_valid) override;
+  void WillFireOnRefreshTokenRevoked(const std::string& account_id) override;
 
 #if !defined(OS_CHROMEOS)
   // SigninManager::DiagnosticsClient:

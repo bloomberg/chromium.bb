@@ -21,6 +21,7 @@ IdentityManager::IdentityManager(SigninManagerBase* signin_manager,
       ->set_diagnostics_client(this);
 #endif
   token_service_->AddDiagnosticsObserver(this);
+  token_service_->set_diagnostics_client(this);
 }
 
 IdentityManager::~IdentityManager() {
@@ -30,6 +31,7 @@ IdentityManager::~IdentityManager() {
       ->set_diagnostics_client(nullptr);
 #endif
   token_service_->RemoveDiagnosticsObserver(this);
+  token_service_->set_diagnostics_client(nullptr);
 }
 
 AccountInfo IdentityManager::GetPrimaryAccountInfo() {
@@ -176,6 +178,27 @@ void IdentityManager::GoogleSignedOut(const AccountInfo& account_info) {
   DCHECK(!HasPrimaryAccount());
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountCleared(account_info);
+  }
+}
+
+void IdentityManager::WillFireOnRefreshTokenAvailable(
+    const std::string& account_id,
+    bool is_valid) {
+  AccountInfo account_info =
+      account_tracker_service_->GetAccountInfo(account_id);
+  DCHECK(!account_info.IsEmpty());
+  for (auto& observer : observer_list_) {
+    observer.OnRefreshTokenUpdatedForAccount(account_info, is_valid);
+  }
+}
+
+void IdentityManager::WillFireOnRefreshTokenRevoked(
+    const std::string& account_id) {
+  AccountInfo account_info =
+      account_tracker_service_->GetAccountInfo(account_id);
+  DCHECK(!account_info.IsEmpty());
+  for (auto& observer : observer_list_) {
+    observer.OnRefreshTokenRemovedForAccount(account_info);
   }
 }
 
