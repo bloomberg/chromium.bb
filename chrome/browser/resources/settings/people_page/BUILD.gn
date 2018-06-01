@@ -142,6 +142,9 @@ js_library("lock_screen_constants") {
 js_library("lock_state_behavior") {
   deps = [
     "..:route",
+    "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
   externs_list = [ "$externs_path/quick_unlock_private.js" ]
   extra_sources = [ "$interfaces_path/quick_unlock_private_interface.js" ]

@@ -87,6 +87,17 @@ PinBackend::~PinBackend() {
   DCHECK(on_cryptohome_support_received_.empty());
 }
 
+void PinBackend::HasLoginSupport(BoolCallback result) {
+  if (resolving_backend_) {
+    on_cryptohome_support_received_.push_back(
+        base::BindOnce(&PinBackend::HasLoginSupport, base::Unretained(this),
+                       std::move(result)));
+    return;
+  }
+
+  PostResponse(std::move(result), !!cryptohome_backend_);
+}
+
 void PinBackend::IsSet(const AccountId& account_id, BoolCallback result) {
   if (resolving_backend_) {
     on_cryptohome_support_received_.push_back(

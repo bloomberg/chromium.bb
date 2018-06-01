@@ -71,7 +71,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         fakeUma = new settings.FakeQuickUnlockUma();
 
         testElement = document.createElement('settings-password-prompt-dialog');
-        testElement.quickUnlockPrivate_ = quickUnlockPrivateApi;
+        testElement.quickUnlockPrivate = quickUnlockPrivateApi;
         testElement.writeUma_ = fakeUma.recordProgress.bind(fakeUma);
         Polymer.dom.flush();
         document.body.appendChild(testElement);
@@ -278,7 +278,7 @@ cr.define('settings_people_page_quick_unlock', function() {
           // Create choose-method element.
           testElement = document.createElement('settings-lock-screen');
           testElement.settingsPrivate_ = fakeSettings;
-          testElement.quickUnlockPrivate_ = quickUnlockPrivateApi;
+          testElement.quickUnlockPrivate = quickUnlockPrivateApi;
           testElement.prefs = prefElement.prefs;
           testElement.writeUma_ = fakeUma.recordProgress.bind(fakeUma);
 
