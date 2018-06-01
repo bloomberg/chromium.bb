@@ -34,7 +34,7 @@ FrameCoordinationUnitImpl::~FrameCoordinationUnitImpl() {
 void FrameCoordinationUnitImpl::AddChildFrame(const CoordinationUnitID& cu_id) {
   DCHECK(cu_id != id());
   FrameCoordinationUnitImpl* frame_cu =
-      FrameCoordinationUnitImpl::GetCoordinationUnitByID(graph_, cu_id);
+      FrameCoordinationUnitImpl::GetCoordinationUnitByID(cu_id);
   if (!frame_cu)
     return;
   if (HasFrameCoordinationUnitInAncestors(frame_cu) ||
@@ -51,7 +51,7 @@ void FrameCoordinationUnitImpl::RemoveChildFrame(
     const CoordinationUnitID& cu_id) {
   DCHECK(cu_id != id());
   FrameCoordinationUnitImpl* frame_cu =
-      FrameCoordinationUnitImpl::GetCoordinationUnitByID(graph_, cu_id);
+      FrameCoordinationUnitImpl::GetCoordinationUnitByID(cu_id);
   if (!frame_cu)
     return;
   if (RemoveChildFrame(frame_cu)) {

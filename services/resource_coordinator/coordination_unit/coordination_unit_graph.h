@@ -8,14 +8,11 @@
 #include <stdint.h>
 
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace service_manager {
@@ -28,6 +25,7 @@ class ServiceContextRefFactory;
 namespace resource_coordinator {
 
 class CoordinationUnitBase;
+struct CoordinationUnitID;
 class CoordinationUnitGraphObserver;
 class CoordinationUnitProviderImpl;
 class FrameCoordinationUnitImpl;
@@ -72,13 +70,6 @@ class CoordinationUnitGraph {
   // SystemCoordinationUnitImpl* FindOrCreateSystemCoordinationUnit(
   //    std::unique_ptr<service_manager::ServiceContextRef> service_ref);
 
-  // Search functions for type and ID queries.
-  std::vector<CoordinationUnitBase*> GetCoordinationUnitsOfType(
-      CoordinationUnitType type);
-
-  std::vector<ProcessCoordinationUnitImpl*> GetAllProcessCoordinationUnits();
-  CoordinationUnitBase* GetCoordinationUnitByID(const CoordinationUnitID cu_id);
-
   // Returns the singleton SystemCU.
   SystemCoordinationUnitImpl* system_cu() const { return system_cu_; }
 
@@ -88,16 +79,6 @@ class CoordinationUnitGraph {
   }
 
  private:
-  using CUIDMap = std::unordered_map<CoordinationUnitID,
-                                     std::unique_ptr<CoordinationUnitBase>>;
-
-  // Lifetime management functions for CoordinationUnitBase.
-  friend class CoordinationUnitBase;
-  CoordinationUnitBase* AddNewCoordinationUnit(
-      std::unique_ptr<CoordinationUnitBase> new_cu);
-  void DestroyCoordinationUnit(CoordinationUnitBase* cu);
-
-  CUIDMap coordination_units_;
   std::vector<std::unique_ptr<CoordinationUnitGraphObserver>> observers_;
   ukm::UkmRecorder* ukm_recorder_ = nullptr;
   std::unique_ptr<CoordinationUnitProviderImpl> provider_;
