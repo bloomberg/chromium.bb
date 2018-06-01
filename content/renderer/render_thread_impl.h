@@ -169,7 +169,6 @@ class CONTENT_EXPORT RenderThreadImpl
     : public RenderThread,
       public ChildThreadImpl,
       public blink::scheduler::WebThreadScheduler::RAILModeObserver,
-      public ChildMemoryCoordinatorDelegate,
       public base::MemoryCoordinatorClient,
       public mojom::Renderer,
       public viz::mojom::CompositingModeWatcher,
@@ -720,8 +719,6 @@ class CONTENT_EXPORT RenderThreadImpl
   HistogramCustomizer histogram_customizer_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
-
-  std::unique_ptr<ChildMemoryCoordinatorImpl> memory_coordinator_;
 
   std::unique_ptr<ui::Gpu> gpu_;
 

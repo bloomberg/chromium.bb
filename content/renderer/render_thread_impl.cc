@@ -56,7 +56,6 @@
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/switches.h"
-#include "content/child/memory/child_memory_coordinator_impl.h"
 #include "content/child/runtime_features.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/buildflags.h"
@@ -965,20 +964,6 @@ void RenderThreadImpl::Init(
       base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this)),
       base::Bind(&RenderThreadImpl::OnSyncMemoryPressure,
                  base::Unretained(this))));
-
-  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
-    // Disable MemoryPressureListener when memory coordinator is enabled.
-    base::MemoryPressureListener::SetNotificationsSuppressed(true);
-
-    // TODO(bashi): Revisit how to manage the lifetime of
-    // ChildMemoryCoordinatorImpl.
-    // https://codereview.chromium.org/2094583002/#msg52
-    mojom::MemoryCoordinatorHandlePtr parent_coordinator;
-    GetConnector()->BindInterface(mojom::kBrowserServiceName,
-                                  mojo::MakeRequest(&parent_coordinator));
-    memory_coordinator_ = CreateChildMemoryCoordinator(
-        std::move(parent_coordinator), this);
-  }
 
   int num_raster_threads = 0;
   std::string string_value =

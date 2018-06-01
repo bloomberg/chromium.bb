@@ -20,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "components/variations/child_process_field_trial_syncer.h"
+#include "content/child/memory/child_memory_coordinator_impl.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/child_control.mojom.h"
 #include "content/common/content_export.h"
@@ -60,6 +61,7 @@ class CONTENT_EXPORT ChildThreadImpl
     : public IPC::Listener,
       virtual public ChildThread,
       private base::FieldTrialList::Observer,
+      public ChildMemoryCoordinatorDelegate,
       public mojom::RouteProvider,
       public mojom::AssociatedInterfaceProvider,
       public mojom::ChildControl {
@@ -105,6 +107,9 @@ class CONTENT_EXPORT ChildThreadImpl
   // base::FieldTrialList::Observer:
   void OnFieldTrialGroupFinalized(const std::string& trial_name,
                                   const std::string& group_name) override;
+
+  // ChildMemoryCoordinatorDelegate implementation.
+  void OnTrimMemoryImmediately() override {}
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 
@@ -256,6 +261,8 @@ class CONTENT_EXPORT ChildThreadImpl
   std::unique_ptr<tracing::TraceEventAgent> trace_event_agent_;
 
   std::unique_ptr<variations::ChildProcessFieldTrialSyncer> field_trial_syncer_;
+
+  std::unique_ptr<ChildMemoryCoordinatorImpl> memory_coordinator_;
 
   std::unique_ptr<base::WeakPtrFactory<ChildThreadImpl>>
       channel_connected_factory_;

@@ -98,6 +98,13 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
   GpuServiceImpl* gpu_service() { return gpu_service_.get(); }
   const GpuServiceImpl* gpu_service() const { return gpu_service_.get(); }
 
+  // Note that this may be null if viz is running in the browser process and
+  // using the ServiceDiscardableSharedMemoryManager.
+  discardable_memory::ClientDiscardableSharedMemoryManager*
+  discardable_shared_memory_manager() {
+    return discardable_shared_memory_manager_.get();
+  }
+
  private:
   // Initializes GPU's UkmRecorder if GPU is running in it's own process.
   void CreateUkmRecorderIfNeeded(service_manager::Connector* connector);

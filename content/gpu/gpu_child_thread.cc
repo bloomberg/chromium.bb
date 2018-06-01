@@ -7,9 +7,11 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/allocator/allocator_extension.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -33,6 +35,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
+#include "third_party/skia/include/core/SkGraphics.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
@@ -192,7 +195,9 @@ GpuChildThread::GpuChildThread(const ChildThreadImpl::Options& options,
   }
 }
 
-GpuChildThread::~GpuChildThread() = default;
+GpuChildThread::~GpuChildThread() {
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
+}
 
 void GpuChildThread::Init(const base::Time& process_start_time) {
   viz_main_.gpu_service()->set_start_time(process_start_time);
@@ -227,6 +232,11 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
   GetServiceManagerConnection()->AddConnectionFilter(std::move(filter));
 
   StartServiceManagerConnection();
+
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
+  memory_pressure_listener_ =
+      std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
+          &GpuChildThread::OnMemoryPressure, base::Unretained(this)));
 }
 
 void GpuChildThread::CreateVizMainService(
@@ -296,6 +306,23 @@ void GpuChildThread::BindServiceFactoryRequest(
   DCHECK(service_factory_);
   service_factory_bindings_.AddBinding(service_factory_.get(),
                                        std::move(request));
+}
+
+void GpuChildThread::OnTrimMemoryImmediately() {
+  OnPurgeMemory();
+}
+
+void GpuChildThread::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  if (level == base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL)
+    OnPurgeMemory();
+}
+
+void GpuChildThread::OnPurgeMemory() {
+  base::allocator::ReleaseFreeMemory();
+  if (viz_main_.discardable_shared_memory_manager())
+    viz_main_.discardable_shared_memory_manager()->ReleaseFreeMemory();
+  SkGraphics::PurgeAllCaches();
 }
 
 #if defined(OS_ANDROID)
