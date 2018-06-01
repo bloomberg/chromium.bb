@@ -14,21 +14,16 @@
   <div class=deindent-header>
     HSTS is HTTP Strict Transport Security: a way for sites to elect to
     always use HTTPS. See <a href="https://www.chromium.org/hsts" target=_blank>
-    https://www.chromium.org/hsts</a>. PKP is Public Key Pinning: a way for sites
-    to "pin" themselves to particular public keys that must appear in their
-    certificate chain. See
-    <a href="https://tools.ietf.org/html/rfc7469" target=_blank>https://tools.ietf.org/html/rfc7469</a>.</div>
+    https://www.chromium.org/hsts</a>. PKP is Public Key Pinning: Chrome "pins"
+    certain public keys for certain sites in official builds.</div>
 
-  <h4>Add HSTS/PKP domain</h4>
+  <h4>Add HSTS domain</h4>
 
-  <p>Input a domain name to add it to the HSTS/PKP set:</p>
+  <p>Input a domain name to add it to the HSTS set:</p>
   <form id=hsts-view-add-form>
     Domain: <input type=text id=hsts-view-add-input type="url"
              placeholder="example.com"><br>
     <label>Include subdomains for STS: <input type="checkbox" id=hsts-view-check-sts-input></label><br>
-    <label>Include subdomains for PKP: <input type="checkbox" id=hsts-view-check-pkp-input></label><br>
-    <label>Public key fingerprints: <input type=text id=hsts-view-add-pins style="width: 25em; max-width: 100%;"></label><br>
-    <p style="font-size: small; color: #767676; font-style: italic; margin-left: 2em; max-width: 40em; max-width: 100%;">(public key fingerprints are comma separated and consist of the hash function followed by a foreslash and the base64 encoded fingerprint, for example <tt>sha256/7HIpactkIAq2Y49orFOOQKurWxmmSFZhBCoQYcRhJ3Y=</tt>)</p>
     <input type=submit value="Add" id=hsts-view-add-submit>
   </form>
 
@@ -95,8 +90,8 @@
   <h3>Delete domain security policies</h3>
 
   <p>
-    Input a domain name to delete its dynamic domain security policies (HSTS,
-    HPKP, and Expect-CT). (<i>you cannot delete preloaded entries</i>):
+    Input a domain name to delete its dynamic domain security policies (HSTS
+    and Expect-CT). (<i>You cannot delete preloaded entries.</i>):
   </p>
   <form id=domain-security-policy-view-delete-form>
     <label>Domain: <input type=text id=domain-security-policy-view-delete-input

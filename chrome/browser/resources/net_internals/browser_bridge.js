@@ -167,11 +167,8 @@ var BrowserBridge = (function() {
       this.send('hstsQuery', [domain]);
     },
 
-    sendHSTSAdd: function(
-        domain, sts_include_subdomains, pkp_include_subdomains, pins) {
-      this.send(
-          'hstsAdd',
-          [domain, sts_include_subdomains, pkp_include_subdomains, pins]);
+    sendHSTSAdd: function(domain, sts_include_subdomains) {
+      this.send('hstsAdd', [domain, sts_include_subdomains]);
     },
 
     sendDomainSecurityPolicyDelete: function(domain) {
