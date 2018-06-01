@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
-#include "content/public/app/content_main.h"
-#include "extensions/shell/app/shell_main_delegate.h"
 
 #if defined(OS_WIN)
 #include "content/public/app/sandbox_helper_win.h"
@@ -13,6 +11,9 @@
 
 #if defined(OS_MACOSX)
 #include "extensions/shell/app/shell_main_mac.h"
+#else
+#include "content/public/app/content_main.h"
+#include "extensions/shell/app/shell_main_delegate.h"
 #endif
 
 #if defined(OS_MACOSX)
