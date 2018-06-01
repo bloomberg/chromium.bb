@@ -28,9 +28,10 @@ abstract class ListItemViewHolder extends ViewHolder {
 
     /**
      * Binds the currently held {@link View} to {@code item}.
-     * @param item The {@link ListItem} to visually represent in this {@link ViewHolder}.
+     * @param properties The shared {@link ListPropertyModel} all items can access.
+     * @param item       The {@link ListItem} to visually represent in this {@link ViewHolder}.
      */
-    public abstract void bind(ListItem item);
+    public abstract void bind(ListPropertyModel properties, ListItem item);
 
     public static class CustomViewHolder extends ListItemViewHolder {
         public CustomViewHolder(ViewGroup parent) {
@@ -41,7 +42,7 @@ abstract class ListItemViewHolder extends ViewHolder {
 
         // DateOrderedViewListHolder implemenation.
         @Override
-        public void bind(ListItem item) {
+        public void bind(ListPropertyModel properties, ListItem item) {
             ViewListItem viewItem = (ViewListItem) item;
             ViewGroup viewGroup = (ViewGroup) itemView;
 
@@ -63,7 +64,7 @@ abstract class ListItemViewHolder extends ViewHolder {
 
         // DateOrderedListViewHolder implementation.
         @Override
-        public void bind(ListItem item) {
+        public void bind(ListPropertyModel properties, ListItem item) {
             DateListItem dateItem = (DateListItem) item;
             ((TextView) itemView).setText(UiUtils.dateToHeaderString(dateItem.date));
         }
@@ -77,7 +78,7 @@ abstract class ListItemViewHolder extends ViewHolder {
 
         // DateOrderedListViewHolder implementation.
         @Override
-        public void bind(ListItem item) {
+        public void bind(ListPropertyModel properties, ListItem item) {
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;
             ((TextView) itemView).setText(offlineItem.item.title);
         }
@@ -91,7 +92,7 @@ abstract class ListItemViewHolder extends ViewHolder {
 
         // DateOrderedListViewHolder implementation.
         @Override
-        public void bind(ListItem item) {
+        public void bind(ListPropertyModel properties, ListItem item) {
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;
             ((TextView) itemView).setText(offlineItem.item.title);
         }
@@ -105,7 +106,7 @@ abstract class ListItemViewHolder extends ViewHolder {
 
         // DateOrderedListViewHolder implementation.
         @Override
-        public void bind(ListItem item) {
+        public void bind(ListPropertyModel properties, ListItem item) {
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;
             ((TextView) itemView).setText(offlineItem.item.title);
         }
@@ -119,7 +120,7 @@ abstract class ListItemViewHolder extends ViewHolder {
 
         // DateOrderedListViewHolder implementation.
         @Override
-        public void bind(ListItem item) {
+        public void bind(ListPropertyModel properties, ListItem item) {
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;
             ((TextView) itemView).setText(offlineItem.item.title);
         }

@@ -12,6 +12,8 @@ import org.chromium.chrome.browser.download.home.filter.SearchOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.TypeOfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 
+import java.io.Closeable;
+
 /**
  * A Mediator responsible for converting an OfflineContentProvider to a list of items in downloads
  * home.  This includes support for filtering, deleting, etc..
@@ -51,6 +53,14 @@ class DateOrderedListMediator {
         mTypeFilter = new TypeOfflineItemFilter(mDeleteUndoFilter);
         mSearchFilter = new SearchOfflineItemFilter(mTypeFilter);
         mListMutator = new DateOrderedListMutator(mSearchFilter, mModel);
+
+        mModel.getProperties().setOpenCallback(id -> mProvider.openItem(id));
+        mModel.getProperties().setPauseCallback(id -> mProvider.pauseDownload(id));
+        mModel.getProperties().setResumeCallback(id -> mProvider.resumeDownload(id, true));
+        mModel.getProperties().setCancelCallback(id -> mProvider.cancelDownload(id));
+        mModel.getProperties().setShareCallback(id -> {});
+        // TODO(dtrainor): Pipe into the undo snackbar and the DeleteUndoOfflineItemFilter.
+        mModel.getProperties().setRemoveCallback(id -> mProvider.removeItem(id));
     }
 
     /** Tears down this mediator. */
@@ -63,7 +73,9 @@ class DateOrderedListMediator {
      * @see TypeOfflineItemFilter#onFilterSelected(int)
      */
     public void onFilterTypeSelected(@FilterType int filter) {
-        mTypeFilter.onFilterSelected(filter);
+        try (AnimationDisableClosable closeable = new AnimationDisableClosable()) {
+            mTypeFilter.onFilterSelected(filter);
+        }
     }
 
     /**
@@ -71,7 +83,9 @@ class DateOrderedListMediator {
      * @see SearchOfflineItemFilter#onQueryChanged(String)
      */
     public void onFilterStringChanged(String filter) {
-        mSearchFilter.onQueryChanged(filter);
+        try (AnimationDisableClosable closeable = new AnimationDisableClosable()) {
+            mSearchFilter.onQueryChanged(filter);
+        }
     }
 
     /**
@@ -80,5 +94,21 @@ class DateOrderedListMediator {
      */
     public OfflineItemFilterSource getFilterSource() {
         return mDeleteUndoFilter;
+    }
+
+    /** Helper class to disable animations for certain list changes. */
+    private class AnimationDisableClosable implements Closeable {
+        private final long mOriginalDuration;
+
+        AnimationDisableClosable() {
+            mOriginalDuration = mModel.getProperties().getItemAnimationDurationMs();
+            mModel.getProperties().setItemAnimationDurationMs(0);
+        }
+
+        // Closeable implementation.
+        @Override
+        public void close() {
+            mModel.getProperties().setItemAnimationDurationMs(mOriginalDuration);
+        }
     }
 }

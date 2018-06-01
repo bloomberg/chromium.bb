@@ -39,6 +39,6 @@ class DateOrderedListViewBinder implements ViewBinder<DecoratedListItemModel, Li
     @Override
     public void onBindViewHolder(
             DecoratedListItemModel model, ListItemViewHolder holder, int position) {
-        holder.bind(model.getItemAt(position));
+        holder.bind(model.getProperties(), model.getItemAt(position));
     }
 }
