@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "ash/accessibility/focus_ring_controller.h"
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
@@ -203,7 +203,7 @@ void ShowLoginWizardFinish(
   if (chromeos::LoginDisplayHost::default_host()) {
     // Tests may have already allocated an instance for us to use.
     display_host = chromeos::LoginDisplayHost::default_host();
-  } else if (ash::switches::IsUsingViewsLogin() &&
+  } else if (ash::features::IsViewsLoginEnabled() &&
              ShouldShowSigninScreen(first_screen)) {
     display_host = new chromeos::LoginDisplayHostMojo();
   } else {
