@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 
 namespace base {
 
@@ -411,64 +410,6 @@ void SetUpFontconfig() {
 
 void TearDownFontconfig() {
   FcFini();
-}
-
-bool LoadConfigFileIntoFontconfig(const FilePath& path) {
-  // Unlike other FcConfig functions, FcConfigParseAndLoad() doesn't default to
-  // the current config when passed NULL. So that's cool.
-  if (!FcConfigParseAndLoad(
-          FcConfigGetCurrent(),
-          reinterpret_cast<const FcChar8*>(path.value().c_str()), FcTrue)) {
-    LOG(ERROR) << "Fontconfig failed to load " << path.value();
-    return false;
-  }
-  return true;
-}
-
-bool LoadConfigDataIntoFontconfig(const FilePath& temp_dir,
-                                  const std::string& data) {
-  FilePath path;
-  if (!CreateTemporaryFileInDir(temp_dir, &path)) {
-    PLOG(ERROR) << "Unable to create temporary file in " << temp_dir.value();
-    return false;
-  }
-  if (WriteFile(path, data.data(), data.size()) !=
-      static_cast<int>(data.size())) {
-    PLOG(ERROR) << "Unable to write config data to " << path.value();
-    return false;
-  }
-  return LoadConfigFileIntoFontconfig(path);
-}
-
-std::string CreateFontconfigEditStanza(const std::string& name,
-                                       const std::string& type,
-                                       const std::string& value) {
-  return StringPrintf(
-      "    <edit name=\"%s\" mode=\"assign\">\n"
-      "      <%s>%s</%s>\n"
-      "    </edit>\n",
-      name.c_str(), type.c_str(), value.c_str(), type.c_str());
-}
-
-std::string CreateFontconfigTestStanza(const std::string& name,
-                                       const std::string& op,
-                                       const std::string& type,
-                                       const std::string& value) {
-  return StringPrintf(
-      "    <test name=\"%s\" compare=\"%s\" qual=\"any\">\n"
-      "      <%s>%s</%s>\n"
-      "    </test>\n",
-      name.c_str(), op.c_str(), type.c_str(), value.c_str(), type.c_str());
-}
-
-std::string CreateFontconfigAliasStanza(const std::string& original_family,
-                                        const std::string& preferred_family) {
-  return StringPrintf(
-      "  <alias>\n"
-      "    <family>%s</family>\n"
-      "    <prefer><family>%s</family></prefer>\n"
-      "  </alias>\n",
-      original_family.c_str(), preferred_family.c_str());
 }
 
 }  // namespace base

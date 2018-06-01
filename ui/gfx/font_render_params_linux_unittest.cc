@@ -6,9 +6,11 @@
 
 #include <fontconfig/fontconfig.h>
 
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/fontconfig_util_linux.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,6 +59,71 @@ class TestFontDelegate : public LinuxFontDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestFontDelegate);
 };
 
+// Instructs Fontconfig to load |path|, an XML configuration file, into the
+// current config, returning true on success.
+bool LoadConfigFileIntoFontconfig(const base::FilePath& path) {
+  // Unlike other FcConfig functions, FcConfigParseAndLoad() doesn't default to
+  // the current config when passed NULL. So that's cool.
+  if (!FcConfigParseAndLoad(
+          FcConfigGetCurrent(),
+          reinterpret_cast<const FcChar8*>(path.value().c_str()), FcTrue)) {
+    LOG(ERROR) << "Fontconfig failed to load " << path.value();
+    return false;
+  }
+  return true;
+}
+
+// Writes |data| to a file in |temp_dir| and passes it to
+// LoadConfigFileIntoFontconfig().
+bool LoadConfigDataIntoFontconfig(const base::FilePath& temp_dir,
+                                  const std::string& data) {
+  base::FilePath path;
+  if (!base::CreateTemporaryFileInDir(temp_dir, &path)) {
+    PLOG(ERROR) << "Unable to create temporary file in " << temp_dir.value();
+    return false;
+  }
+  if (base::WriteFile(path, data.data(), data.size()) !=
+      static_cast<int>(data.size())) {
+    PLOG(ERROR) << "Unable to write config data to " << path.value();
+    return false;
+  }
+  return LoadConfigFileIntoFontconfig(path);
+}
+
+// Returns a Fontconfig <edit> stanza.
+std::string CreateFontconfigEditStanza(const std::string& name,
+                                       const std::string& type,
+                                       const std::string& value) {
+  return base::StringPrintf(
+      "    <edit name=\"%s\" mode=\"assign\">\n"
+      "      <%s>%s</%s>\n"
+      "    </edit>\n",
+      name.c_str(), type.c_str(), value.c_str(), type.c_str());
+}
+
+// Returns a Fontconfig <test> stanza.
+std::string CreateFontconfigTestStanza(const std::string& name,
+                                       const std::string& op,
+                                       const std::string& type,
+                                       const std::string& value) {
+  return base::StringPrintf(
+      "    <test name=\"%s\" compare=\"%s\" qual=\"any\">\n"
+      "      <%s>%s</%s>\n"
+      "    </test>\n",
+      name.c_str(), op.c_str(), type.c_str(), value.c_str(), type.c_str());
+}
+
+// Returns a Fontconfig <alias> stanza.
+std::string CreateFontconfigAliasStanza(const std::string& original_family,
+                                        const std::string& preferred_family) {
+  return base::StringPrintf(
+      "  <alias>\n"
+      "    <family>%s</family>\n"
+      "    <prefer><family>%s</family></prefer>\n"
+      "  </alias>\n",
+      original_family.c_str(), preferred_family.c_str());
+}
+
 }  // namespace
 
 class FontRenderParamsTest : public testing::Test {
@@ -101,36 +168,34 @@ TEST_F(FontRenderParamsTest, Default) {
           // match (since this is the style generally used in
           // /etc/fonts/conf.d).
           kFontconfigMatchFontHeader +
-          base::CreateFontconfigEditStanza("antialias", "bool", "true") +
-          base::CreateFontconfigEditStanza("autohint", "bool", "true") +
-          base::CreateFontconfigEditStanza("hinting", "bool", "true") +
-          base::CreateFontconfigEditStanza("hintstyle", "const", "hintslight") +
-          base::CreateFontconfigEditStanza("rgba", "const", "rgb") +
+          CreateFontconfigEditStanza("antialias", "bool", "true") +
+          CreateFontconfigEditStanza("autohint", "bool", "true") +
+          CreateFontconfigEditStanza("hinting", "bool", "true") +
+          CreateFontconfigEditStanza("hintstyle", "const", "hintslight") +
+          CreateFontconfigEditStanza("rgba", "const", "rgb") +
           kFontconfigMatchFooter +
           // Add a font match for Arimo. Since it specifies a family, it
           // shouldn't take effect when querying default settings.
           kFontconfigMatchFontHeader +
-          base::CreateFontconfigTestStanza("family", "eq", "string", "Arimo") +
-          base::CreateFontconfigEditStanza("antialias", "bool", "true") +
-          base::CreateFontconfigEditStanza("autohint", "bool", "false") +
-          base::CreateFontconfigEditStanza("hinting", "bool", "true") +
-          base::CreateFontconfigEditStanza("hintstyle", "const", "hintfull") +
-          base::CreateFontconfigEditStanza("rgba", "const", "none") +
+          CreateFontconfigTestStanza("family", "eq", "string", "Arimo") +
+          CreateFontconfigEditStanza("antialias", "bool", "true") +
+          CreateFontconfigEditStanza("autohint", "bool", "false") +
+          CreateFontconfigEditStanza("hinting", "bool", "true") +
+          CreateFontconfigEditStanza("hintstyle", "const", "hintfull") +
+          CreateFontconfigEditStanza("rgba", "const", "none") +
           kFontconfigMatchFooter +
           // Add font matches for fonts between 10 and 20 points or pixels.
           // Since they specify sizes, they also should not affect the defaults.
           kFontconfigMatchFontHeader +
-          base::CreateFontconfigTestStanza("size", "more_eq", "double",
-                                           "10.0") +
-          base::CreateFontconfigTestStanza("size", "less_eq", "double",
-                                           "20.0") +
-          base::CreateFontconfigEditStanza("antialias", "bool", "false") +
+          CreateFontconfigTestStanza("size", "more_eq", "double", "10.0") +
+          CreateFontconfigTestStanza("size", "less_eq", "double", "20.0") +
+          CreateFontconfigEditStanza("antialias", "bool", "false") +
           kFontconfigMatchFooter + kFontconfigMatchFontHeader +
-          base::CreateFontconfigTestStanza("pixel_size", "more_eq", "double",
-                                           "10.0") +
-          base::CreateFontconfigTestStanza("pixel_size", "less_eq", "double",
-                                           "20.0") +
-          base::CreateFontconfigEditStanza("antialias", "bool", "false") +
+          CreateFontconfigTestStanza("pixel_size", "more_eq", "double",
+                                     "10.0") +
+          CreateFontconfigTestStanza("pixel_size", "less_eq", "double",
+                                     "20.0") +
+          CreateFontconfigEditStanza("antialias", "bool", "false") +
           kFontconfigMatchFooter + kFontconfigFileFooter));
 
   FontRenderParams params = GetFontRenderParams(
@@ -145,21 +210,20 @@ TEST_F(FontRenderParamsTest, Default) {
 }
 
 TEST_F(FontRenderParamsTest, Size) {
-  ASSERT_TRUE(base::LoadConfigDataIntoFontconfig(
+  ASSERT_TRUE(LoadConfigDataIntoFontconfig(
       temp_dir_.GetPath(),
       std::string(kFontconfigFileHeader) + kFontconfigMatchPatternHeader +
-          base::CreateFontconfigEditStanza("antialias", "bool", "true") +
-          base::CreateFontconfigEditStanza("hinting", "bool", "true") +
-          base::CreateFontconfigEditStanza("hintstyle", "const", "hintfull") +
-          base::CreateFontconfigEditStanza("rgba", "const", "none") +
+          CreateFontconfigEditStanza("antialias", "bool", "true") +
+          CreateFontconfigEditStanza("hinting", "bool", "true") +
+          CreateFontconfigEditStanza("hintstyle", "const", "hintfull") +
+          CreateFontconfigEditStanza("rgba", "const", "none") +
           kFontconfigMatchFooter + kFontconfigMatchPatternHeader +
-          base::CreateFontconfigTestStanza("pixelsize", "less_eq", "double",
-                                           "10") +
-          base::CreateFontconfigEditStanza("antialias", "bool", "false") +
+          CreateFontconfigTestStanza("pixelsize", "less_eq", "double", "10") +
+          CreateFontconfigEditStanza("antialias", "bool", "false") +
           kFontconfigMatchFooter + kFontconfigMatchPatternHeader +
-          base::CreateFontconfigTestStanza("size", "more_eq", "double", "20") +
-          base::CreateFontconfigEditStanza("hintstyle", "const", "hintslight") +
-          base::CreateFontconfigEditStanza("rgba", "const", "rgb") +
+          CreateFontconfigTestStanza("size", "more_eq", "double", "20") +
+          CreateFontconfigEditStanza("hintstyle", "const", "hintslight") +
+          CreateFontconfigEditStanza("rgba", "const", "rgb") +
           kFontconfigMatchFooter + kFontconfigFileFooter));
 
   // The defaults should be used when the supplied size isn't matched by the
@@ -194,16 +258,16 @@ TEST_F(FontRenderParamsTest, Style) {
   ASSERT_TRUE(LoadConfigDataIntoFontconfig(
       temp_dir_.GetPath(),
       std::string(kFontconfigFileHeader) + kFontconfigMatchPatternHeader +
-          base::CreateFontconfigEditStanza("antialias", "bool", "true") +
-          base::CreateFontconfigEditStanza("hinting", "bool", "true") +
-          base::CreateFontconfigEditStanza("hintstyle", "const", "hintslight") +
-          base::CreateFontconfigEditStanza("rgba", "const", "rgb") +
+          CreateFontconfigEditStanza("antialias", "bool", "true") +
+          CreateFontconfigEditStanza("hinting", "bool", "true") +
+          CreateFontconfigEditStanza("hintstyle", "const", "hintslight") +
+          CreateFontconfigEditStanza("rgba", "const", "rgb") +
           kFontconfigMatchFooter + kFontconfigMatchPatternHeader +
-          base::CreateFontconfigTestStanza("weight", "eq", "const", "bold") +
-          base::CreateFontconfigEditStanza("rgba", "const", "none") +
+          CreateFontconfigTestStanza("weight", "eq", "const", "bold") +
+          CreateFontconfigEditStanza("rgba", "const", "none") +
           kFontconfigMatchFooter + kFontconfigMatchPatternHeader +
-          base::CreateFontconfigTestStanza("slant", "eq", "const", "italic") +
-          base::CreateFontconfigEditStanza("hinting", "bool", "false") +
+          CreateFontconfigTestStanza("slant", "eq", "const", "italic") +
+          CreateFontconfigEditStanza("hinting", "bool", "false") +
           kFontconfigMatchFooter + kFontconfigFileFooter));
 
   FontRenderParamsQuery query;
@@ -239,10 +303,10 @@ TEST_F(FontRenderParamsTest, Scalable) {
   ASSERT_TRUE(LoadConfigDataIntoFontconfig(
       temp_dir_.GetPath(),
       std::string(kFontconfigFileHeader) + kFontconfigMatchPatternHeader +
-          base::CreateFontconfigEditStanza("antialias", "bool", "false") +
+          CreateFontconfigEditStanza("antialias", "bool", "false") +
           kFontconfigMatchFooter + kFontconfigMatchPatternHeader +
-          base::CreateFontconfigTestStanza("scalable", "eq", "bool", "true") +
-          base::CreateFontconfigEditStanza("antialias", "bool", "true") +
+          CreateFontconfigTestStanza("scalable", "eq", "bool", "true") +
+          CreateFontconfigEditStanza("antialias", "bool", "true") +
           kFontconfigMatchFooter + kFontconfigFileFooter));
 
   // Check that we specifically ask how scalable fonts should be rendered.
@@ -256,11 +320,10 @@ TEST_F(FontRenderParamsTest, UseBitmaps) {
   ASSERT_TRUE(LoadConfigDataIntoFontconfig(
       temp_dir_.GetPath(),
       std::string(kFontconfigFileHeader) + kFontconfigMatchPatternHeader +
-          base::CreateFontconfigEditStanza("embeddedbitmap", "bool", "false") +
+          CreateFontconfigEditStanza("embeddedbitmap", "bool", "false") +
           kFontconfigMatchFooter + kFontconfigMatchPatternHeader +
-          base::CreateFontconfigTestStanza("pixelsize", "less_eq", "double",
-                                           "10") +
-          base::CreateFontconfigEditStanza("embeddedbitmap", "bool", "true") +
+          CreateFontconfigTestStanza("pixelsize", "less_eq", "double", "10") +
+          CreateFontconfigEditStanza("embeddedbitmap", "bool", "true") +
           kFontconfigMatchFooter + kFontconfigFileFooter));
 
   FontRenderParamsQuery query;
@@ -278,10 +341,10 @@ TEST_F(FontRenderParamsTest, ForceFullHintingWhenAntialiasingIsDisabled) {
   ASSERT_TRUE(LoadConfigDataIntoFontconfig(
       temp_dir_.GetPath(),
       std::string(kFontconfigFileHeader) + kFontconfigMatchPatternHeader +
-          base::CreateFontconfigEditStanza("antialias", "bool", "false") +
-          base::CreateFontconfigEditStanza("hinting", "bool", "false") +
-          base::CreateFontconfigEditStanza("hintstyle", "const", "hintnone") +
-          base::CreateFontconfigEditStanza("rgba", "const", "rgb") +
+          CreateFontconfigEditStanza("antialias", "bool", "false") +
+          CreateFontconfigEditStanza("hinting", "bool", "false") +
+          CreateFontconfigEditStanza("hintstyle", "const", "hintnone") +
+          CreateFontconfigEditStanza("rgba", "const", "rgb") +
           kFontconfigMatchFooter + kFontconfigFileFooter));
 
   // Full hinting should be forced. See the comment in GetFontRenderParams() for
@@ -342,7 +405,7 @@ TEST_F(FontRenderParamsTest, OnlySetConfiguredValues) {
   ASSERT_TRUE(LoadConfigDataIntoFontconfig(
       temp_dir_.GetPath(),
       std::string(kFontconfigFileHeader) + kFontconfigMatchPatternHeader +
-          base::CreateFontconfigEditStanza("antialias", "bool", "true") +
+          CreateFontconfigEditStanza("antialias", "bool", "true") +
           kFontconfigMatchFooter + kFontconfigFileFooter));
 
   // The subpixel rendering setting from the delegate should make it through.
@@ -392,10 +455,10 @@ TEST_F(FontRenderParamsTest, SubstituteFamily) {
   ASSERT_TRUE(LoadConfigDataIntoFontconfig(
       temp_dir_.GetPath(),
       std::string(kFontconfigFileHeader) +
-          base::CreateFontconfigAliasStanza("Helvetica", "Tinos") +
+          CreateFontconfigAliasStanza("Helvetica", "Tinos") +
           kFontconfigMatchPatternHeader +
-          base::CreateFontconfigTestStanza("family", "eq", "string", "Arimo") +
-          base::CreateFontconfigEditStanza("family", "string", "Tinos") +
+          CreateFontconfigTestStanza("family", "eq", "string", "Arimo") +
+          CreateFontconfigEditStanza("family", "string", "Tinos") +
           kFontconfigMatchFooter + kFontconfigFileFooter));
 
   FontRenderParamsQuery query;
