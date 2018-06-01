@@ -331,7 +331,7 @@ public class SiteSettingsCategory {
      * Returns whether the Ads category is enabled via an experiment flag.
      */
     public static boolean adsCategoryEnabled() {
-        return ChromeFeatureList.isEnabled("SubresourceFilterExperimentalUI");
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.SUBRESOURCE_FILTER);
     }
 
     /**

@@ -1431,15 +1431,7 @@ void ContentSettingSubresourceFilterBubbleModel::SetTitle() {
 }
 
 void ContentSettingSubresourceFilterBubbleModel::SetManageText() {
-  // The experimental UI includes the permission UI, which allows us to
-  // guarantee that we will "Always" show ads on the site. For users without the
-  // permission UI, avoid saying "Always" since the user action will be scoped
-  // to the tab only.
-  set_manage_text(l10n_util::GetStringUTF16(
-      base::FeatureList::IsEnabled(
-          subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI)
-          ? IDS_ALWAYS_ALLOW_ADS
-          : IDS_ALLOW_ADS));
+  set_manage_text(l10n_util::GetStringUTF16(IDS_ALWAYS_ALLOW_ADS));
   set_manage_text_style(ContentSettingBubbleModel::ManageTextStyle::kCheckbox);
 }
 

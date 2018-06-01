@@ -231,9 +231,6 @@ base::LazyInstance<scoped_refptr<ConfigurationList>>::Leaky
 const base::Feature kSafeBrowsingSubresourceFilter{
     "SubresourceFilter", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kSafeBrowsingSubresourceFilterExperimentalUI{
-    "SubresourceFilterExperimentalUI", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kSafeBrowsingSubresourceFilterConsiderRedirects{
     "SubresourceFilterConsiderRedirects", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -360,10 +357,9 @@ ActivationState Configuration::GetActivationState(
       (measurement_rate == 1 || base::RandDouble() < measurement_rate);
 
   // This bit keeps track of BAS enforcement-style logging, not warning logging.
-  state.enable_logging =
-      effective_activation_level == ActivationLevel::ENABLED &&
-      base::FeatureList::IsEnabled(
-          kSafeBrowsingSubresourceFilterExperimentalUI);
+  // TODO(csharrison): Consider removing it since it can be computed directly
+  // from the ActivationLevel.
+  state.enable_logging = effective_activation_level == ActivationLevel::ENABLED;
   return state;
 }
 

@@ -90,17 +90,7 @@ void ChromeSubresourceFilterClient::MaybeAppendNavigationThrottles(
 
 void ChromeSubresourceFilterClient::OnReloadRequested() {
   UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.Prompt.NumReloads", true);
-  const GURL& whitelist_url = web_contents()->GetLastCommittedURL();
-
-  // Only whitelist via content settings when using the experimental UI,
-  // otherwise could get into a situation where content settings cannot be
-  // adjusted.
-  if (base::FeatureList::IsEnabled(
-          subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI)) {
-    WhitelistByContentSettings(whitelist_url);
-  } else {
-    WhitelistInCurrentWebContents(whitelist_url);
-  }
+  WhitelistByContentSettings(web_contents()->GetLastCommittedURL());
   web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
 }
 
@@ -137,8 +127,7 @@ ChromeSubresourceFilterClient::OnPageActivationComputed(
                  subresource_filter::ActivationLevel::ENABLED);
   }
 
-  if (whitelisted_hosts_.count(url.host()) ||
-      settings_manager_->GetSitePermission(url) == CONTENT_SETTING_ALLOW) {
+  if (settings_manager_->GetSitePermission(url) == CONTENT_SETTING_ALLOW) {
     if (effective_activation_level ==
         subresource_filter::ActivationLevel::ENABLED) {
       *decision = subresource_filter::ActivationDecision::URL_WHITELISTED;
@@ -146,12 +135,6 @@ ChromeSubresourceFilterClient::OnPageActivationComputed(
     return subresource_filter::ActivationLevel::DISABLED;
   }
   return effective_activation_level;
-}
-
-void ChromeSubresourceFilterClient::WhitelistInCurrentWebContents(
-    const GURL& url) {
-  if (url.SchemeIsHTTPOrHTTPS())
-    whitelisted_hosts_.insert(url.host());
 }
 
 void ChromeSubresourceFilterClient::WhitelistByContentSettings(
