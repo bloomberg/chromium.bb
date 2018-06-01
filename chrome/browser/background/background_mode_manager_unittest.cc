@@ -692,7 +692,7 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BackgroundMenuGeneration) {
       extensions::ExtensionSystem::Get(profile_))
       ->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
                                base::FilePath(), false);
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   service->Init();
   // ExtensionSystem::ready() is dispatched using PostTask to UI Thread. Wait
@@ -774,7 +774,7 @@ TEST_F(BackgroundModeManagerWithExtensionsTest,
       extensions::ExtensionSystem::Get(profile_))
       ->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
                                base::FilePath(), false);
-  ExtensionService* service1 =
+  extensions::ExtensionService* service1 =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   service1->Init();
   base::RunLoop().RunUntilIdle();
@@ -793,7 +793,7 @@ TEST_F(BackgroundModeManagerWithExtensionsTest,
       extensions::ExtensionSystem::Get(profile2))
       ->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
                                base::FilePath(), false);
-  ExtensionService* service2 =
+  extensions::ExtensionService* service2 =
       extensions::ExtensionSystem::Get(profile2)->extension_service();
   service2->Init();
   base::RunLoop().RunUntilIdle();
@@ -935,7 +935,7 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BalloonDisplay) {
       ->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
                                base::FilePath(), false);
 
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   ASSERT_FALSE(service->is_ready());
   service->Init();
