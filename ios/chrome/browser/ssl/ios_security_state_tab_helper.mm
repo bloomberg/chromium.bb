@@ -41,7 +41,7 @@ std::unique_ptr<security_state::VisibleSecurityState>
 IOSSecurityStateTabHelper::GetVisibleSecurityState() const {
   auto state = std::make_unique<security_state::VisibleSecurityState>();
 
-  web::NavigationItem* item =
+  const web::NavigationItem* item =
       web_state_->GetNavigationManager()->GetVisibleItem();
   if (!item || item->GetSSL().security_style == web::SECURITY_STYLE_UNKNOWN)
     return state;

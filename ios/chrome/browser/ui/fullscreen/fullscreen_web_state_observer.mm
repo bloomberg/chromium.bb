@@ -35,7 +35,7 @@ bool ShouldDisableFullscreenForWebStateSSL(web::WebState* web_state) {
   web::NavigationManager* manager = web_state->GetNavigationManager();
   if (!manager)
     return false;
-  web::NavigationItem* item = manager->GetVisibleItem();
+  const web::NavigationItem* item = manager->GetVisibleItem();
   if (!item)
     return false;
   const web::SSLStatus& ssl = item->GetSSL();
