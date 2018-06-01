@@ -220,3 +220,5 @@ crbug.com/794631 http/tests/media/autoplay/document-user-activation-feature-poli
 crbug.com/794631 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
 crbug.com/794631 http/tests/media/autoplay/document-user-activation-feature-policy-same-origin.html [ Failure Pass Timeout ]
 crbug.com/794631 http/tests/media/autoplay/document-user-activation-iframe-delegation.html [ Failure Pass Timeout ]
+
+crbug.com/848281 http/tests/security/cross-origin-session-storage-allowed.html [ Failure Pass Timeout ]
