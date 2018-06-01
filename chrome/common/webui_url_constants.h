@@ -168,6 +168,7 @@ extern const char kDeprecatedChromeUIHistoryFrameHost[];
 extern const char kDeprecatedChromeUIHistoryFrameURL[];
 
 #if defined(OS_ANDROID)
+extern const char kChromeUIEocInternalsHost[];
 extern const char kChromeUIJavaCrashURL[];
 extern const char kChromeUINativeBookmarksURL[];
 extern const char kChromeUINativeHistoryURL[];

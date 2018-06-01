@@ -4619,7 +4619,10 @@ grit("resources") {
   }
 
   if (is_android) {
-    deps += [ "//chrome/browser/ui/webui/snippets_internals:mojo_bindings_js" ]
+    deps += [
+      "//chrome/browser/ui/webui/eoc_internals:mojo_bindings_js",
+      "//chrome/browser/ui/webui/snippets_internals:mojo_bindings_js",
+    ]
   }
 
   if (optimize_webui) {
