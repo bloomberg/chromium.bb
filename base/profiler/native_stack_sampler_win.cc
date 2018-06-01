@@ -399,7 +399,7 @@ class NativeStackSamplerWin : public NativeStackSampler {
       std::vector<StackSamplingProfiler::Module>* modules) override;
   void RecordStackSample(StackBuffer* stack_buffer,
                          StackSamplingProfiler::Sample* sample) override;
-  void ProfileRecordingStopped(StackBuffer* stack_buffer) override;
+  void ProfileRecordingStopped() override;
 
  private:
   // Attempts to query the module filename, base address, and id for
@@ -473,7 +473,7 @@ void NativeStackSamplerWin::RecordStackSample(
   CopyToSample(stack, sample, current_modules_);
 }
 
-void NativeStackSamplerWin::ProfileRecordingStopped(StackBuffer* stack_buffer) {
+void NativeStackSamplerWin::ProfileRecordingStopped() {
   current_modules_ = nullptr;
 }
 
