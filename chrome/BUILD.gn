@@ -822,7 +822,7 @@ if (is_win) {
 
     if (is_component_build) {
       ldflags += [
-        # The helper is in Chromium.app/Contents/Versions/X/Chromium Helper.app/Conents/MacOS/
+        # The helper is in Chromium.app/Contents/Versions/X/Chromium Helper.app/Contents/MacOS/
         # so set rpath up to the base.
         "-rpath",
         "@loader_path/../../../../../../..",

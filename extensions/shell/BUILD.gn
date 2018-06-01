@@ -435,11 +435,13 @@ if (is_mac) {
       ":app_shell_framework_resources",
       "//content/public/app:both",
     ]
-    ldflags = [ "-Wl,-install_name,@rpath/Frameworks/App Shell Framework.framework/App Shell Framework" ]
+    ldflags = [
+      "-Wl,-install_name,@rpath/Frameworks/$output_name.framework/$output_name",
+    ]
     if (is_component_build) {
       ldflags += [
         "-rpath",
-        "@loader_path/../../../..",
+        "@loader_path/../../../../../..",
       ]
     }
     info_plist = "app/framework-Info.plist"
@@ -453,8 +455,15 @@ if (is_mac) {
     ]
     deps = [
       ":app_shell_framework+link",
-      "//content/public/app:both",
     ]
+
+    # deps must not include //content/public/app:both. shell_main.cc does
+    # include a #if !defined(OS_MACOSX) block. Rather than use nogncheck there,
+    # disable checking here so that checking still happens on non-mac targets.
+    check_includes = false
+
+    # The helper is in App Shell.app/Contents/Frameworks/App Shell Helper.app/Contents/MacOS/
+    # so set rpath up to Contents/ so that the loader can find Frameworks/.
     ldflags = [
       "-rpath",
       "@executable_path/../../../..",
