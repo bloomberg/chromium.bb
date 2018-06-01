@@ -44,16 +44,6 @@ void DummyModulator::Trace(blink::Visitor* visitor) {
   Modulator::Trace(visitor);
 }
 
-ReferrerPolicy DummyModulator::GetReferrerPolicy() {
-  NOTREACHED();
-  return kReferrerPolicyDefault;
-}
-
-const SecurityOrigin* DummyModulator::GetSecurityOriginForFetch() {
-  NOTREACHED();
-  return nullptr;
-}
-
 ScriptState* DummyModulator::GetScriptState() {
   NOTREACHED();
   return nullptr;
@@ -69,6 +59,7 @@ base::SingleThreadTaskRunner* DummyModulator::TaskRunner() {
 };
 
 void DummyModulator::FetchTree(const KURL&,
+                               SettingsObject*,
                                WebURLRequest::RequestContext,
                                const ScriptFetchOptions&,
                                ModuleTreeClient*) {
@@ -76,6 +67,7 @@ void DummyModulator::FetchTree(const KURL&,
 }
 
 void DummyModulator::FetchSingle(const ModuleScriptFetchRequest&,
+                                 SettingsObject*,
                                  ModuleGraphLevel,
                                  SingleModuleClient*) {
   NOTREACHED();
@@ -83,6 +75,7 @@ void DummyModulator::FetchSingle(const ModuleScriptFetchRequest&,
 
 void DummyModulator::FetchDescendantsForInlineScript(
     ModuleScript*,
+    SettingsObject* fetch_client_settings_object,
     WebURLRequest::RequestContext,
     ModuleTreeClient*) {
   NOTREACHED();
@@ -94,6 +87,7 @@ ModuleScript* DummyModulator::GetFetchedModuleScript(const KURL&) {
 }
 
 void DummyModulator::FetchNewSingleModule(const ModuleScriptFetchRequest&,
+                                          SettingsObject*,
                                           ModuleGraphLevel,
                                           ModuleScriptLoaderClient*) {
   NOTREACHED();

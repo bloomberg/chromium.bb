@@ -32,7 +32,7 @@ class ScriptModuleResolver;
 class ScriptPromiseResolver;
 class ScriptState;
 class ScriptValue;
-class SecurityOrigin;
+class SettingsObject;
 
 // A SingleModuleClient is notified when single module script node (node as in a
 // module tree graph) load is complete and its corresponding entry is created in
@@ -90,20 +90,14 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual ScriptModuleResolver* GetScriptModuleResolver() = 0;
   virtual base::SingleThreadTaskRunner* TaskRunner() = 0;
 
-  // Get the default referrer policy of this modulator as the environment
-  // settings object.
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-referrer-policy
-  virtual ReferrerPolicy GetReferrerPolicy() = 0;
-
-  // Returns the security origin of the "fetch client settings object".
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
-  // This should be called only from ModuleScriptLoader.
-  virtual const SecurityOrigin* GetSecurityOriginForFetch() = 0;
-
   virtual ScriptState* GetScriptState() = 0;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
+  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
+  // Note that |this| is the "module map settings object" used in the "fetch a
+  // module worker script graph" algorithm.
   virtual void FetchTree(const KURL&,
+                         SettingsObject* fetch_client_settings_object,
                          WebURLRequest::RequestContext destination,
                          const ScriptFetchOptions&,
                          ModuleTreeClient*) = 0;
@@ -111,12 +105,15 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   // Asynchronously retrieve a module script from the module map, or fetch it
   // and put it in the map if it's not there already.
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
+  // Note that |this| is the "module map settings object".
   virtual void FetchSingle(const ModuleScriptFetchRequest&,
+                           SettingsObject* fetch_client_settings_object,
                            ModuleGraphLevel,
                            SingleModuleClient*) = 0;
 
   virtual void FetchDescendantsForInlineScript(
       ModuleScript*,
+      SettingsObject* fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       ModuleTreeClient*) = 0;
 
@@ -184,9 +181,11 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   // This is triggered from fetchSingle() implementation (which is in ModuleMap)
   // if the cached entry doesn't exist.
   // The client can be notified either synchronously or asynchronously.
-  virtual void FetchNewSingleModule(const ModuleScriptFetchRequest&,
-                                    ModuleGraphLevel,
-                                    ModuleScriptLoaderClient*) = 0;
+  virtual void FetchNewSingleModule(
+      const ModuleScriptFetchRequest&,
+      SettingsObject* fetch_client_settings_object,
+      ModuleGraphLevel,
+      ModuleScriptLoaderClient*) = 0;
 };
 
 }  // namespace blink

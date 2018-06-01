@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
+#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
@@ -492,6 +493,9 @@ static void ModulePreloadIfNeeded(const LinkLoadParameters& params,
   // |document| is the node document here, and its context document is the
   // relevant settings object.
   Document* context_document = document.ContextDocument();
+  SettingsObject* settings_object =
+      SettingsObject::Create(context_document->GetSecurityOrigin(),
+                             context_document->GetReferrerPolicy());
 
   Modulator* modulator =
       Modulator::From(ToScriptStateForMainWorld(context_document->GetFrame()));
@@ -535,8 +539,8 @@ static void ModulePreloadIfNeeded(const LinkLoadParameters& params,
   // destination, options, settings object, "client", and with the top-level
   // module fetch flag set. Wait until algorithm asynchronously completes with
   // result." [spec text]
-  modulator->FetchSingle(request, ModuleGraphLevel::kDependentModuleFetch,
-                         link_loader);
+  modulator->FetchSingle(request, settings_object,
+                         ModuleGraphLevel::kDependentModuleFetch, link_loader);
 
   Settings* settings = document.GetSettings();
   if (settings && settings->GetLogPreload()) {

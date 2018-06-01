@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "v8/include/v8.h"
 
@@ -213,7 +214,15 @@ void DynamicModuleResolver::ResolveDynamically(
   // with result."
   auto* tree_client =
       DynamicImportTreeClient::Create(url, modulator_.Get(), promise_resolver);
-  modulator_->FetchTree(url, WebURLRequest::kRequestContextScript, options,
+  // TODO(kouhei): ExecutionContext::From(modulator_->GetScriptState()) is
+  // highly discouraged since it breaks layering. Rewrite this.
+  auto* execution_context =
+      ExecutionContext::From(modulator_->GetScriptState());
+  auto* settings_object =
+      SettingsObject::Create(execution_context->GetSecurityOrigin(),
+                             execution_context->GetReferrerPolicy());
+  modulator_->FetchTree(url, settings_object,
+                        WebURLRequest::kRequestContextScript, options,
                         tree_client);
 
   // Steps 2.[5-8] are implemented at

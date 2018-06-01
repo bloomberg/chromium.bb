@@ -12,9 +12,10 @@
 
 namespace blink {
 
+class ModuleScriptFetchRequest;
 class ModuleScriptLoaderClient;
 class ScriptModuleResolver;
-class ModuleScriptFetchRequest;
+class SettingsObject;
 
 // DummyModulator provides empty Modulator interface implementation w/
 // NOTREACHED().
@@ -33,23 +34,25 @@ class DummyModulator : public Modulator {
 
   ScriptModuleResolver* GetScriptModuleResolver() override;
   base::SingleThreadTaskRunner* TaskRunner() override;
-  ReferrerPolicy GetReferrerPolicy() override;
-  const SecurityOrigin* GetSecurityOriginForFetch() override;
   ScriptState* GetScriptState() override;
 
   void FetchTree(const KURL&,
+                 SettingsObject* fetch_client_settings_object,
                  WebURLRequest::RequestContext destination,
                  const ScriptFetchOptions&,
                  ModuleTreeClient*) override;
   void FetchSingle(const ModuleScriptFetchRequest&,
+                   SettingsObject* fetch_client_settings_object,
                    ModuleGraphLevel,
                    SingleModuleClient*) override;
   void FetchDescendantsForInlineScript(
       ModuleScript*,
+      SettingsObject* fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       ModuleTreeClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
   void FetchNewSingleModule(const ModuleScriptFetchRequest&,
+                            SettingsObject* fetch_client_settings_object,
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
   bool HasValidContext() override;

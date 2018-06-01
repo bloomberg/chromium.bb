@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_registry.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/core/workers/main_thread_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -77,6 +78,7 @@ void ModuleScriptLoader::AdvanceState(ModuleScriptLoader::State new_state) {
 }
 
 void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
+                               SettingsObject* fetch_client_settings_object,
                                ModuleGraphLevel level) {
   // https://html.spec.whatwg.org/#fetch-a-single-module-script
 
@@ -131,7 +133,8 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
   // [SMSR] "... and its credentials mode to options's credentials mode."
   // [spec text]
   fetch_params.SetCrossOriginAccessControl(
-      modulator_->GetSecurityOriginForFetch(), options_.CredentialsMode());
+      fetch_client_settings_object->GetSecurityOrigin(),
+      options_.CredentialsMode());
 
   // Step 5. "... referrer is referrer, ..." [spec text]
   if (!module_request.GetReferrer().IsNull()) {

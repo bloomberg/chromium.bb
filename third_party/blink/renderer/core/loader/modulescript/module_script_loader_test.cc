@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/script.h"
+#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -74,10 +75,6 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
         fetcher_(fetcher) {}
 
   ~ModuleScriptLoaderTestModulator() override = default;
-
-  const SecurityOrigin* GetSecurityOriginForFetch() override {
-    return security_origin_.get();
-  }
 
   ScriptState* GetScriptState() override { return script_state_.get(); }
 
@@ -160,6 +157,7 @@ class ModuleScriptLoaderTest : public PageTestBase {
   std::unique_ptr<MainThreadWorkletReportingProxy> reporting_proxy_;
   Persistent<ModuleScriptLoaderTestModulator> modulator_;
   Persistent<MainThreadWorkletGlobalScope> global_scope_;
+  Persistent<SettingsObject> fetch_client_settings_object_;
 };
 
 void ModuleScriptLoaderTest::SetUp() {
@@ -176,6 +174,8 @@ void ModuleScriptLoaderTest::InitializeForDocument() {
   modulator_ = new ModuleScriptLoaderTestModulator(
       ToScriptStateForMainWorld(&GetFrame()), GetDocument().GetSecurityOrigin(),
       fetcher);
+  fetch_client_settings_object_ = SettingsObject::Create(
+      GetDocument().GetSecurityOrigin(), GetDocument().GetReferrerPolicy());
 }
 
 void ModuleScriptLoaderTest::InitializeForWorklet() {
@@ -198,6 +198,8 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
   modulator_ = new ModuleScriptLoaderTestModulator(
       global_scope_->ScriptController()->GetScriptState(),
       GetDocument().GetSecurityOrigin(), fetcher);
+  fetch_client_settings_object_ = SettingsObject::Create(
+      GetDocument().GetSecurityOrigin(), GetDocument().GetReferrerPolicy());
 }
 
 void ModuleScriptLoaderTest::TestFetchDataURL(
@@ -205,6 +207,7 @@ void ModuleScriptLoaderTest::TestFetchDataURL(
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url("data:text/javascript,export default 'grapes';");
   registry->Fetch(ModuleScriptFetchRequest::CreateForTest(url),
+                  fetch_client_settings_object_.Get(),
                   ModuleGraphLevel::kTopLevelModuleFetch, GetModulator(),
                   client);
 }
@@ -256,6 +259,7 @@ void ModuleScriptLoaderTest::TestInvalidSpecifier(
   KURL url("data:text/javascript,import 'invalid';export default 'grapes';");
   GetModulator()->SetModuleRequests({"invalid"});
   registry->Fetch(ModuleScriptFetchRequest::CreateForTest(url),
+                  fetch_client_settings_object_.Get(),
                   ModuleGraphLevel::kTopLevelModuleFetch, GetModulator(),
                   client);
 }
@@ -293,6 +297,7 @@ void ModuleScriptLoaderTest::TestFetchInvalidURL(
   KURL url;
   EXPECT_FALSE(url.IsValid());
   registry->Fetch(ModuleScriptFetchRequest::CreateForTest(url),
+                  fetch_client_settings_object_.Get(),
                   ModuleGraphLevel::kTopLevelModuleFetch, GetModulator(),
                   client);
 }
@@ -328,6 +333,7 @@ void ModuleScriptLoaderTest::TestFetchURL(
 
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   registry->Fetch(ModuleScriptFetchRequest::CreateForTest(url),
+                  fetch_client_settings_object_.Get(),
                   ModuleGraphLevel::kTopLevelModuleFetch, GetModulator(),
                   client);
 }

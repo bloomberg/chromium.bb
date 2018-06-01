@@ -51,7 +51,6 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
 
  private:
   // Implements Modulator:
-  ReferrerPolicy GetReferrerPolicy() override { return kReferrerPolicyDefault; }
   ScriptState* GetScriptState() final { return script_state_.get(); }
 
   ModuleScript* GetFetchedModuleScript(const KURL& url) final {
@@ -62,6 +61,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
   }
 
   void FetchTree(const KURL& url,
+                 SettingsObject*,
                  WebURLRequest::RequestContext,
                  const ScriptFetchOptions&,
                  ModuleTreeClient* client) final {

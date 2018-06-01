@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
@@ -93,6 +94,9 @@ void WorkletGlobalScope::FetchAndInvokeScript(
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsContextThread());
 
+  SettingsObject* outside_settings_object =
+      SettingsObject::Create(DocumentSecurityOrigin(), GetReferrerPolicy());
+
   // Step 1: "Let insideSettings be the workletGlobalScope's associated
   // environment settings object."
   // Step 2: "Let script by the result of fetch a worklet script given
@@ -110,7 +114,8 @@ void WorkletGlobalScope::FetchAndInvokeScript(
   // spec (e.g., "paint worklet", "audio worklet").
   WebURLRequest::RequestContext destination =
       WebURLRequest::kRequestContextScript;
-  FetchModuleScript(module_url_record, destination, credentials_mode, client);
+  FetchModuleScript(module_url_record, outside_settings_object, destination,
+                    credentials_mode, client);
 }
 
 KURL WorkletGlobalScope::CompleteURL(const String& url) const {

@@ -24,6 +24,7 @@ namespace blink {
 class Modulator;
 class ModuleTreeClient;
 class ResourceFetcher;
+class SettingsObject;
 class V8AbstractEventListener;
 class WorkerOrWorkletScriptController;
 class WorkerReportingProxy;
@@ -113,6 +114,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   // HTML spec:
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
   void FetchModuleScript(const KURL& module_url_record,
+                         SettingsObject* settings_object,
                          WebURLRequest::RequestContext destination,
                          network::mojom::FetchCredentialsMode,
                          ModuleTreeClient*);

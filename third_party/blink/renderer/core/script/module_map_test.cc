@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/script_module_resolver.h"
+#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -102,6 +103,7 @@ class ModuleMapTestModulator final : public DummyModulator {
   };
 
   void FetchNewSingleModule(const ModuleScriptFetchRequest&,
+                            SettingsObject*,
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
 
@@ -132,6 +134,7 @@ void ModuleMapTestModulator::Trace(blink::Visitor* visitor) {
 
 void ModuleMapTestModulator::FetchNewSingleModule(
     const ModuleScriptFetchRequest& request,
+    SettingsObject*,
     ModuleGraphLevel,
     ModuleScriptLoaderClient* client) {
   TestRequest* test_request =
@@ -175,12 +178,15 @@ TEST_F(ModuleMapTest, sequentialRequests) {
   platform->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 
   KURL url(NullURL(), "https://example.com/foo.js");
+  scoped_refptr<SecurityOrigin> security_origin = SecurityOrigin::Create(url);
+  auto* settings_object =
+      SettingsObject::Create(security_origin.get(), kReferrerPolicyDefault);
 
   // First request
   TestSingleModuleClient* client = new TestSingleModuleClient;
-  Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
-                                 ModuleGraphLevel::kTopLevelModuleFetch,
-                                 client);
+  Map()->FetchSingleModuleScript(
+      ModuleScriptFetchRequest::CreateForTest(url), settings_object,
+      ModuleGraphLevel::kTopLevelModuleFetch, client);
   Modulator()->ResolveFetches();
   EXPECT_FALSE(client->WasNotifyFinished())
       << "fetchSingleModuleScript shouldn't complete synchronously";
@@ -195,9 +201,9 @@ TEST_F(ModuleMapTest, sequentialRequests) {
 
   // Secondary request
   TestSingleModuleClient* client2 = new TestSingleModuleClient;
-  Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
-                                 ModuleGraphLevel::kTopLevelModuleFetch,
-                                 client2);
+  Map()->FetchSingleModuleScript(
+      ModuleScriptFetchRequest::CreateForTest(url), settings_object,
+      ModuleGraphLevel::kTopLevelModuleFetch, client2);
   Modulator()->ResolveFetches();
   EXPECT_FALSE(client2->WasNotifyFinished())
       << "fetchSingleModuleScript shouldn't complete synchronously";
@@ -218,18 +224,21 @@ TEST_F(ModuleMapTest, concurrentRequestsShouldJoin) {
   platform->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 
   KURL url(NullURL(), "https://example.com/foo.js");
+  scoped_refptr<SecurityOrigin> security_origin = SecurityOrigin::Create(url);
+  auto* settings_object =
+      SettingsObject::Create(security_origin.get(), kReferrerPolicyDefault);
 
   // First request
   TestSingleModuleClient* client = new TestSingleModuleClient;
-  Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
-                                 ModuleGraphLevel::kTopLevelModuleFetch,
-                                 client);
+  Map()->FetchSingleModuleScript(
+      ModuleScriptFetchRequest::CreateForTest(url), settings_object,
+      ModuleGraphLevel::kTopLevelModuleFetch, client);
 
   // Secondary request (which should join the first request)
   TestSingleModuleClient* client2 = new TestSingleModuleClient;
-  Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
-                                 ModuleGraphLevel::kTopLevelModuleFetch,
-                                 client2);
+  Map()->FetchSingleModuleScript(
+      ModuleScriptFetchRequest::CreateForTest(url), settings_object,
+      ModuleGraphLevel::kTopLevelModuleFetch, client2);
 
   Modulator()->ResolveFetches();
   EXPECT_FALSE(client->WasNotifyFinished())
