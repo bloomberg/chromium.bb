@@ -33,22 +33,19 @@ class StubOfflinePageModel : public OfflinePageModel {
   void AddPage(const OfflinePageItem& page, AddPageCallback callback) override;
   void MarkPageAccessed(int64_t offline_id) override;
   void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
-                              const DeletePageCallback& callback) override;
+                              DeletePageCallback callback) override;
   void DeletePagesByClientIds(const std::vector<ClientId>& client_ids,
-                              const DeletePageCallback& callback) override;
-  void DeletePagesByClientIdsAndOrigin(
-      const std::vector<ClientId>& client_ids,
-      const std::string& origin,
-      const DeletePageCallback& callback) override;
+                              DeletePageCallback callback) override;
+  void DeletePagesByClientIdsAndOrigin(const std::vector<ClientId>& client_ids,
+                                       const std::string& origin,
+                                       DeletePageCallback callback) override;
   void GetPagesByClientIds(const std::vector<ClientId>& client_ids,
                            MultipleOfflinePageItemCallback callback) override;
-  void DeleteCachedPagesByURLPredicate(
-      const UrlPredicate& predicate,
-      const DeletePageCallback& callback) override;
+  void DeleteCachedPagesByURLPredicate(const UrlPredicate& predicate,
+                                       DeletePageCallback callback) override;
   void GetAllPages(MultipleOfflinePageItemCallback callback) override;
-  void GetOfflineIdsForClientId(
-      const ClientId& client_id,
-      const MultipleOfflineIdCallback& callback) override;
+  void GetOfflineIdsForClientId(const ClientId& client_id,
+                                MultipleOfflineIdCallback callback) override;
   void GetPageByOfflineId(int64_t offline_id,
                           SingleOfflinePageItemCallback callback) override;
   void GetPageByGuid(const std::string& guid,

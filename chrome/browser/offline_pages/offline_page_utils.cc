@@ -133,7 +133,7 @@ void CheckDuplicateOngoingDownloads(
 }
 
 void DoCalculateSizeBetween(
-    const offline_pages::SizeInBytesCallback& callback,
+    offline_pages::SizeInBytesCallback callback,
     const base::Time& begin_time,
     const base::Time& end_time,
     const offline_pages::MultipleOfflinePageItemResult& result) {
@@ -142,7 +142,7 @@ void DoCalculateSizeBetween(
     if (begin_time <= page.creation_time && page.creation_time < end_time)
       total_size += page.file_size;
   }
-  callback.Run(total_size);
+  std::move(callback).Run(total_size);
 }
 
 content::WebContents* GetWebContentsByFrameID(int render_process_id,
@@ -367,15 +367,15 @@ bool OfflinePageUtils::CanDownloadAsOfflinePage(
 // static
 bool OfflinePageUtils::GetCachedOfflinePageSizeBetween(
     content::BrowserContext* browser_context,
-    const SizeInBytesCallback& callback,
+    SizeInBytesCallback callback,
     const base::Time& begin_time,
     const base::Time& end_time) {
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(browser_context);
   if (!offline_page_model || begin_time > end_time)
     return false;
-  offline_page_model->GetPagesRemovedOnCacheReset(
-      base::Bind(&DoCalculateSizeBetween, callback, begin_time, end_time));
+  offline_page_model->GetPagesRemovedOnCacheReset(base::BindOnce(
+      &DoCalculateSizeBetween, std::move(callback), begin_time, end_time));
   return true;
 }
 

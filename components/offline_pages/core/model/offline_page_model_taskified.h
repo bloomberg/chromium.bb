@@ -87,16 +87,14 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   void MarkPageAccessed(int64_t offline_id) override;
 
   void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
-                              const DeletePageCallback& callback) override;
+                              DeletePageCallback callback) override;
   void DeletePagesByClientIds(const std::vector<ClientId>& client_ids,
-                              const DeletePageCallback& callback) override;
-  void DeletePagesByClientIdsAndOrigin(
-      const std::vector<ClientId>& client_ids,
-      const std::string& origin,
-      const DeletePageCallback& callback) override;
-  void DeleteCachedPagesByURLPredicate(
-      const UrlPredicate& predicate,
-      const DeletePageCallback& callback) override;
+                              DeletePageCallback callback) override;
+  void DeletePagesByClientIdsAndOrigin(const std::vector<ClientId>& client_ids,
+                                       const std::string& origin,
+                                       DeletePageCallback callback) override;
+  void DeleteCachedPagesByURLPredicate(const UrlPredicate& predicate,
+                                       DeletePageCallback callback) override;
 
   void GetAllPages(MultipleOfflinePageItemCallback callback) override;
   void GetPageByOfflineId(int64_t offline_id,
@@ -122,9 +120,8 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   void GetPageBySizeAndDigest(int64_t file_size,
                               const std::string& digest,
                               SingleOfflinePageItemCallback callback) override;
-  void GetOfflineIdsForClientId(
-      const ClientId& client_id,
-      const MultipleOfflineIdCallback& callback) override;
+  void GetOfflineIdsForClientId(const ClientId& client_id,
+                                MultipleOfflineIdCallback callback) override;
   void StoreThumbnail(const OfflinePageThumbnail& thumb) override;
   void GetThumbnailByOfflineId(
       int64_t offline_id,
@@ -190,7 +187,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
 
   // Callbacks for deleting pages.
   void OnDeleteDone(
-      const DeletePageCallback& callback,
+      DeletePageCallback callback,
       DeletePageResult result,
       const std::vector<OfflinePageModel::DeletedPageInfo>& infos);
 
