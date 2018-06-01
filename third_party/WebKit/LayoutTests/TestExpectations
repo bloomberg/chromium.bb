@@ -4825,3 +4825,4 @@ crbug.com/848398 [ Linux Mac ] http/tests/devtools/oopif/oopif-performance-cpu-p
 
 # Sheriff 2018-06-01
 crbug.com/848851 virtual/exotic-color-space/images/image-hover-display-alt.html [ Failure Pass ]
+crbug.com/848799 [ Mac ] http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Timeout ]
