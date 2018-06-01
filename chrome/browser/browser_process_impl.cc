@@ -104,6 +104,7 @@
 #include "components/previews/core/previews_features.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "components/sessions/core/session_id_generator.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/subresource_filter/content/browser/content_ruleset_service.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
@@ -424,6 +425,8 @@ void BrowserProcessImpl::StartTearDown() {
   // Cancel any uploads to release the system url request context references.
   if (webrtc_log_uploader_)
     webrtc_log_uploader_->StartShutdown();
+
+  sessions::SessionIdGenerator::GetInstance()->Shutdown();
 
   if (local_state_)
     local_state_->CommitPendingWrite();
@@ -1085,6 +1088,8 @@ void BrowserProcessImpl::CreateLocalState() {
       local_state_path, local_state_task_runner_.get(), policy_service(),
       std::move(pref_registry), false, std::move(delegate));
   DCHECK(local_state_);
+
+  sessions::SessionIdGenerator::GetInstance()->Init(local_state_.get());
 }
 
 void BrowserProcessImpl::PreCreateThreads(

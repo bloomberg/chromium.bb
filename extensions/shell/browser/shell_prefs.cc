@@ -13,6 +13,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
+#include "components/sessions/core/session_id_generator.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/audio/audio_api.h"
@@ -29,6 +30,7 @@ namespace extensions {
 namespace {
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+  sessions::SessionIdGenerator::RegisterPrefs(registry);
 #if defined(OS_CHROMEOS)
   chromeos::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry);
 #endif
