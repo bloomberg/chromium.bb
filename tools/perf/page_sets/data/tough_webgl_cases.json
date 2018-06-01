@@ -3,7 +3,7 @@
         "aquarium_20k": {
             "DEFAULT": "tough_webgl_cases_006.wprgo"
         },
-        "ken_russell": {
+        "animometer_webgl": {
             "DEFAULT": "tough_webgl_cases_006.wprgo"
         },
         "aquarium": {
@@ -21,7 +21,7 @@
         "particles": {
             "DEFAULT": "tough_webgl_cases_006.wprgo"
         },
-        "sans_angeles": {
+        "san_angeles": {
             "DEFAULT": "tough_webgl_cases_006.wprgo"
         },
         "earth": {

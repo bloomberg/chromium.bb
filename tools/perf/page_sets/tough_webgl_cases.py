@@ -53,7 +53,7 @@ class ToughWebglCasesPageSet(story.StorySet):
        'nvidia_vertex_buffer_object'),
       # pylint: disable=line-too-long
       ('http://www.khronos.org/registry/webgl/sdk/demos/google/san-angeles/index.html',
-       'sans_angeles'),
+       'san_angeles'),
       # pylint: disable=line-too-long
       ('http://www.khronos.org/registry/webgl/sdk/demos/google/particles/index.html',
        'particles'),
@@ -72,7 +72,7 @@ class ToughWebglCasesPageSet(story.StorySet):
        'dynamic_cube_map'),
       # pylint: disable=line-too-long
       ('http://kenrussell.github.io/webgl-animometer/Animometer/tests/3d/webgl.html',
-       'ken_russell')
+       'animometer_webgl')
     ]
     for url, name in urls_list:
       self.AddStory(ToughWebglCasesPage(url, self, name))
