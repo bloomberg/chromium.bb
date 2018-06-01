@@ -3846,7 +3846,7 @@
 
   <!-- Platform verification UI -->
   <message name="IDS_PLATFORM_VERIFICATION_DIALOG_HEADLINE" desc="The label to describe what the dialog wants to confirm.">
-    <ph name="DOMAIN">$1<ex>example.com</ex></ph> wants to play protected content. Your device’s identity will be verified by Google.
+    <ph name="DOMAIN">$1<ex>example.com</ex></ph> wants your device's identity to be verified, by Google, to determine eligibility for enhanced playback of protected content.
   </message>
 
   <!-- First-run tutorial -->
