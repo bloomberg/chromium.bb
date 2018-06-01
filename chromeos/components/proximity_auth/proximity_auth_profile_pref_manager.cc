@@ -41,14 +41,8 @@ void ProximityAuthProfilePrefManager::RegisterPrefs(
   registry->RegisterIntegerPref(
       prefs::kEasyUnlockProximityThreshold, 1,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-
-  // TODO(tengs): For existing EasyUnlock users, we want to maintain their
-  // current behaviour and keep login enabled. However, for new users, we will
-  // disable login when setting up EasyUnlock.
-  // After a sufficient number of releases, we should make the default value
-  // false.
   registry->RegisterBooleanPref(
-      prefs::kProximityAuthIsChromeOSLoginEnabled, true,
+      prefs::kProximityAuthIsChromeOSLoginEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 

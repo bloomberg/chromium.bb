@@ -111,13 +111,13 @@ TEST_F(ProximityAuthProfilePrefManagerTest, ProximityThreshold) {
 
 TEST_F(ProximityAuthProfilePrefManagerTest, IsChromeOSLoginEnabled) {
   ProximityAuthProfilePrefManager pref_manager(&pref_service_);
-  EXPECT_TRUE(pref_manager.IsChromeOSLoginEnabled());
-
-  pref_manager.SetIsChromeOSLoginEnabled(false);
   EXPECT_FALSE(pref_manager.IsChromeOSLoginEnabled());
 
   pref_manager.SetIsChromeOSLoginEnabled(true);
   EXPECT_TRUE(pref_manager.IsChromeOSLoginEnabled());
+
+  pref_manager.SetIsChromeOSLoginEnabled(false);
+  EXPECT_FALSE(pref_manager.IsChromeOSLoginEnabled());
 }
 
 TEST_F(ProximityAuthProfilePrefManagerTest, SyncsToLocalPrefOnChange) {
