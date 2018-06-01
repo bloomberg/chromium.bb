@@ -19,7 +19,7 @@ using LocalSiteCharacteristicsNonRecordingDataStoreTest = ::testing::Test;
 TEST_F(LocalSiteCharacteristicsNonRecordingDataStoreTest, EndToEnd) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      features::kProactiveTabFreezeAndDiscard);
+      features::kSiteCharacteristicsDatabase);
   content::TestBrowserThreadBundle test_browser_thread_bundle;
   TestingProfile profile;
   const char kTestOrigin[] = "http://www.foo.com";
