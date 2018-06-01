@@ -90,6 +90,7 @@ class InProcessContextFactory : public ContextFactory,
   void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override {}
   void AddObserver(ContextFactoryObserver* observer) override;
   void RemoveObserver(ContextFactoryObserver* observer) override;
+  bool SyncTokensRequiredForDisplayCompositor() override;
   viz::FrameSinkManagerImpl* GetFrameSinkManager() override;
 
   SkMatrix44 GetOutputColorMatrix(Compositor* compositor) const;

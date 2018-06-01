@@ -53,10 +53,6 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
     // capture has issues capturing offscreen tabs whithout this. We should
     // remove this dependency. crbug.com/680196
     bool must_always_swap = false;
-
-    // True if sync points for resources are needed when swapping delegated
-    // frames.
-    bool delegated_sync_points_required = true;
   };
 
   // Constructor for GL-based and/or software resources.

@@ -949,6 +949,12 @@ void GpuProcessTransportFactory::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
+bool GpuProcessTransportFactory::SyncTokensRequiredForDisplayCompositor() {
+  // Display and DirectLayerTreeFrameSink share a GL context, so sync
+  // points aren't needed when passing resources between them.
+  return false;
+}
+
 viz::FrameSinkManagerImpl* GpuProcessTransportFactory::GetFrameSinkManager() {
   return BrowserMainLoop::GetInstance()->GetFrameSinkManager();
 }
