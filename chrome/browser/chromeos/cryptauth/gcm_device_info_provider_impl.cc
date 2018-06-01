@@ -46,6 +46,16 @@ const cryptauth::GcmDeviceInfo& GcmDeviceInfoProviderImpl::GetGcmDeviceInfo()
     // phones/tablets, but it must be set due to server API verification.
     gcm_device_info.set_device_display_diagonal_mils(0);
 
+    // Set all supported features.
+    gcm_device_info.add_supported_software_features(
+        cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT);
+    gcm_device_info.add_supported_software_features(
+        cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT);
+    gcm_device_info.add_supported_software_features(
+        cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT);
+    gcm_device_info.add_supported_software_features(
+        cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT);
+
     return gcm_device_info;
   }());
 

@@ -333,9 +333,9 @@ message GcmDeviceInfo {
   // A list of multi-device software features supported by the device.
   repeated SoftwareFeature supported_software_features = 411;
 
-  // A list of multi-device software features currently enabled (active) on the
-  // device.
-  repeated SoftwareFeature enabled_software_features = 412;
+  // Previously, field 412 referred to "enabled_software_features". However,
+  // this is not an intrinsic property of a device type, so this field has been
+  // removed.
 
   // The enrollment session id this is sent with
   optional bytes enrollment_session_id = 1000;
