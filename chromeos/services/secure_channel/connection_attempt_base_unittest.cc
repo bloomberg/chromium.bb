@@ -12,7 +12,6 @@
 #include "base/test/test_simple_task_runner.h"
 #include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/connection_medium.h"
-#include "chromeos/services/secure_channel/fake_authenticated_channel.h"
 #include "chromeos/services/secure_channel/fake_client_connection_parameters.h"
 #include "chromeos/services/secure_channel/fake_connect_to_device_operation.h"
 #include "chromeos/services/secure_channel/fake_connect_to_device_operation_factory.h"
@@ -20,6 +19,7 @@
 #include "chromeos/services/secure_channel/fake_connection_delegate.h"
 #include "chromeos/services/secure_channel/fake_pending_connection_request.h"
 #include "chromeos/services/secure_channel/pending_connection_request_delegate.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/fake_authenticated_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

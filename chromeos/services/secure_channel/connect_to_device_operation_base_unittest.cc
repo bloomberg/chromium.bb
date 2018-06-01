@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
-#include "chromeos/services/secure_channel/fake_authenticated_channel.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/fake_authenticated_channel.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

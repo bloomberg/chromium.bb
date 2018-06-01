@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_FAKE_AUTHENTICATED_CHANNEL_H_
-#define CHROMEOS_SERVICES_SECURE_CHANNEL_FAKE_AUTHENTICATED_CHANNEL_H_
+#ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_SHARED_FAKE_AUTHENTICATED_CHANNEL_H_
+#define CHROMEOS_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_SHARED_FAKE_AUTHENTICATED_CHANNEL_H_
 
 #include <string>
 #include <tuple>
@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "chromeos/services/secure_channel/authenticated_channel.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/authenticated_channel.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
 namespace chromeos {
@@ -87,4 +87,4 @@ class FakeAuthenticatedChannelObserver : public AuthenticatedChannel::Observer {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_SERVICES_SECURE_CHANNEL_FAKE_AUTHENTICATED_CHANNEL_H_
+#endif  // CHROMEOS_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_SHARED_FAKE_AUTHENTICATED_CHANNEL_H_

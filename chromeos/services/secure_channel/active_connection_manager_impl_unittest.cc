@@ -12,10 +12,10 @@
 #include "base/unguessable_token.h"
 #include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/fake_active_connection_manager.h"
-#include "chromeos/services/secure_channel/fake_authenticated_channel.h"
 #include "chromeos/services/secure_channel/fake_client_connection_parameters.h"
 #include "chromeos/services/secure_channel/fake_multiplexed_channel.h"
 #include "chromeos/services/secure_channel/multiplexed_channel_impl.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/fake_authenticated_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

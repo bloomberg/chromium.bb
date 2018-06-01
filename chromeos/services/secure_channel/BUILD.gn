@@ -10,8 +10,6 @@ static_library("secure_channel") {
     "active_connection_manager.h",
     "active_connection_manager_impl.cc",
     "active_connection_manager_impl.h",
-    "authenticated_channel.cc",
-    "authenticated_channel.h",
     "authenticated_channel_impl.cc",
     "authenticated_channel_impl.h",
     "ble_initiator_failure_type.h",
@@ -61,6 +59,7 @@ static_library("secure_channel") {
   deps = [
     "//base",
     "//chromeos/components/proximity_auth/logging",
+    "//chromeos/services/secure_channel/public/cpp/shared",
     "//chromeos/services/secure_channel/public/mojom",
     "//components/cryptauth",
   ]
@@ -72,8 +71,6 @@ static_library("test_support") {
   sources = [
     "fake_active_connection_manager.cc",
     "fake_active_connection_manager.h",
-    "fake_authenticated_channel.cc",
-    "fake_authenticated_channel.h",
     "fake_channel.cc",
     "fake_channel.h",
     "fake_client_connection_parameters.cc",
@@ -105,6 +102,7 @@ static_library("test_support") {
   deps = [
     ":secure_channel",
     "//base",
+    "//chromeos/services/secure_channel/public/cpp/shared",
     "//chromeos/services/secure_channel/public/mojom",
     "//components/cryptauth:cryptauth",
   ]
@@ -133,6 +131,8 @@ source_set("unit_tests") {
     ":secure_channel",
     ":test_support",
     "//base/test:test_support",
+    "//chromeos/services/secure_channel/public/cpp/shared",
+    "//chromeos/services/secure_channel/public/cpp/shared:test_support",
     "//chromeos/services/secure_channel/public/mojom",
     "//components/cryptauth:test_support",
     "//testing/gtest",
