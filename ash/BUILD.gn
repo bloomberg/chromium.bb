@@ -2244,7 +2244,6 @@ static_library("test_support_common") {
     "//services/ui/public/cpp",
     "//services/ui/public/cpp/input_devices",
     "//services/ui/public/interfaces",
-    "//services/ui/ws2:test_support",
     "//skia",
     "//testing/gtest",
     "//ui/accessibility",

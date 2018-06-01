@@ -13,7 +13,6 @@
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/config.h"
-#include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -1483,9 +1482,6 @@ TEST_F(ShelfLayoutManagerTest, ChangeShelfAlignmentDuringAppListDragging) {
 
 TEST_F(ShelfLayoutManagerTest,
        SwipingUpOnShelfInTabletModeForFullscreenAppList) {
-  // Animations triggered by immersive mode cause this test to fail.
-  ImmersiveFullscreenControllerTestApi::GlobalAnimationDisabler
-      animation_disabler;
   Shell* shell = Shell::Get();
   shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   Shelf* shelf = GetPrimaryShelf();
