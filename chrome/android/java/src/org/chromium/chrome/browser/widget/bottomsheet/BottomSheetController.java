@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.widget.bottomsheet;
 
 import android.app.Activity;
-import android.view.ViewGroup;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -28,11 +27,13 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.FadingBackgroundView.FadingViewObserver;
+import org.chromium.chrome.browser.widget.FadingBackgroundView.ScrimParams;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
-import org.chromium.ui.UiUtils;
 
+import java.util.HashSet;
 import java.util.PriorityQueue;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -46,6 +47,9 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
     /** The initial capacity for the priority queue handling pending content show requests. */
     private static final int INITIAL_QUEUE_CAPACITY = 1;
 
+    /** The parameters that controll how the scrim behaves while the sheet is open. */
+    private final ScrimParams mScrimParams;
+
     /** A handle to the {@link LayoutManager} to determine what state the browser is in. */
     private final LayoutManager mLayoutManager;
 
@@ -57,6 +61,9 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
 
     /** A queue for content that is waiting to be shown in the {@link BottomSheet}. */
     private PriorityQueue<BottomSheetContent> mContentQueue;
+
+    /** A set of contents that have requested to be shown, rather than just preloading. */
+    private Set<BottomSheetContent> mFullShowRequestedSet;
 
     /** Whether the controller is already processing a hide request for the tab. */
     private boolean mIsProcessingHideRequest;
@@ -87,19 +94,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
                 activity, mBottomSheet.findViewById(R.id.bottom_sheet_snackbar_container));
         mSnackbarManager.onStart();
         ApplicationStatus.registerStateListenerForActivity(this, activity);
-
-        // Handle interactions with the scrim.
-        fadingBackgroundView.addObserver(new FadingViewObserver() {
-            @Override
-            public void onFadingViewClick() {
-                if (!mBottomSheet.isSheetOpen()) return;
-                mBottomSheet.setSheetState(
-                        BottomSheet.SHEET_STATE_PEEK, true, StateChangeReason.TAP_SCRIM);
-            }
-
-            @Override
-            public void onFadingViewVisibilityChanged(boolean visible) {}
-        });
+        mFullShowRequestedSet = new HashSet<>();
 
         // Watch for navigation and tab switching that close the sheet.
         new TabModelSelectorTabObserver(tabModelSelector) {
@@ -164,38 +159,29 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
             }
         });
 
-        final BottomSheetObserver scrimAlphaSheetObserver = new EmptyBottomSheetObserver() {
+        FadingViewObserver scrimObserver = new FadingViewObserver() {
+            @Override
+            public void onFadingViewClick() {
+                if (!mBottomSheet.isSheetOpen()) return;
+                mBottomSheet.setSheetState(
+                        BottomSheet.SHEET_STATE_PEEK, true, StateChangeReason.TAP_SCRIM);
+            }
+
+            @Override
+            public void onFadingViewVisibilityChanged(boolean visible) {}
+        };
+        mScrimParams = new ScrimParams(mBottomSheet, false, true, 0, scrimObserver);
+
+        mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
+            @Override
+            public void onSheetOpened(@StateChangeReason int reason) {
+                fadingBackgroundView.showFadingOverlay(mScrimParams);
+                fadingBackgroundView.setViewAlpha(0);
+            }
+
             @Override
             public void onTransitionPeekToHalf(float transitionFraction) {
                 fadingBackgroundView.setViewAlpha(transitionFraction);
-            }
-        };
-
-        // Handles attaching the observer that controls the placement and visibility of the scrim.
-        mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
-            /**
-             * The index of the scrim in the view hierarchy prior to being moved for the bottom
-             * sheet.
-             */
-            private int mOriginalScrimIndexInParent;
-
-            @Override
-            public void onSheetOpened(@BottomSheet.StateChangeReason int reason) {
-                mBottomSheet.addObserver(scrimAlphaSheetObserver);
-                mOriginalScrimIndexInParent = UiUtils.getChildIndexInParent(fadingBackgroundView);
-                ViewGroup parent = (ViewGroup) fadingBackgroundView.getParent();
-                UiUtils.removeViewFromParent(fadingBackgroundView);
-                UiUtils.insertBefore(parent, fadingBackgroundView, mBottomSheet);
-            }
-
-            @Override
-            public void onSheetClosed(@BottomSheet.StateChangeReason int reason) {
-                mBottomSheet.removeObserver(scrimAlphaSheetObserver);
-                assert mOriginalScrimIndexInParent >= 0;
-                ViewGroup parent = (ViewGroup) fadingBackgroundView.getParent();
-                UiUtils.removeViewFromParent(fadingBackgroundView);
-                parent.addView(fadingBackgroundView, mOriginalScrimIndexInParent);
-                fadingBackgroundView.setViewAlpha(0);
             }
 
             @Override
@@ -282,6 +268,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
      */
     public boolean requestShowContent(BottomSheetContent content, boolean animate) {
         // If pre-load failed, do nothing. The content will automatically be queued.
+        mFullShowRequestedSet.add(content);
         if (!loadInternal(content)) return false;
         if (!mBottomSheet.isSheetOpen() && !isOtherUIObscuring()) {
             mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, animate);
@@ -326,6 +313,8 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
      * @param animate Whether the sheet should animate when hiding.
      */
     public void hideContent(BottomSheetContent content, boolean animate) {
+        mFullShowRequestedSet.remove(content);
+
         if (content != mBottomSheet.getCurrentSheetContent()) {
             mContentQueue.remove(content);
             return;
@@ -387,8 +376,11 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
             return;
         }
 
-        mBottomSheet.showContent(mContentQueue.poll());
-        mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+        BottomSheetContent nextContent = mContentQueue.poll();
+        mBottomSheet.showContent(nextContent);
+        if (mFullShowRequestedSet.contains(nextContent)) {
+            mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+        }
     }
 
     /**
@@ -396,10 +388,11 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
      */
     private void clearRequestsAndHide() {
         mContentQueue.clear();
+        mFullShowRequestedSet.clear();
         // TODO(mdjones): Replace usages of bottom sheet with a model in line with MVC.
         // TODO(mdjones): It would probably be useful to expose an observer method that notifies
         //                objects when all content requests are cleared.
-        hideContent(mBottomSheet.getCurrentSheetContent(), false);
+        hideContent(mBottomSheet.getCurrentSheetContent(), true);
         mWasShownForCurrentTab = false;
         mIsSuppressed = false;
     }

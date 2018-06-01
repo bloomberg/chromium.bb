@@ -22,7 +22,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.tab.Tab;
@@ -70,7 +69,8 @@ public class BottomSheetControllerTest {
                                    .findViewById(org.chromium.chrome.R.id.bottom_sheet);
             mBottomSheet.init(coordinator, activity);
 
-            FadingBackgroundView scrim = coordinator.findViewById(R.id.fading_focus_target);
+            FadingBackgroundView scrim =
+                    new FadingBackgroundView(mActivityTestRule.getActivity(), null, coordinator);
 
             mSheetController = new BottomSheetController(activity, activity.getTabModelSelector(),
                     activity.getCompositorViewHolder().getLayoutManager(), scrim,
