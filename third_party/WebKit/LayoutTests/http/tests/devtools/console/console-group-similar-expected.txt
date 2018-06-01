@@ -5,26 +5,38 @@ Tests that console correctly groups similar messages.
 ConsoleAPI log
 'evaluated command'
 "evaluated command"
-console-group-similar.js:19 Uncaught (in promise) undefined
-(anonymous) @ console-group-similar.js:19
+produce_reference_error
+VM:1 Uncaught ReferenceError: produce_reference_error is not defined
+    at <anonymous>:1:1
+(anonymous) @ VM:1
 ConsoleAPI log
 'evaluated command'
 "evaluated command"
-console-group-similar.js:19 Uncaught (in promise) undefined
-(anonymous) @ console-group-similar.js:19
+produce_reference_error
+VM:1 Uncaught ReferenceError: produce_reference_error is not defined
+    at <anonymous>:1:1
+(anonymous) @ VM:1
 ConsoleAPI log
 'evaluated command'
 "evaluated command"
-console-group-similar.js:19 Uncaught (in promise) undefined
-(anonymous) @ console-group-similar.js:19
+produce_reference_error
+VM:1 Uncaught ReferenceError: produce_reference_error is not defined
+    at <anonymous>:1:1
+(anonymous) @ VM:1
 ConsoleAPI log
 'evaluated command'
 "evaluated command"
-console-group-similar.js:19 Uncaught (in promise) undefined
-(anonymous) @ console-group-similar.js:19
+produce_reference_error
+VM:1 Uncaught ReferenceError: produce_reference_error is not defined
+    at <anonymous>:1:1
+(anonymous) @ VM:1
 ConsoleAPI log
 'evaluated command'
 "evaluated command"
+produce_reference_error
+VM:1 Uncaught ReferenceError: produce_reference_error is not defined
+    at <anonymous>:1:1
+(anonymous) @ VM:1
 
 
 Stop grouping messages:
@@ -34,32 +46,44 @@ Stop grouping messages:
 ConsoleAPI log
 'evaluated command'
 "evaluated command"
-console-group-similar.js:19 Uncaught (in promise) undefined
-(anonymous) @ console-group-similar.js:19
+produce_reference_error
+VM:1 Uncaught ReferenceError: produce_reference_error is not defined
+    at <anonymous>:1:1
+(anonymous) @ VM:1
 [Violation] Verbose-level violation
 [Violation] Error-level violation
 ConsoleAPI log
 'evaluated command'
 "evaluated command"
-console-group-similar.js:19 Uncaught (in promise) undefined
-(anonymous) @ console-group-similar.js:19
+produce_reference_error
+VM:1 Uncaught ReferenceError: produce_reference_error is not defined
+    at <anonymous>:1:1
+(anonymous) @ VM:1
 [Violation] Verbose-level violation
 [Violation] Error-level violation
 ConsoleAPI log
 'evaluated command'
 "evaluated command"
-console-group-similar.js:19 Uncaught (in promise) undefined
-(anonymous) @ console-group-similar.js:19
+produce_reference_error
+VM:1 Uncaught ReferenceError: produce_reference_error is not defined
+    at <anonymous>:1:1
+(anonymous) @ VM:1
 [Violation] Verbose-level violation
 [Violation] Error-level violation
 ConsoleAPI log
 'evaluated command'
 "evaluated command"
-console-group-similar.js:19 Uncaught (in promise) undefined
-(anonymous) @ console-group-similar.js:19
+produce_reference_error
+VM:1 Uncaught ReferenceError: produce_reference_error is not defined
+    at <anonymous>:1:1
+(anonymous) @ VM:1
 [Violation] Verbose-level violation
 [Violation] Error-level violation
 ConsoleAPI log
 'evaluated command'
 "evaluated command"
+produce_reference_error
+VM:1 Uncaught ReferenceError: produce_reference_error is not defined
+    at <anonymous>:1:1
+(anonymous) @ VM:1
 
