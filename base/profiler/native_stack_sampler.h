@@ -80,7 +80,7 @@ class NativeStackSampler {
 
   // Notifies the sampler that we've stopped recording the current
   // profile.
-  virtual void ProfileRecordingStopped(StackBuffer* stackbuffer) = 0;
+  virtual void ProfileRecordingStopped() = 0;
 
  protected:
   NativeStackSampler();

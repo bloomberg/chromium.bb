@@ -549,7 +549,7 @@ void StackSamplingProfiler::SamplingThread::RecordSample(
   if (collection->sample == collection->params.samples_per_burst - 1) {
     profile.profile_duration = Time::Now() - collection->profile_start_time +
                                collection->params.sampling_interval;
-    collection->native_sampler->ProfileRecordingStopped(stack_buffer_.get());
+    collection->native_sampler->ProfileRecordingStopped();
   }
 }
 

@@ -480,7 +480,7 @@ class NativeStackSamplerMac : public NativeStackSampler {
       std::vector<StackSamplingProfiler::Module>* modules) override;
   void RecordStackSample(StackBuffer* stack_buffer,
                          StackSamplingProfiler::Sample* sample) override;
-  void ProfileRecordingStopped(StackBuffer* stack_buffer) override;
+  void ProfileRecordingStopped() override;
 
  private:
   // Suspends the thread with |thread_port_|, copies its stack and resumes the
@@ -549,7 +549,7 @@ void NativeStackSamplerMac::RecordStackSample(
   SuspendThreadAndRecordStack(stack_buffer, sample);
 }
 
-void NativeStackSamplerMac::ProfileRecordingStopped(StackBuffer* stack_buffer) {
+void NativeStackSamplerMac::ProfileRecordingStopped() {
   current_modules_ = nullptr;
 }
 
