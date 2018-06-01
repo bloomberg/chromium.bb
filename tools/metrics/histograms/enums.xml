@@ -6947,6 +6947,7 @@ Called by update_net_error_codes.py.-->
   <int value="12" label="MIDI_SYSEX"/>
   <int value="13" label="SOUND"/>
   <int value="14" label="FRAMEBUST"/>
+  <int value="16" label="SENSORS"/>
 </enum>
 
 <enum name="ContentSettingMixedScriptAction">
