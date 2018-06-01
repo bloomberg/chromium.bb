@@ -76,8 +76,8 @@ void SetMockInstallPromptForTesting(
 scoped_refptr<extensions::CrxInstaller> CreateCrxInstaller(
     Profile* profile,
     const download::DownloadItem& download_item) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(profile)->
-      extension_service();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   CHECK(service);
 
   scoped_refptr<extensions::CrxInstaller> installer(
