@@ -36,19 +36,6 @@ LayoutUnit NGLineBoxFragmentBuilder::LineHeight() const {
   return metrics_.LineHeight().ClampNegativeToZero();
 }
 
-LayoutUnit NGLineBoxFragmentBuilder::ComputeBlockSize() const {
-  LayoutUnit block_size;
-  WritingMode writing_mode(node_.Style().GetWritingMode());
-
-  for (size_t i = 0; i < children_.size(); ++i) {
-    block_size = std::max(
-        block_size, offsets_[i].block_offset +
-                        NGFragment(writing_mode, *children_[i]).BlockSize());
-  }
-
-  return block_size;
-}
-
 const NGPhysicalFragment* NGLineBoxFragmentBuilder::Child::PhysicalFragment()
     const {
   return layout_result ? layout_result->PhysicalFragment().get()
