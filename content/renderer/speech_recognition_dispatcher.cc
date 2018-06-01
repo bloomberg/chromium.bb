@@ -215,11 +215,11 @@ void SpeechRecognitionSessionClientImpl::Ended() {
 }
 
 void SpeechRecognitionSessionClientImpl::ResultRetrieved(
-    const std::vector<SpeechRecognitionResult>& results) {
+    std::vector<mojom::SpeechRecognitionResultPtr> results) {
   size_t provisional_count =
       std::count_if(results.begin(), results.end(),
-                    [](const SpeechRecognitionResult& result) {
-                      return result.is_provisional;
+                    [](const mojom::SpeechRecognitionResultPtr& result) {
+                      return result->is_provisional;
                     });
 
   WebVector<WebSpeechRecognitionResult> provisional(provisional_count);
@@ -227,19 +227,19 @@ void SpeechRecognitionSessionClientImpl::ResultRetrieved(
                                               provisional_count);
 
   int provisional_index = 0, final_index = 0;
-  for (const SpeechRecognitionResult& result : results) {
+  for (const mojom::SpeechRecognitionResultPtr& result : results) {
     WebSpeechRecognitionResult* webkit_result =
-        result.is_provisional ? &provisional[provisional_index++]
-                              : &final[final_index++];
+        result->is_provisional ? &provisional[provisional_index++]
+                               : &final[final_index++];
 
-    const size_t num_hypotheses = result.hypotheses.size();
+    const size_t num_hypotheses = result->hypotheses.size();
     WebVector<WebString> transcripts(num_hypotheses);
     WebVector<float> confidences(num_hypotheses);
     for (size_t i = 0; i < num_hypotheses; ++i) {
-      transcripts[i] = WebString::FromUTF16(result.hypotheses[i].utterance);
-      confidences[i] = static_cast<float>(result.hypotheses[i].confidence);
+      transcripts[i] = WebString::FromUTF16(result->hypotheses[i]->utterance);
+      confidences[i] = static_cast<float>(result->hypotheses[i]->confidence);
     }
-    webkit_result->Assign(transcripts, confidences, !result.is_provisional);
+    webkit_result->Assign(transcripts, confidences, !result->is_provisional);
   }
 
   web_client_.DidReceiveResults(handle_, final, provisional);

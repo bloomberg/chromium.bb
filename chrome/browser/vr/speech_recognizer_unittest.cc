@@ -18,7 +18,7 @@
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/common/speech_recognition_error.mojom.h"
-#include "content/public/common/speech_recognition_result.h"
+#include "content/public/common/speech_recognition_result.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -154,12 +154,14 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
     listener->OnAudioStart(session_id_);
     listener->OnAudioEnd(session_id_);
 
-    content::SpeechRecognitionResult result;
-    result.hypotheses.push_back(
-        content::SpeechRecognitionHypothesis(base::ASCIIToUTF16(string), 1.0));
-    result.is_provisional = is_provisional;
-    content::SpeechRecognitionResults results;
-    results.push_back(result);
+    content::mojom::SpeechRecognitionResultPtr result =
+        content::mojom::SpeechRecognitionResult::New();
+    result->hypotheses.push_back(
+        content::mojom::SpeechRecognitionHypothesis::New(
+            base::ASCIIToUTF16(string), 1.0));
+    result->is_provisional = is_provisional;
+    std::vector<content::mojom::SpeechRecognitionResultPtr> results;
+    results.push_back(std::move(result));
 
     listener->OnRecognitionResults(session_id_, results);
   }

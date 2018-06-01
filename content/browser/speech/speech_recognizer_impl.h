@@ -15,7 +15,7 @@
 #include "content/browser/speech/speech_recognition_engine.h"
 #include "content/browser/speech/speech_recognizer.h"
 #include "content/public/common/speech_recognition_error.mojom.h"
-#include "content/public/common/speech_recognition_result.h"
+#include "content/public/common/speech_recognition_result.mojom.h"
 #include "media/base/audio_capturer_source.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -96,7 +96,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
 
     FSMEvent event;
     scoped_refptr<AudioChunk> audio_data;
-    SpeechRecognitionResults engine_results;
+    std::vector<mojom::SpeechRecognitionResultPtr> engine_results;
     mojom::SpeechRecognitionError engine_error;
   };
 
@@ -151,7 +151,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
 
   // SpeechRecognitionEngineDelegate methods.
   void OnSpeechRecognitionEngineResults(
-      const SpeechRecognitionResults& results) override;
+      const std::vector<mojom::SpeechRecognitionResultPtr>& results) override;
   void OnSpeechRecognitionEngineEndOfUtterance() override;
   void OnSpeechRecognitionEngineError(
       const mojom::SpeechRecognitionError& error) override;

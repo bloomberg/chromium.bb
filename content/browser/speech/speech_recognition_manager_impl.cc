@@ -31,7 +31,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/speech_recognition_error.mojom.h"
-#include "content/public/common/speech_recognition_result.h"
+#include "content/public/common/speech_recognition_result.mojom.h"
 #include "media/audio/audio_device_description.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -541,7 +541,8 @@ void SpeechRecognitionManagerImpl::OnAudioEnd(int session_id) {
 }
 
 void SpeechRecognitionManagerImpl::OnRecognitionResults(
-    int session_id, const SpeechRecognitionResults& results) {
+    int session_id,
+    const std::vector<mojom::SpeechRecognitionResultPtr>& results) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;

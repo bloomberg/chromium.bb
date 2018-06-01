@@ -30,7 +30,8 @@ class ShellSpeechRecognitionManagerDelegate
   void OnRecognitionEnd(int session_id) override;
   void OnRecognitionResults(
       int session_id,
-      const content::SpeechRecognitionResults& result) override;
+      const std::vector<content::mojom::SpeechRecognitionResultPtr>& result)
+      override;
   void OnRecognitionError(
       int session_id,
       const content::mojom::SpeechRecognitionError& error) override;

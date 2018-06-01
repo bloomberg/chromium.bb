@@ -306,9 +306,10 @@ void SpeechRecognizerImpl::OnCaptureError(const std::string& message) {
 }
 
 void SpeechRecognizerImpl::OnSpeechRecognitionEngineResults(
-    const SpeechRecognitionResults& results) {
+    const std::vector<mojom::SpeechRecognitionResultPtr>& results) {
   FSMEventArgs event_args(EVENT_ENGINE_RESULT);
-  event_args.engine_results = results;
+  for (auto& result : results)
+    event_args.engine_results.push_back(result.Clone());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&SpeechRecognizerImpl::DispatchEvent, this, event_args));
@@ -780,17 +781,19 @@ SpeechRecognizerImpl::FSMState SpeechRecognizerImpl::ProcessIntermediateResult(
 
 SpeechRecognizerImpl::FSMState
 SpeechRecognizerImpl::ProcessFinalResult(const FSMEventArgs& event_args) {
-  const SpeechRecognitionResults& results = event_args.engine_results;
-  SpeechRecognitionResults::const_iterator i = results.begin();
+  const std::vector<mojom::SpeechRecognitionResultPtr>& results =
+      event_args.engine_results;
+  std::vector<mojom::SpeechRecognitionResultPtr>::const_iterator i =
+      results.begin();
   bool provisional_results_pending = false;
   bool results_are_empty = true;
   for (; i != results.end(); ++i) {
-    const SpeechRecognitionResult& result = *i;
-    if (result.is_provisional) {
+    const mojom::SpeechRecognitionResultPtr& result = *i;
+    if (result->is_provisional) {
       DCHECK(provisional_results_);
       provisional_results_pending = true;
     } else if (results_are_empty) {
-      results_are_empty = result.hypotheses.empty();
+      results_are_empty = result->hypotheses.empty();
     }
   }
 
@@ -900,10 +903,14 @@ SpeechRecognizerImpl::FSMEventArgs::FSMEventArgs(FSMEvent event_value)
       engine_error(mojom::SpeechRecognitionErrorCode::kNone,
                    mojom::SpeechAudioErrorDetails::kNone) {}
 
-SpeechRecognizerImpl::FSMEventArgs::FSMEventArgs(const FSMEventArgs& other) =
-    default;
-
-SpeechRecognizerImpl::FSMEventArgs::~FSMEventArgs() {
+SpeechRecognizerImpl::FSMEventArgs::FSMEventArgs(const FSMEventArgs& other)
+    : event(other.event),
+      audio_data(other.audio_data),
+      engine_error(other.engine_error) {
+  for (auto& result : other.engine_results)
+    engine_results.push_back(result.Clone());
 }
+
+SpeechRecognizerImpl::FSMEventArgs::~FSMEventArgs() {}
 
 }  // namespace content

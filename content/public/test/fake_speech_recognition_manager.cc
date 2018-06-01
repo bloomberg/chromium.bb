@@ -12,7 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager_delegate.h"
-#include "content/public/common/speech_recognition_result.h"
+#include "content/public/common/speech_recognition_result.mojom.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -140,11 +140,12 @@ void FakeSpeechRecognitionManager::SetFakeRecognitionResult() {
 
   VLOG(1) << "Setting fake recognition result.";
   listener_->OnAudioEnd(session_id_);
-  SpeechRecognitionResult result;
-  result.hypotheses.push_back(SpeechRecognitionHypothesis(
+  mojom::SpeechRecognitionResultPtr result =
+      mojom::SpeechRecognitionResult::New();
+  result->hypotheses.push_back(mojom::SpeechRecognitionHypothesis::New(
       base::ASCIIToUTF16(kTestResult), 1.0));
-  SpeechRecognitionResults results;
-  results.push_back(result);
+  std::vector<mojom::SpeechRecognitionResultPtr> results;
+  results.push_back(std::move(result));
   listener_->OnRecognitionResults(session_id_, results);
   listener_->OnRecognitionEnd(session_id_);
   session_id_ = 0;

@@ -66,8 +66,9 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManager,
   void OnSoundEnd(int session_id) override {}
   void OnAudioEnd(int session_id) override {}
   void OnRecognitionEnd(int session_id) override {}
-  void OnRecognitionResults(int session_id,
-                            const SpeechRecognitionResults& result) override {}
+  void OnRecognitionResults(
+      int session_id,
+      const std::vector<mojom::SpeechRecognitionResultPtr>& result) override {}
   void OnRecognitionError(int session_id,
                           const mojom::SpeechRecognitionError& error) override {
   }

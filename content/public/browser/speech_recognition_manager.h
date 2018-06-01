@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "content/public/common/speech_recognition_result.h"
+#include "content/public/common/speech_recognition_result.mojom.h"
 
 namespace content {
 
