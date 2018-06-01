@@ -39,13 +39,12 @@ void OverlaySurfaceEmbedder::SetPrimarySurfaceId(
 
 void OverlaySurfaceEmbedder::UpdateLayerBounds() {
   // Update the size and position of the video to stretch on the entire window.
-  gfx::Size window_size = window_->GetBounds().size();
-  gfx::Rect window_bounds = gfx::Rect(gfx::Point(0, 0), window_size);
-  video_layer_->SetBounds(window_bounds);
-  video_layer_->SetSurfaceSize(window_size);
+  video_layer_->SetBounds(window_->GetVideoBounds());
+  video_layer_->SetSurfaceSize(window_->GetVideoBounds().size());
 
   // Update the size and position of controls.
-  controls_background_layer_->SetBounds(window_bounds);
+  controls_background_layer_->SetBounds(
+      gfx::Rect(gfx::Point(0, 0), window_->GetBounds().size()));
   close_controls_layer_->SetBounds(window_->GetCloseControlsBounds());
   play_pause_controls_layer_->SetBounds(window_->GetPlayPauseControlsBounds());
 }
