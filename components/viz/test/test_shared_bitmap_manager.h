@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/sequence_checker.h"
-#include "components/viz/common/resources/shared_bitmap_manager.h"
+#include "components/viz/service/display/shared_bitmap_manager.h"
 
 namespace base {
 class SharedMemory;

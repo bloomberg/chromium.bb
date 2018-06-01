@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_COMMON_RESOURCES_SHARED_BITMAP_MANAGER_H_
-#define COMPONENTS_VIZ_COMMON_RESOURCES_SHARED_BITMAP_MANAGER_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_SHARED_BITMAP_MANAGER_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_SHARED_BITMAP_MANAGER_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "mojo/public/cpp/system/buffer.h"
-#include "ui/gfx/geometry/size.h"
+
+namespace gfx {
+class Size;
+}
 
 namespace viz {
 
@@ -39,4 +42,4 @@ class SharedBitmapManager {
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_COMMON_RESOURCES_SHARED_BITMAP_MANAGER_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_SHARED_BITMAP_MANAGER_H_

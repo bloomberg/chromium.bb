@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_METADATA_H_
-#define COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_METADATA_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_RESOURCE_METADATA_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_RESOURCE_METADATA_H_
 
-#include "components/viz/common/viz_common_export.h"
+#include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
@@ -15,9 +15,9 @@
 
 namespace viz {
 
-// Metadata for a Resoource. It is used by SkiaRenderer to get resource metedata
-// from DisplayResourceProvider, and make a promise SkImage from it.
-struct VIZ_COMMON_EXPORT ResourceMetadata {
+// Metadata for a resource named by a ResourceId in DisplayResourceProvider.
+// Used to construct a promise SkImage for a ResourceId.
+struct VIZ_SERVICE_EXPORT ResourceMetadata {
   ResourceMetadata();
   ResourceMetadata(ResourceMetadata&& other);
   ~ResourceMetadata();
@@ -54,4 +54,4 @@ struct VIZ_COMMON_EXPORT ResourceMetadata {
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_METADATA_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_RESOURCE_METADATA_H_

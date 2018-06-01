@@ -19,13 +19,13 @@
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/resources/platform_color.h"
-#include "components/viz/common/resources/resource_fence.h"
 #include "components/viz/common/resources/resource_format_utils.h"
-#include "components/viz/common/resources/resource_metadata.h"
 #include "components/viz/common/skia_helper.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/renderer_utils.h"
+#include "components/viz/service/display/resource_fence.h"
+#include "components/viz/service/display/resource_metadata.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "skia/ext/opacity_filter_canvas.h"
@@ -63,8 +63,7 @@ namespace {
 
 bool IsTextureResource(DisplayResourceProvider* resource_provider,
                        ResourceId resource_id) {
-  return resource_provider->GetResourceType(resource_id) ==
-         ResourceType::kTexture;
+  return !resource_provider->IsResourceSoftwareBacked(resource_id);
 }
 
 }  // namespace

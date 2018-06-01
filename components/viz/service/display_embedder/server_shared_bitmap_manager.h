@@ -13,7 +13,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
-#include "components/viz/common/resources/shared_bitmap_manager.h"
+#include "components/viz/service/display/shared_bitmap_manager.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
