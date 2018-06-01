@@ -18,7 +18,6 @@ source_set("database") {
     "download_db_impl.h",
     "download_info.cc",
     "download_info.h",
-    "download_namespace.cc",
     "download_namespace.h",
     "in_progress/download_entry.cc",
     "in_progress/download_entry.h",
@@ -29,8 +28,6 @@ source_set("database") {
     "in_progress/in_progress_info.h",
     "in_progress/ukm_info.cc",
     "in_progress/ukm_info.h",
-    "switches.cc",
-    "switches.h",
   ]
 
   deps = [

@@ -299,16 +299,6 @@ void DownloadHistory::QueryCallback(std::unique_ptr<InfoVector> infos) {
   // ManagerGoingDown() may have happened before the history loaded.
   if (!notifier_.GetManager())
     return;
-
-  notifier_.GetManager()->OnHistoryQueryComplete(
-      base::BindOnce(&DownloadHistory::LoadHistoryDownloads,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(infos)));
-}
-
-void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(notifier_.GetManager());
-
   for (InfoVector::const_iterator it = infos->begin();
        it != infos->end(); ++it) {
     loading_id_ = history::ToContentDownloadId(it->id);

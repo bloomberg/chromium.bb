@@ -4,16 +4,10 @@
 
 #include "components/download/public/common/in_progress_download_manager.h"
 
-#include "base/command_line.h"
 #include "base/optional.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/download/database/download_db_entry.h"
-#include "components/download/database/download_db_impl.h"
-#include "components/download/database/download_namespace.h"
 #include "components/download/database/in_progress/in_progress_cache_impl.h"
-#include "components/download/database/switches.h"
-#include "components/download/internal/common/download_db_cache.h"
 #include "components/download/internal/common/resource_downloader.h"
 #include "components/download/public/common/download_file.h"
 #include "components/download/public/common/download_item_impl.h"
@@ -29,32 +23,6 @@
 namespace download {
 
 namespace {
-
-std::unique_ptr<DownloadItemImpl> CreateDownloadItemImpl(
-    DownloadItemImplDelegate* delegate,
-    const DownloadDBEntry entry) {
-  if (!entry.download_info)
-    return nullptr;
-
-  base::Optional<InProgressInfo> in_progress_info =
-      entry.download_info->in_progress_info;
-  if (!in_progress_info)
-    return nullptr;
-
-  return std::make_unique<DownloadItemImpl>(
-      delegate, entry.download_info->guid, entry.download_info->id,
-      in_progress_info->current_path, in_progress_info->target_path,
-      in_progress_info->url_chain, in_progress_info->referrer_url,
-      in_progress_info->site_url, in_progress_info->tab_url,
-      in_progress_info->tab_referrer_url, in_progress_info->mime_type,
-      in_progress_info->original_mime_type, in_progress_info->start_time,
-      in_progress_info->end_time, in_progress_info->etag,
-      in_progress_info->last_modified, in_progress_info->received_bytes,
-      in_progress_info->total_bytes, in_progress_info->hash,
-      in_progress_info->state, in_progress_info->danger_type,
-      in_progress_info->interrupt_reason, false, base::Time(),
-      in_progress_info->transient, in_progress_info->received_slices);
-}
 
 void OnUrlDownloadHandlerCreated(
     UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader,
@@ -269,26 +237,14 @@ void InProgressDownloadManager::InterceptDownloadFromNavigation(
 void InProgressDownloadManager::Initialize(
     const base::FilePath& metadata_cache_dir,
     base::OnceClosure callback) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDownloadDB)) {
-    // TODO(qinmin): migrate all the data from InProgressCache into
-    // |download_db_|.
-    download_db_cache_ =
-        std::make_unique<DownloadDBCache>(std::make_unique<DownloadDBImpl>(
-            DownloadNamespace::NAMESPACE_BROWSER_DOWNLOAD, metadata_cache_dir));
-    download_db_cache_->Initialize(
-        base::BindOnce(&InProgressDownloadManager::OnDownloadDBInitialized,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
-  } else {
-    download_metadata_cache_ = std::make_unique<InProgressCacheImpl>(
-        metadata_cache_dir.empty()
-            ? base::FilePath()
-            : metadata_cache_dir.Append(kDownloadMetadataStoreFilename),
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND,
-             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
-    download_metadata_cache_->Initialize(std::move(callback));
-  }
+  download_metadata_cache_ = std::make_unique<InProgressCacheImpl>(
+      metadata_cache_dir.empty() ? base::FilePath() :
+          metadata_cache_dir.Append(kDownloadMetadataStoreFilename),
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
+
+  download_metadata_cache_->Initialize(std::move(callback));
 }
 
 void InProgressDownloadManager::ShutDown() {
@@ -302,20 +258,13 @@ void InProgressDownloadManager::ResumeInterruptedDownload(
 
 base::Optional<DownloadEntry> InProgressDownloadManager::GetInProgressEntry(
     DownloadItemImpl* download) {
-  if (!download || !download_metadata_cache_ || !download_db_cache_)
+  if (!download || !download_metadata_cache_)
     return base::Optional<DownloadEntry>();
 
-  if (download_metadata_cache_)
-    return download_metadata_cache_->RetrieveEntry(download->GetGuid());
-
-  return CreateDownloadEntryFromDownloadDBEntry(
-      download_db_cache_->RetrieveEntry(download->GetGuid()));
+  return download_metadata_cache_->RetrieveEntry(download->GetGuid());
 }
 
 void InProgressDownloadManager::ReportBytesWasted(DownloadItemImpl* download) {
-  if (download_db_cache_)
-    download_db_cache_->OnDownloadUpdated(download);
-
   if (!download_metadata_cache_)
     return;
   base::Optional<DownloadEntry> entry_opt =
@@ -413,23 +362,14 @@ void InProgressDownloadManager::StartDownloadWithId(
     }
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDownloadDB)) {
-    download_db_cache_->AddOrReplaceEntry(CreateDownloadDBEntryFromItem(
-        *download, info->download_source, info->fetch_error_body,
-        info->request_headers));
-    download->RemoveObserver(download_db_cache_.get());
-    download->AddObserver(download_db_cache_.get());
-  } else {
-    if (!in_progress_download_observer_) {
-      in_progress_download_observer_ =
-          std::make_unique<InProgressDownloadObserver>(
-              download_metadata_cache_.get());
-    }
-    // May already observe this item, remove observer first.
-    download->RemoveObserver(in_progress_download_observer_.get());
-    download->AddObserver(in_progress_download_observer_.get());
+  if (!in_progress_download_observer_) {
+    in_progress_download_observer_ =
+        std::make_unique<InProgressDownloadObserver>(
+            download_metadata_cache_.get());
   }
+  // May already observe this item, remove observer first.
+  download->RemoveObserver(in_progress_download_observer_.get());
+  download->AddObserver(in_progress_download_observer_.get());
 
   std::unique_ptr<DownloadFile> download_file;
   if (info->result == DOWNLOAD_INTERRUPT_REASON_NONE) {
@@ -457,16 +397,6 @@ void InProgressDownloadManager::StartDownloadWithId(
 
   if (!on_started.is_null())
     on_started.Run(download, DOWNLOAD_INTERRUPT_REASON_NONE);
-}
-
-void InProgressDownloadManager::OnDownloadDBInitialized(
-    base::OnceClosure callback,
-    std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
-  for (const auto& entry : *entries)
-    in_progress_downloads_.emplace_back(CreateDownloadItemImpl(this, entry));
-  // TODO(qinmin): merge the created DownloadItemImpls with those in
-  // DownloadManagerImpl.
-  std::move(callback).Run();
 }
 
 }  // namespace download

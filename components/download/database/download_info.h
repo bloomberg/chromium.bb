@@ -25,10 +25,6 @@ struct DownloadInfo {
   // Download GUID.
   std::string guid;
 
-  // Download ID.
-  // Deprecated, only kept for the purpose of download extension API.
-  int id;
-
   // UKM information for reporting.
   base::Optional<UkmInfo> ukm_info;
 
