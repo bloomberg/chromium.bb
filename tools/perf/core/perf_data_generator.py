@@ -31,8 +31,6 @@ from telemetry import decorators
 
 from py_utils import discover
 
-from core.sharding_map_generator import load_benchmark_sharding_map
-
 
 _UNSCHEDULED_TELEMETRY_BENCHMARKS = set([
   'experimental.startup.android.coldish',
@@ -1312,6 +1310,35 @@ def get_new_recipe_testers(testers, tests):
     tests[tester] = {
       'isolated_scripts': sorted(isolated_scripts, key=lambda x: x['name'])
     }
+
+
+def get_sharding_map_path():
+  return os.path.join(
+      path_util.GetChromiumSrcDir(), 'tools', 'perf', 'core',
+      'benchmark_sharding_map.json')
+
+
+def load_benchmark_sharding_map():
+  with open(get_sharding_map_path()) as f:
+    raw = json.load(f)
+
+  # The raw json format is easy for people to modify, but isn't what we want
+  # here. Change it to map builder -> benchmark -> device.
+  final_map = {}
+  for builder, builder_map in raw.items():
+    if builder == 'all_benchmarks':
+      continue
+
+    # Ignore comment at the top of the builder_map
+    if builder == "comment":
+      continue
+    final_builder_map = {}
+    for device, device_value in builder_map.items():
+      for benchmark_name in device_value['benchmarks']:
+        final_builder_map[benchmark_name] = device
+    final_map[builder] = final_builder_map
+
+  return final_map
 
 
 def main(args):
