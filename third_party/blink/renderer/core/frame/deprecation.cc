@@ -551,10 +551,10 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               kChromeLoadTimesNextHopProtocol};
 
     case WebFeature::kDataUriHasOctothorpe:
-      return {"DataUriHasOctothorpe", kM68,
+      return {"DataUriHasOctothorpe", kM71,
               ReplacedWillBeRemoved(
                   "Using unescaped '#' characters in a data URI body", "'%23'",
-                  kM68, "5656049583390720")};
+                  kM71, "5656049583390720")};
 
     case WebFeature::kImageInputTypeFormDataWithNonEmptyValue:
       return {"ImageInputTypeFormDataWithNonEmptyValue", kM68,
