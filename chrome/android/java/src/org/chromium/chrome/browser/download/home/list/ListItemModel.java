@@ -10,12 +10,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A simple {@link ListObservable} that acts as a backing store for the output of
- * {@link DateOrderedListMutator}.  This will be updated in the near future to support large batch
- * updates to minimize the hit on {@link ListObserver}s.
+ * This model represents the data required to build a list UI around a set of {@link ListItem}s.
+ * This includes (1) a {@link ListObservable} implementation and (2) exposing a
+ * {@link ListPropertyModel} for shared item properties and general list information.
  */
 class ListItemModel extends BatchListObservable {
     private final List<ListItem> mItems = new ArrayList<>();
+    private final ListPropertyModel mListProperties = new ListPropertyModel();
+
+    /**
+     * @return A {@link ListPropertyModel} instance, which is a set of shared properties for the
+     *         list.
+     */
+    public ListPropertyModel getProperties() {
+        return mListProperties;
+    }
 
     /** Adds {@code item} to this list at {@code index}. */
     public void addItem(int index, ListItem item) {

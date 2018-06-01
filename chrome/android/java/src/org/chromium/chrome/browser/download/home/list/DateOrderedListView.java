@@ -15,6 +15,7 @@ import android.support.v7.widget.RecyclerView.State;
 import android.view.View;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
 
 /**
@@ -38,11 +39,10 @@ class DateOrderedListView {
         mImagePaddingPx = context.getResources().getDimensionPixelOffset(
                 R.dimen.download_manager_image_padding);
 
-        DateOrderedListViewBinder viewBinder = new DateOrderedListViewBinder();
-        DateOrderedListViewAdapter adapter = new DateOrderedListViewAdapter(mModel, viewBinder);
+        DateOrderedListViewBinder listViewBinder = new DateOrderedListViewBinder();
+        DateOrderedListViewAdapter adapter = new DateOrderedListViewAdapter(mModel, listViewBinder);
         RecyclerViewModelChangeProcessor<DecoratedListItemModel, ListItemViewHolder>
                 modelChangeProcessor = new RecyclerViewModelChangeProcessor<>(adapter);
-
         mModel.addObserver(modelChangeProcessor);
 
         mView = new RecyclerView(context);
@@ -51,6 +51,10 @@ class DateOrderedListView {
         mView.getItemAnimator().setMoveDuration(0);
         mView.setLayoutManager(new GridLayoutManagerImpl(context));
         mView.addItemDecoration(new ItemDecorationImpl());
+
+        ListPropertyViewBinder propertyViewBinder = new ListPropertyViewBinder();
+        mModel.getProperties().addObserver(new PropertyModelChangeProcessor<>(
+                mModel.getProperties(), mView, propertyViewBinder));
 
         // Do the final hook up to the underlying data adapter.
         mView.setAdapter(adapter);

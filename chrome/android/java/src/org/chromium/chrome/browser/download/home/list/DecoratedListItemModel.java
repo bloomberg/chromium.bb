@@ -8,21 +8,24 @@ import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
 
+/** A wrapper class that adds decoration {@link ListItem}s to a {@link ListItemModel}. */
 class DecoratedListItemModel extends ListObservable implements ListObserver {
     private final ListItemModel mModel;
 
     private ViewListItem mHeaderItem;
 
-    /** */
+    /** Creates a {@link DecoratedListItemModel} instance that wraos {@code model}. */
     public DecoratedListItemModel(ListItemModel model) {
         mModel = model;
         mModel.addObserver(this);
     }
 
-    /**
-     *
-     * @param item
-     */
+    /** @see ListItemModel#getProperties() */
+    public ListPropertyModel getProperties() {
+        return mModel.getProperties();
+    }
+
+    /** Adds {@code item} as a header for the list.  Clears the header if it is {@code null}. */
     public void setHeader(ViewListItem item) {
         if (mHeaderItem == item) return;
 
@@ -38,11 +41,7 @@ class DecoratedListItemModel extends ListObservable implements ListObserver {
         }
     }
 
-    /**
-     *
-     * @param index
-     * @return
-     */
+    /** @see ListItemModel#getItemAt(int) */
     public ListItem getItemAt(int index) {
         if (index == 0 && mHeaderItem != null) return mHeaderItem;
         return mModel.getItemAt(convertIndexForSource(index));
