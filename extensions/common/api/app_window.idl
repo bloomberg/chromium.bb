@@ -136,11 +136,11 @@ namespace app.window {
   enum State { normal, fullscreen, maximized, minimized };
 
   // Specifies the type of window to create.
-  enum WindowType { 
+  enum WindowType {
     // Default window type.
     shell,
-    // OS managed window (Chrome OS only).
-    panel 
+    // OS managed window (Deprecated).
+    panel
   };
 
   [noinline_doc] dictionary CreateWindowOptions {
@@ -217,7 +217,7 @@ namespace app.window {
     [deprecated="Use innerBounds or outerBounds."] long? maxHeight;
 
     // Type of window to create.
-    WindowType? type;
+    [deprecated="All app windows use the 'shell' window type"] WindowType? type;
 
     // Creates a special ime window. This window is not focusable and can be
     // stacked above virtual keyboard window. This is restriced to component ime
