@@ -26,16 +26,19 @@ cr.define('settings', function() {
   class SmbBrowserProxy {
     /**
      * Attempts to mount an Smb filesystem with the provided url.
-     * @param {string} smbUrl
+     * @param {string} smbUrl File Share URL.
+     * @param {string} smbName Display name for the File Share.
+     * @param {string} username
+     * @param {string} password
      */
-    smbMount(smbUrl, username, password) {}
+    smbMount(smbUrl, smbName, username, password) {}
   }
 
   /** @implements {settings.SmbBrowserProxy} */
   class SmbBrowserProxyImpl {
     /** @override */
-    smbMount(smbUrl, username, password) {
-      chrome.send('smbMount', [smbUrl, username, password]);
+    smbMount(smbUrl, smbName, username, password) {
+      chrome.send('smbMount', [smbUrl, smbName, username, password]);
     }
   }
 
