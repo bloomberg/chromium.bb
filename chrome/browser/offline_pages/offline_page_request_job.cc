@@ -150,7 +150,8 @@ bool OfflinePageRequestJob::CopyFragmentOnRedirect(const GURL& location) const {
 }
 
 bool OfflinePageRequestJob::GetMimeType(std::string* mime_type) const {
-  if (request_handler_->IsServingOfflinePage()) {
+  if (request_handler_->IsServingOfflinePage() &&
+      request()->status().is_success()) {
     *mime_type = "multipart/related";
     return true;
   }
@@ -186,6 +187,9 @@ void OfflinePageRequestJob::NotifyReadRawDataComplete(int bytes_read) {
 
 void OfflinePageRequestJob::SetOfflinePageNavigationUIData(
     bool is_offline_page) {
+  // This method should be called before the response data is received.
+  DCHECK(!has_response_started());
+
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request());
   ChromeNavigationUIData* navigation_data =

@@ -395,8 +395,13 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* frame,
       bool is_navigation,
       network::mojom::URLLoaderFactoryRequest* factory_request) override;
+  std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
+  WillCreateURLLoaderRequestInterceptors(
+      content::NavigationUIData* navigation_ui_data,
+      int frame_tree_node_id) override;
   void WillCreateWebSocket(content::RenderFrameHost* frame,
                            network::mojom::WebSocketRequest* request) override;
+
   network::mojom::NetworkContextPtr CreateNetworkContext(
       content::BrowserContext* context,
       bool in_memory,
