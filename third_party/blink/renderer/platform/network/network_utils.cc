@@ -10,6 +10,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request_data_job.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/platform/url_conversion.h"
@@ -125,6 +126,13 @@ bool IsCertificateTransparencyRequiredError(int error_code) {
 
 bool IsLegacySymantecCertError(int error_code) {
   return error_code == net::ERR_CERT_SYMANTEC_LEGACY;
+}
+
+String GenerateAcceptLanguageHeader(const String& lang) {
+  CString cstring(lang.Utf8());
+  std::string string(cstring.data(), cstring.length());
+  return WebString::FromUTF8(
+      net::HttpUtil::GenerateAcceptLanguageHeader(string));
 }
 
 }  // NetworkUtils

@@ -393,8 +393,9 @@ void EmulationHandler::ApplyOverrides(net::HttpRequestHeaders* headers) {
   if (!user_agent_.empty())
     headers->SetHeader(net::HttpRequestHeaders::kUserAgent, user_agent_);
   if (!accept_language_.empty()) {
-    headers->SetHeader(net::HttpRequestHeaders::kAcceptLanguage,
-                       accept_language_);
+    headers->SetHeader(
+        net::HttpRequestHeaders::kAcceptLanguage,
+        net::HttpUtil::GenerateAcceptLanguageHeader(accept_language_));
   }
 }
 

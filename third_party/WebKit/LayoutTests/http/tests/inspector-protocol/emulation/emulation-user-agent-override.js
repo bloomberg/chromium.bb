@@ -7,7 +7,7 @@
   await printHeader('User-Agent');
 
   // Accept Language
-  await dp.Emulation.setUserAgentOverride({userAgent: '', acceptLanguage: 'en-uk,en'});
+  await dp.Emulation.setUserAgentOverride({userAgent: '', acceptLanguage: 'ko, en, zh-CN, zh-HK, en-US, en-GB'});
   testRunner.log('navigator.language == ' + await session.evaluate('navigator.language'));
   await printHeader('Accept-Language');
 

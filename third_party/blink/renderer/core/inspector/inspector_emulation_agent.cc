@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/scheduler/util/thread_cpu_throttler.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -381,8 +382,10 @@ void InspectorEmulationAgent::WillSendRequest(
                     &accept_lang_override);
   if (!accept_lang_override.IsEmpty() &&
       request.HttpHeaderField("Accept-Language").IsEmpty()) {
-    request.SetHTTPHeaderField("Accept-Language",
-                               AtomicString(accept_lang_override));
+    request.SetHTTPHeaderField(
+        "Accept-Language",
+        AtomicString(
+            NetworkUtils::GenerateAcceptLanguageHeader(accept_lang_override)));
   }
 }
 
