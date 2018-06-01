@@ -55,6 +55,9 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override;
+
   // Called by tests.
   const std::vector<CastDialogSinkButton*>& sink_buttons_for_test() const {
     return sink_buttons_;
