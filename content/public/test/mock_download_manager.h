@@ -168,6 +168,9 @@ class MockDownloadManager : public DownloadManager {
   MOCK_METHOD0(CheckForHistoryFilesRemoval, void());
   MOCK_METHOD1(GetDownload, download::DownloadItem*(uint32_t id));
   MOCK_METHOD1(GetDownloadByGuid, download::DownloadItem*(const std::string&));
+
+  void OnHistoryQueryComplete(
+      base::OnceClosure load_history_downloads_cb) override;
 };
 
 }  // namespace content

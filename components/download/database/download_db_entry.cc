@@ -22,4 +22,8 @@ std::string DownloadDBEntry::GetGuid() const {
   return download_info->guid;
 }
 
+bool DownloadDBEntry::operator!=(const DownloadDBEntry& other) const {
+  return !(*this == other);
+}
+
 }  // namespace download

@@ -128,6 +128,8 @@ class CONTENT_EXPORT DownloadManagerImpl
   int NonMaliciousInProgressCount() const override;
   BrowserContext* GetBrowserContext() const override;
   void CheckForHistoryFilesRemoval() override;
+  void OnHistoryQueryComplete(
+      base::OnceClosure load_history_downloads_cb) override;
   download::DownloadItem* GetDownload(uint32_t id) override;
   download::DownloadItem* GetDownloadByGuid(const std::string& guid) override;
 
@@ -313,6 +315,9 @@ class CONTENT_EXPORT DownloadManagerImpl
       url_download_handlers_;
 
   std::unique_ptr<download::InProgressDownloadManager> in_progress_manager_;
+
+  // Callback to run to load all history downloads.
+  base::OnceClosure load_history_downloads_cb_;
 
   base::WeakPtrFactory<DownloadManagerImpl> weak_factory_;
 

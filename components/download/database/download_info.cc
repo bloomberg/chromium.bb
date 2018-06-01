@@ -13,7 +13,7 @@ DownloadInfo::DownloadInfo(const DownloadInfo& other) = default;
 DownloadInfo::~DownloadInfo() = default;
 
 bool DownloadInfo::operator==(const DownloadInfo& other) const {
-  return guid == other.guid && ukm_info == other.ukm_info &&
+  return guid == other.guid && id == other.id && ukm_info == other.ukm_info &&
          in_progress_info == other.in_progress_info;
 }
 
