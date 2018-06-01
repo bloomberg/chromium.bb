@@ -4844,17 +4844,13 @@ static int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   return is_cost_valid;
 }
 
-static uint32_t get_block_residue_hash(MACROBLOCK *x, BLOCK_SIZE bsize) {
+static INLINE uint32_t get_block_residue_hash(MACROBLOCK *x, BLOCK_SIZE bsize) {
   const int rows = block_size_high[bsize];
   const int cols = block_size_wide[bsize];
-  const struct macroblock_plane *const p = &x->plane[0];
-  const int16_t *diff = &p->src_diff[0];
-  uint16_t hash_data[MAX_SB_SQUARE];
-  memcpy(hash_data, diff, sizeof(*hash_data) * rows * cols);
-  return (av1_get_crc32c_value(&x->mb_rd_record.crc_calculator,
-                               (uint8_t *)hash_data, 2 * rows * cols)
-          << 7) +
-         bsize;
+  const int16_t *diff = x->plane[0].src_diff;
+  const uint32_t hash = av1_get_crc32c_value(&x->mb_rd_record.crc_calculator,
+                                             (uint8_t *)diff, 2 * rows * cols);
+  return (hash << 5) + bsize;
 }
 
 static void save_tx_rd_info(int n4, uint32_t hash, const MACROBLOCK *const x,
