@@ -510,7 +510,7 @@ LayoutUnit LayoutFlexibleBox::ChildIntrinsicLogicalHeight(
   DCHECK(!HasOrthogonalFlow(child));
   if (NeedToStretchChildLogicalHeight(child)) {
     LayoutUnit child_intrinsic_content_logical_height;
-    if (!child.StyleRef().ContainsSize()) {
+    if (!child.ShouldApplySizeContainment()) {
       child_intrinsic_content_logical_height =
           child.IntrinsicContentLogicalHeight();
     }
@@ -866,7 +866,7 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
     return std::max(LayoutUnit(), ComputeMainAxisExtentForChild(
                                       child, kMainOrPreferredSize, flex_basis));
 
-  if (child.StyleRef().ContainsSize())
+  if (child.ShouldApplySizeContainment())
     return LayoutUnit();
 
   // The flex basis is indefinite (=auto), so we need to compute the actual
@@ -1094,7 +1094,7 @@ MinMaxSize LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
     // computeMainAxisExtentForChild can return -1 when the child has a
     // percentage min size, but we have an indefinite size in that axis.
     sizes.min_size = std::max(LayoutUnit(), sizes.min_size);
-  } else if (min.IsAuto() && !child.StyleRef().ContainsSize() &&
+  } else if (min.IsAuto() && !child.ShouldApplySizeContainment() &&
              MainAxisOverflowForChild(child) == EOverflow::kVisible &&
              !(IsColumnFlow() && child.IsFlexibleBox())) {
     // TODO(cbiesinger): For now, we do not handle min-height: auto for nested

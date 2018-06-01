@@ -135,7 +135,7 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
   MinMaxSize sizes;
 
   // Size-contained elements don't consider their contents for intrinsic sizing.
-  if (Style().ContainsSize())
+  if (node_.ShouldApplySizeContainment())
     return sizes;
 
   const TextDirection direction = Style().Direction();

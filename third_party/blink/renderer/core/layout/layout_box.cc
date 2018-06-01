@@ -2642,8 +2642,9 @@ static float GetMaxWidthListMarker(const LayoutBox* layout_object) {
 DISABLE_CFI_PERF
 void LayoutBox::ComputeLogicalWidth(
     LogicalExtentComputedValues& computed_values) const {
-  computed_values.extent_ =
-      Style()->ContainsSize() ? BorderAndPaddingLogicalWidth() : LogicalWidth();
+  computed_values.extent_ = ShouldApplySizeContainment()
+                                ? BorderAndPaddingLogicalWidth()
+                                : LogicalWidth();
   computed_values.position_ = LogicalLeft();
   computed_values.margins_.start_ = MarginStart();
   computed_values.margins_.end_ = MarginEnd();
@@ -3118,8 +3119,9 @@ static inline Length HeightForDocumentElement(const Document& document) {
 
 void LayoutBox::ComputeLogicalHeight(
     LogicalExtentComputedValues& computed_values) const {
-  LayoutUnit height = Style()->ContainsSize() ? BorderAndPaddingLogicalHeight()
-                                              : LogicalHeight();
+  LayoutUnit height = ShouldApplySizeContainment()
+                          ? BorderAndPaddingLogicalHeight()
+                          : LogicalHeight();
   ComputeLogicalHeight(height, LogicalTop(), computed_values);
 }
 

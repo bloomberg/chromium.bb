@@ -429,6 +429,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            (!IsTablePart() || IsLayoutBlockFlow());
   }
 
+  inline bool ShouldApplySizeContainment() const {
+    return StyleRef().ContainsSize() &&
+           (!IsInline() || IsAtomicInlineLevel()) && !IsRubyText() &&
+           (!IsTablePart() || IsTableCaption());
+  }
+
  private:
   //////////////////////////////////////////
   // Helper functions. Dangerous to use!

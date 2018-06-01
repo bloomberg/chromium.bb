@@ -1322,7 +1322,7 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
   // Size-contained elements don't consider their contents for preferred sizing.
-  if (Style()->ContainsSize())
+  if (ShouldApplySizeContainment())
     return;
 
   if (ChildrenInline()) {
@@ -1716,7 +1716,7 @@ bool LayoutBlock::UseLogicalBottomMarginEdgeForInlineBlockBaseline() const {
   // ancestors or siblings.
   return (!Style()->IsOverflowVisible() &&
           !ShouldIgnoreOverflowPropertyForInlineBlockBaseline()) ||
-         Style()->ContainsSize();
+         ShouldApplySizeContainment();
 }
 
 LayoutUnit LayoutBlock::InlineBlockBaseline(
