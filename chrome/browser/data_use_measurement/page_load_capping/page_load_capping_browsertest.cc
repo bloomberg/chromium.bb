@@ -23,7 +23,8 @@ class PageLoadCappingBrowserTest : public InProcessBrowserTest {
   PageLoadCappingBrowserTest() {}
 };
 
-IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest, PageLoadCappingBlocksLoads) {
+IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
+                       DISABLED_PageLoadCappingBlocksLoads) {
   net::EmbeddedTestServer https_test_server(
       net::EmbeddedTestServer::TYPE_HTTPS);
   // The main resource and the favicon should be fetched. Additionally, images
