@@ -82,17 +82,15 @@ class CONTENT_EXPORT AudioServiceListener
                            OnInitWithAudioService_ProcessIdNotNull);
   FRIEND_TEST_ALL_PREFIXES(AudioServiceListenerTest,
                            OnAudioServiceCreated_ProcessIdNotNull);
-  FRIEND_TEST_ALL_PREFIXES(AudioServiceListenerTest,
-                           OnAudioServiceStopped_ProcessIdNull);
   FRIEND_TEST_ALL_PREFIXES(
       AudioServiceListenerTest,
-      BrowserChildProcessHostDisconnected_LogProcessTerminationStatus);
+      AudioServiceProcessDisconnected_LogProcessTerminationStatus_ProcessIdNull);
   FRIEND_TEST_ALL_PREFIXES(
       AudioServiceListenerTest,
-      BrowserChildProcessCrashed_LogProcessTerminationStatus);
+      AudioServiceProcessCrashed_LogProcessTerminationStatus_ProcessIdNull);
   FRIEND_TEST_ALL_PREFIXES(
       AudioServiceListenerTest,
-      BrowserChildProcessKilled_LogProcessTerminationStatus);
+      AudioServiceProcessKilled_LogProcessTerminationStatus_ProcessIdNull);
   FRIEND_TEST_ALL_PREFIXES(AudioServiceListenerTest,
                            StartService_LogStartStatus);
 
@@ -118,7 +116,6 @@ class CONTENT_EXPORT AudioServiceListener
                                  const ChildProcessTerminationInfo& info) final;
 
   mojo::Binding<service_manager::mojom::ServiceManagerListener> binding_;
-  std::unique_ptr<service_manager::Connector> connector_;
   base::ProcessId process_id_ = base::kNullProcessId;
   Metrics metrics_;
   SEQUENCE_CHECKER(owning_sequence_);
