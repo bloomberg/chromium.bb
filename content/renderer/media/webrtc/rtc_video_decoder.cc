@@ -13,6 +13,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner_util.h"
+#include "build/build_config.h"
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/bind_to_current_loop.h"
@@ -157,14 +158,25 @@ int32_t RTCVideoDecoder::InitDecode(const webrtc::VideoCodec* codecSettings,
 }
 
 int32_t RTCVideoDecoder::Decode(
-    const webrtc::EncodedImage& inputImage,
-    bool missingFrames,
-    const webrtc::CodecSpecificInfo* /*codecSpecificInfo*/,
-    int64_t /*renderTimeMs*/) {
+    const webrtc::EncodedImage& input_image,
+    bool missing_frames,
+    const webrtc::CodecSpecificInfo* codec_specific_info,
+    int64_t render_time_ms) {
   DVLOG(3) << "Decode";
+  DCHECK(!codec_specific_info ||
+         video_codec_type_ == codec_specific_info->codecType);
+
+#if defined(OS_WIN)
+  // Hardware VP9 decoders don't handle more than one spatial layer. Fall back
+  // to software decoding. See https://crbug.com/webrtc/9304.
+  if (video_codec_type_ == webrtc::kVideoCodecVP9 && codec_specific_info &&
+      codec_specific_info->codecSpecific.VP9.ss_data_available &&
+      codec_specific_info->codecSpecific.VP9.num_spatial_layers > 1) {
+    return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
+  }
+#endif  // defined(OS_WIN)
 
   base::AutoLock auto_lock(lock_);
-
   if (state_ == UNINITIALIZED || !decode_complete_callback_) {
     LOG(ERROR) << "The decoder has not initialized.";
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
@@ -180,7 +192,7 @@ int32_t RTCVideoDecoder::Decode(
     return WEBRTC_VIDEO_CODEC_ERROR;
   }
 
-  if (missingFrames || !inputImage._completeFrame) {
+  if (missing_frames || !input_image._completeFrame) {
     DLOG(ERROR) << "Missing or incomplete frames.";
     // Unlike the SW decoder in libvpx, hw decoder cannot handle broken frames.
     // Return an error to request a key frame.
@@ -198,8 +210,8 @@ int32_t RTCVideoDecoder::Decode(
 #endif
 
   bool need_to_reset_for_midstream_resize = false;
-  const gfx::Size new_frame_size(inputImage._encodedWidth,
-                                 inputImage._encodedHeight);
+  const gfx::Size new_frame_size(input_image._encodedWidth,
+                                 input_image._encodedHeight);
   if (!new_frame_size.IsEmpty() && new_frame_size != frame_size_) {
     DVLOG(2) << "Got new size=" << new_frame_size.ToString();
 
@@ -230,10 +242,8 @@ int32_t RTCVideoDecoder::Decode(
   }
 
   // Create buffer metadata.
-  BufferData buffer_data(next_bitstream_buffer_id_,
-                         inputImage._timeStamp,
-                         inputImage._length,
-                         gfx::Rect(frame_size_));
+  BufferData buffer_data(next_bitstream_buffer_id_, input_image._timeStamp,
+                         input_image._length, gfx::Rect(frame_size_));
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & ID_LAST;
 
@@ -242,9 +252,9 @@ int32_t RTCVideoDecoder::Decode(
   // immediately. Otherwise, save the buffer in the queue for later decode.
   std::unique_ptr<base::SharedMemory> shm_buffer;
   if (!need_to_reset_for_midstream_resize && pending_buffers_.empty())
-    shm_buffer = GetSHM_Locked(inputImage._length);
+    shm_buffer = GetSHM_Locked(input_image._length);
   if (!shm_buffer) {
-    if (!SaveToPendingBuffers_Locked(inputImage, buffer_data)) {
+    if (!SaveToPendingBuffers_Locked(input_image, buffer_data)) {
       // We have exceeded the pending buffers count, we are severely behind.
       // Since we are returning ERROR, WebRTC will not be interested in the
       // remaining buffers, and will provide us with a new keyframe instead.
@@ -263,7 +273,7 @@ int32_t RTCVideoDecoder::Decode(
     return WEBRTC_VIDEO_CODEC_OK;
   }
 
-  SaveToDecodeBuffers_Locked(inputImage, std::move(shm_buffer), buffer_data);
+  SaveToDecodeBuffers_Locked(input_image, std::move(shm_buffer), buffer_data);
   factories_->GetTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&RTCVideoDecoder::RequestBufferDecode,
                                 weak_factory_.GetWeakPtr()));
