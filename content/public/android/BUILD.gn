@@ -31,6 +31,24 @@ android_resources("content_java_resources") {
   resource_dirs = [ "java/res" ]
 }
 
+action("generate_sandboxed_service_srcjar") {
+  script = "//content/public/android/generate_child_service.py"
+  depfile = "$target_gen_dir/$target_name.d"
+
+  _srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
+  _rebased_srcjar_path = rebase_path(_srcjar_path, root_build_dir)
+
+  args = [
+    "--depfile",
+    rebase_path(depfile, root_build_dir),
+    "20",
+    _rebased_srcjar_path,
+  ]
+  outputs = [
+    _srcjar_path,
+  ]
+}
+
 android_library("content_java") {
   deps = [
     ":content_java_resources",
@@ -67,6 +85,7 @@ android_library("content_java") {
 
   srcjar_deps = [
     ":common_aidl",
+    ":generate_sandboxed_service_srcjar",
     ":is_ready_to_pay_service_aidl",
     ":content_public_android_java_enums_srcjar",
     "//content/browser/accessibility:content_browser_accessibility_java_enums_srcjar",
@@ -85,26 +104,6 @@ android_library("content_java") {
     "java/src/org/chromium/content/app/PrivilegedProcessService1.java",
     "java/src/org/chromium/content/app/PrivilegedProcessService2.java",
     "java/src/org/chromium/content/app/SandboxedProcessService.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService0.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService1.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService10.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService11.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService12.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService13.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService14.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService15.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService16.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService17.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService18.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService19.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService2.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService3.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService4.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService5.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService6.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService7.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService8.java",
-    "java/src/org/chromium/content/app/SandboxedProcessService9.java",
     "java/src/org/chromium/content/browser/AppWebMessagePort.java",
     "java/src/org/chromium/content/browser/AudioFocusDelegate.java",
     "java/src/org/chromium/content/browser/BackgroundSyncNetworkObserver.java",
