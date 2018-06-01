@@ -124,7 +124,7 @@ void ApplyWindow(float* p, size_t n) {
   for (unsigned i = 0; i < n; ++i) {
     double x = static_cast<double>(i) / static_cast<double>(n);
     double window =
-        a0 - a1 * cos(twoPiDouble * x) + a2 * cos(twoPiDouble * 2.0 * x);
+        a0 - a1 * cos(kTwoPiDouble * x) + a2 * cos(kTwoPiDouble * 2.0 * x);
     p[i] *= float(window);
   }
 }

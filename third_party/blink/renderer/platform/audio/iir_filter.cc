@@ -135,7 +135,7 @@ void IIRFilter::GetFrequencyResponse(int n_frequencies,
       phase_response[k] = std::nanf("");
     } else {
       // zRecip = 1/z = exp(-j*frequency)
-      double omega = -piDouble * frequency[k];
+      double omega = -kPiDouble * frequency[k];
       std::complex<double> z_recip =
           std::complex<double>(cos(omega), sin(omega));
 

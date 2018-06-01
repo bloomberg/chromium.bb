@@ -117,14 +117,14 @@ void SincResampler::InitializeKernel() {
     for (int i = 0; i < n; ++i) {
       // Compute the sinc() with offset.
       double s =
-          sinc_scale_factor * piDouble * (i - half_size - subsample_offset);
+          sinc_scale_factor * kPiDouble * (i - half_size - subsample_offset);
       double sinc = !s ? 1.0 : std::sin(s) / s;
       sinc *= sinc_scale_factor;
 
       // Compute Blackman window, matching the offset of the sinc().
       double x = (i - subsample_offset) / n;
-      double window = a0 - a1 * std::cos(twoPiDouble * x) +
-                      a2 * std::cos(twoPiDouble * 2.0 * x);
+      double window = a0 - a1 * std::cos(kTwoPiDouble * x) +
+                      a2 * std::cos(kTwoPiDouble * 2.0 * x);
 
       // Window the sinc() function and store at the correct offset.
       kernel_storage_[i + offset_index * kernel_size_] = sinc * window;

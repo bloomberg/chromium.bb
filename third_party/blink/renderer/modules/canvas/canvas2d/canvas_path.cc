@@ -154,10 +154,10 @@ float AdjustEndAngle(float start_angle, float end_angle, bool anticlockwise) {
    * from the ellipse's semi-major axis, acts as both the start point and the
    * end point.
    */
-  if (!anticlockwise && end_angle - start_angle >= twoPiFloat) {
-    new_end_angle = start_angle + twoPiFloat;
-  } else if (anticlockwise && start_angle - end_angle >= twoPiFloat) {
-    new_end_angle = start_angle - twoPiFloat;
+  if (!anticlockwise && end_angle - start_angle >= kTwoPiFloat) {
+    new_end_angle = start_angle + kTwoPiFloat;
+  } else if (anticlockwise && start_angle - end_angle >= kTwoPiFloat) {
+    new_end_angle = start_angle - kTwoPiFloat;
 
     /*
      * Otherwise, the arc is the path along the circumference of this ellipse
@@ -173,11 +173,11 @@ float AdjustEndAngle(float start_angle, float end_angle, bool anticlockwise) {
      * We preserve backward-compatibility.
      */
   } else if (!anticlockwise && start_angle > end_angle) {
-    new_end_angle =
-        start_angle + (twoPiFloat - fmodf(start_angle - end_angle, twoPiFloat));
+    new_end_angle = start_angle +
+                    (kTwoPiFloat - fmodf(start_angle - end_angle, kTwoPiFloat));
   } else if (anticlockwise && start_angle < end_angle) {
-    new_end_angle =
-        start_angle - (twoPiFloat - fmodf(end_angle - start_angle, twoPiFloat));
+    new_end_angle = start_angle -
+                    (kTwoPiFloat - fmodf(end_angle - start_angle, kTwoPiFloat));
   }
 
   DCHECK(EllipseIsRenderable(start_angle, new_end_angle));
@@ -196,21 +196,22 @@ inline FloatPoint GetPointOnEllipse(float radius_x,
 
 void CanonicalizeAngle(float* start_angle, float* end_angle) {
   // Make 0 <= startAngle < 2*PI
-  float new_start_angle = fmodf(*start_angle, twoPiFloat);
+  float new_start_angle = fmodf(*start_angle, kTwoPiFloat);
 
   if (new_start_angle < 0) {
-    new_start_angle += twoPiFloat;
+    new_start_angle += kTwoPiFloat;
     // Check for possible catastrophic cancellation in cases where
     // newStartAngle was a tiny negative number (c.f. crbug.com/503422)
-    if (new_start_angle >= twoPiFloat)
-      new_start_angle -= twoPiFloat;
+    if (new_start_angle >= kTwoPiFloat)
+      new_start_angle -= kTwoPiFloat;
   }
 
   float delta = new_start_angle - *start_angle;
   *start_angle = new_start_angle;
   *end_angle = *end_angle + delta;
 
-  DCHECK(new_start_angle >= 0 && new_start_angle < twoPiFloat);
+  DCHECK_GE(new_start_angle, 0);
+  DCHECK_LT(new_start_angle, kTwoPiFloat);
 }
 
 /*
@@ -256,7 +257,8 @@ void DegenerateEllipse(CanvasPath* path,
                        float end_angle,
                        bool anticlockwise) {
   DCHECK(EllipseIsRenderable(start_angle, end_angle));
-  DCHECK(start_angle >= 0 && start_angle < twoPiFloat);
+  DCHECK_GE(start_angle, 0);
+  DCHECK_LT(start_angle, kTwoPiFloat);
   DCHECK((anticlockwise && (start_angle - end_angle) >= 0) ||
          (!anticlockwise && (end_angle - start_angle) >= 0));
 
@@ -272,19 +274,19 @@ void DegenerateEllipse(CanvasPath* path,
     return;
 
   if (!anticlockwise) {
-    // startAngle - fmodf(startAngle, piOverTwoFloat) + piOverTwoFloat is the
-    // one of (0, 0.5Pi, Pi, 1.5Pi, 2Pi) that is the closest to startAngle on
-    // the clockwise direction.
-    for (float angle =
-             start_angle - fmodf(start_angle, piOverTwoFloat) + piOverTwoFloat;
-         angle < end_angle; angle += piOverTwoFloat) {
+    // start_angle - fmodf(start_angle, kPiOverTwoFloat) + kPiOverTwoFloat is
+    // the one of (0, 0.5Pi, Pi, 1.5Pi, 2Pi) that is the closest to start_angle
+    // on the clockwise direction.
+    for (float angle = start_angle - fmodf(start_angle, kPiOverTwoFloat) +
+                       kPiOverTwoFloat;
+         angle < end_angle; angle += kPiOverTwoFloat) {
       LineToFloatPoint(
           path, center + rotation_matrix.MapPoint(
                              GetPointOnEllipse(radius_x, radius_y, angle)));
     }
   } else {
-    for (float angle = start_angle - fmodf(start_angle, piOverTwoFloat);
-         angle > end_angle; angle -= piOverTwoFloat) {
+    for (float angle = start_angle - fmodf(start_angle, kPiOverTwoFloat);
+         angle > end_angle; angle -= kPiOverTwoFloat) {
       LineToFloatPoint(
           path, center + rotation_matrix.MapPoint(
                              GetPointOnEllipse(radius_x, radius_y, angle)));

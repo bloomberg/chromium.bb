@@ -101,8 +101,8 @@ void EqualPowerPanner::Pan(double azimuth,
     }
   }
 
-  desired_gain_l = std::cos(piOverTwoDouble * desired_pan_position);
-  desired_gain_r = std::sin(piOverTwoDouble * desired_pan_position);
+  desired_gain_l = std::cos(kPiOverTwoDouble * desired_pan_position);
+  desired_gain_r = std::sin(kPiOverTwoDouble * desired_pan_position);
 
   int n = frames_to_process;
 
@@ -170,8 +170,8 @@ void EqualPowerPanner::CalculateDesiredGain(double& desired_gain_l,
     }
   }
 
-  desired_gain_l = std::cos(piOverTwoDouble * desired_pan_position);
-  desired_gain_r = std::sin(piOverTwoDouble * desired_pan_position);
+  desired_gain_l = std::cos(kPiOverTwoDouble * desired_pan_position);
+  desired_gain_r = std::sin(kPiOverTwoDouble * desired_pan_position);
 }
 
 void EqualPowerPanner::PanWithSampleAccurateValues(

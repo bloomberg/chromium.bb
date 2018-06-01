@@ -87,12 +87,12 @@ TEST(StringTest, NumberToStringECMAScriptBoundaries) {
 
 TEST(StringTest, NumberToStringECMAScriptRegularNumbers) {
   // Pi.
-  TestNumberToStringECMAScript(piDouble, "3.141592653589793");
-  TestNumberToStringECMAScript(piFloat, "3.1415927410125732");
-  TestNumberToStringECMAScript(piOverTwoDouble, "1.5707963267948966");
-  TestNumberToStringECMAScript(piOverTwoFloat, "1.5707963705062866");
-  TestNumberToStringECMAScript(piOverFourDouble, "0.7853981633974483");
-  TestNumberToStringECMAScript(piOverFourFloat, "0.7853981852531433");
+  TestNumberToStringECMAScript(kPiDouble, "3.141592653589793");
+  TestNumberToStringECMAScript(kPiFloat, "3.1415927410125732");
+  TestNumberToStringECMAScript(kPiOverTwoDouble, "1.5707963267948966");
+  TestNumberToStringECMAScript(kPiOverTwoFloat, "1.5707963705062866");
+  TestNumberToStringECMAScript(kPiOverFourDouble, "0.7853981633974483");
+  TestNumberToStringECMAScript(kPiOverFourFloat, "0.7853981852531433");
 
   // e.
   const double kE = 2.71828182845904523536028747135266249775724709369995;
