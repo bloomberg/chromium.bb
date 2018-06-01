@@ -118,6 +118,10 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   // in DOM tree.
   PositionWithAffinity PositionForPoint(const NGPhysicalOffset&) const;
 
+  // The node to return when hit-testing on this fragment. This can be different
+  // from GetNode() when this fragment is content of a pseudo node.
+  Node* NodeForHitTest() const;
+
   // A range of fragments for |FragmentsFor()|.
   class FragmentRange {
    public:

@@ -37,6 +37,19 @@ bool IsInlineBoxEmpty(const ComputedStyle& style,
   return true;
 }
 
+// TODO(xiaochengh): Deduplicate with a similar function in ng_paint_fragment.cc
+// ::before, ::after and ::first-letter can be hit test targets.
+bool CanBeHitTestTargetPseudoNodeStyle(const ComputedStyle& style) {
+  switch (style.StyleType()) {
+    case kPseudoIdBefore:
+    case kPseudoIdAfter:
+    case kPseudoIdFirstLetter:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace
 
 NGInlineItem::NGInlineItem(NGInlineItemType type,
@@ -107,7 +120,9 @@ void NGInlineItem::ComputeBoxProperties() {
           ToLayoutBoxModelObject(layout_object_)->HasSelfPaintingLayer() ||
           style_->HasOutline() || style_->CanContainAbsolutePositionObjects() ||
           style_->CanContainFixedPositionObjects(false) ||
-          ToLayoutBoxModelObject(layout_object_)->ShouldApplyPaintContainment();
+          ToLayoutBoxModelObject(layout_object_)
+              ->ShouldApplyPaintContainment() ||
+          CanBeHitTestTargetPseudoNodeStyle(*style_);
     }
     return;
   }
