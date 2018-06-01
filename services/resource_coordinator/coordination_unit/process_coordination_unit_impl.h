@@ -19,6 +19,8 @@ class ProcessCoordinationUnitImpl
                                        mojom::ProcessCoordinationUnit,
                                        mojom::ProcessCoordinationUnitRequest> {
  public:
+  static std::vector<ProcessCoordinationUnitImpl*>
+  GetAllProcessCoordinationUnits();
   static CoordinationUnitType Type() { return CoordinationUnitType::kProcess; }
 
   ProcessCoordinationUnitImpl(

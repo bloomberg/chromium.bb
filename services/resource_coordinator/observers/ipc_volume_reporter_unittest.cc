@@ -45,6 +45,9 @@ TEST_F(IPCVolumeReporterTest, Basic) {
   EXPECT_TRUE(reporter_->mock_timer()->IsRunning());
   MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
       coordination_unit_graph());
+  coordination_unit_graph()->OnCoordinationUnitCreated(cu_graph.process.get());
+  coordination_unit_graph()->OnCoordinationUnitCreated(cu_graph.page.get());
+  coordination_unit_graph()->OnCoordinationUnitCreated(cu_graph.frame.get());
 
   cu_graph.frame->SetAudibility(true);
   cu_graph.frame->SetNetworkAlmostIdle(true);
