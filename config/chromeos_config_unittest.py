@@ -22,6 +22,7 @@ from chromite.cbuildbot.builders import generic_builders
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib.const import waterfall
 from chromite.scripts import cros_show_waterfall_layout
 
 # pylint: disable=protected-access
@@ -78,6 +79,8 @@ class ConfigDumpTest(ChromeosConfigTestBase):
 
   def testSaveLoadReload(self):
     """Make sure that loading and reloading the config is a no-op."""
+    self.maxDiff = None
+
     site_config_str = self.site_config.SaveConfigToString()
     loaded = config_lib.LoadConfigFromString(site_config_str)
 
@@ -1138,6 +1141,31 @@ class CBuildBotTest(ChromeosConfigTestBase):
       if config.binhost_test:
         self.assertEqual(config.boards, [])
 
+  def testLuciScheduler(self):
+    """LUCI Scheduler entries only work for swarming builds."""
+    for config in self.site_config.itervalues():
+      if config.schedule is not None:
+        self.assertEqual(config.active_waterfall, waterfall.WATERFALL_SWARMING,
+                         'schedule set for non-swarming config %s' %
+                         config.name)
+        # TODO: validate the scheduler syntax.
+        self.assertIsInstance(config.schedule, str)
+
+      if config.triggered_gitiles is not None:
+        self.assertEqual(
+            config.schedule, 'triggered',
+            'triggered_gitiles requires triggered schedule on config %s' %
+            config.name)
+
+        try:
+          for gitiles_url, ref_list in config.triggered_gitiles:
+            self.assertIsInstance(gitiles_url, str)
+            for ref in ref_list:
+              self.assertIsInstance(ref, str)
+        except (TypeError, ValueError):
+          self.fail(('%s has a triggered_gitiles that is malformed: %r\n'
+                     "Simple example: [['url', ['refs/heads/master']]]") %
+                    (config.name, config.triggered_gitiles))
 
 class TemplateTest(ChromeosConfigTestBase):
   """Tests for templates."""

@@ -1073,6 +1073,18 @@ def DefaultSettings():
       # waterfall that this target should be active on.
       active_waterfall=None,
 
+      # This is a LUCI Scheduler schedule string. Setting this will create
+      # a LUCI Scheduler for this build on swarming (not buildbot).
+      # See: https://goo.gl/VxSzFf
+      schedule=None,
+
+      # This is the list of git repos which can trigger this build in swarming.
+      # Implies that schedule is set, to "triggered".
+      # The format is of the form:
+      #   [ (<git repo url>, (<ref1>, <ref2>, …)),
+      #    …]
+      triggered_gitiles=None,
+
       # If true, skip package retries in BuildPackages step.
       nobuildretry=False,
 
