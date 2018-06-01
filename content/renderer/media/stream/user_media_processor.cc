@@ -856,6 +856,15 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
 
   blink::WebMediaStreamSource::Capabilities capabilities;
   capabilities.echo_cancellation = {true, false};
+  capabilities.echo_cancellation_type.reserve(2);
+  capabilities.echo_cancellation_type.emplace_back(
+      blink::WebString::FromASCII(blink::kEchoCancellationTypeBrowser));
+  if (device.input.effects() &
+      (media::AudioParameters::ECHO_CANCELLER |
+       media::AudioParameters::EXPERIMENTAL_ECHO_CANCELLER)) {
+    capabilities.echo_cancellation_type.emplace_back(
+        blink::WebString::FromASCII(blink::kEchoCancellationTypeSystem));
+  }
   capabilities.auto_gain_control = {true, false};
   capabilities.noise_suppression = {true, false};
   capabilities.device_id = blink::WebString::FromUTF8(device.id);

@@ -47,9 +47,6 @@ enum BoolConstraint {
   NUM_BOOL_CONSTRAINTS
 };
 
-const char kEchoCancellerTypeBrowser[] = "browser";
-const char kEchoCancellerTypeSystem[] = "system";
-
 // This struct groups related fields or entries from AudioProcessingProperties,
 // SingleDeviceCandidateSet::bool_sets_ and blink::WebMediaTrackConstraintSet.
 struct AudioPropertyConstraintPair {
@@ -227,13 +224,13 @@ class SingleDeviceCandidateSet {
       // it's set up differently. The browser echo canceller is always available
       // when we don't have a source.
       std::vector<std::string> echo_cancellation_types = {
-          kEchoCancellerTypeBrowser};
+          blink::kEchoCancellationTypeBrowser};
 
       // Add the system (e.g. hardware) EC if available, based on the
       // parameters.
       if (parameters_.effects() &
           media::AudioParameters::EXPERIMENTAL_ECHO_CANCELLER) {
-        echo_cancellation_types.push_back(kEchoCancellerTypeSystem);
+        echo_cancellation_types.push_back(blink::kEchoCancellationTypeSystem);
       }
       echo_cancellation_type_set_ =
           DiscreteSet<std::string>(std::move(echo_cancellation_types));
@@ -277,10 +274,10 @@ class SingleDeviceCandidateSet {
     if (experimental_hardware_echo_cancellation_available &&
         !properties.enable_sw_echo_cancellation) {
       echo_cancellation_type_set_ =
-          DiscreteSet<std::string>({kEchoCancellerTypeSystem});
+          DiscreteSet<std::string>({blink::kEchoCancellationTypeSystem});
     } else if (properties.enable_sw_echo_cancellation) {
       echo_cancellation_type_set_ =
-          DiscreteSet<std::string>({kEchoCancellerTypeBrowser});
+          DiscreteSet<std::string>({blink::kEchoCancellationTypeBrowser});
     }
 
     bool_sets_[GOOG_AUDIO_MIRRORING] =
@@ -501,7 +498,7 @@ class SingleDeviceCandidateSet {
 
     properties.enable_experimental_hw_echo_cancellation =
         (echo_cancellation_type &&
-         *echo_cancellation_type == kEchoCancellerTypeSystem) &&
+         *echo_cancellation_type == blink::kEchoCancellationTypeSystem) &&
         !properties.disable_hw_echo_cancellation;
 
     properties.enable_sw_echo_cancellation = SelectEnableSwEchoCancellation(

@@ -41,6 +41,10 @@
 
 namespace blink {
 
+// Possible values of the echo canceller type constraint.
+BLINK_PLATFORM_EXPORT extern const char kEchoCancellationTypeBrowser[];
+BLINK_PLATFORM_EXPORT extern const char kEchoCancellationTypeSystem[];
+
 class WebMediaConstraintsPrivate;
 
 class BLINK_PLATFORM_EXPORT BaseConstraint {
