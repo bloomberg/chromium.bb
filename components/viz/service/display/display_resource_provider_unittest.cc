@@ -349,9 +349,9 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
       child_context_provider_->BindToCurrentThread();
       gpu_memory_buffer_manager_ =
           std::make_unique<TestGpuMemoryBufferManager>();
-    } else {
-      shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
     }
+    // SharedBitmapManager may always be present, even if gpu compositing.
+    shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
 
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
         context_provider_.get(), shared_bitmap_manager_.get());
@@ -869,11 +869,9 @@ TEST_P(DisplayResourceProviderTest, ScopedBatchReturnResourcesPreventsReturn) {
 }
 
 TEST_P(DisplayResourceProviderTest, LostMailboxInParent) {
-  gpu::Mailbox gpu_mailbox;
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId::FromUnsafeValue(0x12), 0x34);
-  auto tran = TransferableResource::MakeGL(gpu_mailbox, GL_LINEAR,
-                                           GL_TEXTURE_2D, sync_token);
+  auto tran = CreateResource(RGBA_8888);
   tran.id = 11;
 
   std::vector<ReturnedResource> returned_to_child;
