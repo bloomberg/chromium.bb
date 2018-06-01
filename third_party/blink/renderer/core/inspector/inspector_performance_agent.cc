@@ -214,7 +214,7 @@ void InspectorPerformanceAgent::WillProcessTask(double start_time) {
 void InspectorPerformanceAgent::DidProcessTask(double start_time,
                                                double end_time) {
   if (task_start_ticks_ == TimeTicksFromSeconds(start_time))
-    task_duration_ += TimeDelta::FromSeconds(end_time - start_time);
+    task_duration_ += TimeDelta::FromSecondsD(end_time - start_time);
   task_start_ticks_ = TimeTicks();
 }
 
