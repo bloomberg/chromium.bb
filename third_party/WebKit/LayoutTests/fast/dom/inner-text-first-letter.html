@@ -1,6 +1,7 @@
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <style>
 .first:first-letter {
   font-weight: bold;
@@ -71,26 +72,60 @@ Results
 </div>
 
 <script>
-description("This tests a letter with :first-letter applied is present in innerText.");
-shouldBe("document.getElementById('divFirst').innerText", "document.getElementById('divNormal').innerText");
-shouldBe("document.getElementById('pFirst').innerText", "document.getElementById('pNormal').innerText");
-shouldBe("document.getElementById('collapsedSpaceFirst').innerText", "document.getElementById('collapsedSpaceNormal').innerText");
-shouldBe("document.getElementById('collapsedSpacePreFirst').innerText", "document.getElementById('collapsedSpacePreNormal').innerText");
-shouldBe("document.getElementById('preLineFirst').innerText", "document.getElementById('preLineNormal').innerText");
-shouldBe("document.getElementById('preWrapFirst').innerText", "document.getElementById('preWrapNormal').innerText");
-shouldBe("document.getElementById('preSpaceFirst').innerText", "document.getElementById('preSpaceNormal').innerText");
-shouldBe("document.getElementById('collapsedSpaceDivFirst').innerText", "document.getElementById('collapsedSpaceDivNormal').innerText");
-shouldBe("document.getElementById('firstCollapsedDivFirst').innerText", "document.getElementById('firstCollapsedDivNormal').innerText");
-shouldBe("document.getElementById('collapsedSpaceCollapsedDivFirst').innerText", "document.getElementById('collapsedSpaceCollapsedDivNormal').innerText");
-shouldBe("document.getElementById('collapsedSpaceCollapsedDivFirst').innerText", "'foo\\nabc\\n'");
-shouldBe("document.getElementById('collapsedSpacePunctDivFirst').innerText", "document.getElementById('collapsedSpacePunctDivNormal').innerText");
-shouldBe("document.getElementById('collapsedSpacePunctDivFirst').innerText", "'foo\\n| abc\\n'");
-shouldBe("document.getElementById('divSpanFirst').innerText", "document.getElementById('divSpanNormal').innerText");
-shouldBe("document.getElementById('invisiblePre').innerText", "''");
-shouldBe("document.getElementById('invisiblePreFirst').innerText", "'t\\n'");
-shouldBe("document.getElementById('invisible').innerText", "'test\\n'");
-shouldBe("document.getElementById('floatDt').innerText", "'Ab Cd E'");
-document.getElementById('tests').innerHTML = "";
+// This tests a letter with :first-letter applied is present in innerText.
+test(() => assert_equals(document.getElementById('divFirst').innerText, document.getElementById('divNormal').innerText),
+     'divFirst.innerText');
+
+test(() => assert_equals(document.getElementById('pFirst').innerText, document.getElementById('pNormal').innerText),
+     'pFirst.innerText');
+
+test(() => assert_equals(document.getElementById('collapsedSpaceFirst').innerText, document.getElementById('collapsedSpaceNormal').innerText),
+     'collapsedSpaceFirst.innerText');
+
+test(() => assert_equals(document.getElementById('collapsedSpacePreFirst').innerText, document.getElementById('collapsedSpacePreNormal').innerText),
+     'collapsedSpacePreFirst.innerText');
+
+test(() => assert_equals(document.getElementById('preLineFirst').innerText, document.getElementById('preLineNormal').innerText),
+     'preLineFirst.innerText');
+
+test(() => assert_equals(document.getElementById('preWrapFirst').innerText, document.getElementById('preWrapNormal').innerText),
+     'preWrapFirst.innerText');
+
+test(() => assert_equals(document.getElementById('preSpaceFirst').innerText, document.getElementById('preSpaceNormal').innerText),
+     'preSpaceFirst.innerText');
+
+test(() => assert_equals(document.getElementById('collapsedSpaceDivFirst').innerText, document.getElementById('collapsedSpaceDivNormal').innerText),
+     'collapsedSpaceDivFirst.innerText');
+
+test(() => assert_equals(document.getElementById('firstCollapsedDivFirst').innerText, document.getElementById('firstCollapsedDivNormal').innerText),
+     'firstCollapsedDivFirst.innerText');
+
+test(() => assert_equals(document.getElementById('collapsedSpaceCollapsedDivFirst').innerText, document.getElementById('collapsedSpaceCollapsedDivNormal').innerText),
+     'collapsedSpaceCollapsedDivFirst.innerText');
+
+test(() => assert_equals(document.getElementById('collapsedSpaceCollapsedDivFirst').innerText, 'foo\nabc\n'),
+     'collapsedSpaceSollapsedDivFirst.innerText literal');
+
+test(() => assert_equals(document.getElementById('collapsedSpacePunctDivFirst').innerText, document.getElementById('collapsedSpacePunctDivNormal').innerText),
+     'collapsedSpacePunctDivFirst.innerText');
+
+test(() => assert_equals(document.getElementById('collapsedSpacePunctDivFirst').innerText, 'foo\n| abc\n'),
+     'collapsedSpacePunctDivFirst.innerText literal');
+
+test(() => assert_equals(document.getElementById('divSpanFirst').innerText, document.getElementById('divSpanNormal').innerText),
+     'divSpanFirst.innerText');
+
+test(() => assert_equals(document.getElementById('invisiblePre').innerText, ''),
+     'invisiblePre.innerText');
+
+test(() => assert_equals(document.getElementById('invisiblePreFirst').innerText, 't\n'),
+     'invisiblePreFirst.innerText');
+
+test(() => assert_equals(document.getElementById('invisible').innerText, 'test\n'),
+     'invisible.innerText');
+
+test(() => assert_equals(document.getElementById('floatDt').innerText, 'Ab Cd E'),
+     'floatDt.innerText');
 </script>
 </body>
 </html>
