@@ -56,6 +56,11 @@ void DevToolsEyeDropper::AttachToHost(content::RenderWidgetHost* host) {
   if (!use_video_capture_api_)
     return;
 
+  // The view can be null if the renderer process has crashed.
+  // (https://crbug.com/847363)
+  if (!host_->GetView())
+    return;
+
   // Capturing a full-page screenshot can be costly so we shouldn't do it too
   // often. We can capture at a lower frame rate without hurting the user
   // experience.
