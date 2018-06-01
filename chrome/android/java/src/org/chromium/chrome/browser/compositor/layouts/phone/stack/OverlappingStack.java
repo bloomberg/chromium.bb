@@ -359,6 +359,16 @@ public class OverlappingStack extends Stack {
     }
 
     @Override
+    protected int computeReferenceIndex() {
+        int centerIndex =
+                getTabIndexAtPositon(mLayout.getWidth() / 2.0f, mLayout.getHeight() / 2.0f);
+        // Alter the center to take into account the scrolling direction.
+        if (mCurrentScrollDirection > 0) centerIndex++;
+        if (mCurrentScrollDirection < 0) centerIndex--;
+        return MathUtils.clamp(centerIndex, 0, mStackTabs.length - 1);
+    }
+
+    @Override
     protected int computeSpacing(int layoutTabCount) {
         int spacing = 0;
         if (layoutTabCount > 1) {

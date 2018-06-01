@@ -205,6 +205,11 @@ public class NonOverlappingStack extends Stack {
     }
 
     @Override
+    protected int computeReferenceIndex() {
+        return -Math.round(mScrollTarget / mSpacing);
+    }
+
+    @Override
     protected boolean shouldCloseGapsBetweenTabs() {
         return false;
     }

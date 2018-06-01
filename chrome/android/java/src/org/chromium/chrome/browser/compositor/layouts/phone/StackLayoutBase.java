@@ -710,7 +710,10 @@ public abstract class StackLayoutBase
      * Called when a {@link Stack} instance is done animating the stack enter effect.
      */
     public void uiDoneEnteringStack() {
-        mSortingComparator = mVisibilityComparator;
+        // Tabs don't overlap in the horizontal tab switcher experiment, so the order comparator
+        // already does what we want (the visibility comparator's logic actually doesn't compute
+        // visibility properly in this case).
+        if (!isHorizontalTabSwitcherFlagEnabled()) mSortingComparator = mVisibilityComparator;
         doneShowing();
     }
 
@@ -1211,9 +1214,17 @@ public abstract class StackLayoutBase
             final float scrollDistance = Math.abs(i + mRenderedScrollOffset);
             final float stackFocus = MathUtils.clamp(1 - scrollDistance, 0, 1);
 
-            mStacks.get(i).setStackFocusInfo(stackFocus,
-                    mSortingComparator == mOrderComparator ? mStacks.get(i).getTabList().index()
-                                                           : -1);
+            // The overlapping stack only uses the OrderComparator for visibliity prioritization
+            // during the animation to open the tab switcher. For this case, we pass a fixed index
+            // for the currently-selected tab.
+            //
+            // If the non-overlapping horizontal tab switcher experiment is enabled, we pass -1 so
+            // NonOverlappingStack can use the scroll position to keep the index used for visibility
+            // prioritization up-to-date.
+            final boolean useFixedIndex =
+                    mSortingComparator == mOrderComparator && !isHorizontalTabSwitcherFlagEnabled();
+            mStacks.get(i).setStackFocusInfo(
+                    stackFocus, useFixedIndex ? mStacks.get(i).getTabList().index() : -1);
         }
 
         // Compute position and visibility
