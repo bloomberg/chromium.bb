@@ -177,6 +177,9 @@ ResourceLoadPriority AdjustPriorityWithPriorityHint(
   mojom::FetchImportanceMode importance_mode =
       resource_request.GetFetchImportanceMode();
 
+  DCHECK(importance_mode == mojom::FetchImportanceMode::kImportanceAuto ||
+         RuntimeEnabledFeatures::PriorityHintsEnabled());
+
   ResourceLoadPriority new_priority = priority_so_far;
 
   switch (importance_mode) {
@@ -274,10 +277,8 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     priority = ResourceLoadPriority::kVeryLow;
   }
 
-  if (RuntimeEnabledFeatures::PriorityHintsEnabled()) {
-    priority = AdjustPriorityWithPriorityHint(priority, type, resource_request,
-                                              defer_option, is_link_preload);
-  }
+  priority = AdjustPriorityWithPriorityHint(priority, type, resource_request,
+                                            defer_option, is_link_preload);
 
   // A manually set priority acts as a floor. This is used to ensure that
   // synchronous requests are always given the highest possible priority, as
