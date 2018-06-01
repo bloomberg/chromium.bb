@@ -37,6 +37,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     kLazySweepInIdle,
     kLazySweepOnAllocation,
     kAtomicPhase,
+    kAtomicPhaseCompaction,
     kAtomicPhaseMarking,
     kVisitDOMWrappers,
     kNumScopeIds,
@@ -46,6 +47,8 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     switch (id) {
       case Id::kAtomicPhase:
         return "BlinkGC.AtomicPhase";
+      case Id::kAtomicPhaseCompaction:
+        return "BlinkGC.AtomicPhaseCompaction";
       case Id::kAtomicPhaseMarking:
         return "BlinkGC.AtomicPhaseMarking";
       case Id::kCompleteSweep:
@@ -134,6 +137,8 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     double sweeping_time_in_ms() const;
 
     size_t marked_object_size = 0;
+    size_t compaction_freed_bytes = 0;
+    size_t compaction_freed_pages = 0;
     double scope_data[kNumScopeIds] = {0};
     BlinkGC::GCReason reason;
   };
@@ -147,6 +152,8 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   }
 
   void IncreaseMarkedObjectSize(size_t);
+  void IncreaseCompactionFreedSize(size_t);
+  void IncreaseCompactionFreedPages(size_t);
 
   bool is_started() const { return is_started_; }
   const Event& current() const { return current_; }

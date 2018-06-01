@@ -42,8 +42,8 @@ class ThreadHeap;
 
 class PLATFORM_EXPORT HeapCompact final {
  public:
-  static std::unique_ptr<HeapCompact> Create() {
-    return base::WrapUnique(new HeapCompact);
+  static std::unique_ptr<HeapCompact> Create(ThreadHeap* heap) {
+    return base::WrapUnique(new HeapCompact(heap));
   }
 
   ~HeapCompact();
@@ -129,13 +129,13 @@ class PLATFORM_EXPORT HeapCompact final {
  private:
   class MovableObjectFixups;
 
-  HeapCompact();
+  explicit HeapCompact(ThreadHeap*);
 
   // Sample the amount of fragmentation and heap memory currently residing
   // on the freelists of the arenas we're able to compact. The computed
   // numbers will be subsequently used to determine if a heap compaction
   // is on order (shouldCompact().)
-  void UpdateHeapResidency(ThreadHeap*);
+  void UpdateHeapResidency();
 
   // Parameters controlling when compaction should be done:
 
@@ -145,6 +145,8 @@ class PLATFORM_EXPORT HeapCompact final {
   // Freelist size threshold that must be exceeded before compaction
   // should be considered.
   static const size_t kFreeListSizeThreshold = 512 * 1024;
+
+  ThreadHeap* const heap_;
 
   MovableObjectFixups& Fixups();
 
@@ -161,13 +163,6 @@ class PLATFORM_EXPORT HeapCompact final {
   // if corresponding bit is set. Indexes are in
   // the range of BlinkGC::ArenaIndices.
   unsigned compactable_arenas_;
-
-  // Stats, number of (complete) pages freed/decommitted +
-  // bytes freed (which will include partial pages.)
-  size_t freed_pages_;
-  size_t freed_size_;
-
-  double start_compaction_time_ms_;
 
   static bool force_compaction_gc_;
 };

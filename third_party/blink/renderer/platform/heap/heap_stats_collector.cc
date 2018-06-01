@@ -13,6 +13,16 @@ void ThreadHeapStatsCollector::IncreaseMarkedObjectSize(size_t size) {
   current_.marked_object_size += size;
 }
 
+void ThreadHeapStatsCollector::IncreaseCompactionFreedSize(size_t size) {
+  DCHECK(is_started_);
+  current_.compaction_freed_bytes += size;
+}
+
+void ThreadHeapStatsCollector::IncreaseCompactionFreedPages(size_t pages) {
+  DCHECK(is_started_);
+  current_.compaction_freed_pages += pages;
+}
+
 void ThreadHeapStatsCollector::Start(BlinkGC::GCReason reason) {
   DCHECK(!is_started_);
   is_started_ = true;
@@ -27,6 +37,8 @@ void ThreadHeapStatsCollector::Stop() {
 
 void ThreadHeapStatsCollector::Event::reset() {
   marked_object_size = 0;
+  compaction_freed_pages = 0;
+  compaction_freed_bytes = 0;
   memset(scope_data, 0, sizeof(scope_data));
   reason = BlinkGC::kTesting;
 }

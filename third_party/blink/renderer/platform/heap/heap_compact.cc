@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/heap/sparse_heap_bitmap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -256,14 +257,12 @@ class HeapCompact::MovableObjectFixups final {
   std::unique_ptr<SparseHeapBitmap> interiors_;
 };
 
-HeapCompact::HeapCompact()
-    : do_compact_(false),
+HeapCompact::HeapCompact(ThreadHeap* heap)
+    : heap_(heap),
+      do_compact_(false),
       gc_count_since_last_compaction_(0),
       free_list_size_(0),
-      compactable_arenas_(0u),
-      freed_pages_(0),
-      freed_size_(0),
-      start_compaction_time_ms_(0) {
+      compactable_arenas_(0u) {
   // The heap compaction implementation assumes the contiguous range,
   //
   //   [Vector1ArenaIndex, HashTableArenaIndex]
@@ -330,7 +329,7 @@ bool HeapCompact::ShouldCompact(ThreadHeap* heap,
   // TODO: add some form of compaction overhead estimate to the marking
   // time estimate.
 
-  UpdateHeapResidency(heap);
+  UpdateHeapResidency();
 
 #if STRESS_TEST_HEAP_COMPACTION
   // Exercise the handling of object movement by compacting as
@@ -348,8 +347,6 @@ void HeapCompact::Initialize(ThreadState* state) {
   DCHECK(RuntimeEnabledFeatures::HeapCompactionEnabled());
   LOG_HEAP_COMPACTION() << "Compacting: free=" << free_list_size_;
   do_compact_ = true;
-  freed_pages_ = 0;
-  freed_size_ = 0;
   fixups_.reset();
   gc_count_since_last_compaction_ = 0;
   force_compaction_gc_ = false;
@@ -371,7 +368,7 @@ void HeapCompact::RegisterMovingObjectCallback(MovableReference reference,
   Fixups().AddFixupCallback(reference, callback, callback_data);
 }
 
-void HeapCompact::UpdateHeapResidency(ThreadHeap* heap) {
+void HeapCompact::UpdateHeapResidency() {
   size_t total_arena_size = 0;
   size_t total_free_list_size = 0;
 
@@ -381,7 +378,7 @@ void HeapCompact::UpdateHeapResidency(ThreadHeap* heap) {
 #endif
   for (int i = BlinkGC::kVector1ArenaIndex; i <= BlinkGC::kHashTableArenaIndex;
        ++i) {
-    NormalPageArena* arena = static_cast<NormalPageArena*>(heap->Arena(i));
+    NormalPageArena* arena = static_cast<NormalPageArena*>(heap_->Arena(i));
     size_t arena_size = arena->ArenaSize();
     size_t free_list_size = arena->FreeListSize();
     total_arena_size += arena_size;
@@ -412,8 +409,8 @@ void HeapCompact::FinishedArenaCompaction(NormalPageArena* arena,
   if (!do_compact_)
     return;
 
-  freed_pages_ += freed_pages;
-  freed_size_ += freed_size;
+  heap_->stats_collector()->IncreaseCompactionFreedPages(freed_pages);
+  heap_->stats_collector()->IncreaseCompactionFreedSize(freed_size);
 }
 
 void HeapCompact::Relocate(Address from, Address to) {
@@ -424,9 +421,6 @@ void HeapCompact::Relocate(Address from, Address to) {
 void HeapCompact::StartThreadCompaction() {
   if (!do_compact_)
     return;
-
-  if (!start_compaction_time_ms_)
-    start_compaction_time_ms_ = WTF::CurrentTimeTicksInMilliseconds();
 }
 
 void HeapCompact::FinishThreadCompaction() {
@@ -439,28 +433,6 @@ void HeapCompact::FinishThreadCompaction() {
 #endif
   fixups_.reset();
   do_compact_ = false;
-
-  double time_for_heap_compaction =
-      WTF::CurrentTimeTicksInMilliseconds() - start_compaction_time_ms_;
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, time_for_heap_compaction_histogram,
-      ("BlinkGC.TimeForHeapCompaction", 1, 10 * 1000, 50));
-  time_for_heap_compaction_histogram.Count(time_for_heap_compaction);
-  start_compaction_time_ms_ = 0;
-
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, object_size_freed_by_heap_compaction,
-      ("BlinkGC.ObjectSizeFreedByHeapCompaction", 1, 4 * 1024 * 1024, 50));
-  object_size_freed_by_heap_compaction.Count(freed_size_ / 1024);
-
-#if DEBUG_LOG_HEAP_COMPACTION_RUNNING_TIME
-  LOG_HEAP_COMPACTION_INTERNAL()
-      << "Compaction stats: time=" << time_for_heap_compaction
-      << "ms, pages freed=" << freed_pages_ << ", size=" << freed_size_;
-#else
-  LOG_HEAP_COMPACTION() << "Compaction stats: freed pages=" << freed_pages_
-                        << " size=" << freed_size_;
-#endif
 }
 
 void HeapCompact::AddCompactingPage(BasePage* page) {
