@@ -63,5 +63,9 @@ void SystemProviderImpl::OnBatteryStatus(
       &SystemProviderImpl::OnBatteryStatus, base::Unretained(this)));
 }
 
+void SystemProviderImpl::FlushForTesting() {
+  battery_monitor_.FlushForTesting();
+}
+
 }  // namespace assistant
 }  // namespace chromeos
