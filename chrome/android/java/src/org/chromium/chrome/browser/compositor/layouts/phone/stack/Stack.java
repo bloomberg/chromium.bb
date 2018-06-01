@@ -211,7 +211,7 @@ public abstract class Stack {
     private Animator mViewAnimations;
 
     // The parent Layout
-    private final StackLayoutBase mLayout;
+    protected final StackLayoutBase mLayout;
 
     // Border values
     private float mBorderTransparentTop;
@@ -1898,7 +1898,7 @@ public abstract class Stack {
         return MathUtils.interpolate(current, input, 0.9f);
     }
 
-    private void forceScrollStop() {
+    protected void forceScrollStop() {
         mScroller.forceFinished(true);
         updateOverscrollOffset();
         mScrollTarget = mScrollOffset;

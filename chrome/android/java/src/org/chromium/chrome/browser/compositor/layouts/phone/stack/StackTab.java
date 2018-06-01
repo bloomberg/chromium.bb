@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.Resources;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.animation.FloatProperty;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
@@ -80,6 +81,19 @@ public class StackTab implements ChromeAnimation.Animatable<StackTab.Property> {
     private int mOrderSortingValue; // Sorting value based on distance to selection.
 
     private LayoutTab mLayoutTab;
+
+    public static final FloatProperty<StackTab> SCROLL_OFFSET =
+            new FloatProperty<StackTab>("SCROLL_OFFSET") {
+                @Override
+                public void setValue(StackTab layoutTab, float v) {
+                    layoutTab.setScrollOffset(v);
+                }
+
+                @Override
+                public Float get(StackTab layoutTab) {
+                    return layoutTab.getScrollOffset();
+                }
+            };
 
     /**
      * @param tab The tab this instance is supposed to draw.

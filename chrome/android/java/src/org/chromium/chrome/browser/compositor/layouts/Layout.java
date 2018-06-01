@@ -1002,6 +1002,14 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
+     * Whether or not the toolbar IncognitoToggleButton (if present) should be enabled. E.g., it can
+     * be disabled while animating a tab selection to avoid odd behavior.
+     */
+    public boolean shouldAllowIncognitoSwitching() {
+        return true;
+    }
+
+    /**
      * @return True if the content decoration layer should be shown.
      */
     public boolean shouldDisplayContentOverlay() {

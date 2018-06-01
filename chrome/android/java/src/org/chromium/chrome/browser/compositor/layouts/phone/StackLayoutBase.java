@@ -126,7 +126,7 @@ public abstract class StackLayoutBase
     // from the event handler; and mRenderedScrollIndex is the value we get
     // after map mScrollIndex through a decelerate function.
     // Here we use float as index so we can smoothly animate the transition between stack.
-    private float mRenderedScrollOffset;
+    protected float mRenderedScrollOffset;
     private float mScrollIndexOffset;
 
     private final int mMinMaxInnerMargin;
@@ -192,6 +192,8 @@ public abstract class StackLayoutBase
             mLastOnDownX = x;
             mLastOnDownY = y;
             mLastOnDownTimeStamp = time;
+
+            if (shouldIgnoreTouchInput()) return;
             mStacks.get(getTabStackIndex()).onDown(time);
         }
 
@@ -202,6 +204,8 @@ public abstract class StackLayoutBase
 
         @Override
         public void drag(float x, float y, float dx, float dy, float tx, float ty) {
+            if (shouldIgnoreTouchInput()) return;
+
             @SwipeMode
             int oldInputMode = mInputMode;
             long time = time();
@@ -228,6 +232,8 @@ public abstract class StackLayoutBase
 
         @Override
         public void click(float x, float y, boolean fromMouse, int buttons) {
+            if (shouldIgnoreTouchInput()) return;
+
             // Click event happens before the up event. mClicked is set to mute the up event.
             mClicked = true;
             PortraitViewport viewportParams = getViewportParameters();
@@ -245,6 +251,8 @@ public abstract class StackLayoutBase
 
         @Override
         public void fling(float x, float y, float velocityX, float velocityY) {
+            if (shouldIgnoreTouchInput()) return;
+
             long time = time();
             float vx = velocityX;
             float vy = velocityY;
@@ -269,15 +277,19 @@ public abstract class StackLayoutBase
 
         @Override
         public void onLongPress(float x, float y) {
+            if (shouldIgnoreTouchInput()) return;
             mStacks.get(getTabStackIndex()).onLongPress(time(), x, y);
         }
 
         @Override
         public void onPinch(float x0, float y0, float x1, float y1, boolean firstEvent) {
+            if (shouldIgnoreTouchInput()) return;
             mStacks.get(getTabStackIndex()).onPinch(time(), x0, y0, x1, y1, firstEvent);
         }
 
         private void onUpOrCancel(long time) {
+            if (shouldIgnoreTouchInput()) return;
+
             int currentIndex = getTabStackIndex();
             if (!mClicked
                     && Math.abs(currentIndex + mRenderedScrollOffset) > THRESHOLD_TO_SWITCH_STACK) {
@@ -370,6 +382,14 @@ public abstract class StackLayoutBase
     @Override
     public boolean forceShowBrowserControlsAndroidView() {
         return true;
+    }
+
+    /**
+     * A subclass can override this to return true to cause touch input to be ignored during certain
+     * operations (e.g. animations).
+     */
+    protected boolean shouldIgnoreTouchInput() {
+        return false;
     }
 
     /**
@@ -614,6 +634,18 @@ public abstract class StackLayoutBase
             return false;
         }
     }
+
+    /**
+     * Called by a NonOverlappingStack that's had switchAwayEffect() called on it, once the
+     * animation has finished.
+     */
+    public void onSwitchAwayFinished() {}
+
+    /**
+     * Called by a NonOverlappingStack that's had switchToEffect() called on it, once the
+     * animation has finished.
+     */
+    public void onSwitchToFinished() {}
 
     @Override
     protected void onAnimationStarted() {
