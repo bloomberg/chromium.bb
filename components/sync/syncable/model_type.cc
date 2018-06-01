@@ -153,6 +153,14 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
 static_assert(arraysize(kModelTypeInfoMap) == MODEL_TYPE_COUNT,
               "kModelTypeInfoMap should have MODEL_TYPE_COUNT elements");
 
+static_assert(41 == syncer::MODEL_TYPE_COUNT,
+              "When adding a new type, update enum SyncModelTypes in enums.xml "
+              "and suffix SyncModelType in histograms.xml.");
+
+static_assert(41 == syncer::MODEL_TYPE_COUNT,
+              "When adding a new type, update kAllocatorDumpNameWhitelist in "
+              "base/trace_event/memory_infra_background_whitelist.cc.");
+
 void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
   switch (type) {
     case UNSPECIFIED:
