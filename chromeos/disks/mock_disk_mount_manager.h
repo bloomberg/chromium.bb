@@ -62,6 +62,11 @@ class MockDiskMountManager : public DiskMountManager {
   // Invokes fake device remove events.
   void NotifyDeviceRemoveEvents();
 
+  // Invokes specified mount event.
+  void NotifyMountEvent(MountEvent event,
+                        MountError error_code,
+                        const MountPointInfo& mount_info);
+
   // Sets up default results for mock methods.
   void SetupDefaultReplies();
 

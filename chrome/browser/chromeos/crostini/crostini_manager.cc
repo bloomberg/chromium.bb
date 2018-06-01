@@ -130,17 +130,21 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
     if (is_aborted_)
       return;
 
+    // Finish Restart immediately if testing.
+    if (CrostiniManager::GetInstance()->skip_restart_for_testing()) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&CrostiniRestarter::FinishRestart,
+                         base::WrapRefCounted(this),
+                         ConciergeClientResult::SUCCESS));
+      return;
+    }
+
     auto* cros_component_manager =
         g_browser_process->platform_part()->cros_component_manager();
-    if (cros_component_manager) {
-      cros_component_manager->Load(
-          "cros-termina",
-          component_updater::CrOSComponentManager::MountPolicy::kMount,
-          base::BindOnce(&CrostiniRestarter::InstallImageLoaderFinished,
-                         base::WrapRefCounted(this)));
-    } else {
-      // Running in test. We still PostTask to prevent races between observers
-      // aborting.
+    if (!cros_component_manager) {
+      // Running in unittest. We still PostTask to prevent races between
+      // observers aborting.
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
           base::BindOnce(
@@ -148,7 +152,14 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
               base::WrapRefCounted(this),
               component_updater::CrOSComponentManager::Error::NONE,
               base::FilePath()));
+      return;
     }
+
+    cros_component_manager->Load(
+        "cros-termina",
+        component_updater::CrOSComponentManager::MountPolicy::kMount,
+        base::BindOnce(&CrostiniRestarter::InstallImageLoaderFinished,
+                       base::WrapRefCounted(this)));
   }
 
   void AddObserver(CrostiniManager::RestartObserver* observer) {

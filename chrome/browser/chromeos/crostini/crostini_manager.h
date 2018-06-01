@@ -210,6 +210,10 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
 
   void AbortRestartCrostini(Profile* profile, RestartId id);
 
+  // Can be called for testing to skip restart.
+  void set_skip_restart_for_testing() { skip_restart_for_testing_ = true; };
+  bool skip_restart_for_testing() { return skip_restart_for_testing_; }
+
   // ConciergeClient::Observer:
   void OnContainerStarted(
       const vm_tools::concierge::ContainerStartedSignal& signal) override;
@@ -304,6 +308,8 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   std::multimap<std::tuple<std::string, std::string, std::string>,
                 StartContainerCallback>
       start_container_callbacks_;
+
+  bool skip_restart_for_testing_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
