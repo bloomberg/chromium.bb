@@ -556,4 +556,15 @@ Polymer({
   showSignin_: function(syncStatus) {
     return !!syncStatus.signinAllowed && !syncStatus.signedIn;
   },
+
+  /**
+   * Looks up the translation id, which depends on PIN login support.
+   * @param {boolean} hasPinLogin
+   * @private
+   */
+  selectLockScreenTitleString(hasPinLogin) {
+    if (hasPinLogin)
+      return this.i18n('lockScreenTitleLoginLock');
+    return this.i18n('lockScreenTitleLock');
+  },
 });

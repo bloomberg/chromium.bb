@@ -284,14 +284,15 @@
         <div id="lock-screen-subpage-trigger" class="settings-box two-line"
             actionable on-click="onConfigureLockTap_">
           <div class="start">
-            $i18n{lockScreenTitle}
+            [[selectLockScreenTitleString(hasPinLogin)]]
             <div class="secondary" id="lockScreenSecondary">
               [[getPasswordState_(hasPin,
                                   prefs.settings.enable_screen_lock.value)]]
             </div>
           </div>
           <paper-icon-button-light class="subpage-arrow">
-            <button aria-label="$i18n{lockScreenTitle}"
+            <button
+                aria-label$="[[selectLockScreenTitleString(hasPinLogin)]]"
                 aria-describedby="lockScreenSecondary"></button>
           </paper-icon-button-light>
         </div>
@@ -338,7 +339,8 @@
       </template>
 <if expr="chromeos">
       <template is="dom-if" route-path="/lockScreen">
-        <settings-subpage page-title="$i18n{lockScreenTitle}"
+        <settings-subpage
+            page-title="[[selectLockScreenTitleString(hasPinLogin)]]"
             associated-control="[[$$('#lock-screen-subpage-trigger')]]">
           <settings-lock-screen
             prefs="{{prefs}}">

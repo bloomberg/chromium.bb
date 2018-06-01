@@ -10,6 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
@@ -169,6 +170,9 @@ class PeopleHandler : public SettingsPageUIHandler,
   void HandleSetEncryption(const base::ListValue* args);
   void HandleShowSetupUI(const base::ListValue* args);
   void HandleAttemptUserExit(const base::ListValue* args);
+#if defined(OS_CHROMEOS)
+  void HandleRequestPinLoginState(const base::ListValue* args);
+#endif
   void HandleStartSignin(const base::ListValue* args);
   void HandleStopSyncing(const base::ListValue* args);
   void HandleGetSyncStatus(const base::ListValue* args);
@@ -182,6 +186,10 @@ class PeopleHandler : public SettingsPageUIHandler,
   // This function is virtual so that tests can override.
   virtual void DisplayGaiaLoginInNewTabOrWindow(
       signin_metrics::AccessPoint access_point);
+#endif
+
+#if defined(OS_CHROMEOS)
+  void OnPinLoginAvailable(bool is_available);
 #endif
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -252,6 +260,10 @@ class PeopleHandler : public SettingsPageUIHandler,
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   ScopedObserver<AccountTrackerService, PeopleHandler>
       account_tracker_observer_;
+#endif
+
+#if defined(OS_CHROMEOS)
+  base::WeakPtrFactory<PeopleHandler> weak_factory_{this};
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PeopleHandler);

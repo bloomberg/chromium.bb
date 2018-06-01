@@ -410,4 +410,15 @@ Polymer({
           });
     }
   },
+
+  /**
+   * Looks up the translation id, which depends on PIN login support.
+   * @param {boolean} hasPinLogin
+   * @private
+   */
+  selectLockScreenOptionsString(hasPinLogin) {
+    if (hasPinLogin)
+      return this.i18n('lockScreenOptionsLoginLock');
+    return this.i18n('lockScreenOptionsLock');
+  },
 });

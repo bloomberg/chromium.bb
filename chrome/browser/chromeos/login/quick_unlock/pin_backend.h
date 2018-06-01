@@ -39,6 +39,10 @@ class PinBackend {
   PinBackend();
   ~PinBackend();
 
+  // Check to see if the PinBackend supports login. This is true when the
+  // cryptohome backend is available.
+  void HasLoginSupport(BoolCallback result);
+
   // Check if the given account_id has a PIN registered.
   void IsSet(const AccountId& account_id, BoolCallback result);
 

@@ -86,7 +86,7 @@
       <template is="dom-if" if="[[quickUnlockEnabled_]]">
         <div id="lockOptionsDiv">
           <div class="settings-box">
-            <h2>$i18n{lockScreenOptions}</h2>
+            <h2>[[selectLockScreenOptionsString(hasPinLogin)]]</h2>
             <template is="dom-if" if="[[quickUnlockDisabledByPolicy_]]">
               <cr-policy-indicator indicator-type="userPolicy">
               </cr-policy-indicator>
