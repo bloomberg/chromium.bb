@@ -5846,12 +5846,13 @@ static int cost_mv_ref(const MACROBLOCK *const x, PREDICTION_MODE mode,
 
 static int get_interinter_compound_mask_rate(const MACROBLOCK *const x,
                                              const MB_MODE_INFO *const mbmi) {
-  switch (mbmi->interinter_compound_type) {
+  switch (mbmi->interinter_comp.type) {
     case COMPOUND_AVERAGE: return 0;
     case COMPOUND_WEDGE:
       return get_interinter_wedge_bits(mbmi->sb_type) > 0
                  ? av1_cost_literal(1) +
-                       x->wedge_idx_cost[mbmi->sb_type][mbmi->wedge_index]
+                       x->wedge_idx_cost[mbmi->sb_type]
+                                        [mbmi->interinter_comp.wedge_index]
                  : 0;
     case COMPOUND_DIFFWTD: return av1_cost_literal(1);
     default: assert(0); return 0;
@@ -7085,8 +7086,8 @@ static int64_t pick_interinter_wedge(const AV1_COMP *const cpi,
     rd = pick_wedge(cpi, x, bsize, p0, p1, &wedge_sign, &wedge_index);
   }
 
-  mbmi->wedge_sign = wedge_sign;
-  mbmi->wedge_index = wedge_index;
+  mbmi->interinter_comp.wedge_sign = wedge_sign;
+  mbmi->interinter_comp.wedge_index = wedge_index;
   return rd;
 }
 
@@ -7151,14 +7152,14 @@ static int64_t pick_interinter_seg(const AV1_COMP *const cpi,
   }
 
   // make final mask
-  mbmi->mask_type = best_mask_type;
+  mbmi->interinter_comp.mask_type = best_mask_type;
   if (hbd)
     av1_build_compound_diffwtd_mask_highbd(
-        xd->seg_mask, mbmi->mask_type, CONVERT_TO_BYTEPTR(p0), bw,
-        CONVERT_TO_BYTEPTR(p1), bw, bh, bw, xd->bd);
+        xd->seg_mask, mbmi->interinter_comp.mask_type, CONVERT_TO_BYTEPTR(p0),
+        bw, CONVERT_TO_BYTEPTR(p1), bw, bh, bw, xd->bd);
   else
-    av1_build_compound_diffwtd_mask(xd->seg_mask, mbmi->mask_type, p0, bw, p1,
-                                    bw, bh, bw);
+    av1_build_compound_diffwtd_mask(
+        xd->seg_mask, mbmi->interinter_comp.mask_type, p0, bw, p1, bw, bh, bw);
 
   return best_rd;
 }
@@ -7188,7 +7189,7 @@ static int64_t pick_interinter_mask(const AV1_COMP *const cpi, MACROBLOCK *x,
                                     const BLOCK_SIZE bsize,
                                     const uint8_t *const p0,
                                     const uint8_t *const p1) {
-  const COMPOUND_TYPE compound_type = x->e_mbd.mi[0]->interinter_compound_type;
+  const COMPOUND_TYPE compound_type = x->e_mbd.mi[0]->interinter_comp.type;
   switch (compound_type) {
     case COMPOUND_WEDGE: return pick_interinter_wedge(cpi, x, bsize, p0, p1);
     case COMPOUND_DIFFWTD: return pick_interinter_seg(cpi, x, bsize, p0, p1);
@@ -7203,22 +7204,20 @@ static int interinter_compound_motion_search(
   MB_MODE_INFO *const mbmi = xd->mi[0];
   int_mv tmp_mv[2];
   int tmp_rate_mv = 0;
-  const INTERINTER_COMPOUND_DATA compound_data = {
-    mbmi->wedge_index, mbmi->wedge_sign, mbmi->mask_type, xd->seg_mask,
-    mbmi->interinter_compound_type
-  };
+  mbmi->interinter_comp.seg_mask = xd->seg_mask;
+  const INTERINTER_COMPOUND_DATA *compound_data = &mbmi->interinter_comp;
 
   if (this_mode == NEW_NEWMV) {
-    do_masked_motion_search_indexed(cpi, x, cur_mv, &compound_data, bsize,
+    do_masked_motion_search_indexed(cpi, x, cur_mv, compound_data, bsize,
                                     mi_row, mi_col, tmp_mv, &tmp_rate_mv, 2);
     mbmi->mv[0].as_int = tmp_mv[0].as_int;
     mbmi->mv[1].as_int = tmp_mv[1].as_int;
   } else if (this_mode == NEW_NEARESTMV || this_mode == NEW_NEARMV) {
-    do_masked_motion_search_indexed(cpi, x, cur_mv, &compound_data, bsize,
+    do_masked_motion_search_indexed(cpi, x, cur_mv, compound_data, bsize,
                                     mi_row, mi_col, tmp_mv, &tmp_rate_mv, 0);
     mbmi->mv[0].as_int = tmp_mv[0].as_int;
   } else if (this_mode == NEAREST_NEWMV || this_mode == NEAR_NEWMV) {
-    do_masked_motion_search_indexed(cpi, x, cur_mv, &compound_data, bsize,
+    do_masked_motion_search_indexed(cpi, x, cur_mv, compound_data, bsize,
                                     mi_row, mi_col, tmp_mv, &tmp_rate_mv, 1);
     mbmi->mv[1].as_int = tmp_mv[1].as_int;
   }
@@ -7239,7 +7238,7 @@ static int64_t build_and_cost_compound_type(
   int64_t rd = INT64_MAX;
   int tmp_skip_txfm_sb;
   int64_t tmp_skip_sse_sb;
-  const COMPOUND_TYPE compound_type = mbmi->interinter_compound_type;
+  const COMPOUND_TYPE compound_type = mbmi->interinter_comp.type;
 
   best_rd_cur = pick_interinter_mask(cpi, x, bsize, *preds0, *preds1);
   *rs2 += get_interinter_compound_mask_rate(x, mbmi);
@@ -8246,7 +8245,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   int64_t skip_sse_sb = INT64_MAX;
   int16_t mode_ctx;
 
-  mbmi->interinter_compound_type = COMPOUND_AVERAGE;
+  mbmi->interinter_comp.type = COMPOUND_AVERAGE;
   mbmi->comp_group_idx = 0;
   mbmi->compound_idx = 1;
   if (mbmi->ref_frame[1] == INTRA_FRAME) mbmi->ref_frame[1] = NONE_FRAME;
@@ -8286,9 +8285,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   const RD_STATS backup_rd_stats_uv = *rd_stats_uv;
   const MB_MODE_INFO backup_mbmi = *mbmi;
   INTERINTER_COMPOUND_DATA best_compound_data;
-  memset(&best_compound_data, 0, sizeof(best_compound_data));
-  uint8_t tmp_mask_buf[2 * MAX_SB_SQUARE];
-  best_compound_data.seg_mask = tmp_mask_buf;
+  uint8_t tmp_best_mask_buf[2 * MAX_SB_SQUARE];
   RD_STATS best_rd_stats, best_rd_stats_y, best_rd_stats_uv;
   int64_t best_rd = INT64_MAX;
   int64_t best_ret_val = INT64_MAX;
@@ -8467,7 +8464,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         if (!is_interinter_compound_used(cur_type, bsize)) continue;
         tmp_rate_mv = rate_mv;
         best_rd_cur = INT64_MAX;
-        mbmi->interinter_compound_type = cur_type;
+        mbmi->interinter_comp.type = cur_type;
         int masked_type_cost = 0;
 
         const int comp_group_idx_ctx = get_comp_group_idx_context(xd);
@@ -8485,8 +8482,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
             masked_type_cost += x->comp_group_idx_cost[comp_group_idx_ctx][1];
             masked_type_cost +=
-                x->compound_type_cost[bsize]
-                                     [mbmi->interinter_compound_type - 1];
+                x->compound_type_cost[bsize][mbmi->interinter_comp.type - 1];
           }
         } else {
           mbmi->comp_group_idx = 0;
@@ -8531,13 +8527,9 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
           best_comp_group_idx = mbmi->comp_group_idx;
           best_compound_idx = mbmi->compound_idx;
           best_rd_compound = best_rd_cur;
-          best_compound_data.wedge_index = mbmi->wedge_index;
-          best_compound_data.wedge_sign = mbmi->wedge_sign;
-          best_compound_data.mask_type = mbmi->mask_type;
-          memcpy(best_compound_data.seg_mask, xd->seg_mask,
+          best_compound_data = mbmi->interinter_comp;
+          memcpy(tmp_best_mask_buf, xd->seg_mask,
                  2 * num_pix * sizeof(uint8_t));
-          best_compound_data.interinter_compound_type =
-              mbmi->interinter_compound_type;
           best_compmode_interinter_cost = rs2;
           if (have_newmv_in_inter_mode(this_mode)) {
             if (use_masked_motion_search(cur_type)) {
@@ -8556,20 +8548,14 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       }
       mbmi->comp_group_idx = best_comp_group_idx;
       mbmi->compound_idx = best_compound_idx;
-      if (mbmi->comp_group_idx == 1) {
-        assert(mbmi->interinter_compound_type != COMPOUND_AVERAGE);
-      }
-      mbmi->wedge_index = best_compound_data.wedge_index;
-      mbmi->wedge_sign = best_compound_data.wedge_sign;
-      mbmi->mask_type = best_compound_data.mask_type;
-      memcpy(xd->seg_mask, best_compound_data.seg_mask,
-             2 * num_pix * sizeof(uint8_t));
-      mbmi->interinter_compound_type =
-          best_compound_data.interinter_compound_type;
+      mbmi->interinter_comp = best_compound_data;
+      assert(IMPLIES(mbmi->comp_group_idx == 1,
+                     mbmi->interinter_comp.type != COMPOUND_AVERAGE));
+      memcpy(xd->seg_mask, tmp_best_mask_buf, 2 * num_pix * sizeof(uint8_t));
       if (have_newmv_in_inter_mode(this_mode)) {
         mbmi->mv[0].as_int = best_mv[0].as_int;
         mbmi->mv[1].as_int = best_mv[1].as_int;
-        if (use_masked_motion_search(mbmi->interinter_compound_type)) {
+        if (use_masked_motion_search(mbmi->interinter_comp.type)) {
           rd_stats->rate += best_tmp_rate_mv - rate_mv;
           rate_mv = best_tmp_rate_mv;
         }
@@ -8690,9 +8676,8 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     *rd_stats_uv = best_rd_stats_uv;
     ret_val = best_ret_val;
     *mbmi = best_mbmi;
-    if (mbmi->comp_group_idx == 1) {
-      assert(mbmi->interinter_compound_type != COMPOUND_AVERAGE);
-    }
+    assert(IMPLIES(mbmi->comp_group_idx == 1,
+                   mbmi->interinter_comp.type != COMPOUND_AVERAGE));
     memcpy(x->blk_skip, best_blk_skip,
            sizeof(best_blk_skip[0]) * xd->n8_h * xd->n8_w);
   }
@@ -9068,7 +9053,7 @@ static void rd_pick_skip_mode(RD_STATS *rd_cost,
   mbmi->interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
   mbmi->comp_group_idx = 0;
   mbmi->compound_idx = x->compound_idx;
-  mbmi->interinter_compound_type = COMPOUND_AVERAGE;
+  mbmi->interinter_comp.type = COMPOUND_AVERAGE;
   mbmi->motion_mode = SIMPLE_TRANSLATION;
   mbmi->ref_mv_idx = 0;
   mbmi->skip_mode = mbmi->skip = 1;
@@ -9129,7 +9114,7 @@ static void rd_pick_skip_mode(RD_STATS *rd_cost,
 
     search_state->best_mbmode.comp_group_idx = 0;
     search_state->best_mbmode.compound_idx = x->compound_idx;
-    search_state->best_mbmode.interinter_compound_type = COMPOUND_AVERAGE;
+    search_state->best_mbmode.interinter_comp.type = COMPOUND_AVERAGE;
     search_state->best_mbmode.motion_mode = SIMPLE_TRANSLATION;
 
     search_state->best_mbmode.interintra_mode =

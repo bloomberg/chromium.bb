@@ -1108,7 +1108,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
       if (mbmi->comp_group_idx == 0) {
         if (mbmi->compound_idx)
-          assert(mbmi->interinter_compound_type == COMPOUND_AVERAGE);
+          assert(mbmi->interinter_comp.type == COMPOUND_AVERAGE);
 
         if (cm->seq_params.enable_jnt_comp) {
           const int comp_index_ctx = get_comp_index_context(cm, xd);
@@ -1123,22 +1123,23 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
                mbmi->motion_mode == SIMPLE_TRANSLATION);
         assert(masked_compound_used);
         // compound_diffwtd, wedge
-        assert(mbmi->interinter_compound_type == COMPOUND_WEDGE ||
-               mbmi->interinter_compound_type == COMPOUND_DIFFWTD);
+        assert(mbmi->interinter_comp.type == COMPOUND_WEDGE ||
+               mbmi->interinter_comp.type == COMPOUND_DIFFWTD);
 
         if (is_interinter_compound_used(COMPOUND_WEDGE, bsize))
-          aom_write_symbol(w, mbmi->interinter_compound_type - 1,
+          aom_write_symbol(w, mbmi->interinter_comp.type - 1,
                            ec_ctx->compound_type_cdf[bsize],
                            COMPOUND_TYPES - 1);
 
-        if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
+        if (mbmi->interinter_comp.type == COMPOUND_WEDGE) {
           assert(is_interinter_compound_used(COMPOUND_WEDGE, bsize));
-          aom_write_symbol(w, mbmi->wedge_index, ec_ctx->wedge_idx_cdf[bsize],
-                           16);
-          aom_write_bit(w, mbmi->wedge_sign);
+          aom_write_symbol(w, mbmi->interinter_comp.wedge_index,
+                           ec_ctx->wedge_idx_cdf[bsize], 16);
+          aom_write_bit(w, mbmi->interinter_comp.wedge_sign);
         } else {
-          assert(mbmi->interinter_compound_type == COMPOUND_DIFFWTD);
-          aom_write_literal(w, mbmi->mask_type, MAX_DIFFWTD_MASK_BITS);
+          assert(mbmi->interinter_comp.type == COMPOUND_DIFFWTD);
+          aom_write_literal(w, mbmi->interinter_comp.mask_type,
+                            MAX_DIFFWTD_MASK_BITS);
         }
       }
     }

@@ -1279,24 +1279,23 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
             assert(masked_compound_used);
             if (is_interinter_compound_used(COMPOUND_WEDGE, bsize)) {
 #if CONFIG_ENTROPY_STATS
-              ++counts
-                    ->compound_type[bsize][mbmi->interinter_compound_type - 1];
+              ++counts->compound_type[bsize][mbmi->interinter_comp.type - 1];
 #endif
               if (allow_update_cdf) {
                 update_cdf(fc->compound_type_cdf[bsize],
-                           mbmi->interinter_compound_type - 1,
-                           COMPOUND_TYPES - 1);
+                           mbmi->interinter_comp.type - 1, COMPOUND_TYPES - 1);
               }
             }
           }
         }
-        if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
+        if (mbmi->interinter_comp.type == COMPOUND_WEDGE) {
           if (is_interinter_compound_used(COMPOUND_WEDGE, bsize)) {
 #if CONFIG_ENTROPY_STATS
-            counts->wedge_idx[bsize][mbmi->wedge_index]++;
+            counts->wedge_idx[bsize][mbmi->interinter_comp.wedge_index]++;
 #endif
             if (allow_update_cdf) {
-              update_cdf(fc->wedge_idx_cdf[bsize], mbmi->wedge_index, 16);
+              update_cdf(fc->wedge_idx_cdf[bsize],
+                         mbmi->interinter_comp.wedge_index, 16);
             }
           }
         }
@@ -1478,7 +1477,7 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     }
     if (has_second_ref(mbmi)) {
       if (mbmi->compound_idx == 0 ||
-          mbmi->interinter_compound_type == COMPOUND_AVERAGE)
+          mbmi->interinter_comp.type == COMPOUND_AVERAGE)
         mbmi->comp_group_idx = 0;
       else
         mbmi->comp_group_idx = 1;

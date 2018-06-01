@@ -706,7 +706,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
                          &pre, &src_stride);
         conv_params.ref = ref;
         conv_params.do_average = ref;
-        if (is_masked_compound_type(mi->interinter_compound_type)) {
+        if (is_masked_compound_type(mi->interinter_comp.type)) {
           // masked compound type has its own average mechanism
           conv_params.do_average = 0;
         }
@@ -779,12 +779,12 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
       warp_types.local_warp_allowed = mi->motion_mode == WARPED_CAUSAL;
       conv_params.ref = ref;
       conv_params.do_average = ref;
-      if (is_masked_compound_type(mi->interinter_compound_type)) {
+      if (is_masked_compound_type(mi->interinter_comp.type)) {
         // masked compound type has its own average mechanism
         conv_params.do_average = 0;
       }
 
-      if (ref && is_masked_compound_type(mi->interinter_compound_type))
+      if (ref && is_masked_compound_type(mi->interinter_comp.type))
         av1_make_masked_inter_predictor(
             pre[ref], src_stride[ref], dst, dst_buf->stride,
             &subpel_params[ref], sf, bw, bh, &conv_params, mi->interp_filters,

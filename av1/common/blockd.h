@@ -210,7 +210,7 @@ typedef struct {
   int wedge_sign;
   DIFFWTD_MASK_TYPE mask_type;
   uint8_t *seg_mask;
-  COMPOUND_TYPE interinter_compound_type;
+  COMPOUND_TYPE type;
 } INTERINTER_COMPOUND_DATA;
 
 #define INTER_TX_SIZE_BUF_LEN 16
@@ -251,10 +251,7 @@ typedef struct MB_MODE_INFO {
   int interintra_wedge_index;
   int interintra_wedge_sign;
   // interinter members
-  COMPOUND_TYPE interinter_compound_type;
-  int wedge_index;
-  int wedge_sign;
-  DIFFWTD_MASK_TYPE mask_type;
+  INTERINTER_COMPOUND_DATA interinter_comp;
   MOTION_MODE motion_mode;
   int overlappable_neighbors[2];
   int_mv mv[2];
