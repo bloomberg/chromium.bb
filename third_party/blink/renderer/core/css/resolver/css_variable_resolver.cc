@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
+#include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
@@ -174,9 +175,10 @@ bool CSSVariableResolver::ResolveVariableReference(
 
 CSSVariableData* CSSVariableResolver::ValueForEnvironmentVariable(
     const AtomicString& name) {
-  // TODO(beccahughes): Make this resolve the environment variable (what is here
-  // is just for testing for now).
-  return ValueForCustomProperty(name);
+  return state_.GetDocument()
+      .GetStyleEngine()
+      .EnsureEnvironmentVariables()
+      .ResolveVariable(name);
 }
 
 bool CSSVariableResolver::ResolveTokenRange(
