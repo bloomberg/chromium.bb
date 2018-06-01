@@ -133,10 +133,13 @@ bool LayoutSVGForeignObject::NodeAtFloatPoint(HitTestResult& result,
     return false;
 
   FloatPoint local_point = local_transform.Inverse().MapPoint(point_in_parent);
-
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    LayoutPoint point_in_foreign_object(local_point);
+    // |local_point| already includes the offset of the <foreignObject> element,
+    // but PaintLayer::HitTestLayer assumes it has not been.
+    point_in_foreign_object.MoveBy(-Layer()->LayoutBoxLocation());
     HitTestResult layer_result(result.GetHitTestRequest(),
-                               LayoutPoint(local_point));
+                               point_in_foreign_object);
     bool retval = Layer()->HitTest(layer_result);
     result = layer_result;
     return retval;
