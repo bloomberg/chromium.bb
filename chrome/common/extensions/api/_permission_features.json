@@ -688,11 +688,12 @@
       "312745D9BF916161191143F6490085EEA0434997"   // Google Talk debug
     ]
   },
-  "safeBrowingPrivate": {
-    "channel": "dev",
+  "safeBrowsingPrivate": {
+    "channel": "stable",
     "extension_types": ["extension"],
     "whitelist": [
-      "FD15C63ABA854733FDCBC1D4D34A71E963A12ABD"  // Chrome Reporting Extension
+      "FD15C63ABA854733FDCBC1D4D34A71E963A12ABD",  // Chrome Reporting Extension
+      "08455FA7CB8734168378F731B00B354CEEE0088F"   // Chrome Reporting Ext. Beta
     ]
   },
   "screenlockPrivate": {
