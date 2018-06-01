@@ -47,7 +47,7 @@
 #include "third_party/blink/renderer/core/css/style_media.h"
 #include "third_party/blink/renderer/core/dom/computed_accessible_node.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
-#include "third_party/blink/renderer/core/dom/events/dom_window_event_queue.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
@@ -319,7 +319,14 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
   ClearDocument();
 
   document_ = CreateDocument(mime_type, init, force_xhtml);
-  event_queue_ = DOMWindowEventQueue::Create(document_.Get());
+
+  // This queue is unthrottled because throttling IndexedDB events may break
+  // scenarios where several tabs, some of which are backgrounded, access
+  // the same database concurrently.
+  // TODO(hajimehoshi): Task type should be determined by a posted event instead
+  // of specifying here.
+  event_queue_ =
+      EventQueueImpl::Create(document_.Get(), TaskType::kUnthrottled);
   document_->Initialize();
 
   if (!GetFrame())

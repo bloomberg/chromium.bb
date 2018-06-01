@@ -7,6 +7,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
@@ -29,7 +30,7 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     : worker_clients_(worker_clients),
       script_controller_(
           WorkerOrWorkletScriptController::Create(this, isolate)),
-      event_queue_(WorkerEventQueue::Create(this)),
+      event_queue_(EventQueueImpl::Create(this, TaskType::kInternalWorker)),
       reporting_proxy_(reporting_proxy),
       used_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {
   if (worker_clients_)

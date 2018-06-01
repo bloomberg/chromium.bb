@@ -50,9 +50,9 @@ class Document;
 class DocumentInit;
 class DOMSelection;
 class DOMVisualViewport;
-class DOMWindowEventQueue;
 class Element;
 class EventQueue;
+class EventQueueImpl;
 class ExceptionState;
 class External;
 class FrameConsole;
@@ -381,7 +381,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   mutable Member<ApplicationCache> application_cache_;
 
-  Member<DOMWindowEventQueue> event_queue_;
+  Member<EventQueueImpl> event_queue_;
   scoped_refptr<SerializedScriptValue> pending_state_object_;
 
   HeapHashSet<Member<PostMessageTimer>> post_message_timers_;
