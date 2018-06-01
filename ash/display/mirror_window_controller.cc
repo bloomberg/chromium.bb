@@ -183,12 +183,9 @@ void MirrorWindowController::UpdateWindow(
       mirroring_host_info_map_[display_info.id()] = host_info;
 
       aura::WindowTreeHost* host = host_info->ash_host->AsWindowTreeHost();
-      // TODO: Config::MUS should not install an InputMethod.
-      // http://crbug.com/706913
-      if (!host->has_input_method()) {
-        host->SetSharedInputMethod(
-            Shell::Get()->window_tree_host_manager()->input_method());
-      }
+      DCHECK(!host->has_input_method());
+      host->SetSharedInputMethod(
+          Shell::Get()->window_tree_host_manager()->input_method());
       host->window()->SetName(
           base::StringPrintf("MirrorRootWindow-%d", mirror_host_count++));
       host->compositor()->SetBackgroundColor(SK_ColorBLACK);
@@ -324,8 +321,6 @@ void MirrorWindowController::OnHostResized(aura::WindowTreeHost* host) {
       if (info->mirror_window_host_size == host->GetBoundsInPixels().size())
         return;
       info->mirror_window_host_size = host->GetBoundsInPixels().size();
-      // TODO: |reflector_| should always be non-null here, but isn't in MUS
-      // yet because of http://crbug.com/601869.
       if (reflector_)
         reflector_->OnMirroringCompositorResized();
       // No need to update the transformer as new transformer is already set
@@ -415,8 +410,7 @@ void MirrorWindowController::CloseAndDeleteHost(MirroringHostInfo* host_info,
   host->RemoveObserver(Shell::Get()->window_tree_host_manager());
   host->RemoveObserver(this);
   host_info->ash_host->PrepareForShutdown();
-  // TODO: |reflector_| should always be non-null here, but isn't in MUS yet
-  // because of http://crbug.com/601869.
+  // |reflector_| may be null during display disconnect or shutdown.
   if (reflector_ && host_info->mirror_window->layer()->GetCompositor())
     reflector_->RemoveMirroringLayer(host_info->mirror_window->layer());
 

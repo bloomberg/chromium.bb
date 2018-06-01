@@ -119,10 +119,6 @@ TEST_F(MirrorWindowControllerTest, DockMode) {
 TEST_F(MirrorOnBootTest, MirrorOnBoot) {
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
 
-  // MirrorWindowController is not used in the MUS or MASH configs.
-  if (Shell::GetAshConfig() != Config::CLASSIC)
-    return;
-
   RunAllPendingInMessageLoop();
   MirrorWindowTestApi test_api;
   EXPECT_EQ(1U, test_api.GetHosts().size());
