@@ -236,6 +236,7 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
 
   KeyboardUI* ui() { return controller_.ui(); }
   KeyboardController& controller() { return controller_; }
+  KeyboardLayoutDelegate* layout_delegate() { return layout_delegate_.get(); }
 
   void ShowKeyboard() {
     test_text_input_client_.reset(
@@ -265,6 +266,7 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
     is_available_number_of_calls_++;
   }
   void OnKeyboardClosed() override { keyboard_closed_ = true; }
+  void ClearKeyboardClosed() { keyboard_closed_ = false; }
 
   int visible_bounds_number_of_calls() const {
     return visible_bounds_number_of_calls_;
@@ -892,6 +894,30 @@ TEST_F(KeyboardControllerAnimationTest, FloatingKeyboardEnsureCaretInWorkArea) {
   RunAnimationForLayer(layer);
 
   EXPECT_TRUE(keyboard_container()->IsVisible());
+}
+
+// Checks DisableKeyboard() doesn't clear the observer list.
+TEST_F(KeyboardControllerTest, DontClearObserverList) {
+  ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
+  aura::Window* keyboard_container(controller().GetContainerWindow());
+  root_window()->AddChild(keyboard_container);
+
+  ShowKeyboard();
+  EXPECT_TRUE(keyboard_container->IsVisible());
+  EXPECT_FALSE(IsKeyboardClosed());
+
+  root_window()->RemoveChild(keyboard_container);
+  controller().DisableKeyboard();
+  EXPECT_TRUE(IsKeyboardClosed());
+
+  controller().EnableKeyboard(
+      std::make_unique<TestKeyboardUI>(host()->GetInputMethod()),
+      layout_delegate());
+  ClearKeyboardClosed();
+  EXPECT_FALSE(IsKeyboardClosed());
+
+  controller().DisableKeyboard();
+  EXPECT_TRUE(IsKeyboardClosed());
 }
 
 }  // namespace keyboard

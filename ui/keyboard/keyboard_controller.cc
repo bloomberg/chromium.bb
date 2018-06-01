@@ -270,7 +270,6 @@ void KeyboardController::DisableKeyboard() {
   ui_->GetInputMethod()->RemoveObserver(this);
   for (KeyboardControllerObserver& observer : observer_list_)
     observer.OnKeyboardClosed();
-  observer_list_.Clear();
   ui_->SetController(nullptr);
   ui_.reset();
 }
