@@ -20,8 +20,8 @@
   <message name="IDS_WALLPAPER_MANAGER_CUSTOM_CATEGORY_LABEL" desc="Wallpaper category label.">
     Custom
   </message>
-  <message name="IDS_WALLPAPER_MANAGER_MY_PHOTOS_CATEGORY_LABEL" desc="Wallpaper category label, the equivalent of the Custom category on the new wallpaper picker.">
-    My Photos
+  <message name="IDS_WALLPAPER_MANAGER_MY_IMAGES_CATEGORY_LABEL" desc="Wallpaper category label, the equivalent of the Custom category on the new wallpaper picker.">
+    My Images
   </message>
   <message name="IDS_WALLPAPER_MANAGER_SELECT_CUSTOM_LABEL" desc="Selects custom wallpaper label.">
     Custom Image:
@@ -50,8 +50,14 @@
   <message name="IDS_WALLPAPER_MANAGER_ACCESS_FAIL" desc="The string displayed to user when access wallpaper server failed.">
     Chrome cannot access wallpapers. Please connect to a network.
   </message>
+  <message name="IDS_WALLPAPER_MANAGER_NETWORK_ERROR" desc="The string displayed to user when access wallpaper server failed on the new wallpaper picker.">
+    The images are currently not available. Please reconnect to view the collections.
+  </message>
   <message name="IDS_WALLPAPER_MANAGER_DOWNLOAD_FAIL" desc="The string displayed to user when downloading the wallpaper failed.">
     Chrome cannot download this wallpaper.
+  </message>
+  <message name="IDS_WALLPAPER_MANAGER_IMAGE_ERROR" desc="The string displayed to user when downloading the wallpaper failed on the new wallpaper picker.">
+    There's an error. Please try again by choosing other images.
   </message>
   <message name="IDS_WALLPAPER_MANAGER_DOWNLOAD_CANCEL" desc="The string displayed to user when downloading the wallpaper canceled.">
     Download was canceled.
