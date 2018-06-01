@@ -43,6 +43,10 @@ class PlatformSensorProviderWin final : public PlatformSensorProvider {
                             const CreateSensorCallback& callback) override;
 
  private:
+  friend struct base::DefaultSingletonTraits<PlatformSensorProviderWin>;
+
+  class SensorThread;
+
   PlatformSensorProviderWin();
 
   void CreateSensorThread();
@@ -56,10 +60,6 @@ class PlatformSensorProviderWin final : public PlatformSensorProvider {
       const CreateSensorCallback& callback,
       std::unique_ptr<PlatformSensorReaderWin> sensor_reader);
 
- private:
-  friend struct base::DefaultSingletonTraits<PlatformSensorProviderWin>;
-
-  class SensorThread;
   std::unique_ptr<SensorThread> sensor_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorProviderWin);
