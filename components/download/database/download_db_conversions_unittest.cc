@@ -18,11 +18,17 @@ InProgressInfo CreateInProgressInfo() {
   info.target_path = base::FilePath(FILE_PATH_LITERAL("/tmp"));
   info.url_chain.emplace_back("http://foo");
   info.url_chain.emplace_back("http://foo2");
+  info.referrer_url = GURL("http://foo1.com");
   info.site_url = GURL("http://foo.com");
-  info.end_time = base::Time::NowFromSystemTime().LocalMidnight();
+  info.tab_url = GURL("http://foo.com");
+  info.tab_referrer_url = GURL("http://abc.com");
+  info.start_time = base::Time::NowFromSystemTime().LocalMidnight();
+  info.end_time = base::Time();
   info.etag = "A";
   info.last_modified = "Wed, 1 Oct 2018 07:00:00 GMT";
   info.received_bytes = 1000;
+  info.mime_type = "text/html";
+  info.original_mime_type = "text/html";
   info.total_bytes = 10000;
   info.state = DownloadItem::IN_PROGRESS;
   info.danger_type = DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
@@ -44,6 +50,8 @@ InProgressInfo CreateInProgressInfo() {
 
 DownloadInfo CreateDownloadInfo() {
   DownloadInfo info;
+  info.guid = "abcdefg";
+  info.id = 1234567;
   info.in_progress_info = CreateInProgressInfo();
   info.ukm_info = UkmInfo(DownloadSource::FROM_RENDERER, 100);
   return info;

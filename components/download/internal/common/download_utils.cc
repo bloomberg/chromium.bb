@@ -359,6 +359,67 @@ DownloadEntry CreateDownloadEntryFromItem(
                        GetUniqueDownloadId());
 }
 
+DownloadDBEntry CreateDownloadDBEntryFromItem(
+    const DownloadItem& item,
+    DownloadSource download_source,
+    bool fetch_error_body,
+    const DownloadUrlParameters::RequestHeadersType& request_headers) {
+  DownloadDBEntry entry;
+  DownloadInfo download_info;
+  download_info.guid = item.GetGuid();
+  download_info.id = item.GetId();
+  InProgressInfo in_progress_info;
+  in_progress_info.url_chain = item.GetUrlChain();
+  in_progress_info.referrer_url = item.GetReferrerUrl();
+  in_progress_info.site_url = item.GetSiteUrl();
+  in_progress_info.tab_url = item.GetTabUrl();
+  in_progress_info.tab_referrer_url = item.GetTabReferrerUrl();
+  in_progress_info.fetch_error_body = fetch_error_body;
+  in_progress_info.request_headers = request_headers;
+  in_progress_info.etag = item.GetETag();
+  in_progress_info.last_modified = item.GetLastModifiedTime();
+  in_progress_info.mime_type = item.GetMimeType();
+  in_progress_info.original_mime_type = item.GetOriginalMimeType();
+  in_progress_info.total_bytes = item.GetTotalBytes();
+  in_progress_info.current_path = item.GetFullPath();
+  in_progress_info.target_path = item.GetTargetFilePath();
+  in_progress_info.received_bytes = item.GetReceivedBytes();
+  in_progress_info.start_time = item.GetStartTime();
+  in_progress_info.end_time = item.GetEndTime();
+  in_progress_info.received_slices = item.GetReceivedSlices();
+  in_progress_info.hash = item.GetHash();
+  in_progress_info.transient = item.IsTransient();
+  in_progress_info.state = item.GetState();
+  in_progress_info.danger_type = item.GetDangerType();
+  in_progress_info.interrupt_reason = item.GetLastReason();
+  in_progress_info.paused = item.IsPaused();
+  in_progress_info.bytes_wasted = item.GetBytesWasted();
+
+  download_info.in_progress_info = in_progress_info;
+
+  UkmInfo ukm_info(download_source, GetUniqueDownloadId());
+  download_info.ukm_info = ukm_info;
+  entry.download_info = download_info;
+  return entry;
+}
+
+base::Optional<DownloadEntry> CreateDownloadEntryFromDownloadDBEntry(
+    base::Optional<DownloadDBEntry> entry) {
+  if (!entry || !entry->download_info)
+    return base::Optional<DownloadEntry>();
+
+  base::Optional<InProgressInfo> in_progress_info =
+      entry->download_info->in_progress_info;
+  base::Optional<UkmInfo> ukm_info = entry->download_info->ukm_info;
+  if (!ukm_info || !in_progress_info)
+    return base::Optional<DownloadEntry>();
+
+  return base::Optional<DownloadEntry>(DownloadEntry(
+      entry->download_info->guid, std::string(), ukm_info->download_source,
+      in_progress_info->fetch_error_body, in_progress_info->request_headers,
+      ukm_info->ukm_download_id));
+}
+
 uint64_t GetUniqueDownloadId() {
   // Get a new UKM download_id that is not 0.
   uint64_t download_id = 0;

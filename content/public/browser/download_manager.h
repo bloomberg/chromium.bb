@@ -223,6 +223,11 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   // finish asynchronously after this method returns.
   virtual void CheckForHistoryFilesRemoval() = 0;
 
+  // Called when download history query completes. Call
+  // |load_history_downloads_cb| to load all the history downloads.
+  virtual void OnHistoryQueryComplete(
+      base::OnceClosure load_history_downloads_cb) = 0;
+
   // Get the download item for |id| if present, no matter what type of download
   // it is or state it's in.
   // DEPRECATED: Don't add new callers for GetDownload(uint32_t). Instead keep

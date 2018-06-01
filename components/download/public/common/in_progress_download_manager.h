@@ -27,9 +27,11 @@ struct ResourceResponse;
 
 namespace download {
 
+class DownloadDBCache;
 class DownloadURLLoaderFactoryGetter;
 class DownloadUrlParameters;
 class InProgressCache;
+struct DownloadDBEntry;
 
 // Manager for handling all active downloads.
 class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
@@ -133,6 +135,11 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   void OnUrlDownloadHandlerCreated(
       UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader) override;
 
+  // Called download db is initialized.
+  void OnDownloadDBInitialized(
+      base::OnceClosure callback,
+      std::unique_ptr<std::vector<DownloadDBEntry>> entries);
+
   // Start a download with given ID.
   void StartDownloadWithId(
       std::unique_ptr<DownloadCreateInfo> info,
@@ -155,11 +162,18 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Cache for storing metadata about in progress downloads.
   std::unique_ptr<InProgressCache> download_metadata_cache_;
 
+  // Cache for DownloadDB.
+  std::unique_ptr<DownloadDBCache> download_db_cache_;
+
   // listens to information about in-progress download items.
   std::unique_ptr<DownloadItem::Observer> in_progress_download_observer_;
 
   // callback to check if an origin is secure.
   IsOriginSecureCallback is_origin_secure_cb_;
+
+  // A list of in-progress download items, could be null if DownloadManagerImpl
+  // is managing all downloads.
+  std::vector<std::unique_ptr<DownloadItem>> in_progress_downloads_;
 
   base::WeakPtrFactory<InProgressDownloadManager> weak_factory_;
 
