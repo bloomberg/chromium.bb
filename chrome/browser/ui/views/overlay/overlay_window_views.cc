@@ -233,6 +233,7 @@ void OverlayWindowViews::SetUpViews() {
       l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_CLOSE_CONTROL_TEXT));
   close_controls_view_->SetAccessibleName(close_button_label);
   close_controls_view_->SetTooltipText(close_button_label);
+  close_controls_view_->SetInstallFocusRingOnFocus(true);
 
   // views::View that toggles play/pause. -------------------------------------
   play_pause_controls_view_->SetSize(kPlayPauseButtonSize);
@@ -268,6 +269,7 @@ void OverlayWindowViews::SetUpViews() {
   const base::string16 pause_button_label(
       l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_PAUSE_CONTROL_TEXT));
   play_pause_controls_view_->SetToggledTooltipText(pause_button_label);
+  play_pause_controls_view_->SetInstallFocusRingOnFocus(true);
 
   // --------------------------------------------------------------------------
   // Paint to ui::Layers to use in the OverlaySurfaceEmbedder.
