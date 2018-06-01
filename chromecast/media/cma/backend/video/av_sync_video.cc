@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iomanip>
+#include <limits>
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
@@ -110,8 +111,8 @@ void AvSyncVideo::UpkeepAvSync() {
   // GetCurrentPts values that are way off.
   int64_t audio_pts = backend_->audio_decoder()->GetCurrentPts();
   if (abs(audio_pts - new_current_vpts) >
-          (1ll * 60ll * 60ll * 1000000ll) /* 1hr in us */
-      || audio_pts == kInvalidTimestamp) {
+          base::TimeDelta::FromHours(1).InMicroseconds() ||
+      audio_pts == kInvalidTimestamp) {
     LOG(WARNING) << "Audio decoder returned invalid pts=" << audio_pts
                  << " new_current_vpts=" << new_current_vpts;
   } else {
@@ -145,12 +146,13 @@ void AvSyncVideo::UpkeepAvSync() {
   int64_t difference;
   error_->EstimateY(now, &difference, &error);
 
-  VLOG(3) << "Pts_monitor."
+  VLOG(2) << "Pts_monitor."
           << " difference=" << difference / 1000 << " apts_slope=" << apts_slope
           << " apts_slope=" << apts_slope
           << " current_audio_playback_rate_=" << current_audio_playback_rate_
           << " current_vpts=" << new_current_vpts
-          << " current_apts=" << backend_->audio_decoder()->GetCurrentPts();
+          << " current_apts=" << backend_->audio_decoder()->GetCurrentPts()
+          << " current_time=" << backend_->MonotonicClockNow();
 
   av_sync_difference_sum_ += difference;
   ++av_sync_difference_count_;

@@ -27,7 +27,9 @@ MockVideoDecoderForMixer<CRN, CRD, CF>::MockVideoDecoderForMixer() {
 }
 
 template <int64_t CRN, int64_t CRD, int64_t CF>
-void MockVideoDecoderForMixer<CRN, CRD, CF>::Initialize() {}
+bool MockVideoDecoderForMixer<CRN, CRD, CF>::Initialize() {
+  return true;
+}
 
 template <int64_t CRN, int64_t CRD, int64_t CF>
 bool MockVideoDecoderForMixer<CRN, CRD, CF>::Start(int64_t start_pts,

@@ -52,7 +52,9 @@ void VideoDecoderNull::OnEndOfStream() {
   delegate_->OnEndOfStream();
 }
 
-void VideoDecoderNull::Initialize() {}
+bool VideoDecoderNull::Initialize() {
+  return true;
+}
 
 bool VideoDecoderNull::Start(int64_t start_pts, bool need_avsync) {
   return true;
