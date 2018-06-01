@@ -29,6 +29,7 @@ SerializedHandle::SerializedHandle(SerializedHandle&& other)
     : type_(other.type_),
       shm_handle_(other.shm_handle_),
       size_(other.size_),
+      shm_region_(std::move(other.shm_region_)),
       descriptor_(other.descriptor_),
       open_flags_(other.open_flags_),
       file_io_(other.file_io_) {
@@ -40,6 +41,7 @@ SerializedHandle& SerializedHandle::operator=(SerializedHandle&& other) {
   type_ = other.type_;
   shm_handle_ = other.shm_handle_;
   size_ = other.size_;
+  shm_region_ = std::move(other.shm_region_);
   descriptor_ = other.descriptor_;
   open_flags_ = other.open_flags_;
   file_io_ = other.file_io_;
@@ -65,6 +67,19 @@ SerializedHandle::SerializedHandle(const base::SharedMemoryHandle& handle,
       file_io_(0) {}
 
 SerializedHandle::SerializedHandle(
+    base::subtle::PlatformSharedMemoryRegion region)
+    : type_(SHARED_MEMORY_REGION),
+      size_(0),
+      shm_region_(std::move(region)),
+      descriptor_(IPC::InvalidPlatformFileForTransit()),
+      open_flags_(0),
+      file_io_(0) {
+  // Writable regions are not supported.
+  DCHECK_NE(shm_region_.GetMode(),
+            base::subtle::PlatformSharedMemoryRegion::Mode::kWritable);
+}
+
+SerializedHandle::SerializedHandle(
     Type type,
     const IPC::PlatformFileForTransit& socket_descriptor)
     : type_(type),
@@ -78,6 +93,8 @@ bool SerializedHandle::IsHandleValid() const {
   switch (type_) {
     case SHARED_MEMORY:
       return base::SharedMemory::IsHandleValid(shm_handle_);
+    case SHARED_MEMORY_REGION:
+      return shm_region_.IsValid();
     case SOCKET:
     case FILE:
       return !(IPC::InvalidPlatformFileForTransit() == descriptor_);
@@ -96,6 +113,9 @@ void SerializedHandle::Close() {
         break;
       case SHARED_MEMORY:
         base::SharedMemory::CloseHandle(shm_handle_);
+        break;
+      case SHARED_MEMORY_REGION:
+        shm_region_ = base::subtle::PlatformSharedMemoryRegion();
         break;
       case SOCKET:
       case FILE:
@@ -144,6 +164,7 @@ bool SerializedHandle::ReadHeader(base::PickleIterator* iter, Header* hdr) {
       valid_type = true;
       break;
     }
+    case SHARED_MEMORY_REGION:
     case SOCKET:
     case INVALID:
       valid_type = true;

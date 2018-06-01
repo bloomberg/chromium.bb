@@ -62,14 +62,29 @@ void WriteHandle(int handle_index,
   if (handle.type() == SerializedHandle::SHARED_MEMORY) {
     // Now write the handle itself in POSIX style.
     // This serialization must be kept in sync with
-    // ParamTraits<SharedMemoryHandle>::Write and
-    // ParamTraits<UnguessableToken>::Write.
+    // ParamTraits<SharedMemoryHandle>::Write.
     if (handle.shmem().IsValid()) {
       msg->WriteBool(true);  // valid == true
       msg->WriteInt(handle_index);
-      msg->WriteUInt64(handle.shmem().GetGUID().GetHighForSerialization());
-      msg->WriteUInt64(handle.shmem().GetGUID().GetLowForSerialization());
+      IPC::WriteParam(msg, handle.shmem().GetGUID());
       msg->WriteUInt64(handle.shmem().GetSize());
+    } else {
+      msg->WriteBool(false);  // valid == false
+    }
+  } else if (handle.type() == SerializedHandle::SHARED_MEMORY_REGION) {
+    // Write the region in POSIX style.
+    // This serialization must be kept in sync with
+    // ParamTraits<PlatformSharedMemoryRegion>::Write.
+    const auto& region = handle.shmem_region();
+    if (region.IsValid()) {
+      IPC::WriteParam(msg, true);  // valid == true
+      IPC::WriteParam(msg, region.GetMode());
+      IPC::WriteParam(msg, static_cast<uint64_t>(region.GetSize()));
+      IPC::WriteParam(msg, region.GetGUID());
+      // Writable regions are not supported, so write only one handle index.
+      DCHECK_NE(region.GetMode(),
+                base::subtle::PlatformSharedMemoryRegion::Mode::kWritable);
+      IPC::WriteParam(msg, handle_index);
     } else {
       msg->WriteBool(false);  // valid == false
     }

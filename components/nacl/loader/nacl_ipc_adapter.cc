@@ -254,6 +254,25 @@ std::unique_ptr<NaClDescWrapper> MakeShmNaClDesc(
 #endif
 }
 
+std::unique_ptr<NaClDescWrapper> MakeShmRegionNaClDesc(
+    base::subtle::PlatformSharedMemoryRegion region) {
+  // Writable regions are not supported in NaCl.
+  DCHECK_NE(region.GetMode(),
+            base::subtle::PlatformSharedMemoryRegion::Mode::kWritable);
+  size_t size = region.GetSize();
+  base::subtle::PlatformSharedMemoryRegion::ScopedPlatformHandle handle =
+      region.PassPlatformHandle();
+  return std::make_unique<NaClDescWrapper>(
+#if defined(OS_MACOSX)
+      NaClDescImcShmMachMake(handle.release(),
+#elif defined(OS_WIN)
+      NaClDescImcShmMake(handle.Take(),
+#else
+      NaClDescImcShmMake(handle.fd.release(),
+#endif
+                             size));
+}
+
 }  // namespace
 
 class NaClIPCAdapter::RewrittenMessage {
@@ -556,24 +575,26 @@ bool NaClIPCAdapter::RewriteMessage(const IPC::Message& msg, uint32_t type) {
 
     // Now add any descriptors we found to rewritten_msg. |handles| is usually
     // empty, unless we read a message containing a FD or handle.
-    for (Handles::const_iterator iter = handles.begin();
-         iter != handles.end();
-         ++iter) {
+    for (ppapi::proxy::SerializedHandle& handle : handles) {
       std::unique_ptr<NaClDescWrapper> nacl_desc;
-      switch (iter->type()) {
+      switch (handle.type()) {
         case ppapi::proxy::SerializedHandle::SHARED_MEMORY: {
-          nacl_desc =
-              MakeShmNaClDesc(iter->shmem(), static_cast<size_t>(iter->size()));
+          nacl_desc = MakeShmNaClDesc(handle.shmem(),
+                                      static_cast<size_t>(handle.size()));
+          break;
+        }
+        case ppapi::proxy::SerializedHandle::SHARED_MEMORY_REGION: {
+          nacl_desc = MakeShmRegionNaClDesc(handle.TakeSharedMemoryRegion());
           break;
         }
         case ppapi::proxy::SerializedHandle::SOCKET: {
           nacl_desc.reset(new NaClDescWrapper(NaClDescSyncSocketMake(
 #if defined(OS_WIN)
-              iter->descriptor().GetHandle()
+              handle.descriptor().GetHandle()
 #else
-              iter->descriptor().fd
+              handle.descriptor().fd
 #endif
-              )));
+                  )));
           break;
         }
         case ppapi::proxy::SerializedHandle::FILE: {
@@ -581,15 +602,14 @@ bool NaClIPCAdapter::RewriteMessage(const IPC::Message& msg, uint32_t type) {
           // required, wrap it in a NaClDescQuota.
           NaClDesc* desc = NaClDescIoMakeFromHandle(
 #if defined(OS_WIN)
-              iter->descriptor().GetHandle(),
+              handle.descriptor().GetHandle(),
 #else
-              iter->descriptor().fd,
+              handle.descriptor().fd,
 #endif
-              TranslatePepperFileReadWriteOpenFlags(iter->open_flags()));
-          if (desc && iter->file_io()) {
+              TranslatePepperFileReadWriteOpenFlags(handle.open_flags()));
+          if (desc && handle.file_io()) {
             desc = MakeNaClDescQuota(
-                locked_data_.nacl_msg_scanner_.GetFile(iter->file_io()),
-                desc);
+                locked_data_.nacl_msg_scanner_.GetFile(handle.file_io()), desc);
           }
           if (desc)
             nacl_desc.reset(new NaClDescWrapper(desc));
