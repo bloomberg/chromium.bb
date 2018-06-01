@@ -2190,13 +2190,11 @@ static INLINE int64_t dist_block_px_domain(const AV1_COMP *cpi, MACROBLOCK *x,
                          blk_row, blk_col, plane_bsize, tx_bsize);
 }
 
-  // NOTE: CONFIG_COLLECT_RD_STATS takes 3 possible values
-  // This macro has 3 possible values:
-  // 0: Do not collect any RD stats
-  // 1: Collect RD stats for transform units
-  // 2: Collect RD stats for partition units
-
 #if CONFIG_COLLECT_RD_STATS
+// NOTE: CONFIG_COLLECT_RD_STATS has 3 possible values
+// 0: Do not collect any RD stats
+// 1: Collect RD stats for transform units
+// 2: Collect RD stats for partition units
 static double get_mean(const int16_t *diff, int stride, int w, int h) {
   double sum = 0.0;
   for (int j = 0; j < h; ++j) {
@@ -8213,7 +8211,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   uint8_t *tmp_buf;
   int64_t rd = INT64_MAX;
   BUFFER_SET orig_dst, tmp_dst;
-  int rs = 0;
 
   int skip_txfm_sb = 0;
   int64_t skip_sse_sb = INT64_MAX;
@@ -8280,7 +8277,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                               (mbmi->mode != GLOBAL_GLOBALMV);
   // If !search_jnt_comp, we need to force mbmi->compound_idx = 1.
   for (comp_idx = 1; comp_idx >= !search_jnt_comp; --comp_idx) {
-    rs = 0;
+    int rs = 0;
     int compmode_interinter_cost = 0;
     early_terminate = 0;
     *rd_stats = backup_rd_stats;
@@ -8624,37 +8621,37 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // !INTER_MODE_RD_STATS_DUMP
 #endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
 
-    if (search_jnt_comp) {
-      if (cpi->sf.jnt_comp_fast_tx_search && comp_idx == 0) {
-        // TODO(chengchen): this speed feature introduces big loss.
-        // Need better estimation of rate distortion.
-        rd_stats->rate += rs;
-        rd_stats->rate += plane_rate[0] + plane_rate[1] + plane_rate[2];
-        rd_stats_y->rate = plane_rate[0];
-        rd_stats_uv->rate = plane_rate[1] + plane_rate[2];
-        rd_stats->sse = plane_sse[0] + plane_sse[1] + plane_sse[2];
-        rd_stats_y->sse = plane_sse[0];
-        rd_stats_uv->sse = plane_sse[1] + plane_sse[2];
-        rd_stats->dist = plane_dist[0] + plane_dist[1] + plane_dist[2];
-        rd_stats_y->dist = plane_dist[0];
-        rd_stats_uv->dist = plane_dist[1] + plane_dist[2];
-      } else {
-        ret_val = motion_mode_rd(cpi, x, bsize, rd_stats, rd_stats_y,
-                                 rd_stats_uv, disable_skip, mi_row, mi_col,
-                                 args, ref_best_rd, refs, rate_mv, &orig_dst);
-      }
-      if (ret_val != INT64_MAX) {
+    if (search_jnt_comp && cpi->sf.jnt_comp_fast_tx_search && comp_idx == 0) {
+      // TODO(chengchen): this speed feature introduces big loss.
+      // Need better estimation of rate distortion.
+      rd_stats->rate += rs;
+      rd_stats->rate += plane_rate[0] + plane_rate[1] + plane_rate[2];
+      rd_stats_y->rate = plane_rate[0];
+      rd_stats_uv->rate = plane_rate[1] + plane_rate[2];
+      rd_stats->sse = plane_sse[0] + plane_sse[1] + plane_sse[2];
+      rd_stats_y->sse = plane_sse[0];
+      rd_stats_uv->sse = plane_sse[1] + plane_sse[2];
+      rd_stats->dist = plane_dist[0] + plane_dist[1] + plane_dist[2];
+      rd_stats_y->dist = plane_dist[0];
+      rd_stats_uv->dist = plane_dist[1] + plane_dist[2];
+    } else {
+      ret_val = motion_mode_rd(cpi, x, bsize, rd_stats, rd_stats_y, rd_stats_uv,
+                               disable_skip, mi_row, mi_col, args, ref_best_rd,
+                               refs, rate_mv, &orig_dst);
+    }
+    if (ret_val != INT64_MAX) {
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
-        const int residue_cost = rd_stats_y->rate + rd_stats_uv->rate;
-        inter_mode_data_push(mbmi->sb_type, rd_stats->sse, rd_stats->dist,
-                             residue_cost);
+      const int residue_cost = rd_stats_y->rate + rd_stats_uv->rate;
+      inter_mode_data_push(mbmi->sb_type, rd_stats->sse, rd_stats->dist,
+                           residue_cost);
 #if INTER_MODE_RD_STATS_DUMP
-        inter_mode_rd_vector_push(
-            inter_mode_rd_vector, this_mode, mbmi, mbmi_ext, rd_stats->sse,
-            rd_stats->dist, args->single_comp_cost + compmode_interinter_cost,
-            args->ref_frame_cost, mv_cost, residue_cost);
+      inter_mode_rd_vector_push(
+          inter_mode_rd_vector, this_mode, mbmi, mbmi_ext, rd_stats->sse,
+          rd_stats->dist, args->single_comp_cost + compmode_interinter_cost,
+          args->ref_frame_cost, mv_cost, residue_cost);
 #endif  // INTER_MODE_RD_STATS_DUMP
 #endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
+      if (search_jnt_comp) {
         int64_t tmp_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
         if (tmp_rd < best_rd) {
           best_rd_stats = *rd_stats;
@@ -8667,25 +8664,10 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                  sizeof(best_blk_skip[0]) * xd->n8_h * xd->n8_w);
         }
       }
-    } else {
-      ret_val = motion_mode_rd(cpi, x, bsize, rd_stats, rd_stats_y, rd_stats_uv,
-                               disable_skip, mi_row, mi_col, args, ref_best_rd,
-                               refs, rate_mv, &orig_dst);
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
-      if (ret_val != INT64_MAX) {
-        const int residue_cost = rd_stats_y->rate + rd_stats_uv->rate;
-        inter_mode_data_push(mbmi->sb_type, rd_stats->sse, rd_stats->dist,
-                             residue_cost);
-#if INTER_MODE_RD_STATS_DUMP
-        inter_mode_rd_vector_push(
-            inter_mode_rd_vector, this_mode, mbmi, mbmi_ext, rd_stats->sse,
-            rd_stats->dist, args->single_comp_cost + compmode_interinter_cost,
-            args->ref_frame_cost, mv_cost, residue_cost);
-#endif  // INTER_MODE_RD_STATS_DUMP
-      }
-#endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
+    }
+    if (!search_jnt_comp && ret_val != 0) {
       restore_dst_buf(xd, orig_dst, num_planes);
-      if (ret_val != 0) return ret_val;
+      return ret_val;
     }
     restore_dst_buf(xd, orig_dst, num_planes);
   }
