@@ -256,7 +256,7 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
 
   DCHECK(PhysicalFragment().ChildrenInline());
 
-  LayoutRect overflow_rect(box_fragment_.VisualOverflowRect());
+  LayoutRect overflow_rect(box_fragment_.VisualContentsRect());
   overflow_rect.MoveBy(paint_offset);
   if (!paint_info.GetCullRect().IntersectsCullRect(overflow_rect))
     return;
