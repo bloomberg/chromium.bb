@@ -504,6 +504,10 @@ INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test6Param_lbd,
                         ::testing::ValuesIn(kLoop8Test6));
 
 const dual_loop_param_t kLoop8Test9[] = {
+  make_tuple(&aom_lpf_horizontal_4_dual_sse2, &aom_lpf_horizontal_4_dual_c, 8),
+  make_tuple(&aom_lpf_vertical_4_dual_sse2, &aom_lpf_vertical_4_dual_c, 8),
+  make_tuple(&aom_lpf_horizontal_8_dual_sse2, &aom_lpf_horizontal_8_dual_c, 8),
+  make_tuple(&aom_lpf_vertical_8_dual_sse2, &aom_lpf_vertical_8_dual_c, 8),
   make_tuple(&aom_lpf_horizontal_14_dual_sse2, &aom_lpf_horizontal_14_dual_c,
              8),
   make_tuple(&aom_lpf_vertical_14_dual_sse2, &aom_lpf_vertical_14_dual_c, 8)
