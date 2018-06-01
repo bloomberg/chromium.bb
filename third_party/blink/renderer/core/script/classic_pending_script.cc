@@ -384,7 +384,9 @@ void ClassicPendingScript::AdvanceReadyState(ReadyState new_ready_state) {
 
 void ClassicPendingScript::OnPurgeMemory() {
   CheckState();
-  CancelStreaming();
+  // TODO(crbug.com/846951): the implementation of CancelStreaming() is
+  // currently incorrect and consequently a call to this method was removed from
+  // here.
 }
 
 bool ClassicPendingScript::StartStreamingIfPossible(
