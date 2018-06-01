@@ -60,6 +60,7 @@
       "benchmarks": [
         "media.desktop",
         "octane",
+        "power.desktop",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
         "smoothness.tough_filters_cases",
         "thread_times.key_hit_test_cases",
@@ -191,6 +192,7 @@
     "build211-b7--device2": {
       "benchmarks": [
         "loading.desktop",
+        "power.desktop",
         "smoothness.key_silk_cases",
         "smoothness.simple_mobile_sites"
       ]
@@ -369,6 +371,7 @@
     "build188-b7--device2": {
       "benchmarks": [
         "loading.desktop",
+        "power.desktop",
         "smoothness.simple_mobile_sites",
         "speedometer-future",
         "speedometer2-future"
@@ -546,6 +549,7 @@
     "build202-b7--device2": {
       "benchmarks": [
         "loading.desktop",
+        "power.desktop",
         "smoothness.simple_mobile_sites"
       ]
     },
@@ -723,6 +727,7 @@
     "build191-b7--device2": {
       "benchmarks": [
         "loading.desktop",
+        "power.desktop",
         "smoothness.simple_mobile_sites"
       ]
     },
@@ -900,6 +905,7 @@
     "build245-m4--device2": {
       "benchmarks": [
         "loading.desktop",
+        "power.desktop",
         "smoothness.simple_mobile_sites"
       ]
     },
@@ -1113,6 +1119,7 @@
         "blink_perf.layout",
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
+        "power.desktop",
         "rasterize_and_record_micro.top_25",
         "smoothness.gpu_rasterization.polymer",
         "smoothness.gpu_rasterization.top_25_smooth",
@@ -1228,6 +1235,7 @@
         "blink_perf.layout",
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
+        "power.desktop",
         "rasterize_and_record_micro.top_25",
         "smoothness.gpu_rasterization.polymer",
         "smoothness.gpu_rasterization.top_25_smooth",
@@ -1323,6 +1331,7 @@
         "loading.desktop",
         "octane",
         "oortonline_tbmv2",
+        "power.desktop",
         "power.idle_platform",
         "smoothness.key_silk_cases",
         "smoothness.pathological_mobile_sites",
@@ -1455,6 +1464,7 @@
         "blink_perf.layout",
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
+        "power.desktop",
         "rasterize_and_record_micro.top_25",
 	"rendering.desktop",
         "smoothness.gpu_rasterization.polymer",
@@ -1529,6 +1539,7 @@
         "dummy_benchmark.stable_benchmark_1",
         "media.mobile",
         "memory.top_10_mobile",
+        "power.desktop",
         "scheduler.tough_scheduling_cases",
         "smoothness.key_desktop_move_cases",
         "smoothness.key_mobile_sites_smooth",
@@ -1670,6 +1681,7 @@
         "dummy_benchmark.stable_benchmark_1",
         "media.mobile",
         "memory.top_10_mobile",
+        "power.desktop",
         "scheduler.tough_scheduling_cases",
         "smoothness.key_desktop_move_cases",
         "smoothness.key_mobile_sites_smooth",
@@ -1765,6 +1777,7 @@
         "dummy_benchmark.stable_benchmark_1",
         "media.mobile",
         "memory.top_10_mobile",
+        "power.desktop",
         "scheduler.tough_scheduling_cases",
         "smoothness.key_desktop_move_cases",
         "smoothness.key_mobile_sites_smooth",
@@ -1879,6 +1892,7 @@
         "dummy_benchmark.stable_benchmark_1",
         "media.mobile",
         "memory.top_10_mobile",
+        "power.desktop",
         "scheduler.tough_scheduling_cases",
         "smoothness.key_desktop_move_cases",
         "smoothness.key_mobile_sites_smooth",
@@ -1993,6 +2007,7 @@
         "dummy_benchmark.stable_benchmark_1",
         "media.mobile",
         "memory.top_10_mobile",
+        "power.desktop",
         "scheduler.tough_scheduling_cases",
         "smoothness.key_desktop_move_cases",
         "smoothness.key_mobile_sites_smooth",
@@ -2107,6 +2122,7 @@
         "dummy_benchmark.stable_benchmark_1",
         "media.mobile",
         "memory.top_10_mobile",
+        "power.desktop",
         "scheduler.tough_scheduling_cases",
         "smoothness.key_desktop_move_cases",
         "smoothness.key_mobile_sites_smooth",
@@ -2242,6 +2258,7 @@
     "memory.top_10_mobile",
     "octane",
     "oortonline_tbmv2",
+    "power.desktop",
     "power.idle_platform",
     "power.typical_10_mobile",
     "rasterize_and_record_micro.partial_invalidation",
