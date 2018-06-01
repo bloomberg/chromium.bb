@@ -36,7 +36,11 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   ~VRDisplayHost() override;
 
   // device::mojom::VRDisplayHost
-  void RequestSession(RequestSessionCallback callback) override;
+  void RequestSession(device::mojom::XRSessionOptionsPtr options,
+                      RequestSessionCallback callback) override;
+  void SupportsSession(device::mojom::XRSessionOptionsPtr options,
+                       SupportsSessionCallback callback) override;
+
   void RequestPresent(device::mojom::VRSubmitFrameClientPtr client,
                       device::mojom::VRPresentationProviderRequest request,
                       device::mojom::VRRequestPresentOptionsPtr options,
@@ -60,6 +64,8 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
  private:
   void ReportRequestPresent();
   bool IsAnotherHostPresenting();
+
+  bool InternalSupportsSession(device::mojom::XRSessionOptionsPtr options);
 
   // TODO(https://crbug.com/837538): Instead, check before returning this
   // object.

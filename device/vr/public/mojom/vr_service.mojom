@@ -28,6 +28,10 @@ enum XRPointerOrigin {
   SCREEN = 3
 };
 
+struct XRSessionOptions {
+  bool exclusive;
+};
+
 struct XRInputSourceDescription {
   XRPointerOrigin pointer_origin;
   XRHandedness handedness;
@@ -272,7 +276,8 @@ interface VRDisplayHost {
   // WebVR.
   // TODO(https://crbug.com/842025): Refactor VR device interfaces to better
   // reflect WebXR.
-  RequestSession() => (bool success);
+  RequestSession(XRSessionOptions options) => (bool success);
+  SupportsSession(XRSessionOptions options) => (bool supports_session);
 
   // The returned transport_options is marked optional: it's null for
   // a failure result but must be non-null for a success result.

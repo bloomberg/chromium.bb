@@ -46,9 +46,12 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider,
 
   void RequestSession(mojom::VRDisplayHost::RequestSessionCallback callback);
 
+  mojom::VRDisplayInfoPtr GetVRDisplayInfo();
+
   // XrSessionController
   void SetFrameDataRestricted(bool paused) override;
   void StopSession() override;
+  device::VRDeviceBase* device() { return device_; };
 
  private:
   // mojom::VRMagicWindowProvider

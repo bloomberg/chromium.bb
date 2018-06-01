@@ -41,6 +41,9 @@ class BrowserXrDevice : public device::VRDeviceEventListener {
       device::mojom::VRDisplayHost::RequestPresentCallback callback);
   VRDisplayHost* GetPresentingDisplayHost() { return presenting_display_host_; }
   void UpdateListeningForActivate(VRDisplayHost* display);
+  device::mojom::VRDisplayInfoPtr GetVRDisplayInfo() {
+    return display_info_.Clone();
+  }
 
   // Methods called by VRDeviceManager to inspect the device.
   bool IsFallbackDevice() { return is_fallback_; }
@@ -57,6 +60,8 @@ class BrowserXrDevice : public device::VRDeviceEventListener {
   device::VRDevice* device_;
 
   std::set<VRDisplayHost*> displays_;
+  device::mojom::VRDisplayInfoPtr display_info_;
+
   VRDisplayHost* listening_for_activation_display_host_ = nullptr;
   VRDisplayHost* presenting_display_host_ = nullptr;
   bool is_fallback_;

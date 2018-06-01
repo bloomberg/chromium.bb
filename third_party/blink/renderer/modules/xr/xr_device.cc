@@ -58,13 +58,9 @@ const AtomicString& XRDevice::InterfaceName() const {
 
 const char* XRDevice::checkSessionSupport(
     const XRSessionCreationOptions& options) const {
-  if (options.exclusive()) {
-    // Validation for exclusive sessions.
-    if (!supports_exclusive_) {
-      return kExclusiveNotSupported;
-    }
-  } else {
-    // Validation for non-exclusive sessions.
+  if (!options.exclusive()) {
+    // Validation for non-exclusive sessions. Validation for exclusive sessions
+    // happens browser side.
     if (!options.hasOutputContext()) {
       return kNoOutputContext;
     }
@@ -94,7 +90,7 @@ const char* XRDevice::checkSessionSupport(
 
 ScriptPromise XRDevice::supportsSession(
     ScriptState* script_state,
-    const XRSessionCreationOptions& options) const {
+    const XRSessionCreationOptions& options) {
   // Check to see if the device is capable of supporting the requested session
   // options. Note that reporting support here does not guarantee that creating
   // a session with those options will succeed, as other external and
@@ -110,8 +106,27 @@ ScriptPromise XRDevice::supportsSession(
   // may specify a value to be returned here.
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  resolver->Resolve();
+
+  device::mojom::blink::XRSessionOptionsPtr session_options =
+      device::mojom::blink::XRSessionOptions::New();
+  session_options->exclusive = options.exclusive();
+
+  display_->SupportsSession(
+      std::move(session_options),
+      WTF::Bind(&XRDevice::OnSupportsSessionReturned, WrapPersistent(this),
+                WrapPersistent(resolver)));
+
   return promise;
+}
+
+void XRDevice::OnSupportsSessionReturned(ScriptPromiseResolver* resolver,
+                                         bool supports_session) {
+  // kExclusiveNotSupported is currently the only reason that SupportsSession
+  // rejects on the browser side. That or there are no devices, but that should
+  // technically not be possible.
+  supports_session ? resolver->Resolve()
+                   : resolver->Reject(DOMException::Create(
+                         kNotSupportedError, kExclusiveNotSupported));
 }
 
 int64_t XRDevice::GetSourceId() const {
@@ -167,14 +182,19 @@ ScriptPromise XRDevice::requestSession(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  display_->RequestSession(WTF::Bind(&XRDevice::OnRequestSessionComplete,
-                                     WrapWeakPersistent(this),
-                                     WrapPersistent(resolver), options));
+  device::mojom::blink::XRSessionOptionsPtr session_options =
+      device::mojom::blink::XRSessionOptions::New();
+  session_options->exclusive = options.exclusive();
+
+  display_->RequestSession(
+      std::move(session_options),
+      WTF::Bind(&XRDevice::OnRequestSessionReturned, WrapWeakPersistent(this),
+                WrapPersistent(resolver), options));
 
   return promise;
 }
 
-void XRDevice::OnRequestSessionComplete(ScriptPromiseResolver* resolver,
+void XRDevice::OnRequestSessionReturned(ScriptPromiseResolver* resolver,
                                         const XRSessionCreationOptions& options,
                                         bool success) {
   if (!success) {
