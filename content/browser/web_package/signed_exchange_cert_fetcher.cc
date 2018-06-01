@@ -218,6 +218,23 @@ void SignedExchangeCertFetcher::OnReceiveResponse(
     Abort();
     return;
   }
+
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cert-chain-format
+  // "The resource at a signature's cert-url MUST have the
+  // application/cert-chain+cbor content type" [spec text]
+  std::string mime_type;
+  if (!head.headers->GetMimeType(&mime_type) ||
+      mime_type != "application/cert-chain+cbor") {
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy_, "SignedExchangeCertFetcher::OnReceiveResponse",
+        base::StringPrintf(
+            "Content type of cert-url must be application/cert-chain+cbor. "
+            "Actual content type: %s",
+            mime_type.c_str()));
+    Abort();
+    return;
+  }
+
   if (head.content_length > 0) {
     if (base::checked_cast<size_t>(head.content_length) >
         g_max_cert_size_for_signed_exchange) {
