@@ -80,17 +80,19 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
       (!inline_flow_box_.PrevForSameLayoutObject() &&
        !inline_flow_box_.NextForSameLayoutObject()) ||
       !inline_flow_box_.Parent()) {
+    bool object_has_multiple_boxes = false;
     box_model_painter.PaintFillLayer(paint_info, c, fill_layer, rect,
                                      kBackgroundBleedNone, geometry, op,
-                                     rect.Size());
+                                     object_has_multiple_boxes);
   } else if (inline_flow_box_.GetLineLayoutItem()
                  .Style()
                  ->BoxDecorationBreak() == EBoxDecorationBreak::kClone) {
     GraphicsContextStateSaver state_saver(paint_info.context);
     paint_info.context.Clip(PixelSnappedIntRect(rect));
+    bool object_has_multiple_boxes = false;
     box_model_painter.PaintFillLayer(paint_info, c, fill_layer, rect,
                                      kBackgroundBleedNone, geometry, op,
-                                     rect.Size());
+                                     object_has_multiple_boxes);
   } else {
     // We have a fill image that spans multiple lines.
     // FIXME: frameSize ought to be the same as rect.size().
@@ -101,9 +103,10 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
     GraphicsContextStateSaver state_saver(paint_info.context);
     // TODO(chrishtr): this should likely be pixel-snapped.
     paint_info.context.Clip(PixelSnappedIntRect(rect));
+    bool object_has_multiple_boxes = true;
     box_model_painter.PaintFillLayer(
         paint_info, c, fill_layer, image_strip_paint_rect, kBackgroundBleedNone,
-        geometry, op, rect.Size());
+        geometry, op, object_has_multiple_boxes, rect.Size());
   }
 }
 
