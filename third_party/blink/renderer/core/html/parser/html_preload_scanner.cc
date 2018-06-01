@@ -29,6 +29,7 @@
 
 #include <memory>
 #include "base/optional.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
@@ -45,6 +46,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/loader/importance_attribute.h"
 #include "third_party/blink/renderer/core/loader/link_loader.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
@@ -132,6 +134,8 @@ class TokenPreloadScanner::StartTagScanner {
         source_size_set_(false),
         defer_(FetchParameters::kNoDefer),
         cross_origin_(kCrossOriginAttributeNotSet),
+        importance_(mojom::FetchImportanceMode::kImportanceAuto),
+        importance_mode_set_(false),
         media_values_(media_values),
         referrer_policy_set_(false),
         referrer_policy_(kReferrerPolicyDefault),
@@ -262,6 +266,7 @@ class TokenPreloadScanner::StartTagScanner {
     }
 
     request->SetCrossOrigin(cross_origin_);
+    request->SetImportance(importance_);
     request->SetNonce(nonce_);
     request->SetCharset(Charset());
     request->SetDefer(defer_);
@@ -321,6 +326,9 @@ class TokenPreloadScanner::StartTagScanner {
                Match(attribute_name, referrerpolicyAttr) &&
                !attribute_value.IsNull()) {
       SetReferrerPolicy(attribute_value, kSupportReferrerPolicyLegacyKeywords);
+    } else if (!importance_mode_set_ && Match(attribute_name, importanceAttr) &&
+               RuntimeEnabledFeatures::PriorityHintsEnabled()) {
+      SetImportance(attribute_value);
     }
   }
 
@@ -375,6 +383,9 @@ class TokenPreloadScanner::StartTagScanner {
       srcset_attribute_value_ = attribute_value;
     } else if (Match(attribute_name, imgsizesAttr) && !source_size_set_) {
       ParseSourceSize(attribute_value);
+    } else if (!importance_mode_set_ && Match(attribute_name, importanceAttr) &&
+               RuntimeEnabledFeatures::PriorityHintsEnabled()) {
+      SetImportance(attribute_value);
     }
   }
 
@@ -569,6 +580,12 @@ class TokenPreloadScanner::StartTagScanner {
         attribute_value, legacy_keywords_support, &referrer_policy_);
   }
 
+  void SetImportance(const String& importance) {
+    DCHECK(RuntimeEnabledFeatures::PriorityHintsEnabled());
+    importance_mode_set_ = true;
+    importance_ = GetFetchImportanceAttributeValue(importance);
+  }
+
   void SetNonce(const String& nonce) { nonce_ = nonce; }
 
   void SetDefer(FetchParameters::DeferOption defer) { defer_ = defer; }
@@ -596,6 +613,8 @@ class TokenPreloadScanner::StartTagScanner {
   bool source_size_set_;
   FetchParameters::DeferOption defer_;
   CrossOriginAttributeValue cross_origin_;
+  mojom::FetchImportanceMode importance_;
+  bool importance_mode_set_;
   String nonce_;
   Member<MediaValuesCached> media_values_;
   bool referrer_policy_set_;

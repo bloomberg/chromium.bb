@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
@@ -43,6 +44,8 @@ Resource* PreloadRequest::Start(Document* document,
           : document->OutgoingReferrer()));
   resource_request.SetRequestContext(ResourceFetcher::DetermineRequestContext(
       resource_type_, is_image_set_, false));
+
+  resource_request.SetFetchImportanceMode(importance_);
 
   ResourceLoaderOptions options;
   options.initiator_info = initiator_info;

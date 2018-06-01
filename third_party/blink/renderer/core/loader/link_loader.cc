@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_srcset_parser.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/importance_attribute.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 #include "third_party/blink/renderer/core/loader/private/prerender_handle.h"
@@ -84,6 +85,11 @@ static unsigned PrerenderRelTypesFromRelAttribute(
   return result;
 }
 
+// TODO(domfarolino)
+// Eventually we'll want to support an |importance| value on
+// LinkHeaders. We can communicate a header's importance value
+// to LinkLoadParameters here, likely after modifying the LinkHeader
+// class. See https://crbug.com/821464 for info on Priority Hints.
 LinkLoadParameters::LinkLoadParameters(const LinkHeader& header,
                                        const KURL& base_url)
     : rel(LinkRelAttribute(header.Rel())),
@@ -409,6 +415,9 @@ static Resource* PreloadIfNeeded(const LinkLoadParameters& params,
         params.referrer_policy, url, document.OutgoingReferrer()));
   }
 
+  resource_request.SetFetchImportanceMode(
+      GetFetchImportanceAttributeValue(params.importance));
+
   ResourceLoaderOptions options;
   options.initiator_info.name = FetchInitiatorTypeNames::link;
   FetchParameters link_fetch_params(resource_request, options);
@@ -565,6 +574,9 @@ static Resource* PrefetchIfNeeded(const LinkLoadParameters& params,
       resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
           params.referrer_policy, params.href, document.OutgoingReferrer()));
     }
+
+    resource_request.SetFetchImportanceMode(
+        GetFetchImportanceAttributeValue(params.importance));
 
     ResourceLoaderOptions options;
     options.initiator_info.name = FetchInitiatorTypeNames::link;

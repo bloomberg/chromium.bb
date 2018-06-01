@@ -2932,6 +2932,7 @@ interface HTMLImageElement : HTMLElement
     getter decoding
     getter height
     getter hspace
+    getter importance
     getter isMap
     getter longDesc
     getter lowsrc
@@ -2956,6 +2957,7 @@ interface HTMLImageElement : HTMLElement
     setter decoding
     setter height
     setter hspace
+    setter importance
     setter isMap
     setter longDesc
     setter lowsrc
@@ -3098,6 +3100,7 @@ interface HTMLLinkElement : HTMLElement
     getter href
     getter hreflang
     getter import
+    getter importance
     getter integrity
     getter media
     getter referrerPolicy
@@ -3115,6 +3118,7 @@ interface HTMLLinkElement : HTMLElement
     setter disabled
     setter href
     setter hreflang
+    setter importance
     setter integrity
     setter media
     setter referrerPolicy
@@ -3961,6 +3965,7 @@ interface Image
     getter decoding
     getter height
     getter hspace
+    getter importance
     getter isMap
     getter longDesc
     getter lowsrc
@@ -3985,6 +3990,7 @@ interface Image
     setter decoding
     setter height
     setter hspace
+    setter importance
     setter isMap
     setter longDesc
     setter lowsrc

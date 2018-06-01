@@ -646,6 +646,7 @@ html element img
     property decoding
     property height
     property hspace
+    property importance
     property isMap
     property longDesc
     property lowsrc
@@ -743,6 +744,7 @@ html element link
     property href
     property hreflang
     property import
+    property importance
     property integrity
     property media
     property referrerPolicy

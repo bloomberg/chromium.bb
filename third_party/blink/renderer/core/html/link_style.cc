@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/loader/importance_attribute.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -300,6 +301,11 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
         referrer_policy, url, GetDocument().OutgoingReferrer()));
   }
 
+  if (RuntimeEnabledFeatures::PriorityHintsEnabled()) {
+    resource_request.SetFetchImportanceMode(
+        GetFetchImportanceAttributeValue(owner_->ImportanceValue()));
+  }
+
   ResourceLoaderOptions options;
   options.initiator_info.name = owner_->localName();
   FetchParameters params(resource_request, options);
@@ -352,7 +358,8 @@ void LinkStyle::Process() {
       GetCrossOriginAttributeValue(owner_->FastGetAttribute(crossoriginAttr)),
       owner_->TypeValue().DeprecatedLower(),
       owner_->AsValue().DeprecatedLower(), owner_->Media().DeprecatedLower(),
-      owner_->nonce(), owner_->IntegrityValue(), owner_->GetReferrerPolicy(),
+      owner_->nonce(), owner_->IntegrityValue(),
+      owner_->ImportanceValue().LowerASCII(), owner_->GetReferrerPolicy(),
       owner_->GetNonEmptyURLAttribute(hrefAttr),
       owner_->FastGetAttribute(srcsetAttr),
       owner_->FastGetAttribute(imgsizesAttr));

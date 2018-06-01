@@ -41,6 +41,7 @@
     readonly attribute DOMString currentSrc;
     [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerPolicy;
     [RuntimeEnabled=ImageDecodingAttribute, CEReactions, Reflect, ReflectOnly=("async", "sync", "auto"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString decoding;
+    [CEReactions, RuntimeEnabled=PriorityHints, Reflect, ReflectOnly=("low", "auto", "high"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString importance;
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLImageElement-partial
