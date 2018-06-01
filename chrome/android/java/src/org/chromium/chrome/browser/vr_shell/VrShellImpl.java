@@ -600,6 +600,7 @@ public class VrShellImpl
         // destroyed if possible.
         if (VrShellDelegate.getVrClassesWrapper().bootsToVr()) {
             VrShellDelegate.setVrModeEnabled(mActivity, focused);
+            setVisibility(focused ? View.VISIBLE : View.INVISIBLE);
         }
     }
 
