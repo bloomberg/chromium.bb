@@ -24,7 +24,7 @@
  *
  */
 
-#include "third_party/blink/renderer/core/dom/events/dom_window_event_queue.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
 
 #include "base/macros.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -34,23 +34,24 @@
 
 namespace blink {
 
-DOMWindowEventQueue* DOMWindowEventQueue::Create(ExecutionContext* context) {
-  return new DOMWindowEventQueue(context);
+EventQueueImpl* EventQueueImpl::Create(ExecutionContext* context,
+                                       TaskType task_type) {
+  return new EventQueueImpl(context, task_type);
 }
 
-DOMWindowEventQueue::DOMWindowEventQueue(ExecutionContext* context)
-    : context_(context), is_closed_(false) {}
+EventQueueImpl::EventQueueImpl(ExecutionContext* context, TaskType task_type)
+    : context_(context), task_type_(task_type), is_closed_(false) {}
 
-DOMWindowEventQueue::~DOMWindowEventQueue() = default;
+EventQueueImpl::~EventQueueImpl() = default;
 
-void DOMWindowEventQueue::Trace(blink::Visitor* visitor) {
+void EventQueueImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
   visitor->Trace(queued_events_);
   EventQueue::Trace(visitor);
 }
 
-bool DOMWindowEventQueue::EnqueueEvent(const base::Location& from_here,
-                                       Event* event) {
+bool EventQueueImpl::EnqueueEvent(const base::Location& from_here,
+                                  Event* event) {
   if (is_closed_)
     return false;
 
@@ -61,29 +62,26 @@ bool DOMWindowEventQueue::EnqueueEvent(const base::Location& from_here,
   bool was_added = queued_events_.insert(event).is_new_entry;
   DCHECK(was_added);  // It should not have already been in the list.
 
-  // This queue is unthrottled because throttling IndexedDB events may break
-  // scenarios where several tabs, some of which are backgrounded, access
-  // the same database concurrently.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      context_->GetTaskRunner(TaskType::kUnthrottled);
+      context_->GetTaskRunner(task_type_);
 
   // Pass the event as a weak persistent so that GC can collect an event-related
   // object like IDBTransaction as soon as possible.
   task_runner->PostTask(
-      FROM_HERE, WTF::Bind(&DOMWindowEventQueue::DispatchEvent,
-                           WrapPersistent(this), WrapWeakPersistent(event)));
+      FROM_HERE, WTF::Bind(&EventQueueImpl::DispatchEvent, WrapPersistent(this),
+                           WrapWeakPersistent(event)));
 
   return true;
 }
 
-bool DOMWindowEventQueue::CancelEvent(Event* event) {
+bool EventQueueImpl::CancelEvent(Event* event) {
   if (!RemoveEvent(event))
     return false;
   probe::AsyncTaskCanceled(event->target()->GetExecutionContext(), event);
   return true;
 }
 
-void DOMWindowEventQueue::Close() {
+void EventQueueImpl::Close() {
   is_closed_ = true;
   for (const auto& queued_event : queued_events_) {
     if (queued_event) {
@@ -94,7 +92,7 @@ void DOMWindowEventQueue::Close() {
   queued_events_.clear();
 }
 
-bool DOMWindowEventQueue::RemoveEvent(Event* event) {
+bool EventQueueImpl::RemoveEvent(Event* event) {
   auto found = queued_events_.find(event);
   if (found == queued_events_.end())
     return false;
@@ -102,7 +100,7 @@ bool DOMWindowEventQueue::RemoveEvent(Event* event) {
   return true;
 }
 
-void DOMWindowEventQueue::DispatchEvent(Event* event) {
+void EventQueueImpl::DispatchEvent(Event* event) {
   if (!event || !RemoveEvent(event))
     return;
 

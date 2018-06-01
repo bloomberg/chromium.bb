@@ -62,8 +62,6 @@ blink_core_sources("workers") {
     "worker_clients.h",
     "worker_content_settings_client.cc",
     "worker_content_settings_client.h",
-    "worker_event_queue.cc",
-    "worker_event_queue.h",
     "worker_global_scope.cc",
     "worker_global_scope.h",
     "worker_inspector_proxy.cc",

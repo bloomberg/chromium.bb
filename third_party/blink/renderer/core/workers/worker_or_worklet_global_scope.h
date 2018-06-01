@@ -15,12 +15,13 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
-#include "third_party/blink/renderer/core/workers/worker_event_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 
 namespace blink {
 
+class EventQueue;
+class EventQueueImpl;
 class Modulator;
 class ModuleTreeClient;
 class ResourceFetcher;
@@ -123,7 +124,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   CrossThreadPersistent<WorkerClients> worker_clients_;
   Member<ResourceFetcher> resource_fetcher_;
   Member<WorkerOrWorkletScriptController> script_controller_;
-  Member<WorkerEventQueue> event_queue_;
+  Member<EventQueueImpl> event_queue_;
 
   WorkerReportingProxy& reporting_proxy_;
 
