@@ -9,11 +9,13 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/child/features.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -75,6 +77,10 @@ class FrameSchedulerImplTest : public testing::Test {
 
   scoped_refptr<TaskQueue> LoadingTaskQueue() {
     return frame_scheduler_->LoadingTaskQueue();
+  }
+
+  scoped_refptr<TaskQueue> LoadingControlTaskQueue() {
+    return frame_scheduler_->LoadingControlTaskQueue();
   }
 
   scoped_refptr<TaskQueue> DeferrableTaskQueue() {
@@ -627,6 +633,106 @@ TEST_F(FrameSchedulerImplTest, SubesourceLoadingPaused) {
   worker_observer->CheckObserverState(
       FROM_HERE, ++worker_not_throttled_count, worker_hidden_count,
       worker_throttled_count, worker_stopped_count);
+}
+
+// TODO(farahcharab) Move priority testing to MainThreadTaskQueueTest after
+// landing the change that moves priority computation to MainThreadTaskQueue.
+
+TEST_F(FrameSchedulerImplTest, LowPriorityBackgroundPagesWhenFeatureEnabled) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndEnableFeature(kLowPriorityForBackgroundPages);
+
+  page_scheduler_->SetPageVisible(false);
+  EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(LoadingControlTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(DeferrableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(ThrottleableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(PausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+
+  page_scheduler_->AudioStateChanged(true);
+  EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(LoadingControlTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kHighestPriority);
+  EXPECT_EQ(DeferrableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(ThrottleableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(PausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+
+  page_scheduler_->AudioStateChanged(false);
+  page_scheduler_->SetPageVisible(true);
+  EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(LoadingControlTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kHighestPriority);
+  EXPECT_EQ(DeferrableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(ThrottleableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(PausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+}
+
+TEST_F(FrameSchedulerImplTest,
+       BestEffortPriorityBackgroundPagesWhenFeatureEnabled) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndEnableFeature(kBestEffortPriorityForBackgroundPages);
+
+  page_scheduler_->SetPageVisible(false);
+  EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kBestEffortPriority);
+  EXPECT_EQ(LoadingControlTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kBestEffortPriority);
+  EXPECT_EQ(DeferrableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kBestEffortPriority);
+  EXPECT_EQ(ThrottleableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kBestEffortPriority);
+  EXPECT_EQ(PausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kBestEffortPriority);
+  EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kBestEffortPriority);
+
+  page_scheduler_->AudioStateChanged(true);
+  EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(LoadingControlTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kHighestPriority);
+  EXPECT_EQ(DeferrableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(ThrottleableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(PausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+
+  page_scheduler_->AudioStateChanged(false);
+  page_scheduler_->SetPageVisible(true);
+  EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(LoadingControlTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kHighestPriority);
+  EXPECT_EQ(DeferrableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(ThrottleableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(PausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
 }
 
 }  // namespace frame_scheduler_impl_unittest
