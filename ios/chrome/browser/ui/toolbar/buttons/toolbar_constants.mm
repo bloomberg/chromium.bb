@@ -70,7 +70,7 @@ const CGFloat kAdaptiveLocationBarVerticalMargin = 6.0f;
 const CGFloat kToolbarHeight = 56;
 const CGFloat kTopToolbarUnsplitMargin = 2;
 const CGFloat kAdaptiveToolbarHeight = 48;
-const CGFloat kToolbarHeightFullscreen = 20;
+const CGFloat kToolbarHeightFullscreen = 30;
 
 NSString* const kToolbarToolsMenuButtonIdentifier =
     @"kToolbarToolsMenuButtonIdentifier";
