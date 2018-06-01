@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/style/clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_value.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -79,13 +78,6 @@ TEST(ComputedStyleTest, SVGStackingContext) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->UpdateIsStackingContext(false, false, true);
   EXPECT_TRUE(style->IsStackingContext());
-}
-
-TEST(ComputedStyleTest, SVGStackingContextSPv1) {
-  ScopedSlimmingPaintV175ForTest spv175(false);
-  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  style->UpdateIsStackingContext(false, false, true);
-  EXPECT_FALSE(style->IsStackingContext());
 }
 
 TEST(ComputedStyleTest, Preserve3dForceStackingContext) {

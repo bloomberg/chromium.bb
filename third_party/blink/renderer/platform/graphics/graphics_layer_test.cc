@@ -82,10 +82,8 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
     layer_tree_view_->RegisterViewportLayers(viewport_layers);
     layer_tree_view_->SetViewportSize(WebSize(1, 1));
 
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       graphics_layer_->SetLayerState(
           PropertyTreeState(PropertyTreeState::Root()), IntPoint());
-    }
   }
 
   ~GraphicsLayerTest() override {
@@ -129,7 +127,6 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
 INSTANTIATE_TEST_CASE_P(All,
                         GraphicsLayerTest,
                         testing::Values(0,
-                                        kSlimmingPaintV175,
                                         kBlinkGenPropertyTrees));
 
 class AnimationForTesting : public CompositorAnimationClient {
@@ -225,9 +222,6 @@ TEST_P(GraphicsLayerTest, Paint) {
 }
 
 TEST_P(GraphicsLayerTest, PaintRecursively) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   IntRect interest_rect(1, 2, 3, 4);
   auto* transform_root = TransformPaintPropertyNode::Root();
   auto transform1 =

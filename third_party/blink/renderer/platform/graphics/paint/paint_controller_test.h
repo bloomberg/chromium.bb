@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CONTROLLER_TEST_H_
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
@@ -44,10 +43,8 @@ class PaintControllerTestBase : public testing::Test {
   }
 
   void InitRootChunk() {
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       GetPaintController().UpdateCurrentPaintChunkProperties(
           root_paint_chunk_id_, DefaultPaintChunkProperties());
-    }
   }
 
  protected:

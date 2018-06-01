@@ -708,7 +708,8 @@ TEST_P(GeometryMapperTest, ReflectionWithPaintOffset) {
 }
 
 TEST_P(GeometryMapperTest, InvertedClip) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+  // This test is invalid for SPv2.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   auto clip = CreateClip(ClipPaintPropertyNode::Root(),

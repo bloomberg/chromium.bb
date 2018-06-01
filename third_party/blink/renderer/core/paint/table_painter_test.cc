@@ -133,23 +133,11 @@ TEST_P(TablePainterTest, BackgroundInSelfPaintingRow) {
   IntRect interest_rect(200, 0, 200, 200);
   Paint(&interest_rect);
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    EXPECT_DISPLAY_LIST(
-        RootPaintController().GetDisplayItemList(), 3,
-        TestDisplayItem(ViewBackgroundClient(),
-                        DisplayItem::kDocumentBackground),
-        TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
-        TestDisplayItem(cell1, DisplayItem::kBoxDecorationBackground));
-  } else {
-    EXPECT_DISPLAY_LIST(
-        RootPaintController().GetDisplayItemList(), 5,
-        TestDisplayItem(ViewBackgroundClient(),
-                        DisplayItem::kDocumentBackground),
-        TestDisplayItem(row, DisplayItem::kBeginCompositing),
-        TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
-        TestDisplayItem(cell1, DisplayItem::kBoxDecorationBackground),
-        TestDisplayItem(row, DisplayItem::kEndCompositing));
-  }
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 3,
+      TestDisplayItem(ViewBackgroundClient(), DisplayItem::kDocumentBackground),
+      TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
+      TestDisplayItem(cell1, DisplayItem::kBoxDecorationBackground));
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects the spacing only.
@@ -165,23 +153,12 @@ TEST_P(TablePainterTest, BackgroundInSelfPaintingRow) {
   interest_rect = IntRect(450, 0, 200, 200);
   Paint(&interest_rect);
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     EXPECT_DISPLAY_LIST(
         RootPaintController().GetDisplayItemList(), 3,
         TestDisplayItem(ViewBackgroundClient(),
                         DisplayItem::kDocumentBackground),
         TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
         TestDisplayItem(cell2, DisplayItem::kBoxDecorationBackground));
-  } else {
-    EXPECT_DISPLAY_LIST(
-        RootPaintController().GetDisplayItemList(), 5,
-        TestDisplayItem(ViewBackgroundClient(),
-                        DisplayItem::kDocumentBackground),
-        TestDisplayItem(row, DisplayItem::kBeginCompositing),
-        TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
-        TestDisplayItem(cell2, DisplayItem::kBoxDecorationBackground),
-        TestDisplayItem(row, DisplayItem::kEndCompositing));
-  }
 }
 
 TEST_P(TablePainterTest, CollapsedBorderAndOverflow) {

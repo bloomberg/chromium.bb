@@ -848,9 +848,6 @@ TEST_P(PaintPropertyTreeUpdateTest, MenuListControlClipChange) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, BoxAddRemoveMask) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>#target {width: 100px; height: 100px}</style>
     <div id='target'>
@@ -879,9 +876,6 @@ TEST_P(PaintPropertyTreeUpdateTest, BoxAddRemoveMask) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, MaskClipNodeBoxSizeChange) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #target {
@@ -910,9 +904,6 @@ TEST_P(PaintPropertyTreeUpdateTest, MaskClipNodeBoxSizeChange) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, InlineAddRemoveMask) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(
       "<span id='target'><img id='img' style='width: 50px'></span>");
 
@@ -937,9 +928,6 @@ TEST_P(PaintPropertyTreeUpdateTest, InlineAddRemoveMask) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, MaskClipNodeInlineBoundsChange) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <span id='target' style='-webkit-mask: linear-gradient(red, blue)'>
       <img id='img' style='width: 50px'>
@@ -961,9 +949,6 @@ TEST_P(PaintPropertyTreeUpdateTest, MaskClipNodeInlineBoundsChange) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, AddRemoveSVGMask) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <svg width='200' height='200'>
       <rect id='rect' x='0' y='100' width='100' height='100' fill='blue'/>
@@ -993,9 +978,6 @@ TEST_P(PaintPropertyTreeUpdateTest, AddRemoveSVGMask) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, SVGMaskTargetBoundsChange) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <svg width='500' height='500'>
       <g id='target' mask='url(#mask)'>
@@ -1103,9 +1085,6 @@ TEST_P(PaintPropertyTreeUpdateTest, CompositingReasonForAnimation) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, SVGViewportContainerOverflowChange) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <svg>
       <svg id='target' width='30' height='40'></svg>
@@ -1130,9 +1109,6 @@ TEST_P(PaintPropertyTreeUpdateTest, SVGViewportContainerOverflowChange) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, SVGForeignObjectOverflowChange) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <svg>
       <foreignObject id='target' x='10' y='20' width='30' height='40'

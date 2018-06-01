@@ -2017,7 +2017,6 @@ jumbo_source_set("unit_tests") {
     "paint/first_meaningful_paint_detector_test.cc",
     "paint/fragment_data_test.cc",
     "paint/html_canvas_painter_test.cc",
-    "paint/layer_clip_recorder_test.cc",
     "paint/link_highlight_impl_test.cc",
     "paint/ng/ng_paint_fragment_test.cc",
     "paint/ng/ng_paint_fragment_traversal_test.cc",

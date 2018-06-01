@@ -49,7 +49,6 @@ void ViewPainterTest::RunFixedBackgroundTest(
   layout_viewport->SetScrollOffset(scroll_offset, kUserScroll);
   frame_view->UpdateAllLifecyclePhases();
 
-  bool v175 = RuntimeEnabledFeatures::SlimmingPaintV175Enabled();
   CompositedLayerMapping* clm =
       GetLayoutView().Layer()->GetCompositedLayerMapping();
 
@@ -64,8 +63,7 @@ void ViewPainterTest::RunFixedBackgroundTest(
   }
   const DisplayItemList& display_items =
       layer_for_background->GetPaintController().GetDisplayItemList();
-  const DisplayItem& background =
-      display_items[!prefer_compositing_to_lcd_text && !v175 ? 2 : 0];
+  const DisplayItem& background = display_items[0];
   EXPECT_EQ(background.GetType(), kDocumentBackgroundType);
   DisplayItemClient* expected_client;
   if (!prefer_compositing_to_lcd_text)
@@ -111,9 +109,6 @@ TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 1,
       TestDisplayItem(*background_item_client, kDocumentBackgroundType));
-
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
 
   const auto& chunks = RootPaintController().GetPaintArtifact().PaintChunks();
   EXPECT_EQ(1u, chunks.size());

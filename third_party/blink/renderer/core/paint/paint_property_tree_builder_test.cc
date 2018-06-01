@@ -77,8 +77,7 @@ void PaintPropertyTreeBuilderTest::SetUp() {
 
 #define CHECK_VISUAL_RECT(expected, source_object, ancestor, slop_factor)      \
   do {                                                                         \
-    if ((source_object)->HasLayer() && (ancestor)->HasLayer() &&               \
-        RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {                  \
+    if ((source_object)->HasLayer() && (ancestor)->HasLayer()) {               \
       LayoutRect actual((source_object)->LocalVisualRect());                   \
       (source_object)                                                          \
           ->MapToVisualRectInAncestorSpace(ancestor, actual,                   \
@@ -295,10 +294,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbarsSubpixel) {
   EXPECT_EQ(DocContentClip(), overflow_clip->Parent());
   EXPECT_EQ(properties->PaintOffsetTranslation(),
             overflow_clip->LocalTransformSpace());
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    EXPECT_EQ(FloatRoundedRect(10, 10, 101, 100), overflow_clip->ClipRect());
-  else
-    EXPECT_EQ(FloatRoundedRect(10, 10, 100.5, 100), overflow_clip->ClipRect());
+  EXPECT_EQ(FloatRoundedRect(10, 10, 101, 100), overflow_clip->ClipRect());
 
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"))->Layer();
@@ -306,13 +302,8 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbarsSubpixel) {
                   ->VerticalScrollbar()
                   ->IsOverlayScrollbar());
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    EXPECT_EQ(FloatRoundedRect(10, 10, 94, 93),
-              overflow_clip->ClipRectExcludingOverlayScrollbars());
-  } else {
-    EXPECT_EQ(FloatRoundedRect(10, 10, 93.5, 93),
-              overflow_clip->ClipRectExcludingOverlayScrollbars());
-  }
+  EXPECT_EQ(FloatRoundedRect(10, 10, 94, 93),
+            overflow_clip->ClipRectExcludingOverlayScrollbars());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRL) {
@@ -607,7 +598,7 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(nullptr, transform_properties->PaintOffsetTranslation());
   } else {
-    // SPv175 creates PaintOffsetTranslation for composited layers.
+    // Pre-SPv2 creates PaintOffsetTranslation for composited layers.
     EXPECT_EQ(TransformationMatrix().Translate(50, 100),
               transform_properties->PaintOffsetTranslation()->Matrix());
   }
@@ -672,10 +663,6 @@ TEST_P(PaintPropertyTreeBuilderTest, RelativePositionInline) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, NestedOpacityEffect) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <div id='nodeWithoutOpacity' style='width: 100px; height: 200px'>
       <div id='childWithOpacity'
@@ -732,10 +719,6 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedOpacityEffect) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TransformNodeDoesNotAffectEffectNodes) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
       #nodeWithOpacity {
@@ -797,9 +780,6 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodeDoesNotAffectEffectNodes) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
   SetBodyInnerHTML(R"HTML(
     <div id='nodeWithOpacity'
         style='opacity: 0.6; width: 100px; height: 200px'>
@@ -847,10 +827,6 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, EffectNodesInSVG) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <svg id='svgRoot'>
       <g id='groupWithOpacity' opacity='0.6'>
@@ -901,10 +877,6 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesInSVG) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossHTMLSVGBoundary) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <div id='divWithOpacity' style='opacity: 0.2;'>
       <svg id='svgRootWithOpacity' style='opacity: 0.3;'>
@@ -936,10 +908,6 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossHTMLSVGBoundary) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossSVGHTMLBoundary) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <svg id='svgRootWithOpacity' style='opacity: 0.3;'>
       <foreignObject id='foreignObjectWithOpacity' opacity='0.4'>
@@ -1236,10 +1204,6 @@ TEST_P(PaintPropertyTreeBuilderTest, ForeignObjectWithTransformAndOffset) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ForeignObjectWithMask) {
-  // SPV1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style> body { margin: 0px; } </style>
     <svg id='svg' style='position; relative'>
@@ -1296,9 +1260,6 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetTranslationSVGHTMLBoundary) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGViewportContainer) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <!-- border radius of inner svg elemnents should be ignored. -->
     <style>svg { border-radius: 10px }</style>
@@ -1359,9 +1320,6 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGViewportContainer) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGForeignObjectOverflowClip) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <svg id='svg'>
       <foreignObject id='object1' x='10' y='20' width='30' height='40'
@@ -1809,11 +1767,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
     EXPECT_EQ(child.FirstFragment().PaintProperties()->PaintOffsetTranslation(),
               child.FirstFragment().LocalBorderBoxProperties().Transform());
   }
-  // SPv1 has no effect tree.
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    EXPECT_EQ(scroller_properties->Effect(),
-              child.FirstFragment().LocalBorderBoxProperties().Effect());
-  }
+  EXPECT_EQ(scroller_properties->Effect(),
+            child.FirstFragment().LocalBorderBoxProperties().Effect());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 800, 10000), &scroller,
                           GetDocument().View()->GetLayoutView());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 100, 200), &child,
@@ -1995,10 +1950,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipSubpixel) {
   LayoutRect local_clip_rect(40, 10, 40, 60);
   LayoutRect absolute_clip_rect = local_clip_rect;
   // Moved by 124 pixels due to pixel-snapping.
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    absolute_clip_rect.Move(124, 456);
-  else
-    absolute_clip_rect.Move(LayoutUnit(123.5f), LayoutUnit(456));
+  absolute_clip_rect.Move(124, 456);
 
   auto* clip = GetLayoutObjectByElementId("clip");
   const ObjectPaintProperties* clip_properties =
@@ -4415,10 +4367,6 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodeAnimatedHasCompositorElementId) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FloatUnderInline) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <div style='position: absolute; top: 55px; left: 66px'>
       <span id='span'
@@ -4477,21 +4425,12 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipSubpixelPosition) {
 
   EXPECT_EQ(LayoutPoint(FloatPoint(31.5, 20)),
             clipper->FirstFragment().PaintOffset());
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    // Result is pixel-snapped.
-    EXPECT_EQ(FloatRect(32, 20, 400, 300),
-              clip_properties->OverflowClip()->ClipRect().Rect());
-  } else {
-    EXPECT_EQ(FloatRect(31.5, 20, 400, 300),
-              clip_properties->OverflowClip()->ClipRect().Rect());
-  }
+  // Result is pixel-snapped.
+  EXPECT_EQ(FloatRect(32, 20, 400, 300),
+            clip_properties->OverflowClip()->ClipRect().Rect());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, MaskSimple) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <div id='target' style='width:300px; height:200px;
         -webkit-mask:linear-gradient(red,red)'>
@@ -4520,10 +4459,6 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskSimple) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, MaskWithOutset) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <div id='target' style='width:300px; height:200px;
         -webkit-mask-box-image-source:linear-gradient(red,red);
@@ -4553,10 +4488,6 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskWithOutset) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, MaskEscapeClip) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   // This test verifies an abs-pos element still escape the scroll of a
   // static-pos ancestor, but gets clipped due to the presence of a mask.
   SetBodyInnerHTML(R"HTML(
@@ -4625,10 +4556,6 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskEscapeClip) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, MaskInline) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   LoadAhem();
   // This test verifies CSS mask applied on an inline element is clipped to
   // the line box of the said element. In this test the masked element has
@@ -4741,10 +4668,6 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGHiddenResource) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGRootBlending) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <svg id='svgroot' 'width=100' height='100'
         style='position: relative; z-index: 0'>
@@ -4980,13 +4903,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowControlsClipSubpixel) {
   const auto* properties1 = PaintPropertiesForElement("div1");
   ASSERT_NE(nullptr, properties1);
   const auto* overflow_controls_clip = properties1->OverflowControlsClip();
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    EXPECT_EQ(FloatRect(0, 0, 6, 50),
-              overflow_controls_clip->ClipRect().Rect());
-  } else {
-    EXPECT_EQ(FloatRect(0, 0, 5.5, 50),
-              overflow_controls_clip->ClipRect().Rect());
-  }
+  EXPECT_EQ(FloatRect(0, 0, 6, 50), overflow_controls_clip->ClipRect().Rect());
 
   const auto* properties2 = PaintPropertiesForElement("div2");
   ASSERT_NE(nullptr, properties2);
@@ -5017,13 +4934,8 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentPaintOffsetUnderOverflowScroll) {
 
   EXPECT_EQ(LayoutPoint(), first_fragment.PaintOffset());
   EXPECT_EQ(LayoutPoint(390, -10), second_fragment->PaintOffset());
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    EXPECT_EQ(LayoutRect(0, 0, 20, 20), first_fragment.VisualRect());
-    EXPECT_EQ(LayoutRect(390, -10, 20, 20), second_fragment->VisualRect());
-  } else {
-    EXPECT_EQ(LayoutRect(0, 50, 20, 10), first_fragment.VisualRect());
-    EXPECT_EQ(LayoutRect(390, 50, 20, 10), second_fragment->VisualRect());
-  }
+  EXPECT_EQ(LayoutRect(0, 0, 20, 20), first_fragment.VisualRect());
+  EXPECT_EQ(LayoutRect(390, -10, 20, 20), second_fragment->VisualRect());
 }
 
 // The following test tests that we restrict actual column count, to not run
@@ -5058,24 +4970,13 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentClipPixelSnapped) {
   const auto* second_clip =
       FragmentAt(flow_thread, 1).PaintProperties()->FragmentClip();
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    EXPECT_EQ(FloatRect(-999992, -999992, 1000025, 1000050),
-              first_clip->ClipRect().Rect());
-    EXPECT_EQ(FloatRect(33, 8, 1000000, 999951),
-              second_clip->ClipRect().Rect());
-  } else {
-    EXPECT_EQ(FloatRect(-999992, -999992, 1000024.75, 1000049.5),
-              first_clip->ClipRect().Rect());
-    EXPECT_EQ(FloatRect(32.75, 8, 1000000, 999950.5),
-              second_clip->ClipRect().Rect());
-  }
+  EXPECT_EQ(FloatRect(-999992, -999992, 1000025, 1000050),
+            first_clip->ClipRect().Rect());
+  EXPECT_EQ(FloatRect(33, 8, 1000000, 999951), second_clip->ClipRect().Rect());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
        UpdateUnderChangedEffectUnderCompositedLayer) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
   SetBodyInnerHTML(R"HTML(
     <div id="opacity" style="isolation: isolate; width: 100px: height: 100px">
       <div id="target"
@@ -5092,15 +4993,12 @@ TEST_P(PaintPropertyTreeBuilderTest,
   opacity_element->setAttribute(HTMLNames::styleAttr, "opacity: 0.5");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
 
-  // In SPv175 mode, all paint chunks contained by the new opacity effect
-  // node need to be re-painted.
+  // All paint chunks contained by the new opacity effect node need to be
+  // re-painted.
   EXPECT_TRUE(ToLayoutBoxModelObject(target)->Layer()->NeedsRepaint());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGRootWithMask) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
   SetBodyInnerHTML(R"HTML(
     <svg id="svg" width="16" height="16" mask="url(#test)">
       <rect width="100%" height="16" fill="#fff"></rect>
@@ -5120,9 +5018,6 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootWithMask) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGRootWithCSSMask) {
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
   SetBodyInnerHTML(R"HTML(
     <svg id="svg" width="16" height="16" style="-webkit-mask-image: url(fake);">
     </svg>
@@ -5136,10 +5031,6 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootWithCSSMask) {
 TEST_P(PaintPropertyTreeBuilderTest, ClearClipPathEffectNode) {
   // This test makes sure ClipPath effect node is cleared properly upon
   // removal of a clip-path.
-
-  // SPv1 has no effect tree.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
   SetBodyInnerHTML(R"HTML(
     <svg>
       <clipPath clip-path="circle()" id="clip"></clipPath>

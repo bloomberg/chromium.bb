@@ -144,12 +144,8 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
   std::unique_ptr<PaintController> paint_controller = PaintController::Create();
   {
     GraphicsContext context(*paint_controller);
-
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      paint_controller->UpdateCurrentPaintChunkProperties(
-          root_paint_chunk_id_, PropertyTreeState::Root());
-    }
-
+    paint_controller->UpdateCurrentPaintChunkProperties(
+        root_paint_chunk_id_, PropertyTreeState::Root());
     Selection().PaintCaret(context, LayoutPoint());
   }
   paint_controller->CommitNewDisplayItems();

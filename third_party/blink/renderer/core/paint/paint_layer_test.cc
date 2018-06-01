@@ -283,10 +283,7 @@ TEST_P(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_EQ(LayoutPoint(-1000, -1000), content_layer->Location());
   EXPECT_TRUE(scroll_layer->NeedsRepaint());
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    EXPECT_FALSE(content_layer->NeedsRepaint());
-  else
-    EXPECT_TRUE(content_layer->NeedsRepaint());
+  EXPECT_FALSE(content_layer->NeedsRepaint());
   GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
@@ -566,15 +563,9 @@ TEST_P(PaintLayerTest, PaintInvalidationOnNonCompositedScroll) {
   scroller->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 20),
                                                  kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    EXPECT_EQ(LayoutRect(0, 30, 50, 10),
-              content_layer->FirstFragment().VisualRect());
-    EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
-  } else {
-    EXPECT_EQ(LayoutRect(0, 10, 50, 10),
-              content_layer->FirstFragment().VisualRect());
-    EXPECT_EQ(LayoutRect(0, 10, 50, 5), content->FirstFragment().VisualRect());
-  }
+  EXPECT_EQ(LayoutRect(0, 30, 50, 10),
+            content_layer->FirstFragment().VisualRect());
+  EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
 }
 
 TEST_P(PaintLayerTest, PaintInvalidationOnCompositedScroll) {
