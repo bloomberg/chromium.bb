@@ -9,6 +9,8 @@ dictionary MediaTrackCapabilities {
     DoubleRange frameRate;
     sequence<DOMString> facingMode;
     sequence<boolean> echoCancellation;
+    // See http://crbug.com/846270.
+    [OriginTrialEnabled=ExperimentalHardwareEchoCancellation] sequence<DOMString> echoCancellationType;
     sequence<boolean> autoGainControl;
     sequence<boolean> noiseSuppression;
     DOMString deviceId;

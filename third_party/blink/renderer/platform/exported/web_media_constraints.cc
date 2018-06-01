@@ -72,6 +72,9 @@ void MaybeEmitNamedBoolean(StringBuilder& builder,
 
 }  // namespace
 
+const char kEchoCancellationTypeBrowser[] = "browser";
+const char kEchoCancellationTypeSystem[] = "system";
+
 class WebMediaConstraintsPrivate final
     : public ThreadSafeRefCounted<WebMediaConstraintsPrivate> {
  public:

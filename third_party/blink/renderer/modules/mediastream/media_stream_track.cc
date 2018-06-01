@@ -332,6 +332,10 @@ void MediaStreamTrack::getCapabilities(MediaTrackCapabilities& capabilities) {
     for (bool value : platform_capabilities.noise_suppression)
       noise_suppression.push_back(value);
     capabilities.setNoiseSuppression(noise_suppression);
+    Vector<String> echo_cancellation_type;
+    for (String value : platform_capabilities.echo_cancellation_type)
+      echo_cancellation_type.push_back(value);
+    capabilities.setEchoCancellationType(echo_cancellation_type);
   }
 
   if (component_->Source()->GetType() == MediaStreamSource::kTypeVideo) {

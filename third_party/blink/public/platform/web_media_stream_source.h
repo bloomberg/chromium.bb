@@ -82,6 +82,7 @@ class WebMediaStreamSource {
     WebVector<double> aspect_ratio;
     WebVector<double> frame_rate;
     WebVector<bool> echo_cancellation;
+    WebVector<WebString> echo_cancellation_type;
     WebVector<bool> auto_gain_control;
     WebVector<bool> noise_suppression;
 
