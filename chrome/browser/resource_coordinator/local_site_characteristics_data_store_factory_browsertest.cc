@@ -41,7 +41,7 @@ class LocalSiteCharacteristicsDataStoreFactoryTest
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        features::kProactiveTabDiscarding);
+        features::kProactiveTabFreezeAndDiscard);
     InProcessBrowserTest::SetUp();
   }
 

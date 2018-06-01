@@ -13,7 +13,7 @@
 namespace features {
 
 extern const base::Feature kCustomizedTabLoadTimeout;
-extern const base::Feature kProactiveTabDiscarding;
+extern const base::Feature kProactiveTabFreezeAndDiscard;
 extern const base::Feature kStaggeredBackgroundTabOpening;
 extern const base::Feature kStaggeredBackgroundTabOpeningExperiment;
 extern const base::Feature kTabRanker;
@@ -23,39 +23,48 @@ extern const base::Feature kTabRanker;
 namespace resource_coordinator {
 
 // Variations parameter names related to proactive discarding.
-// See ProactiveTabDiscardsParams for details.
-extern const char kProactiveTabDiscard_LowLoadedTabCountParam[];
-extern const char kProactiveTabDiscard_ModerateLoadedTabsPerGbRamParam[];
-extern const char kProactiveTabDiscard_HighLoadedTabCountParam[];
-extern const char kProactiveTabDiscard_LowOccludedTimeoutParam[];
-extern const char kProactiveTabDiscard_ModerateOccludedTimeoutParam[];
-extern const char kProactiveTabDiscard_HighOccludedTimeoutParam[];
-extern const char kProactiveTabDiscard_FaviconUpdateObservationWindow[];
-extern const char kProactiveTabDiscard_TitleUpdateObservationWindow[];
-extern const char kProactiveTabDiscard_AudioUsageObservationWindow[];
-extern const char kProactiveTabDiscard_NotificationsUsageObservationWindow[];
-extern const char kProactiveTabDiscard_FreezeTimeout[];
+// See ProactiveTabFreezeAndDiscardsParams for details.
+extern const char kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscard[];
+extern const char kProactiveTabFreezeAndDiscard_LowLoadedTabCountParam[];
+extern const char
+    kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamParam[];
+extern const char kProactiveTabFreezeAndDiscard_HighLoadedTabCountParam[];
+extern const char kProactiveTabFreezeAndDiscard_LowOccludedTimeoutParam[];
+extern const char kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutParam[];
+extern const char kProactiveTabFreezeAndDiscard_HighOccludedTimeoutParam[];
+extern const char
+    kProactiveTabFreezeAndDiscard_FaviconUpdateObservationWindow[];
+extern const char kProactiveTabFreezeAndDiscard_TitleUpdateObservationWindow[];
+extern const char kProactiveTabFreezeAndDiscard_AudioUsageObservationWindow[];
+extern const char
+    kProactiveTabFreezeAndDiscard_NotificationsUsageObservationWindow[];
+extern const char kProactiveTabFreezeAndDiscard_FreezeTimeout[];
 
 // Default values of parameters related to proactive discarding.
-// See ProactiveTabDiscardsParams for details.
-extern const uint32_t kProactiveTabDiscard_LowLoadedTabCountDefault;
-extern const uint32_t kProactiveTabDiscard_ModerateLoadedTabsPerGbRamDefault;
-extern const uint32_t kProactiveTabDiscard_HighLoadedTabCountDefault;
-extern const base::TimeDelta kProactiveTabDiscard_LowOccludedTimeoutDefault;
+// See ProactiveTabFreezeAndDiscardsParams for details.
+extern const bool kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardDefault;
+extern const uint32_t kProactiveTabFreezeAndDiscard_LowLoadedTabCountDefault;
+extern const uint32_t
+    kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamDefault;
+extern const uint32_t kProactiveTabFreezeAndDiscard_HighLoadedTabCountDefault;
 extern const base::TimeDelta
-    kProactiveTabDiscard_ModerateOccludedTimeoutDefault;
-extern const base::TimeDelta kProactiveTabDiscard_HighOccludedTimeoutDefault;
+    kProactiveTabFreezeAndDiscard_LowOccludedTimeoutDefault;
 extern const base::TimeDelta
-    kProactiveTabDiscard_FaviconUpdateObservationWindow_Default;
+    kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutDefault;
 extern const base::TimeDelta
-    kProactiveTabDiscard_TitleUpdateObservationWindow_Default;
+    kProactiveTabFreezeAndDiscard_HighOccludedTimeoutDefault;
 extern const base::TimeDelta
-    kProactiveTabDiscard_AudioUsageObservationWindow_Default;
+    kProactiveTabFreezeAndDiscard_FaviconUpdateObservationWindow_Default;
 extern const base::TimeDelta
-    kProactiveTabDiscard_NotificationsUsageObservationWindow_Default;
-extern const base::TimeDelta kProactiveTabDiscard_FreezeTimeout_Default;
+    kProactiveTabFreezeAndDiscard_TitleUpdateObservationWindow_Default;
+extern const base::TimeDelta
+    kProactiveTabFreezeAndDiscard_AudioUsageObservationWindow_Default;
+extern const base::TimeDelta
+    kProactiveTabFreezeAndDiscard_NotificationsUsageObservationWindow_Default;
+extern const base::TimeDelta
+    kProactiveTabFreezeAndDiscard_FreezeTimeout_Default;
 
-// Parameters used by the proactive tab discarding feature.
+// Parameters used by the proactive tab freezing and discarding feature.
 //
 // Proactive discarding has 5 key parameters:
 //
@@ -100,10 +109,15 @@ extern const base::TimeDelta kProactiveTabDiscard_FreezeTimeout_Default;
 // NOTE: This is extremely simplistic, and by design. We will be using this to
 // do a very simple "lightspeed" experiment to determine how much possible
 // savings proactive discarding can hope to achieve.
-struct ProactiveTabDiscardParams {
-  ProactiveTabDiscardParams();
-  ProactiveTabDiscardParams(const ProactiveTabDiscardParams& rhs);
+struct ProactiveTabFreezeAndDiscardParams {
+  ProactiveTabFreezeAndDiscardParams();
+  ProactiveTabFreezeAndDiscardParams(
+      const ProactiveTabFreezeAndDiscardParams& rhs);
 
+  // Whether tabs should be proactively discarded. When the
+  // |kProactiveTabFreezeAndDiscard| feature is enabled and this is false, only
+  // proactive tab freezing happens.
+  bool should_proactively_discard;
   // Tab count (inclusive) beyond which the state transitions to MODERATE.
   // Intended to cover the majority of simple workflows and be small enough that
   // it is very unlikely that memory pressure will be encountered with this many
@@ -145,13 +159,14 @@ struct ProactiveTabDiscardParams {
 // Gets parameters for the proactive tab discarding feature. This does no
 // parameter validation, and sets the default values if the feature is not
 // enabled.
-ProactiveTabDiscardParams GetProactiveTabDiscardParams(
+ProactiveTabFreezeAndDiscardParams GetProactiveTabFreezeAndDiscardParams(
     int memory_in_gb = base::SysInfo::AmountOfPhysicalMemory() /
                        (1024 * 1024 * 1024));
 
-// Return a static ProactiveTabDiscardParams object that can be used by all the
-// classes that need one.
-const ProactiveTabDiscardParams& GetStaticProactiveTabDiscardParams();
+// Return a static ProactiveTabFreezeAndDiscardParams object that can be used by
+// all the classes that need one.
+const ProactiveTabFreezeAndDiscardParams&
+GetStaticProactiveTabFreezeAndDiscardParams();
 
 base::TimeDelta GetTabLoadTimeout(const base::TimeDelta& default_timeout);
 

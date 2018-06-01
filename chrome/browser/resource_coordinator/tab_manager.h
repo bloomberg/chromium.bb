@@ -238,6 +238,11 @@ class TabManager : public LifecycleUnitObserver,
                            IsInBackgroundTabOpeningSession);
   FRIEND_TEST_ALL_PREFIXES(TabManagerWithProactiveDiscardExperimentEnabledTest,
                            GetTimeInBackgroundBeforeProactiveDiscardTest);
+  FRIEND_TEST_ALL_PREFIXES(
+      TabManagerWithProactiveDiscardExperimentEnabledTest,
+      NoProactiveDiscardWhenDiscardingVariationParamDisabled);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerWithProactiveDiscardExperimentEnabledTest,
+                           FreezingWhenDiscardingVariationParamDisabled);
 
   // The time of the first purging after a renderer is backgrounded.
   // The initial value was chosen because most of users activate backgrounded
@@ -420,9 +425,8 @@ class TabManager : public LifecycleUnitObserver,
   // to determine timeout threshold for proactive discarding.
   int num_loaded_lifecycle_units_ = 0;
 
-  // Parameters for proactive discarding. Used to determine the timeout until a
-  // LifecycleUnit should be discarded based on |num_loaded_lifecycle_units_|.
-  ProactiveTabDiscardParams proactive_discard_params_;
+  // Parameters for proactive freezing and discarding.
+  ProactiveTabFreezeAndDiscardParams proactive_freeze_discard_params_;
 
   // Timer to periodically update the stats of the renderers.
   base::RepeatingTimer update_timer_;
