@@ -4,14 +4,17 @@
 
 #include "components/viz/common/display/use_layered_window.h"
 
-#include "base/win/windows_version.h"
 #include "ui/base/win/internal_constants.h"
 
 namespace viz {
 
 bool NeedsToUseLayerWindow(HWND hwnd) {
-  return base::win::GetVersion() <= base::win::VERSION_WIN7 &&
-         GetProp(hwnd, ui::kWindowTranslucent);
+  // TODO(kylechar): Revisit if we can not use layered windows on Windows 8 and
+  // higher. With DWM enabled HWNDs seem to support an alpha channel natively.
+  // However, when touch highlight or pointer trails are enabled Windows ends up
+  // blending the highlight/trail with old content for non-layered HWNDs. See
+  // https://crbug.com/843974 for more details.
+  return GetProp(hwnd, ui::kWindowTranslucent);
 }
 
 }  // namespace viz

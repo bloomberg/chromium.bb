@@ -169,8 +169,6 @@ void SoftwareOutputDeviceWinDirect::EndPaintDelegated(
 
 // SoftwareOutputDevice implementation that uses layered window API to draw to
 // the provided HWND.
-// Note: This is only needed if DWM might not be enabled so only on Windows 7
-// and earlier.
 class SoftwareOutputDeviceWinLayered : public SoftwareOutputDeviceWinBase {
  public:
   explicit SoftwareOutputDeviceWinLayered(HWND hwnd)
