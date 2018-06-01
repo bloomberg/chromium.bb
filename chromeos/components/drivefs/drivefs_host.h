@@ -29,6 +29,8 @@ class Connector;
 
 namespace drivefs {
 
+class DriveFsHostObserver;
+
 // A host for a DriveFS process. In addition to managing its lifetime via
 // mounting and unmounting, it also bridges between the DriveFS process and the
 // file manager.
@@ -75,6 +77,9 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
               Delegate* delegate);
   ~DriveFsHost() override;
 
+  void AddObserver(DriveFsHostObserver* observer);
+  void RemoveObserver(DriveFsHostObserver* observer);
+
   // Mount DriveFS.
   bool Mount();
 
@@ -114,6 +119,8 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
 
   // The connection to the identity service. Access via |GetIdentityManager()|.
   identity::mojom::IdentityManagerPtr identity_manager_;
+
+  base::ObserverList<DriveFsHostObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveFsHost);
 };
