@@ -278,7 +278,12 @@ id<GREYMatcher> EmptyBackground() {
 // Adds the current page to the Reading List.
 void AddCurrentPageToReadingList() {
   // Add the page to the reading list.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
+  if (IsUIRefreshPhase1Enabled()) {
+    [ChromeEarlGreyUI openToolsMenu];
+    [ChromeEarlGreyUI
+        tapToolsMenuButton:chrome_test_util::ButtonWithAccessibilityLabelId(
+                               IDS_IOS_SHARE_MENU_READING_LIST_ACTION)];
+  } else if (base::ios::IsRunningOnIOS11OrLater()) {
     // On iOS 11, it is not possible to interact with the share menu in EG.
     // Send directly the command instead. This is the closest behavior we can
     // have from the normal behavior.
