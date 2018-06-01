@@ -1334,7 +1334,8 @@ void ProxyConfigServiceLinux::Delegate::OnCheckProxyConfigSettings() {
 
   // See if it is different from what we had before.
   if (new_config.has_value() != reference_config_.has_value() ||
-      !new_config->value().Equals(reference_config_->value())) {
+      (new_config.has_value() &&
+       !new_config->value().Equals(reference_config_->value()))) {
     // Post a task to the main TaskRunner with the new configuration, so it can
     // update |cached_config_|.
     main_task_runner_->PostTask(
