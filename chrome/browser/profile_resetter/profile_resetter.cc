@@ -261,7 +261,7 @@ void ProfileResetter::ResetExtensions() {
   std::vector<std::string> brandcode_extensions;
   master_settings_->GetExtensions(&brandcode_extensions);
 
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   DCHECK(extension_service);
   extension_service->DisableUserExtensionsExcept(brandcode_extensions);
