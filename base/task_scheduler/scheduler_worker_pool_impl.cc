@@ -110,6 +110,11 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   // incremented if this returns true.
   bool MustIncrementMaxTasksLockRequired();
 
+  bool is_running_background_task_lock_required() const {
+    outer_->lock_.AssertAcquired();
+    return is_running_background_task_;
+  }
+
  private:
   // Returns true if |worker| is allowed to cleanup and remove itself from the
   // pool. Called from GetWork() when no work is available.
@@ -151,6 +156,12 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   // Whether this worker is currently running a task (i.e. GetWork() has
   // returned a non-empty sequence and DidRunTask() hasn't been called yet).
   bool is_running_task_ = false;
+
+  // Whether this worker is currently running a TaskPriority::BACKGROUND task.
+  // Writes are made from the worker thread and are protected by
+  // |outer_->lock_|. Reads are made from any thread, they are protected by
+  // |outer_->lock_| when made outside of the worker thread.
+  bool is_running_background_task_ = false;
 
 #if defined(OS_WIN)
   std::unique_ptr<win::ScopedWindowsThreadEnvironment> win_thread_environment_;
@@ -212,6 +223,7 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
 
 void SchedulerWorkerPoolImpl::Start(
     const SchedulerWorkerPoolParams& params,
+    int max_background_tasks,
     scoped_refptr<TaskRunner> service_thread_task_runner,
     SchedulerWorkerObserver* scheduler_worker_observer,
     WorkerEnvironment worker_environment) {
@@ -220,8 +232,10 @@ void SchedulerWorkerPoolImpl::Start(
   DCHECK(workers_.empty());
 
   max_tasks_ = params.max_tasks();
+  DCHECK_GE(max_tasks_, 1U);
   initial_max_tasks_ = max_tasks_;
   DCHECK_LE(initial_max_tasks_, kMaxNumberOfWorkers);
+  max_background_tasks_ = max_background_tasks;
   suggested_reclaim_time_ = params.suggested_reclaim_time();
   backward_compatibility_ = params.backward_compatibility();
   worker_environment_ = worker_environment;
@@ -430,8 +444,9 @@ scoped_refptr<Sequence>
 SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
     SchedulerWorker* worker) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-
   DCHECK(!is_running_task_);
+  DCHECK(!is_running_background_task_);
+
   {
     AutoSchedulerLock auto_lock(outer_->lock_);
 
@@ -477,10 +492,24 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
       // 4. This thread adds itself to |idle_workers_stack_| and goes to sleep.
       //    No thread runs the Sequence inserted in step 2.
       AutoSchedulerLock auto_lock(outer_->lock_);
-
       OnWorkerBecomesIdleLockRequired(worker);
       return nullptr;
     }
+
+    // Enforce that no more than |max_background_tasks_| run concurrently.
+    const TaskPriority priority = transaction->PeekSortKey().priority();
+    if (priority == TaskPriority::BACKGROUND) {
+      AutoSchedulerLock auto_lock(outer_->lock_);
+      if (outer_->num_running_background_tasks_ <
+          outer_->max_background_tasks_) {
+        ++outer_->num_running_background_tasks_;
+        is_running_background_task_ = true;
+      } else {
+        OnWorkerBecomesIdleLockRequired(worker);
+        return nullptr;
+      }
+    }
+
     sequence = transaction->PopSequence();
   }
   DCHECK(sequence);
@@ -497,11 +526,17 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-
   DCHECK(may_block_start_time_.is_null());
   DCHECK(!incremented_max_tasks_since_blocked_);
   DCHECK(is_running_task_);
+
   is_running_task_ = false;
+
+  if (is_running_background_task_) {
+    AutoSchedulerLock auto_lock(outer_->lock_);
+    --outer_->num_running_background_tasks_;
+    is_running_background_task_ = false;
+  }
 
   ++num_tasks_since_last_wait_;
   ++num_tasks_since_last_detach_;
@@ -654,6 +689,8 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
     if (!may_block_start_time_.is_null()) {
       may_block_start_time_ = TimeTicks();
       --outer_->num_pending_may_block_workers_;
+      if (is_running_background_task_)
+        --outer_->num_pending_background_may_block_workers_;
     }
   }
 
@@ -669,10 +706,12 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::BlockingEnded() {
 
   AutoSchedulerLock auto_lock(outer_->lock_);
   if (incremented_max_tasks_since_blocked_) {
-    outer_->DecrementMaxTasksLockRequired();
+    outer_->DecrementMaxTasksLockRequired(is_running_background_task_);
   } else {
     DCHECK(!may_block_start_time_.is_null());
     --outer_->num_pending_may_block_workers_;
+    if (is_running_background_task_)
+      --outer_->num_pending_background_may_block_workers_;
   }
 
   incremented_max_tasks_since_blocked_ = false;
@@ -689,6 +728,8 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::MayBlockEntered() {
     DCHECK(may_block_start_time_.is_null());
     may_block_start_time_ = TimeTicks::Now();
     ++outer_->num_pending_may_block_workers_;
+    if (is_running_background_task_)
+      ++outer_->num_pending_background_may_block_workers_;
   }
   outer_->ScheduleAdjustMaxTasksIfNeeded();
 }
@@ -705,7 +746,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::WillBlockEntered() {
     DCHECK(!incremented_max_tasks_since_blocked_);
     DCHECK(may_block_start_time_.is_null());
     incremented_max_tasks_since_blocked_ = true;
-    outer_->IncrementMaxTasksLockRequired();
+    outer_->IncrementMaxTasksLockRequired(is_running_background_task_);
 
     // If the number of workers was less than the old max tasks, PostTask
     // would've handled creating extra workers during WakeUpOneWorker.
@@ -741,9 +782,11 @@ bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
     incremented_max_tasks_since_blocked_ = true;
 
     // Reset |may_block_start_time_| so that BlockingScopeExited() knows that it
-    // doesn't have to decrement |outer_->num_pending_may_block_workers_|.
+    // doesn't have to decrement the number of pending MAY_BLOCK workers.
     may_block_start_time_ = TimeTicks();
     --outer_->num_pending_may_block_workers_;
+    if (is_running_background_task_)
+      --outer_->num_pending_background_may_block_workers_;
 
     return true;
   }
@@ -882,7 +925,7 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasks() {
       shared_priority_queue_.BeginTransaction());
   AutoSchedulerLock auto_lock(lock_);
 
-  const size_t original_worker_capacity = max_tasks_;
+  const size_t previous_max_tasks = max_tasks_;
 
   // Increment max tasks for each worker that has been within a MAY_BLOCK
   // ScopedBlockingCall for more than MayBlockThreshold().
@@ -891,14 +934,16 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasks() {
     // SchedulerWorkerDelegateImpls.
     SchedulerWorkerDelegateImpl* delegate =
         static_cast<SchedulerWorkerDelegateImpl*>(worker->delegate());
-    if (delegate->MustIncrementMaxTasksLockRequired())
-      IncrementMaxTasksLockRequired();
+    if (delegate->MustIncrementMaxTasksLockRequired()) {
+      IncrementMaxTasksLockRequired(
+          delegate->is_running_background_task_lock_required());
+    }
   }
 
   // Wake up a worker per pending sequence, capacity permitting.
   const size_t num_pending_sequences = transaction->Size();
   const size_t num_wake_ups_needed =
-      std::min(max_tasks_ - original_worker_capacity, num_pending_sequences);
+      std::min(max_tasks_ - previous_max_tasks, num_pending_sequences);
 
   for (size_t i = 0; i < num_wake_ups_needed; ++i) {
     // No need to call ScheduleAdjustMaxTasksIfNeeded() as the caller will
@@ -957,29 +1002,49 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasksFunction() {
 
 bool SchedulerWorkerPoolImpl::ShouldPeriodicallyAdjustMaxTasksLockRequired() {
   lock_.AssertAcquired();
-  // AdjustMaxTasks() must be periodically called when (1) there are no
-  // idle workers that can do work (2) there are workers that are within the
-  // scope of a MAY_BLOCK ScopedBlockingCall but haven't cause a max tasks
-  // increment yet.
-  //
+
+  // The maximum number of background tasks that can run concurrently must be
+  // adjusted periodically when (1) the number of background tasks that are
+  // currently running is equal to it and (2) there are workers running
+  // background tasks within the scope of a MAY_BLOCK ScopedBlockingCall but
+  // haven't cause a max background tasks increment yet.
+  // - When (1) is false: A newly posted background task will be allowed to run
+  //   normally. There is no hurry to increase max background tasks.
+  // - When (2) is false: AdjustMaxTasks() wouldn't affect
+  //   |max_background_tasks_|.
+  if (num_running_background_tasks_ >= max_background_tasks_ &&
+      num_pending_background_may_block_workers_ > 0) {
+    return true;
+  }
+
+  // The maximum number of tasks that can run concurrently must be adjusted
+  // periodically when (1) there are no idle workers that can do work (2) there
+  // are workers that are within the scope of a MAY_BLOCK ScopedBlockingCall but
+  // haven't cause a max tasks increment yet.
   // - When (1) is false: A newly posted task will run on one of the idle
-  //   workers that are allowed to do work. There is no hurry to increase
-  //   capacity.
-  // - When (2) is false: AdjustMaxTasks() would be a no-op.
+  //   workers that are allowed to do work. There is no hurry to increase max
+  //   tasks.
+  // - When (2) is false: AdjustMaxTasks() wouldn't affect |max_tasks_|.
   const int idle_workers_that_can_do_work =
       idle_workers_stack_.Size() - NumberOfExcessWorkersLockRequired();
   return idle_workers_that_can_do_work <= 0 &&
          num_pending_may_block_workers_ > 0;
 }
 
-void SchedulerWorkerPoolImpl::DecrementMaxTasksLockRequired() {
+void SchedulerWorkerPoolImpl::DecrementMaxTasksLockRequired(
+    bool is_running_background_task) {
   lock_.AssertAcquired();
   --max_tasks_;
+  if (is_running_background_task)
+    --max_background_tasks_;
 }
 
-void SchedulerWorkerPoolImpl::IncrementMaxTasksLockRequired() {
+void SchedulerWorkerPoolImpl::IncrementMaxTasksLockRequired(
+    bool is_running_background_task) {
   lock_.AssertAcquired();
   ++max_tasks_;
+  if (is_running_background_task)
+    ++max_background_tasks_;
 }
 
 }  // namespace internal

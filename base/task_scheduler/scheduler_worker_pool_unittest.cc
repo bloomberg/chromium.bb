@@ -35,6 +35,8 @@ namespace internal {
 namespace {
 
 constexpr size_t kMaxTasks = 4;
+// By default, tests allow half of the pool to be used by background tasks.
+constexpr size_t kMaxBackgroundTasks = kMaxTasks / 2;
 constexpr size_t kNumThreadsPostingTasks = 4;
 constexpr size_t kNumTasksPostedPerThread = 150;
 
@@ -132,7 +134,7 @@ class TaskSchedulerWorkerPoolTest
             static_cast<SchedulerWorkerPoolImpl*>(worker_pool_.get());
         scheduler_worker_pool_impl->Start(
             SchedulerWorkerPoolParams(kMaxTasks, TimeDelta::Max()),
-            service_thread_.task_runner(), nullptr,
+            kMaxBackgroundTasks, service_thread_.task_runner(), nullptr,
             SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
         break;
       }

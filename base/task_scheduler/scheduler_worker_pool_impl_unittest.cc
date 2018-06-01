@@ -21,6 +21,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -32,6 +33,7 @@
 #include "base/task_scheduler/task_tracker.h"
 #include "base/task_scheduler/test_task_factory.h"
 #include "base/task_scheduler/test_utils.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/test/test_timeouts.h"
@@ -67,6 +69,7 @@ constexpr TimeDelta kReclaimTimeForCleanupTests =
 // affecting the max tasks.
 void WaitWithoutBlockingObserver(WaitableEvent* event) {
   internal::ScopedClearBlockingObserverForTesting clear_blocking_observer;
+  ScopedAllowBaseSyncPrimitivesForTesting allow_base_sync_primitives;
   event->Wait();
 }
 
@@ -80,8 +83,10 @@ class TaskSchedulerWorkerPoolImplTestBase {
   void CommonTearDown() {
     service_thread_.Stop();
     task_tracker_.FlushForTesting();
-    worker_pool_->WaitForAllWorkersIdleForTesting();
-    worker_pool_->JoinForTesting();
+    if (worker_pool_) {
+      worker_pool_->WaitForAllWorkersIdleForTesting();
+      worker_pool_->JoinForTesting();
+    }
   }
 
   void CreateWorkerPool() {
@@ -98,7 +103,7 @@ class TaskSchedulerWorkerPoolImplTestBase {
                                size_t max_tasks) {
     ASSERT_TRUE(worker_pool_);
     worker_pool_->Start(
-        SchedulerWorkerPoolParams(max_tasks, suggested_reclaim_time),
+        SchedulerWorkerPoolParams(max_tasks, suggested_reclaim_time), max_tasks,
         service_thread_.task_runner(), nullptr,
         SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
   }
@@ -247,10 +252,10 @@ TEST_P(TaskSchedulerWorkerPoolImplTestParam, PostTasksWithOneAvailableWorker) {
 }
 
 TEST_P(TaskSchedulerWorkerPoolImplTestParam, Saturate) {
-  // Verify that it is possible to have |kMaxTasks|
-  // tasks/sequences running simultaneously. Use different factories so that the
-  // blocking tasks are added to different sequences and can run simultaneously
-  // when the execution mode is SEQUENCED.
+  // Verify that it is possible to have |kMaxTasks| tasks/sequences running
+  // simultaneously. Use different factories so that the blocking tasks are
+  // added to different sequences and can run simultaneously when the execution
+  // mode is SEQUENCED.
   WaitableEvent event;
   std::vector<std::unique_ptr<test::TestTaskFactory>> factories;
   for (size_t i = 0; i < kMaxTasks; ++i) {
@@ -321,7 +326,7 @@ class TaskSchedulerWorkerPoolImplTestCOMMTAParam
                        size_t max_tasks) override {
     ASSERT_TRUE(worker_pool_);
     worker_pool_->Start(
-        SchedulerWorkerPoolParams(max_tasks, suggested_reclaim_time),
+        SchedulerWorkerPoolParams(max_tasks, suggested_reclaim_time), max_tasks,
         service_thread_.task_runner(), nullptr,
         SchedulerWorkerPoolImpl::WorkerEnvironment::COM_MTA);
   }
@@ -361,7 +366,7 @@ INSTANTIATE_TEST_CASE_P(Sequenced,
 
 namespace {
 
-class TaskSchedulerWorkerPoolImplPostTaskBeforeStartTest
+class TaskSchedulerWorkerPoolImplStartInBodyTest
     : public TaskSchedulerWorkerPoolImplTest {
  public:
   void SetUp() override {
@@ -382,8 +387,7 @@ void TaskPostedBeforeStart(PlatformThreadRef* platform_thread_ref,
 
 // Verify that 2 tasks posted before Start() to a SchedulerWorkerPoolImpl with
 // more than 2 workers run on different workers when Start() is called.
-TEST_F(TaskSchedulerWorkerPoolImplPostTaskBeforeStartTest,
-       PostTasksBeforeStart) {
+TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, PostTasksBeforeStart) {
   PlatformThreadRef task_1_thread_ref;
   PlatformThreadRef task_2_thread_ref;
   WaitableEvent task_1_running;
@@ -427,7 +431,7 @@ TEST_F(TaskSchedulerWorkerPoolImplPostTaskBeforeStartTest,
 
 // Verify that posting many tasks before Start will cause the number of workers
 // to grow to |max_tasks_| during Start.
-TEST_F(TaskSchedulerWorkerPoolImplPostTaskBeforeStartTest, PostManyTasks) {
+TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, PostManyTasks) {
   scoped_refptr<TaskRunner> task_runner =
       worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
   constexpr size_t kNumTasksPosted = 2 * kMaxTasks;
@@ -776,6 +780,7 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeCleanup) {
 }
 
 TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitOne) {
+  constexpr int kLocalMaxTasks = 8;
   TaskTracker task_tracker("Test");
   DelayedTaskManager delayed_task_manager;
   scoped_refptr<TaskRunner> service_thread_task_runner =
@@ -784,9 +789,10 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitOne) {
   auto worker_pool = std::make_unique<SchedulerWorkerPoolImpl>(
       "OnePolicyWorkerPool", "A", ThreadPriority::NORMAL,
       task_tracker.GetTrackedRef(), &delayed_task_manager);
-  worker_pool->Start(SchedulerWorkerPoolParams(8U, TimeDelta::Max()),
-                     service_thread_task_runner, nullptr,
-                     SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
+  worker_pool->Start(
+      SchedulerWorkerPoolParams(kLocalMaxTasks, TimeDelta::Max()),
+      kLocalMaxTasks, service_thread_task_runner, nullptr,
+      SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
   ASSERT_TRUE(worker_pool);
   EXPECT_EQ(1U, worker_pool->NumberOfWorkersForTesting());
   worker_pool->JoinForTesting();
@@ -807,7 +813,7 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, VerifyStandbyThread) {
       task_tracker.GetTrackedRef(), &delayed_task_manager);
   worker_pool->Start(
       SchedulerWorkerPoolParams(kLocalMaxTasks, kReclaimTimeForCleanupTests),
-      service_thread_task_runner, nullptr,
+      kLocalMaxTasks, service_thread_task_runner, nullptr,
       SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
   ASSERT_TRUE(worker_pool);
   EXPECT_EQ(1U, worker_pool->NumberOfWorkersForTesting());
@@ -1240,7 +1246,7 @@ TEST(TaskSchedulerWorkerPoolOverCapacityTest, VerifyCleanup) {
       task_tracker.GetTrackedRef(), &delayed_task_manager);
   worker_pool.Start(
       SchedulerWorkerPoolParams(kLocalMaxTasks, kReclaimTimeForCleanupTests),
-      service_thread_task_runner, nullptr,
+      kLocalMaxTasks, service_thread_task_runner, nullptr,
       SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
 
   scoped_refptr<TaskRunner> task_runner =
@@ -1416,9 +1422,154 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, MaximumWorkersTest) {
   task_tracker_.FlushForTesting();
 }
 
+// Verify that the maximum number of background tasks that can run concurrently
+// is honored.
+TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, MaxBackgroundTasks) {
+  constexpr int kMaxBackgroundTasks = kMaxTasks / 2;
+  worker_pool_->Start(
+      SchedulerWorkerPoolParams(kMaxTasks, base::TimeDelta::Max()),
+      kMaxBackgroundTasks, service_thread_.task_runner(), nullptr,
+      SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
+  const scoped_refptr<TaskRunner> foreground_runner =
+      worker_pool_->CreateTaskRunnerWithTraits({MayBlock()});
+  const scoped_refptr<TaskRunner> background_runner =
+      worker_pool_->CreateTaskRunnerWithTraits(
+          {TaskPriority::BACKGROUND, MayBlock()});
+
+  // It should be possible to have |kMaxBackgroundTasks|
+  // TaskPriority::BACKGROUND tasks running concurrently.
+  WaitableEvent background_tasks_running;
+  WaitableEvent unblock_background_tasks;
+  RepeatingClosure background_tasks_running_barrier = BarrierClosure(
+      kMaxBackgroundTasks,
+      BindOnce(&WaitableEvent::Signal, Unretained(&background_tasks_running)));
+
+  for (int i = 0; i < kMaxBackgroundTasks; ++i) {
+    background_runner->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          background_tasks_running_barrier.Run();
+          WaitWithoutBlockingObserver(&unblock_background_tasks);
+        }));
+  }
+  background_tasks_running.Wait();
+
+  // No more TaskPriority::BACKGROUND task should run.
+  AtomicFlag extra_background_task_can_run;
+  WaitableEvent extra_background_task_running;
+  background_runner->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        EXPECT_TRUE(extra_background_task_can_run.IsSet());
+        extra_background_task_running.Signal();
+      }));
+
+  // An extra foreground task should be able to run.
+  WaitableEvent foreground_task_running;
+  foreground_runner->PostTask(
+      FROM_HERE, base::BindOnce(&WaitableEvent::Signal,
+                                Unretained(&foreground_task_running)));
+  foreground_task_running.Wait();
+
+  // Completion of the TaskPriority::BACKGROUND tasks should allow the extra
+  // TaskPriority::BACKGROUND task to run.
+  extra_background_task_can_run.Set();
+  unblock_background_tasks.Signal();
+  extra_background_task_running.Wait();
+
+  // Tear down.
+  task_tracker_.FlushForTesting();
+}
+
+namespace {
+
+class TaskSchedulerWorkerPoolBlockingCallAndMaxBackgroundTasksTest
+    : public TaskSchedulerWorkerPoolImplTestBase,
+      public testing::TestWithParam<BlockingType> {
+ public:
+  static constexpr int kMaxBackgroundTasks = kMaxTasks / 2;
+
+  TaskSchedulerWorkerPoolBlockingCallAndMaxBackgroundTasksTest() = default;
+
+  void SetUp() override {
+    CreateWorkerPool();
+    worker_pool_->Start(
+        SchedulerWorkerPoolParams(kMaxTasks, base::TimeDelta::Max()),
+        kMaxBackgroundTasks, service_thread_.task_runner(), nullptr,
+        SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
+  }
+
+  void TearDown() override {
+    TaskSchedulerWorkerPoolImplTestBase::CommonTearDown();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(
+      TaskSchedulerWorkerPoolBlockingCallAndMaxBackgroundTasksTest);
+};
+
+}  // namespace
+
+TEST_P(TaskSchedulerWorkerPoolBlockingCallAndMaxBackgroundTasksTest,
+       BlockingCallAndMaxBackgroundTasksTest) {
+  const scoped_refptr<TaskRunner> background_runner =
+      worker_pool_->CreateTaskRunnerWithTraits(
+          {TaskPriority::BACKGROUND, MayBlock()});
+
+  // Post |kMaxBackgroundTasks| TaskPriority::BACKGROUND tasks that block in a
+  // ScopedBlockingCall.
+  WaitableEvent blocking_background_tasks_running;
+  WaitableEvent unblock_blocking_background_tasks;
+  RepeatingClosure blocking_background_tasks_running_barrier =
+      BarrierClosure(kMaxBackgroundTasks,
+                     BindOnce(&WaitableEvent::Signal,
+                              Unretained(&blocking_background_tasks_running)));
+  for (int i = 0; i < kMaxBackgroundTasks; ++i) {
+    background_runner->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          blocking_background_tasks_running_barrier.Run();
+          ScopedBlockingCall scoped_blocking_call(GetParam());
+          WaitWithoutBlockingObserver(&unblock_blocking_background_tasks);
+        }));
+  }
+  blocking_background_tasks_running.Wait();
+
+  // Post an extra |kMaxBackgroundTasks| TaskPriority::BACKGROUND tasks. They
+  // should be able to run, because the existing TaskPriority::BACKGROUND tasks
+  // are blocked within a ScopedBlockingCall.
+  //
+  // Note: We block the tasks until they have all started running to make sure
+  // that it is possible to run an extra |kMaxBackgroundTasks| concurrently.
+  WaitableEvent background_tasks_running;
+  WaitableEvent unblock_background_tasks;
+  RepeatingClosure background_tasks_running_barrier = BarrierClosure(
+      kMaxBackgroundTasks,
+      BindOnce(&WaitableEvent::Signal, Unretained(&background_tasks_running)));
+  for (int i = 0; i < kMaxBackgroundTasks; ++i) {
+    background_runner->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          background_tasks_running_barrier.Run();
+          WaitWithoutBlockingObserver(&unblock_background_tasks);
+        }));
+  }
+  background_tasks_running.Wait();
+
+  // Unblock all tasks and tear down.
+  unblock_blocking_background_tasks.Signal();
+  unblock_background_tasks.Signal();
+  task_tracker_.FlushForTesting();
+}
+
+INSTANTIATE_TEST_CASE_P(
+    MayBlock,
+    TaskSchedulerWorkerPoolBlockingCallAndMaxBackgroundTasksTest,
+    ::testing::Values(BlockingType::MAY_BLOCK));
+INSTANTIATE_TEST_CASE_P(
+    WillBlock,
+    TaskSchedulerWorkerPoolBlockingCallAndMaxBackgroundTasksTest,
+    ::testing::Values(BlockingType::WILL_BLOCK));
+
 // Verify that worker detachement doesn't race with worker cleanup, regression
 // test for https://crbug.com/810464.
-TEST(TaskSchedulerWorkerPoolTest, RacyCleanup) {
+TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, RacyCleanup) {
 #if defined(OS_FUCHSIA)
   // Fuchsia + QEMU doesn't deal well with *many* threads being
   // created/destroyed at once: https://crbug.com/816575.
@@ -1429,21 +1580,13 @@ TEST(TaskSchedulerWorkerPoolTest, RacyCleanup) {
   constexpr TimeDelta kReclaimTimeForRacyCleanupTest =
       TimeDelta::FromMilliseconds(10);
 
-  TaskTracker task_tracker("Test");
-  DelayedTaskManager delayed_task_manager;
-  scoped_refptr<TaskRunner> service_thread_task_runner =
-      MakeRefCounted<TestSimpleTaskRunner>();
-  delayed_task_manager.Start(service_thread_task_runner);
-  SchedulerWorkerPoolImpl worker_pool(
-      "RacyCleanupTestWorkerPool", "A", ThreadPriority::NORMAL,
-      task_tracker.GetTrackedRef(), &delayed_task_manager);
-  worker_pool.Start(
+  worker_pool_->Start(
       SchedulerWorkerPoolParams(kLocalMaxTasks, kReclaimTimeForRacyCleanupTest),
-      service_thread_task_runner, nullptr,
+      kLocalMaxTasks, service_thread_.task_runner(), nullptr,
       SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
 
   scoped_refptr<TaskRunner> task_runner =
-      worker_pool.CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
+      worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
 
   WaitableEvent threads_running(WaitableEvent::ResetPolicy::AUTOMATIC,
                                 WaitableEvent::InitialState::NOT_SIGNALED);
@@ -1471,10 +1614,11 @@ TEST(TaskSchedulerWorkerPoolTest, RacyCleanup) {
   // being idle.
   PlatformThread::Sleep(kReclaimTimeForRacyCleanupTest);
 
-  worker_pool.JoinForTesting();
+  worker_pool_->JoinForTesting();
 
   // Unwinding this test will be racy if worker cleanup can race with
   // SchedulerWorkerPoolImpl destruction : https://crbug.com/810464.
+  worker_pool_.reset();
 }
 
 }  // namespace internal
