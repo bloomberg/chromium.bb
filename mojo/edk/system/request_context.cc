@@ -55,8 +55,14 @@ RequestContext::~RequestContext() {
       static const HandleSignalsState closed_state = {0, 0};
 
       // Establish a new RequestContext to capture and run any new notifications
-      // triggered by the callback invocation.
-      RequestContext inner_context(source_);
+      // triggered by the callback invocation. Note that while it would be safe
+      // to inherit |source_| from the perspective of Mojo core re-entrancy,
+      // upper application layers may use the flag as a signal to allow
+      // synchronous event dispatch and in turn shoot themselves in the foot
+      // with e.g. mutually recursive event handlers. We avoid that by
+      // treating all nested trap events as if they originated from a local API
+      // call even if this is a system RequestContext.
+      RequestContext inner_context(Source::LOCAL_API_CALL);
       watch->InvokeCallback(MOJO_RESULT_CANCELLED, closed_state, flags);
     }
 
