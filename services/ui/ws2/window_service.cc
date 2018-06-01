@@ -63,6 +63,11 @@ void WindowService::SetFrameDecorationValues(
                                              max_title_bar_button_width);
 }
 
+// static
+bool WindowService::HasRemoteClient(aura::Window* window) {
+  return ClientWindow::GetMayBeNull(window);
+}
+
 void WindowService::OnStart() {
   window_tree_factory_ = std::make_unique<WindowTreeFactory>(this);
 

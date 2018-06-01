@@ -122,6 +122,7 @@ class FocusCycler;
 class HighContrastController;
 class HighlighterController;
 class ImeController;
+class ImeFocusHandler;
 class ImmersiveContextAsh;
 class ImmersiveHandlerFactoryAsh;
 class KeyAccessibilityEnabler;
@@ -749,6 +750,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<FirstRunHelper> first_run_helper_;
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<ImeController> ime_controller_;
+  std::unique_ptr<ImeFocusHandler> ime_focus_handler_;
   std::unique_ptr<ImmersiveContextAsh> immersive_context_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;

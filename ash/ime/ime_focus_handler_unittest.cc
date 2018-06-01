@@ -1,0 +1,137 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ash/ime/ime_focus_handler.h"
+
+#include <memory>
+
+#include "ash/shell.h"
+#include "ash/test/ash_test_base.h"
+#include "ash/wm/window_util.h"
+#include "base/macros.h"
+#include "services/ui/ws2/gpu_support.h"
+#include "services/ui/ws2/test_window_service_delegate.h"
+#include "services/ui/ws2/window_service.h"
+#include "ui/base/ime/mock_input_method.h"
+#include "ui/wm/core/focus_controller.h"
+
+namespace ash {
+
+namespace {
+
+// A testing input method that tracks OnFocus/OnBlur calls.
+class TestInputMethod : public ui::MockInputMethod {
+ public:
+  explicit TestInputMethod(bool initial_focused)
+      : MockInputMethod(nullptr), focused_(initial_focused) {}
+  ~TestInputMethod() override = default;
+
+  bool focused() const { return focused_; }
+
+ private:
+  // ui::MokcInputMethod
+  void OnFocus() override { focused_ = true; }
+  void OnBlur() override { focused_ = false; }
+
+  bool focused_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TestInputMethod);
+};
+
+}  // namespace
+
+class ImeFocusHandlerTest : public AshTestBase {
+ public:
+  ImeFocusHandlerTest() = default;
+  ~ImeFocusHandlerTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    AshTestBase::SetUp();
+
+    aura::client::FocusClient* const focus_controller =
+        Shell::Get()->focus_controller();
+
+    window_service_ = std::make_unique<ui::ws2::WindowService>(
+        &delegate_, nullptr, focus_controller);
+
+    ime_focus_handler_ =
+        std::make_unique<ImeFocusHandler>(focus_controller, &input_method_);
+  }
+  void TearDown() override {
+    ime_focus_handler_.reset();
+
+    AshTestBase::TearDown();
+  }
+
+  // Simulates a window created by a window service client.
+  std::unique_ptr<aura::Window> CreateRemoteWindow() {
+    std::unique_ptr<aura::Window> window =
+        CreateTestWindow(gfx::Rect(0, 0, 100, 50));
+    window_service_->GetClientWindowForWindowCreateIfNecessary(window.get());
+    return window;
+  }
+
+  TestInputMethod& input_method() { return input_method_; }
+
+ private:
+  ui::ws2::TestWindowServiceDelegate delegate_;
+  std::unique_ptr<ui::ws2::WindowService> window_service_;
+
+  TestInputMethod input_method_{true /* initial_focus */};
+  std::unique_ptr<ImeFocusHandler> ime_focus_handler_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImeFocusHandlerTest);
+};
+
+// Tests that IME focus state is updated when the active window changes between
+// a ClientWindow and an ash window.
+TEST_F(ImeFocusHandlerTest, BetweenClientWindowAndAshWindow) {
+  // Activates a non-ash window. IME should lose focus.
+  std::unique_ptr<aura::Window> non_ash_window = CreateRemoteWindow();
+  wm::ActivateWindow(non_ash_window.get());
+  EXPECT_FALSE(input_method().focused());
+
+  // Activates an ash window. IME should gain focus.
+  std::unique_ptr<aura::Window> ash_window =
+      CreateTestWindow(gfx::Rect(0, 0, 100, 50));
+  wm::ActivateWindow(ash_window.get());
+  EXPECT_TRUE(input_method().focused());
+
+  // Activates a non-ash window again. IME should lose focus again.
+  wm::ActivateWindow(non_ash_window.get());
+  EXPECT_FALSE(input_method().focused());
+}
+
+// Tests that IME stays un-focused when the active window changes between
+// different ClientWindows.
+TEST_F(ImeFocusHandlerTest, BetweenClientWindows) {
+  // Activates a non-ash window. IME should lose focus.
+  std::unique_ptr<aura::Window> non_ash_window_1 = CreateRemoteWindow();
+  wm::ActivateWindow(non_ash_window_1.get());
+  EXPECT_FALSE(input_method().focused());
+
+  // Activates another non-ash window. IME should not be focused.
+  std::unique_ptr<aura::Window> non_ash_window_2 = CreateRemoteWindow();
+  wm::ActivateWindow(non_ash_window_2.get());
+  EXPECT_FALSE(input_method().focused());
+}
+
+// Tests that IME stays focused when the active window changes between ash
+// windows.
+TEST_F(ImeFocusHandlerTest, BetweenAshWindows) {
+  // Activates an ash window. IME is focused.
+  std::unique_ptr<aura::Window> ash_window_1 =
+      CreateTestWindow(gfx::Rect(0, 0, 100, 50));
+  wm::ActivateWindow(ash_window_1.get());
+  EXPECT_TRUE(input_method().focused());
+
+  // Activates another ash window. IME is still focused.
+  std::unique_ptr<aura::Window> ash_window_2 =
+      CreateTestWindow(gfx::Rect(0, 0, 100, 50));
+  wm::ActivateWindow(ash_window_2.get());
+  EXPECT_TRUE(input_method().focused());
+}
+
+}  // namespace ash

@@ -49,8 +49,10 @@ InputMethodChromeOS::~InputMethodChromeOS() {
   // We are dead, so we need to ask the client to stop relying on us.
   OnInputMethodChanged();
 
-  if (ui::IMEBridge::Get())
-    ui::IMEBridge::Get()->SetInputContextHandler(NULL);
+  if (ui::IMEBridge::Get() &&
+      ui::IMEBridge::Get()->GetInputContextHandler() == this) {
+    ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+  }
 }
 
 ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEvent(
