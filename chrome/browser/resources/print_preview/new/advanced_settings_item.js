@@ -143,6 +143,14 @@ Polymer({
   },
 
   /**
+   * Only used in tests.
+   * @param {(number | string | boolean)} value A value to set the setting to.
+   */
+  setCurrentValueForTest: function(value) {
+    this.currentValue_ = value;
+  },
+
+  /**
    * @param {?RegExp} query The current search query.
    * @return {boolean} Whether the current query is a match for this item.
    */

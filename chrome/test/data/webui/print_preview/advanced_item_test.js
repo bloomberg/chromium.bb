@@ -7,6 +7,8 @@ cr.define('advanced_item_test', function() {
   const TestNames = {
     DisplaySelect: 'display select',
     DisplayInput: 'display input',
+    UpdateSelect: 'update select',
+    UpdateInput: 'update input',
     QueryName: 'query name',
     QueryOption: 'query option',
   };
@@ -25,6 +27,17 @@ cr.define('advanced_item_test', function() {
       item.capability = print_preview_test_utils
                             .getCddTemplateWithAdvancedSettings(2, 'FooDevice')
                             .capabilities.printer.vendor_capability[1];
+
+      // Settings - only need vendor items
+      item.settings = {
+        vendorItems: {
+          value: {},
+          unavailableValue: {},
+          valid: true,
+          available: true,
+          key: 'vendorOptions',
+        },
+      };
 
       document.body.appendChild(item);
       Polymer.dom.flush();
@@ -64,6 +77,36 @@ cr.define('advanced_item_test', function() {
 
       // No select.
       assertEquals(null, item.$$('select'));
+    });
+
+    // Test that a select capability updates correctly when the setting is
+    // updated (e.g. when sticky settings are set).
+    test(assert(TestNames.UpdateSelect), function() {
+      // Check that the default option is selected.
+      const select = item.$$('select');
+      assertEquals(0, select.selectedIndex);
+
+      // Update the setting.
+      item.set('settings.vendorItems.value', {paperType: 1});
+      assertEquals(1, select.selectedIndex);
+    });
+
+    // Test that an input capability updates correctly when the setting is
+    // updated (e.g. when sticky settings are set).
+    test(assert(TestNames.UpdateInput), function() {
+      // Create capability
+      item.capability = print_preview_test_utils
+                            .getCddTemplateWithAdvancedSettings(3, 'FooDevice')
+                            .capabilities.printer.vendor_capability[2];
+      Polymer.dom.flush();
+
+      // Check that the default value is set.
+      const input = item.$$('input');
+      assertEquals('', input.value);
+
+      // Update the setting.
+      item.set('settings.vendorItems.value', {watermark: 'ABCD'});
+      assertEquals('ABCD', input.value);
     });
 
     // Test that the setting is displayed correctly when the search query

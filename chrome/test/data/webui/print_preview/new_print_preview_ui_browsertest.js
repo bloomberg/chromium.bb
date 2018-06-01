@@ -574,6 +574,7 @@ PrintPreviewAdvancedDialogTest = class extends NewPrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
       'print_preview_test_utils.js',
       'advanced_dialog_test.js',
     ]);
@@ -594,6 +595,18 @@ TEST_F(
       this.runMochaTest(
           advanced_dialog_test.TestNames.AdvancedSettings2Options);
     });
+
+TEST_F('PrintPreviewAdvancedDialogTest', 'AdvancedSettingsApply', function() {
+  this.runMochaTest(advanced_dialog_test.TestNames.AdvancedSettingsApply);
+});
+
+TEST_F('PrintPreviewAdvancedDialogTest', 'AdvancedSettingsClose', function() {
+  this.runMochaTest(advanced_dialog_test.TestNames.AdvancedSettingsClose);
+});
+
+TEST_F('PrintPreviewAdvancedDialogTest', 'AdvancedSettingsFilter', function() {
+  this.runMochaTest(advanced_dialog_test.TestNames.AdvancedSettingsFilter);
+});
 
 PrintPreviewCustomMarginsTest = class extends NewPrintPreviewTest {
   /** @override */
@@ -779,6 +792,14 @@ TEST_F('PrintPreviewAdvancedItemTest', 'DisplaySelect', function() {
 
 TEST_F('PrintPreviewAdvancedItemTest', 'DisplayInput', function() {
   this.runMochaTest(advanced_item_test.TestNames.DisplayInput);
+});
+
+TEST_F('PrintPreviewAdvancedItemTest', 'UpdateSelect', function() {
+  this.runMochaTest(advanced_item_test.TestNames.UpdateSelect);
+});
+
+TEST_F('PrintPreviewAdvancedItemTest', 'UpdateInput', function() {
+  this.runMochaTest(advanced_item_test.TestNames.UpdateInput);
 });
 
 TEST_F('PrintPreviewAdvancedItemTest', 'QueryName', function() {
