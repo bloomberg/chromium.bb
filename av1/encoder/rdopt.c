@@ -4707,11 +4707,15 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
       }
     }
   }
-  int64_t zero_rd = RDCOST(x->rdmult, rd_stats->zero_rate, rd_stats->sse);
-  this_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
-  if (zero_rd < this_rd) {
-    this_rd = zero_rd;
-    rd_stats->rate = rd_stats->zero_rate;
+
+  const int skip_ctx = av1_get_skip_context(xd);
+  const int s0 = x->skip_cost[skip_ctx][0];
+  const int s1 = x->skip_cost[skip_ctx][1];
+  int64_t skip_rd = RDCOST(x->rdmult, s1, rd_stats->sse);
+  this_rd = RDCOST(x->rdmult, rd_stats->rate + s0, rd_stats->dist);
+  if (skip_rd < this_rd) {
+    this_rd = skip_rd;
+    rd_stats->rate = 0;
     rd_stats->dist = rd_stats->sse;
     rd_stats->skip = 1;
   }
@@ -4921,11 +4925,15 @@ static int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
       }
     }
   }
-  int64_t zero_rd = RDCOST(x->rdmult, rd_stats->zero_rate, rd_stats->sse);
-  this_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
-  if (zero_rd < this_rd) {
-    this_rd = zero_rd;
-    rd_stats->rate = rd_stats->zero_rate;
+
+  const int skip_ctx = av1_get_skip_context(xd);
+  const int s0 = x->skip_cost[skip_ctx][0];
+  const int s1 = x->skip_cost[skip_ctx][1];
+  int64_t skip_rd = RDCOST(x->rdmult, s1, rd_stats->sse);
+  this_rd = RDCOST(x->rdmult, rd_stats->rate + s0, rd_stats->dist);
+  if (skip_rd < this_rd) {
+    this_rd = skip_rd;
+    rd_stats->rate = 0;
     rd_stats->dist = rd_stats->sse;
     rd_stats->skip = 1;
   }
