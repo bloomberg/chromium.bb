@@ -28,7 +28,10 @@ class SystemProviderImpl : public assistant_client::SystemProvider {
                                const std::string& locale) override;
 
  private:
+  friend class SystemProviderImplTest;
   void OnBatteryStatus(device::mojom::BatteryStatusPtr battery_status);
+
+  void FlushForTesting();
 
   device::mojom::BatteryMonitorPtr battery_monitor_;
   device::mojom::BatteryStatusPtr current_battery_status_;
