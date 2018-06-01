@@ -7,20 +7,23 @@
 namespace content {
 
 NavigationStateImpl::~NavigationStateImpl() {
+  RunCommitNavigationCallback(blink::mojom::CommitResult::Aborted);
 }
 
 NavigationStateImpl* NavigationStateImpl::CreateBrowserInitiated(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
-    base::TimeTicks time_commit_requested) {
+    base::TimeTicks time_commit_requested,
+    mojom::FrameNavigationControl::CommitNavigationCallback callback) {
   return new NavigationStateImpl(common_params, request_params,
-                                 time_commit_requested, false);
+                                 time_commit_requested, false,
+                                 std::move(callback));
 }
 
 NavigationStateImpl* NavigationStateImpl::CreateContentInitiated() {
-  return new NavigationStateImpl(CommonNavigationParams(),
-                                 RequestNavigationParams(), base::TimeTicks(),
-                                 true);
+  return new NavigationStateImpl(
+      CommonNavigationParams(), RequestNavigationParams(), base::TimeTicks(),
+      true, content::mojom::FrameNavigationControl::CommitNavigationCallback());
 }
 
 ui::PageTransition NavigationStateImpl::GetTransitionType() {
@@ -35,17 +38,25 @@ bool NavigationStateImpl::IsContentInitiated() {
   return is_content_initiated_;
 }
 
+void NavigationStateImpl::RunCommitNavigationCallback(
+    blink::mojom::CommitResult result) {
+  if (commit_callback_)
+    std::move(commit_callback_).Run(result);
+}
+
 NavigationStateImpl::NavigationStateImpl(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     base::TimeTicks time_commit_requested,
-    bool is_content_initiated)
+    bool is_content_initiated,
+    mojom::FrameNavigationControl::CommitNavigationCallback callback)
     : request_committed_(false),
       was_within_same_document_(false),
       is_content_initiated_(is_content_initiated),
       common_params_(common_params),
       request_params_(request_params),
       time_commit_requested_(time_commit_requested),
-      navigation_client_(nullptr) {}
+      navigation_client_(nullptr),
+      commit_callback_(std::move(callback)) {}
 
 }  // namespace content

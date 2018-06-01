@@ -193,6 +193,9 @@ class NavigationSimulator : public WebContentsObserver {
   // Simulates the commit of the navigation in the RenderFrameHost.
   virtual void Commit();
 
+  // Simulates the commit of a navigation or an error page aborting.
+  virtual void AbortCommit();
+
   // Simulates the navigation failing with the error code |error_code|.
   virtual void Fail(int error_code);
 

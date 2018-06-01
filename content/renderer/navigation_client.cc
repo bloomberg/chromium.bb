@@ -32,7 +32,8 @@ void NavigationClient::CommitNavigation(
       head, common_params, request_params,
       std::move(url_loader_client_endpoints), std::move(subresource_loaders),
       std::move(subresource_overrides),
-      std::move(controller_service_worker_info), devtools_navigation_token);
+      std::move(controller_service_worker_info), devtools_navigation_token,
+      mojom::FrameNavigationControl::CommitNavigationCallback());
 }
 
 void NavigationClient::CommitFailedNavigation(
@@ -45,7 +46,8 @@ void NavigationClient::CommitFailedNavigation(
   ResetDisconnectionHandler();
   render_frame_->CommitFailedNavigation(
       common_params, request_params, has_stale_copy_in_cache, error_code,
-      error_page_content, std::move(subresource_loaders));
+      error_page_content, std::move(subresource_loaders),
+      mojom::FrameNavigationControl::CommitFailedNavigationCallback());
 }
 
 void NavigationClient::Bind(mojom::NavigationClientAssociatedRequest request) {

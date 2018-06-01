@@ -91,7 +91,8 @@ interface FrameNavigationControl {
       URLLoaderFactoryBundle? subresource_loader_factories,
       array<TransferrableURLLoader>? subresource_overrides,
       ControllerServiceWorkerInfo? controller_service_worker_info,
-      mojo_base.mojom.UnguessableToken devtools_navigation_token);
+      mojo_base.mojom.UnguessableToken devtools_navigation_token)
+      => (blink.mojom.CommitResult commit_result);
 
   // Tells the renderer that a failed navigation is ready to commit.
   //
@@ -108,7 +109,8 @@ interface FrameNavigationControl {
       bool has_stale_copy_in_cache,
       int32 error_code,
       string? error_page_content,
-      URLLoaderFactoryBundle? subresource_loader_factories);
+      URLLoaderFactoryBundle? subresource_loader_factories)
+      => (blink.mojom.CommitResult commit_result);
 
   // Tells the renderer that a same-document navigation should be committed.
   // The renderer will return a status value indicating whether the commit

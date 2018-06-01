@@ -303,12 +303,16 @@ namespace content {
 // Helper struct keeping track in one place of all the parameters the browser
 // provided to the renderer to commit a navigation.
 struct PendingNavigationParams {
-  PendingNavigationParams(const CommonNavigationParams& common_params,
-                          const RequestNavigationParams& request_params,
-                          base::TimeTicks time_commit_requested)
+  PendingNavigationParams(
+      const CommonNavigationParams& common_params,
+      const RequestNavigationParams& request_params,
+      base::TimeTicks time_commit_requested,
+      content::mojom::FrameNavigationControl::CommitNavigationCallback
+          commit_callback)
       : common_params(common_params),
         request_params(request_params),
-        time_commit_requested(time_commit_requested) {}
+        time_commit_requested(time_commit_requested),
+        commit_callback_(std::move(commit_callback)) {}
   ~PendingNavigationParams() = default;
 
   CommonNavigationParams common_params;
@@ -316,6 +320,9 @@ struct PendingNavigationParams {
 
   // Time when RenderFrameImpl::CommitNavigation() is called.
   base::TimeTicks time_commit_requested;
+
+  content::mojom::FrameNavigationControl::CommitNavigationCallback
+      commit_callback_;
 };
 
 namespace {
@@ -2446,8 +2453,8 @@ void RenderFrameImpl::DidFailProvisionalLoadInternal(
   if (!navigation_state->IsContentInitiated()) {
     pending_navigation_params_.reset(new PendingNavigationParams(
         navigation_state->common_params(), navigation_state->request_params(),
-        base::TimeTicks()  // not used for failed navigation.
-        ));
+        base::TimeTicks(),  // not used for failed navigation.
+        CommitNavigationCallback()));
   }
 
   // Load an error page.
@@ -2870,7 +2877,8 @@ void RenderFrameImpl::CommitNavigation(
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
-    const base::UnguessableToken& devtools_navigation_token) {
+    const base::UnguessableToken& devtools_navigation_token,
+    CommitNavigationCallback callback) {
   DCHECK(!IsRendererDebugURL(common_params.url));
   DCHECK(
       !FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type));
@@ -2881,6 +2889,7 @@ void RenderFrameImpl::CommitNavigation(
       browser_side_navigation_pending_url_ == request_params.original_url &&
       request_params.nav_entry_id == 0) {
     browser_side_navigation_pending_url_ = GURL();
+    std::move(callback).Run(blink::mojom::CommitResult::Aborted);
     return;
   }
 
@@ -2910,8 +2919,9 @@ void RenderFrameImpl::CommitNavigation(
   if (request_params.is_view_source)
     frame_->EnableViewSourceMode(true);
 
-  pending_navigation_params_.reset(new PendingNavigationParams(
-      common_params, request_params, base::TimeTicks::Now()));
+  pending_navigation_params_.reset(
+      new PendingNavigationParams(common_params, request_params,
+                                  base::TimeTicks::Now(), std::move(callback)));
   PrepareFrameForCommit();
 
   blink::WebFrameLoadType load_type = NavigationTypeToLoadType(
@@ -2999,7 +3009,8 @@ void RenderFrameImpl::CommitFailedNavigation(
     bool has_stale_copy_in_cache,
     int error_code,
     const base::Optional<std::string>& error_page_content,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories) {
+    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+    CommitFailedNavigationCallback callback) {
   DCHECK(
       !FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type));
   bool is_reload =
@@ -3024,8 +3035,8 @@ void RenderFrameImpl::CommitFailedNavigation(
 
   pending_navigation_params_.reset(new PendingNavigationParams(
       common_params, request_params,
-      base::TimeTicks()  // Not used for failed navigation.
-      ));
+      base::TimeTicks(),  // Not used for failed navigation.
+      std::move(callback)));
 
   // Send the provisional load failure.
   WebURLError error(
@@ -3040,6 +3051,9 @@ void RenderFrameImpl::CommitFailedNavigation(
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
     // The browser expects this frame to be loading an error page. Inform it
     // that the load stopped.
+    std::move(pending_navigation_params_->commit_callback_)
+        .Run(blink::mojom::CommitResult::Aborted);
+    pending_navigation_params_.reset();
     Send(new FrameHostMsg_DidStopLoading(routing_id_));
     browser_side_navigation_pending_ = false;
     browser_side_navigation_pending_url_ = GURL();
@@ -3057,6 +3071,9 @@ void RenderFrameImpl::CommitFailedNavigation(
       // either, as the frame has already been populated with something
       // unrelated to this navigation failure. In that case, just send a stop
       // IPC to the browser to unwind its state, and leave the frame as-is.
+      std::move(pending_navigation_params_->commit_callback_)
+          .Run(blink::mojom::CommitResult::Aborted);
+      pending_navigation_params_.reset();
       Send(new FrameHostMsg_DidStopLoading(routing_id_));
     }
     browser_side_navigation_pending_ = false;
@@ -3133,10 +3150,15 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
       common_params.has_user_gesture ? new blink::WebScopedUserGesture(frame_)
                                      : nullptr);
 
+  // Note: The CommitNavigationCallback below is not used: the commit of
+  // same-document navigation is synchronous so there is enough information at
+  // the end of this function to run |callback| directly.
+  // TODO(clamy): See if PendingNavigationParams should not be set at all for
+  // same-document navigations.
   pending_navigation_params_.reset(new PendingNavigationParams(
       common_params, request_params,
-      base::TimeTicks()  // Not used for same-document navigation.
-      ));
+      base::TimeTicks(),  // Not used for same-document navigation.
+      CommitNavigationCallback()));
   PrepareFrameForCommit();
 
   blink::WebFrameLoadType load_type = NavigationTypeToLoadType(
@@ -4097,6 +4119,7 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   if (media_permission_dispatcher_)
     media_permission_dispatcher_->OnNavigation();
 
+  navigation_state->RunCommitNavigationCallback(blink::mojom::CommitResult::Ok);
   DidCommitNavigationInternal(item, commit_type,
                               false /* was_within_same_document */,
                               std::move(remote_interface_provider_request));
@@ -6804,7 +6827,8 @@ NavigationState* RenderFrameImpl::CreateNavigationStateFromPending() {
     return NavigationStateImpl::CreateBrowserInitiated(
         pending_navigation_params_->common_params,
         pending_navigation_params_->request_params,
-        pending_navigation_params_->time_commit_requested);
+        pending_navigation_params_->time_commit_requested,
+        std::move(pending_navigation_params_->commit_callback_));
   }
   return NavigationStateImpl::CreateContentInitiated();
 }
