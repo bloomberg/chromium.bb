@@ -138,10 +138,8 @@ class WebContentsTester {
   // Sets the return value of GetContentsMimeType().
   virtual void SetMainFrameMimeType(const std::string& mime_type) = 0;
 
-  // Override WasRecentlyAudible for testing.
-  virtual void SetWasRecentlyAudible(bool audible) = 0;
-
-  // Override IsCurrentlyAudible for testing.
+  // Change currently audible state for testing. This will cause all relevant
+  // notifications to fire as well.
   virtual void SetIsCurrentlyAudible(bool audible) = 0;
 
   // Simulates an input event from the user.

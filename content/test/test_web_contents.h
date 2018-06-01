@@ -97,7 +97,6 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
       const std::vector<gfx::Size>& original_bitmap_sizes) override;
   void SetLastCommittedURL(const GURL& url) override;
   void SetMainFrameMimeType(const std::string& mime_type) override;
-  void SetWasRecentlyAudible(bool audible) override;
   void SetIsCurrentlyAudible(bool audible) override;
   void TestDidReceiveInputEvent(blink::WebInputEvent::Type type) override;
   void TestDidFailLoadWithError(

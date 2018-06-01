@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -151,7 +152,8 @@ tab_ranker::TabFeatures TabMetricsLogger::GetTabFeatures(
 
   // This checks if the tab was audible within the past two seconds, same as the
   // audio indicator in the tab strip.
-  tab.was_recently_audible = web_contents->WasRecentlyAudible();
+  auto* audible_helper = RecentlyAudibleHelper::FromWebContents(web_contents);
+  tab.was_recently_audible = audible_helper->WasRecentlyAudible();
   return tab;
 }
 

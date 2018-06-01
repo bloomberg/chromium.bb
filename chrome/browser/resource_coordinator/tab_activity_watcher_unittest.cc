@@ -12,6 +12,7 @@
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_activity_simulator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_ukm_test_helper.h"
@@ -244,7 +245,9 @@ TEST_F(TabMetricsTest, TabMetrics) {
   SiteEngagementService::Get(profile())->ResetBaseScoreForURL(kTestUrls[1], 45);
   expected_metrics[TabManager_TabMetrics::kSiteEngagementScoreName] = 40;
 
-  WebContentsTester::For(test_contents_2)->SetWasRecentlyAudible(true);
+  auto* audible_helper_2 =
+      RecentlyAudibleHelper::FromWebContents(test_contents_2);
+  audible_helper_2->SetRecentlyAudibleForTesting();
   expected_metrics[TabManager_TabMetrics::kWasRecentlyAudibleName] = 1;
 
   // Pin the background tab to log an event. (This moves it to index 0.)
@@ -257,7 +260,7 @@ TEST_F(TabMetricsTest, TabMetrics) {
 
   // Unset WasRecentlyAudible and navigate the background tab to a new domain.
   // Site engagement score for the new domain is 0.
-  WebContentsTester::For(test_contents_2)->SetWasRecentlyAudible(false);
+  audible_helper_2->SetNotRecentlyAudibleForTesting();
   expected_metrics[TabManager_TabMetrics::kWasRecentlyAudibleName] = 0;
   WebContentsTester::For(test_contents_2)->NavigateAndCommit(kTestUrls[2]);
   expected_metrics[TabManager_TabMetrics::kSiteEngagementScoreName] = 0;

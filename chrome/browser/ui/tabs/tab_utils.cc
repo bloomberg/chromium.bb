@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
@@ -180,7 +181,8 @@ TabAlertState GetTabAlertStateForContents(content::WebContents* contents) {
   if (contents->HasPictureInPictureVideo())
     return TabAlertState::PIP_PLAYING;
 
-  if (contents->WasRecentlyAudible()) {
+  auto* audible_helper = RecentlyAudibleHelper::FromWebContents(contents);
+  if (audible_helper->WasRecentlyAudible()) {
     if (contents->IsAudioMuted())
       return TabAlertState::AUDIO_MUTING;
     return TabAlertState::AUDIO_PLAYING;

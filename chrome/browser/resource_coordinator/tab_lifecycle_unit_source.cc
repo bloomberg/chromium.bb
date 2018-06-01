@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -205,7 +206,8 @@ void TabLifecycleUnitSource::TabChangedAt(content::WebContents* contents,
     return;
   TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(contents);
   DCHECK(lifecycle_unit);
-  lifecycle_unit->SetRecentlyAudible(contents->WasRecentlyAudible());
+  auto* audible_helper = RecentlyAudibleHelper::FromWebContents(contents);
+  lifecycle_unit->SetRecentlyAudible(audible_helper->WasRecentlyAudible());
 }
 
 void TabLifecycleUnitSource::OnBrowserSetLastActive(Browser* browser) {

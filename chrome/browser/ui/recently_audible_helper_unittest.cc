@@ -53,12 +53,10 @@ class RecentlyAudibleHelperTest : public testing::Test {
 
   void SimulateAudioStarts() {
     content::WebContentsTester::For(contents_)->SetIsCurrentlyAudible(true);
-    helper_->OnAudioStateChanged(true);
   }
 
   void SimulateAudioStops() {
     content::WebContentsTester::For(contents_)->SetIsCurrentlyAudible(false);
-    helper_->OnAudioStateChanged(false);
   }
 
   void AdvanceTime(base::TimeDelta duration) {

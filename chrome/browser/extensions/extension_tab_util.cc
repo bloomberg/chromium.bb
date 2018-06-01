@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
@@ -352,7 +353,9 @@ std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
   tab_object->selected = tab_strip && tab_index == tab_strip->active_index();
   tab_object->highlighted = tab_strip && tab_strip->IsTabSelected(tab_index);
   tab_object->pinned = tab_strip && tab_strip->IsTabPinned(tab_index);
-  tab_object->audible = std::make_unique<bool>(contents->WasRecentlyAudible());
+  auto* audible_helper = RecentlyAudibleHelper::FromWebContents(contents);
+  tab_object->audible =
+      std::make_unique<bool>(audible_helper->WasRecentlyAudible());
   auto* tab_lifeycle_unit_external =
       resource_coordinator::TabLifecycleUnitExternal::FromWebContents(contents);
   tab_object->discarded =
