@@ -2585,7 +2585,6 @@
           "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
-        "experiment_percentage": 100,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 4
@@ -2980,7 +2979,6 @@
           "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
-        "experiment_percentage": 100,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
