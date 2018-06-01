@@ -1035,7 +1035,7 @@
     ],
 
     'asan_lsan_release_trybot': [
-      'asan', 'libfuzzer', 'lsan', 'release_trybot',
+      'asan', 'lsan', 'release_trybot',
     ],
 
     # Cast Linux takes very long in linking, possibly due to being on GCE
