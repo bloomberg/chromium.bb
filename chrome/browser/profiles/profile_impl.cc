@@ -50,6 +50,7 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -79,6 +80,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
@@ -137,6 +139,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/authpolicy/auth_policy_credentials_manager.h"
+#include "chrome/browser/chromeos/cryptauth/gcm_device_info_provider_impl.h"
 #include "chrome/browser/chromeos/locale_change_guard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
@@ -148,6 +151,8 @@
 #include "chromeos/account_manager/account_manager_factory.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/chromeos_features.h"
+#include "chromeos/services/device_sync/device_sync_service.h"
+#include "chromeos/services/device_sync/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -1131,6 +1136,14 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
   }
 #endif
 
+  if (base::FeatureList::IsEnabled(features::kMultiDeviceApi)) {
+    service_manager::EmbeddedServiceInfo info;
+    info.task_runner = base::ThreadTaskRunnerHandle::Get();
+    info.factory = base::BindRepeating(&ProfileImpl::CreateDeviceSyncService,
+                                       base::Unretained(this));
+    services->emplace(chromeos::device_sync::mojom::kServiceName, info);
+  }
+
   if (base::FeatureList::IsEnabled(
           chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
     service_manager::EmbeddedServiceInfo info;
@@ -1445,3 +1458,13 @@ std::unique_ptr<service_manager::Service> ProfileImpl::CreateIdentityService() {
   return std::make_unique<identity::IdentityService>(
       account_tracker, signin_manager, token_service);
 }
+
+#if defined(OS_CHROMEOS)
+std::unique_ptr<service_manager::Service>
+ProfileImpl::CreateDeviceSyncService() {
+  return std::make_unique<chromeos::device_sync::DeviceSyncService>(
+      IdentityManagerFactory::GetForProfile(this),
+      gcm::GCMProfileServiceFactory::GetForProfile(this)->driver(),
+      chromeos::GcmDeviceInfoProviderImpl::GetInstance(), GetRequestContext());
+}
+#endif  // defined(OS_CHROMEOS)

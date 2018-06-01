@@ -465,7 +465,10 @@ service_manifest("chrome_content_browser_manifest_overlay") {
     packaged_services += [ "//chromeos/services/assistant:manifest" ]
   }
   if (is_chromeos) {
-    packaged_services += [ "//chromeos/services/multidevice_setup:manifest" ]
+    packaged_services += [
+      "//chromeos/services/device_sync:manifest",
+      "//chromeos/services/multidevice_setup:manifest",
+    ]
   }
 }
 

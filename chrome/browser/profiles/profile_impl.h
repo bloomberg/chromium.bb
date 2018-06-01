@@ -200,6 +200,10 @@ class ProfileImpl : public Profile {
   // with the appropriate instances of its dependencies.
   std::unique_ptr<service_manager::Service> CreateIdentityService();
 
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<service_manager::Service> CreateDeviceSyncService();
+#endif  // defined(OS_CHROMEOS)
+
   PrefChangeRegistrar pref_change_registrar_;
 
   base::FilePath path_;
