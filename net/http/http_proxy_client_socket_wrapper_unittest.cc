@@ -127,6 +127,7 @@ class HttpProxyClientSocketWrapperTest
         quic::kDefaultMaxPacketSize, /*user_agent_id=*/kUserAgent,
         store_server_configs_in_properties_,
         /*close_sessions_on_ip_change=*/true,
+        /*goaway_sessions_on_ip_change=*/false,
         /*mark_quic_broken_when_network_blackholes=*/false,
         idle_connection_timeout_seconds_, reduced_ping_timeout_seconds_,
         /*max_time_before_crypto_handshake_seconds=*/

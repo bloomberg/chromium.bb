@@ -246,6 +246,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
         privacy_mode_(PRIVACY_MODE_DISABLED),
         store_server_configs_in_properties_(false),
         close_sessions_on_ip_change_(false),
+        goaway_sessions_on_ip_change_(false),
         idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds),
         reduced_ping_timeout_seconds_(quic::kPingTimeoutSecs),
         max_time_before_crypto_handshake_seconds_(
@@ -273,6 +274,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
         &crypto_client_stream_factory_, &random_generator_, &clock_,
         quic::kDefaultMaxPacketSize, string(),
         store_server_configs_in_properties_, close_sessions_on_ip_change_,
+        goaway_sessions_on_ip_change_,
         /*mark_quic_broken_when_network_blackholes*/ false,
         idle_connection_timeout_seconds_, reduced_ping_timeout_seconds_,
         max_time_before_crypto_handshake_seconds_,
@@ -822,6 +824,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   // Variables to configure QuicStreamFactory.
   bool store_server_configs_in_properties_;
   bool close_sessions_on_ip_change_;
+  bool goaway_sessions_on_ip_change_;
   int idle_connection_timeout_seconds_;
   int reduced_ping_timeout_seconds_;
   int max_time_before_crypto_handshake_seconds_;
@@ -1907,7 +1910,7 @@ TEST_P(QuicStreamFactoryTest, WriteErrorInCryptoConnectWithSyncHostResolution) {
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
-TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
+TEST_P(QuicStreamFactoryTest, CloseSessionsOnIPAddressChanged) {
   close_sessions_on_ip_change_ = true;
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -1941,18 +1944,25 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
+  // Check an active session exisits for the destination.
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+
   IPAddress last_address;
   EXPECT_TRUE(http_server_properties_.GetSupportsQuic(&last_address));
-  // Change the IP address and verify that stream saw the error.
+  // Change the IP address and verify that stream saw the error and the active
+  // session is closed.
   NotifyIPAddressChanged();
   EXPECT_EQ(ERR_NETWORK_CHANGED,
             stream->ReadResponseHeaders(callback_.callback()));
   EXPECT_TRUE(factory_->require_confirmation());
   EXPECT_FALSE(http_server_properties_.GetSupportsQuic(&last_address));
+  // Check no active session exists for the destination.
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
 
   // Now attempting to request a stream to the same origin should create
   // a new session.
-
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
             request2.Request(host_port_pair_, version_, privacy_mode_,
@@ -1962,12 +1972,119 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   stream = CreateStream(&request2);
-  stream.reset();  // Will reset stream 3.
 
+  // Check a new active session exisits for the destination and the old session
+  // is no longer live.
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  QuicChromiumClientSession* session2 = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session2));
+
+  stream.reset();  // Will reset stream 3.
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data2.AllReadDataConsumed());
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
+}
+
+// Test that if goaway_session_on_ip_change is set, old sessions will be marked
+// as going away on IP address change instead of being closed. New requests will
+// go to a new connection.
+TEST_P(QuicStreamFactoryTest, GoAwaySessionsOnIPAddressChanged) {
+  goaway_sessions_on_ip_change_ = true;
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockQuicData quic_data1;
+  quic::QuicStreamOffset header_stream_offset = 0;
+  quic_data1.AddWrite(SYNCHRONOUS,
+                      ConstructInitialSettingsPacket(1, &header_stream_offset));
+  quic_data1.AddWrite(SYNCHRONOUS, ConstructGetRequestPacket(
+                                       2, GetNthClientInitiatedStreamId(0),
+                                       true, true, &header_stream_offset));
+  quic_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+  quic_data1.AddRead(
+      ASYNC, ConstructOkResponsePacket(1, GetNthClientInitiatedStreamId(0),
+                                       false, true));
+  quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
+  quic_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  MockQuicData quic_data2;
+  quic::QuicStreamOffset header_stream_offset2 = 0;
+  quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
+  quic_data2.AddWrite(
+      SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset2));
+  quic_data2.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, version_, privacy_mode_,
+                            DEFAULT_PRIORITY, SocketTag(),
+                            /*cert_verify_flags=*/0, url_, net_log_,
+                            &net_error_details_, callback_.callback()));
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = url_;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
+                                         net_log_, CompletionOnceCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Send GET request on stream.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+
+  // Receive an IP address change notification.
+  NotifyIPAddressChanged();
+
+  // The connection should still be alive, but marked as going away.
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  // Resume the data, response should be read from the original connection.
+  quic_data1.Resume();
+  EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(200, response.headers->response_code());
+  EXPECT_EQ(0u, session->GetNumActiveStreams());
+
+  // Second request should be sent on a new connection.
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(host_port_pair_, version_, privacy_mode_,
+                             DEFAULT_PRIORITY, SocketTag(),
+                             /*cert_verify_flags=*/0, url_, net_log_,
+                             &net_error_details_, callback_.callback()));
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
+  EXPECT_TRUE(stream2.get());
+
+  // Check an active session exisits for the destination.
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  QuicChromiumClientSession* session2 = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session2));
+
+  stream.reset();
+  stream2.reset();
+  EXPECT_TRUE(quic_data1.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(quic_data2.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, OnIPAddressChangedWithConnectionMigration) {

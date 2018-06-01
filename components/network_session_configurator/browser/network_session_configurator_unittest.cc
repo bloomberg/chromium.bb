@@ -93,6 +93,7 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_EQ(quic::QuicTagVector(), params_.quic_client_connection_options);
   EXPECT_FALSE(params_.enable_server_push_cancellation);
   EXPECT_FALSE(params_.quic_close_sessions_on_ip_change);
+  EXPECT_FALSE(params_.quic_goaway_sessions_on_ip_change);
   EXPECT_EQ(net::kIdleConnectionTimeoutSeconds,
             params_.quic_idle_connection_timeout_seconds);
   EXPECT_EQ(quic::kPingTimeoutSecs, params_.quic_reduced_ping_timeout_seconds);
@@ -179,6 +180,18 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.quic_close_sessions_on_ip_change);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicGoAwaySessionsOnIpChangeFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["goaway_sessions_on_ip_change"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_goaway_sessions_on_ip_change);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,

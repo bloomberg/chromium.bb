@@ -158,6 +158,9 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     bool support_ietf_format_quic_altsvc;
     // If true, all QUIC sessions are closed when any local IP address changes.
     bool quic_close_sessions_on_ip_change;
+    // If true, all QUIC sessions are marked as goaway when any local IP address
+    // changes.
+    bool quic_goaway_sessions_on_ip_change;
     // Specifies QUIC idle connection state lifetime.
     int quic_idle_connection_timeout_seconds;
     // Specifies the reduced ping timeout subsequent connections should use when
