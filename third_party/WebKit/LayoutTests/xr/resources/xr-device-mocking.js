@@ -31,6 +31,10 @@ function setPose(pose) {
   mockVRService.mockVRDisplays_[0].setPose(pose);
 }
 
+function setHitTestResults(results)  {
+  mockVRService.mockVRDisplays_[0].setHitTestResults(results);
+}
+
 function setStageTransform(transform) {
   mockVRService.mockVRDisplays_[0].setStageTransform(transform);
 }
@@ -146,6 +150,31 @@ function fakeXRDevices() {
         renderWidth: 1920,
         renderHeight: 2160
       },
+      webxrDefaultFramebufferScale: 0.7,
+    },
+
+    FakeARPhone: {
+      displayName: 'AR device',
+      capabilities: {
+        hasPosition: true,
+        hasExternalDisplay: false,
+        canPresent: false,
+        maxLayers: 1,
+        canProvidePassThroughImages: true,
+      },
+      stageParameters: null,
+      leftEye: {
+        fieldOfView: {
+          upDegrees: 48.316,
+          downDegrees: 50.099,
+          leftDegrees: 35.197,
+          rightDegrees: 50.899,
+        },
+        offset: [-0.032, 0, 0],
+        renderWidth: 1920,
+        renderHeight: 2160,
+      },
+      rightEye: null,
       webxrDefaultFramebufferScale: 0.7,
     }
   };
@@ -332,6 +361,38 @@ class MockDevice {
     }
 
     this.displayClient_.onChanged(this.displayInfo_);
+  }
+
+  getFrameData(imageSize, orientationAngle) {
+    return Promise.resolve({
+      frame_data: {
+        pose: this.presentation_provider_.pose_,
+        buffer_holder: null,
+        buffer_size: {},
+        time_delta: [],
+        projection_matrix: [1, 0, 0, 0,
+                            0, 1, 0, 0,
+                            0, 0, 1, 0,
+                            0, 0, 0, 1]
+      }
+    });
+  }
+
+  setHitTestResults(results) {
+    this.hittest_results_ = results;
+  }
+
+  requestHitTest(ray) {
+    var hit_results = this.hittest_results_;
+    if (!hit_results) {
+      var hit = new device.mojom.XRHitResult();
+      hit.hitMatrix = [1, 0, 0, 0,
+                       0, 1, 0, 0,
+                       0, 0, 1, 0,
+                       0, 0, 0, 1];
+      hit_results = { results: [hit] };
+    }
+    return Promise.resolve(hit_results);
   }
 
   getSubmitFrameCount() {
