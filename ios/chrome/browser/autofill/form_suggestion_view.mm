@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 
 #include "base/i18n/rtl.h"
+#include "base/logging.h"
+#include "components/autofill/core/browser/popup_item_ids.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "ios/chrome/browser/autofill/form_suggestion_label.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view_client.h"
@@ -53,12 +55,16 @@ const CGFloat kSuggestionHorizontalMargin = 6;
           // the width.
           CGRect proposedFrame =
               CGRectMake(currentX, kSuggestionVerticalMargin, 0, labelHeight);
+          BOOL userInteractionEnabled =
+              suggestion.identifier !=
+              autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING;
           UIView* label = [[FormSuggestionLabel alloc]
-              initWithSuggestion:suggestion
-                   proposedFrame:proposedFrame
-                           index:idx
-                  numSuggestions:[_suggestions count]
-                          client:client];
+                  initWithSuggestion:suggestion
+                       proposedFrame:proposedFrame
+                               index:idx
+              userInteractionEnabled:userInteractionEnabled
+                      numSuggestions:[_suggestions count]
+                              client:client];
           [self addSubview:label];
           currentX +=
               CGRectGetWidth([label frame]) + kSuggestionHorizontalMargin;
@@ -69,6 +75,26 @@ const CGFloat kSuggestionHorizontalMargin = 6;
                          usingBlock:setupBlock];
   }
   return self;
+}
+
+- (void)willMoveToSuperview:(UIView*)newSuperview {
+  FormSuggestion* firstSuggestion = [_suggestions firstObject];
+  if (firstSuggestion.identifier ==
+      autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING) {
+    UIView* firstLabel = [self.subviews firstObject];
+    DCHECK(firstLabel);
+    const CGFloat firstLabelWidth =
+        CGRectGetWidth([firstLabel frame]) + kSuggestionHorizontalMargin;
+    dispatch_time_t popTime =
+        dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC);
+    __weak FormSuggestionView* weakSelf = self;
+    dispatch_after(popTime, dispatch_get_main_queue(), ^{
+      [weakSelf setContentOffset:CGPointMake(firstLabelWidth,
+                                             weakSelf.contentOffset.y)
+                        animated:YES];
+    });
+  }
+  [super willMoveToSuperview:newSuperview];
 }
 
 - (void)layoutSubviews {

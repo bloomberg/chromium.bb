@@ -15,6 +15,11 @@ extern const char kAutofillCacheQueryResponsesDescription[];
 extern const char kAutofillCreditCardUploadName[];
 extern const char kAutofillCreditCardUploadDescription[];
 
+// Title and description for the flag to control GPay branding in credit card
+// downstream keyboard accessory.
+extern const char kAutofillDownstreamUseGooglePayBrandingOniOSName[];
+extern const char kAutofillDownstreamUseGooglePayBrandingOniOSDescription[];
+
 // Title and description for the flag to control the dynamic autofill.
 extern const char kAutofillDynamicFormsName[];
 extern const char kAutofillDynamicFormsDescription[];

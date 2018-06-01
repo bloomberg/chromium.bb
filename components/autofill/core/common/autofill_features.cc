@@ -17,6 +17,12 @@ const base::Feature kAutofillAddressNormalizer{
 const base::Feature kAutofillCacheQueryResponses{
     "AutofillCacheQueryResponses", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether the credit card downstream keyboard accessory shows
+// the Google Pay logo animation on iOS.
+const base::Feature kAutofillDownstreamUseGooglePayBrandingOniOS{
+    "AutofillDownstreamUseGooglePayBrandingOniOS",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether Autofill attemps to fill dynamically changing forms.
 const base::Feature kAutofillDynamicForms{"AutofillDynamicForms",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

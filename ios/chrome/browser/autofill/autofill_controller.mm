@@ -128,9 +128,10 @@ showAutofillPopup:(const std::vector<autofill::Suggestion>&)popup_suggestions
     // such as separators ... see blink::WebAutofillClient::MenuItemIDSeparator
     // for example. We can't include that enum because it's from WebKit, but
     // fortunately almost all the entries we are interested in (profile or
-    // autofill entries) are zero or positive. The only negative entry we are
+    // autofill entries) are zero or positive. Negative entries we are
     // interested in is autofill::POPUP_ITEM_ID_CLEAR_FORM, used to show the
-    // "clear form" button.
+    // "clear form" button and autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING, used
+    // to show the "Google Pay" branding.
     NSString* value = nil;
     NSString* displayDescription = nil;
     if (popup_suggestions[i].frontend_id >= 0) {
@@ -142,6 +143,10 @@ showAutofillPopup:(const std::vector<autofill::Suggestion>&)popup_suggestions
     } else if (popup_suggestions[i].frontend_id ==
                autofill::POPUP_ITEM_ID_CLEAR_FORM) {
       // Show the "clear form" button.
+      value = base::SysUTF16ToNSString(popup_suggestions[i].value);
+    } else if (popup_suggestions[i].frontend_id ==
+               autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING) {
+      // Show "GPay branding" icon
       value = base::SysUTF16ToNSString(popup_suggestions[i].value);
     }
 

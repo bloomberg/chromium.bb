@@ -223,6 +223,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillCreditCardUploadName,
      flag_descriptions::kAutofillCreditCardUploadDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::kAutofillUpstream)},
+    {"enable-autofill-credit-card-downstream-google-pay-branding",
+     flag_descriptions::kAutofillDownstreamUseGooglePayBrandingOniOSName,
+     flag_descriptions::kAutofillDownstreamUseGooglePayBrandingOniOSDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillDownstreamUseGooglePayBrandingOniOS)},
     {"enable-autofill-credit-card-upload-google-pay-branding",
      flag_descriptions::kAutofillUpstreamUseGooglePayBrandingOnMobileName,
      flag_descriptions::
