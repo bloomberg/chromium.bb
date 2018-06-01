@@ -1122,6 +1122,20 @@ TEST_F(ProxyConfigServiceLinuxTest, GSettingsNotification) {
   EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
             sync_config_getter.SyncGetLatestProxyConfig(&config));
   EXPECT_TRUE(config.value().auto_detect());
+
+  // Simulate two settings changes, where PROXY_MODE is missing. This will make
+  // the settings be interpreted as DIRECT.
+  //
+  // Trigering the check a *second* time is a regression test for
+  // https://crbug.com/848237, where a comparison is done between two nullopts.
+  for (size_t i = 0; i < 2; ++i) {
+    setting_getter->values.mode = nullptr;
+    service->OnCheckProxyConfigSettings();
+    EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
+              sync_config_getter.SyncGetLatestProxyConfig(&config));
+    EXPECT_FALSE(config.value().auto_detect());
+    EXPECT_TRUE(config.value().proxy_rules().empty());
+  }
 }
 
 TEST_F(ProxyConfigServiceLinuxTest, KDEConfigParser) {
