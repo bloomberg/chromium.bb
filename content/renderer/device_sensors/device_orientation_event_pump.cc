@@ -102,6 +102,12 @@ void DeviceOrientationEventPump::SendStopMessage() {
   }
 
   absolute_orientation_sensor_.Stop();
+
+  // Reset the cached data because DeviceOrientationDispatcher resets its
+  // data when stopping. If we don't reset here as well, then when starting back
+  // up we won't notify DeviceOrientationDispatcher of the orientation, since
+  // we think it hasn't changed.
+  data_ = device::OrientationData();
 }
 
 void DeviceOrientationEventPump::SendFakeDataForTesting(void* fake_data) {

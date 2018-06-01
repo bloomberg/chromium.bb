@@ -3,33 +3,46 @@
 <body>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../../http/tests/resources/sensor-helpers.js"></script>
 <script src="../resources/device-orientation-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/device/public/mojom/sensor_provider.mojom.js"></script>
 <script>
 'use strict';
 
-async_test(test => {
-  assertTestRunner();
-  var orientationData = generateOrientationData(1.1, 2.2, 3.3, true);
+sensor_test(async sensor => {
+  const orientationData = generateOrientationData(1.1, 2.2, 3.3, false);
 
-  var firstListenerEvents = 0;
-  var firstListener = test.step_func(event => {
-    checkOrientation(event, orientationData);
-    window.removeEventListener('deviceorientation', firstListener);
-    if (++firstListenerEvents == 1)
-      window.addEventListener('deviceorientation', secondListener);
+  let firstListener = null;
+  let secondListener = null;
+  let firstEventCount = 0;
+  let firstPromise = new Promise(resolve => {
+    firstListener = (event) => {
+      checkOrientation(event, orientationData);
+      window.removeEventListener('deviceorientation', firstListener);
+      if (++firstEventCount == 1) {
+        window.addEventListener('deviceorientation', secondListener);
+      }
+      resolve(event);
+    };
   });
 
-  var secondListenerEvents = 0;
-  var secondListener = test.step_func(event => {
-    checkOrientation(event, orientationData);
-    ++secondListenerEvents;
-    assert_equals(firstListenerEvents, 1, "Too many events fired for the first listener");
-    assert_equals(secondListenerEvents, 1, "Too many events fired for the second listener");
-    test.done();
+  let secondEventCount = 0;
+  let secondPromise = new Promise(resolve => {
+    secondListener = (event) => {
+      checkOrientation(event, orientationData);
+      window.removeEventListener('deviceorientation', secondListener);
+      ++secondEventCount;
+      resolve(event);
+    };
   });
 
-  setMockOrientation(orientationData);
+  setMockOrientationData(sensor, orientationData);
   window.addEventListener('deviceorientation', firstListener);
+  await firstPromise;
+  await secondPromise;
+  assert_equals(firstEventCount, 1, "Too many events fired for the first listener");
+  assert_equals(secondEventCount, 1, "Too many events fired for the second listener");
 }, 'Tests that adding a new deviceorientation event listener from a callback works as expected.');
 </script>
 </body>

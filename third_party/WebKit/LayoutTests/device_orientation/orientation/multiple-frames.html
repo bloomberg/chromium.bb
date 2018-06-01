@@ -3,40 +3,22 @@
 <body>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../../http/tests/resources/sensor-helpers.js"></script>
 <script src="../resources/device-orientation-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/device/public/mojom/sensor_provider.mojom.js"></script>
 <script>
 'use strict';
 
-async_test(test => {
-  assertTestRunner();
-  var orientationData = generateOrientationData(1.1, 2.2, 3.3, true);
-  var hasMainFrameEventFired = false;
-  var hasChildFrameEventFired = false;
+sensor_test(async sensor => {
+  const orientationData = generateOrientationData(1.1, 2.2, 3.3, false);
 
-  var mainFrameListener = test.step_func(event => {
-    checkOrientation(event, orientationData);
-    hasMainFrameEventFired = true;
-    maybeFinishTest();
-  });
+  setMockOrientationData(sensor, orientationData);
+  await waitForOrientation(orientationData);
 
-  var childFrameListener = test.step_func(event => {
-    checkOrientation(event, orientationData);
-    hasChildFrameEventFired = true;
-    maybeFinishTest();
-  });
-
-  function maybeFinishTest() {
-    if (hasMainFrameEventFired && hasChildFrameEventFired)
-      test.done();
-  }
-
-  setMockOrientation(orientationData);
-
-  var childFrame = document.createElement('iframe');
+  let childFrame = document.createElement('iframe');
   document.body.appendChild(childFrame);
-  childFrame.contentWindow.addEventListener('deviceorientation', childFrameListener);
-
-  window.addEventListener('deviceorientation', mainFrameListener);
+  return waitForOrientation(orientationData, childFrame.contentWindow);
 }, 'Tests using DeviceOrientation from multiple frames.');
 </script>
 </body>

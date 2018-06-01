@@ -3,57 +3,32 @@
 <body>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../../http/tests/resources/sensor-helpers.js"></script>
 <script src="../resources/device-orientation-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/device/public/mojom/sensor_provider.mojom.js"></script>
 <script>
 'use strict';
 
-async_test(test => {
-  assertTestRunner();
-  var orientationData1 = generateOrientationData(null, null, null, false);
-  var orientationData2 = generateOrientationData(1.1, null, null, true);
-  var orientationData3 = generateOrientationData(null, 2.2, null, true);
-  var orientationData4 = generateOrientationData(null, null, 3.3, true);
+sensor_test(async sensor => {
+  const orientationData1 = generateOrientationData(1.1, null, null, false);
+  const orientationData2 = generateOrientationData(null, 2.2, null, false);
+  const orientationData3 = generateOrientationData(null, null, 3.3, false);
+  // The all null event is last because DeviceSingleWindowEventController
+  // will stop updating the sensor when it sees a null event.
+  const orientationData4 = generateOrientationData(null, null, null, false);
 
-  var firstListener = test.step_func(event => {
-    checkOrientation(event, orientationData1);
-    window.removeEventListener('deviceorientation', firstListener);
-    setTimeout(initSecondListener, 0);
-  });
+  setMockOrientationData(sensor, orientationData1);
+  await waitForOrientation(orientationData1);
 
-  function initSecondListener() {
-    setMockOrientation(orientationData2);
-    window.addEventListener('deviceorientation', secondListener);
-  }
+  setMockOrientationData(sensor, orientationData2);
+  await waitForOrientation(orientationData2);
 
-  var secondListener = test.step_func(event => {
-    checkOrientation(event, orientationData2);
-    window.removeEventListener('deviceorientation', secondListener);
-    setTimeout(initThirdListener, 0);
-  });
+  setMockOrientationData(sensor, orientationData3);
+  await waitForOrientation(orientationData3);
 
-  function initThirdListener() {
-    setMockOrientation(orientationData3);
-    window.addEventListener('deviceorientation', thirdListener);
-  }
-
-  var thirdListener = test.step_func(event => {
-    checkOrientation(event, orientationData3);
-    window.removeEventListener('deviceorientation', thirdListener);
-    setTimeout(initFourthListener, 0);
-  });
-
-  function initFourthListener() {
-    setMockOrientation(orientationData4);
-    window.addEventListener('deviceorientation', fourthListener);
-  }
-
-  var fourthListener = test.step_func(event => {
-    checkOrientation(event, orientationData4);
-    test.done();
-  });
-
-  setMockOrientation(orientationData1);
-  window.addEventListener('deviceorientation', firstListener);
+  setMockOrientationData(sensor, orientationData4);
+  return waitForOrientation(orientationData4);
 }, 'Tests using null values for some of the event properties.');
 </script>
 </body>
