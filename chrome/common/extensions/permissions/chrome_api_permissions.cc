@@ -187,6 +187,7 @@ ChromeAPIPermissions::GetAllPermissions() const {
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kResourcesPrivate, "resourcesPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
+      {APIPermission::kSafeBrowsingPrivate, "safeBrowsingPrivate"},
 
       // Full url access permissions.
       {APIPermission::kDebugger, "debugger",
