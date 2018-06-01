@@ -151,6 +151,7 @@ Polymer({
         callback,
         /** @type {IntersectionObserverInit} */ ({
           root: bodyContainer,
+          rootMargin: '1px 0px',
           threshold: 0,
         }));
     this.intersectionObserver_.observe(bottomMarker);
