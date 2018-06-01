@@ -32,4 +32,8 @@ void DevToolsAgentHostObserver::DevToolsAgentHostDestroyed(
     DevToolsAgentHost* agent_host) {
 }
 
+void DevToolsAgentHostObserver::DevToolsAgentHostCrashed(
+    DevToolsAgentHost* agent_host,
+    base::TerminationStatus status) {}
+
 }  // namespace content

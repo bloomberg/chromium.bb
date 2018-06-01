@@ -734,6 +734,7 @@ void RenderFrameDevToolsAgentHost::RenderProcessGone(
     case base::TERMINATION_STATUS_LAUNCH_FAILED:
       for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
         inspector->TargetCrashed();
+      NotifyCrashed(status);
       break;
     default:
       for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
