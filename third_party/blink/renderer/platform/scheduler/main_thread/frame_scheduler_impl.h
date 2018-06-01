@@ -61,7 +61,10 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   // FrameScheduler implementation:
   void SetFrameVisible(bool frame_visible) override;
   bool IsFrameVisible() const override;
+
   bool IsPageVisible() const override;
+  bool IsAudioPlaying() const;
+
   void SetPaused(bool frame_paused) override;
 
   void SetCrossOrigin(bool cross_origin) override;

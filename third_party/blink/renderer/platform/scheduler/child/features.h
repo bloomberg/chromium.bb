@@ -16,6 +16,18 @@ const base::Feature kHighPriorityInput{"BlinkSchedulerHighPriorityInput",
 const base::Feature kDedicatedWorkerThrottling{
     "BlinkSchedulerWorkerThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables setting the priority of background (with no audio) pages'
+// task queues to low priority.
+const base::Feature kLowPriorityForBackgroundPages{
+    "BlinkSchedulerLowPriorityForBackgroundPages",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables setting the priority of background (with no audio) pages'
+// task queues to best effort.
+const base::Feature kBestEffortPriorityForBackgroundPages{
+    "BlinkSchedulerBestEffortPriorityForBackgroundPages",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace scheduler
 }  // namespace blink
 

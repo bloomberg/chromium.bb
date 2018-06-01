@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/child/default_params.h"
+#include "third_party/blink/renderer/platform/scheduler/child/features.h"
 #include "third_party/blink/renderer/platform/scheduler/child/page_visibility_state.h"
 #include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_proxy.h"
@@ -560,6 +561,11 @@ bool FrameSchedulerImpl::IsPageVisible() const {
                                 : true;
 }
 
+bool FrameSchedulerImpl::IsAudioPlaying() const {
+  return parent_page_scheduler_ ? parent_page_scheduler_->IsAudioPlaying()
+                                : false;
+}
+
 void FrameSchedulerImpl::SetPaused(bool frame_paused) {
   DCHECK(parent_page_scheduler_);
   if (frame_paused_ == frame_paused)
@@ -691,6 +697,16 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
 
   if (fixed_priority)
     return fixed_priority.value();
+
+  bool background_page_with_no_audio = !IsPageVisible() && !IsAudioPlaying();
+
+  if (background_page_with_no_audio) {
+    if (base::FeatureList::IsEnabled(kLowPriorityForBackgroundPages))
+      return TaskQueue::QueuePriority::kLowPriority;
+
+    if (base::FeatureList::IsEnabled(kBestEffortPriorityForBackgroundPages))
+      return TaskQueue::QueuePriority::kBestEffortPriority;
+  }
 
   // TODO(farahcharab) Add further logic depending on frame origin/type,
   // |use_case|, and which finch experiment is enabled.
