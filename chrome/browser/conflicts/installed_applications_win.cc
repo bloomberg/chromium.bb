@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/registry.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/conflicts/msi_util_win.h"
 
 namespace {
@@ -123,15 +124,23 @@ InstalledApplications::InstalledApplications(
   static constexpr wchar_t kUninstallKeyPath[] =
       L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
 
-  // The "HKCU\SOFTWARE\" registry subtree is shared between both 32-bits and
-  // 64-bits views. Accessing both would create duplicate entries.
-  // https://msdn.microsoft.com/library/windows/desktop/aa384253.aspx
-  static const std::pair<HKEY, REGSAM> kCombinations[] = {
-      {HKEY_CURRENT_USER, 0},
-      {HKEY_LOCAL_MACHINE, KEY_WOW64_32KEY},
-      {HKEY_LOCAL_MACHINE, KEY_WOW64_64KEY},
-  };
-  for (const auto& combination : kCombinations) {
+  std::vector<std::pair<HKEY, REGSAM>> registry_key_combinations;
+  if (base::win::OSInfo::GetInstance()->architecture() ==
+      base::win::OSInfo::X86_ARCHITECTURE) {
+    // On 32-bit Windows, there is only one view of the registry.
+    registry_key_combinations.emplace_back(HKEY_CURRENT_USER, 0);
+    registry_key_combinations.emplace_back(HKEY_LOCAL_MACHINE, 0);
+  } else {
+    // On 64-bit Windows, there also exists a 32-bit view (Wow6432Node). Except
+    // that the "HKCU\SOFTWARE\" subtree is shared between the 32-bits and
+    // 64 bits views. Accessing both would create duplicate entries.
+    // See https://msdn.microsoft.com/library/windows/desktop/aa384253.aspx
+    registry_key_combinations.emplace_back(HKEY_CURRENT_USER, 0);
+    registry_key_combinations.emplace_back(HKEY_LOCAL_MACHINE, KEY_WOW64_32KEY);
+    registry_key_combinations.emplace_back(HKEY_LOCAL_MACHINE, KEY_WOW64_64KEY);
+  }
+
+  for (const auto& combination : registry_key_combinations) {
     for (base::win::RegistryKeyIterator i(combination.first, kUninstallKeyPath,
                                           combination.second);
          i.Valid(); ++i) {
@@ -268,8 +277,8 @@ bool InstalledApplications::GetApplicationsFromInstallDirectories(
                        file, FilePathParentLess());
 
   // Skip cases where there are multiple matches because there is no way to know
-  // which application is the real owner of the |file| with the data owned by
-  // us.
+  // which application is the real owner of the |file| with the information this
+  // class possess.
   if (std::distance(equal_range.first, equal_range.second) != 1)
     return false;
 

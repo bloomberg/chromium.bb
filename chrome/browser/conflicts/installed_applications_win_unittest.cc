@@ -4,6 +4,7 @@
 
 #include "chrome/browser/conflicts/installed_applications_win.h"
 
+#include <algorithm>
 #include <map>
 
 #include "base/macros.h"
@@ -69,9 +70,8 @@ class InstalledApplicationsTest : public testing::Test {
   InstalledApplicationsTest() = default;
   ~InstalledApplicationsTest() override = default;
 
-  // ASSERT_NO_FATAL_FAILURE cannot be used in a constructor so the registry
-  // hive overrides are done here.
-  void SetUp() override {
+  // Overrides HKLM and HKCU to prevent real keys from messing with the tests.
+  void OverrideRegistry() {
     ASSERT_NO_FATAL_FAILURE(
         registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE));
     ASSERT_NO_FATAL_FAILURE(
@@ -172,6 +172,8 @@ TEST_F(InstalledApplicationsTest, InvalidEntries) {
       },
   };
 
+  ASSERT_NO_FATAL_FAILURE(OverrideRegistry());
+
   for (const auto& test_case : kTestCases)
     AddFakeApplication(test_case);
 
@@ -198,6 +200,8 @@ TEST_F(InstalledApplicationsTest, InstallLocation) {
       },
       kInstallLocation,
   };
+
+  ASSERT_NO_FATAL_FAILURE(OverrideRegistry());
 
   AddFakeApplication(kTestCase);
 
@@ -239,6 +243,8 @@ TEST_F(InstalledApplicationsTest, Msi) {
           L"c:\\windows\\system32\\file4.dll",
       },
   };
+
+  ASSERT_NO_FATAL_FAILURE(OverrideRegistry());
 
   AddFakeApplication(kTestCase);
 
@@ -291,6 +297,8 @@ TEST_F(InstalledApplicationsTest, PrioritizeMsi) {
       },
   };
 
+  ASSERT_NO_FATAL_FAILURE(OverrideRegistry());
+
   AddFakeApplication(kInstallLocationFakeApplication);
   AddFakeApplication(kMsiFakeApplication);
 
@@ -329,6 +337,8 @@ TEST_F(InstalledApplicationsTest, ConflictingInstallLocations) {
       kInstallLocationChild,
   };
 
+  ASSERT_NO_FATAL_FAILURE(OverrideRegistry());
+
   AddFakeApplication(kFakeApplication1);
   AddFakeApplication(kFakeApplication2);
 
@@ -337,4 +347,26 @@ TEST_F(InstalledApplicationsTest, ConflictingInstallLocations) {
   std::vector<InstalledApplications::ApplicationInfo> applications;
   EXPECT_FALSE(installed_applications().GetInstalledApplications(
       base::FilePath(kFile), &applications));
+}
+
+// This test ensures that each uninstall registry key is only read once, and
+// thus no applications are picked up twice.
+// This is possible if the same registry key is requested for both the 32-bit
+// and 64-bit view but either that key is shared between the views, or the host
+// OS is 32-bit, and there is no 64-bit view.
+TEST_F(InstalledApplicationsTest, NoDuplicates) {
+  InitializeInstalledApplications();
+
+  auto applications = installed_applications().applications_;
+  std::sort(std::begin(applications), std::end(applications));
+  EXPECT_EQ(std::end(applications),
+            std::adjacent_find(std::begin(applications), std::end(applications),
+                               [](const auto& lhs, const auto& rhs) {
+                                 return std::tie(lhs.name, lhs.registry_root,
+                                                 lhs.registry_key_path,
+                                                 lhs.registry_wow64_access) ==
+                                        std::tie(rhs.name, rhs.registry_root,
+                                                 rhs.registry_key_path,
+                                                 rhs.registry_wow64_access);
+                               }));
 }
