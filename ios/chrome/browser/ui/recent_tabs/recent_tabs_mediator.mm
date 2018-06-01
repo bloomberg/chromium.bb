@@ -23,6 +23,13 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Desired width and height of favicon.
+const CGFloat kFaviconWidthHeight = 24;
+// Minimum favicon size to retrieve.
+const CGFloat kFaviconMinWidthHeight = 16;
+}  // namespace
+
 @interface RecentTabsMediator () {
   std::unique_ptr<synced_sessions::SyncedSessionsObserverBridge>
       _syncedSessionsObserver;
@@ -107,19 +114,18 @@
 
 #pragma mark - RecentTabsImageDataSource
 
-- (UIImage*)faviconForURL:(const GURL&)URL
-               completion:(void (^)(UIImage*))completion {
+- (FaviconAttributes*)faviconForURL:(const GURL&)URL
+                         completion:(void (^)(FaviconAttributes*))completion {
   FaviconLoader* faviconLoader =
       IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
-  favicon_base::IconTypeSet faviconTypes = {
-      favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
-      favicon_base::IconType::kTouchPrecomposedIcon};
-  UIImage* cachedFavicon =
-      faviconLoader->ImageForURL(URL, faviconTypes, ^(UIImage* favicon) {
-        DCHECK(favicon);
-        completion(favicon);
+  FaviconAttributes* cachedAttributes = faviconLoader->FaviconForUrl(
+      URL, kFaviconMinWidthHeight, kFaviconWidthHeight,
+      ^(FaviconAttributes* attributes) {
+        completion(attributes);
       });
-  return cachedFavicon;
+  DCHECK(cachedAttributes);
+
+  return cachedAttributes;
 }
 
 #pragma mark - Private

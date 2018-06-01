@@ -86,7 +86,7 @@ TEST_F(TableViewURLItemTest, ConfigureCellWithStyler) {
   UIColor* testColor = [UIColor redColor];
   styler.tableViewBackgroundColor = testColor;
   [item configureCell:cell withStyler:styler];
-  EXPECT_NSEQ(testColor, cell.faviconView.backgroundColor);
+  EXPECT_NSEQ(testColor, cell.faviconContainerView.backgroundColor);
   EXPECT_NSEQ(testColor, cell.titleLabel.backgroundColor);
   EXPECT_NSEQ(testColor, cell.URLLabel.backgroundColor);
   EXPECT_NSEQ(testColor, cell.metadataLabel.backgroundColor);

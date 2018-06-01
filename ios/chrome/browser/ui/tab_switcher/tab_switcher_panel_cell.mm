@@ -7,6 +7,7 @@
 #include "components/favicon/ios/web_favicon_driver.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/fade_truncated_label.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_button.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_cache.h"
@@ -422,30 +423,33 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
 
 - (void)setSessionGURL:(GURL const&)gurl
       withBrowserState:(ios::ChromeBrowserState*)browserState {
-  TabSwitcherFaviconGetterCompletionBlock block = ^(UIImage* favicon) {
-    UIColor* imageDominantColor =
-        DominantColorForImage(gfx::Image(favicon), 1.0);
-    MDCPalette* dominantPalette =
-        [MDCPalette paletteGeneratedFromColor:imageDominantColor];
-    UIColor* backgroundColor = dominantPalette.tint300;
-    UIColor* textColor =
-        [MDFTextAccessibility textColorOnBackgroundColor:backgroundColor
-                                         targetTextAlpha:kTitleLabelTextAlpha
-                                                    font:[_titleLabel font]];
-    UIColor* iconColor =
-        [MDFTextAccessibility textColorOnBackgroundColor:backgroundColor
-                                         targetTextAlpha:kNewTabIconAlpha
-                                                    font:[_titleLabel font]];
-    [_raisedButton setBackgroundColor:backgroundColor];
-    [_titleLabel setTextColor:textColor];
-    [_newTabIcon setTintColor:iconColor];
-    [_newTabIcon setAlpha:1.0];
-    [_favicon setImage:favicon];
-    [UIView animateWithDuration:0.2
-                     animations:^{
-                       [_raisedButton setAlpha:1.0];
-                     }];
-  };
+  TabSwitcherFaviconGetterCompletionBlock block =
+      ^(FaviconAttributes* attributes) {
+        if (attributes.faviconImage) {
+          UIColor* imageDominantColor =
+              DominantColorForImage(gfx::Image(attributes.faviconImage), 1.0);
+          MDCPalette* dominantPalette =
+              [MDCPalette paletteGeneratedFromColor:imageDominantColor];
+          UIColor* backgroundColor = dominantPalette.tint300;
+          UIColor* textColor = [MDFTextAccessibility
+              textColorOnBackgroundColor:backgroundColor
+                         targetTextAlpha:kTitleLabelTextAlpha
+                                    font:[_titleLabel font]];
+          UIColor* iconColor = [MDFTextAccessibility
+              textColorOnBackgroundColor:backgroundColor
+                         targetTextAlpha:kNewTabIconAlpha
+                                    font:[_titleLabel font]];
+          [_raisedButton setBackgroundColor:backgroundColor];
+          [_titleLabel setTextColor:textColor];
+          [_newTabIcon setTintColor:iconColor];
+          [_newTabIcon setAlpha:1.0];
+          [_favicon setImage:attributes.faviconImage];
+          [UIView animateWithDuration:0.2
+                           animations:^{
+                             [_raisedButton setAlpha:1.0];
+                           }];
+        }
+      };
   GURL gurlCopy = gurl;
   _faviconObtainer = [NSBlockOperation blockOperationWithBlock:^{
     TabSwitcherGetFavicon(gurlCopy, browserState, block);

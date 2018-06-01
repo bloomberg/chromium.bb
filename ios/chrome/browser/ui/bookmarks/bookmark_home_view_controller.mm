@@ -42,6 +42,8 @@
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell_title_edit_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_signin_promo_cell.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
+#import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
@@ -1617,7 +1619,9 @@ const CGFloat kShadowRadius = 12.0f;
     if (!URLCell)
       return;
     if (image)
-      URLCell.faviconView.image = image;
+      [URLCell.faviconView
+          configureWithAttributes:[FaviconAttributes
+                                      attributesWithImage:image]];
   } else {
     BookmarkTableCell* cell =
         [self.sharedState.tableView cellForRowAtIndexPath:indexPath];

@@ -82,6 +82,7 @@ source_set("tab_switcher") {
     "//ios/chrome/browser/ui/authentication:authentication_ui",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/favicon:favicon_ui",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/material_components",
@@ -140,6 +141,7 @@ source_set("utils") {
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/favicon:favicon_ui",
     "//ui/base",
   ]
 }

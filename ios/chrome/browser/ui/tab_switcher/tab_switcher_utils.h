@@ -8,13 +8,14 @@
 #include <vector>
 
 class GURL;
+@class FaviconAttributes;
 @class UIImage;
 
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
-typedef void (^TabSwitcherFaviconGetterCompletionBlock)(UIImage*);
+typedef void (^TabSwitcherFaviconGetterCompletionBlock)(FaviconAttributes*);
 
 // Favicon for |url|, calls |block| when loaded.
 void TabSwitcherGetFavicon(GURL const& url,
