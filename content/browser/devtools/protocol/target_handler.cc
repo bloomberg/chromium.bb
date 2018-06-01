@@ -7,12 +7,14 @@
 #include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/web_contents.h"
 
 namespace content {
 namespace protocol {
@@ -36,6 +38,42 @@ std::unique_ptr<Target::TargetInfo> CreateInfo(DevToolsAgentHost* host) {
   if (host->GetBrowserContext())
     target_info->SetBrowserContextId(host->GetBrowserContext()->UniqueId());
   return target_info;
+}
+
+static std::string TerminationStatusToString(base::TerminationStatus status) {
+  switch (status) {
+    case base::TERMINATION_STATUS_NORMAL_TERMINATION:
+      return "normal";
+    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+      return "abnormal";
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+      return "killed";
+    case base::TERMINATION_STATUS_PROCESS_CRASHED:
+      return "crashed";
+    case base::TERMINATION_STATUS_STILL_RUNNING:
+      return "still running";
+#if defined(OS_CHROMEOS)
+    // Used for the case when oom-killer kills a process on ChromeOS.
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
+      return "oom killed";
+#endif
+#if defined(OS_ANDROID)
+    // On Android processes are spawned from the system Zygote and we do not get
+    // the termination status.  We can't know if the termination was a crash or
+    // an oom kill for sure: but we can use status of the strong process
+    // bindings as a hint.
+    case base::TERMINATION_STATUS_OOM_PROTECTED:
+      return "oom protected";
+#endif
+    case base::TERMINATION_STATUS_LAUNCH_FAILED:
+      return "failed to launch";
+    case base::TERMINATION_STATUS_OOM:
+      return "oom";
+    case base::TERMINATION_STATUS_MAX_ENUM:
+      break;
+  }
+  NOTREACHED() << "Unknown Termination Status.";
+  return "unknown";
 }
 
 }  // namespace
@@ -465,6 +503,16 @@ void TargetHandler::DevToolsAgentHostDetached(DevToolsAgentHost* host) {
   if (reported_hosts_.find(host) == reported_hosts_.end())
     return;
   frontend_->TargetInfoChanged(CreateInfo(host));
+}
+
+void TargetHandler::DevToolsAgentHostCrashed(DevToolsAgentHost* host,
+                                             base::TerminationStatus status) {
+  if (reported_hosts_.find(host) == reported_hosts_.end())
+    return;
+  frontend_->TargetCrashed(host->GetId(), TerminationStatusToString(status),
+                           host->GetWebContents()
+                               ? host->GetWebContents()->GetCrashedErrorCode()
+                               : 0);
 }
 
 }  // namespace protocol

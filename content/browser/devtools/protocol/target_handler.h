@@ -95,6 +95,8 @@ class TargetHandler : public DevToolsDomainHandler,
   void DevToolsAgentHostDestroyed(DevToolsAgentHost* agent_host) override;
   void DevToolsAgentHostAttached(DevToolsAgentHost* agent_host) override;
   void DevToolsAgentHostDetached(DevToolsAgentHost* agent_host) override;
+  void DevToolsAgentHostCrashed(DevToolsAgentHost* agent_host,
+                                base::TerminationStatus status) override;
 
   std::unique_ptr<Target::Frontend> frontend_;
   TargetAutoAttacher auto_attacher_;

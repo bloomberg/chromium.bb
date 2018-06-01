@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_DEVTOOLS_AGENT_HOST_OBSERVER_H_
 #define CONTENT_PUBLIC_BROWSER_DEVTOOLS_AGENT_HOST_OBSERVER_H_
 
+#include "base/process/kill.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -32,6 +33,10 @@ class CONTENT_EXPORT DevToolsAgentHostObserver {
 
   // Called when client has detached from DevToolsAgentHost.
   virtual void DevToolsAgentHostDetached(DevToolsAgentHost* agent_host);
+
+  // Called when DevToolsAgentHost crashed.
+  virtual void DevToolsAgentHostCrashed(DevToolsAgentHost* agent_host,
+                                        base::TerminationStatus status);
 
   // Called when DevToolsAgentHost was destroyed.
   virtual void DevToolsAgentHostDestroyed(DevToolsAgentHost* agent_host);

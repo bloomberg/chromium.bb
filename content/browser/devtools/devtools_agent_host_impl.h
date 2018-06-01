@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/process/kill.h"
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/certificate_request_result_type.h"
@@ -71,6 +72,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   void NotifyCreated();
   void NotifyNavigated();
+  void NotifyCrashed(base::TerminationStatus status);
   void ForceDetachAllSessions();
   void ForceDetachRestrictedSessions();
   DevToolsIOContext* GetIOContext() { return &io_context_; }

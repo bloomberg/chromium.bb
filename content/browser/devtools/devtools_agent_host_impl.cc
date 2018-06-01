@@ -400,6 +400,11 @@ void DevToolsAgentHostImpl::NotifyDetached() {
     observer.DevToolsAgentHostDetached(this);
 }
 
+void DevToolsAgentHostImpl::NotifyCrashed(base::TerminationStatus status) {
+  for (auto& observer : g_devtools_observers.Get())
+    observer.DevToolsAgentHostCrashed(this, status);
+}
+
 void DevToolsAgentHostImpl::NotifyDestroyed() {
   DCHECK(g_devtools_instances.Get().find(id_) !=
          g_devtools_instances.Get().end());
