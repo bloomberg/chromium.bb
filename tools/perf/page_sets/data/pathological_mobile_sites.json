@@ -1,33 +1,33 @@
 {
     "archives": {
-        "http://edition.cnn.com": {
+        "cnn_pathological": {
             "DEFAULT": "pathological_mobile_sites_000.wprgo"
         },
-        "http://m.espn.go.com/nhl/rankings": {
+        "espn_pathological": {
             "DEFAULT": "pathological_mobile_sites_000.wprgo"
         },
-        "http://recode.net": {
+        "recode_pathological": {
             "DEFAULT": "pathological_mobile_sites_000.wprgo"
         },
-        "http://sports.yahoo.com/": {
+        "yahoo_sports_pathological": {
             "DEFAULT": "pathological_mobile_sites_001.wprgo"
         },
-        "http://www.latimes.com": {
+        "latimes_pathological": {
             "DEFAULT": "pathological_mobile_sites_000.wprgo"
         },
-        "http://www.pbs.org/newshour/bb/much-really-cost-live-city-like-seattle/#the-rundown": {
+        "pbs_pathological": {
             "DEFAULT": "pathological_mobile_sites_000.wprgo"
         },
-        "http://www.theguardian.com/politics/2015/mar/09/ed-balls-tory-spending-plans-nhs-charging": {
+        "guardian_pathological": {
             "DEFAULT": "pathological_mobile_sites_010.wprgo"
         },
-        "http://www.wowwiki.com/World_of_Warcraft:_Mists_of_Pandaria": {
+        "wow_wiki_pathological": {
             "DEFAULT": "pathological_mobile_sites_008.wprgo"
         },
-        "http://www.zdnet.com": {
+        "zdnet_pathological": {
             "DEFAULT": "pathological_mobile_sites_000.wprgo"
         },
-        "https://www.linkedin.com/in/linustorvalds": {
+        "linkedin_pathological": {
             "DEFAULT": "pathological_mobile_sites_009.wprgo"
         }
     },
