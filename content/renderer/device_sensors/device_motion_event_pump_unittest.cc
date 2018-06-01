@@ -411,10 +411,11 @@ TEST_F(DeviceMotionEventPumpTest, PumpThrottlesEventRate) {
   sensor_provider()->UpdateLinearAccelerationSensorData(4, 5, 6);
   sensor_provider()->UpdateGyroscopeData(7, 8, 9);
 
+  base::RunLoop loop;
   blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      FROM_HERE, loop.QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(100));
-  base::RunLoop().Run();
+  loop.Run();
   motion_pump()->Stop();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
