@@ -579,6 +579,7 @@ modules_dictionary_idl_files =
           "peerconnection/rtc_offer_answer_options.idl",
           "peerconnection/rtc_offer_options.idl",
           "peerconnection/rtc_peer_connection_ice_event_init.idl",
+          "peerconnection/rtc_rtcp_parameters.idl",
           "peerconnection/rtc_rtp_codec_parameters.idl",
           "peerconnection/rtc_rtp_encoding_parameters.idl",
           "peerconnection/rtc_rtp_parameters.idl",

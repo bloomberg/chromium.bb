@@ -76,14 +76,28 @@ bool HasInvalidModification(const RTCRtpParameters& parameters,
                             const RTCRtpParameters& new_parameters) {
   if (parameters.hasTransactionId() != new_parameters.hasTransactionId() ||
       (parameters.hasTransactionId() &&
-       parameters.transactionId() != new_parameters.transactionId()))
+       parameters.transactionId() != new_parameters.transactionId())) {
     return true;
+  }
 
   if (parameters.hasEncodings() != new_parameters.hasEncodings())
     return true;
   if (parameters.hasEncodings()) {
     if (parameters.encodings().size() != new_parameters.encodings().size())
       return true;
+  }
+
+  if (parameters.hasRtcp() != new_parameters.hasRtcp() ||
+      (parameters.hasRtcp() &&
+       ((parameters.rtcp().hasCname() != new_parameters.rtcp().hasCname() ||
+         (parameters.rtcp().hasCname() &&
+          parameters.rtcp().cname() != new_parameters.rtcp().cname())) ||
+        (parameters.rtcp().hasReducedSize() !=
+             new_parameters.rtcp().hasReducedSize() ||
+         (parameters.rtcp().hasReducedSize() &&
+          parameters.rtcp().reducedSize() !=
+              new_parameters.rtcp().reducedSize()))))) {
+    return true;
   }
 
   if (parameters.hasCodecs() != new_parameters.hasCodecs())
@@ -232,6 +246,11 @@ void RTCRtpSender::getParameters(RTCRtpParameters& parameters) {
       sender_->GetParameters();
 
   parameters.setTransactionId(webrtc_parameters->transaction_id.c_str());
+
+  RTCRtcpParameters rtcp;
+  rtcp.setCname(webrtc_parameters->rtcp.cname.c_str());
+  rtcp.setReducedSize(webrtc_parameters->rtcp.reduced_size);
+  parameters.setRtcp(rtcp);
 
   HeapVector<RTCRtpEncodingParameters> encodings;
   encodings.ReserveCapacity(webrtc_parameters->encodings.size());
