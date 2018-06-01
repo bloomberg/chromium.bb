@@ -704,6 +704,8 @@ In the future CORB may be extended to protect additional resources as follows:
   for these other MIME types seems low, since mislabeling content as such
   types seems less likely than for example mislabeling as `text/html`.
 
+> [lukasza@chromium.org] See also https://github.com/whatwg/fetch/issues/721
+
 * **CORB opt-in header**.
   To protect resources that normally may be embedded cross-origin,
   a server might explicitly opt into CORB with a HTTP response header.
@@ -711,80 +713,28 @@ In the future CORB may be extended to protect additional resources as follows:
   images or JavaScript (including JSONP).
 
 > [lukasza@chromium.org] Currently considered CORB opt-in signals include:
-> - `From-Origin:` header - https://github.com/whatwg/fetch/issues/687
-> - `Isolate-Me` header - https://github.com/WICG/isolation
+> - `From-Origin:` or `Cross-Origin-Resource-Policy:` header - see https://github.com/whatwg/fetch/issues/687
+> - `Isolate-Me` header - see https://github.com/WICG/isolation
 
-## Appendix: Early attempt to codify CORB algorithm
+## Appendix: CORB and web standards
 
-This is an early attempt to codify CORB behavior in an unambiguous, spec-like
-language.  This section should eventually evolve to become part of the Fetch
-spec.
+[The CORB section in the Fetch spec](https://fetch.spec.whatwg.org/#corb) covers
+handling of `nosniff` and 206 responses since
+[May 2018](https://github.com/whatwg/fetch/pull/686).
 
-* Protected origins
-  * CORB SHOULD allow same-origin responses.
-  * CORB SHOULD block cross-origin responses from HTTP and/or HTTPS origins
-    (this includes responses from `filesystem:` and `blob:` URIs if their nested
-    origin has a HTTP and/or HTTPS scheme).
-  * CORB MAY block cross-origin responses from non-HTTP/HTTPS origins.
+CORB confirmation sniffing is not standardized yet.
 
-* Initiator origins
-    * CORB SHOULD block responses for requests initiated from HTTP/HTTPS origins.
-    * CORB SHOULD block responses for requests initiated from
-      opaque/unique/sandboxed origins.
-    * CORB MAY allow responses for requests initiated from `file:` origins.
-    * CORB MAY allow responses for requests initiated from content scripts of
-      browser extensions or from plugins.
+[Some aspects of CORB](https://github.com/whatwg/fetch/issues?utf8=%E2%9C%93&q=is%3Aissue+CORB+)
+are under discussion and may evolve over time.
 
-* Interoperability with other origin-related policies
-    * CORB SHOULD allow responses that are otherwise allowed by CORS
-    * CORB SHOULD allow non-opaque responses from service workers
-    * CORB SHOULD block opaque responses from service workers
+## Appendix: CORB implementation status
 
-* Classification rules based on Content-Type and response data:
-  * Classification based on Content-Type header alone:
-    * CORB SHOULD classify as CORB-exempt all responses with the following
-      Content-Types:
-      * `text/css`
-  * Classification based on response body alone:
-    * CORB MAY classify as CORB-protected any response whose body meets any
-      of the criteria below, regardless of its Content-Type and regardless of
-      the presence of `X-Content-Type-Options: nosniff` header.
-        * Response body begins with
-          [a JSON security prefix](https://www.owasp.org/index.php/AJAX_Security_Cheat_Sheet#Protect_against_JSON_Hijacking_for_Older_Browsers)
-          such as:
-          * `)]}'`
-          * `{}&&`
-          * `for(;;);`
-        * Response body has a prefix that indicates a valid, non-empty JSON
-          object.
+Tracking bugs:
+- Chrome: https://crbug.com/268640 and https://crbug.com/802835 and https://www.chromestatus.com/feature/5629709824032768
+- Edge: https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/17382911/
+- Firefox: https://bugzilla.mozilla.org/show_bug.cgi?id=1459357
+- Safari/WebKit: https://bugs.webkit.org/show_bug.cgi?id=185331
 
-  * Classification based on Content-Type and sniffing:
-    * CORB SHOULD classify as CORB-exempt all responses labeled as
-      `image/svg+xml`
-    * CORB SHOULD classify as CORB-protected all responses with the following
-      Content-Type if either 1) the response body sniffs as the reported type or
-      2) the `X-Content-Type-Options: nosniff` header is present:
-      * [HTML MIME type](https://mimesniff.spec.whatwg.org/#html-mime-type)
-      * [XML MIME type](https://mimesniff.spec.whatwg.org/#xml-mime-type)
-        (except `image/svg+xml` which is CORB-exempt, per rules above)
-      * [JSON MIME type](https://mimesniff.spec.whatwg.org/#json-mime-type)
-      * `text/plain`
-
-* Sniffing to confirm the Content-Type of the response
-    * CORB SHOULD NOT sniff if `X-Content-Type-Options: nosniff` is present.
-    * CORB MAY avoid sniffing 206 content range responses with a single-range.
-    * CORB MAY limit sniffing to the first few network packets.
-    * If Content-Type is
-      [HTML MIME type](https://mimesniff.spec.whatwg.org/#html-mime-type)
-      then CORB SHOULD allow the response
-      if it doesn't sniff as `text/html` according to the [sniffing rules]
-      (https://mimesniff.spec.whatwg.org/#rules-for-identifying-an-unknown-mime-type),
-      amended so that the pattern `"<!--"` is removed from the matching table.
-    * If Content-Type is
-      [XML MIME type](https://mimesniff.spec.whatwg.org/#xml-mime-type)
-      then CORB SHOULD allow the response
-      if it doesn't
-      [sniff as XML](https://mimesniff.spec.whatwg.org/#rules-for-identifying-an-unknown-mime-type).
-    * If Content-Type is [JSON MIME type](https://mimesniff.spec.whatwg.org/#json-mime-type),
-      then CORB SHOULD allow the response
-      if it doesn't sniff as JSON.  TODO: define "sniff as JSON".
+Status of Web Platform Tests:
+- [Experimental builds](https://master-dot-wptdashboard.appspot.com/results/fetch/corb?label=experimental)
+- [Stable releases](https://master-dot-wptdashboard.appspot.com/results/fetch/corb)
