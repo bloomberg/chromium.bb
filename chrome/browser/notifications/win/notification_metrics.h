@@ -132,10 +132,10 @@ enum class HandleEventStatus {
 // numeric values should never be reused.
 enum class SetReadyCallbackStatus {
   SUCCESS = 0,
-  COM_NOT_INITIALIZED = 1,
-  COM_SERVER_MISCONFIGURATION = 2,
-  SHORTCUT_MISCONFIGURATION = 3,
-  COUNT  // Must be the final value.
+  SHORTCUT_MISCONFIGURATION = 1 << 0,
+  COM_SERVER_MISCONFIGURATION = 1 << 1,
+  COM_NOT_INITIALIZED = 1 << 2,
+  COUNT = 1 << 3  // Must be the final value.
 };
 
 // These values are persisted to logs. Entries should not be renumbered and

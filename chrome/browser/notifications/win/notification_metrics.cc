@@ -60,7 +60,7 @@ void LogActivationStatus(ActivationStatus status) {
 }
 
 void LogSetReadyCallbackStatus(SetReadyCallbackStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("Notifications.Windows.SetReadyCallbackStatus",
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Windows.SetReadyCallbackStatus2",
                             status, SetReadyCallbackStatus::COUNT);
 }
 
