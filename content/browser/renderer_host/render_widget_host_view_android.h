@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
-#include "components/viz/client/frame_evictor.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/selection.h"
@@ -74,8 +73,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       public ui::TouchSelectionControllerClient,
       public ui::ViewAndroidObserver,
       public ui::WindowAndroidObserver,
-      public viz::BeginFrameObserver,
-      public viz::FrameEvictorClient {
+      public viz::BeginFrameObserver {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               gfx::NativeView parent_native_view);
@@ -219,9 +217,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnActivityStopped() override;
   void OnActivityStarted() override;
 
-  // viz::FrameEvictor implementation
-  void EvictDelegatedFrame() override;
-
   // StylusTextSelectorClient implementation.
   void OnStylusSelectBegin(float x0, float y0, float x1, float y1) override;
   void OnStylusSelectUpdate(float x, float y) override;
@@ -352,6 +347,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
  private:
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
 
+  void EvictDelegatedFrame();
   void RunAckCallbacks();
 
   bool ShouldRouteEvents() const;
@@ -488,8 +484,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   std::unique_ptr<SynchronousCompositorHost> sync_compositor_;
 
   SynchronousCompositorClient* synchronous_compositor_client_;
-
-  std::unique_ptr<viz::FrameEvictor> frame_evictor_;
 
   bool observing_root_window_;
 

@@ -28,6 +28,7 @@ class VIZ_CLIENT_EXPORT FrameEvictor : public FrameEvictionManagerClient {
   void LockFrame();
   void UnlockFrame();
   bool HasFrame() { return has_frame_; }
+  bool visible() const { return visible_; }
 
  private:
   // FrameEvictionManagerClient implementation.

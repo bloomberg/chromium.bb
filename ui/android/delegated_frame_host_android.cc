@@ -71,7 +71,8 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
       enable_surface_synchronization_(
           features::IsSurfaceSynchronizationEnabled()),
       enable_viz_(
-          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
+      frame_evictor_(std::make_unique<viz::FrameEvictor>(this)) {
   DCHECK(view_);
   DCHECK(client_);
 
@@ -113,6 +114,8 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
     // |local_surface_id| has changed since the last submission.
     if (content_layer_->bounds() == expected_pixel_size_)
       compositor_pending_resize_lock_.reset();
+
+    frame_evictor_->SwappedFrame(frame_evictor_->visible());
   }
 }
 
@@ -189,6 +192,7 @@ void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
     return;
   std::vector<viz::SurfaceId> surface_ids = {surface_id};
   host_frame_sink_manager_->EvictSurfaces(surface_ids);
+  frame_evictor_->DiscardedFrame();
 }
 
 bool DelegatedFrameHostAndroid::HasDelegatedContent() const {
@@ -237,6 +241,34 @@ void DelegatedFrameHostAndroid::DetachFromCompositor() {
   registered_parent_compositor_ = nullptr;
 }
 
+bool DelegatedFrameHostAndroid::IsPrimarySurfaceEvicted() const {
+  return !content_layer_->primary_surface_id().is_valid();
+}
+
+bool DelegatedFrameHostAndroid::HasSavedFrame() const {
+  return frame_evictor_->HasFrame();
+}
+
+void DelegatedFrameHostAndroid::WasHidden() {
+  frame_evictor_->SetVisible(false);
+}
+
+void DelegatedFrameHostAndroid::WasShown(
+    const viz::LocalSurfaceId& new_pending_local_surface_id,
+    const gfx::Size& new_pending_size_in_pixels) {
+  frame_evictor_->SetVisible(true);
+
+  if (!enable_surface_synchronization_)
+    return;
+
+  // Use the default deadline to synchronize web content with browser UI.
+  // TODO(fsamuel): We probably want to use the deadlines
+  // kFirstFrameTimeoutSeconds and kResizeTimeoutSeconds for equivalent
+  // cases with surface synchronization too.
+  EmbedSurface(new_pending_local_surface_id, new_pending_size_in_pixels,
+               cc::DeadlinePolicy::UseDefaultDeadline());
+}
+
 void DelegatedFrameHostAndroid::EmbedSurface(
     const viz::LocalSurfaceId& new_pending_local_surface_id,
     const gfx::Size& new_pending_size_in_pixels,
@@ -245,8 +277,22 @@ void DelegatedFrameHostAndroid::EmbedSurface(
     return;
 
   pending_local_surface_id_ = new_pending_local_surface_id;
+  pending_surface_size_in_pixels_ = new_pending_size_in_pixels;
 
-  // TODO(fsamuel): Early exit if not visible.
+  if (!frame_evictor_->visible()) {
+    // If the tab is resized while hidden, reset the fallback so that the next
+    // time user switches back to it the page is blank. This is preferred to
+    // showing contents of old size. Don't call EvictDelegatedFrame to avoid
+    // races when dragging tabs across displays. See https://crbug.com/813157.
+    if (pending_surface_size_in_pixels_ != content_layer_->bounds() &&
+        content_layer_->fallback_surface_id().is_valid()) {
+      content_layer_->SetFallbackSurfaceId(viz::SurfaceId());
+    }
+    // Don't update the SurfaceLayer when invisible to avoid blocking on
+    // renderers that do not submit CompositorFrames. Next time the renderer
+    // is visible, EmbedSurface will be called again. See WasShown.
+    return;
+  }
 
   viz::SurfaceId primary_surface_id(frame_sink_id_, pending_local_surface_id_);
   content_layer_->SetPrimarySurfaceId(primary_surface_id, deadline_policy);
@@ -363,6 +409,12 @@ void DelegatedFrameHostAndroid::OnFirstSurfaceActivation(
   }
 
   content_layer_->SetFallbackSurfaceId(surface_info.id());
+
+  // TODO(fsamuel): "SwappedFrame" is a bad name. Also, this method doesn't
+  // really need to take in visiblity. FrameEvictor already has the latest
+  // visibility state.
+  frame_evictor_->SwappedFrame(frame_evictor_->visible());
+  // Note: the frame may have been evicted immediately.
 }
 
 void DelegatedFrameHostAndroid::OnFrameTokenChanged(uint32_t frame_token) {

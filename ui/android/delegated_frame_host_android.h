@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/layers/deadline_policy.h"
+#include "components/viz/client/frame_evictor.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/surface_info.h"
@@ -35,7 +36,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     : public viz::mojom::CompositorFrameSinkClient,
       public viz::ExternalBeginFrameSourceClient,
       public viz::HostFrameSinkClient,
-      public ui::CompositorLockClient {
+      public ui::CompositorLockClient,
+      public viz::FrameEvictorClient {
  public:
   class Client {
    public:
@@ -66,7 +68,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
       base::Optional<viz::HitTestRegionList> hit_test_region_list);
   void DidNotProduceFrame(const viz::BeginFrameAck& ack);
 
-  void EvictDelegatedFrame();
+  // FrameEvictorClient implementation.
+  void EvictDelegatedFrame() override;
 
   bool HasDelegatedContent() const;
 
@@ -88,6 +91,11 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void AttachToCompositor(WindowAndroidCompositor* compositor);
   void DetachFromCompositor();
 
+  bool IsPrimarySurfaceEvicted() const;
+  bool HasSavedFrame() const;
+  void WasHidden();
+  void WasShown(const viz::LocalSurfaceId& local_surface_id,
+                const gfx::Size& size_in_pixels);
   void EmbedSurface(const viz::LocalSurfaceId& new_pending_local_surface_id,
                     const gfx::Size& new_pending_size_in_pixels,
                     cc::DeadlinePolicy deadline_policy);
@@ -170,6 +178,11 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   // EmbedSurface. This is the surface that we expect future frames to
   // reference. This will eventually equal the active surface.
   viz::LocalSurfaceId pending_local_surface_id_;
+
+  // The size of the above surface (updated at the same time).
+  gfx::Size pending_surface_size_in_pixels_;
+
+  std::unique_ptr<viz::FrameEvictor> frame_evictor_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatedFrameHostAndroid);
 };
