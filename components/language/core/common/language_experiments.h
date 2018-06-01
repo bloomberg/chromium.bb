@@ -19,6 +19,10 @@ extern const base::Feature kUseHeuristicLanguageModel;
 // target language. This can in turn be overriden by the Heuristic Model
 // experiment.
 extern const base::Feature kOverrideTranslateTriggerInIndia;
+extern const char kOverrideModelKey[];
+extern const char kEnforceRankerKey[];
+extern const char kOverrideModelHeuristicValue[];
+extern const char kOverrideModelGeoValue[];
 
 enum class OverrideLanguageModel {
   DEFAULT,
