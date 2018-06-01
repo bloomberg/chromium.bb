@@ -89,9 +89,7 @@ public class NonOverlappingStack extends Stack {
         return false;
     }
 
-    @Override
-    public void contextChanged(Context context) {
-        super.contextChanged(context);
+    private void updateScrollSnap() {
         mScroller.setFrictionMultiplier(FRICTION_MULTIPLIER);
         // This is what computeSpacing() returns when there are >= 2 tabs
         final int snapDistance =
@@ -100,6 +98,18 @@ public class NonOverlappingStack extends Stack {
         // Really we're scrolling in the x direction, but the scroller is always wired up to the y
         // direction for both portrait and landscape mode.
         mScroller.setYSnapDistance(snapDistance);
+    }
+
+    @Override
+    public void contextChanged(Context context) {
+        super.contextChanged(context);
+        updateScrollSnap();
+    }
+
+    @Override
+    public void notifySizeChanged(float width, float height, int orientation) {
+        super.notifySizeChanged(width, height, orientation);
+        updateScrollSnap();
     }
 
     @Override
