@@ -3877,9 +3877,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kAutoplayIgnoreWebAudio)},
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-    {"uifood", flag_descriptions::kUiFoodName,
-     flag_descriptions::kUiFoodDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kUiFood)},
+    {"uifood", flag_descriptions::kExperimentalUiName,
+     flag_descriptions::kExperimentalUiDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kExperimentalUi)},
 #endif
 
     {"enable-blink-heap-incremental-marking",

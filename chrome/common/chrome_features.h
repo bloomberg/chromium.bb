@@ -345,10 +345,6 @@ extern const base::Feature kTPMFirmwareUpdate;
 extern const base::Feature kCrOSEnableUSMUserService;
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-extern const base::Feature kUiFood;
-#endif
-
 bool PrefServiceEnabled();
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
