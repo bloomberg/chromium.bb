@@ -6,6 +6,10 @@
   await dumpMetrics();
   await dp.Performance.enable();
   await dumpMetrics();
+  const taskTime1 = (await retrieveMetrics()).get('TaskDuration');
+  const taskTime2 = (await retrieveMetrics()).get('TaskDuration');
+  if (taskTime1 >= taskTime2)
+    testRunner.log(`Error: Metric TaskDuration should be monotonically increasing: ${taskTime1} ${taskTime2}.`);
   await dp.Performance.disable();
   await dumpMetrics();
 
