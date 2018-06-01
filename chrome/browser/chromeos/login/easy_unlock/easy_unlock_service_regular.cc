@@ -291,12 +291,6 @@ void EasyUnlockServiceRegular::LaunchSetup() {
 
   LogToggleFeature(SmartLockToggleFeature::ENABLE);
 
-  // TODO(tengs): To keep login working for existing EasyUnlock users, we need
-  // to explicitly disable login here for new users who set up EasyUnlock.
-  // After a sufficient number of releases, we should make the default value
-  // false.
-  pref_manager_->SetIsChromeOSLoginEnabled(false);
-
   // Force the user to reauthenticate by showing a modal overlay (similar to the
   // lock screen). The password obtained from the reauth is cached for a short
   // period of time and used to create the cryptohome keys for sign-in.
