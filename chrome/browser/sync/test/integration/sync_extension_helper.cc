@@ -223,7 +223,7 @@ SyncExtensionHelper::ExtensionStateMap
       extensions::ExtensionRegistry::Get(profile)
           ->GenerateInstalledExtensionsSet());
 
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   for (const scoped_refptr<const Extension>& extension : *extensions) {
     const std::string& id = extension->id();
