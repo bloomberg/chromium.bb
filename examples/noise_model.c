@@ -18,6 +18,25 @@
  *
  * The --output-grain-table file can be passed as input to the encoder (in
  * aomenc this is done through the "--film-grain-table" parameter).
+ *
+ * As an example, where the input source is an 854x480 yuv420p 8-bit video
+ * named "input.854_480.yuv" you would use steps similar to the following:
+ *
+ * # Run your denoiser (e.g, using hqdn3d filter):
+ * ffmpeg -vcodec rawvideo -video_size 854x480 -i input.854_480.yuv \
+ *    -vf hqdn3d=5:5:5:5 -vcodec rawvideo -an -f rawvideo \
+ *    denoised.854_480.yuv
+ *
+ * # Model the noise between the denoised version and original source:
+ * ./examples/noise_model --fps=25/1 --width=854 --height=480 --i420 \
+ *    --input-denoised=denoised.854_480.yuv --input=original.854_480.yuv \
+ *    --output-grain-table=film_grain.tbl
+ *
+ * # Encode with your favorite settings (including the grain table):
+ * aomenc --limit=100  --cpu-used=4 --input-bit-depth=8                  \
+ *    --i420 -w 854 -h 480 --end-usage=q --cq-level=25 --lag-in-frames=25 \
+ *    --auto-alt-ref=2 --bit-depth=8 --film-grain-table=film_grain.tbl \
+ *    -o denoised_with_grain_params.ivf denoised.854_480.yuv
  */
 #include <math.h>
 #include <stdio.h>
@@ -261,7 +280,7 @@ static void print_debug_info(FILE *debug_file, aom_image_t *raw,
 }
 
 int main(int argc, char *argv[]) {
-  noise_model_args_t args = { 0,  0, { 1, 25 }, 0, 0, 0,   AOM_IMG_FMT_I420,
+  noise_model_args_t args = { 0,  0, { 25, 1 }, 0, 0, 0,   AOM_IMG_FMT_I420,
                               32, 8, 1,         0, 1, NULL };
   aom_image_t raw, denoised;
   FILE *infile = NULL;
