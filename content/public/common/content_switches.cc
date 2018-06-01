@@ -410,10 +410,6 @@ const char kEnableServiceBinaryLauncher[] = "enable-service-binary-launcher";
 // Enables the Skia benchmarking extension
 const char kEnableSkiaBenchmarking[]        = "enable-skia-benchmarking";
 
-// Enables slimming paint phase 1.75:
-// https://www.chromium.org/blink/slimming-paint
-const char kEnableSlimmingPaintV175[] = "enable-slimming-paint-v175";
-
 // Enables slimming paint phase 2: https://www.chromium.org/blink/slimming-paint
 const char kEnableSlimmingPaintV2[]         = "enable-slimming-paint-v2";
 

@@ -375,10 +375,6 @@ const base::Feature kSignedHTTPExchangeOriginTrial{
 const base::Feature kSignInProcessIsolation{"sign-in-process-isolation",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Slimming Paint V1.75. See http://crbug.com/771643.
-const base::Feature kSlimmingPaintV175{"SlimmingPaintV175",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether SpareRenderProcessHostManager tries to always have a warm
 // spare renderer process around for the most recently requested BrowserContext.
 // This feature is only consulted in site-per-process mode.
