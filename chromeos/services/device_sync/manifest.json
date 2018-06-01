@@ -4,8 +4,11 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "device_sync": [ "device_sync.mojom.DeviceSync" ]
-       }
-     }
+        "device_sync": [ "chromeos.device_sync.mojom.DeviceSync" ]
+      },
+      "requires": {
+        "preferences": [ "pref_client" ]
+      }
+    }
   }
 }

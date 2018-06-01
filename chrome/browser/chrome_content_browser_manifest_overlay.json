@@ -40,6 +40,7 @@
           "device:geolocation_control",
           "device:ip_geolocator"
         ],
+        "device_sync": [ "device_sync" ],
         "file_util": [ "analyze_archive", "zip_file" ],
         "identity": [ "identity_manager" ],
         // Only used in classic ash case.
