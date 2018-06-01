@@ -458,9 +458,6 @@ void WebPluginContainerImpl::DispatchProgressEvent(const WebString& type,
 void WebPluginContainerImpl::EnqueueMessageEvent(
     const WebDOMMessageEvent& event) {
   static_cast<Event*>(event)->SetTarget(element_);
-  CHECK(element_);
-  CHECK(element_->GetExecutionContext());
-  CHECK(element_->GetExecutionContext()->GetEventQueue());
   element_->GetExecutionContext()->GetEventQueue()->EnqueueEvent(FROM_HERE,
                                                                  event);
 }
