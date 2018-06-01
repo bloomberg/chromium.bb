@@ -39,7 +39,9 @@ enum class WebEffectiveConnectionType {
   kTypeSlow2G,
   kType2G,
   kType3G,
-  kType4G
+  kType4G,
+
+  kMaxValue = kType4G
 };
 
 }  // namespace blink
