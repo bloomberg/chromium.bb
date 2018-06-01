@@ -202,7 +202,9 @@ const FilterMask size_mask_y[BLOCK_SIZES_ALL] = {
 
 LoopFilterMask *get_loop_filter_mask(const AV1_COMMON *const cm, int mi_row,
                                      int mi_col) {
-  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return NULL;
+  if ((mi_row << MI_SIZE_LOG2) >= cm->height ||
+      (mi_col << MI_SIZE_LOG2) >= cm->width)
+    return NULL;
   assert(cm->lf.lfm != NULL);
   const int row = mi_row >> MIN_MIB_SIZE_LOG2;  // 64x64
   const int col = mi_col >> MIN_MIB_SIZE_LOG2;
@@ -489,11 +491,22 @@ static void update_masks(EDGE_DIR dir, int plane, uint64_t *mask,
 }
 
 static int is_frame_boundary(AV1_COMMON *const cm, int plane, int mi_row,
-                             int mi_col, int subsampling_x, int subsampling_y,
-                             EDGE_DIR dir) {
-  if ((mi_row << MI_SIZE_LOG2) >= cm->height ||
-      (mi_col << MI_SIZE_LOG2) >= cm->width)
-    return 1;
+                             int mi_col, int ssx, int ssy, EDGE_DIR dir) {
+  if (plane && (ssx || ssy)) {
+    if (ssx && ssy) {  // format 420
+      if ((mi_row << MI_SIZE_LOG2) > cm->height ||
+          (mi_col << MI_SIZE_LOG2) > cm->width)
+        return 1;
+    } else if (ssx) {  // format 422
+      if ((mi_row << MI_SIZE_LOG2) >= cm->height ||
+          (mi_col << MI_SIZE_LOG2) > cm->width)
+        return 1;
+    }
+  } else {
+    if ((mi_row << MI_SIZE_LOG2) >= cm->height ||
+        (mi_col << MI_SIZE_LOG2) >= cm->width)
+      return 1;
+  }
 
   int row_or_col;
   if (plane == 0) {
@@ -502,9 +515,9 @@ static int is_frame_boundary(AV1_COMMON *const cm, int plane, int mi_row,
     // chroma sub8x8 block uses bottom/right mi of co-located 8x8 luma block.
     // So if mi_col == 1, it is actually the frame boundary.
     if (dir == VERT_EDGE) {
-      row_or_col = subsampling_x ? (mi_col & 0x0FFFFFFE) : mi_col;
+      row_or_col = ssx ? (mi_col & 0x0FFFFFFE) : mi_col;
     } else {
-      row_or_col = subsampling_y ? (mi_row & 0x0FFFFFFE) : mi_row;
+      row_or_col = ssy ? (mi_row & 0x0FFFFFFE) : mi_row;
     }
   }
   return row_or_col == 0;
@@ -546,9 +559,26 @@ static void setup_masks(AV1_COMMON *const cm, int mi_row, int mi_col, int plane,
     for (int r = mi_row; r < mi_row + mi_height; r += row_step) {
       for (int c = mi_col; c < mi_col + mi_width; c += col_step) {
         // do not filter frame boundary
-        if ((r << MI_SIZE_LOG2) >= cm->height ||
-            (c << MI_SIZE_LOG2) >= cm->width)
-          continue;
+        // Note: when chroma planes' size are half of luma plane,
+        // chroma plane mi corresponds to even position.
+        // If frame size is not even, we still need to filter this chroma
+        // position. Therefore the boundary condition check needs to be
+        // separated to two cases.
+        if (plane && (ssx || ssy)) {
+          if (ssx && ssy) {  // format 420
+            if ((r << MI_SIZE_LOG2) > cm->height ||
+                (c << MI_SIZE_LOG2) > cm->width)
+              continue;
+          } else if (ssx) {  // format 422
+            if ((r << MI_SIZE_LOG2) >= cm->height ||
+                (c << MI_SIZE_LOG2) > cm->width)
+              continue;
+          }
+        } else {
+          if ((r << MI_SIZE_LOG2) >= cm->height ||
+              (c << MI_SIZE_LOG2) >= cm->width)
+            continue;
+        }
 
         const int row = r % MI_SIZE_64X64;
         const int col = c % MI_SIZE_64X64;
@@ -619,7 +649,8 @@ static void setup_tx_block_mask(AV1_COMMON *const cm, int mi_row, int mi_col,
                                 int plane, int ssx, int ssy) {
   blk_row <<= ssy;
   blk_col <<= ssx;
-  if (mi_row + blk_row >= cm->mi_rows || mi_col + blk_col >= cm->mi_cols)
+  if (((mi_row + blk_row) << MI_SIZE_LOG2) >= cm->height ||
+      ((mi_col + blk_col) << MI_SIZE_LOG2) >= cm->width)
     return;
 
   // U/V plane, tx_size is always the largest size
@@ -734,15 +765,19 @@ static void setup_fix_block_mask(AV1_COMMON *const cm, int mi_row, int mi_col,
 
 static void setup_block_mask(AV1_COMMON *const cm, int mi_row, int mi_col,
                              BLOCK_SIZE bsize, int plane, int ssx, int ssy) {
-  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
+  if ((mi_row << MI_SIZE_LOG2) >= cm->height ||
+      (mi_col << MI_SIZE_LOG2) >= cm->width)
+    return;
 
   const PARTITION_TYPE partition = get_partition(cm, mi_row, mi_col, bsize);
   const BLOCK_SIZE subsize = get_partition_subsize(bsize, partition);
   const int hbs = mi_size_wide[bsize] / 2;
   const int quarter_step = mi_size_wide[bsize] / 4;
   const int allow_sub8x8 = (ssx || ssy) ? bsize > BLOCK_8X8 : 1;
-  const int has_next_row = (mi_row + hbs < cm->mi_rows) & allow_sub8x8;
-  const int has_next_col = (mi_col + hbs < cm->mi_cols) & allow_sub8x8;
+  const int has_next_row =
+      (((mi_row + hbs) << MI_SIZE_LOG2) < cm->height) & allow_sub8x8;
+  const int has_next_col =
+      (((mi_col + hbs) << MI_SIZE_LOG2) < cm->width) & allow_sub8x8;
   int i;
 
   switch (partition) {
@@ -800,7 +835,7 @@ static void setup_block_mask(AV1_COMMON *const cm, int mi_row, int mi_col,
     case PARTITION_HORZ_4:
       for (i = 0; i < 4; ++i) {
         int this_mi_row = mi_row + i * quarter_step;
-        if (i > 0 && this_mi_row >= cm->mi_rows) break;
+        if (i > 0 && (this_mi_row << MI_SIZE_LOG2) >= cm->height) break;
         // chroma plane filter the odd location
         if (plane && bsize == BLOCK_16X16 && (i & 0x01)) continue;
 
@@ -832,7 +867,9 @@ void av1_setup_bitmask(AV1_COMMON *const cm, int mi_row, int mi_col, int plane,
       const int row = mi_row + y * MI_SIZE_64X64;
       const int col = mi_col + x * MI_SIZE_64X64;
       if (row >= row_end || col >= col_end) continue;
-      if (row >= cm->mi_rows || col >= cm->mi_cols) continue;
+      if ((row << MI_SIZE_LOG2) >= cm->height ||
+          (col << MI_SIZE_LOG2) >= cm->width)
+        continue;
 
       LoopFilterMask *lfm = get_loop_filter_mask(cm, row, col);
       if (lfm == NULL) return;
@@ -866,7 +903,9 @@ void av1_setup_bitmask(AV1_COMMON *const cm, int mi_row, int mi_col, int plane,
       const int row = mi_row + y * MI_SIZE_64X64;
       const int col = mi_col + x * MI_SIZE_64X64;
       if (row >= row_end || col >= col_end) continue;
-      if (row >= cm->mi_rows || col >= cm->mi_cols) continue;
+      if ((row << MI_SIZE_LOG2) >= cm->height ||
+          (col << MI_SIZE_LOG2) >= cm->width)
+        continue;
 
       LoopFilterMask *lfm = get_loop_filter_mask(cm, row, col);
       if (lfm == NULL) return;
@@ -1316,9 +1355,11 @@ void av1_filter_block_plane_ver(AV1_COMMON *const cm,
   uint8_t *lfl2;
 
   // filter two rows at a time
-  for (r = 0; r < cm->seq_params.mib_size && mi_row + r < cm->mi_rows;
+  for (r = 0; r < cm->seq_params.mib_size &&
+              ((mi_row + r) << MI_SIZE_LOG2 < cm->height);
        r += r_step) {
-    for (c = 0; c < cm->seq_params.mib_size && mi_col + c < cm->mi_cols;
+    for (c = 0; c < cm->seq_params.mib_size &&
+                ((mi_col + c) << MI_SIZE_LOG2 < cm->width);
          c += MI_SIZE_64X64) {
       dst->buf += ((c << MI_SIZE_LOG2) >> ssx);
       LoopFilterMask *lfm = get_loop_filter_mask(cm, mi_row + r, mi_col + c);
@@ -1393,9 +1434,11 @@ void av1_filter_block_plane_hor(AV1_COMMON *const cm,
   uint64_t mask_4x4 = 0;
   uint8_t *lfl;
 
-  for (r = 0; r < cm->seq_params.mib_size && mi_row + r < cm->mi_rows;
+  for (r = 0; r < cm->seq_params.mib_size &&
+              ((mi_row + r) << MI_SIZE_LOG2 < cm->height);
        r += r_step) {
-    for (c = 0; c < cm->seq_params.mib_size && mi_col + c < cm->mi_cols;
+    for (c = 0; c < cm->seq_params.mib_size &&
+                ((mi_col + c) << MI_SIZE_LOG2 < cm->width);
          c += MI_SIZE_64X64) {
       if (mi_row + r == 0) continue;
 
