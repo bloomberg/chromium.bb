@@ -40,6 +40,7 @@ class MockArcNotificationItem : public ArcNotificationItem {
   void Click() override {}
   void ToggleExpansion() override {}
   void OpenSettings() override {}
+  void OpenSnooze() override {}
   void IncrementWindowRefCount() override {}
   void DecrementWindowRefCount() override {}
   arc::mojom::ArcNotificationType GetNotificationType() const override;

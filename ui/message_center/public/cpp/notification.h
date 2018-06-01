@@ -178,6 +178,9 @@ class MESSAGE_CENTER_PUBLIC_EXPORT RichNotificationData {
   // crbug.com/780342
   SettingsButtonHandler settings_button_handler = SettingsButtonHandler::NONE;
 
+  // Controls whether a snooze button should appear on the notification.
+  bool should_show_snooze_button = false;
+
   FullscreenVisibility fullscreen_visibility = FullscreenVisibility::NONE;
 };
 
@@ -399,6 +402,10 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   bool should_show_settings_button() const {
     return optional_fields_.settings_button_handler !=
            SettingsButtonHandler::NONE;
+  }
+
+  bool should_show_snooze_button() const {
+    return optional_fields_.should_show_snooze_button;
   }
 
   FullscreenVisibility fullscreen_visibility() const {

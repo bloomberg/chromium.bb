@@ -42,6 +42,9 @@ class ArcNotificationItem {
   // Called when the user wants to open an intrinsic setting of notification.
   // This is called from ArcNotificationContentView.
   virtual void OpenSettings() = 0;
+  // Called when the user wants to open an intrinsic snooze setting of
+  // notification. This is called from ArcNotificationContentView.
+  virtual void OpenSnooze() = 0;
   // Called when the user wants to toggle expansio of notification. This is
   // called from ArcNotificationContentView.
   virtual void ToggleExpansion() = 0;

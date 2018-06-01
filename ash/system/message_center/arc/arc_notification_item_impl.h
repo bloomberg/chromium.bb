@@ -37,6 +37,7 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
   void Close(bool by_user) override;
   void Click() override;
   void OpenSettings() override;
+  void OpenSnooze() override;
   void ToggleExpansion() override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;

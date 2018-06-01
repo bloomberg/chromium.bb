@@ -137,6 +137,11 @@ void ArcNotificationView::OnContainerAnimationStarted() {
   content_view_->OnContainerAnimationStarted();
 }
 
+void ArcNotificationView::OnSnoozeButtonPressed(const ui::Event& event) {
+  if (item_)
+    return item_->OpenSnooze();
+}
+
 void ArcNotificationView::OnContainerAnimationEnded() {
   content_view_->OnContainerAnimationEnded();
 }

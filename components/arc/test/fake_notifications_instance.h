@@ -29,6 +29,7 @@ class FakeNotificationsInstance : public mojom::NotificationsInstance {
   void CreateNotificationWindow(const std::string& key) override;
   void CloseNotificationWindow(const std::string& key) override;
   void OpenNotificationSettings(const std::string& key) override;
+  void OpenNotificationSnoozeSettings(const std::string& key) override;
 
   const std::vector<std::pair<std::string, mojom::ArcNotificationEvent>>&
   events() const;

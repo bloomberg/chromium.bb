@@ -27,6 +27,9 @@ void FakeNotificationsInstance::CloseNotificationWindow(
 void FakeNotificationsInstance::OpenNotificationSettings(
     const std::string& key) {}
 
+void FakeNotificationsInstance::OpenNotificationSnoozeSettings(
+    const std::string& key) {}
+
 void FakeNotificationsInstance::InitDeprecated(
     mojom::NotificationsHostPtr host_ptr) {
   Init(std::move(host_ptr), base::DoNothing());

@@ -44,6 +44,9 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
   void ShowCloseButton(bool show);
   // Change the visibility of the settings button. True to show, false to hide.
   void ShowSettingsButton(bool show);
+  // Change the visibility of the settings button. True to show, false to hide.
+  // Default: hidden.
+  void ShowSnoozeButton(bool show);
 
   // Set the background color of the view.
   void SetBackgroundColor(const SkColor& target_bgcolor);
@@ -61,6 +64,7 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
   // Methods for retrieving the control buttons directly.
   views::Button* close_button() const;
   views::Button* settings_button() const;
+  views::Button* snooze_button() const;
 
   // views::View
   const char* GetClassName() const override;
@@ -79,6 +83,7 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
 
   std::unique_ptr<PaddedButton> close_button_;
   std::unique_ptr<PaddedButton> settings_button_;
+  std::unique_ptr<PaddedButton> snooze_button_;
 
   std::unique_ptr<gfx::LinearAnimation> bgcolor_animation_;
   SkColor bgcolor_origin_;

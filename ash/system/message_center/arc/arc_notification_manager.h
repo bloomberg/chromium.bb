@@ -60,6 +60,7 @@ class ArcNotificationManager
   void CreateNotificationWindow(const std::string& key);
   void CloseNotificationWindow(const std::string& key);
   void OpenNotificationSettings(const std::string& key);
+  void OpenNotificationSnoozeSettings(const std::string& key);
   bool IsOpeningSettingsSupported() const;
   void SendNotificationToggleExpansionOnChrome(const std::string& key);
 
