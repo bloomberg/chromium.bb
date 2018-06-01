@@ -50,7 +50,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -95,7 +95,7 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
   ~AudioInputDevice() override;
 
   // AudioInputIPCDelegate implementation.
-  void OnStreamCreated(base::SharedMemoryHandle handle,
+  void OnStreamCreated(base::ReadOnlySharedMemoryRegion shared_memory_region,
                        base::SyncSocket::Handle socket_handle,
                        bool initially_muted) override;
   void OnError() override;

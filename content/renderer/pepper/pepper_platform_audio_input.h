@@ -55,7 +55,7 @@ class PepperPlatformAudioInput
   void ShutDown();
 
   // media::AudioInputIPCDelegate.
-  void OnStreamCreated(base::SharedMemoryHandle handle,
+  void OnStreamCreated(base::ReadOnlySharedMemoryRegion shared_memory_region,
                        base::SyncSocket::Handle socket_handle,
                        bool initially_muted) override;
   void OnError() override;

@@ -62,7 +62,8 @@ class FakeStreamFactory : public audio::mojom::StreamFactory {
     auto h = mojo::SharedBufferHandle::Create(kShMemSize);
     std::move(created_callback)
         .Run({base::in_place,
-              h->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
+              mojo::WrapReadOnlySharedMemoryRegion(
+                  base::ReadOnlySharedMemoryRegion::Create(kShMemSize).region),
               mojo::WrapPlatformFile(socket1.Release())},
              initially_muted_, base::UnguessableToken::Create());
   }
@@ -111,11 +112,9 @@ class MockDelegate : public media::AudioInputIPCDelegate {
   MockDelegate() {}
   ~MockDelegate() override {}
 
-  void OnStreamCreated(base::SharedMemoryHandle mem_handle,
+  void OnStreamCreated(base::ReadOnlySharedMemoryRegion mem_handle,
                        base::SyncSocket::Handle socket_handle,
                        bool initially_muted) override {
-    base::SharedMemory sh_mem(
-        mem_handle, /*read_only*/ true);  // Releases the shared memory handle.
     base::SyncSocket socket(socket_handle);  // Releases the socket descriptor.
     GotOnStreamCreated(initially_muted);
   }

@@ -16,11 +16,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::CancelableSyncSocket;
-using base::SharedMemory;
 using base::SyncSocket;
 using testing::_;
 using testing::DoAll;
 using testing::Invoke;
+using testing::InvokeWithoutArgs;
 
 namespace media {
 
@@ -91,32 +91,28 @@ TEST(AudioInputDeviceTest, FailToCreateStream) {
   device->Stop();
 }
 
-ACTION_P3(ReportOnStreamCreated, device, handle, socket) {
-  static_cast<AudioInputIPCDelegate*>(device)->OnStreamCreated(handle, socket,
-                                                               false);
-}
-
 TEST(AudioInputDeviceTest, CreateStream) {
   AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                          CHANNEL_LAYOUT_STEREO, 48000, 480);
-  SharedMemory shared_memory;
+  base::MappedReadOnlyRegion shared_memory;
   CancelableSyncSocket browser_socket;
   CancelableSyncSocket renderer_socket;
 
   const uint32_t memory_size =
       media::ComputeAudioInputBufferSize(params, kMemorySegmentCount);
 
-  ASSERT_TRUE(shared_memory.CreateAndMapAnonymous(memory_size));
-  memset(shared_memory.memory(), 0xff, memory_size);
+  shared_memory = base::ReadOnlySharedMemoryRegion::Create(memory_size);
+  ASSERT_TRUE(shared_memory.IsValid());
+  memset(shared_memory.mapping.memory(), 0xff, memory_size);
 
   ASSERT_TRUE(
       CancelableSyncSocket::CreatePair(&browser_socket, &renderer_socket));
   SyncSocket::TransitDescriptor audio_device_socket_descriptor;
   ASSERT_TRUE(renderer_socket.PrepareTransitDescriptor(
       base::GetCurrentProcessHandle(), &audio_device_socket_descriptor));
-  base::SharedMemoryHandle duplicated_memory_handle =
-      shared_memory.handle().Duplicate();
-  ASSERT_TRUE(duplicated_memory_handle.IsValid());
+  base::ReadOnlySharedMemoryRegion duplicated_shared_memory_region =
+      shared_memory.region.Duplicate();
+  ASSERT_TRUE(duplicated_shared_memory_region.IsValid());
 
   base::test::ScopedTaskEnvironment ste;
   MockCaptureCallback callback;
@@ -126,16 +122,19 @@ TEST(AudioInputDeviceTest, CreateStream) {
   device->Initialize(params, &callback);
 
   EXPECT_CALL(*input_ipc, CreateStream(_, _, _, _))
-      .WillOnce(ReportOnStreamCreated(
-          device.get(), duplicated_memory_handle,
-          SyncSocket::UnwrapHandle(audio_device_socket_descriptor)));
+      .WillOnce(InvokeWithoutArgs([&]() {
+        static_cast<AudioInputIPCDelegate*>(device.get())
+            ->OnStreamCreated(
+                std::move(duplicated_shared_memory_region),
+                SyncSocket::UnwrapHandle(audio_device_socket_descriptor),
+                false);
+      }));
   EXPECT_CALL(*input_ipc, RecordStream());
 
   EXPECT_CALL(callback, OnCaptureStarted());
   device->Start();
   EXPECT_CALL(*input_ipc, CloseStream());
   device->Stop();
-  duplicated_memory_handle.Close();
 }
 
 }  // namespace media.

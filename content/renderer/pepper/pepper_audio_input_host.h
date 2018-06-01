@@ -13,7 +13,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/sync_socket.h"
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
 #include "ipc/ipc_platform_file.h"
@@ -37,8 +37,7 @@ class PepperAudioInputHost : public ppapi::host::ResourceHost {
       ppapi::host::HostMessageContext* context) override;
 
   // Called when the stream is created.
-  void StreamCreated(base::SharedMemoryHandle shared_memory_handle,
-                     size_t shared_memory_size,
+  void StreamCreated(base::ReadOnlySharedMemoryRegion shared_memory_region,
                      base::SyncSocket::Handle socket);
   void StreamCreationFailed();
 
@@ -51,15 +50,14 @@ class PepperAudioInputHost : public ppapi::host::ResourceHost {
   int32_t OnClose(ppapi::host::HostMessageContext* context);
 
   void OnOpenComplete(int32_t result,
-                      base::SharedMemoryHandle shared_memory_handle,
-                      size_t shared_memory_size,
+                      base::ReadOnlySharedMemoryRegion shared_memory_region,
                       base::SyncSocket::Handle socket_handle);
 
   int32_t GetRemoteHandles(
       const base::SyncSocket& socket,
-      const base::SharedMemory& shared_memory,
+      const base::ReadOnlySharedMemoryRegion& shared_memory_region,
       IPC::PlatformFileForTransit* remote_socket_handle,
-      base::SharedMemoryHandle* remote_shared_memory_handle);
+      base::ReadOnlySharedMemoryRegion* remote_shared_memory_region);
 
   void Close();
 

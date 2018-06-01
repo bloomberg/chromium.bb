@@ -84,14 +84,13 @@ void InputIPC::StreamCreated(
   auto result =
       mojo::UnwrapPlatformFile(std::move(data_pipe->socket), &socket_handle);
   DCHECK_EQ(result, MOJO_RESULT_OK);
-  base::SharedMemoryHandle memory_handle;
-  mojo::UnwrappedSharedMemoryHandleProtection protection;
-  result = mojo::UnwrapSharedMemoryHandle(std::move(data_pipe->shared_memory),
-                                          &memory_handle, nullptr, &protection);
-  DCHECK_EQ(result, MOJO_RESULT_OK);
-  DCHECK_EQ(protection, mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly);
+  base::ReadOnlySharedMemoryRegion shared_memory_region =
+      mojo::UnwrapReadOnlySharedMemoryRegion(
+          std::move(data_pipe->shared_memory));
+  DCHECK(shared_memory_region.IsValid());
 
-  delegate_->OnStreamCreated(memory_handle, socket_handle, initially_muted);
+  delegate_->OnStreamCreated(std::move(shared_memory_region), socket_handle,
+                             initially_muted);
 }
 
 void InputIPC::RecordStream() {
