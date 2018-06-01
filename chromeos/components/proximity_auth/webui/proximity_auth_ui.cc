@@ -21,7 +21,7 @@ namespace proximity_auth {
 
 ProximityAuthUI::ProximityAuthUI(content::WebUI* web_ui,
                                  ProximityAuthClient* delegate)
-    : ui::MojoWebUIController(web_ui) {
+    : ui::MojoWebUIController(web_ui, true /* enable_chrome_send */) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUIProximityAuthHost);
   source->SetDefaultResource(IDR_PROXIMITY_AUTH_INDEX_HTML);
