@@ -513,6 +513,10 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // channels when copying into the GMB.
   GLuint premultiplied_alpha_false_texture_ = 0;
 
+  // A mailbox for the premultiplied_alpha_false_texture_, created lazily if we
+  // need to produce it.
+  gpu::Mailbox premultiplied_alpha_false_mailbox_;
+
   // When wantExplicitResolve() returns false, the target of all draw and
   // read operations. When wantExplicitResolve() returns true, the target of
   // all read operations.
