@@ -322,8 +322,16 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
   ASSERT_FALSE(IsKeyboardLockActive());
 }
 
+#if defined(OS_MACOSX)
+// TODO(crbug.com/837438): Enable once browser fullscreen is reliable in tests.
+#define MAYBE_RequestedButNotActiveInBrowserFullscreen \
+  DISABLED_RequestedButNotActiveInBrowserFullscreen
+#else
+#define MAYBE_RequestedButNotActiveInBrowserFullscreen \
+  RequestedButNotActiveInBrowserFullscreen
+#endif
 IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
-                       RequestedButNotActiveInBrowserFullscreen) {
+                       MAYBE_RequestedButNotActiveInBrowserFullscreen) {
   ASSERT_NO_FATAL_FAILURE(StartFullscreenLockPage());
   ASSERT_TRUE(DisablePreventDefaultOnTestPage());
   ASSERT_TRUE(KeyboardLockApiExists());
