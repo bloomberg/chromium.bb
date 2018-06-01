@@ -26,7 +26,7 @@ class TestOfflinePageArchiver : public OfflinePageArchiver {
   void CreateArchive(const base::FilePath& archives_dir,
                      const CreateArchiveParams& create_archive_params,
                      content::WebContents* web_contents,
-                     const CreateArchiveCallback& callback) override {}
+                     CreateArchiveCallback callback) override {}
 };
 
 class OfflinePageArchiverTest
@@ -65,7 +65,7 @@ class OfflinePageArchiverTest
     return weak_ptr_factory_.GetWeakPtr();
   }
 
-  void PublishArchiveDone(const SavePageCallback& save_page_callback,
+  void PublishArchiveDone(SavePageCallback save_page_callback,
                           const OfflinePageItem& offline_page,
                           PublishArchiveResult* archive_result);
 
@@ -87,7 +87,7 @@ void OfflinePageArchiverTest::SetUp() {
 }
 
 void OfflinePageArchiverTest::PublishArchiveDone(
-    const SavePageCallback& save_page_callback,
+    SavePageCallback save_page_callback,
     const OfflinePageItem& offline_page,
     PublishArchiveResult* archive_result) {
   publish_archive_result_ = *archive_result;
@@ -112,7 +112,7 @@ TEST_F(OfflinePageArchiverTest, PublishArchive) {
       offline_page, base::ThreadTaskRunnerHandle::Get(),
       public_archive_dir_path(), download_manager.get(),
       base::BindOnce(&OfflinePageArchiverTest::PublishArchiveDone,
-                     get_weak_ptr(), save_page_callback));
+                     get_weak_ptr(), std::move(save_page_callback)));
   PumpLoop();
 
   EXPECT_EQ(SavePageResult::SUCCESS, publish_archive_result().move_result);

@@ -271,12 +271,12 @@ class TestOfflinePageArchiver : public OfflinePageArchiver {
   void CreateArchive(const base::FilePath& archives_dir,
                      const CreateArchiveParams& create_archive_params,
                      content::WebContents* web_contents,
-                     const CreateArchiveCallback& callback) override {
+                     CreateArchiveCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, this, ArchiverResult::SUCCESSFULLY_CREATED, url_,
-                   archive_file_path_, base::string16(), archive_file_size_,
-                   digest_));
+        FROM_HERE, base::BindOnce(std::move(callback), this,
+                                  ArchiverResult::SUCCESSFULLY_CREATED, url_,
+                                  archive_file_path_, base::string16(),
+                                  archive_file_size_, digest_));
   }
 
   void PublishArchive(
@@ -971,7 +971,8 @@ class OfflinePageRequestHandlerTest : public OfflinePageRequestHandlerTestBase {
 
 class OfflinePageRequestJobBuilder {
  public:
-  OfflinePageRequestJobBuilder(OfflinePageRequestHandlerTestBase* test_base)
+  explicit OfflinePageRequestJobBuilder(
+      OfflinePageRequestHandlerTestBase* test_base)
       : test_base_(test_base) {}
 
   void InterceptRequest(const GURL& url,

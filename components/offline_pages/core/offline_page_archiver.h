@@ -94,13 +94,13 @@ class OfflinePageArchiver {
     bool use_page_problem_detectors;
   };
 
-  typedef base::Callback<void(OfflinePageArchiver* /* archiver */,
-                              ArchiverResult /* result */,
-                              const GURL& /* url */,
-                              const base::FilePath& /* file_path */,
-                              const base::string16& /* title */,
-                              int64_t /* file_size */,
-                              const std::string& /* digest */)>
+  typedef base::OnceCallback<void(OfflinePageArchiver* /* archiver */,
+                                  ArchiverResult /* result */,
+                                  const GURL& /* url */,
+                                  const base::FilePath& /* file_path */,
+                                  const base::string16& /* title */,
+                                  int64_t /* file_size */,
+                                  const std::string& /* digest */)>
       CreateArchiveCallback;
 
   virtual ~OfflinePageArchiver() {}
@@ -111,7 +111,7 @@ class OfflinePageArchiver {
   virtual void CreateArchive(const base::FilePath& archives_dir,
                              const CreateArchiveParams& create_archive_params,
                              content::WebContents* web_contents,
-                             const CreateArchiveCallback& callback) = 0;
+                             CreateArchiveCallback callback) = 0;
 
   // Publishes the page on a background thread, then returns to the
   // OfflinePageModelTaskified's done callback.

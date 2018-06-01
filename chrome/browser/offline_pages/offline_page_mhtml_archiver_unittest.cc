@@ -139,9 +139,9 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
   int64_t last_file_size() const { return last_file_size_; }
   const std::string& last_digest() const { return last_digest_; }
 
-  const OfflinePageArchiver::CreateArchiveCallback callback() {
-    return base::Bind(&OfflinePageMHTMLArchiverTest::OnCreateArchiveDone,
-                      base::Unretained(this));
+  OfflinePageArchiver::CreateArchiveCallback callback() {
+    return base::BindOnce(&OfflinePageMHTMLArchiverTest::OnCreateArchiveDone,
+                          base::Unretained(this));
   }
 
  private:

@@ -32,12 +32,11 @@ class TestOfflinePageModel : public StubOfflinePageModel {
   TestOfflinePageModel() { ignore_result(archive_dir_.CreateUniqueTempDir()); }
   ~TestOfflinePageModel() override = default;
 
-  void AddPage(const OfflinePageItem& page,
-               const AddPageCallback& callback) override {
+  void AddPage(const OfflinePageItem& page, AddPageCallback callback) override {
     page_added_ = page.offline_id != kTestOfflineIDFailedToAdd;
     if (page_added_)
       last_added_page_ = page;
-    callback.Run(
+    std::move(callback).Run(
         page_added_ ? AddPageResult::SUCCESS : AddPageResult::STORE_FAILURE,
         page.offline_id);
   }

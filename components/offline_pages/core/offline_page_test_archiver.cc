@@ -39,9 +39,9 @@ void OfflinePageTestArchiver::CreateArchive(
     const base::FilePath& archives_dir,
     const CreateArchiveParams& create_archive_params,
     content::WebContents* web_contents,
-    const CreateArchiveCallback& callback) {
+    CreateArchiveCallback callback) {
   create_archive_called_ = true;
-  callback_ = callback;
+  callback_ = std::move(callback);
   archives_dir_ = archives_dir;
   create_archive_params_ = create_archive_params;
   if (!delayed_)
@@ -73,8 +73,9 @@ void OfflinePageTestArchiver::CompleteCreateArchive() {
   }
   observer_->SetLastPathCreatedByArchiver(archive_path);
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(callback_, this, result_, url_, archive_path,
-                            result_title_, size_to_report_, digest_to_report_));
+      FROM_HERE,
+      base::BindOnce(std::move(callback_), this, result_, url_, archive_path,
+                     result_title_, size_to_report_, digest_to_report_));
 }
 
 }  // namespace offline_pages

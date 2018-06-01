@@ -76,17 +76,11 @@ class MockOfflinePageModel : public StubOfflinePageModel {
   }
   ~MockOfflinePageModel() override = default;
   MOCK_METHOD1(StoreThumbnail, void(const OfflinePageThumbnail& thumb));
-  MOCK_METHOD2(HasThumbnailForOfflineId_,
+  MOCK_METHOD2(HasThumbnailForOfflineId,
                void(int64_t offline_id,
-                    base::OnceCallback<void(bool)>* callback));
+                    base::OnceCallback<void(bool)> callback));
   MOCK_METHOD2(AddPage,
-               void(const OfflinePageItem& page,
-                    const AddPageCallback& callback));
-  void HasThumbnailForOfflineId(
-      int64_t offline_id,
-      base::OnceCallback<void(bool)> callback) override {
-    HasThumbnailForOfflineId_(offline_id, &callback);
-  }
+               void(const OfflinePageItem& page, AddPageCallback callback));
 };
 
 class TestPrefetchBackgroundTask : public PrefetchBackgroundTask {
@@ -193,34 +187,24 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
                             const char* client_id) {
     EXPECT_CALL(
         *thumbnail_fetcher_,
-        FetchSuggestionImageData_(
+        FetchSuggestionImageData(
             ClientId(kSuggestedArticlesNamespace, client_id), first_attempt, _))
-        .WillOnce(
-            testing::Invoke(testing::CallbackToFunctor(base::BindRepeating(
-                [](const std::string& thumbnail_data,
-                   scoped_refptr<base::TestMockTimeTaskRunner> task_runner,
-                   const ClientId& id, bool is_first_attemp,
-                   ThumbnailFetcher::ImageDataFetchedCallback* callback) {
-                  task_runner->PostTask(
-                      FROM_HERE,
-                      base::BindOnce(std::move(*callback), thumbnail_data));
-                },
-                thumbnail_data, task_runner()))));
+        .WillOnce([&, thumbnail_data](
+                      const ClientId& client_id, bool first_attempt,
+                      ThumbnailFetcher::ImageDataFetchedCallback callback) {
+          task_runner()->PostTask(
+              FROM_HERE, base::BindOnce(std::move(callback), thumbnail_data));
+        });
   }
 
   void ExpectHasThumbnailForOfflineId(int64_t offline_id, bool to_return) {
-    EXPECT_CALL(*offline_model_, HasThumbnailForOfflineId_(offline_id, _))
+    EXPECT_CALL(*offline_model_, HasThumbnailForOfflineId(offline_id, _))
         .WillOnce(
-            testing::Invoke(testing::CallbackToFunctor(base::BindRepeating(
-                [](bool to_return,
-                   scoped_refptr<base::TestMockTimeTaskRunner> task_runner,
-                   int64_t offline_id_,
-                   base::OnceCallback<void(bool)>* callback) {
-                  task_runner->PostTask(
-                      FROM_HERE,
-                      base::BindOnce(std::move(*callback), to_return));
-                },
-                to_return, task_runner()))));
+            [&, offline_id, to_return](
+                int64_t offline_id, base::OnceCallback<void(bool)> callback) {
+              task_runner()->PostTask(
+                  FROM_HERE, base::BindOnce(std::move(callback), to_return));
+            });
   }
 
   PrefetchDispatcherImpl* dispatcher() { return dispatcher_; }
@@ -574,7 +558,7 @@ TEST_F(PrefetchDispatcherTest, ThumbnailFetchSuccess_ItemDownloaded) {
 
 TEST_F(PrefetchDispatcherTest, ThumbnailAlreadyExists_ItemDownloaded) {
   ExpectHasThumbnailForOfflineId(kTestOfflineID, true);
-  EXPECT_CALL(*thumbnail_fetcher_, FetchSuggestionImageData_(_, _, _)).Times(0);
+  EXPECT_CALL(*thumbnail_fetcher_, FetchSuggestionImageData(_, _, _)).Times(0);
   EXPECT_CALL(*offline_model_, StoreThumbnail(_)).Times(0);
   prefetch_dispatcher()->ItemDownloaded(
       kTestOfflineID, ClientId(kSuggestedArticlesNamespace, kClientID));
@@ -626,13 +610,12 @@ TEST_F(PrefetchDispatcherTest, PrefetchItemFlow) {
   // callback, and store the page to added_page.
   OfflinePageItem added_page;
   EXPECT_CALL(*offline_model_, AddPage(_, _))
-      .WillOnce(testing::Invoke([&](const OfflinePageItem& page,
-                                    const AddPageCallback& callback) {
+      .WillOnce([&](const OfflinePageItem& page, AddPageCallback callback) {
         added_page = page;
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::BindOnce(callback, AddPageResult::SUCCESS, page.offline_id));
-      }));
+            FROM_HERE, base::BindOnce(std::move(callback),
+                                      AddPageResult::SUCCESS, page.offline_id));
+      });
 
   network_request_factory()->set_respond_to_generate_page_bundle(true);
   download_service()->SetTestFileData(kBodyContent);
