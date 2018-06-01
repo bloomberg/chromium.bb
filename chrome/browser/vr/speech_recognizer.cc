@@ -77,7 +77,8 @@ class SpeechRecognizerOnIO : public content::SpeechRecognitionEventListener {
   void OnRecognitionEnd(int session_id) override;
   void OnRecognitionResults(
       int session_id,
-      const content::SpeechRecognitionResults& results) override;
+      const std::vector<content::mojom::SpeechRecognitionResultPtr>& results)
+      override;
   void OnRecognitionError(
       int session_id,
       const content::mojom::SpeechRecognitionError& error) override;
@@ -201,16 +202,16 @@ void SpeechRecognizerOnIO::OnRecognitionEnd(int session_id) {
 
 void SpeechRecognizerOnIO::OnRecognitionResults(
     int session_id,
-    const content::SpeechRecognitionResults& results) {
+    const std::vector<content::mojom::SpeechRecognitionResultPtr>& results) {
   base::string16 result_str;
   size_t final_count = 0;
   // The number of results with |is_provisional| false. If |final_count| ==
   // results.size(), then all results are non-provisional and the recognition is
   // complete.
   for (const auto& result : results) {
-    if (!result.is_provisional)
+    if (!result->is_provisional)
       final_count++;
-    result_str += result.hypotheses[0].utterance;
+    result_str += result->hypotheses[0]->utterance;
   }
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,

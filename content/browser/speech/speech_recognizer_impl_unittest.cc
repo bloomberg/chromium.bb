@@ -144,8 +144,9 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
     CheckEventsConsistency();
   }
 
-  void OnRecognitionResults(int session_id,
-                            const SpeechRecognitionResults& results) override {
+  void OnRecognitionResults(
+      int session_id,
+      const std::vector<mojom::SpeechRecognitionResultPtr>& results) override {
     result_received_ = true;
   }
 

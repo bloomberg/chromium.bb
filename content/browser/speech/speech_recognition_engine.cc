@@ -17,7 +17,7 @@
 #include "content/browser/speech/audio_buffer.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
 #include "content/public/common/speech_recognition_error.mojom.h"
-#include "content/public/common/speech_recognition_result.h"
+#include "content/public/common/speech_recognition_result.mojom.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -567,30 +567,31 @@ SpeechRecognitionEngine::ProcessDownstreamResponse(
     delegate_->OnSpeechRecognitionEngineEndOfUtterance();
   }
 
-  SpeechRecognitionResults results;
+  std::vector<mojom::SpeechRecognitionResultPtr> results;
   for (int i = 0; i < ws_event.result_size(); ++i) {
     const proto::SpeechRecognitionResult& ws_result = ws_event.result(i);
-    results.push_back(SpeechRecognitionResult());
-    SpeechRecognitionResult& result = results.back();
-    result.is_provisional = !(ws_result.has_final() && ws_result.final());
+    results.push_back(mojom::SpeechRecognitionResult::New());
+    mojom::SpeechRecognitionResultPtr& result = results.back();
+    result->is_provisional = !(ws_result.has_final() && ws_result.final());
 
-    if (!result.is_provisional)
+    if (!result->is_provisional)
       got_last_definitive_result_ = true;
 
     for (int j = 0; j < ws_result.alternative_size(); ++j) {
       const proto::SpeechRecognitionAlternative& ws_alternative =
           ws_result.alternative(j);
-      SpeechRecognitionHypothesis hypothesis;
+      mojom::SpeechRecognitionHypothesisPtr hypothesis =
+          mojom::SpeechRecognitionHypothesis::New();
       if (ws_alternative.has_confidence())
-        hypothesis.confidence = ws_alternative.confidence();
+        hypothesis->confidence = ws_alternative.confidence();
       else if (ws_result.has_stability())
-        hypothesis.confidence = ws_result.stability();
+        hypothesis->confidence = ws_result.stability();
       DCHECK(ws_alternative.has_transcript());
       // TODO(hans): Perhaps the transcript should be required in the proto?
       if (ws_alternative.has_transcript())
-        hypothesis.utterance = base::UTF8ToUTF16(ws_alternative.transcript());
+        hypothesis->utterance = base::UTF8ToUTF16(ws_alternative.transcript());
 
-      result.hypotheses.push_back(hypothesis);
+      result->hypotheses.push_back(std::move(hypothesis));
     }
   }
   if (results.size()) {
@@ -606,7 +607,8 @@ SpeechRecognitionEngine::RaiseNoMatchErrorIfGotNoResults(
   if (!got_last_definitive_result_) {
     // Provide an empty result to notify that recognition is ended with no
     // errors, yet neither any further results.
-    delegate_->OnSpeechRecognitionEngineResults(SpeechRecognitionResults());
+    delegate_->OnSpeechRecognitionEngineResults(
+        std::vector<mojom::SpeechRecognitionResultPtr>());
   }
   return AbortSilently(event_args);
 }

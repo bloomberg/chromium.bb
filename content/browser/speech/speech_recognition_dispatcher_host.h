@@ -92,8 +92,9 @@ class SpeechRecognitionSession : public mojom::SpeechRecognitionSession,
   void OnSoundEnd(int session_id) override;
   void OnAudioEnd(int session_id) override;
   void OnRecognitionEnd(int session_id) override;
-  void OnRecognitionResults(int session_id,
-                            const SpeechRecognitionResults& results) override;
+  void OnRecognitionResults(
+      int session_id,
+      const std::vector<mojom::SpeechRecognitionResultPtr>& results) override;
   void OnRecognitionError(int session_id,
                           const mojom::SpeechRecognitionError& error) override;
   void OnAudioLevelsChange(int session_id,

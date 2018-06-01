@@ -234,8 +234,11 @@ void SpeechRecognitionSession::OnRecognitionEnd(int session_id) {
 
 void SpeechRecognitionSession::OnRecognitionResults(
     int session_id,
-    const SpeechRecognitionResults& results) {
-  client_->ResultRetrieved(results);
+    const std::vector<mojom::SpeechRecognitionResultPtr>& results) {
+  std::vector<mojom::SpeechRecognitionResultPtr> results_copy;
+  for (auto& result : results)
+    results_copy.push_back(result.Clone());
+  client_->ResultRetrieved(std::move(results_copy));
 }
 
 void SpeechRecognitionSession::OnRecognitionError(

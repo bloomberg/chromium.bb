@@ -19,7 +19,7 @@
 #include "content/public/browser/speech_recognition_session_preamble.h"
 #include "content/public/common/speech_recognition_error.mojom.h"
 #include "content/public/common/speech_recognition_grammar.mojom.h"
-#include "content/public/common/speech_recognition_result.h"
+#include "content/public/common/speech_recognition_result.mojom.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace net {
@@ -63,7 +63,7 @@ class CONTENT_EXPORT SpeechRecognitionEngine : public net::URLFetcherDelegate {
    public:
     // Called whenever a result is retrieved.
     virtual void OnSpeechRecognitionEngineResults(
-        const SpeechRecognitionResults& results) = 0;
+        const std::vector<mojom::SpeechRecognitionResultPtr>& results) = 0;
     virtual void OnSpeechRecognitionEngineEndOfUtterance() = 0;
     virtual void OnSpeechRecognitionEngineError(
         const mojom::SpeechRecognitionError& error) = 0;

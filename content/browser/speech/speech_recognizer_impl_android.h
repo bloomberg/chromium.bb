@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/speech/speech_recognizer.h"
 #include "content/public/common/speech_recognition_error.mojom.h"
-#include "content/public/common/speech_recognition_result.h"
+#include "content/public/common/speech_recognition_result.mojom.h"
 
 namespace content {
 
@@ -61,7 +61,8 @@ class CONTENT_EXPORT SpeechRecognizerImplAndroid : public SpeechRecognizer {
   void StartRecognitionOnUIThread(const std::string& language,
                                   bool continuous,
                                   bool interim_results);
-  void OnRecognitionResultsOnIOThread(SpeechRecognitionResults const &results);
+  void OnRecognitionResultsOnIOThread(
+      std::vector<mojom::SpeechRecognitionResultPtr> results);
 
   ~SpeechRecognizerImplAndroid() override;
 

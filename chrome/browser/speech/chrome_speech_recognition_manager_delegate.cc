@@ -20,7 +20,7 @@
 #include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/speech_recognition_error.mojom.h"
-#include "content/public/common/speech_recognition_result.h"
+#include "content/public/common/speech_recognition_result.mojom.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
@@ -62,8 +62,8 @@ void ChromeSpeechRecognitionManagerDelegate::OnAudioEnd(int session_id) {
 }
 
 void ChromeSpeechRecognitionManagerDelegate::OnRecognitionResults(
-    int session_id, const content::SpeechRecognitionResults& result) {
-}
+    int session_id,
+    const std::vector<content::mojom::SpeechRecognitionResultPtr>& result) {}
 
 void ChromeSpeechRecognitionManagerDelegate::OnRecognitionError(
     int session_id,

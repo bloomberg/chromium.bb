@@ -16,7 +16,7 @@
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
-#include "content/public/common/speech_recognition_result.h"
+#include "content/public/common/speech_recognition_result.mojom.h"
 #include "jni/SpeechRecognitionImpl_jni.h"
 
 using base::android::AppendJavaStringArrayToStringVector;
@@ -174,24 +174,24 @@ void SpeechRecognizerImplAndroid::OnRecognitionResults(
   std::vector<float> scores(options.size(), 0.0);
   if (floats != NULL)
     JavaFloatArrayToFloatVector(env, floats, &scores);
-  SpeechRecognitionResults results;
-  results.push_back(SpeechRecognitionResult());
-  SpeechRecognitionResult& result = results.back();
+  std::vector<mojom::SpeechRecognitionResultPtr> results;
+  results.push_back(mojom::SpeechRecognitionResult::New());
+  mojom::SpeechRecognitionResultPtr& result = results.back();
   CHECK_EQ(options.size(), scores.size());
   for (size_t i = 0; i < options.size(); ++i) {
-    result.hypotheses.push_back(SpeechRecognitionHypothesis(
+    result->hypotheses.push_back(mojom::SpeechRecognitionHypothesis::New(
         options[i], static_cast<double>(scores[i])));
   }
-  result.is_provisional = provisional;
+  result->is_provisional = provisional;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
           &SpeechRecognizerImplAndroid::OnRecognitionResultsOnIOThread, this,
-          results));
+          std::move(results)));
 }
 
 void SpeechRecognizerImplAndroid::OnRecognitionResultsOnIOThread(
-    SpeechRecognitionResults const &results) {
+    std::vector<mojom::SpeechRecognitionResultPtr> results) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   listener()->OnRecognitionResults(session_id(), results);
 }

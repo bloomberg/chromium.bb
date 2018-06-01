@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "content/common/speech_recognizer.mojom.h"
-#include "content/public/common/speech_recognition_result.h"
+#include "content/public/common/speech_recognition_result.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "third_party/blink/public/web/web_speech_recognition_handle.h"
@@ -103,7 +103,7 @@ class SpeechRecognitionSessionClientImpl
   void ErrorOccurred(const mojom::SpeechRecognitionErrorPtr error) override;
   void Ended() override;
   void ResultRetrieved(
-      const std::vector<SpeechRecognitionResult>& results) override;
+      std::vector<mojom::SpeechRecognitionResultPtr> results) override;
 
  private:
   // Not owned, |parent_dispatcher_| owns |this|.
