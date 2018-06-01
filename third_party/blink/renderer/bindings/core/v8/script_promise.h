@@ -43,6 +43,7 @@
 namespace blink {
 
 class DOMException;
+class ExceptionState;
 
 // ScriptPromise is the class for representing Promise values in C++ world.
 // ScriptPromise holds a Promise.
@@ -106,6 +107,8 @@ class CORE_EXPORT ScriptPromise final {
 
   static ScriptPromise Reject(ScriptState*, const ScriptValue&);
   static ScriptPromise Reject(ScriptState*, v8::Local<v8::Value>);
+  // Rejects with a given exception. The ExceptionState gets cleared.
+  static ScriptPromise Reject(ScriptState*, ExceptionState&);
 
   static ScriptPromise RejectWithDOMException(ScriptState*, DOMException*);
 

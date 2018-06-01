@@ -1074,18 +1074,18 @@ ScriptPromise RTCPeerConnection::generateCertificate(
 
 ScriptPromise RTCPeerConnection::addIceCandidate(
     ScriptState* script_state,
-    const RTCIceCandidateInitOrRTCIceCandidate& candidate) {
+    const RTCIceCandidateInitOrRTCIceCandidate& candidate,
+    ExceptionState& exception_state) {
   if (signaling_state_ == kSignalingStateClosed)
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(kInvalidStateError, kSignalingStateClosedMessage));
 
-  if (IsIceCandidateMissingSdp(candidate))
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(
-            script_state->GetIsolate(),
-            "Candidate missing values for both sdpMid and sdpMLineIndex"));
+  if (IsIceCandidateMissingSdp(candidate)) {
+    exception_state.ThrowTypeError(
+        "Candidate missing values for both sdpMid and sdpMLineIndex");
+    return ScriptPromise();
+  }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -1105,19 +1105,19 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
     ScriptState* script_state,
     const RTCIceCandidateInitOrRTCIceCandidate& candidate,
     V8VoidFunction* success_callback,
-    V8RTCPeerConnectionErrorCallback* error_callback) {
+    V8RTCPeerConnectionErrorCallback* error_callback,
+    ExceptionState& exception_state) {
   DCHECK(success_callback);
   DCHECK(error_callback);
 
   if (CallErrorCallbackIfSignalingStateClosed(signaling_state_, error_callback))
     return ScriptPromise::CastUndefined(script_state);
 
-  if (IsIceCandidateMissingSdp(candidate))
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(
-            script_state->GetIsolate(),
-            "Candidate missing values for both sdpMid and sdpMLineIndex"));
+  if (IsIceCandidateMissingSdp(candidate)) {
+    exception_state.ThrowTypeError(
+        "Candidate missing values for both sdpMid and sdpMLineIndex");
+    return ScriptPromise();
+  }
 
   RTCVoidRequest* request = RTCVoidRequestImpl::Create(
       GetExecutionContext(), this, success_callback, error_callback);
@@ -1319,7 +1319,7 @@ ScriptPromise RTCPeerConnection::getStats(
   exception_state.ThrowTypeError(
       "The argument provided as parameter 1 is neither a callback (function) "
       "or selector (MediaStreamTrack or null).");
-  return exception_state.Reject(script_state);
+  return ScriptPromise::Reject(script_state, exception_state);
 }
 
 ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,

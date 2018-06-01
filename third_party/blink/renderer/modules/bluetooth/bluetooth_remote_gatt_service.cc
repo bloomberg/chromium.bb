@@ -93,7 +93,7 @@ ScriptPromise BluetoothRemoteGATTService::getCharacteristic(
   String characteristic_uuid =
       BluetoothUUID::getCharacteristic(characteristic, exception_state);
   if (exception_state.HadException())
-    return exception_state.Reject(script_state);
+    return ScriptPromise();
 
   return GetCharacteristicsImpl(
       script_state, mojom::blink::WebBluetoothGATTQueryQuantity::SINGLE,
@@ -107,7 +107,7 @@ ScriptPromise BluetoothRemoteGATTService::getCharacteristics(
   String characteristic_uuid =
       BluetoothUUID::getCharacteristic(characteristic, exception_state);
   if (exception_state.HadException())
-    return exception_state.Reject(script_state);
+    return ScriptPromise();
 
   return GetCharacteristicsImpl(
       script_state, mojom::blink::WebBluetoothGATTQueryQuantity::MULTIPLE,

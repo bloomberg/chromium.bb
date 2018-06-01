@@ -98,12 +98,6 @@ void ExceptionState::ClearException() {
   exception_.Clear();
 }
 
-ScriptPromise ExceptionState::Reject(ScriptState* script_state) {
-  ScriptPromise promise = ScriptPromise::Reject(script_state, GetException());
-  ClearException();
-  return promise;
-}
-
 void ExceptionState::SetException(ExceptionCode ec,
                                   const String& message,
                                   v8::Local<v8::Value> exception) {

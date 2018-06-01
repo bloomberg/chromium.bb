@@ -11,10 +11,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_GENERATED_CODE_HELPER_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_GENERATED_CODE_HELPER_H_
 
-#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -51,7 +51,8 @@ class CORE_EXPORT ExceptionToRejectPromiseScope {
     // promises must also be created in the current realm while regular promises
     // are created in the relevant realm of the context object.
     ScriptState* script_state = ScriptState::ForCurrentRealm(info_);
-    V8SetReturnValue(info_, exception_state_.Reject(script_state).V8Value());
+    V8SetReturnValue(
+        info_, ScriptPromise::Reject(script_state, exception_state_).V8Value());
   }
 
  private:

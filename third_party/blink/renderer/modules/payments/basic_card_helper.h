@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class ScriptValue;
+
 class BasicCardHelper {
   STATIC_ONLY(BasicCardHelper);
 

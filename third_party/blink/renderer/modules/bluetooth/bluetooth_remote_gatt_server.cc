@@ -190,7 +190,7 @@ ScriptPromise BluetoothRemoteGATTServer::getPrimaryService(
     ExceptionState& exception_state) {
   String service_uuid = BluetoothUUID::getService(service, exception_state);
   if (exception_state.HadException())
-    return exception_state.Reject(script_state);
+    return ScriptPromise();
 
   return GetPrimaryServicesImpl(
       script_state, mojom::blink::WebBluetoothGATTQueryQuantity::SINGLE,
@@ -203,7 +203,7 @@ ScriptPromise BluetoothRemoteGATTServer::getPrimaryServices(
     ExceptionState& exception_state) {
   String service_uuid = BluetoothUUID::getService(service, exception_state);
   if (exception_state.HadException())
-    return exception_state.Reject(script_state);
+    return ScriptPromise();
 
   return GetPrimaryServicesImpl(
       script_state, mojom::blink::WebBluetoothGATTQueryQuantity::MULTIPLE,

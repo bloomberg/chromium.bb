@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/xml/xpath_evaluator.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/xml/native_xpath_ns_resolver.h"

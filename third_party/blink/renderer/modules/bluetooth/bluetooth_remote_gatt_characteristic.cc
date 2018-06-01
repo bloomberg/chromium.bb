@@ -300,7 +300,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::getDescriptor(
   String descriptor =
       BluetoothUUID::getDescriptor(descriptor_uuid, exception_state);
   if (exception_state.HadException())
-    return exception_state.Reject(script_state);
+    return ScriptPromise();
 
   return GetDescriptorsImpl(script_state,
                             mojom::blink::WebBluetoothGATTQueryQuantity::SINGLE,
@@ -321,7 +321,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::getDescriptors(
   String descriptor =
       BluetoothUUID::getDescriptor(descriptor_uuid, exception_state);
   if (exception_state.HadException())
-    return exception_state.Reject(script_state);
+    return ScriptPromise();
 
   return GetDescriptorsImpl(
       script_state, mojom::blink::WebBluetoothGATTQueryQuantity::MULTIPLE,

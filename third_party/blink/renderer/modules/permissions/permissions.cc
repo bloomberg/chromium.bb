@@ -147,14 +147,12 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
 }  // anonymous namespace
 
 ScriptPromise Permissions::query(ScriptState* script_state,
-                                 const Dictionary& raw_permission) {
-  ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionState::kGetterContext, "Permissions",
-                                 "query");
+                                 const Dictionary& raw_permission,
+                                 ExceptionState& exception_state) {
   PermissionDescriptorPtr descriptor =
       ParsePermission(script_state, raw_permission, exception_state);
   if (exception_state.HadException())
-    return exception_state.Reject(script_state);
+    return ScriptPromise();
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -173,14 +171,12 @@ ScriptPromise Permissions::query(ScriptState* script_state,
 }
 
 ScriptPromise Permissions::request(ScriptState* script_state,
-                                   const Dictionary& raw_permission) {
-  ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionState::kGetterContext, "Permissions",
-                                 "request");
+                                   const Dictionary& raw_permission,
+                                   ExceptionState& exception_state) {
   PermissionDescriptorPtr descriptor =
       ParsePermission(script_state, raw_permission, exception_state);
   if (exception_state.HadException())
-    return exception_state.Reject(script_state);
+    return ScriptPromise();
 
   ExecutionContext* context = ExecutionContext::From(script_state);
 
@@ -202,14 +198,12 @@ ScriptPromise Permissions::request(ScriptState* script_state,
 }
 
 ScriptPromise Permissions::revoke(ScriptState* script_state,
-                                  const Dictionary& raw_permission) {
-  ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionState::kGetterContext, "Permissions",
-                                 "revoke");
+                                  const Dictionary& raw_permission,
+                                  ExceptionState& exception_state) {
   PermissionDescriptorPtr descriptor =
       ParsePermission(script_state, raw_permission, exception_state);
   if (exception_state.HadException())
-    return exception_state.Reject(script_state);
+    return ScriptPromise();
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -224,12 +218,9 @@ ScriptPromise Permissions::revoke(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise Permissions::requestAll(
-    ScriptState* script_state,
-    const Vector<Dictionary>& raw_permissions) {
-  ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionState::kGetterContext, "Permissions",
-                                 "requestAll");
+ScriptPromise Permissions::requestAll(ScriptState* script_state,
+                                      const Vector<Dictionary>& raw_permissions,
+                                      ExceptionState& exception_state) {
   Vector<PermissionDescriptorPtr> internal_permissions;
   Vector<int> caller_index_to_internal_index;
   caller_index_to_internal_index.resize(raw_permissions.size());
@@ -239,7 +230,7 @@ ScriptPromise Permissions::requestAll(
     auto descriptor =
         ParsePermission(script_state, raw_permission, exception_state);
     if (exception_state.HadException())
-      return exception_state.Reject(script_state);
+      return ScriptPromise();
 
     // Only append permissions types that are not already present in the vector.
     size_t internal_index = kNotFound;
