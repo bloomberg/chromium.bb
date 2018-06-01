@@ -52,11 +52,11 @@ class MockOmniboxEditModel : public OmniboxEditModel {
 
 class MockOmniboxPopupView : public OmniboxPopupView {
  public:
-  MockOmniboxPopupView() {}
+  MockOmniboxPopupView() : is_open_(false) {}
   ~MockOmniboxPopupView() override {}
 
   // Overridden from OmniboxPopupView:
-  bool IsOpen() const override { return false; }
+  bool IsOpen() const override { return is_open_; }
   void InvalidateLine(size_t line) override {}
   void OnLineSelected(size_t line) override {}
   void UpdatePopupAppearance() override {}
@@ -64,26 +64,12 @@ class MockOmniboxPopupView : public OmniboxPopupView {
   void PaintUpdatesNow() override {}
   void OnDragCanceled() override {}
 
+  void set_is_open(bool is_open) { is_open_ = is_open; }
+
  private:
+  bool is_open_;
+
   DISALLOW_COPY_AND_ASSIGN(MockOmniboxPopupView);
-};
-
-class MockOmniboxPopupModel : public OmniboxPopupModel {
- public:
-  MockOmniboxPopupModel(OmniboxPopupView* popup_view,
-                        OmniboxEditModel* edit_model)
-      : OmniboxPopupModel(popup_view, edit_model) {}
-  ~MockOmniboxPopupModel() override {}
-
-  bool IsDisplayingResults() const override { return is_displaying_results_; }
-  void set_is_displaying_results(bool is_displaying_results) {
-    is_displaying_results_ = is_displaying_results;
-  }
-
- private:
-  bool is_displaying_results_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(MockOmniboxPopupModel);
 };
 
 class TestingToolbarModelDelegate : public ChromeToolbarModelDelegate {
@@ -145,17 +131,17 @@ TEST_F(OmniboxViewMacTest, TabToAutocomplete) {
   SetModel(&view, model);
 
   MockOmniboxPopupView popup_view;
-  MockOmniboxPopupModel popup_model(&popup_view, model);
+  OmniboxPopupModel popup_model(&popup_view, model);
 
   // With popup closed verify that tab doesn't autocomplete.
-  popup_model.set_is_displaying_results(false);
+  popup_view.set_is_open(false);
   view.OnDoCommandBySelector(@selector(insertTab:));
   EXPECT_EQ(0, model->up_or_down_count());
   view.OnDoCommandBySelector(@selector(insertBacktab:));
   EXPECT_EQ(0, model->up_or_down_count());
 
   // With popup open verify that tab does autocomplete.
-  popup_model.set_is_displaying_results(true);
+  popup_view.set_is_open(true);
   view.OnDoCommandBySelector(@selector(insertTab:));
   EXPECT_EQ(1, model->up_or_down_count());
   view.OnDoCommandBySelector(@selector(insertBacktab:));
@@ -171,10 +157,10 @@ TEST_F(OmniboxViewMacTest, UpDownArrow) {
   SetModel(&view, model);
 
   MockOmniboxPopupView popup_view;
-  MockOmniboxPopupModel popup_model(&popup_view, model);
+  OmniboxPopupModel popup_model(&popup_view, model);
 
   // With popup closed verify that pressing up and down arrow works.
-  popup_model.set_is_displaying_results(false);
+  popup_view.set_is_open(false);
   model->set_up_or_down_count(0);
   view.OnDoCommandBySelector(@selector(moveDown:));
   EXPECT_EQ(1, model->up_or_down_count());
@@ -183,7 +169,7 @@ TEST_F(OmniboxViewMacTest, UpDownArrow) {
   EXPECT_EQ(-1, model->up_or_down_count());
 
   // With popup open verify that pressing up and down arrow works.
-  popup_model.set_is_displaying_results(true);
+  popup_view.set_is_open(true);
   model->set_up_or_down_count(0);
   view.OnDoCommandBySelector(@selector(moveDown:));
   EXPECT_EQ(1, model->up_or_down_count());
@@ -202,7 +188,7 @@ TEST_F(OmniboxViewMacTest, WritingDirectionLTR) {
   MockOmniboxEditModel* model =
       new MockOmniboxEditModel(&view, &edit_controller, profile());
   MockOmniboxPopupView popup_view;
-  MockOmniboxPopupModel popup_model(&popup_view, model);
+  OmniboxPopupModel popup_model(&popup_view, model);
 
   model->OnSetFocus(true);
   SetModel(&view, model);
@@ -234,7 +220,7 @@ TEST_F(OmniboxViewMacTest, WritingDirectionRTL) {
   MockOmniboxEditModel* model =
       new MockOmniboxEditModel(&view, &edit_controller, profile());
   MockOmniboxPopupView popup_view;
-  MockOmniboxPopupModel popup_model(&popup_view, model);
+  OmniboxPopupModel popup_model(&popup_view, model);
 
   model->OnSetFocus(true);
   SetModel(&view, model);

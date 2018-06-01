@@ -225,8 +225,7 @@ bool OmniboxEditModel::ResetDisplayUrls() {
   // URL" (which sounds as if it might be persistent) from seeing just that URL
   // forever afterwards.
   return (GetCurrentPermanentUrlText() != old_current_permanent_url) &&
-         (!has_focus() ||
-          (!user_input_in_progress_ && !PopupIsDisplayingResults()));
+         (!has_focus() || (!user_input_in_progress_ && !PopupIsOpen()));
 }
 
 GURL OmniboxEditModel::PermanentURL() const {
@@ -322,7 +321,7 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   *url_from_text = match_from_text.destination_url;
 
   GURL current_page_url = PermanentURL();
-  if (PopupIsDisplayingResults()) {
+  if (PopupIsOpen()) {
     AutocompleteMatch current_match = CurrentMatch(nullptr);
     if (!AutocompleteMatch::IsSearchType(current_match.type) &&
         current_match.destination_url.is_valid()) {
@@ -606,7 +605,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   // metrics_log.cc.  They also don't necessarily make sense if the omnibox
   // dropdown is closed or the user used a paste-and-go action.  (In most
   // cases when this happens, the user never modified the omnibox.)
-  const bool popup_open = PopupIsDisplayingResults();
+  const bool popup_open = PopupIsOpen();
   if (input_.from_omnibox_focus() || !popup_open || !pasted_text.empty()) {
     const base::TimeDelta default_time_delta =
         base::TimeDelta::FromMilliseconds(-1);
@@ -747,7 +746,7 @@ bool OmniboxEditModel::AcceptKeyword(
   keyword_mode_entry_method_ = entry_method;
   user_text_ = MaybeStripKeyword(user_text_);
 
-  if (PopupIsDisplayingResults())
+  if (PopupIsOpen())
     popup_model()->SetSelectedLineState(OmniboxPopupModel::KEYWORD);
   else
     StartAutocomplete(false, true);
@@ -1007,7 +1006,7 @@ void OmniboxEditModel::OnPaste() {
 
 void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
   // NOTE: This purposefully doesn't trigger any code that resets paste_state_.
-  if (PopupIsDisplayingResults()) {
+  if (PopupIsOpen()) {
     // The popup is open, so the user should be able to interact with it
     // normally.
     popup_model()->Move(count);
@@ -1274,8 +1273,8 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
 const char OmniboxEditModel::kCutOrCopyAllTextHistogram[] =
     "Omnibox.CutOrCopyAllText";
 
-bool OmniboxEditModel::PopupIsDisplayingResults() const {
-  return popup_model() && popup_model()->IsDisplayingResults();
+bool OmniboxEditModel::PopupIsOpen() const {
+  return popup_model() && popup_model()->IsOpen();
 }
 
 void OmniboxEditModel::InternalSetUserText(const base::string16& text) {
@@ -1304,7 +1303,7 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
                                              GURL* alternate_nav_url) const {
   DCHECK(match);
 
-  if (query_in_progress() || PopupIsDisplayingResults()) {
+  if (query_in_progress() || PopupIsOpen()) {
     if (query_in_progress()) {
       // It's technically possible for |result| to be empty if no provider
       // returns a synchronous result but the query has not completed
