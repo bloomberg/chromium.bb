@@ -159,7 +159,7 @@ const char kName[] = "Name";
 const char kUsername[] = "Username";
 const char kPassword[] = "Password";
 const char kLocalizedName[] = "LocalizedName";
-const char kLanguage[] = "LocalizedName";
+const char kLanguage[] = "Language";
 }  // namespace cellular_apn
 
 namespace cellular_found_network {
