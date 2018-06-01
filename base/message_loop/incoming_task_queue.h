@@ -129,9 +129,9 @@ class BASE_EXPORT IncomingTaskQueue
     ~TriageQueue() override;
 
     // ReadAndRemoveOnlyQueue:
-    // In general, the methods below will attempt to reload from the incoming
-    // queue if the queue itself is empty except for Clear(). See Clear() for
-    // why it doesn't reload.
+    // The methods below will attempt to reload from the incoming queue if the
+    // queue itself is empty (Clear() has special logic to reload only once
+    // should destructors post more tasks).
     const PendingTask& Peek() override;
     PendingTask Pop() override;
     // Whether this queue has tasks after reloading from the incoming queue.

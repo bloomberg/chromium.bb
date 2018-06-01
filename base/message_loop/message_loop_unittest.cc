@@ -23,6 +23,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/task_scheduler.h"
+#include "base/test/gtest_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -2172,6 +2173,51 @@ TEST_P(MessageLoopTest, SequenceLocalStorageDifferentMessageLoops) {
 
   RunLoop().RunUntilIdle();
   EXPECT_NE(slot.Get(), 11);
+}
+
+namespace {
+
+class PostTaskOnDestroy {
+ public:
+  PostTaskOnDestroy(int times) : times_remaining_(times) {}
+  ~PostTaskOnDestroy() { PostTaskWithPostingDestructor(times_remaining_); }
+
+  // Post a task that will repost itself on destruction |times| times.
+  static void PostTaskWithPostingDestructor(int times) {
+    if (times > 0) {
+      ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, BindOnce([](std::unique_ptr<PostTaskOnDestroy>) {},
+                              std::make_unique<PostTaskOnDestroy>(times - 1)));
+    }
+  }
+
+ private:
+  const int times_remaining_;
+
+  DISALLOW_COPY_AND_ASSIGN(PostTaskOnDestroy);
+};
+
+}  // namespace
+
+// Test that MessageLoop destruction handles a task's destructor posting another
+// task by:
+//  1) Not getting stuck clearing its task queue.
+//  2) DCHECKing when clearing pending tasks many times still doesn't yield an
+//     empty queue.
+TEST_P(MessageLoopTest, ExpectDeathWithStubbornPostTaskOnDestroy) {
+  std::unique_ptr<MessageLoop> loop = std::make_unique<MessageLoop>();
+
+  EXPECT_DCHECK_DEATH({
+    PostTaskOnDestroy::PostTaskWithPostingDestructor(1000);
+    loop.reset();
+  });
+}
+
+TEST_P(MessageLoopTest, DestroysFineWithReasonablePostTaskOnDestroy) {
+  std::unique_ptr<MessageLoop> loop = std::make_unique<MessageLoop>();
+
+  PostTaskOnDestroy::PostTaskWithPostingDestructor(10);
+  loop.reset();
 }
 
 INSTANTIATE_TEST_CASE_P(

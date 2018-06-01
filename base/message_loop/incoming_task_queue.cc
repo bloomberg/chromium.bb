@@ -7,6 +7,8 @@
 #include <limits>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -157,18 +159,31 @@ bool IncomingTaskQueue::TriageQueue::HasTasks() {
 
 void IncomingTaskQueue::TriageQueue::Clear() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(outer_->sequence_checker_);
-  // Previously, MessageLoop would delete all tasks including delayed and
-  // deferred tasks in a single round before attempting to reload from the
-  // incoming queue to see if more tasks remained. This gave it a chance to
-  // assess whether or not clearing should continue. As a result, while
-  // reloading is automatic for getting and seeing if tasks exist, it is not
-  // automatic for Clear().
-  while (!queue_.empty()) {
-    PendingTask pending_task = std::move(queue_.front());
-    queue_.pop();
 
-    if (pending_task.is_high_res)
-      --outer_->pending_high_res_tasks_;
+  // Clear() should be invoked before WillDestroyCurrentMessageLoop().
+  DCHECK(outer_->accept_new_tasks_);
+
+  // Delete all currently pending tasks but not tasks potentially posted from
+  // their destructors. See ~MessageLoop() for the full logic mitigating against
+  // infite loops when clearing pending tasks. The ScopedClosureRunner below
+  // will be bound to a task posted at the end of the queue. After it is posted,
+  // tasks will be deleted one by one, when the bound ScopedClosureRunner is
+  // deleted and sets |deleted_all_originally_pending|, we know we've deleted
+  // all originally pending tasks.
+  bool deleted_all_originally_pending = false;
+  ScopedClosureRunner capture_deleted_all_originally_pending(BindOnce(
+      [](bool* deleted_all_originally_pending) {
+        *deleted_all_originally_pending = true;
+      },
+      Unretained(&deleted_all_originally_pending)));
+  outer_->AddToIncomingQueue(
+      FROM_HERE,
+      BindOnce([](ScopedClosureRunner) {},
+               std::move(capture_deleted_all_originally_pending)),
+      TimeDelta(), Nestable::kNestable);
+
+  while (!deleted_all_originally_pending) {
+    PendingTask pending_task = Pop();
 
     if (!pending_task.delayed_run_time.is_null()) {
       outer_->delayed_tasks().Push(std::move(pending_task));
