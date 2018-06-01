@@ -59,6 +59,7 @@ const char kQuicMaxTimeBeforeCryptoHandshakeSeconds[] =
 const char kQuicMaxIdleTimeBeforeCryptoHandshakeSeconds[] =
     "max_idle_time_before_crypto_handshake_seconds";
 const char kQuicCloseSessionsOnIpChange[] = "close_sessions_on_ip_change";
+const char kQuicGoAwaySessionsOnIpChange[] = "goaway_sessions_on_ip_change";
 const char kQuicAllowServerMigration[] = "allow_server_migration";
 const char kQuicMigrateSessionsOnNetworkChangeV2[] =
     "migrate_sessions_on_network_change_v2";
@@ -282,6 +283,13 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
                                 &quic_close_sessions_on_ip_change)) {
         session_params->quic_close_sessions_on_ip_change =
             quic_close_sessions_on_ip_change;
+      }
+
+      bool quic_goaway_sessions_on_ip_change = false;
+      if (quic_args->GetBoolean(kQuicGoAwaySessionsOnIpChange,
+                                &quic_goaway_sessions_on_ip_change)) {
+        session_params->quic_goaway_sessions_on_ip_change =
+            quic_goaway_sessions_on_ip_change;
       }
 
       bool quic_allow_server_migration = false;

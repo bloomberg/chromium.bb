@@ -730,6 +730,7 @@ QuicStreamFactory::QuicStreamFactory(
     const std::string& user_agent_id,
     bool store_server_configs_in_properties,
     bool close_sessions_on_ip_change,
+    bool goaway_sessions_on_ip_change,
     bool mark_quic_broken_when_network_blackholes,
     int idle_connection_timeout_seconds,
     int reduced_ping_timeout_seconds,
@@ -786,6 +787,7 @@ QuicStreamFactory::QuicStreamFactory(
       yield_after_duration_(quic::QuicTime::Delta::FromMilliseconds(
           kQuicYieldAfterDurationMilliseconds)),
       close_sessions_on_ip_change_(close_sessions_on_ip_change),
+      goaway_sessions_on_ip_change_(goaway_sessions_on_ip_change),
       migrate_sessions_on_network_change_v2_(
           migrate_sessions_on_network_change_v2 &&
           NetworkChangeNotifier::AreNetworkHandlesSupported()),
@@ -848,13 +850,19 @@ QuicStreamFactory::QuicStreamFactory(
   if (migrate_sessions_early_v2)
     DCHECK(migrate_sessions_on_network_change_v2);
 
-  // close_sessions_on_ip_change and migrate_sessions_on_network_change should
-  // never be simultaneously set to true.
-  DCHECK(!(close_sessions_on_ip_change && migrate_sessions_on_network_change));
-  DCHECK(
-      !(close_sessions_on_ip_change && migrate_sessions_on_network_change_v2));
+  // goaway_sessions_on_ip_change and close_sessions_on_ip_change should never
+  // be simultaneously set to true.
+  DCHECK(!(close_sessions_on_ip_change_ && goaway_sessions_on_ip_change_));
 
-  if (close_sessions_on_ip_change_)
+  // Connection migration should not be set if explicitly handle ip address
+  // change.
+  bool handle_ip_change =
+      close_sessions_on_ip_change_ || goaway_sessions_on_ip_change_;
+  bool connection_migration_on = migrate_sessions_on_network_change_ ||
+                                 migrate_sessions_on_network_change_v2_;
+  DCHECK(!(handle_ip_change && connection_migration_on));
+
+  if (handle_ip_change)
     NetworkChangeNotifier::AddIPAddressObserver(this);
 
   if (NetworkChangeNotifier::AreNetworkHandlesSupported())
@@ -874,7 +882,7 @@ QuicStreamFactory::~QuicStreamFactory() {
     active_cert_verifier_jobs_.erase(active_cert_verifier_jobs_.begin());
   if (ssl_config_service_.get())
     ssl_config_service_->RemoveObserver(this);
-  if (close_sessions_on_ip_change_) {
+  if (close_sessions_on_ip_change_ || goaway_sessions_on_ip_change_) {
     NetworkChangeNotifier::RemoveIPAddressObserver(this);
   }
   if (NetworkChangeNotifier::AreNetworkHandlesSupported()) {
@@ -1266,8 +1274,13 @@ void QuicStreamFactory::OnIPAddressChanged() {
   if (migrate_sessions_on_network_change_ ||
       migrate_sessions_on_network_change_v2_)
     return;
-  CloseAllSessions(ERR_NETWORK_CHANGED, quic::QUIC_IP_ADDRESS_CHANGED);
   set_require_confirmation(true);
+  if (close_sessions_on_ip_change_) {
+    CloseAllSessions(ERR_NETWORK_CHANGED, quic::QUIC_IP_ADDRESS_CHANGED);
+  } else {
+    DCHECK(goaway_sessions_on_ip_change_);
+    MarkAllActiveSessionsGoingAway();
+  }
 }
 
 void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {

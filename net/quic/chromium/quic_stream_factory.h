@@ -236,6 +236,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       const std::string& user_agent_id,
       bool store_server_configs_in_properties,
       bool close_sessions_on_ip_change,
+      bool goway_sessions_on_ip_change,
       bool mark_quic_broken_when_network_blackholes,
       int idle_connection_timeout_seconds,
       int reduced_ping_timeout_seconds,
@@ -536,6 +537,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Set if all sessions should be closed when any local IP address changes.
   const bool close_sessions_on_ip_change_;
+
+  // Set if all sessions should be marked as go away when any local IP address
+  // changes.
+  const bool goaway_sessions_on_ip_change_;
 
   // Set if migration should be attempted after probing.
   const bool migrate_sessions_on_network_change_v2_;
