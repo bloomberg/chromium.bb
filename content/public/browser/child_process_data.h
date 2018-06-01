@@ -21,6 +21,9 @@ struct ChildProcessData {
   // for workers it might be the domain that it's from.
   base::string16 name;
 
+  // The non-localized name of the process used for metrics reporting.
+  std::string metrics_name;
+
   // The unique identifier for this child process. This identifier is NOT a
   // process ID, and will be unique for all types of child process for
   // one run of the browser.

@@ -89,6 +89,10 @@ class CONTENT_EXPORT UtilityProcessHost
   // Sets the name of the process to appear in the task manager.
   void SetName(const base::string16& name);
 
+  // Sets the name used for metrics reporting. This should not be a localized
+  // name.
+  void SetMetricsName(const std::string& metrics_name);
+
   void set_child_flags(int flags) { child_flags_ = flags; }
 
   // Used when the utility process is going to host a service. |identity| is
@@ -133,6 +137,9 @@ class CONTENT_EXPORT UtilityProcessHost
 
   // The process name used to identify the process in task manager.
   base::string16 name_;
+
+  // The non-localized name used for metrics reporting.
+  std::string metrics_name_;
 
   // Child process host implementation.
   std::unique_ptr<BrowserChildProcessHostImpl> process_;

@@ -47,6 +47,7 @@ void StartUtilityProcessOnIOThread(mojom::PowerMonitorTestRequest request) {
   UtilityProcessHost* host =
       new UtilityProcessHost(/*client=*/nullptr,
                              /*client_task_runner=*/nullptr);
+  host->SetMetricsName("test_process");
   host->SetName(base::ASCIIToUTF16("TestProcess"));
   EXPECT_TRUE(host->Start());
 

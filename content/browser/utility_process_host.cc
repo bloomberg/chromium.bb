@@ -187,6 +187,10 @@ void UtilityProcessHost::BindInterface(
                                               std::move(interface_pipe));
 }
 
+void UtilityProcessHost::SetMetricsName(const std::string& metrics_name) {
+  metrics_name_ = metrics_name;
+}
+
 void UtilityProcessHost::SetName(const base::string16& name) {
   name_ = name;
 }
@@ -208,6 +212,7 @@ bool UtilityProcessHost::StartProcess() {
 
   started_ = true;
   process_->SetName(name_);
+  process_->SetMetricsName(metrics_name_);
   process_->GetHost()->CreateChannelMojo();
 
   if (RenderProcessHost::run_renderer_in_process()) {

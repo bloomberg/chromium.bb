@@ -35,6 +35,7 @@ class UtilityProcessHostBrowserTest : public ContentBrowserTest {
         new UtilityProcessHost(/*client=*/nullptr,
                                /*client_task_runner=*/nullptr);
     host->SetName(base::ASCIIToUTF16("TestProcess"));
+    host->SetMetricsName("test_process");
 #if defined(OS_WIN)
     if (elevated)
       host->SetSandboxType(service_manager::SandboxType::
