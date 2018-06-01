@@ -1515,11 +1515,13 @@ void GpuProcessHost::RecordProcessCrash() {
 
 std::string GpuProcessHost::GetShaderPrefixKey() {
   if (shader_prefix_key_.empty()) {
-    gpu::GPUInfo info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
+    const gpu::GPUInfo info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
+    const gpu::GPUInfo::GPUDevice& active_gpu = info.active_gpu();
 
     shader_prefix_key_ = GetContentClient()->GetProduct() + "-" +
                          info.gl_vendor + "-" + info.gl_renderer + "-" +
-                         info.driver_version + "-" + info.driver_vendor;
+                         active_gpu.driver_version + "-" +
+                         active_gpu.driver_vendor;
 
 #if defined(OS_ANDROID)
     std::string build_fp =
