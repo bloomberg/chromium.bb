@@ -6,6 +6,7 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/focus_cycler.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -134,7 +135,7 @@ bool ShelfWidget::IsUsingViewsShelf() {
     case session_manager::SessionState::UNKNOWN:
     case session_manager::SessionState::LOGIN_PRIMARY:
     case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
-      return switches::IsUsingViewsLogin();
+      return features::IsViewsLoginEnabled();
   }
 }
 

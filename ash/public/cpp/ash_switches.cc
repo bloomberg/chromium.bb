@@ -133,9 +133,6 @@ const char kKeyboardShortcutViewerApp[] = "keyboard-shortcut-viewer-app";
 // option "Show taps".
 const char kShowTaps[] = "show-taps";
 
-// Forces the views login implementation.
-const char kShowViewsLogin[] = "show-views-login";
-
 // If true, the webui lock screen wil be shown. This is deprecated and will be
 // removed in the future.
 const char kShowWebUiLock[] = "show-webui-lock";
@@ -162,12 +159,6 @@ bool IsNightLightEnabled() {
 bool IsSidebarEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshSidebarEnabled);
-}
-
-bool IsUsingViewsLogin() {
-  // Only show webui login if it is forced. If both switches are present use
-  // views.
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(kShowWebUiLogin);
 }
 
 bool IsUsingViewsLock() {

@@ -58,11 +58,16 @@ ASH_PUBLIC_EXPORT extern const base::Feature kTapVisualizerApp;
 // Enables trilinear filtering.
 ASH_PUBLIC_EXPORT extern const base::Feature kTrilinearFiltering;
 
+// Enables views login.
+ASH_PUBLIC_EXPORT extern const base::Feature kViewsLogin;
+
 ASH_PUBLIC_EXPORT bool IsDisplayMoveWindowAccelsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsDockedMagnifierEnabled();
 
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerEnabled();
+
+ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsPersistentWindowBoundsEnabled();
 
@@ -70,7 +75,7 @@ ASH_PUBLIC_EXPORT bool IsSystemTrayUnifiedEnabled();
 
 ASH_PUBLIC_EXPORT bool IsTrilinearFilteringEnabled();
 
-ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
+ASH_PUBLIC_EXPORT bool IsViewsLoginEnabled();
 
 }  // namespace features
 }  // namespace ash

@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
@@ -1023,7 +1023,7 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
   // Views-based login may reach here while pre-loading the Gaia screen, so
   // update the wallpaper in |LoginDisplayHostMojo::UpdateGaiaDialogVisibility|
   // instead, which controls the actual visibility of the Gaia screen.
-  if (!ash::switches::IsUsingViewsLogin()) {
+  if (!ash::features::IsViewsLoginEnabled()) {
     // Note that LoadAuthExtension clears |populated_email_|.
     if (populated_email_.empty()) {
       LoginDisplayHost::default_host()->LoadSigninWallpaper();

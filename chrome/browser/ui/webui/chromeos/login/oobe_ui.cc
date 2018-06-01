@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -547,7 +548,7 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString(
       "showViewsLock", ash::switches::IsUsingViewsLock() ? "on" : "off");
   localized_strings->SetString(
-      "showViewsLogin", ash::switches::IsUsingViewsLogin() ? "on" : "off");
+      "showViewsLogin", ash::features::IsViewsLoginEnabled() ? "on" : "off");
   localized_strings->SetBoolean(
       "changePictureVideoModeEnabled",
       base::FeatureList::IsEnabled(features::kChangePictureVideoMode));
