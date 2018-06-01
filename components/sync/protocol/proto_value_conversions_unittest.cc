@@ -55,18 +55,14 @@ class ProtoValueConversionsTest : public testing::Test {
   }
 };
 
-TEST_F(ProtoValueConversionsTest, ProtoChangeCheck) {
-  // If this number changes, that means we added or removed a data
-  // type.  Don't forget to add a unit test for {New
-  // type}SpecificsToValue below.
-  EXPECT_EQ(41, MODEL_TYPE_COUNT);
+static_assert(41 == syncer::MODEL_TYPE_COUNT,
+              "When adding a new type, add a unit test for "
+              "{NewType}SpecificsToValue below.");
 
-  // We'd also like to check if we changed any field in our messages.
-  // However, that's hard to do: sizeof could work, but it's
-  // platform-dependent.  default_instance().ByteSize() won't change
-  // for most changes, since most of our fields are optional.  So we
-  // just settle for comments in the proto files.
-}
+// We'd also like to check if we changed any field in our messages. However,
+// that's hard to do: sizeof could work, but it's platform-dependent.
+// default_instance().ByteSize() won't change for most changes, since most of
+// our fields are optional. So we just settle for comments in the proto files.
 
 TEST_F(ProtoValueConversionsTest, EncryptedDataToValue) {
   TestSpecificsToValue(EncryptedDataToValue);
@@ -365,6 +361,9 @@ TEST_F(ProtoValueConversionsTest, WifiCredentialSpecificsToValue) {
 // TODO(akalin): Figure out how to better test EntitySpecificsToValue.
 
 TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
+  static_assert(41 == syncer::MODEL_TYPE_COUNT,
+                "When adding a new type, add its field below.");
+
   sync_pb::EntitySpecifics specifics;
 // Touch the extensions to make sure it shows up in the generated
 // value.

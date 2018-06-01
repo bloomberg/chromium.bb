@@ -155,15 +155,6 @@ enum ModelType {
   LAST_CONTROL_MODEL_TYPE = EXPERIMENTS,
   LAST_REAL_MODEL_TYPE = LAST_CONTROL_MODEL_TYPE,
 
-  // If you are adding a new sync datatype that is exposed to the user via the
-  // sync preferences UI, be sure to update the list in
-  // components/sync/driver/user_selectable_sync_type.h so that the UMA
-  // histograms for sync include your new type.  In this case, be sure to also
-  // update the UserSelectableTypes() definition in
-  // sync/syncable/model_type.cc.
-
-  // Additionally, enum SyncModelTypes and suffix SyncModelType need to be
-  // updated in histograms.xml for all new types.
   MODEL_TYPE_COUNT,
 };
 
