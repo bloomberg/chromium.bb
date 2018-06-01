@@ -9,6 +9,8 @@
 
 #include "base/containers/mru_cache.h"
 #include "base/containers/span.h"
+#include "base/memory/memory_coordinator_client.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "cc/paint/transfer_cache_entry.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -24,10 +26,11 @@ namespace gpu {
 // unlocking and deleting entries when no longer needed, as well as enforcing
 // cache limits. If the cache exceeds its specified limits, unlocked transfer
 // cache entries may be deleted.
-class GPU_GLES2_EXPORT ServiceTransferCache {
+class GPU_GLES2_EXPORT ServiceTransferCache
+    : public base::MemoryCoordinatorClient {
  public:
   ServiceTransferCache();
-  ~ServiceTransferCache();
+  ~ServiceTransferCache() override;
 
   bool CreateLockedEntry(cc::TransferCacheEntryType entry_type,
                          uint32_t entry_id,
@@ -41,14 +44,21 @@ class GPU_GLES2_EXPORT ServiceTransferCache {
   cc::ServiceTransferCacheEntry* GetEntry(cc::TransferCacheEntryType entry_type,
                                           uint32_t entry_id);
 
+  // base::MemoryCoordinatorClient implementation.
+  void OnMemoryStateChange(base::MemoryState state) override;
+  void OnPurgeMemory() override;
+
   // Test-only functions:
   void SetCacheSizeLimitForTesting(size_t cache_size_limit) {
     cache_size_limit_ = cache_size_limit;
     EnforceLimits();
   }
+  size_t cache_size_for_testing() const { return total_size_; }
 
  private:
   void EnforceLimits();
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel level);
 
   struct CacheEntryInternal {
     CacheEntryInternal(base::Optional<ServiceDiscardableHandle> handle,
@@ -64,12 +74,16 @@ class GPU_GLES2_EXPORT ServiceTransferCache {
                      CacheEntryInternal>;
   EntryCache entries_;
 
+  base::MemoryState memory_state_ = base::MemoryState::NORMAL;
+
   // Total size of all |entries_|. The same as summing
   // GpuDiscardableEntry::size for each entry.
   size_t total_size_ = 0;
 
   // The limit above which the cache will start evicting resources.
   size_t cache_size_limit_ = 0;
+
+  base::MemoryPressureListener memory_pressure_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceTransferCache);
 };

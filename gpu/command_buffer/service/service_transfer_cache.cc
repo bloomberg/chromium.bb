@@ -4,16 +4,28 @@
 
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 
+#include "base/bind.h"
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/sys_info.h"
 
 namespace gpu {
 namespace {
-size_t CacheSizeLimit() {
-  if (base::SysInfo::IsLowEndDevice()) {
-    return 4 * 1024 * 1024;
-  } else {
-    return 128 * 1024 * 1024;
+size_t CacheSizeLimit(base::MemoryState state) {
+  size_t normal_state_memory_usage = 128 * 1024 * 1024;
+  if (base::SysInfo::IsLowEndDevice())
+    normal_state_memory_usage = 4 * 1024 * 1024;
+
+  switch (state) {
+    case base::MemoryState::NORMAL:
+      return normal_state_memory_usage;
+    case base::MemoryState::THROTTLED:
+      return normal_state_memory_usage / 2;
+    case base::MemoryState::SUSPENDED:
+      return 0u;
+    case base::MemoryState::UNKNOWN:
+      NOTREACHED();
   }
+  return normal_state_memory_usage;
 }
 
 }  // namespace
@@ -23,7 +35,7 @@ ServiceTransferCache::CacheEntryInternal::CacheEntryInternal(
     std::unique_ptr<cc::ServiceTransferCacheEntry> entry)
     : handle(handle), entry(std::move(entry)) {}
 
-ServiceTransferCache::CacheEntryInternal::~CacheEntryInternal() = default;
+ServiceTransferCache::CacheEntryInternal::~CacheEntryInternal() {}
 
 ServiceTransferCache::CacheEntryInternal::CacheEntryInternal(
     CacheEntryInternal&& other) = default;
@@ -34,9 +46,16 @@ ServiceTransferCache::CacheEntryInternal::operator=(
 
 ServiceTransferCache::ServiceTransferCache()
     : entries_(EntryCache::NO_AUTO_EVICT),
-      cache_size_limit_(CacheSizeLimit()) {}
+      cache_size_limit_(CacheSizeLimit(memory_state_)),
+      memory_pressure_listener_(
+          base::BindRepeating(&ServiceTransferCache::OnMemoryPressure,
+                              base::Unretained(this))) {
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
+}
 
-ServiceTransferCache::~ServiceTransferCache() = default;
+ServiceTransferCache::~ServiceTransferCache() {
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
+}
 
 bool ServiceTransferCache::CreateLockedEntry(
     cc::TransferCacheEntryType entry_type,
@@ -128,6 +147,23 @@ void ServiceTransferCache::EnforceLimits() {
     total_size_ -= it->second.entry->CachedSize();
     it = entries_.Erase(it);
   }
+}
+
+void ServiceTransferCache::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  if (level == base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL)
+    OnPurgeMemory();
+}
+
+void ServiceTransferCache::OnMemoryStateChange(base::MemoryState state) {
+  memory_state_ = state;
+  cache_size_limit_ = CacheSizeLimit(memory_state_);
+}
+
+void ServiceTransferCache::OnPurgeMemory() {
+  cache_size_limit_ = 0u;
+  EnforceLimits();
+  cache_size_limit_ = CacheSizeLimit(memory_state_);
 }
 
 }  // namespace gpu
