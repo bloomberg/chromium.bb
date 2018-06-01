@@ -5,36 +5,12 @@
 #include "third_party/blink/renderer/core/layout/layout_table_col.h"
 
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
 using LayoutTableColTest = RenderingTest;
 
-TEST_F(LayoutTableColTest, LocalVisualRectSPv1) {
-  ScopedSlimmingPaintV175ForTest spv175(false);
-  SetBodyInnerHTML(R"HTML(
-    <table id='table' style='width: 200px; height: 200px'>
-      <col id='col1' style='visibility: hidden'>
-      <col id='col2' style='visibility: collapse'>
-      <col id='col3'>
-      <tr><td></td><td></td></tr>
-    </table>
-  )HTML");
-
-  auto table_local_visual_rect =
-      GetLayoutObjectByElementId("table")->LocalVisualRect();
-  EXPECT_NE(LayoutRect(), table_local_visual_rect);
-  EXPECT_EQ(table_local_visual_rect,
-            GetLayoutObjectByElementId("col1")->LocalVisualRect());
-  EXPECT_EQ(table_local_visual_rect,
-            GetLayoutObjectByElementId("col2")->LocalVisualRect());
-  EXPECT_EQ(table_local_visual_rect,
-            GetLayoutObjectByElementId("col3")->LocalVisualRect());
-}
-
-TEST_F(LayoutTableColTest, LocalVisualRectSPv175) {
-  ScopedSlimmingPaintV175ForTest spv175(true);
+TEST_F(LayoutTableColTest, LocalVisualRect) {
   SetBodyInnerHTML(R"HTML(
     <table style='width: 200px; height: 200px'>
       <col id='col1' style='visibility: hidden'>

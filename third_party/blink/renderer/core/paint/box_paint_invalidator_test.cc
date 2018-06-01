@@ -96,37 +96,6 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
 
 INSTANTIATE_PAINT_TEST_CASE_P(BoxPaintInvalidatorTest);
 
-TEST_P(BoxPaintInvalidatorTest, SlowMapToVisualRectInAncestorSpaceLayoutView) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
-  SetBodyInnerHTML(
-      "<!doctype html>"
-      "<style>"
-      "#parent {"
-      "    display: inline-block;"
-      "    width: 300px;"
-      "    height: 300px;"
-      "    margin-top: 200px;"
-      "    filter: blur(3px);"  // Forces the slow path in
-                                // SlowMapToVisualRectInAncestorSpace.
-      "    border: 1px solid rebeccapurple;"
-      "}"
-      "</style>"
-      "<div id=parent>"
-      "  <iframe id='target' src='data:text/html,<body style='background: "
-      "blue;'></body>'></iframe>"
-      "</div>");
-
-  auto& target = *GetDocument().getElementById("target");
-  EXPECT_EQ(IntRect(2, 202, 318, 168),
-            EnclosingIntRect(ToHTMLFrameOwnerElement(target)
-                                 .contentDocument()
-                                 ->GetLayoutView()
-                                 ->FirstFragment()
-                                 .VisualRect()));
-}
-
 TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
   SetUpHTML();
   auto& target = *GetDocument().getElementById("target");
@@ -180,14 +149,6 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
       PaintInvalidationReason::kNone,
       ComputePaintInvalidationReason(box, visual_rect, visual_rect.Location()));
 
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    // Location change.
-    EXPECT_EQ(
-        PaintInvalidationReason::kGeometry,
-        ComputePaintInvalidationReason(
-            box, visual_rect, visual_rect.Location() + LayoutSize(10, 20)));
-  }
-
   // Visual rect size change.
   LayoutRect old_visual_rect = visual_rect;
   target.setAttribute(HTMLNames::styleAttr, "background: blue; width: 200px");
@@ -225,8 +186,7 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonOtherCases) {
   auto& target = *GetDocument().getElementById("target");
 
   // The target initially has border.
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    ExpectFullPaintInvalidationOnGeometryChange("With border");
+  ExpectFullPaintInvalidationOnGeometryChange("With border");
 
   // Clear border.
   target.setAttribute(HTMLNames::classAttr, "");

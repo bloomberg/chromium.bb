@@ -7,7 +7,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 using testing::ElementsAre;
 
@@ -15,11 +14,7 @@ namespace blink {
 
 namespace {
 
-class PaintChunkerTest : public testing::Test,
-                         private ScopedSlimmingPaintV175ForTest {
- public:
-  PaintChunkerTest() : ScopedSlimmingPaintV175ForTest(true) {}
-
+class PaintChunkerTest : public testing::Test {
  protected:
   class TestDisplayItemClient : public DisplayItemClient {
     String DebugName() const final { return "Test"; }

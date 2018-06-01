@@ -35,14 +35,6 @@ class VisualRectMappingTest : public PaintTestConfigurations,
     if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
       EXPECT_EQ(&ancestor, &object.ContainerForPaintInvalidation());
 
-    if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      EXPECT_EQ(expected_visual_rect_in_ancestor, object.VisualRect());
-      if (!object.FirstFragment().NextFragment()) {
-        EXPECT_EQ(expected_visual_rect_in_ancestor,
-                  object.FirstFragment().VisualRect());
-      }
-    }
-
     CheckVisualRect(object, ancestor, rect, expected_visual_rect_in_ancestor,
                     AdjustForBacking);
   }

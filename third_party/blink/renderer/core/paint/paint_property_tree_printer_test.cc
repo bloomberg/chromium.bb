@@ -46,9 +46,6 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleClipTree) {
 }
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTree) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML("<div style='opacity: 0.9;'>hello world</div>");
   String effect_tree_as_string =
       effectPropertyTreeAsString(*GetDocument().View());
@@ -100,9 +97,6 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleClipTreePath) {
 }
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTreePath) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
   SetBodyInnerHTML("<div id='effect' style='opacity: 0.9;'></div>");
   LayoutObject* effect_object =
       GetDocument().getElementById("effect")->GetLayoutObject();

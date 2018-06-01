@@ -12,22 +12,19 @@
 namespace blink {
 
 enum {
-  kSlimmingPaintV175 = 1 << 0,
-  kBlinkGenPropertyTrees = 1 << 1,
-  kSlimmingPaintV2 = 1 << 2,
-  kUnderInvalidationChecking = 1 << 3,
+  kBlinkGenPropertyTrees = 1 << 0,
+  kSlimmingPaintV2 = 1 << 1,
+  kUnderInvalidationChecking = 1 << 2,
 };
 
 class PaintTestConfigurations
     : public testing::WithParamInterface<unsigned>,
-      private ScopedSlimmingPaintV175ForTest,
       private ScopedBlinkGenPropertyTreesForTest,
       private ScopedSlimmingPaintV2ForTest,
       private ScopedPaintUnderInvalidationCheckingForTest {
  public:
   PaintTestConfigurations()
-      : ScopedSlimmingPaintV175ForTest(GetParam() & kSlimmingPaintV175),
-        ScopedBlinkGenPropertyTreesForTest(GetParam() & kBlinkGenPropertyTrees),
+      : ScopedBlinkGenPropertyTreesForTest(GetParam() & kBlinkGenPropertyTrees),
         ScopedSlimmingPaintV2ForTest(GetParam() & kSlimmingPaintV2),
         ScopedPaintUnderInvalidationCheckingForTest(
             GetParam() & kUnderInvalidationChecking) {}
@@ -37,11 +34,10 @@ class PaintTestConfigurations
   }
 };
 
-#define INSTANTIATE_PAINT_TEST_CASE_P(test_class)                   \
-  INSTANTIATE_TEST_CASE_P(                                          \
-      All, test_class,                                              \
-      ::testing::Values(kSlimmingPaintV175, kBlinkGenPropertyTrees, \
-                        kSlimmingPaintV2))
+#define INSTANTIATE_PAINT_TEST_CASE_P(test_class) \
+  INSTANTIATE_TEST_CASE_P(                        \
+      All, test_class,                            \
+      ::testing::Values(0, kBlinkGenPropertyTrees, kSlimmingPaintV2))
 
 #define INSTANTIATE_SPV2_TEST_CASE_P(test_class) \
   INSTANTIATE_TEST_CASE_P(All, test_class, ::testing::Values(kSlimmingPaintV2))

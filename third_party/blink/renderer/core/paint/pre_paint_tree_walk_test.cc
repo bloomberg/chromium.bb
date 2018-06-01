@@ -122,9 +122,6 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithCSSTransformInvalidation) {
 }
 
 TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithOpacityInvalidation) {
-  // In SPv1 mode, we don't need or store property tree nodes for effects.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
   SetBodyInnerHTML(R"HTML(
     <style>
       .opacityA { opacity: 0.9; }
@@ -277,12 +274,7 @@ TEST_P(PrePaintTreeWalkTest, VisualRectClipForceSubtree) {
   GetDocument().getElementById("parent")->removeAttribute("style");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  // In SPv175 mode, VisualRects are in the space of the containing transform
-  // node without applying any ancestor property nodes, including clip.
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    EXPECT_EQ(200, grandchild->FirstFragment().VisualRect().Height());
-  else
-    EXPECT_EQ(75, grandchild->FirstFragment().VisualRect().Height());
+  EXPECT_EQ(200, grandchild->FirstFragment().VisualRect().Height());
 }
 
 TEST_P(PrePaintTreeWalkTest, ClipChangeHasRadius) {

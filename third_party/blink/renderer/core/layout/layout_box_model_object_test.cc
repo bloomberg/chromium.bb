@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -1062,8 +1061,6 @@ TEST_F(LayoutBoxModelObjectTest, StickyRemovedFromRootScrollableArea) {
 }
 
 TEST_F(LayoutBoxModelObjectTest, BackfaceVisibilityChange) {
-  ScopedSlimmingPaintV175ForTest spv175(true);
-
   AtomicString base_style =
       "width: 100px; height: 100px; background: blue; position: absolute";
   SetBodyInnerHTML("<div id='target' style='" + base_style + "'></div>");
