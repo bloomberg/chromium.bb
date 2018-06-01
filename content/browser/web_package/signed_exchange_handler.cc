@@ -40,10 +40,6 @@ namespace content {
 
 namespace {
 
-// 256KB (Maximum header size) * 2, since signed exchange header contains
-// request and response headers.
-constexpr size_t kMaxHeadersCBORLength = 512 * 1024;
-
 constexpr char kMiHeader[] = "MI";
 
 net::CertVerifier* g_cert_verifier_for_testing = nullptr;
@@ -107,8 +103,8 @@ SignedExchangeHandler::SignedExchangeHandler(
     return;
   }
 
-  // Triggering the read (asynchronously) for the encoded header length.
-  SetupBuffers(SignedExchangePrologue::kEncodedLengthInBytes);
+  // Triggering the read (asynchronously) for the prologue bytes.
+  SetupBuffers(SignedExchangePrologue::kEncodedPrologueInBytes);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&SignedExchangeHandler::DoHeaderLoop,
                                 weak_factory_.GetWeakPtr()));
@@ -127,8 +123,7 @@ void SignedExchangeHandler::SetupBuffers(size_t size) {
 }
 
 void SignedExchangeHandler::DoHeaderLoop() {
-  DCHECK(state_ == State::kReadingHeadersLength ||
-         state_ == State::kReadingHeaders);
+  DCHECK(state_ == State::kReadingPrologue || state_ == State::kReadingHeaders);
   int rv = source_->Read(
       header_read_buf_.get(), header_read_buf_->BytesRemaining(),
       base::BindRepeating(&SignedExchangeHandler::DidReadHeader,
@@ -138,8 +133,7 @@ void SignedExchangeHandler::DoHeaderLoop() {
 }
 
 void SignedExchangeHandler::DidReadHeader(bool completed_syncly, int result) {
-  DCHECK(state_ == State::kReadingHeadersLength ||
-         state_ == State::kReadingHeaders);
+  DCHECK(state_ == State::kReadingPrologue || state_ == State::kReadingHeaders);
 
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "SignedExchangeHandler::DidReadHeader");
@@ -162,8 +156,8 @@ void SignedExchangeHandler::DidReadHeader(bool completed_syncly, int result) {
   header_read_buf_->DidConsume(result);
   if (header_read_buf_->BytesRemaining() == 0) {
     switch (state_) {
-      case State::kReadingHeadersLength:
-        if (!ParseHeadersLength()) {
+      case State::kReadingPrologue:
+        if (!ParsePrologue()) {
           RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
           return;
         }
@@ -188,8 +182,7 @@ void SignedExchangeHandler::DidReadHeader(bool completed_syncly, int result) {
   }
 
   // Trigger the next read.
-  DCHECK(state_ == State::kReadingHeadersLength ||
-         state_ == State::kReadingHeaders);
+  DCHECK(state_ == State::kReadingPrologue || state_ == State::kReadingHeaders);
   if (completed_syncly) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&SignedExchangeHandler::DoHeaderLoop,
@@ -201,26 +194,19 @@ void SignedExchangeHandler::DidReadHeader(bool completed_syncly, int result) {
                    "SignedExchangeHandler::DidReadHeader");
 }
 
-bool SignedExchangeHandler::ParseHeadersLength() {
-  TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                     "SignedExchangeHandler::ParseHeadersLength");
-  DCHECK_EQ(state_, State::kReadingHeadersLength);
+bool SignedExchangeHandler::ParsePrologue() {
+  DCHECK_EQ(state_, State::kReadingPrologue);
 
-  headers_length_ = SignedExchangePrologue::ParseEncodedLength(
+  prologue_ = SignedExchangePrologue::Parse(
       base::make_span(reinterpret_cast<uint8_t*>(header_buf_->data()),
-                      SignedExchangePrologue::kEncodedLengthInBytes));
-  if (headers_length_ == 0 || headers_length_ > kMaxHeadersCBORLength) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy_.get(), "SignedExchangeHandler::ParseHeadersLength",
-        base::StringPrintf("Invalid CBOR header length: %zu", headers_length_));
+                      SignedExchangePrologue::kEncodedPrologueInBytes),
+      devtools_proxy_.get());
+  if (!prologue_)
     return false;
-  }
 
-  // Set up a new buffer for CBOR-encoded buffer reading.
-  SetupBuffers(headers_length_);
+  // Set up a new buffer for Signature + CBOR-encoded header reading.
+  SetupBuffers(prologue_->ComputeFollowingSectionsLength());
   state_ = State::kReadingHeaders;
-  TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                   "SignedExchangeHandler::ParseHeadersLength");
   return true;
 }
 
@@ -229,10 +215,14 @@ bool SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
                      "SignedExchangeHandler::ParseHeadersAndFetchCertificate");
   DCHECK_EQ(state_, State::kReadingHeaders);
 
-  header_ = SignedExchangeEnvelope::Parse(
-      base::make_span(reinterpret_cast<uint8_t*>(header_buf_->data()),
-                      headers_length_),
-      devtools_proxy_.get());
+  base::StringPiece data(header_buf_->data(), header_read_buf_->size());
+  base::StringPiece signature_header_field =
+      data.substr(0, prologue_->signature_header_field_length());
+  base::span<const uint8_t> cbor_header = base::as_bytes(
+      base::make_span(data.substr(prologue_->signature_header_field_length(),
+                                  prologue_->cbor_header_length())));
+  header_ = SignedExchangeEnvelope::Parse(signature_header_field, cbor_header,
+                                          devtools_proxy_.get());
   header_read_buf_ = nullptr;
   header_buf_ = nullptr;
   if (!header_) {

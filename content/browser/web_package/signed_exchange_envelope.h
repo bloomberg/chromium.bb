@@ -36,7 +36,8 @@ class CONTENT_EXPORT SignedExchangeEnvelope {
   // This also performs the step 3 and 4 of "Cross-origin trust" validation.
   // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#cross-origin-trust
   static base::Optional<SignedExchangeEnvelope> Parse(
-      base::span<const uint8_t> input,
+      base::StringPiece signature_header_field,
+      base::span<const uint8_t> cbor_header,
       SignedExchangeDevToolsProxy* devtools_proxy);
   SignedExchangeEnvelope();
   SignedExchangeEnvelope(const SignedExchangeEnvelope&);

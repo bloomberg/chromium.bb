@@ -29,7 +29,7 @@ namespace content {
 
 namespace {
 
-// https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#signature-validity
+// https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#signature-validity
 // Step 7. "Let message be the concatenation of the following byte strings."
 constexpr uint8_t kMessageHeader[] =
     // 7.1. "A string that consists of octet 32 (0x20) repeated 64 times."
@@ -38,10 +38,12 @@ constexpr uint8_t kMessageHeader[] =
     "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
     "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
     "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
-    // 7.2. "A context string: the ASCII encoding of "HTTP Exchange"."
+    // 7.2. "A context string: the ASCII encoding of "HTTP Exchange 1"." ...
+    // "but implementations of drafts MUST NOT use it and MUST use another
+    // draft-specific string beginning with "HTTP Exchange 1 " instead."
     // [spec text]
     // 7.3. "A single 0 byte which serves as a separator." [spec text]
-    "HTTP Exchange";
+    "HTTP Exchange 1 b1";
 
 base::Optional<cbor::CBORValue> GenerateCanonicalRequestCBOR(
     const SignedExchangeEnvelope& header) {
@@ -67,8 +69,6 @@ base::Optional<cbor::CBORValue> GenerateCanonicalResponseCBOR(
       cbor::CBORValue(kStatusKey, cbor::CBORValue::Type::BYTE_STRING),
       cbor::CBORValue(response_code_str, cbor::CBORValue::Type::BYTE_STRING));
   for (const auto& pair : headers) {
-    if (pair.first == kSignature)
-      continue;
     map.insert_or_assign(
         cbor::CBORValue(pair.first, cbor::CBORValue::Type::BYTE_STRING),
         cbor::CBORValue(pair.second, cbor::CBORValue::Type::BYTE_STRING));

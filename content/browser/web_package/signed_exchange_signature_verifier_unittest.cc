@@ -66,11 +66,11 @@ const uint64_t kSignatureHeaderExpires = 1517895941;
 // clang-format off
 constexpr char kSignatureHeaderRSA[] =
     "label; "
-    "sig=*C0Oh9FEKos7Vk1bLyMazdZpgBTpPhIgnY3CDqyECut1HdMP2Ye8kxZXkT9BLQSv48leG"
-    "NS/hePxRtwJJybWMan/hFMhcz+s8aHxLT6E2e87iI9tNh29NPGGFVgiJ+hljSH/QAPP8sFIBb"
-    "pD/VGWy6NgpsSHft8DVlqhloBZMR9MUPXe36tdaOf5krUbY76Daj5kVQ0LZxrZhbzb97Bstvg"
-    "gVnTQe/RV1ElOql/xhYvsYxNgM0+Bkmu2hSWFMlLHMQ29LhMHS7oYUfuqqP2qhBj7VEArgDsC"
-    "hQ1W5r8K4WaI9krdvG3UsXlFufKbqGIQ2zKbeUWJUHoelkjb/ixBhwg==*; "
+    "sig=*RBFZPtl5xPDQyZuq4TcXY9fPkso5Edl7NofpdA9Bylwhvdsd7uCBAmOYx0BvXjrg8UVj"
+    "axIHeVNavLzTU42NZgSBd3po1qrT4TZb6piN/BMqmBWtaxEFxLaLZyBgrQpXN/l+OkWSvCF30"
+    "J9QEhqaI749SlVrrV37121Ik/WBIuo6Peo88HRP9292FEsrgwH3ggTJcTvkBbOIttO3UddEtN"
+    "3hQNNowNhsUCr3fXn0lIMW8Gyp0V6TVedIhgT7zqUxRqJRjedQzY+Bm7F01/jKzvD1etAcw7r"
+    "CidWFISmcyWjsLG1dlNtiZynO9gyyZduOSzBwEb9QcMTHekFsnmzFtg==*; "
     "validity-url=\"https://example.com/resource.validity.msg\"; "
     "integrity=\"mi\"; "
     "cert-url=\"https://example.com/cert.msg\"; "
@@ -82,8 +82,8 @@ constexpr char kSignatureHeaderRSA[] =
 // clang-format off
 constexpr char kSignatureHeaderECDSAP256[] =
     "label; "
-    "sig=*MEUCIQCycBCSrsmT04lZBFklDiAdp2UkMoLhLKLv/79a39qqbgIgNI8ApHxPUPuXiko7"
-    "IPehUcU9i+jHGEYO3f0fKFn3dIg=*; "
+    "sig=*MEUCIEbg974hkbM6gy0bT4ZpO0afUtpeViz+mojLqtSnqepvAiEApKfMyaKxhE8xofyW"
+    "DlBjGTwsoOvNBycL9YfN9C72Rhs=*; "
     "validity-url=\"https://example.com/resource.validity.msg\"; "
     "integrity=\"mi\"; "
     "cert-url=\"https://example.com/cert.msg\"; "
@@ -95,8 +95,8 @@ constexpr char kSignatureHeaderECDSAP256[] =
 // clang-format off
 constexpr char kSignatureHeaderECDSAP384[] =
     "label; "
-    "sig=*MGUCMQCIdT4ipb0lb8AW+oxxXlv1F8kdhwoL9jsOJww2C3zTCM71Zsvu7U/BxcBCT5H7I"
-    "mkCMEatuNz+wa0q6pg2Zr3lYZ8Jy4xZbDJHVILmBqGMKxUVDGT3aw8/yJXPLPgSU6f6ZQ==*; "
+    "sig=*MGUCMQC2Sw+qw8pFB8S7gCqFdJlaimbZCA9BOOnjPHuRa8nGbYwnQBJEZnNwWxW+7ffwQ"
+    "skCMBVWAWya/ahn1XebSGAFeV8d6jC/xe9Rc8YCvb/KlV0tRxF0v06VasWcHx6OL8gZUg==*; "
     "validity-url=\"https://example.com/resource.validity.msg\"; "
     "integrity=\"mi\"; "
     "cert-url=\"https://example.com/cert.msg\"; "

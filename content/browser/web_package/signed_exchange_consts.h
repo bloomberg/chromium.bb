@@ -22,7 +22,6 @@ constexpr char kExpiresKey[] = "expires";
 constexpr char kHeadersKey[] = "headers";
 constexpr char kIntegrity[] = "integrity";
 constexpr char kMethodKey[] = ":method";
-constexpr char kSignature[] = "signature";
 constexpr char kSig[] = "sig";
 constexpr char kStatusKey[] = ":status";
 constexpr char kUrlKey[] = ":url";
