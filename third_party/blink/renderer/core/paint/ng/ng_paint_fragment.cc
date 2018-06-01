@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/inline_box_traversal.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
@@ -115,6 +116,20 @@ base::Optional<PositionWithAffinity> PositionForPointInChild(
   if (result.IsNotNull())
     return result;
   return base::nullopt;
+}
+
+// ::before, ::after and ::first-letter can be hit test targets.
+bool CanBeHitTestTargetPseudoNode(const Node& node) {
+  if (!node.IsPseudoElement())
+    return false;
+  switch (ToPseudoElement(node).GetPseudoId()) {
+    case kPseudoIdBefore:
+    case kPseudoIdAfter:
+    case kPseudoIdFirstLetter:
+      return true;
+    default:
+      return false;
+  }
 }
 
 }  // namespace
@@ -552,6 +567,24 @@ PositionWithAffinity NGPaintFragment::PositionForPoint(
 
   DCHECK(PhysicalFragment().IsInline() || PhysicalFragment().IsLineBox());
   return PositionForPointInInlineLevelBox(point);
+}
+
+Node* NGPaintFragment::NodeForHitTest() const {
+  if (GetNode())
+    return GetNode();
+
+  // When the fragment is inside a ::first-letter, ::before or ::after pseudo
+  // node, return the pseudo node.
+  for (const NGPaintFragment* runner = Parent(); runner;
+       runner = runner->Parent()) {
+    if (Node* node = runner->GetNode()) {
+      if (CanBeHitTestTargetPseudoNode(*node))
+        return node;
+      return nullptr;
+    }
+  }
+
+  return nullptr;
 }
 
 }  // namespace blink

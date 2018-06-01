@@ -877,7 +877,7 @@ bool NGBoxFragmentPainter::NodeAtPoint(
   if (hit_test_self && VisibleToHitTestRequest(result.GetHitTestRequest())) {
     LayoutRect bounds_rect(adjusted_location, size);
     if (location_in_container.Intersects(bounds_rect)) {
-      Node* node = box_fragment_.GetNode();
+      Node* node = box_fragment_.NodeForHitTest();
       if (!result.InnerNode() && node) {
         LayoutPoint point =
             location_in_container.Point() - ToLayoutSize(adjusted_location);
@@ -927,7 +927,7 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
   LayoutRect rect = LayoutRect(PixelSnappedIntRect(border_rect));
   if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
       location_in_container.Intersects(rect)) {
-    Node* node = ToNGPhysicalTextFragment(text_fragment).TextSourceNode();
+    Node* node = text_paint_fragment.NodeForHitTest();
     if (!result.InnerNode() && node) {
       LayoutPoint point =
           location_in_container.Point() - ToLayoutSize(accumulated_offset) -
