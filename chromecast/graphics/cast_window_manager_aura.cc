@@ -5,7 +5,6 @@
 #include "chromecast/graphics/cast_window_manager_aura.h"
 
 #include "base/memory/ptr_util.h"
-#include "chromecast/graphics/accessibility/accessibility_manager.h"
 #include "chromecast/graphics/cast_focus_client_aura.h"
 #include "chromecast/graphics/cast_system_gesture_event_handler.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -91,25 +90,6 @@ ui::EventTarget* CastEventIgnorer::FindNextBestTarget(
     ui::Event* event) {
   return nullptr;
 }
-
-// An aura::WindowTreeHost that correctly converts input events.
-class CastWindowTreeHost : public aura::WindowTreeHostPlatform {
- public:
-  CastWindowTreeHost(bool enable_input, const gfx::Rect& bounds);
-  ~CastWindowTreeHost() override;
-
-  // aura::WindowTreeHostPlatform implementation:
-  void DispatchEvent(ui::Event* event) override;
-
-  // aura::WindowTreeHost implementation
-  gfx::Rect GetTransformedRootWindowBoundsInPixels(
-      const gfx::Size& size_in_pixels) const override;
-
- private:
-  const bool enable_input_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastWindowTreeHost);
-};
 
 CastWindowTreeHost::CastWindowTreeHost(bool enable_input,
                                        const gfx::Rect& bounds)
@@ -221,19 +201,8 @@ void CastLayoutManager::SetChildBounds(aura::Window* child,
   SetChildBoundsDirect(child, requested_bounds);
 }
 
-// static
-std::unique_ptr<CastWindowManager> CastWindowManager::Create(
-    bool enable_input,
-    AccessibilityManager* accessibility_manager) {
-  return base::WrapUnique(
-      new CastWindowManagerAura(enable_input, accessibility_manager));
-}
-
-CastWindowManagerAura::CastWindowManagerAura(
-    bool enable_input,
-    AccessibilityManager* accessibility_manager)
-    : enable_input_(enable_input),
-      accessibility_manager_(accessibility_manager) {}
+CastWindowManagerAura::CastWindowManagerAura(bool enable_input)
+    : enable_input_(enable_input) {}
 
 CastWindowManagerAura::~CastWindowManagerAura() {
   TearDown();
@@ -251,7 +220,8 @@ void CastWindowManagerAura::Setup() {
 
   LOG(INFO) << "Starting window manager, bounds: " << host_bounds.ToString();
   CHECK(aura::Env::GetInstance());
-  window_tree_host_.reset(new CastWindowTreeHost(enable_input_, host_bounds));
+  window_tree_host_ =
+      std::make_unique<CastWindowTreeHost>(enable_input_, host_bounds);
   window_tree_host_->InitHost();
   window_tree_host_->window()->SetLayoutManager(new CastLayoutManager());
   window_tree_host_->SetRootTransform(GetPrimaryDisplayRotationTransform());
@@ -259,7 +229,7 @@ void CastWindowManagerAura::Setup() {
   // Allow seeing through to the hardware video plane:
   window_tree_host_->compositor()->SetBackgroundColor(SK_ColorTRANSPARENT);
 
-  focus_client_.reset(new CastFocusClientAura());
+  focus_client_ = std::make_unique<CastFocusClientAura>();
   aura::client::SetFocusClient(window_tree_host_->window(),
                                focus_client_.get());
   wm::SetActivationClient(window_tree_host_->window(), focus_client_.get());
@@ -267,7 +237,7 @@ void CastWindowManagerAura::Setup() {
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(window_tree_host_->window()));
 
-  screen_position_client_.reset(new wm::DefaultScreenPositionClient());
+  screen_position_client_ = std::make_unique<wm::DefaultScreenPositionClient>();
 
   aura::Window* root_window = window_tree_host_->window()->GetRootWindow();
   aura::client::SetScreenPositionClient(root_window,
@@ -276,11 +246,11 @@ void CastWindowManagerAura::Setup() {
   window_tree_host_->Show();
   system_gesture_event_handler_ =
       std::make_unique<CastSystemGestureEventHandler>(root_window);
+}
 
-  // Set up the accessibility manager (if we have one) with our state.
-  if (accessibility_manager_) {
-    accessibility_manager_->Setup(root_window, focus_client_.get());
-  }
+CastWindowTreeHost* CastWindowManagerAura::window_tree_host() const {
+  DCHECK(window_tree_host_);
+  return window_tree_host_.get();
 }
 
 void CastWindowManagerAura::TearDown() {

@@ -5,53 +5,59 @@
 #include "chromecast/graphics/accessibility/accessibility_manager.h"
 
 #include "chromecast/graphics/accessibility/focus_ring_controller.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace chromecast {
 
-AccessibilityManager::AccessibilityManager() {}
-AccessibilityManager::~AccessibilityManager() {}
-
-void AccessibilityManager::Setup(aura::Window* root_window,
-                                 wm::ActivationClient* activation_client) {
+AccessibilityManager::AccessibilityManager(
+    aura::WindowTreeHost* window_tree_host) {
+  DCHECK(window_tree_host);
+  aura::Window* root_window = window_tree_host->window()->GetRootWindow();
+  wm::ActivationClient* activation_client =
+      wm::GetActivationClient(root_window);
   focus_ring_controller_ =
       std::make_unique<FocusRingController>(root_window, activation_client);
   accessibility_focus_ring_controller_ =
       std::make_unique<AccessibilityFocusRingController>(root_window);
 }
 
+AccessibilityManager::~AccessibilityManager() {}
+
 void AccessibilityManager::SetFocusRingColor(SkColor color) {
-  if (accessibility_focus_ring_controller_)
-    accessibility_focus_ring_controller_->SetFocusRingColor(color);
+  DCHECK(accessibility_focus_ring_controller_);
+  accessibility_focus_ring_controller_->SetFocusRingColor(color);
 }
 
 void AccessibilityManager::ResetFocusRingColor() {
-  if (accessibility_focus_ring_controller_)
-    accessibility_focus_ring_controller_->ResetFocusRingColor();
+  DCHECK(accessibility_focus_ring_controller_);
+  accessibility_focus_ring_controller_->ResetFocusRingColor();
 }
 
 void AccessibilityManager::SetFocusRing(
     const std::vector<gfx::Rect>& rects_in_screen,
     FocusRingBehavior focus_ring_behavior) {
-  if (accessibility_focus_ring_controller_)
-    accessibility_focus_ring_controller_->SetFocusRing(rects_in_screen,
-                                                       focus_ring_behavior);
+  DCHECK(accessibility_focus_ring_controller_);
+  accessibility_focus_ring_controller_->SetFocusRing(rects_in_screen,
+                                                     focus_ring_behavior);
 }
 
 void AccessibilityManager::HideFocusRing() {
-  if (accessibility_focus_ring_controller_)
-    accessibility_focus_ring_controller_->HideFocusRing();
+  DCHECK(accessibility_focus_ring_controller_);
+  accessibility_focus_ring_controller_->HideFocusRing();
 }
 
 void AccessibilityManager::SetHighlights(
     const std::vector<gfx::Rect>& rects_in_screen,
     SkColor color) {
-  if (accessibility_focus_ring_controller_)
-    accessibility_focus_ring_controller_->SetHighlights(rects_in_screen, color);
+  DCHECK(accessibility_focus_ring_controller_);
+  accessibility_focus_ring_controller_->SetHighlights(rects_in_screen, color);
 }
 
 void AccessibilityManager::HideHighlights() {
-  if (accessibility_focus_ring_controller_)
-    accessibility_focus_ring_controller_->HideHighlights();
+  DCHECK(accessibility_focus_ring_controller_);
+  accessibility_focus_ring_controller_->HideHighlights();
 }
 
 void AccessibilityManager::SetTouchAccessibilityAnchorPoint(

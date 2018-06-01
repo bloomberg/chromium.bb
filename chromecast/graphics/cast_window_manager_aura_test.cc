@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/graphics/cast_window_manager.h"
+#include "chromecast/graphics/cast_window_manager_aura.h"
 
 #include <memory>
 
@@ -46,8 +46,8 @@ TEST_F(CastWindowManagerAuraTest, InitialWindowId) {
 }
 
 TEST_F(CastWindowManagerAuraTest, WindowInput) {
-  std::unique_ptr<CastWindowManager> window_manager(CastWindowManager::Create(
-      true /* enable input */, nullptr /* accessibility manager */));
+  std::unique_ptr<CastWindowManagerAura> window_manager =
+      std::make_unique<CastWindowManagerAura>(true /* enable input */);
 
   CastTestWindowDelegate window_delegate;
   aura::Window window(&window_delegate);
@@ -74,8 +74,8 @@ TEST_F(CastWindowManagerAuraTest, WindowInput) {
 }
 
 TEST_F(CastWindowManagerAuraTest, WindowInputDisabled) {
-  std::unique_ptr<CastWindowManager> window_manager(CastWindowManager::Create(
-      false /* enable input */, nullptr /* accessibility manager */));
+  std::unique_ptr<CastWindowManagerAura> window_manager =
+      std::make_unique<CastWindowManagerAura>(false /* enable input */);
 
   CastTestWindowDelegate window_delegate;
   aura::Window window(&window_delegate);

@@ -34,7 +34,12 @@ class NetLog;
 
 namespace chromecast {
 class CastMemoryPressureMonitor;
+
+#if defined(USE_AURA)
+class CastWindowManagerAura;
+#else
 class CastWindowManager;
+#endif  // #if defined(USE_AURA)
 
 namespace media {
 class MediaCapsImpl;
@@ -89,7 +94,13 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<net::NetLog> net_log_;
   std::unique_ptr<media::VideoPlaneController> video_plane_controller_;
   std::unique_ptr<media::MediaCapsImpl> media_caps_;
+
+#if defined(USE_AURA)
+  std::unique_ptr<CastWindowManagerAura> window_manager_;
+#else
   std::unique_ptr<CastWindowManager> window_manager_;
+#endif  //  defined(USE_AURA)
+
 #if defined(USE_AURA)
   std::unique_ptr<CastDisplayConfigurator> display_configurator_;
 #endif
