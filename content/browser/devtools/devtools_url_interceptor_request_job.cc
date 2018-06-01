@@ -105,8 +105,8 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
             "This feature cannot be disabled in settings, however it happens "
             "only when user is debugging a page."
           chrome_policy {
-            DeveloperToolsDisabled {
-              DeveloperToolsDisabled: true
+            DeveloperToolsAvailability {
+              DeveloperToolsAvailability: 2
             }
           }
         })");

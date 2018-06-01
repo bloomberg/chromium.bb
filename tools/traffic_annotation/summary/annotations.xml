@@ -71,12 +71,12 @@ Refer to README.md for content description and update process.
  <item id="desktop_ios_promotion" hash_code="13694792" type="0" content_hash_code="19776951" os_list="windows" file_path="chrome/browser/ui/desktop_ios_promotion/sms_service.cc"/>
  <item id="device_geolocation_request" hash_code="77673751" type="0" deprecated="2017-10-20" content_hash_code="97181773" file_path=""/>
  <item id="device_management_service" hash_code="117782019" type="0" content_hash_code="127535409" os_list="linux,windows" file_path="components/policy/core/common/cloud/device_management_service.cc"/>
- <item id="devtools_free_data_source" hash_code="22774132" type="0" content_hash_code="136324050" os_list="linux,windows" file_path="chrome/browser/ui/webui/devtools_ui.cc"/>
- <item id="devtools_handle_front_end_messages" hash_code="135636011" type="0" content_hash_code="18422190" os_list="linux,windows" file_path="content/shell/browser/shell_devtools_bindings.cc"/>
- <item id="devtools_hard_coded_data_source" hash_code="111565057" type="0" content_hash_code="46074423" os_list="linux,windows" file_path="chrome/browser/ui/webui/devtools_ui.cc"/>
+ <item id="devtools_free_data_source" hash_code="22774132" type="0" content_hash_code="35733000" os_list="linux,windows" file_path="chrome/browser/ui/webui/devtools_ui.cc"/>
+ <item id="devtools_handle_front_end_messages" hash_code="135636011" type="0" content_hash_code="76808593" os_list="linux,windows" file_path="content/shell/browser/shell_devtools_bindings.cc"/>
+ <item id="devtools_hard_coded_data_source" hash_code="111565057" type="0" content_hash_code="75183720" os_list="linux,windows" file_path="chrome/browser/ui/webui/devtools_ui.cc"/>
  <item id="devtools_http_handler" hash_code="49160454" type="0" content_hash_code="88414393" os_list="linux,windows" file_path="content/browser/devtools/devtools_http_handler.cc"/>
- <item id="devtools_interceptor" hash_code="98123737" type="0" content_hash_code="19053470" os_list="linux,windows" file_path="content/browser/devtools/devtools_url_interceptor_request_job.cc"/>
- <item id="devtools_network_resource" hash_code="129652775" type="0" content_hash_code="24059212" os_list="linux,windows" file_path="chrome/browser/devtools/devtools_ui_bindings.cc"/>
+ <item id="devtools_interceptor" hash_code="98123737" type="0" content_hash_code="64591843" os_list="linux,windows" file_path="content/browser/devtools/devtools_url_interceptor_request_job.cc"/>
+ <item id="devtools_network_resource" hash_code="129652775" type="0" content_hash_code="32810159" os_list="linux,windows" file_path="chrome/browser/devtools/devtools_ui_bindings.cc"/>
  <item id="dial_get_app_info" hash_code="15952025" type="0" deprecated="2018-02-27" content_hash_code="90542080" file_path=""/>
  <item id="dial_get_device_description" hash_code="50422598" type="0" deprecated="2018-02-27" content_hash_code="129827780" file_path=""/>
  <item id="dial_url_fetcher" hash_code="41424546" type="0" content_hash_code="129828432" os_list="linux,windows" file_path="chrome/browser/media/router/discovery/dial/dial_url_fetcher.cc"/>

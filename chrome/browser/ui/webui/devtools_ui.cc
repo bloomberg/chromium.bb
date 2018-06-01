@@ -271,9 +271,9 @@ void DevToolsDataSource::StartRemoteDataRequest(
           cookies_store: "user"
           setting: "This feature cannot be disabled by settings."
           chrome_policy {
-            DeveloperToolsDisabled {
+            DeveloperToolsAvailability {
               policy_options {mode: MANDATORY}
-              DeveloperToolsDisabled: true
+              DeveloperToolsAvailability: 2
             }
           }
         })");
@@ -310,9 +310,9 @@ void DevToolsDataSource::StartCustomDataRequest(
           cookies_store: "user"
           setting: "This feature cannot be disabled by settings."
           chrome_policy {
-            DeveloperToolsDisabled {
+            DeveloperToolsAvailability {
               policy_options {mode: MANDATORY}
-              DeveloperToolsDisabled: true
+              DeveloperToolsAvailability: 2
             }
           }
         })");
