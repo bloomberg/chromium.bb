@@ -42,7 +42,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // First, interpret the remaining fuzzed data as an unindexed ruleset.
   google::protobuf::io::ArrayInputStream input_stream(remaining_bytes.data(),
                                                       remaining_bytes.size());
-  url_pattern_index::UnindexedRulesetReader reader(&input_stream);
+  subresource_filter::UnindexedRulesetReader reader(&input_stream);
 
   // Use the unindexed ruleset to build a flat indexed ruleset.
   subresource_filter::RulesetIndexer indexer;
