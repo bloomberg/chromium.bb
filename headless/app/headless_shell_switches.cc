@@ -117,5 +117,7 @@ const char kAuthServerWhitelist[] = "auth-server-whitelist";
 // Possible values: none|slight|medium|full|max. Default: full.
 const char kFontRenderHinting[] = "font-render-hinting";
 
+// If true, then all pop-ups and calls to window.open will fail.
+const char kBlockNewWebContents[] = "block-new-web-contents";
 }  // namespace switches
 }  // namespace headless

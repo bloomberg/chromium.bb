@@ -819,6 +819,9 @@ int HeadlessShellMain(int argc, const char** argv) {
     }
   }
 
+  if (command_line.HasSwitch(switches::kBlockNewWebContents))
+    builder.SetBlockNewWebContents(true);
+
   return HeadlessBrowserMain(
       builder.Build(),
       base::BindOnce(&HeadlessShell::OnStart, base::Unretained(&shell)));
