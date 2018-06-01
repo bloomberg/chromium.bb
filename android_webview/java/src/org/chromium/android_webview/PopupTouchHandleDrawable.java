@@ -45,10 +45,10 @@ import java.lang.reflect.Method;
 public class PopupTouchHandleDrawable extends View implements DisplayAndroidObserver {
 
     private final PopupWindow mContainer;
-    private final PositionObserver.Listener mParentPositionListener;
+    private final ViewPositionObserver.Listener mParentPositionListener;
     private WebContents mWebContents;
     private ViewGroup mContainerView;
-    private PositionObserver mParentPositionObserver;
+    private ViewPositionObserver mParentPositionObserver;
     private Drawable mDrawable;
 
     // The native side of this object.

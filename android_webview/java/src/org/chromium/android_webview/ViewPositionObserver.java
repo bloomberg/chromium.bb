@@ -12,7 +12,12 @@ import java.util.ArrayList;
 /**
  * Used to register listeners that can be notified of changes to the position of a view.
  */
-public class ViewPositionObserver implements PositionObserver {
+public class ViewPositionObserver {
+    /**
+     * Called during predraw if the position of the underlying view has changed.
+     */
+    public interface Listener { void onPositionChanged(int positionX, int positionY); }
+
     private View mView;
     // Absolute position of the container view relative to its parent window.
     private final int[] mPosition = new int[2];
@@ -39,7 +44,6 @@ public class ViewPositionObserver implements PositionObserver {
     /**
      * @return The current x position of the observed view.
      */
-    @Override
     public int getPositionX() {
         // The stored position may be out-of-date. Get the real current position.
         updatePosition();
@@ -49,7 +53,6 @@ public class ViewPositionObserver implements PositionObserver {
     /**
      * @return The current y position of the observed view.
      */
-    @Override
     public int getPositionY() {
         // The stored position may be out-of-date. Get the real current position.
         updatePosition();
@@ -59,7 +62,6 @@ public class ViewPositionObserver implements PositionObserver {
     /**
      * Register a listener to be called when the position of the underlying view changes.
      */
-    @Override
     public void addListener(Listener listener) {
         if (mListeners.contains(listener)) return;
 
@@ -74,7 +76,6 @@ public class ViewPositionObserver implements PositionObserver {
     /**
      * Remove a previously installed listener.
      */
-    @Override
     public void removeListener(Listener listener) {
         if (!mListeners.contains(listener)) return;
 
@@ -103,7 +104,6 @@ public class ViewPositionObserver implements PositionObserver {
     /**
      * Clears installed listener(s).
      */
-    @Override
     public void clearListener() {
         mListeners.clear();
     }
