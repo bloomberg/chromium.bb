@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_COMMON_QUADS_SHARED_BITMAP_H_
-#define COMPONENTS_VIZ_COMMON_QUADS_SHARED_BITMAP_H_
+#ifndef COMPONENTS_VIZ_COMMON_RESOURCES_SHARED_BITMAP_H_
+#define COMPONENTS_VIZ_COMMON_RESOURCES_SHARED_BITMAP_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -47,4 +47,4 @@ class VIZ_COMMON_EXPORT SharedBitmap {
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_COMMON_QUADS_SHARED_BITMAP_H_
+#endif  // COMPONENTS_VIZ_COMMON_RESOURCES_SHARED_BITMAP_H_
