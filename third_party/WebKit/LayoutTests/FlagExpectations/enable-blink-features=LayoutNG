@@ -63,6 +63,7 @@ crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-prct-vlr-in-ht
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-prct-vrl-in-htb-002.xht [ Pass ]
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-001.xht [ Pass ]
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-004.xht [ Pass ]
+crbug.com/591099 fast/dom/inner-text-first-letter.html [ Pass ]
 
 # The position of writing-mode:vertical inline image is different from legacy.
 crbug.com/591099 fast/lists/008-vertical.html [ Failure ]
@@ -568,7 +569,6 @@ crbug.com/591099 fast/dom/domstring-attribute-reflection.html [ Pass Timeout ]
 crbug.com/714962 fast/dom/elementFromPoint-relative-to-viewport.html [ Failure ]
 crbug.com/714962 fast/dom/elementsFromPoint/elementsFromPoint-inline.html [ Failure ]
 crbug.com/714962 fast/dom/inert/inert-inlines.html [ Failure ]
-crbug.com/591099 fast/dom/inner-text-first-letter.html [ Failure ]
 crbug.com/591099 fast/dom/nodesFromRect/nodesFromRect-basic.html [ Failure ]
 crbug.com/591099 fast/dom/nodesFromRect/nodesFromRect-child-frame-scrolled-content.html [ Failure ]
 crbug.com/714962 fast/dom/nodesFromRect/nodesFromRect-culled-inline-with-linebreak.html [ Failure ]
