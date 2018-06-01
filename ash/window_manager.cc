@@ -108,7 +108,6 @@ void WindowManager::Init(
   DCHECK_EQ(nullptr, ash::Shell::window_tree_client());
   ash::Shell::set_window_tree_client(window_tree_client_.get());
 
-  // TODO(jamescook): Maybe not needed in Config::MUS?
   pointer_watcher_event_router_ =
       std::make_unique<views::PointerWatcherEventRouter>(
           window_tree_client_.get());

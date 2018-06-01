@@ -53,7 +53,6 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
   // Only used when running in --enable-ui-devtools.
   std::unique_ptr<ui_devtools::UiDevToolsServer> devtools_server_;
 
-  // Not created when running in ash::Config::MUS.
   std::unique_ptr<wm::WMState> wm_state_;
 
   // Only used when running in ash::Config::MASH.

@@ -155,6 +155,7 @@
 -MouseCursorEventFilterTest.CursorDeviceScaleFactor
 
 # TODO: Triage
+-MirrorOnBootTest.MirrorOnBoot
 -MultiMirroringTest.CompositingCursorInMultiSoftwareMirroring
 -MultiMirroringTest.HardwareMirrorMode
 -MultiMirroringTest.SoftwareMirrorModeBasics
