@@ -175,6 +175,7 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
         new ChildConnection(child_identity, broker_client_invitation_.get(),
                             ServiceManagerContext::GetConnectorForIOThread(),
                             base::ThreadTaskRunnerHandle::Get()));
+    data_.metrics_name = service_name;
   }
 
   // Create a persistent memory segment for subprocess histograms.
@@ -268,6 +269,8 @@ void BrowserChildProcessHostImpl::Launch(
   }
 
   DCHECK(broker_client_invitation_);
+  // All processes should have a non-empty metrics name.
+  DCHECK(!data_.metrics_name.empty());
   notify_child_disconnected_ = true;
   child_process_.reset(new ChildProcessLauncher(
       std::move(delegate), std::move(cmd_line), data_.id, this,
@@ -305,6 +308,12 @@ BrowserChildProcessHostImpl::TakeMetricsAllocator() {
 void BrowserChildProcessHostImpl::SetName(const base::string16& name) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   data_.name = name;
+}
+
+void BrowserChildProcessHostImpl::SetMetricsName(
+    const std::string& metrics_name) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  data_.metrics_name = metrics_name;
 }
 
 void BrowserChildProcessHostImpl::SetHandle(base::ProcessHandle handle) {

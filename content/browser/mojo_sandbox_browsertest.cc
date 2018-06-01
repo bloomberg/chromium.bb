@@ -52,6 +52,7 @@ class MojoSandboxTest : public ContentBrowserTest {
  private:
   void StartUtilityProcessOnIoThread() {
     host_.reset(new UtilityProcessHost(nullptr, nullptr));
+    host_->SetMetricsName("mojo_sandbox_test_process");
     ASSERT_TRUE(host_->Start());
   }
 

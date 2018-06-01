@@ -79,6 +79,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   void SetName(const base::string16& name) override;
+  void SetMetricsName(const std::string& metrics_name) override;
   void SetHandle(base::ProcessHandle handle) override;
   service_manager::mojom::ServiceRequest TakeInProcessServiceRequest() override;
 
@@ -155,6 +156,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
 #endif
 
   ChildProcessData data_;
+  std::string metrics_name_;
   BrowserChildProcessHostDelegate* delegate_;
   std::unique_ptr<ChildProcessHost> child_process_host_;
 

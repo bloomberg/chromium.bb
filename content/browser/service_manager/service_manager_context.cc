@@ -128,6 +128,7 @@ void StartServiceInUtilityProcess(
     // Start a new process for this service.
     UtilityProcessHost* impl = new UtilityProcessHost(nullptr, nullptr);
     impl->SetName(process_name);
+    impl->SetMetricsName(service_name);
     impl->SetServiceIdentity(service_manager::Identity(service_name));
     impl->SetSandboxType(sandbox_type);
     impl->Start();
