@@ -256,8 +256,11 @@ int32_t PepperVideoDecoderHost::OnHostMsgDecode(
 int32_t PepperVideoDecoderHost::OnHostMsgAssignTextures(
     ppapi::host::HostMessageContext* context,
     const PP_Size& size,
-    const std::vector<uint32_t>& texture_ids) {
+    const std::vector<uint32_t>& texture_ids,
+    const std::vector<gpu::Mailbox>& mailboxes) {
   if (!initialized_)
+    return PP_ERROR_FAILED;
+  if (texture_ids.size() != mailboxes.size())
     return PP_ERROR_FAILED;
   DCHECK(decoder_);
 
@@ -304,6 +307,7 @@ int32_t PepperVideoDecoderHost::OnHostMsgAssignTextures(
         gfx::Size(size.width, size.height), ids);
     picture_buffers.push_back(buffer);
   }
+  texture_mailboxes_ = mailboxes;
   decoder_->AssignPictureBuffers(picture_buffers);
   return PP_OK;
 }
@@ -375,10 +379,12 @@ void PepperVideoDecoderHost::ProvidePictureBuffers(
     const gfx::Size& dimensions,
     uint32_t texture_target) {
   DCHECK_EQ(1u, textures_per_buffer);
-  RequestTextures(std::max(min_picture_count_, requested_num_of_buffers),
-                  dimensions,
-                  texture_target,
-                  std::vector<gpu::Mailbox>());
+  pending_texture_requests_++;
+  host()->SendUnsolicitedReply(
+      pp_resource(), PpapiPluginMsg_VideoDecoder_RequestTextures(
+                         std::max(min_picture_count_, requested_num_of_buffers),
+                         PP_MakeSize(dimensions.width(), dimensions.height()),
+                         texture_target));
 }
 
 void PepperVideoDecoderHost::PictureReady(const media::Picture& picture) {
@@ -474,21 +480,6 @@ const uint8_t* PepperVideoDecoderHost::DecodeIdToAddress(uint32_t decode_id) {
   DCHECK(it != pending_decodes_.end());
   uint32_t shm_id = it->shm_id;
   return static_cast<uint8_t*>(shm_buffers_[shm_id]->memory());
-}
-
-void PepperVideoDecoderHost::RequestTextures(
-    uint32_t requested_num_of_buffers,
-    const gfx::Size& dimensions,
-    uint32_t texture_target,
-    const std::vector<gpu::Mailbox>& mailboxes) {
-  pending_texture_requests_++;
-  host()->SendUnsolicitedReply(
-      pp_resource(),
-      PpapiPluginMsg_VideoDecoder_RequestTextures(
-          requested_num_of_buffers,
-          PP_MakeSize(dimensions.width(), dimensions.height()),
-          texture_target,
-          mailboxes));
 }
 
 bool PepperVideoDecoderHost::TryFallbackToSoftwareDecoder() {
