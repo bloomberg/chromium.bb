@@ -281,6 +281,14 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/modules/animationworklet/',
+        ],
+        'allowed': [
+            'cc::AnimationOptions',
+        ],
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/modules/webdatabase/',
         ],
         'allowed': ['sql::.+'],

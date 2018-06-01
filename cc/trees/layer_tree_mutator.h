@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
+#include "cc/trees/animation_options.h"
 
 #include <memory>
 #include <string>
@@ -27,12 +28,21 @@ struct CC_EXPORT MutatorInputState {
     std::string name;
     // Worklet animation's current time, from its associated timeline.
     double current_time = 0;
+    std::unique_ptr<AnimationOptions> options = nullptr;
+
+    AnimationState(int animation_id,
+                   std::string name,
+                   double current_time,
+                   std::unique_ptr<AnimationOptions> options = nullptr);
+    AnimationState(AnimationState&&);
+    ~AnimationState();
   };
 
   MutatorInputState();
   ~MutatorInputState();
 
   std::vector<AnimationState> animations;
+  DISALLOW_COPY_AND_ASSIGN(MutatorInputState);
 };
 
 struct CC_EXPORT MutatorOutputState {

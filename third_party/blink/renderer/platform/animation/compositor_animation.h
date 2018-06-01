@@ -34,7 +34,8 @@ class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
   static std::unique_ptr<CompositorAnimation> Create();
   static std::unique_ptr<CompositorAnimation> CreateWorkletAnimation(
       const String& name,
-      std::unique_ptr<CompositorScrollTimeline>);
+      std::unique_ptr<CompositorScrollTimeline>,
+      std::unique_ptr<cc::AnimationOptions>);
 
   explicit CompositorAnimation(
       scoped_refptr<cc::SingleKeyframeEffectAnimation>);

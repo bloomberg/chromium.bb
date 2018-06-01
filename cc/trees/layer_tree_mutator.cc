@@ -6,6 +6,20 @@
 
 namespace cc {
 
+MutatorInputState::AnimationState::AnimationState(
+    int animation_id,
+    std::string name,
+    double current_time,
+    std::unique_ptr<AnimationOptions> options)
+    : animation_id(animation_id),
+      name(name),
+      current_time(current_time),
+      options(std::move(options)) {}
+
+MutatorInputState::AnimationState::AnimationState(AnimationState&& state) =
+    default;
+MutatorInputState::AnimationState::~AnimationState() = default;
+
 MutatorInputState::MutatorInputState() = default;
 MutatorInputState::~MutatorInputState() = default;
 

@@ -25,5 +25,7 @@ blink_modules_sources("animationworklet") {
     "window_animation_worklet.h",
     "worklet_animation.cc",
     "worklet_animation.h",
+    "worklet_animation_options.cc",
+    "worklet_animation_options.h",
   ]
 }

@@ -5,6 +5,7 @@
 #include "cc/animation/worklet_animation.h"
 
 #include "cc/animation/scroll_timeline.h"
+#include "cc/trees/animation_options.h"
 
 namespace cc {
 
@@ -12,10 +13,12 @@ WorkletAnimation::WorkletAnimation(
     int id,
     const std::string& name,
     std::unique_ptr<ScrollTimeline> scroll_timeline,
+    std::unique_ptr<AnimationOptions> options,
     bool is_controlling_instance)
     : SingleKeyframeEffectAnimation(id),
       name_(name),
       scroll_timeline_(std::move(scroll_timeline)),
+      options_(std::move(options)),
       start_time_(base::nullopt),
       last_current_time_(base::nullopt),
       is_impl_instance_(is_controlling_instance) {}
@@ -25,9 +28,10 @@ WorkletAnimation::~WorkletAnimation() = default;
 scoped_refptr<WorkletAnimation> WorkletAnimation::Create(
     int id,
     const std::string& name,
-    std::unique_ptr<ScrollTimeline> scroll_timeline) {
-  return WrapRefCounted(
-      new WorkletAnimation(id, name, std::move(scroll_timeline), false));
+    std::unique_ptr<ScrollTimeline> scroll_timeline,
+    std::unique_ptr<AnimationOptions> options) {
+  return WrapRefCounted(new WorkletAnimation(
+      id, name, std::move(scroll_timeline), std::move(options), false));
 }
 
 scoped_refptr<Animation> WorkletAnimation::CreateImplInstance() const {
@@ -35,8 +39,8 @@ scoped_refptr<Animation> WorkletAnimation::CreateImplInstance() const {
   if (scroll_timeline_)
     impl_timeline = scroll_timeline_->CreateImplInstance();
 
-  return WrapRefCounted(
-      new WorkletAnimation(id(), name(), std::move(impl_timeline), true));
+  return WrapRefCounted(new WorkletAnimation(
+      id(), name(), std::move(impl_timeline), CloneOptions(), true));
 }
 
 void WorkletAnimation::Tick(base::TimeTicks monotonic_time) {
@@ -64,7 +68,7 @@ MutatorInputState::AnimationState WorkletAnimation::GetInputState(
 
   double current_time = CurrentTime(monotonic_time, scroll_tree);
   last_current_time_ = current_time;
-  return {id(), name(), current_time};
+  return {id(), name(), current_time, CloneOptions()};
 }
 
 void WorkletAnimation::SetOutputState(

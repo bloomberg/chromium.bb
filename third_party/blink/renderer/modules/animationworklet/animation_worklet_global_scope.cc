@@ -5,11 +5,13 @@
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_global_scope.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_parser.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/animation_worklet_proxy_client.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/modules/animationworklet/worklet_animation_options.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -83,12 +85,14 @@ void AnimationWorkletGlobalScope::Dispose() {
   ThreadedWorkletGlobalScope::Dispose();
 }
 
-Animator* AnimationWorkletGlobalScope::GetAnimatorFor(int animation_id,
-                                                      const String& name) {
+Animator* AnimationWorkletGlobalScope::GetOrCreateAnimatorFor(
+    int animation_id,
+    const String& name,
+    WorkletAnimationOptions* options) {
   Animator* animator = animators_.at(animation_id);
   if (!animator) {
     // This is a new animation so we should create an animator for it.
-    animator = CreateInstance(name);
+    animator = CreateInstance(name, options);
     if (!animator)
       return nullptr;
 
@@ -118,7 +122,11 @@ AnimationWorkletGlobalScope::Mutate(
     const String name = String::FromUTF8(animation_input.name.data(),
                                          animation_input.name.size());
 
-    Animator* animator = GetAnimatorFor(id, name);
+    // Down casting to blink type to access the serialized value.
+    WorkletAnimationOptions* options =
+        static_cast<WorkletAnimationOptions*>(animation_input.options.get());
+
+    Animator* animator = GetOrCreateAnimatorFor(id, name, options);
     // TODO(majidvp): This means there is an animatorName for which
     // definition was not registered. We should handle this case gracefully.
     // http://crbug.com/776017
@@ -188,7 +196,9 @@ void AnimationWorkletGlobalScope::registerAnimator(
   animator_definitions_.Set(name, definition);
 }
 
-Animator* AnimationWorkletGlobalScope::CreateInstance(const String& name) {
+Animator* AnimationWorkletGlobalScope::CreateInstance(
+    const String& name,
+    WorkletAnimationOptions* options) {
   DCHECK(IsContextThread());
   AnimatorDefinition* definition = animator_definitions_.at(name);
   if (!definition)
@@ -197,9 +207,13 @@ Animator* AnimationWorkletGlobalScope::CreateInstance(const String& name) {
   v8::Isolate* isolate = ScriptController()->GetScriptState()->GetIsolate();
   v8::Local<v8::Function> constructor = definition->ConstructorLocal(isolate);
   DCHECK(!IsUndefinedOrNull(constructor));
+  v8::Local<v8::Value> value;
+  if (options && options->GetData())
+    value = options->GetData()->Deserialize(isolate);
 
   v8::Local<v8::Object> instance;
-  if (!V8ObjectConstructor::NewInstance(isolate, constructor)
+  if (!V8ObjectConstructor::NewInstance(isolate, constructor,
+                                        !value.IsEmpty() ? 1 : 0, &value)
            .ToLocal(&instance))
     return nullptr;
 
