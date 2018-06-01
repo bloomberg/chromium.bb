@@ -217,9 +217,11 @@ void UnifiedSystemTrayController::ShowIMEDetailedView() {
   ShowDetailedView(std::make_unique<UnifiedIMEDetailedViewController>(this));
 }
 
-void UnifiedSystemTrayController::TransitionToMainView() {
+void UnifiedSystemTrayController::TransitionToMainView(bool restore_focus) {
   detailed_view_controller_.reset();
   unified_view_->ResetDetailedView();
+  if (restore_focus)
+    unified_view_->RestoreFeaturePodFocus();
 }
 
 void UnifiedSystemTrayController::CloseBubble() {
@@ -267,6 +269,7 @@ void UnifiedSystemTrayController::AddFeaturePodItem(
 void UnifiedSystemTrayController::ShowDetailedView(
     std::unique_ptr<DetailedViewController> controller) {
   unified_view_->SetDetailedView(controller->CreateView());
+  unified_view_->SaveFeaturePodFocus();
   detailed_view_controller_ = std::move(controller);
 }
 

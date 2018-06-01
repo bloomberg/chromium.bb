@@ -55,6 +55,22 @@ void FeaturePodsContainerView::SetExpandedAmount(double expanded_amount) {
   Layout();
 }
 
+void FeaturePodsContainerView::SaveFocus() {
+  focused_button_ = nullptr;
+  for (int i = 0; i < child_count(); ++i) {
+    auto* child = child_at(i);
+    if (child->HasFocus()) {
+      focused_button_ = child;
+      break;
+    }
+  }
+}
+
+void FeaturePodsContainerView::RestoreFocus() {
+  if (focused_button_)
+    focused_button_->RequestFocus();
+}
+
 void FeaturePodsContainerView::ChildVisibilityChanged(View* child) {
   // ChildVisibilityChanged can change child visibility in
   // UpdateChildVisibility(), so we have to prevent this.

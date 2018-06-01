@@ -15,7 +15,7 @@ UnifiedDetailedViewDelegate::UnifiedDetailedViewDelegate(
 UnifiedDetailedViewDelegate::~UnifiedDetailedViewDelegate() = default;
 
 void UnifiedDetailedViewDelegate::TransitionToMainView(bool restore_focus) {
-  tray_controller_->TransitionToMainView();
+  tray_controller_->TransitionToMainView(restore_focus);
 }
 
 void UnifiedDetailedViewDelegate::CloseBubble() {
