@@ -60,8 +60,6 @@ char kRedirectURL[] = "http://redirect.test/";
 
 const char kSafeBrowsingNavigationDelay[] =
     "SubresourceFilter.PageLoad.SafeBrowsingDelay";
-const char kSafeBrowsingNavigationDelayNoSpeculation[] =
-    "SubresourceFilter.PageLoad.SafeBrowsingDelay.NoRedirectSpeculation";
 const char kSafeBrowsingCheckTime[] =
     "SubresourceFilter.SafeBrowsing.CheckTime";
 const char kActivationListHistogram[] =
@@ -779,7 +777,6 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
                               static_cast<int>(ActivationList::NONE), 1);
 
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelay, 1);
-  tester().ExpectTotalCount(kSafeBrowsingNavigationDelayNoSpeculation, 1);
   tester().ExpectTotalCount(kSafeBrowsingCheckTime, 1);
 }
 
@@ -845,7 +842,6 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   EXPECT_EQ(ActivationLevel::DISABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelay, 1);
-  tester().ExpectTotalCount(kSafeBrowsingNavigationDelayNoSpeculation, 1);
   tester().ExpectTotalCount(kSafeBrowsingCheckTime, 1);
 }
 
@@ -869,7 +865,6 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
 
   tester().ExpectTimeBucketCount(kSafeBrowsingNavigationDelay,
                                  base::TimeDelta::FromMilliseconds(0), 1);
-  tester().ExpectTotalCount(kSafeBrowsingNavigationDelayNoSpeculation, 1);
 }
 
 // Flaky on Win, Chromium and Linux. http://crbug.com/748524
@@ -896,7 +891,6 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   const std::string suffix(GetSuffixForList(test_data.activation_list_type));
   tester().ExpectTimeBucketCount(kSafeBrowsingNavigationDelay,
                                  base::TimeDelta::FromMilliseconds(0), 1);
-  tester().ExpectTotalCount(kSafeBrowsingNavigationDelayNoSpeculation, 1);
   tester().ExpectTotalCount(kSafeBrowsingCheckTime, 2);
 }
 
@@ -920,7 +914,6 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectTimeBucketCount(kSafeBrowsingNavigationDelay,
                                  base::TimeDelta::FromMilliseconds(0), 1);
-  tester().ExpectTotalCount(kSafeBrowsingNavigationDelayNoSpeculation, 1);
 }
 
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling,
