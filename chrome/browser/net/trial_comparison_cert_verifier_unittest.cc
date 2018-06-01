@@ -220,6 +220,12 @@ class TrialComparisonCertVerifierTest : public testing::Test {
     reporting_service_test_helper()->SetFailureMode(
         certificate_reporting_test_utils::REPORTS_SUCCESSFUL);
 
+    system_request_context_getter_ =
+        base::MakeRefCounted<net::TestURLRequestContextGetter>(
+            content::BrowserThread::GetTaskRunnerForThread(
+                content::BrowserThread::IO));
+    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
+        system_request_context_getter_.get());
     sb_service_ = base::MakeRefCounted<safe_browsing::TestSafeBrowsingService>(
         // Doesn't matter, just need to choose one.
         safe_browsing::V4FeatureList::V4UsageStatus::V4_DISABLED);
@@ -250,6 +256,8 @@ class TrialComparisonCertVerifierTest : public testing::Test {
       TestingBrowserProcess::GetGlobal()->safe_browsing_service()->ShutDown();
       TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
     }
+    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(nullptr);
+    system_request_context_getter_ = nullptr;
     net::URLRequestFilter::GetInstance()->ClearHandlers();
   }
 
@@ -276,6 +284,7 @@ class TrialComparisonCertVerifierTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<safe_browsing::SafeBrowsingService> sb_service_;
+  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
 

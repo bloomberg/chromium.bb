@@ -17,6 +17,10 @@ class ChromeSubresourceFilterClient;
 class GURL;
 class SubresourceFilterContentSettingsManager;
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
 namespace content {
 class RenderFrameHost;
 }  // namespace content
@@ -70,6 +74,7 @@ class SubresourceFilterTestHarness : public ChromeRenderViewHostTestHarness {
       scoped_configuration_;
 
   scoped_refptr<FakeSafeBrowsingDatabaseManager> fake_safe_browsing_database_;
+  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterTestHarness);
 };

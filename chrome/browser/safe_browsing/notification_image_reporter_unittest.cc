@@ -17,6 +17,7 @@
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -122,6 +123,7 @@ class NotificationImageReporterTest : public ::testing::Test {
   void ReportNotificationImage();
 
   scoped_refptr<SafeBrowsingService> safe_browsing_service_;
+  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
 
   std::unique_ptr<TestingProfile> profile_;
 
@@ -144,6 +146,13 @@ NotificationImageReporterTest::NotificationImageReporterTest()
 
 void NotificationImageReporterTest::SetUp() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  system_request_context_getter_ =
+      base::MakeRefCounted<net::TestURLRequestContextGetter>(
+          content::BrowserThread::GetTaskRunnerForThread(
+              content::BrowserThread::IO));
+  TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
+      system_request_context_getter_.get());
 
   // Initialize SafeBrowsingService with FakeSafeBrowsingDatabaseManager.
   TestSafeBrowsingServiceFactory sb_service_factory;
@@ -175,6 +184,8 @@ void NotificationImageReporterTest::TearDown() {
   thread_bundle_.RunIOThreadUntilIdle();
   thread_bundle_.RunUntilIdle();
   TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
+  TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(nullptr);
+  system_request_context_getter_ = nullptr;
 }
 
 void NotificationImageReporterTest::SetExtendedReportingLevel(

@@ -30,6 +30,7 @@ SafeBrowsingURLRequestContextGetter::SafeBrowsingURLRequestContextGetter(
       network_task_runner_(
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)) {
   DCHECK(!user_data_dir.empty());
+  DCHECK(system_context_getter_);
 }
 
 net::URLRequestContext*
@@ -42,11 +43,8 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
 
   if (!safe_browsing_request_context_) {
     safe_browsing_request_context_.reset(new net::URLRequestContext());
-    // May be NULL in unit tests.
-    if (system_context_getter_) {
-      safe_browsing_request_context_->CopyFrom(
-          system_context_getter_->GetURLRequestContext());
-    }
+    safe_browsing_request_context_->CopyFrom(
+        system_context_getter_->GetURLRequestContext());
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
         base::CreateSequencedTaskRunnerWithTraits(
             {base::MayBlock(), base::TaskPriority::BACKGROUND,

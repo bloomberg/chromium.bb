@@ -32,6 +32,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -51,6 +52,13 @@ void SubresourceFilterTestHarness::SetUp() {
       subresource_filter::ActivationList::SUBRESOURCE_FILTER));
 
   NavigateAndCommit(GURL("https://example.first"));
+
+  system_request_context_getter_ =
+      base::MakeRefCounted<net::TestURLRequestContextGetter>(
+          content::BrowserThread::GetTaskRunnerForThread(
+              content::BrowserThread::IO));
+  TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
+      system_request_context_getter_.get());
 
   // Set up safe browsing service with the fake database manager.
   //
@@ -115,6 +123,9 @@ void SubresourceFilterTestHarness::TearDown() {
   // all cleanup related to these classes actually happens.
   TestingBrowserProcess::GetGlobal()->SetRulesetService(nullptr);
   TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
+  TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(nullptr);
+  system_request_context_getter_ = nullptr;
+
   base::RunLoop().RunUntilIdle();
 
   ChromeRenderViewHostTestHarness::TearDown();

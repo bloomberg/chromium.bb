@@ -23,6 +23,7 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -85,6 +86,11 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
     safe_browsing::TestSafeBrowsingServiceFactory sb_service_factory;
     auto* safe_browsing_service =
         sb_service_factory.CreateSafeBrowsingService();
+    system_request_context_getter_ =
+        base::MakeRefCounted<net::TestURLRequestContextGetter>(
+            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
+        system_request_context_getter_.get());
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(
         safe_browsing_service);
     g_browser_process->safe_browsing_service()->Initialize();
@@ -98,6 +104,8 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
   void TearDown() override {
     TestingBrowserProcess::GetGlobal()->safe_browsing_service()->ShutDown();
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
+    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(nullptr);
+    system_request_context_getter_ = nullptr;
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -156,6 +164,7 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
   SafeBrowsingUIManager* ui_manager() { return ui_manager_.get(); }
 
  private:
+  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
 };
 

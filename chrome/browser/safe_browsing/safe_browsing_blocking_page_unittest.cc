@@ -28,6 +28,7 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/buildflags/buildflags.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -222,6 +223,13 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
+    system_request_context_getter_ =
+        base::MakeRefCounted<net::TestURLRequestContextGetter>(
+            content::BrowserThread::GetTaskRunnerForThread(
+                content::BrowserThread::IO));
+    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
+        system_request_context_getter_.get());
+
     SafeBrowsingBlockingPage::RegisterFactory(&factory_);
     ResetUserResponse();
     SafeBrowsingUIManager::CreateWhitelistForTesting(web_contents());
@@ -253,6 +261,8 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     TestingBrowserProcess::GetGlobal()->safe_browsing_service()->ShutDown();
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
     SafeBrowsingBlockingPage::RegisterFactory(NULL);
+    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(nullptr);
+    system_request_context_getter_ = nullptr;
     // Clean up singleton reference (crbug.com/110594).
     ThreatDetails::RegisterFactory(NULL);
     ChromeRenderViewHostTestHarness::TearDown();
@@ -322,6 +332,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   }
 
   scoped_refptr<TestSafeBrowsingUIManager> ui_manager_;
+  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
 
   // Owned by TestSafeBrowsingBlockingPage.
   MockTestingProfile* mock_profile_;
@@ -945,6 +956,13 @@ class SafeBrowsingBlockingQuietPageTest
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
+    system_request_context_getter_ =
+        base::MakeRefCounted<net::TestURLRequestContextGetter>(
+            content::BrowserThread::GetTaskRunnerForThread(
+                content::BrowserThread::IO));
+    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
+        system_request_context_getter_.get());
+
     SafeBrowsingBlockingPage::RegisterFactory(&factory_);
     SafeBrowsingUIManager::CreateWhitelistForTesting(web_contents());
 
@@ -968,8 +986,11 @@ class SafeBrowsingBlockingQuietPageTest
     TestingBrowserProcess::GetGlobal()->safe_browsing_service()->ShutDown();
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
     SafeBrowsingBlockingPage::RegisterFactory(NULL);
+    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(nullptr);
+    system_request_context_getter_ = nullptr;
     // Clean up singleton reference (crbug.com/110594).
     ThreatDetails::RegisterFactory(NULL);
+
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -1026,6 +1047,7 @@ class SafeBrowsingBlockingQuietPageTest
 
   UserResponse user_response_;
   TestSafeBrowsingBlockingQuietPageFactory factory_;
+  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
 };
 
 // Tests showing a quiet blocking page for a malware page.
