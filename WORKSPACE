@@ -1,3 +1,5 @@
+workspace(name = "com_google_quic_trace")
+
 http_archive(
     name = "com_google_protobuf",
     sha256 = "1b666f3990f66890ade9faa77d134f0369c19d3721dc8111643b56685a717319",

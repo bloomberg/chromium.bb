@@ -34,8 +34,7 @@ if [ -z "$2" ]; then
 fi
 
 if [ ! -x "$QUIC_TRACE_CONV_BIN" ]; then
-  BAZEL_BIN_DIR="$(bazel info | grep bazel-bin | sed -e's/bazel-bin: //')"
-  QUIC_TRACE_CONV_BIN="$BAZEL_BIN_DIR/tools/quic_trace_to_time_sequence_gnuplot"
+  QUIC_TRACE_CONV_BIN="$0.runfiles/com_google_quic_trace/tools/quic_trace_to_time_sequence_gnuplot"
 fi
 
 if [ ! -x "$QUIC_TRACE_CONV_BIN" ]; then

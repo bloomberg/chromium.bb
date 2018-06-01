@@ -22,3 +22,9 @@ cc_binary(
         "//lib:quic_trace_cc_proto",
     ],
 )
+
+sh_binary(
+    name = "time_sequence_gnuplot",
+    srcs = ["time_sequence_gnuplot.sh"],
+    data = [":quic_trace_to_time_sequence_gnuplot"],
+)
