@@ -113,7 +113,6 @@ template("pkg_config") {
     if (!defined(invoker.ignore_libs) || !invoker.ignore_libs) {
       libs = pkgresult[2]
       lib_dirs = pkgresult[3]
-      ldflags = pkgresult[4]
     }
 
     forward_variables_from(invoker,

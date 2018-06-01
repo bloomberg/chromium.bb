@@ -158,6 +158,13 @@ if (is_linux) {
       }
     }
 
+    # The only symbols that nacl_helper needs to export are those specified by
+    # its direct dependencies, so -rdynamic would only serve to unnecessarily
+    # increase the binary size.
+    if (is_desktop_linux) {
+      configs -= [ "//build/config/linux:export_dynamic" ]
+    }
+
     data_deps = [
       "//native_client/src/trusted/service_runtime/linux:bootstrap",
     ]
