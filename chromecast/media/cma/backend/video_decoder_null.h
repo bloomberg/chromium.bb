@@ -26,7 +26,7 @@ class VideoDecoderNull : public VideoDecoderForMixer {
   void GetStatistics(Statistics* statistics) override;
   bool SetConfig(const VideoConfig& config) override;
 
-  void Initialize() override;
+  bool Initialize() override;
   bool Start(int64_t start_pts, bool need_avsync) override;
   void Stop() override;
   bool Pause() override;

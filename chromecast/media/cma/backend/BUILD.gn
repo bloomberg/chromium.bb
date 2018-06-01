@@ -208,7 +208,11 @@ cast_source_set("for_mixer_audio") {
   } else if (is_fuchsia) {
     deps += [ "fuchsia:cma_backend_support" ]
   } else {
-    sources += [ "mixer_output_stream_dummy.cc" ]
+    # If enable_video_with_mixed_audio && !use_alsa, the platform needs to
+    # provide its own mixer output.
+    if (!enable_video_with_mixed_audio) {
+      sources += [ "mixer_output_stream_dummy.cc" ]
+    }
   }
 }
 

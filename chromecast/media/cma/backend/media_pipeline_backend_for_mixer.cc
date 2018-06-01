@@ -64,6 +64,9 @@ bool MediaPipelineBackendForMixer::Initialize() {
   DCHECK_EQ(kStateUninitialized, state_);
   if (audio_decoder_)
     audio_decoder_->Initialize();
+  if (video_decoder_ && !video_decoder_->Initialize()) {
+    return false;
+  }
   state_ = kStateInitialized;
   return true;
 }
@@ -80,8 +83,6 @@ bool MediaPipelineBackendForMixer::Start(int64_t start_pts) {
     return false;
   if (video_decoder_ && !video_decoder_->Start(start_pts, true))
     return false;
-  // TODO(almasrymina): need to also start video playback at the proper time in
-  // non-kModeSyncPts.
   if (video_decoder_ &&
       !video_decoder_->SetPts(start_playback_timestamp_us, start_pts))
     return false;

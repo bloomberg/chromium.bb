@@ -36,7 +36,7 @@ class MockVideoDecoderForMixer : public VideoDecoderForTest {
   ~MockVideoDecoderForMixer() override;
 
   // VideoDecoderForMixer implementation:
-  void Initialize() override;
+  bool Initialize() override;
   bool Start(int64_t start_pts, bool need_avsync) override;
   void Stop() override;
   bool Pause() override;

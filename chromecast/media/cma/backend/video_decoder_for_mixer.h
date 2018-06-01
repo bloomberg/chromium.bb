@@ -32,7 +32,7 @@ class VideoDecoderForMixer : public MediaPipelineBackend::VideoDecoder {
   // Initializes the VideoDecoderForMixer. Called after allocation and before
   // Start is called. Gives the implementation a chance to initialize any
   // resources.
-  virtual void Initialize() = 0;
+  virtual bool Initialize() = 0;
 
   // When called, playback is expected to start from |start_pts|.
   //
