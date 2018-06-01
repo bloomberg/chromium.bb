@@ -244,17 +244,17 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
         // Totally offscreen. Find the nearest edge or corner.
         // Make the minimum dimension 1 instead of 0.
         if (clipped.x() >= container_bounds.width()) {
-          clipped.set_x(container_bounds.width() - 1);
+          clipped.set_x(container_bounds.right() - 1);
           clipped.set_width(1);
         } else if (clipped.x() + clipped.width() <= 0) {
-          clipped.set_x(0);
+          clipped.set_x(container_bounds.x());
           clipped.set_width(1);
         }
         if (clipped.y() >= container_bounds.height()) {
-          clipped.set_y(container_bounds.height() - 1);
+          clipped.set_y(container_bounds.bottom() - 1);
           clipped.set_height(1);
         } else if (clipped.y() + clipped.height() <= 0) {
-          clipped.set_y(0);
+          clipped.set_y(container_bounds.y());
           clipped.set_height(1);
         }
       }

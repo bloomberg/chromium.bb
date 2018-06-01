@@ -192,7 +192,7 @@ void AccessibilityWinBrowserTest::SetUpScrollableInputField(
                                            R"HTML(<!DOCTYPE html>
           <html>
           <body>
-            <input type="text" style="width: 30px;" value=")HTML") +
+            <input type="text" style="width: 150px;" value=")HTML") +
                                        net::EscapeForHTML(kInputContents) +
                                        std::string(R"HTML(">
           </body>
@@ -240,7 +240,9 @@ void AccessibilityWinBrowserTest::SetUpInputFieldHelper(
   ExecuteScript(std::wstring(L"let textField = document.querySelector('input');"
                              L"textField.focus();"
                              L"textField.setSelectionRange(") +
-                caret_offset + L"," + caret_offset + L");");
+                caret_offset + L"," + caret_offset +
+                L");"
+                L"textField.scrollLeft = 1000;");
   waiter.WaitForNotification();
 }
 
@@ -1314,11 +1316,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       DISABLED_TestCharacterExtentsInScrollableInputField) {
+                       TestCharacterExtentsInScrollableInputField) {
   Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpScrollableInputField(&input_text);
 
-  constexpr LONG visible_characters_start = 20;
+  constexpr LONG visible_characters_start = 21;
   LONG n_characters;
   ASSERT_HRESULT_SUCCEEDED(input_text->get_nCharacters(&n_characters));
   ASSERT_EQ(kContentsLength, n_characters);
@@ -1338,7 +1340,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
     // of 0 is not used because it signifies an invalid size.
     EXPECT_HRESULT_SUCCEEDED(input_text->get_characterExtents(
         0, coordinate_type, &x, &y, &width, &height));
-    EXPECT_LT(0, x) << "at offset 0";
+    EXPECT_LT(0, x + width) << "at offset 0";
     EXPECT_LT(0, y) << "at offset 0";
     EXPECT_EQ(1, width) << "at offset 0";
     EXPECT_LT(1, height) << "at offset 0";
@@ -1346,7 +1348,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
     // Test that characters at the start of the input field are offscreen by
     // checking that their x coordinate is at the start of the field and their
     // width is 1.
-    for (LONG offset = 1; offset < visible_characters_start; ++offset) {
+    // Exclude the character that is partly visible.
+    for (LONG offset = 1; offset < (visible_characters_start - 1); ++offset) {
       previous_x = x;
       previous_y = y;
       previous_height = height;
@@ -1356,7 +1359,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       EXPECT_EQ(previous_x, x) << "at offset " << offset;
       EXPECT_EQ(previous_y, y) << "at offset " << offset;
       EXPECT_EQ(1, width) << "at offset " << offset;
-      EXPECT_LT(previous_height, height) << "at offset " << offset;
+      EXPECT_EQ(previous_height, height) << "at offset " << offset;
     }
 
     // Test that non offscreen characters have increasing x coordinates and a
@@ -1369,8 +1372,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
     EXPECT_EQ(previous_height, height)
         << "at offset " << visible_characters_start;
 
-    for (LONG offset = visible_characters_start + 1; offset < n_characters;
-         ++offset) {
+    // Exclude the dot at the end of the text field, because it has a width of
+    // one anyway.
+    for (LONG offset = visible_characters_start + 1;
+         offset < (n_characters - 1); ++offset) {
       previous_x = x;
       previous_y = y;
       previous_height = height;

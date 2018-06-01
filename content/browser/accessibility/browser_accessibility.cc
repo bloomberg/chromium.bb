@@ -426,47 +426,52 @@ gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start, int len)
         local_start > 0 ? character_offsets[local_start - 1] : 0;
     int end_pixel_offset =
         local_end > 0 ? character_offsets[local_end - 1] : 0;
+    int max_pixel_offset = character_offsets_length > 0
+                               ? character_offsets[character_offsets_length - 1]
+                               : 0;
 
-    gfx::Rect child_rect = child->GetPageBoundsRect();
     auto text_direction = static_cast<ax::mojom::TextDirection>(
         child->GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
-    gfx::Rect child_overlap_rect;
+    gfx::RectF child_overlap_rect;
     switch (text_direction) {
       case ax::mojom::TextDirection::kNone:
       case ax::mojom::TextDirection::kLtr: {
-        int left = child_rect.x() + start_pixel_offset;
-        int right = child_rect.x() + end_pixel_offset;
-        child_overlap_rect = gfx::Rect(left, child_rect.y(),
-                                       right - left, child_rect.height());
+        int height = child->GetLocation().height();
+        child_overlap_rect =
+            gfx::RectF(start_pixel_offset, 0,
+                       end_pixel_offset - start_pixel_offset, height);
         break;
       }
       case ax::mojom::TextDirection::kRtl: {
-        int right = child_rect.right() - start_pixel_offset;
-        int left = child_rect.right() - end_pixel_offset;
-        child_overlap_rect = gfx::Rect(left, child_rect.y(),
-                                       right - left, child_rect.height());
+        int right = max_pixel_offset - start_pixel_offset;
+        int left = max_pixel_offset - end_pixel_offset;
+        int height = child->GetLocation().height();
+        child_overlap_rect = gfx::RectF(left, 0, right - left, height);
         break;
       }
       case ax::mojom::TextDirection::kTtb: {
-        int top = child_rect.y() + start_pixel_offset;
-        int bottom = child_rect.y() + end_pixel_offset;
-        child_overlap_rect = gfx::Rect(child_rect.x(), top,
-                                       child_rect.width(), bottom - top);
+        int width = child->GetLocation().width();
+        child_overlap_rect = gfx::RectF(0, start_pixel_offset, width,
+                                        end_pixel_offset - start_pixel_offset);
         break;
       }
       case ax::mojom::TextDirection::kBtt: {
-        int bottom = child_rect.bottom() - start_pixel_offset;
-        int top = child_rect.bottom() - end_pixel_offset;
-        child_overlap_rect = gfx::Rect(child_rect.x(), top,
-                                       child_rect.width(), bottom - top);
+        int bottom = max_pixel_offset - start_pixel_offset;
+        int top = max_pixel_offset - end_pixel_offset;
+        int width = child->GetLocation().width();
+        child_overlap_rect = gfx::RectF(0, top, width, bottom - top);
         break;
       }
     }
 
-    if (bounds.width() == 0 && bounds.height() == 0)
-      bounds = child_overlap_rect;
-    else
-      bounds.Union(child_overlap_rect);
+    gfx::Rect absolute_child_rect = child->RelativeToAbsoluteBounds(
+        child_overlap_rect, false /* frame_only */, nullptr /* offscreen */,
+        true /* clip_bounds */);
+    if (bounds.width() == 0 && bounds.height() == 0) {
+      bounds = absolute_child_rect;
+    } else {
+      bounds.Union(absolute_child_rect);
+    }
   }
 
   return bounds;
