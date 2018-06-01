@@ -732,7 +732,6 @@
 <translation id="2114326799768592691">Перезавантажити фрейм</translation>
 <translation id="2114896190328250491">Автор фотографії: <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Надіслати на телефон</translation>
-<translation id="2115946962706216358">Не вдалося приєднати пристрій до домену. Можливо, ви перевищили максимальну кількість дозволених приєднань пристроїв для свого облікового запису на сервері.</translation>
 <translation id="2119349053129246860">Відкрити в додатку <ph name="APP" /></translation>
 <translation id="2121825465123208577">Змінити розмір</translation>
 <translation id="2124930039827422115">{1,plural, =1{Оцінка одного користувача: <ph name="AVERAGE_RATING" />.}one{Оцінка # користувача: <ph name="AVERAGE_RATING" />.}few{Оцінка # користувачів: <ph name="AVERAGE_RATING" />.}many{Оцінка # користувачів: <ph name="AVERAGE_RATING" />.}other{Оцінка # користувача: <ph name="AVERAGE_RATING" />.}}</translation>
@@ -1003,7 +1002,6 @@
 <translation id="253434972992662860">&amp;Пауза</translation>
 <translation id="2534460670861217804">Захищений проксі-сервер HTTP</translation>
 <translation id="253557089021624350">Кількість процесів, які використовуються розширеннями</translation>
-<translation id="2540384386570049483">Дозволити рекламу на цьому сайті</translation>
 <translation id="2541423446708352368">Показати всі завантаження</translation>
 <translation id="2542049655219295786">Таблиця Google</translation>
 <translation id="2544853746127077729">Сертифікат автентифікації відхилений мережею</translation>
@@ -1156,7 +1154,6 @@
 <translation id="2739191690716947896">Налагоджувати</translation>
 <translation id="2739240477418971307">Змінювати налаштування доступності</translation>
 <translation id="2740393541869613458">переглядати веб-сайти, які відвідував контрольований користувач, і</translation>
-<translation id="2740531572673183784">OK</translation>
 <translation id="2743387203779672305">Копіювати в буфер</translation>
 <translation id="2745080116229976798">Посилене підпорядкування Microsoft</translation>
 <translation id="2749756011735116528">Увійти в <ph name="PRODUCT_NAME" /></translation>
@@ -1479,7 +1476,6 @@
 <translation id="3270965368676314374">Читати, змінювати й видаляти фотографії, музику та інші медіафайли на комп’ютері</translation>
 <translation id="327147043223061465">Переглянути всі файли cookie й дані із сайтів</translation>
 <translation id="3271648667212143903">Сайт <ph name="ORIGIN" /> хоче підключитися</translation>
-<translation id="327444463633065042">Недійсна назва пристрою</translation>
 <translation id="3274763671541996799">Ви перейшли в повноекранний режим.</translation>
 <translation id="3275778913554317645">Відкрити вікно</translation>
 <translation id="3279741024917655738">Показувати відео на весь екран на</translation>
@@ -1504,7 +1500,6 @@
 <translation id="3305389145870741612">Процес форматування може зайняти декілька секунд. Зачекайте.</translation>
 <translation id="3305661444342691068">Відкрити файл PDF у вікні попереднього перегляду</translation>
 <translation id="3306684685104080068">Увімкнути трансляцію в хмарні служби, як-от Google Hangouts.</translation>
-<translation id="3307091518408668019">Організаційний підрозділ комп’ютера (наприклад, OU=Chromebooks,DC=приклад,DC=com)</translation>
 <translation id="3308006649705061278">Організаційний підрозділ (OU)</translation>
 <translation id="3308116878371095290">Цій сторінці було відмовлено в збереженні файлів cookie.</translation>
 <translation id="3308134619352333507">Кнопка "Сховати"</translation>
@@ -1870,7 +1865,6 @@
 <translation id="383891835335927981">Масштабування сайтів не змінено</translation>
 <translation id="3839516600093027468">Завжди забороняти сайту <ph name="HOST" /> переглядати буфер обміну</translation>
 <translation id="3840053866656739575">Утрачено з’єднання з Chromebox. Підійдіть ближче або перевірте пристрій, поки ми намагатимемося відновити з’єднання.</translation>
-<translation id="3842132283799370683">Не вдалося приєднати пристрій до домену. Можливо, виникли проблеми з організаційним підрозділом.</translation>
 <translation id="3842552989725514455">Шрифт Serif</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3851428669031642514">Завантажити небезпечні сценарії</translation>
@@ -2281,7 +2275,6 @@
 <translation id="4552678318981539154">Придбати більше об’єму пам’яті</translation>
 <translation id="4554591392113183336">Зовнішнє розширення має таку саму або нижчу версію порівняно з наявним.</translation>
 <translation id="4555769855065597957">Shadow</translation>
-<translation id="4555979468244469039">Назва комп’ютера Chromebook</translation>
 <translation id="4556110439722119938">Ваші закладки, історія, паролі й інші налаштування синхронізуватимуться з обліковим записом Google, щоб ви могли користуватися ними на всіх своїх пристроях</translation>
 <translation id="4558426062282641716">Потрібен дозвіл на автозапуск</translation>
 <translation id="4562155214028662640">Додати відбиток пальця</translation>
@@ -2424,7 +2417,6 @@
 <translation id="4784330909746505604">Презентація PowerPoint</translation>
 <translation id="4790972063719531840">Автоматично надсилати в Google дані про діагностику та використання</translation>
 <translation id="4792711294155034829">&amp;Повідомити про проблему...</translation>
-<translation id="479285515899735347">Схоже, пароль уже не дійсний. Поновіть його на іншому пристрої та повторіть спробу.</translation>
 <translation id="479536056609751218">Веб-сторінка, тільки HTML</translation>
 <translation id="479989351350248267">пошук</translation>
 <translation id="4801448226354548035">Сховати облікові записи</translation>
@@ -3092,7 +3084,6 @@
 <translation id="577322787686508614">Операцію перегляду заборонено на пристрої <ph name="DEVICE_NAME" />.</translation>
 <translation id="5774295353725270860">Відкрити програму файлів</translation>
 <translation id="5774515636230743468">Маніфест:</translation>
-<translation id="5775834615653774429">Не вдалося приєднати пристрій до домену. Організаційний підрозділ не існує.</translation>
 <translation id="577624874850706961">Пошук файлів cookie</translation>
 <translation id="5777468213129569553">Відкрити Chrome</translation>
 <translation id="5778747455497889540">Ось навмання згенерований пароль для модуля безпеки, присвоєний вашому комп’ютеру:</translation>
@@ -3113,7 +3104,6 @@
 <translation id="5804241973901381774">Дозволи</translation>
 <translation id="580571955903695899">Переупорядкувати за назвою</translation>
 <translation id="5807290661599647102">Налаштувати блокування екрана</translation>
-<translation id="580926004266167721">Не вдалося приєднати пристрій до домену. Можливо, права вашого облікового запису для організаційного підрозділу обмежено.</translation>
 <translation id="580961539202306967">Запитувати, якщо сайт хоче надсилати мені push-повідомлення (рекомендовано)</translation>
 <translation id="5809725759695043233">У вас є додатки, оптимізовані для комп’ютерів Chromebook</translation>
 <translation id="5814126672212206791">Тип з’єднання</translation>
@@ -3680,7 +3670,6 @@
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="6664237456442406323">На жаль, ваш комп’ютер налаштовано за допомогою ідентифікатора апаратного забезпечення з невірною структурою. Це перешкоджає оновленню ОС Chrome найновішими виправленнями системи безпеки, а тому ваш комп’ютер <ph name="BEGIN_BOLD" />може бути вразливим до зловмисних атак<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Не вдалося відкрити профіль. Вийдіть і знову ввійдіть.</translation>
-<translation id="6670647982128220776">Функціями, пов’язаними із синхронізацією та персоналізацію, тепер можна керувати за допомогою одного параметра. Якщо ввімкнути його, поточні налаштування можуть змінитися.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Перекласти цю сторінку (<ph name="SOURCE_LANGUAGE" />) такою мовою: <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Маніпулятор підключено</translation>
@@ -4546,7 +4535,6 @@
 <translation id="7984068253310542383">Дзеркалювати дисплей <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">Задля підвищення безпеки <ph name="PRODUCT_NAME" /> шифруватиме ваші дані.</translation>
 <translation id="7986295104073916105">Переглядати та змінювати налаштування паролів</translation>
-<translation id="798749371774946697">Назва пристрою задовга</translation>
 <translation id="7988355189918024273">Увімкнути функції доступності</translation>
 <translation id="7994702968232966508">Метод EAP</translation>
 <translation id="799547531016638432">Видалити ярлик</translation>
@@ -4804,7 +4792,6 @@
 <translation id="8400146488506985033">Керувати користувачами</translation>
 <translation id="8410073653152358832">Використовувати цей телефон</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">Так, увімкнути синхронізацію та персоналізацію</translation>
 <translation id="8413385045638830869">Спершу запитувати (рекомендується)</translation>
 <translation id="8418445294933751433">&amp;Показати як вкладку</translation>
 <translation id="8419098111404128271">Результати пошуку для запиту "<ph name="SEARCH_TEXT" />"</translation>
@@ -4849,7 +4836,6 @@
 <translation id="8470028084415844044">Щоб мати доступ до паролів на всіх своїх пристроях, увімкніть синхронізацію.</translation>
 <translation id="8470513973197838199">Збережені паролі для <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">з апаратною підтримкою</translation>
-<translation id="8474229360677287535">Закрити всі вікна</translation>
 <translation id="8475313423285172237">Інша програма на вашому комп’ютері додала розширення, яке може змінити роботу Chrome.</translation>
 <translation id="8475647382427415476">Не вдалося синхронізувати файл "<ph name="FILENAME" />". Google Диск спробує пізніше.</translation>
 <translation id="8477241577829954800">Заміщено</translation>
@@ -4988,7 +4974,6 @@
 <translation id="8688579245973331962">Немає вашого імені?</translation>
 <translation id="8688591111840995413">Неправильний пароль</translation>
 <translation id="8688672835843460752">Доступно</translation>
-<translation id="8689583087392258564">Не вдалося приєднати пристрій до домену. Організаційний підрозділ недійсний.</translation>
 <translation id="869257642790614972">Повторне відкривання останньої закритої вкладки</translation>
 <translation id="8695825812785969222">Відкрити &amp;розташування...</translation>
 <translation id="8698464937041809063">Малюнок Google</translation>
@@ -5126,7 +5111,6 @@
 <translation id="8902667442496790482">Відкрити налаштування служби Читання з екрана</translation>
 <translation id="8903921497873541725">Збільшити масштаб</translation>
 <translation id="8904976895050290827">Синхронізація Chrome</translation>
-<translation id="8909233240676134608">Не вдається приєднати пристрій до домену. Сервер не підтримує вказані типи шифрування Kerberos. Перегляньте розділ "Додаткові параметри", щоб налаштувати шифрування.</translation>
 <translation id="8909833622202089127">Сайт відстежує місцезнаходження</translation>
 <translation id="8910146161325739742">Як показувати екран</translation>
 <translation id="8910222113987937043">Зміни в закладках, історії, паролях та інших налаштуваннях більше не синхронізуватимуться з вашим обліковим записом Google. Дані, які зберігаються в обліковому записі Google, не буде видалено. Ними можна керувати на <ph name="BEGIN_LINK" />Інформаційній панелі Google<ph name="END_LINK" />.</translation>
@@ -5312,7 +5296,6 @@
 <translation id="9177499212658576372">Зараз ви під’єднані до такої мережі: <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9180380851667544951">Сайт може показувати ваш екран</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> з домену <ph name="DOWNLOAD_DOMAIN" />, залишилось: <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">Не вдалося приєднати пристрій до домену. Можливо, права вашого облікового запису на сервері обмежено.</translation>
 <translation id="9188441292293901223">Щоб розблоковувати цей <ph name="DEVICE_TYPE" />, оновіть свій телефон до останньої версії ОС Android.</translation>
 <translation id="9190063653747922532">L2TP/IPSec + Спільний ключ</translation>
 <translation id="920045321358709304">Пошук у <ph name="SEARCH_ENGINE" /></translation>

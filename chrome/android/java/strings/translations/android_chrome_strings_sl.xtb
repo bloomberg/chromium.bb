@@ -767,7 +767,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7882131421121961860">Ni zgodovine</translation>
 <translation id="7882806643839505685">Dovolitev zvoka za določeno spletno mesto.</translation>
 <translation id="7929962904089429003">Odpiranje menija</translation>
-<translation id="7939459033526903956">{FILE_COUNT,plural, =1{1 prenos končan}one{# prenos končan}two{# prenosa končana}few{# prenosi končani}other{# prenosov končanih}}</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{1 prenos je končan}one{# prenos je končan}two{# prenosa sta končana}few{# prenosi so končani}other{# prenosov je končanih}}</translation>
 <translation id="7942131818088350342">Izdelek <ph name="PRODUCT_NAME" /> je zastarel.</translation>
 <translation id="7947953824732555851">Sprejem in prijava</translation>
 <translation id="7963646190083259054">Ponudnik:</translation>

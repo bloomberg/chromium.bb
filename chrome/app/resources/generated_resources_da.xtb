@@ -729,7 +729,6 @@
 <translation id="2114326799768592691">Genindlæs &amp;ramme</translation>
 <translation id="2114896190328250491">Foto af <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Send til telefon</translation>
-<translation id="2115946962706216358">Enheden kunne ikke knyttes til domænet. Dette kan skyldes, at du har overskredet det tilladte antal enhedstilknytninger for din konto på serveren.</translation>
 <translation id="2119349053129246860">Åbn i <ph name="APP" /></translation>
 <translation id="2121825465123208577">Tilpas størrelse</translation>
 <translation id="2124930039827422115">{1,plural, =1{Én bruger gav bedømmelsen <ph name="AVERAGE_RATING" />.}one{# bruger gav bedømmelsen <ph name="AVERAGE_RATING" />.}other{# brugere gav bedømmelsen <ph name="AVERAGE_RATING" />.}}</translation>
@@ -1000,7 +999,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="253434972992662860">&amp;Pause</translation>
 <translation id="2534460670861217804">Sikker HTTP-proxy</translation>
 <translation id="253557089021624350">Antal aktiviteter, der bruger udvidelsen</translation>
-<translation id="2540384386570049483">Tillad annoncer på dette website</translation>
 <translation id="2541423446708352368">Vis alle downloads</translation>
 <translation id="2542049655219295786">Google-tabel</translation>
 <translation id="2544853746127077729">Godkendelsescertifikatet blev afvist af netværk</translation>
@@ -1154,7 +1152,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="2739191690716947896">Fejlretning</translation>
 <translation id="2739240477418971307">Skift dine tilgængelighedsindstillinger</translation>
 <translation id="2740393541869613458">gennemse de websites, som den administrerede bruger har besøgt, og</translation>
-<translation id="2740531572673183784">OK</translation>
 <translation id="2743387203779672305">Kopiér til udklipsholderen</translation>
 <translation id="2745080116229976798">Microsoft-kvalificeret delegering</translation>
 <translation id="2749756011735116528">Log ind på <ph name="PRODUCT_NAME" /></translation>
@@ -1477,7 +1474,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="3270965368676314374">Læs, rediger og slet billeder, musik og andre medier på din computer</translation>
 <translation id="327147043223061465">Se alle cookies og websitedata</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> vil gerne oprette forbindelse</translation>
-<translation id="327444463633065042">Ugyldigt enhedsnavn</translation>
 <translation id="3274763671541996799">Du er nu i fuld skærm.</translation>
 <translation id="3275778913554317645">Åbn som vindue</translation>
 <translation id="3279741024917655738">Se videoer i fuld skærm på</translation>
@@ -1502,7 +1498,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="3305389145870741612">Formateringen kan tage et par sekunder. Vent et øjeblik.</translation>
 <translation id="3305661444342691068">Åbn PDF i fremviseren</translation>
 <translation id="3306684685104080068">Aktivér casting til tjenester, der er baseret på skyen, som f.eks. Google Hangouts.</translation>
-<translation id="3307091518408668019">Computer OU (f.eks. OU=Chromebooks, DC=eksempel, DC=com)</translation>
 <translation id="3308006649705061278">Organisationsenhed (OU)</translation>
 <translation id="3308116878371095290">Denne side blev forhindret i at konfigurere cookies.</translation>
 <translation id="3308134619352333507">Skjul knap</translation>
@@ -1868,7 +1863,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="383891835335927981">Der er ikke zoomet ind eller ud på nogen websites</translation>
 <translation id="3839516600093027468">Bloker altid <ph name="HOST" /> fra at se udklipsholderen</translation>
 <translation id="3840053866656739575">Forbindelsen til din Chromebox er afbrudt. Flyt dig tættere på, eller kontrollér din enhed, mens vi forsøger at genoprette forbindelsen.</translation>
-<translation id="3842132283799370683">Enheden kunne ikke knyttes til domænet. Dette kan skyldes problemer med organisationsenheden.</translation>
 <translation id="3842552989725514455">Serif-skrifttype</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3851428669031642514">Indlæs usikre scripts</translation>
@@ -2279,7 +2273,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4552678318981539154">Køb mere lagerplads</translation>
 <translation id="4554591392113183336">Ekstern udvidelse er den samme version eller en ældre version end den eksisterende.</translation>
 <translation id="4555769855065597957">Skygge</translation>
-<translation id="4555979468244469039">Enhedsnavn for Chromebook</translation>
 <translation id="4556110439722119938">Dine bogmærker, din historik, dine adgangskoder og andre indstillinger synkroniseres med din Google-konto, så du kan bruge dem på alle dine enheder</translation>
 <translation id="4558426062282641716">Der er anmodet om tilladelse til automatisk start</translation>
 <translation id="4562155214028662640">Tilføj fingeraftryk</translation>
@@ -2422,7 +2415,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4784330909746505604">PowerPoint-præsentation</translation>
 <translation id="4790972063719531840">Send automatisk diagnostik og brugsdata til Google</translation>
 <translation id="4792711294155034829">&amp;Rapporter et problem...</translation>
-<translation id="479285515899735347">Ups! Det lader til, at din adgangskode er udløbet. Forny den på en anden enhed, og prøv igen.</translation>
 <translation id="479536056609751218">Webside, kun HTML</translation>
 <translation id="479989351350248267">søg</translation>
 <translation id="4801448226354548035">Skjul konti</translation>
@@ -3090,7 +3082,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="577322787686508614">Læsehandlingen er ikke tilladt på: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Åbn appen Filer</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5775834615653774429">Enheden kunne ikke knyttes til domænet. Organisationsenheden eksisterer ikke.</translation>
 <translation id="577624874850706961">Søg i cookies</translation>
 <translation id="5777468213129569553">Åbn Chrome</translation>
 <translation id="5778747455497889540">Nedenfor ses den tilfældigt genererede adgangskode til sikkerhedsmodulet, der er tilknyttet din computer:</translation>
@@ -3111,7 +3102,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5804241973901381774">Tilladelser</translation>
 <translation id="580571955903695899">Omorganiser efter titel</translation>
 <translation id="5807290661599647102">Opret en skærmlås</translation>
-<translation id="580926004266167721">Enheden kunne ikke knyttes til domænet. Dette kan skyldes utilstrækkelige privilegier for din konto på organisationsenheden.</translation>
 <translation id="580961539202306967">Spørg mig, når et website vil sende mig push-meddelelser (anbefales)</translation>
 <translation id="5809725759695043233">Du har apps, der er optimeret til Chromebooks</translation>
 <translation id="5814126672212206791">Forbindelsestype</translation>
@@ -3679,7 +3669,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6659594942844771486">Fane</translation>
 <translation id="6664237456442406323">Din computer er desværre konfigureret med et hardware-id i forkert format. Dette forhindrer Chrome OS i at opdatere med de nyeste sikkerhedsrettelser, og din computer <ph name="BEGIN_BOLD" />kan være sårbar over for ondartede angreb<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Der gik noget galt ved åbningen af din profil. Nogle funktioner er muligvis ikke tilgængelige.</translation>
-<translation id="6670647982128220776">Funktioner, som er relateret til synkronisering og tilpasning, ligger nu under et enkelt kontrolelement. Hvis du aktiverer dette, kan det ændre dine nuværende indstillinger.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Skal Google oversætte denne side fra <ph name="SOURCE_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Pegeredskabet er tilsluttet</translation>
@@ -4544,7 +4533,6 @@ Installationen af <ph name="APP_NAME" /> downloader <ph name="DOWNLOAD_SIZE" /> 
 <translation id="7984068253310542383">Spejl <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540"><ph name="PRODUCT_NAME" /> krypterer dine data for at opnå øget sikkerhed.</translation>
 <translation id="7986295104073916105">Læse og redigere gemte indstillinger for adgangskode</translation>
-<translation id="798749371774946697">Enhedsnavnet er for langt</translation>
 <translation id="7988355189918024273">Aktiver tilgængelighedsfunktioner</translation>
 <translation id="7994702968232966508">EAP-metode</translation>
 <translation id="799547531016638432">Fjern genvej</translation>
@@ -4802,7 +4790,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8400146488506985033">Administrer personer</translation>
 <translation id="8410073653152358832">Brug denne telefon</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">Ja. Aktivér synkronisering og tilpasning</translation>
 <translation id="8413385045638830869">Spørg først (anbefales)</translation>
 <translation id="8418445294933751433">&amp;Vis som fane</translation>
 <translation id="8419098111404128271">Søgeresultater for "<ph name="SEARCH_TEXT" />"</translation>
@@ -4847,7 +4834,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8470028084415844044">Aktivér synkronisering for at få alle dine adgangskoder på alle dine enheder.</translation>
 <translation id="8470513973197838199">Gemte adgangskoder til <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">hardwarebaseret</translation>
-<translation id="8474229360677287535">Luk alle dine vinduer</translation>
 <translation id="8475313423285172237">Et andet program på din computer tilføjede en udvidelse, der kan ændre den måde, hvorpå Chrome fungerer.</translation>
 <translation id="8475647382427415476">Google Drev kunne ikke synkronisere "<ph name="FILENAME" />" på nuværende tidspunkt. Google Drev prøver igen senere.</translation>
 <translation id="8477241577829954800">Erstattet</translation>
@@ -4986,7 +4972,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8688579245973331962">Kan du ikke se dit navn?</translation>
 <translation id="8688591111840995413">Forkert adgangskode</translation>
 <translation id="8688672835843460752">Tilgængelig</translation>
-<translation id="8689583087392258564">Enheden kunne ikke knyttes til domænet. Organisationsenheden er ugyldig.</translation>
 <translation id="869257642790614972">Genåbn den senest lukkede fane</translation>
 <translation id="8695825812785969222">Åbn &amp;placering...</translation>
 <translation id="8698464937041809063">Google-tegning</translation>
@@ -5125,7 +5110,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8902667442496790482">Åbn indstillinger for Tekstoplæsning</translation>
 <translation id="8903921497873541725">Zoom ind</translation>
 <translation id="8904976895050290827">Chrome-synkronisering</translation>
-<translation id="8909233240676134608">Enheden kunne ikke knyttes til domænet. Serveren understøtter ikke de angivne Kerberos-krypteringstyper. Tjek krypteringsindstillingerne under "Flere valgmuligheder".</translation>
 <translation id="8909833622202089127">Websitet sporer din placering</translation>
 <translation id="8910146161325739742">Del din skærm</translation>
 <translation id="8910222113987937043">Ændringer af bogmærker, historik, adgangskoder og andre indstillinger synkroniseres ikke længere med din Google-konto. Dine eksisterende data er dog stadig gemt på din Google-konto og kan administreres i <ph name="BEGIN_LINK" />Google Betjeningspanel<ph name="END_LINK" />.</translation>
@@ -5311,7 +5295,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9177499212658576372">Du har i øjeblikket forbindelse til netværket <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9180380851667544951">Websitet kan dele din skærm</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> fra <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">Enheden kunne ikke knyttes til domænet. Dette kan skyldes utilstrækkelige privilegier for din konto på serveren.</translation>
 <translation id="9188441292293901223">Opdater din telefon til en nyere version af Android for at låse denne <ph name="DEVICE_TYPE" /> op.</translation>
 <translation id="9190063653747922532">L2TP/IPsec + forhåndsdelt nøgle</translation>
 <translation id="920045321358709304">Søg via <ph name="SEARCH_ENGINE" /></translation>

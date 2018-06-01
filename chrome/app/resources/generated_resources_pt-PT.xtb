@@ -733,7 +733,6 @@
 <translation id="2114326799768592691">Atualizar &amp;frame</translation>
 <translation id="2114896190328250491">Foto de <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Enviar para telemóvel</translation>
-<translation id="2115946962706216358">Falha ao associar o computador ao domínio. Isto pode ter ocorrido por ter excedido o número máximo de associações de computadores permitidas para a sua conta no servidor.</translation>
 <translation id="2119349053129246860">Abrir na aplicação <ph name="APP" /></translation>
 <translation id="2121825465123208577">Redimensionar</translation>
 <translation id="2124930039827422115">{1,plural, =1{Classificação de <ph name="AVERAGE_RATING" /> por um utilizador.}other{Classificação de <ph name="AVERAGE_RATING" /> por # utilizadores.}}</translation>
@@ -1004,7 +1003,6 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="253434972992662860">&amp;Pausa</translation>
 <translation id="2534460670861217804">Proxy de HTTP seguro</translation>
 <translation id="253557089021624350">Contagem keepalive</translation>
-<translation id="2540384386570049483">Permitir anúncios neste site</translation>
 <translation id="2541423446708352368">Mostrar todas as  transferências</translation>
 <translation id="2542049655219295786">Tabela do Google</translation>
 <translation id="2544853746127077729">Certificado de autenticação rejeitado pela rede</translation>
@@ -1157,7 +1155,6 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2739191690716947896">Depurar</translation>
 <translation id="2739240477418971307">Alterar as definições de acessibilidade</translation>
 <translation id="2740393541869613458">analisar Sites que o utilizador supervisionado visitou e</translation>
-<translation id="2740531572673183784">OK</translation>
 <translation id="2743387203779672305">Copiar para a área de transferência</translation>
 <translation id="2745080116229976798">Subordinação qualificada Microsoft</translation>
 <translation id="2749756011735116528">Iniciar sessão no <ph name="PRODUCT_NAME" /></translation>
@@ -1481,7 +1478,6 @@ Pretende pará-lo?</translation>
 <translation id="3270965368676314374">Ler, alterar e eliminar fotos, música e outros elementos multimédia do computador</translation>
 <translation id="327147043223061465">Ver todos os cookies e os dados de sites</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> pretende estabelecer ligação</translation>
-<translation id="327444463633065042">Nome de computador inválido</translation>
 <translation id="3274763671541996799">Mudou para o ecrã inteiro.</translation>
 <translation id="3275778913554317645">Abrir como janela</translation>
 <translation id="3279741024917655738">Mostrar vídeos em ecrã inteiro em</translation>
@@ -1506,7 +1502,6 @@ Pretende pará-lo?</translation>
 <translation id="3305389145870741612">O processo de formatação pode demorar alguns segundos. Aguarde.</translation>
 <translation id="3305661444342691068">Abrir PDF na Pré-visualização</translation>
 <translation id="3306684685104080068">Ativar a transmissão para serviços baseados na nuvem como o Hangouts do Google.</translation>
-<translation id="3307091518408668019">UO do computador (por exemplo, UO=Chromebooks, DC=exemplo, DC=com)</translation>
 <translation id="3308006649705061278">Unidade organizacional (OU)</translation>
 <translation id="3308116878371095290">Esta página foi impedida de definir cookies.</translation>
 <translation id="3308134619352333507">Ocultar Botão</translation>
@@ -1567,7 +1562,7 @@ Pretende pará-lo?</translation>
 <translation id="3407837288045706722">Para obter mais definições relacionadas com privacidade, segurança e recolha de dados, consulte <ph name="BEGIN_LINK" />Sincronização e personalização<ph name="END_LINK" />.</translation>
 <translation id="3412265149091626468">Passar para a selecção</translation>
 <translation id="3413122095806433232">Emissores de AC: <ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">Realce o que pretende ouvir e, em seguida, prima Pesquisar + S. Em alternativa, prima sem soltar ou toque no ícone Selecionar para falar junto à sua imagem de perfil e, em seguida, selecione uma região para ser lida em voz alta.</translation>
+<translation id="3414791204526549759">Realce o que pretende ouvir e, em seguida, prima Pesquisar + S. Em alternativa, prima sem soltar Pesquisar ou toque no ícone Selecionar para falar junto à sua imagem do perfil e, em seguida, selecione uma região para ser lida em voz alta.</translation>
 <translation id="3414856743105198592">A formatação do suporte de dados amovível apagará todos os dados. Pretende continuar?</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
 <translation id="3420980393175304359">Mudar de pessoa</translation>
@@ -1872,7 +1867,6 @@ Pretende pará-lo?</translation>
 <translation id="383891835335927981">O zoom dos sites não foi aumentado nem diminuído</translation>
 <translation id="3839516600093027468">Impedir sempre <ph name="HOST" /> de ver a área de transferência</translation>
 <translation id="3840053866656739575">A ligação ao Chromebox foi perdida. Aproxime-se ou verifique o dispositivo enquanto tentamos restabelecer a ligação.</translation>
-<translation id="3842132283799370683">Falha ao associar o computador ao domínio. Isto pode dever-se a problemas com a unidade organizacional.</translation>
 <translation id="3842552989725514455">Tipo de letra Serif</translation>
 <translation id="385051799172605136">Anterior</translation>
 <translation id="3851428669031642514">Carregar scripts não seguros</translation>
@@ -2283,7 +2277,6 @@ Pretende pará-lo?</translation>
 <translation id="4552678318981539154">Comprar mais armazenamento</translation>
 <translation id="4554591392113183336">A extensão externa tem a mesma versão ou uma versão inferior à existente.</translation>
 <translation id="4555769855065597957">Sombra</translation>
-<translation id="4555979468244469039">Nome do computador Chromebook</translation>
 <translation id="4556110439722119938">Os marcadores, o histórico, as palavras-passe e outras definições são sincronizados com a sua Conta Google para que os possa utilizar em todos os dispositivos</translation>
 <translation id="4558426062282641716">Permissão para início automático solicitado</translation>
 <translation id="4562155214028662640">Adicionar impressão digital</translation>
@@ -2426,7 +2419,6 @@ Pretende pará-lo?</translation>
 <translation id="4784330909746505604">Apresentação do PowerPoint</translation>
 <translation id="4790972063719531840">Enviar automaticamente dados de diagnóstico e de utilização para a Google</translation>
 <translation id="4792711294155034829">&amp;Comunicar um problema...</translation>
-<translation id="479285515899735347">Ups! Parece que a sua palavra-passe expirou. Renove-a a partir de outro computador e tente novamente.</translation>
 <translation id="479536056609751218">Página Web, Apenas HTML</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4801448226354548035">Ocultar contas</translation>
@@ -3095,7 +3087,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="577322787686508614">A operação de leitura não é permitida em: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Aplicação Abrir Ficheiros</translation>
 <translation id="5774515636230743468">Manifesto:</translation>
-<translation id="5775834615653774429">Falha ao associar o computador ao domínio. A unidade organizacional não existe.</translation>
 <translation id="577624874850706961">Pesquisar cookies</translation>
 <translation id="5777468213129569553">Abrir o Chrome</translation>
 <translation id="5778747455497889540">Abaixo, encontra a palavra-passe do módulo seguro, gerada aleatoriamente, que foi atribuída ao seu computador:</translation>
@@ -3116,7 +3107,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5804241973901381774">Permissões</translation>
 <translation id="580571955903695899">Reordenar por título</translation>
 <translation id="5807290661599647102">Definir um bloqueio de ecrã</translation>
-<translation id="580926004266167721">Falha ao associar o computador ao domínio. Isto pode dever-se a privilégios insuficientes para a sua conta da unidade organizacional.</translation>
 <translation id="580961539202306967">Perguntar-me quando um site pretender enviar-me mensagens push (recomendado)</translation>
 <translation id="5809725759695043233">Tem aplicações que foram otimizadas para Chromebooks.</translation>
 <translation id="5814126672212206791">Tipo de ligação</translation>
@@ -3216,7 +3206,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5955282598396714173">A sua palavra-passe expirou. Termine e inicie sessão novamente para a alterar.</translation>
 <translation id="5956585768868398362">É esta a página de pesquisa de que estava à espera?</translation>
 <translation id="5957613098218939406">Mais opções</translation>
-<translation id="5957987129450536192">Toque no ícone Selecionar para falar junto à sua imagem de perfil e, em seguida, selecione o que pretende ouvir.</translation>
+<translation id="5957987129450536192">Toque no ícone Selecionar para falar junto à sua imagem do perfil e, em seguida, selecione o que pretende ouvir.</translation>
 <translation id="5958529069007801266">Utilizador supervisionado</translation>
 <translation id="5959471481388474538">Rede não disponível</translation>
 <translation id="595959584676692139">Atualizar a página para utilizar esta extensão</translation>
@@ -3683,7 +3673,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">Infelizmente, o seu computador está configurado com um ID de hardware formatado incorretamente. Este facto impede que o Chrome OS faça a atualização das últimas correções de segurança e o seu computador <ph name="BEGIN_BOLD" />pode estar vulnerável a ataques maliciosos<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Ocorreu um erro ao abrir o seu perfil. Termine sessão e inicie-a novamente.</translation>
-<translation id="6670647982128220776">As funcionalidades relacionadas com a sincronização e com a personalização estão agora sob um único controlo. A ativação da mesma poderá alterar as suas definições atuais.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Pretende que o Google traduza esta página de <ph name="SOURCE_LANGUAGE" /> para <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Dispositivo apontador ligado</translation>
@@ -4549,7 +4538,6 @@ A instalação da aplicação <ph name="APP_NAME" /> implica uma transferência 
 <translation id="7984068253310542383">Espelhar <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">Para maior segurança, o <ph name="PRODUCT_NAME" /> encriptará os seus dados.</translation>
 <translation id="7986295104073916105">Ler e alterar as definições de palavras-passe guardadas</translation>
-<translation id="798749371774946697">O nome do computador é demasiado longo</translation>
 <translation id="7988355189918024273">Activar funcionalidades de acessibilidade</translation>
 <translation id="7994702968232966508">Método EAP</translation>
 <translation id="799547531016638432">Remover atalho</translation>
@@ -4807,7 +4795,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8400146488506985033">Gerir pessoas</translation>
 <translation id="8410073653152358832">Utilizar este telemóvel</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">Sim, ativar a sincronização e a personalização</translation>
 <translation id="8413385045638830869">Perguntar primeiro (recomendado)</translation>
 <translation id="8418445294933751433">Mo&amp;strar como separador</translation>
 <translation id="8419098111404128271">Resultados da pesquisa para "<ph name="SEARCH_TEXT" />"</translation>
@@ -4852,7 +4839,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8470028084415844044">Para obter todas as suas palavras-passe em todos os dispositivos, ative a sincronização.</translation>
 <translation id="8470513973197838199">Palavras-passe guardadas para <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">suporte de hardware</translation>
-<translation id="8474229360677287535">Fechar todas as janelas</translation>
 <translation id="8475313423285172237">Outro programa do computador adicionou uma extensão que pode alterar o funcionamento do Chrome.</translation>
 <translation id="8475647382427415476">O Google Drive não conseguiu sincronizar "<ph name="FILENAME" />" de momento e vai tentar novamente mais tarde.</translation>
 <translation id="8477241577829954800">Substituído</translation>
@@ -4991,7 +4977,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8688579245973331962">Não vê o seu nome?</translation>
 <translation id="8688591111840995413">Palavra-passe incorreta</translation>
 <translation id="8688672835843460752">Disponível</translation>
-<translation id="8689583087392258564">Falha ao associar o computador ao domínio. A unidade organizacional é inválida.</translation>
 <translation id="869257642790614972">Voltar a abrir o separador fechado</translation>
 <translation id="8695825812785969222">Abrir &amp;Localização...</translation>
 <translation id="8698464937041809063">Desenho do Google</translation>
@@ -5129,7 +5114,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8902667442496790482">Abrir as definições de Selecionar para ativar voz</translation>
 <translation id="8903921497873541725">Ampliar</translation>
 <translation id="8904976895050290827">Sincronização do Google Chrome</translation>
-<translation id="8909233240676134608">Não é possível associar a máquina ao domínio. O servidor não suporta os tipos de encriptação Kerberos especificados. Selecione "Mais opções" para aceder às definições de encriptação.</translation>
 <translation id="8909833622202089127">O site está a monitorizar a sua localização.</translation>
 <translation id="8910146161325739742">Partilhar o ecrã</translation>
 <translation id="8910222113987937043">As alterações aos seus marcadores, histórico, palavras-passe e outras definições já não serão sincronizadas com a sua Conta Google. No entanto, os dados existentes continuarão armazenados na Conta Google e podem ser geridos no <ph name="BEGIN_LINK" />Painel de Controlo Google<ph name="END_LINK" />.</translation>
@@ -5315,7 +5299,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9177499212658576372">Está atualmente ligado à rede <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9180380851667544951">O site pode partilhar o ecrã.</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> de <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">Falha ao associar o computador ao domínio. Isto pode dever-se a privilégios insuficientes para a sua conta no servidor.</translation>
 <translation id="9188441292293901223">Atualize o telemóvel para uma versão mais recente do Android para desbloquear este <ph name="DEVICE_TYPE" />.</translation>
 <translation id="9190063653747922532">L2TP/IPSec + chave pré-partilhada</translation>
 <translation id="920045321358709304">Pesquisar no <ph name="SEARCH_ENGINE" /></translation>

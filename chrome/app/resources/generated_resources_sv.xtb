@@ -731,7 +731,6 @@
 <translation id="2114326799768592691">Läs in &amp;ram igen</translation>
 <translation id="2114896190328250491">Foto taget av <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Skicka till mobilen</translation>
-<translation id="2115946962706216358">Det gick inte att ansluta datorn till domänen. Detta kan bero på att det maximala antalet datorer som får anslutas på servern har överskridits för ditt konto.</translation>
 <translation id="2119349053129246860">Öppna i <ph name="APP" /></translation>
 <translation id="2121825465123208577">Ändra storlek</translation>
 <translation id="2124930039827422115">{1,plural, =1{Fått betyget <ph name="AVERAGE_RATING" /> av en användare.}other{Fått betyget <ph name="AVERAGE_RATING" /> av # användare.}}</translation>
@@ -1002,7 +1001,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="253434972992662860">&amp;Paus</translation>
 <translation id="2534460670861217804">Säker HTTP-proxy</translation>
 <translation id="253557089021624350">Antal keepalive</translation>
-<translation id="2540384386570049483">Tillåt annonser på den här webbplatsen</translation>
 <translation id="2541423446708352368">Visa alla hämtade filer</translation>
 <translation id="2542049655219295786">Tabell i Google Dokument</translation>
 <translation id="2544853746127077729">Autentiseringscertifikatet godkändes inte av nätverket</translation>
@@ -1155,7 +1153,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2739191690716947896">Felsökning</translation>
 <translation id="2739240477418971307">Ändra tillgänglighetsinställningarna</translation>
 <translation id="2740393541869613458">granska webbplatser som den kontrollerade användaren har besökt och</translation>
-<translation id="2740531572673183784">OK</translation>
 <translation id="2743387203779672305">Kopiera till Urklipp</translation>
 <translation id="2745080116229976798">Microsofts kvalificerade underordning</translation>
 <translation id="2749756011735116528">Logga in på <ph name="PRODUCT_NAME" /></translation>
@@ -1478,7 +1475,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="3270965368676314374">Läsa, ändra och ta bort foton, musik och andra media från datorn</translation>
 <translation id="327147043223061465">Visa alla cookies och webbplatsuppgifter</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> vill ansluta</translation>
-<translation id="327444463633065042">Ogiltigt datornamn</translation>
 <translation id="3274763671541996799">Du har aktiverat helskärmsläget.</translation>
 <translation id="3275778913554317645">Öppna som fönster</translation>
 <translation id="3279741024917655738">Visa videor i helskärmsläge på</translation>
@@ -1503,7 +1499,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="3305389145870741612">Formateringen kan ta ett par sekunder. Vänta.</translation>
 <translation id="3305661444342691068">Öppna PDF i förhandsgranskning</translation>
 <translation id="3306684685104080068">Aktivera castning till molnbaserade tjänster som Google Hangouts.</translation>
-<translation id="3307091518408668019">Organisationsenhet (OU) för dator (t.ex. OU = Chromebooks, DC = exempel, DC = com)</translation>
 <translation id="3308006649705061278">Organisationsenhet (OU)</translation>
 <translation id="3308116878371095290">Den här sidan har förhindrats att ange cookies.</translation>
 <translation id="3308134619352333507">Dölj knapp</translation>
@@ -1869,7 +1864,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="383891835335927981">Inga webbplatser har zoomats in eller ut</translation>
 <translation id="3839516600093027468">Blockera alltid tillgången till Urklipp för <ph name="HOST" /></translation>
 <translation id="3840053866656739575">Anslutningen till din Chromebox avbröts. Flytta dig närmare eller kontrollera enheten medan ett nytt anslutningsförsök görs.</translation>
-<translation id="3842132283799370683">Det gick inte att ansluta datorn till domänen. Detta kan bero på problem med organisationsenheten.</translation>
 <translation id="3842552989725514455">Serif-teckensnitt</translation>
 <translation id="385051799172605136">Bakåt</translation>
 <translation id="3851428669031642514">Läsa in osäkra skript</translation>
@@ -2280,7 +2274,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="4552678318981539154">Köp mer lagringsutrymme</translation>
 <translation id="4554591392113183336">Det externa tillägget har samma eller lägre version än det som redan finns.</translation>
 <translation id="4555769855065597957">Skugga</translation>
-<translation id="4555979468244469039">Datornamn för Chromebook</translation>
 <translation id="4556110439722119938">Bokmärken, historik, lösenord och andra inställningar synkroniseras med ditt Google-konto så att du kan använda dem på alla enheter.</translation>
 <translation id="4558426062282641716">Autostartbehörighet har begärts</translation>
 <translation id="4562155214028662640">Lägg till fingeravtryck</translation>
@@ -2423,7 +2416,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="4784330909746505604">PowerPoint-presentation</translation>
 <translation id="4790972063719531840">Skicka diagnostik- och användningsdata automatiskt till Google</translation>
 <translation id="4792711294155034829">&amp;Rapportera ett problem...</translation>
-<translation id="479285515899735347">Hoppsan. Ditt lösenord verkar ha gått ut. Förnya det på en annan dator och försök igen.</translation>
 <translation id="479536056609751218">Webbsida, endast HTML</translation>
 <translation id="479989351350248267">sök</translation>
 <translation id="4801448226354548035">Dölj konton</translation>
@@ -3091,7 +3083,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="577322787686508614">Läsbehörigheten för åtgärden saknas på: <ph name="DEVICE_NAME" />.</translation>
 <translation id="5774295353725270860">Appen Öppna filer</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5775834615653774429">Det gick inte att ansluta datorn till domänen. Organisationsenheten finns inte.</translation>
 <translation id="577624874850706961">Sök efter cookies</translation>
 <translation id="5777468213129569553">Öppna Chrome</translation>
 <translation id="5778747455497889540">Nedan visas det slumpmässigt genererade lösenordet för den säkra modulen som har tilldelats din dator:</translation>
@@ -3112,7 +3103,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="5804241973901381774">Behörigheter</translation>
 <translation id="580571955903695899">Ordna efter titel</translation>
 <translation id="5807290661599647102">Konfigurera ett skärmlås</translation>
-<translation id="580926004266167721">Det gick inte att ansluta datorn till domänen. Detta kan bero på att kontot inte har de behörigheter som krävs för organisationsenheten.</translation>
 <translation id="580961539202306967">Fråga mig när en webbplats vill skicka push-meddelanden (rekommenderas)</translation>
 <translation id="5809725759695043233">Du har appar som optimerats för Chromebook</translation>
 <translation id="5814126672212206791">Anslutningstyp</translation>
@@ -3679,7 +3669,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="6659594942844771486">Flik</translation>
 <translation id="6664237456442406323">Tyvärr är din dator konfigurerad med ett felaktigt maskinvaru-ID. Detta förhindrar att Chrome OS uppdateras med de senaste säkerhetskorrigeringarna och datorn <ph name="BEGIN_BOLD" />kan vara utsatt för skadlig programvara<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Något gick snett när profilen skulle öppnas. Logga ut och sedan in igen.</translation>
-<translation id="6670647982128220776">Funktioner som rör synkronisering och anpassning styrs nu från ett och samma ställe. Om du aktiverar detta kan de nuvarande inställningarna ändras.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Vill du att Google ska översätta sidan från <ph name="SOURCE_LANGUAGE" /> till <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Pekdon har anslutits</translation>
@@ -4544,7 +4533,6 @@ När du installerar <ph name="APP_NAME" /> laddas <ph name="DOWNLOAD_SIZE" /> da
 <translation id="7984068253310542383">Spegla <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540"><ph name="PRODUCT_NAME" /> krypterar data för att öka säkerheten.</translation>
 <translation id="7986295104073916105">Läsa och ändra inställningar för sparade lösenord</translation>
-<translation id="798749371774946697">Datornamnet är för långt</translation>
 <translation id="7988355189918024273">Aktivera tillgänglighetsfunktioner</translation>
 <translation id="7994702968232966508">EAP-metod</translation>
 <translation id="799547531016638432">Ta bort genväg</translation>
@@ -4802,7 +4790,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8400146488506985033">Hantera personer</translation>
 <translation id="8410073653152358832">Använd den här mobilen</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">Ja, aktivera synkronisering och anpassning</translation>
 <translation id="8413385045638830869">Fråga först (rekommenderas)</translation>
 <translation id="8418445294933751433">&amp;Visa som flik</translation>
 <translation id="8419098111404128271">Sökresultat för ”<ph name="SEARCH_TEXT" />”</translation>
@@ -4847,7 +4834,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8470028084415844044">Aktivera synkronisering om du vill ha tillgång till alla lösenord oavsett vilken enhet du använder.</translation>
 <translation id="8470513973197838199">Sparade lösenord för <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">maskinvarustödd</translation>
-<translation id="8474229360677287535">Stäng alla fönster</translation>
 <translation id="8475313423285172237">Ett annat program i datorn har lagt till ett tillägg som kan ändra hur Chrome fungerar.</translation>
 <translation id="8475647382427415476">Det gick inte att synkronisera <ph name="FILENAME" /> med Google Drive just nu. Ett nytt försök görs senare.</translation>
 <translation id="8477241577829954800">Ersatt</translation>
@@ -4986,7 +4972,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8688579245973331962">Hittar du inte ditt namn?</translation>
 <translation id="8688591111840995413">Felaktigt lösenord</translation>
 <translation id="8688672835843460752">Tillgängligt</translation>
-<translation id="8689583087392258564">Det gick inte att ansluta datorn till domänen. Organisationsenheten är inte giltig.</translation>
 <translation id="869257642790614972">Öppna senast stängda flik igen</translation>
 <translation id="8695825812785969222">Öppna plats...</translation>
 <translation id="8698464937041809063">Google-teckning</translation>
@@ -5124,7 +5109,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8902667442496790482">Öppna inställningarna för Textuppläsning</translation>
 <translation id="8903921497873541725">Zooma in</translation>
 <translation id="8904976895050290827">Synkronisera med Chrome</translation>
-<translation id="8909233240676134608">Det gick inte att koppla datorn till domänen. Servern har inte stöd för typerna av Kerberos-krypteringen som har angetts. Inställningarna för kryptering finns under Fler alternativ.</translation>
 <translation id="8909833622202089127">Webbplatsen spårar din plats</translation>
 <translation id="8910146161325739742">Dela skärmen</translation>
 <translation id="8910222113987937043">När bokmärken, historik, lösenord och andra inställningar ändras kommer dessa ändringar inte längre att synkroniseras med Google-kontot. Uppgifter som redan har sparats i Google-kontot finns däremot kvar och kan hanteras via <ph name="BEGIN_LINK" />Google Översikt<ph name="END_LINK" />.</translation>
@@ -5310,7 +5294,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9177499212658576372">Du är ansluten till nätverket <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9180380851667544951">Webbplatsen kan dela din skärm</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> från <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">Det gick inte att ansluta datorn till domänen. Detta kan bero på att kontot inte har de behörigheter som krävs på servern.</translation>
 <translation id="9188441292293901223">Uppdatera mobilen till en nyare version av Android om du vill låsa upp denna <ph name="DEVICE_TYPE" />.</translation>
 <translation id="9190063653747922532">L2TP/IPSec + i förväg delad nyckel</translation>
 <translation id="920045321358709304">Sök på <ph name="SEARCH_ENGINE" /></translation>

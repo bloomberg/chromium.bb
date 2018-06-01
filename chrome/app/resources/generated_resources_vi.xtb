@@ -621,7 +621,7 @@
 <translation id="1919345977826869612">Quảng cáo</translation>
 <translation id="1919814239594435008">Đã cho phép truy cập vào plugin không có hộp cát</translation>
 <translation id="1921584744613111023"><ph name="DPI" /> dpi</translation>
-<translation id="1924559387127953748">Nhận các tiện ích thông minh của Google trong <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
+<translation id="1924559387127953748">Trải nghiệm các tính năng thông minh của Google trong <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="192494336144674234">Mở bằng</translation>
 <translation id="1925021887439448749">Nhập địa chỉ web tùy chỉnh</translation>
 <translation id="1926339101652878330">Các cài đặt này chịu sự kiểm soát của chính sách doanh nghiệp. Vui lòng liên hệ với quản trị viên của bạn để biết thêm thông tin.</translation>
@@ -668,7 +668,7 @@
 <translation id="1997616988432401742">Chứng chỉ của bạn</translation>
 <translation id="1999115740519098545">Khi khởi động</translation>
 <translation id="2001796770603320721">Quản lý trong Drive</translation>
-<translation id="200544492091181894">Bạn luôn có thể thay đổi tùy chọn này sau trong mục cài đặt</translation>
+<translation id="200544492091181894">Bạn luôn có thể thay đổi tùy chọn này trong mục cài đặt</translation>
 <translation id="2006638907958895361">Mở liên kết trong <ph name="APP" /></translation>
 <translation id="2007404777272201486">Báo cáo sự cố...</translation>
 <translation id="2016430552235416146">Truyền thống</translation>
@@ -733,7 +733,6 @@
 <translation id="2114326799768592691">Tải lại &amp;khung</translation>
 <translation id="2114896190328250491">Ảnh của <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Gửi tới điện thoại</translation>
-<translation id="2115946962706216358">Máy không tham gia được vào miền. Điều này có thể do đã vượt quá số lượng máy tối đa được phép tham gia cho tài khoản của bạn trên máy chủ.</translation>
 <translation id="2119349053129246860">Mở trong <ph name="APP" /></translation>
 <translation id="2121825465123208577">Đổi kích thước</translation>
 <translation id="2124930039827422115">{1,plural, =1{Một người dùng đã xếp hạng <ph name="AVERAGE_RATING" />.}other{# người dùng đã xếp hạng <ph name="AVERAGE_RATING" />.}}</translation>
@@ -1004,7 +1003,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="253434972992662860">&amp;Tạm dừng</translation>
 <translation id="2534460670861217804">Proxy HTTP bảo mật</translation>
 <translation id="253557089021624350">Số lượng giữ kết nối</translation>
-<translation id="2540384386570049483">Cho phép quảng cáo trên trang web này</translation>
 <translation id="2541423446708352368">Hiển thị mọi bản tải xuống</translation>
 <translation id="2542049655219295786">Bảng Google</translation>
 <translation id="2544853746127077729">Chứng chỉ xác thực bị mạng từ chối</translation>
@@ -1157,7 +1155,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2739191690716947896">Gỡ lỗi</translation>
 <translation id="2739240477418971307">Thay đổi cài đặt trợ năng của bạn</translation>
 <translation id="2740393541869613458">xem lại các trang web mà người dùng được giám sát đã truy cập và</translation>
-<translation id="2740531572673183784">Ok</translation>
 <translation id="2743387203779672305">Sao chép vào khay nhớ tạm</translation>
 <translation id="2745080116229976798">Microsoft Qualified Subordination</translation>
 <translation id="2749756011735116528">Đăng nhập vào <ph name="PRODUCT_NAME" /></translation>
@@ -1480,7 +1477,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="3270965368676314374">Đọc, thay đổi và xóa ảnh, nhạc và các phương tiện khác khỏi máy tính của bạn</translation>
 <translation id="327147043223061465">Xem tất cả các cookie và dữ liệu trang web</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> muốn kết nối</translation>
-<translation id="327444463633065042">Tên máy không hợp lệ</translation>
 <translation id="3274763671541996799">Bạn đang ở chế độ toàn màn hình.</translation>
 <translation id="3275778913554317645">Mở dưới dạng cửa sổ</translation>
 <translation id="3279741024917655738">Hiển thị video ở chế độ toàn màn hình trên</translation>
@@ -1505,7 +1501,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="3305389145870741612">Quá trình định dạng có thể mất vài giây. Vui lòng đợi.</translation>
 <translation id="3305661444342691068">Mở PDF ở chế độ xem trước</translation>
 <translation id="3306684685104080068">Cho phép truyền tới các dịch vụ dựa trên đám mây như Google Hangouts.</translation>
-<translation id="3307091518408668019">Đơn vị tổ chức máy tính (ví dụ OU=Chromebook,DC=example,DC=com)</translation>
 <translation id="3308006649705061278">Đơn vị Tổ chức (OU)</translation>
 <translation id="3308116878371095290">Trang này đã bị chặn cài đặt cookie.</translation>
 <translation id="3308134619352333507">Nút ẩn</translation>
@@ -1871,7 +1866,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="383891835335927981">Không có trang web nào được phóng to hoặc thu nhỏ</translation>
 <translation id="3839516600093027468">Luôn chặn <ph name="HOST" /> xem khay nhớ tạm</translation>
 <translation id="3840053866656739575">Mất kết nối với Chromebox của bạn. Vui lòng chuyển thiết bị đến gần hơn hoặc kiểm tra thiết bị của bạn trong khi chúng tôi tìm cách kết nối lại.</translation>
-<translation id="3842132283799370683">Máy không tham gia được vào miền. Điều này có thể do đơn vị tổ chức gặp vấn đề.</translation>
 <translation id="3842552989725514455">Phông chữ Serif</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3851428669031642514">Tải tập lệnh không an toàn</translation>
@@ -2282,7 +2276,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="4552678318981539154">Mua thêm dung lượng lưu trữ</translation>
 <translation id="4554591392113183336">Tiện ích bên ngoài có cùng phiên bản hoặc phiên bản thấp hơn so với tiện ích hiện có.</translation>
 <translation id="4555769855065597957">Bóng</translation>
-<translation id="4555979468244469039">Tên máy Chromebook</translation>
 <translation id="4556110439722119938">Dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ được đồng bộ hóa với Tài khoản Google của bạn để bạn có thể sử dụng chúng trên tất cả thiết bị của mình.</translation>
 <translation id="4558426062282641716">Đã yêu cầu quyền tự động chạy</translation>
 <translation id="4562155214028662640">Thêm vân tay</translation>
@@ -2425,7 +2418,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="4784330909746505604">Bản trình bày PowerPoint</translation>
 <translation id="4790972063719531840">Tự động gửi dữ liệu chẩn đoán và dữ liệu sử dụng cho Google</translation>
 <translation id="4792711294155034829">&amp;Báo cáo sự cố...</translation>
-<translation id="479285515899735347">Rất tiếc! Có vẻ như mật khẩu của bạn đã hết hạn. Vui lòng gia hạn mật khẩu trên máy khác và thử lại.</translation>
 <translation id="479536056609751218">Trang web, chỉ HTML</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4801448226354548035">Ẩn tài khoản</translation>
@@ -3093,7 +3085,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="577322787686508614">Tác vụ đọc không được phép trên: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Mở ứng dụng tệp</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5775834615653774429">Máy không tham gia được vào miền. Đơn vị tổ chức không tồn tại.</translation>
 <translation id="577624874850706961">Tìm kiếm cookie</translation>
 <translation id="5777468213129569553">Mở Chrome</translation>
 <translation id="5778747455497889540">Dưới đây là mật khẩu mô-đun an toàn được tạo ngẫu nhiên đã gán cho máy tính của bạn:</translation>
@@ -3114,7 +3105,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="5804241973901381774">Quyền</translation>
 <translation id="580571955903695899">Sắp xếp lại theo Tiêu đề</translation>
 <translation id="5807290661599647102">Đặt khóa màn hình</translation>
-<translation id="580926004266167721">Máy không tham gia được vào miền. Điều này có thể do tài khoản của bạn không có đủ đặc quyền dành cho đơn vị tổ chức.</translation>
 <translation id="580961539202306967">Hỏi tôi khi một trang web muốn gửi thông báo đẩy cho tôi (nên chọn)</translation>
 <translation id="5809725759695043233">Bạn có các ứng dụng được tối ưu hóa cho Chromebook</translation>
 <translation id="5814126672212206791">Loại kết nối</translation>
@@ -3559,7 +3549,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="6478248366783946499">Giữ tệp nguy hiểm?</translation>
 <translation id="6483805311199035658">Đang mở <ph name="FILE" />...</translation>
 <translation id="6485131920355264772">Không thể truy xuất thông tin dung lượng</translation>
-<translation id="648637985389593741">Tiếp tục, bật tính năng đồng bộ hóa và cá nhân hóa</translation>
+<translation id="648637985389593741">Tiếp tục bật tính năng đồng bộ hóa và cá nhân hóa</translation>
 <translation id="6488384360522318064">Chọn ngôn ngữ</translation>
 <translation id="648927581764831596">Không có</translation>
 <translation id="6490936204492416398">Cài đặt tiện ích mới từ cửa hàng trực tuyến</translation>
@@ -3681,7 +3671,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">Rất tiếc, máy tính của bạn được định cấu hình bằng ID phần cứng không đúng định dạng. Điều này ngăn Chrome OS cập nhật các bản vá bảo mật mới nhất và máy tính của bạn <ph name="BEGIN_BOLD" />có thể bị các cuộc tấn công làm hại<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Đã xảy ra sự cố khi mở hồ sơ của bạn. Vui lòng đăng xuất rồi đăng nhập lại.</translation>
-<translation id="6670647982128220776">Các tính năng liên quan đến đồng bộ hóa và cá nhân hóa hiện được kết hợp trong một tùy chọn kiểm soát. Việc bật tùy chọn này có thể thay đổi các mục cài đặt hiện tại của bạn.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Bạn có muốn Google dịch trang này từ <ph name="SOURCE_LANGUAGE" /> sang <ph name="TARGET_LANGUAGE" /> không?</translation>
 <translation id="6675665718701918026">Đã kết nối thiết bị trỏ</translation>
@@ -4547,7 +4536,6 @@ Việc cài đặt <ph name="APP_NAME" /> sẽ tải xuống <ph name="DOWNLOAD_
 <translation id="7984068253310542383">Phản chiếu <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">Để bảo mật hơn, <ph name="PRODUCT_NAME" /> sẽ mã hóa dữ liệu của bạn.</translation>
 <translation id="7986295104073916105">Đọc và thay đổi cài đặt mật khẩu đã lưu</translation>
-<translation id="798749371774946697">Tên máy quá dài</translation>
 <translation id="7988355189918024273">Bật các tính năng hỗ trợ truy cập</translation>
 <translation id="7994702968232966508">Phương pháp EAP</translation>
 <translation id="799547531016638432">Xóa lối tắt</translation>
@@ -4569,7 +4557,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8012382203418782830">Trang này đã được dịch.</translation>
 <translation id="8014154204619229810">Trình cập nhật hiện đang chạy. Hãy làm mới sau một phút nữa để kiểm tra lại.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> không thể hoàn nguyên về phiên bản được cài đặt trước. Vui lòng thử lại để Powerwash thiết bị của bạn.</translation>
-<translation id="8014210335923519270">Cải tiến <ph name="IDS_SHORT_PRODUCT_NAME" /> và tăng cường bảo mật cho sản phẩm bằng cách gửi thông tin và việc sử dụng hệ thống cho Google</translation>
+<translation id="8014210335923519270">Cải tiến <ph name="IDS_SHORT_PRODUCT_NAME" /> và tăng cường bảo mật cho sản phẩm bằng cách gửi thông tin hệ thống và việc sử dụng cho Google</translation>
 <translation id="8016266267177410919">Bộ nhớ tạm thời</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Đã chỉnh sửa phím tắt</translation>
@@ -4805,7 +4793,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8400146488506985033">Quản lý mọi người</translation>
 <translation id="8410073653152358832">Sử dụng điện thoại này</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">Có, hãy bật tính năng đồng bộ hóa và cá nhân hóa</translation>
 <translation id="8413385045638830869">Hỏi trước (được đề xuất)</translation>
 <translation id="8418445294933751433">&amp;Hiển thị dưới dạng tab</translation>
 <translation id="8419098111404128271">Kết quả tìm kiếm cho '<ph name="SEARCH_TEXT" />'</translation>
@@ -4850,7 +4837,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8470028084415844044">Để lấy tất cả mật khẩu của bạn trên mọi thiết bị, hãy bật tính năng đồng bộ hóa.</translation>
 <translation id="8470513973197838199">Đã lưu mật khẩu cho <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">được hỗ trợ bằng phần cứng</translation>
-<translation id="8474229360677287535">Đóng tất cả các cửa sổ</translation>
 <translation id="8475313423285172237">Một chương trình khác trên máy tính của bạn đã thêm một tiện ích có thể thay đổi cách Chrome hoạt động.</translation>
 <translation id="8475647382427415476">Google Drive không thể đồng bộ hóa "<ph name="FILENAME" />" ngay bây giờ. Google Drive sẽ thử lại sau.</translation>
 <translation id="8477241577829954800">Đã thay thế</translation>
@@ -4989,7 +4975,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8688579245973331962">Bạn không thấy tên của mình?</translation>
 <translation id="8688591111840995413">Mật khẩu yếu</translation>
 <translation id="8688672835843460752">Có sẵn</translation>
-<translation id="8689583087392258564">Máy không tham gia được vào miền. Đơn vị tổ chức không hợp lệ.</translation>
 <translation id="869257642790614972">Mở lại tab đóng sau cùng</translation>
 <translation id="8695825812785969222">Mở &amp;vị trí...</translation>
 <translation id="8698464937041809063">Bản vẽ Google</translation>
@@ -5127,7 +5112,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8902667442496790482">Mở cài đặt chọn để nói</translation>
 <translation id="8903921497873541725">Phóng to</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
-<translation id="8909233240676134608">Không thể kết hợp máy với miền. Máy chủ không hỗ trợ các loại mã hóa Kerberos cụ thể. Hãy xem "Tùy chọn khác" để biết các cài đặt mã hóa.</translation>
 <translation id="8909833622202089127">Trang web đang theo dõi vị trí của bạn</translation>
 <translation id="8910146161325739742">Chia sẻ màn hình của bạn</translation>
 <translation id="8910222113987937043">Các thay đổi đối với dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ không được đồng bộ hóa với Tài khoản Google của bạn nữa. Tuy nhiên, dữ liệu hiện có của bạn sẽ vẫn được lưu trữ trong Tài khoản Google và có thể được quản lý trên <ph name="BEGIN_LINK" />Trang tổng quan Google<ph name="END_LINK" />.</translation>
@@ -5313,7 +5297,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="9177499212658576372">Bạn hiện kết nối với mạng <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9180380851667544951">Trang web có thể chia sẻ màn hình của bạn</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> từ <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">Máy không tham gia được vào miền. Điều này có thể do tài khoản của bạn không có đủ đặc quyền trên máy chủ.</translation>
 <translation id="9188441292293901223">Hãy cập nhật điện thoại của bạn lên phiên bản Android mới hơn để mở khóa <ph name="DEVICE_TYPE" /> này.</translation>
 <translation id="9190063653747922532">L2TP/IPsec + khóa chia sẻ trước</translation>
 <translation id="920045321358709304">Tìm kiếm trên <ph name="SEARCH_ENGINE" /></translation>

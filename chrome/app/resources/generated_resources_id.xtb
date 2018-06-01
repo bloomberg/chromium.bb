@@ -732,7 +732,6 @@
 <translation id="2114326799768592691">Muat ulang &amp;Frame</translation>
 <translation id="2114896190328250491">Foto oleh <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Kirim ke ponsel</translation>
-<translation id="2115946962706216358">Gagal menggabungkan mesin ke domain. Hal ini mungkin disebabkan karena jumlah mesin yang digabungkan untuk akun Anda di server telah melebihi maksimum.</translation>
 <translation id="2119349053129246860">Buka di <ph name="APP" /></translation>
 <translation id="2121825465123208577">Ubah ukuran</translation>
 <translation id="2124930039827422115">{1,plural, =1{Diberi nilai <ph name="AVERAGE_RATING" /> oleh satu pengguna.}other{Diberi nilai <ph name="AVERAGE_RATING" /> oleh # pengguna.}}</translation>
@@ -1003,7 +1002,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="253434972992662860">&amp;Jeda</translation>
 <translation id="2534460670861217804">Proxy HTTP Aman</translation>
 <translation id="253557089021624350">Jumlah aktivitas yang tetap aktif</translation>
-<translation id="2540384386570049483">Izinkan iklan di situs ini</translation>
 <translation id="2541423446708352368">Tampilkan semua download</translation>
 <translation id="2542049655219295786">Tabel Google</translation>
 <translation id="2544853746127077729">Sertifikat autentikasi ditolak oleh jaringan</translation>
@@ -1156,7 +1154,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="2739191690716947896">Debug</translation>
 <translation id="2739240477418971307">Mengubah setelan aksesibilitas Anda</translation>
 <translation id="2740393541869613458">meninjau situs web yang telah dikunjungi oleh pengguna yang dilindungi, dan</translation>
-<translation id="2740531572673183784">Oke</translation>
 <translation id="2743387203779672305">Salin ke papan klip</translation>
 <translation id="2745080116229976798">Microsoft Qualified Subordination</translation>
 <translation id="2749756011735116528">Masuk ke <ph name="PRODUCT_NAME" /></translation>
@@ -1479,7 +1476,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="3270965368676314374">Membaca, mengubah, dan menghapus foto, musik, serta media lain dari komputer Anda</translation>
 <translation id="327147043223061465">Lihat semua data situs dan cookie</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> ingin terhubung</translation>
-<translation id="327444463633065042">Nama mesin tidak valid</translation>
 <translation id="3274763671541996799">Anda telah memasuki mode layar penuh.</translation>
 <translation id="3275778913554317645">Buka sebagai jendela</translation>
 <translation id="3279741024917655738">Tampilkan video layar penuh diaktifkan</translation>
@@ -1504,7 +1500,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="3305389145870741612">Proses pemformatan dapat memakan waktu beberapa detik. Harap tunggu.</translation>
 <translation id="3305661444342691068">Membuka PDF dalam Pratinjau</translation>
 <translation id="3306684685104080068">Aktifkan transmisi ke layanan berbasis awan, seperti Google Hangouts.</translation>
-<translation id="3307091518408668019">UO komputer (misal, OU=Chromebooks,DC=example,DC=com)</translation>
 <translation id="3308006649705061278">Unit Organisasi (OU)</translation>
 <translation id="3308116878371095290">Halaman ini dicegah menyetel cookie.</translation>
 <translation id="3308134619352333507">Sembunyikan Tombol</translation>
@@ -1870,7 +1865,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="383891835335927981">Tidak ada situs yang telah diperbesar atau diperkecil</translation>
 <translation id="3839516600093027468">Selalu blokir <ph name="HOST" /> dari melihat papan klip</translation>
 <translation id="3840053866656739575">Sambungan ke Chromebox terputus. Mendekatlah, atau periksa perangkat sementara kami mencoba untuk menyambung kembali.</translation>
-<translation id="3842132283799370683">Gagal menggabungkan mesin ke domain. Hal ini mungkin disebabkan masalah pada unit organisasi.</translation>
 <translation id="3842552989725514455">Font Serif</translation>
 <translation id="385051799172605136">Mundur</translation>
 <translation id="3851428669031642514">Muat skrip yang tidak aman</translation>
@@ -2281,7 +2275,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="4552678318981539154">Beli penyimpanan lagi</translation>
 <translation id="4554591392113183336">Versi ekstensi eksternal sama atau lebih rendah dibandingkan yang sudah ada.</translation>
 <translation id="4555769855065597957">Bayangan</translation>
-<translation id="4555979468244469039">Nama perangkat Chromebook</translation>
 <translation id="4556110439722119938">Bookmark, histori, sandi, dan setelan lainnya akan disinkronkan ke Akun Google agar Anda dapat menggunakannya di semua perangkat</translation>
 <translation id="4558426062282641716">Diminta izin peluncuran otomatis</translation>
 <translation id="4562155214028662640">Tambahkan Sidik Jari</translation>
@@ -2424,7 +2417,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="4784330909746505604">Presentasi PowerPoint</translation>
 <translation id="4790972063719531840">Otomatis kirimkan data diagnostik dan penggunaan ke Google</translation>
 <translation id="4792711294155034829">Lapo&amp;rkan Masalah...</translation>
-<translation id="479285515899735347">Maaf.  Sepertinya sandi sudah tidak berlaku. Harap perbarui sandi di perangkat yang lain dan coba lagi.</translation>
 <translation id="479536056609751218">Halaman Web, HTML Saja</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4801448226354548035">Sembunyikan akun</translation>
@@ -2472,7 +2464,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="4862642413395066333">Tanggapan OCSP Penandatanganan</translation>
 <translation id="4864369630010738180">Login...</translation>
 <translation id="486635084936119914">Buka jenis file tertentu secara otomatis setelah didownload</translation>
-<translation id="4869142322204669043">Google dapat menggunakan konten di situs yang Anda buka, aktivitas penjelajahan, dan interaksi untuk mempersonalisasi <ph name="IDS_SHORT_PRODUCT_NAME" /> dan layanan Google lainnya seperti Terjemahan, Penelusuran, dan iklan. Anda dapat menyesuaikannya kapan saja di Setelan.</translation>
+<translation id="4869142322204669043">Google dapat menggunakan konten di situs yang Anda buka, aktivitas browsing, dan interaksi untuk mempersonalisasi <ph name="IDS_SHORT_PRODUCT_NAME" /> dan layanan Google lainnya seperti Terjemahan, Penelusuran, dan iklan. Anda dapat menyesuaikannya kapan saja di Setelan.</translation>
 <translation id="48704129375571883">Tambahkan fitur tambahan</translation>
 <translation id="4870903493621965035">Tidak ada perangkat yang dihubungkan</translation>
 <translation id="4871210892959306034">$1 KB</translation>
@@ -3092,7 +3084,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="577322787686508614">Operasi membaca tidak diizinkan di: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Membuka aplikasi File</translation>
 <translation id="5774515636230743468">Manifes:</translation>
-<translation id="5775834615653774429">Gagal menggabungkan mesin ke domain. Unit organisasi tidak ada.</translation>
 <translation id="577624874850706961">Telusuri cookie</translation>
 <translation id="5777468213129569553">Buka Chrome</translation>
 <translation id="5778747455497889540">Berikut adalah sandi modul aman yang dibuat secara acak, yang telah ditetapkan untuk komputer Anda:</translation>
@@ -3113,7 +3104,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="5804241973901381774">Izin</translation>
 <translation id="580571955903695899">Susun Ulang menurut Judul</translation>
 <translation id="5807290661599647102">Setel Kunci Layar</translation>
-<translation id="580926004266167721">Gagal menggabungkan mesin ke domain. Hal ini mungkin disebabkan karena hak istimewa untuk akun tidak memadai untuk unit organisasi.</translation>
 <translation id="580961539202306967">Tanyakan kepada saya saat situs ingin mengirim pesan push (disarankan)</translation>
 <translation id="5809725759695043233">Anda memiliki aplikasi yang dioptimalkan untuk Chromebook</translation>
 <translation id="5814126672212206791">Jenis sambungan</translation>
@@ -3623,7 +3613,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
 <translation id="6585283250473596934">Memasuki sesi publik.</translation>
 <translation id="6586451623538375658">Tukar tombol mouse utama</translation>
-<translation id="6589660129740381104">Untuk membantu Anda lebih mudah mengelola pengalaman saat menggunakan <ph name="IDS_SHORT_PRODUCT_NAME" />, fitur yang terkait dengan sinkronisasi dan personalisasi kini ada di satu kontrol. Mengaktifkannya dapat mengubah setelan saat ini.</translation>
+<translation id="6589660129740381104">Untuk membantu Anda lebih mudah mengelola pengalaman saat menggunakan <ph name="IDS_SHORT_PRODUCT_NAME" />, fitur yang terkait dengan sinkronisasi dan personalisasi kini ada di 1 kontrol. Mengaktifkannya dapat mengubah setelan saat ini.</translation>
 <translation id="6589706261477377614">Tingkatkan kecerahan tombol</translation>
 <translation id="6590458744723262880">Ganti nama folder</translation>
 <translation id="6592267180249644460">Log WebRTC direkam pada <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
@@ -3680,7 +3670,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">Sayangnya, komputer Anda dikonfigurasi dengan ID hardware yang rusak. Hal ini mencegah Chrome OS memperbarui dengan perbaikan keamanan terbaru dan komputer Anda <ph name="BEGIN_BOLD" />mungkin rentan terhadap serangan berbahaya<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Terjadi kesalahan saat membuka profil Anda. Harap keluar, lalu masuk lagi.</translation>
-<translation id="6670647982128220776">Fitur yang terkait dengan sinkronisasi dan personalisasi kini ada di 1 kontrol. Mengaktifkan ini dapat mengubah setelan Anda saat ini.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Ingin Google menerjemahkan halaman ini dari <ph name="SOURCE_LANGUAGE" /> ke <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Perangkat penunjuk telah tersambung</translation>
@@ -4546,7 +4535,6 @@ Menginstal <ph name="APP_NAME" /> akan mendownload <ph name="DOWNLOAD_SIZE" /> d
 <translation id="7984068253310542383">Cerminkan <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">Agar lebih aman, <ph name="PRODUCT_NAME" /> akan mengenkripsi data Anda.</translation>
 <translation id="7986295104073916105">Membaca dan mengubah setelan sandi yang tersimpan</translation>
-<translation id="798749371774946697">Nama mesin terlalu panjang</translation>
 <translation id="7988355189918024273">Aktifkan fitur aksesibilitas</translation>
 <translation id="7994702968232966508">Metode EAP</translation>
 <translation id="799547531016638432">Hapus pintasan</translation>
@@ -4804,7 +4792,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8400146488506985033">Kelola orang</translation>
 <translation id="8410073653152358832">Gunakan ponsel ini</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">Ya, aktifkan sinkronisasi dan personalisasi</translation>
 <translation id="8413385045638830869">Tanya dulu (disarankan)</translation>
 <translation id="8418445294933751433">Tampilkan &amp;sebagai tab</translation>
 <translation id="8419098111404128271">Hasil penelusuran untuk '<ph name="SEARCH_TEXT" />'</translation>
@@ -4849,7 +4836,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8470028084415844044">Untuk mendapatkan semua sandi di semua perangkat Anda, aktifkan sinkronisasi.</translation>
 <translation id="8470513973197838199">Sandi yang tersimpan untuk <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">cadangan hardware</translation>
-<translation id="8474229360677287535">Tutup semua Jendela</translation>
 <translation id="8475313423285172237">Program lain di komputer Anda menambahkan ekstensi yang dapat mengubah cara kerja Chrome.</translation>
 <translation id="8475647382427415476">Saat ini Google Drive tidak dapat menyinkronkan "<ph name="FILENAME" />". Google Drive akan mencoba lagi nanti.</translation>
 <translation id="8477241577829954800">Diganti</translation>
@@ -4988,7 +4974,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8688579245973331962">Tidak melihat nama Anda?</translation>
 <translation id="8688591111840995413">Sandi lemah</translation>
 <translation id="8688672835843460752">Tersedia</translation>
-<translation id="8689583087392258564">Gagal menggabungkan mesin ke domain. Unit organisasi tidak valid.</translation>
 <translation id="869257642790614972">Buka ulang tab yang terakhir ditutup</translation>
 <translation id="8695825812785969222">Buka &amp;Lokasi...</translation>
 <translation id="8698464937041809063">Gambar Google</translation>
@@ -5126,7 +5111,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8902667442496790482">Buka setelan klik untuk diucapkan</translation>
 <translation id="8903921497873541725">Perbesar</translation>
 <translation id="8904976895050290827">Sinkronisasi Chrome</translation>
-<translation id="8909233240676134608">Tidak dapat menggabungkan mesin ke domain. Server tidak mendukung jenis enkripsi Kerberos yang ditentukan. Centang "Opsi lainnya" untuk melihat setelan enkripsi.</translation>
 <translation id="8909833622202089127">Situs sedang melacak lokasi Anda</translation>
 <translation id="8910146161325739742">Berbagi layar</translation>
 <translation id="8910222113987937043">Perubahan terhadap bookmark, histori, sandi, dan setelan lain sudah tidak disinkronkan ke Akun Google Anda. Namun, data yang sudah ada akan tetap disimpan di Akun Google dan dapat dikelola di <ph name="BEGIN_LINK" />Google Dasbor<ph name="END_LINK" />.</translation>
@@ -5312,7 +5296,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="9177499212658576372">Saat ini Anda tersambung ke jaringan <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9180380851667544951">Situs dapat membagikan layar Anda</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> dari <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">Gagal menggabungkan mesin ke domain. Hal ini mungkin disebabkan karena hak istimewa tidak memadai untuk akun Anda di server.</translation>
 <translation id="9188441292293901223">Perbarui ponsel Anda ke versi Android yang lebih baru untuk membuka <ph name="DEVICE_TYPE" /> ini.</translation>
 <translation id="9190063653747922532">L2TP/IPSec + kunci yang dibagikan sebelumnya</translation>
 <translation id="920045321358709304">Penelusuran <ph name="SEARCH_ENGINE" /></translation>

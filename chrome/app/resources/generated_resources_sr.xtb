@@ -729,7 +729,6 @@
 <translation id="2114326799768592691">Поново учитај &amp;оквир</translation>
 <translation id="2114896190328250491">Аутор слике: <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Пошаљи на телефон</translation>
-<translation id="2115946962706216358">Придруживање уређаја домену није успело. Можда сте премашили максималан број дозвољених придруживања уређаја за налог на серверу.</translation>
 <translation id="2119349053129246860">Отвори у <ph name="APP" /></translation>
 <translation id="2121825465123208577">Промени величину</translation>
 <translation id="2124930039827422115">{1,plural, =1{Један корисник је оценио са <ph name="AVERAGE_RATING" />.}one{# корисник је оценио са <ph name="AVERAGE_RATING" />.}few{# корисника су оценила са <ph name="AVERAGE_RATING" />.}other{# корисника је оценило са <ph name="AVERAGE_RATING" />.}}</translation>
@@ -1000,7 +999,6 @@
 <translation id="253434972992662860">&amp;Паузирај</translation>
 <translation id="2534460670861217804">Безбедан HTTP прокси</translation>
 <translation id="253557089021624350">Број keepalive сигнала</translation>
-<translation id="2540384386570049483">Дозволи огласе на овом сајту</translation>
 <translation id="2541423446708352368">Прикажи све преузете ставке</translation>
 <translation id="2542049655219295786">Google табела</translation>
 <translation id="2544853746127077729">Мрежа је одбила сертификат за потврду аутентичности</translation>
@@ -1152,7 +1150,6 @@
 <translation id="2739191690716947896">Отклони грешке</translation>
 <translation id="2739240477418971307">Мењање подешавања приступачности</translation>
 <translation id="2740393541869613458">да прегледате веб-сајтове које је корисник под надзором посетио и</translation>
-<translation id="2740531572673183784">Потврди</translation>
 <translation id="2743387203779672305">Копирај у меморију</translation>
 <translation id="2745080116229976798">Microsoft квалификовано подређивање</translation>
 <translation id="2749756011735116528">Пријави ме на производ <ph name="PRODUCT_NAME" /></translation>
@@ -1475,7 +1472,6 @@
 <translation id="3270965368676314374">Читање слика, музике и других медија са рачунара, мењање и брисање тих медија</translation>
 <translation id="327147043223061465">Прегледајте све колачиће и податке о сајтовима</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> жели да се повеже</translation>
-<translation id="327444463633065042">Неважећи назив уређаја</translation>
 <translation id="3274763671541996799">Прешли сте на режим целог екрана.</translation>
 <translation id="3275778913554317645">Отвори као прозор</translation>
 <translation id="3279741024917655738">Приказуј видео снимке преко целог екрана на:</translation>
@@ -1500,7 +1496,6 @@
 <translation id="3305389145870741612">Процес форматирања може да потраје неколико секунди. Сачекајте.</translation>
 <translation id="3305661444342691068">Отвори PDF у прегледу</translation>
 <translation id="3306684685104080068">Омогућите пребацивање у услуге засноване на клауду попут Google Hangouts-а.</translation>
-<translation id="3307091518408668019">Рачунарска организациона јединица (нпр. OU=Chromebook-ови,DC=пример,DC=com)</translation>
 <translation id="3308006649705061278">Организациона јединица (OU)</translation>
 <translation id="3308116878371095290">Овој страници је забрањено да поставља колачиће.</translation>
 <translation id="3308134619352333507">Сакриј дугме</translation>
@@ -1866,7 +1861,6 @@
 <translation id="383891835335927981">Ниједан сајт није увећан ни умањен</translation>
 <translation id="3839516600093027468">Увек блокирај увид у привремену меморију страници <ph name="HOST" /></translation>
 <translation id="3840053866656739575">Прекинута је веза са Chromebox-ом. Приближите се или проверите уређај док покушамо да се поново повежемо.</translation>
-<translation id="3842132283799370683">Придруживање уређаја домену није успело. Можда је дошло до проблема са организационом јединицом.</translation>
 <translation id="3842552989725514455">Фонт Serif</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3851428669031642514">Учитавај небезбедне скрипте</translation>
@@ -2277,7 +2271,6 @@
 <translation id="4552678318981539154">Купи још меморијског простора</translation>
 <translation id="4554591392113183336">Верзија спољног додатка је иста или старија од постојећег.</translation>
 <translation id="4555769855065597957">Нови профил</translation>
-<translation id="4555979468244469039">Назив Chromebook уређаја</translation>
 <translation id="4556110439722119938">Обележивачи, историја, лозинке и друга подешавања ће се синхронизовати са Google налогом да бисте могли да их користите на свим уређајима</translation>
 <translation id="4558426062282641716">Тражи се дозвола за аутоматско покретање</translation>
 <translation id="4562155214028662640">Додај дигитални отисак</translation>
@@ -2420,7 +2413,6 @@
 <translation id="4784330909746505604">PowerPoint презентација</translation>
 <translation id="4790972063719531840">Аутоматски шаљи дијагностику и податке о коришћењу Google-у</translation>
 <translation id="4792711294155034829">&amp;Пријави проблем...</translation>
-<translation id="479285515899735347">Упс, изгледа да вам је истекла лозинка. Обновите је на другом уређају, па пробајте поново.</translation>
 <translation id="479536056609751218">Веб-страница, само HTML</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4801448226354548035">Сакриј налоге</translation>
@@ -3090,7 +3082,6 @@
 <translation id="577322787686508614">Операција читања није дозвољена на: „<ph name="DEVICE_NAME" />“.</translation>
 <translation id="5774295353725270860">Отварање апликације Датотеке</translation>
 <translation id="5774515636230743468">Манифест:</translation>
-<translation id="5775834615653774429">Придруживање уређаја домену није успело. Организациона јединица не постоји.</translation>
 <translation id="577624874850706961">Претражите колачиће</translation>
 <translation id="5777468213129569553">Отвори Chrome</translation>
 <translation id="5778747455497889540">У наставку је насумично генерисана лозинка за безбедносни модул која је додељена рачунару:</translation>
@@ -3111,7 +3102,6 @@
 <translation id="5804241973901381774">Дозволе</translation>
 <translation id="580571955903695899">Поређај према наслову</translation>
 <translation id="5807290661599647102">Подесите закључавање екрана</translation>
-<translation id="580926004266167721">Придруживање уређаја домену није успело. Можда немате довољно привилегија за налог за организациону јединицу.</translation>
 <translation id="580961539202306967">Питај ме када сајт жели да ми шаље искачуће поруке (препоручено)</translation>
 <translation id="5809725759695043233">Имате апликације које су оптимизоване за Chromebook-ове</translation>
 <translation id="5814126672212206791">Тип везе</translation>
@@ -3677,7 +3667,6 @@
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">Нажалост, рачунар је конфигурисан помоћу погрешно направљеног ИД-а хардвера. То спречава Chrome ОС да се ажурира најновијим безбедносним исправкама и рачунар је <ph name="BEGIN_BOLD" />можда подложан злонамерним нападима<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Дошло је до проблема при отварању профила. Одјавите се, па се поново пријавите.</translation>
-<translation id="6670647982128220776">Функције везане за синхронизацију и персонализацију су сада под једном контролом. Ако ово укључите, можда ћете променити тренутна подешавања.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Желите ли да Google преведе ову страницу са језика <ph name="SOURCE_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Показивачки уређај је повезан</translation>
@@ -4537,7 +4526,6 @@
 <translation id="7984068253310542383">Пресликај <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540"><ph name="PRODUCT_NAME" /> ће шифровати податке ради додатне сигурности.</translation>
 <translation id="7986295104073916105">Читање и мењање сачуваних подешавања лозинке</translation>
-<translation id="798749371774946697">Назив уређаја је предугачак</translation>
 <translation id="7988355189918024273">Омогући функције приступачности</translation>
 <translation id="7994702968232966508">EAP метод</translation>
 <translation id="799547531016638432">Уклони пречицу</translation>
@@ -4795,7 +4783,6 @@
 <translation id="8400146488506985033">Управљај људима</translation>
 <translation id="8410073653152358832">Користи овај телефон</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">Да, укључи синхронизацију и персонализацију</translation>
 <translation id="8413385045638830869">Прво питај (препоручено)</translation>
 <translation id="8418445294933751433">&amp;Прикажи као картицу</translation>
 <translation id="8419098111404128271">Резултати претраге за „<ph name="SEARCH_TEXT" />“</translation>
@@ -4840,7 +4827,6 @@
 <translation id="8470028084415844044">Да би вам све лозинке били доступне на свим уређајима, укључите синхронизацију.</translation>
 <translation id="8470513973197838199">Сачуване лозинке за <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">хардверски подржан</translation>
-<translation id="8474229360677287535">Затвори све моје прозоре</translation>
 <translation id="8475313423285172237">Други програм на рачунару је додао додатак који може да промени начин на који Chrome функционише.</translation>
 <translation id="8475647382427415476">Google диск тренутно није успео да синхронизује „<ph name="FILENAME" />“. Google диск ће покушати поново касније.</translation>
 <translation id="8477241577829954800">Замењено</translation>
@@ -4979,7 +4965,6 @@
 <translation id="8688579245973331962">Не видите своје име?</translation>
 <translation id="8688591111840995413">Погрешна лозинка</translation>
 <translation id="8688672835843460752">Доступно</translation>
-<translation id="8689583087392258564">Придруживање уређаја домену није успело. Организациона јединица је неважећа.</translation>
 <translation id="869257642790614972">Поновно отварање последње затворене картице</translation>
 <translation id="8695825812785969222">Open &amp;Location... (Отвори локацију)</translation>
 <translation id="8698464937041809063">Google цртеж</translation>
@@ -5117,7 +5102,6 @@
 <translation id="8902667442496790482">Отвори подешавања за услугу Изаберите за говор</translation>
 <translation id="8903921497873541725">Увећавање</translation>
 <translation id="8904976895050290827">Синхронизација Chrome прегледача</translation>
-<translation id="8909233240676134608">Уређај не може да се придружи домену. Сервер не подржава наведене типове шифровања Kerberos. Погледајте „Још опција“ да бисте пронашли подешавања шифровања.</translation>
 <translation id="8909833622202089127">Сајт прати локацију</translation>
 <translation id="8910146161325739742">Делите екран</translation>
 <translation id="8910222113987937043">Промене обележивача, историје, лозинки и других подешавања се више неће синхронизовати са Google налогом. Међутим, постојећи подаци ће се и даље чувати на Google налогу и можете да управљате њима на <ph name="BEGIN_LINK" />Google контролној табли<ph name="END_LINK" />.</translation>
@@ -5303,7 +5287,6 @@
 <translation id="9177499212658576372">Тренутно сте повезани са <ph name="NETWORK_TYPE" /> мрежом.</translation>
 <translation id="9180380851667544951">Сајт може да дели екран</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> са <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">Придруживање уређаја домену није успело. Можда немате довољно привилегија за налог на серверу.</translation>
 <translation id="9188441292293901223">Ажурирајте телефон на новију верзију Android-а да бисте откључали овај <ph name="DEVICE_TYPE" />.</translation>
 <translation id="9190063653747922532">L2TP/IPsec + тајни кључ</translation>
 <translation id="920045321358709304">Претражи <ph name="SEARCH_ENGINE" /></translation>

@@ -725,7 +725,6 @@
 <translation id="2114326799768592691">रीलोड आणि फ्रेम करा</translation>
 <translation id="2114896190328250491"><ph name="NAME" /> चे फोटो</translation>
 <translation id="2115103655317273167">फोन वर पाठवा</translation>
-<translation id="2115946962706216358">डोमेनशी मशीन जोडण्‍यात अयशस्वी झाले. हे कदाचित सर्व्हर वरील आपल्या खात्यास जोडण्यासाठी अनुमती असलेल्या मशीनींच्या कमाल संख्येस ओलांडल्यामुळे असू शकते.</translation>
 <translation id="2119349053129246860"><ph name="APP" /> मध्ये उघडा</translation>
 <translation id="2121825465123208577">आकार बदला</translation>
 <translation id="2124930039827422115">{1,plural, =1{एका वापरकर्त्याने <ph name="AVERAGE_RATING" /> रेट केले.}one{# वापरकर्त्याने <ph name="AVERAGE_RATING" /> रेट केले.}other{# वापरकर्त्यांनी <ph name="AVERAGE_RATING" /> रेट केले.}}</translation>
@@ -995,7 +994,6 @@
 <translation id="253434972992662860">&amp;विराम द्या</translation>
 <translation id="2534460670861217804">सुरक्षित HTTP प्रॉक्सी</translation>
 <translation id="253557089021624350">Keepalive गणना</translation>
-<translation id="2540384386570049483">या साइटवर जाहिरातींना अनुमती द्या</translation>
 <translation id="2541423446708352368">सर्व डाउनलोड दर्शवा</translation>
 <translation id="2542049655219295786">Google सारणी</translation>
 <translation id="2544853746127077729">प्रमाणीकरण प्रमाणपत्र नेटवर्कद्वारे नाकारले</translation>
@@ -1148,7 +1146,6 @@
 <translation id="2739191690716947896">डीबग</translation>
 <translation id="2739240477418971307">आपल्या प्रवेशयोग्यता सेटिंग्ज बदला</translation>
 <translation id="2740393541869613458">पर्यवेक्षी वापरकर्त्याने भेट दिलेल्या वेबसाइटचे पुनरावलोकन करा आणि</translation>
-<translation id="2740531572673183784">ठीक आहे</translation>
 <translation id="2743387203779672305">क्लिपबोर्डवर कॉपी करा</translation>
 <translation id="2745080116229976798">Microsoft Qualified Subordination</translation>
 <translation id="2749756011735116528"><ph name="PRODUCT_NAME" /> मध्ये साइन इन करा</translation>
@@ -1471,7 +1468,6 @@
 <translation id="3270965368676314374">आपल्या संगणकावरील फोटो, संगीत आणि अन्य मीडिया वाचा, बदला आणि हटवा</translation>
 <translation id="327147043223061465">सर्व कुकीज आणि साइट डेटा पहा</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> कनेक्ट करू इच्छिते</translation>
-<translation id="327444463633065042">अवैध मशीन नाव</translation>
 <translation id="3274763671541996799">आपण फुल स्‍क्रीन केली आहे</translation>
 <translation id="3275778913554317645">विंडो म्हणून उघडा</translation>
 <translation id="3279741024917655738">पूर्णस्क्रीन व्हिडिओ दाखवा</translation>
@@ -1496,7 +1492,6 @@
 <translation id="3305389145870741612">स्वरूपन प्रक्रियेस दोन सेकंद लागू शकतात. कृपया प्रतीक्षा करा.</translation>
 <translation id="3305661444342691068">पूर्वावलोकनात PDF उघडा</translation>
 <translation id="3306684685104080068">Google Hangouts सारख्या क्लाउड-आधारित सेवांवर कास्ट करणे सक्षम करा.</translation>
-<translation id="3307091518408668019">कॉंप्युटर OU (e.g. OU=Chromebooks,DC=example,DC=com)</translation>
 <translation id="3308006649705061278">संस्थात्मक एकक (OU)</translation>
 <translation id="3308116878371095290">हे पृष्ठ कुकीज सेट करण्यापासून प्रतिबंधित केलेले होते.</translation>
 <translation id="3308134619352333507">बटण लपवा</translation>
@@ -1862,7 +1857,6 @@
 <translation id="383891835335927981">कोणत्याही साइटसाठी झूम वाढविले किंवा कमी केलेले नाही</translation>
 <translation id="3839516600093027468"><ph name="HOST" /> ला क्लिपबोर्ड पाहण्यापासून नेहमी ब्लॉक करा</translation>
 <translation id="3840053866656739575">आपल्‍या Chromebox वरील कनेक्‍शन गमावले. कृपया आम्‍ही पुन्हा कनेक्‍ट करण्‍याचा प्रयत्न करताना अधिक जवळ हलवा किंवा आपले डिव्‍हाइस तपासा.</translation>
-<translation id="3842132283799370683">मशीन डोमेनमध्ये जोडणे अयशस्वी झाले. हे कदाचित ऑर्गनायझेशनल युनिटसंबंधित समस्यांमुळे असू शकेल.</translation>
 <translation id="3842552989725514455">Serif font</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="3851428669031642514">असुरक्षित स्क्रिप्ट लोड करा</translation>
@@ -2272,7 +2266,6 @@
 <translation id="4552678318981539154">अधिक संचयन खरेदी करा</translation>
 <translation id="4554591392113183336">बाह्य विस्‍तार अस्‍तित्वात असलेल्‍याच्या तुलनेत समान किंवा कमी आवृत्तीवर आहे.</translation>
 <translation id="4555769855065597957">शॅडो</translation>
-<translation id="4555979468244469039">Chromebook मशीन नाव</translation>
 <translation id="4556110439722119938">आपले बुकमार्क, इतिहास, पासवर्ड आणि इतर सेटिंग्ज आपल्या Google खात्यात संकालित केल्या जातील जेणेकरून आपण आपल्या सर्व डिव्हाइसेसवर त्यांचा वापर करू शकता</translation>
 <translation id="4558426062282641716">स्वयं-लाँच परवानगीची विनंती केली</translation>
 <translation id="4562155214028662640">फिंगरप्रिंट जोडा</translation>
@@ -2415,7 +2408,6 @@
 <translation id="4784330909746505604">PowerPoint सादरीकरण</translation>
 <translation id="4790972063719531840">Google कडे निदान आणि वापर डेटा स्वयंचलितपणे पाठवा</translation>
 <translation id="4792711294155034829">&amp;समस्या नोंदवणे...</translation>
-<translation id="479285515899735347">अरेरे! तुमचा पासवर्ड एक्स्पायर झाल्याचे दिसत आहे. कृपया तो दुसर्‍या मशीनवर रिन्यू करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="479536056609751218">वेबपृष्‍ठ, केवळ HTML</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4801448226354548035">खाती लपवा</translation>
@@ -3081,7 +3073,6 @@
 <translation id="577322787686508614">वाचा ऑपरेशनला यावर परवानगी नाही: " <ph name="DEVICE_NAME" /> ".</translation>
 <translation id="5774295353725270860">फायलीचा अॅप्लिकेशन उघडा</translation>
 <translation id="5774515636230743468">मॅनिफेस्ट:</translation>
-<translation id="5775834615653774429">मशीन डोमेनमध्ये जोडणे अयशस्वी झाले. ऑर्गनायझेशनल युनिट अस्तित्वात नाही.</translation>
 <translation id="577624874850706961">कुकीज शोधा</translation>
 <translation id="5777468213129569553">Chrome उघडा</translation>
 <translation id="5778747455497889540">खाली यादृच्छिकपणे तयार केलेला सुरक्षित मॉड्यूल पासवर्ड आहे जो तुमच्‍‍‍‍या काँप्युटरसाठी असाइन केला गेला आहे:</translation>
@@ -3102,7 +3093,6 @@
 <translation id="5804241973901381774">परवानग्या</translation>
 <translation id="580571955903695899">शीर्षकानुसार पुन्हा क्रमवारी लावा</translation>
 <translation id="5807290661599647102">स्क्रीन लॉक सेट करा</translation>
-<translation id="580926004266167721">मशीन डोमेनमध्ये जोडणे अयशस्वी झाले. हे कदाचित, तुमच्या खात्याला ऑर्गनायझेशनल युनिटसाठीच्या असलेल्या अपुर्‍या विशेषाधिकारांमुळे असू शकेल.</translation>
 <translation id="580961539202306967">जेव्हा एक साइट मला पुश संदेश पाठवू इच्छिते तेव्हा मला विचारा (शिफारस केलेले)</translation>
 <translation id="5809725759695043233">तुमच्याकडे Chromebook साठी ऑप्टिमाइझ केलेली अॅप्स आहेत</translation>
 <translation id="5814126672212206791">कनेक्शन प्रकार</translation>
@@ -3663,7 +3653,6 @@
 <translation id="6659594942844771486">टॅब</translation>
 <translation id="6664237456442406323">दुर्दैवाने, आपला कॉंप्युटर एका विकृत हार्डवेअर आयडी सह कॉन्फिगर केला आहे. हे नवीनतम सुरक्षितता निराकरणे अपडेट करण्यापासून Chrome OS ला प्रतिबंध करते आणि आपल्या कॉंप्युटरावर <ph name="BEGIN_BOLD" />दुर्भावनापूर्ण आक्रमणांमुळे सहज परिणाम होऊ शकतो<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">आपले प्रोफाईल उघडताना काहीतरी चूक झाली. कृपया साइन आउट करा नंतर पुन्हा साइन इन करा.</translation>
-<translation id="6670647982128220776">सिंक आणि पर्सनलायझेशनशी संबंधित वैशिष्ट्ये आता एकाच नियंत्रणाखाली आहेत. हे सुरू केल्यास तुमच्या सध्याच्या सेटिंग्ज बदलू शकतात.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Google ने हे पृष्ठ <ph name="SOURCE_LANGUAGE" /> मधून <ph name="TARGET_LANGUAGE" /> मध्ये भाषांतरित करावे असे आपण इच्छिता?</translation>
 <translation id="6675665718701918026">निर्देशित करणारे डिव्हाइस कनेक्‍ट केले</translation>
@@ -4520,7 +4509,6 @@
 <translation id="7984068253310542383">मिरर <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">जोडलेल्या सुरक्षिततेसाठी, <ph name="PRODUCT_NAME" /> आपला डेटा कूटबद्ध करेल.</translation>
 <translation id="7986295104073916105">सेव्ह केलेल्या पासवर्ड सेटिंग्ज वाचा आणि बदला</translation>
-<translation id="798749371774946697">मशीन नाव खूप मोठे आहे</translation>
 <translation id="7988355189918024273">प्रवेश वैशिष्ट्ये सक्षम करा</translation>
 <translation id="7994702968232966508">EAP पद्धत</translation>
 <translation id="799547531016638432">शॉर्टकट काढा</translation>
@@ -4776,7 +4764,6 @@
 <translation id="8400146488506985033">लोकांना व्यवस्थापित करा</translation>
 <translation id="8410073653152358832">हा फोन वापरा</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">होय, सिंक आणि पर्सनलायझेशन सुरू करा</translation>
 <translation id="8413385045638830869">प्रथम विचारा (शिफारस केलेले)</translation>
 <translation id="8418445294933751433">टॅब म्हणून &amp;दर्शवा</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />' साठी शोध परिणाम</translation>
@@ -4821,7 +4808,6 @@
 <translation id="8470028084415844044">तुमच्या सर्व डिव्हाइसवर सर्व पासवर्ड मिळवण्यासाठी, सिंक सुरू करा.</translation>
 <translation id="8470513973197838199"><ph name="ORIGIN" /> साठी सेव्ह केलेले पासवर्ड</translation>
 <translation id="8472623782143987204">हार्डवेअर-बॅक्ड</translation>
-<translation id="8474229360677287535">तुमच्या सर्व विंडो बंद करा</translation>
 <translation id="8475313423285172237">आपल्या संगणकावरील दुसऱ्या प्रोग्रामने Chrome च्या कार्य करण्याचा मार्ग बदलू शकणारा विस्तार जोडला.</translation>
 <translation id="8475647382427415476">आत्ता "<ph name="FILENAME" />" संकालित करण्यात Google ड्राइव्ह अक्षम होते. Google ड्राइव्ह नंतर पुन्हा प्रयत्न करेल.</translation>
 <translation id="8477241577829954800">अधिग्रहित</translation>
@@ -4959,7 +4945,6 @@
 <translation id="8688579245973331962">आपले नाव दिसत नाही?</translation>
 <translation id="8688591111840995413">चुकीचा पासवर्ड</translation>
 <translation id="8688672835843460752">उपलब्ध</translation>
-<translation id="8689583087392258564">मशीन डोमेनमध्ये जोडणे अयशस्वी झाले. ऑर्गनायझेशनल युनिट अवैध आहे.</translation>
 <translation id="869257642790614972">शेवटी-बंद केलेला टॅब पुन्हा उघडा</translation>
 <translation id="8695825812785969222">&amp;स्थान उघडा...</translation>
 <translation id="8698464937041809063">Google रेखांकन</translation>
@@ -5098,7 +5083,6 @@
 <translation id="8902667442496790482">बोलण्यासाठी निवडा सेटिंग्ज उघडा</translation>
 <translation id="8903921497873541725">झूम इन करा</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
-<translation id="8909233240676134608">मशीन डोमेनशी जोडू शकत नाही. सर्व्हर नमूद केलेल्या Kerberos एंक्रिप्शन प्रकारांना सपोर्ट करत नाही. एंक्रिप्शन सेटिंग्जसाठी "अधिक पर्याय" पहा.</translation>
 <translation id="8909833622202089127">साइट तुमचे स्थान ट्रॅक करत आहे</translation>
 <translation id="8910146161325739742">तुमची स्क्रीन शेअर करा</translation>
 <translation id="8910222113987937043">आपल्या बुकमार्क, इतिहास आणि अन्य सेटिंग्जसाठी बदल यापुढे आपल्या Google खात्यासह संकालित केले जाणार नाहीत. तथापि, आपला विद्यमान डेटा आपल्या Google खात्यामध्ये संग्रहित केलेला असेल आणि <ph name="BEGIN_LINK" />Google डॅशबोर्ड<ph name="END_LINK" /> वर व्यवस्थापित केला जाऊ शकतो.</translation>
@@ -5280,7 +5264,6 @@
 <translation id="9177499212658576372">आपण सध्या <ph name="NETWORK_TYPE" /> नेटवर्कशी कनेक्ट केले आहे.</translation>
 <translation id="9180380851667544951">साइट तुमची स्क्रीन शेअर करू शकते</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_DOMAIN" /> वरून <ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">डोमेनशी मशीन जोडण्‍यात अयशस्वी झाले. हे कदाचित सर्व्हर वरील आपल्या खात्यासाठी असलेल्या अपुर्‍या विशेषाधिकारांमुळे असू शकते.</translation>
 <translation id="9188441292293901223">कृपया हा <ph name="DEVICE_TYPE" /> अनलॉक करण्यासाठी Android च्या नवीनतम आवृत्तीवर आपला फोन अपडेट करा.</translation>
 <translation id="9190063653747922532">L2TP/IPSec + पूर्व-सामायिक की</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> शोध</translation>

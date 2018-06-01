@@ -732,7 +732,6 @@
 <translation id="2114326799768592691">Załaduj ponownie &amp;ramkę</translation>
 <translation id="2114896190328250491">Zdjęcie: <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Wyślij na telefon</translation>
-<translation id="2115946962706216358">Nie udało się dołączyć komputera do domeny. Powodem może być przekroczenie dozwolonej liczby przyłączonych komputerów dla Twojego konta na serwerze.</translation>
 <translation id="2119349053129246860">Otwórz w aplikacji <ph name="APP" /></translation>
 <translation id="2121825465123208577">Zmień rozmiar</translation>
 <translation id="2124930039827422115">{1,plural, =1{Ocena <ph name="AVERAGE_RATING" /> od jednego użytkownika.}few{Ocena <ph name="AVERAGE_RATING" /> od # użytkowników.}many{Ocena <ph name="AVERAGE_RATING" /> od # użytkowników.}other{Ocena <ph name="AVERAGE_RATING" /> od # użytkownika.}}</translation>
@@ -900,7 +899,7 @@
 <translation id="236141728043665931">Zawsze blokuj dostęp do mikrofonu</translation>
 <translation id="2365507699358342471">Ta witryna ma dostęp do tekstu i obrazów skopiowanych do schowka.</translation>
 <translation id="2366463953911599217">BŁĄD: nie udało się odinstalować aplikacji <ph name="APP_NAME" />.</translation>
-<translation id="2367199180085172140">Dodaj dostęp do plików</translation>
+<translation id="2367199180085172140">Dodaj udział plików</translation>
 <translation id="2367972762794486313">Pokaż aplikacje</translation>
 <translation id="2371076942591664043">Otwórz po &amp;zakończeniu</translation>
 <translation id="2377319039870049694">Przełącz na widok listy</translation>
@@ -1003,7 +1002,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="253434972992662860">&amp;Wstrzymaj</translation>
 <translation id="2534460670861217804">Serwer proxy HTTPS</translation>
 <translation id="253557089021624350">Liczba elementów wymuszających aktywność</translation>
-<translation id="2540384386570049483">Zezwól na wyświetlanie reklam na tej stronie</translation>
 <translation id="2541423446708352368">Pokaż wszystkie pobrane pliki</translation>
 <translation id="2542049655219295786">Tabela Google</translation>
 <translation id="2544853746127077729">Certyfikat uwierzytelniania został odrzucony przez sieć</translation>
@@ -1156,7 +1154,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2739191690716947896">Debugowanie</translation>
 <translation id="2739240477418971307">Zmiana ustawień ułatwień dostępu</translation>
 <translation id="2740393541869613458">sprawdzać, na jakie strony wszedł użytkownik nadzorowany, oraz</translation>
-<translation id="2740531572673183784">OK</translation>
 <translation id="2743387203779672305">Skopiuj do schowka</translation>
 <translation id="2745080116229976798">Subordynacja kwalifikowana firmy Microsoft</translation>
 <translation id="2749756011735116528">Zaloguj się w <ph name="PRODUCT_NAME" /></translation>
@@ -1479,7 +1476,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="3270965368676314374">Odczyt, zmiana i usuwanie zdjęć, muzyki oraz innych multimediów na komputerze</translation>
 <translation id="327147043223061465">Wyświetl wszystkie pliki cookie i dane stron</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> chce się połączyć</translation>
-<translation id="327444463633065042">Nieprawidłowa nazwa komputera</translation>
 <translation id="3274763671541996799">Pracujesz w trybie pełnoekranowym.</translation>
 <translation id="3275778913554317645">Otwórz jako okno</translation>
 <translation id="3279741024917655738">Wyświetlaj filmy pełnoekranowe na:</translation>
@@ -1504,7 +1500,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="3305389145870741612">Proces formatowania może potrwać kilka sekund. Czekaj.</translation>
 <translation id="3305661444342691068">Otwieraj podgląd plików PDF</translation>
 <translation id="3306684685104080068">Włącz przesyłanie do usług w chmurze takich jak Google Hangouts.</translation>
-<translation id="3307091518408668019">Jednostka  organizacyjna komputera(np. OU=Chromebooks,DC=example,DC=com)</translation>
 <translation id="3308006649705061278">Jednostka organizacyjna (OU)</translation>
 <translation id="3308116878371095290">Umieszczanie na komputerze plików cookie z tej strony jest niedozwolone.</translation>
 <translation id="3308134619352333507">Ukryj przycisk</translation>
@@ -1870,7 +1865,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="383891835335927981">Żadna strona nie jest powiększana ani pomniejszana</translation>
 <translation id="3839516600093027468">Zawsze blokuj stronie <ph name="HOST" /> dostęp do schowka</translation>
 <translation id="3840053866656739575">Połączenie z Chromeboxem zostało utracone. Przysuń się bliżej lub sprawdź urządzenie – spróbujemy połączyć się ponownie.</translation>
-<translation id="3842132283799370683">Nie udało się dołączyć komputera do domeny. Powodem mogą być problemy z jednostką organizacyjną.</translation>
 <translation id="3842552989725514455">Czcionka szeryfowa</translation>
 <translation id="385051799172605136">Wstecz</translation>
 <translation id="3851428669031642514">Wczytaj niezabezpieczone skrypty</translation>
@@ -2281,7 +2275,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="4552678318981539154">Kup więcej miejsca</translation>
 <translation id="4554591392113183336">Wersja rozszerzenia zewnętrznego jest starsza lub taka sama jak wersja obecna.</translation>
 <translation id="4555769855065597957">Cień</translation>
-<translation id="4555979468244469039">Nazwa Chromebooka</translation>
 <translation id="4556110439722119938">Zakładki, historia, hasła i inne ustawienia zostaną zsynchronizowane z kontem Google, by można było z nich korzystać na dowolnym urządzeniu.</translation>
 <translation id="4558426062282641716">Przesłano prośbę o pozwolenie na automatyczne uruchamianie</translation>
 <translation id="4562155214028662640">Dodaj odcisk palca</translation>
@@ -2424,7 +2417,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="4784330909746505604">Prezentacja PowerPoint</translation>
 <translation id="4790972063719531840">Automatycznie wysyłaj do Google dane diagnostyczne i informacje o użytkowaniu</translation>
 <translation id="4792711294155034829">&amp;Zgłaszanie problemu...</translation>
-<translation id="479285515899735347">Ups. Wygląda na to, że Twoje hasło jest już nieaktualne. Ustaw nowe na drugim urządzeniu i spróbuj jeszcze raz.</translation>
 <translation id="479536056609751218">Strona internetowa, tylko kod HTML</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4801448226354548035">Ukryj konta</translation>
@@ -3092,7 +3084,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="577322787686508614">Nie jest dozwolona operacja odczytu na: „<ph name="DEVICE_NAME" />”.</translation>
 <translation id="5774295353725270860">Otwórz aplikację Pliki</translation>
 <translation id="5774515636230743468">Manifest:</translation>
-<translation id="5775834615653774429">Nie udało się dołączyć komputera do domeny. Powodem może być brak uprawnień Twojego konta na serwerze.</translation>
 <translation id="577624874850706961">Szukaj plików cookie</translation>
 <translation id="5777468213129569553">Otwórz Chrome</translation>
 <translation id="5778747455497889540">Poniżej znajduje się losowo wygenerowane hasło modułu zabezpieczeń, które zostało przypisane do Twojego komputera:</translation>
@@ -3113,7 +3104,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="5804241973901381774">Uprawnienia</translation>
 <translation id="580571955903695899">Uporządkuj według tytułu</translation>
 <translation id="5807290661599647102">Ustaw blokadę ekranu</translation>
-<translation id="580926004266167721">Nie udało się dołączyć komputera do domeny. Powodem może być brak uprawnień Twojego konta w jednostce organizacyjnej.</translation>
 <translation id="580961539202306967">Pytaj mnie, gdy strona chce wysyłać mi wiadomości push (zalecane)</translation>
 <translation id="5809725759695043233">Masz aplikacje zoptymalizowane dla Chromebooków</translation>
 <translation id="5814126672212206791">Typ połączenia</translation>
@@ -3361,7 +3351,7 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="6181431612547969857">Pobieranie zostało zablokowane</translation>
 <translation id="6185132558746749656">Lokalizacja urządzenia</translation>
 <translation id="6185696379715117369">Strona do góry</translation>
-<translation id="6189273858858366896">Skonfiguruj sieciowy dostęp do plików lub nim zarządzaj.</translation>
+<translation id="6189273858858366896">Skonfiguruj sieciowe udziały plików lub nimi zarządzaj.</translation>
 <translation id="6189412234224385711">Otwórz w rozszerzeniu <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blokuj pliki cookie innych firm</translation>
 <translation id="6196854373336333322">Rozszerzenie „<ph name="EXTENSION_NAME" />” przejęło kontrolę nad ustawieniami serwera proxy, co oznacza, że może zmieniać, przerywać lub podglądać wszystko, co robisz online. Jeśli nie masz pewności, skąd wzięła się ta zmiana, prawdopodobnie jej nie chcesz.</translation>
@@ -3680,7 +3670,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">Twój komputer jest skonfigurowany przy użyciu błędnie sformatowanego identyfikatora sprzętu. Ta sytuacja uniemożliwia zaktualizowanie systemu operacyjnego Chrome za pomocą najnowszych poprawek zabezpieczeń, a komputer <ph name="BEGIN_BOLD" />może być narażony na złośliwe ataki<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Podczas otwierania Twojego profilu coś poszło nie tak. Wyloguj się i ponownie zaloguj.</translation>
-<translation id="6670647982128220776">Funkcje związane z synchronizacją i personalizacją można teraz konfigurować w jednym miejscu. Włączając tę opcję, możesz spowodować zmianę swoich bieżących ustawień.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Chcesz zobaczyć tłumaczenie Google tej strony z języka <ph name="SOURCE_LANGUAGE" /> na <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Podłączono urządzenie wskazujące</translation>
@@ -4538,7 +4527,6 @@ Zainstalowanie aplikacji <ph name="APP_NAME" /> wymaga pobrania <ph name="DOWNLO
 <translation id="7984068253310542383">Odbicie lustrzane: <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">W celu zwiększenia bezpieczeństwa <ph name="PRODUCT_NAME" /> szyfruje Twoje dane.</translation>
 <translation id="7986295104073916105">Odczytywanie i zmienianie ustawień zapisanych haseł</translation>
-<translation id="798749371774946697">Nazwa komputera jest za długa</translation>
 <translation id="7988355189918024273">Włącz ułatwienia dostępu</translation>
 <translation id="7994702968232966508">Metoda EAP</translation>
 <translation id="799547531016638432">Usuń skrót</translation>
@@ -4797,7 +4785,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8400146488506985033">Zarządzaj użytkownikami</translation>
 <translation id="8410073653152358832">Użyj tego telefonu</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">Tak, włącz synchronizację i personalizację</translation>
 <translation id="8413385045638830869">Najpierw zapytaj (zalecane)</translation>
 <translation id="8418445294933751433">&amp;Pokaż jako kartę</translation>
 <translation id="8419098111404128271">Wyniki wyszukiwania dla „<ph name="SEARCH_TEXT" />”</translation>
@@ -4842,7 +4829,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8470028084415844044">Aby korzystać ze wszystkich swoich haseł na innych urządzeniach, włącz synchronizację.</translation>
 <translation id="8470513973197838199">Zapisane hasła do <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">sprzętowe</translation>
-<translation id="8474229360677287535">Zamknij wszystkie okna</translation>
 <translation id="8475313423285172237">Inny program na Twoim komputerze dodał rozszerzenie, które może zmienić działanie Chrome.</translation>
 <translation id="8475647382427415476">Dysk Google nie mógł zsynchronizować pliku „<ph name="FILENAME" />”. Spróbujemy ponownie później.</translation>
 <translation id="8477241577829954800">Zastąpiony</translation>
@@ -4981,13 +4967,12 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8688579245973331962">Nie widzisz swojej nazwy?</translation>
 <translation id="8688591111840995413">Nieprawidłowe hasło</translation>
 <translation id="8688672835843460752">Dostępne</translation>
-<translation id="8689583087392258564">Nie udało się dołączyć komputera do domeny. Jednostka organizacyjna jest nieprawidłowa.</translation>
 <translation id="869257642790614972">Otwórz ostatnio zamkniętą kartę</translation>
 <translation id="8695825812785969222">Otwórz &amp;lokalizację</translation>
 <translation id="8698464937041809063">Rysunek Google</translation>
 <translation id="869884720829132584">Menu aplikacji</translation>
 <translation id="869891660844655955">Data wygaśnięcia</translation>
-<translation id="870073306461175568">Sieciowy dostęp do plików</translation>
+<translation id="870073306461175568">Sieciowe udziały plików</translation>
 <translation id="8700934097952626751">Kliknij, by rozpocząć wyszukiwanie głosowe</translation>
 <translation id="8704521619148782536">To trwa o wiele dłużej niż zwykle. Możesz zaczekać albo anulować i spróbować ponownie później.</translation>
 <translation id="8705331520020532516">Numer seryjny</translation>
@@ -5119,7 +5104,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8902667442496790482">Otwórz ustawienia funkcji Przeczytaj na głos</translation>
 <translation id="8903921497873541725">Powiększ</translation>
 <translation id="8904976895050290827">Synchronizacja Chrome</translation>
-<translation id="8909233240676134608">Nie można dołączyć komputera do domeny. Serwer nie obsługuje wybranych typów szyfrowania Kerberos. Kliknij „Więcej opcji”, by otworzyć ustawienia szyfrowania.</translation>
 <translation id="8909833622202089127">Strona śledzi Twoją lokalizację</translation>
 <translation id="8910146161325739742">Udostępnianie ekranu</translation>
 <translation id="8910222113987937043">Twoje zakładki, historia, hasła i inne ustawienia nie będą już synchronizowane z kontem Google. Wcześniejsze dane pozostaną zapisane na koncie Google. Możesz nimi zarządzać w <ph name="BEGIN_LINK" />Panelu Google<ph name="END_LINK" />.</translation>
@@ -5305,7 +5289,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="9177499212658576372">Obecnie masz połączenie z siecią: <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9180380851667544951">Strona może udostępniać ekran</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> z <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">Nie udało się dołączyć komputera do domeny. Powodem może być brak uprawnień Twojego konta na serwerze.</translation>
 <translation id="9188441292293901223">Aby odblokować to urządzenie <ph name="DEVICE_TYPE" />, zaktualizuj Androida na telefonie do nowszej wersji.</translation>
 <translation id="9190063653747922532">L2TP/IPSec + klucz wstępny</translation>
 <translation id="920045321358709304">Szukaj w: <ph name="SEARCH_ENGINE" /></translation>

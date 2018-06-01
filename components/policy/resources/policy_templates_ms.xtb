@@ -95,7 +95,7 @@
       tapak https://example.com/.
       Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak yang jelas akan berlaku dan percubaan medan IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih dapat mendayakan IsolateOrigins secara manual.
       Jika dasar tidak dikonfigurasikan, pengguna akan dapat menukar tetapan ini.
-      Pada <ph name="PRODUCT_OS_NAME" />, adalah disyorkan supaya menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> kepada nilai yang sama. Jika nilai yang ditetapkan oleh kedua-dua dasar ini tidak sepadan, satu penangguhan mungkin akan berlaku semasa memasuki sesi pengguna pada waktu nilai yang ditetapkan oleh pengguna sedang digunakan. 
+      Pada <ph name="PRODUCT_OS_NAME" />, adalah disyorkan supaya menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> kepada nilai yang sama. Jika nilai yang ditetapkan oleh kedua-dua dasar ini tidak sepadan, satu penangguhan mungkin akan berlaku semasa memasuki sesi pengguna pada waktu nilai yang ditetapkan oleh dasar pengguna sedang digunakan. 
 
      NOTA: Dasar ini tidak terpakai pada Android. Untuk mendayakan IsolateOrigins pada Android, gunakan tetapan dasar IsolateOriginsAndroid.
       </translation>

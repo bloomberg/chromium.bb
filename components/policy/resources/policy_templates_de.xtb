@@ -90,7 +90,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="1372267489642113556">
       Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in einer
       durch Kommas getrennten Liste ein eigener Prozess ausgeführt. Dadurch werden auch
-      durch Subdomains benannte Ursprünge isoliert; wenn Sie z. B. https://example.com/ angeben,
+      durch Subdomains benannte Ursprünge isoliert; wenn Sie z. B. https://example.com/ angeben,
       wird auch https://foo.example.com/ als Teil der Website https://example.com/ isoliert.
       Wenn die Richtlinie deaktiviert ist, findet keine explizite Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "IsolateOrigins" weiterhin manuell aktivieren.
       Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.

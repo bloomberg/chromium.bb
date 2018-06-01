@@ -715,7 +715,6 @@
 <translation id="2114326799768592691">&amp;ફ્રેમ ફરીથી લોડ કરો</translation>
 <translation id="2114896190328250491"><ph name="NAME" /> દ્વારા ફોટો</translation>
 <translation id="2115103655317273167">ફોન પર મોકલો</translation>
-<translation id="2115946962706216358">મશીનને ડોમેન સાથે જોડવામાં નિષ્ફળ થયાં. આ, સર્વર પર તમારા એકાઉન્ટ માટે જોડવાની મંજૂર મશીનની સંખ્યા ઓળંગાઈ ગઈ હોવાને કારણે હોઈ શકે છે.</translation>
 <translation id="2119349053129246860"><ph name="APP" />માં ખોલો</translation>
 <translation id="2121825465123208577">આકાર બદલો</translation>
 <translation id="2124930039827422115">{1,plural, =1{એક વપરાશકર્તાએ <ph name="AVERAGE_RATING" /> રેટ કરેલું.}one{# વપરાશકર્તાએ <ph name="AVERAGE_RATING" /> રેટ કરેલું.}other{# વપરાશકર્તાએ <ph name="AVERAGE_RATING" /> રેટ કરેલું.}}</translation>
@@ -982,7 +981,6 @@
 <translation id="253434972992662860">&amp;થોભો</translation>
 <translation id="2534460670861217804">સુરક્ષિત HTTP પ્રોક્સી</translation>
 <translation id="253557089021624350">સક્રિય રાખવા માટેની સંખ્યા</translation>
-<translation id="2540384386570049483">આ સાઇટ પર જાહેરાતોને મંજૂરી આપો</translation>
 <translation id="2541423446708352368">બધા ડાઉનલોડ્સ બતાવો</translation>
 <translation id="2542049655219295786">Google કોષ્ટક</translation>
 <translation id="2544853746127077729">નેટવર્ક દ્વારા પ્રમાણીકરણ પ્રમાણપત્ર નકારવામાં આવ્યું</translation>
@@ -1132,7 +1130,6 @@
 <translation id="2739191690716947896">ડીબગ કરો</translation>
 <translation id="2739240477418971307">તમારી ઍક્સેસિબિલિટી સેટિંગ્સ બદલો</translation>
 <translation id="2740393541869613458">નિરીક્ષણ કરેલ વપરાશકર્તાએ મુલાકાત લીધેલી વેબસાઇટ્સની સમીક્ષા કરો, અને</translation>
-<translation id="2740531572673183784">બરાબર, સમજાઇ ગયું</translation>
 <translation id="2743387203779672305">ક્લિપબોર્ડ પર કૉપિ કરો</translation>
 <translation id="2745080116229976798">Microsoft Qualified Subordination</translation>
 <translation id="2749756011735116528"><ph name="PRODUCT_NAME" /> પર સાઇન ઇન કરો</translation>
@@ -1453,7 +1450,6 @@
 <translation id="3270965368676314374">તમારા કમ્પ્યુટરમાંથી ફોટો, સંગીત અને અન્ય મીડિયા વાંચો, બદલો અને કાઢી નાખો</translation>
 <translation id="327147043223061465">બધી કુકીઝ અને સાઇટ ડેટા જુઓ</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" />, કનેક્ટ કરવા માગે છે</translation>
-<translation id="327444463633065042">અમાન્ય મશીન નામ</translation>
 <translation id="3274763671541996799">તમે પૂર્ણ સ્ક્રીન પર ગયા છો.</translation>
 <translation id="3275778913554317645">વિંડો તરીકે ખોલો</translation>
 <translation id="3279741024917655738">આના પર પૂર્ણસ્ક્રીન વીડિઓ બતાવો</translation>
@@ -1478,7 +1474,6 @@
 <translation id="3305389145870741612">ફોર્મેટ કરવાની પ્રક્રિયામાં થોડો સમય લાગી શકે છે. કૃપા કરીને રાહ જુઓ.</translation>
 <translation id="3305661444342691068">PDF ને પૂવાવલોકનમાં ખોલો</translation>
 <translation id="3306684685104080068">Google Hangouts જેવી મેઘ-આધરિત સેવાઓ પર કાસ્ટ કરવાનું સક્ષમ કરો.</translation>
-<translation id="3307091518408668019">કમ્પ્યુટર OU (દા.ત. OU=Chromebooks,DC=ઉદાહરણ,DC=com)</translation>
 <translation id="3308006649705061278">ઑર્ગેનાઇઝેશનલ યૂનિટ (OU)</translation>
 <translation id="3308116878371095290">આ પૃષ્ઠને કૂકીઝ સેટ કરવાથી અટકાવવામાં આવ્યું હતું.</translation>
 <translation id="3308134619352333507">બટન છુપાવો</translation>
@@ -1839,7 +1834,6 @@
 <translation id="383891835335927981">કોઈ સાઇટનું ઝૂમ વધારેલ અથવા તો ઘટાડેલ નથી</translation>
 <translation id="3839516600093027468"><ph name="HOST" />ને હંમેશા ક્લિપબોર્ડ જોવાથી બ્લૉક કરો</translation>
 <translation id="3840053866656739575">તમારા Chromebox નું કનેક્શન ગુમાવ્યું. કૃપા કરીને નજીક ખસેડો અથવા અમે ફરીથી કનેક્ટ કરવાનો પ્રયાસ કરીએ ત્યારે તમારું ઉપકરણ તપાસો.</translation>
-<translation id="3842132283799370683">મશીનને ડોમેન સાથે જોડવામાં નિષ્ફળ રહ્યાં. આ કદાચ સંસ્થાગત એકમની સમસ્યાને કારણે હોઈ શકે છે.</translation>
 <translation id="3842552989725514455">Serif ફૉન્ટ</translation>
 <translation id="385051799172605136">પાછળ</translation>
 <translation id="3851428669031642514">અસુરક્ષિત સ્ક્રિપ્ટ્સ લોડ કરો</translation>
@@ -2238,7 +2232,6 @@
 <translation id="4552678318981539154">વધુ સ્ટોરેજ ખરીદો</translation>
 <translation id="4554591392113183336">બાહ્ય એક્સટેન્શન હાલના એક્સટેન્શનની સરખામણીએ સમાન અથવા નીચલા સંસ્કરણ પર છે.</translation>
 <translation id="4555769855065597957">શેડો</translation>
-<translation id="4555979468244469039">Chromebook મશીન નામ</translation>
 <translation id="4556110439722119938">તમારા Google એકાઉન્ટ પર તમારા બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સ સમન્વયિત કરવામાં આવશે જેથી કરીને તમે તમારા બધા ઉપકરણો પર તેમનો ઉપયોગ કરી શકો.</translation>
 <translation id="4558426062282641716">સ્વતઃલોંચ પરવાનગીની વિનંતી કરી</translation>
 <translation id="4562155214028662640">ફિંગરપ્રિન્ટ ઉમેરો</translation>
@@ -2377,7 +2370,6 @@
 <translation id="4784330909746505604">PowerPoint પ્રસ્તુતિ</translation>
 <translation id="4790972063719531840">Google ને આપમેળે નિદાન અને વપરાશ ડેટા મોકલો</translation>
 <translation id="4792711294155034829">&amp;સમસ્યાની જાણ કરો...</translation>
-<translation id="479285515899735347">અરેરે! એવું લાગે છે તમારો પાસવર્ડ સમાપ્ત થઈ ગયો છે. કૃપા કરીને એને અન્ય મશીન પરથી નવીનીકૃત કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="479536056609751218">વેબપૃષ્ઠ, ફક્ત HTML</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4801448226354548035">એકાઉન્ટ્સ છુપાવો</translation>
@@ -3038,7 +3030,6 @@
 <translation id="577322787686508614">આના પર વાંચન ઓપરેશનને મંજૂરી નથી: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">ફાઇલ્સ ઍપ્લિકેશન ખોલો</translation>
 <translation id="5774515636230743468">સ્પષ્ટ:</translation>
-<translation id="5775834615653774429">મશીનને ડોમેન સાથે જોડવામાં નિષ્ફળ રહ્યાં. સંસ્થાગત એકમ અસ્તિત્વ ધરાવતું નથી.</translation>
 <translation id="577624874850706961">કૂકીઝ શોધો</translation>
 <translation id="5777468213129569553">Chrome ખોલો</translation>
 <translation id="5778747455497889540">નીચે રૅન્ડમલી બનાવવામાં આવેલ સુરક્ષિત મોડ્યુલ પાસવર્ડ છે, જે તમારા કમ્પ્યુટરને આપવામાં આવ્યો છે:</translation>
@@ -3059,7 +3050,6 @@
 <translation id="5804241973901381774">પરવાનગીઓ</translation>
 <translation id="580571955903695899">શીર્ષકથી પુનઃક્રમાંકિત કરો</translation>
 <translation id="5807290661599647102">સ્ક્રીન લૉક સેટ કરો</translation>
-<translation id="580926004266167721">મશીનને ડોમેન સાથે જોડવામાં નિષ્ફળ રહ્યાં. આ કદાચ સંસ્થાગત એકમના તમારા એકાઉન્ટ માટે અપૂરતા વિશેષાધિકારોને કારણે હોઈ શકે છે.</translation>
 <translation id="580961539202306967">જ્યારે સાઇટ મને પુશ સંદેશાઓ મોકલવાનું ઇચ્છે ત્યારે મને પૂછો (ભલામણ કરેલ)</translation>
 <translation id="5814126672212206791">કનેક્શનનો પ્રકાર</translation>
 <translation id="5815645614496570556">X.400 સરનામું</translation>
@@ -4441,7 +4431,6 @@
 <translation id="7984068253310542383">મિરર <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">ઉમેરેલી સુરક્ષા માટે, <ph name="PRODUCT_NAME" /> તમારા ડેટાને એન્ક્રિપ્ટ કરશે.</translation>
 <translation id="7986295104073916105">સાચવેલ પાસવર્ડ સેટિંગ્સ વાંચો અને બદલો</translation>
-<translation id="798749371774946697">મશીન નામ ખૂબ લાંબું છે</translation>
 <translation id="7988355189918024273">ઍક્સેસિબિલિટી સુવિધાઓ સક્ષમ કરો </translation>
 <translation id="7994702968232966508">EAP પદ્ધતિ</translation>
 <translation id="799547531016638432">શૉર્ટકટ દૂર કરો</translation>
@@ -4871,7 +4860,6 @@
 <translation id="8688579245973331962">તમારું નામ દેખાતું નથી?</translation>
 <translation id="8688591111840995413">ખોટો પાસવર્ડ</translation>
 <translation id="8688672835843460752">ઉપલબ્ધ</translation>
-<translation id="8689583087392258564">મશીનને ડોમેન સાથે જોડવામાં નિષ્ફળ રહ્યાં. સંસ્થાગત એકમ અમાન્ય છે.</translation>
 <translation id="869257642790614972">છેલ્લે બંધ કરેલો ટૅબ ફરીથી ખોલો</translation>
 <translation id="8695825812785969222">Open &amp;Location...</translation>
 <translation id="8698464937041809063">Google રેખાંકન</translation>
@@ -5008,7 +4996,6 @@
 <translation id="8902667442496790482">સાંભળવા માટે પસંદ કરોના સેટિંગ ખોલો</translation>
 <translation id="8903921497873541725">ઝૂમ વધારો</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
-<translation id="8909233240676134608">મશીનને ડોમેન સાથે જોડી શકતા નથી. સર્વર નિર્દિષ્ટ Kerberos એન્ક્રિપ્શન પ્રકારોને સહાય કરતું નથી. એન્ક્રિપ્શન સેટિંગ માટે "વધુ વિકલ્પો" તપાસો.</translation>
 <translation id="8909833622202089127">સાઇટ તમારા સ્થાનને ટ્રૅક કરી રહી છે</translation>
 <translation id="8910146161325739742">તમારી સ્ક્રીન શેર કરો</translation>
 <translation id="8910222113987937043">તમારા બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સ પરના ફેરફારો હવે તમારો અસ્તિત્વમાંનો ડેટા, તમારા Google એકાઉન્ટમાં સંગ્રહિત રહેશે અને તે <ph name="BEGIN_LINK" />Google ડેશબોર્ડ<ph name="END_LINK" /> પર સંચાલિત કરવામાં આવી શકે છે.</translation>
@@ -5186,7 +5173,6 @@
 <translation id="9177499212658576372">તમે હાલમાં <ph name="NETWORK_TYPE" /> નેટવર્કથી કનેક્ટ કરેલું છે.</translation>
 <translation id="9180380851667544951">સાઇટ તમારી સ્ક્રીનને શેર કરી શકે છે</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_DOMAIN" /> માંથી <ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">મશીનને ડોમેન સાથે જોડવામાં નિષ્ફળ થયાં. આ, સર્વર પર તમારા એકાઉન્ટ માટે અપૂરતાં વિશેષાધિકારોને કારણે હોઈ શકે છે.</translation>
 <translation id="9188441292293901223">આ <ph name="DEVICE_TYPE" /> ને અનલૉક કરવા માટે, કૃપા કરીને તમારા ફોનને Android ના નવા સંસ્કરણ પર અપડેટ કરો.</translation>
 <translation id="9190063653747922532">L2TP/IPsec + પૂર્વ-શેર કરેલી કી</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" />માં શોધો</translation>

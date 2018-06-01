@@ -729,7 +729,6 @@
 <translation id="2114326799768592691">טען מחדש את ה&amp;מסגרת</translation>
 <translation id="2114896190328250491">צילום מאת <ph name="NAME" /></translation>
 <translation id="2115103655317273167">שלח לטלפון</translation>
-<translation id="2115946962706216358">צירוף המכשיר לדומיין נכשל. ייתכן שהסיבה לכך היא חריגה בחשבונך ממספר הצירופים המותרים של המכשיר בשרת.</translation>
 <translation id="2119349053129246860">פתיחה באמצעות <ph name="APP" /></translation>
 <translation id="2121825465123208577">שנה גודל</translation>
 <translation id="2124930039827422115">{1,plural, =1{משתמש אחד נתן דירוג של <ph name="AVERAGE_RATING" />.}two{# משתמשים נתנו דירוג של <ph name="AVERAGE_RATING" />.}many{# משתמשים נתנו דירוג של <ph name="AVERAGE_RATING" />.}other{# משתמשים נתנו דירוג של <ph name="AVERAGE_RATING" />.}}</translation>
@@ -1000,7 +999,6 @@
 <translation id="253434972992662860">&amp;השהה</translation>
 <translation id="2534460670861217804">‏שרת proxy של Secure HTTP</translation>
 <translation id="253557089021624350">‏ספירת Keepalive</translation>
-<translation id="2540384386570049483">התר מודעות באתר הזה</translation>
 <translation id="2541423446708352368">הצג את כל ההורדות</translation>
 <translation id="2542049655219295786">‏טבלה של Google</translation>
 <translation id="2544853746127077729">אישור האימות נדחה על ידי הרשת</translation>
@@ -1153,7 +1151,6 @@
 <translation id="2739191690716947896">ניפוי באגים</translation>
 <translation id="2739240477418971307">שינוי הגדרות הנגישות שלך</translation>
 <translation id="2740393541869613458">סקירת אתרים שהמשתמש המבוקר ביקר בהם, וכן</translation>
-<translation id="2740531572673183784">אישור</translation>
 <translation id="2743387203779672305">העתק ללוח</translation>
 <translation id="2745080116229976798">‏שיעבוד מוגדר של Microsoft</translation>
 <translation id="2749756011735116528">היכנס אל <ph name="PRODUCT_NAME" /></translation>
@@ -1476,7 +1473,6 @@
 <translation id="3270965368676314374">קריאה, שינוי ומחיקה של קובצי תמונות, מוזיקה ומדיה מסוגים נוספים מהמחשב שלך</translation>
 <translation id="327147043223061465">‏הצגה של כל קובצי ה-Cookie ונתוני האתרים</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> רוצה להתחבר אל</translation>
-<translation id="327444463633065042">שם המכשיר שגוי</translation>
 <translation id="3274763671541996799">עברת למסך מלא.</translation>
 <translation id="3275778913554317645">פתח כחלון</translation>
 <translation id="3279741024917655738">הצגת סרטונים במסך מלא פועלת</translation>
@@ -1501,7 +1497,6 @@
 <translation id="3305389145870741612">תהליך הפרמוט עשוי להימשך מספר שניות. אנא המתן.</translation>
 <translation id="3305661444342691068">‏פתח PDF בתצוגה מקדימה</translation>
 <translation id="3306684685104080068">‏הפעל העברה לשירותים מבוססי-ענן כמו Google Hangouts.</translation>
-<translation id="3307091518408668019">‏יחידה ארגונית (OU) של מחשב (לדוגמה OU=Chromebooks,DC=example,DC=com)</translation>
 <translation id="3308006649705061278">‏יחידה ארגונית (OU)</translation>
 <translation id="3308116878371095290">‏לא ניתן להגדיר קובצי Cookie לדף זה.</translation>
 <translation id="3308134619352333507">לחצן 'הסתר'</translation>
@@ -1867,7 +1862,6 @@
 <translation id="383891835335927981">באף אתר לא השתנה המרחק מהתצוגה</translation>
 <translation id="3839516600093027468">יש למנוע תמיד מ-<ph name="HOST" /> לגשת אל הלוח</translation>
 <translation id="3840053866656739575">‏אבד החיבור ל-Chromebox שלך. התקרב עוד או בדוק את מכשירך בזמן שאנחנו מנסים להתחבר שוב.</translation>
-<translation id="3842132283799370683">צירוף המכשיר לדומיין נכשל. ייתכן שהסיבה לכך היא בעיות ביחידה הארגונית.</translation>
 <translation id="3842552989725514455">‏גופן Serif</translation>
 <translation id="385051799172605136">חזור</translation>
 <translation id="3851428669031642514">טען סקריפטים לא בטוחים</translation>
@@ -2278,7 +2272,6 @@
 <translation id="4552678318981539154">קנה עוד שטח אחסון</translation>
 <translation id="4554591392113183336">התוסף החיצוני הוא מגרסה זהה או קודמת לזו של התוסף הקיים.</translation>
 <translation id="4555769855065597957">צל</translation>
-<translation id="4555979468244469039">‏שם מכשיר ה-Chromebook</translation>
 <translation id="4556110439722119938">‏הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות יסונכרנו עם חשבון Google, כך שתוכל להשתמש בהם בכל המכשירים שלך.</translation>
 <translation id="4558426062282641716">התבקשה הרשאה להפעלה אוטומטית</translation>
 <translation id="4562155214028662640">הוסף טביעת אצבע</translation>
@@ -2421,7 +2414,6 @@
 <translation id="4784330909746505604">‏מצגת PowerPoint</translation>
 <translation id="4790972063719531840">‏שליחה אוטומטית של נתוני אבחון ושימוש אל Google</translation>
 <translation id="4792711294155034829">&amp;דווח על בעיה...</translation>
-<translation id="479285515899735347">אופס! נראה שהסיסמה שלך כבר לא בתוקף. חדש אותה במחשב אחר ונסה שוב.</translation>
 <translation id="479536056609751218">‏דף אינטרנט, HTML בלבד</translation>
 <translation id="479989351350248267">Search</translation>
 <translation id="4801448226354548035">הסתר חשבונות</translation>
@@ -3090,7 +3082,6 @@
 <translation id="577322787686508614">פעולת קריאה אסורה במכשיר: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">פתח את יישום הקבצים</translation>
 <translation id="5774515636230743468">מניפסט:</translation>
-<translation id="5775834615653774429">צירוף המכשיר לדומיין נכשל. היחידה הארגונית לא קיימת.</translation>
 <translation id="577624874850706961">‏חפש קובצי Cookie</translation>
 <translation id="5777468213129569553">‏פתח את Chrome</translation>
 <translation id="5778747455497889540">סיסמת המודול המאובטח שנוצרה באופן אקראי והוקצתה למחשב שלך:</translation>
@@ -3111,7 +3102,6 @@
 <translation id="5804241973901381774">הרשאות</translation>
 <translation id="580571955903695899">סדר מחדש לפי כותרת</translation>
 <translation id="5807290661599647102">הגדרה של נעילת מסך</translation>
-<translation id="580926004266167721">צירוף המכשיר לדומיין נכשל. ייתכן שהסיבה לכך היא הרשאות לא מספיקות של חשבונך ביחידה הארגונית.</translation>
 <translation id="580961539202306967">שאל אותי כאשר אתר רוצה לשלוח לי הודעות בדחיפה (מומלץ)</translation>
 <translation id="5809725759695043233">‏יש לך אפליקציות המותאמות למחשבי Chromebook</translation>
 <translation id="5814126672212206791">סוג חיבור</translation>
@@ -3678,7 +3668,6 @@
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">‏לצערנו, המחשב שלך מוגדר עם זיהוי חומרה פגום. המצב הזה מונע ממערכת ההפעלה של Chrome להתקין את עדכוני האבטחה האחרונים, וייתכן שהמחשב שלך יהיה <ph name="BEGIN_BOLD" />חשוף להתקפות זדוניות<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">משהו השתבש בפתיחת הפרופיל שלך. צא ולאחר מכן היכנס מחדש.</translation>
-<translation id="6670647982128220776">התכונות הקשורות לסינכרון ולהתאמה אישית נשלטות עכשיו דרך פקד אחד. הפעלת הפקד הזה עשויה לשנות את ההגדרות הנוכחיות.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">‏האם תרצה ש-Google תתרגם דף זה מ<ph name="SOURCE_LANGUAGE" /> ל<ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">התקן הצבעה מחובר</translation>
@@ -4535,7 +4524,6 @@
 <translation id="7984068253310542383">שיקוף מסך של <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">לשיפור האבטחה, <ph name="PRODUCT_NAME" /> יצפין את הנתונים שלך.</translation>
 <translation id="7986295104073916105">קריאה ושינוי של הגדרות בשביל סיסמאות שמורות</translation>
-<translation id="798749371774946697">הזנת שם ארוך מדי למכשיר</translation>
 <translation id="7988355189918024273">הפוך תכונות נגישות לפעילות</translation>
 <translation id="7994702968232966508">‏שיטת EAP</translation>
 <translation id="799547531016638432">הסר קיצור דרך</translation>
@@ -4793,7 +4781,6 @@
 <translation id="8400146488506985033">נהל אנשים</translation>
 <translation id="8410073653152358832">השתמש בטלפון הזה</translation>
 <translation id="8410775397654368139">Google Play</translation>
-<translation id="8411022984399993066">כן, אני רוצה להפעיל את הסינכרון וההתאמה האישית</translation>
 <translation id="8413385045638830869">שאל תחילה (מומלץ)</translation>
 <translation id="8418445294933751433">&amp;הצג ככרטיסייה</translation>
 <translation id="8419098111404128271">תוצאות לחיפוש "<ph name="SEARCH_TEXT" />"</translation>
@@ -4838,7 +4825,6 @@
 <translation id="8470028084415844044">כדי שכל הסיסמאות יהיו זמינות בכל המכשירים שברשותך, צריך להפעיל את הסינכרון.</translation>
 <translation id="8470513973197838199">סיסמאות שנשמרו בשביל <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">גיבוי חומרה</translation>
-<translation id="8474229360677287535">סגירת כל החלונות</translation>
 <translation id="8475313423285172237">‏תכנית אחרת במחשב שלך הוסיפה תוסף שעשוי לשנות את אופן הפעולה של Chrome.</translation>
 <translation id="8475647382427415476">‏ל-Google Drive אין כרגע אפשרות לסנכרן את "<ph name="FILENAME" />". מערכת Google Drive תנסה זאת שוב מאוחר יותר.</translation>
 <translation id="8477241577829954800">הוחלף</translation>
@@ -4977,7 +4963,6 @@
 <translation id="8688579245973331962">לא רואה את השם שלך?</translation>
 <translation id="8688591111840995413">סיסמה שגויה</translation>
 <translation id="8688672835843460752">פנוי</translation>
-<translation id="8689583087392258564">צירוף המכשיר לדומיין נכשל. היחידה הארגונית לא חוקית.</translation>
 <translation id="869257642790614972">פתח מחדש את הכרטיסייה האחרונה שנסגרה</translation>
 <translation id="8695825812785969222">פתח &amp;מיקום...</translation>
 <translation id="8698464937041809063">‏איור של Google</translation>
@@ -5115,7 +5100,6 @@
 <translation id="8902667442496790482">פתיחה של הגדרות ההקראה</translation>
 <translation id="8903921497873541725">התקרב</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
-<translation id="8909233240676134608">‏אי אפשר לצרף את המחשב הזה אל הדומיין. השרת לא תומך בסוגי הצפנת Kerberos שצוינו. יש לעיין ב"אפשרויות נוספות" כדי לקרוא על הגדרות ההצפנה.</translation>
 <translation id="8909833622202089127">האתר עוקב אחרי המיקום שלך</translation>
 <translation id="8910146161325739742">שיתוף המסך שלך</translation>
 <translation id="8910222113987937043">‏שינויים בסימניות, בהיסטוריה, בסיסמאות ובהגדרות אחרות לא יסונכרנו עוד עם חשבון Google שלך. עם זאת, הנתונים הקיימים עדיין יישארו בחשבון Google ותוכל לנהל אותם ב<ph name="BEGIN_LINK" />מרכז השליטה של Google<ph name="END_LINK" />.</translation>
@@ -5301,7 +5285,6 @@
 <translation id="9177499212658576372">אתה מחובר כעת לרשת <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9180380851667544951">האתר רשאי לשתף את המסך</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> מ-<ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
-<translation id="9187210477874601037">צירוף המכשיר לדומיין נכשל. ייתכן שהסיבה לכך היא הרשאות לא מספיקות של חשבונך בשרת.</translation>
 <translation id="9188441292293901223">‏עדכן את הטלפון לגרסה חדשה יותר של Android כדי לבטל את הנעילה של <ph name="DEVICE_TYPE" /> זה.</translation>
 <translation id="9190063653747922532">‏L2TP/‏IPSec + מפתח משותף מראש</translation>
 <translation id="920045321358709304">חפש ב-<ph name="SEARCH_ENGINE" /></translation>

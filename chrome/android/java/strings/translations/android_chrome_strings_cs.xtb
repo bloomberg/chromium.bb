@@ -692,7 +692,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7189372733857464326">Počkejte prosím, než služby Google Play dokončí aktualizaci</translation>
 <translation id="7189598951263744875">Sdílet...</translation>
 <translation id="7191430249889272776">Karta je otevřena na pozadí.</translation>
-<translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 nevyřízené stahování}few{# nevyřízená stahování}many{# nevyřízeného stahování}other{# nevyřízených stahování1}}</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 nevyřízené stahování}few{# nevyřízená stahování}many{# nevyřízeného stahování}other{# nevyřízených stahování}}</translation>
 <translation id="723171743924126238">Vyberte fotky</translation>
 <translation id="7243308994586599757">Možnosti jsou k dispozici ve spodní části obrazovky</translation>
 <translation id="7250468141469952378">Vybráno: <ph name="ITEM_COUNT" /></translation>
