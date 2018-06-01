@@ -179,7 +179,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       stylus_text_selector_(this),
       using_browser_compositor_(CompositorImpl::IsInitialized()),
       synchronous_compositor_client_(nullptr),
-      frame_evictor_(new viz::FrameEvictor(this)),
       observing_root_window_(false),
       prev_top_shown_pix_(0.f),
       prev_top_controls_translate_(0.f),
@@ -199,6 +198,11 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     delegated_frame_host_ = std::make_unique<ui::DelegatedFrameHostAndroid>(
         &view_, CompositorImpl::GetHostFrameSinkManager(), this,
         host()->GetFrameSinkId());
+    if (is_showing_) {
+      delegated_frame_host_->WasShown(
+          local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+          GetCompositorViewportPixelSize());
+    }
 
     // Let the page-level input event router know about our frame sink ID
     // for surface-based hit testing.
@@ -289,18 +293,16 @@ void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
 }
 
 bool RenderWidgetHostViewAndroid::HasValidFrame() const {
+  if (!delegated_frame_host_)
+    return false;
+
   if (!view_.parent())
     return false;
 
   if (current_surface_size_.IsEmpty())
     return false;
-  // This tell us whether a valid frame has arrived or not.
-  if (!frame_evictor_->HasFrame())
-    return false;
 
-  DCHECK(!delegated_frame_host_ ||
-         delegated_frame_host_->HasDelegatedContent());
-  return true;
+  return delegated_frame_host_->HasSavedFrame();
 }
 
 gfx::NativeView RenderWidgetHostViewAndroid::GetNativeView() const {
@@ -962,7 +964,6 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
 
   delegated_frame_host_->SubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list));
-  frame_evictor_->SwappedFrame(!host()->is_hidden());
   AcknowledgeBeginFrame();
 
   if (host()->is_hidden())
@@ -971,21 +972,6 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
   // As the metadata update may trigger view invalidation, always call it after
   // any potential compositor scheduling.
   OnFrameMetadataUpdated(std::move(metadata), is_transparent);
-}
-
-void RenderWidgetHostViewAndroid::EvictDelegatedFrame() {
-  if (!delegated_frame_host_)
-    return;
-
-  DCHECK(delegated_frame_host_->HasDelegatedContent() ==
-         frame_evictor_->HasFrame());
-
-  delegated_frame_host_->EvictDelegatedFrame();
-
-  if (frame_evictor_->HasFrame())
-    frame_evictor_->DiscardedFrame();
-
-  current_surface_size_.SetSize(0, 0);
 }
 
 void RenderWidgetHostViewAndroid::OnDidNotProduceFrame(
@@ -1347,12 +1333,21 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
 
   view_.GetLayer()->SetHideLayerAndSubtree(false);
 
-  frame_evictor_->SetVisible(true);
-
   if (overscroll_controller_)
     overscroll_controller_->Enable();
 
+  if (delegated_frame_host_ &&
+      delegated_frame_host_->IsPrimarySurfaceEvicted()) {
+    SynchronizeVisualProperties();
+  }
+
   host()->WasShown(ui::LatencyInfo());
+
+  if (delegated_frame_host_) {
+    delegated_frame_host_->WasShown(
+        local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+        GetCompositorViewportPixelSize());
+  }
 
   if (view_.parent() && view_.GetWindowAndroid()) {
     StartObservingRootWindow();
@@ -1376,7 +1371,8 @@ void RenderWidgetHostViewAndroid::HideInternal() {
 
   if (hide_frontbuffer) {
     view_.GetLayer()->SetHideLayerAndSubtree(true);
-    frame_evictor_->SetVisible(false);
+    if (delegated_frame_host_)
+      delegated_frame_host_->WasHidden();
   }
 
   if (stop_observing_root_window) {
@@ -1966,6 +1962,14 @@ void RenderWidgetHostViewAndroid::UpdateNativeViewTree(
 MouseWheelPhaseHandler*
 RenderWidgetHostViewAndroid::GetMouseWheelPhaseHandler() {
   return &mouse_wheel_phase_handler_;
+}
+
+void RenderWidgetHostViewAndroid::EvictDelegatedFrame() {
+  if (!delegated_frame_host_)
+    return;
+
+  delegated_frame_host_->EvictDelegatedFrame();
+  current_surface_size_.SetSize(0, 0);
 }
 
 void RenderWidgetHostViewAndroid::RunAckCallbacks() {
