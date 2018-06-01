@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "chromeos/services/device_sync/public/cpp/device_sync_client_impl.h"
 
 #include "chromeos/components/proximity_auth/logging/logging.h"

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <queue>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
