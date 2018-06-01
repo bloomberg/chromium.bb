@@ -189,6 +189,7 @@ static const char* const kSwitchNames[] = {
     switches::kDisableGLExtensions,
     switches::kDisableLogging,
     switches::kDisableShaderNameHashing,
+    switches::kDisableSkiaRuntimeOpts,
     switches::kDisableWebRtcHWEncoding,
 #if defined(OS_WIN)
     switches::kEnableAcceleratedVpxDecode,
@@ -202,6 +203,8 @@ static const char* const kSwitchNames[] = {
     switches::kEnableLowEndDeviceMode,
     switches::kDisableLowEndDeviceMode,
     switches::kRunAllCompositorStagesBeforeDraw,
+    switches::kSkiaFontCacheLimitMb,
+    switches::kSkiaResourceCacheLimitMb,
     switches::kTestGLLib,
     switches::kTraceToConsole,
     switches::kUseFakeJpegDecodeAccelerator,

@@ -24,6 +24,7 @@
 #include "components/viz/service/main/viz_main_impl.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/skia_utils.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
 #include "content/public/common/content_client.h"
@@ -329,6 +330,8 @@ int GpuMain(const MainFunctionParams& parameters) {
   child_thread->Init(start_time);
 
   gpu_process.set_main_thread(child_thread);
+
+  InitializeSkia();
 
 #if defined(OS_ANDROID)
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
