@@ -11,13 +11,11 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/prefs/pref_value_map.h"
@@ -376,7 +374,8 @@ SchemaValidatingPolicyHandler::SchemaValidatingPolicyHandler(
   DCHECK(schema_.valid());
 }
 
-SchemaValidatingPolicyHandler::~SchemaValidatingPolicyHandler() {}
+SchemaValidatingPolicyHandler::~SchemaValidatingPolicyHandler() {
+}
 
 const char* SchemaValidatingPolicyHandler::policy_name() const {
   return policy_name_;
@@ -439,9 +438,11 @@ SimpleSchemaValidatingPolicyHandler::SimpleSchemaValidatingPolicyHandler(
                                     strategy),
       pref_path_(pref_path),
       allow_recommended_(recommended_permission == RECOMMENDED_ALLOWED),
-      allow_mandatory_(mandatory_permission == MANDATORY_ALLOWED) {}
+      allow_mandatory_(mandatory_permission == MANDATORY_ALLOWED) {
+}
 
-SimpleSchemaValidatingPolicyHandler::~SimpleSchemaValidatingPolicyHandler() {}
+SimpleSchemaValidatingPolicyHandler::~SimpleSchemaValidatingPolicyHandler() {
+}
 
 bool SimpleSchemaValidatingPolicyHandler::CheckPolicySettings(
     const PolicyMap& policies,
@@ -469,136 +470,6 @@ void SimpleSchemaValidatingPolicyHandler::ApplyPolicySettings(
   const base::Value* value = policies.GetValue(policy_name());
   if (value)
     prefs->SetValue(pref_path_, value->CreateDeepCopy());
-}
-
-// SimpleJsonStringSchemaValidatingPolicyHandler implementation ----------------
-
-SimpleJsonStringSchemaValidatingPolicyHandler::
-    SimpleJsonStringSchemaValidatingPolicyHandler(
-        const char* policy_name,
-        const char* pref_path,
-        Schema schema,
-        SchemaOnErrorStrategy strategy,
-        RecommendedPermission recommended_permission,
-        MandatoryPermission mandatory_permission,
-        bool allow_errors_in_embedded_json)
-    : SimpleSchemaValidatingPolicyHandler(policy_name,
-                                          pref_path,
-                                          schema,
-                                          strategy,
-                                          recommended_permission,
-                                          mandatory_permission),
-      allow_errors_in_embedded_json_(allow_errors_in_embedded_json) {}
-
-SimpleJsonStringSchemaValidatingPolicyHandler::
-    ~SimpleJsonStringSchemaValidatingPolicyHandler() {}
-
-bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckPolicySettings(
-    const PolicyMap& policies,
-    PolicyErrorMap* errors) {
-  const base::Value* root_value = policies.GetValue(policy_name());
-  if (!root_value)
-    return true;
-
-  if (IsListSchema())
-    return CheckListOfJsonStrings(root_value, errors);
-
-  return CheckSingleJsonString(root_value, errors);
-}
-
-bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckSingleJsonString(
-    const base::Value* root_value,
-    PolicyErrorMap* errors) {
-  if (!root_value->is_string()) {
-    if (errors) {
-      errors->AddError(policy_name(), "(ROOT)", IDS_POLICY_TYPE_ERROR,
-                       base::Value::GetTypeName(base::Value::Type::STRING));
-    }
-    return false;
-  }
-  const std::string& json_string = root_value->GetString();
-  return ValidateJsonString(json_string, errors, 0);
-}
-
-bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckListOfJsonStrings(
-    const base::Value* root_value,
-    PolicyErrorMap* errors) {
-  if (!root_value->is_list()) {
-    if (errors) {
-      errors->AddError(policy_name(), "(ROOT)", IDS_POLICY_TYPE_ERROR,
-                       base::Value::GetTypeName(base::Value::Type::LIST));
-    }
-    return false;
-  }
-
-  // We validate every list value, so that if several values have errors, we can
-  // show the users all of the errors insteada of one at a time.
-  bool error_seen = false;
-  const ::base::Value::ListStorage& list = root_value->GetList();
-  for (size_t index = 0; index < list.size(); ++index) {
-    const base::Value& entry = list[index];
-    if (!entry.is_string()) {
-      if (errors) {
-        errors->AddError(policy_name(), index, IDS_POLICY_TYPE_ERROR,
-                         base::Value::GetTypeName(base::Value::Type::STRING));
-      }
-      error_seen |= true;
-      continue;
-    }
-    const std::string& json_string = entry.GetString();
-    if (!ValidateJsonString(json_string, errors, index))
-      error_seen |= true;
-  }
-  return !error_seen;
-}
-
-bool SimpleJsonStringSchemaValidatingPolicyHandler::ValidateJsonString(
-    const std::string& json_string,
-    PolicyErrorMap* errors,
-    int index) {
-  std::string parse_error;
-  std::unique_ptr<base::Value> parsed_value =
-      base::JSONReader::ReadAndReturnError(
-          json_string, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &parse_error);
-  if (!parse_error.empty()) {
-    // The string contained JSON that could not be parsed.
-    if (errors) {
-      errors->AddError(policy_name(), ErrorPath(index, ""),
-                       IDS_POLICY_INVALID_JSON_ERROR, parse_error);
-    }
-    // Return false - unless we allow JSON errors, in which case, return true.
-    return allow_errors_in_embedded_json_;
-  }
-
-  std::string schema_error;
-  std::string error_path;
-  const Schema json_string_schema =
-      IsListSchema() ? schema_.GetItems() : schema_;
-  bool result = json_string_schema.Validate(*parsed_value, strategy_,
-                                            &error_path, &schema_error);
-  if (!schema_error.empty()) {
-    // The JSON was parsed, but did not match the schema.
-    if (errors) {
-      errors->AddError(policy_name(), ErrorPath(index, error_path),
-                       schema_error);
-    }
-    // Return false - unless we allow JSON errors, in which case, return true.
-    return allow_errors_in_embedded_json_;
-  }
-
-  return result;
-}
-
-std::string SimpleJsonStringSchemaValidatingPolicyHandler::ErrorPath(
-    int index,
-    std::string json_error_path) {
-  if (IsListSchema()) {
-    return json_error_path.empty()
-               ? base::StringPrintf("items[%d]", index)
-               : base::StringPrintf("items[%d].%s", index,
-                                    json_error_path.c_str());
-  }
-  return json_error_path.empty() ? "(ROOT)" : json_error_path;
 }
 
 // LegacyPoliciesDeprecatingPolicyHandler implementation -----------------------

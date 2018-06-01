@@ -54,20 +54,6 @@ LEGACY_INVERTED_POLARITY_WHITELIST = [
     'SyncDisabled',
 ]
 
-# List of policies where the 'string' part of the schema is actually a JSON
-# string which has its own schema.
-LEGACY_EMBEDDED_JSON_WHITELIST = [
-  'ArcPolicy',
-  'AutoSelectCertificateForUrls',
-  'DefaultPrinterSelection',
-  'DeviceLoginScreenAutoSelectCertificateForUrls',
-  'DeviceOpenNetworkConfiguration',
-  'OpenNetworkConfiguration',
-  'RemoteAccessHostDebugOverridePolicies',
-  # NOTE: Do not add any new policies to this list! Do not store policies with
-  # complex schemas using stringified JSON - instead, store them as dicts.
-]
-
 class PolicyTemplateChecker(object):
 
   def __init__(self):
@@ -190,35 +176,6 @@ class PolicyTemplateChecker(object):
                      'new boolean policies follow the XYZEnabled pattern. ' +
                      'See also http://crbug.com/85687') % policy.get('name'))
 
-      # Checks that the policy doesn't have a validation_schema - the whole
-      # schema should be defined in 'schema'- unless whitelisted as legacy.
-      if (policy.has_key('validation_schema') and
-          policy.get('name') not in LEGACY_EMBEDDED_JSON_WHITELIST):
-        self._Error(('\'validation_schema\' is defined for new policy %s - ' +
-                     'entire schema data should be contained in \'schema\'') %
-                     policy.get('name'))
-
-      # Try to make sure that any policy with a complex schema is storing it as
-      # a 'dict', not embedding it inside JSON strings - unless whitelisted.
-      if (self._AppearsToContainEmbeddedJson(policy.get('example_value')) and
-          policy.get('name') not in LEGACY_EMBEDDED_JSON_WHITELIST):
-        self._Error(('Example value for new policy %s looks like JSON. Do ' +
-                     'not store complex data as stringified JSON - instead, ' +
-                     'store it in a dict and define it in \'schema\'.') %
-                     policy.get('name'))
-
-  # Returns True if the example value for a policy seems to contain JSON
-  # embedded inside a string. Simply checks if strings start with '{', so it
-  # doesn't flag numbers (which are valid JSON) but it does flag both JSON
-  # objects and python objects (regardless of the type of quotes used).
-  def _AppearsToContainEmbeddedJson(self, example_value):
-    if isinstance(example_value, str):
-      return example_value.strip().startswith('{')
-    elif isinstance(example_value, list):
-      return any(self._AppearsToContainEmbeddedJson(v) for v in example_value)
-    elif isinstance(example_value, dict):
-      return any(self._AppearsToContainEmbeddedJson(v)
-          for v in example_value.itervalues())
 
   def _CheckPolicy(self, policy, is_in_group, policy_ids, deleted_policy_ids):
     if not isinstance(policy, dict):
@@ -230,7 +187,7 @@ class PolicyTemplateChecker(object):
       if key not in ('name', 'type', 'caption', 'desc', 'device_only',
                      'supported_on', 'label', 'policies', 'items',
                      'example_value', 'features', 'deprecated', 'future',
-                     'id', 'schema', 'validation_schema', 'max_size', 'tags',
+                     'id', 'schema', 'max_size', 'tags',
                      'default_for_enterprise_users',
                      'default_for_managed_devices_doc_only',
                      'arc_support', 'supported_chrome_os_management'):

@@ -140,24 +140,6 @@
 #   be seen by the policy providers either, the 'supported_on' key should be set
 #   to an empty list.
 #
-# Schemas:
-#   All policies have a key 'schema' which describes the schema of the policy.
-#   For many policies this is simply a type eg 'boolean' or 'string', but for
-#   'dict' policies this describes the types of not only the root object, but
-#   also all of its descendants. This schema data is used to validate 'dict'
-#   policies, if a SchemaValidatingPolicyHandler is configured appropriately in
-#   configuration_policy_handler_list_factory.cc
-#
-#   Some policies at first seem to have simple schema e.g. a string or a list of
-#   strings, but those strings are actually JSON strings, and this JSON has
-#   another schema. This type of policy is deprecated. When adding new policies,
-#   make sure the entire schema is described by the 'schema' field and that
-#   there are no strings which contain JSON.
-#   The legacy policies which contain JSON strings have an extra field, the
-#   'validation_schema' which is used to validate not only the schema of the
-#   policy itself, but also the content of the JSON strings inside the policy.
-#   Do not use this field when adding new policies.
-#
 # IDs:
 #   Since a Protocol Buffer definition is generated from this file, unique and
 #   persistent IDs for all fields (but not for groups!) are needed. These are
@@ -3928,16 +3910,6 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'validation_schema': {
-        'type': 'array',
-        'items': {
-          'type': 'object',
-          'properties': {
-            'pattern': { 'type': 'string'},
-            'filter': { 'type': 'string'}
-          }
-        }
-      },
       'supported_on': ['chrome.*:15-', 'chrome_os:15-'],
       'features': {
         'dynamic_refresh': True,
@@ -3959,16 +3931,6 @@
       'schema': {
         'type': 'array',
         'items': { 'type': 'string' },
-      },
-      'validation_schema': {
-        'type': 'array',
-        'items': {
-          'type': 'object',
-          'properties': {
-            'pattern': { 'type': 'string'},
-            'filter': { 'type': 'string'}
-          }
-        }
       },
       'supported_on': ['chrome_os:65-'],
       'device_only': True,
@@ -5460,24 +5422,6 @@
       'name': 'DefaultPrinterSelection',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'validation_schema': {
-        'type': 'object',
-        'properties': {
-          'kind': {
-            'description': 'Whether to limit the search of the matching printer to a specific set of printers.',
-            'type': 'string',
-            'enum': [ 'local', 'cloud' ]
-          },
-          'idPattern': {
-            'description': 'Regular expression to match printer id.',
-            'type': 'string'
-          },
-          'namePattern': {
-            'description': 'Regular expression to match printer display name.',
-            'type': 'string'
-          }
-        }
-      },
       'supported_on': ['chrome.*:48-', 'chrome_os:48-'],
       'features': {
         'dynamic_refresh': True,
@@ -5501,8 +5445,9 @@
         "properties": {
           "kind": {
             "description": "Whether to limit the search of the matching printer to a specific set of printers.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
           },
           "idPattern": {
             "description": "Regular expression to match printer id.",
