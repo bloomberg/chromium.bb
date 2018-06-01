@@ -113,11 +113,13 @@ void ResourceLoader::Start() {
   // Synchronous requests should not work with a throttling. Also, disables
   // throttling for the case that can be used for aka long-polling requests.
   // Allow top level frame main resource loads in paused frames as well.
+  // We also disable throttling for non-http[s] requests.
   if (resource_->Options().synchronous_policy == kRequestSynchronously ||
       !IsThrottlableRequestContext(request.GetRequestContext()) ||
       (request.GetFrameType() ==
            network::mojom::RequestContextFrameType::kTopLevel &&
-       resource_->GetType() == Resource::kMainResource)) {
+       resource_->GetType() == Resource::kMainResource) ||
+      !request.Url().ProtocolIsInHTTPFamily()) {
     throttle_option = ResourceLoadScheduler::ThrottleOption::kCanNotBeThrottled;
   }
 
