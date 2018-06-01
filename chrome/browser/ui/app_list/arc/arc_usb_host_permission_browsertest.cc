@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
@@ -20,6 +21,7 @@
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_utils.h"
 
 namespace arc {
@@ -30,6 +32,8 @@ namespace {
 constexpr char kAppName[] = "test.app.name";
 constexpr char kAppActivity[] = "test.app.activity";
 constexpr char kPackageName[] = "test.app.package.name";
+
+constexpr char kTestProfileName[] = "user@gmail.com";
 
 }  // namespace
 
@@ -155,6 +159,10 @@ class ArcUsbHostPermissionTest : public InProcessBrowserTest {
     arc_usb_permission_manager_->ClearPermissionForTesting();
   }
 
+  ArcUsbHostPermissionManager* arc_usb_permission_manager() {
+    return arc_usb_permission_manager_;
+  }
+
  private:
   ArcAppListPrefs* arc_app_list_pref_;
   ArcUsbHostPermissionManager* arc_usb_permission_manager_;
@@ -164,6 +172,48 @@ class ArcUsbHostPermissionTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ArcUsbHostPermissionTest);
 };
 
+class ArcUsbHostKioskPermissionTest : public ArcUsbHostPermissionTest {
+ public:
+  ArcUsbHostKioskPermissionTest() = default;
+
+  ~ArcUsbHostKioskPermissionTest() override = default;
+
+  void SetUpOnMainThread() override {
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<chromeos::FakeChromeUserManager>());
+    const AccountId account_id(AccountId::FromUserEmail(kTestProfileName));
+    GetFakeUserManager()->AddArcKioskAppUser(account_id);
+    GetFakeUserManager()->LoginUser(account_id);
+    ArcUsbHostPermissionTest::SetUpOnMainThread();
+  }
+
+  void TearDownOnMainThread() override {
+    ArcUsbHostPermissionTest::TearDownOnMainThread();
+    const AccountId account_id(AccountId::FromUserEmail(kTestProfileName));
+    GetFakeUserManager()->RemoveUserFromList(account_id);
+    user_manager_enabler_.reset();
+  }
+
+  void set_response(bool accepted) {
+    if (accepted)
+      accepted_response_count_++;
+  }
+
+  int accepted_response_count() const { return accepted_response_count_; }
+
+ private:
+  chromeos::FakeChromeUserManager* GetFakeUserManager() const {
+    return static_cast<chromeos::FakeChromeUserManager*>(
+        user_manager::UserManager::Get());
+  }
+
+  int accepted_response_count_ = 0;
+
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcUsbHostKioskPermissionTest);
+};
+
 IN_PROC_BROWSER_TEST_F(ArcUsbHostPermissionTest, UsbTemporayPermissionTest) {
   AddArcApp(kAppName, kPackageName, kAppActivity);
   AddArcPackage(kPackageName);
@@ -171,8 +221,8 @@ IN_PROC_BROWSER_TEST_F(ArcUsbHostPermissionTest, UsbTemporayPermissionTest) {
   const std::string guid0 = "TestGuidXXXXXX0";
   const base::string16 device_name0 = base::UTF8ToUTF16("TestDevice0");
   const base::string16 serial_number0 = base::UTF8ToUTF16("TestSerialNumber0");
-  uint16_t vendor_id0 = 123;
-  uint16_t product_id0 = 456;
+  const uint16_t vendor_id0 = 123;
+  const uint16_t product_id0 = 456;
 
   ArcUsbHostPermissionManager::UsbDeviceEntry testDevice0(
       guid0, device_name0, serial_number0, vendor_id0, product_id0);
@@ -194,19 +244,19 @@ IN_PROC_BROWSER_TEST_F(ArcUsbHostPermissionTest, UsbChromePrefsTest) {
   const std::string guid0 = "TestGuidXXXXXX0";
   const base::string16 device_name0 = base::UTF8ToUTF16("TestDevice0");
   const base::string16 serial_number0 = base::UTF8ToUTF16("TestSerialNumber0");
-  uint16_t vendor_id0 = 123;
-  uint16_t product_id0 = 456;
+  const uint16_t vendor_id0 = 123;
+  const uint16_t product_id0 = 456;
   // Persistent device1.
   const std::string guid1 = "TestGuidXXXXXX1";
   const base::string16 device_name1 = base::UTF8ToUTF16("TestDevice1");
   const base::string16 serial_number1 = base::UTF8ToUTF16("TestSerialNumber1");
-  uint16_t vendor_id1 = 234;
-  uint16_t product_id1 = 567;
+  const uint16_t vendor_id1 = 234;
+  const uint16_t product_id1 = 567;
   // Non persistent device2.
   const std::string guid2 = "TestGuidXXXXXX2";
   const base::string16 device_name2 = base::UTF8ToUTF16("TestDevice2");
-  uint16_t vendor_id2 = 345;
-  uint16_t product_id2 = 678;
+  const uint16_t vendor_id2 = 345;
+  const uint16_t product_id2 = 678;
 
   ArcUsbHostPermissionManager::UsbDeviceEntry testDevice0(
       guid0, device_name0, serial_number0, vendor_id0, product_id0);
@@ -262,6 +312,34 @@ IN_PROC_BROWSER_TEST_F(ArcUsbHostPermissionTest, UsbChromePrefsTest) {
   EXPECT_FALSE(HasUsbAccessPermission(kPackageName, testDevice0));
   EXPECT_FALSE(HasUsbAccessPermission(kPackageName, testDevice1));
   EXPECT_FALSE(HasUsbAccessPermission(kPackageName, testDevice2));
+}
+
+// If Enterprise wants to control USB permission for kiosk app, this
+// test expectation should also be updated.
+IN_PROC_BROWSER_TEST_F(ArcUsbHostKioskPermissionTest, UsbKioskPermission) {
+  DCHECK(IsArcKioskMode());
+  AddArcApp(kAppName, kPackageName, kAppActivity);
+  AddArcPackage(kPackageName);
+  // Persistent device0.
+  const std::string guid = "TestGuidXXXXXX0";
+  const base::string16 serial_number = base::UTF8ToUTF16("TestSerialNumber0");
+  const uint16_t vendor_id = 123;
+  const uint16_t product_id = 456;
+
+  int request_count = 0;
+  EXPECT_EQ(request_count, accepted_response_count());
+
+  arc_usb_permission_manager()->RequestUsbScanDeviceListPermission(
+      kPackageName, base::BindOnce(&ArcUsbHostKioskPermissionTest::set_response,
+                                   base::Unretained(this)));
+  EXPECT_EQ(++request_count, accepted_response_count());
+
+  arc_usb_permission_manager()->RequestUsbAccessPermission(
+      kPackageName, guid, serial_number, base::string16(), base::string16(),
+      vendor_id, product_id,
+      base::BindOnce(&ArcUsbHostKioskPermissionTest::set_response,
+                     base::Unretained(this)));
+  EXPECT_EQ(++request_count, accepted_response_count());
 }
 
 }  // namespace arc
