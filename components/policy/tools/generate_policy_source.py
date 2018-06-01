@@ -78,10 +78,7 @@ class PolicyDetails:
     self.supported_chrome_os_management = \
         policy.get('supported_chrome_os_management',
                    ['active_directory', 'google_cloud'])
-
-    # Get the schema to use for validation (this is normally 'schema', but we
-    # override this with the 'validation_schema' field on some legacy policies).
-    self.schema = policy.get('validation_schema', policy['schema'])
+    self.schema = policy.get('schema', {})
     self.has_enterprise_default = 'default_for_enterprise_users' in policy
     if self.has_enterprise_default:
       self.enterprise_default = policy['default_for_enterprise_users']
@@ -128,6 +125,7 @@ class PolicyDetails:
                                 (policy['name'], policy['type']))
     self.policy_type, self.protobuf_type, self.policy_protobuf_type, \
         self.restriction_type = PolicyDetails.TYPE_MAP[policy['type']]
+    self.schema = policy['schema']
 
     self.desc = '\n'.join(
         map(str.strip,
