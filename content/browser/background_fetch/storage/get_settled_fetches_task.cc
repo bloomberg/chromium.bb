@@ -131,7 +131,10 @@ void GetSettledFetchesTask::FillFailedResponse(ServiceWorkerResponse* response,
                                                base::OnceClosure callback) {
   DCHECK(response);
   background_fetch_succeeded_ = false;
+
   // TODO(rayankans): Fill failed response with error reports.
+  response->response_type = network::mojom::FetchResponseType::kError;
+
   std::move(callback).Run();
 }
 
