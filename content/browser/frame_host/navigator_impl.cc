@@ -86,7 +86,7 @@ void NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
               ->GetController()
               ->GetBrowserContext(),
           url);
-  if ((enabled_bindings & BINDINGS_POLICY_WEB_UI) &&
+  if ((enabled_bindings & kWebUIBindingsPolicyMask) &&
       !is_allowed_in_web_ui_renderer) {
     // Log the URL to help us diagnose any future failures of this CHECK.
     FrameTreeNode* root_node =

@@ -25,6 +25,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
@@ -42,6 +43,13 @@
 #include "url/url_util.h"
 
 namespace content {
+namespace {
+
+GURL GetWebUIURL(std::string host) {
+  return GURL(std::string(kChromeUIScheme) + "://" + host);
+}
+
+}  // namespace
 
 const char kPrivilegedScheme[] = "privileged";
 
@@ -621,6 +629,7 @@ static scoped_refptr<SiteInstanceImpl> CreateSiteInstance(
 
 // Test to ensure that pages that require certain privileges are grouped
 // in processes with similar pages.
+// TODO(nasko): Remove. See https://crbug.com/847127.
 TEST_F(SiteInstanceTest, ProcessSharingByType) {
   // This test shouldn't run with --site-per-process mode, which prohibits
   // the renderer process reuse this test explicitly exercises.
@@ -660,13 +669,13 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
             extension2_instance->GetProcess());
 
   // Create some WebUI instances and make sure they share a process.
-  scoped_refptr<SiteInstanceImpl> webui1_instance(CreateSiteInstance(
-      browser_context.get(), GURL(kChromeUIScheme + std::string("://gpu"))));
-  policy->GrantWebUIBindings(webui1_instance->GetProcess()->GetID());
+  scoped_refptr<SiteInstanceImpl> webui1_instance(
+      CreateSiteInstance(browser_context.get(), GetWebUIURL(kChromeUIGpuHost)));
+  policy->GrantWebUIBindings(webui1_instance->GetProcess()->GetID(),
+                             BINDINGS_POLICY_WEB_UI);
 
   scoped_refptr<SiteInstanceImpl> webui2_instance(CreateSiteInstance(
-      browser_context.get(),
-      GURL(kChromeUIScheme + std::string("://media-internals"))));
+      browser_context.get(), GetWebUIURL(kChromeUIMediaInternalsHost)));
 
   std::unique_ptr<RenderProcessHost> dom_host(webui1_instance->GetProcess());
   EXPECT_EQ(webui1_instance->GetProcess(), webui2_instance->GetProcess());
@@ -724,7 +733,7 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
 
   // Simulate granting WebUI bindings for the process.
   ChildProcessSecurityPolicyImpl::GetInstance()->GrantWebUIBindings(
-      webui_host->GetID());
+      webui_host->GetID(), BINDINGS_POLICY_WEB_UI);
 
   EXPECT_TRUE(webui_instance->HasProcess());
   EXPECT_FALSE(webui_instance->HasWrongProcessForURL(webui_url));
@@ -1024,7 +1033,7 @@ TEST_F(SiteInstanceTest, IsValidIsolatedOrigin) {
 
   // Scheme must be HTTP or HTTPS.
   EXPECT_FALSE(IsolatedOriginUtil::IsValidIsolatedOrigin(
-      url::Origin::Create(GURL(kChromeUIScheme + std::string("://gpu")))));
+      url::Origin::Create(GetWebUIURL(kChromeUIGpuHost))));
   EXPECT_TRUE(IsolatedOriginUtil::IsValidIsolatedOrigin(
       url::Origin::Create(GURL("http://a.com"))));
   EXPECT_TRUE(IsolatedOriginUtil::IsValidIsolatedOrigin(

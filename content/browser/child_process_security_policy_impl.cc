@@ -280,7 +280,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   }
 
   bool has_web_ui_bindings() const {
-    return enabled_bindings_ & BINDINGS_POLICY_WEB_UI;
+    return enabled_bindings_ & kWebUIBindingsPolicyMask;
   }
 
   bool can_read_raw_cookies() const {
@@ -587,14 +587,19 @@ void ChildProcessSecurityPolicyImpl::GrantScheme(int child_id,
   state->second->GrantScheme(scheme);
 }
 
-void ChildProcessSecurityPolicyImpl::GrantWebUIBindings(int child_id) {
+void ChildProcessSecurityPolicyImpl::GrantWebUIBindings(int child_id,
+                                                        int bindings) {
+  // Only WebUI bindings should come through here.
+  CHECK(bindings & kWebUIBindingsPolicyMask);
+  CHECK_EQ(0, bindings & ~kWebUIBindingsPolicyMask);
+
   base::AutoLock lock(lock_);
 
   SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
-  state->second->GrantBindings(BINDINGS_POLICY_WEB_UI);
+  state->second->GrantBindings(bindings);
 
   // Web UI bindings need the ability to request chrome: URLs.
   state->second->GrantScheme(kChromeUIScheme);

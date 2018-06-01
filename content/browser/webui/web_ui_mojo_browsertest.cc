@@ -22,8 +22,10 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -32,7 +34,6 @@
 #include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
@@ -101,8 +102,11 @@ class BrowserTargetImpl : public mojom::BrowserTarget {
 // WebUIController that sets up mojo bindings.
 class TestWebUIController : public WebUIController {
  public:
-  TestWebUIController(WebUI* web_ui, base::RunLoop* run_loop)
+  TestWebUIController(WebUI* web_ui,
+                      base::RunLoop* run_loop,
+                      int bindings = BINDINGS_POLICY_MOJO_WEB_UI)
       : WebUIController(web_ui), run_loop_(run_loop) {
+    web_ui->SetBindings(bindings);
     WebUIDataSource* data_source = WebUIDataSource::Create("mojo-web-ui");
     data_source->SetRequestFilter(base::Bind(&GetResource));
     WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
@@ -160,6 +164,14 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
                                                const GURL& url) const override {
     if (url.query() == "ping")
       return new PingTestWebUIController(web_ui, run_loop_);
+    if (url.query() == "webui_bindings")
+      return new TestWebUIController(web_ui, run_loop_, BINDINGS_POLICY_WEB_UI);
+    if (url.query() == "hybrid") {
+      return new TestWebUIController(
+          web_ui, run_loop_,
+          BINDINGS_POLICY_WEB_UI | BINDINGS_POLICY_MOJO_WEB_UI);
+    }
+
     return new TestWebUIController(web_ui, run_loop_);
   }
   WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
@@ -198,6 +210,24 @@ class WebUIMojoTest : public ContentBrowserTest {
 
   TestWebUIControllerFactory* factory() { return &factory_; }
 
+  void NavigateWithNewWebUI(const std::string& path) {
+    // Load an invalid URL first so that a new WebUI is set up when we load
+    // the URL we're actually interested in.
+    EXPECT_FALSE(NavigateToURL(shell(), GURL()));
+
+    constexpr char kChromeUIMojoWebUIOrigin[] = "chrome://mojo-web-ui/";
+    EXPECT_TRUE(NavigateToURL(shell(), GURL(kChromeUIMojoWebUIOrigin + path)));
+  }
+
+  // Run |script| and return a boolean result.
+  bool RunBoolFunction(const std::string& script) {
+    bool result = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        shell()->web_contents(), "domAutomationController.send(" + script + ")",
+        &result));
+    return result;
+  }
+
  private:
   TestWebUIControllerFactory factory_;
 
@@ -225,7 +255,6 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
     return;
 
   g_got_message = false;
-  ASSERT_TRUE(embedded_test_server()->Start());
   base::RunLoop run_loop;
   factory()->set_run_loop(&run_loop);
   GURL test_url("chrome://mojo-web-ui/web_ui_mojo.html?ping");
@@ -249,28 +278,47 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIMojoTest, NativeMojoAvailable) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL kTestWebUIUrl("chrome://mojo-web-ui/web_ui_mojo_native.html");
-  NavigateToURL(shell(), kTestWebUIUrl);
+  // Mojo bindings should be enabled.
+  NavigateWithNewWebUI("web_ui_mojo_native.html");
+  EXPECT_TRUE(RunBoolFunction("isNativeMojoAvailable()"));
 
-  bool is_native_mojo_available = false;
-  const std::string kTestScript("isNativeMojoAvailable()");
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
-      "domAutomationController.send(" + kTestScript + ")",
-      &is_native_mojo_available));
-  EXPECT_TRUE(is_native_mojo_available);
+  // Now navigate again with normal WebUI bindings and ensure chrome.send is
+  // available.
+  NavigateWithNewWebUI("web_ui_mojo_native.html?webui_bindings");
+  EXPECT_FALSE(RunBoolFunction("isNativeMojoAvailable()"));
+
+  // Now navigate again both WebUI and Mojo bindings and ensure chrome.send is
+  // available.
+  NavigateWithNewWebUI("web_ui_mojo_native.html?hybrid");
+  EXPECT_TRUE(RunBoolFunction("isNativeMojoAvailable()"));
 
   // Now navigate again with WebUI disabled and ensure the native bindings are
   // not available.
   factory()->set_web_ui_enabled(false);
-  const std::string kTestNonWebUIUrl("/web_ui_mojo_native.html");
-  NavigateToURL(shell(), embedded_test_server()->GetURL(kTestNonWebUIUrl));
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
-      "domAutomationController.send(" + kTestScript + ")",
-      &is_native_mojo_available));
-  EXPECT_FALSE(is_native_mojo_available);
+  NavigateWithNewWebUI("web_ui_mojo_native.html?hybrid");
+  EXPECT_FALSE(RunBoolFunction("isNativeMojoAvailable()"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIMojoTest, ChromeSendAvailable) {
+  // chrome.send is not available on mojo-only WebUIs.
+  NavigateWithNewWebUI("web_ui_mojo_native.html");
+  EXPECT_FALSE(RunBoolFunction("isChromeSendAvailable()"));
+
+  // Now navigate again with normal WebUI bindings and ensure chrome.send is
+  // available.
+  NavigateWithNewWebUI("web_ui_mojo_native.html?webui_bindings");
+  EXPECT_TRUE(RunBoolFunction("isChromeSendAvailable()"));
+
+  // Now navigate again both WebUI and Mojo bindings and ensure chrome.send is
+  // available.
+  NavigateWithNewWebUI("web_ui_mojo_native.html?hybrid");
+  EXPECT_TRUE(RunBoolFunction("isChromeSendAvailable()"));
+
+  // Now navigate again with WebUI disabled and ensure that chrome.send is
+  // not available.
+  factory()->set_web_ui_enabled(false);
+  NavigateWithNewWebUI("web_ui_mojo_native.html?hybrid");
+  EXPECT_FALSE(RunBoolFunction("isChromeSendAvailable()"));
 }
 
 }  // namespace

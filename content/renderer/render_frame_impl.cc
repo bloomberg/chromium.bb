@@ -4915,7 +4915,7 @@ bool RenderFrameImpl::ShouldTrackUseCounter(const blink::WebURL& url) {
 
 void RenderFrameImpl::DidCreateScriptContext(v8::Local<v8::Context> context,
                                              int world_id) {
-  if ((enabled_bindings_ & BINDINGS_POLICY_WEB_UI) && IsMainFrame() &&
+  if ((enabled_bindings_ & BINDINGS_POLICY_MOJO_WEB_UI) && IsMainFrame() &&
       world_id == ISOLATED_WORLD_ID_GLOBAL) {
     // We only allow these bindings to be installed when creating the main
     // world context of the main frame.
@@ -5892,11 +5892,10 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     bool is_initial_navigation = render_view_->history_list_length_ == 0;
     bool should_fork =
         HasWebUIScheme(url) || HasWebUIScheme(old_url) ||
-        (cumulative_bindings & BINDINGS_POLICY_WEB_UI) ||
+        (cumulative_bindings & kWebUIBindingsPolicyMask) ||
         url.SchemeIs(kViewSourceScheme) ||
         (frame_->IsViewSourceModeEnabled() &&
          info.navigation_type != blink::kWebNavigationTypeReload);
-
     if (!should_fork && url.SchemeIs(url::kFileScheme)) {
       // Fork non-file to file opens.  Note that this may fork unnecessarily if
       // another tab (hosting a file or not) targeted this one before its

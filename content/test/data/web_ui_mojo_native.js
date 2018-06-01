@@ -8,3 +8,7 @@ window.isNativeMojoAvailable = () => {
       'createMessagePipe' in Mojo && 'writeMessage' in MojoHandle.prototype &&
       'cancel' in MojoWatcher.prototype;
 };
+
+window.isChromeSendAvailable = () => {
+  return 'chrome' in self && 'send' in chrome;
+};

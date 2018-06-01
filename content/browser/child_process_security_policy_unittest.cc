@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/test/mock_log.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_content_browser_client.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
@@ -834,18 +835,40 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceWebUIBindings) {
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   GURL url("chrome://thumb/http://www.google.com/");
-
-  p->Add(kRendererID);
-
-  EXPECT_FALSE(p->HasWebUIBindings(kRendererID));
-  EXPECT_FALSE(p->CanRequestURL(kRendererID, url));
-  EXPECT_TRUE(p->CanRedirectToURL(url));
-  p->GrantWebUIBindings(kRendererID);
-  EXPECT_TRUE(p->HasWebUIBindings(kRendererID));
-  EXPECT_TRUE(p->CanRequestURL(kRendererID, url));
-  EXPECT_TRUE(p->CanRedirectToURL(url));
-
-  p->Remove(kRendererID);
+  {
+    p->Add(kRendererID);
+    EXPECT_FALSE(p->HasWebUIBindings(kRendererID));
+    EXPECT_FALSE(p->CanRequestURL(kRendererID, url));
+    EXPECT_TRUE(p->CanRedirectToURL(url));
+    p->GrantWebUIBindings(kRendererID, BINDINGS_POLICY_WEB_UI);
+    EXPECT_TRUE(p->HasWebUIBindings(kRendererID));
+    EXPECT_TRUE(p->CanRequestURL(kRendererID, url));
+    EXPECT_TRUE(p->CanRedirectToURL(url));
+    p->Remove(kRendererID);
+  }
+  {
+    p->Add(kRendererID);
+    EXPECT_FALSE(p->HasWebUIBindings(kRendererID));
+    EXPECT_FALSE(p->CanRequestURL(kRendererID, url));
+    EXPECT_TRUE(p->CanRedirectToURL(url));
+    p->GrantWebUIBindings(kRendererID, BINDINGS_POLICY_MOJO_WEB_UI);
+    EXPECT_TRUE(p->HasWebUIBindings(kRendererID));
+    EXPECT_TRUE(p->CanRequestURL(kRendererID, url));
+    EXPECT_TRUE(p->CanRedirectToURL(url));
+    p->Remove(kRendererID);
+  }
+  {
+    p->Add(kRendererID);
+    EXPECT_FALSE(p->HasWebUIBindings(kRendererID));
+    EXPECT_FALSE(p->CanRequestURL(kRendererID, url));
+    EXPECT_TRUE(p->CanRedirectToURL(url));
+    p->GrantWebUIBindings(kRendererID,
+                          BINDINGS_POLICY_WEB_UI | BINDINGS_POLICY_MOJO_WEB_UI);
+    EXPECT_TRUE(p->HasWebUIBindings(kRendererID));
+    EXPECT_TRUE(p->CanRequestURL(kRendererID, url));
+    EXPECT_TRUE(p->CanRedirectToURL(url));
+    p->Remove(kRendererID);
+  }
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, RemoveRace) {
@@ -859,7 +882,8 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace) {
 
   p->GrantRequestURL(kRendererID, url);
   p->GrantReadFile(kRendererID, file);
-  p->GrantWebUIBindings(kRendererID);
+  p->GrantWebUIBindings(kRendererID,
+                        BINDINGS_POLICY_WEB_UI | BINDINGS_POLICY_MOJO_WEB_UI);
 
   EXPECT_TRUE(p->CanRequestURL(kRendererID, url));
   EXPECT_TRUE(p->CanRedirectToURL(url));

@@ -393,8 +393,8 @@ void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
       base::NumberToString(content::RenderView::GetRenderViewCount()));
 
 #if !defined(OS_ANDROID)
-  if ((render_frame()->GetEnabledBindings() &
-       content::BINDINGS_POLICY_WEB_UI)) {
+  if (render_frame()->GetEnabledBindings() &
+      content::kWebUIBindingsPolicyMask) {
     for (const auto& script : webui_javascript_)
       render_frame()->ExecuteJavaScript(script);
     webui_javascript_.clear();
