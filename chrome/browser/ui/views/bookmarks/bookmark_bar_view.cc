@@ -859,7 +859,7 @@ bool BookmarkBarView::CanProcessEventsWithinSubtree() const {
           ->GetOmniboxView()
           ->model()
           ->popup_model()
-          ->IsDisplayingResults()) {
+          ->IsOpen()) {
     return false;
   }
   return true;

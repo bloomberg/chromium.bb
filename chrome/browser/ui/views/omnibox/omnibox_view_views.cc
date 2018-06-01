@@ -425,7 +425,7 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
   if (model()->is_keyword_hint() && !event.IsShiftDown())
     return model()->AcceptKeyword(KeywordModeEntryMethod::TAB);
 
-  if (!model()->popup_model()->IsDisplayingResults())
+  if (!model()->popup_model()->IsOpen())
     return false;
 
   if (event.IsShiftDown() && (model()->popup_model()->selected_line_state() ==
@@ -836,7 +836,7 @@ bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
     const ui::KeyEvent& event) {
   if (views::FocusManager::IsTabTraversalKeyEvent(event) &&
       ((model()->is_keyword_hint() && !event.IsShiftDown()) ||
-       model()->popup_model()->IsDisplayingResults())) {
+       model()->popup_model()->IsOpen())) {
     return true;
   }
   if (event.key_code() == ui::VKEY_ESCAPE)
@@ -1008,7 +1008,7 @@ void OmniboxViewViews::OnBlur() {
   // TODO(tommycli): This seems like it should apply to the Cocoa version of
   // the Omnibox as well. Investigate moving this into the OmniboxEditModel.
   if (!model()->user_input_in_progress() && model()->popup_model() &&
-      model()->popup_model()->IsDisplayingResults() &&
+      model()->popup_model()->IsOpen() &&
       text() != model()->GetCurrentPermanentUrlText()) {
     RevertAll();
   } else {
@@ -1184,7 +1184,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_DELETE:
-      if (shift && model()->popup_model()->IsDisplayingResults())
+      if (shift && model()->popup_model()->IsOpen())
         model()->popup_model()->TryDeletingCurrentItem();
       break;
 

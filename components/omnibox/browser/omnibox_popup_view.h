@@ -19,8 +19,7 @@ class OmniboxPopupView {
  public:
   virtual ~OmniboxPopupView() {}
 
-  // Returns true if the popup is currently open, regardless of whether or not
-  // it actually contains results.
+  // Returns true if the popup is currently open.
   virtual bool IsOpen() const = 0;
 
   // Invalidates one line of the autocomplete popup.

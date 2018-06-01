@@ -796,9 +796,6 @@ void LocationBarView::RefreshBackground() {
   // correctly enable subpixel AA.
   omnibox_view_->SetBackgroundColor(background_color);
   omnibox_view_->EmphasizeURLComponents();
-
-  // Keep the popup in sync when we refresh the background.
-  GetOmniboxPopupView()->UpdatePopupAppearance();
 }
 
 void LocationBarView::RefreshLocationIcon() {
@@ -1121,6 +1118,9 @@ const char* LocationBarView::GetClassName() const {
 }
 
 void LocationBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  OmniboxPopupView* popup = GetOmniboxPopupView();
+  if (popup->IsOpen())
+    popup->UpdatePopupAppearance();
   RefreshBackground();
   RefreshFocusRing();
 }
@@ -1197,15 +1197,6 @@ void LocationBarView::AnimationEnded(const gfx::Animation* animation) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private OmniboxEditController implementation:
-
-void LocationBarView::OnInputInProgress(bool in_progress) {
-  ChromeOmniboxEditController::OnInputInProgress(in_progress);
-
-  if (ui::MaterialDesignController::IsRefreshUi()) {
-    GetOmniboxPopupView()->UpdatePopupAppearance();
-    RefreshFocusRing();
-  }
-}
 
 void LocationBarView::OnChanged() {
   RefreshLocationIcon();
