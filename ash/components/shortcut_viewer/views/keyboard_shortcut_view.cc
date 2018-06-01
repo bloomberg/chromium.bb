@@ -28,8 +28,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/search_box/search_box_view_base.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -97,7 +95,7 @@ KeyboardShortcutView::~KeyboardShortcutView() {
 }
 
 // static
-views::Widget* KeyboardShortcutView::Toggle(gfx::NativeWindow context) {
+views::Widget* KeyboardShortcutView::Toggle() {
   if (g_ksv_view) {
     if (g_ksv_view->GetWidget()->IsActive())
       g_ksv_view->GetWidget()->Close();
@@ -107,16 +105,12 @@ views::Widget* KeyboardShortcutView::Toggle(gfx::NativeWindow context) {
     base::RecordAction(
         base::UserMetricsAction("KeyboardShortcutViewer.CreateWindow"));
 
-    constexpr gfx::Size kKSVWindowSize(800, 512);
-    gfx::Rect window_bounds(kKSVWindowSize);
-    if (context) {
-      window_bounds = display::Screen::GetScreen()
-                          ->GetDisplayNearestWindow(context->GetRootWindow())
-                          .work_area();
-      window_bounds.ClampToCenteredSize(kKSVWindowSize);
-    }
-    views::Widget::CreateWindowWithContextAndBounds(new KeyboardShortcutView(),
-                                                    context, window_bounds);
+    views::Widget::InitParams params;
+    params.delegate = new KeyboardShortcutView;
+    // Intentionally don't set bounds. The window will be sized and centered
+    // based on CalculatePreferredSize().
+    views::Widget* widget = new views::Widget;
+    widget->Init(params);
 
     // Set frame view Active and Inactive colors, both are SK_ColorWHITE.
     aura::Window* window = g_ksv_view->GetWidget()->GetNativeWindow();
@@ -188,6 +182,10 @@ void KeyboardShortcutView::Layout() {
   content_view->SetBounds(left, top + search_box_used_height,
                           content_bounds.width(),
                           content_bounds.height() - search_box_used_height);
+}
+
+gfx::Size KeyboardShortcutView::CalculatePreferredSize() const {
+  return gfx::Size(800, 512);
 }
 
 void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {

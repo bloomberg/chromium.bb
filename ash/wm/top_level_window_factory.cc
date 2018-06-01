@@ -27,6 +27,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -75,9 +76,10 @@ RootWindowController* GetRootWindowControllerForNewTopLevelWindow(
   return RootWindowController::ForWindow(Shell::GetRootWindowForNewWindows());
 }
 
-// Returns the bounds for the new window.
+// Returns the bounds for the new window. If |container_window| is provided the
+// bounds are local to the container, otherwise they are in screen coordinates.
 gfx::Rect CalculateDefaultBounds(
-    RootWindowController* root_window_controller,
+    aura::Window* root_window,
     aura::Window* container_window,
     aura::PropertyConverter* property_converter,
     const std::map<std::string, std::vector<uint8_t>>* properties) {
@@ -85,18 +87,15 @@ gfx::Rect CalculateDefaultBounds(
   if (GetInitialBounds(*properties, &requested_bounds))
     return requested_bounds;
 
-  const gfx::Size root_size =
-      root_window_controller->GetRootWindow()->bounds().size();
+  const gfx::Size root_size = root_window->bounds().size();
   auto show_state_iter =
       properties->find(ui::mojom::WindowManager::kShowState_Property);
   if (show_state_iter != properties->end()) {
     if (IsFullscreen(property_converter, show_state_iter->second)) {
       gfx::Rect bounds(root_size);
       if (!container_window) {
-        const display::Display display =
-            display::Screen::GetScreen()->GetDisplayNearestWindow(
-                root_window_controller->GetRootWindow());
-        bounds.Offset(display.bounds().OffsetFromOrigin());
+        // Ensure the window is placed on the correct display.
+        ::wm::ConvertRectToScreen(root_window, &bounds);
       }
       return bounds;
     }
@@ -108,13 +107,18 @@ gfx::Rect CalculateDefaultBounds(
     // TODO(sky): likely want to constrain more than root size.
     window_size.SetToMin(root_size);
   } else {
-    static constexpr int kRootSizeDelta = 240;
-    window_size.SetSize(root_size.width() - kRootSizeDelta,
-                        root_size.height() - kRootSizeDelta);
+    // Pick a fixed default size. Most applications will immediately set the
+    // bounds and/or center the window, so the user usually won't see this.
+    window_size.SetSize(300, 200);
   }
   // TODO(sky): this should use code in chrome/browser/ui/window_sizer.
   static constexpr int kOriginOffset = 40;
-  return gfx::Rect(gfx::Point(kOriginOffset, kOriginOffset), window_size);
+  gfx::Rect bounds(gfx::Point(kOriginOffset, kOriginOffset), window_size);
+  if (!container_window) {
+    // Ensure the window is placed on the correct display.
+    ::wm::ConvertRectToScreen(root_window, &bounds);
+  }
+  return bounds;
 }
 
 // Does the real work of CreateAndParentTopLevelWindow() once the appropriate
@@ -126,19 +130,19 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
     aura::PropertyConverter* property_converter,
     std::map<std::string, std::vector<uint8_t>>* properties) {
   // TODO(sky): constrain and validate properties.
+  aura::Window* root_window = root_window_controller->GetRootWindow();
 
   int32_t container_id = kShellWindowId_Invalid;
   aura::Window* context = nullptr;
   aura::Window* container_window = nullptr;
   if (GetInitialContainerId(*properties, &container_id)) {
-    container_window =
-        root_window_controller->GetRootWindow()->GetChildById(container_id);
+    container_window = root_window->GetChildById(container_id);
   } else {
-    context = root_window_controller->GetRootWindow();
+    context = root_window;
   }
 
-  gfx::Rect bounds = CalculateDefaultBounds(
-      root_window_controller, container_window, property_converter, properties);
+  gfx::Rect bounds = CalculateDefaultBounds(root_window, container_window,
+                                            property_converter, properties);
 
   const bool provide_non_client_frame =
       window_type == ui::mojom::WindowType::WINDOW ||
@@ -172,20 +176,18 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
                       aura::client::WindowEmbedType::TOP_LEVEL_IN_WM);
   ApplyProperties(window, property_converter, *properties);
   window->Init(ui::LAYER_TEXTURED);
-  window->SetBounds(bounds);
 
   if (container_window) {
+    // |bounds| are in local coordinates.
     container_window->AddChild(window);
+    window->SetBounds(bounds);
   } else {
-    aura::Window* root = root_window_controller->GetRootWindow();
-    gfx::Point origin;
-    aura::Window::ConvertPointToTarget(root, root->GetRootWindow(), &origin);
-    const display::Display display =
-        display::Screen::GetScreen()->GetDisplayNearestWindow(
-            root_window_controller->GetRootWindow());
-    origin += display.bounds().OffsetFromOrigin();
-    gfx::Rect bounds_in_screen(origin, bounds.size());
-    ash::wm::GetDefaultParent(window, bounds_in_screen)->AddChild(window);
+    // |bounds| are in screen coordinates.
+    aura::Window* parent = ash::wm::GetDefaultParent(window, bounds);
+    parent->AddChild(window);
+    gfx::Rect bounds_in_parent = bounds;
+    ::wm::ConvertRectFromScreen(parent, &bounds_in_parent);
+    window->SetBounds(bounds_in_parent);
   }
   return window;
 }

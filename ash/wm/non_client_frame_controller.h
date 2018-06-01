@@ -49,7 +49,8 @@ class ASH_EXPORT NonClientFrameController
   // is the parent to place the newly created window in, and may be null. If
   // |parent| is null, |context| is used to determine the parent Window. One of
   // |parent| or |context| must be non-null. |window_manager_client| may be
-  // null for now.
+  // null for now. |bounds| is screen coordinates when |parent| is null,
+  // otherwise local coordinates, see views::Widget::InitParams::bounds.
   NonClientFrameController(
       aura::Window* parent,
       aura::Window* context,

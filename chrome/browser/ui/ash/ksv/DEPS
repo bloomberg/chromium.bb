@@ -14,6 +14,5 @@ specific_include_rules = {
   "keyboard_shortcut_viewer_util\.cc": [
     "+ash/components/shortcut_viewer/views/keyboard_shortcut_view.h",
     "+ash/public/cpp",
-    "+ash/shell.h",
   ],
 }

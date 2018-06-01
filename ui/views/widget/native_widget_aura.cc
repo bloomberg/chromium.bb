@@ -201,13 +201,15 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     }
     // SetAlwaysOnTop before SetParent so that always-on-top container is used.
     SetAlwaysOnTop(params.keep_on_top);
+
     // Make sure we have a real |window_bounds|.
-    if (parent && window_bounds == gfx::Rect()) {
-      // If a parent is specified but no bounds are given,
-      // use the origin of the parent's display so that the widget
-      // will be added to the same display as the parent.
+    aura::Window* parent_or_context = parent ? parent : context;
+    if (parent_or_context && window_bounds == gfx::Rect()) {
+      // If a parent or context is specified but no bounds are given, use the
+      // origin of the display so that the widget will be added to the same
+      // display as the parent or context.
       gfx::Rect bounds = display::Screen::GetScreen()
-                             ->GetDisplayNearestWindow(parent)
+                             ->GetDisplayNearestWindow(parent_or_context)
                              .bounds();
       window_bounds.set_origin(bounds.origin());
     }
