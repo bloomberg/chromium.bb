@@ -105,6 +105,9 @@ void HTMLLinkElement::ParseAttribute(
     Process();
   } else if (name == integrityAttr) {
     integrity_ = value;
+  } else if (name == importanceAttr &&
+             RuntimeEnabledFeatures::PriorityHintsEnabled()) {
+    importance_ = value;
   } else if (name == disabledAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kHTMLLinkElementDisabled);
     if (LinkStyle* link = GetLinkStyle())

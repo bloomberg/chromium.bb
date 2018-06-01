@@ -60,6 +60,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   String TypeValue() const { return type_; }
   String AsValue() const { return as_; }
   String IntegrityValue() const { return integrity_; }
+  String ImportanceValue() const { return importance_; }
   ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
   const LinkRelAttribute& RelAttribute() const { return rel_attribute_; }
   DOMTokenList& relList() const {
@@ -154,6 +155,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   String as_;
   String media_;
   String integrity_;
+  String importance_;
   ReferrerPolicy referrer_policy_;
   Member<DOMTokenList> sizes_;
   Vector<IntSize> icon_sizes_;

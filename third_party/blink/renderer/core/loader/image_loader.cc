@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
+#include "third_party/blink/renderer/core/loader/importance_attribute.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
@@ -299,6 +300,13 @@ static void ConfigureRequest(
   if (cross_origin != kCrossOriginAttributeNotSet) {
     params.SetCrossOriginAccessControl(
         element.GetDocument().GetSecurityOrigin(), cross_origin);
+  }
+
+  if (RuntimeEnabledFeatures::PriorityHintsEnabled()) {
+    mojom::FetchImportanceMode importance_mode =
+        GetFetchImportanceAttributeValue(
+            element.FastGetAttribute(HTMLNames::importanceAttr));
+    params.SetFetchImportanceMode(importance_mode);
   }
 
   if (client_hints_preferences.ShouldSend(

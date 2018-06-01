@@ -44,6 +44,8 @@ blink_core_sources("loader") {
     "idleness_detector.h",
     "image_loader.cc",
     "image_loader.h",
+    "importance_attribute.cc",
+    "importance_attribute.h",
     "interactive_detector.cc",
     "interactive_detector.h",
     "link_loader.cc",

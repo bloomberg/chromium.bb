@@ -59,6 +59,7 @@ struct LinkLoadParameters {
                      const String& media,
                      const String& nonce,
                      const String& integrity,
+                     const String& importance,
                      const ReferrerPolicy& referrer_policy,
                      const KURL& href,
                      const String& srcset,
@@ -70,6 +71,7 @@ struct LinkLoadParameters {
         media(media),
         nonce(nonce),
         integrity(integrity),
+        importance(importance),
         referrer_policy(referrer_policy),
         href(href),
         srcset(srcset),
@@ -83,6 +85,7 @@ struct LinkLoadParameters {
   String media;
   String nonce;
   String integrity;
+  String importance;
   ReferrerPolicy referrer_policy;
   KURL href;
   String srcset;

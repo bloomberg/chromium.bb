@@ -96,6 +96,7 @@
     "http-equiv",
     "id",
     "imgsizes",
+    "importance",
     "incremental",
     "inert",
     "inputmode",

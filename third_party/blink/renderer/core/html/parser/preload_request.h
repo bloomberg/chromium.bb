@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
@@ -76,6 +77,11 @@ class CORE_EXPORT PreloadRequest {
   }
   CrossOriginAttributeValue CrossOrigin() const { return cross_origin_; }
 
+  void SetImportance(mojom::FetchImportanceMode importance) {
+    importance_ = importance;
+  }
+  mojom::FetchImportanceMode Importance() const { return importance_; }
+
   void SetNonce(const String& nonce) { nonce_ = nonce; }
   const String& Nonce() const { return nonce_; }
 
@@ -134,6 +140,7 @@ class CORE_EXPORT PreloadRequest {
         resource_type_(resource_type),
         script_type_(ScriptType::kClassic),
         cross_origin_(kCrossOriginAttributeNotSet),
+        importance_(mojom::FetchImportanceMode::kImportanceAuto),
         defer_(FetchParameters::kNoDefer),
         resource_width_(resource_width),
         client_hints_preferences_(client_hints_preferences),
@@ -153,6 +160,7 @@ class CORE_EXPORT PreloadRequest {
   Resource::Type resource_type_;
   ScriptType script_type_;
   CrossOriginAttributeValue cross_origin_;
+  mojom::FetchImportanceMode importance_;
   String nonce_;
   FetchParameters::DeferOption defer_;
   FetchParameters::ResourceWidth resource_width_;
