@@ -22,6 +22,7 @@
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/run_loop.h"
 #include "base/scoped_native_library.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -866,7 +867,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopSafely) {
     params[1].sampling_interval = TimeDelta::FromMilliseconds(1);
     params[1].samples_per_burst = 100000;
 
-    SampleRecordedCounter samples_recorded[arraysize(params)];
+    SampleRecordedCounter samples_recorded[base::size(params)];
 
     TestProfilerInfo profiler_info0(target_thread_id, params[0],
                                     &samples_recorded[0]);

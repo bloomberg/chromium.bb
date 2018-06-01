@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/profiler/win32_stack_frame_unwinder.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -139,7 +140,7 @@ void RewritePointersToStackMemory(uintptr_t top, uintptr_t bottom,
   };
 
   // Rewrite pointers in the context.
-  for (size_t i = 0; i < arraysize(nonvolatile_registers); ++i) {
+  for (size_t i = 0; i < base::size(nonvolatile_registers); ++i) {
     DWORD64* const reg = &(context->*nonvolatile_registers[i]);
     RewritePointerIfInOriginalStack(top, bottom, stack_copy,
                                     reinterpret_cast<const void**>(reg));
@@ -482,7 +483,7 @@ bool NativeStackSamplerWin::GetModuleForHandle(
     StackSamplingProfiler::Module* module) {
   wchar_t module_name[MAX_PATH];
   DWORD result_length =
-      ::GetModuleFileName(module_handle, module_name, arraysize(module_name));
+      ::GetModuleFileName(module_handle, module_name, base::size(module_name));
   if (result_length == 0)
     return false;
 
