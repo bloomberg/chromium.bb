@@ -28,7 +28,7 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
 
  protected:
   // Enum for gaia auth mode, must match AuthMode defined in
-  // chrome/browser/resources/gaia_auth_host/gaia_auth_host.js.
+  // chrome/browser/resources/gaia_auth_host/authenticator.js.
   enum AuthMode {
     kDefaultAuthMode = 0,
     kOfflineAuthMode = 1,
