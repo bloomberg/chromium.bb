@@ -568,6 +568,10 @@ if (is_clang && !is_nacl) {
   ]
 }
 
+if (is_desktop_linux) {
+  default_compiler_configs += [ "//build/config/linux:export_dynamic" ]
+}
+
 # Debug/release-related defines.
 if (is_debug) {
   default_compiler_configs += [ "//build/config:debug" ]
