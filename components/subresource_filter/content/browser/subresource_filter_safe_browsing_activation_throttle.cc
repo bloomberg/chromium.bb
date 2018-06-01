@@ -192,15 +192,6 @@ void SubresourceFilterSafeBrowsingActivationThrottle::
                               : base::TimeTicks::Now() - defer_time_;
   UMA_HISTOGRAM_TIMES("SubresourceFilter.PageLoad.SafeBrowsingDelay", delay);
 
-  // Log a histogram for the delay we would have introduced if the throttle only
-  // speculatively checks URLs on WillStartRequest. This is only different from
-  // the actual delay if there was at least one redirect.
-  base::TimeDelta no_redirect_speculation_delay =
-      check_results_.size() > 1 ? check_results_.back().check_time : delay;
-  UMA_HISTOGRAM_TIMES(
-      "SubresourceFilter.PageLoad.SafeBrowsingDelay.NoRedirectSpeculation",
-      no_redirect_speculation_delay);
-
   ukm::SourceId source_id = ukm::ConvertToSourceId(
       navigation_handle()->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
   ukm::builders::SubresourceFilter builder(source_id);
