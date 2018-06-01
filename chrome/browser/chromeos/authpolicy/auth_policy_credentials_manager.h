@@ -131,18 +131,18 @@ class AuthPolicyCredentialsManagerFactory
  public:
   static AuthPolicyCredentialsManagerFactory* GetInstance();
 
-  // Returns nullptr in case profile is not Active Directory. Otherwise returns
-  // valid AuthPolicyCredentialsManager. Lifetime is managed by
-  // BrowserContextKeyedServiceFactory.
-  static KeyedService* BuildForProfileIfActiveDirectory(Profile* profile);
-
  private:
   friend struct base::DefaultSingletonTraits<
       AuthPolicyCredentialsManagerFactory>;
+  friend class AuthPolicyCredentialsManagerTest;
 
   AuthPolicyCredentialsManagerFactory();
   ~AuthPolicyCredentialsManagerFactory() override;
 
+  bool ServiceIsCreatedWithBrowserContext() const override;
+
+  // Returns nullptr in case profile is not Active Directory. Otherwise returns
+  // valid AuthPolicyCredentialsManager.
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 

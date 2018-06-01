@@ -116,6 +116,75 @@ void WaitForPermanentlyUntrustedStatusAndRun(const base::Closure& callback) {
   }
 }
 
+std::string GetKerberosConfigFileName() {
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  std::string config_file;
+  EXPECT_TRUE(env->GetVar("KRB5_CONFIG", &config_file));
+  return config_file;
+}
+
+std::string GetKerberosCredentialsCacheFileName() {
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  std::string creds_file;
+  EXPECT_TRUE(env->GetVar("KRB5CCNAME", &creds_file));
+  EXPECT_EQ(kKrb5CCFilePrefix, creds_file.substr(0, strlen(kKrb5CCFilePrefix)));
+  return creds_file.substr(strlen(kKrb5CCFilePrefix));
+}
+
+// Helper class to wait when both Kerberos credentials cache and config file
+// changed.
+class KerberosFilesChangeWaiter {
+ public:
+  // If |files_must_exist| is true and a file already exists the class does not
+  // wait when it changes.
+  explicit KerberosFilesChangeWaiter(bool files_must_exist) {
+    barrier_closure_ = base::BarrierClosure(2, loop_.QuitClosure());
+
+    watch_callback_ = base::BindRepeating(
+        [](const base::RepeatingClosure& barrier_closure,
+           const base::FilePath& path, bool error) -> void {
+          EXPECT_FALSE(error);
+          barrier_closure.Run();
+        },
+        barrier_closure_);
+
+    config_watcher_ = std::make_unique<base::FilePathWatcher>();
+    MaybeStartWatch(&config_watcher_,
+                    base::FilePath(GetKerberosConfigFileName()),
+                    files_must_exist);
+
+    creds_watcher_ = std::make_unique<base::FilePathWatcher>();
+    MaybeStartWatch(&creds_watcher_,
+                    base::FilePath(GetKerberosCredentialsCacheFileName()),
+                    files_must_exist);
+  }
+
+  // Should be called once.
+  void Wait() {
+    loop_.Run();
+    config_watcher_.reset();
+    creds_watcher_.reset();
+  }
+
+ private:
+  void MaybeStartWatch(std::unique_ptr<base::FilePathWatcher>* watcher,
+                       const base::FilePath& path,
+                       bool files_must_exist) {
+    (*watcher)->Watch(path, false /* recursive */, watch_callback_);
+    if (!files_must_exist && base::PathExists(path)) {
+      watch_callback_.Run(path, false /* error */);
+      watcher->reset();
+    }
+  }
+  base::RunLoop loop_;
+  base::RepeatingClosure barrier_closure_;
+
+  base::RepeatingCallback<void(const base::FilePath& path, bool error)>
+      watch_callback_;
+  std::unique_ptr<base::FilePathWatcher> config_watcher_;
+  std::unique_ptr<base::FilePathWatcher> creds_watcher_;
+};
+
 }  // namespace
 
 class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
@@ -822,22 +891,6 @@ class ExistingUserControllerActiveDirectoryTest
     return config;
   }
 
-  std::string GetKerberosConfigFileName() {
-    std::unique_ptr<base::Environment> env(base::Environment::Create());
-    std::string config_file;
-    EXPECT_TRUE(env->GetVar("KRB5_CONFIG", &config_file));
-    return config_file;
-  }
-
-  std::string GetKerberosCredentialsCacheFileName() {
-    std::unique_ptr<base::Environment> env(base::Environment::Create());
-    std::string creds_file;
-    EXPECT_TRUE(env->GetVar("KRB5CCNAME", &creds_file));
-    EXPECT_EQ(kKrb5CCFilePrefix,
-              creds_file.substr(0, strlen(kKrb5CCFilePrefix)));
-    return creds_file.substr(strlen(kKrb5CCFilePrefix));
-  }
-
   void CheckKerberosFiles(bool enable_dns_cname_lookup) {
     std::string file_contents;
     EXPECT_TRUE(base::ReadFileToString(
@@ -852,27 +905,7 @@ class ExistingUserControllerActiveDirectoryTest
 
   // Applies policy and waits until both config and credentials files changed.
   void ApplyPolicyAndWaitFilesChanged(bool enable_dns_cname_lookup) {
-    base::RunLoop loop;
-    base::RepeatingClosure barrier_closure(
-        base::BarrierClosure(2, loop.QuitClosure()));
-
-    auto watch_callback = base::BindRepeating(
-        [](const base::RepeatingClosure& barrier_closure,
-           const base::FilePath& path, bool error) -> void {
-          LOG(ERROR) << "Changed " << path.value();
-          EXPECT_FALSE(error);
-          barrier_closure.Run();
-        },
-        barrier_closure);
-
-    base::FilePathWatcher config_watcher;
-    config_watcher.Watch(base::FilePath(GetKerberosConfigFileName()),
-                         false /* recursive */, watch_callback);
-
-    base::FilePathWatcher creds_watcher;
-    creds_watcher.Watch(base::FilePath(GetKerberosCredentialsCacheFileName()),
-                        false /* recursive */, watch_callback);
-
+    KerberosFilesChangeWaiter files_change_waiter(true /* files_must_exist */);
     policy::PolicyMap policies;
     policies.Set(policy::key::kDisableAuthNegotiateCnameLookup,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
@@ -880,7 +913,7 @@ class ExistingUserControllerActiveDirectoryTest
                  std::make_unique<base::Value>(!enable_dns_cname_lookup),
                  nullptr);
     UpdateProviderPolicy(policies);
-    loop.Run();
+    files_change_waiter.Wait();
   }
 
  private:
@@ -932,6 +965,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
   existing_user_controller()->CompleteLogin(user_context);
 
   profile_prepared_observer.Wait();
+  KerberosFilesChangeWaiter files_change_waiter(false /* files_must_exist */);
+  files_change_waiter.Wait();
   CheckKerberosFiles(true /* enable_dns_cname_lookup */);
 }
 
@@ -953,6 +988,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
   existing_user_controller()->CompleteLogin(user_context);
 
   profile_prepared_observer.Wait();
+  KerberosFilesChangeWaiter files_change_waiter(false /* files_must_exist */);
+  files_change_waiter.Wait();
   CheckKerberosFiles(true /* enable_dns_cname_lookup */);
 
   ApplyPolicyAndWaitFilesChanged(false /* enable_dns_cname_lookup */);
@@ -978,8 +1015,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
       content::NotificationService::AllSources());
   existing_user_controller()->Login(user_context, SigninSpecifics());
-
   profile_prepared_observer.Wait();
+  KerberosFilesChangeWaiter files_change_waiter(false /* files_must_exist */);
+  files_change_waiter.Wait();
   CheckKerberosFiles(true /* enable_dns_cname_lookup */);
 }
 
