@@ -1097,47 +1097,38 @@ bool IsSimpleDRRect(const FloatRoundedRect& outer,
       !WebCoreFloatNearlyEqual(stroke_size.Width(),
                                outer.Rect().MaxX() - inner.Rect().MaxX()) ||
       !WebCoreFloatNearlyEqual(stroke_size.Height(),
-                               outer.Rect().MaxY() - inner.Rect().MaxY()))
+                               outer.Rect().MaxY() - inner.Rect().MaxY())) {
     return false;
+  }
 
-  // and
-  //   2) the inner radii are not constrained
-  const FloatRoundedRect::Radii& o_radii = outer.GetRadii();
-  const FloatRoundedRect::Radii& i_radii = inner.GetRadii();
-  if (!WebCoreFloatNearlyEqual(o_radii.TopLeft().Width() - stroke_size.Width(),
-                               i_radii.TopLeft().Width()) ||
-      !WebCoreFloatNearlyEqual(
-          o_radii.TopLeft().Height() - stroke_size.Height(),
-          i_radii.TopLeft().Height()) ||
-      !WebCoreFloatNearlyEqual(o_radii.TopRight().Width() - stroke_size.Width(),
-                               i_radii.TopRight().Width()) ||
-      !WebCoreFloatNearlyEqual(
-          o_radii.TopRight().Height() - stroke_size.Height(),
-          i_radii.TopRight().Height()) ||
-      !WebCoreFloatNearlyEqual(
-          o_radii.BottomRight().Width() - stroke_size.Width(),
-          i_radii.BottomRight().Width()) ||
-      !WebCoreFloatNearlyEqual(
-          o_radii.BottomRight().Height() - stroke_size.Height(),
-          i_radii.BottomRight().Height()) ||
-      !WebCoreFloatNearlyEqual(
-          o_radii.BottomLeft().Width() - stroke_size.Width(),
-          i_radii.BottomLeft().Width()) ||
-      !WebCoreFloatNearlyEqual(
-          o_radii.BottomLeft().Height() - stroke_size.Height(),
-          i_radii.BottomLeft().Height()))
-    return false;
+  const auto& is_simple_corner = [&stroke_size](const FloatSize& outer,
+                                                const FloatSize& inner) {
+    DCHECK(outer.Width() >= inner.Width());
+    DCHECK(outer.Height() >= inner.Height());
 
-  // We also ignore DRRects with a very thick relative stroke (shapes which are
-  // mostly filled by the stroke): Skia's stroke outline can diverge
-  // significantly from the outer/inner contours in some edge cases, so we fall
-  // back to drawDRRect() instead.
-  const float kMaxStrokeToSizeRatio = 0.75f;
-  if (2 * stroke_size.Width() / outer.Rect().Width() > kMaxStrokeToSizeRatio ||
-      2 * stroke_size.Height() / outer.Rect().Height() > kMaxStrokeToSizeRatio)
-    return false;
+    // trivial/zero-radius corner
+    if (outer.IsZero()) {
+      DCHECK(inner.IsZero());
+      return true;
+    }
 
-  return true;
+    // and
+    //   2) all corners are isotropic
+    // and
+    //   3) the inner radii are not constrained
+    return WebCoreFloatNearlyEqual(outer.Width(), outer.Height()) &&
+           WebCoreFloatNearlyEqual(inner.Width(), inner.Height()) &&
+           WebCoreFloatNearlyEqual(outer.Width(),
+                                   inner.Width() + stroke_size.Width());
+  };
+
+  const auto& o_radii = outer.GetRadii();
+  const auto& i_radii = inner.GetRadii();
+
+  return is_simple_corner(o_radii.TopLeft(), i_radii.TopLeft()) &&
+         is_simple_corner(o_radii.TopRight(), i_radii.TopRight()) &&
+         is_simple_corner(o_radii.BottomRight(), i_radii.BottomRight()) &&
+         is_simple_corner(o_radii.BottomLeft(), i_radii.BottomLeft());
 }
 
 }  // anonymous namespace
