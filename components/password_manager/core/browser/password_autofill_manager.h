@@ -122,10 +122,6 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // The driver that owns |this|.
   PasswordManagerDriver* password_manager_driver_;
 
-  // True if the Form-Not-Secure warning has been shown on the current
-  // navigation. Used for metrics.
-  bool did_show_form_not_secure_warning_ = false;
-
   // Context in which the "Show all saved passwords" fallback was shown.
   metrics_util::ShowAllSavedPasswordsContext
       show_all_saved_passwords_shown_context_ =
