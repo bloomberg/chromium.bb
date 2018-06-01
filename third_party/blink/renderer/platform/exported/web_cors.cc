@@ -163,7 +163,7 @@ base::Optional<CORSError> HandleRedirect(
     // Set request's origin to a globally unique identifier as specified in
     // the step 10 in https://fetch.spec.whatwg.org/#http-redirect-fetch.
     if (!last_origin->CanRequest(new_url)) {
-      options.security_origin = SecurityOrigin::CreateUnique();
+      options.security_origin = SecurityOrigin::CreateUniqueOpaque();
       new_security_origin = options.security_origin;
     }
   }

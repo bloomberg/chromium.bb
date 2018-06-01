@@ -77,7 +77,7 @@ CredentialInfoPtr TypeConverter<CredentialInfoPtr, blink::Credential*>::Convert(
     info->password = password_credential->password();
     info->name = password_credential->name();
     info->icon = password_credential->iconURL();
-    info->federation = blink::SecurityOrigin::CreateUnique();
+    info->federation = blink::SecurityOrigin::CreateUniqueOpaque();
   } else {
     DCHECK(credential->IsFederatedCredential());
     ::blink::FederatedCredential* federated_credential =

@@ -155,7 +155,7 @@ TEST_F(ResourceFetcherTest, UseExistingResource) {
 TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
   // Add a resource to the memory cache.
   scoped_refptr<const SecurityOrigin> source_origin =
-      SecurityOrigin::CreateUnique();
+      SecurityOrigin::CreateUniqueOpaque();
   Context()->SetSecurityOrigin(source_origin);
   KURL url("http://127.0.0.1:8000/foo.html");
   Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
@@ -185,7 +185,7 @@ TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
 
 TEST_F(ResourceFetcherTest, Vary) {
   scoped_refptr<const SecurityOrigin> source_origin =
-      SecurityOrigin::CreateUnique();
+      SecurityOrigin::CreateUniqueOpaque();
   Context()->SetSecurityOrigin(source_origin);
 
   KURL url("http://127.0.0.1:8000/foo.html");
@@ -249,7 +249,7 @@ TEST_F(ResourceFetcherTest, NavigationTimingInfo) {
 
 TEST_F(ResourceFetcherTest, VaryOnBack) {
   scoped_refptr<const SecurityOrigin> source_origin =
-      SecurityOrigin::CreateUnique();
+      SecurityOrigin::CreateUniqueOpaque();
   Context()->SetSecurityOrigin(source_origin);
 
   ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
@@ -338,7 +338,7 @@ class RequestSameResourceOnComplete
 
 TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
   scoped_refptr<const SecurityOrigin> source_origin =
-      SecurityOrigin::CreateUnique();
+      SecurityOrigin::CreateUniqueOpaque();
   Context()->SetSecurityOrigin(source_origin);
 
   KURL url("http://127.0.0.1:8000/foo.png");
@@ -754,7 +754,7 @@ TEST_F(ResourceFetcherTest, SpeculativePreloadShouldBePromotedToLinkePreload) {
 
 TEST_F(ResourceFetcherTest, Revalidate304) {
   scoped_refptr<const SecurityOrigin> source_origin =
-      SecurityOrigin::CreateUnique();
+      SecurityOrigin::CreateUniqueOpaque();
   Context()->SetSecurityOrigin(source_origin);
 
   KURL url("http://127.0.0.1:8000/foo.html");

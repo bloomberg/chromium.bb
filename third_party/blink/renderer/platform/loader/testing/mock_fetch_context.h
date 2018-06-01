@@ -147,7 +147,7 @@ class MockFetchContext : public FetchContext {
         runner_(loading_task_runner
                     ? std::move(loading_task_runner)
                     : base::MakeRefCounted<scheduler::FakeTaskRunner>()),
-        security_origin_(SecurityOrigin::CreateUnique()),
+        security_origin_(SecurityOrigin::CreateUniqueOpaque()),
         frame_scheduler_(new MockFrameScheduler(runner_)),
         complete_(false),
         transfer_size_(-1) {}

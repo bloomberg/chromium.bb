@@ -537,7 +537,7 @@ TEST_F(DocumentTest, OutgoingReferrer) {
 
 TEST_F(DocumentTest, OutgoingReferrerWithUniqueOrigin) {
   GetDocument().SetURL(KURL("https://www.example.com/hoge#fuga?piyo"));
-  GetDocument().SetSecurityOrigin(SecurityOrigin::CreateUnique());
+  GetDocument().SetSecurityOrigin(SecurityOrigin::CreateUniqueOpaque());
   EXPECT_EQ(String(), GetDocument().OutgoingReferrer());
 }
 

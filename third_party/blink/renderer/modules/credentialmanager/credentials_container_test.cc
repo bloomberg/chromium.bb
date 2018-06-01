@@ -59,7 +59,7 @@ class MockCredentialManager
 
     auto info = password_manager::mojom::blink::CredentialInfo::New();
     info->type = password_manager::mojom::blink::CredentialType::EMPTY;
-    info->federation = SecurityOrigin::CreateUnique();
+    info->federation = SecurityOrigin::CreateUniqueOpaque();
     std::move(get_callback_)
         .Run(password_manager::mojom::blink::CredentialManagerError::SUCCESS,
              std::move(info));

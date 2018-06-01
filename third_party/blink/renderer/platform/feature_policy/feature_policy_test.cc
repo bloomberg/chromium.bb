@@ -215,7 +215,8 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
 TEST_F(FeaturePolicyTest, PolicyParsedCorrectlyForOpaqueOrigins) {
   Vector<String> messages;
 
-  scoped_refptr<SecurityOrigin> opaque_origin = SecurityOrigin::CreateUnique();
+  scoped_refptr<SecurityOrigin> opaque_origin =
+      SecurityOrigin::CreateUniqueOpaque();
 
   // Empty policy.
   ParsedFeaturePolicy parsed_policy =

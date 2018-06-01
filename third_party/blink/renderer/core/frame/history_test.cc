@@ -109,7 +109,7 @@ TEST_F(HistoryTest, CanChangeToURLInUniqueOrigin) {
     KURL url(test.url);
     KURL document_url(test.document_url);
     scoped_refptr<const SecurityOrigin> document_origin =
-        SecurityOrigin::CreateUnique();
+        SecurityOrigin::CreateUniqueOpaque();
     EXPECT_EQ(test.expected, History::CanChangeToUrl(url, document_origin.get(),
                                                      document_url));
   }

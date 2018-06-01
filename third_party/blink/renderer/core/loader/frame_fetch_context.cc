@@ -1395,7 +1395,7 @@ FetchContext* FrameFetchContext::Detach() {
         kReferrerPolicyDefault, String(), NullURL(), GetSecurityOrigin(),
         GetParentSecurityOrigin(), GetAddressSpace(),
         GetContentSecurityPolicy(), GetSiteForCookies(),
-        SecurityOrigin::CreateUnique(), GetClientHintsPreferences(),
+        SecurityOrigin::CreateUniqueOpaque(), GetClientHintsPreferences(),
         GetDevicePixelRatio(), GetUserAgent(), IsMainFrame(),
         IsSVGImageChromeClient());
   }

@@ -81,7 +81,8 @@ TEST(KURLSecurityOriginStructTraitsTest, Basic) {
   EXPECT_TRUE(non_unique->IsSameSchemeHostPort(output.get()));
   EXPECT_FALSE(output->IsOpaque());
 
-  scoped_refptr<const SecurityOrigin> unique = SecurityOrigin::CreateUnique();
+  scoped_refptr<const SecurityOrigin> unique =
+      SecurityOrigin::CreateUniqueOpaque();
   EXPECT_TRUE(proxy->BounceOrigin(unique, &output));
   EXPECT_TRUE(output->IsOpaque());
 }
