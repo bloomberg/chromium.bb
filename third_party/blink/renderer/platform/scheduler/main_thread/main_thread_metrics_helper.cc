@@ -445,9 +445,10 @@ void MainThreadMetricsHelper::RecordForegroundMainThreadTaskLoad(
       UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME ".Foreground",
                                load_percentage);
 
-      if (time - main_thread_scheduler_->main_thread_only()
-                     .background_status_changed_at >
-          base::TimeDelta::FromMinutes(1)) {
+      base::TimeDelta time_since_foregrounded =
+          time - main_thread_scheduler_->main_thread_only()
+                     .background_status_changed_at;
+      if (time_since_foregrounded > base::TimeDelta::FromMinutes(1)) {
         UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
                                  ".Foreground.AfterFirstMinute",
                                  load_percentage);
@@ -476,11 +477,17 @@ void MainThreadMetricsHelper::RecordBackgroundMainThreadTaskLoad(
       UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME ".Background",
                                load_percentage);
 
-      if (time - main_thread_scheduler_->main_thread_only()
-                     .background_status_changed_at >
-          base::TimeDelta::FromMinutes(1)) {
+      base::TimeDelta time_since_backgrounded =
+          time - main_thread_scheduler_->main_thread_only()
+                     .background_status_changed_at;
+      if (time_since_backgrounded > base::TimeDelta::FromMinutes(1)) {
         UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
                                  ".Background.AfterFirstMinute",
+                                 load_percentage);
+      }
+      if (time_since_backgrounded > base::TimeDelta::FromMinutes(5)) {
+        UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
+                                 ".Background.AfterFifthMinute",
                                  load_percentage);
       }
       break;
