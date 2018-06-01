@@ -828,6 +828,7 @@ void MediaControlsImpl::Reset() {
   }
 
   UpdateCSSClassFromState();
+  UpdateSizingCSSClass();
   OnControlsListUpdated();
 }
 
@@ -1665,8 +1666,14 @@ void MediaControlsImpl::NotifyElementSizeChanged(DOMRectReadOnly* new_size) {
   size_.SetHeight(new_size->height());
 
   // Don't bother to do any work if this matches the most recent size.
-  if (old_size != size_)
+  if (old_size != size_) {
+    // Update the sizing CSS class before computing which controls fit so that
+    // the element sizes can update from the CSS class change before we start
+    // calculating.
+    if (IsModern())
+      UpdateSizingCSSClass();
     element_size_changed_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  }
 }
 
 void MediaControlsImpl::ElementSizeChangedTimerFired(TimerBase*) {
@@ -1682,7 +1689,6 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
   // This might be better suited for a layout, but since JS media controls
   // won't benefit from that anwyay, we just do it here like JS will.
   if (IsModern()) {
-    UpdateSizingCSSClass();
     UpdateOverflowMenuWanted();
     UpdateScrubbingMessageFits();
     return;

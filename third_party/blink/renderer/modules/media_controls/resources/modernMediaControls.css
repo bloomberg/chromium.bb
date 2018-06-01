@@ -71,10 +71,6 @@ video::-webkit-media-controls-panel {
   font-weight: normal;  /* Make sure that we don't inherit non-defaults. */
   font-style: normal;
 
-  background:
-    -webkit-image-set(url('default_100_percent/modern/gradient_bg.png') 1x)
-    repeat-x bottom left;
-
   opacity: 1;
   transition: opacity 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
@@ -85,9 +81,27 @@ video::-webkit-media-controls-panel.transparent {
   transition: opacity 1s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
-video::-webkit-media-controls-panel.scrubbing-message {
-  /* Need dark gradient at the top of the video when the scrubbing message is
-   * shown */
+video::-webkit-media-controls:not(.audio-only) div[pseudo="-webkit-media-controls-panel" i] {
+  background:
+    -webkit-image-set(url('default_100_percent/modern/gradient_bg.png') 1x)
+    repeat-x bottom left;
+}
+
+video::-webkit-media-controls.sizing-small div[pseudo="-webkit-media-controls-panel" i] {
+  background-size: auto 92px;
+}
+
+video::-webkit-media-controls.sizing-medium div[pseudo="-webkit-media-controls-panel" i] {
+  background-size: auto 200px;
+}
+
+video::-webkit-media-controls.sizing-large div[pseudo="-webkit-media-controls-panel" i] {
+  background-size: auto 312px;
+}
+
+/* Need dark gradient at the top of the video when the scrubbing message is
+ * shown */
+video::-webkit-media-controls:not(.audio-only) div[pseudo="-webkit-media-controls-panel" i].scrubbing-message {
   background:
     -webkit-image-set(url('default_100_percent/modern/top_gradient_bg.png') 1x)
     repeat-x top left,
@@ -95,21 +109,16 @@ video::-webkit-media-controls-panel.scrubbing-message {
     repeat-x bottom left;
 }
 
-@media (-webkit-min-device-pixel-ratio: 2) {
-  audio::-webkit-media-controls-panel,
-  video::-webkit-media-controls-panel {
-    background:
-      -webkit-image-set(url('default_200_percent/modern/gradient_bg.png') 1x)
-      repeat-x bottom left auto 80px;
-  }
+video::-webkit-media-controls.sizing-small div[pseudo="-webkit-media-controls-panel" i].scrubbing-message {
+  background-size: auto 120px, auto 92px;
+}
 
-  video::-webkit-media-controls-panel.scrubbing-message {
-    background:
-      -webkit-image-set(url('default_200_percent/modern/top_gradient_bg.png') 1x)
-      repeat-x top left auto 120px,
-      -webkit-image-set(url('default_200_percent/modern/gradient_bg.png') 1x)
-      repeat-x bottom left auto 80px;
-  }
+video::-webkit-media-controls.sizing-medium div[pseudo="-webkit-media-controls-panel" i].scrubbing-message {
+  background-size: auto 120px, auto 200px;
+}
+
+video::-webkit-media-controls.sizing-large div[pseudo="-webkit-media-controls-panel" i].scrubbing-message {
+  background-size: auto 120px, auto 312px;
 }
 
 audio::-internal-media-controls-button-panel,
@@ -193,12 +202,66 @@ video::-internal-media-controls-picture-in-picture-button {
   color: inherit;
 }
 
-video::-webkit-media-controls:not(.audio-only) input[pseudo="-webkit-media-controls-mute-button" i],
-video::-webkit-media-controls:not(.audio-only) input[pseudo="-webkit-media-controls-fullscreen-button" i],
-video::-webkit-media-controls:not(.audio-only) input[pseudo="-internal-media-controls-overflow-button" i] {
+video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-play-button" i],
+video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-mute-button" i],
+video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-fullscreen-button" i],
+video::-webkit-media-controls.sizing-small input[pseudo="-internal-media-controls-overflow-button" i] {
   width: 48px;
   height: 48px;
   min-width: 48px;
+}
+
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-play-button" i],
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-mute-button" i],
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-fullscreen-button" i],
+video::-webkit-media-controls.sizing-medium input[pseudo="-internal-media-controls-overflow-button" i] {
+  width: 96px;
+  height: 96px;
+  min-width: 96px;
+  background-size: 48px;
+}
+
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-play-button" i],
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-mute-button" i],
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-fullscreen-button" i],
+video::-webkit-media-controls.sizing-large input[pseudo="-internal-media-controls-overflow-button" i] {
+  width: 144px;
+  height: 144px;
+  min-width: 144px;
+  background-size: 72px;
+}
+
+video::-webkit-media-controls.sizing-small div[pseudo="-internal-media-controls-button-panel" i] {
+  height: 48px;
+  line-height: 48px;
+  padding: 0 0 0 16px;
+}
+
+video::-webkit-media-controls.sizing-medium div[pseudo="-internal-media-controls-button-panel" i] {
+  height: 96px;
+  line-height: 96px;
+  padding: 0 32px 0 64px;
+}
+
+video::-webkit-media-controls.sizing-large div[pseudo="-internal-media-controls-button-panel" i] {
+  height: 144px;
+  line-height: 144px;
+  padding: 0 64px 0 96px;
+}
+
+video::-webkit-media-controls.sizing-small [pseudo="-webkit-media-controls-current-time-display"],
+video::-webkit-media-controls.sizing-small [pseudo="-webkit-media-controls-time-remaining-display"] {
+  font-size: 16px;
+}
+
+video::-webkit-media-controls.sizing-medium [pseudo="-webkit-media-controls-current-time-display"],
+video::-webkit-media-controls.sizing-medium [pseudo="-webkit-media-controls-time-remaining-display"] {
+  font-size: 32px;
+}
+
+video::-webkit-media-controls.sizing-large [pseudo="-webkit-media-controls-current-time-display"],
+video::-webkit-media-controls.sizing-large [pseudo="-webkit-media-controls-time-remaining-display"] {
+  font-size: 48px;
 }
 
 audio::-webkit-media-controls-play-button,
@@ -296,7 +359,7 @@ video::-webkit-media-controls-overlay-play-button {
   box-sizing: border-box;
   overflow: hidden;
   background: transparent;
-  margin-bottom: -61px;
+  margin-bottom: -48px;
   position: relative;
   opacity: 1;
   transition: opacity 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
@@ -335,6 +398,18 @@ video::-webkit-media-controls.state-playing:not(.audio-only) input[pseudo="-webk
   background-image: -webkit-image-set(url(ic_pause_white.svg) 1x);
 }
 
+video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-overlay-play-button" i] {
+  margin-bottom: -48px;
+}
+
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-overlay-play-button" i] {
+  margin-bottom: -96px;
+}
+
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-overlay-play-button" i] {
+  margin-bottom: -144px;
+}
+
 /**
  * Timeline
  */
@@ -359,9 +434,76 @@ video::-webkit-media-controls.audio-only [pseudo="-webkit-media-controls-timelin
 }
 
 video::-webkit-media-controls-timeline {
-  padding-top: 16px;
-  padding-bottom: 12px;
   z-index: 0;
+}
+
+video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline" i] {
+  padding: 0 16px 8px 16px;
+}
+
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i] {
+  padding: 0 64px 32px 64px;
+}
+
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i] {
+  padding: 0 96px 64px 96px;
+}
+
+video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline" i],
+video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before,
+video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
+video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-background,
+video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffering {
+  height: 4px;
+}
+
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i],
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before,
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-background,
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffering {
+  height: 8px;
+}
+
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i],
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before,
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-background,
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffering {
+  height: 12px;
+}
+
+video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
+  width: 12px;
+  height: 12px;
+  margin-top: -4px;
+}
+
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+  margin-top: -8px;
+}
+
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
+  width: 36px;
+  height: 36px;
+  margin-top: -12px;
+}
+
+video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
+video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline" i]::-internal-media-controls-segmented-track {
+  border-radius: 2px;
+}
+
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i]::-internal-media-controls-segmented-track {
+  border-radius: 4px;
+}
+
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i]::-internal-media-controls-segmented-track {
+  border-radius: 6px;
 }
 
 input[pseudo="-webkit-media-controls-timeline" i]::-internal-media-controls-segmented-track {
@@ -384,7 +526,7 @@ input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
 
   width: 12px;
   height: 12px;
-  border-radius: 6px;
+  border-radius: 50%;
   margin-top: -4px;
   flex: 0 0 0;
 }

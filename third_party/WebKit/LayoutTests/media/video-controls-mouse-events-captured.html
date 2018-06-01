@@ -39,7 +39,7 @@ async_test(function(t) {
             mouseMoveEventCount++;
         });
 
-        eventSender.mouseMoveTo(coords[0] + 10, coords[1] + 10);
+        eventSender.mouseMoveTo(coords[0] + 10, coords[1]);
         // Expect another as we move back to the slider.
         eventSender.mouseMoveTo(coords[0], coords[1]);
 
