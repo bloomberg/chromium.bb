@@ -169,9 +169,9 @@ login.createScreen('UpdateScreen', 'update', function() {
      * @private
      */
     setMDMode_: function() {
-      var useMDOobe = (loadTimeData.getString('newOobeUI') == 'on');
-      $('oobe-update-md').hidden = !useMDOobe;
-      $('oobe-update').hidden = useMDOobe;
+      $('oobe-update-md').hidden = false;
+      // TODO(stevenjb): Remove oobe-update. https://crbug.com/647411.
+      $('oobe-update').hidden = true;
     },
 
     /**

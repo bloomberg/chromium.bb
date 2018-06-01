@@ -1811,9 +1811,6 @@ const char kOobeComplete[] = "OobeComplete";
 // The name of the screen that has to be shown if OOBE has been interrupted.
 const char kOobeScreenPending[] = "OobeScreenPending";
 
-// If material design OOBE should be selected if OOBE has been interrupted.
-const char kOobeMdMode[] = "OobeMdModeEnabled";
-
 // A boolean pref to indicate if an eligible controller (either a Chrome OS
 // device, or an Android device) is detected during bootstrapping or
 // shark/remora setup process. A controller can help the device go through OOBE

@@ -15,7 +15,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
 
     /** @override */
     decorate: function(element) {
-      // Valid newOobeUI is not available at this time.
       this.countryCode_ = null;
       this.language_ = null;
       this.pageReady_ = false;

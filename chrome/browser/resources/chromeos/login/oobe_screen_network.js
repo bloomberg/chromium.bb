@@ -38,6 +38,7 @@ login.createScreen('NetworkScreen', 'connect', function() {
       // ---------- Welcome screen
       var welcomeScreen = $('oobe-welcome-md');
       welcomeScreen.screen = this;
+      welcomeScreen.enabled = true;
 
       var languageList = loadTimeData.getValue('languageList');
       welcomeScreen.languages = languageList;
@@ -145,10 +146,7 @@ login.createScreen('NetworkScreen', 'connect', function() {
      * Returns a control which should receive an initial focus.
      */
     get defaultControl() {
-      if (loadTimeData.getString('newOobeUI') == 'on')
-        return $('oobe-welcome-md');
-
-      return $('language-select');
+      return $('oobe-welcome-md');
     },
 
     /**
@@ -171,7 +169,6 @@ login.createScreen('NetworkScreen', 'connect', function() {
      * This is called after resources are updated.
      */
     updateLocalizedContent: function() {
-      this.setMDMode_();
       $('oobe-welcome-md').updateLocalizedContent();
     },
 
@@ -195,25 +192,9 @@ login.createScreen('NetworkScreen', 'connect', function() {
      * @private
      */
     setMDMode_: function() {
-      var useMDOobe = (loadTimeData.getString('newOobeUI') == 'on');
-
-      $('oobe-connect').hidden = useMDOobe;
-      $('oobe-welcome-md').hidden = !useMDOobe;
-
-      if (useMDOobe) {
-        var welcomeScreen = $('oobe-welcome-md');
-        var languageList = loadTimeData.getValue('languageList');
-        welcomeScreen.languages = languageList;
-
-        welcomeScreen.keyboards = loadTimeData.getValue('inputMethodsList');
-        welcomeScreen.enabled = true;
-
-        var timezoneList = loadTimeData.getValue('timezoneList');
-        welcomeScreen.timezones = timezoneList;
-
-        welcomeScreen.highlightStrength =
-            loadTimeData.getValue('highlightStrength');
-      }
+      // TODO(stevenjb): Remove oobe-connect. https://crbug.com/689198.
+      $('oobe-connect').hidden = true;
+      $('oobe-welcome-md').hidden = false;
     },
   };
 });

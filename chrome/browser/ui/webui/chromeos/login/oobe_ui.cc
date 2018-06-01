@@ -544,9 +544,6 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
 
   bool new_kiosk_ui = KioskAppMenuHandler::EnableNewKioskUI();
   localized_strings->SetString("newKioskUI", new_kiosk_ui ? "on" : "off");
-  oobe_ui_md_mode_ =
-      g_browser_process->local_state()->GetBoolean(prefs::kOobeMdMode);
-  localized_strings->SetString("newOobeUI", oobe_ui_md_mode_ ? "on" : "off");
   localized_strings->SetString(
       "showViewsLock", ash::switches::IsUsingViewsLock() ? "on" : "off");
   localized_strings->SetString(
@@ -679,17 +676,6 @@ void OobeUI::AddObserver(Observer* observer) {
 
 void OobeUI::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
-}
-
-void OobeUI::UpdateLocalizedStringsIfNeeded() {
-  if (oobe_ui_md_mode_ ==
-      g_browser_process->local_state()->GetBoolean(prefs::kOobeMdMode)) {
-    return;
-  }
-
-  base::DictionaryValue localized_strings;
-  GetLocalizedStrings(&localized_strings);
-  static_cast<CoreOobeView*>(core_handler_)->ReloadContent(localized_strings);
 }
 
 void OobeUI::OnDisplayConfigurationChanged() {

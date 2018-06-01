@@ -354,16 +354,6 @@ void WizardController::Init(OobeScreen first_screen) {
   // an eligible controller is detected later.
   SetControllerDetectedPref(false);
 
-  if ((screen_pref.empty() ||
-       GetLocalState()->HasPrefPath(prefs::kOobeMdMode)) ||
-      GetLocalState()->GetBoolean(prefs::kOobeMdMode))
-    SetShowMdOobe(true);
-
-  // TODO(drcrash): Remove this after testing (http://crbug.com/647411).
-  if (IsRemoraPairingOobe() || IsSharkRequisition()) {
-    SetShowMdOobe(false);
-  }
-
   AdvanceToScreen(first_screen_);
   if (!IsMachineHWIDCorrect() && !StartupUtils::IsDeviceRegistered() &&
       first_screen_ == OobeScreen::SCREEN_UNKNOWN)
@@ -1134,8 +1124,6 @@ void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
   previous_screen_ = current_screen_;
   current_screen_ = new_current;
 
-  oobe_ui_->UpdateLocalizedStringsIfNeeded();
-
   if (use_smoothing) {
     smooth_show_timer_.Start(FROM_HERE,
                              base::TimeDelta::FromMilliseconds(kShowDelayMs),
@@ -1163,10 +1151,6 @@ void WizardController::UpdateStatusAreaVisibilityForScreen(OobeScreen screen) {
   } else {
     host_->SetStatusAreaVisible(true);
   }
-}
-
-void WizardController::SetShowMdOobe(bool show) {
-  GetLocalState()->SetBoolean(prefs::kOobeMdMode, show);
 }
 
 void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
