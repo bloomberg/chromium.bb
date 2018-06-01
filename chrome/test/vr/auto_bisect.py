@@ -347,7 +347,7 @@ def RunTestOnSwarming(args, unknown_args, output_dir):
 
   # Temporary workaround for https://crbug.com/812428. We could get the same
   # effect by isolating/uploading/running using "mb.py run -s", but that has
-  # the issue of apparently not having a way to spcify a task output directory.
+  # the issue of apparently not having a way to specify a task output directory.
   # So instead, manually append the additional arguments that running that way
   # would do for us to work around the vpython issues until they're fixed.
   # TODO(https://crbug.com/819719): Remove this when possible.
@@ -359,10 +359,10 @@ def RunTestOnSwarming(args, unknown_args, output_dir):
     '${platform}:git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c',
 
     '.swarming_module:infra/tools/luci/vpython-native/'
-    '${platform}:git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c',
+    '${platform}:git_revision:ad60019cb66a75b59991d43b95a43f68e3fff81b',
 
     '.swarming_module:infra/tools/luci/vpython/'
-    '${platform}:git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c',
+    '${platform}:git_revision:ad60019cb66a75b59991d43b95a43f68e3fff81b',
   ]
   for package in cipd_packages:
     swarming_args.extend(['--cipd-package', package])
