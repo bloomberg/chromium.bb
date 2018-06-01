@@ -135,19 +135,40 @@ bool FinalizeFutureItems(PrefetchItemState state,
 }
 
 // If there is a bug in our code, an item might be stuck in the queue waiting
-// on an event that didn't happen.  If so, report that item.
-void ReportStuckItems(base::Time now, sql::Connection* db) {
-  static constexpr char kSql[] =
-      "SELECT state FROM prefetch_items"
-      " WHERE creation_time < ?";
+// on an event that didn't happen.  If so, finalize that item and report it.
+void ReportAndFinalizeStuckItems(base::Time now, sql::Connection* db) {
   const int64_t earliest_valid_creation_time = store_utils::ToDatabaseTime(
       now - base::TimeDelta::FromDays(kStuckTimeLimitInDays));
-  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
-  statement.BindInt64(0, earliest_valid_creation_time);
+  // Report.
+  {
+    static constexpr char kSql[] =
+        "SELECT state FROM prefetch_items"
+        " WHERE creation_time < ?"
+        " AND state NOT IN (?, ?)";  // (ZOMBIE, FINISHED);
+    sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+    statement.BindInt64(0, earliest_valid_creation_time);
+    statement.BindInt64(1, static_cast<int>(PrefetchItemState::FINISHED));
+    statement.BindInt64(2, static_cast<int>(PrefetchItemState::ZOMBIE));
 
-  while (statement.Step()) {
-    base::UmaHistogramSparse("OfflinePages.Prefetching.StuckItemState",
-                             statement.ColumnInt(0));
+    while (statement.Step()) {
+      base::UmaHistogramSparse("OfflinePages.Prefetching.StuckItemState",
+                               statement.ColumnInt(0));
+    }
+  }
+  // Finalize.
+  {
+    static constexpr char kSql[] =
+        "UPDATE prefetch_items SET state = ?, error_code = ?"
+        " WHERE creation_time < ?"
+        " AND state NOT IN (?, ?)";  // (ZOMBIE, FINISHED)
+    sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+    statement.BindInt64(0, static_cast<int>(PrefetchItemState::FINISHED));
+    statement.BindInt64(1, static_cast<int>(PrefetchItemErrorCode::STUCK));
+    statement.BindInt64(2, earliest_valid_creation_time);
+    statement.BindInt64(3, static_cast<int>(PrefetchItemState::FINISHED));
+    statement.BindInt64(4, static_cast<int>(PrefetchItemState::ZOMBIE));
+
+    statement.Run();
   }
 }
 
@@ -182,7 +203,7 @@ Result FinalizeStaleEntriesSync(StaleEntryFinalizerTask::NowGetter now_getter,
 
   // Items could also be stuck in a non-expirable state due to a bug, report
   // them.
-  ReportStuckItems(now, db);
+  ReportAndFinalizeStuckItems(now, db);
 
   Result result = Result::MORE_WORK_NEEDED;
   if (!MoreWorkInQueue(db))

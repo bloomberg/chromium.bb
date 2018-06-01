@@ -133,18 +133,18 @@ std::unique_ptr<PrefetchItem> GetPrefetchItemSync(int64_t offline_id,
   return item;
 }
 
-std::size_t GetAllItemsSync(std::set<PrefetchItem>* items,
-                            sql::Connection* db) {
+std::set<PrefetchItem> GetAllItemsSync(sql::Connection* db) {
   // Not starting transaction as this is a single read.
+  std::set<PrefetchItem> items;
   static const std::string kSql =
       base::StringPrintf("SELECT %s FROM prefetch_items", kSqlAllColumnNames);
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql.c_str()));
   while (statement.Step()) {
     PrefetchItem loaded_item;
     PopulatePrefetchItem(statement, &loaded_item);
-    items->insert(loaded_item);
+    items.insert(loaded_item);
   }
-  return items->size();
+  return items;
 }
 
 int UpdateItemsStateSync(const std::string& name_space,
@@ -247,13 +247,22 @@ std::unique_ptr<PrefetchItem> PrefetchStoreTestUtil::GetPrefetchItem(
 
 std::size_t PrefetchStoreTestUtil::GetAllItems(
     std::set<PrefetchItem>* all_items) {
-  std::size_t items_count;
-  store_->Execute(base::BindOnce(&GetAllItemsSync, all_items),
-                  base::BindOnce([](std::size_t* alias,
-                                    std::size_t result) { *alias = result; },
-                                 &items_count));
+  DCHECK(all_items->empty());
+  *all_items = GetAllItems();
+  return all_items->size();
+}
+
+std::set<PrefetchItem> PrefetchStoreTestUtil::GetAllItems() {
+  std::set<PrefetchItem> items;
+  store_->Execute(
+      base::BindOnce(&GetAllItemsSync),
+      base::BindOnce(
+          [](std::set<PrefetchItem>* alias, std::set<PrefetchItem> result) {
+            *alias = std::move(result);
+          },
+          &items));
   RunUntilIdle();
-  return items_count;
+  return items;
 }
 
 std::string PrefetchStoreTestUtil::ToString() {

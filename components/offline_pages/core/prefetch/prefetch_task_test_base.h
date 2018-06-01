@@ -40,17 +40,18 @@ class PrefetchTaskTestBase : public TaskTestBase {
   void SetUp() override;
   void TearDown() override;
 
-  // Returns all PrefetchItemState values in a vector, filtering our the ones
+  // Returns all PrefetchItemState values in a vector, filtering out the ones
   // listed in |states_to_exclude|. The returned list is based off
   // |kOrderedPrefetchItemStates| and its order of states is maintained.
-  std::vector<PrefetchItemState> GetAllStatesExcept(
+  static std::vector<PrefetchItemState> GetAllStatesExcept(
       std::set<PrefetchItemState> states_to_exclude);
 
   int64_t InsertPrefetchItemInStateWithOperation(std::string operation_name,
                                                  PrefetchItemState state);
 
-  std::set<PrefetchItem> FilterByState(const std::set<PrefetchItem>& items,
-                                       PrefetchItemState state) const;
+  static std::set<PrefetchItem> FilterByState(
+      const std::set<PrefetchItem>& items,
+      PrefetchItemState state);
 
   TestPrefetchNetworkRequestFactory* prefetch_request_factory() {
     return &prefetch_request_factory_;
