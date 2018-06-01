@@ -207,7 +207,7 @@ class TestKioskLoaderVisitor
     : public extensions::ExternalProviderInterface::VisitorInterface {
  public:
   TestKioskLoaderVisitor(content::BrowserContext* browser_context,
-                         ExtensionService* extension_service)
+                         extensions::ExtensionService* extension_service)
       : browser_context_(browser_context),
         extension_service_(extension_service) {}
 
@@ -320,7 +320,7 @@ class TestKioskLoaderVisitor
 
  private:
   content::BrowserContext* const browser_context_;
-  ExtensionService* const extension_service_;
+  extensions::ExtensionService* const extension_service_;
 
   std::set<std::string> pending_crx_files_;
   std::set<std::string> pending_update_urls_;

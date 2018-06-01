@@ -71,7 +71,7 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
   kiosk_profile_loader_.reset();
 
   // Load our demo app, then launch it.
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   CHECK(demo_app_path_);
   const std::string extension_id = extension_service->component_loader()->Add(

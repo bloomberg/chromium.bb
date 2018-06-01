@@ -43,7 +43,7 @@ void KioskAppUpdateService::Init(const std::string& app_id) {
   DCHECK(app_id_.empty());
   app_id_ = app_id;
 
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (service)
     service->AddUpdateObserver(this);
@@ -75,7 +75,7 @@ void KioskAppUpdateService::ForceAppUpdateRestart() {
 }
 
 void KioskAppUpdateService::Shutdown() {
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (service)
     service->RemoveUpdateObserver(this);

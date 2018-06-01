@@ -280,7 +280,7 @@ class EasyUnlockAppManagerTest : public testing::Test {
   TestingProfile profile_;
 
   EasyUnlockAppEventConsumer event_consumer_;
-  ExtensionService* extension_service_;
+  extensions::ExtensionService* extension_service_;
   extensions::TestEventRouter* event_router_;
 
   base::CommandLine command_line_;

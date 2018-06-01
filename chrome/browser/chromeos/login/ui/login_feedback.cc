@@ -40,7 +40,8 @@ extensions::ComponentLoader* GetComponentLoader(
     content::BrowserContext* context) {
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(context);
-  ExtensionService* extension_service = extension_system->extension_service();
+  extensions::ExtensionService* extension_service =
+      extension_system->extension_service();
   return extension_service->component_loader();
 }
 

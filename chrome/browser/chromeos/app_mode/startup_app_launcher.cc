@@ -147,7 +147,7 @@ void StartupAppLauncher::MaybeInitializeNetwork() {
 void StartupAppLauncher::SetSecondaryAppsEnabledState(
     const extensions::Extension* primary_app) {
   extensions::KioskModeInfo* info = extensions::KioskModeInfo::Get(primary_app);
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
   for (const auto& app_info : info->secondary_apps) {
