@@ -101,9 +101,9 @@ fuzzer_test("password_manager_form_parser_proto_fuzzer") {
   dict = "form_parser_fuzzer.dict"
 }
 
-fuzzer_test("password_manager_form_parser_fuzzer_generic") {
+fuzzer_test("password_manager_form_parser_generic_fuzzer") {
   sources = [
-    "form_parser_fuzzer_generic.cc",
+    "form_parser_generic_fuzzer.cc",
   ]
 
   deps = [
@@ -117,9 +117,9 @@ fuzzer_test("password_manager_form_parser_fuzzer_generic") {
   dict = "form_parser_fuzzer.dict"
 }
 
-fuzzer_test("password_manager_form_parser_proto_fuzzer_generic") {
+fuzzer_test("password_manager_form_parser_proto_generic_fuzzer") {
   sources = [
-    "form_parser_proto_fuzzer_generic.cc",
+    "form_parser_proto_generic_fuzzer.cc",
   ]
 
   deps = [
