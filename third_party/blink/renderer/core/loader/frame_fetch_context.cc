@@ -35,6 +35,7 @@
 
 #include "base/feature_list.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
@@ -108,8 +109,13 @@ namespace {
 // If kAllowClientHintsToThirdParty is enabled, then device-memory,
 // resource-width and viewport-width client hints can be sent to third-party
 // origins if the first-party has opted in to receiving client hints.
+#if defined(OS_ANDROID)
+const base::Feature kAllowClientHintsToThirdParty{
+    "AllowClientHintsToThirdParty", base::FEATURE_ENABLED_BY_DEFAULT};
+#else
 const base::Feature kAllowClientHintsToThirdParty{
     "AllowClientHintsToThirdParty", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 enum class RequestMethod { kIsPost, kIsNotPost };
 enum class RequestType { kIsConditional, kIsNotConditional };
