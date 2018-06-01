@@ -83,10 +83,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   // are currently audible.
   bool AreAnyGuestsCurrentlyAudible();
 
-  // Polls all guests for this web contents and returns true if any of them
-  // were audible recently.
-  bool WereAnyGuestsRecentlyAudible();
-
  private:
   explicit BrowserPluginEmbedder(WebContentsImpl* web_contents);
 
@@ -103,7 +99,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
                                              WebContents* guest);
 
   static bool GuestCurrentlyAudibleCallback(WebContents* guest);
-  static bool GuestRecentlyAudibleCallback(WebContents* guest);
 
   // Message handlers.
 

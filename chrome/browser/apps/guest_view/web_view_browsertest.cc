@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -951,32 +952,36 @@ class WebContentsAudioMutedObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(WebContentsAudioMutedObserver);
 };
 
-class WasAudibleWebContentsDelegate : public content::WebContentsDelegate {
+class IsAudibleObserver : public content::WebContentsObserver {
  public:
-  WasAudibleWebContentsDelegate() : invalidate_type_tab_seen_(false) {}
+  explicit IsAudibleObserver(content::WebContents* contents)
+      : WebContentsObserver(contents) {}
+  ~IsAudibleObserver() override {}
 
-  void NavigationStateChanged(content::WebContents* contents,
-                              content::InvalidateTypes changed_flags) override {
-    if (changed_flags == content::INVALIDATE_TYPE_TAB) {
-      invalidate_type_tab_seen_ = true;
-      if (message_loop_runner_.get())
-        message_loop_runner_->Quit();
-    }
-  }
+  void WaitForCurrentlyAudible(bool audible) {
+    // If there's no state change to observe then return right away.
+    if (web_contents()->IsCurrentlyAudible() == audible)
+      return;
 
-  void WaitForInvalidateTypeTab() {
-    if (!invalidate_type_tab_seen_) {
-      message_loop_runner_ = new content::MessageLoopRunner;
-      message_loop_runner_->Run();
-    }
-    invalidate_type_tab_seen_ = false;
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+    message_loop_runner_ = nullptr;
+
+    EXPECT_EQ(audible, web_contents()->IsCurrentlyAudible());
+    EXPECT_EQ(audible, audible_);
   }
 
  private:
-  bool invalidate_type_tab_seen_;
+  void OnAudioStateChanged(bool audible) override {
+    audible_ = audible;
+    if (message_loop_runner_.get())
+      message_loop_runner_->Quit();
+  }
+
+  bool audible_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(WasAudibleWebContentsDelegate);
+  DISALLOW_COPY_AND_ASSIGN(IsAudibleObserver);
 };
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, AudibilityStatePropagates) {
@@ -986,13 +991,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AudibilityStatePropagates) {
 
   content::WebContents* embedder = GetEmbedderWebContents();
   content::WebContents* guest = GetGuestWebContents();
-
-  EXPECT_FALSE(embedder->WasRecentlyAudible());
-  EXPECT_FALSE(guest->WasRecentlyAudible());
-
-  std::unique_ptr<WasAudibleWebContentsDelegate> was_audible_delegate(
-      new WasAudibleWebContentsDelegate);
-  embedder->SetDelegate(was_audible_delegate.get());
+  IsAudibleObserver embedder_obs(embedder);
+  EXPECT_FALSE(embedder->IsCurrentlyAudible());
+  EXPECT_FALSE(guest->IsCurrentlyAudible());
 
   // Just in case we get console error messages from the guest, we should
   // surface them in the test output.
@@ -1014,18 +1015,15 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AudibilityStatePropagates) {
       audio_url.spec().c_str());
   EXPECT_TRUE(content::ExecuteScript(guest, setup_audio_script));
 
-  was_audible_delegate->WaitForInvalidateTypeTab();
-  EXPECT_TRUE(embedder->WasRecentlyAudible());
-  EXPECT_TRUE(guest->WasRecentlyAudible());
+  // Wait for audio to start.
+  embedder_obs.WaitForCurrentlyAudible(true);
+  EXPECT_TRUE(embedder->IsCurrentlyAudible());
+  EXPECT_TRUE(guest->IsCurrentlyAudible());
 
-  // Wait for audio to stop (the .mp3 is shorter than the audio stream
-  // monitor's timeout, so no need to explicitly stop it. Other callers may
-  // call NotifyNavigationStateChanged() on the embedder web contents, so
-  // we may have to wait several times).
-  while (embedder->WasRecentlyAudible())
-    was_audible_delegate->WaitForInvalidateTypeTab();
-  EXPECT_FALSE(embedder->WasRecentlyAudible());
-  EXPECT_FALSE(guest->WasRecentlyAudible());
+  // Wait for audio to stop.
+  embedder_obs.WaitForCurrentlyAudible(false);
+  EXPECT_FALSE(embedder->IsCurrentlyAudible());
+  EXPECT_FALSE(guest->IsCurrentlyAudible());
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, WebViewRespectsInsets) {

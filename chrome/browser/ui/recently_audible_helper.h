@@ -54,6 +54,14 @@ class RecentlyAudibleHelper
   // to nullptr will restore the default tick clock.
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 
+  // State transition functions for testing. These do not invoke callbacks but
+  // modify state such that WasEverAudible/IsCurrentlyAudible/WasRecentlyAudible
+  // will return as expected. They also ensure the internal state of the timer
+  // is as expected.
+  void SetCurrentlyAudibleForTesting();
+  void SetRecentlyAudibleForTesting();
+  void SetNotRecentlyAudibleForTesting();
+
  private:
   friend class RecentlyAudibleHelperTest;
   friend class content::WebContentsUserData<RecentlyAudibleHelper>;
@@ -65,6 +73,9 @@ class RecentlyAudibleHelper
 
   // The callback that is invoked by the |recently_audible_timer_|.
   void OnRecentlyAudibleTimerFired();
+
+  // Transitions to not being audible and starts the timer.
+  void TransitionToNotCurrentlyAudible();
 
   // is_null() if the tab has never been audible, and is_max() if audio is
   // currently playing. Otherwise, corresponds to the last time the tab was

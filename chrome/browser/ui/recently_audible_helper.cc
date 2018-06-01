@@ -47,16 +47,19 @@ RecentlyAudibleHelper::RegisterCallback(const Callback& callback) {
 
 RecentlyAudibleHelper::RecentlyAudibleHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents),
-      tick_clock_(GetDefaultTickClock()) {}
+      tick_clock_(GetDefaultTickClock()) {
+  if (contents->IsCurrentlyAudible())
+    last_audible_time_ = base::TimeTicks::Max();
+}
 
 void RecentlyAudibleHelper::OnAudioStateChanged(bool audible) {
+  // Redundant notifications should never happen.
+  DCHECK(audible != IsCurrentlyAudible());
+
   // If audio is stopping remember the time at which it stopped and set a timer
   // to fire the recently audible transition.
   if (!audible) {
-    last_audible_time_ = tick_clock_->NowTicks();
-    recently_audible_timer_.Start(
-        FROM_HERE, kRecentlyAudibleTimeout, this,
-        &RecentlyAudibleHelper::OnRecentlyAudibleTimerFired);
+    TransitionToNotCurrentlyAudible();
     return;
   }
 
@@ -71,10 +74,17 @@ void RecentlyAudibleHelper::OnAudioStateChanged(bool audible) {
 }
 
 void RecentlyAudibleHelper::OnRecentlyAudibleTimerFired() {
-  DCHECK(last_audible_time_ + kRecentlyAudibleTimeout >=
+  DCHECK(last_audible_time_ + kRecentlyAudibleTimeout <=
          tick_clock_->NowTicks());
   // Notify of the transition to no longer being recently audible.
   callback_list_.Notify(false);
+}
+
+void RecentlyAudibleHelper::TransitionToNotCurrentlyAudible() {
+  last_audible_time_ = tick_clock_->NowTicks();
+  recently_audible_timer_.Start(
+      FROM_HERE, kRecentlyAudibleTimeout, this,
+      &RecentlyAudibleHelper::OnRecentlyAudibleTimerFired);
 }
 
 void RecentlyAudibleHelper::SetTickClockForTesting(
@@ -84,4 +94,18 @@ void RecentlyAudibleHelper::SetTickClockForTesting(
   } else {
     tick_clock_ = GetDefaultTickClock();
   }
+}
+
+void RecentlyAudibleHelper::SetCurrentlyAudibleForTesting() {
+  recently_audible_timer_.Stop();
+  last_audible_time_ = base::TimeTicks::Max();
+}
+
+void RecentlyAudibleHelper::SetRecentlyAudibleForTesting() {
+  TransitionToNotCurrentlyAudible();
+}
+
+void RecentlyAudibleHelper::SetNotRecentlyAudibleForTesting() {
+  last_audible_time_ = tick_clock_->NowTicks() - kRecentlyAudibleTimeout;
+  recently_audible_timer_.Stop();
 }

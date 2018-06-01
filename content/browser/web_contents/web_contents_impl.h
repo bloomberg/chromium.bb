@@ -458,7 +458,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
             const base::string16& search_text,
             const blink::WebFindOptions& options) override;
   void StopFinding(StopFindAction action) override;
-  bool WasRecentlyAudible() override;
   bool WasEverAudible() override;
   void GetManifest(GetManifestCallback callback) override;
   bool IsFullscreenForCurrentTab() const override;

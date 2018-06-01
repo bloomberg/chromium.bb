@@ -7,6 +7,7 @@
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
 namespace metrics {
@@ -44,7 +45,8 @@ void AudibleContentsTracker::TabChangedAt(content::WebContents* web_contents,
   if (change_type != TabChangeType::kAll)
     return;
 
-  if (web_contents->WasRecentlyAudible())
+  auto* audible_helper = RecentlyAudibleHelper::FromWebContents(web_contents);
+  if (audible_helper->WasRecentlyAudible())
     AddAudibleWebContents(web_contents);
   else
     RemoveAudibleWebContents(web_contents);
@@ -56,7 +58,9 @@ void AudibleContentsTracker::TabReplacedAt(
     content::WebContents* new_web_contents,
     int index) {
   RemoveAudibleWebContents(old_web_contents);
-  if (new_web_contents->WasRecentlyAudible())
+  auto* audible_helper =
+      RecentlyAudibleHelper::FromWebContents(new_web_contents);
+  if (audible_helper->WasRecentlyAudible())
     AddAudibleWebContents(new_web_contents);
 }
 

@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
@@ -1011,8 +1012,10 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
         continue;
       }
 
+      auto* audible_helper =
+          RecentlyAudibleHelper::FromWebContents(web_contents);
       if (!MatchesBool(params->query_info.audible.get(),
-                       web_contents->WasRecentlyAudible())) {
+                       audible_helper->WasRecentlyAudible())) {
         continue;
       }
 

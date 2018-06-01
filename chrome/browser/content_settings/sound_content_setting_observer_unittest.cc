@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -47,6 +48,7 @@ class SoundContentSettingObserverTest : public ChromeRenderViewHostTestHarness {
     test_service_manager_context_ =
         std::make_unique<content::TestServiceManagerContext>();
 
+    RecentlyAudibleHelper::CreateForWebContents(web_contents());
     SoundContentSettingObserver::CreateForWebContents(web_contents());
     ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
     host_content_settings_map_ = HostContentSettingsMapFactory::GetForProfile(

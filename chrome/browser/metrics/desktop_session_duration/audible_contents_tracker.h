@@ -14,6 +14,9 @@
 namespace metrics {
 
 // BrowserList / TabStripModelObserver used for tracking audio status.
+// TODO(chrisha): Migrate this entire thing to use RecentlyAudibleHelper
+// notifications rather then TabStripModel notifications.
+// https://crbug.com/846374
 class AudibleContentsTracker : public BrowserListObserver,
                                public TabStripModelObserver {
  public:

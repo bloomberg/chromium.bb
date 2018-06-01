@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -70,9 +71,12 @@ TabsEventRouter::TabEntry::TabEntry(TabsEventRouter* router,
                                     content::WebContents* contents)
     : WebContentsObserver(contents),
       complete_waiting_on_load_(false),
-      was_audible_(contents->WasRecentlyAudible()),
+      was_audible_(false),
       was_muted_(contents->IsAudioMuted()),
-      router_(router) {}
+      router_(router) {
+  auto* audible_helper = RecentlyAudibleHelper::FromWebContents(contents);
+  was_audible_ = audible_helper->WasRecentlyAudible();
+}
 
 std::set<std::string> TabsEventRouter::TabEntry::UpdateLoadState() {
   // The tab may go in & out of loading (for instance if iframes navigate).
@@ -396,7 +400,9 @@ void TabsEventRouter::TabMoved(WebContents* contents,
 
 void TabsEventRouter::TabUpdated(TabEntry* entry,
                                  std::set<std::string> changed_property_names) {
-  bool audible = entry->web_contents()->WasRecentlyAudible();
+  auto* audible_helper =
+      RecentlyAudibleHelper::FromWebContents(entry->web_contents());
+  bool audible = audible_helper->WasRecentlyAudible();
   if (entry->SetAudible(audible)) {
     changed_property_names.insert(tabs_constants::kAudibleKey);
   }

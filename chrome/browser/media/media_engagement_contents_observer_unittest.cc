@@ -20,6 +20,7 @@
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/media/media_engagement_service_factory.h"
 #include "chrome/browser/media/media_engagement_session.h"
+#include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -48,6 +49,7 @@ class MediaEngagementContentsObserverTest
 
     SetContents(content::WebContentsTester::CreateTestWebContents(
         browser_context(), nullptr));
+    RecentlyAudibleHelper::CreateForWebContents(web_contents());
 
     service_ =
         base::WrapUnique(new MediaEngagementService(profile(), &test_clock_));
@@ -242,12 +244,12 @@ class MediaEngagementContentsObserverTest
 
   void SimulateAudible() {
     content::WebContentsTester::For(web_contents())
-        ->SetWasRecentlyAudible(true);
+        ->SetIsCurrentlyAudible(true);
   }
 
   void SimulateInaudible() {
     content::WebContentsTester::For(web_contents())
-        ->SetWasRecentlyAudible(false);
+        ->SetIsCurrentlyAudible(false);
   }
 
   void ExpectUkmEntry(GURL url,
