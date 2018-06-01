@@ -19,6 +19,7 @@
 // <include src="hd-iron-icon.js">
 // <include src="host-pairing-screen.js">
 // <include src="html-echo.js">
+// <include src="network_select_login.js">
 // <include src="notification_card.js">
 // <include src="offline_gaia.js">
 // <include src="saml_confirm_password.js">

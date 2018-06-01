@@ -2,8 +2,6 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_select.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
@@ -330,21 +328,15 @@
         </div>
       </div>
       <div class="footer layout vertical">
-        <cr-network-select id="networkSelect"
-            on-default-network-changed="onDefaultNetworkChanged_"
-            on-network-connect-changed="onNetworkConnectChanged_"
-            on-network-item-selected="onNetworkListNetworkItemSelected_"
-            on-custom-item-selected="onNetworkListCustomItemSelected_"
-            custom-items="[[getNetworkCustomItems_(isConnected_)]]"
-            no-bottom-scroll-border
-            class="focus-on-show">
-        </cr-network-select>
+        <network-select-login id="networkSelectLogin"
+            is-connected="{{isConnected_}}">
+        </network-select-login>
       </div>
       <div class="bottom-buttons layout horizontal justified">
         <oobe-back-button on-tap="onNetworkSelectionBackButtonPressed_">
         </oobe-back-button>
         <oobe-next-button disabled="[[!isConnected_]]"
-            on-tap="onSelectedNetworkConnected_">
+            on-tap="onNetworkNextTap_">
         </oobe-next-button>
       </div>
     </oobe-dialog>
