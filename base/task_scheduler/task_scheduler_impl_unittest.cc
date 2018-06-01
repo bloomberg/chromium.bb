@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/cfi_buildflags.h"
 #include "base/debug/stack_trace.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -663,8 +664,9 @@ void VerifyHasStringOnStack(const std::string& query) {
 // Many POSIX bots flakily crash on |debug::StackTrace().ToString()|,
 // https://crbug.com/840429.
 #define MAYBE_IdentifiableStacks DISABLED_IdentifiableStacks
-#elif defined(OS_WIN) && defined(ADDRESS_SANITIZER)
-// Hangs on WinASan (grabbing StackTrace() too slow?),
+#elif defined(OS_WIN) && \
+    (defined(ADDRESS_SANITIZER) || BUILDFLAG(CFI_CAST_CHECK))
+// Hangs on WinASan and WinCFI (grabbing StackTrace() too slow?),
 // https://crbug.com/845010#c7.
 #define MAYBE_IdentifiableStacks DISABLED_IdentifiableStacks
 #else
