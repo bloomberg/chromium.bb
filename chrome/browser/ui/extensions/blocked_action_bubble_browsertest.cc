@@ -80,7 +80,7 @@ void ExtensionBlockedActionsBubbleTest::ShowUi(const std::string& name) {
   ASSERT_TRUE(extension);
   extensions::ScriptingPermissionsModifier(profile(),
                                            base::WrapRefCounted(extension))
-      .SetAllowedOnAllUrls(false);
+      .SetWithholdAllUrls(true);
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();

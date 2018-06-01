@@ -356,8 +356,7 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
     PermissionsUpdater updater(profile());
     updater.InitializePermissions(extension.get());
 
-    ScriptingPermissionsModifier(profile(), extension)
-        .SetAllowedOnAllUrls(false);
+    ScriptingPermissionsModifier(profile(), extension).SetWithholdAllUrls(true);
 
     // All-hosts was withheld, so the extension shouldn't have access to any
     // site (like foo.com).

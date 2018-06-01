@@ -152,7 +152,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, WithholdAndGrantAllHosts) {
 
   // Then, withhold the all-hosts permissions.
   ScriptingPermissionsModifier modifier(profile(), extension);
-  modifier.SetAllowedOnAllUrls(false);
+  modifier.SetWithholdAllUrls(true);
 
   EXPECT_TRUE(SetsAreEqual(
       permissions_data->active_permissions().scriptable_hosts().patterns(),
@@ -168,7 +168,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, WithholdAndGrantAllHosts) {
       all_host_patterns));
 
   // Finally, re-grant the withheld permissions.
-  modifier.SetAllowedOnAllUrls(true);
+  modifier.SetWithholdAllUrls(false);
 
   // We should be back to our initial state - all requested permissions are
   // granted.
@@ -211,11 +211,11 @@ TEST_F(ScriptingPermissionsModifierUnitTest, SwitchBehavior) {
   EXPECT_TRUE(
       permissions_data->withheld_permissions().scriptable_hosts().is_empty());
   ScriptingPermissionsModifier modifier(profile(), extension);
-  EXPECT_TRUE(modifier.IsAllowedOnAllUrls());
+  EXPECT_FALSE(modifier.HasWithheldAllUrls());
 
   // Revoke access.
-  modifier.SetAllowedOnAllUrls(false);
-  EXPECT_FALSE(modifier.IsAllowedOnAllUrls());
+  modifier.SetWithholdAllUrls(true);
+  EXPECT_TRUE(modifier.HasWithheldAllUrls());
   EXPECT_TRUE(
       permissions_data->active_permissions().scriptable_hosts().is_empty());
   EXPECT_TRUE(SetsAreEqual(
@@ -236,7 +236,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, SwitchBehavior) {
   // withheld.
   enabled_scope = std::make_unique<RuntimeHostPermissionsEnabledScope>();
   updater.InitializePermissions(extension.get());
-  EXPECT_FALSE(modifier.IsAllowedOnAllUrls());
+  EXPECT_TRUE(modifier.HasWithheldAllUrls());
   EXPECT_TRUE(
       permissions_data->active_permissions().scriptable_hosts().is_empty());
   EXPECT_TRUE(SetsAreEqual(
@@ -259,7 +259,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
   PermissionsUpdater(profile()).InitializePermissions(extension.get());
 
   ScriptingPermissionsModifier modifier(profile(), extension);
-  modifier.SetAllowedOnAllUrls(false);
+  modifier.SetWithholdAllUrls(true);
 
   const GURL kUrl("https://www.google.com/");
   const GURL kUrl2("https://www.chromium.org/");
