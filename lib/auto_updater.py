@@ -858,7 +858,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     2. Verify the remote device, by checking that whether the root device
     changed after reboot.
     """
-    logging.notice('rebooting device...')
+    logging.notice('Rebooting device...')
     # Record the current root device. This must be done after SetupRootfsUpdate
     # and before reboot, since SetupRootfsUpdate may reboot the device if there
     # is a pending update, which changes the root device, and reboot will
