@@ -131,11 +131,13 @@ class MODULES_EXPORT RTCPeerConnection final
       ExceptionState&);
 
   ScriptPromise addIceCandidate(ScriptState*,
-                                const RTCIceCandidateInitOrRTCIceCandidate&);
+                                const RTCIceCandidateInitOrRTCIceCandidate&,
+                                ExceptionState&);
   ScriptPromise addIceCandidate(ScriptState*,
                                 const RTCIceCandidateInitOrRTCIceCandidate&,
                                 V8VoidFunction*,
-                                V8RTCPeerConnectionErrorCallback*);
+                                V8RTCPeerConnectionErrorCallback*,
+                                ExceptionState&);
 
   String iceGatheringState() const;
 

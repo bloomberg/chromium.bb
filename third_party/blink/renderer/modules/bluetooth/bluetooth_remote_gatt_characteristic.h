@@ -21,6 +21,7 @@ namespace blink {
 
 class BluetoothCharacteristicProperties;
 class BluetoothDevice;
+class DOMException;
 class ExecutionContext;
 class ScriptPromise;
 class ScriptState;

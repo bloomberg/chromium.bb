@@ -299,6 +299,14 @@ ScriptPromise ScriptPromise::Reject(ScriptState* script_state,
   return promise;
 }
 
+ScriptPromise ScriptPromise::Reject(ScriptState* script_state,
+                                    ExceptionState& exception_state) {
+  DCHECK(exception_state.HadException());
+  ScriptPromise promise = Reject(script_state, exception_state.GetException());
+  exception_state.ClearException();
+  return promise;
+}
+
 ScriptPromise ScriptPromise::RejectWithDOMException(ScriptState* script_state,
                                                     DOMException* exception) {
   DCHECK(script_state->GetIsolate()->InContext());

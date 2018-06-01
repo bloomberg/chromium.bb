@@ -127,7 +127,7 @@ ScriptPromise MediaDevices::getUserMedia(ScriptState* script_state,
     DCHECK(error_state.HadException());
     if (error_state.CanGenerateException()) {
       error_state.RaiseException(exception_state);
-      return exception_state.Reject(script_state);
+      return ScriptPromise();
     }
     ScriptPromise rejected_promise = resolver->Promise();
     resolver->Reject(error_state.CreateError());

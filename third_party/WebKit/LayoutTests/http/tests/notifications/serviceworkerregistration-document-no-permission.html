@@ -30,7 +30,7 @@
                   assert_unreached('showNotification() is expected to reject.');
               }).catch(function(error) {
                   assert_equals(error.name, 'TypeError');
-                  assert_equals(error.message, 'No notification permission has been granted for this origin.');
+                  assert_equals(error.message, "Failed to execute 'showNotification' on 'ServiceWorkerRegistration': No notification permission has been granted for this origin.");
                   test.done();
               });
 

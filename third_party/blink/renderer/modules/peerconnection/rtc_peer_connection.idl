@@ -77,7 +77,7 @@ enum RTCIceConnectionState {
     readonly attribute RTCSessionDescription? remoteDescription;
     // readonly attribute RTCSessionDescription? currentRemoteDescription;
     // readonly attribute RTCSessionDescription? pendingRemoteDescription;
-    [CallWith=ScriptState, MeasureAs=RTCPeerConnectionAddIceCandidatePromise] Promise<void> addIceCandidate ((RTCIceCandidateInit or RTCIceCandidate) candidate);
+    [CallWith=ScriptState, RaisesException, MeasureAs=RTCPeerConnectionAddIceCandidatePromise] Promise<void> addIceCandidate((RTCIceCandidateInit or RTCIceCandidate) candidate);
     readonly attribute RTCSignalingState signalingState;
     readonly attribute RTCIceGatheringState iceGatheringState;
     readonly attribute RTCIceConnectionState iceConnectionState;
@@ -102,7 +102,7 @@ enum RTCIceConnectionState {
     // TODO(guidou): The failureCallback argument should be non-optional.
     // TODO(crbug.com/841185): |failureCallback| is not nullable in the spec.
     [CallWith=ScriptState] Promise<void> setRemoteDescription(RTCSessionDescriptionInit description, VoidFunction successCallback, optional RTCPeerConnectionErrorCallback? failureCallback);
-    [CallWith=ScriptState, MeasureAs=RTCPeerConnectionAddIceCandidateLegacy] Promise<void> addIceCandidate((RTCIceCandidateInit or RTCIceCandidate) candidate, VoidFunction successCallback, RTCPeerConnectionErrorCallback failureCallback);
+    [CallWith=ScriptState, RaisesException, MeasureAs=RTCPeerConnectionAddIceCandidateLegacy] Promise<void> addIceCandidate((RTCIceCandidateInit or RTCIceCandidate) candidate, VoidFunction successCallback, RTCPeerConnectionErrorCallback failureCallback);
 
     // Legacy getStats() API. The returned metrics are a completely different
     // set of metrics than the standard compliant version, presented in a

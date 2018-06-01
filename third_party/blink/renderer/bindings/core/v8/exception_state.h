@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_EXCEPTION_STATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_EXCEPTION_STATE_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
@@ -44,7 +43,6 @@
 namespace blink {
 
 typedef int ExceptionCode;
-class ScriptState;
 
 // ExceptionState is a scope-like class and provides a way to throw an exception
 // with an option to cancel it.  An exception message may be auto-generated.
@@ -125,9 +123,6 @@ class CORE_EXPORT ExceptionState {
     DCHECK(!exception_.IsEmpty());
     return exception_.NewLocal(isolate_);
   }
-
-  // This method clears out the exception which |this| has.
-  ScriptPromise Reject(ScriptState*);
 
   ContextType Context() const { return context_; }
   const char* PropertyName() const { return property_name_; }

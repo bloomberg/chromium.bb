@@ -21,10 +21,12 @@ class Permissions final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  ScriptPromise query(ScriptState*, const Dictionary&);
-  ScriptPromise request(ScriptState*, const Dictionary&);
-  ScriptPromise revoke(ScriptState*, const Dictionary&);
-  ScriptPromise requestAll(ScriptState*, const Vector<Dictionary>&);
+  ScriptPromise query(ScriptState*, const Dictionary&, ExceptionState&);
+  ScriptPromise request(ScriptState*, const Dictionary&, ExceptionState&);
+  ScriptPromise revoke(ScriptState*, const Dictionary&, ExceptionState&);
+  ScriptPromise requestAll(ScriptState*,
+                           const Vector<Dictionary>&,
+                           ExceptionState&);
 
  private:
   mojom::blink::PermissionService& GetService(ExecutionContext*);

@@ -195,7 +195,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
   ConvertRequestDeviceOptions(options, device_options, exception_state);
 
   if (exception_state.HadException())
-    return exception_state.Reject(script_state);
+    return ScriptPromise();
 
   // Record the eTLD+1 of the frame using the API.
   Document* document = ToDocument(context);

@@ -96,26 +96,26 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
   if (this->IsOffscreenCanvas() && this->IsNeutered()) {
     exception_state.ThrowDOMException(kInvalidStateError,
                                       "OffscreenCanvas object is detached.");
-    return exception_state.Reject(script_state);
+    return ScriptPromise();
   }
 
   if (!this->OriginClean()) {
     error_msg << "Tainted " << object_name << " may not be exported.";
     exception_state.ThrowSecurityError(error_msg.str().c_str());
-    return exception_state.Reject(script_state);
+    return ScriptPromise();
   }
 
   if (!this->IsPaintable() || Size().IsEmpty()) {
     error_msg << "The size of " << object_name << " iz zero.";
     exception_state.ThrowDOMException(kIndexSizeError, error_msg.str().c_str());
-    return exception_state.Reject(script_state);
+    return ScriptPromise();
   }
 
   if (!RenderingContext()) {
     error_msg << object_name << " has no rendering context.";
     exception_state.ThrowDOMException(kInvalidStateError,
                                       error_msg.str().c_str());
-    return exception_state.Reject(script_state);
+    return ScriptPromise();
   }
 
   double start_time = WTF::CurrentTimeTicksInSeconds();
@@ -138,7 +138,7 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
   }
   exception_state.ThrowDOMException(kNotReadableError,
                                     "Readback of the source image has failed.");
-  return exception_state.Reject(script_state);
+  return ScriptPromise();
 }
 
 }  // namespace blink
