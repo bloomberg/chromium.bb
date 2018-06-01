@@ -18,7 +18,6 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"

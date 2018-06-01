@@ -9,8 +9,8 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/service/display/display.h"
+#include "components/viz/service/display/shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/display_provider.h"
 #include "components/viz/service/display_embedder/external_begin_frame_controller_impl.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_impl.h"

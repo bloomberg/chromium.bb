@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_FENCE_H_
-#define COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_FENCE_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_RESOURCE_FENCE_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_RESOURCE_FENCE_H_
+
+#include "base/memory/ref_counted.h"
 
 namespace viz {
 
@@ -26,4 +28,4 @@ class ResourceFence : public base::RefCounted<ResourceFence> {
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_FENCE_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_RESOURCE_FENCE_H_

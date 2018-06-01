@@ -13,6 +13,7 @@ include_rules = [
   "+gpu/GLES2",
   "+gpu/vulkan",
   "+media/base",
+  "+mojo/public/cpp/system",
   "+skia",
   "+third_party/khronos",
   "+third_party/skia",

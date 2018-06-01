@@ -169,8 +169,7 @@ void SoftwareRenderer::PrepareSurfaceForPass(
 }
 
 bool SoftwareRenderer::IsSoftwareResource(ResourceId resource_id) const {
-  return resource_provider_->GetResourceType(resource_id) ==
-         ResourceType::kBitmap;
+  return resource_provider_->IsResourceSoftwareBacked(resource_id);
 }
 
 void SoftwareRenderer::DoDrawQuad(const DrawQuad* quad,
