@@ -39,4 +39,18 @@ PepperProxyChannelDelegateImpl::ShareSharedMemoryHandleWithRemote(
   return base::SharedMemory::DuplicateHandle(handle);
 }
 
+base::UnsafeSharedMemoryRegion
+PepperProxyChannelDelegateImpl::ShareUnsafeSharedMemoryRegionWithRemote(
+    const base::UnsafeSharedMemoryRegion& region,
+    base::ProcessId remote_pid) {
+  return region.Duplicate();
+}
+
+base::ReadOnlySharedMemoryRegion
+PepperProxyChannelDelegateImpl::ShareReadOnlySharedMemoryRegionWithRemote(
+    const base::ReadOnlySharedMemoryRegion& region,
+    base::ProcessId remote_pid) {
+  return region.Duplicate();
+}
+
 }  // namespace content

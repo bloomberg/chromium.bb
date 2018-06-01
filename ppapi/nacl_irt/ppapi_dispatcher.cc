@@ -80,6 +80,20 @@ base::SharedMemoryHandle PpapiDispatcher::ShareSharedMemoryHandleWithRemote(
   return base::SharedMemoryHandle();
 }
 
+base::UnsafeSharedMemoryRegion
+PpapiDispatcher::ShareUnsafeSharedMemoryRegionWithRemote(
+    const base::UnsafeSharedMemoryRegion& region,
+    base::ProcessId remote_pid) {
+  return base::UnsafeSharedMemoryRegion();
+}
+
+base::ReadOnlySharedMemoryRegion
+PpapiDispatcher::ShareReadOnlySharedMemoryRegionWithRemote(
+    const base::ReadOnlySharedMemoryRegion& region,
+    base::ProcessId remote_pid) {
+  return base::ReadOnlySharedMemoryRegion();
+}
+
 std::set<PP_Instance>* PpapiDispatcher::GetGloballySeenInstanceIDSet() {
   return &instances_;
 }

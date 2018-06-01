@@ -261,6 +261,20 @@ PluginProxyTestHarness::PluginDelegateMock::ShareSharedMemoryHandleWithRemote(
   return base::SharedMemory::DuplicateHandle(handle);
 }
 
+base::UnsafeSharedMemoryRegion PluginProxyTestHarness::PluginDelegateMock::
+    ShareUnsafeSharedMemoryRegionWithRemote(
+        const base::UnsafeSharedMemoryRegion& region,
+        base::ProcessId /* remote_pid */) {
+  return region.Duplicate();
+}
+
+base::ReadOnlySharedMemoryRegion PluginProxyTestHarness::PluginDelegateMock::
+    ShareReadOnlySharedMemoryRegionWithRemote(
+        const base::ReadOnlySharedMemoryRegion& region,
+        base::ProcessId /* remote_pid */) {
+  return region.Duplicate();
+}
+
 std::set<PP_Instance>*
 PluginProxyTestHarness::PluginDelegateMock::GetGloballySeenInstanceIDSet() {
   return &instance_id_set_;
@@ -496,6 +510,20 @@ HostProxyTestHarness::DelegateMock::ShareSharedMemoryHandleWithRemote(
     const base::SharedMemoryHandle& handle,
     base::ProcessId /*remote_pid*/) {
   return base::SharedMemory::DuplicateHandle(handle);
+}
+
+base::UnsafeSharedMemoryRegion
+HostProxyTestHarness::DelegateMock::ShareUnsafeSharedMemoryRegionWithRemote(
+    const base::UnsafeSharedMemoryRegion& region,
+    base::ProcessId /*remote_pid*/) {
+  return region.Duplicate();
+}
+
+base::ReadOnlySharedMemoryRegion
+HostProxyTestHarness::DelegateMock::ShareReadOnlySharedMemoryRegionWithRemote(
+    const base::ReadOnlySharedMemoryRegion& region,
+    base::ProcessId /*remote_pid*/) {
+  return region.Duplicate();
 }
 
 // HostProxyTest ---------------------------------------------------------------

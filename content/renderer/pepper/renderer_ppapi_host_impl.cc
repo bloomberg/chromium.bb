@@ -237,6 +237,26 @@ RendererPpapiHostImpl::ShareSharedMemoryHandleWithRemote(
   return dispatcher_->ShareSharedMemoryHandleWithRemote(handle);
 }
 
+base::UnsafeSharedMemoryRegion
+RendererPpapiHostImpl::ShareUnsafeSharedMemoryRegionWithRemote(
+    const base::UnsafeSharedMemoryRegion& region) {
+  if (!dispatcher_) {
+    DCHECK(is_running_in_process_);
+    return region.Duplicate();
+  }
+  return dispatcher_->ShareUnsafeSharedMemoryRegionWithRemote(region);
+}
+
+base::ReadOnlySharedMemoryRegion
+RendererPpapiHostImpl::ShareReadOnlySharedMemoryRegionWithRemote(
+    const base::ReadOnlySharedMemoryRegion& region) {
+  if (!dispatcher_) {
+    DCHECK(is_running_in_process_);
+    return region.Duplicate();
+  }
+  return dispatcher_->ShareReadOnlySharedMemoryRegionWithRemote(region);
+}
+
 bool RendererPpapiHostImpl::IsRunningInProcess() const {
   return is_running_in_process_;
 }

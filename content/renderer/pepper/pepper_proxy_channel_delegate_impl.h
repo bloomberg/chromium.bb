@@ -25,6 +25,12 @@ class PepperProxyChannelDelegateImpl
   base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
       const base::SharedMemoryHandle& handle,
       base::ProcessId remote_pid) override;
+  base::UnsafeSharedMemoryRegion ShareUnsafeSharedMemoryRegionWithRemote(
+      const base::UnsafeSharedMemoryRegion& region,
+      base::ProcessId remote_pid) override;
+  base::ReadOnlySharedMemoryRegion ShareReadOnlySharedMemoryRegionWithRemote(
+      const base::ReadOnlySharedMemoryRegion& region,
+      base::ProcessId remote_pid) override;
 };
 
 }  // namespace content
