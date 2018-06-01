@@ -1172,7 +1172,7 @@
   },
 
   'linux_chromeos_rel_specific_gtests': {
-    'angle_unittests': {},
+    # Chrome OS only.
     'chromevox_tests': {},
     'exo_unittests': {},
     'gl_unittests_ozone': {},
@@ -1190,6 +1190,7 @@
   },
 
   'linux_chromeos_specific_gtests': {
+    # Chrome OS only.
     'app_list_presenter_unittests': {},
     'app_list_unittests': {},
     'ash_content_unittests': {},
@@ -1216,6 +1217,7 @@
   },
 
   'linux_specific_chromium_gtests': {
+    # Linux only.
     # TODO(kbr): unclear why some of these aren't run more broadly.
     'filesystem_service_unittests': {},
     'leveldb_service_unittests': {},
@@ -1813,6 +1815,7 @@
     'linux_clang_and_fyi_specific_chromium_gtests',
     'linux_flavor_specific_chromium_gtests',
     'linux_incl_clang_specific_chromium_gtests',
+    'linux_specific_chromium_gtests',
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
     'non_mac_non_clang_win_chromium_gtests',
@@ -1826,6 +1829,7 @@
     'linux_clang_and_fyi_specific_chromium_gtests',
     'linux_flavor_specific_chromium_gtests',
     'linux_incl_clang_specific_chromium_gtests',
+    'linux_specific_chromium_gtests',
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
     'non_mac_non_clang_win_chromium_gtests',
