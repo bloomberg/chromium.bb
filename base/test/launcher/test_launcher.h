@@ -133,7 +133,7 @@ class TestLauncher {
     base::LaunchOptions::Inherit inherit_mode =
         base::LaunchOptions::Inherit::kSpecific;
     base::HandlesToInheritVector handles_to_inherit;
-#elif defined(OS_POSIX)
+#else
     FileHandleMappingVector fds_to_remap;
 #endif
   };

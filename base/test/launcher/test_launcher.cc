@@ -262,7 +262,7 @@ CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
   // TODO(phajdan.jr): Give it a try to support CommandLine removing switches.
 #if defined(OS_WIN)
   new_command_line.PrependWrapper(ASCIIToUTF16(wrapper));
-#elif defined(OS_POSIX)
+#else
   new_command_line.PrependWrapper(wrapper);
 #endif
 
@@ -283,7 +283,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   const bool kOnBot = getenv("CHROME_HEADLESS") != nullptr;
 #endif  // OS_FUCHSIA
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
   // Make sure an option we rely on is present - see LaunchChildGTestProcess.
   DCHECK(options.new_process_group);
 #endif
@@ -475,6 +475,7 @@ void DoLaunchChildTestProcess(
 
   LaunchOptions options;
 #if defined(OS_WIN)
+
   options.inherit_mode = test_launch_options.inherit_mode;
   options.handles_to_inherit = test_launch_options.handles_to_inherit;
   if (redirect_stdio) {
@@ -491,7 +492,9 @@ void DoLaunchChildTestProcess(
       options.handles_to_inherit.push_back(handle);
     }
   }
-#elif defined(OS_POSIX)
+
+#else  // if !defined(OS_WIN)
+
   options.fds_to_remap = test_launch_options.fds_to_remap;
   if (redirect_stdio) {
     int output_file_fd = fileno(output_file.get());
@@ -509,7 +512,7 @@ void DoLaunchChildTestProcess(
   options.kill_on_parent_death = true;
 #endif
 
-#endif  // defined(OS_POSIX)
+#endif  // !defined(OS_WIN)
 
   bool was_timeout = false;
   int exit_code = LaunchChildTestProcessWithOptions(
