@@ -6,6 +6,7 @@
       "provides": {
         // Interfaces needed by a generic client of content browser.
         "app": [
+          "content.mojom.MemoryCoordinatorHandle",
           "discardable_memory.mojom.DiscardableSharedMemoryManager",
           "memory_instrumentation.mojom.Coordinator"
         ],
@@ -46,7 +47,6 @@
           "content.mojom.FieldTrialRecorder",
           "content.mojom.FrameSinkProvider",
           "content.mojom.MediaStreamTrackMetricsHost",
-          "content.mojom.MemoryCoordinatorHandle",
           "content.mojom.PeerConnectionTrackerHost",
           "content.mojom.PushMessaging",
           "content.mojom.RendererHost",
