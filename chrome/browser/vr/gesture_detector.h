@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_VR_GESTURE_DETECTOR_H_
 #define CHROME_BROWSER_VR_GESTURE_DETECTOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/vr_export.h"
