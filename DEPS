@@ -819,7 +819,7 @@ deps = {
 
   # Graphics buffer allocator for Chrome OS.
   'src/third_party/minigbm/src': {
-      'url': Var('chromium_git') + '/chromiumos/platform/minigbm.git' + '@' + '6eca36809e185337bfcca95310a1765c34c360e1',
+      'url': Var('chromium_git') + '/chromiumos/platform/minigbm.git' + '@' + '3cb5bbacc5c8a79105c868875222696f6b9d8296',
       'condition': 'checkout_linux',
   },
 
