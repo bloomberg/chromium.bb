@@ -116,6 +116,12 @@ void CastDialogView::ButtonPressed(views::Button* sender,
   SelectSinkAtIndex(sender->tag());
 }
 
+gfx::Size CastDialogView::CalculatePreferredSize() const {
+  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_BUBBLE_PREFERRED_WIDTH);
+  return gfx::Size(width, GetHeightForWidth(width));
+}
+
 void CastDialogView::Init() {
   auto* provider = ChromeLayoutProvider::Get();
   set_margins(
