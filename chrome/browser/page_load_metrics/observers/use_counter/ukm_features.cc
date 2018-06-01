@@ -34,6 +34,7 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           WebFeature::kCredentialManagerGetPublicKeyCredential,
           WebFeature::kCredentialManagerMakePublicKeyCredentialSuccess,
           WebFeature::kCredentialManagerGetPublicKeyCredentialSuccess,
+          WebFeature::kV8AudioContext_Constructor,
       }));
   return opt_in_features.count(feature);
 }
