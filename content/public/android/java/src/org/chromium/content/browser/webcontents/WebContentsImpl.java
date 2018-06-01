@@ -197,7 +197,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
         mInternalsHolder = new DefaultInternalsHolder();
         mInternalsHolder.set(internals);
-        WindowEventObserverManager.from(this).addObserver(this);
         mIsAlive = true;
     }
 
@@ -852,6 +851,11 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         nativeOnScaleFactorChanged(mNativeWebContentsAndroid);
     }
 
+    public void setFocus(boolean hasFocus) {
+        if (mNativeWebContentsAndroid == 0) return;
+        nativeSetFocus(mNativeWebContentsAndroid, hasFocus);
+    }
+
     // This is static to avoid exposing a public destroy method on the native side of this class.
     private static native void nativeDestroyWebContents(long webContentsAndroidPtr);
 
@@ -933,4 +937,5 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     private native void nativeSendOrientationChangeEvent(
             long nativeWebContentsAndroid, int orientation);
     private native void nativeOnScaleFactorChanged(long nativeWebContentsAndroid);
+    private native void nativeSetFocus(long nativeWebContentsAndroid, boolean focused);
 }

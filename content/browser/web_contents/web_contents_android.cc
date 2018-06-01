@@ -847,6 +847,18 @@ void WebContentsAndroid::OnScaleFactorChanged(
   }
 }
 
+void WebContentsAndroid::SetFocus(JNIEnv* env,
+                                  const JavaParamRef<jobject>& obj,
+                                  jboolean focused) {
+  RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
+  if (!rwhva)
+    return;
+  if (focused)
+    rwhva->GotFocus();
+  else
+    rwhva->LostFocus();
+}
+
 int WebContentsAndroid::GetTopControlsShrinkBlinkHeightPixForTesting(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {

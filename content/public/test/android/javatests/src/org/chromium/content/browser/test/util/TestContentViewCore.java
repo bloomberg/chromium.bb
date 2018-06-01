@@ -5,7 +5,6 @@
 package org.chromium.content.browser.test.util;
 
 import android.content.Context;
-import android.content.res.Configuration;
 
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ContentViewCore.InternalAccessDelegate;
@@ -22,28 +21,4 @@ public class TestContentViewCore implements ContentViewCore {
 
     @Override
     public void destroy() {}
-
-    @Override
-    public void onAttachedToWindow() {}
-
-    @Override
-    public void onDetachedFromWindow() {}
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {}
-
-    @Override
-    public void onWindowFocusChanged(boolean hasWindowFocus) {}
-
-    @Override
-    public void onPause() {}
-
-    @Override
-    public void onResume() {}
-
-    @Override
-    public void onViewFocusChanged(boolean gainFocus) {}
-
-    @Override
-    public void setHideKeyboardOnBlur(boolean hideKeyboardOnBlur) {}
 }

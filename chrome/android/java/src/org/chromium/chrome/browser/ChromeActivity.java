@@ -150,7 +150,6 @@ import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content_public.browser.ContentVideoView;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
@@ -914,14 +913,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             LaunchMetrics.commitLaunchMetrics(getActivityTab().getWebContents());
         }
 
-        for (TabModel model : getTabModelSelector().getModels()) {
-            int count = model.getCount();
-            for (int i = 0; i < count; ++i) {
-                ContentViewCore cvc = model.getTabAt(i).getContentViewCore();
-                if (cvc != null) cvc.onResume();
-            }
-        }
-
         FeatureUtilities.setCustomTabVisible(isCustomTab());
         FeatureUtilities.setIsInMultiWindowMode(
                 MultiWindowUtils.getInstance().isInMultiWindowMode(this));
@@ -952,13 +943,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         RecordUserAction.record("MobileGoToBackground");
         Tab tab = getActivityTab();
         if (tab != null) getTabContentManager().cacheTabThumbnail(tab);
-        for (TabModel model : getTabModelSelector().getModels()) {
-            int count = model.getCount();
-            for (int i = 0; i < count; ++i) {
-                ContentViewCore cvc = model.getTabAt(i).getContentViewCore();
-                if (cvc != null) cvc.onPause();
-            }
-        }
+
         VrShellDelegate.maybeUnregisterVrEntryHook(this);
         markSessionEnd();
         super.onPauseWithNative();
