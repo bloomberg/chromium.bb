@@ -115,6 +115,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableOverflowIconsForMediaControls(bool);
   BLINK_PLATFORM_EXPORT static void EnableOverlayScrollbars(bool);
   BLINK_PLATFORM_EXPORT static void EnableOutOfBlinkCORS(bool);
+  BLINK_PLATFORM_EXPORT static void EnablePageLifecycle(bool);
   BLINK_PLATFORM_EXPORT static void EnablePagePopup(bool);
   BLINK_PLATFORM_EXPORT static void EnablePassiveDocumentEventListeners(bool);
   BLINK_PLATFORM_EXPORT static void EnablePaymentApp(bool);
