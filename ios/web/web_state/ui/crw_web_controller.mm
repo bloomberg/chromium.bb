@@ -2951,21 +2951,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
-  if ([error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
-      (error.code == web::kWebKitErrorPlugInLoadFailed ||
-       error.code == web::kWebKitErrorCannotShowUrl)) {
-    // In cases where a Plug-in handles the load do not take any further action.
-    return;
-  }
-
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      [error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
-      error.code == web::kWebKitErrorUrlBlockedByContentFilter) {
-    // If URL is blocked due to Restriction, do not take any further action as
-    // WKWebView will show a built-in error.
-    return;
-  }
-
   web::NavigationContextImpl* navigationContext =
       [_navigationStates contextForNavigation:navigation];
   navigationContext->SetError(error);
@@ -2973,44 +2958,61 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // TODO(crbug.com/803631) DCHECK that self.currentNavItem is the navigation
   // item associated with navigationContext.
 
-  if ([error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
-      error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange) {
-    // Handle Frame Load Interrupted errors from WebView. This block is executed
-    // when web controller rejected the load inside
-    // decidePolicyForNavigationAction: or decidePolicyForNavigationResponse:.
-    // Load rejection may happen if embedder denied the load via
-    // WebStatePolicyDecider or the navigation was a download navigation.
-    NSString* errorURLSpec = error.userInfo[NSURLErrorFailingURLStringErrorKey];
-    NSURL* errorURL = [NSURL URLWithString:errorURLSpec];
-    NSString* MIMEType = [_pendingNavigationInfo MIMEType];
-    if (!base::FeatureList::IsEnabled(web::features::kNewFileDownload) &&
-        ![MIMEType isEqualToString:@"application/vnd.apple.pkpass"]) {
-      // This block is executed to handle legacy download navigation.
-      const GURL errorGURL = net::GURLWithNSURL(errorURL);
-      if (errorGURL.is_valid()) {
-        id<CRWNativeContent> controller =
-            [_nativeProvider controllerForUnhandledContentAtURL:errorGURL
-                                                       webState:self.webState];
-        if (controller) {
-          [self loadCompleteWithSuccess:NO forNavigation:navigation];
-          [self removeWebView];
-          [self setNativeController:controller];
-          [self loadNativeViewWithSuccess:YES
-                        navigationContext:navigationContext];
-          _loadPhase = web::PAGE_LOADED;
-          return;
-        }
-      }
+  if ([error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)]) {
+    if (error.code == web::kWebKitErrorPlugInLoadFailed ||
+        error.code == web::kWebKitErrorCannotShowUrl) {
+      // In cases where a Plug-in handles the load do not take any further
+      // action.
+      return;
     }
 
-    // The load was rejected, because embedder launched an external application.
-    if ([_openedApplicationURL containsObject:errorURL])
+    if (error.code == web::kWebKitErrorUrlBlockedByContentFilter &&
+        web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+      // If URL is blocked due to Restriction, do not take any further action as
+      // WKWebView will show a built-in error.
       return;
+    }
 
-    // This navigation was a download navigation and embedder now has a chance
-    // to start the download task.
-    _webStateImpl->SetIsLoading(false);
-    return;
+    if (error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange) {
+      // Handle Frame Load Interrupted errors from WebView. This block is
+      // executed when web controller rejected the load inside
+      // decidePolicyForNavigationAction: or decidePolicyForNavigationResponse:.
+      // Load rejection may happen if embedder denied the load via
+      // WebStatePolicyDecider or the navigation was a download navigation.
+      NSString* errorURLSpec =
+          error.userInfo[NSURLErrorFailingURLStringErrorKey];
+      NSURL* errorURL = [NSURL URLWithString:errorURLSpec];
+      NSString* MIMEType = [_pendingNavigationInfo MIMEType];
+      if (!base::FeatureList::IsEnabled(web::features::kNewFileDownload) &&
+          ![MIMEType isEqualToString:@"application/vnd.apple.pkpass"]) {
+        // This block is executed to handle legacy download navigation.
+        const GURL errorGURL = net::GURLWithNSURL(errorURL);
+        if (errorGURL.is_valid()) {
+          id<CRWNativeContent> controller = [_nativeProvider
+              controllerForUnhandledContentAtURL:errorGURL
+                                        webState:self.webState];
+          if (controller) {
+            [self loadCompleteWithSuccess:NO forNavigation:navigation];
+            [self removeWebView];
+            [self setNativeController:controller];
+            [self loadNativeViewWithSuccess:YES
+                          navigationContext:navigationContext];
+            _loadPhase = web::PAGE_LOADED;
+            return;
+          }
+        }
+      }
+
+      // The load was rejected, because embedder launched an external
+      // application.
+      if ([_openedApplicationURL containsObject:errorURL])
+        return;
+
+      // This navigation was a download navigation and embedder now has a chance
+      // to start the download task.
+      _webStateImpl->SetIsLoading(false);
+      return;
+    }
   }
 
   NavigationManager* navManager = self.webState->GetNavigationManager();
