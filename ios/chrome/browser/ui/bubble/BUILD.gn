@@ -5,11 +5,13 @@
 source_set("bubble") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "bubble_presenter.h",
+    "bubble_presenter.mm",
+    "bubble_presenter_delegate.h",
     "bubble_util.h",
     "bubble_util.mm",
     "bubble_view.h",
     "bubble_view.mm",
-    "bubble_view_anchor_point_provider.h",
     "bubble_view_controller.h",
     "bubble_view_controller.mm",
     "bubble_view_controller_presenter.h",
@@ -18,10 +20,19 @@ source_set("bubble") {
   deps = [
     "//base",
     "//base:i18n",
+    "//components/feature_engagement/public",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/feature_engagement",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
     "//ios/third_party/material_components_ios",
+    "//net",
+    "//ui/base",
   ]
   libs = [ "UIKit.framework" ]
 }

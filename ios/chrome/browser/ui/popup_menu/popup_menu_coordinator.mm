@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -55,7 +56,7 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 @synthesize requestStartTime = _requestStartTime;
 @synthesize UIUpdater = _UIUpdater;
 @synthesize webStateList = _webStateList;
-@synthesize incognitoTabTipPresenter = _incognitoTabTipPresenter;
+@synthesize bubblePresenter = _bubblePresenter;
 
 #pragma mark - ChromeCoordinator
 
@@ -179,8 +180,10 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   BOOL triggerNewIncognitoTabTip = NO;
   if (type == PopupMenuTypeToolsMenu) {
     triggerNewIncognitoTabTip =
-        self.incognitoTabTipPresenter.triggerFollowUpAction;
-    self.incognitoTabTipPresenter.triggerFollowUpAction = NO;
+        self.bubblePresenter.incognitoTabTipBubblePresenter
+            .triggerFollowUpAction;
+    self.bubblePresenter.incognitoTabTipBubblePresenter.triggerFollowUpAction =
+        NO;
   }
 
   self.mediator = [[PopupMenuMediator alloc]
