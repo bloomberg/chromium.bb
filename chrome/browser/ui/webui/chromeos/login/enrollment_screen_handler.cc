@@ -272,9 +272,6 @@ void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
     case authpolicy::ERROR_OU_DOES_NOT_EXIST:
       ShowError(IDS_AD_OU_DOES_NOT_EXIST, true);
       return;
-    case authpolicy::ERROR_INVALID_OU:
-      ShowError(IDS_AD_OU_INVALID, true);
-      return;
     case authpolicy::ERROR_OU_ACCESS_DENIED:
       ShowError(IDS_AD_OU_ACCESS_DENIED, true);
       return;

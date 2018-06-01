@@ -4302,8 +4302,8 @@
     Device Location
   </message>
   <!-- Administrator facing strings for Active Directory screens. -->
-  <message name="IDS_AD_MACHINE_NAME_INPUT_LABEL" desc="Admin-facing. Label for machine name input field on the AD domain join screen. User should tell us the name of his machine.">
-    Chromebook machine name
+  <message name="IDS_AD_MACHINE_NAME_INPUT_LABEL" desc="Admin-facing. Label for device name input field on the AD domain join screen. User should tell us the name of his device.">
+    Chromebook device name
   </message>
   <message name="IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE" desc="Admin-facing. Welcome message on the AD domain join screen.">
     Join device to domain
@@ -4312,7 +4312,7 @@
     More options
   </message>
   <message name="IDS_AD_ORG_UNIT_HINT" desc="Admin-facing. Hint for the Active Directory Organizational units input on the 'More options' dialog.">
-    Computer OU (e.g. OU=Chromebooks,DC=example,DC=com)
+    Device OU (e.g. OU=Chromebooks,DC=example,DC=com)
   </message>
   <message name="IDS_AD_ENCRYPTION_SELECTION_SELECT" desc="Admin-facing. Title for kerberos encryption types selection.">
     Select encryption types
@@ -4338,38 +4338,35 @@
   <message name="IDS_AD_DOMAIN_JOIN_UNKNOWN_ERROR" desc="Admin-facing. Default error text on the Active Directory join screen">
     Oops!  Something went wrong when trying to join the domain. Please try again.
   </message>
-  <message name="IDS_AD_MACHINENAME_INVALID" desc="Admin-facing. Alert message about invalid machine name">
-    Invalid machine name
+  <message name="IDS_AD_MACHINENAME_INVALID" desc="Admin-facing alert message. Admin entered a bad device name.">
+    The device name is invalid. Enter a valid device name to try again.
   </message>
-  <message name="IDS_AD_MACHINENAME_TOO_LONG" desc="Admin-facing. Alert message about too long machine name">
-    Machine name too long
+  <message name="IDS_AD_MACHINENAME_TOO_LONG" desc="Admin-facing alert message. Admin entered a device name that was too long.">
+    The device name is too long. Enter a shorter name to try again.
   </message>
-  <message name="IDS_AD_USER_DENIED_TO_JOIN_MACHINE" desc="Admin-facing. Alert message user was denied to join machine to the domain">
-    Failed to join the machine to the domain. This might be due to insufficient privileges for your account on the server.
+  <message name="IDS_AD_USER_DENIED_TO_JOIN_MACHINE" desc="Admin-facing alert message. Admin doesn’t have privileges to add devices to the domain. 'Devices' refers to Chromebook computers. 'Domain' is the Windows domain that accounts are registered to.">
+    Can't join the domain. Check your account to see if you have sufficient privileges to add devices.
   </message>
-  <message name="IDS_AD_USER_HIT_JOIN_QUOTA" desc="Admin-facing. Alert message that user can't add more machines to the domain">
-    Failed to join the machine to the domain. This might be due to exceeding the maximum number of allowed machine joins for your account on the server.
+  <message name="IDS_AD_USER_HIT_JOIN_QUOTA" desc="Admin-facing alert message. Administrator has reached the limit of devices that can be added.">
+    Can't join the device to the domain. Make sure you haven’t exceeded the number of devices you can add.
   </message>
-  <message name="IDS_AD_OU_DOES_NOT_EXIST" desc="Admin-facing. Alert message that user joins the machine to non-existing organizational unit.">
-    Failed to join the machine to the domain. Organizational unit does not exist.
+  <message name="IDS_AD_OU_DOES_NOT_EXIST" desc="Admin-facing alert message.  Admin entered the name of the organizational unit incorrectly.">
+    Can’t find an organizational unit with that name. Please try again.
   </message>
-  <message name="IDS_AD_OU_INVALID" desc="Admin-facing. Alert message that user joins the machine to invalid organizational unit.">
-    Failed to join the machine to the domain. Organizational unit is invalid.
+  <message name="IDS_AD_OU_ACCESS_DENIED" desc="Admin-facing alert message. The admin is using an account that doesn’t have privileges to add devices to the organizational unit.">
+    Can't join the device to the domain. Check your account to make sure you have privileges to add devices.
   </message>
-  <message name="IDS_AD_OU_ACCESS_DENIED" desc="Admin-facing. Alert message that user does not have rights to join the machine to specified organizational unit.">
-    Failed to join the machine to the domain. This might be due to insufficient privileges for your account for the organizational unit.
+  <message name="IDS_AD_OU_SETTING_FAILED" desc="Admin-facing alert message. Settings for the organizational unit are incorrect.">
+    Can’t join the domain. Make sure the settings are correct for the organizational unit.
   </message>
-  <message name="IDS_AD_OU_SETTING_FAILED" desc="Admin-facing. Alert message that user could not join the machine to specified organizational unit due to unknown reason.">
-    Failed to join the machine to the domain. This might be due to issues with the organizational unit.
-  </message>
-  <message name="IDS_AD_NOT_SUPPORTED_ENCRYPTION" desc="Admin-facing. Alert message that user could not join the machine to due to not supported encryption types.">
-    Can't join the machine to the domain. The server does not support specified Kerberos encryption types. Check "More options" for encryption settings.
+  <message name="IDS_AD_NOT_SUPPORTED_ENCRYPTION" desc="Admin-facing. Alert message that user could not join the device to due to not supported encryption types.">
+    Can't join the device to the domain. The server does not support specified Kerberos encryption types. Check "More options" for encryption settings.
   </message>
   <message name="IDS_AD_BOARD_NOT_SUPPORTED" desc="Admin-facing. Alert message that the Chromebook model is not supported for Active Directory">
     Chrome <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> integration is only supported on x86_64 platforms. Chromebooks built on top of an ARM or x86 platform do not support this functionality.
   </message>
   <!-- User facing strings for Active Directory screens. -->
-  <message name="IDS_AD_DOMAIN_AUTH_WELCOME_MESSAGE" desc="Welcome message on the AD Authentication user screen. Include the domain (realm) the machine joined to.">
+  <message name="IDS_AD_DOMAIN_AUTH_WELCOME_MESSAGE" desc="Welcome message on the AD Authentication user screen. Include the domain (realm) the device joined to.">
     Sign in to <ph name="REALM">$1<ex>example.com</ex></ph>
   </message>
   <message name="IDS_AD_ENROLLMENT_LOGIN_USER" desc="Label for userPrincipalName input field on the AD domain join user screen. Looks like user@example.com where example.com is the realm.">
@@ -4418,7 +4415,7 @@
     The username and password you entered do not match
   </message>
   <message name="IDS_AD_PASSWORD_EXPIRED" desc="Alert message about expired password in the Active Directory">
-    Oops!  Looks like your password expired. Please renew it on another machine and try again.
+    Oops!  Looks like your password expired. Please renew it on another device and try again.
   </message>
   <message name="IDS_AD_AUTH_NETWORK_ERROR" desc="Error message to show when there is a problem contacting the logon server when authenticating for Active Directory enrollment.">
     Oops!  There was a problem contacting the logon server. Please check your network connection and the domain name, then try again.
