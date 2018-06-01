@@ -21,6 +21,8 @@ component("cpp") {
     "service_context.h",
     "service_context_ref.cc",
     "service_context_ref.h",
+    "service_keepalive.cc",
+    "service_keepalive.h",
     "service_runner.cc",
     "service_runner.h",
   ]

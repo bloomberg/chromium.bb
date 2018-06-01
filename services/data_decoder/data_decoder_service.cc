@@ -4,6 +4,8 @@
 
 #include "services/data_decoder/data_decoder_service.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -16,32 +18,7 @@
 
 namespace data_decoder {
 
-namespace {
-
-void OnImageDecoderRequest(
-    service_manager::ServiceContextRefFactory* ref_factory,
-    mojom::ImageDecoderRequest request) {
-  mojo::MakeStrongBinding(
-      std::make_unique<ImageDecoderImpl>(ref_factory->CreateRef()),
-      std::move(request));
-}
-
-void OnJsonParserRequest(service_manager::ServiceContextRefFactory* ref_factory,
-                         mojom::JsonParserRequest request) {
-  mojo::MakeStrongBinding(
-      std::make_unique<JsonParserImpl>(ref_factory->CreateRef()),
-      std::move(request));
-}
-
-void OnXmlParserRequest(service_manager::ServiceContextRefFactory* ref_factory,
-                        mojom::XmlParserRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<XmlParser>(ref_factory->CreateRef()),
-                          std::move(request));
-}
-
-}  // namespace
-
-DataDecoderService::DataDecoderService() : weak_factory_(this) {}
+DataDecoderService::DataDecoderService() = default;
 
 DataDecoderService::~DataDecoderService() = default;
 
@@ -51,13 +28,15 @@ std::unique_ptr<service_manager::Service> DataDecoderService::Create() {
 }
 
 void DataDecoderService::OnStart() {
-  ref_factory_.reset(new service_manager::ServiceContextRefFactory(
-      base::BindRepeating(&DataDecoderService::MaybeRequestQuitDelayed,
-                          weak_factory_.GetWeakPtr())));
-  registry_.AddInterface(
-      base::Bind(&OnImageDecoderRequest, ref_factory_.get()));
-  registry_.AddInterface(base::Bind(&OnJsonParserRequest, ref_factory_.get()));
-  registry_.AddInterface(base::Bind(&OnXmlParserRequest, ref_factory_.get()));
+  constexpr int kMaxServiceIdleTimeInSeconds = 5;
+  keepalive_ = std::make_unique<service_manager::ServiceKeepalive>(
+      context(), base::TimeDelta::FromSeconds(kMaxServiceIdleTimeInSeconds));
+  registry_.AddInterface(base::BindRepeating(
+      &DataDecoderService::BindImageDecoder, base::Unretained(this)));
+  registry_.AddInterface(base::BindRepeating(
+      &DataDecoderService::BindJsonParser, base::Unretained(this)));
+  registry_.AddInterface(base::BindRepeating(&DataDecoderService::BindXmlParser,
+                                             base::Unretained(this)));
 }
 
 void DataDecoderService::OnBindInterface(
@@ -67,18 +46,21 @@ void DataDecoderService::OnBindInterface(
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
-void DataDecoderService::MaybeRequestQuitDelayed() {
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&DataDecoderService::MaybeRequestQuit,
-                 weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(5));
+void DataDecoderService::BindImageDecoder(mojom::ImageDecoderRequest request) {
+  mojo::MakeStrongBinding(
+      std::make_unique<ImageDecoderImpl>(keepalive_->CreateRef()),
+      std::move(request));
 }
 
-void DataDecoderService::MaybeRequestQuit() {
-  DCHECK(ref_factory_);
-  if (ref_factory_->HasNoRefs())
-    context()->CreateQuitClosure().Run();
+void DataDecoderService::BindJsonParser(mojom::JsonParserRequest request) {
+  mojo::MakeStrongBinding(
+      std::make_unique<JsonParserImpl>(keepalive_->CreateRef()),
+      std::move(request));
+}
+
+void DataDecoderService::BindXmlParser(mojom::XmlParserRequest request) {
+  mojo::MakeStrongBinding(std::make_unique<XmlParser>(keepalive_->CreateRef()),
+                          std::move(request));
 }
 
 }  // namespace data_decoder

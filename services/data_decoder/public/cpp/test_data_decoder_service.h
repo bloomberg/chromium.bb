@@ -43,14 +43,14 @@ class TestDataDecoderService {
 // a call is made on an interface.
 // Can be used with a TestConnectorFactory to simulate crashes in the service
 // while processing a call.
-class CrashyDataDecoderService : public service_manager::Service,
+class CrashyDataDecoderService : public service_manager::ForwardingService,
                                  public mojom::ImageDecoder,
                                  public mojom::JsonParser {
  public:
   CrashyDataDecoderService(bool crash_json, bool crash_image);
   ~CrashyDataDecoderService() override;
 
-  // service_manager::Service:
+  // service_manager::ForwardingService:
   void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
@@ -72,6 +72,11 @@ class CrashyDataDecoderService : public service_manager::Service,
   void Parse(const std::string& json, ParseCallback callback) override;
 
  private:
+  CrashyDataDecoderService(
+      std::unique_ptr<service_manager::Service> real_service,
+      bool crash_json,
+      bool crash_image);
+
   std::unique_ptr<mojo::Binding<mojom::ImageDecoder>> image_decoder_binding_;
   std::unique_ptr<mojo::Binding<mojom::JsonParser>> json_parser_binding_;
 
