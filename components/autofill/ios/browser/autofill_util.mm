@@ -28,7 +28,7 @@ bool IsContextSecureForWebState(web::WebState* web_state) {
   // the iOS web view blocks active mixed content without an option to run it,
   // there is no need to check for active mixed content here.
   web::NavigationManager* manager = web_state->GetNavigationManager();
-  web::NavigationItem* nav_item = manager->GetLastCommittedItem();
+  const web::NavigationItem* nav_item = manager->GetLastCommittedItem();
   if (!nav_item)
     return false;
 

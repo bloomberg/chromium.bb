@@ -53,7 +53,7 @@ bool DoesCurrentPageHaveCertInfo(web::WebState* webState) {
   web::NavigationManager* navigationMangager = webState->GetNavigationManager();
   if (!navigationMangager)
     return false;
-  web::NavigationItem* visibleItem = navigationMangager->GetVisibleItem();
+  const web::NavigationItem* visibleItem = navigationMangager->GetVisibleItem();
   if (!visibleItem)
     return false;
 
