@@ -1854,16 +1854,6 @@ scoped_refptr<HitTestingTransformState> PaintLayer::CreateLocalTransformState(
     ConvertToLayerCoords(root_layer, offset);
   }
   offset.MoveBy(translation_offset);
-  // The location of a foreignObject element is added *after* transform, not
-  // before (all SVG child elements have this behavior). Therefore, remove
-  // the offset here to avoid applying it before the transform. It will be
-  // added later.
-  // TODO(chrishtr): this ugliness can be removed if we change the code to
-  // to be based on PaintOffset rather than PaintLayer offsets, like the
-  // paint code does. This is a larger effort though, that involves using
-  // property trees to drive hit testing coordinate spaces.
-  if (GetLayoutObject().IsSVGForeignObject())
-    offset.MoveBy(-LayoutBoxLocation());
 
   LayoutObject* container_layout_object =
       container_layer ? &container_layer->GetLayoutObject() : nullptr;
@@ -1941,7 +1931,11 @@ PaintLayer* PaintLayer::HitTestLayer(
   if (result.GetHitTestRequest().IgnoreClipping())
     clip_behavior = kIgnoreOverflowClip;
 
-  bool use_transform = Transform();
+  // We can only reach an SVG foreign object's PaintLayer from
+  // LayoutSVGForeignObject::NodeAtFloatPoint (because
+  // IsReplacedNormalFlowStacking() true for LayoutSVGForeignObject),
+  // where the hit_test_rect has already been transformed to local coordinates.
+  bool use_transform = Transform() && !GetLayoutObject().IsSVGForeignObject();
 
   // Apply a transform if we have one.
   if (use_transform && !applied_transform) {
@@ -2081,10 +2075,6 @@ PaintLayer* PaintLayer::HitTestLayer(
   }
 
   LayoutPoint offset = -LayoutBoxLocation();
-  // See comment in CreateLocalTransformState. The code here is
-  // where we re-add the location.
-  if (root_layer->GetLayoutObject().IsSVGForeignObject())
-    offset.MoveBy(root_layer->LayoutBoxLocation());
 
   // Next we want to see if the mouse pos is inside the child LayoutObjects of
   // the layer. Check every fragment in reverse order.
