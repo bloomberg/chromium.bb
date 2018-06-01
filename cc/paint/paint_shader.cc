@@ -36,11 +36,13 @@ bool CompareMatrices(const SkMatrix& a,
   SkSize scale;
   SkMatrix a_without_scale;
   SkMatrix b_without_scale;
-  if (a.decomposeScale(&scale, &a_without_scale) !=
-      b.decomposeScale(&scale, &b_without_scale)) {
-    return false;
-  }
 
+  const bool decomposes = a.decomposeScale(&scale, &a_without_scale);
+  if (decomposes != b.decomposeScale(&scale, &b_without_scale))
+    return false;
+
+  if (!decomposes)
+    return true;
   return PaintOp::AreSkMatricesEqual(a_without_scale, b_without_scale);
 }
 
