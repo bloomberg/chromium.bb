@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PASSWORD_GENERATOR_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PASSWORD_GENERATOR_H_
 
-#include "base/macros.h"
 #include "base/strings/string16.h"
 
 namespace autofill {
