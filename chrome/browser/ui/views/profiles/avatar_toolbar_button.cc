@@ -12,7 +12,9 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -22,6 +24,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -120,7 +123,7 @@ bool AvatarToolbarButton::ShouldShowGenericIcon() const {
          !SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated();
 }
 
-gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() const {
+gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() {
   const int icon_size =
       ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 24 : 20;
 
@@ -134,8 +137,20 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() const {
     return gfx::CreateVectorIcon(kUserMenuGuestIcon, icon_size, icon_color);
 
   gfx::Image avatar_icon;
-  if (!ShouldShowGenericIcon())
-    avatar_icon = GetIconImageFromProfile();
+  if (!ShouldShowGenericIcon()) {
+    switch (GetSyncState()) {
+      case SyncState::kNormal:
+        avatar_icon = GetIconImageFromProfile();
+        break;
+      case SyncState::kPaused:
+        return gfx::CreateVectorIcon(kSyncPausedIcon, icon_size,
+                                     gfx::kGoogleBlue500);
+      case SyncState::kError:
+        return gfx::CreateVectorIcon(kSyncProblemIcon, icon_size,
+                                     gfx::kGoogleRed700);
+    }
+  }
+
   if (!avatar_icon.IsEmpty()) {
     return profiles::GetSizedAvatarIcon(avatar_icon, true, icon_size, icon_size,
                                         profiles::SHAPE_CIRCLE)
@@ -168,4 +183,19 @@ gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
   }
 
   return entry->GetAvatarIcon();
+}
+
+AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() {
+  if (profile_->IsSyncAllowed() && error_controller_.HasAvatarError()) {
+    // When DICE is enabled and the error is an auth error, the sync-paused
+    // icon is shown.
+    int unused;
+    const bool should_show_sync_paused_ui =
+        AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
+        sync_ui_util::GetMessagesForAvatarSyncError(
+            profile_, *SigninManagerFactory::GetForProfile(profile_), &unused,
+            &unused) == sync_ui_util::AUTH_ERROR;
+    return should_show_sync_paused_ui ? SyncState::kPaused : SyncState::kError;
+  }
+  return SyncState::kNormal;
 }
