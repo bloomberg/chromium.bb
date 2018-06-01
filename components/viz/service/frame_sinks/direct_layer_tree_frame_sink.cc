@@ -45,9 +45,6 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   capabilities_.must_always_swap = true;
-  // Display and DirectLayerTreeFrameSink share a GL context, so sync
-  // points aren't needed when passing resources between them.
-  capabilities_.delegated_sync_points_required = false;
 }
 
 DirectLayerTreeFrameSink::~DirectLayerTreeFrameSink() {
@@ -61,10 +58,9 @@ bool DirectLayerTreeFrameSink::BindToClient(
   if (!cc::LayerTreeFrameSink::BindToClient(client))
     return false;
 
-  constexpr bool is_root = true;
   support_ = support_manager_->CreateCompositorFrameSinkSupport(
-      this, frame_sink_id_, is_root,
-      capabilities_.delegated_sync_points_required);
+      this, frame_sink_id_, /*is_root=*/true,
+      /*return_sync_tokens_required=*/false);
   begin_frame_source_ = std::make_unique<ExternalBeginFrameSource>(this);
   client_->SetBeginFrameSource(begin_frame_source_.get());
 

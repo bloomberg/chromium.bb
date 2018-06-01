@@ -49,6 +49,7 @@ class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   void AddObserver(ui::ContextFactoryObserver* observer) override {}
   void RemoveObserver(ui::ContextFactoryObserver* observer) override {}
+  bool SyncTokensRequiredForDisplayCompositor() override;
 
   ui::RasterThreadHelper raster_thread_helper_;
   ui::Gpu* gpu_;

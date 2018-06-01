@@ -45,9 +45,6 @@ TestLayerTreeFrameSink::TestLayerTreeFrameSink(
       client_provided_begin_frame_source_(begin_frame_source),
       external_begin_frame_source_(this),
       weak_ptr_factory_(this) {
-  // Always use sync tokens so that code paths in resource provider that deal
-  // with sync tokens are tested.
-  capabilities_.delegated_sync_points_required = true;
 }
 
 TestLayerTreeFrameSink::~TestLayerTreeFrameSink() {

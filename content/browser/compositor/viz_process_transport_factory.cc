@@ -245,6 +245,12 @@ void VizProcessTransportFactory::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
+bool VizProcessTransportFactory::SyncTokensRequiredForDisplayCompositor() {
+  // The display compositor is out-of-process, so must be using a different
+  // context from the UI compositor, and requires synchronization between them.
+  return true;
+}
+
 std::unique_ptr<ui::Reflector> VizProcessTransportFactory::CreateReflector(
     ui::Compositor* source,
     ui::Layer* target) {

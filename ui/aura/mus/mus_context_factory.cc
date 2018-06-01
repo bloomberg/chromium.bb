@@ -86,4 +86,10 @@ cc::TaskGraphRunner* MusContextFactory::GetTaskGraphRunner() {
   return raster_thread_helper_.task_graph_runner();
 }
 
+bool MusContextFactory::SyncTokensRequiredForDisplayCompositor() {
+  // The display compositor is out-of-process, so must be using a different
+  // context from the UI compositor, and requires synchronization between them.
+  return true;
+}
+
 }  // namespace aura
