@@ -350,11 +350,10 @@ bool RulesetService::IndexRuleset(base::File unindexed_ruleset_file,
   int64_t unindexed_ruleset_size = unindexed_ruleset_file.GetLength();
   if (unindexed_ruleset_size < 0)
     return false;
-  url_pattern_index::CopyingFileInputStream copying_stream(
-      std::move(unindexed_ruleset_file));
+  CopyingFileInputStream copying_stream(std::move(unindexed_ruleset_file));
   google::protobuf::io::CopyingInputStreamAdaptor zero_copy_stream_adaptor(
       &copying_stream, 4096 /* buffer_size */);
-  url_pattern_index::UnindexedRulesetReader reader(&zero_copy_stream_adaptor);
+  UnindexedRulesetReader reader(&zero_copy_stream_adaptor);
 
   size_t num_unsupported_rules = 0;
   url_pattern_index::proto::FilteringRules ruleset_chunk;
