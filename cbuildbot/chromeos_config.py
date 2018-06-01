@@ -749,7 +749,7 @@ _vmtest_boards = frozenset([
 # aren't included by default (see IsDefaultMainWaterfall). This loosely
 # corresponds to the set of experimental or self-standing configs.
 _waterfall_config_map = {
-    waterfall.WATERFALL_EXTERNAL: frozenset([
+    waterfall.WATERFALL_SWARMING: frozenset([
         # Full
         'amd64-generic-full',
         'arm-generic-full',
@@ -759,9 +759,7 @@ _waterfall_config_map = {
         'oak-full',
         'tael-full',
         'tatl-full',
-    ]),
 
-    waterfall.WATERFALL_SWARMING: frozenset([
         # ASAN.
         'amd64-generic-asan',
         'amd64-generic-fuzzer',
