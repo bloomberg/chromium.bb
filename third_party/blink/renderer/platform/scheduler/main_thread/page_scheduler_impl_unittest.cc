@@ -1255,6 +1255,17 @@ TEST_F(PageSchedulerImplTest, BudgetBasedThrottlingForPageScheduler) {
   page_scheduler_->SetPageVisible(false);
 }
 
+TEST_F(PageSchedulerImplTest, KeepActiveSetForNewPages) {
+  scheduler_->SetSchedulerKeepActive(true);
+
+  std::unique_ptr<PageSchedulerImpl> page_scheduler2 =
+      std::make_unique<PageSchedulerImpl>(nullptr, scheduler_.get(),
+                                          DisableBackgroundTimerThrottling());
+
+  EXPECT_TRUE(page_scheduler_->KeepActive());
+  EXPECT_TRUE(page_scheduler2->KeepActive());
+}
+
 }  // namespace page_scheduler_impl_unittest
 }  // namespace scheduler
 }  // namespace blink

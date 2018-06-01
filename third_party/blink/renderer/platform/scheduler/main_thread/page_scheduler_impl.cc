@@ -114,7 +114,7 @@ PageSchedulerImpl::PageSchedulerImpl(
       nested_runloop_(false),
       is_main_frame_local_(false),
       is_throttled_(false),
-      keep_active_(false),
+      keep_active_(main_thread_scheduler->SchedulerKeepActive()),
       background_time_budget_pool_(nullptr),
       delegate_(delegate),
       weak_factory_(this) {
