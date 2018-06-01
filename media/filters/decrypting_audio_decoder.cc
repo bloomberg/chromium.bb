@@ -94,7 +94,7 @@ void DecryptingAudioDecoder::Initialize(
 
   if (state_ == kUninitialized) {
     if (!cdm_context->GetDecryptor()) {
-      MEDIA_LOG(DEBUG, media_log_) << GetDisplayName() << ": no decryptor";
+      DVLOG(1) << __func__ << ": no decryptor";
       base::ResetAndReturn(&init_cb_).Run(false);
       return;
     }
@@ -206,8 +206,7 @@ void DecryptingAudioDecoder::FinishInitialization(bool success) {
   DCHECK(decode_cb_.is_null());  // No Decode() before initialization finished.
 
   if (!success) {
-    MEDIA_LOG(DEBUG, media_log_)
-        << GetDisplayName() << ": failed to init decoder on decryptor";
+    DVLOG(1) << __func__ << ": failed to init audio decoder on decryptor";
     base::ResetAndReturn(&init_cb_).Run(false);
     decryptor_ = NULL;
     state_ = kError;
@@ -276,10 +275,11 @@ void DecryptingAudioDecoder::DeliverFrame(
   if (status == Decryptor::kNoKey) {
     std::string key_id =
         scoped_pending_buffer_to_decode->decrypt_config()->key_id();
-    std::string missing_key_id = base::HexEncode(key_id.data(), key_id.size());
-    DVLOG(1) << "DeliverFrame() - no key for key ID " << missing_key_id;
-    MEDIA_LOG(DEBUG, media_log_)
-        << GetDisplayName() << ": no key for key ID " << missing_key_id;
+    std::string log_message =
+        "no key for key ID " + base::HexEncode(key_id.data(), key_id.size()) +
+        "; will resume decoding after new usable key is available";
+    DVLOG(1) << __func__ << ": " << log_message;
+    MEDIA_LOG(INFO, media_log_) << GetDisplayName() << ": " << log_message;
 
     // Set |pending_buffer_to_decode_| back as we need to try decoding the
     // pending buffer again when new key is added to the decryptor.
