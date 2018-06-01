@@ -19,8 +19,9 @@ extern "C" {
 
 int file_is_ivf(struct AvxInputContext *input);
 
+typedef int64_t aom_codec_pts_t;
 int ivf_read_frame(FILE *infile, uint8_t **buffer, size_t *bytes_read,
-                   size_t *buffer_size);
+                   size_t *buffer_size, aom_codec_pts_t *pts);
 
 #ifdef __cplusplus
 } /* extern "C" */

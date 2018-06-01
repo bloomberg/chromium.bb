@@ -24,6 +24,7 @@ struct AvxVideoReaderStruct {
   uint8_t *buffer;
   size_t buffer_size;
   size_t frame_size;
+  aom_codec_pts_t pts;
 };
 
 AvxVideoReader *aom_video_reader_open(const char *filename) {
@@ -62,7 +63,7 @@ void aom_video_reader_close(AvxVideoReader *reader) {
 
 int aom_video_reader_read_frame(AvxVideoReader *reader) {
   return !ivf_read_frame(reader->file, &reader->buffer, &reader->frame_size,
-                         &reader->buffer_size);
+                         &reader->buffer_size, &reader->pts);
 }
 
 const uint8_t *aom_video_reader_get_frame(AvxVideoReader *reader,
@@ -71,6 +72,12 @@ const uint8_t *aom_video_reader_get_frame(AvxVideoReader *reader,
 
   return reader->buffer;
 }
+
+int64_t aom_video_reader_get_frame_pts(AvxVideoReader *reader) {
+  return (int64_t)reader->pts;
+}
+
+FILE *aom_video_reader_get_file(AvxVideoReader *reader) { return reader->file; }
 
 const AvxVideoInfo *aom_video_reader_get_info(AvxVideoReader *reader) {
   return &reader->info;

@@ -62,7 +62,7 @@ int file_is_ivf(struct AvxInputContext *input_ctx) {
 }
 
 int ivf_read_frame(FILE *infile, uint8_t **buffer, size_t *bytes_read,
-                   size_t *buffer_size) {
+                   size_t *buffer_size, aom_codec_pts_t *pts) {
   char raw_header[IVF_FRAME_HDR_SZ] = { 0 };
   size_t frame_size = 0;
 
@@ -86,6 +86,11 @@ int ivf_read_frame(FILE *infile, uint8_t **buffer, size_t *bytes_read,
         warn("Failed to allocate compressed data buffer");
         frame_size = 0;
       }
+    }
+
+    if (pts) {
+      *pts = mem_get_le32(&raw_header[4]);
+      *pts += ((aom_codec_pts_t)mem_get_le32(&raw_header[8]) << 32);
     }
   }
 

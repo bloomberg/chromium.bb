@@ -244,7 +244,7 @@ static int read_frame(struct AvxDecInputContext *input, uint8_t **buf,
                             buffer_size);
     case FILE_TYPE_IVF:
       return ivf_read_frame(input->aom_input_ctx->file, buf, bytes_in_buffer,
-                            buffer_size);
+                            buffer_size, NULL);
     case FILE_TYPE_OBU:
       return obudec_read_temporal_unit(input->obu_ctx, buf, bytes_in_buffer,
                                        buffer_size);

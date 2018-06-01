@@ -42,6 +42,11 @@ int aom_video_reader_read_frame(AvxVideoReader *reader);
 // aom_video_reader_read_frame().
 const uint8_t *aom_video_reader_get_frame(AvxVideoReader *reader, size_t *size);
 
+// Returns the pts of the frame.
+int64_t aom_video_reader_get_frame_pts(AvxVideoReader *reader);
+// Return the reader file.
+FILE *aom_video_reader_get_file(AvxVideoReader *reader);
+
 // Fills AvxVideoInfo with information from opened video file.
 const AvxVideoInfo *aom_video_reader_get_info(AvxVideoReader *reader);
 

@@ -68,7 +68,7 @@ bool ReadTemporalUnit(InputContext *ctx, size_t *unit_size) {
   switch (file_type) {
     case FILE_TYPE_IVF: {
       if (ivf_read_frame(ctx->avx_ctx->file, &ctx->unit_buffer, unit_size,
-                         &ctx->unit_buffer_size)) {
+                         &ctx->unit_buffer_size, NULL)) {
         return false;
       }
       break;
