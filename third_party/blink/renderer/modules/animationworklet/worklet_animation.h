@@ -6,12 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_WORKLET_ANIMATION_H_
 
 #include "base/optional.h"
-#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/document_timeline_or_scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/animation_effect_owner.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_base.h"
+#include "third_party/blink/renderer/modules/animationworklet/worklet_animation_options.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
@@ -20,6 +20,7 @@
 namespace blink {
 
 class AnimationEffectOrAnimationEffectSequence;
+class SerializedScriptValue;
 
 // The main-thread controller for a single AnimationWorklet animator instance.
 //
@@ -99,7 +100,6 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   Document* GetDocument() const override { return document_.Get(); }
   const String& Name() { return animator_name_; }
 
-  const scoped_refptr<SerializedScriptValue> Options() { return options_; }
   KeyframeEffect* GetEffect() const override;
 
   void Trace(blink::Visitor*) override;
@@ -131,7 +131,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
 
   HeapVector<Member<KeyframeEffect>> effects_;
   Member<AnimationTimeline> timeline_;
-  scoped_refptr<SerializedScriptValue> options_;
+  std::unique_ptr<WorkletAnimationOptions> options_;
 
   std::unique_ptr<CompositorAnimation> compositor_animation_;
 };

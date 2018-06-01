@@ -13,6 +13,7 @@
 
 namespace cc {
 
+class AnimationOptions;
 class ScrollTimeline;
 
 // A WorkletAnimation is an animation that allows its animation
@@ -24,11 +25,13 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   WorkletAnimation(int id,
                    const std::string& name,
                    std::unique_ptr<ScrollTimeline> scroll_timeline,
+                   std::unique_ptr<AnimationOptions> options,
                    bool is_controlling_instance);
   static scoped_refptr<WorkletAnimation> Create(
       int id,
       const std::string& name,
-      std::unique_ptr<ScrollTimeline> scroll_timeline);
+      std::unique_ptr<ScrollTimeline> scroll_timeline,
+      std::unique_ptr<AnimationOptions> options);
   scoped_refptr<Animation> CreateImplInstance() const override;
 
   const std::string& name() const { return name_; }
@@ -56,6 +59,9 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   // The current time is based on the timeline associated with the animation.
   double CurrentTime(base::TimeTicks monotonic_time,
                      const ScrollTree& scroll_tree);
+  std::unique_ptr<AnimationOptions> CloneOptions() const {
+    return options_ ? options_->Clone() : nullptr;
+  }
   std::string name_;
 
   // The ScrollTimeline associated with the underlying animation. If null, the
@@ -65,6 +71,8 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   // which must exist but can either be a DocumentTimeline, ScrollTimeline, or
   // some other future implementation.
   std::unique_ptr<ScrollTimeline> scroll_timeline_;
+
+  std::unique_ptr<AnimationOptions> options_;
 
   base::TimeDelta local_time_;
 

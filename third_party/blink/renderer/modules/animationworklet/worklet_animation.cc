@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/animationworklet/worklet_animation.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/animation_effect_or_animation_effect_sequence.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
@@ -254,7 +255,7 @@ WorkletAnimation::WorkletAnimation(
       document_(document),
       effects_(effects),
       timeline_(timeline),
-      options_(std::move(options)) {
+      options_(std::make_unique<WorkletAnimationOptions>(options)) {
   DCHECK(IsMainThread());
   DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
 
@@ -398,7 +399,8 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
 
   if (!compositor_animation_) {
     compositor_animation_ = CompositorAnimation::CreateWorkletAnimation(
-        animator_name_, ToCompositorScrollTimeline(timeline_));
+        animator_name_, ToCompositorScrollTimeline(timeline_),
+        std::move(options_));
     compositor_animation_->SetAnimationDelegate(this);
   }
 

@@ -223,11 +223,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     // Passing a new input state with a new animation id should cause the
     // worklet to create and animate an animator.
     CompositorMutatorInputState state;
-    CompositorMutatorInputState::AnimationState test_animation_state;
-    test_animation_state.animation_id = 1;
-    test_animation_state.name = "test";
-    test_animation_state.current_time = 5000;
-    state.animations = {test_animation_state};
+    state.animations.emplace_back(1, "test", 5000, nullptr);
 
     std::unique_ptr<CompositorMutatorOutputState> output =
         global_scope->Mutate(state);
@@ -275,11 +271,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     // Passing a new input state with a new animation id should cause the
     // worklet to create and animate an animator.
     CompositorMutatorInputState state;
-    CompositorMutatorInputState::AnimationState test_animation_state;
-    test_animation_state.animation_id = 1;
-    test_animation_state.name = "test";
-    test_animation_state.current_time = 5000;
-    state.animations = {test_animation_state};
+    state.animations.emplace_back(1, "test", 5000, nullptr);
 
     std::unique_ptr<CompositorMutatorOutputState> output =
         global_scope->Mutate(state);

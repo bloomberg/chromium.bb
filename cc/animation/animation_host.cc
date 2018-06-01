@@ -364,7 +364,7 @@ std::unique_ptr<MutatorInputState> AnimationHost::CollectWorkletAnimationsState(
     if (!animation->IsWorkletAnimation())
       continue;
 
-    const MutatorInputState::AnimationState& state =
+    MutatorInputState::AnimationState state =
         ToWorkletAnimation(animation.get())
             ->GetInputState(monotonic_time, scroll_tree);
     result->animations.push_back(std::move(state));
