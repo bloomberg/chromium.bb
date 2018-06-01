@@ -95,6 +95,7 @@ class TestOverlayWindow : public OverlayWindow {
   ui::Layer* GetControlsBackgroundLayer() override { return nullptr; }
   ui::Layer* GetCloseControlsLayer() override { return nullptr; }
   ui::Layer* GetPlayPauseControlsLayer() override { return nullptr; }
+  gfx::Rect GetVideoBounds() override { return gfx::Rect(); }
   gfx::Rect GetCloseControlsBounds() override { return gfx::Rect(); }
   gfx::Rect GetPlayPauseControlsBounds() override { return gfx::Rect(); }
 

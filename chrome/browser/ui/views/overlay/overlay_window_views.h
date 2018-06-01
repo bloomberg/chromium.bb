@@ -44,6 +44,7 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   ui::Layer* GetControlsBackgroundLayer() override;
   ui::Layer* GetCloseControlsLayer() override;
   ui::Layer* GetPlayPauseControlsLayer() override;
+  gfx::Rect GetVideoBounds() override;
   gfx::Rect GetCloseControlsBounds() override;
   gfx::Rect GetPlayPauseControlsBounds() override;
 
@@ -58,7 +59,6 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   // views::internal::NativeWidgetDelegate:
   void OnNativeFocus() override;
   void OnNativeBlur() override;
-  void OnNativeWidgetMove() override;
   void OnNativeWidgetSizeChanged(const gfx::Size& new_size) override;
 
  private:
@@ -66,14 +66,14 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   // is reason for the bounds to change, such as switching primary displays or
   // playing a new video (i.e. different aspect ratio). This also updates
   // |min_size_| and |max_size_|.
-  gfx::Rect CalculateAndUpdateBounds();
+  gfx::Rect CalculateAndUpdateWindowBounds();
 
   // Set up the views::Views that will be shown on the window.
   void SetUpViews();
 
-  // Update |current_size_| closest to the |new_size| while adhering to the
-  // aspect ratio of the video, which is retrieved from |natural_size_|.
-  void UpdateCurrentSizeWithAspectRatio(gfx::Size new_size);
+  // Update |video_bounds_| to fit within |window_bounds_| while adhering to
+  // the aspect ratio of the video, which is retrieved from |natural_size_|.
+  void UpdateVideoLayerSizeWithAspectRatio(gfx::Size window_size);
 
   // Updates the controls view::Views to reflect |is_visible|.
   void UpdateControlsVisibility(bool is_visible);
@@ -99,7 +99,10 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   gfx::Size max_size_;
 
   // Current bounds of the Picture-in-Picture window.
-  gfx::Rect current_bounds_;
+  gfx::Rect window_bounds_;
+
+  // Bounds of |video_view_|.
+  gfx::Rect video_bounds_;
 
   // The natural size of the video to show. This is used to compute sizing and
   // ensuring factors such as aspect ratio is maintained.

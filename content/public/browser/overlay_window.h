@@ -53,7 +53,8 @@ class OverlayWindow {
   virtual ui::Layer* GetCloseControlsLayer() = 0;
   virtual ui::Layer* GetPlayPauseControlsLayer() = 0;
 
-  // Retrieves the bounds of the media controls.
+  // Retrieves the bounds of the video and media controls.
+  virtual gfx::Rect GetVideoBounds() = 0;
   virtual gfx::Rect GetCloseControlsBounds() = 0;
   virtual gfx::Rect GetPlayPauseControlsBounds() = 0;
 

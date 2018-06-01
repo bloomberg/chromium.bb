@@ -130,7 +130,7 @@ OverlayWindowViews::OverlayWindowViews(
       play_pause_controls_view_(new views::ToggleImageButton(nullptr)) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = CalculateAndUpdateBounds();
+  params.bounds = CalculateAndUpdateWindowBounds();
   params.keep_on_top = true;
   params.visible_on_all_workspaces = true;
   params.remove_standard_frame = true;
@@ -146,7 +146,7 @@ OverlayWindowViews::OverlayWindowViews(
 
 OverlayWindowViews::~OverlayWindowViews() = default;
 
-gfx::Rect OverlayWindowViews::CalculateAndUpdateBounds() {
+gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
   gfx::Rect work_area =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
 
@@ -159,46 +159,48 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateBounds() {
 
   // Initial size of the window is always 20% of the display width and height,
   // constrained by the min and max sizes. Only explicitly update this the first
-  // time |current_size| is being calculated.
-  // Once |current_size| is calculated at least once, it should stay within the
+  // time |window_size| is being calculated.
+  // Once |window_size| is calculated at least once, it should stay within the
   // bounds of |min_size_| and |max_size_|.
-  gfx::Size current_size;
-  if (!current_bounds_.size().IsEmpty()) {
-    current_size = current_bounds_.size();
+  gfx::Size window_size;
+  if (!window_bounds_.size().IsEmpty()) {
+    window_size = window_bounds_.size();
   } else {
-    current_size = gfx::Size(work_area.width() / 5, work_area.height() / 5);
-    current_size.set_width(std::min(
-        max_size_.width(), std::max(min_size_.width(), current_size.width())));
-    current_size.set_height(
+    window_size = gfx::Size(work_area.width() / 5, work_area.height() / 5);
+    window_size.set_width(std::min(
+        max_size_.width(), std::max(min_size_.width(), window_size.width())));
+    window_size.set_height(
         std::min(max_size_.height(),
-                 std::max(min_size_.height(), current_size.height())));
+                 std::max(min_size_.height(), window_size.height())));
   }
 
   // Determine the window size by fitting |natural_size_| within
-  // |current_size|, keeping to |natural_size_|'s aspect ratio.
-  if (!natural_size_.IsEmpty())
-    UpdateCurrentSizeWithAspectRatio(current_size);
+  // |window_size|, keeping to |natural_size_|'s aspect ratio.
+  if (!natural_size_.IsEmpty()) {
+    UpdateVideoLayerSizeWithAspectRatio(window_size);
+    window_size = video_bounds_.size();
+  }
 
   // The size is only empty the first time the window is shown. gfx::Point
   // cannot be checked for being unset as the default (0,0) is the valid
   // origin.
-  if (!current_bounds_.size().IsEmpty()) {
-    current_bounds_.set_size(current_size);
+  if (!window_bounds_.size().IsEmpty()) {
+    window_bounds_.set_size(window_size);
   } else {
     // The initial positioning is on the bottom right quadrant
     // of the primary display work area.
-    int window_diff_width = work_area.width() - current_size.width();
-    int window_diff_height = work_area.height() - current_size.height();
+    int window_diff_width = work_area.width() - window_size.width();
+    int window_diff_height = work_area.height() - window_size.height();
 
     // Keep a margin distance of 2% the average of the two window size
     // differences, keeping the margins consistent.
     int buffer = (window_diff_width + window_diff_height) / 2 * 0.02;
-    current_bounds_ = gfx::Rect(
+    window_bounds_ = gfx::Rect(
         gfx::Point(window_diff_width - buffer, window_diff_height - buffer),
-        current_size);
+        window_size);
   }
 
-  return current_bounds_;
+  return window_bounds_;
 }
 
 void OverlayWindowViews::SetUpViews() {
@@ -281,33 +283,28 @@ void OverlayWindowViews::SetUpViews() {
   UpdateControlsVisibility(false);
 }
 
-void OverlayWindowViews::UpdateCurrentSizeWithAspectRatio(gfx::Size new_size) {
-  // This function will only be called once when this is true -- when the
-  // window is initially created.
-  if (current_bounds_.size().IsEmpty())
+void OverlayWindowViews::UpdateVideoLayerSizeWithAspectRatio(
+    gfx::Size window_size) {
+  // This is the case when the window is initially created or the video surface
+  // id has not been embedded.
+  if (window_bounds_.size().IsEmpty() || natural_size_.IsEmpty())
     return;
 
-  // Check whether or not the new size and the video's natural size have the
-  // same orientation (landscape vs. portrait). Otherwise, the usage of the
-  // area checks below will flip the orientation of the video.
-  bool is_natural_size_landscape =
-      natural_size_.width() > natural_size_.height();
-  bool is_new_size_landscape = new_size.width() > new_size.height();
+  gfx::Rect letterbox_region = media::ComputeLetterboxRegion(
+      gfx::Rect(gfx::Point(0, 0), window_size), natural_size_);
+  if (letterbox_region.IsEmpty())
+    return;
 
-  // TODO(apacible): Make resizing more strict. Currently, the window may
-  // resize to not adhere to the aspect ratio while the bounds are being
-  // dragged. When there is no more drag motion (e.g. mouse lifts), the window
-  // snaps to adhere to the aspect ratio. Ideally, the window will always
-  // adhere to the aspect ratio while in drag motion. http://crbug/829677.
-  if (is_new_size_landscape == is_natural_size_landscape) {
-    if (natural_size_.GetArea() > new_size.GetArea()) {
-      current_bounds_.set_size(
-          media::ScaleSizeToEncompassTarget(natural_size_, new_size));
-    } else {
-      current_bounds_.set_size(
-          media::ScaleSizeToFitWithinTarget(natural_size_, new_size));
-    }
-  }
+  gfx::Size letterbox_size = letterbox_region.size();
+  gfx::Point origin =
+      gfx::Point((window_size.width() - letterbox_size.width()) / 2,
+                 (window_size.height() - letterbox_size.height()) / 2);
+
+  video_bounds_.set_origin(origin);
+  video_bounds_.set_size(letterbox_region.size());
+
+  // Update the surface layer bounds to scale with window size changes.
+  controller_->UpdateLayerBounds();
 }
 
 void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
@@ -353,7 +350,7 @@ void OverlayWindowViews::UpdateVideoSize(const gfx::Size& natural_size) {
   natural_size_ = natural_size;
 
   // Update the views::Widget bounds to adhere to sizing spec.
-  SetBounds(CalculateAndUpdateBounds());
+  SetBounds(CalculateAndUpdateWindowBounds());
 }
 
 void OverlayWindowViews::UpdatePlayPauseControlsIcon(bool is_playing) {
@@ -374,6 +371,10 @@ ui::Layer* OverlayWindowViews::GetCloseControlsLayer() {
 
 ui::Layer* OverlayWindowViews::GetPlayPauseControlsLayer() {
   return play_pause_controls_view_->layer();
+}
+
+gfx::Rect OverlayWindowViews::GetVideoBounds() {
+  return video_bounds_;
 }
 
 gfx::Rect OverlayWindowViews::GetCloseControlsBounds() {
@@ -501,24 +502,11 @@ void OverlayWindowViews::OnNativeBlur() {
   views::Widget::OnNativeBlur();
 }
 
-void OverlayWindowViews::OnNativeWidgetMove() {
-  // If the sizes are the same, |this| was moved. Otherwise, this can be also
-  // called when the window resizes. Let OnNativeWidgetSizeChanged() handle
-  // all resizing.
-  if (GetBounds().size() == current_bounds_.size())
-    current_bounds_ = GetBounds();
-  views::Widget::OnNativeWidgetMove();
-}
-
 void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
-  // Update the surface layer bounds to stretch / shrink the size of the shown
-  // video in the window.
-  if (controller_)
-    controller_->UpdateLayerBounds();
+  // Update the video layer size to respect aspect ratio.
+  UpdateVideoLayerSizeWithAspectRatio(new_size);
 
-  UpdateCurrentSizeWithAspectRatio(new_size);
-  SetBounds(current_bounds_);
-  views::Widget::OnNativeWidgetSizeChanged(current_bounds_.size());
+  views::Widget::OnNativeWidgetSizeChanged(new_size);
 }
 
 void OverlayWindowViews::TogglePlayPause() {
