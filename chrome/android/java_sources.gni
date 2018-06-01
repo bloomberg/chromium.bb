@@ -458,6 +458,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/home/list/ListItem.java",
   "java/src/org/chromium/chrome/browser/download/home/list/ListItemModel.java",
   "java/src/org/chromium/chrome/browser/download/home/list/ListItemViewHolder.java",
+  "java/src/org/chromium/chrome/browser/download/home/list/ListUtils.java",
   "java/src/org/chromium/chrome/browser/download/home/list/UiUtils.java",
   "java/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorFactory.java",
   "java/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorNotificationBridgeUi.java",
