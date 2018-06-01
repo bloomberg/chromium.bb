@@ -3,14 +3,17 @@
 // found in the LICENSE file.
 
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/simple_connection_listener.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 
 namespace {
@@ -20,11 +23,18 @@ const base::FilePath::CharType kDocRoot[] =
 
 class PageLoadCappingBrowserTest : public InProcessBrowserTest {
  protected:
-  PageLoadCappingBrowserTest() {}
+  PageLoadCappingBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {network::features::kRendererSideResourceScheduler,
+         features::kResourceLoadScheduler},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
-                       DISABLED_PageLoadCappingBlocksLoads) {
+IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest, PageLoadCappingBlocksLoads) {
   net::EmbeddedTestServer https_test_server(
       net::EmbeddedTestServer::TYPE_HTTPS);
   // The main resource and the favicon should be fetched. Additionally, images
