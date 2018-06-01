@@ -428,22 +428,22 @@ class SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling
 };
 
 struct ActivationScopeTestData {
-  ActivationDecision expected_activation_decision;
+  ActivationLevel expected_activation_level;
   bool url_matches_activation_list;
   ActivationScope activation_scope;
 };
 
 const ActivationScopeTestData kActivationScopeTestData[] = {
-    {ActivationDecision::ACTIVATED, false /* url_matches_activation_list */,
+    {ActivationLevel::ENABLED, false /* url_matches_activation_list */,
      ActivationScope::ALL_SITES},
-    {ActivationDecision::ACTIVATED, true /* url_matches_activation_list */,
+    {ActivationLevel::ENABLED, true /* url_matches_activation_list */,
      ActivationScope::ALL_SITES},
-    {ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-     true /* url_matches_activation_list */, ActivationScope::NO_SITES},
-    {ActivationDecision::ACTIVATED, true /* url_matches_activation_list */,
+    {ActivationLevel::DISABLED, true /* url_matches_activation_list */,
+     ActivationScope::NO_SITES},
+    {ActivationLevel::ENABLED, true /* url_matches_activation_list */,
      ActivationScope::ACTIVATION_LIST},
-    {ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-     false /* url_matches_activation_list */, ActivationScope::ACTIVATION_LIST},
+    {ActivationLevel::DISABLED, false /* url_matches_activation_list */,
+     ActivationScope::ACTIVATION_LIST},
 };
 
 class SubresourceFilterSafeBrowsingActivationThrottleScopeTest
@@ -461,7 +461,7 @@ class SubresourceFilterSafeBrowsingActivationThrottleScopeTest
 TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, NoConfigs) {
   scoped_configuration()->ResetConfiguration(std::vector<Configuration>());
   SimulateNavigateAndCommit({GURL(kURL)}, main_rfh());
-  EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
+  EXPECT_EQ(ActivationLevel::DISABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
 }
 
@@ -489,12 +489,12 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   ConfigureForMatch(match_url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
                     metadata);
   SimulateNavigateAndCommit({match_url}, main_rfh());
-  EXPECT_EQ(ActivationDecision::ACTIVATION_DISABLED,
+  EXPECT_EQ(ActivationLevel::DISABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
 
   // Should match |config3|.
   SimulateNavigateAndCommit({non_match_url}, main_rfh());
-  EXPECT_EQ(ActivationDecision::ACTIVATED,
+  EXPECT_EQ(ActivationLevel::ENABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
 }
 
@@ -506,18 +506,18 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   GURL url(kURL);
 
   SimulateNavigateAndCommit({url}, main_rfh());
-  EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
+  EXPECT_EQ(ActivationLevel::DISABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
 
   ConfigureForMatch(url);
   SimulateNavigateAndCommit({url}, main_rfh());
-  EXPECT_EQ(ActivationDecision::ACTIVATION_DISABLED,
+  EXPECT_EQ(ActivationLevel::DISABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
 
   // Whitelisting occurs last, so the decision should still be DISABLED.
   client()->WhitelistInCurrentWebContents(url);
   SimulateNavigateAndCommit({url}, main_rfh());
-  EXPECT_EQ(ActivationDecision::ACTIVATION_DISABLED,
+  EXPECT_EQ(ActivationLevel::DISABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
 }
 
@@ -527,12 +527,12 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
       Configuration(ActivationLevel::ENABLED, ActivationScope::ALL_SITES));
   GURL url(kURL);
   SimulateNavigateAndCommit({url}, main_rfh());
-  EXPECT_EQ(ActivationDecision::ACTIVATED,
+  EXPECT_EQ(ActivationLevel::ENABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
 
   ConfigureForMatch(url);
   SimulateNavigateAndCommit({url}, main_rfh());
-  EXPECT_EQ(ActivationDecision::ACTIVATED,
+  EXPECT_EQ(ActivationLevel::ENABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
 
   // Adding performance measurement should keep activation.
@@ -541,17 +541,17 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   config_with_perf.activation_options.performance_measurement_rate = 1.0;
   scoped_configuration()->ResetConfiguration(std::move(config_with_perf));
   SimulateNavigateAndCommit({url}, main_rfh());
-  EXPECT_EQ(ActivationDecision::ACTIVATED,
+  EXPECT_EQ(ActivationLevel::ENABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
 }
 
 TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
        NavigationFails_NoActivation) {
-  EXPECT_EQ(base::Optional<ActivationDecision>(),
+  EXPECT_EQ(base::Optional<ActivationLevel>(),
             observer()->GetPageActivationForLastCommittedLoad());
   content::NavigationSimulator::NavigateAndFailFromDocument(
       GURL(kURL), net::ERR_TIMED_OUT, main_rfh());
-  EXPECT_EQ(base::Optional<ActivationDecision>(),
+  EXPECT_EQ(base::Optional<ActivationLevel>(),
             observer()->GetPageActivationForLastCommittedLoad());
 }
 
@@ -565,115 +565,62 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(rfh));
 }
 
-TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
-       ActivateForFrameState) {
-  const struct {
-    ActivationDecision activation_decision;
-    ActivationLevel activation_level;
-  } kTestCases[] = {
-      {ActivationDecision::ACTIVATED, ActivationLevel::DRYRUN},
-      {ActivationDecision::ACTIVATED, ActivationLevel::ENABLED},
-      {ActivationDecision::ACTIVATION_DISABLED, ActivationLevel::DISABLED},
-  };
-  for (const auto& test_data : kTestCases) {
-    SCOPED_TRACE(::testing::Message()
-                 << "activation_decision "
-                 << static_cast<int>(test_data.activation_decision)
-                 << " activation_level " << test_data.activation_level);
-    client()->ClearWhitelist();
-    scoped_configuration()->ResetConfiguration(Configuration(
-        test_data.activation_level, ActivationScope::ACTIVATION_LIST,
-        ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL));
-    const GURL url(kURLWithParams);
-    safe_browsing::ThreatMetadata metadata;
-    metadata.threat_pattern_type =
-        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS;
-    ConfigureForMatch(url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
-                      metadata);
-    SimulateNavigateAndCommit({url}, main_rfh());
-    EXPECT_EQ(test_data.activation_decision,
-              *observer()->GetPageActivationForLastCommittedLoad());
-
-    // Whitelisting is only applied when the page will otherwise activate.
-    client()->WhitelistInCurrentWebContents(url);
-    ActivationDecision decision =
-        test_data.activation_level == ActivationLevel::ENABLED
-            ? ActivationDecision::URL_WHITELISTED
-            : test_data.activation_decision;
-    SimulateNavigateAndCommit({url}, main_rfh());
-    EXPECT_EQ(decision, *observer()->GetPageActivationForLastCommittedLoad());
-  }
-}
-
 TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, ActivationList) {
   const struct {
-    ActivationDecision expected_activation_decision;
+    ActivationLevel expected_activation_level;
     ActivationList activation_list;
     safe_browsing::SBThreatType threat_type;
     safe_browsing::ThreatPatternType threat_type_metadata;
   } kTestCases[] = {
-      {ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET, ActivationList::NONE,
+      {ActivationLevel::DISABLED, ActivationList::NONE,
        safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-       ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
+      {ActivationLevel::DISABLED, ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
        safe_browsing::ThreatPatternType::NONE},
-      {ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-       ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
+      {ActivationLevel::DISABLED, ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
        safe_browsing::ThreatPatternType::MALWARE_LANDING},
-      {ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-       ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
+      {ActivationLevel::DISABLED, ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
        safe_browsing::ThreatPatternType::MALWARE_DISTRIBUTION},
-      {ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-       ActivationList::PHISHING_INTERSTITIAL,
+      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_API_ABUSE,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-       ActivationList::PHISHING_INTERSTITIAL,
+      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_BLACKLISTED_RESOURCE,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-       ActivationList::PHISHING_INTERSTITIAL,
+      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-       ActivationList::PHISHING_INTERSTITIAL,
+      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_BINARY_MALWARE,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-       ActivationList::PHISHING_INTERSTITIAL,
+      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_UNWANTED,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-       ActivationList::PHISHING_INTERSTITIAL,
+      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-       ActivationList::PHISHING_INTERSTITIAL,
+      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-       ActivationList::PHISHING_INTERSTITIAL,
+      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_SAFE,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationDecision::ACTIVATED, ActivationList::PHISHING_INTERSTITIAL,
+      {ActivationLevel::ENABLED, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
        safe_browsing::ThreatPatternType::NONE},
-      {ActivationDecision::ACTIVATED,
-       ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
+      {ActivationLevel::ENABLED, ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationDecision::ACTIVATED, ActivationList::PHISHING_INTERSTITIAL,
+      {ActivationLevel::ENABLED, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationDecision::ACTIVATED, ActivationList::SUBRESOURCE_FILTER,
+      {ActivationLevel::ENABLED, ActivationList::SUBRESOURCE_FILTER,
        safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
        safe_browsing::ThreatPatternType::NONE},
-      {ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-       ActivationList::PHISHING_INTERSTITIAL,
+      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
        safe_browsing::ThreatPatternType::NONE},
   };
@@ -688,7 +635,7 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, ActivationList) {
     ConfigureForMatch(test_url, test_case.threat_type, metadata);
     SimulateNavigateAndCommit({GURL(kUrlA), GURL(kUrlB), GURL(kUrlC), test_url},
                               main_rfh());
-    EXPECT_EQ(test_case.expected_activation_decision,
+    EXPECT_EQ(test_case.expected_activation_level,
               *observer()->GetPageActivationForLastCommittedLoad());
   }
 }
@@ -777,16 +724,12 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
   if (test_data.url_matches_activation_list)
     ConfigureForMatch(test_url);
   SimulateNavigateAndCommit({test_url}, main_rfh());
-  EXPECT_EQ(test_data.expected_activation_decision,
+  EXPECT_EQ(test_data.expected_activation_level,
             *observer()->GetPageActivationForLastCommittedLoad());
   if (test_data.url_matches_activation_list) {
     client()->WhitelistInCurrentWebContents(test_url);
-    ActivationDecision expected_decision =
-        test_data.expected_activation_decision;
-    if (expected_decision == ActivationDecision::ACTIVATED)
-      expected_decision = ActivationDecision::URL_WHITELISTED;
     SimulateNavigateAndCommit({test_url}, main_rfh());
-    EXPECT_EQ(expected_decision,
+    EXPECT_EQ(ActivationLevel::DISABLED,
               *observer()->GetPageActivationForLastCommittedLoad());
   }
 };
@@ -811,7 +754,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
     if (test_data.url_matches_activation_list)
       ConfigureForMatch(GURL(url));
     SimulateNavigateAndCommit({GURL(url)}, main_rfh());
-    EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
+    EXPECT_EQ(ActivationLevel::DISABLED,
               *observer()->GetPageActivationForLastCommittedLoad());
   }
 
@@ -820,7 +763,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
     if (test_data.url_matches_activation_list)
       ConfigureForMatch(GURL(url));
     SimulateNavigateAndCommit({GURL(url)}, main_rfh());
-    EXPECT_EQ(test_data.expected_activation_decision,
+    EXPECT_EQ(test_data.expected_activation_level,
               *observer()->GetPageActivationForLastCommittedLoad());
   }
 };
@@ -830,7 +773,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   const GURL url(kURL);
   SimulateStartAndExpectProceed(url);
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
+  EXPECT_EQ(ActivationLevel::DISABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(ActivationList::NONE), 1);
@@ -847,7 +790,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   ConfigureForMatchParam(url);
   SimulateStartAndExpectProceed(url);
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationDecision::ACTIVATED,
+  EXPECT_EQ(ActivationLevel::ENABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(test_data.activation_list_type),
@@ -860,7 +803,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   SimulateStartAndExpectProceed(url);
   SimulateRedirectAndExpectProceed(GURL(kRedirectURL));
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
+  EXPECT_EQ(ActivationLevel::DISABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(ActivationList::NONE), 1);
@@ -874,7 +817,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   SimulateStartAndExpectProceed(url);
   SimulateRedirectAndExpectProceed(GURL(kRedirectURL));
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationDecision::ACTIVATED,
+  EXPECT_EQ(ActivationLevel::ENABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(test_data.activation_list_type),
@@ -899,7 +842,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   EXPECT_EQ(expected_delay, test_io_task_runner()->NextPendingTaskDelay());
   test_io_task_runner()->FastForwardBy(expected_delay);
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
+  EXPECT_EQ(ActivationLevel::DISABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelay, 1);
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelayNoSpeculation, 1);
@@ -918,7 +861,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   RunUntilIdle();
 
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationDecision::ACTIVATED,
+  EXPECT_EQ(ActivationLevel::ENABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(test_data.activation_list_type),
@@ -944,7 +887,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   RunUntilIdle();
 
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationDecision::ACTIVATED,
+  EXPECT_EQ(ActivationLevel::ENABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(test_data.activation_list_type),
@@ -973,7 +916,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   RunUntilIdle();
 
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
+  EXPECT_EQ(ActivationLevel::DISABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectTimeBucketCount(kSafeBrowsingNavigationDelay,
                                  base::TimeDelta::FromMilliseconds(0), 1);

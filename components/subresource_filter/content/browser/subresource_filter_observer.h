@@ -44,7 +44,6 @@ class SubresourceFilterObserver {
   // will be called before ReadyToCommitNavigation.
   virtual void OnPageActivationComputed(
       content::NavigationHandle* navigation_handle,
-      ActivationDecision activation_decision,
       const ActivationState& activation_state) {}
 
   // Called before navigation commit, either at the WillStartRequest stage or

@@ -5,6 +5,7 @@
 #include "components/subresource_filter/content/browser/subresource_filter_observer_test_utils.h"
 
 #include "base/logging.h"
+#include "components/subresource_filter/core/common/activation_state.h"
 #include "content/public/browser/navigation_handle.h"
 
 namespace subresource_filter {
@@ -36,11 +37,11 @@ void TestSubresourceFilterObserver::OnSafeBrowsingCheckComplete(
 
 void TestSubresourceFilterObserver::OnPageActivationComputed(
     content::NavigationHandle* navigation_handle,
-    ActivationDecision activation_decision,
     const ActivationState& activation_state) {
   DCHECK(navigation_handle->IsInMainFrame());
-  page_activations_[navigation_handle->GetURL()] = activation_decision;
-  pending_activations_[navigation_handle] = activation_decision;
+  ActivationLevel level = activation_state.activation_level;
+  page_activations_[navigation_handle->GetURL()] = level;
+  pending_activations_[navigation_handle] = level;
 }
 
 void TestSubresourceFilterObserver::OnSubframeNavigationEvaluated(
@@ -66,16 +67,16 @@ void TestSubresourceFilterObserver::DidFinishNavigation(
     last_committed_activation_ = it->second;
     pending_activations_.erase(it);
   } else {
-    last_committed_activation_ = base::Optional<ActivationDecision>();
+    last_committed_activation_ = base::Optional<ActivationLevel>();
   }
 }
 
-base::Optional<ActivationDecision>
+base::Optional<ActivationLevel>
 TestSubresourceFilterObserver::GetPageActivation(const GURL& url) const {
   auto it = page_activations_.find(url);
   if (it != page_activations_.end())
     return it->second;
-  return base::Optional<ActivationDecision>();
+  return base::Optional<ActivationLevel>();
 }
 
 base::Optional<bool> TestSubresourceFilterObserver::GetIsAdSubframe(
@@ -94,7 +95,7 @@ base::Optional<LoadPolicy> TestSubresourceFilterObserver::GetSubframeLoadPolicy(
   return base::Optional<LoadPolicy>();
 }
 
-base::Optional<ActivationDecision>
+base::Optional<ActivationLevel>
 TestSubresourceFilterObserver::GetPageActivationForLastCommittedLoad() const {
   return last_committed_activation_;
 }

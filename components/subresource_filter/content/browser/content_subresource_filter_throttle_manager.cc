@@ -223,7 +223,6 @@ bool ContentSubresourceFilterThrottleManager::OnMessageReceived(
 // activation for that page load.
 void ContentSubresourceFilterThrottleManager::OnPageActivationComputed(
     content::NavigationHandle* navigation_handle,
-    ActivationDecision activation_decision,
     const ActivationState& activation_state) {
   DCHECK(navigation_handle->IsInMainFrame());
   DCHECK(!navigation_handle->HasCommitted());

@@ -106,7 +106,7 @@ TEST_F(SubresourceFilterTest, SimpleAllowedLoad_WithObserver) {
   subresource_filter::TestSubresourceFilterObserver observer(web_contents());
   SimulateNavigateAndCommit(url, main_rfh());
 
-  EXPECT_EQ(subresource_filter::ActivationDecision::ACTIVATED,
+  EXPECT_EQ(subresource_filter::ActivationLevel::ENABLED,
             observer.GetPageActivation(url).value());
 
   GURL allowed_url("https://example.test/foo");
@@ -125,7 +125,7 @@ TEST_F(SubresourceFilterTest, SimpleDisallowedLoad_WithObserver) {
   subresource_filter::TestSubresourceFilterObserver observer(web_contents());
   SimulateNavigateAndCommit(url, main_rfh());
 
-  EXPECT_EQ(subresource_filter::ActivationDecision::ACTIVATED,
+  EXPECT_EQ(subresource_filter::ActivationLevel::ENABLED,
             observer.GetPageActivation(url).value());
 
   GURL disallowed_url(SubresourceFilterTest::kDefaultDisallowedUrl);

@@ -46,7 +46,6 @@ class SubresourceFilterObserverManager
   // throttles created in MaybeAppendNavigationThrottles().
   void NotifyPageActivationComputed(
       content::NavigationHandle* navigation_handle,
-      ActivationDecision activation_decision,
       const ActivationState& activation_state);
 
   // Called in WillStartRequest or WillRedirectRequest stage from a
