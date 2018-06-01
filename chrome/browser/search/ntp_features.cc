@@ -4,7 +4,7 @@
 
 #include "chrome/browser/search/ntp_features.h"
 
-#include "chrome/common/chrome_features.h"
+#include "ui/base/ui_base_features.h"
 
 namespace features {
 
@@ -31,17 +31,17 @@ bool IsMDUIEnabled() {
          // custom backgrounds are enabled
          base::FeatureList::IsEnabled(kNtpIcons) ||
          base::FeatureList::IsEnabled(kNtpBackgrounds) ||
-         base::FeatureList::IsEnabled(features::kUiFood);
+         base::FeatureList::IsEnabled(features::kExperimentalUi);
 }
 
 bool IsMDIconsEnabled() {
   return base::FeatureList::IsEnabled(kNtpIcons) ||
-         base::FeatureList::IsEnabled(features::kUiFood);
+         base::FeatureList::IsEnabled(features::kExperimentalUi);
 }
 
 bool IsCustomBackgroundsEnabled() {
   return base::FeatureList::IsEnabled(kNtpBackgrounds) ||
-         base::FeatureList::IsEnabled(features::kUiFood);
+         base::FeatureList::IsEnabled(features::kExperimentalUi);
 }
 
 }  // namespace features

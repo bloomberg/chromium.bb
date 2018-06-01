@@ -3168,8 +3168,8 @@ const char kAutomaticTabDiscardingDescription[] =
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
-const char kUiFoodName[] = "Use all upcoming UI features";
-const char kUiFoodDescription[] = "Use all upcoming UI features.";
+const char kExperimentalUiName[] = "Use all upcoming UI features";
+const char kExperimentalUiDescription[] = "Use all upcoming UI features.";
 
 #endif
 

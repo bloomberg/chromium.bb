@@ -1944,8 +1944,8 @@ extern const char kWarnBeforeQuittingFlagDescription[];
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
-extern const char kUiFoodName[];
-extern const char kUiFoodDescription[];
+extern const char kExperimentalUiName[];
+extern const char kExperimentalUiDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 

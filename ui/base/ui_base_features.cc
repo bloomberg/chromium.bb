@@ -85,6 +85,12 @@ const base::Feature kUiCompositorScrollWithLayers = {
 #endif
 };
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+// Enables all upcoming UI features.
+const base::Feature kExperimentalUi{"ExperimentalUi",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_WIN)
 // Enables stylus appearing as touch when in contact with digitizer.
 const base::Feature kDirectManipulationStylus = {

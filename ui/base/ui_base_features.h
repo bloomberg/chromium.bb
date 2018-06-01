@@ -29,6 +29,10 @@ UI_BASE_EXPORT bool IsNotificationIndicatorEnabled();
 
 UI_BASE_EXPORT bool IsUiGpuRasterizationEnabled();
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+UI_BASE_EXPORT extern const base::Feature kExperimentalUi;
+#endif
+
 #if defined(OS_WIN)
 UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
 UI_BASE_EXPORT extern const base::Feature kInputPaneOnScreenKeyboard;
