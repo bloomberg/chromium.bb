@@ -15,7 +15,7 @@ namespace content {
 
 // AudioHelper -----------------------------------------------------------------
 
-AudioHelper::AudioHelper() : shared_memory_size_for_create_callback_(0) {}
+AudioHelper::AudioHelper() {}
 
 AudioHelper::~AudioHelper() {}
 
@@ -28,26 +28,22 @@ int32_t AudioHelper::GetSyncSocketImpl(int* sync_socket) {
   return PP_ERROR_FAILED;
 }
 
-int32_t AudioHelper::GetSharedMemoryImpl(base::SharedMemory** shm,
-                                         uint32_t* shm_size) {
-  if (shared_memory_for_create_callback_) {
-    *shm = shared_memory_for_create_callback_.get();
-    *shm_size = shared_memory_size_for_create_callback_;
+int32_t AudioHelper::GetSharedMemoryImpl(base::UnsafeSharedMemoryRegion** shm) {
+  if (shared_memory_for_create_callback_.IsValid()) {
+    *shm = &shared_memory_for_create_callback_;
     return PP_OK;
   }
   return PP_ERROR_FAILED;
 }
 
-void AudioHelper::StreamCreated(base::SharedMemoryHandle shared_memory_handle,
-                                size_t shared_memory_size,
-                                base::SyncSocket::Handle socket_handle) {
+void AudioHelper::StreamCreated(
+    base::UnsafeSharedMemoryRegion shared_memory_region,
+    base::SyncSocket::Handle socket_handle) {
   if (TrackedCallback::IsPending(create_callback_)) {
     // Trusted side of proxy can specify a callback to receive handles. In
     // this case we don't need to map any data or start the thread since it
     // will be handled by the proxy.
-    shared_memory_for_create_callback_.reset(
-        new base::SharedMemory(shared_memory_handle, false));
-    shared_memory_size_for_create_callback_ = shared_memory_size;
+    shared_memory_for_create_callback_ = std::move(shared_memory_region);
     socket_for_create_callback_.reset(new base::SyncSocket(socket_handle));
 
     create_callback_->Run(PP_OK);
@@ -60,7 +56,7 @@ void AudioHelper::StreamCreated(base::SharedMemoryHandle shared_memory_handle,
     // the I/O thread and back, but this extra complexity doesn't seem worth it
     // just to clean up these handles faster.
   } else {
-    OnSetStreamInfo(shared_memory_handle, shared_memory_size, socket_handle);
+    OnSetStreamInfo(std::move(shared_memory_region), socket_handle);
   }
 }
 

@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/sync_socket.h"
 #include "base/threading/simple_thread.h"
 #include "ppapi/c/ppb_audio_config.h"
@@ -72,8 +72,7 @@ class AudioOutputResource : public PluginResource,
   void OnPluginMsgOpenReply(const ResourceMessageReplyParams& params);
 
   // Sets the shared memory and socket handles.
-  void SetStreamInfo(base::SharedMemoryHandle shared_memory_handle,
-                     size_t shared_memory_size,
+  void SetStreamInfo(base::UnsafeSharedMemoryRegion shared_memory_region,
                      base::SyncSocket::Handle socket_handle);
 
   // Starts execution of the audio output thread.
@@ -104,7 +103,7 @@ class AudioOutputResource : public PluginResource,
   // Sample buffer in shared memory. This pointer is created in
   // SetStreamInfo(). The memory is only mapped when the audio thread is
   // created.
-  std::unique_ptr<base::SharedMemory> shared_memory_;
+  base::WritableSharedMemoryMapping shared_memory_mapping_;
 
   // The size of the sample buffer in bytes.
   size_t shared_memory_size_;

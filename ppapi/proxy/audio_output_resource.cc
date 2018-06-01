@@ -147,12 +147,14 @@ void AudioOutputResource::OnPluginMsgOpenReply(
     CHECK(socket_handle != base::SyncSocket::kInvalidHandle);
 
     SerializedHandle serialized_shared_memory_handle =
-        params.TakeHandleOfTypeAtIndex(1, SerializedHandle::SHARED_MEMORY);
+        params.TakeHandleOfTypeAtIndex(1,
+                                       SerializedHandle::SHARED_MEMORY_REGION);
     CHECK(serialized_shared_memory_handle.IsHandleValid());
 
     open_state_ = OPENED;
-    SetStreamInfo(serialized_shared_memory_handle.shmem(),
-                  serialized_shared_memory_handle.size(), socket_handle);
+    SetStreamInfo(base::UnsafeSharedMemoryRegion::Deserialize(
+                      serialized_shared_memory_handle.TakeSharedMemoryRegion()),
+                  socket_handle);
   } else {
     playing_ = false;
   }
@@ -163,12 +165,9 @@ void AudioOutputResource::OnPluginMsgOpenReply(
 }
 
 void AudioOutputResource::SetStreamInfo(
-    base::SharedMemoryHandle shared_memory_handle,
-    size_t shared_memory_size,
+    base::UnsafeSharedMemoryRegion shared_memory_region,
     base::SyncSocket::Handle socket_handle) {
   socket_.reset(new base::CancelableSyncSocket(socket_handle));
-  shared_memory_.reset(new base::SharedMemory(shared_memory_handle, false));
-  DCHECK(!shared_memory_->memory());
 
   // Ensure that the allocated memory is enough for the audio bus and buffer
   // parameters. Note that there might be slightly more allocated memory as
@@ -177,15 +176,16 @@ void AudioOutputResource::SetStreamInfo(
   // Example: DCHECK_GE(8208, 8192 + 16) for |sample_frame_count_| = 2048.
   shared_memory_size_ = media::ComputeAudioOutputBufferSize(
       kAudioOutputChannels, sample_frame_count_);
-  DCHECK_GE(shared_memory_size, shared_memory_size_);
+  DCHECK_GE(shared_memory_region.GetSize(), shared_memory_size_);
 
   // If we fail to map the shared memory into the caller's address space we
   // might as well fail here since nothing will work if this is the case.
-  CHECK(shared_memory_->Map(shared_memory_size_));
+  shared_memory_mapping_ = shared_memory_region.MapAt(0, shared_memory_size_);
+  CHECK(shared_memory_mapping_.IsValid());
 
   // Create a new audio bus and wrap the audio data section in shared memory.
   media::AudioOutputBuffer* buffer =
-      static_cast<media::AudioOutputBuffer*>(shared_memory_->memory());
+      static_cast<media::AudioOutputBuffer*>(shared_memory_mapping_.memory());
   audio_bus_ = media::AudioBus::WrapMemory(kAudioOutputChannels,
                                            sample_frame_count_, buffer->audio);
 
@@ -197,14 +197,15 @@ void AudioOutputResource::SetStreamInfo(
 
 void AudioOutputResource::StartThread() {
   // Don't start the thread unless all our state is set up correctly.
-  if (!audio_output_callback_ || !socket_.get() || !shared_memory_->memory() ||
-      !audio_bus_.get() || !client_buffer_.get() || bytes_per_second_ == 0)
+  if (!audio_output_callback_ || !socket_.get() ||
+      !shared_memory_mapping_.memory() || !audio_bus_.get() ||
+      !client_buffer_.get() || bytes_per_second_ == 0)
     return;
 
   // Clear contents of shm buffer before starting audio thread. This will
   // prevent a burst of static if for some reason the audio thread doesn't
   // start up quickly enough.
-  memset(shared_memory_->memory(), 0, shared_memory_size_);
+  memset(shared_memory_mapping_.memory(), 0, shared_memory_size_);
   memset(client_buffer_.get(), 0, client_buffer_size_bytes_);
 
   DCHECK(!audio_output_thread_.get());
@@ -227,7 +228,7 @@ void AudioOutputResource::Run() {
   // The shared memory represents AudioOutputBufferParameters and the actual
   // data buffer stored as an audio bus.
   media::AudioOutputBuffer* buffer =
-      static_cast<media::AudioOutputBuffer*>(shared_memory_->memory());
+      static_cast<media::AudioOutputBuffer*>(shared_memory_mapping_.memory());
 
   // This is a constantly increasing counter that is used to verify on the
   // browser side that buffers are in sync.

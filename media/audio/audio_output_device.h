@@ -67,7 +67,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "media/audio/audio_device_thread.h"
@@ -116,7 +116,7 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   void OnDeviceAuthorized(OutputDeviceStatus device_status,
                           const media::AudioParameters& output_params,
                           const std::string& matched_device_id) override;
-  void OnStreamCreated(base::SharedMemoryHandle handle,
+  void OnStreamCreated(base::UnsafeSharedMemoryRegion shared_memory_region,
                        base::SyncSocket::Handle socket_handle,
                        bool play_automatically) override;
   void OnIPCClosed() override;

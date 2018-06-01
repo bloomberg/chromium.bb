@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/sync_socket.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
@@ -35,9 +35,10 @@ class MEDIA_EXPORT AudioOutputIPCDelegate {
   // |handle| and |socket_handle|. |playing_automatically| indicates if the
   // AudioOutputIPCDelegate is playing right away due to an earlier call to
   // Play();
-  virtual void OnStreamCreated(base::SharedMemoryHandle handle,
-                               base::SyncSocket::Handle socket_handle,
-                               bool playing_automatically) = 0;
+  virtual void OnStreamCreated(
+      base::UnsafeSharedMemoryRegion shared_memory_region,
+      base::SyncSocket::Handle socket_handle,
+      bool playing_automatically) = 0;
 
   // Called when the AudioOutputIPC object is going away and/or when the IPC
   // channel has been closed and no more ipc requests can be made.

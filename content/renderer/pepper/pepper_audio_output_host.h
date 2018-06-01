@@ -13,7 +13,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/sync_socket.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
@@ -39,8 +39,7 @@ class PepperAudioOutputHost : public ppapi::host::ResourceHost,
       ppapi::host::HostMessageContext* context) override;
 
   // Called when the stream is created.
-  void StreamCreated(base::SharedMemoryHandle shared_memory_handle,
-                     size_t shared_memory_size,
+  void StreamCreated(base::UnsafeSharedMemoryRegion shared_memory_region,
                      base::SyncSocket::Handle socket);
   void StreamCreationFailed();
   void SetVolume(double volume);
@@ -55,15 +54,14 @@ class PepperAudioOutputHost : public ppapi::host::ResourceHost,
   int32_t OnClose(ppapi::host::HostMessageContext* context);
 
   void OnOpenComplete(int32_t result,
-                      base::SharedMemoryHandle shared_memory_handle,
-                      size_t shared_memory_size,
+                      base::UnsafeSharedMemoryRegion shared_memory_region,
                       base::SyncSocket::Handle socket_handle);
 
   int32_t GetRemoteHandles(
       const base::SyncSocket& socket,
-      const base::SharedMemory& shared_memory,
+      const base::UnsafeSharedMemoryRegion& shared_memory_region,
       IPC::PlatformFileForTransit* remote_socket_handle,
-      base::SharedMemoryHandle* remote_shared_memory_handle);
+      base::UnsafeSharedMemoryRegion* remote_shared_memory_region);
 
   void Close();
 
