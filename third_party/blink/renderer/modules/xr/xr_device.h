@@ -8,6 +8,7 @@
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/modules/xr/xr_session_creation_options.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -35,8 +36,7 @@ class XRDevice final : public EventTargetWithInlineData,
 
   bool external() const { return is_external_; }
 
-  ScriptPromise supportsSession(ScriptState*,
-                                const XRSessionCreationOptions&) const;
+  ScriptPromise supportsSession(ScriptState*, const XRSessionCreationOptions&);
   ScriptPromise requestSession(ScriptState*, const XRSessionCreationOptions&);
 
   // EventTarget overrides.
@@ -87,9 +87,11 @@ class XRDevice final : public EventTargetWithInlineData,
 
   const char* checkSessionSupport(const XRSessionCreationOptions&) const;
 
-  void OnRequestSessionComplete(ScriptPromiseResolver* resolver,
+  void OnRequestSessionReturned(ScriptPromiseResolver* resolver,
                                 const XRSessionCreationOptions& options,
                                 bool success);
+  void OnSupportsSessionReturned(ScriptPromiseResolver* resolver,
+                                 bool supports_session);
 
   // There are two components to focus - whether the frame itself has
   // traditional focus and whether the device reports that we have focus. These

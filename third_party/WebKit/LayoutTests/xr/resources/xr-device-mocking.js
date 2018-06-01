@@ -274,9 +274,20 @@ class MockDevice {
     }
   }
 
-  requestSession() {
-    return Promise.resolve({success:true});
+  requestSession(options) {
+    return this.supportsSession(options).then((result) => {
+      return result = {
+        success: result.supportsSession,
+      };
+    });
   }
+
+  supportsSession(options) {
+    return Promise.resolve({
+      supportsSession:
+          !options.exclusive || this.displayInfo_.capabilities.canPresent
+    });
+  };
 
   requestPresent(submitFrameClient, request, presentOptions) {
     this.presentation_provider_.bind(

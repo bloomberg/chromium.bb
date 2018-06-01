@@ -62,8 +62,10 @@ VRDisplayHost::~VRDisplayHost() {
   display_->StopSession();
 }
 
-void VRDisplayHost::RequestSession(RequestSessionCallback callback) {
-  if (!IsSecureContextRequirementSatisfied()) {
+void VRDisplayHost::RequestSession(device::mojom::XRSessionOptionsPtr options,
+                                   RequestSessionCallback callback) {
+  if (!InternalSupportsSession(std::move(options)) ||
+      !IsSecureContextRequirementSatisfied()) {
     std::move(callback).Run(false);
     return;
   }
@@ -79,6 +81,20 @@ void VRDisplayHost::RequestSession(RequestSessionCallback callback) {
 bool VRDisplayHost::IsAnotherHostPresenting() {
   return (browser_device_->GetPresentingDisplayHost() != this &&
           browser_device_->GetPresentingDisplayHost() != nullptr);
+}
+
+void VRDisplayHost::SupportsSession(device::mojom::XRSessionOptionsPtr options,
+                                    SupportsSessionCallback callback) {
+  std::move(callback).Run(InternalSupportsSession(std::move(options)));
+}
+
+bool VRDisplayHost::InternalSupportsSession(
+    device::mojom::XRSessionOptionsPtr options) {
+  if (options->exclusive) {
+    return browser_device_->GetVRDisplayInfo()->capabilities->canPresent;
+  }
+
+  return true;
 }
 
 void VRDisplayHost::RequestPresent(

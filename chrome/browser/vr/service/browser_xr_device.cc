@@ -12,6 +12,7 @@ namespace vr {
 BrowserXrDevice::BrowserXrDevice(device::VRDevice* device, bool is_fallback)
     : device_(device), is_fallback_(is_fallback), weak_ptr_factory_(this) {
   device_->SetVRDeviceEventListener(this);
+  display_info_ = device->GetVRDisplayInfo();
 }
 
 BrowserXrDevice::~BrowserXrDevice() {
@@ -20,6 +21,7 @@ BrowserXrDevice::~BrowserXrDevice() {
 
 void BrowserXrDevice::OnChanged(
     device::mojom::VRDisplayInfoPtr vr_device_info) {
+  display_info_ = vr_device_info.Clone();
   for (VRDisplayHost* display : displays_) {
     display->OnChanged(vr_device_info.Clone());
   }
