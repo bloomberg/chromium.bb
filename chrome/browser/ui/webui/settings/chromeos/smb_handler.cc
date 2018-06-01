@@ -28,22 +28,24 @@ void SmbHandler::RegisterMessages() {
 }
 
 void SmbHandler::HandleSmbMount(const base::ListValue* args) {
-  CHECK_EQ(3U, args->GetSize());
-  std::string mountUrl;
+  CHECK_EQ(4U, args->GetSize());
+  std::string mount_url;
+  std::string mount_name;
   std::string username;
   std::string password;
-  CHECK(args->GetString(0, &mountUrl));
-  CHECK(args->GetString(1, &username));
-  CHECK(args->GetString(2, &password));
+  CHECK(args->GetString(0, &mount_url));
+  CHECK(args->GetString(1, &mount_name));
+  CHECK(args->GetString(2, &username));
+  CHECK(args->GetString(3, &password));
 
   chromeos::smb_client::SmbService* const service =
       chromeos::smb_client::SmbService::Get(profile_);
 
   chromeos::file_system_provider::MountOptions mo;
-  mo.display_name = mountUrl;
+  mo.display_name = mount_name.empty() ? mount_url : mount_name;
   mo.writable = true;
 
-  service->Mount(mo, base::FilePath(mountUrl), username, password,
+  service->Mount(mo, base::FilePath(mount_url), username, password,
                  base::BindOnce(&SmbHandler::HandleSmbMountResponse,
                                 weak_ptr_factory_.GetWeakPtr()));
 }

@@ -818,6 +818,7 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_DOWNLOADS_SMB_SHARES_LEARN_MORE_LABEL},
     {"addSmbShare", IDS_SETTINGS_DOWNLOADS_SMB_SHARES_ADD_SHARE},
     {"smbShareUrl", IDS_SETTINGS_DOWNLOADS_ADD_SHARE_URL},
+    {"smbShareName", IDS_SETTINGS_DOWNLOADS_ADD_SHARE_NAME},
     {"smbShareUsername", IDS_SETTINGS_DOWNLOADS_ADD_SHARE_USERNAME},
     {"smbSharePassword", IDS_SETTINGS_DOWNLOADS_ADD_SHARE_PASSWORD},
     {"smbShareAddedSuccessfulMessage",
