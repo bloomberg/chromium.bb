@@ -134,10 +134,11 @@ bool GeometryMapper::LocalToAncestorVisualRect(
     OverlayScrollbarClipBehavior clip_behavior,
     InclusiveIntersectOrNot inclusive_behavior) {
   bool success = false;
-  return LocalToAncestorVisualRectInternal(local_state, ancestor_state,
-                                           mapping_rect, clip_behavior,
-                                           inclusive_behavior, success);
+  bool result = LocalToAncestorVisualRectInternal(local_state, ancestor_state,
+                                                  mapping_rect, clip_behavior,
+                                                  inclusive_behavior, success);
   DCHECK(success);
+  return result;
 }
 
 bool GeometryMapper::PointVisibleInAncestorSpace(
