@@ -127,7 +127,7 @@ class CORE_EXPORT SpellCheckRequester final
 
   int last_request_sequence_;
   int last_processed_sequence_;
-  double last_request_time_;
+  TimeTicks last_request_time_;
 
   TaskRunnerTimer<SpellCheckRequester> timer_to_process_queued_request_;
 

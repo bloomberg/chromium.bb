@@ -334,7 +334,7 @@ void StyleSheetContents::ParseAuthorStyleSheet(
     const SecurityOrigin* security_origin) {
   TRACE_EVENT1("blink,devtools.timeline", "ParseAuthorStyleSheet", "data",
                InspectorParseAuthorStyleSheetEvent::Data(cached_style_sheet));
-  double start_time = CurrentTimeTicksInSeconds();
+  TimeTicks start_time = CurrentTimeTicks();
 
   bool is_same_origin_request =
       security_origin && security_origin->CanRequest(BaseURL());
@@ -373,8 +373,8 @@ void StyleSheetContents::ParseAuthorStyleSheet(
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, parse_histogram,
                       ("Style.AuthorStyleSheet.ParseTime", 0, 10000000, 50));
-  double parse_duration_seconds = (CurrentTimeTicksInSeconds() - start_time);
-  parse_histogram.Count(parse_duration_seconds * 1000 * 1000);
+  TimeDelta parse_duration_seconds = (CurrentTimeTicks() - start_time);
+  parse_histogram.Count(parse_duration_seconds.InMicroseconds());
 }
 
 void StyleSheetContents::ParseString(const String& sheet_text) {

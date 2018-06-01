@@ -271,7 +271,6 @@ DocumentThreadableLoader::DocumentThreadableLoader(
           GetExecutionContext()->GetTaskRunner(TaskType::kNetworking),
           this,
           &DocumentThreadableLoader::DidTimeout),
-      request_started_seconds_(0.0),
       cors_redirect_limit_(0),
       redirect_mode_(network::mojom::FetchRedirectMode::kFollow),
       override_referrer_(false) {
@@ -321,7 +320,7 @@ void DocumentThreadableLoader::Start(const ResourceRequest& request) {
     return;
   }
 
-  request_started_seconds_ = CurrentTimeTicksInSeconds();
+  request_started_ = CurrentTimeTicks();
 
   // Save any headers on the request here. If this request redirects
   // cross-origin, we cancel the old request create a new one, and copy these
@@ -534,7 +533,7 @@ void DocumentThreadableLoader::OverrideTimeout(
   // |m_requestStartedSeconds| == 0.0 indicates loading is already finished and
   // |m_timeoutTimer| is already stopped, and thus we do nothing for such cases.
   // See https://crbug.com/551663 for details.
-  if (request_started_seconds_ <= 0.0)
+  if (request_started_ <= TimeTicks())
     return;
 
   timeout_timer_.Stop();
@@ -546,10 +545,9 @@ void DocumentThreadableLoader::OverrideTimeout(
   // was initially sent, however other uses of this method may need to
   // behave differently, in which case this should be re-arranged somehow.
   if (timeout_milliseconds) {
-    double elapsed_time =
-        CurrentTimeTicksInSeconds() - request_started_seconds_;
-    double next_fire = timeout_milliseconds / 1000.0;
-    double resolved_time = std::max(next_fire - elapsed_time, 0.0);
+    TimeDelta elapsed_time = CurrentTimeTicks() - request_started_;
+    TimeDelta next_fire = TimeDelta::FromMilliseconds(timeout_milliseconds);
+    TimeDelta resolved_time = std::max(next_fire - elapsed_time, TimeDelta());
     timeout_timer_.StartOneShot(resolved_time, FROM_HERE);
   }
 }
@@ -580,7 +578,7 @@ void DocumentThreadableLoader::SetDefersLoading(bool value) {
 void DocumentThreadableLoader::Clear() {
   client_ = nullptr;
   timeout_timer_.Stop();
-  request_started_seconds_ = 0.0;
+  request_started_ = TimeTicks();
   if (GetResource())
     checker_.WillRemoveClient();
   ClearResource();

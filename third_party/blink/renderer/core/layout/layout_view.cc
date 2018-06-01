@@ -60,26 +60,24 @@ namespace {
 class HitTestLatencyRecorder {
  public:
   HitTestLatencyRecorder(bool allows_child_frame_content)
-      : start_(WTF::CurrentTimeTicksInSeconds()),
+      : start_(CurrentTimeTicks()),
         allows_child_frame_content_(allows_child_frame_content) {}
 
   ~HitTestLatencyRecorder() {
-    int duration =
-        static_cast<int>((WTF::CurrentTimeTicksInSeconds() - start_) * 1000000);
-
+    TimeDelta duration = CurrentTimeTicks() - start_;
     if (allows_child_frame_content_) {
       DEFINE_STATIC_LOCAL(CustomCountHistogram, recursive_latency_histogram,
                           ("Event.Latency.HitTestRecursive", 0, 10000000, 100));
-      recursive_latency_histogram.Count(duration);
+      recursive_latency_histogram.Count(duration.InMicroseconds());
     } else {
       DEFINE_STATIC_LOCAL(CustomCountHistogram, latency_histogram,
                           ("Event.Latency.HitTest", 0, 10000000, 100));
-      latency_histogram.Count(duration);
+      latency_histogram.Count(duration.InMicroseconds());
     }
   }
 
  private:
-  double start_;
+  TimeTicks start_;
   bool allows_child_frame_content_;
 };
 

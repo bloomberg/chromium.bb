@@ -235,8 +235,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   HTTPHeaderMap request_headers_;
 
   TaskRunnerTimer<DocumentThreadableLoader> timeout_timer_;
-  double request_started_seconds_;  // Time an asynchronous fetch request is
-                                    // started
+  TimeTicks request_started_;  // Time an asynchronous fetch request is started
 
   // Max number of times that this DocumentThreadableLoader can follow
   // cross-origin redirects. This is used to limit the number of redirects. But

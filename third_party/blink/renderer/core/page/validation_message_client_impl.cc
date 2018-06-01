@@ -43,9 +43,7 @@
 namespace blink {
 
 ValidationMessageClientImpl::ValidationMessageClientImpl(WebViewImpl& web_view)
-    : web_view_(web_view),
-      current_anchor_(nullptr),
-      finish_time_(0) {}
+    : web_view_(web_view), current_anchor_(nullptr) {}
 
 ValidationMessageClientImpl* ValidationMessageClientImpl::Create(
     WebViewImpl& web_view) {
@@ -75,12 +73,13 @@ void ValidationMessageClientImpl::ShowValidationMessage(
   current_anchor_ = &anchor;
   message_ = message;
   web_view_.GetChromeClient().RegisterPopupOpeningObserver(this);
-  const double kMinimumSecondToShowValidationMessage = 5.0;
-  const double kSecondPerCharacter = 0.05;
+  constexpr auto kMinimumTimeToShowValidationMessage =
+      TimeDelta::FromSeconds(5);
+  constexpr auto kTimePerCharacter = TimeDelta::FromMilliseconds(50);
   finish_time_ =
-      CurrentTimeTicksInSeconds() +
-      std::max(kMinimumSecondToShowValidationMessage,
-               (message.length() + sub_message.length()) * kSecondPerCharacter);
+      CurrentTimeTicks() +
+      std::max(kMinimumTimeToShowValidationMessage,
+               (message.length() + sub_message.length()) * kTimePerCharacter);
 
   auto* target_frame =
       web_view_.MainFrameImpl()
@@ -128,7 +127,7 @@ void ValidationMessageClientImpl::Reset(TimerBase*) {
   timer_ = nullptr;
   current_anchor_ = nullptr;
   message_ = String();
-  finish_time_ = 0;
+  finish_time_ = TimeTicks();
   overlay_ = nullptr;
   overlay_delegate_ = nullptr;
   web_view_.GetChromeClient().UnregisterPopupOpeningObserver(this);
@@ -147,7 +146,7 @@ void ValidationMessageClientImpl::DocumentDetached(const Document& document) {
 void ValidationMessageClientImpl::CheckAnchorStatus(TimerBase*) {
   DCHECK(current_anchor_);
   if ((!LayoutTestSupport::IsRunningLayoutTest() &&
-       CurrentTimeTicksInSeconds() >= finish_time_) ||
+       CurrentTimeTicks() >= finish_time_) ||
       !CurrentView()) {
     HideValidationMessage(*current_anchor_);
     return;

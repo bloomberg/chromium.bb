@@ -209,7 +209,7 @@ WebDistillabilityFeatures DocumentStatisticsCollector::CollectStatistics(
 
   features.is_mobile_friendly = IsMobileFriendly(document);
 
-  double start_time = CurrentTimeTicksInSeconds();
+  TimeTicks start_time = CurrentTimeTicks();
 
   // This should be cheap since collectStatistics is only called right after
   // layout.
@@ -219,11 +219,11 @@ WebDistillabilityFeatures DocumentStatisticsCollector::CollectStatistics(
   CollectFeatures(*body, features);
   features.open_graph = HasOpenGraphArticle(*head);
 
-  double elapsed_time = CurrentTimeTicksInSeconds() - start_time;
+  TimeDelta elapsed_time = CurrentTimeTicks() - start_time;
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, distillability_histogram,
                       ("WebCore.DistillabilityUs", 1, 1000000, 50));
-  distillability_histogram.Count(static_cast<int>(1e6 * elapsed_time));
+  distillability_histogram.Count(elapsed_time.InMicroseconds());
 
   return features;
 }
