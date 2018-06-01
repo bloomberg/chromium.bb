@@ -96,21 +96,20 @@ void PPB_Audio_Shared::SetStopPlaybackState() {
 
 void PPB_Audio_Shared::SetStreamInfo(
     PP_Instance instance,
-    base::SharedMemoryHandle shared_memory_handle,
-    size_t shared_memory_size,
+    base::UnsafeSharedMemoryRegion shared_memory_region,
     base::SyncSocket::Handle socket_handle,
     PP_AudioSampleRate sample_rate,
     int sample_frame_count) {
   socket_.reset(new base::CancelableSyncSocket(socket_handle));
-  shared_memory_.reset(new base::SharedMemory(shared_memory_handle, false));
   shared_memory_size_ = media::ComputeAudioOutputBufferSize(
       kAudioOutputChannels, sample_frame_count);
-  DCHECK_GE(shared_memory_size, shared_memory_size_);
+  DCHECK_GE(shared_memory_region.GetSize(), shared_memory_size_);
   bytes_per_second_ =
       kAudioOutputChannels * (kBitsPerAudioOutputSample / 8) * sample_rate;
   buffer_index_ = 0;
 
-  if (!shared_memory_->Map(shared_memory_size_)) {
+  shared_memory_ = shared_memory_region.MapAt(0, shared_memory_size_);
+  if (!shared_memory_.IsValid()) {
     PpapiGlobals::Get()->LogWithSource(
         instance,
         PP_LOGLEVEL_WARNING,
@@ -118,7 +117,7 @@ void PPB_Audio_Shared::SetStreamInfo(
         "Failed to map shared memory for PPB_Audio_Shared.");
   } else {
     media::AudioOutputBuffer* buffer =
-        reinterpret_cast<media::AudioOutputBuffer*>(shared_memory_->memory());
+        reinterpret_cast<media::AudioOutputBuffer*>(shared_memory_.memory());
     audio_bus_ = media::AudioBus::WrapMemory(kAudioOutputChannels,
                                              sample_frame_count, buffer->audio);
     // Setup integer audio buffer for user audio data.
@@ -133,13 +132,13 @@ void PPB_Audio_Shared::SetStreamInfo(
 void PPB_Audio_Shared::StartThread() {
   // Don't start the thread unless all our state is set up correctly.
   if (!playing_ || !callback_.IsValid() || !socket_.get() ||
-      !shared_memory_->memory() || !audio_bus_.get() || !client_buffer_.get() ||
+      !shared_memory_.memory() || !audio_bus_.get() || !client_buffer_.get() ||
       bytes_per_second_ == 0)
     return;
   // Clear contents of shm buffer before starting audio thread. This will
   // prevent a burst of static if for some reason the audio thread doesn't
   // start up quickly enough.
-  memset(shared_memory_->memory(), 0, shared_memory_size_);
+  memset(shared_memory_.memory(), 0, shared_memory_size_);
   memset(client_buffer_.get(), 0, client_buffer_size_bytes_);
 
   if (g_nacl_mode) {
@@ -227,7 +226,7 @@ void PPB_Audio_Shared::Run() {
     {
       TRACE_EVENT0("audio", "PPB_Audio_Shared::FireRenderCallback");
       media::AudioOutputBuffer* buffer =
-          reinterpret_cast<media::AudioOutputBuffer*>(shared_memory_->memory());
+          reinterpret_cast<media::AudioOutputBuffer*>(shared_memory_.memory());
       base::TimeDelta delay =
           base::TimeDelta::FromMicroseconds(buffer->params.delay_us);
 

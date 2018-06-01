@@ -52,8 +52,7 @@ class Audio : public Resource, public PPB_Audio_Shared {
   int32_t Open(PP_Resource config_id,
                scoped_refptr<TrackedCallback> create_callback) override;
   int32_t GetSyncSocket(int* sync_socket) override;
-  int32_t GetSharedMemory(base::SharedMemory** shm,
-                          uint32_t* shm_size) override;
+  int32_t GetSharedMemory(base::UnsafeSharedMemoryRegion** shm) override;
 
  private:
   // Owning reference to the current config object. This isn't actually used,
@@ -125,7 +124,7 @@ int32_t Audio::GetSyncSocket(int* sync_socket) {
   return PP_ERROR_NOTSUPPORTED;  // Don't proxy the trusted interface.
 }
 
-int32_t Audio::GetSharedMemory(base::SharedMemory** shm, uint32_t* shm_size) {
+int32_t Audio::GetSharedMemory(base::UnsafeSharedMemoryRegion** shm) {
   return PP_ERROR_NOTSUPPORTED;  // Don't proxy the trusted interface.
 }
 
@@ -249,14 +248,12 @@ void PPB_Audio_Proxy::AudioChannelConnected(
     const HostResource& resource) {
   IPC::PlatformFileForTransit socket_handle =
       IPC::InvalidPlatformFileForTransit();
-  base::SharedMemoryHandle shared_memory;
-  uint32_t audio_buffer_length = 0;
+  base::UnsafeSharedMemoryRegion shared_memory_region;
 
   int32_t result_code = result;
   if (result_code == PP_OK) {
     result_code = GetAudioConnectedHandles(resource, &socket_handle,
-                                           &shared_memory,
-                                           &audio_buffer_length);
+                                           &shared_memory_region);
   }
 
   // Send all the values, even on error. This simplifies some of our cleanup
@@ -265,16 +262,18 @@ void PPB_Audio_Proxy::AudioChannelConnected(
   // us, as long as the remote side always closes the handles it receives
   // (in OnMsgNotifyAudioStreamCreated), even in the failure case.
   SerializedHandle fd_wrapper(SerializedHandle::SOCKET, socket_handle);
-  SerializedHandle handle_wrapper(shared_memory, audio_buffer_length);
+  SerializedHandle handle_wrapper(
+      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          std::move(shared_memory_region)));
   dispatcher()->Send(new PpapiMsg_PPBAudio_NotifyAudioStreamCreated(
-      API_ID_PPB_AUDIO, resource, result_code, fd_wrapper, handle_wrapper));
+      API_ID_PPB_AUDIO, resource, result_code, std::move(fd_wrapper),
+      std::move(handle_wrapper)));
 }
 
 int32_t PPB_Audio_Proxy::GetAudioConnectedHandles(
     const HostResource& resource,
     IPC::PlatformFileForTransit* foreign_socket_handle,
-    base::SharedMemoryHandle* foreign_shared_memory_handle,
-    uint32_t* shared_memory_length) {
+    base::UnsafeSharedMemoryRegion* foreign_shared_memory_region) {
   // Get the audio interface which will give us the handles.
   EnterHostFromHostResource<PPB_Audio_API> enter(resource);
   if (enter.failed())
@@ -293,16 +292,16 @@ int32_t PPB_Audio_Proxy::GetAudioConnectedHandles(
     return PP_ERROR_FAILED;
 
   // Get the shared memory for the buffer.
-  base::SharedMemory* shared_memory;
-  result =
-      enter.object()->GetSharedMemory(&shared_memory, shared_memory_length);
+  base::UnsafeSharedMemoryRegion* shared_memory_region;
+  result = enter.object()->GetSharedMemory(&shared_memory_region);
   if (result != PP_OK)
     return result;
 
-  // shared_memory_handle doesn't belong to us: don't close it.
-  *foreign_shared_memory_handle =
-      dispatcher()->ShareSharedMemoryHandleWithRemote(shared_memory->handle());
-  if (!base::SharedMemory::IsHandleValid(*foreign_shared_memory_handle))
+  // shared_memory_region doesn't belong to us: don't close it.
+  *foreign_shared_memory_region =
+      dispatcher()->ShareUnsafeSharedMemoryRegionWithRemote(
+          *shared_memory_region);
+  if (!foreign_shared_memory_region->IsValid())
     return PP_ERROR_FAILED;
 
   return PP_OK;
@@ -316,23 +315,26 @@ void PPB_Audio_Proxy::OnMsgNotifyAudioStreamCreated(
     SerializedHandle socket_handle,
     SerializedHandle handle) {
   CHECK(socket_handle.is_socket());
-  CHECK(handle.is_shmem());
+  CHECK(handle.is_shmem_region());
   EnterPluginFromHostResource<PPB_Audio_API> enter(audio_id);
   if (enter.failed() || result_code != PP_OK) {
     // The caller may still have given us these handles in the failure case.
-    // The easiest way to clean these up is to just put them in the objects
-    // and then close them. This failure case is not performance critical.
+    // The easiest way to clean socket handle up is to just put them in the
+    // SyncSocket object and then close it. The shared memory region will be
+    // cleaned up automatically. This failure case is not performance critical.
     base::SyncSocket temp_socket(
         IPC::PlatformFileForTransitToPlatformFile(socket_handle.descriptor()));
-    base::SharedMemory temp_mem(handle.shmem(), false);
   } else {
     EnterResourceNoLock<PPB_AudioConfig_API> config(
         static_cast<Audio*>(enter.object())->GetCurrentConfig(), true);
-    static_cast<Audio*>(enter.object())->SetStreamInfo(
-        enter.resource()->pp_instance(), handle.shmem(), handle.size(),
-        IPC::PlatformFileForTransitToPlatformFile(socket_handle.descriptor()),
-        config.object()->GetSampleRate(),
-        config.object()->GetSampleFrameCount());
+    static_cast<Audio*>(enter.object())
+        ->SetStreamInfo(enter.resource()->pp_instance(),
+                        base::UnsafeSharedMemoryRegion::Deserialize(
+                            handle.TakeSharedMemoryRegion()),
+                        IPC::PlatformFileForTransitToPlatformFile(
+                            socket_handle.descriptor()),
+                        config.object()->GetSampleRate(),
+                        config.object()->GetSampleFrameCount());
   }
 }
 

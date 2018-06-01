@@ -152,20 +152,15 @@ int32_t PPB_Audio_Impl::GetSyncSocket(int* sync_socket) {
   return GetSyncSocketImpl(sync_socket);
 }
 
-int32_t PPB_Audio_Impl::GetSharedMemory(base::SharedMemory** shm,
-                                        uint32_t* shm_size) {
-  return GetSharedMemoryImpl(shm, shm_size);
+int32_t PPB_Audio_Impl::GetSharedMemory(base::UnsafeSharedMemoryRegion** shm) {
+  return GetSharedMemoryImpl(shm);
 }
 
 void PPB_Audio_Impl::OnSetStreamInfo(
-    base::SharedMemoryHandle shared_memory_handle,
-    size_t shared_memory_size,
+    base::UnsafeSharedMemoryRegion shared_memory_region,
     base::SyncSocket::Handle socket_handle) {
   EnterResourceNoLock<PPB_AudioConfig_API> enter(config_, true);
-  SetStreamInfo(pp_instance(),
-                shared_memory_handle,
-                shared_memory_size,
-                socket_handle,
+  SetStreamInfo(pp_instance(), std::move(shared_memory_region), socket_handle,
                 enter.object()->GetSampleRate(),
                 enter.object()->GetSampleFrameCount());
 }

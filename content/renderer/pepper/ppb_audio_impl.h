@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/sync_socket.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
 #include "content/renderer/pepper/audio_helper.h"
@@ -47,8 +47,7 @@ class PPB_Audio_Impl : public ppapi::Resource,
   int32_t Open(PP_Resource config_id,
                scoped_refptr<ppapi::TrackedCallback> create_callback) override;
   int32_t GetSyncSocket(int* sync_socket) override;
-  int32_t GetSharedMemory(base::SharedMemory** shm,
-                          uint32_t* shm_size) override;
+  int32_t GetSharedMemory(base::UnsafeSharedMemoryRegion** shm) override;
 
   void SetVolume(double volume);
 
@@ -56,8 +55,7 @@ class PPB_Audio_Impl : public ppapi::Resource,
   ~PPB_Audio_Impl() override;
 
   // AudioHelper implementation.
-  void OnSetStreamInfo(base::SharedMemoryHandle shared_memory_handle,
-                       size_t shared_memory_size_,
+  void OnSetStreamInfo(base::UnsafeSharedMemoryRegion shared_memory_region,
                        base::SyncSocket::Handle socket) override;
 
   // PluginInstanceThrottler::Observer implementation.

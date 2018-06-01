@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/sync_socket.h"
 #include "base/threading/simple_thread.h"
 #include "media/base/audio_bus.h"
@@ -76,8 +76,7 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
   // Sets the shared memory and socket handles. This will automatically start
   // playback if we're currently set to play.
   void SetStreamInfo(PP_Instance instance,
-                     base::SharedMemoryHandle shared_memory_handle,
-                     size_t shared_memory_size,
+                     base::UnsafeSharedMemoryRegion shared_memory_region,
                      base::SyncSocket::Handle socket_handle,
                      PP_AudioSampleRate sample_rate,
                      int sample_frame_count);
@@ -117,7 +116,7 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
   // Sample buffer in shared memory. This pointer is created in
   // StreamCreated(). The memory is only mapped when the audio thread is
   // created.
-  std::unique_ptr<base::SharedMemory> shared_memory_;
+  base::WritableSharedMemoryMapping shared_memory_;
 
   // The size of the sample buffer in bytes.
   size_t shared_memory_size_;

@@ -70,7 +70,9 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
         base::CancelableSyncSocket::CreatePair(&socket_, &foreign_socket));
     provider_client_->Created(
         std::move(stream_ptr),
-        {base::in_place, mojo::SharedBufferHandle::Create(kMemoryLength),
+        {base::in_place,
+         mojo::WrapUnsafeSharedMemoryRegion(
+             base::UnsafeSharedMemoryRegion::Create(kMemoryLength)),
          mojo::WrapPlatformFile(foreign_socket.Release())});
   }
 
@@ -180,11 +182,9 @@ class MockDelegate : public media::AudioOutputIPCDelegate {
   MockDelegate() {}
   ~MockDelegate() override {}
 
-  void OnStreamCreated(base::SharedMemoryHandle mem_handle,
+  void OnStreamCreated(base::UnsafeSharedMemoryRegion mem_handle,
                        base::SyncSocket::Handle socket_handle,
                        bool playing_automatically) override {
-    base::SharedMemory sh_mem(
-        mem_handle, /*read_only*/ false);  // Releases the shared memory handle.
     base::SyncSocket socket(socket_handle);  // Releases the socket descriptor.
     GotOnStreamCreated();
   }

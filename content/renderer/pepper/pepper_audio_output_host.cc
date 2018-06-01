@@ -71,14 +71,13 @@ int32_t PepperAudioOutputHost::OnResourceMessageReceived(
 }
 
 void PepperAudioOutputHost::StreamCreated(
-    base::SharedMemoryHandle shared_memory_handle,
-    size_t shared_memory_size,
+    base::UnsafeSharedMemoryRegion shared_memory_region,
     base::SyncSocket::Handle socket) {
-  OnOpenComplete(PP_OK, shared_memory_handle, shared_memory_size, socket);
+  OnOpenComplete(PP_OK, std::move(shared_memory_region), socket);
 }
 
 void PepperAudioOutputHost::StreamCreationFailed() {
-  OnOpenComplete(PP_ERROR_FAILED, base::SharedMemoryHandle(), 0,
+  OnOpenComplete(PP_ERROR_FAILED, base::UnsafeSharedMemoryRegion(),
                  base::SyncSocket::kInvalidHandle);
 }
 
@@ -150,12 +149,10 @@ int32_t PepperAudioOutputHost::OnClose(
 
 void PepperAudioOutputHost::OnOpenComplete(
     int32_t result,
-    base::SharedMemoryHandle shared_memory_handle,
-    size_t shared_memory_size,
+    base::UnsafeSharedMemoryRegion shared_memory_region,
     base::SyncSocket::Handle socket_handle) {
   // Make sure the handles are cleaned up.
   base::SyncSocket scoped_socket(socket_handle);
-  base::SharedMemory scoped_shared_memory(shared_memory_handle, false);
 
   if (!open_context_.is_valid()) {
     NOTREACHED();
@@ -165,17 +162,19 @@ void PepperAudioOutputHost::OnOpenComplete(
   ppapi::proxy::SerializedHandle serialized_socket_handle(
       ppapi::proxy::SerializedHandle::SOCKET);
   ppapi::proxy::SerializedHandle serialized_shared_memory_handle(
-      ppapi::proxy::SerializedHandle::SHARED_MEMORY);
+      ppapi::proxy::SerializedHandle::SHARED_MEMORY_REGION);
 
   if (result == PP_OK) {
     IPC::PlatformFileForTransit temp_socket =
         IPC::InvalidPlatformFileForTransit();
-    base::SharedMemoryHandle temp_shmem;
-    result = GetRemoteHandles(scoped_socket, scoped_shared_memory, &temp_socket,
+    base::UnsafeSharedMemoryRegion temp_shmem;
+    result = GetRemoteHandles(scoped_socket, shared_memory_region, &temp_socket,
                               &temp_shmem);
 
     serialized_socket_handle.set_socket(temp_socket);
-    serialized_shared_memory_handle.set_shmem(temp_shmem, shared_memory_size);
+    serialized_shared_memory_handle.set_shmem_region(
+        base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+            std::move(temp_shmem)));
   }
 
   // Send all the values, even on error. This simplifies some of our cleanup
@@ -190,18 +189,18 @@ void PepperAudioOutputHost::OnOpenComplete(
 
 int32_t PepperAudioOutputHost::GetRemoteHandles(
     const base::SyncSocket& socket,
-    const base::SharedMemory& shared_memory,
+    const base::UnsafeSharedMemoryRegion& shared_memory_region,
     IPC::PlatformFileForTransit* remote_socket_handle,
-    base::SharedMemoryHandle* remote_shared_memory_handle) {
+    base::UnsafeSharedMemoryRegion* remote_shared_memory_region) {
   *remote_socket_handle =
       renderer_ppapi_host_->ShareHandleWithRemote(socket.handle(), false);
   if (*remote_socket_handle == IPC::InvalidPlatformFileForTransit())
     return PP_ERROR_FAILED;
 
-  *remote_shared_memory_handle =
-      renderer_ppapi_host_->ShareSharedMemoryHandleWithRemote(
-          shared_memory.handle());
-  if (!base::SharedMemory::IsHandleValid(*remote_shared_memory_handle))
+  *remote_shared_memory_region =
+      renderer_ppapi_host_->ShareUnsafeSharedMemoryRegionWithRemote(
+          shared_memory_region);
+  if (!remote_shared_memory_region->IsValid())
     return PP_ERROR_FAILED;
 
   return PP_OK;

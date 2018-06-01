@@ -73,10 +73,9 @@ TEST_F(PluginDispatcherTest, PPBCreation) {
   EXPECT_FALSE(HasTargetProxy(API_ID_PPB_AUDIO));
   PpapiMsg_PPBAudio_NotifyAudioStreamCreated audio_msg(
       API_ID_PPB_AUDIO, HostResource(), 0,
+      ppapi::proxy::SerializedHandle(ppapi::proxy::SerializedHandle::SOCKET),
       ppapi::proxy::SerializedHandle(
-          ppapi::proxy::SerializedHandle::SOCKET),
-      ppapi::proxy::SerializedHandle(
-          ppapi::proxy::SerializedHandle::SHARED_MEMORY));
+          ppapi::proxy::SerializedHandle::SHARED_MEMORY_REGION));
   plugin_dispatcher()->OnMessageReceived(audio_msg);
   EXPECT_TRUE(HasTargetProxy(API_ID_PPB_AUDIO));
 }

@@ -31,7 +31,7 @@ class AudioOutputDevice::AudioThreadCallback
     : public AudioDeviceThread::Callback {
  public:
   AudioThreadCallback(const AudioParameters& audio_parameters,
-                      base::SharedMemoryHandle memory,
+                      base::UnsafeSharedMemoryRegion shared_memory_region,
                       AudioRendererSink::RenderCallback* render_callback);
   ~AudioThreadCallback() override;
 
@@ -51,6 +51,8 @@ class AudioOutputDevice::AudioThreadCallback
   void InitializePlayStartTime();
 
  private:
+  base::UnsafeSharedMemoryRegion shared_memory_region_;
+  base::WritableSharedMemoryMapping shared_memory_mapping_;
   const base::TimeTicks start_time_;
   // If set, this is used to record the startup duration UMA stat.
   base::Optional<base::TimeTicks> first_play_start_time_;
@@ -357,19 +359,20 @@ void AudioOutputDevice::OnDeviceAuthorized(
   }
 }
 
-void AudioOutputDevice::OnStreamCreated(base::SharedMemoryHandle handle,
-                                        base::SyncSocket::Handle socket_handle,
-                                        bool playing_automatically) {
+void AudioOutputDevice::OnStreamCreated(
+    base::UnsafeSharedMemoryRegion shared_memory_region,
+    base::SyncSocket::Handle socket_handle,
+    bool playing_automatically) {
   TRACE_EVENT0("audio", "AudioOutputDevice::OnStreamCreated")
 
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(base::SharedMemory::IsHandleValid(handle));
+  DCHECK(shared_memory_region.IsValid());
 #if defined(OS_WIN)
   DCHECK(socket_handle);
 #else
   DCHECK_GE(socket_handle, 0);
 #endif
-  DCHECK_GT(handle.GetSize(), 0u);
+  DCHECK_GT(shared_memory_region.GetSize(), 0u);
 
   if (state_ != STREAM_CREATION_REQUESTED)
     return;
@@ -395,7 +398,7 @@ void AudioOutputDevice::OnStreamCreated(base::SharedMemoryHandle handle,
     DCHECK(!audio_callback_);
 
     audio_callback_.reset(new AudioOutputDevice::AudioThreadCallback(
-        audio_parameters_, handle, callback_));
+        audio_parameters_, std::move(shared_memory_region), callback_));
     if (playing_automatically)
       audio_callback_->InitializePlayStartTime();
     audio_thread_.reset(new AudioDeviceThread(
@@ -429,18 +432,21 @@ void AudioOutputDevice::NotifyRenderCallbackOfError() {
 
 AudioOutputDevice::AudioThreadCallback::AudioThreadCallback(
     const AudioParameters& audio_parameters,
-    base::SharedMemoryHandle memory,
+    base::UnsafeSharedMemoryRegion shared_memory_region,
     AudioRendererSink::RenderCallback* render_callback)
     : AudioDeviceThread::Callback(
           audio_parameters,
-          memory,
-          /*read only*/ false,
           ComputeAudioOutputBufferSize(audio_parameters),
           /*segment count*/ 1),
+      shared_memory_region_(std::move(shared_memory_region)),
       start_time_(base::TimeTicks::Now()),
       first_play_start_time_(base::nullopt),
       render_callback_(render_callback),
-      callback_num_(0) {}
+      callback_num_(0) {
+  // CHECK that the shared memory is large enough. The memory allocated must be
+  // at least as large as expected.
+  CHECK(memory_length_ <= shared_memory_region_.GetSize());
+}
 
 AudioOutputDevice::AudioThreadCallback::~AudioThreadCallback() {
   UMA_HISTOGRAM_LONG_TIMES("Media.Audio.Render.OutputStreamDuration",
@@ -449,10 +455,11 @@ AudioOutputDevice::AudioThreadCallback::~AudioThreadCallback() {
 
 void AudioOutputDevice::AudioThreadCallback::MapSharedMemory() {
   CHECK_EQ(total_segments_, 1u);
-  CHECK(shared_memory_.Map(memory_length_));
+  shared_memory_mapping_ = shared_memory_region_.MapAt(0, memory_length_);
+  CHECK(shared_memory_mapping_.IsValid());
 
   AudioOutputBuffer* buffer =
-      reinterpret_cast<AudioOutputBuffer*>(shared_memory_.memory());
+      reinterpret_cast<AudioOutputBuffer*>(shared_memory_mapping_.memory());
   output_bus_ = AudioBus::WrapMemory(audio_parameters_, buffer->audio);
   output_bus_->set_is_bitstream_format(audio_parameters_.IsBitstreamFormat());
 }
@@ -463,7 +470,7 @@ void AudioOutputDevice::AudioThreadCallback::Process(uint32_t control_signal) {
 
   // Read and reset the number of frames skipped.
   AudioOutputBuffer* buffer =
-      reinterpret_cast<AudioOutputBuffer*>(shared_memory_.memory());
+      reinterpret_cast<AudioOutputBuffer*>(shared_memory_mapping_.memory());
   uint32_t frames_skipped = buffer->params.frames_skipped;
   buffer->params.frames_skipped = 0;
 

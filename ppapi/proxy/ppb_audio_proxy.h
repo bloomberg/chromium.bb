@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/sync_socket.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_instance.h"
@@ -76,8 +76,7 @@ class PPB_Audio_Proxy : public InterfaceProxy {
   int32_t GetAudioConnectedHandles(
       const ppapi::HostResource& resource,
       IPC::PlatformFileForTransit* foreign_socket_handle,
-      base::SharedMemoryHandle* foreign_shared_memory_handle,
-      uint32_t* shared_memory_length);
+      base::UnsafeSharedMemoryRegion* foreign_shared_memory_region);
 
   ProxyCompletionCallbackFactory<PPB_Audio_Proxy> callback_factory_;
 

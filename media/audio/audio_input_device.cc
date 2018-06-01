@@ -66,6 +66,7 @@ class AudioInputDevice::AudioThreadCallback
   void Process(uint32_t pending_data) override;
 
  private:
+  base::SharedMemory shared_memory_;
   const base::TimeTicks start_time_;
   bool no_callbacks_received_;
   size_t current_segment_id_;
@@ -324,10 +325,12 @@ AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
     base::RepeatingClosure got_data_callback_)
     : AudioDeviceThread::Callback(
           audio_parameters,
-          memory,
-          /*read only*/ true,
           ComputeAudioInputBufferSize(audio_parameters, 1u),
           total_segments),
+      // CHECK that the shared memory is large enough. The memory allocated must
+      // be at least as large as expected.
+      shared_memory_((CHECK(memory_length_ <= memory.GetSize()), memory),
+                     /* read_only */ true),
       start_time_(base::TimeTicks::Now()),
       no_callbacks_received_(true),
       current_segment_id_(0u),

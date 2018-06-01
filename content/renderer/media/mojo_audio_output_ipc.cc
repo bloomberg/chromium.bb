@@ -228,17 +228,11 @@ void MojoAudioOutputIPC::Created(media::mojom::AudioOutputStreamPtr stream,
       mojo::UnwrapPlatformFile(std::move(data_pipe->socket), &socket_handle);
   DCHECK_EQ(result, MOJO_RESULT_OK);
 
-  base::SharedMemoryHandle memory_handle;
-  mojo::UnwrappedSharedMemoryHandleProtection protection;
-  size_t memory_length = 0;
-  result = mojo::UnwrapSharedMemoryHandle(std::move(data_pipe->shared_memory),
-                                          &memory_handle, &memory_length,
-                                          &protection);
-  DCHECK_EQ(result, MOJO_RESULT_OK);
-  DCHECK_EQ(protection,
-            mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
+  auto shared_memory_region =
+      mojo::UnwrapUnsafeSharedMemoryRegion(std::move(data_pipe->shared_memory));
+  DCHECK(shared_memory_region.IsValid());
 
-  delegate_->OnStreamCreated(memory_handle, socket_handle,
+  delegate_->OnStreamCreated(std::move(shared_memory_region), socket_handle,
                              expected_state_ == kPlaying);
 
   if (volume_)
