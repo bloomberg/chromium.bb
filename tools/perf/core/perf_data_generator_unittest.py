@@ -9,6 +9,7 @@ from core.perf_data_generator import BenchmarkMetadata
 from telemetry import benchmark
 
 import mock
+import json
 
 
 class PerfDataGeneratorTest(unittest.TestCase):
@@ -39,9 +40,16 @@ class PerfDataGeneratorTest(unittest.TestCase):
         'benchmark_name_3': BenchmarkMetadata('neo@matrix.org', None, False)
     }
 
-    # Mock out content of unowned_benchmarks.txt
+    # Mock out content of unowned_benchmarks.txt and sharding map
+    data = {
+      "0": {
+        "benchmarks": {
+            "benchmark_name_2": {}
+        }
+      }
+    }
     with mock.patch('__builtin__.open',
-                    mock.mock_open(read_data="benchmark_name_2")):
+                    mock.mock_open(read_data=json.dumps(data))):
       perf_data_generator.verify_all_tests_in_benchmark_csv(tests, benchmarks)
 
 
