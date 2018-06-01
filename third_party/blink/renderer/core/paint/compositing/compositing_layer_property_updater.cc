@@ -16,6 +16,12 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
       RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
+  // We flatten compositing layers in real printing, so no need of properties
+  // for compositing layers.
+  if (object.GetDocument().Printing() &&
+      !RuntimeEnabledFeatures::PrintBrowserEnabled())
+    return;
+
   if (!object.HasLayer())
     return;
   const auto* paint_layer = ToLayoutBoxModelObject(object).Layer();
