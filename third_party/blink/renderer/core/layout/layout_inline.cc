@@ -1635,6 +1635,10 @@ void LayoutInline::InvalidateDisplayItemClients(
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
     auto fragments = NGPaintFragment::InlineFragmentsFor(this);
     if (fragments.IsInLayoutNGInlineFormattingContext()) {
+      if (Container()->IsLayoutNGMixin() && StyleRef().HasOutline()) {
+        Container()->InvalidateDisplayItemClients(
+            PaintInvalidationReason::kOutline);
+      }
       for (NGPaintFragment* fragment : fragments) {
         paint_invalidator.InvalidateDisplayItemClient(*fragment,
                                                       invalidation_reason);
