@@ -53,8 +53,6 @@
       'Cast Android (dbg)': 'android_cast_debug_static_bot',
       'Deterministic Android': 'android_without_codecs_release_bot_minimal_symbols',
       'Deterministic Android (dbg)': 'android_debug_bot',
-      'KitKat Phone Tester (rel)': 'android_release_bot_minimal_symbols',
-      'Marshmallow Phone Tester (rel)': 'android_release_bot_minimal_symbols_arm64',
       'android-kitkat-arm-rel': 'android_release_bot_minimal_symbols',
       'android-marshmallow-arm64-rel': 'android_release_bot_minimal_symbols_arm64',
     },
@@ -558,13 +556,11 @@
 
       'android_mojo': 'android_release_trybot_arm64',
       'android_n5x_swarming_dbg': 'android_debug_trybot_arm64',
-      'android_n5x_swarming_rel': 'android_release_trybot_arm64_no_symbols',
       'android_optional_gpu_tests_rel': 'gpu_tests_android_release_trybot_arm64',
       'android_unswarmed_n5_rel': 'android_release_trybot',
       'android_unswarmed_n5x_rel': 'android_release_trybot_arm64',
       'cast_shell_android': 'android_cast_debug_static_bot_compile_only',
       'linux_android_dbg_ng': 'android_debug_trybot',
-      'linux_android_rel_ng': 'android_release_trybot',
     },
 
     # TODO(crbug/786044): Remove non-compile debug configs when migrated.
