@@ -3587,7 +3587,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-viz-display-compositor",
      flag_descriptions::kVizDisplayCompositorName,
      flag_descriptions::kVizDisplayCompositorDescription,
-     kOsLinux | kOsWin | kOsMac,
+     kOsLinux | kOsWin | kOsMac | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kVizDisplayCompositor)},
 
 #if defined(OS_CHROMEOS)
