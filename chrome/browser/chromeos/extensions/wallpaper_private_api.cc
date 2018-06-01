@@ -382,9 +382,20 @@ ExtensionFunction::ResponseAction WallpaperPrivateSetWallpaperFunction::Run() {
       params->url,
       wallpaper_api_util::GetLayoutEnum(
           wallpaper_base::ToString(params->layout)),
-      params->preview_mode);
+      params->preview_mode,
+      base::BindOnce(
+          &WallpaperPrivateSetWallpaperFunction::OnSetWallpaperCallback, this));
+  return RespondLater();
+}
 
-  return RespondNow(NoArguments());
+void WallpaperPrivateSetWallpaperFunction::OnSetWallpaperCallback(
+    bool success) {
+  if (!success) {
+    Respond(Error("Failed to set wallpaper."));
+    return;
+  }
+
+  Respond(NoArguments());
 }
 
 WallpaperPrivateResetWallpaperFunction::

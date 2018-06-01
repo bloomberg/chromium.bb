@@ -54,11 +54,13 @@ class TestWallpaperController : ash::mojom::WallpaperController {
       bool preview_mode,
       ash::mojom::WallpaperController::SetOnlineWallpaperIfExistsCallback
           callback) override;
-  void SetOnlineWallpaperFromData(ash::mojom::WallpaperUserInfoPtr user_info,
-                                  const std::string& image_data,
-                                  const std::string& url,
-                                  ash::WallpaperLayout layout,
-                                  bool preview_mode) override;
+  void SetOnlineWallpaperFromData(
+      ash::mojom::WallpaperUserInfoPtr user_info,
+      const std::string& image_data,
+      const std::string& url,
+      ash::WallpaperLayout layout,
+      bool preview_mode,
+      SetOnlineWallpaperFromDataCallback callback) override;
   void SetDefaultWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id,
                            bool show_wallpaper) override;

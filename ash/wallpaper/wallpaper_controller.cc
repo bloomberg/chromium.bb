@@ -568,13 +568,14 @@ void WallpaperController::SetWallpaperFromPath(
     LOG(ERROR) << "The path " << valid_path.value()
                << " doesn't exist. Falls back to default wallpaper.";
     reply_task_runner->PostTask(
-        FROM_HERE, base::Bind(&WallpaperController::SetDefaultWallpaperImpl,
-                              weak_ptr, account_id, user_type, show_wallpaper));
+        FROM_HERE,
+        base::BindOnce(&WallpaperController::SetDefaultWallpaperImpl, weak_ptr,
+                       account_id, user_type, show_wallpaper));
   } else {
     reply_task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(&WallpaperController::StartDecodeFromPath, weak_ptr,
-                   account_id, user_type, valid_path, info, show_wallpaper));
+        FROM_HERE, base::BindOnce(&WallpaperController::StartDecodeFromPath,
+                                  weak_ptr, account_id, user_type, valid_path,
+                                  info, show_wallpaper));
   }
 }
 
@@ -707,9 +708,9 @@ void WallpaperController::SetDefaultWallpaperImpl(
                               cached_default_wallpaper_.image);
   } else {
     ReadAndDecodeWallpaper(
-        base::Bind(&WallpaperController::OnDefaultWallpaperDecoded,
-                   weak_factory_.GetWeakPtr(), file_path, layout,
-                   show_wallpaper),
+        base::BindOnce(&WallpaperController::OnDefaultWallpaperDecoded,
+                       weak_factory_.GetWeakPtr(), file_path, layout,
+                       show_wallpaper),
         sequenced_task_runner_, file_path);
   }
 }
@@ -814,8 +815,9 @@ void WallpaperController::OnDisplayConfigurationChanged() {
   if (wallpaper_mode_ == WALLPAPER_IMAGE && current_wallpaper_) {
     timer_.Stop();
     GetInternalDisplayCompositorLock();
-    timer_.Start(FROM_HERE, wallpaper_reload_delay_,
-                 base::Bind(&WallpaperController::ReloadWallpaper,
+    timer_.Start(
+        FROM_HERE, wallpaper_reload_delay_,
+        base::BindRepeating(&WallpaperController::ReloadWallpaper,
                             weak_factory_.GetWeakPtr(), /*clear_cache=*/false));
   }
 }
@@ -901,9 +903,9 @@ void WallpaperController::ReadAndDecodeWallpaper(
   std::string* data = new std::string;
   base::PostTaskAndReplyWithResult(
       task_runner.get(), FROM_HERE,
-      base::Bind(&base::ReadFileToString, file_path, data),
-      base::Bind(&OnWallpaperDataRead, callback,
-                 base::Passed(base::WrapUnique(data))));
+      base::BindOnce(&base::ReadFileToString, file_path, data),
+      base::BindOnce(&OnWallpaperDataRead, std::move(callback),
+                     base::Passed(base::WrapUnique(data))));
 }
 
 bool WallpaperController::ShouldApplyDimming() const {
@@ -1115,21 +1117,25 @@ void WallpaperController::SetOnlineWallpaperFromData(
     const std::string& image_data,
     const std::string& url,
     WallpaperLayout layout,
-    bool preview_mode) {
-  DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
-  if (!CanSetUserWallpaper(user_info->account_id, user_info->is_ephemeral))
+    bool preview_mode,
+    SetOnlineWallpaperFromDataCallback callback) {
+  if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted() ||
+      !CanSetUserWallpaper(user_info->account_id, user_info->is_ephemeral)) {
+    std::move(callback).Run(/*success=*/false);
     return;
+  }
 
   const OnlineWallpaperParams params = {user_info->account_id,
                                         user_info->is_ephemeral, url, layout,
                                         preview_mode};
-  LoadedCallback callback =
-      base::Bind(&WallpaperController::OnOnlineWallpaperDecoded,
-                 weak_factory_.GetWeakPtr(), params, /*save_file=*/true);
+  LoadedCallback decoded_callback =
+      base::BindOnce(&WallpaperController::OnOnlineWallpaperDecoded,
+                     weak_factory_.GetWeakPtr(), params, /*save_file=*/true,
+                     std::move(callback));
   if (bypass_decode_for_testing_)
-    std::move(callback).Run(CreateSolidColorWallpaper());
+    std::move(decoded_callback).Run(CreateSolidColorWallpaper());
   else
-    DecodeWallpaper(image_data, std::move(callback));
+    DecodeWallpaper(image_data, std::move(decoded_callback));
 }
 
 void WallpaperController::SetDefaultWallpaper(
@@ -1180,7 +1186,7 @@ void WallpaperController::SetPolicyWallpaper(
   // Updates the screen only when the user has logged in.
   const bool show_wallpaper =
       Shell::Get()->session_controller()->IsActiveUserSessionStarted();
-  LoadedCallback callback = base::Bind(
+  LoadedCallback callback = base::BindOnce(
       &WallpaperController::SaveAndSetWallpaper, weak_factory_.GetWeakPtr(),
       base::Passed(&user_info), wallpaper_files_id, kPolicyWallpaperFile,
       POLICY, WALLPAPER_LAYOUT_CENTER_CROPPED, show_wallpaper);
@@ -1614,8 +1620,9 @@ void WallpaperController::SetOnlineWallpaperFromPath(
   std::move(callback).Run(file_exists);
   if (file_exists) {
     ReadAndDecodeWallpaper(
-        base::Bind(&WallpaperController::OnOnlineWallpaperDecoded,
-                   weak_factory_.GetWeakPtr(), params, /*save_file=*/false),
+        base::BindOnce(&WallpaperController::OnOnlineWallpaperDecoded,
+                       weak_factory_.GetWeakPtr(), params, /*save_file=*/false,
+                       SetOnlineWallpaperFromDataCallback()),
         sequenced_task_runner_, file_path);
   }
 }
@@ -1623,8 +1630,12 @@ void WallpaperController::SetOnlineWallpaperFromPath(
 void WallpaperController::OnOnlineWallpaperDecoded(
     const OnlineWallpaperParams& params,
     bool save_file,
+    SetOnlineWallpaperFromDataCallback callback,
     const gfx::ImageSkia& image) {
-  if (image.isNull()) {
+  bool success = !image.isNull();
+  if (callback)
+    std::move(callback).Run(success);
+  if (!success) {
     LOG(ERROR) << "Failed to decode online wallpaper.";
     return;
   }
@@ -1712,9 +1723,9 @@ void WallpaperController::SetWallpaperFromInfo(
       return;
 
     ReadAndDecodeWallpaper(
-        base::Bind(&WallpaperController::OnWallpaperDecoded,
-                   weak_factory_.GetWeakPtr(), account_id, user_type,
-                   wallpaper_path, info, show_wallpaper),
+        base::BindOnce(&WallpaperController::OnWallpaperDecoded,
+                       weak_factory_.GetWeakPtr(), account_id, user_type,
+                       wallpaper_path, info, show_wallpaper),
         sequenced_task_runner_, wallpaper_path);
   } else {
     // Default wallpapers are migrated from M21 user profiles. A code
@@ -1726,9 +1737,9 @@ void WallpaperController::SetWallpaperFromInfo(
     wallpaper_path = GlobalUserDataDir().Append(info.location);
 
     ReadAndDecodeWallpaper(
-        base::Bind(&WallpaperController::OnWallpaperDecoded,
-                   weak_factory_.GetWeakPtr(), account_id, user_type,
-                   wallpaper_path, info, show_wallpaper),
+        base::BindOnce(&WallpaperController::OnWallpaperDecoded,
+                       weak_factory_.GetWeakPtr(), account_id, user_type,
+                       wallpaper_path, info, show_wallpaper),
         sequenced_task_runner_, wallpaper_path);
   }
 }
@@ -1821,9 +1832,9 @@ void WallpaperController::StartDecodeFromPath(
     const WallpaperInfo& info,
     bool show_wallpaper) {
   ReadAndDecodeWallpaper(
-      base::Bind(&WallpaperController::OnWallpaperDecoded,
-                 weak_factory_.GetWeakPtr(), account_id, user_type,
-                 wallpaper_path, info, show_wallpaper),
+      base::BindOnce(&WallpaperController::OnWallpaperDecoded,
+                     weak_factory_.GetWeakPtr(), account_id, user_type,
+                     wallpaper_path, info, show_wallpaper),
       sequenced_task_runner_, wallpaper_path);
 }
 

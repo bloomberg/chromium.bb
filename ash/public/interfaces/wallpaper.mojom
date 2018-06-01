@@ -105,11 +105,13 @@ interface WallpaperController {
   // |preview_mode|: If true, show the wallpaper immediately but doesn't change
   //                 the user wallpaper info until |ConfirmPreviewWallpaper| is
   //                 called.
+  // |success|: If the wallpaper is set successfully (i.e. no decoding error
+  //            etc.).
   SetOnlineWallpaperFromData(WallpaperUserInfo user_info,
                              string image_data,
                              string url,
                              WallpaperLayout layout,
-                             bool preview_mode);
+                             bool preview_mode) => (bool success);
 
   // Sets the user's wallpaper to be the default wallpaper. Note: different user
   // types may have different default wallpapers.

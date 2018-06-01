@@ -95,6 +95,9 @@ class WallpaperPrivateSetWallpaperFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
+  // Responds with the |success| status.
+  void OnSetWallpaperCallback(bool success);
+
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateSetWallpaperFunction);
 };
 
