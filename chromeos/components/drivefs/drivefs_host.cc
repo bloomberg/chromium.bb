@@ -8,6 +8,7 @@
 
 #include "base/strings/strcat.h"
 #include "base/unguessable_token.h"
+#include "chromeos/components/drivefs/drivefs_host_observer.h"
 #include "chromeos/components/drivefs/pending_connection_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
@@ -113,6 +114,11 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
       chromeos::disks::DiskMountManager::GetInstance()->UnmountPath(
           mount_path_.value(), chromeos::UNMOUNT_OPTIONS_NONE, {});
     }
+    if (mounted()) {
+      for (auto& observer : host_->observers_) {
+        observer.OnUnmounted();
+      }
+    }
   }
 
   bool mounted() const { return drivefs_has_mounted_ && !mount_path_.empty(); }
@@ -180,6 +186,12 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     drivefs_has_mounted_ = true;
     if (mounted()) {
       NotifyDelegateOnMounted();
+    }
+  }
+
+  void OnSyncingStatusUpdate(mojom::SyncingStatusPtr status) override {
+    for (auto& observer : host_->observers_) {
+      observer.OnSyncingStatusUpdate(*status);
     }
   }
 
@@ -257,6 +269,14 @@ DriveFsHost::DriveFsHost(const base::FilePath& profile_path,
 DriveFsHost::~DriveFsHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   chromeos::disks::DiskMountManager::GetInstance()->RemoveObserver(this);
+}
+
+void DriveFsHost::AddObserver(DriveFsHostObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DriveFsHost::RemoveObserver(DriveFsHostObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 bool DriveFsHost::Mount() {

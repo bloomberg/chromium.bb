@@ -40,6 +40,8 @@ interface DriveFsDelegate {
 
   // Invoked when the mount is ready for use.
   OnMounted();
+
+  OnSyncingStatusUpdate(SyncingStatus status);
 };
 
 struct DriveFsConfiguration {
@@ -120,4 +122,32 @@ struct ImageMetadata {
 
   // Rotation in clockwise degrees.
   int32 rotation = 0;
+};
+
+struct ItemEvent {
+  enum State {
+    kQueued,
+    kInProgress,
+    kCompleted,
+    kFailed,
+  };
+
+  // The stable ID used by DriveFS.
+  int64 stable_id;
+
+  // A unique ID corresponding to a particular sync action.
+  int64 group_id;
+
+  string file_title;
+
+  State state;
+
+  // The following are valid only if |state| is kInProgress or kQueued. -1 acts
+  // as the sentinel value for unset.
+  int64 bytes_transferred = -1;
+  int64 bytes_to_transfer = -1;
+};
+
+struct SyncingStatus {
+  array<ItemEvent> item_events;
 };

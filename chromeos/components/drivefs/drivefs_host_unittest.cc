@@ -8,10 +8,12 @@
 
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/components/drivefs/drivefs_host_observer.h"
 #include "chromeos/components/drivefs/pending_connection_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -207,6 +209,12 @@ class FakeIdentityService
   DISALLOW_COPY_AND_ASSIGN(FakeIdentityService);
 };
 
+class MockDriveFsHostObserver : public DriveFsHostObserver {
+ public:
+  MOCK_METHOD0(OnUnmounted, void());
+  MOCK_METHOD1(OnSyncingStatusUpdate, void(const mojom::SyncingStatus& status));
+};
+
 ACTION_P(RunQuitClosure, quit) {
   std::move(*quit).Run();
 }
@@ -353,10 +361,15 @@ TEST_F(DriveFsHostTest, OnMountedBeforeMountEvent) {
 }
 
 TEST_F(DriveFsHostTest, UnmountAfterMountComplete) {
+  MockDriveFsHostObserver observer;
+  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
+  observer_scoper.Add(host_.get());
+
   ASSERT_NO_FATAL_FAILURE(DoMount());
 
   EXPECT_CALL(*disk_manager_, UnmountPath("/media/drivefsroot/g-ID",
                                           chromeos::UNMOUNT_OPTIONS_NONE, _));
+  EXPECT_CALL(observer, OnUnmounted());
   base::RunLoop run_loop;
   delegate_ptr_.set_connection_error_handler(run_loop.QuitClosure());
   host_->Unmount();
@@ -364,6 +377,11 @@ TEST_F(DriveFsHostTest, UnmountAfterMountComplete) {
 }
 
 TEST_F(DriveFsHostTest, UnmountBeforeMountEvent) {
+  MockDriveFsHostObserver observer;
+  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
+  observer_scoper.Add(host_.get());
+  EXPECT_CALL(observer, OnUnmounted()).Times(0);
+
   auto token = StartMount();
   EXPECT_FALSE(host_->IsMounted());
   host_->Unmount();
@@ -371,6 +389,11 @@ TEST_F(DriveFsHostTest, UnmountBeforeMountEvent) {
 }
 
 TEST_F(DriveFsHostTest, UnmountBeforeMojoConnection) {
+  MockDriveFsHostObserver observer;
+  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
+  observer_scoper.Add(host_.get());
+  EXPECT_CALL(observer, OnUnmounted()).Times(0);
+
   auto token = StartMount();
   DispatchMountSuccessEvent(token);
 
@@ -632,6 +655,30 @@ TEST_F(DriveFsHostTest, GetAccessToken_MintTokenFailure_Transient) {
             std::move(quit_closure).Run();
           }));
   run_loop.Run();
+}
+
+ACTION_P(CloneStruct, output) {
+  *output = arg0.Clone();
+}
+
+TEST_F(DriveFsHostTest,
+       GetAccessToken_OnSyncingStatusUpdate_ForwardToObservers) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+  MockDriveFsHostObserver observer;
+  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
+  observer_scoper.Add(host_.get());
+  auto status = mojom::SyncingStatus::New();
+  status->item_events.emplace_back(base::in_place, 12, 34, "filename.txt",
+                                   mojom::ItemEvent::State::kInProgress, 123,
+                                   456);
+  mojom::SyncingStatusPtr observed_status;
+  EXPECT_CALL(observer, OnSyncingStatusUpdate(_))
+      .WillOnce(CloneStruct(&observed_status));
+  delegate_ptr_->OnSyncingStatusUpdate(status.Clone());
+  delegate_ptr_.FlushForTesting();
+  testing::Mock::VerifyAndClear(&observer);
+
+  EXPECT_EQ(status, observed_status);
 }
 
 }  // namespace
