@@ -7,12 +7,13 @@
 
 #include <memory>
 
-#include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
+#include "services/data_decoder/public/mojom/image_decoder.mojom.h"
+#include "services/data_decoder/public/mojom/json_parser.mojom.h"
+#include "services/data_decoder/public/mojom/xml_parser.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
 
 namespace data_decoder {
 
@@ -31,12 +32,12 @@ class DataDecoderService : public service_manager::Service {
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
-  void MaybeRequestQuitDelayed();
-  void MaybeRequestQuit();
+  void BindImageDecoder(mojom::ImageDecoderRequest request);
+  void BindJsonParser(mojom::JsonParserRequest request);
+  void BindXmlParser(mojom::XmlParserRequest request);
 
-  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
   service_manager::BinderRegistry registry_;
-  base::WeakPtrFactory<DataDecoderService> weak_factory_;
+  std::unique_ptr<service_manager::ServiceKeepalive> keepalive_;
 
   DISALLOW_COPY_AND_ASSIGN(DataDecoderService);
 };

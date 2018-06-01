@@ -18,9 +18,9 @@ TestDataDecoderService::~TestDataDecoderService() = default;
 
 CrashyDataDecoderService::CrashyDataDecoderService(bool crash_json,
                                                    bool crash_image)
-    : real_service_(DataDecoderService::Create()),
-      crash_json_(crash_json),
-      crash_image_(crash_image) {}
+    : CrashyDataDecoderService(DataDecoderService::Create(),
+                               crash_json,
+                               crash_image) {}
 
 CrashyDataDecoderService::~CrashyDataDecoderService() = default;
 
@@ -75,5 +75,14 @@ void CrashyDataDecoderService::Parse(const std::string& json,
                                      ParseCallback callback) {
   json_parser_binding_.reset();
 }
+
+CrashyDataDecoderService::CrashyDataDecoderService(
+    std::unique_ptr<service_manager::Service> real_service,
+    bool crash_json,
+    bool crash_image)
+    : ForwardingService(real_service.get()),
+      real_service_(std::move(real_service)),
+      crash_json_(crash_json),
+      crash_image_(crash_image) {}
 
 }  // namespace data_decoder

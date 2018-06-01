@@ -70,8 +70,15 @@ std::unique_ptr<ServiceContextRef> ServiceContextRefFactory::CreateRef() {
       weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get());
 }
 
+void ServiceContextRefFactory::SetRefAddedCallback(
+    const base::RepeatingClosure& ref_added_closure) {
+  ref_added_closure_ = ref_added_closure;
+}
+
 void ServiceContextRefFactory::AddRef() {
   ++ref_count_;
+  if (ref_added_closure_)
+    ref_added_closure_.Run();
 }
 
 void ServiceContextRefFactory::Release() {

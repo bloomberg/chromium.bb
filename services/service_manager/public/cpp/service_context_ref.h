@@ -41,6 +41,8 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceContextRefFactory {
 
   bool HasNoRefs() const { return !ref_count_; }
 
+  void SetRefAddedCallback(const base::RepeatingClosure& on_ref_added);
+
  private:
   friend ServiceContextRefImpl;
 
@@ -49,6 +51,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceContextRefFactory {
   void Release();
 
   base::RepeatingClosure quit_closure_;
+  base::RepeatingClosure ref_added_closure_;
   int ref_count_ = 0;
   base::WeakPtrFactory<ServiceContextRefFactory> weak_factory_;
 
