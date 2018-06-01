@@ -236,7 +236,7 @@ void ThreadHeap::DecommitCallbackStacks() {
 
 HeapCompact* ThreadHeap::Compaction() {
   if (!compaction_)
-    compaction_ = HeapCompact::Create();
+    compaction_ = HeapCompact::Create(this);
   return compaction_.get();
 }
 
@@ -498,6 +498,8 @@ void ThreadHeap::Compact() {
   if (!Compaction()->IsCompacting())
     return;
 
+  ThreadHeapStatsCollector::Scope stats_scope(
+      stats_collector(), ThreadHeapStatsCollector::kAtomicPhaseCompaction);
   // Compaction is done eagerly and before the mutator threads get
   // to run again. Doing it lazily is problematic, as the mutator's
   // references to live objects could suddenly be invalidated by

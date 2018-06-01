@@ -1013,6 +1013,17 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
       ("BlinkGC.TimeForInvokingPreFinalizers", 1, 10 * 1000, 50));
   pre_finalizers_histogram.Count(
       event.scope_data[ThreadHeapStatsCollector::kInvokePreFinalizers]);
+
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, time_for_heap_compaction_histogram,
+                      ("BlinkGC.TimeForHeapCompaction", 1, 10 * 1000, 50));
+  time_for_heap_compaction_histogram.Count(
+      event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseCompaction]);
+
+  DEFINE_STATIC_LOCAL(
+      CustomCountHistogram, object_size_freed_by_heap_compaction,
+      ("BlinkGC.ObjectSizeFreedByHeapCompaction", 1, 4 * 1024 * 1024, 50));
+  object_size_freed_by_heap_compaction.Count(event.compaction_freed_bytes /
+                                             1024);
 }
 
 }  // namespace
