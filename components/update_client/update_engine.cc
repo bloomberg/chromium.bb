@@ -18,6 +18,7 @@
 #include "components/update_client/configurator.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/persisted_data.h"
+#include "components/update_client/protocol_parser.h"
 #include "components/update_client/update_checker.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
@@ -175,13 +176,16 @@ void UpdateEngine::DoUpdateCheck(scoped_refptr<UpdateContext> update_context) {
       update_context->components_to_check_for_updates,
       update_context->components, config_->ExtraRequestParams(),
       update_context->enabled_component_updates,
-      base::BindOnce(&UpdateEngine::UpdateCheckDone, base::Unretained(this),
-                     update_context));
+      base::BindOnce(&UpdateEngine::UpdateCheckResultsAvailable,
+                     base::Unretained(this), update_context));
 }
 
-void UpdateEngine::UpdateCheckDone(scoped_refptr<UpdateContext> update_context,
-                                   int error,
-                                   int retry_after_sec) {
+void UpdateEngine::UpdateCheckResultsAvailable(
+    scoped_refptr<UpdateContext> update_context,
+    const base::Optional<ProtocolParser::Results>& results,
+    ErrorCategory error_category,
+    int error,
+    int retry_after_sec) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(update_context);
 
@@ -202,12 +206,34 @@ void UpdateEngine::UpdateCheckDone(scoped_refptr<UpdateContext> update_context,
 
   update_context->update_check_error = error;
 
+  if (error) {
+    DCHECK(!results);
+    for (const auto& id : update_context->components_to_check_for_updates) {
+      DCHECK_EQ(1u, update_context->components.count(id));
+      auto& component = update_context->components.at(id);
+      component->SetUpdateCheckResult(base::nullopt,
+                                      ErrorCategory::kUpdateCheck, error);
+    }
+    return;
+  }
+
+  DCHECK(results);
+  DCHECK_EQ(0, error);
+
+  std::map<std::string, ProtocolParser::Result> id_to_result;
+  for (const auto& result : results->list)
+    id_to_result[result.extension_id] = result;
+
   for (const auto& id : update_context->components_to_check_for_updates) {
     DCHECK_EQ(1u, update_context->components.count(id));
-    DCHECK(update_context->components.at(id));
-
-    auto& component = *update_context->components.at(id);
-    component.UpdateCheckComplete();
+    auto& component = update_context->components.at(id);
+    const auto& it = id_to_result.find(id);
+    if (it != id_to_result.end())
+      component->SetUpdateCheckResult(it->second, ErrorCategory::kNone, 0);
+    else
+      component->SetUpdateCheckResult(
+          base::nullopt, ErrorCategory::kUpdateCheck,
+          static_cast<int>(ProtocolError::UPDATE_RESPONSE_NOT_FOUND));
   }
 }
 

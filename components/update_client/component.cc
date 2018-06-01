@@ -266,10 +266,17 @@ void Component::Uninstall(const base::Version& version, int reason) {
   state_ = std::make_unique<StateUninstalled>(this);
 }
 
-void Component::UpdateCheckComplete() {
+void Component::SetUpdateCheckResult(
+    const base::Optional<ProtocolParser::Result>& result,
+    ErrorCategory error_category,
+    int error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
   DCHECK_EQ(ComponentState::kChecking, state());
+
+  error_category_ = error_category;
+  error_code_ = error;
+  if (result)
+    SetParseResult(result.value());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, std::move(update_check_complete_));
@@ -411,6 +418,9 @@ void Component::StateUpdateError::DoHandle() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto& component = State::component();
+
+  DCHECK_NE(ErrorCategory::kNone, component.error_category_);
+  DCHECK_NE(0, component.error_code_);
 
   // Create an event only when the server response included an update.
   if (component.IsUpdateAvailable())
