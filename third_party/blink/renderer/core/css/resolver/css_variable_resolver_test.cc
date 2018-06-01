@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -27,6 +29,7 @@ class CSSVariableResolverTest : public PageTestBase {
     PageTestBase::SetUp();
 
     RuntimeEnabledFeatures::SetCSSEnvironmentVariablesEnabled(true);
+    GetStyleEngine().EnsureEnvironmentVariables().SetVariable("test", "red");
   }
 
   void SetTestHTML(const String& value) {
@@ -46,7 +49,7 @@ class CSSVariableResolverTest : public PageTestBase {
 };
 
 TEST_F(CSSVariableResolverTest, ParseEnvVariable_Missing_NestedVar) {
-  SetTestHTML("env(--missing, var(--main-bg-color))");
+  SetTestHTML("env(missing, var(--main-bg-color))");
 
   // Check that the element has the background color provided by the
   // nested variable.
@@ -57,7 +60,7 @@ TEST_F(CSSVariableResolverTest, ParseEnvVariable_Missing_NestedVar) {
 }
 
 TEST_F(CSSVariableResolverTest, ParseEnvVariable_Missing_NestedVar_Fallback) {
-  SetTestHTML("env(--missing, var(--missing, blue))");
+  SetTestHTML("env(missing, var(--missing, blue))");
 
   // Check that the element has the fallback background color.
   Element* target = GetDocument().getElementById("target");
@@ -67,7 +70,7 @@ TEST_F(CSSVariableResolverTest, ParseEnvVariable_Missing_NestedVar_Fallback) {
 }
 
 TEST_F(CSSVariableResolverTest, ParseEnvVariable_Missing_WithFallback) {
-  SetTestHTML("env(--missing, blue)");
+  SetTestHTML("env(missing, blue)");
 
   // Check that the element has the fallback background color.
   Element* target = GetDocument().getElementById("target");
@@ -77,7 +80,7 @@ TEST_F(CSSVariableResolverTest, ParseEnvVariable_Missing_WithFallback) {
 }
 
 TEST_F(CSSVariableResolverTest, ParseEnvVariable_Valid) {
-  SetTestHTML("env(--test)");
+  SetTestHTML("env(test)");
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
@@ -86,7 +89,7 @@ TEST_F(CSSVariableResolverTest, ParseEnvVariable_Valid) {
 }
 
 TEST_F(CSSVariableResolverTest, ParseEnvVariable_Valid_WithFallback) {
-  SetTestHTML("env(--test, blue)");
+  SetTestHTML("env(test, blue)");
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
@@ -95,7 +98,7 @@ TEST_F(CSSVariableResolverTest, ParseEnvVariable_Valid_WithFallback) {
 }
 
 TEST_F(CSSVariableResolverTest, ParseEnvVariable_WhenNested) {
-  SetTestHTML("var(--main-bg-color, var(--missing))");
+  SetTestHTML("var(--main-bg-color, env(missing))");
 
   // Check that the element has the background color provided by var().
   Element* target = GetDocument().getElementById("target");
@@ -105,7 +108,7 @@ TEST_F(CSSVariableResolverTest, ParseEnvVariable_WhenNested) {
 }
 
 TEST_F(CSSVariableResolverTest, ParseEnvVariable_WhenNested_WillFallback) {
-  SetTestHTML("var(--missing, env(--test))");
+  SetTestHTML("var(--missing, env(test))");
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");

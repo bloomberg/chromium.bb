@@ -62,6 +62,7 @@ class MediaQueryEvaluator;
 class Node;
 class RuleFeatureSet;
 class ShadowTreeStyleSheetCollection;
+class DocumentStyleEnvironmentVariables;
 class StyleRuleFontFace;
 class StyleRuleUsageTracker;
 class StyleSheetContents;
@@ -302,6 +303,8 @@ class CORE_EXPORT StyleEngine final
 
   void CustomPropertyRegistered();
 
+  void EnvironmentVariableChanged();
+
   bool NeedsWhitespaceReattachment() const {
     return !whitespace_reattach_set_.IsEmpty();
   }
@@ -313,6 +316,8 @@ class CORE_EXPORT StyleEngine final
 
   StyleRuleKeyframes* KeyframeStylesForAnimation(
       const AtomicString& animation_name);
+
+  DocumentStyleEnvironmentVariables& EnsureEnvironmentVariables();
 
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
@@ -474,6 +479,8 @@ class CORE_EXPORT StyleEngine final
   using KeyframesRuleMap =
       HeapHashMap<AtomicString, Member<StyleRuleKeyframes>>;
   KeyframesRuleMap keyframes_rule_map_;
+
+  scoped_refptr<DocumentStyleEnvironmentVariables> environment_variables_;
 
   friend class StyleEngineTest;
 };

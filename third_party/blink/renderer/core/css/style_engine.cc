@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/document_style_sheet_collector.h"
 #include "third_party/blink/renderer/core/css/font_face_cache.h"
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
@@ -40,6 +41,7 @@
 #include "third_party/blink/renderer/core/css/resolver/viewport_style_resolver.h"
 #include "third_party/blink/renderer/core/css/shadow_tree_style_sheet_collection.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/css/style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -1428,6 +1430,14 @@ void StyleEngine::CustomPropertyRegistered() {
     resolver_->InvalidateMatchedPropertiesCache();
 }
 
+void StyleEngine::EnvironmentVariableChanged() {
+  GetDocument().SetNeedsStyleRecalc(
+      kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
+                               StyleChangeReason::kPropertyRegistration));
+  if (resolver_)
+    resolver_->InvalidateMatchedPropertiesCache();
+}
+
 void StyleEngine::MarkForWhitespaceReattachment() {
   for (auto element : whitespace_reattach_set_) {
     if (!element->GetLayoutObject())
@@ -1520,6 +1530,14 @@ StyleRuleKeyframes* StyleEngine::KeyframeStylesForAnimation(
     return nullptr;
 
   return it->value.Get();
+}
+
+DocumentStyleEnvironmentVariables& StyleEngine::EnsureEnvironmentVariables() {
+  if (!environment_variables_) {
+    environment_variables_ = DocumentStyleEnvironmentVariables::Create(
+        StyleEnvironmentVariables::GetRootInstance(), *document_);
+  }
+  return *environment_variables_.get();
 }
 
 void StyleEngine::Trace(blink::Visitor* visitor) {
