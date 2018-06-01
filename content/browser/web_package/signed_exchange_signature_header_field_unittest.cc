@@ -18,19 +18,19 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, ParseSignature) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
-      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY;"
+      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
       " integrity=\"mi\";"
-      " validityUrl=\"https://example.com/resource.validity.1511128380\";"
-      " certUrl=\"https://example.com/oldcerts\";"
-      " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
+      " validity-url=\"https://example.com/resource.validity.1511128380\";"
+      " cert-url=\"https://example.com/oldcerts\";"
+      " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
       " date=1511128380; expires=1511733180,"
       "sig2;"
       " sig=*MEQCIGjZRqTRf9iKNkGFyzRMTFgwf/BrY2ZNIP/dykhUV0aYAiBTXg+8wujoT4n/W+"
-      "cNgb7pGqQvIUGYZ8u8HZJ5YH26Qg;"
+      "cNgb7pGqQvIUGYZ8u8HZJ5YH26Qg==*;"
       " integrity=\"mi\";"
-      " validityUrl=\"https://example.com/resource.validity.1511128380\";"
-      " certUrl=\"https://example.com/newcerts\";"
-      " certSha256=*J/lEm9kNRODdCmINbvitpvdYKNQ+YgBj99DlYp4fEXw;"
+      " validity-url=\"https://example.com/resource.validity.1511128380\";"
+      " cert-url=\"https://example.com/newcerts\";"
+      " cert-sha256=*J/lEm9kNRODdCmINbvitpvdYKNQ+YgBj99DlYp4fEXw=*;"
       " date=1511128380; expires=1511733180";
 
   const uint8_t decoded_sig1[] = {
@@ -90,11 +90,11 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, IncompleteSignature) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
-      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY;"
+      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
       // no integrity= param
-      " validityUrl=\"https://example.com/resource.validity.1511128380\";"
-      " certUrl=\"https://example.com/oldcerts\";"
-      " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
+      " validity-url=\"https://example.com/resource.validity.1511128380\";"
+      " cert-url=\"https://example.com/oldcerts\";"
+      " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
@@ -105,12 +105,12 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, DuplicatedParam) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
-      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY;"
+      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
       " integrity=\"mi\";"
-      " validityUrl=\"https://example.com/resource.validity.1511128380\";"
-      " certUrl=\"https://example.com/oldcerts\";"
-      " certUrl=\"https://example.com/oldcerts\";"
-      " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
+      " validity-url=\"https://example.com/resource.validity.1511128380\";"
+      " cert-url=\"https://example.com/oldcerts\";"
+      " cert-url=\"https://example.com/oldcerts\";"
+      " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
@@ -121,11 +121,11 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, InvalidCertURL) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
-      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY;"
+      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
       " integrity=\"mi\";"
-      " validityUrl=\"https://example.com/resource.validity.1511128380\";"
-      " certUrl=\"https:://example.com/oldcerts\";"
-      " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
+      " validity-url=\"https://example.com/resource.validity.1511128380\";"
+      " cert-url=\"https:://example.com/oldcerts\";"
+      " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
@@ -136,11 +136,11 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, CertURLWithFragment) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
-      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY;"
+      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
       " integrity=\"mi\";"
-      " validityUrl=\"https://example.com/resource.validity.1511128380\";"
-      " certUrl=\"https://example.com/oldcerts#test\";"
-      " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
+      " validity-url=\"https://example.com/resource.validity.1511128380\";"
+      " cert-url=\"https://example.com/oldcerts#test\";"
+      " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
@@ -151,11 +151,11 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, RelativeCertURL) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
-      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY;"
+      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
       " integrity=\"mi\";"
-      " validityUrl=\"https://example.com/resource.validity.1511128380\";"
-      " certUrl=\"oldcerts\";"
-      " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
+      " validity-url=\"https://example.com/resource.validity.1511128380\";"
+      " cert-url=\"oldcerts\";"
+      " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
@@ -166,11 +166,11 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, InvalidValidityUrl) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
-      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY;"
+      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
       " integrity=\"mi\";"
-      " validityUrl=\"https:://example.com/resource.validity.1511128380\";"
-      " certUrl=\"https://example.com/oldcerts\";"
-      " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
+      " validity-url=\"https:://example.com/resource.validity.1511128380\";"
+      " cert-url=\"https://example.com/oldcerts\";"
+      " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
@@ -181,11 +181,11 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, ValidityUrlWithFragment) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
-      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY;"
+      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
       " integrity=\"mi\";"
-      " validityUrl=\"https://example.com/resource.validity.1511128380#test\";"
-      " certUrl=\"https://example.com/oldcerts\";"
-      " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
+      " validity-url=\"https://example.com/resource.validity.1511128380#test\";"
+      " cert-url=\"https://example.com/oldcerts\";"
+      " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
@@ -196,11 +196,11 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, RelativeValidityUrl) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
-      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY;"
+      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
       " integrity=\"mi\";"
-      " validityUrl=\"resource.validity.1511128380\";"
-      " certUrl=\"https://example.com/oldcerts\";"
-      " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
+      " validity-url=\"resource.validity.1511128380\";"
+      " cert-url=\"https://example.com/oldcerts\";"
+      " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
@@ -211,11 +211,11 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, InvalidCertSHA256) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
-      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY;"
+      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
       " integrity=\"mi\";"
-      " validityUrl=\"https://example.com/resource.validity.1511128380\";"
-      " certUrl=\"https://example.com/oldcerts\";"
-      " certSha256=*W7uB969dFW3Mb5ZefPS9;"
+      " validity-url=\"https://example.com/resource.validity.1511128380\";"
+      " cert-url=\"https://example.com/oldcerts\";"
+      " cert-sha256=*W7uB969dFW3Mb5ZefPS9;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
@@ -224,6 +224,21 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, InvalidCertSHA256) {
 
 TEST_F(SignedExchangeSignatureHeaderFieldTest, OpenQuoteAtEnd) {
   const char hdr_string[] = "sig1; sig=\"";
+  auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
+      hdr_string, nullptr /* devtools_proxy */);
+  EXPECT_FALSE(signatures.has_value());
+}
+
+TEST_F(SignedExchangeSignatureHeaderFieldTest, AsteriskInTheMiddleOfBinary) {
+  const char hdr_string[] =
+      "sig1;"
+      " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
+      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
+      " integrity=\"mi\";"
+      " validity-url=\"https://example.com/resource.validity.1511128380\";"
+      " cert-url=\"https://example.com/oldcerts\";"
+      " cert-sha256=*W7uB969dFW3Mb5ZefP*S9Tq5ZbH5iSmOILpjv2qEArmI=*;"
+      " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());

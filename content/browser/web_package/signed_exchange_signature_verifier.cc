@@ -94,7 +94,7 @@ base::Optional<cbor::CBORValue> GenerateCanonicalExchangeHeadersCBOR(
 }
 
 // Generate a CBOR map value as specified in
-// https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#signature-validity
+// https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#signature-validity
 // Step 7.4.
 base::Optional<cbor::CBORValue> GenerateSignedMessageCBOR(
     const SignedExchangeEnvelope& header) {
@@ -105,8 +105,8 @@ base::Optional<cbor::CBORValue> GenerateSignedMessageCBOR(
   // 7.4. "The bytes of the canonical CBOR serialization (Section 3.4) of
   // a CBOR map mapping:" [spec text]
   cbor::CBORValue::MapValue map;
-  // 7.4.1. "If certSha256 is set: The text string "certSha256" to the byte
-  // string value of certSha256." [spec text]
+  // 7.4.1. "If cert-sha256 is set: The text string "cert-sha256" to the byte
+  // string value of cert-sha256." [spec text]
   if (header.signature().cert_sha256.has_value()) {
     map.insert_or_assign(
         cbor::CBORValue(kCertSha256Key),
@@ -116,8 +116,8 @@ base::Optional<cbor::CBORValue> GenerateSignedMessageCBOR(
                               sizeof(header.signature().cert_sha256->data)),
             cbor::CBORValue::Type::BYTE_STRING));
   }
-  // 7.4.2. "The text string "validityUrl" to the byte string value of
-  // validityUrl." [spec text]
+  // 7.4.2. "The text string "validity-url" to the byte string value of
+  // validity-url." [spec text]
   map.insert_or_assign(cbor::CBORValue(kValidityUrlKey),
                        cbor::CBORValue(header.signature().validity_url.spec(),
                                        cbor::CBORValue::Type::BYTE_STRING));
@@ -310,7 +310,7 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
   if (!header.signature().cert_sha256.has_value()) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy, "SignedExchangeSignatureVerifier::Verify",
-        "No certSha256 set.");
+        "No cert-sha256 set.");
     return Result::kErrNoCertificateSHA256;
   }
 
@@ -320,7 +320,7 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
           certificate->cert_buffer())) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy, "SignedExchangeSignatureVerifier::Verify",
-        "certSha256 mismatch.");
+        "cert-sha256 mismatch.");
     return Result::kErrCertificateSHA256Mismatch;
   }
 
