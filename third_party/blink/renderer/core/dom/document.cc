@@ -5543,8 +5543,9 @@ void Document::SetEncodingData(const DocumentEncodingData& new_data) {
       title_element_->textContent().ContainsOnlyLatin1()) {
     CString original_bytes = title_element_->textContent().Latin1();
     std::unique_ptr<TextCodec> codec = NewTextCodec(new_data.Encoding());
-    String correctly_decoded_title = codec->Decode(
-        original_bytes.data(), original_bytes.length(), WTF::kDataEOF);
+    String correctly_decoded_title =
+        codec->Decode(original_bytes.data(), original_bytes.length(),
+                      WTF::FlushBehavior::kDataEOF);
     title_element_->setTextContent(correctly_decoded_title);
   }
 

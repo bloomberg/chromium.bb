@@ -1109,11 +1109,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // local roots which are under this frame and their first ancestor which is a
   // local root is either this frame or this frame's local root. For instance,
   // in a frame tree such as:
-  //                    A0
-  //                 /  |   \
-  //                B   A1   E
-  //               /   /  \   \
-  //              D  A2    C   F
+  //                    A0                   //
+  //                 /  |   \                //
+  //                B   A1   E               //
+  //               /   /  \   \              //
+  //              D  A2    C   F             //
   // RFHs at nodes B, E, D, C, and F are all local roots in the given frame tree
   // under the root at A0, but only B, C, and E are considered immediate local
   // roots of A0. Note that this will exclude any speculative or pending RFHs.

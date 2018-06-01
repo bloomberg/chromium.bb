@@ -290,6 +290,7 @@ String TextCodecUTF8::Decode(const char* bytes,
                              FlushBehavior flush,
                              bool stop_on_error,
                              bool& saw_error) {
+  const bool do_flush = flush != FlushBehavior::kDoNotFlush;
   // Each input byte might turn into a character.
   // That includes all bytes in the partial-sequence buffer because
   // each byte in an invalid sequence will turn into a replacement character.
@@ -308,8 +309,8 @@ String TextCodecUTF8::Decode(const char* bytes,
       LChar* destination_for_handle_partial_sequence = destination;
       const uint8_t* source_for_handle_partial_sequence = source;
       if (HandlePartialSequence(destination_for_handle_partial_sequence,
-                                source_for_handle_partial_sequence, end, flush,
-                                stop_on_error, saw_error)) {
+                                source_for_handle_partial_sequence, end,
+                                do_flush, stop_on_error, saw_error)) {
         source = source_for_handle_partial_sequence;
         goto upConvertTo16Bit;
       }
@@ -369,7 +370,7 @@ String TextCodecUTF8::Decode(const char* bytes,
       source += count;
       *destination++ = static_cast<LChar>(character);
     }
-  } while (flush && partial_sequence_size_);
+  } while (do_flush && partial_sequence_size_);
 
   buffer.Shrink(destination - buffer.Characters());
 
@@ -392,7 +393,7 @@ upConvertTo16Bit:
       UChar* destination_for_handle_partial_sequence = destination16;
       const uint8_t* source_for_handle_partial_sequence = source;
       HandlePartialSequence(destination_for_handle_partial_sequence,
-                            source_for_handle_partial_sequence, end, flush,
+                            source_for_handle_partial_sequence, end, do_flush,
                             stop_on_error, saw_error);
       destination16 = destination_for_handle_partial_sequence;
       source = source_for_handle_partial_sequence;
@@ -454,7 +455,7 @@ upConvertTo16Bit:
       source += count;
       destination16 = AppendCharacter(destination16, character);
     }
-  } while (flush && partial_sequence_size_);
+  } while (do_flush && partial_sequence_size_);
 
   buffer16.Shrink(destination16 - buffer16.Characters());
 

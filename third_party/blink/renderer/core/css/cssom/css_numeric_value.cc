@@ -128,16 +128,16 @@ CSSNumericValue* CalcToNumericValue(const CSSCalcExpressionNode& root) {
   CSSNumericValueVector values;
 
   // For cases like calc(1 + 2 + 3), the calc expression tree looks like:
-  //       +
-  //      / \
-  //     +   3
-  //    / \
-  //   1   2
+  //       +     //
+  //      / \    //
+  //     +   3   //
+  //    / \      //
+  //   1   2     //
   //
   // But we want to produce a CSSMathValue tree that looks like:
-  //       +
-  //      /|\
-  //     1 2 3
+  //       +     //
+  //      /|\    //
+  //     1 2 3   //
   //
   // So when the left child has the same operator as its parent, we can combine
   // the two nodes. We keep moving down the left side of the tree as long as the

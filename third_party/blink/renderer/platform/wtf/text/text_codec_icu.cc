@@ -408,7 +408,7 @@ String TextCodecICU::Decode(const char* bytes,
   do {
     int uchars_decoded =
         DecodeToBuffer(buffer, buffer_limit, source, source_limit, offsets,
-                       flush != kDoNotFlush, err);
+                       flush != FlushBehavior::kDoNotFlush, err);
     result.Append(buffer, uchars_decoded);
   } while (err == U_BUFFER_OVERFLOW_ERROR);
 
