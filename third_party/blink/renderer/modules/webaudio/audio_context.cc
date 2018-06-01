@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_context_options.h"
@@ -93,6 +94,15 @@ AudioContext* AudioContext::Create(Document& document,
   max_channel_count_histogram.Sample(
       audio_context->destination()->maxChannelCount());
   sample_rate_histogram.Sample(audio_context->sampleRate());
+
+  // Warn users about new autoplay policy when it does not apply to them.
+  if (RuntimeEnabledFeatures::AutoplayIgnoresWebAudioEnabled()) {
+    document.AddConsoleMessage(ConsoleMessage::Create(
+        kOtherMessageSource, kWarningMessageLevel,
+        "The Web Audio autoplay policy will be re-enabled in Chrome 70 (October"
+        " 2018). Please check that your website is compatible with it. "
+        "https://goo.gl/7K7WLu"));
+  }
 
   return audio_context;
 }
