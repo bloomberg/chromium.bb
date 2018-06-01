@@ -257,7 +257,7 @@ void HTMLSelectElement::setValue(const String& value, bool send_events) {
   HTMLOptionElement* previous_selected_option = SelectedOption();
   SetSuggestedOption(nullptr);
   if (is_autofilled_by_preview_)
-    SetAutofilled(false);
+    SetAutofillState(WebAutofillState::kNotFilled);
   SelectOptionFlags flags = kDeselectOtherOptions | kMakeOptionDirty;
   if (send_events)
     flags |= kDispatchInputAndChangeEvent;
@@ -965,7 +965,7 @@ void HTMLSelectElement::OptionRemoved(HTMLOptionElement& option) {
   if (suggested_option_ == &option)
     SetSuggestedOption(nullptr);
   if (option.Selected())
-    SetAutofilled(false);
+    SetAutofillState(WebAutofillState::kNotFilled);
   SetNeedsValidityCheck();
   last_on_change_selection_.clear();
 
@@ -1001,7 +1001,7 @@ void HTMLSelectElement::SelectOption(HTMLOptionElement* element,
 
   // selectedOption() is O(N).
   if (IsAutofilled() && SelectedOption() != element)
-    SetAutofilled(false);
+    SetAutofillState(WebAutofillState::kNotFilled);
 
   if (element) {
     if (!element->Selected())

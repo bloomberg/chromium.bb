@@ -1347,7 +1347,8 @@ void Internals::setAutofilledValue(Element* element,
   if (auto* select = ToHTMLSelectElementOrNull(*element))
     select->setValue(value, kDispatchInputAndChangeEvent);
 
-  ToHTMLFormControlElement(element)->SetAutofilled(true);
+  ToHTMLFormControlElement(element)->SetAutofillState(
+      blink::WebAutofillState::kAutofilled);
 }
 
 void Internals::setEditingValue(Element* element,
@@ -1373,7 +1374,13 @@ void Internals::setAutofilled(Element* element,
         "The element provided is not a form control element.");
     return;
   }
-  ToHTMLFormControlElement(element)->SetAutofilled(enabled);
+  if (enabled) {
+    ToHTMLFormControlElement(element)->SetAutofillState(
+        WebAutofillState::kAutofilled);
+  } else {
+    ToHTMLFormControlElement(element)->SetAutofillState(
+        WebAutofillState::kNotFilled);
+  }
 }
 
 Range* Internals::rangeFromLocationAndLength(Element* scope,

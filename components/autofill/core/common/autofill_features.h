@@ -26,6 +26,7 @@ extern const base::Feature kAutofillShowTypePredictions;
 extern const base::Feature kAutofillSkipComparingInferredLabels;
 extern const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile;
 extern const base::Feature kSingleClickAutofill;
+extern const base::Feature kAutofillPrefilledFields;
 
 }  // namespace features
 }  // namespace autofill

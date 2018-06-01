@@ -52,10 +52,10 @@ using namespace HTMLNames;
 HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tag_name,
                                                Document& document)
     : LabelableElement(tag_name, document),
+      autofill_state_(WebAutofillState::kNotFilled),
       ancestor_disabled_state_(kAncestorDisabledStateUnknown),
       data_list_ancestor_state_(kUnknown),
       may_have_field_set_ancestor_(true),
-      is_autofilled_(false),
       has_validation_message_(false),
       will_validate_initialized_(false),
       will_validate_(true),
@@ -147,7 +147,7 @@ void HTMLFormControlElement::AncestorDisabledStateWasChanged() {
 }
 
 void HTMLFormControlElement::Reset() {
-  SetAutofilled(false);
+  SetAutofillState(WebAutofillState::kNotFilled);
   ResetImpl();
 }
 
@@ -232,11 +232,11 @@ bool HTMLFormControlElement::IsAutofocusable() const {
   return FastHasAttribute(autofocusAttr) && SupportsAutofocus();
 }
 
-void HTMLFormControlElement::SetAutofilled(bool autofilled) {
-  if (autofilled == is_autofilled_)
+void HTMLFormControlElement::SetAutofillState(WebAutofillState autofill_state) {
+  if (autofill_state == autofill_state_)
     return;
 
-  is_autofilled_ = autofilled;
+  autofill_state_ = autofill_state;
   PseudoStateChanged(CSSSelector::kPseudoAutofill);
 }
 

@@ -302,8 +302,8 @@ class AutofillAgent : public content::RenderFrameObserver,
   // We use a simplified comparison function.
   std::set<FormData, FormDataCompare> submitted_forms_;
 
-  // Was the query node autofilled prior to previewing the form?
-  bool was_query_node_autofilled_;
+  // The query node autofill state prior to previewing the form.
+  blink::WebAutofillState query_node_autofill_state_;
 
   // Whether or not to ignore text changes.  Useful for when we're committing
   // a composition when we are defocusing the WebView and we don't want to

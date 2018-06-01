@@ -55,6 +55,8 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
 
+using blink::WebAutofillState;
+
 namespace autofill {
 namespace {
 
@@ -631,8 +633,8 @@ PasswordAutofillAgent::PasswordAutofillAgent(
     : content::RenderFrameObserver(render_frame),
       last_supplied_password_info_iter_(web_input_to_password_info_.end()),
       logging_state_active_(false),
-      was_username_autofilled_(false),
-      was_password_autofilled_(false),
+      username_autofill_state_(WebAutofillState::kNotFilled),
+      password_autofill_state_(WebAutofillState::kNotFilled),
       sent_request_to_store_(false),
       checked_safe_browsing_reputation_(false),
       binding_(this) {
@@ -700,7 +702,7 @@ void PasswordAutofillAgent::PasswordValueGatekeeper::ShowValue(
     blink::WebInputElement* element) {
   if (!element->IsNull() && !element->SuggestedValue().IsEmpty()) {
     element->SetAutofillValue(element->SuggestedValue());
-    element->SetAutofilled(true);
+    element->SetAutofillState(WebAutofillState::kAutofilled);
   }
 }
 
@@ -708,7 +710,7 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
     const blink::WebInputElement& element) {
   // TODO(vabr): Get a mutable argument instead. http://crbug.com/397083
   blink::WebInputElement mutable_element = element;  // We need a non-const.
-  mutable_element.SetAutofilled(false);
+  mutable_element.SetAutofillState(WebAutofillState::kNotFilled);
 
   WebInputToPasswordInfoMap::iterator iter =
       web_input_to_password_info_.find(element);
@@ -740,7 +742,7 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
       web_input_to_password_info_[iter->second].password_was_edited_last = true;
       // Note that the suggested value of |mutable_element| was reset when its
       // value changed.
-      mutable_element.SetAutofilled(false);
+      mutable_element.SetAutofillState(WebAutofillState::kNotFilled);
     }
   }
 
@@ -773,7 +775,7 @@ bool PasswordAutofillAgent::FillSuggestion(
     password_info->password_field = password_element;
   }
 
-  // Call OnFieldAutofilled before WebInputElement::SetAutofilled which may
+  // Call OnFieldAutofilled before WebInputElement::SetAutofillState which may
   // cause frame closing.
   if (password_generation_agent_)
     password_generation_agent_->OnFieldAutofilled(password_element);
@@ -782,14 +784,14 @@ bool PasswordAutofillAgent::FillSuggestion(
                           element->IsPasswordFieldForAutofill()) &&
       username_element.Value().Utf16() != username) {
     username_element.SetAutofillValue(blink::WebString::FromUTF16(username));
-    username_element.SetAutofilled(true);
+    username_element.SetAutofillState(WebAutofillState::kAutofilled);
     UpdateFieldValueAndPropertiesMaskMap(username_element, &username,
                                          FieldPropertiesFlags::AUTOFILLED,
                                          &field_value_and_properties_map_);
   }
 
   password_element.SetAutofillValue(blink::WebString::FromUTF16(password));
-  password_element.SetAutofilled(true);
+  password_element.SetAutofillState(WebAutofillState::kAutofilled);
   UpdateFieldValueAndPropertiesMaskMap(password_element, &password,
                                        FieldPropertiesFlags::AUTOFILLED,
                                        &field_value_and_properties_map_);
@@ -827,15 +829,15 @@ bool PasswordAutofillAgent::PreviewSuggestion(
     if (username_query_prefix_.empty())
       username_query_prefix_ = username_element.Value().Utf16();
 
-    was_username_autofilled_ = username_element.IsAutofilled();
+    username_autofill_state_ = username_element.GetAutofillState();
     username_element.SetSuggestedValue(username);
-    username_element.SetAutofilled(true);
+    username_element.SetAutofillState(WebAutofillState::kPreviewed);
     form_util::PreviewSuggestion(username_element.SuggestedValue().Utf16(),
                                  username_query_prefix_, &username_element);
   }
-  was_password_autofilled_ = password_element.IsAutofilled();
+  password_autofill_state_ = password_element.GetAutofillState();
   password_element.SetSuggestedValue(password);
-  password_element.SetAutofilled(true);
+  password_element.SetAutofillState(WebAutofillState::kPreviewed);
 
   return true;
 }
@@ -1636,8 +1638,8 @@ void PasswordAutofillAgent::FrameClosing() {
   last_supplied_password_info_iter_ = web_input_to_password_info_.end();
   provisionally_saved_form_.Reset();
   field_value_and_properties_map_.clear();
-  was_username_autofilled_ = false;
-  was_password_autofilled_ = false;
+  username_autofill_state_ = WebAutofillState::kNotFilled;
+  password_autofill_state_ = WebAutofillState::kNotFilled;
   sent_request_to_store_ = false;
   checked_safe_browsing_reputation_ = false;
   username_query_prefix_.clear();
@@ -1654,13 +1656,13 @@ void PasswordAutofillAgent::ClearPreview(
     blink::WebInputElement* password) {
   if (!username->IsNull() && !username->SuggestedValue().IsEmpty()) {
     username->SetSuggestedValue(blink::WebString());
-    username->SetAutofilled(was_username_autofilled_);
+    username->SetAutofillState(username_autofill_state_);
     username->SetSelectionRange(username_query_prefix_.length(),
                                 username->Value().length());
   }
   if (!password->SuggestedValue().IsEmpty()) {
     password->SetSuggestedValue(blink::WebString());
-    password->SetAutofilled(was_password_autofilled_);
+    password->SetAutofillState(password_autofill_state_);
   }
 }
 void PasswordAutofillAgent::ProvisionallySavePassword(
@@ -1740,7 +1742,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   if (password.empty())
     return false;
 
-  // Call OnFieldAutofilled before WebInputElement::SetAutofilled which may
+  // Call OnFieldAutofilled before WebInputElement::SetAutofillState which may
   // cause frame closing.
   if (password_generation_agent_)
     password_generation_agent_->OnFieldAutofilled(*password_element);
@@ -1761,7 +1763,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
     UpdateFieldValueAndPropertiesMaskMap(*username_element, &username,
                                          FieldPropertiesFlags::AUTOFILLED,
                                          field_value_and_properties_map);
-    username_element->SetAutofilled(true);
+    username_element->SetAutofillState(WebAutofillState::kAutofilled);
     if (logger)
       logger->LogElementName(Logger::STRING_USERNAME_FILLED, *username_element);
     if (set_selection) {
@@ -1781,7 +1783,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   ProvisionallySavePassword(password_element->Form(), *password_element,
                             RESTRICTION_NONE);
   registration_callback.Run(password_element);
-  password_element->SetAutofilled(true);
+  password_element->SetAutofillState(WebAutofillState::kAutofilled);
 
   if (logger)
     logger->LogElementName(Logger::STRING_PASSWORD_FILLED, *password_element);

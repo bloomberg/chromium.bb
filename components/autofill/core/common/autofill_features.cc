@@ -27,6 +27,11 @@ const base::Feature kAutofillDownstreamUseGooglePayBrandingOniOS{
 const base::Feature kAutofillDynamicForms{"AutofillDynamicForms",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether Autofill should fill fields previously filled by the
+// website.
+const base::Feature kAutofillPrefilledFields{"AutofillPrefilledFields",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls whether or not a minimum number of fields is required before
 // heuristic field type prediction is run for a form.
 const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics{

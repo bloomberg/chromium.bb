@@ -252,7 +252,7 @@ void SearchFieldCancelButtonElement::DefaultEventHandler(Event* event) {
       ToMouseEvent(event)->button() ==
           static_cast<short>(WebPointerProperties::Button::kLeft)) {
     input->SetValueForUser("");
-    input->SetAutofilled(false);
+    input->SetAutofillState(WebAutofillState::kNotFilled);
     input->OnSearch();
     event->SetDefaultHandled();
   }

@@ -60,6 +60,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
+using blink::WebAutofillState;
 using blink::WebAutofillClient;
 using blink::WebConsoleMessage;
 using blink::WebDocument;
@@ -137,7 +138,7 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       password_autofill_agent_(password_autofill_agent),
       password_generation_agent_(password_generation_agent),
       autofill_query_id_(0),
-      was_query_node_autofilled_(false),
+      query_node_autofill_state_(WebAutofillState::kNotFilled),
       ignore_text_changes_(false),
       is_popup_possibly_visible_(false),
       is_generation_popup_possibly_visible_(false),
@@ -421,7 +422,7 @@ void AutofillAgent::FillForm(int32_t id, const FormData& form) {
   if (base::FeatureList::IsEnabled(features::kAutofillDynamicForms))
     ReplaceElementIfNowInvalid(form);
 
-  was_query_node_autofilled_ = element_.IsAutofilled();
+  query_node_autofill_state_ = element_.GetAutofillState();
   form_util::FillForm(form, element_);
   if (!element_.Form().IsNull())
     UpdateLastInteractedForm(element_.Form());
@@ -436,7 +437,7 @@ void AutofillAgent::PreviewForm(int32_t id, const FormData& form) {
   if (id != autofill_query_id_)
     return;
 
-  was_query_node_autofilled_ = element_.IsAutofilled();
+  query_node_autofill_state_ = element_.GetAutofillState();
   form_util::PreviewForm(form, element_);
 
   GetAutofillDriver()->DidPreviewAutofillFormData();
@@ -469,7 +470,7 @@ void AutofillAgent::ClearPreviewedForm() {
     return;
 
   form_util::ClearPreviewedFormWithElement(element_,
-                                           was_query_node_autofilled_);
+                                           query_node_autofill_state_);
 }
 
 void AutofillAgent::FillFieldWithValue(const base::string16& value) {
@@ -479,7 +480,7 @@ void AutofillAgent::FillFieldWithValue(const base::string16& value) {
   WebInputElement* input_element = ToWebInputElement(&element_);
   if (input_element) {
     DoFillFieldWithValue(value, input_element);
-    input_element->SetAutofilled(true);
+    input_element->SetAutofillState(WebAutofillState::kAutofilled);
   }
 }
 
@@ -696,9 +697,9 @@ void AutofillAgent::DoFillFieldWithValue(const base::string16& value,
 
 void AutofillAgent::DoPreviewFieldWithValue(const base::string16& value,
                                             WebInputElement* node) {
-  was_query_node_autofilled_ = element_.IsAutofilled();
+  query_node_autofill_state_ = element_.GetAutofillState();
   node->SetSuggestedValue(blink::WebString::FromUTF16(value));
-  node->SetAutofilled(true);
+  node->SetAutofillState(WebAutofillState::kPreviewed);
   form_util::PreviewSuggestion(node->SuggestedValue().Utf16(),
                                node->Value().Utf16(), node);
 }

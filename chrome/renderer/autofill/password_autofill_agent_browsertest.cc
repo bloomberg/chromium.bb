@@ -36,18 +36,13 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_document.h"
-#include "third_party/blink/public/web/web_element.h"
-#include "third_party/blink/public/web/web_form_control_element.h"
-#include "third_party/blink/public/web/web_form_element.h"
-#include "third_party/blink/public/web/web_input_element.h"
-#include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using autofill::FormTracker;
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
+using blink::WebAutofillState;
 using base::UTF16ToUTF8;
 using blink::WebDocument;
 using blink::WebElement;
@@ -413,10 +408,10 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   void ClearUsernameAndPasswordFields() {
     username_element_.SetValue(WebString());
     username_element_.SetSuggestedValue(WebString());
-    username_element_.SetAutofilled(false);
+    username_element_.SetAutofillState(WebAutofillState::kNotFilled);
     password_element_.SetValue(WebString());
     password_element_.SetSuggestedValue(WebString());
-    password_element_.SetAutofilled(false);
+    password_element_.SetAutofillState(WebAutofillState::kNotFilled);
   }
 
   void SimulateSuggestionChoice(WebInputElement& username_input) {
@@ -526,12 +521,13 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         true /* check_suggested_password */);
   }
 
-  void ResetFieldState(WebInputElement* element,
-                       const std::string& value = std::string(),
-                       bool is_autofilled = false) {
+  void ResetFieldState(
+      WebInputElement* element,
+      const std::string& value = std::string(),
+      blink::WebAutofillState is_autofilled = WebAutofillState::kNotFilled) {
     element->SetValue(WebString::FromUTF8(value));
     element->SetSuggestedValue(WebString());
-    element->SetAutofilled(is_autofilled);
+    element->SetAutofillState(is_autofilled);
     element->SetSelectionRange(value.size(), value.size());
   }
 
@@ -1521,7 +1517,7 @@ TEST_F(PasswordAutofillAgentTest, PreviewSuggestionSelectionRange) {
   SimulateOnFillPasswordForm(fill_data_);
 
   for (const auto& selected_element : {username_element_, password_element_}) {
-    ResetFieldState(&username_element_, "ali", true);
+    ResetFieldState(&username_element_, "ali", WebAutofillState::kPreviewed);
     ResetFieldState(&password_element_);
 
     EXPECT_TRUE(password_autofill_agent_->PreviewSuggestion(
@@ -1535,7 +1531,7 @@ TEST_F(PasswordAutofillAgentTest, PreviewSuggestionSelectionRange) {
 // Tests that |ClearPreview| properly clears previewed username and password
 // with password being previously autofilled.
 TEST_F(PasswordAutofillAgentTest, ClearPreviewWithPasswordAutofilled) {
-  ResetFieldState(&password_element_, "sec", true);
+  ResetFieldState(&password_element_, "sec", WebAutofillState::kPreviewed);
 
   // Simulate the browser sending the login info, but set |wait_for_username|
   // to prevent the form from being immediately filled.
@@ -1560,7 +1556,7 @@ TEST_F(PasswordAutofillAgentTest, ClearPreviewWithPasswordAutofilled) {
 // Tests that |ClearPreview| properly clears previewed username and password
 // with username being previously autofilled.
 TEST_F(PasswordAutofillAgentTest, ClearPreviewWithUsernameAutofilled) {
-  ResetFieldState(&username_element_, "ali", true);
+  ResetFieldState(&username_element_, "ali", WebAutofillState::kPreviewed);
   username_element_.SetSelectionRange(3, 3);
 
   // Simulate the browser sending the login info, but set |wait_for_username|
@@ -1587,8 +1583,8 @@ TEST_F(PasswordAutofillAgentTest, ClearPreviewWithUsernameAutofilled) {
 // with username and password being previously autofilled.
 TEST_F(PasswordAutofillAgentTest,
        ClearPreviewWithAutofilledUsernameAndPassword) {
-  ResetFieldState(&username_element_, "ali", true);
-  ResetFieldState(&password_element_, "sec", true);
+  ResetFieldState(&username_element_, "ali", WebAutofillState::kPreviewed);
+  ResetFieldState(&password_element_, "sec", WebAutofillState::kPreviewed);
 
   // Simulate the browser sending the login info, but set |wait_for_username|
   // to prevent the form from being immediately filled.
@@ -2144,7 +2140,7 @@ TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnlyNoUsername) {
   fill_data_.additional_logins.clear();
 
   password_element_.SetValue("");
-  password_element_.SetAutofilled(false);
+  password_element_.SetAutofillState(WebAutofillState::kNotFilled);
 
   // Simulate the browser sending back the login info for an initial page load.
   SimulateOnShowInitialPasswordAccountSuggestions(fill_data_);
@@ -2163,14 +2159,14 @@ TEST_F(PasswordAutofillAgentTest, ShowPopupOnEmptyPasswordField) {
   fill_data_.additional_logins.clear();
 
   password_element_.SetValue("");
-  password_element_.SetAutofilled(false);
+  password_element_.SetAutofillState(WebAutofillState::kNotFilled);
 
   // Simulate the browser sending back the login info for an initial page load.
   SimulateOnFillPasswordForm(fill_data_);
 
   // Show popup suggesstion when the password field is empty.
   password_element_.SetValue("");
-  password_element_.SetAutofilled(false);
+  password_element_.SetAutofillState(WebAutofillState::kNotFilled);
 
   SimulateSuggestionChoiceOfUsernameAndPassword(
       password_element_, base::string16(), ASCIIToUTF16(kAlicePassword));
@@ -2188,14 +2184,14 @@ TEST_F(PasswordAutofillAgentTest, ShowPopupOnAutofilledPasswordField) {
   fill_data_.additional_logins.clear();
 
   password_element_.SetValue("");
-  password_element_.SetAutofilled(false);
+  password_element_.SetAutofillState(WebAutofillState::kNotFilled);
 
   // Simulate the browser sending back the login info for an initial page load.
   SimulateOnFillPasswordForm(fill_data_);
 
   // Show popup suggesstion when the password field is autofilled.
   password_element_.SetValue("123");
-  password_element_.SetAutofilled(true);
+  password_element_.SetAutofillState(WebAutofillState::kAutofilled);
 
   SimulateSuggestionChoiceOfUsernameAndPassword(
       password_element_, base::string16(), ASCIIToUTF16(kAlicePassword));
@@ -2213,7 +2209,7 @@ TEST_F(PasswordAutofillAgentTest, NotShowPopupPasswordField) {
   fill_data_.additional_logins.clear();
 
   password_element_.SetValue("");
-  password_element_.SetAutofilled(false);
+  password_element_.SetAutofillState(WebAutofillState::kNotFilled);
 
   // Simulate the browser sending back the login info for an initial page load.
   SimulateOnFillPasswordForm(fill_data_);
@@ -2221,7 +2217,7 @@ TEST_F(PasswordAutofillAgentTest, NotShowPopupPasswordField) {
   // Do not show popup suggesstion when the password field is not-empty and not
   // autofilled.
   password_element_.SetValue("123");
-  password_element_.SetAutofilled(false);
+  password_element_.SetAutofillState(WebAutofillState::kNotFilled);
 
   SimulateSuggestionChoiceOfUsernameAndPassword(
       password_element_, base::string16(), ASCIIToUTF16(kAlicePassword));
@@ -3405,7 +3401,7 @@ TEST_F(PasswordAutofillAgentTest, NotShowShowAllSavedPasswordsTest) {
   EXPECT_TRUE(GetCalledShowManualFallbackSuggestion());
   fake_driver_.reset_called_manual_fallback_suggestion();
   password_element_.SetValue("123");
-  password_element_.SetAutofilled(false);
+  password_element_.SetAutofillState(WebAutofillState::kNotFilled);
   ASSERT_FALSE(GetCalledShowManualFallbackSuggestion());
 }
 

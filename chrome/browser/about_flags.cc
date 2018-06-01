@@ -3689,6 +3689,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillDynamicFormsDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillDynamicForms)},
 
+    {"autofill-prefilled-fields",
+     flag_descriptions::kAutofillPrefilledFieldsName,
+     flag_descriptions::kAutofillPrefilledFieldsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillPrefilledFields)},
+
     {"autofill-restrict-formless-form-extraction",
      flag_descriptions::kAutofillRestrictUnownedFieldsToFormlessCheckoutName,
      flag_descriptions::

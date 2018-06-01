@@ -245,7 +245,7 @@ void PreviewForm(const FormData& form,
 // autofilled state of |node| to |was_autofilled|.  Returns false if the form is
 // not found.
 bool ClearPreviewedFormWithElement(const blink::WebFormControlElement& element,
-                                   bool was_autofilled);
+                                   blink::WebAutofillState old_autofill_state);
 
 // Checks if the webpage is empty.
 // This kind of webpage is considered as empty:

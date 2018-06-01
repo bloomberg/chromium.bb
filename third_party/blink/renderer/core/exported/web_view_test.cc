@@ -3376,7 +3376,7 @@ TEST_F(WebViewTest, FinishComposingTextDoesntTriggerAutofillTextChange) {
   EXPECT_EQ(0, info.composition_start);
   EXPECT_EQ((int)composition_text.length(), info.composition_end);
 
-  form->SetAutofilled(true);
+  form->SetAutofillState(blink::WebAutofillState::kAutofilled);
   client.ClearChangeCounts();
 
   active_input_method_controller->FinishComposingText(
