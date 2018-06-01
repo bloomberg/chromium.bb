@@ -23,6 +23,7 @@ include_rules = [
   "+net",
   "+services/identity/public",
   "+services/metrics/public",
+  "+services/network/public",
   "+sql",
   "+third_party/fips181",
   "+third_party/libaddressinput", # For address i18n.
@@ -45,4 +46,7 @@ specific_include_rules = {
   "test_autofill_client\.h": [
     "+components/ukm",
   ],
+  "password_requirements_spec_fetcher_unittest\.cc": [
+    "+services/network/test",
+  ]
 }

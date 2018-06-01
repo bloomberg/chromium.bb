@@ -215,10 +215,11 @@ TEST_F(PasswordGeneratorTest, AllCharactersAreGenerated) {
   spec_.mutable_lower_case()->set_min(5);
   spec_.mutable_lower_case()->set_max(5);
   bool success = false;
-  // The chance of not seing both an a and a b in one run are only 2/32 per run.
-  // Ultimately we should see success. If none of the 100 generated passwords
-  // contained an 'a' (or 'b'), then this would indicate that the generator does
-  // not fully use the character set (probably due to an off-by-one error).
+  // The chance of not seing both an 'a' and a 'b' in one run are only 2/32 per
+  // run. Ultimately we should see success. If none of the 100 generated
+  // passwords contained an 'a' (or 'b'), then this would indicate that the
+  // generator does not fully use the character set (probably due to an
+  // off-by-one error).
   for (size_t attempt = 0; attempt < 100; ++attempt) {
     base::string16 password = GeneratePassword(spec_);
     size_t num_as = 0;
@@ -255,7 +256,7 @@ TEST_F(PasswordGeneratorTest, AllCharactersForbidden) {
     char_class_config->set_max(0);
   }
   // If it is impossible to generate a password (due to max = 0), the generator
-  // delivers a password as per standard spec and ignores everything else.
+  // delivers a password as per default spec and ignores everything else.
   EXPECT_EQ(kDefaultPasswordLength, GeneratePassword(spec_).length());
 }
 
