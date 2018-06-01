@@ -37,7 +37,7 @@ namespace {
 
 inline unsigned ApproximateBoxWidth(float s) {
   return static_cast<unsigned>(
-      floorf(s * (3 / 4.f * sqrtf(twoPiFloat)) + 0.5f));
+      floorf(s * (3 / 4.f * sqrtf(kTwoPiFloat)) + 0.5f));
 }
 
 IntSize CalculateKernelSize(const FloatSize& std) {

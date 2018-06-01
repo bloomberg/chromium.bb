@@ -353,7 +353,7 @@ void Path::AddEllipse(const FloatPoint& p,
                       bool anticlockwise) {
   DCHECK(EllipseIsRenderable(start_angle, end_angle));
   DCHECK_GE(start_angle, 0);
-  DCHECK_LT(start_angle, twoPiFloat);
+  DCHECK_LT(start_angle, kTwoPiFloat);
   DCHECK((anticlockwise && (start_angle - end_angle) >= 0) ||
          (!anticlockwise && (end_angle - start_angle) >= 0));
 
@@ -367,8 +367,8 @@ void Path::AddEllipse(const FloatPoint& p,
            cy + radius_y_scalar);
 
   float sweep = end_angle - start_angle;
-  SkScalar start_degrees = WebCoreFloatToSkScalar(start_angle * 180 / piFloat);
-  SkScalar sweep_degrees = WebCoreFloatToSkScalar(sweep * 180 / piFloat);
+  SkScalar start_degrees = WebCoreFloatToSkScalar(start_angle * 180 / kPiFloat);
+  SkScalar sweep_degrees = WebCoreFloatToSkScalar(sweep * 180 / kPiFloat);
   SkScalar s360 = SkIntToScalar(360);
 
   // We can't use SkPath::addOval(), because addOval() makes a new sub-path.
@@ -415,7 +415,7 @@ void Path::AddEllipse(const FloatPoint& p,
                       bool anticlockwise) {
   DCHECK(EllipseIsRenderable(start_angle, end_angle));
   DCHECK_GE(start_angle, 0);
-  DCHECK_LT(start_angle, twoPiFloat);
+  DCHECK_LT(start_angle, kTwoPiFloat);
   DCHECK((anticlockwise && (start_angle - end_angle) >= 0) ||
          (!anticlockwise && (end_angle - start_angle) >= 0));
 
@@ -535,8 +535,9 @@ bool Path::IntersectPath(const Path& other) {
 }
 
 bool EllipseIsRenderable(float start_angle, float end_angle) {
-  return (std::abs(end_angle - start_angle) < twoPiFloat) ||
-         WebCoreFloatNearlyEqual(std::abs(end_angle - start_angle), twoPiFloat);
+  return (std::abs(end_angle - start_angle) < kTwoPiFloat) ||
+         WebCoreFloatNearlyEqual(std::abs(end_angle - start_angle),
+                                 kTwoPiFloat);
 }
 
 }  // namespace blink

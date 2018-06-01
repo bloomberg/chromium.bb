@@ -319,7 +319,7 @@ void PeriodicWave::GenerateBasicWaveform(int shape) {
   imag_p[0] = 0;
 
   for (unsigned n = 1; n < half_size; ++n) {
-    float pi_factor = 2 / (n * piFloat);
+    float pi_factor = 2 / (n * kPiFloat);
 
     // All waveforms are odd functions with a positive slope at time 0. Hence
     // the coefficients for cos() are always 0.

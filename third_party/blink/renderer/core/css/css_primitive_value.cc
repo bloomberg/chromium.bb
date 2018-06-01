@@ -380,7 +380,7 @@ double CSSPrimitiveValue::ConversionToCanonicalUnitsScaleFactor(
       factor = kCssPixelsPerPica;
       break;
     case UnitType::kRadians:
-      factor = 180 / piDouble;
+      factor = 180 / kPiDouble;
       break;
     case UnitType::kGradians:
       factor = 0.9;

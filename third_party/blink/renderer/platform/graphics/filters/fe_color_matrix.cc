@@ -84,8 +84,8 @@ static void SaturateMatrix(float s, SkScalar matrix[kColorMatrixSize]) {
 }
 
 static void HueRotateMatrix(float hue, SkScalar matrix[kColorMatrixSize]) {
-  float cos_hue = cosf(hue * piFloat / 180);
-  float sin_hue = sinf(hue * piFloat / 180);
+  float cos_hue = cosf(hue * kPiFloat / 180);
+  float sin_hue = sinf(hue * kPiFloat / 180);
   matrix[0] = 0.213f + cos_hue * 0.787f - sin_hue * 0.213f;
   matrix[1] = 0.715f - cos_hue * 0.715f - sin_hue * 0.715f;
   matrix[2] = 0.072f - cos_hue * 0.072f + sin_hue * 0.928f;

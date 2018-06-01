@@ -234,9 +234,9 @@ bool SVGPathNormalizer::DecomposeArcToCubic(
 
   float theta_arc = theta2 - theta1;
   if (theta_arc < 0 && arc_segment.arc_sweep)
-    theta_arc += twoPiFloat;
+    theta_arc += kTwoPiFloat;
   else if (theta_arc > 0 && !arc_segment.arc_sweep)
-    theta_arc -= twoPiFloat;
+    theta_arc -= kTwoPiFloat;
 
   point_transform.MakeIdentity();
   point_transform.Rotate(angle);
@@ -245,7 +245,7 @@ bool SVGPathNormalizer::DecomposeArcToCubic(
   // Some results of atan2 on some platform implementations are not exact
   // enough. So that we get more cubic curves than expected here. Adding 0.001f
   // reduces the count of sgements to the correct count.
-  int segments = ceilf(fabsf(theta_arc / (piOverTwoFloat + 0.001f)));
+  int segments = ceilf(fabsf(theta_arc / (kPiOverTwoFloat + 0.001f)));
   for (int i = 0; i < segments; ++i) {
     float start_theta = theta1 + i * theta_arc / segments;
     float end_theta = theta1 + (i + 1) * theta_arc / segments;

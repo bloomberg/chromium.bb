@@ -470,7 +470,7 @@ void BaseRenderingContext2D::rotate(double angle_in_radians) {
   ModifiableState().SetTransform(new_transform);
   if (!GetState().IsTransformInvertible())
     return;
-  c->rotate(clampTo<float>(angle_in_radians * (180.0 / piFloat)));
+  c->rotate(clampTo<float>(angle_in_radians * (180.0 / kPiFloat)));
   path_.Transform(AffineTransform().RotateRadians(-angle_in_radians));
 }
 
