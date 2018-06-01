@@ -284,7 +284,7 @@ void ErrorScreen::OnConfigureCerts() {
 
 void ErrorScreen::OnDiagnoseButtonClicked() {
   Profile* profile = GetAppProfile();
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
 
   std::string extension_id = extension_service->component_loader()->Add(

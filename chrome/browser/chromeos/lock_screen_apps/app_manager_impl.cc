@@ -420,7 +420,7 @@ AppManagerImpl::State AppManagerImpl::AddAppToLockScreenProfile(
     return State::kActive;
   }
 
-  ExtensionService* lock_screen_service =
+  extensions::ExtensionService* lock_screen_service =
       extensions::ExtensionSystem::Get(lock_screen_profile_)
           ->extension_service();
 
@@ -465,7 +465,7 @@ void AppManagerImpl::CompleteLockScreenAppInstall(
 
 void AppManagerImpl::InstallAndEnableLockScreenAppInLockScreenProfile(
     const extensions::Extension* app) {
-  ExtensionService* lock_screen_service =
+  extensions::ExtensionService* lock_screen_service =
       extensions::ExtensionSystem::Get(lock_screen_profile_)
           ->extension_service();
 
@@ -534,7 +534,7 @@ const extensions::Extension* AppManagerImpl::GetAppForLockScreenAppLaunch() {
                                     *app->manifest()->value()->CreateDeepCopy(),
                                     app->creation_flags(), app->id(), &error);
 
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(lock_screen_profile_)
           ->extension_service();
   extension_service->AddExtension(lock_profile_app.get());

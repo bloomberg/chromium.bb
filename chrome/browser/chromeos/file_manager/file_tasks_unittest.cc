@@ -534,7 +534,7 @@ class FileManagerFileTasksComplexTest : public testing::Test {
   chromeos::ScopedTestUserManager test_user_manager_;
   TestingProfile test_profile_;
   base::CommandLine command_line_;
-  ExtensionService* extension_service_;  // Owned by test_profile_;
+  extensions::ExtensionService* extension_service_;  // Owned by test_profile_;
 };
 
 // The basic logic is similar to a test case for FindDriveAppTasks above.

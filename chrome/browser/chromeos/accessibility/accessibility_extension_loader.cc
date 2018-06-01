@@ -73,14 +73,14 @@ void AccessibilityExtensionLoader::Unload() {
 
 void AccessibilityExtensionLoader::UnloadExtensionFromProfile(
     Profile* profile) {
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   extension_service->component_loader()->Remove(extension_path_);
 }
 
 void AccessibilityExtensionLoader::LoadExtension(Profile* profile,
                                                  base::Closure done_cb) {
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
 
   extension_service->component_loader()->AddComponentFromDir(

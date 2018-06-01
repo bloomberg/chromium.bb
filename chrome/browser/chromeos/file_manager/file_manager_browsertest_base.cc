@@ -620,7 +620,7 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
   // The test resources are setup: enable and add default ChromeOS component
   // extensions now and not before: crbug.com/831074, crbug.com/804413
   extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile())->extension_service();
   service->component_loader()->AddDefaultComponentExtensions(false);
 

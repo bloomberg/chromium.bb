@@ -333,7 +333,7 @@ void DriveFirstRunController::EnableOfflineMode() {
     return;
   }
 
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (!extension_service->GetExtensionById(drive_hosted_app_id_, false)) {
     LOG(WARNING) << "Drive app is not installed.";
@@ -413,7 +413,7 @@ void DriveFirstRunController::OnOfflineInit(bool success, UMAOutcome outcome) {
 }
 
 void DriveFirstRunController::ShowNotification() {
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   DCHECK(service);
   const extensions::Extension* extension =
