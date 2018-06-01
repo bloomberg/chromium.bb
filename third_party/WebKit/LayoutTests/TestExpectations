@@ -4114,6 +4114,7 @@ crbug.com/832447 virtual/new-remote-playback-pipeline/media/controls/controls-pa
 crbug.com/832447 virtual/new-remote-playback-pipeline/media/controls/controls-page-zoom-out.html [ Failure Pass ]
 crbug.com/832447 virtual/video-surface-layer/media/controls/controls-page-zoom-in.html [ Failure Pass ]
 crbug.com/832447 virtual/video-surface-layer/media/controls/controls-page-zoom-out.html [ Failure Pass ]
+crbug.com/848919 [ Win ] virtual/video-surface-layer/media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Failure Pass ]
 
 # Tests failing on Android after https://chromium-review.googlesource.com/612442
 crbug.com/755405 [ Android ] compositing/rendering-contexts.html [ Failure ]
