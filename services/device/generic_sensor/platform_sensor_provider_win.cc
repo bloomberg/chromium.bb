@@ -13,6 +13,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "services/device/generic_sensor/linear_acceleration_fusion_algorithm_using_accelerometer.h"
+#include "services/device/generic_sensor/orientation_euler_angles_fusion_algorithm_using_quaternion.h"
 #include "services/device/generic_sensor/platform_sensor_fusion.h"
 #include "services/device/generic_sensor/platform_sensor_win.h"
 
@@ -136,8 +137,22 @@ void PlatformSensorProviderWin::SensorReaderCreated(
     std::unique_ptr<PlatformSensorReaderWin> sensor_reader) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!sensor_reader) {
-    callback.Run(nullptr);
-    return;
+    // Fallback options for sensors that can be implemented using sensor
+    // fusion. Note that it is important not to generate a cycle by adding a
+    // fallback here that depends on one of the other fallbacks provided.
+    switch (type) {
+      case mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES: {
+        auto algorithm = std::make_unique<
+            OrientationEulerAnglesFusionAlgorithmUsingQuaternion>(
+            true /* absolute */);
+        PlatformSensorFusion::Create(reading_buffer, this, std::move(algorithm),
+                                     std::move(callback));
+        return;
+      }
+      default:
+        callback.Run(nullptr);
+        return;
+    }
   }
 
   scoped_refptr<PlatformSensor> sensor = new PlatformSensorWin(
