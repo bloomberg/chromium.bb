@@ -70,8 +70,8 @@ void NotificationControlButtonsView::ShowCloseButton(bool show) {
         views::CreateSolidBackground(SK_ColorTRANSPARENT));
 
     // Add the button at the last.
-    DCHECK_LE(child_count(), 1);
     AddChildView(close_button_.get());
+    Layout();
   } else if (!show && close_button_) {
     DCHECK(Contains(close_button_.get()));
     close_button_.reset();
@@ -93,12 +93,37 @@ void NotificationControlButtonsView::ShowSettingsButton(bool show) {
     settings_button_->SetBackground(
         views::CreateSolidBackground(SK_ColorTRANSPARENT));
 
-    // Add the button at the first.
-    DCHECK_LE(child_count(), 1);
-    AddChildViewAt(settings_button_.get(), 0);
+    // Add the button next right to the snooze button.
+    int position = snooze_button_ ? 1 : 0;
+    AddChildViewAt(settings_button_.get(), position);
+    Layout();
   } else if (!show && settings_button_) {
     DCHECK(Contains(settings_button_.get()));
     settings_button_.reset();
+  }
+}
+
+void NotificationControlButtonsView::ShowSnoozeButton(bool show) {
+  if (show && !snooze_button_) {
+    snooze_button_ = std::make_unique<PaddedButton>(this);
+    snooze_button_->set_owned_by_client();
+    snooze_button_->SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(kNotificationSnoozeButtonIcon,
+                              gfx::kChromeIconGrey));
+    snooze_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+        IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
+    snooze_button_->SetTooltipText(l10n_util::GetStringUTF16(
+        IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
+    snooze_button_->SetBackground(
+        views::CreateSolidBackground(SK_ColorTRANSPARENT));
+
+    // Add the button at the first.
+    AddChildViewAt(snooze_button_.get(), 0);
+    Layout();
+  } else if (!show && snooze_button_) {
+    DCHECK(Contains(snooze_button_.get()));
+    snooze_button_.reset();
   }
 }
 
@@ -146,6 +171,10 @@ views::Button* NotificationControlButtonsView::settings_button() const {
   return settings_button_.get();
 }
 
+views::Button* NotificationControlButtonsView::snooze_button() const {
+  return snooze_button_.get();
+}
+
 const char* NotificationControlButtonsView::GetClassName() const {
   return kViewClassName;
 }
@@ -156,6 +185,8 @@ void NotificationControlButtonsView::ButtonPressed(views::Button* sender,
     message_view_->OnCloseButtonPressed();
   } else if (settings_button_ && sender == settings_button_.get()) {
     message_view_->OnSettingsButtonPressed(event);
+  } else if (snooze_button_ && sender == snooze_button_.get()) {
+    message_view_->OnSnoozeButtonPressed(event);
   }
 }
 

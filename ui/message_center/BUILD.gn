@@ -18,6 +18,7 @@ aggregate_vector_icons("message_center_vector_icons") {
     "notification_expand_more.icon",
     "notification_inline_reply.icon",
     "notification_settings_button.icon",
+    "notification_snooze_button.icon",
     "product.icon",
   ]
 }

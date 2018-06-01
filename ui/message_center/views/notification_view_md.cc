@@ -757,6 +757,8 @@ void NotificationViewMD::UpdateControlButtonsVisibilityWithNotification(
     const Notification& notification) {
   control_buttons_view_->ShowSettingsButton(
       notification.should_show_settings_button());
+  control_buttons_view_->ShowSnoozeButton(
+      notification.should_show_snooze_button());
   control_buttons_view_->ShowCloseButton(!GetPinned());
   UpdateControlButtonsVisibility();
 }

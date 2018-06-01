@@ -308,7 +308,9 @@ void ArcNotificationContentView::Update(
     const message_center::Notification& notification) {
   control_buttons_view_.ShowSettingsButton(
       notification.should_show_settings_button());
-  control_buttons_view_.ShowCloseButton(!message_view->GetPinned());
+  control_buttons_view_.ShowCloseButton(!notification.pinned());
+  control_buttons_view_.ShowSnoozeButton(
+      notification.should_show_snooze_button());
   control_buttons_view_.SetBackgroundColor(
       GetControlButtonBackgroundColor(item_->GetShownContents()));
   UpdateControlButtonsVisibility();
@@ -335,18 +337,18 @@ void ArcNotificationContentView::UpdateControlButtonsVisibility() {
 
   DCHECK(floating_control_buttons_widget_);
 
-  const bool target_visiblity =
+  const bool target_visibility =
       IsMouseHovered() || (control_buttons_view_.IsCloseButtonFocused()) ||
       (control_buttons_view_.IsSettingsButtonFocused());
 
-  if (target_visiblity == floating_control_buttons_widget_->IsVisible())
+  if (target_visibility == floating_control_buttons_widget_->IsVisible())
     return;
 
   // Add the guard to prevent an infinite loop. Changing visibility may generate
   // an event and it may call thie method again.
   base::AutoReset<bool> reset(&updating_control_buttons_visibility_, true);
 
-  if (target_visiblity)
+  if (target_visibility)
     floating_control_buttons_widget_->Show();
   else
     floating_control_buttons_widget_->Hide();

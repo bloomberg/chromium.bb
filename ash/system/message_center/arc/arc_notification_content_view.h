@@ -60,6 +60,7 @@ class ArcNotificationContentView
   void OnContainerAnimationEnded();
 
  private:
+  friend class ArcNotificationViewTest;
   friend class ArcNotificationContentViewTest;
 
   class EventForwarder;

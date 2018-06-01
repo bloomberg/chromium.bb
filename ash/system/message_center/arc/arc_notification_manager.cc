@@ -331,6 +331,24 @@ void ArcNotificationManager::OpenNotificationSettings(const std::string& key) {
   notifications_instance->OpenNotificationSettings(key);
 }
 
+void ArcNotificationManager::OpenNotificationSnoozeSettings(
+    const std::string& key) {
+  if (!base::ContainsKey(items_, key)) {
+    DVLOG(3) << "Chrome requests to show a snooze setting gut on the"
+             << "notification (key: " << key << "), but it is gone.";
+    return;
+  }
+
+  auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      instance_owner_->holder(), OpenNotificationSnoozeSettings);
+
+  // On shutdown, the ARC channel may quit earlier than notifications.
+  if (!notifications_instance)
+    return;
+
+  notifications_instance->OpenNotificationSnoozeSettings(key);
+}
+
 bool ArcNotificationManager::IsOpeningSettingsSupported() const {
   const auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
       instance_owner_->holder(), OpenNotificationSettings);

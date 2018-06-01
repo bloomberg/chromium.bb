@@ -77,6 +77,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
 
   void OnCloseButtonPressed();
   virtual void OnSettingsButtonPressed(const ui::Event& event);
+  virtual void OnSnoozeButtonPressed(const ui::Event& event);
 
   // views::View
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

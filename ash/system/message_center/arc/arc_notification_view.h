@@ -52,6 +52,7 @@ class ArcNotificationView : public message_center::MessageView,
   bool IsManuallyExpandedOrCollapsed() const override;
   void OnContainerAnimationStarted() override;
   void OnContainerAnimationEnded() override;
+  void OnSnoozeButtonPressed(const ui::Event& event) override;
 
   // views::SlideOutController::Delegate:
   void OnSlideChanged() override;

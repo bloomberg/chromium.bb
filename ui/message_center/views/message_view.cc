@@ -128,7 +128,11 @@ void MessageView::UpdateWithNotification(const Notification& notification) {
 }
 
 void MessageView::SetIsNested() {
+  DCHECK(!is_nested_) << "MessageView::SetIsNested() is called twice wrongly.";
+
   is_nested_ = true;
+  // Update enability since it might be changed by "is_nested" flag.
+  slide_out_controller_.set_enabled(!GetPinned());
 
   if (ShouldRoundMessageViewCorners()) {
     SetBorder(views::CreateRoundedRectBorder(
@@ -351,6 +355,10 @@ void MessageView::OnCloseButtonPressed() {
 
 void MessageView::OnSettingsButtonPressed(const ui::Event& event) {
   MessageCenter::Get()->ClickOnSettingsButton(notification_id_);
+}
+
+void MessageView::OnSnoozeButtonPressed(const ui::Event& event) {
+  // No default implementation for snooze.
 }
 
 void MessageView::SetDrawBackgroundAsActive(bool active) {

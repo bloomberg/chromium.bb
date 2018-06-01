@@ -644,7 +644,6 @@ TEST_F(NotificationViewTest, SlideOutNested) {
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
   UpdateNotificationViews();
-  notification_view()->SetIsNested();
   std::string notification_id = notification()->id();
 
   BeginScroll();
