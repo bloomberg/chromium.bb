@@ -561,7 +561,12 @@ TEST_F(LocalSessionEventHandlerImplTest,
   EXPECT_CALL(
       *update_mock_batch,
       Put(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId1, kTabNodeId1,
-                             /*urls=*/{kFoo1, kBaz1}))));
+                             /*urls=*/{kFoo1, kBaz1}))))
+      .Times(2);
+  EXPECT_CALL(
+      *update_mock_batch,
+      Put(Pointee(MatchesTab(kSessionTag, kWindowId2, kTabId2, kTabNodeId2,
+                             /*urls=*/{kBar1}))));
   EXPECT_CALL(*update_mock_batch, Commit());
 
   EXPECT_CALL(mock_delegate_, CreateLocalSessionWriteBatch())
