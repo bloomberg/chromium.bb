@@ -9,7 +9,6 @@ config("default_coverage") {
     cflags = [
       "-fprofile-instr-generate",
       "-fcoverage-mapping",
-      "-fno-use-cxa-atexit",
 
       # Following experimental flags removes unused header functions from the
       # coverage mapping data embedded in the test binaries, and the reduction
@@ -19,5 +18,9 @@ config("default_coverage") {
       "-limited-coverage-experimental=true",
     ]
     ldflags = [ "-fprofile-instr-generate" ]
+
+    if (!is_win) {
+      cflags += [ "-fno-cxa-atexit" ]
+    }
   }
 }
