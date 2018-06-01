@@ -210,7 +210,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
                            redirect_url.GetOrigin().spec().c_str()),
         request_method, &delegate);
     delegate.WaitForRequestRedirected();
-    loader->FollowRedirect();
+    loader->FollowRedirect(base::nullopt);
 
     EXPECT_EQ(expected_redirect_method, delegate.redirect_info().new_method);
 
@@ -251,7 +251,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
                            url.GetOrigin().spec().c_str()),
         "GET", &delegate, false /* allow_download */, is_main_frame);
     delegate.WaitForRequestRedirected();
-    loader->FollowRedirect();
+    loader->FollowRedirect(base::nullopt);
     delegate.WaitForResponseStarted();
 
     return most_recent_resource_request_.value().priority;
@@ -343,6 +343,48 @@ TEST_F(NavigationURLLoaderImplTest, Redirect308Tests) {
   HTTPRedirectOriginHeaderTest(url, "POST", "POST", url.GetOrigin().spec());
   HTTPRedirectOriginHeaderTest(https_redirect_url, "POST", "POST", "null",
                                true);
+}
+
+TEST_F(NavigationURLLoaderImplTest, RedirectModifiedHeaders) {
+  ASSERT_TRUE(http_test_server_.Start());
+
+  const GURL redirect_url = http_test_server_.GetURL("/redirect301-to-echo");
+
+  TestNavigationURLLoaderDelegate delegate;
+  std::unique_ptr<NavigationURLLoader> loader = CreateTestLoader(
+      redirect_url, "Header1: Value1\r\nHeader2: Value2", "GET", &delegate);
+  delegate.WaitForRequestRedirected();
+
+  ASSERT_TRUE(most_recent_resource_request_);
+
+  // Initial request should only have initial headers.
+  std::string header1, header2;
+  EXPECT_TRUE(
+      most_recent_resource_request_->headers.GetHeader("Header1", &header1));
+  EXPECT_EQ("Value1", header1);
+  EXPECT_TRUE(
+      most_recent_resource_request_->headers.GetHeader("Header2", &header2));
+  EXPECT_EQ("Value2", header2);
+  EXPECT_FALSE(most_recent_resource_request_->headers.HasHeader("Header3"));
+
+  // Overwrite Header2 and add Header3.
+  net::HttpRequestHeaders redirect_headers;
+  redirect_headers.SetHeader("Header2", "");
+  redirect_headers.SetHeader("Header3", "Value3");
+  loader->FollowRedirect(redirect_headers);
+  delegate.WaitForResponseStarted();
+
+  // Redirected request should also have modified headers.
+  EXPECT_TRUE(
+      most_recent_resource_request_->headers.GetHeader("Header1", &header1));
+  EXPECT_EQ("Value1", header1);
+  EXPECT_TRUE(
+      most_recent_resource_request_->headers.GetHeader("Header2", &header2));
+  EXPECT_EQ("", header2);
+  std::string header3;
+  EXPECT_TRUE(
+      most_recent_resource_request_->headers.GetHeader("Header3", &header3));
+  EXPECT_EQ("Value3", header3);
 }
 
 }  // namespace content

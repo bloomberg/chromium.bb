@@ -179,9 +179,10 @@ ThrottlingURLLoader::~ThrottlingURLLoader() {
   }
 }
 
-void ThrottlingURLLoader::FollowRedirect() {
+void ThrottlingURLLoader::FollowRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   if (url_loader_)
-    url_loader_->FollowRedirect(base::nullopt);
+    url_loader_->FollowRedirect(modified_request_headers);
 }
 
 void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,

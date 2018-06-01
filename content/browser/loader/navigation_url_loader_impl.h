@@ -44,7 +44,8 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   ~NavigationURLLoaderImpl() override;
 
   // NavigationURLLoader implementation:
-  void FollowRedirect() override;
+  void FollowRedirect(const base::Optional<net::HttpRequestHeaders>&
+                          modified_request_headers) override;
   void ProceedWithResponse() override;
 
   void OnReceiveResponse(

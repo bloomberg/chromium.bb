@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/optional.h"
 #include "net/base/net_export.h"
 
 class GURL;
@@ -19,13 +20,17 @@ class HttpRequestHeaders;
 class RedirectUtil {
  public:
   // Updates HTTP headers in |request_headers| for a redirect.
+  // |modified_request_headers| are specified by clients to add or override
+  // existing headers for the redirect.
   // |should_clear_upload| is set to true when the request body should be
   // cleared during the redirect.
-  NET_EXPORT static void UpdateHttpRequest(const GURL& original_url,
-                                           const std::string& original_method,
-                                           const RedirectInfo& redirect_info,
-                                           HttpRequestHeaders* request_headers,
-                                           bool* should_clear_upload);
+  NET_EXPORT static void UpdateHttpRequest(
+      const GURL& original_url,
+      const std::string& original_method,
+      const RedirectInfo& redirect_info,
+      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+      HttpRequestHeaders* request_headers,
+      bool* should_clear_upload);
 };
 
 }  // namespace net

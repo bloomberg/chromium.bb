@@ -659,7 +659,8 @@ void ResourceLoader::FollowDeferredRedirectInternal() {
   if (delegate_->HandleExternalProtocol(this, redirect_url)) {
     Cancel();
   } else {
-    request_->FollowDeferredRedirect();
+    request_->FollowDeferredRedirect(
+        base::nullopt /* modified_request_headers */);
   }
 }
 

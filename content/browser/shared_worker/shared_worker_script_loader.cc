@@ -107,7 +107,8 @@ void SharedWorkerScriptLoader::FollowRedirect(
   bool should_clear_upload = false;
   net::RedirectUtil::UpdateHttpRequest(
       resource_request_.url, resource_request_.method, *redirect_info_,
-      &resource_request_.headers, &should_clear_upload);
+      modified_request_headers, &resource_request_.headers,
+      &should_clear_upload);
 
   resource_request_.url = redirect_info_->new_url;
   resource_request_.method = redirect_info_->new_method;

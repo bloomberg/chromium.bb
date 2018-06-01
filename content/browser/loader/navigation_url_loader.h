@@ -8,7 +8,12 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/common/content_export.h"
+
+namespace net {
+class HttpRequestHeaders;
+}
 
 namespace content {
 
@@ -51,7 +56,8 @@ class CONTENT_EXPORT NavigationURLLoader {
 
   // Called in response to OnRequestRedirected to continue processing the
   // request.
-  virtual void FollowRedirect() = 0;
+  virtual void FollowRedirect(const base::Optional<net::HttpRequestHeaders>&
+                                  modified_request_headers) = 0;
 
   // Called in response to OnResponseStarted to process the response.
   virtual void ProceedWithResponse() = 0;

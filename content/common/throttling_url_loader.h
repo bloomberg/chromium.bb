@@ -50,7 +50,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   ~ThrottlingURLLoader() override;
 
-  void FollowRedirect();
+  void FollowRedirect(
+      const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
   void SetPriority(net::RequestPriority priority, int32_t intra_priority_value);
 
   // Disconnect the forwarding URLLoaderClient and the URLLoader. Returns the

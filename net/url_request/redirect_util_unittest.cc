@@ -23,6 +23,7 @@ TEST(RedirectUtilTest, UpdateHttpRequest) {
   struct TestCase {
     const char* new_method;
     const char* new_url;
+    const char* modified_request_headers;
     bool expected_should_clear_upload;
     // nullptr if the origin header should not exist
     const char* expected_origin_header;
@@ -31,24 +32,28 @@ TEST(RedirectUtilTest, UpdateHttpRequest) {
       {
           "POST" /* new_method */,
           "https://www.example.com/redirected.php" /* new_url */,
+          "Header1: Value1\r\nHeader2: Value2" /* modified_request_headers */,
           false /* expected_should_clear_upload */,
           "https://origin.example.com" /* expected_origin_header */
       },
       {
           "GET" /* new_method */,
           "https://www.example.com/redirected.php" /* new_url */,
+          "Header1: Value1\r\nHeader2: Value2" /* modified_request_headers */,
           true /* expected_should_clear_upload */,
           nullptr /* expected_origin_header */
       },
       {
           "POST" /* new_method */,
           "https://other.example.com/redirected.php" /* new_url */,
+          "Header1: Value1\r\nHeader2: Value2" /* modified_request_headers */,
           false /* expected_should_clear_upload */,
           "null" /* expected_origin_header */
       },
       {
           "GET" /* new_method */,
           "https://other.example.com/redirected.php" /* new_url */,
+          "Header1: Value1\r\nHeader2: Value2" /* modified_request_headers */,
           true /* expected_should_clear_upload */,
           nullptr /* expected_origin_header */
       }};
@@ -60,6 +65,13 @@ TEST(RedirectUtilTest, UpdateHttpRequest) {
     redirect_info.new_method = test.new_method;
     redirect_info.new_url = GURL(test.new_url);
 
+    net::HttpRequestHeaders modified_request_headers;
+    modified_request_headers.AddHeadersFromString(
+        test.modified_request_headers);
+    std::string expected_modified_header1, expected_modified_header2;
+    modified_request_headers.GetHeader("Header1", &expected_modified_header1);
+    modified_request_headers.GetHeader("Header2", &expected_modified_header2);
+
     HttpRequestHeaders request_headers;
     request_headers.SetHeader(HttpRequestHeaders::kOrigin,
                               "https://origin.example.com");
@@ -67,12 +79,13 @@ TEST(RedirectUtilTest, UpdateHttpRequest) {
     request_headers.SetHeader(HttpRequestHeaders::kContentType,
                               "text/plain; charset=utf-8");
     request_headers.SetHeader(kCustomHeader, kCustomHeaderValue);
+    request_headers.SetHeader("Header1", "Initial-Value1");
 
     bool should_clear_upload = !test.expected_should_clear_upload;
 
     RedirectUtil::UpdateHttpRequest(original_url, kOriginalMethod,
-                                    redirect_info, &request_headers,
-                                    &should_clear_upload);
+                                    redirect_info, modified_request_headers,
+                                    &request_headers, &should_clear_upload);
     EXPECT_EQ(test.expected_should_clear_upload, should_clear_upload);
     EXPECT_EQ(!test.expected_should_clear_upload,
               request_headers.HasHeader(HttpRequestHeaders::kContentLength));
@@ -87,6 +100,12 @@ TEST(RedirectUtilTest, UpdateHttpRequest) {
     if (test.expected_origin_header) {
       EXPECT_EQ(test.expected_origin_header, origin_header_value);
     }
+
+    std::string modified_header1, modified_header2;
+    EXPECT_TRUE(request_headers.GetHeader("Header1", &modified_header1));
+    EXPECT_EQ(expected_modified_header1, modified_header1);
+    EXPECT_TRUE(request_headers.GetHeader("Header2", &modified_header2));
+    EXPECT_EQ(expected_modified_header2, modified_header2);
   }
 }
 

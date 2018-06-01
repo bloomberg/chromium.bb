@@ -12,11 +12,13 @@
 namespace net {
 
 // static
-void RedirectUtil::UpdateHttpRequest(const GURL& original_url,
-                                     const std::string& original_method,
-                                     const RedirectInfo& redirect_info,
-                                     HttpRequestHeaders* request_headers,
-                                     bool* should_clear_upload) {
+void RedirectUtil::UpdateHttpRequest(
+    const GURL& original_url,
+    const std::string& original_method,
+    const RedirectInfo& redirect_info,
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    HttpRequestHeaders* request_headers,
+    bool* should_clear_upload) {
   DCHECK(request_headers);
   DCHECK(should_clear_upload);
 
@@ -63,6 +65,9 @@ void RedirectUtil::UpdateHttpRequest(const GURL& original_url,
     request_headers->SetHeader(HttpRequestHeaders::kOrigin,
                                url::Origin().Serialize());
   }
+
+  if (modified_request_headers)
+    request_headers->MergeFrom(modified_request_headers.value());
 }
 
 }  // namespace net
