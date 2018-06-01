@@ -23,7 +23,7 @@
   <key>CFBundleVersion</key>
   <string>1</string>
   <key>LSMinimumSystemVersion</key>
-  <string>${MACOSX_DEPLOYMENT_TARGET}</string>
+  <string>${CHROMIUM_MIN_SYSTEM_VERSION}</string>
   <key>NSHumanReadableCopyright</key>
   <string>Copyright © 2016 Google. All rights reserved.</string>
   <key>NSMainNibFile</key>
