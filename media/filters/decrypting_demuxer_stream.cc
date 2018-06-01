@@ -58,7 +58,7 @@ void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
   InitializeDecoderConfig();
 
   if (!cdm_context->GetDecryptor()) {
-    DVLOG(2) << __func__ << ": no decryptor";
+    DVLOG(1) << __func__ << ": no decryptor";
     state_ = kUninitialized;
     base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
@@ -273,10 +273,12 @@ void DecryptingDemuxerStream::DeliverBuffer(
 
   if (status == Decryptor::kNoKey) {
     std::string key_id = pending_buffer_to_decrypt_->decrypt_config()->key_id();
-    std::string missing_key_id = base::HexEncode(key_id.data(), key_id.size());
-    DVLOG(1) << "DeliverBuffer() - no key for key ID " << missing_key_id;
-    MEDIA_LOG(INFO, media_log_)
-        << GetDisplayName() << ": no key for key ID " << missing_key_id;
+
+    std::string log_message =
+        "no key for key ID " + base::HexEncode(key_id.data(), key_id.size()) +
+        "; will resume decrypting after new usable key is available";
+    DVLOG(1) << __func__ << ": " << log_message;
+    MEDIA_LOG(INFO, media_log_) << GetDisplayName() << ": " << log_message;
 
     if (need_to_try_again_if_nokey) {
       // The |state_| is still kPendingDecrypt.
