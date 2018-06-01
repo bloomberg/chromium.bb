@@ -196,8 +196,7 @@ PositionInFlatTree TextOffsetMapping::GetPositionBefore(unsigned offset) const {
 PositionInFlatTree TextOffsetMapping::GetPositionAfter(unsigned offset) const {
   DCHECK_LE(offset, text16_.length());
   CharacterIteratorInFlatTree iterator(range_, behavior_);
-  if (offset > 0)
-    iterator.Advance(offset - 1);
+  iterator.Advance(offset);
   return iterator.GetPositionAfter();
 }
 

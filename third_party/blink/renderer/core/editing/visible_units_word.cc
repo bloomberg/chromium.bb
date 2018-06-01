@@ -32,10 +32,12 @@
 
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/text_segments.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/text/text_boundaries.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 
 namespace blink {
 
@@ -80,7 +82,29 @@ PositionTemplate<Strategy> EndOfWordAlgorithm(
 
 PositionInFlatTree NextWordPositionInternal(
     const PositionInFlatTree& position) {
-  return FindBoundaryForward(position, FindNextWordForward);
+  class Finder final : public TextSegments::Finder {
+    STACK_ALLOCATED();
+
+   private:
+    Position Find(const String text, unsigned offset) final {
+      DCHECK_LE(offset, text.length());
+      if (offset == text.length() || text.length() == 0)
+        return Position();
+      TextBreakIterator* it =
+          WordBreakIterator(text.Characters16(), text.length());
+      for (int runner = it->following(offset); runner != kTextBreakDone;
+           runner = it->following(runner)) {
+        // We stop searching when the character preceding the break is
+        // alphanumeric or underscore.
+        if (static_cast<unsigned>(runner) < text.length() &&
+            (WTF::Unicode::IsAlphanumeric(text[runner - 1]) ||
+             text[runner - 1] == kLowLineCharacter))
+          return Position::After(runner - 1);
+      }
+      return Position::After(text.length() - 1);
+    }
+  } finder;
+  return TextSegments::FindBoundaryForward(position, &finder);
 }
 
 unsigned PreviousWordPositionBoundary(

@@ -348,13 +348,13 @@ TEST_P(ParameterizedTextOffsetMappingTest, GetPositionBefore) {
 
 TEST_P(ParameterizedTextOffsetMappingTest, GetPositionAfter) {
   EXPECT_EQ("  0|12  456  ", GetPositionAfter("  012  456  ", 0));
-  EXPECT_EQ("  0|12  456  ", GetPositionAfter("  012  456  ", 1));
-  EXPECT_EQ("  01|2  456  ", GetPositionAfter("  012  456  ", 2));
-  EXPECT_EQ("  012|  456  ", GetPositionAfter("  012  456  ", 3));
-  EXPECT_EQ("  012 | 456  ", GetPositionAfter("  012  456  ", 4));
-  EXPECT_EQ("  012  4|56  ", GetPositionAfter("  012  456  ", 5));
-  EXPECT_EQ("  012  45|6  ", GetPositionAfter("  012  456  ", 6));
-  EXPECT_EQ("  012  456|  ", GetPositionAfter("  012  456  ", 7));
+  EXPECT_EQ("  01|2  456  ", GetPositionAfter("  012  456  ", 1));
+  EXPECT_EQ("  012|  456  ", GetPositionAfter("  012  456  ", 2));
+  EXPECT_EQ("  012 | 456  ", GetPositionAfter("  012  456  ", 3));
+  EXPECT_EQ("  012  4|56  ", GetPositionAfter("  012  456  ", 4));
+  EXPECT_EQ("  012  45|6  ", GetPositionAfter("  012  456  ", 5));
+  EXPECT_EQ("  012  456|  ", GetPositionAfter("  012  456  ", 6));
+  EXPECT_EQ("  012  456  |", GetPositionAfter("  012  456  ", 7));
   // We hit DCHECK for offset 8, because we walk on "012 456".
 }
 
