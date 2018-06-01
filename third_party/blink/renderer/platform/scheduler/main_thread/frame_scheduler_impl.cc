@@ -311,14 +311,15 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     // Media events should not be deferred to ensure that media playback is
     // smooth.
     case TaskType::kMediaElementEvent:
+    case TaskType::kInternalTest:
+    case TaskType::kInternalWebCrypto:
     case TaskType::kInternalIndexedDB:
     case TaskType::kInternalMedia:
     case TaskType::kInternalMediaRealTime:
     case TaskType::kInternalUserInteraction:
+    case TaskType::kInternalIntersectionObserver:
     case TaskType::kUnthrottled:
       return TaskQueueWithTaskType::Create(PausableTaskQueue(), type);
-    case TaskType::kInternalTest:
-    case TaskType::kInternalWebCrypto:
     case TaskType::kInternalIPC:
     // The TaskType of Inspector tasks needs to be unpausable because they need
     // to run even on a paused page.
@@ -327,7 +328,6 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     // unthrottled and undeferred) not to prevent service workers that may
     // control browser navigation on multiple tabs.
     case TaskType::kInternalWorker:
-    case TaskType::kInternalIntersectionObserver:
       return TaskQueueWithTaskType::Create(UnpausableTaskQueue(), type);
     case TaskType::kDeprecatedNone:
     case TaskType::kMainThreadTaskQueueV8:
