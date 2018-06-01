@@ -16,7 +16,6 @@
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/fake_connection.h"
-#include "components/cryptauth/fake_cryptauth_service.h"
 #include "components/cryptauth/fake_secure_channel.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
 #include "components/cryptauth/remote_device_test_util.h"
@@ -294,10 +293,8 @@ class BleConnectionManagerTest : public testing::Test {
  protected:
   class FakeSecureChannel : public cryptauth::FakeSecureChannel {
    public:
-    FakeSecureChannel(std::unique_ptr<cryptauth::Connection> connection,
-                      cryptauth::CryptAuthService* cryptauth_service)
-        : cryptauth::FakeSecureChannel(std::move(connection),
-                                       cryptauth_service) {}
+    FakeSecureChannel(std::unique_ptr<cryptauth::Connection> connection)
+        : cryptauth::FakeSecureChannel(std::move(connection)) {}
     ~FakeSecureChannel() override = default;
 
     void AddObserver(Observer* observer) override {
@@ -326,13 +323,11 @@ class BleConnectionManagerTest : public testing::Test {
     }
 
     std::unique_ptr<cryptauth::SecureChannel> BuildInstance(
-        std::unique_ptr<cryptauth::Connection> connection,
-        cryptauth::CryptAuthService* cryptauth_service) override {
+        std::unique_ptr<cryptauth::Connection> connection) override {
       FakeConnectionWithAddress* fake_connection =
           static_cast<FakeConnectionWithAddress*>(connection.get());
       EXPECT_EQ(expected_device_address_, fake_connection->GetDeviceAddress());
-      FakeSecureChannel* channel =
-          new FakeSecureChannel(std::move(connection), cryptauth_service);
+      FakeSecureChannel* channel = new FakeSecureChannel(std::move(connection));
       created_channels_.push_back(channel);
       return base::WrapUnique(channel);
     }
@@ -352,8 +347,6 @@ class BleConnectionManagerTest : public testing::Test {
     verified_status_changes_.clear();
     verified_received_messages_.clear();
 
-    fake_cryptauth_service_ =
-        std::make_unique<cryptauth::FakeCryptAuthService>();
     mock_adapter_ =
         base::MakeRefCounted<NiceMock<device::MockBluetoothAdapter>>();
 
@@ -378,9 +371,8 @@ class BleConnectionManagerTest : public testing::Test {
         fake_secure_channel_factory_.get());
 
     manager_ = base::WrapUnique(new BleConnectionManager(
-        fake_cryptauth_service_.get(), mock_adapter_, device_queue_.get(),
-        fake_ble_advertiser_.get(), fake_ble_scanner_.get(),
-        fake_ad_hoc_ble_advertiser_.get()));
+        mock_adapter_, device_queue_.get(), fake_ble_advertiser_.get(),
+        fake_ble_scanner_.get(), fake_ad_hoc_ble_advertiser_.get()));
     test_observer_ = base::WrapUnique(new TestObserver());
     manager_->AddObserver(test_observer_.get());
     test_metrics_observer_ = base::WrapUnique(new TestMetricsObserver());
@@ -637,7 +629,6 @@ class BleConnectionManagerTest : public testing::Test {
 
   const cryptauth::RemoteDeviceRefList test_devices_;
 
-  std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
   std::unique_ptr<FakeBleAdvertiser> fake_ble_advertiser_;
   std::unique_ptr<FakeBleScanner> fake_ble_scanner_;

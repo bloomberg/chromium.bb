@@ -10,13 +10,10 @@
 
 namespace cryptauth {
 
-class CryptAuthService;
-
 // A fake implementation of SecureChannel to use in tests.
 class FakeSecureChannel : public SecureChannel {
  public:
-  FakeSecureChannel(std::unique_ptr<Connection> connection,
-                    CryptAuthService* cryptauth_service);
+  FakeSecureChannel(std::unique_ptr<Connection> connection);
   ~FakeSecureChannel() override;
 
   struct SentMessage {

@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/cryptauth/fake_authenticator.h"
 #include "components/cryptauth/fake_connection.h"
-#include "components/cryptauth/fake_cryptauth_service.h"
 #include "components/cryptauth/fake_secure_context.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
 #include "components/cryptauth/remote_device_ref.h"
@@ -185,14 +184,12 @@ class CryptAuthSecureChannelTest : public testing::Test {
 
     fake_secure_context_ = nullptr;
 
-    fake_cryptauth_service_ = std::make_unique<FakeCryptAuthService>();
-
     fake_connection_ =
         new FakeConnection(test_device_, /* should_auto_connect */ false);
 
     EXPECT_FALSE(fake_connection_->observers().size());
-    secure_channel_ = base::WrapUnique(new SecureChannel(
-        base::WrapUnique(fake_connection_), fake_cryptauth_service_.get()));
+    secure_channel_ =
+        base::WrapUnique(new SecureChannel(base::WrapUnique(fake_connection_)));
     EXPECT_EQ(static_cast<size_t>(1), fake_connection_->observers().size());
     EXPECT_EQ(secure_channel_.get(), fake_connection_->observers()[0]);
 
@@ -374,8 +371,6 @@ class CryptAuthSecureChannelTest : public testing::Test {
 
   std::unique_ptr<FakeSecureMessageDelegateFactory>
       fake_secure_message_delegate_factory_;
-
-  std::unique_ptr<FakeCryptAuthService> fake_cryptauth_service_;
 
   // Owned by secure_channel_ once authentication has completed successfully.
   FakeSecureContext* fake_secure_context_;
