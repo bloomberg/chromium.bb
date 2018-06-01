@@ -214,7 +214,7 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   SET_STRING("deleteCommandLabel", IDS_WALLPAPER_MANAGER_DELETE_COMMAND_LABEL);
   SET_STRING("customCategoryLabel",
              IsUsingNewWallpaperPicker()
-                 ? IDS_WALLPAPER_MANAGER_MY_PHOTOS_CATEGORY_LABEL
+                 ? IDS_WALLPAPER_MANAGER_MY_IMAGES_CATEGORY_LABEL
                  : IDS_WALLPAPER_MANAGER_CUSTOM_CATEGORY_LABEL);
   SET_STRING("selectCustomLabel",
              IDS_WALLPAPER_MANAGER_SELECT_CUSTOM_LABEL);
@@ -226,8 +226,12 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
              IDS_WALLPAPER_MANAGER_LAYOUT_CENTER_CROPPED);
   SET_STRING("centerLayout", IDS_WALLPAPER_MANAGER_LAYOUT_CENTER);
   SET_STRING("stretchLayout", IDS_WALLPAPER_MANAGER_LAYOUT_STRETCH);
-  SET_STRING("connectionFailed", IDS_WALLPAPER_MANAGER_ACCESS_FAIL);
-  SET_STRING("downloadFailed", IDS_WALLPAPER_MANAGER_DOWNLOAD_FAIL);
+  SET_STRING("connectionFailed", IsUsingNewWallpaperPicker()
+                                     ? IDS_WALLPAPER_MANAGER_NETWORK_ERROR
+                                     : IDS_WALLPAPER_MANAGER_ACCESS_FAIL);
+  SET_STRING("downloadFailed", IsUsingNewWallpaperPicker()
+                                   ? IDS_WALLPAPER_MANAGER_IMAGE_ERROR
+                                   : IDS_WALLPAPER_MANAGER_DOWNLOAD_FAIL);
   SET_STRING("downloadCanceled", IDS_WALLPAPER_MANAGER_DOWNLOAD_CANCEL);
   SET_STRING("customWallpaperWarning",
              IDS_WALLPAPER_MANAGER_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING);
