@@ -35,6 +35,7 @@ extern const char kVirtualTimeBudget[];
 extern const char kWindowSize[];
 extern const char kAuthServerWhitelist[];
 extern const char kFontRenderHinting[];
+extern const char kBlockNewWebContents[];
 
 // Switches which are replicated from content.
 using ::switches::kRemoteDebuggingPort;
