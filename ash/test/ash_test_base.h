@@ -40,17 +40,9 @@ class Rect;
 }
 
 namespace ui {
-namespace mojom {
-enum class WindowType;
-}
 namespace test {
 class EventGenerator;
 }
-namespace ws2 {
-class TestWindowTreeClient;
-class WindowServiceClient;
-class WindowServiceClientTestHelper;
-}  // namespace ws2
 }
 
 namespace views {
@@ -106,10 +98,6 @@ class AshTestBase : public testing::Test,
   // window, otherwise the window is added to the display matching
   // |bounds_in_screen|. |shell_window_id| is the shell window id to give to
   // the new window.
-  //
-  // In classic mode this simulates creating a window as a client of Ash would.
-  // That is, it goes through the WindowService.
-  //
   // TODO(sky): convert existing CreateTestWindow() functions into this one.
   std::unique_ptr<aura::Window> CreateTestWindow(
       const gfx::Rect& bounds_in_screen = gfx::Rect(),
@@ -235,11 +223,6 @@ class AshTestBase : public testing::Test,
   display::Display GetSecondaryDisplay();
 
  private:
-  std::unique_ptr<aura::Window> CreateTestWindowMash(
-      ui::mojom::WindowType window_type,
-      int shell_window_id,
-      std::map<std::string, std::vector<uint8_t>>* properties);
-
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* window) override;
   void OnHostInitialized(aura::WindowTreeHost* host) override;
@@ -257,10 +240,6 @@ class AshTestBase : public testing::Test,
   std::unique_ptr<AshTestEnvironment> ash_test_environment_;
   std::unique_ptr<AshTestHelper> ash_test_helper_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
-
-  std::unique_ptr<ui::ws2::TestWindowTreeClient> window_tree_client_;
-  std::unique_ptr<ui::ws2::WindowServiceClient> window_service_client_;
-  std::unique_ptr<ui::ws2::WindowServiceClientTestHelper> client_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };

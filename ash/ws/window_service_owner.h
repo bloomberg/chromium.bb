@@ -43,13 +43,7 @@ class ASH_EXPORT WindowServiceOwner {
   // WindowService.
   void BindWindowService(service_manager::mojom::ServiceRequest request);
 
-  // Returns the WindowService, or null if BindWindowService() hasn't been
-  // called yet.
-  ui::ws2::WindowService* window_service() { return window_service_; }
-
  private:
-  friend class AshTestHelper;
-
   // Non-null until |service_context_| is created.
   std::unique_ptr<ui::ws2::GpuSupport> gpu_support_;
 

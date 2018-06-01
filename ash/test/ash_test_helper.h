@@ -8,8 +8,11 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
+#include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/session/test_session_controller_client.h"
 #include "base/macros.h"
 #include "base/test/scoped_command_line.h"
@@ -45,11 +48,11 @@ class WMState;
 
 namespace ash {
 
-class AppListTestHelper;
 class AshTestEnvironment;
 class AshTestViewsDelegate;
-class TestConnector;
+class RootWindowController;
 class TestShellDelegate;
+class TestSessionControllerClient;
 class WindowManagerService;
 
 enum class Config;
@@ -122,15 +125,17 @@ class AshTestHelper {
   friend class AshTestSuite;
   friend class mash::test::MashTestSuite;
 
-  // Forces creation of the WindowService. The WindowService is normally created
-  // on demand, this force the creation.
-  void CreateWindowService();
-
   // Called when running in mash to create the WindowManager.
   void CreateMashWindowManager();
 
   // Called when running in ash to create Shell.
   void CreateShell();
+
+  // Creates a new RootWindowController based on |display_spec|. The origin is
+  // set to |next_x| and on exit |next_x| is set to the origin + the width.
+  RootWindowController* CreateRootWindowController(
+      const std::string& display_spec,
+      int* next_x);
 
   static Config config_;
 
@@ -153,14 +158,14 @@ class AshTestHelper {
   aura::TestWindowTreeClientSetup window_tree_client_setup_;
   std::unique_ptr<WindowManagerService> window_manager_service_;
   std::unique_ptr<aura::WindowTreeClientPrivate> window_tree_client_private_;
+  // Id for the next Display created by CreateRootWindowController().
+  int64_t next_display_id_ = 1;
 
   std::unique_ptr<TestSessionControllerClient> session_controller_client_;
 
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
 
   std::unique_ptr<AppListTestHelper> app_list_test_helper_;
-
-  std::unique_ptr<TestConnector> test_connector_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };
