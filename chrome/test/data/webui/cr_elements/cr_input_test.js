@@ -15,31 +15,24 @@ suite('cr-input', function() {
   });
 
   test('AttributesCorrectlySupported', function() {
-    assertFalse(input.autofocus);
-    crInput.setAttribute('autofocus', 'autofocus');
-    assertTrue(input.autofocus);
-
-    assertFalse(input.disabled);
-    crInput.setAttribute('disabled', 'disabled');
-    assertTrue(input.disabled);
-
+    assertFalse(input.hasAttribute('autofocus'));
+    assertFalse(input.hasAttribute('disabled'));
     assertFalse(input.hasAttribute('tabindex'));
+
+    crInput.setAttribute('autofocus', 'autofocus');
+    assertTrue(input.hasAttribute('autofocus'));
+
+    crInput.setAttribute('disabled', 'disabled');
+    assertTrue(input.hasAttribute('disabled'));
+
     crInput.tabIndex = '-1';
-    assertEquals(-1, input.tabIndex);
+    assertEquals('-1', input.getAttribute('tabindex'));
     crInput.tabIndex = '0';
-    assertEquals(0, input.tabIndex);
+    assertEquals('0', input.getAttribute('tabindex'));
 
     assertEquals('none', getComputedStyle(crInput.$.label).display);
     crInput.label = 'label';
     assertEquals('block', getComputedStyle(crInput.$.label).display);
-
-    assertFalse(input.readOnly);
-    crInput.setAttribute('readonly', 'readonly');
-    assertTrue(input.readOnly);
-
-    assertEquals('text', input.type);
-    crInput.setAttribute('type', 'password');
-    assertEquals('password', input.type);
   });
 
   test('placeholderCorrectlyBound', function() {

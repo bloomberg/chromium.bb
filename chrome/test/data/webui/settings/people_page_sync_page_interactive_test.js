@@ -16,11 +16,16 @@ suite('sync-page-test', function() {
     cr.webUIListenerCallback('sync-prefs-changed', {passphraseRequired: true});
     Polymer.dom.flush();
 
+    const input = testElement.$$('#existingPassphraseInput');
+
+    let focused = false;
+    input.addEventListener('focus', function() {
+      focused = true;
+    });
+
     // Simulate event normally fired by main_page_behavior after subpage
     // animation ends.
     testElement.fire('show-container');
-    assertEquals(
-        testElement.$$('#existingPassphraseInput').inputElement,
-        testElement.$$('#existingPassphraseInput').shadowRoot.activeElement);
+    assertTrue(focused);
   });
 });

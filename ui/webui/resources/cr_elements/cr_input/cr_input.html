@@ -27,7 +27,7 @@
         margin-top: 8px;
       }
 
-      :host(:focus-within:not([readonly]):not([invalid])) #label {
+      :host(:focus-within) #label {
         color: var(--cr-input-focus-color);
       }
 
@@ -50,7 +50,6 @@
         box-sizing: border-box;
         caret-color: var(--cr-input-focus-color);
         color: inherit;
-        font-size: inherit;
         line-height: inherit;
         outline: none;
         padding: 6px 8px;
@@ -63,10 +62,6 @@
 
       :host([invalid]) input {
         caret-color: var(--cr-input-error-color);
-      }
-
-      :host([readonly]) input {
-        opacity: 0.6;
       }
 
       /* Underline styling below. */
@@ -88,7 +83,7 @@
       }
 
       :host([invalid]) #underline,
-      :host(:focus-within:not([readonly])) #underline {
+      :host(:focus-within) #underline {
         opacity: 1;
         transition: width 180ms ease-out, opacity 120ms ease-in;
         width: 100%;
@@ -118,12 +113,8 @@
     </style>
     <div id="label" hidden="[[!label]]">[[label]]</div>
     <div id="input-container">
-      <!-- Only attributes that are named inconsistently between html and js
-           need to use attr$="", such as |tabindex| vs .tabIndex and |readonly|
-           vs .readOnly. -->
       <input id="input" disabled="[[disabled]]" autofocus="[[autofocus]]"
-          value="{{value::input}}" tabindex$="[[tabIndex]]" type="[[type]]"
-          readonly$="[[readonly]]">
+          value="{{value::input}}" tabindex$="[[tabIndex]]">
       <div id="underline"></div>
     </div>
     <div id="error">[[errorMessage]]</div>
