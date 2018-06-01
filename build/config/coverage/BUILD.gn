@@ -20,7 +20,7 @@ config("default_coverage") {
     ldflags = [ "-fprofile-instr-generate" ]
 
     if (!is_win) {
-      cflags += [ "-fno-cxa-atexit" ]
+      cflags += [ "-fno-use-cxa-atexit" ]
     }
   }
 }
