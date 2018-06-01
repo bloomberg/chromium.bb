@@ -277,7 +277,27 @@ void VizProcessTransportFactory::SetDisplayVisible(ui::Compositor* compositor,
 
 void VizProcessTransportFactory::ResizeDisplay(ui::Compositor* compositor,
                                                const gfx::Size& size) {
-  // Do nothing and resize when a CompositorFrame with a new size arrives.
+  auto iter = compositor_data_map_.find(compositor);
+  if (iter == compositor_data_map_.end() || !iter->second.display_private)
+    return;
+  iter->second.display_private->Resize(size);
+}
+
+void VizProcessTransportFactory::DisableSwapUntilResize(
+    ui::Compositor* compositor) {
+  auto iter = compositor_data_map_.find(compositor);
+  if (iter == compositor_data_map_.end() || !iter->second.display_private)
+    return;
+  {
+    // Browser needs to block for Viz to receive and process this message.
+    // Otherwise when we return from WM_WINDOWPOSCHANGING message handler and
+    // receive a WM_WINDOWPOSCHANGED the resize is finalized and any swaps of
+    // wrong size by Viz can cause the swapped content to get scaled.
+    // TODO(samans): Investigate nonblocking ways for solving
+    // https://crbug.com/811945.
+    mojo::SyncCallRestrictions::ScopedAllowSyncCall scoped_allow_sync_call;
+    iter->second.display_private->DisableSwapUntilResize();
+  }
 }
 
 void VizProcessTransportFactory::SetDisplayColorMatrix(
@@ -516,6 +536,7 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
   // which will destroy the existing CompositorFrameSink.
   GetHostFrameSinkManager()->CreateRootCompositorFrameSink(
       std::move(root_params));
+  compositor_data.display_private->Resize(compositor->size());
 
   // Create LayerTreeFrameSink with the browser end of CompositorFrameSink.
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;

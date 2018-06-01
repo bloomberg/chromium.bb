@@ -23,8 +23,7 @@ class CompositorFrameSinkClientBinding
   CompositorFrameSinkClientBinding(
       viz::mojom::CompositorFrameSinkClient* sink_client,
       viz::mojom::CompositorFrameSinkClientRequest sink_client_request,
-      viz::mojom::CompositorFrameSinkAssociatedPtr compositor_frame_sink,
-      viz::mojom::DisplayPrivateAssociatedPtr display_private);
+      viz::mojom::CompositorFrameSinkAssociatedPtr compositor_frame_sink);
   ~CompositorFrameSinkClientBinding() override;
 
  private:
@@ -48,7 +47,6 @@ class CompositorFrameSinkClientBinding
   void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
 
   mojo::Binding<viz::mojom::CompositorFrameSinkClient> binding_;
-  viz::mojom::DisplayPrivateAssociatedPtr display_private_;
   viz::mojom::CompositorFrameSinkAssociatedPtr compositor_frame_sink_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameSinkClientBinding);
