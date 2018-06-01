@@ -20,7 +20,7 @@ std::string PrefetchEnumToString(PrefetchBackgroundTaskRescheduleType value) {
     case PrefetchBackgroundTaskRescheduleType::SUSPEND:
       return "SUSPEND";
   }
-  CHECK(false) << static_cast<int>(value) << " not valid enum value";
+  DCHECK(false) << static_cast<int>(value) << " not valid enum value";
 }
 
 std::string PrefetchEnumToString(PrefetchRequestStatus value) {
@@ -36,7 +36,7 @@ std::string PrefetchEnumToString(PrefetchRequestStatus value) {
     case PrefetchRequestStatus::COUNT:
       return "COUNT";
   }
-  CHECK(false) << static_cast<int>(value) << " not valid enum value";
+  DCHECK(false) << static_cast<int>(value) << " not valid enum value";
 }
 
 std::string PrefetchEnumToString(RenderStatus value) {
@@ -50,7 +50,7 @@ std::string PrefetchEnumToString(RenderStatus value) {
     case RenderStatus::EXCEEDED_LIMIT:
       return "EXCEEDED_LIMIT";
   }
-  CHECK(false) << static_cast<int>(value) << " not valid enum value";
+  DCHECK(false) << static_cast<int>(value) << " not valid enum value";
 }
 
 std::string PrefetchEnumToString(PrefetchItemState value) {
@@ -78,7 +78,7 @@ std::string PrefetchEnumToString(PrefetchItemState value) {
     case PrefetchItemState::ZOMBIE:
       return "ZOMBIE";
   }
-  CHECK(false) << static_cast<int>(value) << " not valid enum value";
+  DCHECK(false) << static_cast<int>(value) << " not valid enum value";
 }
 
 std::string PrefetchEnumToString(PrefetchItemErrorCode value) {
@@ -109,6 +109,8 @@ std::string PrefetchEnumToString(PrefetchItemErrorCode value) {
       return "STALE_AT_IMPORTING";
     case PrefetchItemErrorCode::STALE_AT_UNKNOWN:
       return "STALE_AT_UNKNOWN";
+    case PrefetchItemErrorCode::STUCK:
+      return "STUCK";
     case PrefetchItemErrorCode::GET_OPERATION_MAX_ATTEMPTS_REACHED:
       return "GET_OPERATION_MAX_ATTEMPTS_REACHED";
     case PrefetchItemErrorCode::
@@ -123,7 +125,7 @@ std::string PrefetchEnumToString(PrefetchItemErrorCode value) {
     case PrefetchItemErrorCode::SUGGESTION_INVALIDATED:
       return "SUGGESTION_INVALIDATED";
   }
-  CHECK(false) << static_cast<int>(value) << " not valid enum value";
+  DCHECK(false) << static_cast<int>(value) << " not valid enum value";
 }
 }  // namespace
 

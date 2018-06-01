@@ -30,6 +30,7 @@ void PrefetchTaskTestBase::TearDown() {
   TaskTestBase::TearDown();
 }
 
+// static
 std::vector<PrefetchItemState> PrefetchTaskTestBase::GetAllStatesExcept(
     std::set<PrefetchItemState> states_to_exclude) {
   std::vector<PrefetchItemState> selected_states;
@@ -55,9 +56,10 @@ int64_t PrefetchTaskTestBase::InsertPrefetchItemInStateWithOperation(
   return item.offline_id;
 }
 
+// static
 std::set<PrefetchItem> PrefetchTaskTestBase::FilterByState(
     const std::set<PrefetchItem>& items,
-    PrefetchItemState state) const {
+    PrefetchItemState state) {
   std::set<PrefetchItem> result;
   for (const PrefetchItem& item : items) {
     if (item.state == state)

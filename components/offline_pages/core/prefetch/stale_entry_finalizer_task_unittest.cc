@@ -88,13 +88,12 @@ TEST_F(StaleEntryFinalizerTaskTest, StoreFailure) {
 
 // Tests that the task works correctly with an empty database.
 TEST_F(StaleEntryFinalizerTaskTest, EmptyRun) {
-  std::set<PrefetchItem> no_items;
-  EXPECT_EQ(0U, store_util()->GetAllItems(&no_items));
+  EXPECT_EQ(std::set<PrefetchItem>(), store_util()->GetAllItems());
 
   // Execute the expiration task.
   RunTask(stale_finalizer_task_.get());
   EXPECT_EQ(Result::NO_MORE_WORK, stale_finalizer_task_->final_status());
-  EXPECT_EQ(0U, store_util()->GetAllItems(&no_items));
+  EXPECT_EQ(std::set<PrefetchItem>(), store_util()->GetAllItems());
 }
 
 // Verifies that expired and non-expired items from all expirable states are
@@ -133,9 +132,7 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesFreshnessTimesCorrectly) {
       b1_item1_fresh, b1_item2_stale, b2_item1_fresh, b2_item2_stale,
       b2_item3_fresh, b2_item4_stale, b2_item5_fresh, b2_item6_stale,
       b3_item1_fresh, b3_item2_stale, b3_item3_fresh, b3_item4_stale};
-  std::set<PrefetchItem> all_inserted_items;
-  EXPECT_EQ(12U, store_util()->GetAllItems(&all_inserted_items));
-  EXPECT_EQ(initial_items, all_inserted_items);
+  EXPECT_EQ(initial_items, store_util()->GetAllItems());
 
   // Execute the expiration task.
   RunTask(stale_finalizer_task_.get());
@@ -167,10 +164,7 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesFreshnessTimesCorrectly) {
       b1_item1_fresh, b1_item2_finished, b2_item1_fresh, b2_item2_finished,
       b2_item3_fresh, b2_item4_finished, b2_item5_fresh, b2_item6_finished,
       b3_item1_fresh, b3_item2_finished, b3_item3_fresh, b3_item4_finished};
-  EXPECT_EQ(12U, expected_final_items.size());
-  std::set<PrefetchItem> all_items_post_expiration;
-  EXPECT_EQ(12U, store_util()->GetAllItems(&all_items_post_expiration));
-  EXPECT_EQ(expected_final_items, all_items_post_expiration);
+  EXPECT_EQ(expected_final_items, store_util()->GetAllItems());
 }
 
 // Checks that items from all states are handled properly by the task when all
@@ -189,8 +183,8 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesStalesInAllStatesCorrectly) {
   EXPECT_EQ(Result::MORE_WORK_NEEDED, stale_finalizer_task_->final_status());
 
   // Checks item counts for states expected to still exist.
-  std::set<PrefetchItem> post_items;
-  EXPECT_EQ(11U, store_util()->GetAllItems(&post_items));
+  std::set<PrefetchItem> post_items = store_util()->GetAllItems();
+  EXPECT_EQ(11U, post_items.size());
   EXPECT_EQ(
       1U,
       Filter(post_items, PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE).size());
@@ -274,9 +268,7 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesClockSetBackwardsCorrectly) {
       b2_item3_recent, b2_item4_future, b2_item5_recent, b2_item6_future,
       b3_item1_recent, b3_item2_future, b3_item3_recent, b3_item4_future,
       b4_item1_future};
-  std::set<PrefetchItem> all_inserted_items;
-  EXPECT_EQ(13U, store_util()->GetAllItems(&all_inserted_items));
-  EXPECT_EQ(initial_items, all_inserted_items);
+  EXPECT_EQ(initial_items, store_util()->GetAllItems());
 
   // Execute the expiration task.
   RunTask(stale_finalizer_task_.get());
@@ -318,10 +310,7 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesClockSetBackwardsCorrectly) {
       b2_item3_recent, b2_item4_finished, b2_item5_recent, b2_item6_finished,
       b3_item1_recent, b3_item2_finished, b3_item3_recent, b3_item4_finished,
       b4_item1_future};
-  EXPECT_EQ(13U, expected_final_items.size());
-  std::set<PrefetchItem> all_items_post_expiration;
-  EXPECT_EQ(13U, store_util()->GetAllItems(&all_items_post_expiration));
-  EXPECT_EQ(expected_final_items, all_items_post_expiration);
+  EXPECT_EQ(expected_final_items, store_util()->GetAllItems());
 }
 
 // Checks that items from all states are handled properly by the task when all
@@ -339,8 +328,8 @@ TEST_F(StaleEntryFinalizerTaskTest,
   EXPECT_EQ(Result::MORE_WORK_NEEDED, stale_finalizer_task_->final_status());
 
   // Checks item counts for states expected to still exist.
-  std::set<PrefetchItem> post_items;
-  EXPECT_EQ(11U, store_util()->GetAllItems(&post_items));
+  std::set<PrefetchItem> post_items = store_util()->GetAllItems();
+  EXPECT_EQ(11U, post_items.size());
   EXPECT_EQ(
       1U,
       Filter(post_items, PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE).size());
@@ -351,8 +340,7 @@ TEST_F(StaleEntryFinalizerTaskTest,
   EXPECT_EQ(1U, Filter(post_items, PrefetchItemState::ZOMBIE).size());
 }
 
-// Verifies that expired and non-expired items from all expirable states are
-// properly handled.
+// Verifies that only stale, live items are transitioned to 'FINISHED'.
 TEST_F(StaleEntryFinalizerTaskTest, HandlesStuckItemsCorrectly) {
   base::HistogramTester histogram_tester;
   // Insert fresh and stale items for all expirable states from all buckets.
@@ -360,17 +348,27 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesStuckItemsCorrectly) {
       CreateAndInsertItem(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE, 1);
   PrefetchItem item2_stuck =
       CreateAndInsertItem(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE, -170);
+  PrefetchItem item3_finished =
+      CreateAndInsertItem(PrefetchItemState::FINISHED, -170);
+  PrefetchItem item4_zombie =
+      CreateAndInsertItem(PrefetchItemState::ZOMBIE, -170);
 
   // Check inserted initial items.
-  std::set<PrefetchItem> initial_items = {item1_recent, item2_stuck};
-  std::set<PrefetchItem> all_inserted_items;
-  EXPECT_EQ(2U, store_util()->GetAllItems(&all_inserted_items));
-  EXPECT_EQ(initial_items, all_inserted_items);
+  std::set<PrefetchItem> initial_items = {item1_recent, item2_stuck,
+                                          item3_finished, item4_zombie};
+  EXPECT_EQ(initial_items, store_util()->GetAllItems());
 
   // Execute the expiration task.
   RunTask(stale_finalizer_task_.get());
   EXPECT_EQ(Result::MORE_WORK_NEEDED, stale_finalizer_task_->final_status());
 
+  // Only the stuck item is changed.
+  PrefetchItem want_stuck_item = item2_stuck;
+  want_stuck_item.state = PrefetchItemState::FINISHED;
+  want_stuck_item.error_code = PrefetchItemErrorCode::STUCK;
+  std::set<PrefetchItem> final_items{item1_recent, want_stuck_item,
+                                     item3_finished, item4_zombie};
+  EXPECT_EQ(final_items, store_util()->GetAllItems());
   // Check that the proper UMA was reported for the stale item, but not the
   // fresh item, so there should be exactly one sample.
   histogram_tester.ExpectUniqueSample(
