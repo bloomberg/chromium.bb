@@ -771,9 +771,9 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
           setting:
             "It's not possible to disable this feature from settings."
           chrome_policy {
-            DeveloperToolsDisabled {
+            DeveloperToolsAvailability {
               policy_options {mode: MANDATORY}
-              DeveloperToolsDisabled: true
+              DeveloperToolsAvailability: 2
             }
           }
         })");
