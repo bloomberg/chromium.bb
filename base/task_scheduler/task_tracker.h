@@ -85,6 +85,11 @@ namespace internal {
 // Note: A background task is a task posted with TaskPriority::BACKGROUND. A
 // foreground task is a task posted with TaskPriority::USER_VISIBLE or
 // TaskPriority::USER_BLOCKING.
+//
+// TODO(fdoray): We want to allow disabling TaskPriority::BACKGROUND tasks in a
+// scope (e.g. during startup or page load), but we don't need a dynamic maximum
+// number of background tasks. The code could probably be simplified if it
+// didn't support that. https://crbug.com/831835
 class BASE_EXPORT TaskTracker {
  public:
   // |histogram_label| is used as a suffix for histograms, it must not be empty.

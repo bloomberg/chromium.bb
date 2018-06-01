@@ -113,19 +113,25 @@ void TaskSchedulerImpl::Start(
 #endif
 
   worker_pools_[BACKGROUND]->Start(
-      init_params.background_worker_pool_params, service_thread_task_runner,
-      scheduler_worker_observer, worker_environment);
-  worker_pools_[BACKGROUND_BLOCKING]->Start(
-      init_params.background_blocking_worker_pool_params,
+      init_params.background_worker_pool_params,
+      init_params.background_worker_pool_params.max_tasks(),
       service_thread_task_runner, scheduler_worker_observer,
       worker_environment);
+  worker_pools_[BACKGROUND_BLOCKING]->Start(
+      init_params.background_blocking_worker_pool_params,
+      init_params.background_blocking_worker_pool_params.max_tasks(),
+      service_thread_task_runner, scheduler_worker_observer,
+      worker_environment);
+
+  constexpr int kMaxBackgroundTaskInForegroundPools = 0;
   worker_pools_[FOREGROUND]->Start(
-      init_params.foreground_worker_pool_params, service_thread_task_runner,
+      init_params.foreground_worker_pool_params,
+      kMaxBackgroundTaskInForegroundPools, service_thread_task_runner,
       scheduler_worker_observer, worker_environment);
   worker_pools_[FOREGROUND_BLOCKING]->Start(
       init_params.foreground_blocking_worker_pool_params,
-      service_thread_task_runner, scheduler_worker_observer,
-      worker_environment);
+      kMaxBackgroundTaskInForegroundPools, service_thread_task_runner,
+      scheduler_worker_observer, worker_environment);
 }
 
 void TaskSchedulerImpl::PostDelayedTaskWithTraits(const Location& from_here,
