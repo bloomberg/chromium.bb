@@ -39,6 +39,7 @@ cr.define('model_test', function() {
         isDuplexEnabled: true,
         isLandscapeEnabled: false,
         isColorEnabled: true,
+        vendorOptions: {},
       };
 
       // Non-default state
@@ -56,6 +57,10 @@ cr.define('model_test', function() {
         isDuplexEnabled: false,
         isLandscapeEnabled: true,
         isColorEnabled: false,
+        vendorOptions: {
+          paperType: 1,
+          printArea: 6,
+        },
       };
 
       /**
@@ -94,39 +99,21 @@ cr.define('model_test', function() {
 
       model.initialized_ = true;
       return testStickySetting('collate', 'isCollateEnabled')
-          .then(function() {
-            return testStickySetting('color', 'isColorEnabled');
-          })
-          .then(function() {
-            return testStickySetting('cssBackground', 'isCssBackgroundEnabled');
-          })
-          .then(function() {
-            return testStickySetting('dpi', 'dpi');
-          })
-          .then(function() {
-            return testStickySetting('duplex', 'isDuplexEnabled');
-          })
-          .then(function() {
-            return testStickySetting('fitToPage', 'isFitToPageEnabled');
-          })
-          .then(function() {
-            return testStickySetting('headerFooter', 'isHeaderFooterEnabled');
-          })
-          .then(function() {
-            return testStickySetting('layout', 'isLandscapeEnabled');
-          })
-          .then(function() {
-            return testStickySetting('margins', 'marginsType');
-          })
-          .then(function() {
-            return testStickySetting('mediaSize', 'mediaSize');
-          })
-          .then(function() {
-            return testStickySetting('scaling', 'scaling');
-          })
-          .then(function() {
-            return testStickySetting('fitToPage', 'isFitToPageEnabled');
-          });
+          .then(() => testStickySetting('color', 'isColorEnabled'))
+          .then(
+              () =>
+                  testStickySetting('cssBackground', 'isCssBackgroundEnabled'))
+          .then(() => testStickySetting('dpi', 'dpi'))
+          .then(() => testStickySetting('duplex', 'isDuplexEnabled'))
+          .then(() => testStickySetting('fitToPage', 'isFitToPageEnabled'))
+          .then(
+              () => testStickySetting('headerFooter', 'isHeaderFooterEnabled'))
+          .then(() => testStickySetting('layout', 'isLandscapeEnabled'))
+          .then(() => testStickySetting('margins', 'marginsType'))
+          .then(() => testStickySetting('mediaSize', 'mediaSize'))
+          .then(() => testStickySetting('scaling', 'scaling'))
+          .then(() => testStickySetting('fitToPage', 'isFitToPageEnabled'))
+          .then(() => testStickySetting('vendorItems', 'vendorOptions'));
     });
   });
 
