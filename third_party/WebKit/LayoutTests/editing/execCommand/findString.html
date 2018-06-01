@@ -1,12 +1,21 @@
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-if (window.testRunner)
-     testRunner.dumpEditingCallbacks();
-</script>
-<p>In the block below, the second 'bar ' should be selected.</p>
-<div style="border: 1px solid black; width:50px;">foo bar <span>bar</span> baz</div>
-
-<script>
-document.execCommand("FindString", false, "bar ");
-document.execCommand("FindString", false, "bar ");
-document.execCommand("FindString", false, "bar ");
+selection_test(
+    [
+      '<p>In the block below, the second "bar " should be selected.</p>',
+      '<div style="width: 50px">foo bar <span>bar</span> baz</div>'
+    ],
+    selection => {
+      const document = selection.document;
+      document.execCommand('FindString', false, 'bar ');
+      document.execCommand('FindString', false, 'bar ');
+      document.execCommand('FindString', false, 'bar ');
+    },
+    [
+      '<p>In the block below, the second "bar " should be selected.</p>',
+      '<div style="width: 50px">foo bar <span>^bar</span> |baz</div>'
+    ].join(''),
+    'execCommand findString');
 </script>
