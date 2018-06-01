@@ -1068,17 +1068,9 @@ static void search_wiener(const RestorationTileLimits *limits,
 
   const AV1_COMMON *const cm = rsc->cm;
   if (cm->use_highbitdepth) {
-    if (rsc->plane == AOM_PLANE_Y) {
-      compute_stats_highbd(WIENER_WIN, rsc->dgd_buffer, rsc->src_buffer,
-                           limits->h_start, limits->h_end, limits->v_start,
-                           limits->v_end, rsc->dgd_stride, rsc->src_stride, M,
-                           H);
-    } else {
-      compute_stats_highbd(WIENER_WIN_CHROMA, rsc->dgd_buffer, rsc->src_buffer,
-                           limits->h_start, limits->h_end, limits->v_start,
-                           limits->v_end, rsc->dgd_stride, rsc->src_stride, M,
-                           H);
-    }
+    compute_stats_highbd(wiener_win, rsc->dgd_buffer, rsc->src_buffer,
+                         limits->h_start, limits->h_end, limits->v_start,
+                         limits->v_end, rsc->dgd_stride, rsc->src_stride, M, H);
   } else {
     compute_stats(wiener_win, rsc->dgd_buffer, rsc->src_buffer, limits->h_start,
                   limits->h_end, limits->v_start, limits->v_end,
