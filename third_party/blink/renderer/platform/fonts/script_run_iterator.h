@@ -60,8 +60,11 @@ class PLATFORM_EXPORT ScriptRunIterator {
   static const int kMaxBrackets = 32;
 
   UScriptCodeList current_set_;
-  UScriptCodeList next_set_;
-  UScriptCodeList ahead_set_;
+  // Because next_set_ and ahead_set_ are swapped as we consume characters, and
+  // swapping inlined vector is not cheap, next_set_ and ahead_set_ are
+  // pointers.
+  std::unique_ptr<UScriptCodeList> next_set_;
+  std::unique_ptr<UScriptCodeList> ahead_set_;
 
   UChar32 ahead_character_;
   size_t ahead_pos_;
