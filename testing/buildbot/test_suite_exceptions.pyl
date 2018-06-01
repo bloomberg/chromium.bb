@@ -1761,6 +1761,8 @@
       'Chromium Mac 10.11 Force Mac Toolchain',
       'Chromium Mac 10.13',
       'Out of Process Profiling Mac',
+      # chromium.clang
+      'ToTMacASan',  # The mac asan tot bot sets enable_nacl=false
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # TODO(thakis): Try removing this exception.
       'Linux TSan Tests',  # The TSan bot sets enable_nacl=false
