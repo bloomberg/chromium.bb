@@ -36,8 +36,6 @@ static const int64_t kFirstFrameTimeoutSeconds = 5;
 // have always produced a frame before the OS stops waiting.
 static const int64_t kResizeTimeoutSeconds = 1;
 
-constexpr viz::LocalSurfaceId kInvalidLocalSurfaceId;
-
 scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
     const viz::SurfaceId& primary_surface_id,
     const viz::SurfaceId& fallback_surface_id,
@@ -173,12 +171,12 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
         gfx::Vector2d(request->area().width(), request->area().height()),
         gfx::Vector2d(output_size.width(), output_size.height()));
   }
-  support_->RequestCopyOfOutput(kInvalidLocalSurfaceId, std::move(request));
+  host_frame_sink_manager_->RequestCopyOfOutput(
+      content_layer_->fallback_surface_id(), std::move(request));
 }
 
 bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {
-  // TODO(ericrk): Handle Viz cases here.
-  return support_ && content_layer_->fallback_surface_id().is_valid() &&
+  return content_layer_->fallback_surface_id().is_valid() &&
          view_->GetWindowAndroid() &&
          view_->GetWindowAndroid()->GetCompositor();
 }
