@@ -1,5 +1,6 @@
 This is a testharness.js-based test.
-Found 583 tests; 405 PASS, 178 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 584 tests; 406 PASS, 178 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS Setup
 PASS align-content (type: discrete) has testAccumulation function
 PASS align-content: "flex-end" onto "flex-start"
 PASS align-content: "flex-start" onto "flex-end"

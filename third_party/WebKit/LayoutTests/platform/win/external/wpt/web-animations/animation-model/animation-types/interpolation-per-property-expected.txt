@@ -1,5 +1,6 @@
 This is a testharness.js-based test.
-Found 723 tests; 643 PASS, 80 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 724 tests; 644 PASS, 80 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS Setup
 PASS align-content (type: discrete) has testInterpolation function
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with linear easing
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with effect easing
