@@ -365,7 +365,24 @@
   'chromeos_gtests_experimental': {
     'base_unittests': {},
     'cros_vm_sanity_test': {},
-    'net_unittests': {},
+    # net_unittests has a test-time dependency on vpython. So add a CIPD'ed
+    # vpython of the right arch to the task, and tell the test runner to copy
+    # it over to the VM before the test runs.
+    'net_unittests': {
+      'args': [
+        '--vpython-dir=../../vpython_dir_linux_amd64',
+      ],
+      'swarming': {
+        'cipd_packages': [
+          {
+            "cipd_package": 'infra/tools/luci/vpython/linux-amd64',
+            'location': 'vpython_dir_linux_amd64',
+            'revision': 'git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c',
+          }
+        ],
+        'shards': 3,
+      },
+    },
   },
 
   'chromeos_isolated_scripts': {
