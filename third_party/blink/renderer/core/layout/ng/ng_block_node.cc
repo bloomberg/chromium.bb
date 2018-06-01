@@ -586,43 +586,50 @@ scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
 
 scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
     const NGConstraintSpace& constraint_space) {
-  LayoutUnit inline_size =
-      Style().LogicalWidth().IsPercent()
-          ? constraint_space.PercentageResolutionSize().inline_size
-          : constraint_space.AvailableSize().inline_size;
-  LayoutUnit block_size =
-      Style().LogicalHeight().IsPercent()
-          ? constraint_space.PercentageResolutionSize().block_size
-          : constraint_space.AvailableSize().block_size;
-  LayoutObject* containing_block = box_->ContainingBlock();
   WritingMode writing_mode = Style().GetWritingMode();
-  bool parallel_writing_mode;
-  if (!containing_block) {
-    parallel_writing_mode = true;
-  } else {
-    parallel_writing_mode = IsParallelWritingMode(
-        containing_block->StyleRef().GetWritingMode(), writing_mode);
-  }
-  if (parallel_writing_mode) {
-    box_->SetOverrideContainingBlockContentLogicalWidth(inline_size);
-    box_->SetOverrideContainingBlockContentLogicalHeight(block_size);
-  } else {
-    // OverrideContainingBlock should be in containing block writing mode.
-    box_->SetOverrideContainingBlockContentLogicalWidth(block_size);
-    box_->SetOverrideContainingBlockContentLogicalHeight(inline_size);
-  }
+  const NGConstraintSpace* old_space =
+      box_->IsLayoutNGMixin() ? ToLayoutBlockFlow(box_)->CachedConstraintSpace()
+                              : nullptr;
+  if (!old_space || box_->NeedsLayout() || *old_space != constraint_space) {
+    LayoutUnit inline_size =
+        Style().LogicalWidth().IsPercent()
+            ? constraint_space.PercentageResolutionSize().inline_size
+            : constraint_space.AvailableSize().inline_size;
+    LayoutUnit block_size =
+        Style().LogicalHeight().IsPercent()
+            ? constraint_space.PercentageResolutionSize().block_size
+            : constraint_space.AvailableSize().block_size;
+    LayoutObject* containing_block = box_->ContainingBlock();
+    bool parallel_writing_mode;
+    if (!containing_block) {
+      parallel_writing_mode = true;
+    } else {
+      parallel_writing_mode = IsParallelWritingMode(
+          containing_block->StyleRef().GetWritingMode(), writing_mode);
+    }
+    if (parallel_writing_mode) {
+      box_->SetOverrideContainingBlockContentLogicalWidth(inline_size);
+      box_->SetOverrideContainingBlockContentLogicalHeight(block_size);
+    } else {
+      // OverrideContainingBlock should be in containing block writing mode.
+      box_->SetOverrideContainingBlockContentLogicalWidth(block_size);
+      box_->SetOverrideContainingBlockContentLogicalHeight(inline_size);
+    }
 
-  if (constraint_space.IsFixedSizeInline()) {
-    box_->SetOverrideLogicalWidth(constraint_space.AvailableSize().inline_size);
-  }
-  if (constraint_space.IsFixedSizeBlock()) {
-    box_->SetOverrideLogicalHeight(constraint_space.AvailableSize().block_size);
-  }
+    if (constraint_space.IsFixedSizeInline()) {
+      box_->SetOverrideLogicalWidth(
+          constraint_space.AvailableSize().inline_size);
+    }
+    if (constraint_space.IsFixedSizeBlock()) {
+      box_->SetOverrideLogicalHeight(
+          constraint_space.AvailableSize().block_size);
+    }
 
-  if (box_->IsLayoutNGMixin() && box_->NeedsLayout()) {
-    ToLayoutBlockFlow(box_)->LayoutBlockFlow::UpdateBlockLayout(true);
-  } else {
-    box_->ForceLayout();
+    if (box_->IsLayoutNGMixin() && box_->NeedsLayout()) {
+      ToLayoutBlockFlow(box_)->LayoutBlockFlow::UpdateBlockLayout(true);
+    } else {
+      box_->ForceLayout();
+    }
   }
   NGLogicalSize box_size(box_->LogicalWidth(), box_->LogicalHeight());
   // TODO(kojii): Implement use_first_line_style.
