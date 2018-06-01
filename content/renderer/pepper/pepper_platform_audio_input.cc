@@ -76,34 +76,32 @@ void PepperPlatformAudioInput::ShutDown() {
 }
 
 void PepperPlatformAudioInput::OnStreamCreated(
-    base::SharedMemoryHandle handle,
+    base::ReadOnlySharedMemoryRegion shared_memory_region,
     base::SyncSocket::Handle socket_handle,
     bool initially_muted) {
+  DCHECK(shared_memory_region.IsValid());
 #if defined(OS_WIN)
-  DCHECK(handle.IsValid());
   DCHECK(socket_handle);
 #else
-  DCHECK(base::SharedMemory::IsHandleValid(handle));
   DCHECK_NE(-1, socket_handle);
 #endif
-  DCHECK(handle.GetSize());
+  DCHECK_GT(shared_memory_region.GetSize(), 0u);
 
   if (base::ThreadTaskRunnerHandle::Get().get() != main_task_runner_.get()) {
     // If shutdown has occurred, |client_| will be NULL and the handles will be
     // cleaned up on the main thread.
     main_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&PepperPlatformAudioInput::OnStreamCreated, this, handle,
-                       socket_handle, initially_muted));
+        FROM_HERE, base::BindOnce(&PepperPlatformAudioInput::OnStreamCreated,
+                                  this, std::move(shared_memory_region),
+                                  socket_handle, initially_muted));
   } else {
     // Must dereference the client only on the main thread. Shutdown may have
     // occurred while the request was in-flight, so we need to NULL check.
     if (client_) {
-      client_->StreamCreated(handle, handle.GetSize(), socket_handle);
+      client_->StreamCreated(std::move(shared_memory_region), socket_handle);
     } else {
-      // Clean up the handles.
+      // Clean up the handle.
       base::SyncSocket temp_socket(socket_handle);
-      base::SharedMemory temp_shared_memory(handle, false);
     }
   }
 }

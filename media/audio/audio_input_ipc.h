@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/sync_socket.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
@@ -22,9 +22,10 @@ class MEDIA_EXPORT AudioInputIPCDelegate {
   // Called when an AudioInputController has been created.
   // See media/mojo/interfaces/audio_data_pipe.mojom for documentation of
   // |handle| and |socket_handle|.
-  virtual void OnStreamCreated(base::SharedMemoryHandle handle,
-                               base::SyncSocket::Handle socket_handle,
-                               bool initially_muted) = 0;
+  virtual void OnStreamCreated(
+      base::ReadOnlySharedMemoryRegion shared_memory_region,
+      base::SyncSocket::Handle socket_handle,
+      bool initially_muted) = 0;
 
   // Called when state of an audio stream has changed.
   virtual void OnError() = 0;

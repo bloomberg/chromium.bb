@@ -12,8 +12,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/threading/simple_thread.h"
 #include "ppapi/proxy/device_enumeration_resource_helper.h"
@@ -77,8 +77,7 @@ class AudioInputResource : public PluginResource,
 
   // Sets the shared memory and socket handles. This will automatically start
   // capture if we're currently set to capture.
-  void SetStreamInfo(base::SharedMemoryHandle shared_memory_handle,
-                     size_t shared_memory_size,
+  void SetStreamInfo(base::ReadOnlySharedMemoryRegion shared_memory_region,
                      base::SyncSocket::Handle socket_handle);
 
   // Starts execution of the audio input thread.
@@ -110,7 +109,7 @@ class AudioInputResource : public PluginResource,
   // Sample buffer in shared memory. This pointer is created in
   // SetStreamInfo(). The memory is only mapped when the audio thread is
   // created.
-  std::unique_ptr<base::SharedMemory> shared_memory_;
+  base::ReadOnlySharedMemoryMapping shared_memory_mapping_;
 
   // The size of the sample buffer in bytes.
   size_t shared_memory_size_;
@@ -140,7 +139,7 @@ class AudioInputResource : public PluginResource,
   size_t bytes_per_second_;
 
   // AudioBus for shuttling data across the shared memory.
-  std::unique_ptr<media::AudioBus> audio_bus_;
+  std::unique_ptr<const media::AudioBus> audio_bus_;
   int sample_frame_count_;
 
   // Internal buffer for client's integer audio data.

@@ -54,7 +54,7 @@ class AudioInputDevice::AudioThreadCallback
     : public AudioDeviceThread::Callback {
  public:
   AudioThreadCallback(const AudioParameters& audio_parameters,
-                      base::SharedMemoryHandle memory,
+                      base::ReadOnlySharedMemoryRegion shared_memory_region,
                       uint32_t total_segments,
                       CaptureCallback* capture_callback,
                       base::RepeatingClosure got_data_callback);
@@ -66,7 +66,8 @@ class AudioInputDevice::AudioThreadCallback
   void Process(uint32_t pending_data) override;
 
  private:
-  base::SharedMemory shared_memory_;
+  base::ReadOnlySharedMemoryRegion shared_memory_region_;
+  base::ReadOnlySharedMemoryMapping shared_memory_mapping_;
   const base::TimeTicks start_time_;
   bool no_callbacks_received_;
   size_t current_segment_id_;
@@ -191,18 +192,19 @@ void AudioInputDevice::SetOutputDeviceForAec(
     ipc_->SetOutputDeviceForAec(output_device_id);
 }
 
-void AudioInputDevice::OnStreamCreated(base::SharedMemoryHandle handle,
-                                       base::SyncSocket::Handle socket_handle,
-                                       bool initially_muted) {
+void AudioInputDevice::OnStreamCreated(
+    base::ReadOnlySharedMemoryRegion shared_memory_region,
+    base::SyncSocket::Handle socket_handle,
+    bool initially_muted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("audio", "AudioInputDevice::OnStreamCreated");
-  DCHECK(base::SharedMemory::IsHandleValid(handle));
+  DCHECK(shared_memory_region.IsValid());
 #if defined(OS_WIN)
   DCHECK(socket_handle);
 #else
   DCHECK_GE(socket_handle, 0);
 #endif
-  DCHECK_GT(handle.GetSize(), 0u);
+  DCHECK_GT(shared_memory_region.GetSize(), 0u);
 
   if (state_ != CREATING_STREAM)
     return;
@@ -240,7 +242,8 @@ void AudioInputDevice::OnStreamCreated(base::SharedMemoryHandle handle,
 
   // Unretained is safe since |alive_checker_| outlives |audio_callback_|.
   audio_callback_ = std::make_unique<AudioInputDevice::AudioThreadCallback>(
-      audio_parameters_, handle, kRequestedSharedMemoryCount, callback_,
+      audio_parameters_, std::move(shared_memory_region),
+      kRequestedSharedMemoryCount, callback_,
       base::BindRepeating(&AliveChecker::NotifyAlive,
                           base::Unretained(alive_checker_.get())));
   audio_thread_ = std::make_unique<AudioDeviceThread>(
@@ -319,7 +322,7 @@ void AudioInputDevice::DetectedDeadInputStream() {
 // AudioInputDevice::AudioThreadCallback
 AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
     const AudioParameters& audio_parameters,
-    base::SharedMemoryHandle memory,
+    base::ReadOnlySharedMemoryRegion shared_memory_region,
     uint32_t total_segments,
     CaptureCallback* capture_callback,
     base::RepeatingClosure got_data_callback_)
@@ -327,10 +330,7 @@ AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
           audio_parameters,
           ComputeAudioInputBufferSize(audio_parameters, 1u),
           total_segments),
-      // CHECK that the shared memory is large enough. The memory allocated must
-      // be at least as large as expected.
-      shared_memory_((CHECK(memory_length_ <= memory.GetSize()), memory),
-                     /* read_only */ true),
+      shared_memory_region_(std::move(shared_memory_region)),
       start_time_(base::TimeTicks::Now()),
       no_callbacks_received_(true),
       current_segment_id_(0u),
@@ -339,7 +339,11 @@ AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
       got_data_callback_interval_in_frames_(kGotDataCallbackIntervalSeconds *
                                             audio_parameters.sample_rate()),
       frames_since_last_got_data_callback_(0),
-      got_data_callback_(std::move(got_data_callback_)) {}
+      got_data_callback_(std::move(got_data_callback_)) {
+  // CHECK that the shared memory is large enough. The memory allocated must
+  // be at least as large as expected.
+  CHECK_LE(memory_length_, shared_memory_region_.GetSize());
+}
 
 AudioInputDevice::AudioThreadCallback::~AudioThreadCallback() {
   UMA_HISTOGRAM_LONG_TIMES("Media.Audio.Capture.InputStreamDuration",
@@ -347,10 +351,11 @@ AudioInputDevice::AudioThreadCallback::~AudioThreadCallback() {
 }
 
 void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
-  shared_memory_.Map(memory_length_);
+  shared_memory_mapping_ = shared_memory_region_.MapAt(0, memory_length_);
 
   // Create vector of audio buses by wrapping existing blocks of memory.
-  const uint8_t* ptr = static_cast<const uint8_t*>(shared_memory_.memory());
+  const uint8_t* ptr =
+      static_cast<const uint8_t*>(shared_memory_mapping_.memory());
   for (uint32_t i = 0; i < total_segments_; ++i) {
     const media::AudioInputBuffer* buffer =
         reinterpret_cast<const media::AudioInputBuffer*>(ptr);
@@ -378,7 +383,8 @@ void AudioInputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
   // The shared memory represents parameters, size of the data buffer and the
   // actual data buffer containing audio data. Map the memory into this
   // structure and parse out parameters and the data area.
-  const uint8_t* ptr = static_cast<const uint8_t*>(shared_memory_.memory());
+  const uint8_t* ptr =
+      static_cast<const uint8_t*>(shared_memory_mapping_.memory());
   ptr += current_segment_id_ * segment_length_;
   const AudioInputBuffer* buffer =
       reinterpret_cast<const AudioInputBuffer*>(ptr);
