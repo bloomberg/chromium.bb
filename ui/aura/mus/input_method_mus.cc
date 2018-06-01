@@ -131,6 +131,7 @@ ui::EventDispatchDetails InputMethodMus::SendKeyEventToInputMethod(
     std::unique_ptr<ui::Event> event_clone = ui::Event::Clone(event);
     return DispatchKeyEventPostIME(event_clone->AsKeyEvent());
   }
+
   // IME driver will notify us whether it handled the event or not by calling
   // ProcessKeyEventCallback(), in which we will run the |ack_callback| to tell
   // the window server if client handled the event or not.
@@ -149,9 +150,12 @@ void InputMethodMus::OnDidChangeFocusedClient(
   InputMethodBase::OnDidChangeFocusedClient(focused_before, focused);
   UpdateTextInputType();
 
-  // TODO(moshayedi): crbug.com/681563. Handle when there is no focused clients.
-  if (!focused)
+  if (!focused) {
+    input_method_ = nullptr;
+    input_method_ptr_.reset();
+    text_input_client_.reset();
     return;
+  }
 
   text_input_client_ =
       std::make_unique<TextInputClientImpl>(focused, delegate());

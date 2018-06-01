@@ -77,6 +77,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   void SetFrameDecorationValues(const gfx::Insets& client_area_insets,
                                 int max_title_bar_button_width);
 
+  // Whether |window| hosts a remote client.
+  static bool HasRemoteClient(aura::Window* window);
+
   WindowServiceDelegate* delegate() { return delegate_; }
 
   aura::PropertyConverter* property_converter() { return &property_converter_; }

@@ -53,6 +53,7 @@
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_focus_handler.h"
 #include "ash/keyboard/keyboard_ui.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/login/login_screen_controller.h"
@@ -898,6 +899,9 @@ Shell::~Shell() {
   // WindowTreeHostManager.
   window_service_owner_.reset();
 
+  // Must be released before |focus_controller_|.
+  ime_focus_handler_.reset();
+
   shell_port_->Shutdown();
   window_tree_host_manager_->Shutdown();
 
@@ -1299,6 +1303,8 @@ void Shell::Init(ui::ContextFactory* context_factory,
   if (config != Config::MASH) {
     window_service_owner_ =
         std::make_unique<WindowServiceOwner>(std::move(gpu_support));
+    ime_focus_handler_ = std::make_unique<ImeFocusHandler>(
+        focus_controller(), window_tree_host_manager_->input_method());
   }
 
   for (auto& observer : shell_observers_)

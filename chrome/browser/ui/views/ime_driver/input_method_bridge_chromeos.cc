@@ -8,6 +8,16 @@
 #include <utility>
 
 #include "chrome/browser/ui/views/ime_driver/remote_text_input_client.h"
+#include "ui/base/ime/ime_bridge.h"
+
+namespace {
+
+bool IsActiveInputContextHandler(ui::InputMethodChromeOS* input_method) {
+  ui::IMEBridge* bridge = ui::IMEBridge::Get();
+  return bridge && bridge->GetInputContextHandler() == input_method;
+}
+
+}  // namespace
 
 InputMethodBridge::InputMethodBridge(
     std::unique_ptr<RemoteTextInputClient> client)
@@ -17,24 +27,29 @@ InputMethodBridge::InputMethodBridge(
   input_method_chromeos_->SetFocusedTextInputClient(client_.get());
 }
 
-InputMethodBridge::~InputMethodBridge() {}
+InputMethodBridge::~InputMethodBridge() = default;
 
 void InputMethodBridge::OnTextInputTypeChanged(
     ui::TextInputType text_input_type) {
   client_->SetTextInputType(text_input_type);
-  input_method_chromeos_->OnTextInputTypeChanged(client_.get());
+
+  if (IsActiveInputContextHandler(input_method_chromeos_.get()))
+    input_method_chromeos_->OnTextInputTypeChanged(client_.get());
 }
 
 void InputMethodBridge::OnCaretBoundsChanged(const gfx::Rect& caret_bounds) {
   client_->SetCaretBounds(caret_bounds);
-  input_method_chromeos_->OnCaretBoundsChanged(client_.get());
+
+  if (IsActiveInputContextHandler(input_method_chromeos_.get()))
+    input_method_chromeos_->OnCaretBoundsChanged(client_.get());
 }
 
 void InputMethodBridge::ProcessKeyEvent(std::unique_ptr<ui::Event> event,
                                         ProcessKeyEventCallback callback) {
   DCHECK(event->IsKeyEvent());
   ui::KeyEvent* key_event = event->AsKeyEvent();
-  if (!key_event->is_char()) {
+  if (IsActiveInputContextHandler(input_method_chromeos_.get()) &&
+      !key_event->is_char()) {
     input_method_chromeos_->DispatchKeyEvent(key_event, std::move(callback));
   } else {
     const bool handled = false;
@@ -43,5 +58,6 @@ void InputMethodBridge::ProcessKeyEvent(std::unique_ptr<ui::Event> event,
 }
 
 void InputMethodBridge::CancelComposition() {
-  input_method_chromeos_->CancelComposition(client_.get());
+  if (IsActiveInputContextHandler(input_method_chromeos_.get()))
+    input_method_chromeos_->CancelComposition(client_.get());
 }
