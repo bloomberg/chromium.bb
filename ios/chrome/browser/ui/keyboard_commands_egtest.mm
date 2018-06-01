@@ -210,16 +210,10 @@ using chrome_test_util::SettingsDoneButton;
   [self verifyKeyboardCommandsAreRegistered];
 
   UIResponder* firstResponder = GetFirstResponder();
-  if (@available(iOS 11.3, *)) {
-    GREYAssert([firstResponder isKindOfClass:NSClassFromString(@"WKWebView")],
-               @"Expected first responder to be a WKWebView. Instead, is a %@",
-               NSStringFromClass([firstResponder class]));
-  } else {
-    GREYAssert(
-        [firstResponder isKindOfClass:NSClassFromString(@"WKContentView")],
-        @"Expected first responder to be a WKContentView. Instead, is a %@",
-        NSStringFromClass([firstResponder class]));
-  }
+  GREYAssert(
+      [firstResponder isKindOfClass:NSClassFromString(@"WKContentView")],
+      @"Expected first responder to be a WKContentView. Instead, is a %@",
+      NSStringFromClass([firstResponder class]));
 }
 
 @end
