@@ -876,6 +876,8 @@ void ParamTraits<base::UnsafeSharedMemoryRegion>::Log(const param_type& p,
 void ParamTraits<base::subtle::PlatformSharedMemoryRegion>::Write(
     base::Pickle* m,
     const param_type& p) {
+  // This serialization must be kept in sync with
+  // nacl_message_scanner.cc::WriteHandle().
   const bool valid = p.IsValid();
   WriteParam(m, valid);
 
@@ -1259,8 +1261,6 @@ void ParamTraits<base::UnguessableToken>::Write(base::Pickle* m,
                                                 const param_type& p) {
   DCHECK(!p.is_empty());
 
-  // This serialization must be kept in sync with
-  // nacl_message_scanner.cc:WriteHandle().
   ParamTraits<uint64_t>::Write(m, p.GetHighForSerialization());
   ParamTraits<uint64_t>::Write(m, p.GetLowForSerialization());
 }

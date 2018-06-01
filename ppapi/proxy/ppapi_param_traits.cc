@@ -238,6 +238,9 @@ void ParamTraits<ppapi::proxy::SerializedHandle>::Write(base::Pickle* m,
     case ppapi::proxy::SerializedHandle::SHARED_MEMORY:
       WriteParam(m, p.shmem());
       break;
+    case ppapi::proxy::SerializedHandle::SHARED_MEMORY_REGION:
+      WriteParam(m, const_cast<param_type&>(p).TakeSharedMemoryRegion());
+      break;
     case ppapi::proxy::SerializedHandle::SOCKET:
     case ppapi::proxy::SerializedHandle::FILE:
       WriteParam(m, p.descriptor());
@@ -259,33 +262,37 @@ bool ParamTraits<ppapi::proxy::SerializedHandle>::Read(
   switch (header.type) {
     case ppapi::proxy::SerializedHandle::SHARED_MEMORY: {
       base::SharedMemoryHandle handle;
-      if (ReadParam(m, iter, &handle)) {
-        r->set_shmem(handle, header.size);
-        return true;
-      }
+      if (!ReadParam(m, iter, &handle))
+        return false;
+      r->set_shmem(handle, header.size);
+      break;
+    }
+    case ppapi::proxy::SerializedHandle::SHARED_MEMORY_REGION: {
+      base::subtle::PlatformSharedMemoryRegion region;
+      if (!ReadParam(m, iter, &region))
+        return false;
+      r->set_shmem_region(std::move(region));
       break;
     }
     case ppapi::proxy::SerializedHandle::SOCKET: {
       IPC::PlatformFileForTransit socket;
-      if (ReadParam(m, iter, &socket)) {
-        r->set_socket(socket);
-        return true;
-      }
+      if (!ReadParam(m, iter, &socket))
+        return false;
+      r->set_socket(socket);
       break;
     }
     case ppapi::proxy::SerializedHandle::FILE: {
       IPC::PlatformFileForTransit desc;
-      if (ReadParam(m, iter, &desc)) {
-        r->set_file_handle(desc, header.open_flags, header.file_io);
-        return true;
-      }
+      if (!ReadParam(m, iter, &desc))
+        return false;
+      r->set_file_handle(desc, header.open_flags, header.file_io);
       break;
     }
     case ppapi::proxy::SerializedHandle::INVALID:
-      return true;
-    // No default so the compiler will warn us if a new type is added.
+      break;
+      // No default so the compiler will warn us if a new type is added.
   }
-  return false;
+  return true;
 }
 
 // static
