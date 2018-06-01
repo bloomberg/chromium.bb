@@ -106,12 +106,6 @@ base::string16 AutofillSaveCardInfoBarDelegateMobile::GetMessageText() const {
                     : IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
 }
 
-base::string16 AutofillSaveCardInfoBarDelegateMobile::GetLinkText() const {
-  return IsGooglePayBrandingEnabled()
-             ? base::string16()
-             : l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-}
-
 infobars::InfoBarDelegate::InfoBarIdentifier
 AutofillSaveCardInfoBarDelegateMobile::GetIdentifier() const {
   return AUTOFILL_CC_INFOBAR_DELEGATE_MOBILE;
@@ -146,10 +140,6 @@ bool AutofillSaveCardInfoBarDelegateMobile::Accept() {
 bool AutofillSaveCardInfoBarDelegateMobile::Cancel() {
   LogUserAction(AutofillMetrics::INFOBAR_DENIED);
   return true;
-}
-
-GURL AutofillSaveCardInfoBarDelegateMobile::GetLinkURL() const {
-  return IsGooglePayBrandingEnabled() ? GURL() : GURL(kHelpURL);
 }
 
 void AutofillSaveCardInfoBarDelegateMobile::LogUserAction(
