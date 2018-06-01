@@ -29,7 +29,8 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
     kBothValidDifferentDetails = 4,
     kBothErrorDifferentDetails = 5,
     kIgnoredMacUndesiredRevocationChecking = 6,
-    kMaxValue = kIgnoredMacUndesiredRevocationChecking
+    kIgnoredMultipleEVPoliciesAndOneMatchesRoot = 7,
+    kMaxValue = kIgnoredMultipleEVPoliciesAndOneMatchesRoot
   };
 
   TrialComparisonCertVerifier(

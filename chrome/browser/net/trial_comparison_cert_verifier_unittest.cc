@@ -13,6 +13,7 @@
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/ssl/cert_logger.pb.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -20,10 +21,12 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "crypto/sha2.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/log/net_log_with_source.h"
@@ -1202,4 +1205,212 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryRevokedSecondaryOk) {
       &full_reports);
 
   ASSERT_EQ(1U, full_reports.size());
+}
+
+TEST_F(TrialComparisonCertVerifierTest, MultipleEVPolicies) {
+  base::FilePath certs_dir;
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &certs_dir));
+  certs_dir = certs_dir.AppendASCII("net")
+                  .AppendASCII("trial_comparison_cert_verifier_unittest")
+                  .AppendASCII("target-multiple-policies");
+  scoped_refptr<net::X509Certificate> cert_chain =
+      CreateCertificateChainFromFile(certs_dir, "chain.pem",
+                                     net::X509Certificate::FORMAT_AUTO);
+  ASSERT_TRUE(cert_chain);
+  ASSERT_EQ(2U, cert_chain->intermediate_buffers().size());
+
+  net::SHA256HashValue root_fingerprint;
+  crypto::SHA256HashString(net::x509_util::CryptoBufferAsStringPiece(
+                               cert_chain->intermediate_buffers().back().get()),
+                           root_fingerprint.data,
+                           sizeof(root_fingerprint.data));
+
+  // Both policies in the target are EV policies, but only 1.2.6.7 is valid for
+  // the root in this chain.
+  net::ScopedTestEVPolicy scoped_ev_policy_1(
+      net::EVRootCAMetadata::GetInstance(), root_fingerprint, "1.2.6.7");
+  net::ScopedTestEVPolicy scoped_ev_policy_2(
+      net::EVRootCAMetadata::GetInstance(), net::SHA256HashValue(), "1.2.3.4");
+
+  // Both verifiers return OK, but secondary returns EV status.
+  net::CertVerifyResult primary_result;
+  primary_result.verified_cert = cert_chain;
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, primary_result);
+
+  net::CertVerifyResult secondary_result;
+  secondary_result.verified_cert = cert_chain;
+  secondary_result.cert_status =
+      net::CERT_STATUS_IS_EV | net::CERT_STATUS_REV_CHECKING_ENABLED;
+  scoped_refptr<FakeCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, secondary_result);
+
+  TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
+
+  net::CertVerifier::RequestParams params(
+      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
+      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifyResult result;
+  net::TestCompletionCallback callback;
+  std::unique_ptr<net::CertVerifier::Request> request;
+  int error =
+      verifier.Verify(params, nullptr /* crl_set */, &result,
+                      callback.callback(), &request, net::NetLogWithSource());
+  ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
+  EXPECT_TRUE(request);
+
+  error = callback.WaitForResult();
+  EXPECT_THAT(error, IsError(net::OK));
+
+  verify_proc2->WaitForVerifyCall();
+
+  // Expect no report.
+  reporting_service_test_helper()->ExpectNoRequests(service());
+
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
+                               1);
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kIgnoredMultipleEVPoliciesAndOneMatchesRoot,
+      1);
+}
+
+TEST_F(TrialComparisonCertVerifierTest, MultipleEVPoliciesNoneValidForRoot) {
+  base::FilePath certs_dir;
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &certs_dir));
+  certs_dir = certs_dir.AppendASCII("net")
+                  .AppendASCII("trial_comparison_cert_verifier_unittest")
+                  .AppendASCII("target-multiple-policies");
+  scoped_refptr<net::X509Certificate> cert_chain =
+      CreateCertificateChainFromFile(certs_dir, "chain.pem",
+                                     net::X509Certificate::FORMAT_AUTO);
+  ASSERT_TRUE(cert_chain);
+
+  // Both policies in the target are EV policies, but neither is valid for the
+  // root in this chain.
+  net::ScopedTestEVPolicy scoped_ev_policy_1(
+      net::EVRootCAMetadata::GetInstance(), {1}, "1.2.6.7");
+  net::ScopedTestEVPolicy scoped_ev_policy_2(
+      net::EVRootCAMetadata::GetInstance(), {2}, "1.2.3.4");
+
+  // Both verifiers return OK, but secondary returns EV status.
+  net::CertVerifyResult primary_result;
+  primary_result.verified_cert = cert_chain;
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, primary_result);
+
+  net::CertVerifyResult secondary_result;
+  secondary_result.verified_cert = cert_chain;
+  secondary_result.cert_status =
+      net::CERT_STATUS_IS_EV | net::CERT_STATUS_REV_CHECKING_ENABLED;
+  scoped_refptr<FakeCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, secondary_result);
+
+  TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
+
+  net::CertVerifier::RequestParams params(
+      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
+      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifyResult result;
+  net::TestCompletionCallback callback;
+  std::unique_ptr<net::CertVerifier::Request> request;
+  int error =
+      verifier.Verify(params, nullptr /* crl_set */, &result,
+                      callback.callback(), &request, net::NetLogWithSource());
+  ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
+  EXPECT_TRUE(request);
+
+  error = callback.WaitForResult();
+  EXPECT_THAT(error, IsError(net::OK));
+
+  verify_proc2->WaitForVerifyCall();
+
+  // Expect a report.
+  std::vector<std::string> full_reports;
+  reporting_service_test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Successful({{"127.0.0.1", RetryStatus::NOT_RETRIED}}),
+      &full_reports);
+
+  ASSERT_EQ(1U, full_reports.size());
+
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
+                               1);
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kBothValidDifferentDetails, 1);
+}
+
+TEST_F(TrialComparisonCertVerifierTest, MultiplePoliciesOnlyOneIsEV) {
+  base::FilePath certs_dir;
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &certs_dir));
+  certs_dir = certs_dir.AppendASCII("net")
+                  .AppendASCII("trial_comparison_cert_verifier_unittest")
+                  .AppendASCII("target-multiple-policies");
+  scoped_refptr<net::X509Certificate> cert_chain =
+      CreateCertificateChainFromFile(certs_dir, "chain.pem",
+                                     net::X509Certificate::FORMAT_AUTO);
+  ASSERT_TRUE(cert_chain);
+  ASSERT_EQ(2U, cert_chain->intermediate_buffers().size());
+
+  net::SHA256HashValue root_fingerprint;
+  crypto::SHA256HashString(net::x509_util::CryptoBufferAsStringPiece(
+                               cert_chain->intermediate_buffers().back().get()),
+                           root_fingerprint.data,
+                           sizeof(root_fingerprint.data));
+
+  // One policy in the target is an EV policy and is valid for the root.
+  net::ScopedTestEVPolicy scoped_ev_policy_1(
+      net::EVRootCAMetadata::GetInstance(), root_fingerprint, "1.2.6.7");
+
+  // Both verifiers return OK, but secondary returns EV status.
+  net::CertVerifyResult primary_result;
+  primary_result.verified_cert = cert_chain;
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, primary_result);
+
+  net::CertVerifyResult secondary_result;
+  secondary_result.verified_cert = cert_chain;
+  secondary_result.cert_status =
+      net::CERT_STATUS_IS_EV | net::CERT_STATUS_REV_CHECKING_ENABLED;
+  scoped_refptr<FakeCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, secondary_result);
+
+  TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
+
+  net::CertVerifier::RequestParams params(
+      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
+      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifyResult result;
+  net::TestCompletionCallback callback;
+  std::unique_ptr<net::CertVerifier::Request> request;
+  int error =
+      verifier.Verify(params, nullptr /* crl_set */, &result,
+                      callback.callback(), &request, net::NetLogWithSource());
+  ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
+  EXPECT_TRUE(request);
+
+  error = callback.WaitForResult();
+  EXPECT_THAT(error, IsError(net::OK));
+
+  verify_proc2->WaitForVerifyCall();
+
+  // Expect a report.
+  std::vector<std::string> full_reports;
+  reporting_service_test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Successful({{"127.0.0.1", RetryStatus::NOT_RETRIED}}),
+      &full_reports);
+
+  ASSERT_EQ(1U, full_reports.size());
+
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
+                               1);
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kBothValidDifferentDetails, 1);
 }

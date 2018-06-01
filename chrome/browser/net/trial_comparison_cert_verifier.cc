@@ -22,10 +22,14 @@
 #include "chrome/common/chrome_features.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
+#include "crypto/sha2.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/crl_set.h"
+#include "net/cert/ev_root_ca_metadata.h"
+#include "net/cert/internal/cert_errors.h"
+#include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
 #include "net/cert/x509_util.h"
 #include "net/log/net_log.h"
@@ -114,6 +118,81 @@ bool CertVerifyResultEqual(const net::CertVerifyResult& a,
          (!!a.verified_cert == !!b.verified_cert) &&
          (!a.verified_cert ||
           a.verified_cert->EqualsIncludingChain(b.verified_cert.get()));
+}
+
+scoped_refptr<net::ParsedCertificate> ParsedCertificateFromBuffer(
+    CRYPTO_BUFFER* cert_handle,
+    net::CertErrors* errors) {
+  return net::ParsedCertificate::Create(
+      net::x509_util::DupCryptoBuffer(cert_handle),
+      net::x509_util::DefaultParseCertificateOptions(), errors);
+}
+
+net::ParsedCertificateList ParsedCertificateListFromX509Certificate(
+    const net::X509Certificate* cert) {
+  net::CertErrors parsing_errors;
+
+  net::ParsedCertificateList certs;
+  scoped_refptr<net::ParsedCertificate> target =
+      ParsedCertificateFromBuffer(cert->cert_buffer(), &parsing_errors);
+  if (!target)
+    return {};
+  certs.push_back(target);
+
+  for (const auto& buf : cert->intermediate_buffers()) {
+    scoped_refptr<net::ParsedCertificate> intermediate =
+        ParsedCertificateFromBuffer(buf.get(), &parsing_errors);
+    if (!intermediate)
+      return {};
+    certs.push_back(intermediate);
+  }
+
+  return certs;
+}
+
+// Tests whether cert has multiple EV policies, and at least one matches the
+// root. This is not a complete test of EV, but just enough to give a possible
+// explanation as to why the platform verifier did not validate as EV while
+// builtin did. (Since only the builtin verifier correctly handles multiple
+// candidate EV policies.)
+bool CertHasMultipleEVPoliciesAndOneMatchesRoot(
+    const net::X509Certificate* cert) {
+  if (cert->intermediate_buffers().empty())
+    return false;
+
+  net::ParsedCertificateList certs =
+      ParsedCertificateListFromX509Certificate(cert);
+  if (certs.empty())
+    return false;
+
+  net::ParsedCertificate* leaf = certs.front().get();
+  net::ParsedCertificate* root = certs.back().get();
+
+  if (!leaf->has_policy_oids())
+    return false;
+
+  const net::EVRootCAMetadata* ev_metadata =
+      net::EVRootCAMetadata::GetInstance();
+  std::set<net::der::Input> candidate_oids;
+  for (const net::der::Input& oid : leaf->policy_oids()) {
+    if (ev_metadata->IsEVPolicyOIDGivenBytes(oid))
+      candidate_oids.insert(oid);
+  }
+
+  if (candidate_oids.size() <= 1)
+    return false;
+
+  net::SHA256HashValue root_fingerprint;
+  crypto::SHA256HashString(root->der_cert().AsStringPiece(),
+                           root_fingerprint.data,
+                           sizeof(root_fingerprint.data));
+
+  for (const net::der::Input& oid : candidate_oids) {
+    if (ev_metadata->HasEVPolicyOIDGivenBytes(root_fingerprint, oid))
+      return true;
+  }
+
+  return false;
 }
 
 }  // namespace
@@ -249,6 +328,24 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
       return;
     }
 #endif
+
+    bool chains_equal = primary_result_.verified_cert &&
+                        trial_result_.verified_cert &&
+                        primary_result_.verified_cert->EqualsIncludingChain(
+                            trial_result_.verified_cert.get());
+
+    if (chains_equal && (trial_result_.cert_status & net::CERT_STATUS_IS_EV) &&
+        !(primary_result_.cert_status & net::CERT_STATUS_IS_EV) &&
+        (primary_error_ == trial_error_)) {
+      // The platform CertVerifyProc impls only check a single potential EV
+      // policy from the leaf.  If the leaf had multiple policies, builtin
+      // verifier may verify it as EV when the platform verifier did not.
+      if (CertHasMultipleEVPoliciesAndOneMatchesRoot(
+              trial_result_.verified_cert.get())) {
+        FinishSuccess(kIgnoredMultipleEVPoliciesAndOneMatchesRoot);
+        return;
+      }
+    }
 
     FinishWithError();
   }
