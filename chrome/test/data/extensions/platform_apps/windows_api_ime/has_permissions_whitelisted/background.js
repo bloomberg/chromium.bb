@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var error = "IME extensions must create ime window ( with \"ime: true\" and " +
-  "\"frame: 'none'\") or panel window (with \"type: panel\").";
+var error = 'IME extensions must create an IME window ( with "ime: true" and ' +
+    '"frame: \'none\'"). Panels are no longer supported for IME extensions.';
 
 function testImeEnabled(createOptions) {
   if (createOptions.frame == 'none' && createOptions.ime) {
