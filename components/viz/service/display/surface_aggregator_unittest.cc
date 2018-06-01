@@ -3007,10 +3007,14 @@ void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
   }
 
   for (size_t i = 0u; i < num_resource_ids; ++i) {
-    TransferableResource resource;
+    auto resource = TransferableResource::MakeSoftware(
+        SharedBitmap::GenerateId(), gfx::Size(1, 1), RGBA_8888);
     resource.id = resource_ids[i];
-    // ResourceProvider is software, so only software resources are valid.
-    resource.is_software = valid;
+    if (!valid) {
+      // ResourceProvider is software, so only software resources are valid. Do
+      // this to cause the resource to be rejected.
+      resource.is_software = false;
+    }
     frame.resource_list.push_back(resource);
     auto* quad = pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     const gfx::Rect rect;

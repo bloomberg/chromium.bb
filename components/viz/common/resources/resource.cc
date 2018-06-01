@@ -10,27 +10,19 @@
 namespace viz {
 namespace internal {
 
-Resource::Resource(const gfx::Size& size,
-                   ResourceType type,
-                   ResourceFormat format,
-                   const gfx::ColorSpace& color_space)
-    : locked_for_external_use(false),
-      marked_for_deletion(false),
-      read_lock_fences_enabled(false),
-      is_overlay_candidate(false),
-#if defined(OS_ANDROID)
-      is_backed_by_surface_texture(false),
-      wants_promotion_hint(false),
-#endif
-      size(size),
-      type(type),
-      format(format),
-      color_space(color_space) {
+Resource::Resource(int child_id, const TransferableResource& transferable)
+    : child_id(child_id),
+      transferable(transferable),
+      filter(transferable.filter) {
+  if (is_gpu_resource_type())
+    UpdateSyncToken(transferable.mailbox_holder.sync_token);
+  else
+    SetSynchronized();
 }
 
 Resource::Resource(Resource&& other) = default;
+
 Resource::~Resource() = default;
-Resource& Resource::operator=(Resource&& other) = default;
 
 void Resource::SetLocallyUsed() {
   synchronization_state_ = LOCALLY_USED;
