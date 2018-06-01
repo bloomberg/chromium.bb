@@ -23,7 +23,9 @@ XRWebGLDrawingBuffer::ColorBuffer::ColorBuffer(
     const IntSize& size,
     GLuint texture_id)
     : drawing_buffer(drawing_buffer), size(size), texture_id(texture_id) {
-  drawing_buffer->ContextGL()->GenMailboxCHROMIUM(mailbox.name);
+  gpu::gles2::GLES2Interface* gl = drawing_buffer->ContextGL();
+  gl->GenMailboxCHROMIUM(mailbox.name);
+  gl->ProduceTextureDirectCHROMIUM(texture_id, mailbox.name);
 }
 
 XRWebGLDrawingBuffer::ColorBuffer::~ColorBuffer() {
@@ -560,7 +562,6 @@ XRWebGLDrawingBuffer::TransferToStaticBitmapImage(
 
     buffer = front_color_buffer_;
 
-    gl->ProduceTextureDirectCHROMIUM(buffer->texture_id, buffer->mailbox.name);
     gl->GenUnverifiedSyncTokenCHROMIUM(buffer->produce_sync_token.GetData());
 
     // This should only fail if the context is lost during the buffer swap.
