@@ -13,8 +13,10 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -114,7 +116,11 @@ class UpdateCheckerTest : public testing::Test,
   void SetUp() override;
   void TearDown() override;
 
-  void UpdateCheckComplete(int error, int retry_after_sec);
+  void UpdateCheckComplete(
+      const base::Optional<ProtocolParser::Results>& results,
+      ErrorCategory error_category,
+      int error,
+      int retry_after_sec);
 
  protected:
   void Quit();
@@ -132,6 +138,8 @@ class UpdateCheckerTest : public testing::Test,
   std::unique_ptr<InterceptorFactory> interceptor_factory_;
   scoped_refptr<URLRequestPostInterceptor> post_interceptor_;
 
+  base::Optional<ProtocolParser::Results> results_;
+  ErrorCategory error_category_ = ErrorCategory::kNone;
   int error_ = 0;
   int retry_after_sec_ = 0;
 
@@ -198,7 +206,13 @@ void UpdateCheckerTest::Quit() {
     std::move(quit_closure_).Run();
 }
 
-void UpdateCheckerTest::UpdateCheckComplete(int error, int retry_after_sec) {
+void UpdateCheckerTest::UpdateCheckComplete(
+    const base::Optional<ProtocolParser::Results>& results,
+    ErrorCategory error_category,
+    int error,
+    int retry_after_sec) {
+  results_ = results;
+  error_category_ = error_category;
   error_ = error;
   retry_after_sec_ = retry_after_sec;
   Quit();
@@ -215,7 +229,7 @@ std::unique_ptr<Component> UpdateCheckerTest::MakeComponent() const {
   std::unique_ptr<CrxComponent> crx_component =
       std::make_unique<CrxComponent>();
   crx_component->name = "test_jebg";
-  crx_component->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+  crx_component->pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
   crx_component->installer = nullptr;
   crx_component->version = base::Version("0.9");
   crx_component->fingerprint = "fp1";
@@ -280,15 +294,20 @@ TEST_P(UpdateCheckerTest, UpdateCheckSuccess) {
   EXPECT_THAT(request, testing::HasSubstr(" sessionid="));
 
   // Sanity check the arguments of the callback after parsing.
+  EXPECT_EQ(ErrorCategory::kNone, error_category_);
   EXPECT_EQ(0, error_);
-
-  EXPECT_EQ(base::Version("1.0"), component->next_version_);
-  EXPECT_EQ(1u, component->crx_urls_.size());
-  EXPECT_EQ(
-      GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx"),
-      component->crx_urls_.front());
-
-  EXPECT_STREQ("this", component->action_run_.c_str());
+  EXPECT_TRUE(results_);
+  EXPECT_EQ(1u, results_->list.size());
+  const auto& result = results_->list.front();
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", result.extension_id.c_str());
+  EXPECT_EQ("1.0", result.manifest.version);
+  EXPECT_EQ("11.0.1.0", result.manifest.browser_min_version);
+  EXPECT_EQ(1u, result.manifest.packages.size());
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf.crx",
+               result.manifest.packages.front().name.c_str());
+  EXPECT_EQ(1u, result.crx_urls.size());
+  EXPECT_EQ(GURL("http://localhost/download/"), result.crx_urls.front());
+  EXPECT_STREQ("this", result.action_run.c_str());
 
 #if (OS_WIN)
   EXPECT_THAT(request, testing::HasSubstr(" domainjoined="));
@@ -382,8 +401,6 @@ TEST_F(UpdateCheckerTest, UpdateCheckError) {
   IdToComponentPtrMap components;
   components[kUpdateItemId] = MakeComponent();
 
-  auto& component = components[kUpdateItemId];
-
   update_checker_->CheckForUpdates(
       update_context_->session_id, {kUpdateItemId}, components, "", true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
@@ -395,8 +412,9 @@ TEST_F(UpdateCheckerTest, UpdateCheckError) {
   EXPECT_EQ(1, post_interceptor_->GetCount())
       << post_interceptor_->GetRequestsAsString();
 
+  EXPECT_EQ(ErrorCategory::kUpdateCheck, error_category_);
   EXPECT_EQ(403, error_);
-  EXPECT_FALSE(component->next_version_.IsValid());
+  EXPECT_FALSE(results_);
 }
 
 TEST_F(UpdateCheckerTest, UpdateCheckDownloadPreference) {
@@ -416,7 +434,6 @@ TEST_F(UpdateCheckerTest, UpdateCheckDownloadPreference) {
       "extra=\"params\"", true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
-
   RunThreads();
 
   // The request must contain dlpref="cacheable".
@@ -437,8 +454,6 @@ TEST_F(UpdateCheckerTest, UpdateCheckCupError) {
 
   IdToComponentPtrMap components;
   components[kUpdateItemId] = MakeComponent();
-
-  const auto& component = components[kUpdateItemId];
 
   update_checker_->CheckForUpdates(
       update_context_->session_id, {kUpdateItemId}, components, "", true,
@@ -463,8 +478,9 @@ TEST_F(UpdateCheckerTest, UpdateCheckCupError) {
       testing::HasSubstr(R"(<packages><package fp="fp1"/></packages></app>)"));
 
   // Expect an error since the response is not trusted.
+  EXPECT_EQ(ErrorCategory::kUpdateCheck, error_category_);
   EXPECT_EQ(-10000, error_);
-  EXPECT_FALSE(component->next_version_.IsValid());
+  EXPECT_FALSE(results_);
 }
 
 // Tests that the UpdateCheckers will not make an update check for a
@@ -486,7 +502,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckRequiresEncryptionError) {
                      base::Unretained(this)));
   RunThreads();
 
-  EXPECT_EQ(-1, error_);
+  EXPECT_EQ(ErrorCategory::kUpdateCheck, error_category_);
+  EXPECT_EQ(-10002, error_);
   EXPECT_FALSE(component->next_version_.IsValid());
 }
 
@@ -867,8 +884,6 @@ TEST_F(UpdateCheckerTest, NoUpdateActionRun) {
   IdToComponentPtrMap components;
   components[kUpdateItemId] = MakeComponent();
 
-  auto& component = components[kUpdateItemId];
-
   update_checker_->CheckForUpdates(
       update_context_->session_id, {kUpdateItemId}, components, "", true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
@@ -880,8 +895,14 @@ TEST_F(UpdateCheckerTest, NoUpdateActionRun) {
   ASSERT_EQ(1, post_interceptor_->GetCount())
       << post_interceptor_->GetRequestsAsString();
 
+  // Sanity check the arguments of the callback after parsing.
+  EXPECT_EQ(ErrorCategory::kNone, error_category_);
   EXPECT_EQ(0, error_);
-  EXPECT_STREQ("this", component->action_run_.c_str());
+  EXPECT_TRUE(results_);
+  EXPECT_EQ(1u, results_->list.size());
+  const auto& result = results_->list.front();
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", result.extension_id.c_str());
+  EXPECT_STREQ("this", result.action_run.c_str());
 }
 
 TEST_F(UpdateCheckerTest, UpdatePauseResume) {
@@ -939,6 +960,34 @@ TEST_F(UpdateCheckerTest, UpdateResetUpdateChecker) {
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   runloop.Run();
+}
+
+// The update response contains a protocol version which does not match the
+// expected protocol version.
+TEST_F(UpdateCheckerTest, ParseErrorProtocolVersionMismatch) {
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_parse_error.xml")));
+
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+
+  IdToComponentPtrMap components;
+  components[kUpdateItemId] = MakeComponent();
+
+  update_checker_->CheckForUpdates(
+      update_context_->session_id, {kUpdateItemId}, components, "", true,
+      base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
+                     base::Unretained(this)));
+  RunThreads();
+
+  EXPECT_EQ(1, post_interceptor_->GetHitCount())
+      << post_interceptor_->GetRequestsAsString();
+  ASSERT_EQ(1, post_interceptor_->GetCount())
+      << post_interceptor_->GetRequestsAsString();
+
+  EXPECT_EQ(ErrorCategory::kUpdateCheck, error_category_);
+  EXPECT_EQ(-10003, error_);
+  EXPECT_FALSE(results_);
 }
 
 }  // namespace update_client

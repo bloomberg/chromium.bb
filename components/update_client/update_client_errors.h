@@ -85,12 +85,27 @@ enum class InstallError {
   CUSTOM_ERROR_BASE = 100,  // Specific installer errors go above this value.
 };
 
-// These errors are returned with the |kInstall| error category and
+// These errors are returned with the |kService| error category and
 // indicate critical or configuration errors in the update service.
 enum class ServiceError {
   NONE = 0,
   SERVICE_WAIT_FAILED = 1,
   UPDATE_DISABLED = 2,
+};
+
+// These errors are related to serialization, deserialization, and parsing of
+// protocol requests.
+// The begin value for this enum is chosen not to conflict with network errors
+// defined by net/base/net_error_list.h. The callers don't have to handle this
+// error in any meaningful way, but this value may be reported in UMA stats,
+// therefore avoiding collisions with known network errors is desirable.
+enum class ProtocolError : int {
+  RESPONSE_NOT_TRUSTED = -10000,
+  MISSING_PUBLIC_KEY = -10001,
+  MISSING_URLS = -10002,
+  PARSE_FAILED = -10003,
+  UPDATE_RESPONSE_NOT_FOUND = -10004,
+  URL_FETCHER_FAILED = -10005,
 };
 
 }  // namespace update_client

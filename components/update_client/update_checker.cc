@@ -25,7 +25,6 @@
 #include "components/update_client/configurator.h"
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/protocol_builder.h"
-#include "components/update_client/protocol_parser.h"
 #include "components/update_client/request_sender.h"
 #include "components/update_client/task_traits.h"
 #include "components/update_client/update_client.h"
@@ -69,14 +68,12 @@ class UpdateCheckerImpl : public UpdateChecker {
                              const IdToComponentPtrMap& components,
                              const std::string& additional_attributes,
                              bool enabled_component_updates);
-  void OnRequestSenderComplete(const IdToComponentPtrMap& components,
-                               int error,
+  void OnRequestSenderComplete(int error,
                                const std::string& response,
                                int retry_after_sec);
-  void UpdateCheckSucceeded(const IdToComponentPtrMap& components,
-                            const ProtocolParser::Results& results,
+  void UpdateCheckSucceeded(const ProtocolParser::Results& results,
                             int retry_after_sec);
-  void UpdateCheckFailed(const IdToComponentPtrMap& components,
+  void UpdateCheckFailed(ErrorCategory error_category,
                          int error,
                          int retry_after_sec);
 
@@ -168,11 +165,10 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
                               updater_state_attributes_),
       config_->EnabledCupSigning(),
       base::BindOnce(&UpdateCheckerImpl::OnRequestSenderComplete,
-                     base::Unretained(this), base::ConstRef(components)));
+                     base::Unretained(this)));
 }
 
 void UpdateCheckerImpl::OnRequestSenderComplete(
-    const IdToComponentPtrMap& components,
     int error,
     const std::string& response,
     int retry_after_sec) {
@@ -180,23 +176,24 @@ void UpdateCheckerImpl::OnRequestSenderComplete(
 
   if (error) {
     VLOG(1) << "RequestSender failed " << error;
-    UpdateCheckFailed(components, error, retry_after_sec);
+    UpdateCheckFailed(ErrorCategory::kUpdateCheck, error, retry_after_sec);
     return;
   }
 
   ProtocolParser update_response;
   if (!update_response.Parse(response)) {
     VLOG(1) << "Parse failed " << update_response.errors();
-    UpdateCheckFailed(components, -1, retry_after_sec);
+    UpdateCheckFailed(ErrorCategory::kUpdateCheck,
+                      static_cast<int>(ProtocolError::PARSE_FAILED),
+                      retry_after_sec);
     return;
   }
 
   DCHECK_EQ(0, error);
-  UpdateCheckSucceeded(components, update_response.results(), retry_after_sec);
+  UpdateCheckSucceeded(update_response.results(), retry_after_sec);
 }
 
 void UpdateCheckerImpl::UpdateCheckSucceeded(
-    const IdToComponentPtrMap& components,
     const ProtocolParser::Results& results,
     int retry_after_sec) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -218,32 +215,23 @@ void UpdateCheckerImpl::UpdateCheckSucceeded(
       metadata_->SetCohortHint(result.extension_id, entry->second);
   }
 
-  for (const auto& result : results.list) {
-    const auto& id = result.extension_id;
-    const auto it = components.find(id);
-    if (it != components.end())
-      it->second->SetParseResult(result);
-  }
-
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(update_check_callback_), 0, retry_after_sec));
+      base::BindOnce(std::move(update_check_callback_),
+                     base::make_optional<ProtocolParser::Results>(results),
+                     ErrorCategory::kNone, 0, retry_after_sec));
 }
 
-void UpdateCheckerImpl::UpdateCheckFailed(const IdToComponentPtrMap& components,
+void UpdateCheckerImpl::UpdateCheckFailed(ErrorCategory error_category,
                                           int error,
                                           int retry_after_sec) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(0, error);
-  for (const auto& item : components) {
-    DCHECK(item.second);
-    Component& component = *item.second;
-    component.set_update_check_error(error);
-  }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(update_check_callback_), error,
-                                retry_after_sec));
+      FROM_HERE,
+      base::BindOnce(std::move(update_check_callback_), base::nullopt,
+                     error_category, error, retry_after_sec));
 }
 
 }  // namespace

@@ -15,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/client_update_protocol/ecdsa.h"
 #include "components/update_client/configurator.h"
+#include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
@@ -73,7 +74,7 @@ void RequestSender::Send(
   request_sender_callback_ = std::move(request_sender_callback);
 
   if (urls_.empty()) {
-    return HandleSendError(-1, 0);
+    return HandleSendError(static_cast<int>(ProtocolError::MISSING_URLS), 0);
   }
 
   cur_url_ = urls_.begin();
@@ -81,7 +82,8 @@ void RequestSender::Send(
   if (use_signing_) {
     public_key_ = GetKey(kKeyPubBytesBase64);
     if (public_key_.empty())
-      return HandleSendError(-1, 0);
+      return HandleSendError(
+          static_cast<int>(ProtocolError::MISSING_PUBLIC_KEY), 0);
   }
 
   SendInternal();
@@ -107,9 +109,11 @@ void RequestSender::SendInternal() {
                                      this, config_->RequestContext());
   if (!url_fetcher_)
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&RequestSender::SendInternalComplete,
-                                  base::Unretained(this), -1, std::string(),
-                                  std::string(), 0));
+        FROM_HERE,
+        base::BindOnce(&RequestSender::SendInternalComplete,
+                       base::Unretained(this),
+                       static_cast<int>(ProtocolError::URL_FETCHER_FAILED),
+                       std::string(), std::string(), 0));
 }
 
 void RequestSender::SendInternalComplete(int error,
@@ -133,7 +137,7 @@ void RequestSender::SendInternalComplete(int error,
       return;
     }
 
-    error = kErrorResponseNotTrusted;
+    error = static_cast<int>(ProtocolError::RESPONSE_NOT_TRUSTED);
   }
 
   DCHECK(error);

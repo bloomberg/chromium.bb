@@ -16,6 +16,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/version.h"
@@ -49,14 +50,14 @@ class Component {
 
   CrxUpdateItem GetCrxUpdateItem() const;
 
-  // Called by the UpdateChecker to set the update response for this component.
-  void SetParseResult(const ProtocolParser::Result& result);
-
   // Sets the uninstall state for this component.
   void Uninstall(const base::Version& cur_version, int reason);
 
   // Called by the UpdateEngine when an update check for this component is done.
-  void UpdateCheckComplete();
+  void SetUpdateCheckResult(
+      const base::Optional<ProtocolParser::Result>& result,
+      ErrorCategory error_category,
+      int error);
 
   // Returns true if the component has reached a final state and no further
   // handling and state transitions are possible.
@@ -91,12 +92,6 @@ class Component {
 
   std::string next_fp() const { return next_fp_; }
   void set_next_fp(const std::string& next_fp) { next_fp_ = next_fp; }
-
-  void set_update_check_error(int update_check_error) {
-    error_category_ = ErrorCategory::kUpdateCheck;
-    error_code_ = update_check_error;
-    extra_code1_ = 0;
-  }
 
   bool is_foreground() const;
 
@@ -370,6 +365,8 @@ class Component {
 
   // Notifies registered observers about changes in the state of the component.
   void NotifyObservers(Events event) const;
+
+  void SetParseResult(const ProtocolParser::Result& result);
 
   base::ThreadChecker thread_checker_;
 

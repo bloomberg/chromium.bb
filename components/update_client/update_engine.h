@@ -15,6 +15,7 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/update_client/component.h"
@@ -81,9 +82,12 @@ class UpdateEngine : public base::RefCounted<UpdateEngine> {
   void UpdateCheckComplete(scoped_refptr<UpdateContext> update_context);
 
   void DoUpdateCheck(scoped_refptr<UpdateContext> update_context);
-  void UpdateCheckDone(scoped_refptr<UpdateContext> update_context,
-                       int error,
-                       int retry_after_sec);
+  void UpdateCheckResultsAvailable(
+      scoped_refptr<UpdateContext> update_context,
+      const base::Optional<ProtocolParser::Results>& results,
+      ErrorCategory error_category,
+      int error,
+      int retry_after_sec);
 
   void HandleComponent(scoped_refptr<UpdateContext> update_context);
   void HandleComponentComplete(scoped_refptr<UpdateContext> update_context);

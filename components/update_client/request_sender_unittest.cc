@@ -245,7 +245,7 @@ TEST_F(RequestSenderTest, RequestSendFailedNoUrls) {
                      base::Unretained(this)));
   RunThreads();
 
-  EXPECT_EQ(-1, error_);
+  EXPECT_EQ(-10002, error_);
 }
 
 // Tests that a CUP request fails if the response is not signed.
@@ -268,7 +268,7 @@ TEST_F(RequestSenderTest, RequestSendCupError) {
       << post_interceptor_1_->GetRequestsAsString();
 
   EXPECT_STREQ("test", post_interceptor_1_->GetRequestBody(0).c_str());
-  EXPECT_EQ(RequestSender::kErrorResponseNotTrusted, error_);
+  EXPECT_EQ(-10000, error_);
   EXPECT_TRUE(response_.empty());
 }
 
