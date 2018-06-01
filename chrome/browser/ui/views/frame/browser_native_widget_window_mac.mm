@@ -6,6 +6,10 @@
 
 #import <AppKit/AppKit.h>
 
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
+
 namespace {
 constexpr NSInteger kWindowButtonsOffsetFromBottom = 9;
 constexpr NSInteger kWindowButtonsOffsetFromLeft = 11;
@@ -103,6 +107,15 @@ WEAK_IMPORT_ATTRIBUTE
 // subclasses are known to override it and return NO.
 - (BOOL)_usesCustomDrawing {
   return NO;
+}
+
+// Handle "Move focus to the window toolbar" configured in System Preferences ->
+// Keyboard -> Shortcuts -> Keyboard. Usually Ctrl+F5. The argument (|unknown|)
+// tends to just be nil.
+- (void)_handleFocusToolbarHotKey:(id)unknown {
+  Browser* browser = chrome::FindBrowserWithWindow(self);
+  if (browser)
+    chrome::ExecuteCommand(browser, IDC_FOCUS_TOOLBAR);
 }
 
 @end
