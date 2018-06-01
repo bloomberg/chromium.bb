@@ -252,11 +252,25 @@ struct Config {
     GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
 #undef GPU_OP
 
+#if defined(GPU_FUZZER_USE_PASSTHROUGH_CMD_DECODER)
+    gl_context_attribs.bind_generates_resource =
+        attrib_helper.bind_generates_resource;
+    gl_context_attribs.webgl_compatibility_context =
+        IsWebGLContextType(attrib_helper.context_type);
+    gl_context_attribs.global_texture_share_group = true;
+    gl_context_attribs.robust_resource_initialization = true;
+    gl_context_attribs.robust_buffer_access = true;
+    gl_context_attribs.client_major_es_version =
+        IsWebGL2OrES3ContextType(attrib_helper.context_type) ? 3 : 2;
+    gl_context_attribs.client_minor_es_version = 0;
+#endif
+
     return it.consumed_bytes();
   }
 
   GpuDriverBugWorkarounds workarounds;
   ContextCreationAttribs attrib_helper;
+  gl::GLContextAttribs gl_context_attribs;
 #if defined(GPU_FUZZER_USE_STUB)
   const char* version;
   std::string extensions;
@@ -439,7 +453,7 @@ class CommandBufferSetup {
   void InitContext() {
 #if !defined(GPU_FUZZER_USE_STUB)
     context_ = new gl::GLContextEGL(share_group_.get());
-    context_->Initialize(surface_.get(), gl::GLContextAttribs());
+    context_->Initialize(surface_.get(), config_.gl_context_attribs);
 #else
     scoped_refptr<gl::GLContextStub> context_stub =
         new gl::GLContextStub(share_group_.get());
