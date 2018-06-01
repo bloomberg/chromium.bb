@@ -19,7 +19,7 @@ namespace resource_coordinator {
 // static
 SiteCharacteristicsDataStore*
 LocalSiteCharacteristicsDataStoreFactory::GetForProfile(Profile* profile) {
-  if (base::FeatureList::IsEnabled(features::kProactiveTabDiscarding)) {
+  if (base::FeatureList::IsEnabled(features::kProactiveTabFreezeAndDiscard)) {
     return static_cast<SiteCharacteristicsDataStore*>(
         GetInstance()->GetServiceForBrowserContext(profile, true));
   }
@@ -91,7 +91,7 @@ LocalSiteCharacteristicsDataStoreFactory::GetBrowserContextToUse(
 
 bool LocalSiteCharacteristicsDataStoreFactory::
     ServiceIsCreatedWithBrowserContext() const {
-  return base::FeatureList::IsEnabled(features::kProactiveTabDiscarding);
+  return base::FeatureList::IsEnabled(features::kProactiveTabFreezeAndDiscard);
 }
 
 bool LocalSiteCharacteristicsDataStoreFactory::ServiceIsNULLWhileTesting()

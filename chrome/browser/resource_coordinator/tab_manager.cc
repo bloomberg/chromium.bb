@@ -180,7 +180,8 @@ TabManager::TabManager()
         new ResourceCoordinatorSignalObserver());
   }
   stats_collector_.reset(new TabManagerStatsCollector());
-  proactive_discard_params_ = GetStaticProactiveTabDiscardParams();
+  proactive_freeze_discard_params_ =
+      GetStaticProactiveTabFreezeAndDiscardParams();
   TabLoadTracker::Get()->AddObserver(this);
 }
 
@@ -898,28 +899,28 @@ bool TabManager::IsForceLoadTimerRunning() const {
 base::TimeDelta TabManager::GetTimeInBackgroundBeforeProactiveDiscard() const {
   // Exceed high threshold - in excessive state.
   if (num_loaded_lifecycle_units_ >=
-      proactive_discard_params_.high_loaded_tab_count) {
+      proactive_freeze_discard_params_.high_loaded_tab_count) {
     return base::TimeDelta();
   }
 
   // Exceed moderate threshold - in high state.
   if (num_loaded_lifecycle_units_ >=
-      proactive_discard_params_.moderate_loaded_tab_count) {
-    return proactive_discard_params_.high_occluded_timeout;
+      proactive_freeze_discard_params_.moderate_loaded_tab_count) {
+    return proactive_freeze_discard_params_.high_occluded_timeout;
   }
 
   // Exceed low threshold - in moderate state.
   if (num_loaded_lifecycle_units_ >=
-      proactive_discard_params_.low_loaded_tab_count) {
-    return proactive_discard_params_.moderate_occluded_timeout;
+      proactive_freeze_discard_params_.low_loaded_tab_count) {
+    return proactive_freeze_discard_params_.moderate_occluded_timeout;
   }
 
   // Didn't meet any thresholds - in low state.
-  return proactive_discard_params_.low_occluded_timeout;
+  return proactive_freeze_discard_params_.low_occluded_timeout;
 }
 
 void TabManager::PerformStateTransitions() {
-  if (!base::FeatureList::IsEnabled(features::kProactiveTabDiscarding))
+  if (!base::FeatureList::IsEnabled(features::kProactiveTabFreezeAndDiscard))
     return;
 
   base::TimeTicks next_state_transition_time = base::TimeTicks::Max();
@@ -935,7 +936,7 @@ void TabManager::PerformStateTransitions() {
       const base::TimeDelta time_not_visible =
           now - lifecycle_unit->GetLastVisibleTime();
       const base::TimeDelta time_until_freeze =
-          proactive_discard_params_.freeze_timeout - time_not_visible;
+          proactive_freeze_discard_params_.freeze_timeout - time_not_visible;
 
       if (time_until_freeze <= base::TimeDelta()) {
         lifecycle_unit->Freeze();
@@ -968,7 +969,8 @@ void TabManager::PerformStateTransitions() {
   // oldest LifecycleUnit and call PerformStateTransitions() again, rather than
   // discarding all LifecycleUnits that have been non-visible for at least
   // GetTimeInBackgroundBeforeProactiveDiscard().
-  if (oldest_discardable_lifecycle_unit) {
+  if (proactive_freeze_discard_params_.should_proactively_discard &&
+      oldest_discardable_lifecycle_unit) {
     const base::TimeDelta time_not_visible =
         now - oldest_discardable_lifecycle_unit->GetLastVisibleTime();
     const base::TimeDelta time_until_discard =

@@ -285,18 +285,20 @@ class TabManagerWithProactiveDiscardExperimentEnabledTest
  public:
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        features::kProactiveTabDiscarding);
+        features::kProactiveTabFreezeAndDiscard);
 
     TabManagerTest::SetUp();
 
     // Use test constants for proactive discarding parameters.
-    tab_manager_->proactive_discard_params_ = GetTestProactiveDiscardParams();
+    tab_manager_->proactive_freeze_discard_params_ =
+        GetTestProactiveDiscardParams();
   }
 
-  ProactiveTabDiscardParams GetTestProactiveDiscardParams() {
-    // Return a ProactiveTabDiscardParams struct with default test
+  ProactiveTabFreezeAndDiscardParams GetTestProactiveDiscardParams() {
+    // Return a ProactiveTabFreezeAndDiscardParams struct with default test
     // parameters.
-    ProactiveTabDiscardParams params;
+    ProactiveTabFreezeAndDiscardParams params = {};
+    params.should_proactively_discard = true;
     params.low_occluded_timeout = kLowOccludedTimeout;
     params.moderate_occluded_timeout = kModerateOccludedTimeout;
     params.high_occluded_timeout = kHighOccludedTimeout;
@@ -1492,7 +1494,11 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest, FreezeOnceLoaded) {
   tab_strip->CloseAllTabs();
 }
 
-TEST_F(TabManagerTest, ProactiveDiscardDoesNotOccurWhenDisabled) {
+TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
+       NoProactiveDiscardWhenDiscardingVariationParamDisabled) {
+  tab_manager_->proactive_freeze_discard_params_.should_proactively_discard =
+      false;
+
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
   params.type = Browser::TYPE_TABBED;
@@ -1501,19 +1507,22 @@ TEST_F(TabManagerTest, ProactiveDiscardDoesNotOccurWhenDisabled) {
   TabStripModel* tab_strip = browser->tab_strip_model();
 
   tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
-  tab_strip->GetWebContentsAt(0)->WasShown();
-  tab_strip->GetWebContentsAt(0)->WasHidden();
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/false);
+  tab_strip->GetWebContentsAt(1)->WasShown();
+  tab_strip->GetWebContentsAt(1)->WasHidden();
 
   task_runner_->FastForwardBy(kLowOccludedTimeout);
 
-  EXPECT_FALSE(
-      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(0))
-          ->IsDiscarded());
+  EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(1)));
 
   tab_strip->CloseAllTabs();
 }
 
-TEST_F(TabManagerTest, FreezingDoesNotOccurWhenDisabled) {
+TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
+       FreezingWhenDiscardingVariationParamDisabled) {
+  tab_manager_->proactive_freeze_discard_params_.should_proactively_discard =
+      false;
+
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
   params.type = Browser::TYPE_TABBED;
@@ -1522,12 +1531,57 @@ TEST_F(TabManagerTest, FreezingDoesNotOccurWhenDisabled) {
   TabStripModel* tab_strip = browser->tab_strip_model();
 
   tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
-  tab_strip->GetWebContentsAt(0)->WasShown();
-  tab_strip->GetWebContentsAt(0)->WasHidden();
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/false);
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(1), TabLoadTracker::LoadingState::LOADED);
+  tab_strip->GetWebContentsAt(1)->WasShown();
+  tab_strip->GetWebContentsAt(1)->WasHidden();
 
   task_runner_->FastForwardBy(kFreezeTimeout);
 
-  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerTest, NoProactiveDiscardWhenFeatureDisabled) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/false);
+  tab_strip->GetWebContentsAt(1)->WasShown();
+  tab_strip->GetWebContentsAt(1)->WasHidden();
+
+  task_runner_->FastForwardBy(kLowOccludedTimeout);
+
+  EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(1)));
+
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerTest, NoFreezingWhenFeatureDisabled) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/false);
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(1), TabLoadTracker::LoadingState::LOADED);
+  tab_strip->GetWebContentsAt(1)->WasShown();
+  tab_strip->GetWebContentsAt(1)->WasHidden();
+
+  task_runner_->FastForwardBy(kFreezeTimeout);
+
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
 
   tab_strip->CloseAllTabs();
 }

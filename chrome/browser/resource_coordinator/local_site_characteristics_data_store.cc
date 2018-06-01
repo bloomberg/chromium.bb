@@ -25,7 +25,7 @@ constexpr char kSiteCharacteristicsDirectoryName[] =
 LocalSiteCharacteristicsDataStore::LocalSiteCharacteristicsDataStore(
     Profile* profile)
     : history_observer_(this) {
-  DCHECK(base::FeatureList::IsEnabled(features::kProactiveTabDiscarding));
+  DCHECK(base::FeatureList::IsEnabled(features::kProactiveTabFreezeAndDiscard));
 
   database_ = std::make_unique<LevelDBSiteCharacteristicsDatabase>(
       profile->GetPath().AppendASCII(kSiteCharacteristicsDirectoryName));

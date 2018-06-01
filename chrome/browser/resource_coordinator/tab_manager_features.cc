@@ -23,9 +23,9 @@ namespace features {
 const base::Feature kCustomizedTabLoadTimeout{
     "CustomizedTabLoadTimeout", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables proactive tab discarding.
-const base::Feature kProactiveTabDiscarding{"ProactiveTabDiscarding",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables proactive tab freezing and discarding.
+const base::Feature kProactiveTabFreezeAndDiscard{
+    "ProactiveTabFreezeAndDiscard", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables delaying the navigation of background tabs in order to improve
 // foreground tab's user experience.
@@ -53,12 +53,12 @@ namespace {
 // and enforces the constraint that it must be in the interval
 // [low_loaded_tab_count, high_loaded_tab_count].
 int GetModerateThresholdTabCountBasedOnSystemMemory(
-    ProactiveTabDiscardParams* params,
+    ProactiveTabFreezeAndDiscardParams* params,
     int memory_in_gb) {
   int moderate_loaded_tab_count_per_gb = base::GetFieldTrialParamByFeatureAsInt(
-      features::kProactiveTabDiscarding,
-      kProactiveTabDiscard_ModerateLoadedTabsPerGbRamParam,
-      kProactiveTabDiscard_ModerateLoadedTabsPerGbRamDefault);
+      features::kProactiveTabFreezeAndDiscard,
+      kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamParam,
+      kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamDefault);
 
   int moderate_level = moderate_loaded_tab_count_per_gb * memory_in_gb;
 
@@ -72,82 +72,97 @@ int GetModerateThresholdTabCountBasedOnSystemMemory(
 }  // namespace
 
 // Field-trial parameter names for proactive tab discarding.
-const char kProactiveTabDiscard_LowLoadedTabCountParam[] = "LowLoadedTabCount";
-const char kProactiveTabDiscard_ModerateLoadedTabsPerGbRamParam[] =
+const char kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscard[] =
+    "ShouldProactivelyDiscard";
+const char kProactiveTabFreezeAndDiscard_LowLoadedTabCountParam[] =
+    "LowLoadedTabCount";
+const char kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamParam[] =
     "ModerateLoadedTabsPerGbRam";
-const char kProactiveTabDiscard_HighLoadedTabCountParam[] =
+const char kProactiveTabFreezeAndDiscard_HighLoadedTabCountParam[] =
     "HighLoadedTabCount";
-const char kProactiveTabDiscard_LowOccludedTimeoutParam[] =
+const char kProactiveTabFreezeAndDiscard_LowOccludedTimeoutParam[] =
     "LowOccludedTimeoutSeconds";
-const char kProactiveTabDiscard_ModerateOccludedTimeoutParam[] =
+const char kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutParam[] =
     "ModerateOccludedTimeoutSeconds";
-const char kProactiveTabDiscard_HighOccludedTimeoutParam[] =
+const char kProactiveTabFreezeAndDiscard_HighOccludedTimeoutParam[] =
     "HighOccludedTimeoutSeconds";
-const char kProactiveTabDiscard_FaviconUpdateObservationWindow[] =
+const char kProactiveTabFreezeAndDiscard_FaviconUpdateObservationWindow[] =
     "FaviconUpdateObservationWindow";
-const char kProactiveTabDiscard_TitleUpdateObservationWindow[] =
+const char kProactiveTabFreezeAndDiscard_TitleUpdateObservationWindow[] =
     "TitleUpdateObservationWindow";
-const char kProactiveTabDiscard_AudioUsageObservationWindow[] =
+const char kProactiveTabFreezeAndDiscard_AudioUsageObservationWindow[] =
     "AudioUsageObservationWindow";
-const char kProactiveTabDiscard_NotificationsUsageObservationWindow[] =
+const char kProactiveTabFreezeAndDiscard_NotificationsUsageObservationWindow[] =
     "NotificationsUsageObservationWindow";
-const char kProactiveTabDiscard_FreezeTimeout[] = "FreezeTimeout";
+const char kProactiveTabFreezeAndDiscard_FreezeTimeout[] = "FreezeTimeout";
 
-// Default values for ProactiveTabDiscardParams.
-//
+// Default values for ProactiveTabFreezeAndDiscardParams.
+const bool kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardDefault =
+    false;
 // 50% of people cap out at 4 tabs, so for them proactive discarding won't even
 // be invoked. See Tabs.MaxTabsInADay.
 // TODO(chrisha): This should eventually be informed by the number of tabs
 // typically used over a given time horizon (metric being developed).
-const uint32_t kProactiveTabDiscard_LowLoadedTabCountDefault = 4;
+const uint32_t kProactiveTabFreezeAndDiscard_LowLoadedTabCountDefault = 4;
 // Testing in the lab shows that 2GB devices suffer beyond 6 tabs, and 4GB
 // devices suffer beyond about 12 tabs. As a very simple first step, we'll aim
 // at allowing 3 tabs per GB of RAM on a system before proactive discarding
 // kicks in. This is a system resource dependent max, which is combined with the
 // DefaultMaxLoadedTabCount to determine the max on a system.
-const uint32_t kProactiveTabDiscard_ModerateLoadedTabsPerGbRamDefault = 3;
+const uint32_t kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamDefault =
+    3;
 // 99.9% of people cap out with fewer than this number, so only 0.1% of the
 // population should ever encounter proactive discarding based on this cap.
-const uint32_t kProactiveTabDiscard_HighLoadedTabCountDefault = 100;
+const uint32_t kProactiveTabFreezeAndDiscard_HighLoadedTabCountDefault = 100;
 // Current discarding uses 10 minutes as a minimum cap. This uses exponentially
 // increasing timeouts beyond that.
-const base::TimeDelta kProactiveTabDiscard_LowOccludedTimeoutDefault =
+const base::TimeDelta kProactiveTabFreezeAndDiscard_LowOccludedTimeoutDefault =
     base::TimeDelta::FromHours(6);
-const base::TimeDelta kProactiveTabDiscard_ModerateOccludedTimeoutDefault =
-    base::TimeDelta::FromHours(1);
-const base::TimeDelta kProactiveTabDiscard_HighOccludedTimeoutDefault =
+const base::TimeDelta
+    kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutDefault =
+        base::TimeDelta::FromHours(1);
+const base::TimeDelta kProactiveTabFreezeAndDiscard_HighOccludedTimeoutDefault =
     base::TimeDelta::FromMinutes(10);
 // Observations windows have a default value of 2 hours, 95% of backgrounded
 // tabs don't use any of these features in this time window.
 const base::TimeDelta
-    kProactiveTabDiscard_FaviconUpdateObservationWindow_Default =
+    kProactiveTabFreezeAndDiscard_FaviconUpdateObservationWindow_Default =
         base::TimeDelta::FromHours(2);
 const base::TimeDelta
-    kProactiveTabDiscard_TitleUpdateObservationWindow_Default =
+    kProactiveTabFreezeAndDiscard_TitleUpdateObservationWindow_Default =
         base::TimeDelta::FromHours(2);
-const base::TimeDelta kProactiveTabDiscard_AudioUsageObservationWindow_Default =
-    base::TimeDelta::FromHours(2);
 const base::TimeDelta
-    kProactiveTabDiscard_NotificationsUsageObservationWindow_Default =
+    kProactiveTabFreezeAndDiscard_AudioUsageObservationWindow_Default =
         base::TimeDelta::FromHours(2);
-const base::TimeDelta kProactiveTabDiscard_FreezeTimeout_Default =
+const base::TimeDelta
+    kProactiveTabFreezeAndDiscard_NotificationsUsageObservationWindow_Default =
+        base::TimeDelta::FromHours(2);
+const base::TimeDelta kProactiveTabFreezeAndDiscard_FreezeTimeout_Default =
     base::TimeDelta::FromMinutes(10);
 
-ProactiveTabDiscardParams::ProactiveTabDiscardParams() = default;
-ProactiveTabDiscardParams::ProactiveTabDiscardParams(
-    const ProactiveTabDiscardParams& rhs) = default;
+ProactiveTabFreezeAndDiscardParams::ProactiveTabFreezeAndDiscardParams() =
+    default;
+ProactiveTabFreezeAndDiscardParams::ProactiveTabFreezeAndDiscardParams(
+    const ProactiveTabFreezeAndDiscardParams& rhs) = default;
 
-ProactiveTabDiscardParams GetProactiveTabDiscardParams(int memory_in_gb) {
-  ProactiveTabDiscardParams params = {};
+ProactiveTabFreezeAndDiscardParams GetProactiveTabFreezeAndDiscardParams(
+    int memory_in_gb) {
+  ProactiveTabFreezeAndDiscardParams params = {};
+
+  params.should_proactively_discard = base::GetFieldTrialParamByFeatureAsBool(
+      features::kProactiveTabFreezeAndDiscard,
+      kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscard,
+      kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardDefault);
+
   params.low_loaded_tab_count = base::GetFieldTrialParamByFeatureAsInt(
-      features::kProactiveTabDiscarding,
-      kProactiveTabDiscard_LowLoadedTabCountParam,
-      kProactiveTabDiscard_LowLoadedTabCountDefault);
+      features::kProactiveTabFreezeAndDiscard,
+      kProactiveTabFreezeAndDiscard_LowLoadedTabCountParam,
+      kProactiveTabFreezeAndDiscard_LowLoadedTabCountDefault);
 
   params.high_loaded_tab_count = base::GetFieldTrialParamByFeatureAsInt(
-      features::kProactiveTabDiscarding,
-      kProactiveTabDiscard_HighLoadedTabCountParam,
-      kProactiveTabDiscard_HighLoadedTabCountDefault);
+      features::kProactiveTabFreezeAndDiscard,
+      kProactiveTabFreezeAndDiscard_HighLoadedTabCountParam,
+      kProactiveTabFreezeAndDiscard_HighLoadedTabCountDefault);
 
   // |moderate_loaded_tab_count| determined after |high_loaded_tab_count| so it
   // can be enforced that it is lower than |high_loaded_tab_count|.
@@ -156,61 +171,65 @@ ProactiveTabDiscardParams GetProactiveTabDiscardParams(int memory_in_gb) {
 
   params.low_occluded_timeout =
       base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
-          features::kProactiveTabDiscarding,
-          kProactiveTabDiscard_LowOccludedTimeoutParam,
-          kProactiveTabDiscard_LowOccludedTimeoutDefault.InSeconds()));
+          features::kProactiveTabFreezeAndDiscard,
+          kProactiveTabFreezeAndDiscard_LowOccludedTimeoutParam,
+          kProactiveTabFreezeAndDiscard_LowOccludedTimeoutDefault.InSeconds()));
 
   params.moderate_occluded_timeout =
       base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
-          features::kProactiveTabDiscarding,
-          kProactiveTabDiscard_ModerateOccludedTimeoutParam,
-          kProactiveTabDiscard_ModerateOccludedTimeoutDefault.InSeconds()));
+          features::kProactiveTabFreezeAndDiscard,
+          kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutParam,
+          kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutDefault
+              .InSeconds()));
 
   params.high_occluded_timeout =
       base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
-          features::kProactiveTabDiscarding,
-          kProactiveTabDiscard_HighOccludedTimeoutParam,
-          kProactiveTabDiscard_HighOccludedTimeoutDefault.InSeconds()));
+          features::kProactiveTabFreezeAndDiscard,
+          kProactiveTabFreezeAndDiscard_HighOccludedTimeoutParam,
+          kProactiveTabFreezeAndDiscard_HighOccludedTimeoutDefault
+              .InSeconds()));
 
   params.favicon_update_observation_window =
       base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
-          features::kProactiveTabDiscarding,
-          kProactiveTabDiscard_FaviconUpdateObservationWindow,
-          kProactiveTabDiscard_FaviconUpdateObservationWindow_Default
+          features::kProactiveTabFreezeAndDiscard,
+          kProactiveTabFreezeAndDiscard_FaviconUpdateObservationWindow,
+          kProactiveTabFreezeAndDiscard_FaviconUpdateObservationWindow_Default
               .InSeconds()));
 
   params.title_update_observation_window =
       base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
-          features::kProactiveTabDiscarding,
-          kProactiveTabDiscard_TitleUpdateObservationWindow,
-          kProactiveTabDiscard_TitleUpdateObservationWindow_Default
+          features::kProactiveTabFreezeAndDiscard,
+          kProactiveTabFreezeAndDiscard_TitleUpdateObservationWindow,
+          kProactiveTabFreezeAndDiscard_TitleUpdateObservationWindow_Default
               .InSeconds()));
 
   params.audio_usage_observation_window =
       base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
-          features::kProactiveTabDiscarding,
-          kProactiveTabDiscard_AudioUsageObservationWindow,
-          kProactiveTabDiscard_AudioUsageObservationWindow_Default
+          features::kProactiveTabFreezeAndDiscard,
+          kProactiveTabFreezeAndDiscard_AudioUsageObservationWindow,
+          kProactiveTabFreezeAndDiscard_AudioUsageObservationWindow_Default
               .InSeconds()));
 
   params.notifications_usage_observation_window =
       base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
-          features::kProactiveTabDiscarding,
-          kProactiveTabDiscard_NotificationsUsageObservationWindow,
-          kProactiveTabDiscard_NotificationsUsageObservationWindow_Default
+          features::kProactiveTabFreezeAndDiscard,
+          kProactiveTabFreezeAndDiscard_NotificationsUsageObservationWindow,
+          kProactiveTabFreezeAndDiscard_NotificationsUsageObservationWindow_Default
               .InSeconds()));
 
   params.freeze_timeout =
       base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
-          features::kProactiveTabDiscarding, kProactiveTabDiscard_FreezeTimeout,
-          kProactiveTabDiscard_FreezeTimeout_Default.InSeconds()));
+          features::kProactiveTabFreezeAndDiscard,
+          kProactiveTabFreezeAndDiscard_FreezeTimeout,
+          kProactiveTabFreezeAndDiscard_FreezeTimeout_Default.InSeconds()));
 
   return params;
 }
 
-const ProactiveTabDiscardParams& GetStaticProactiveTabDiscardParams() {
-  static base::NoDestructor<ProactiveTabDiscardParams> params(
-      GetProactiveTabDiscardParams());
+const ProactiveTabFreezeAndDiscardParams&
+GetStaticProactiveTabFreezeAndDiscardParams() {
+  static base::NoDestructor<ProactiveTabFreezeAndDiscardParams> params(
+      GetProactiveTabFreezeAndDiscardParams());
   return *params;
 }
 

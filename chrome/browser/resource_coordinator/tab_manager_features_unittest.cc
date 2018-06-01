@@ -20,7 +20,7 @@ class TabManagerFeaturesTest : public testing::Test {
   // variations parameter values.
   void EnableProactiveTabDiscarding() {
     std::set<std::string> features;
-    features.insert(features::kProactiveTabDiscarding.name);
+    features.insert(features::kProactiveTabFreezeAndDiscard.name);
     variations_manager_.SetVariationParamsWithFeatureAssociations(
         "DummyTrial", params_, features);
   }
@@ -41,8 +41,8 @@ class TabManagerFeaturesTest : public testing::Test {
       base::TimeDelta title_update_observation_window,
       base::TimeDelta audio_usage_observation_window,
       base::TimeDelta notifications_usage_observation_window) {
-    ProactiveTabDiscardParams params =
-        GetProactiveTabDiscardParams(memory_in_gb);
+    ProactiveTabFreezeAndDiscardParams params =
+        GetProactiveTabFreezeAndDiscardParams(memory_in_gb);
 
     EXPECT_EQ(low_loaded_tab_count, params.low_loaded_tab_count);
     EXPECT_EQ(moderate_loaded_tab_count, params.moderate_loaded_tab_count);
@@ -67,19 +67,20 @@ class TabManagerFeaturesTest : public testing::Test {
               params.notifications_usage_observation_window);
   }
 
-  void ExpectDefaultProactiveTabDiscardParams() {
+  void ExpectDefaultProactiveTabFreezeAndDiscardParams() {
     int memory_in_gb = 4;
     ExpectProactiveTabDiscardingParams(
-        kProactiveTabDiscard_LowLoadedTabCountDefault,
-        kProactiveTabDiscard_ModerateLoadedTabsPerGbRamDefault * memory_in_gb,
-        kProactiveTabDiscard_HighLoadedTabCountDefault, memory_in_gb,
-        kProactiveTabDiscard_LowOccludedTimeoutDefault,
-        kProactiveTabDiscard_ModerateOccludedTimeoutDefault,
-        kProactiveTabDiscard_HighOccludedTimeoutDefault,
-        kProactiveTabDiscard_FaviconUpdateObservationWindow_Default,
-        kProactiveTabDiscard_TitleUpdateObservationWindow_Default,
-        kProactiveTabDiscard_AudioUsageObservationWindow_Default,
-        kProactiveTabDiscard_NotificationsUsageObservationWindow_Default);
+        kProactiveTabFreezeAndDiscard_LowLoadedTabCountDefault,
+        kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamDefault *
+            memory_in_gb,
+        kProactiveTabFreezeAndDiscard_HighLoadedTabCountDefault, memory_in_gb,
+        kProactiveTabFreezeAndDiscard_LowOccludedTimeoutDefault,
+        kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutDefault,
+        kProactiveTabFreezeAndDiscard_HighOccludedTimeoutDefault,
+        kProactiveTabFreezeAndDiscard_FaviconUpdateObservationWindow_Default,
+        kProactiveTabFreezeAndDiscard_TitleUpdateObservationWindow_Default,
+        kProactiveTabFreezeAndDiscard_AudioUsageObservationWindow_Default,
+        kProactiveTabFreezeAndDiscard_NotificationsUsageObservationWindow_Default);
   }
 
  private:
@@ -90,44 +91,50 @@ class TabManagerFeaturesTest : public testing::Test {
 }  // namespace
 
 TEST_F(TabManagerFeaturesTest,
-       GetProactiveTabDiscardParamsDisabledFeatureGoesToDefault) {
+       GetProactiveTabFreezeAndDiscardParamsDisabledFeatureGoesToDefault) {
   // Do not enable the proactive tab discarding feature.
-  ExpectDefaultProactiveTabDiscardParams();
-}
-
-TEST_F(TabManagerFeaturesTest, GetProactiveTabDiscardParamsNoneGoesToDefault) {
-  EnableProactiveTabDiscarding();
-  ExpectDefaultProactiveTabDiscardParams();
+  ExpectDefaultProactiveTabFreezeAndDiscardParams();
 }
 
 TEST_F(TabManagerFeaturesTest,
-       GetProactiveTabDiscardParamsInvalidGoesToDefault) {
-  SetParam(kProactiveTabDiscard_LowLoadedTabCountParam, "ab");
-  SetParam(kProactiveTabDiscard_ModerateLoadedTabsPerGbRamParam, "27.8");
-  SetParam(kProactiveTabDiscard_HighLoadedTabCountParam, "4e8");
-  SetParam(kProactiveTabDiscard_LowOccludedTimeoutParam, "---");
-  SetParam(kProactiveTabDiscard_ModerateOccludedTimeoutParam, " ");
-  SetParam(kProactiveTabDiscard_HighOccludedTimeoutParam, "");
-  SetParam(kProactiveTabDiscard_FaviconUpdateObservationWindow, "    ");
-  SetParam(kProactiveTabDiscard_TitleUpdateObservationWindow, "foo");
-  SetParam(kProactiveTabDiscard_AudioUsageObservationWindow, ".");
-  SetParam(kProactiveTabDiscard_NotificationsUsageObservationWindow, "abc");
+       GetProactiveTabFreezeAndDiscardParamsNoneGoesToDefault) {
   EnableProactiveTabDiscarding();
-  ExpectDefaultProactiveTabDiscardParams();
+  ExpectDefaultProactiveTabFreezeAndDiscardParams();
 }
 
-TEST_F(TabManagerFeaturesTest, GetProactiveTabDiscardParams) {
-  SetParam(kProactiveTabDiscard_LowLoadedTabCountParam, "7");
-  SetParam(kProactiveTabDiscard_ModerateLoadedTabsPerGbRamParam, "4");
-  SetParam(kProactiveTabDiscard_HighLoadedTabCountParam, "42");
+TEST_F(TabManagerFeaturesTest,
+       GetProactiveTabFreezeAndDiscardParamsInvalidGoesToDefault) {
+  SetParam(kProactiveTabFreezeAndDiscard_LowLoadedTabCountParam, "ab");
+  SetParam(kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamParam,
+           "27.8");
+  SetParam(kProactiveTabFreezeAndDiscard_HighLoadedTabCountParam, "4e8");
+  SetParam(kProactiveTabFreezeAndDiscard_LowOccludedTimeoutParam, "---");
+  SetParam(kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutParam, " ");
+  SetParam(kProactiveTabFreezeAndDiscard_HighOccludedTimeoutParam, "");
+  SetParam(kProactiveTabFreezeAndDiscard_FaviconUpdateObservationWindow,
+           "    ");
+  SetParam(kProactiveTabFreezeAndDiscard_TitleUpdateObservationWindow, "foo");
+  SetParam(kProactiveTabFreezeAndDiscard_AudioUsageObservationWindow, ".");
+  SetParam(kProactiveTabFreezeAndDiscard_NotificationsUsageObservationWindow,
+           "abc");
+  EnableProactiveTabDiscarding();
+  ExpectDefaultProactiveTabFreezeAndDiscardParams();
+}
+
+TEST_F(TabManagerFeaturesTest, GetProactiveTabFreezeAndDiscardParams) {
+  SetParam(kProactiveTabFreezeAndDiscard_LowLoadedTabCountParam, "7");
+  SetParam(kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamParam, "4");
+  SetParam(kProactiveTabFreezeAndDiscard_HighLoadedTabCountParam, "42");
   // These are expressed in seconds.
-  SetParam(kProactiveTabDiscard_LowOccludedTimeoutParam, "60");
-  SetParam(kProactiveTabDiscard_ModerateOccludedTimeoutParam, "120");
-  SetParam(kProactiveTabDiscard_HighOccludedTimeoutParam, "247");
-  SetParam(kProactiveTabDiscard_FaviconUpdateObservationWindow, "3600");
-  SetParam(kProactiveTabDiscard_TitleUpdateObservationWindow, "36000");
-  SetParam(kProactiveTabDiscard_AudioUsageObservationWindow, "360000");
-  SetParam(kProactiveTabDiscard_NotificationsUsageObservationWindow, "3600000");
+  SetParam(kProactiveTabFreezeAndDiscard_LowOccludedTimeoutParam, "60");
+  SetParam(kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutParam, "120");
+  SetParam(kProactiveTabFreezeAndDiscard_HighOccludedTimeoutParam, "247");
+  SetParam(kProactiveTabFreezeAndDiscard_FaviconUpdateObservationWindow,
+           "3600");
+  SetParam(kProactiveTabFreezeAndDiscard_TitleUpdateObservationWindow, "36000");
+  SetParam(kProactiveTabFreezeAndDiscard_AudioUsageObservationWindow, "360000");
+  SetParam(kProactiveTabFreezeAndDiscard_NotificationsUsageObservationWindow,
+           "3600000");
   EnableProactiveTabDiscarding();
 
   // Should snap |moderate_loaded_tab_count| to |low_loaded_tab_count|, when the
