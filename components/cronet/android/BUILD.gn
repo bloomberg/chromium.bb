@@ -300,6 +300,8 @@ android_library("cronet_impl_common_base_java") {
     "java/src/org/chromium/net/impl/VersionSafeCallbacks.java",
   ]
 
+  # Adding deps here won't include those deps in the cronet_impl_common_java.jar.
+  # Please add to cronet_impl_common_java_deps_to_package instead.
   deps = [
     ":cronet_api_java",
     "//third_party/android_tools:android_support_annotations_java",
@@ -632,6 +634,16 @@ android_apk("cronet_test_apk") {
   ]
 }
 
+cronet_javatests_deps_to_package = [
+  ":cronet_test_apk_java",
+  "//base:base_java",
+  "//base:base_java_test_support",
+  "//net/android:embedded_test_server_aidl_java",
+  "//net/android:net_java",
+  "//net/android:net_java_test_support",
+  "//url:url_java",
+]
+
 android_library("cronet_javatests") {
   testonly = true
 
@@ -675,17 +687,15 @@ android_library("cronet_javatests") {
     "test/javatests/src/org/chromium/net/UrlResponseInfoTest.java",
   ]
 
+  # Adding deps here won't include those deps in the cronet_tests_java.jar.
+  # Please add to cronet_javatests_deps_to_package instead.
   deps = [
     ":cronet_api_java",
     ":cronet_impl_all_java",
-    ":cronet_test_apk_java",
-    "//base:base_java",
-    "//base:base_java_test_support",
-    "//net/android:net_java",
-    "//net/android:net_java_test_support",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
   ]
+  deps += cronet_javatests_deps_to_package
   data = [
     "//components/cronet/test/data/",
   ]
@@ -916,6 +926,8 @@ action("extract_cronet_native_jars") {
   deps += cronet_impl_native_java_deps_to_package
 
   sources = []
+
+  # Extract pre-desugared jar for each dependency.
   foreach(dep, deps) {
     sources += [ get_label_info(dep, "target_gen_dir") + "/" +
                  get_label_info(dep, "name") + ".javac.jar" ]
@@ -982,6 +994,8 @@ action("extract_cronet_common_jars") {
   deps += cronet_impl_common_java_deps_to_package
 
   sources = []
+
+  # Extract pre-desugared jar for each dependency.
   foreach(dep, deps) {
     sources += [ get_label_info(dep, "target_gen_dir") + "/" +
                  get_label_info(dep, "name") + ".javac.jar" ]
@@ -1020,6 +1034,9 @@ action("repackage_extracted_common_jars") {
   ]
 }
 
+cronet_test_deps = [ ":cronet_javatests" ]
+cronet_test_deps += cronet_javatests_deps_to_package
+
 action("extract_cronet_test_jars") {
   # extract_from_jars.py deletes the target directory before extracting.
   script = "//components/cronet/tools/extract_from_jars.py"
@@ -1027,16 +1044,14 @@ action("extract_cronet_test_jars") {
   testonly = true
 
   sources = [
-    "$root_out_dir/lib.java/base/base_java.jar",
-    "$root_out_dir/lib.java/base/base_java_test_support.jar",
-    "$root_out_dir/lib.java/components/cronet/android/cronet_javatests.jar",
-    "$root_out_dir/lib.java/components/cronet/android/cronet_test_apk_java.jar",
-    "$root_out_dir/lib.java/net/android/embedded_test_server_aidl_java.jar",
-    "$root_out_dir/lib.java/net/android/net_java.jar",
-    "$root_out_dir/lib.java/net/android/net_java_test_support.jar",
-    "$root_out_dir/lib.java/url/url_java.jar",
     NETTY4_JAR_FILE,
   ]
+
+  # Extract pre-desugared jar for each cronet_test_deps.
+  foreach(dep, cronet_test_deps) {
+    sources += [ get_label_info(dep, "target_gen_dir") + "/" +
+                 get_label_info(dep, "name") + ".javac.jar" ]
+  }
 
   _stamp_file = "$target_gen_dir/$target_name.stamp"
   outputs = [
@@ -1056,16 +1071,9 @@ action("extract_cronet_test_jars") {
   ]
 
   deps = [
-    ":cronet_javatests",
-    ":cronet_test_apk_java",
-    "//base:base_java",
-    "//base:base_java_test_support",
-    "//net/android:embedded_test_server_aidl_java",
-    "//net/android:net_java",
-    "//net/android:net_java_test_support",
     "//third_party/netty4:netty_all_java",
-    "//url:url_java",
   ]
+  deps += cronet_test_deps
 }
 
 action("repackage_extracted_test_jars") {
