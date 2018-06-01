@@ -11,7 +11,7 @@ layer at (8,8) size 384x140 backgroundClip at (0,0) size 400x78 clip at (0,0) si
     LayoutBlockFlow {DIV} at (0,0) size 384x100
 layer at (408,38) size 384x40 scrollHeight 41
   LayoutBlockFlow {DIV} at (0,100) size 384x40
-    LayoutNGBlockFlow (anonymous) at (0,0) size 376.50x20
+    LayoutBlockFlow (anonymous) at (0,0) size 384x20
       LayoutText {#text} at (0,0) size 312x19
         text run at (0,0) width 312: "There should be a black rectangle below this text."
 layer at (408,58) size 384x20

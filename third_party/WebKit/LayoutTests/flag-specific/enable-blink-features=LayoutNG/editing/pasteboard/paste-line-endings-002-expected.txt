@@ -37,7 +37,7 @@ layer at (0,0) size 800x600
             text run at (0,55) width 715: "one\" and \"line two\". The insertion point must be at the start of \"line two\"."
       LayoutBlockFlow {DIV} at (0,234) size 784x60
         LayoutBlockFlow {DIV} at (0,0) size 784x60 [border: (2px solid #FF0000)]
-          LayoutNGBlockFlow (anonymous) at (2,2) size 765x28
+          LayoutBlockFlow (anonymous) at (2,2) size 780x28
             LayoutText {#text} at (0,0) size 78x27
               text run at (0,0) width 78: "line one"
           LayoutBlockFlow {DIV} at (2,30) size 780x28

@@ -1945,24 +1945,23 @@ const char* LayoutBlock::GetName() const {
 LayoutBlock* LayoutBlock::CreateAnonymousWithParentAndDisplay(
     const LayoutObject* parent,
     EDisplay display) {
-  // FIXME: Do we need to convert all our inline displays to block-type in the
-  // anonymous logic ?
-  EDisplay new_display;
-  LayoutBlock* new_box = nullptr;
-  if (display == EDisplay::kFlex || display == EDisplay::kInlineFlex) {
-    new_box = LayoutFlexibleBox::CreateAnonymous(&parent->GetDocument());
-    new_display = EDisplay::kFlex;
-  } else {
-    new_box = LayoutBlockFlow::CreateAnonymous(&parent->GetDocument());
-    new_display = EDisplay::kBlock;
-  }
-
+  // TODO(layout-dev): Do we need to convert all our inline displays to block
+  // type in the anonymous logic?
+  const EDisplay new_display =
+      display == EDisplay::kFlex || display == EDisplay::kInlineFlex
+          ? EDisplay::kFlex
+          : EDisplay::kBlock;
   scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(parent->StyleRef(),
                                                      new_display);
-  parent->UpdateAnonymousChildStyle(*new_box, *new_style);
-  new_box->SetStyle(std::move(new_style));
-  return new_box;
+  parent->UpdateAnonymousChildStyle(nullptr, *new_style);
+  if (new_display == EDisplay::kFlex) {
+    return LayoutFlexibleBox::CreateAnonymous(&parent->GetDocument(),
+                                              std::move(new_style));
+  }
+  DCHECK_EQ(new_display, EDisplay::kBlock);
+  return LayoutBlockFlow::CreateAnonymous(&parent->GetDocument(),
+                                          std::move(new_style));
 }
 
 bool LayoutBlock::RecalcNormalFlowChildOverflowIfNeeded(

@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutNGBlockFlow (anonymous) at (0,0) size 769x20
+      LayoutBlockFlow (anonymous) at (0,0) size 784x20
         LayoutInline {SPAN} at (0,0) size 368x19
           LayoutText {#text} at (0,0) size 368x19
             text run at (0,0) width 368: "This test passes if the caret is at the start of the second line."

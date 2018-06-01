@@ -33,7 +33,7 @@ layer at (0,0) size 800x600
               text run at (0,48) width 99: "For this test: "
           LayoutText {#text} at (99,48) size 177x20
             text run at (99,48) width 177: "Test typing after a table."
-        LayoutNGBlockFlow (anonymous) at (20,89) size 729x21
+        LayoutBlockFlow (anonymous) at (20,89) size 744x21
           LayoutBR {BR} at (0,0) size 0x20
         LayoutBlockFlow {DIV} at (20,110) size 744x90
           LayoutText {#text} at (0,0) size 189x26
@@ -81,7 +81,7 @@ layer at (0,0) size 800x600
               LayoutTableCell {TD} at (30,54) size 12x24 [border: (1px inset #808080)] [r=2 c=2 rs=1 cs=1]
                 LayoutText {#text} at (2,2) size 8x19
                   text run at (2,2) width 8: "9"
-        LayoutNGBlockFlow (anonymous) at (2,84) size 765x28
+        LayoutBlockFlow (anonymous) at (2,84) size 780x28
           LayoutText {#text} at (0,0) size 36x27
             text run at (0,0) width 36: "xxx"
       LayoutBlockFlow {DIV} at (0,354) size 784x114
@@ -118,7 +118,7 @@ layer at (0,0) size 800x600
                 LayoutTableCell {TD} at (30,54) size 12x24 [border: (1px inset #808080)] [r=2 c=2 rs=1 cs=1]
                   LayoutText {#text} at (2,2) size 8x19
                     text run at (2,2) width 8: "9"
-          LayoutNGBlockFlow (anonymous) at (2,84) size 780x28
+          LayoutBlockFlow (anonymous) at (2,84) size 780x28
             LayoutText {#text} at (0,0) size 36x27
               text run at (0,0) width 36: "xxx"
 caret: position 3 of child 2 {#text} of child 1 {DIV} of child 5 {DIV} of body

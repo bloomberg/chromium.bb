@@ -3,7 +3,7 @@ layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollY 282.00 scrollHeig
 layer at (0,-282) size 785x902 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x902
     LayoutBlockFlow {BODY} at (8,8) size 769x886
-      LayoutNGBlockFlow (anonymous) at (0,0) size 769x40
+      LayoutBlockFlow (anonymous) at (0,0) size 769x40
         LayoutText {#text} at (0,0) size 497x19
           text run at (0,0) width 497: "This test will try to call focus() on a contenteditable div, and then a normal div. "
         LayoutBR {BR} at (0,0) size 0x0

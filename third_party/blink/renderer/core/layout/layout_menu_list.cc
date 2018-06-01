@@ -88,8 +88,8 @@ void LayoutMenuList::CreateInnerBlock() {
 
   // Create an anonymous block.
   DCHECK(!FirstChild());
-  inner_block_ = LayoutBlockFlow::CreateAnonymous(&GetDocument());
-  inner_block_->SetStyle(CreateInnerStyle());
+  inner_block_ =
+      LayoutBlockFlow::CreateAnonymous(&GetDocument(), CreateInnerStyle());
 
   button_text_ = LayoutText::CreateEmptyAnonymous(GetDocument());
   // We need to set the text explicitly though it was specified in the

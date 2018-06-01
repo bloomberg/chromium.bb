@@ -5,9 +5,9 @@ Mouse down: PASS
 Moving slightly to the right: PASS
 Moving slightly to the left: PASS
 Moving to the right: PASS
-Moving further to the right: FAIL - expected selection to be range but was caret
+Moving further to the right: PASS
 Moving back to the left: PASS
-Moving to the right again: FAIL - expected selection to be range but was caret
+Moving to the right again: PASS
 Mouse down on the right: PASS
 Moving to the left: PASS
 Done.

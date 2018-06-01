@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
-      LayoutNGBlockFlow (anonymous) at (0,0) size 769x60
+      LayoutBlockFlow (anonymous) at (0,0) size 784x60
         LayoutText {#text} at (0,0) size 760x39
           text run at (0,0) width 333: "This is a test for simple ruby that contains <rp> tags. "
           text run at (333,0) width 427: "Contents of the <rp> tags (opening and closing brackets) should not"

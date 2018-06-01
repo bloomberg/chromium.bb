@@ -2304,7 +2304,7 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
         ToLayoutBlockFlow(child)->IsAnonymousBlockContinuation())
       new_style->SetPosition(child->Style()->GetPosition());
 
-    UpdateAnonymousChildStyle(*child, *new_style);
+    UpdateAnonymousChildStyle(child, *new_style);
 
     child->SetStyle(std::move(new_style));
   }

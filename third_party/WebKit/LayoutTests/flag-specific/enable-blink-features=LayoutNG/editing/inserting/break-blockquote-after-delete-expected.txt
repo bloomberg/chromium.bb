@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutNGBlockFlow (anonymous) at (0,0) size 769x40
+      LayoutBlockFlow (anonymous) at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 759x19
           text run at (0,0) width 759: "This tests that the blockquote's typing style doesn't remain after breaking the blockquote and typing in the unquoted area."
         LayoutBR {BR} at (759,15) size 0x0
@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
         LayoutBlockFlow {BLOCKQUOTE} at (0,0) size 784x20 [color=#0000FF] [border: none (2px solid #0000FF)]
           LayoutText {#text} at (12,0) size 27x19
             text run at (12,0) width 27: "blue"
-        LayoutNGBlockFlow (anonymous) at (0,20) size 784x20
+        LayoutBlockFlow (anonymous) at (0,20) size 784x20
           LayoutText {#text} at (0,0) size 34x19
             text run at (0,0) width 34: "black"
           LayoutBR {BR} at (34,15) size 0x0

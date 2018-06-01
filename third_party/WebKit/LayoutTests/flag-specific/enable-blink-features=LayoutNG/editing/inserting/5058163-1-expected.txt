@@ -1,9 +1,9 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutNGBlockFlow {HTML} at (0,0) size 800x600
-    LayoutNGBlockFlow {BODY} at (8,8) size 784x584
-      LayoutNGBlockFlow {P} at (0,0) size 784x20
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 759x19
           text run at (0,0) width 759: "This tests for a bug where hitting return between two tables would add a new paragraph at the end of the editable region."
       LayoutBlockFlow {DIV} at (0,36) size 784x96
@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
               LayoutTableCell {TD} at (2,2) size 469x22 [r=0 c=0 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 467x19
                   text run at (1,1) width 467: "There should be two empty paragraphs after this table and before the next."
-        LayoutNGBlockFlow (anonymous) at (0,28) size 769x40
+        LayoutBlockFlow (anonymous) at (0,28) size 784x40
           LayoutBR {BR} at (0,0) size 0x19
           LayoutBR {BR} at (0,20) size 0x19
         LayoutTable {TABLE} at (0,68) size 276x28 [border: (1px solid #AAAAAA)]

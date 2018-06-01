@@ -63,7 +63,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 71x19
             text run at (0,0) width 71: "select box: "
           LayoutMenuList {SELECT} at (71,0) size 29x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-            LayoutNGBlockFlow (anonymous) at (1,1) size 27x18
+            LayoutBlockFlow (anonymous) at (1,1) size 27x18
               LayoutText (anonymous) at (4,1) size 7x16
                 text run at (4,1) width 7: "1"
           LayoutText {#text} at (100,0) size 66x19

@@ -26,7 +26,7 @@ layer at (0,0) size 800x600
               text run at (0,48) width 99: "For this test: "
           LayoutText {#text} at (99,48) size 222x20
             text run at (99,48) width 222: "Test typing at the end of a list."
-        LayoutNGBlockFlow (anonymous) at (20,89) size 729x21
+        LayoutBlockFlow (anonymous) at (20,89) size 744x21
           LayoutBR {BR} at (0,0) size 0x20
         LayoutBlockFlow {DIV} at (20,110) size 744x90
           LayoutText {#text} at (0,0) size 189x26

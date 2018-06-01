@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x86
   LayoutBlockFlow {HTML} at (0,0) size 800x86
     LayoutBlockFlow {BODY} at (8,8) size 784x70
-      LayoutNGBlockFlow (anonymous) at (0,0) size 769x20
+      LayoutBlockFlow (anonymous) at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 303x19
           text run at (0,0) width 303: "Test passes if caret is visible after text is entered."
       LayoutBlockFlow {DIV} at (0,20) size 784x50 [border: (1px solid #000000)]

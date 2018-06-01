@@ -65,9 +65,12 @@ LayoutFlexibleBox::LayoutFlexibleBox(Element* element)
 
 LayoutFlexibleBox::~LayoutFlexibleBox() = default;
 
-LayoutFlexibleBox* LayoutFlexibleBox::CreateAnonymous(Document* document) {
+LayoutFlexibleBox* LayoutFlexibleBox::CreateAnonymous(
+    Document* document,
+    scoped_refptr<ComputedStyle> style) {
   LayoutFlexibleBox* layout_object = new LayoutFlexibleBox(nullptr);
   layout_object->SetDocumentForAnonymous(document);
+  layout_object->SetStyle(style);
   return layout_object;
 }
 

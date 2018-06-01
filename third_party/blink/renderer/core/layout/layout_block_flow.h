@@ -102,7 +102,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   explicit LayoutBlockFlow(ContainerNode*);
   ~LayoutBlockFlow() override;
 
-  static LayoutBlockFlow* CreateAnonymous(Document*);
+  static LayoutBlockFlow* CreateAnonymous(Document*,
+                                          scoped_refptr<ComputedStyle>);
   bool BeingDestroyed() const { return being_destroyed_; }
 
   bool IsLayoutBlockFlow() const final { return true; }

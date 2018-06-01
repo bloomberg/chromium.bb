@@ -15,7 +15,9 @@ namespace blink {
 class LayoutBlockTest : public RenderingTest {};
 
 TEST_F(LayoutBlockTest, LayoutNameCalledWithNullStyle) {
-  LayoutObject* obj = LayoutBlockFlow::CreateAnonymous(&GetDocument());
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  LayoutObject* obj = LayoutBlockFlow::CreateAnonymous(&GetDocument(), style);
+  obj->SetStyleInternal(nullptr);
   EXPECT_FALSE(obj->Style());
   EXPECT_STREQ("LayoutBlockFlow (anonymous)",
                obj->DecoratedName().Ascii().data());

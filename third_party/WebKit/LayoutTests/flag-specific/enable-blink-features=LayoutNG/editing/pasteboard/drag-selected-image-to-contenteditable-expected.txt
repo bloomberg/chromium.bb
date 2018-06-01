@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (0,0) size 800x584
       LayoutBlockFlow {DIV} at (0,0) size 302x122 [border: (1px solid #000000)]
         LayoutImage {IMG} at (1,1) size 76x103
-      LayoutNGBlockFlow (anonymous) at (0,122) size 785x103
+      LayoutBlockFlow (anonymous) at (0,122) size 800x103
         LayoutImage {IMG} at (0,0) size 76x103
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {UL} at (0,241) size 800x20
