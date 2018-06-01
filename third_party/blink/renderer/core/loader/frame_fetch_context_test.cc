@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/core/loader/frame_fetch_context.h"
 
 #include <memory>
+
+#include "build/build_config.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -635,10 +637,15 @@ TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemorySecureTransport) {
   ExpectHeader("https://www.example.com/1.gif", "DPR", false, "");
   ExpectHeader("https://www.example.com/1.gif", "Width", false, "");
   ExpectHeader("https://www.example.com/1.gif", "Viewport-Width", false, "");
-  // The origin of the resource does not match the origin of the main frame
-  // resource. Client hint should not be attached.
+// On non-Android platforms, the client hints should be sent only to the first
+// party origins.
+#if defined(OS_ANDROID)
+  ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory", true,
+               "4");
+#else
   ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory",
                false, "");
+#endif
 }
 
 // Verify that the client hints should be attached for subresources fetched
