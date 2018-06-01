@@ -386,8 +386,8 @@ const int kRelativeTimeMaxHours = 4;
     header.text = l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OTHER_DEVICES);
     [model setHeader:header
         forSectionWithIdentifier:SectionIdentifierOtherDevices];
-    header.collapsed = [self.tableViewModel
-        sectionIsCollapsed:SectionIdentifierRecentlyClosedTabs];
+    header.collapsed =
+        [self.tableViewModel sectionIsCollapsed:SectionIdentifierOtherDevices];
   }
 
   // Adds Other Devices item for |state|.
