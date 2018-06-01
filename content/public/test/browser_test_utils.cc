@@ -1472,6 +1472,24 @@ RenderWidgetHost* GetKeyboardLockWidget(WebContents* web_contents) {
   return static_cast<WebContentsImpl*>(web_contents)->GetKeyboardLockWidget();
 }
 
+bool RequestKeyboardLock(WebContents* web_contents,
+                         base::Optional<base::flat_set<ui::DomCode>> codes) {
+  DCHECK(!codes.has_value() || !codes.value().empty());
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents);
+  RenderWidgetHostImpl* render_widget_host_impl =
+      web_contents_impl->GetMainFrame()->GetRenderWidgetHost();
+  return render_widget_host_impl->RequestKeyboardLock(std::move(codes));
+}
+
+void CancelKeyboardLock(WebContents* web_contents) {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents);
+  RenderWidgetHostImpl* render_widget_host_impl =
+      web_contents_impl->GetMainFrame()->GetRenderWidgetHost();
+  render_widget_host_impl->CancelKeyboardLock();
+}
+
 bool IsInnerInterstitialPageConnected(InterstitialPage* interstitial_page) {
   InterstitialPageImpl* impl =
       static_cast<InterstitialPageImpl*>(interstitial_page);

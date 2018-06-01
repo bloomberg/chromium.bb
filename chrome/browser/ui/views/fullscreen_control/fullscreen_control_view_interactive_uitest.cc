@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <utility>
+
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -20,11 +25,13 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_fullscreen_options.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 #include "url/gurl.h"
@@ -58,8 +65,13 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
   FullscreenControlViewTest() = default;
 
   void SetUp() override {
+    // Ensure the KeyboardLockAPI is enabled and system keyboard lock is
+    // disabled. It is important to disable system keyboard lock as low-level
+    // test utilities may install a keyboard hook to listen for keyboard events
+    // and having an active system hook may cause issues with that mechanism.
     scoped_feature_list_.InitWithFeatures(
-        {features::kFullscreenExitUI, features::kKeyboardLockAPI}, {});
+        {features::kFullscreenExitUI, features::kKeyboardLockAPI},
+        {features::kSystemKeyboardLock});
     InProcessBrowserTest::SetUp();
   }
 
@@ -122,12 +134,10 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
     ASSERT_TRUE(delegate->IsFullscreenForTabOrPending(GetActiveWebContents()));
   }
 
-  void EnableKeyboardLock() {
-    KeyboardLockController* controller = GetKeyboardLockController();
-    controller->fake_keyboard_lock_for_test_ = true;
-    controller->RequestKeyboardLock(GetActiveWebContents(),
-                                    /*require_esc_to_exit=*/true);
-    controller->fake_keyboard_lock_for_test_ = false;
+  bool EnableKeyboardLock() {
+    base::Optional<base::flat_set<ui::DomCode>> codes({ui::DomCode::ESCAPE});
+    return content::RequestKeyboardLock(GetActiveWebContents(),
+                                        std::move(codes));
   }
 
   void SetPopupVisibilityChangedCallback(base::OnceClosure callback) {
@@ -450,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest,
   ASSERT_FALSE(host->IsVisible());
 
   // Lock the keyboard and ensure it is active.
-  EnableKeyboardLock();
+  ASSERT_TRUE(EnableKeyboardLock());
   ASSERT_TRUE(GetKeyboardLockController()->IsKeyboardLockActive());
 
   // Verify a bubble message is now displayed, then dismiss it.
