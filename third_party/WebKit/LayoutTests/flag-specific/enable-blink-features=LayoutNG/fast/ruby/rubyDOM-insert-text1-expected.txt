@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,36) size 784x20
         LayoutText {#text} at (0,0) size 436x19
           text run at (0,0) width 436: "Both lines should look identical (the first line is the one manipulated)."
-      LayoutNGBlockFlow (anonymous) at (0,72) size 769x40
+      LayoutBlockFlow (anonymous) at (0,72) size 784x40
         LayoutBR {BR} at (0,0) size 0x19
         LayoutBR {BR} at (0,20) size 0x19
       LayoutBlockFlow {P} at (0,128) size 784x32

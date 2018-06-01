@@ -23,14 +23,14 @@ layer at (0,0) size 800x600
             text run at (422,27) width 327: " font loses bold style after pasting"
             text run at (0,55) width 384: "next to existing text and pressing return"
         LayoutBlockFlow {DIV} at (14,113) size 756x110
-          LayoutNGBlockFlow (anonymous) at (0,0) size 741x55
+          LayoutBlockFlow (anonymous) at (0,0) size 756x55
             LayoutText {#text} at (0,0) size 189x26
               text run at (0,0) width 189: "Expected Results: "
             LayoutBR {BR} at (189,21) size 0x0
             LayoutText {#text} at (0,27) size 436x27
               text run at (0,27) width 436: "Should see this content in the red box below:"
           LayoutBlockFlow {DIV} at (0,55) size 756x55
-            LayoutNGBlockFlow (anonymous) at (0,0) size 741x28
+            LayoutBlockFlow (anonymous) at (0,0) size 756x28
               LayoutText {#text} at (0,0) size 32x27
                 text run at (0,0) width 32: "foo"
             LayoutBlockFlow {DIV} at (0,28) size 756x27

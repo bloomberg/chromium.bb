@@ -199,10 +199,10 @@ layer at (0,0) size 785x1566 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutInline {B} at (0,0) size 28x19
             LayoutText {#text} at (741,0) size 28x19
               text run at (741,0) width 28: "Test"
-      LayoutNGBlockFlow (anonymous) at (0,778) size 769x0
+      LayoutBlockFlow (anonymous) at (0,778) size 769x0
         LayoutInline {B} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
-      LayoutNGBlockFlow (anonymous) at (0,786) size 769x748
+      LayoutBlockFlow (anonymous) at (0,786) size 769x748
         LayoutBlockFlow {P} at (0,18) size 769x20
           LayoutText {#text} at (99,0) size 670x19
             text run at (99,0) width 670: "Text in <img>, <href>, <em>, <tr>. The following English text should all display as \"This is a Test\"."
@@ -260,21 +260,21 @@ layer at (0,0) size 785x1566 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (732,0) size 37x19
                   text run at (732,0) width 37: "again"
         LayoutBlockFlow {DIV} at (0,156) size 769x46
-          LayoutNGBlockFlow (anonymous) at (0,0) size 769x20
+          LayoutBlockFlow (anonymous) at (0,0) size 769x20
             LayoutText {#text} at (683,0) size 60x19
               text run at (683,0) width 60: "This is a "
             LayoutInline {SPAN} at (0,0) size 26x19
               LayoutInline {EM} at (0,0) size 26x19
                 LayoutText {#text} at (743,0) size 26x19
                   text run at (743,0) width 26: "Test"
-          LayoutNGBlockFlow (anonymous) at (0,20) size 769x26
+          LayoutBlockFlow (anonymous) at (0,20) size 769x26
             LayoutTable {TABLE} at (755,0) size 14x26
               LayoutTableSection {TBODY} at (0,0) size 14x26
                 LayoutTableRow {TR} at (0,2) size 14x22
                   LayoutTableCell {TD} at (2,2) size 10x22 [r=0 c=0 rs=1 cs=1]
                     LayoutText {#text} at (1,1) size 8x19
                       text run at (1,1) width 8: "a"
-          LayoutNGBlockFlow (anonymous) at (0,46) size 769x0
+          LayoutBlockFlow (anonymous) at (0,46) size 769x0
             LayoutInline {SPAN} at (0,0) size 0x0
               LayoutInline {EM} at (0,0) size 0x0
         LayoutBlockFlow {UL} at (0,228) size 769x520
@@ -382,7 +382,7 @@ layer at (0,0) size 785x1566 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
             LayoutText {#text} at (0,0) size 117x19
               text run at (0,0) width 117: "Test 25: : Success"
-      LayoutNGBlockFlow (anonymous) at (0,1550) size 769x0
+      LayoutBlockFlow (anonymous) at (0,1550) size 769x0
         LayoutInline {B} at (0,0) size 0x0
 layer at (8,92) size 769x2 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,76) size 769x2 [border: (1px inset #EEEEEE)]

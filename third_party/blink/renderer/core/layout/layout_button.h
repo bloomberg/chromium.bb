@@ -57,7 +57,7 @@ class LayoutButton final : public LayoutFlexibleBox {
                               LinePositionMode) const override;
 
  private:
-  void UpdateAnonymousChildStyle(const LayoutObject& child,
+  void UpdateAnonymousChildStyle(const LayoutObject* child,
                                  ComputedStyle& child_style) const override;
 
   bool HasLineIfEmpty() const override { return IsHTMLInputElement(GetNode()); }

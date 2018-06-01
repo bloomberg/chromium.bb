@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
-      LayoutNGBlockFlow (anonymous) at (0,0) size 769x40
+      LayoutBlockFlow (anonymous) at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 224x19
           text run at (0,0) width 224: "This is a initial test for simple ruby. "
         LayoutBR {BR} at (224,15) size 0x0

@@ -10,7 +10,7 @@ layer at (0,0) size 800x145
       LayoutBlockFlow {DIV} at (0,56) size 205.59x45 [border: (1px solid #000000)]
         LayoutText {#text} at (11,11) size 66x22
           text run at (11,11) width 66 RTL: "\x{5E9}\x{5D3}\x{5D4} \x{5D1}\x{5D5}\x{5E8}"
-      LayoutNGBlockFlow (anonymous) at (0,101) size 784x20
+      LayoutBlockFlow (anonymous) at (0,101) size 784x20
         LayoutText {#text} at (0,0) size 38x19
           text run at (0,0) width 38: "PASS"
         LayoutBR {BR} at (38,0) size 0x19

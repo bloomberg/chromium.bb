@@ -56,10 +56,9 @@ void LayoutButton::RemoveChild(LayoutObject* old_child) {
   }
 }
 
-void LayoutButton::UpdateAnonymousChildStyle(const LayoutObject& child,
+void LayoutButton::UpdateAnonymousChildStyle(const LayoutObject* child,
                                              ComputedStyle& child_style) const {
-  DCHECK(!inner_ || &child == inner_);
-
+  DCHECK_EQ(inner_, child);
   child_style.SetFlexGrow(1.0f);
   // min-width: 0; is needed for correct shrinking.
   child_style.SetMinWidth(Length(0, kFixed));

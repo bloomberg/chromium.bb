@@ -396,8 +396,8 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
             InFlowPositionedInlineAncestor(this))
       new_style->SetPosition(positioned_ancestor->Style()->GetPosition());
 
-    LayoutBlockFlow* new_box = LayoutBlockFlow::CreateAnonymous(&GetDocument());
-    new_box->SetStyle(std::move(new_style));
+    LayoutBlockFlow* new_box =
+        LayoutBlockFlow::CreateAnonymous(&GetDocument(), std::move(new_style));
     LayoutBoxModelObject* old_continuation = Continuation();
     SetContinuation(new_box);
 

@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 421: "This tests copying/pasting less than a paragraph of quoted content. "
           text run at (421,0) width 176: "It should not appear quoted."
       LayoutBlockFlow {DIV} at (0,36) size 784x100
-        LayoutNGBlockFlow (anonymous) at (0,0) size 769x40
+        LayoutBlockFlow (anonymous) at (0,0) size 784x40
           LayoutText {#text} at (0,0) size 20x19
             text run at (0,0) width 20: "On"
           LayoutBR {BR} at (20,15) size 0x0

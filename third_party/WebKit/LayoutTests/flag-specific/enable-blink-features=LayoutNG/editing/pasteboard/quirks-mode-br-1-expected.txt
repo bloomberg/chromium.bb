@@ -18,6 +18,6 @@ layer at (0,0) size 800x600
             text run at (0,0) width 370: "The test should add a single blank line after this paragraph."
           LayoutInline {SPAN} at (0,0) size 0x19
           LayoutBR {BR} at (370,15) size 0x0
-        LayoutNGBlockFlow (anonymous) at (0,20) size 784x20
+        LayoutBlockFlow (anonymous) at (0,20) size 784x20
           LayoutBR {BR} at (0,0) size 0x19
 caret: position 0 of child 1 {BR} of child 2 {DIV} of body
