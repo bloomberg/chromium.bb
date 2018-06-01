@@ -19,15 +19,20 @@
 namespace heap_profiling {
 
 namespace {
-// Check memory usage every hour. Trigger slow report if needed.
-const int kRepeatingCheckMemoryDelayInHours = 1;
-const int kThrottledReportRepeatingCheckMemoryDelayInHours = 12;
 
 #if defined(OS_ANDROID)
+// Check memory usage every 10 minutes. Trigger slow report if needed.
+const int kRepeatingCheckMemoryDelayInMinutes = 10;
+const int kThrottledReportRepeatingCheckMemoryDelayInHours = 1;
+
 const size_t kBrowserProcessMallocTriggerKb = 100 * 1024;    // 100 MB
 const size_t kGPUProcessMallocTriggerKb = 40 * 1024;         // 40 MB
 const size_t kRendererProcessMallocTriggerKb = 125 * 1024;   // 125 MB
 #else
+// Check memory usage every hour. Trigger slow report if needed.
+const int kRepeatingCheckMemoryDelayInMinutes = 60;
+const int kThrottledReportRepeatingCheckMemoryDelayInHours = 12;
+
 const size_t kBrowserProcessMallocTriggerKb = 400 * 1024;    // 400 MB
 const size_t kGPUProcessMallocTriggerKb = 400 * 1024;        // 400 MB
 const size_t kRendererProcessMallocTriggerKb = 500 * 1024;   // 500 MB
@@ -75,11 +80,12 @@ void BackgroundProfilingTriggers::StartTimer() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Register a repeating timer to check memory usage periodically.
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromHours(kRepeatingCheckMemoryDelayInHours),
-               base::BindRepeating(
-                   &BackgroundProfilingTriggers::PerformMemoryUsageChecks,
-                   weak_ptr_factory_.GetWeakPtr()));
+  timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMinutes(kRepeatingCheckMemoryDelayInMinutes),
+      base::BindRepeating(
+          &BackgroundProfilingTriggers::PerformMemoryUsageChecks,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool BackgroundProfilingTriggers::IsAllowedToUpload() const {
