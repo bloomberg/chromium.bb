@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/ui/assistant_bubble_view.h"
+#include "ash/assistant/ui/assistant_main_view.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -70,16 +70,16 @@ class AssistantContainerView : public views::BubbleDialogDelegateView {
   int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
 
   void RequestFocus() override {
-    if (assistant_bubble_view_)
-      assistant_bubble_view_->RequestFocus();
+    if (assistant_main_view_)
+      assistant_main_view_->RequestFocus();
   }
 
  private:
   void InitLayout() {
     SetLayoutManager(std::make_unique<views::FillLayout>());
 
-    assistant_bubble_view_ = new AssistantBubbleView(assistant_controller_);
-    AddChildView(assistant_bubble_view_);
+    assistant_main_view_ = new AssistantMainView(assistant_controller_);
+    AddChildView(assistant_main_view_);
   }
 
   void SetAnchor() {
@@ -99,7 +99,7 @@ class AssistantContainerView : public views::BubbleDialogDelegateView {
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
   // Owned by view hierarchy.
-  AssistantBubbleView* assistant_bubble_view_ = nullptr;
+  AssistantMainView* assistant_main_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantContainerView);
 };
