@@ -10,7 +10,6 @@
 #include <tuple>
 #include <utility>
 
-#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -18,7 +17,6 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/process/kill.h"
-#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"
@@ -134,21 +132,24 @@ namespace {
 class InterstitialObserver : public content::WebContentsObserver {
  public:
   InterstitialObserver(content::WebContents* web_contents,
-                       const base::Closure& attach_callback,
-                       const base::Closure& detach_callback)
+                       base::OnceClosure attach_callback,
+                       base::OnceClosure detach_callback)
       : WebContentsObserver(web_contents),
-        attach_callback_(attach_callback),
-        detach_callback_(detach_callback) {
-  }
+        attach_callback_(std::move(attach_callback)),
+        detach_callback_(std::move(detach_callback)) {}
   ~InterstitialObserver() override {}
 
   // WebContentsObserver methods:
-  void DidAttachInterstitialPage() override { attach_callback_.Run(); }
-  void DidDetachInterstitialPage() override { detach_callback_.Run(); }
+  void DidAttachInterstitialPage() override {
+    std::move(attach_callback_).Run();
+  }
+  void DidDetachInterstitialPage() override {
+    std::move(detach_callback_).Run();
+  }
 
  private:
-  base::Closure attach_callback_;
-  base::Closure detach_callback_;
+  base::OnceClosure attach_callback_;
+  base::OnceClosure detach_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
 };
@@ -1302,16 +1303,16 @@ bool SetCookie(BrowserContext* browser_context,
 }
 
 void FetchHistogramsFromChildProcesses() {
-  scoped_refptr<content::MessageLoopRunner> runner = new MessageLoopRunner;
+  base::RunLoop run_loop;
 
   FetchHistogramsAsynchronously(
-      base::ThreadTaskRunnerHandle::Get(), runner->QuitClosure(),
+      base::ThreadTaskRunnerHandle::Get(), run_loop.QuitClosure(),
       // If this call times out, it means that a child process is not
       // responding, which is something we should not ignore.  The timeout is
       // set to be longer than the normal browser test timeout so that it will
       // be prempted by the normal timeout.
       TestTimeouts::action_max_timeout());
-  runner->Run();
+  run_loop.Run();
 }
 
 void SetupCrossSiteRedirector(net::EmbeddedTestServer* embedded_test_server) {
@@ -1322,12 +1323,10 @@ void SetupCrossSiteRedirector(net::EmbeddedTestServer* embedded_test_server) {
 void WaitForInterstitialAttach(content::WebContents* web_contents) {
   if (web_contents->ShowingInterstitialPage())
     return;
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
-  InterstitialObserver observer(web_contents,
-                                loop_runner->QuitClosure(),
-                                base::Closure());
-  loop_runner->Run();
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  InterstitialObserver observer(web_contents, run_loop.QuitClosure(),
+                                base::OnceClosure());
+  run_loop.Run();
 }
 
 void WaitForInterstitialDetach(content::WebContents* web_contents) {
@@ -1338,15 +1337,13 @@ void RunTaskAndWaitForInterstitialDetach(content::WebContents* web_contents,
                                          const base::Closure& task) {
   if (!web_contents || !web_contents->ShowingInterstitialPage())
     return;
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
-  InterstitialObserver observer(web_contents,
-                                base::Closure(),
-                                loop_runner->QuitClosure());
+  base::RunLoop run_loop;
+  InterstitialObserver observer(web_contents, base::OnceClosure(),
+                                run_loop.QuitClosure());
   if (!task.is_null())
     task.Run();
   // At this point, web_contents may have been deleted.
-  loop_runner->Run();
+  run_loop.Run();
 }
 
 bool WaitForRenderFrameReady(RenderFrameHost* rfh) {
@@ -1378,11 +1375,10 @@ void EnableAccessibilityForWebContents(WebContents* web_contents) {
 }
 
 void WaitForAccessibilityFocusChange() {
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
+  base::RunLoop run_loop;
   BrowserAccessibilityManager::SetFocusChangeCallbackForTesting(
-      loop_runner->QuitClosure());
-  loop_runner->Run();
+      run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 ui::AXNodeData GetFocusedAccessibilityNodeInfo(WebContents* web_contents) {
@@ -1736,22 +1732,19 @@ void TitleWatcher::TestTitle() {
 }
 
 RenderProcessHostWatcher::RenderProcessHostWatcher(
-    RenderProcessHost* render_process_host, WatchType type)
+    RenderProcessHost* render_process_host,
+    WatchType type)
     : render_process_host_(render_process_host),
       type_(type),
       did_exit_normally_(true),
-      message_loop_runner_(new MessageLoopRunner) {
+      quit_closure_(run_loop_.QuitClosure()) {
   render_process_host_->AddObserver(this);
 }
 
 RenderProcessHostWatcher::RenderProcessHostWatcher(WebContents* web_contents,
                                                    WatchType type)
-    : render_process_host_(web_contents->GetMainFrame()->GetProcess()),
-      type_(type),
-      did_exit_normally_(true),
-      message_loop_runner_(new MessageLoopRunner) {
-  render_process_host_->AddObserver(this);
-}
+    : RenderProcessHostWatcher(web_contents->GetMainFrame()->GetProcess(),
+                               type) {}
 
 RenderProcessHostWatcher::~RenderProcessHostWatcher() {
   if (render_process_host_)
@@ -1759,7 +1752,7 @@ RenderProcessHostWatcher::~RenderProcessHostWatcher() {
 }
 
 void RenderProcessHostWatcher::Wait() {
-  message_loop_runner_->Run();
+  run_loop_.Run();
 }
 
 void RenderProcessHostWatcher::RenderProcessExited(
@@ -1768,14 +1761,14 @@ void RenderProcessHostWatcher::RenderProcessExited(
   did_exit_normally_ =
       info.status == base::TERMINATION_STATUS_NORMAL_TERMINATION;
   if (type_ == WATCH_FOR_PROCESS_EXIT)
-    message_loop_runner_->Quit();
+    std::move(quit_closure_).Run();
 }
 
 void RenderProcessHostWatcher::RenderProcessHostDestroyed(
     RenderProcessHost* host) {
   render_process_host_ = nullptr;
   if (type_ == WATCH_FOR_HOST_DESTRUCTION)
-    message_loop_runner_->Quit();
+    std::move(quit_closure_).Run();
 }
 
 DOMMessageQueue::DOMMessageQueue() {
@@ -1796,8 +1789,8 @@ void DOMMessageQueue::Observe(int type,
                               const NotificationDetails& details) {
   Details<std::string> dom_op_result(details);
   message_queue_.push(*dom_op_result.ptr());
-  if (message_loop_runner_)
-    message_loop_runner_->Quit();
+  if (quit_closure_)
+    std::move(quit_closure_).Run();
 }
 
 void DOMMessageQueue::RenderProcessGone(base::TerminationStatus status) {
@@ -1808,8 +1801,8 @@ void DOMMessageQueue::RenderProcessGone(base::TerminationStatus status) {
       break;
     default:
       renderer_crashed_ = true;
-      if (message_loop_runner_.get())
-        message_loop_runner_->Quit();
+      if (quit_closure_)
+        std::move(quit_closure_).Run();
       break;
   }
 }
@@ -1822,9 +1815,9 @@ bool DOMMessageQueue::WaitForMessage(std::string* message) {
   DCHECK(message);
   if (!renderer_crashed_ && message_queue_.empty()) {
     // This will be quit when a new message comes in.
-    message_loop_runner_ =
-        new MessageLoopRunner(MessageLoopRunner::QuitMode::IMMEDIATE);
-    message_loop_runner_->Run();
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
   return PopMessage(message);
 }
@@ -1879,16 +1872,17 @@ void WebContentsAddedObserver::WebContentsCreated(WebContents* web_contents) {
   web_contents_ = web_contents;
   child_observer_.reset(new RenderViewCreatedObserver(web_contents));
 
-  if (runner_.get())
-    runner_->QuitClosure().Run();
+  if (quit_closure_)
+    std::move(quit_closure_).Run();
 }
 
 WebContents* WebContentsAddedObserver::GetWebContents() {
   if (web_contents_)
     return web_contents_;
 
-  runner_ = new MessageLoopRunner();
-  runner_->Run();
+  base::RunLoop run_loop;
+  quit_closure_ = run_loop.QuitClosure();
+  run_loop.Run();
   return web_contents_;
 }
 
@@ -1973,14 +1967,14 @@ RenderFrameSubmissionObserver::LastRenderFrameMetadata() const {
 }
 
 void RenderFrameSubmissionObserver::Quit() {
-  if (run_loop_)
-    run_loop_->Quit();
+  if (quit_closure_)
+    std::move(quit_closure_).Run();
 }
 
 void RenderFrameSubmissionObserver::Wait() {
-  run_loop_ = std::make_unique<base::RunLoop>();
-  run_loop_->Run();
-  run_loop_.reset();
+  base::RunLoop run_loop;
+  quit_closure_ = run_loop.QuitClosure();
+  run_loop.Run();
 }
 
 void RenderFrameSubmissionObserver::OnRenderFrameMetadataChanged() {
@@ -2013,14 +2007,14 @@ void MainThreadFrameObserver::Wait() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   render_widget_host_->Send(new ViewMsg_WaitForNextFrameForTests(
       render_widget_host_->GetRoutingID(), routing_id_));
-  run_loop_.reset(new base::RunLoop());
-  run_loop_->Run();
-  run_loop_.reset(nullptr);
+  base::RunLoop run_loop;
+  quit_closure_ = run_loop.QuitClosure();
+  run_loop.Run();
 }
 
 void MainThreadFrameObserver::Quit() {
-  if (run_loop_)
-    run_loop_->Quit();
+  if (quit_closure_)
+    std::move(quit_closure_).Run();
 }
 
 bool MainThreadFrameObserver::OnMessageReceived(const IPC::Message& msg) {
@@ -2052,8 +2046,8 @@ void InputMsgWatcher::OnInputEventAck(InputEventAckSource ack_source,
   if (event.GetType() == wait_for_type_) {
     ack_result_ = ack_state;
     ack_source_ = ack_source;
-    if (!quit_.is_null())
-      quit_.Run();
+    if (quit_closure_)
+      std::move(quit_closure_).Run();
   }
 }
 
@@ -2064,7 +2058,7 @@ bool InputMsgWatcher::HasReceivedAck() const {
 InputEventAckState InputMsgWatcher::WaitForAck() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::RunLoop run_loop;
-  base::AutoReset<base::Closure> reset_quit(&quit_, run_loop.QuitClosure());
+  quit_closure_ = run_loop.QuitClosure();
   run_loop.Run();
   return ack_result_;
 }
@@ -2106,14 +2100,14 @@ InputEventAckWaiter::~InputEventAckWaiter() {
 void InputEventAckWaiter::Wait() {
   if (!event_received_) {
     base::RunLoop run_loop;
-    quit_ = run_loop.QuitClosure();
+    quit_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
 }
 
 void InputEventAckWaiter::Reset() {
   event_received_ = false;
-  quit_ = base::Closure();
+  quit_closure_ = base::OnceClosure();
 }
 
 void InputEventAckWaiter::OnInputEventAck(InputEventAckSource source,
@@ -2121,8 +2115,8 @@ void InputEventAckWaiter::OnInputEventAck(InputEventAckSource source,
                                           const blink::WebInputEvent& event) {
   if (predicate_.Run(source, state, event)) {
     event_received_ = true;
-    if (quit_)
-      quit_.Run();
+    if (quit_closure_)
+      std::move(quit_closure_).Run();
   }
 }
 
@@ -2156,22 +2150,21 @@ void BrowserTestClipboardScope::GetText(std::string* result) {
 class FrameFocusedObserver::FrameTreeNodeObserverImpl
     : public FrameTreeNode::Observer {
  public:
-  explicit FrameTreeNodeObserverImpl(FrameTreeNode* owner)
-      : owner_(owner), message_loop_runner_(new MessageLoopRunner) {
+  explicit FrameTreeNodeObserverImpl(FrameTreeNode* owner) : owner_(owner) {
     owner->AddObserver(this);
   }
   ~FrameTreeNodeObserverImpl() override { owner_->RemoveObserver(this); }
 
-  void Run() { message_loop_runner_->Run(); }
+  void Run() { run_loop_.Run(); }
 
   void OnFrameTreeNodeFocused(FrameTreeNode* node) override {
     if (node == owner_)
-      message_loop_runner_->Quit();
+      run_loop_.Quit();
   }
 
  private:
   FrameTreeNode* owner_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  base::RunLoop run_loop_;
 };
 
 FrameFocusedObserver::FrameFocusedObserver(RenderFrameHost* owner_host)
@@ -2311,10 +2304,10 @@ bool TestNavigationManager::WaitForDesiredState() {
 
   // Wait for the desired state if needed.
   if (current_state_ < desired_state_) {
-    DCHECK(!loop_runner_);
-    loop_runner_ = new MessageLoopRunner();
-    loop_runner_->Run();
-    loop_runner_ = nullptr;
+    DCHECK(!quit_closure_);
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
 
   // Return false if the navigation did not reach the state specified by the
@@ -2326,8 +2319,8 @@ void TestNavigationManager::OnNavigationStateChanged() {
   // If the state the user was waiting for has been reached, exit the message
   // loop.
   if (current_state_ >= desired_state_) {
-    if (loop_runner_)
-      loop_runner_->Quit();
+    if (quit_closure_)
+      std::move(quit_closure_).Run();
     return;
   }
 
@@ -2364,14 +2357,12 @@ void NavigationHandleCommitObserver::DidFinishNavigation(
 
 ConsoleObserverDelegate::ConsoleObserverDelegate(WebContents* web_contents,
                                                  const std::string& filter)
-    : web_contents_(web_contents),
-      filter_(filter),
-      message_loop_runner_(new MessageLoopRunner) {}
+    : web_contents_(web_contents), filter_(filter) {}
 
 ConsoleObserverDelegate::~ConsoleObserverDelegate() {}
 
 void ConsoleObserverDelegate::Wait() {
-  message_loop_runner_->Run();
+  run_loop_.Run();
 }
 
 bool ConsoleObserverDelegate::DidAddMessageToConsole(
@@ -2385,7 +2376,7 @@ bool ConsoleObserverDelegate::DidAddMessageToConsole(
   std::string ascii_message = base::UTF16ToASCII(message);
   if (base::MatchPattern(ascii_message, filter_)) {
     message_ = ascii_message;
-    message_loop_runner_->Quit();
+    run_loop_.Quit();
   }
   return false;
 }
@@ -2450,9 +2441,7 @@ namespace {
 class MockOverscrollControllerImpl : public OverscrollController,
                                      public MockOverscrollController {
  public:
-  MockOverscrollControllerImpl()
-      : content_scrolling_(false),
-        message_loop_runner_(new MessageLoopRunner) {}
+  MockOverscrollControllerImpl() : content_scrolling_(false) {}
   ~MockOverscrollControllerImpl() override {}
 
   // OverscrollController:
@@ -2466,20 +2455,23 @@ class MockOverscrollControllerImpl : public OverscrollController,
     if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
         processed) {
       content_scrolling_ = true;
-      if (message_loop_runner_->loop_running())
-        message_loop_runner_->Quit();
+      if (quit_closure_)
+        std::move(quit_closure_).Run();
     }
   }
 
   // MockOverscrollController:
   void WaitForConsumedScroll() override {
-    if (!content_scrolling_)
-      message_loop_runner_->Run();
+    if (!content_scrolling_) {
+      base::RunLoop run_loop;
+      quit_closure_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
   }
 
  private:
   bool content_scrolling_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(MockOverscrollControllerImpl);
 };
@@ -2503,8 +2495,8 @@ MockOverscrollController* MockOverscrollController::Create(
 
 ContextMenuFilter::ContextMenuFilter()
     : content::BrowserMessageFilter(FrameMsgStart),
-      message_loop_runner_(new content::MessageLoopRunner),
-      handled_(false) {}
+      run_loop_(new base::RunLoop),
+      quit_closure_(run_loop_->QuitClosure()) {}
 
 bool ContextMenuFilter::OnMessageReceived(const IPC::Message& message) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -2520,8 +2512,9 @@ bool ContextMenuFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ContextMenuFilter::Wait() {
-  if (!handled_)
-    message_loop_runner_->Run();
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  run_loop_->Run();
+  run_loop_ = nullptr;
 }
 
 ContextMenuFilter::~ContextMenuFilter() {}
@@ -2529,9 +2522,8 @@ ContextMenuFilter::~ContextMenuFilter() {}
 void ContextMenuFilter::OnContextMenu(
     const content::ContextMenuParams& params) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  handled_ = true;
   last_params_ = params;
-  message_loop_runner_->Quit();
+  std::move(quit_closure_).Run();
 }
 
 WebContents* GetEmbedderForGuest(content::WebContents* guest) {
