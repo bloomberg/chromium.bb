@@ -120,9 +120,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'in-parameter-passed-as-inout-argument-and-global.html',
         ['nvidia'], bug=792210)
 
-    self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
-        ['intel', 'amd', 'no_angle'], bug=844308)
-
     # Windows only.
     self.Fail('conformance2/buffers/uniform-buffers.html',
         ['win'], bug=757098)
@@ -211,7 +208,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
         ['win', 'nvidia', 'opengl'], bug=795030)
     self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
-        ['win', 'nvidia', 'opengl'], bug=830046)
+        ['win', 'nvidia', 'opengl', 'passthrough'], bug=830046)
     self.Flaky('conformance2/transform_feedback/switching-objects.html',
         ['win', 'nvidia', 'opengl', 'no_passthrough'], bug=832238)
 
@@ -441,10 +438,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'nvidia', 'intel'], bug=630800)
     self.Fail('deqp/functional/gles3/negativeshaderapi.html',
         ['mac', 'amd', 'intel'], bug=811614)
-
-    # Mac NVIDIA
-    self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
-        ['mac', 'nvidia', 'no_angle'], bug=844308)
 
     # Mac Retina NVIDIA
     self.Fail('deqp/functional/gles3/shaderindexing/mat_01.html',
@@ -841,7 +834,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux NVIDIA Quadro P400
     # This test causes a lost device and then the next test fails.
     self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
-        ['linux', ('nvidia', 0x1cb3)], bug=709320)
+        ['linux', ('nvidia', 0x1cb3), 'passthrough'], bug=709320)
     # Observed flaky on Swarmed bots. Some of these were directly
     # observed, some not. We can't afford any flakes on the tryservers
     # so mark them all flaky.
