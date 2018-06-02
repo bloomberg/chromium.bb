@@ -32,6 +32,7 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/web_contents.h"
@@ -48,6 +49,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
@@ -132,10 +134,15 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       select_all_on_mouse_release_(false),
       select_all_on_gesture_tap_(false),
       latency_histogram_state_(NOT_ACTIVE),
-      friendly_suggestion_text_prefix_length_(0),
-      scoped_observer_(this) {
+      friendly_suggestion_text_prefix_length_(0) {
   set_id(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
+
+  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
+    InstallPlaceholderText();
+    scoped_template_url_service_observer_.Add(
+        model()->client()->GetTemplateURLService());
+  }
 }
 
 OmniboxViewViews::~OmniboxViewViews() {
@@ -213,6 +220,19 @@ void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
 
 void OmniboxViewViews::ResetTabState(content::WebContents* web_contents) {
   web_contents->SetUserData(OmniboxState::kKey, nullptr);
+}
+
+void OmniboxViewViews::InstallPlaceholderText() {
+  base::string16 search_provider_name = model()
+                                            ->client()
+                                            ->GetTemplateURLService()
+                                            ->GetDefaultSearchProvider()
+                                            ->short_name();
+  set_placeholder_text(l10n_util::GetStringFUTF16(IDS_OMNIBOX_PLACEHOLDER_TEXT,
+                                                  search_provider_name));
+  set_placeholder_text_color(
+      location_bar_view_->GetColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED));
+  set_placeholder_text_hidden_on_focus(true);
 }
 
 void OmniboxViewViews::EmphasizeURLComponents() {
@@ -379,12 +399,12 @@ ui::TextInputType OmniboxViewViews::GetTextInputType() const {
 
 void OmniboxViewViews::AddedToWidget() {
   views::Textfield::AddedToWidget();
-  scoped_observer_.Add(GetWidget()->GetCompositor());
+  scoped_compositor_observer_.Add(GetWidget()->GetCompositor());
 }
 
 void OmniboxViewViews::RemovedFromWidget() {
   views::Textfield::RemovedFromWidget();
-  scoped_observer_.RemoveAll();
+  scoped_compositor_observer_.RemoveAll();
 }
 
 bool OmniboxViewViews::ShouldDoLearning() {
@@ -1403,5 +1423,9 @@ void OmniboxViewViews::OnCompositingLockStateChanged(
 void OmniboxViewViews::OnCompositingChildResizing(ui::Compositor* compositor) {}
 
 void OmniboxViewViews::OnCompositingShuttingDown(ui::Compositor* compositor) {
-  scoped_observer_.RemoveAll();
+  scoped_compositor_observer_.RemoveAll();
+}
+
+void OmniboxViewViews::OnTemplateURLServiceChanged() {
+  InstallPlaceholderText();
 }
