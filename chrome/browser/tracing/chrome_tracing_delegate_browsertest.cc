@@ -65,8 +65,8 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
 
     DCHECK(config);
     content::BackgroundTracingManager::ReceiveCallback receive_callback =
-        base::BindOnce(&ChromeTracingDelegateBrowserTest::OnUpload,
-                       base::Unretained(this));
+        base::BindRepeating(&ChromeTracingDelegateBrowserTest::OnUpload,
+                            base::Unretained(this));
 
     return content::BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), std::move(receive_callback), data_filtering);

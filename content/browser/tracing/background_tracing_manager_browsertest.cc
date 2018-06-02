@@ -144,6 +144,10 @@ class BackgroundTracingManagerUploadConfigWrapper {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(callback_));
   }
 
+  void SetUploadCallback(base::OnceClosure callback) {
+    callback_ = std::move(callback);
+  }
+
   bool TraceHasMatchingString(const char* str) {
     return last_file_contents_.find(str) != std::string::npos;
   }
@@ -151,8 +155,9 @@ class BackgroundTracingManagerUploadConfigWrapper {
   int get_receive_count() const { return receive_count_; }
 
   BackgroundTracingManager::ReceiveCallback get_receive_callback() {
-    return base::BindOnce(&BackgroundTracingManagerUploadConfigWrapper::Upload,
-                          base::Unretained(this));
+    return base::BindRepeating(
+        &BackgroundTracingManagerUploadConfigWrapper::Upload,
+        base::Unretained(this));
   }
 
  private:
@@ -1330,6 +1335,57 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     run_loop.Run();
 
     EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 1);
+  }
+}
+
+#if defined(OS_ANDROID)
+// Flaky on android: https://crbug.com/639706
+#define MAYBE_ReactiveSecondUpload DISABLED_ReactiveSecondUpload
+#else
+#define MAYBE_ReactiveSecondUpload ReactiveSecondUpload
+#endif
+
+// This tests that reactive mode uploads on a second set of triggers.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       MAYBE_ReactiveSecondUpload) {
+  {
+    SetupBackgroundTracingManager();
+
+    base::RunLoop run_loop;
+    BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
+        run_loop.QuitClosure());
+
+    std::unique_ptr<BackgroundTracingConfig> config = CreateReactiveConfig();
+
+    BackgroundTracingManager::TriggerHandle handle =
+        BackgroundTracingManager::GetInstance()->RegisterTriggerType(
+            "reactive_test");
+
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
+        std::move(config), upload_config_wrapper.get_receive_callback(),
+        BackgroundTracingManager::NO_DATA_FILTERING));
+
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        handle, base::Bind(&StartedFinalizingCallback, base::Closure(), true));
+    // second trigger to terminate.
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        handle, base::Bind(&StartedFinalizingCallback, base::Closure(), true));
+
+    run_loop.Run();
+
+    base::RunLoop second_upload_run_loop;
+    upload_config_wrapper.SetUploadCallback(
+        second_upload_run_loop.QuitClosure());
+
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        handle, base::Bind(&StartedFinalizingCallback, base::Closure(), true));
+    // second trigger to terminate.
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        handle, base::Bind(&StartedFinalizingCallback, base::Closure(), true));
+
+    second_upload_run_loop.Run();
+
+    EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 2);
   }
 }
 

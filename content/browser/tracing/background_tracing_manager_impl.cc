@@ -507,11 +507,12 @@ void BackgroundTracingManagerImpl::OnFinalizeStarted(
                           file_contents->size() / 1024);
 
   if (!receive_callback_.is_null()) {
-    std::move(receive_callback_)
-        .Run(file_contents, std::move(metadata),
-             base::BindOnce(&BackgroundTracingManagerImpl::OnFinalizeComplete,
-                            base::Unretained(this)));
+    receive_callback_.Run(
+        file_contents, std::move(metadata),
+        base::BindOnce(&BackgroundTracingManagerImpl::OnFinalizeComplete,
+                       base::Unretained(this)));
   }
+
   if (!started_finalizing_closure.is_null())
     std::move(started_finalizing_closure).Run();
 }

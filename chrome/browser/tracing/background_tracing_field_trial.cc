@@ -103,7 +103,7 @@ void SetupBackgroundTracingFieldTrial() {
 
   content::BackgroundTracingManager::GetInstance()->SetActiveScenario(
       std::move(config),
-      base::BindOnce(&BackgroundTracingUploadCallback, upload_url),
+      base::BindRepeating(&BackgroundTracingUploadCallback, upload_url),
       content::BackgroundTracingManager::ANONYMIZE_DATA);
 }
 
