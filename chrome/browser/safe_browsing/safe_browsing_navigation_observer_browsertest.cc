@@ -2440,4 +2440,32 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            referrer_chain.Get(3));
 }
 
+IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
+                       NavigateBackwardForward) {
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(kSingleFrameTestURL));
+  GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
+  ClickTestLink("complete_referrer_chain", 2, initial_url);
+  auto* nav_list = navigation_event_list();
+  ASSERT_TRUE(nav_list);
+  EXPECT_EQ(3U, nav_list->Size());
+
+  // Simulates back.
+  ASSERT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.history.back();"));
+  base::RunLoop().RunUntilIdle();
+
+  // Simulates forward.
+  ASSERT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.history.forward();"));
+  base::RunLoop().RunUntilIdle();
+
+  nav_list = navigation_event_list();
+  ASSERT_TRUE(nav_list);
+  // Verifies navigations caused by back/forward are ignored.
+  EXPECT_EQ(3U, nav_list->Size());
+}
+
 }  // namespace safe_browsing
