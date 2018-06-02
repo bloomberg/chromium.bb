@@ -66,5 +66,7 @@
   check(() => f3.element().firstChild === f2.element());
   TestRunner.addResult('');
 
+  check(() => UI.html`<div>${[1, 2, 3].map(x => UI.html`<span>${x}</span>`)}</div>`.childNodes.length === 3);
+
   TestRunner.completeTest();
 })();
