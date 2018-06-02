@@ -540,6 +540,27 @@ TEST(FileTest, DuplicateDeleteOnClose) {
   ASSERT_FALSE(base::PathExists(file_path));
 }
 
+TEST(FileTest, WriteDataToLargeOffset) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath file_path = temp_dir.GetPath().AppendASCII("file");
+  File file(file_path,
+            (base::File::FLAG_CREATE | base::File::FLAG_READ |
+             base::File::FLAG_WRITE | base::File::FLAG_DELETE_ON_CLOSE));
+  ASSERT_TRUE(file.IsValid());
+
+  const char kData[] = "this file is sparse.";
+  const int kDataLen = sizeof(kData) - 1;
+  const int64_t kLargeFileOffset = (1LL << 31);
+
+  // If the file fails to write, it is probably we are running out of disk space
+  // and the file system doesn't support sparse file.
+  if (file.Write(kLargeFileOffset - kDataLen - 1, kData, kDataLen) < 0)
+    return;
+
+  ASSERT_EQ(kDataLen, file.Write(kLargeFileOffset + 1, kData, kDataLen));
+}
+
 #if defined(OS_WIN)
 TEST(FileTest, GetInfoForDirectory) {
   base::ScopedTempDir temp_dir;
