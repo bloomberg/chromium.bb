@@ -33242,12 +33242,36 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="UNREGISTRATION_FAILED"/>
 </enum>
 
-<enum name="NotificationHelperNotificationActivatorStatus">
+<enum name="NotificationHelperNotificationActivatorPrimaryStatus">
   <int value="0" label="Success"/>
   <int value="1" label="Chrome exe missing"/>
-  <int value="2" label="Launch chrome failed"/>
+  <int value="2" label="ShellExecute failed"/>
+</enum>
+
+<enum name="NotificationHelperNotificationActivatorSecondaryStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="LaunchId empty"/>
+  <int value="2" label="AllowSetForegroundWindow failed"/>
+  <int value="3" label="LaunchId empty, AllowSetForegroundWindow failed"/>
+  <int value="4" label="Handle missing"/>
+  <int value="5" label="LaunchId empty, Handle missing"/>
+  <int value="6" label="AllowSetForegroundWindow failed, Handle missing"/>
+  <int value="7"
+      label="LaunchId empty, AllowSetForegroundWindow failed, Handle missing"/>
+</enum>
+
+<enum name="NotificationHelperNotificationActivatorStatus">
+  <obsolete>
+    Deprecated as of 06/2018. Replaced by
+    NotificationHelperNotificationActivatorPrimaryStatus and
+    NotificationHelperNotificationActivatorSecondaryStatus.
+  </obsolete>
+  <int value="0" label="Success"/>
+  <int value="1" label="Chrome exe missing"/>
+  <int value="2" label="ShellExecute failed"/>
   <int value="3" label="Launch id empty"/>
   <int value="4" label="AllowSetForegroundWindow call failed"/>
+  <int value="5" label="Chrome process launch failed"/>
 </enum>
 
 <enum name="NotifierType">
