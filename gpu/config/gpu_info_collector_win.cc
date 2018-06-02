@@ -113,11 +113,14 @@ inline VulkanVersion ConvertToHistogramVulkanVersion(uint32_t vulkan_version) {
 #if defined(GOOGLE_CHROME_BUILD) && defined(OFFICIAL_BUILD)
 // This function has a real implementation for official builds that can
 // be found in src/third_party/amd.
-void GetAMDVideocardInfo(GPUInfo* gpu_info);
+bool GetAMDSwitchableInfo(bool* is_switchable,
+                          uint32_t* active_vendor_id,
+                          uint32_t* active_device_id);
 #else
-void GetAMDVideocardInfo(GPUInfo* gpu_info) {
-  DCHECK(gpu_info);
-  return;
+bool GetAMDSwitchableInfo(bool* is_switchable,
+                          uint32_t* active_vendor_id,
+                          uint32_t* active_device_id) {
+  return false;
 }
 #endif
 
@@ -206,25 +209,17 @@ bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info) {
   SetupDiDestroyDeviceInfoList(device_info);
   if (found_amd && found_intel) {
     // Potential AMD Switchable system found.
-    {
-      // TODO(zmo): for GetAMDVideocardInfo, now we only care about
-      // |amd_switchable| bit. Simplify the logic of that function and then the
-      // logic here.
-      GPUInfo amd_gpu_info;
-      for (const auto& device : devices) {
-        if (device.vendor_id == 0x8086) {
-          amd_gpu_info.gpu = device;
-        }
-      }
-      GetAMDVideocardInfo(&amd_gpu_info);
-      gpu_info->amd_switchable = amd_gpu_info.amd_switchable;
-      if (!gpu_info->amd_switchable && !amd_is_primary) {
-        // Some machines aren't properly detected as AMD switchable, but count
-        // them anyway. This may erroneously count machines where there are
-        // independent AMD and Intel cards and the AMD isn't hooked up to
-        // anything, but that should be rare.
-        gpu_info->amd_switchable = true;
-      }
+    if (!amd_is_primary) {
+      // Some machines aren't properly detected as AMD switchable, but count
+      // them anyway. This may erroneously count machines where there are
+      // independent AMD and Intel cards and the AMD isn't hooked up to
+      // anything, but that should be rare.
+      gpu_info->amd_switchable = true;
+    } else {
+      bool is_amd_switchable = false;
+      uint32_t active_vendor = 0, active_device = 0;
+      GetAMDSwitchableInfo(&is_amd_switchable, &active_vendor, &active_device);
+      gpu_info->amd_switchable = is_amd_switchable;
     }
   }
   bool found = false;
