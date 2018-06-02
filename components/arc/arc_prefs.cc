@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/arc/arc_prefs.h"
+#include "components/arc/arc_supervision_transition.h"
 
 #include <string>
 
@@ -40,6 +41,9 @@ const char kArcInitialSettingsPending[] = "arc.initial.settings.pending";
 // A preference that indicated whether Android reported it's compliance status
 // with provided policies. This is used only as a signal to start Android kiosk.
 const char kArcPolicyComplianceReported[] = "arc.policy_compliance_reported";
+// A preference that indicates that a supervision transition is necessary, in
+// response to a CHILD_ACCOUNT transiting to a REGULAR_ACCOUNT or vice-versa.
+const char kArcSupervisionTransition[] = "arc.supervision_transition";
 // A preference that indicates that user accepted PlayStore terms.
 const char kArcTermsAccepted[] = "arc.terms.accepted";
 // A preference that indicates that ToS was shown in OOBE flow.
@@ -98,6 +102,10 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
   // This is used to decide whether migration from ecryptfs to ext4 is allowed.
   registry->RegisterIntegerPref(prefs::kEcryptfsMigrationStrategy, 0);
+
+  registry->RegisterIntegerPref(
+      kArcSupervisionTransition,
+      static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
 
   // Sorted in lexicographical order.
   registry->RegisterBooleanPref(kArcDataRemoveRequested, false);

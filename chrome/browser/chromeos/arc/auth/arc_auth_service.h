@@ -58,6 +58,8 @@ class ArcAuthService : public KeyedService,
   void RequestAccountInfo(bool initial_signin) override;
   void ReportMetrics(mojom::MetricsType metrics_type, int32_t value) override;
   void ReportAccountCheckStatus(mojom::AccountCheckStatus status) override;
+  void ReportSupervisionChangeStatus(
+      mojom::SupervisionChangeStatus status) override;
 
   void SetURLLoaderFactoryForTesting(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);

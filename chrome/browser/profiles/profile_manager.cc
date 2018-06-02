@@ -128,6 +128,9 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/arc/arc_features.h"
+#include "components/arc/arc_prefs.h"
+#include "components/arc/arc_supervision_transition.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -987,15 +990,23 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   if (user) {
-    if (profile->IsChild() !=
-        (user->GetType() == user_manager::USER_TYPE_CHILD)) {
+    const bool user_is_child =
+        (user->GetType() == user_manager::USER_TYPE_CHILD);
+    const bool profile_is_child = profile->IsChild();
+    if (profile_is_child != user_is_child) {
       ProfileAttributesEntry* entry;
       if (storage.GetProfileAttributesWithPath(profile->GetPath(), &entry)) {
         LOG(WARNING) << "Profile child status has changed.";
         storage.RemoveProfile(profile->GetPath());
       }
+      // Notify ARC about user type change via prefs.
+      const arc::ArcSupervisionTransition supervisionTransition =
+          user_is_child ? arc::ArcSupervisionTransition::REGULAR_TO_CHILD
+                        : arc::ArcSupervisionTransition::CHILD_TO_REGULAR;
+      profile->GetPrefs()->SetInteger(arc::prefs::kArcSupervisionTransition,
+                                      static_cast<int>(supervisionTransition));
     }
-    if (user->GetType() == user_manager::USER_TYPE_CHILD) {
+    if (user_is_child) {
       profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
                                      supervised_users::kChildAccountSUID);
     } else {
