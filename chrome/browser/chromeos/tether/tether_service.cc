@@ -147,7 +147,8 @@ TetherService::TetherService(
                   ->GetUserPrivateKey())),
       tether_host_fetcher_(
           chromeos::tether::TetherHostFetcherImpl::Factory::NewInstance(
-              remote_device_provider_.get())),
+              remote_device_provider_.get(),
+              nullptr /* device_sync_client */)),
       timer_(std::make_unique<base::OneShotTimer>()),
       weak_ptr_factory_(this) {
   tether_host_fetcher_->AddObserver(this);
