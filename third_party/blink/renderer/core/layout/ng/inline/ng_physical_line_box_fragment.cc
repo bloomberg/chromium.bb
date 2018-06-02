@@ -45,7 +45,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
     NGStyleVariant style_variant,
     NGPhysicalSize size,
     Vector<scoped_refptr<NGPhysicalFragment>>& children,
-    const NGPhysicalOffsetRect& contents_visual_rect,
+    const NGPhysicalOffsetRect& contents_ink_overflow,
     const NGPhysicalOffsetRect& scrollable_overflow,
     const NGLineHeightMetrics& metrics,
     TextDirection base_direction,
@@ -57,7 +57,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
                                   kFragmentLineBox,
                                   0,
                                   children,
-                                  contents_visual_rect,
+                                  contents_ink_overflow,
                                   std::move(break_token)),
       scrollable_overflow_(scrollable_overflow),
       metrics_(metrics) {
@@ -71,8 +71,8 @@ LayoutUnit NGPhysicalLineBoxFragment::BaselinePosition(FontBaseline) const {
   return metrics_.ascent;
 }
 
-NGPhysicalOffsetRect NGPhysicalLineBoxFragment::VisualRectWithContents() const {
-  return ContentsVisualRect();
+NGPhysicalOffsetRect NGPhysicalLineBoxFragment::InkOverflow() const {
+  return ContentsInkOverflow();
 }
 
 const NGPhysicalFragment* NGPhysicalLineBoxFragment::FirstLogicalLeaf() const {

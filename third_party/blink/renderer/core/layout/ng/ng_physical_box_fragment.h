@@ -23,7 +23,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
                         NGPhysicalSize size,
                         Vector<scoped_refptr<NGPhysicalFragment>>& children,
                         const NGPixelSnappedPhysicalBoxStrut& padding,
-                        const NGPhysicalOffsetRect& contents_visual_rect,
+                        const NGPhysicalOffsetRect& contents_ink_overflow,
                         Vector<NGBaseline>& baselines,
                         NGBoxType box_type,
                         bool is_old_layout_root,
@@ -55,10 +55,10 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
   // Visual rect of this box in the local coordinate. Does not include children
   // even if they overflow this box.
-  NGPhysicalOffsetRect SelfVisualRect() const;
+  NGPhysicalOffsetRect SelfInkOverflow() const;
 
-  // VisualRect of itself including contents, in the local coordinate.
-  NGPhysicalOffsetRect VisualRectWithContents(bool clip_overflow) const;
+  // Ink overflow including contents, in the local coordinates.
+  NGPhysicalOffsetRect InkOverflow(bool apply_clip) const;
 
   void AddSelfOutlineRects(Vector<LayoutRect>*,
                            const LayoutPoint& additional_offset) const;

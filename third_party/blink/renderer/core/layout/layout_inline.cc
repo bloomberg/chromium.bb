@@ -1164,8 +1164,7 @@ LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
     auto children =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     for (const auto& child : children) {
-      NGPhysicalOffsetRect child_rect =
-          child.fragment->VisualRectWithContents();
+      NGPhysicalOffsetRect child_rect = child.fragment->InkOverflow();
       child_rect.offset += child.offset_to_container_box;
       result.Unite(child_rect);
     }

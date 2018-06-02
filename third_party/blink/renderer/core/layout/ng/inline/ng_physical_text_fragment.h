@@ -115,7 +115,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   // The visual bounding box that includes glpyh bounding box and CSS
   // properties, in local coordinates.
-  NGPhysicalOffsetRect SelfVisualRect() const;
+  NGPhysicalOffsetRect SelfInkOverflow() const;
 
   NGTextEndEffect EndEffect() const {
     return static_cast<NGTextEndEffect>(end_effect_);

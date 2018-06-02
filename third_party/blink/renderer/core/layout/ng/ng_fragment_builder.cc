@@ -257,12 +257,12 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
 
   NGPhysicalSize physical_size = Size().ConvertToPhysical(GetWritingMode());
 
-  NGPhysicalOffsetRect contents_visual_rect({}, physical_size);
+  NGPhysicalOffsetRect contents_ink_overflow({}, physical_size);
   for (size_t i = 0; i < children_.size(); ++i) {
     NGPhysicalFragment* child = children_[i].get();
     child->SetOffset(offsets_[i].ConvertToPhysical(
         GetWritingMode(), Direction(), physical_size, child->Size()));
-    child->PropagateContentsVisualRect(&contents_visual_rect);
+    child->PropagateContentsInkOverflow(&contents_ink_overflow);
   }
 
   scoped_refptr<NGBreakToken> break_token;
@@ -287,7 +287,7 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
           layout_object_, Style(), style_variant_, physical_size, children_,
           padding_.ConvertToPhysical(GetWritingMode(), Direction())
               .SnapToDevicePixels(),
-          contents_visual_rect, baselines_, BoxType(), is_old_layout_root_,
+          contents_ink_overflow, baselines_, BoxType(), is_old_layout_root_,
           border_edges_.ToPhysical(GetWritingMode()), std::move(break_token)));
 
   Vector<NGPositionedFloat> positioned_floats;

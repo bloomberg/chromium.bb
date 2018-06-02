@@ -258,7 +258,7 @@ LayoutRect PaintInvalidator::ComputeVisualRectInBacking(
 // We need update |fragment| visual rect considering selection.
 static LayoutRect ComputeLocalVisualRect(const NGPaintFragment& fragment) {
   const NGPhysicalFragment& physical_fragment = fragment.PhysicalFragment();
-  LayoutRect rect = physical_fragment.VisualRectWithContents().ToLayoutRect();
+  LayoutRect rect = physical_fragment.InkOverflow().ToLayoutRect();
   if (!physical_fragment.IsText())
     return rect;
   const FrameSelection& frame_selection =

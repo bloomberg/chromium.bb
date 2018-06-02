@@ -43,16 +43,16 @@ bool AppendFragmentOffsetAndSize(const NGPhysicalFragment* fragment,
   if (flags & NGPhysicalFragment::DumpOverflow) {
     if (has_content)
       builder->Append(" ");
-    NGPhysicalOffsetRect overflow = fragment->VisualRectWithContents();
+    NGPhysicalOffsetRect overflow = fragment->InkOverflow();
     if (overflow.size.width != fragment->Size().width ||
         overflow.size.height != fragment->Size().height) {
-      builder->Append(" visualRectWithContents: ");
+      builder->Append(" InkOverflow: ");
       builder->Append(overflow.ToString());
       has_content = true;
     }
     if (has_content)
       builder->Append(" ");
-    overflow = fragment->SelfVisualRect();
+    overflow = fragment->SelfInkOverflow();
     if (overflow.size.width != fragment->Size().width ||
         overflow.size.height != fragment->Size().height) {
       builder->Append(" visualRect: ");
@@ -304,12 +304,12 @@ NGPixelSnappedPhysicalBoxStrut NGPhysicalFragment::BorderWidths() const {
   return box_strut.SnapToDevicePixels();
 }
 
-NGPhysicalOffsetRect NGPhysicalFragment::SelfVisualRect() const {
+NGPhysicalOffsetRect NGPhysicalFragment::SelfInkOverflow() const {
   switch (Type()) {
     case NGPhysicalFragment::kFragmentBox:
-      return ToNGPhysicalBoxFragment(*this).SelfVisualRect();
+      return ToNGPhysicalBoxFragment(*this).SelfInkOverflow();
     case NGPhysicalFragment::kFragmentText:
-      return ToNGPhysicalTextFragment(*this).SelfVisualRect();
+      return ToNGPhysicalTextFragment(*this).SelfInkOverflow();
     case NGPhysicalFragment::kFragmentLineBox:
       return {{}, Size()};
   }
@@ -317,16 +317,14 @@ NGPhysicalOffsetRect NGPhysicalFragment::SelfVisualRect() const {
   return {{}, Size()};
 }
 
-NGPhysicalOffsetRect NGPhysicalFragment::VisualRectWithContents(
-    bool clip_overflow) const {
+NGPhysicalOffsetRect NGPhysicalFragment::InkOverflow(bool apply_clip) const {
   switch (Type()) {
     case NGPhysicalFragment::kFragmentBox:
-      return ToNGPhysicalBoxFragment(*this).VisualRectWithContents(
-          clip_overflow);
+      return ToNGPhysicalBoxFragment(*this).InkOverflow(apply_clip);
     case NGPhysicalFragment::kFragmentText:
-      return ToNGPhysicalTextFragment(*this).SelfVisualRect();
+      return ToNGPhysicalTextFragment(*this).SelfInkOverflow();
     case NGPhysicalFragment::kFragmentLineBox:
-      return ToNGPhysicalLineBoxFragment(*this).VisualRectWithContents();
+      return ToNGPhysicalLineBoxFragment(*this).InkOverflow();
   }
   NOTREACHED();
   return {{}, Size()};
@@ -345,11 +343,11 @@ NGPhysicalOffsetRect NGPhysicalFragment::ScrollableOverflow() const {
   return {{}, Size()};
 }
 
-void NGPhysicalFragment::PropagateContentsVisualRect(
-    NGPhysicalOffsetRect* parent_visual_rect) const {
-  NGPhysicalOffsetRect visual_rect = VisualRectWithContents();
-  visual_rect.offset += Offset();
-  parent_visual_rect->Unite(visual_rect);
+void NGPhysicalFragment::PropagateContentsInkOverflow(
+    NGPhysicalOffsetRect* parent_ink_overflow) const {
+  NGPhysicalOffsetRect ink_overflow = InkOverflow();
+  ink_overflow.offset += Offset();
+  parent_ink_overflow->Unite(ink_overflow);
 }
 
 const Vector<NGInlineItem>& NGPhysicalFragment::InlineItemsOfContainingBlock()
