@@ -61,23 +61,36 @@ BleConnectionManager::ConnectionMetadata::ConnectionMetadata(
 
 BleConnectionManager::ConnectionMetadata::~ConnectionMetadata() = default;
 
-void BleConnectionManager::ConnectionMetadata::RegisterConnectionReason(
-    const ConnectionReason& connection_reason) {
-  active_connection_reasons_.insert(connection_reason);
+void BleConnectionManager::ConnectionMetadata::RegisterConnectionRequest(
+    const base::UnguessableToken& request_id,
+    ConnectionPriority connection_priority) {
+  DCHECK(!base::ContainsKey(request_id_to_priority_map_, request_id));
+  request_id_to_priority_map_.insert(
+      std::make_pair(request_id, connection_priority));
 }
 
-void BleConnectionManager::ConnectionMetadata::UnregisterConnectionReason(
-    const ConnectionReason& connection_reason) {
-  active_connection_reasons_.erase(connection_reason);
+void BleConnectionManager::ConnectionMetadata::UnregisterConnectionRequest(
+    const base::UnguessableToken& request_id) {
+  request_id_to_priority_map_.erase(request_id);
 }
 
 ConnectionPriority
 BleConnectionManager::ConnectionMetadata::GetConnectionPriority() {
-  return HighestPriorityForConnectionReasons(active_connection_reasons_);
+  DCHECK(HasPendingConnectionRequests());
+
+  ConnectionPriority highest_priority =
+      ConnectionPriority::CONNECTION_PRIORITY_LOW;
+  for (const auto& map_entry : request_id_to_priority_map_) {
+    if (map_entry.second > highest_priority)
+      highest_priority = map_entry.second;
+  }
+
+  return highest_priority;
 }
 
-bool BleConnectionManager::ConnectionMetadata::HasReasonForConnection() const {
-  return !active_connection_reasons_.empty();
+bool BleConnectionManager::ConnectionMetadata::HasPendingConnectionRequests()
+    const {
+  return !request_id_to_priority_map_.empty();
 }
 
 bool BleConnectionManager::ConnectionMetadata::HasEstablishedConnection()
@@ -236,7 +249,8 @@ BleConnectionManager::~BleConnectionManager() {
 
 void BleConnectionManager::RegisterRemoteDevice(
     const std::string& device_id,
-    const ConnectionReason& connection_reason) {
+    const base::UnguessableToken& request_id,
+    ConnectionPriority connection_priority) {
   if (!has_registered_observer_) {
     ble_scanner_->AddObserver(this);
   }
@@ -244,36 +258,37 @@ void BleConnectionManager::RegisterRemoteDevice(
 
   PA_LOG(INFO) << "Register - Device ID: \""
                << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
-               << "\", Reason: " << ConnectionReasonToString(connection_reason);
+               << "\", Request ID: " << request_id
+               << ", Priority: " << connection_priority;
 
   ConnectionMetadata* connection_metadata = GetConnectionMetadata(device_id);
   if (!connection_metadata)
     connection_metadata = AddMetadataForDevice(device_id);
 
-  connection_metadata->RegisterConnectionReason(connection_reason);
+  connection_metadata->RegisterConnectionRequest(request_id,
+                                                 connection_priority);
   UpdateConnectionAttempts();
 }
 
 void BleConnectionManager::UnregisterRemoteDevice(
     const std::string& device_id,
-    const ConnectionReason& connection_reason) {
+    const base::UnguessableToken& request_id) {
   ConnectionMetadata* connection_metadata = GetConnectionMetadata(device_id);
   if (!connection_metadata) {
     PA_LOG(WARNING) << "Tried to unregister device, but was not registered - "
                     << "Device ID: \""
                     << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
                            device_id)
-                    << "\", Reason: "
-                    << ConnectionReasonToString(connection_reason);
+                    << "\", Request ID: " << request_id;
     return;
   }
 
   PA_LOG(INFO) << "Unregister - Device ID: \""
                << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
-               << "\", Reason: " << ConnectionReasonToString(connection_reason);
+               << "\", Request ID: " << request_id;
 
-  connection_metadata->UnregisterConnectionReason(connection_reason);
-  if (!connection_metadata->HasReasonForConnection()) {
+  connection_metadata->UnregisterConnectionRequest(request_id);
+  if (!connection_metadata->HasPendingConnectionRequests()) {
     if (connection_metadata->HasEstablishedConnection()) {
       connection_metadata->Disconnect();
     } else {
@@ -560,7 +575,7 @@ void BleConnectionManager::OnSecureChannelStatusChanged(
   const cryptauth::SecureChannel::Status old_status_copy = old_status;
   const cryptauth::SecureChannel::Status new_status_copy = new_status;
 
-  if (!connection_metadata->HasReasonForConnection() &&
+  if (!connection_metadata->HasPendingConnectionRequests() &&
       new_status == cryptauth::SecureChannel::Status::DISCONNECTED) {
     device_id_to_metadata_map_.erase(device_id_copy);
     state_change_detail =

@@ -44,8 +44,6 @@ static_library("tether") {
     "connection_preserver_impl.h",
     "connection_priority.cc",
     "connection_priority.h",
-    "connection_reason.cc",
-    "connection_reason.h",
     "crash_recovery_manager.h",
     "crash_recovery_manager_impl.cc",
     "crash_recovery_manager_impl.h",

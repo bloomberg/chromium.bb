@@ -5,9 +5,9 @@
 #ifndef CHROMEOS_COMPONENTS_TETHER_CONNECTION_PRIORITY_H_
 #define CHROMEOS_COMPONENTS_TETHER_CONNECTION_PRIORITY_H_
 
+#include <ostream>
 #include <set>
 
-#include "chromeos/components/tether/connection_reason.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 
 namespace chromeos {
@@ -34,10 +34,8 @@ enum class ConnectionPriority {
   CONNECTION_PRIORITY_HIGH = 3
 };
 
-ConnectionPriority PriorityForConnectionReason(
-    ConnectionReason connection_reason);
-ConnectionPriority HighestPriorityForConnectionReasons(
-    std::set<ConnectionReason> connection_reasons);
+std::ostream& operator<<(std::ostream& stream,
+                         const ConnectionPriority& connection_priority);
 
 }  // namespace tether
 

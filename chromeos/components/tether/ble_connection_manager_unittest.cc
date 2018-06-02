@@ -6,8 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/timer/mock_timer.h"
+#include "base/unguessable_token.h"
 #include "chromeos/components/tether/ble_constants.h"
-#include "chromeos/components/tether/connection_reason.h"
 #include "chromeos/components/tether/fake_ad_hoc_ble_advertiser.h"
 #include "chromeos/components/tether/fake_ble_advertiser.h"
 #include "chromeos/components/tether/fake_ble_scanner.h"
@@ -121,8 +121,8 @@ class TestObserver final : public BleConnectionManager::Observer {
 class UnregisteringObserver : public BleConnectionManager::Observer {
  public:
   UnregisteringObserver(BleConnectionManager* manager,
-                        ConnectionReason connection_reason)
-      : manager_(manager), connection_reason_(connection_reason) {}
+                        const base::UnguessableToken& request_id)
+      : manager_(manager), request_id_(request_id) {}
 
   // BleConnectionManager::Observer:
   void OnSecureChannelStatusChanged(
@@ -130,19 +130,19 @@ class UnregisteringObserver : public BleConnectionManager::Observer {
       const cryptauth::SecureChannel::Status& old_status,
       const cryptauth::SecureChannel::Status& new_status,
       BleConnectionManager::StateChangeDetail status_change_detail) override {
-    manager_->UnregisterRemoteDevice(device_id, connection_reason_);
+    manager_->UnregisterRemoteDevice(device_id, request_id_);
   }
 
   void OnMessageReceived(const std::string& device_id,
                          const std::string& payload) override {
-    manager_->UnregisterRemoteDevice(device_id, connection_reason_);
+    manager_->UnregisterRemoteDevice(device_id, request_id_);
   }
 
   void OnMessageSent(int sequence_number) override { NOTIMPLEMENTED(); }
 
  private:
   BleConnectionManager* manager_;
-  ConnectionReason connection_reason_;
+  const base::UnguessableToken request_id_;
 };
 
 class TestMetricsObserver final : public BleConnectionManager::MetricsObserver {
@@ -528,7 +528,7 @@ class BleConnectionManagerTest : public testing::Test {
     BleConnectionManager::ConnectionMetadata* connection_metadata =
         manager_->GetConnectionMetadata(remote_device.GetDeviceId());
     if (connection_metadata)
-      EXPECT_FALSE(connection_metadata->HasReasonForConnection());
+      EXPECT_FALSE(connection_metadata->HasPendingConnectionRequests());
   }
 
   // Registers |remote_device|, creates a connection to that device at
@@ -536,10 +536,10 @@ class BleConnectionManagerTest : public testing::Test {
   FakeSecureChannel* ConnectSuccessfully(
       cryptauth::RemoteDeviceRef remote_device,
       const std::string& bluetooth_address,
-      const ConnectionReason connection_reason,
+      const base::UnguessableToken& request_id,
       bool is_background_advertisement) {
-    manager_->RegisterRemoteDevice(remote_device.GetDeviceId(),
-                                   connection_reason);
+    manager_->RegisterRemoteDevice(remote_device.GetDeviceId(), request_id,
+                                   ConnectionPriority::CONNECTION_PRIORITY_LOW);
     VerifyAdvertisingTimeoutSet(remote_device);
     VerifyConnectionStateChanges(
         std::vector<SecureChannelStatusChange>{
@@ -656,7 +656,8 @@ TEST_F(BleConnectionManagerTest, TestCannotScan) {
   fake_ble_scanner_->set_should_fail_to_register(true);
 
   manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+                                 base::UnguessableToken::Create(),
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
   VerifyFailImmediatelyTimeoutSet(test_devices_[0]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
@@ -669,7 +670,8 @@ TEST_F(BleConnectionManagerTest, TestCannotAdvertise) {
   fake_ble_advertiser_->set_should_fail_to_start_advertising(true);
 
   manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+                                 base::UnguessableToken::Create(),
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
   VerifyFailImmediatelyTimeoutSet(test_devices_[0]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
@@ -680,7 +682,8 @@ TEST_F(BleConnectionManagerTest, TestCannotAdvertise) {
 
 TEST_F(BleConnectionManagerTest, TestRegistersButNoResult) {
   manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+                                 base::UnguessableToken::Create(),
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
   VerifyAdvertisingTimeoutSet(test_devices_[0]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
@@ -690,8 +693,9 @@ TEST_F(BleConnectionManagerTest, TestRegistersButNoResult) {
 }
 
 TEST_F(BleConnectionManagerTest, TestRegistersAndUnregister_NoConnection) {
-  manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  base::UnguessableToken request_id = base::UnguessableToken::Create();
+  manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(), request_id,
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
   VerifyAdvertisingTimeoutSet(test_devices_[0]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
@@ -699,9 +703,7 @@ TEST_F(BleConnectionManagerTest, TestRegistersAndUnregister_NoConnection) {
        cryptauth::SecureChannel::Status::CONNECTING,
        BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE}});
 
-  manager_->UnregisterRemoteDevice(
-      test_devices_[0].GetDeviceId(),
-      ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->UnregisterRemoteDevice(test_devices_[0].GetDeviceId(), request_id);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
        cryptauth::SecureChannel::Status::CONNECTING,
@@ -712,7 +714,8 @@ TEST_F(BleConnectionManagerTest, TestRegistersAndUnregister_NoConnection) {
 
 TEST_F(BleConnectionManagerTest, TestAdHocBleAdvertiser) {
   manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+                                 base::UnguessableToken::Create(),
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
   VerifyAdvertisingTimeoutSet(test_devices_[0]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
@@ -743,8 +746,9 @@ TEST_F(BleConnectionManagerTest, TestAdHocBleAdvertiser) {
 }
 
 TEST_F(BleConnectionManagerTest, TestRegisterWithNoConnection_TimeoutOccurs) {
-  manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  base::UnguessableToken request_id = base::UnguessableToken::Create();
+  manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(), request_id,
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
   VerifyAdvertisingTimeoutSet(test_devices_[0]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
@@ -764,9 +768,7 @@ TEST_F(BleConnectionManagerTest, TestRegisterWithNoConnection_TimeoutOccurs) {
        cryptauth::SecureChannel::Status::CONNECTING,
        BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE}});
 
-  manager_->UnregisterRemoteDevice(
-      test_devices_[0].GetDeviceId(),
-      ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->UnregisterRemoteDevice(test_devices_[0].GetDeviceId(), request_id);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
        cryptauth::SecureChannel::Status::CONNECTING,
@@ -777,7 +779,8 @@ TEST_F(BleConnectionManagerTest, TestRegisterWithNoConnection_TimeoutOccurs) {
 
 TEST_F(BleConnectionManagerTest, TestSuccessfulConnection_FailsAuthentication) {
   manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+                                 base::UnguessableToken::Create(),
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
   VerifyAdvertisingTimeoutSet(test_devices_[0]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
@@ -824,9 +827,9 @@ TEST_F(BleConnectionManagerTest, TestSuccessfulConnection_FailsAuthentication) {
 }
 
 TEST_F(BleConnectionManagerTest, TestSuccessfulConnection_SendAndReceive) {
+  base::UnguessableToken request_id = base::UnguessableToken::Create();
   FakeSecureChannel* channel =
-      ConnectSuccessfully(test_devices_[0], kBluetoothAddress1,
-                          ConnectionReason::TETHER_AVAILABILITY_REQUEST,
+      ConnectSuccessfully(test_devices_[0], kBluetoothAddress1, request_id,
                           false /* is_background_advertisement */);
 
   int sequence_number =
@@ -845,9 +848,7 @@ TEST_F(BleConnectionManagerTest, TestSuccessfulConnection_SendAndReceive) {
   VerifyReceivedMessages(std::vector<ReceivedMessage>{
       {test_devices_[0].GetDeviceId(), "response2"}});
 
-  manager_->UnregisterRemoteDevice(
-      test_devices_[0].GetDeviceId(),
-      ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->UnregisterRemoteDevice(test_devices_[0].GetDeviceId(), request_id);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
        cryptauth::SecureChannel::Status::AUTHENTICATED,
@@ -868,7 +869,7 @@ TEST_F(BleConnectionManagerTest, TestSuccessfulConnection_SendAndReceive) {
 TEST_F(BleConnectionManagerTest,
        TestSuccessfulConnection_BackgroundAdvertisement) {
   ConnectSuccessfully(test_devices_[0], kBluetoothAddress1,
-                      ConnectionReason::TETHER_AVAILABILITY_REQUEST,
+                      base::UnguessableToken::Create(),
                       true /* is_background_advertisement */);
   used_background_advertisements_ = true;
 }
@@ -877,7 +878,8 @@ TEST_F(BleConnectionManagerTest,
 TEST_F(BleConnectionManagerTest,
        TestSuccessfulConnection_MultipleAdvertisementsReceived) {
   manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+                                 base::UnguessableToken::Create(),
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
   VerifyAdvertisingTimeoutSet(test_devices_[0]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
@@ -908,25 +910,26 @@ TEST_F(BleConnectionManagerTest,
 
 TEST_F(BleConnectionManagerTest,
        TestSuccessfulConnection_MultipleConnectionReasons) {
-  ConnectSuccessfully(test_devices_[0], kBluetoothAddress1,
-                      ConnectionReason::TETHER_AVAILABILITY_REQUEST,
+  base::UnguessableToken request_id_1 = base::UnguessableToken::Create();
+  base::UnguessableToken request_id_2 = base::UnguessableToken::Create();
+
+  ConnectSuccessfully(test_devices_[0], kBluetoothAddress1, request_id_1,
                       false /* is_background_advertisement */);
 
   // Now, register a different connection reason.
-  manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(),
-                                 ConnectionReason::CONNECT_TETHERING_REQUEST);
+  manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(), request_id_2,
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
 
   // Unregister the |TETHER_AVAILABILITY_REQUEST| reason, but leave the
   // |CONNECT_TETHERING_REQUEST| registered.
-  manager_->UnregisterRemoteDevice(
-      test_devices_[0].GetDeviceId(),
-      ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->UnregisterRemoteDevice(test_devices_[0].GetDeviceId(),
+                                   request_id_1);
   VerifyDeviceRegistered(test_devices_[0]);
 
   // Now, unregister the other reason; this should cause the device to be
   // fully unregistered.
   manager_->UnregisterRemoteDevice(test_devices_[0].GetDeviceId(),
-                                   ConnectionReason::CONNECT_TETHERING_REQUEST);
+                                   request_id_2);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
        cryptauth::SecureChannel::Status::AUTHENTICATED,
@@ -945,14 +948,15 @@ TEST_F(BleConnectionManagerTest,
 }
 
 TEST_F(BleConnectionManagerTest, TestGetStatusForDevice) {
+  base::UnguessableToken request_id = base::UnguessableToken::Create();
   cryptauth::SecureChannel::Status status;
 
   // Should return false when the device has not yet been registered at all.
   EXPECT_FALSE(
       manager_->GetStatusForDevice(test_devices_[0].GetDeviceId(), &status));
 
-  manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(), request_id,
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
   VerifyAdvertisingTimeoutSet(test_devices_[0]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
@@ -1007,9 +1011,7 @@ TEST_F(BleConnectionManagerTest, TestGetStatusForDevice) {
   EXPECT_EQ(cryptauth::SecureChannel::Status::AUTHENTICATED, status);
 
   // Now, unregister the device.
-  manager_->UnregisterRemoteDevice(
-      test_devices_[0].GetDeviceId(),
-      ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->UnregisterRemoteDevice(test_devices_[0].GetDeviceId(), request_id);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
        cryptauth::SecureChannel::Status::AUTHENTICATED,
@@ -1033,10 +1035,9 @@ TEST_F(BleConnectionManagerTest, TestGetStatusForDevice) {
 
 TEST_F(BleConnectionManagerTest,
        TestSuccessfulConnection_DisconnectsAfterConnection) {
-  FakeSecureChannel* channel =
-      ConnectSuccessfully(test_devices_[0], kBluetoothAddress1,
-                          ConnectionReason::TETHER_AVAILABILITY_REQUEST,
-                          false /* is_background_advertisement */);
+  FakeSecureChannel* channel = ConnectSuccessfully(
+      test_devices_[0], kBluetoothAddress1, base::UnguessableToken::Create(),
+      false /* is_background_advertisement */);
 
   channel->ChangeStatus(cryptauth::SecureChannel::Status::DISCONNECTED);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
@@ -1054,7 +1055,8 @@ TEST_F(BleConnectionManagerTest,
 TEST_F(BleConnectionManagerTest, TwoDevices_NeitherCanScan) {
   fake_ble_scanner_->set_should_fail_to_register(true);
   manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+                                 base::UnguessableToken::Create(),
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
   VerifyFailImmediatelyTimeoutSet(test_devices_[0]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
@@ -1063,7 +1065,8 @@ TEST_F(BleConnectionManagerTest, TwoDevices_NeitherCanScan) {
        BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE}});
 
   manager_->RegisterRemoteDevice(test_devices_[1].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+                                 base::UnguessableToken::Create(),
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
   VerifyFailImmediatelyTimeoutSet(test_devices_[1]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[1].GetDeviceId(),
@@ -1076,7 +1079,8 @@ TEST_F(BleConnectionManagerTest, TwoDevices_NeitherCanAdvertise) {
   fake_ble_advertiser_->set_should_fail_to_start_advertising(true);
 
   manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+                                 base::UnguessableToken::Create(),
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
   VerifyFailImmediatelyTimeoutSet(test_devices_[0]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
@@ -1085,7 +1089,8 @@ TEST_F(BleConnectionManagerTest, TwoDevices_NeitherCanAdvertise) {
        BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE}});
 
   manager_->RegisterRemoteDevice(test_devices_[1].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+                                 base::UnguessableToken::Create(),
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
   VerifyFailImmediatelyTimeoutSet(test_devices_[1]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[1].GetDeviceId(),
@@ -1096,9 +1101,12 @@ TEST_F(BleConnectionManagerTest, TwoDevices_NeitherCanAdvertise) {
 
 TEST_F(BleConnectionManagerTest,
        TwoDevices_RegisterWithNoConnection_TimerFires) {
+  base::UnguessableToken request_id_1 = base::UnguessableToken::Create();
+  base::UnguessableToken request_id_2 = base::UnguessableToken::Create();
+
   // Register device 0.
-  manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(), request_id_1,
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
   VerifyAdvertisingTimeoutSet(test_devices_[0]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
@@ -1107,8 +1115,8 @@ TEST_F(BleConnectionManagerTest,
        BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE}});
 
   // Register device 1.
-  manager_->RegisterRemoteDevice(test_devices_[1].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->RegisterRemoteDevice(test_devices_[1].GetDeviceId(), request_id_2,
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
   VerifyAdvertisingTimeoutSet(test_devices_[1]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[1].GetDeviceId(),
@@ -1143,9 +1151,8 @@ TEST_F(BleConnectionManagerTest,
        BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE}});
 
   // Unregister device 0.
-  manager_->UnregisterRemoteDevice(
-      test_devices_[0].GetDeviceId(),
-      ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->UnregisterRemoteDevice(test_devices_[0].GetDeviceId(),
+                                   request_id_1);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
        cryptauth::SecureChannel::Status::CONNECTING,
@@ -1154,9 +1161,8 @@ TEST_F(BleConnectionManagerTest,
            STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED}});
 
   // Unregister device 1.
-  manager_->UnregisterRemoteDevice(
-      test_devices_[1].GetDeviceId(),
-      ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->UnregisterRemoteDevice(test_devices_[1].GetDeviceId(),
+                                   request_id_2);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[1].GetDeviceId(),
        cryptauth::SecureChannel::Status::CONNECTING,
@@ -1166,14 +1172,16 @@ TEST_F(BleConnectionManagerTest,
 }
 
 TEST_F(BleConnectionManagerTest, TwoDevices_OneConnects) {
+  base::UnguessableToken request_id_1 = base::UnguessableToken::Create();
+  base::UnguessableToken request_id_2 = base::UnguessableToken::Create();
+
   // Successfully connect to device 0.
-  ConnectSuccessfully(test_devices_[0], kBluetoothAddress1,
-                      ConnectionReason::TETHER_AVAILABILITY_REQUEST,
+  ConnectSuccessfully(test_devices_[0], kBluetoothAddress1, request_id_1,
                       false /* is_background_advertisement */);
 
   // Register device 1.
-  manager_->RegisterRemoteDevice(test_devices_[1].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->RegisterRemoteDevice(test_devices_[1].GetDeviceId(), request_id_2,
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
   VerifyAdvertisingTimeoutSet(test_devices_[1]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[1].GetDeviceId(),
@@ -1195,9 +1203,8 @@ TEST_F(BleConnectionManagerTest, TwoDevices_OneConnects) {
        BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE}});
 
   // Unregister device 0.
-  manager_->UnregisterRemoteDevice(
-      test_devices_[0].GetDeviceId(),
-      ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->UnregisterRemoteDevice(test_devices_[0].GetDeviceId(),
+                                   request_id_1);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
        cryptauth::SecureChannel::Status::AUTHENTICATED,
@@ -1214,9 +1221,8 @@ TEST_F(BleConnectionManagerTest, TwoDevices_OneConnects) {
            STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED}});
 
   // Unregister device 1.
-  manager_->UnregisterRemoteDevice(
-      test_devices_[1].GetDeviceId(),
-      ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->UnregisterRemoteDevice(test_devices_[1].GetDeviceId(),
+                                   request_id_2);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[1].GetDeviceId(),
        cryptauth::SecureChannel::Status::CONNECTING,
@@ -1226,14 +1232,15 @@ TEST_F(BleConnectionManagerTest, TwoDevices_OneConnects) {
 }
 
 TEST_F(BleConnectionManagerTest, TwoDevices_BothConnectSendAndReceive) {
+  base::UnguessableToken request_id_1 = base::UnguessableToken::Create();
+  base::UnguessableToken request_id_2 = base::UnguessableToken::Create();
+
   FakeSecureChannel* channel0 =
-      ConnectSuccessfully(test_devices_[0], kBluetoothAddress1,
-                          ConnectionReason::TETHER_AVAILABILITY_REQUEST,
+      ConnectSuccessfully(test_devices_[0], kBluetoothAddress1, request_id_1,
                           false /* is_background_advertisement */);
 
   FakeSecureChannel* channel1 =
-      ConnectSuccessfully(test_devices_[1], kBluetoothAddress2,
-                          ConnectionReason::TETHER_AVAILABILITY_REQUEST,
+      ConnectSuccessfully(test_devices_[1], kBluetoothAddress2, request_id_2,
                           false /* is_background_advertisement */);
 
   int sequence_number =
@@ -1268,9 +1275,8 @@ TEST_F(BleConnectionManagerTest, TwoDevices_BothConnectSendAndReceive) {
   VerifyReceivedMessages(std::vector<ReceivedMessage>{
       {test_devices_[1].GetDeviceId(), "response2_device1"}});
 
-  manager_->UnregisterRemoteDevice(
-      test_devices_[0].GetDeviceId(),
-      ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->UnregisterRemoteDevice(test_devices_[0].GetDeviceId(),
+                                   request_id_1);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
        cryptauth::SecureChannel::Status::AUTHENTICATED,
@@ -1287,9 +1293,8 @@ TEST_F(BleConnectionManagerTest, TwoDevices_BothConnectSendAndReceive) {
        BleConnectionManager::StateChangeDetail::
            STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED}});
 
-  manager_->UnregisterRemoteDevice(
-      test_devices_[1].GetDeviceId(),
-      ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->UnregisterRemoteDevice(test_devices_[1].GetDeviceId(),
+                                   request_id_2);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[1].GetDeviceId(),
        cryptauth::SecureChannel::Status::AUTHENTICATED,
@@ -1308,16 +1313,21 @@ TEST_F(BleConnectionManagerTest, TwoDevices_BothConnectSendAndReceive) {
 }
 
 TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
+  base::UnguessableToken request_id_1 = base::UnguessableToken::Create();
+  base::UnguessableToken request_id_2 = base::UnguessableToken::Create();
+  base::UnguessableToken request_id_3 = base::UnguessableToken::Create();
+  base::UnguessableToken request_id_4 = base::UnguessableToken::Create();
+
   // Register all devices. Since the maximum number of simultaneous connection
   // attempts is 2, only devices 0 and 1 should actually start connecting.
-  manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
-  manager_->RegisterRemoteDevice(test_devices_[1].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
-  manager_->RegisterRemoteDevice(test_devices_[2].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
-  manager_->RegisterRemoteDevice(test_devices_[3].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(), request_id_1,
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
+  manager_->RegisterRemoteDevice(test_devices_[1].GetDeviceId(), request_id_2,
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
+  manager_->RegisterRemoteDevice(test_devices_[2].GetDeviceId(), request_id_3,
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
+  manager_->RegisterRemoteDevice(test_devices_[3].GetDeviceId(), request_id_4,
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
 
   // Devices 0 and 1 should be advertising; devices 2 and 3 should not be.
   VerifyAdvertisingTimeoutSet(test_devices_[0]);
@@ -1375,9 +1385,8 @@ TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
       {test_devices_[0].GetDeviceId(), "response1"}});
 
   // Now, device 0 is unregistered.
-  manager_->UnregisterRemoteDevice(
-      test_devices_[0].GetDeviceId(),
-      ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->UnregisterRemoteDevice(test_devices_[0].GetDeviceId(),
+                                   request_id_1);
   VerifyDeviceNotRegistered(test_devices_[0]);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
@@ -1433,17 +1442,14 @@ TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
 
   // Assume that none of the other devices can connect, and unregister the
   // remaining 3 devices.
-  manager_->UnregisterRemoteDevice(
-      test_devices_[3].GetDeviceId(),
-      ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->UnregisterRemoteDevice(test_devices_[3].GetDeviceId(),
+                                   request_id_4);
   VerifyDeviceNotRegistered(test_devices_[3]);
-  manager_->UnregisterRemoteDevice(
-      test_devices_[1].GetDeviceId(),
-      ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->UnregisterRemoteDevice(test_devices_[1].GetDeviceId(),
+                                   request_id_2);
   VerifyDeviceNotRegistered(test_devices_[1]);
-  manager_->UnregisterRemoteDevice(
-      test_devices_[2].GetDeviceId(),
-      ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->UnregisterRemoteDevice(test_devices_[2].GetDeviceId(),
+                                   request_id_3);
   VerifyDeviceNotRegistered(test_devices_[2]);
 
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
@@ -1484,17 +1490,16 @@ TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
 // pass the parameters from the ConnectionMetadata to BleConnectionManager by
 // value instead.
 TEST_F(BleConnectionManagerTest, ObserverUnregisters) {
+  base::UnguessableToken request_id = base::UnguessableToken::Create();
+
   FakeSecureChannel* channel =
-      ConnectSuccessfully(test_devices_[0], kBluetoothAddress1,
-                          ConnectionReason::TETHER_AVAILABILITY_REQUEST,
+      ConnectSuccessfully(test_devices_[0], kBluetoothAddress1, request_id,
                           false /* is_background_advertisement */);
 
   // Register two separate UnregisteringObservers. When a message is received,
   // the first observer will unregister the device.
-  UnregisteringObserver first(manager_.get(),
-                              ConnectionReason::TETHER_AVAILABILITY_REQUEST);
-  UnregisteringObserver second(manager_.get(),
-                               ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  UnregisteringObserver first(manager_.get(), request_id);
+  UnregisteringObserver second(manager_.get(), request_id);
   manager_->AddObserver(&first);
   manager_->AddObserver(&second);
 
@@ -1525,8 +1530,8 @@ TEST_F(BleConnectionManagerTest, ObserverUnregisters) {
   // connecting" status change. This time, the multiple observers will respond
   // to a status change event instead of a message received event. This also
   // would have caused a crash before the fix for crbug.com/733360.
-  manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(),
-                                 ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+  manager_->RegisterRemoteDevice(test_devices_[0].GetDeviceId(), request_id,
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW);
 
   // We expect the device to be unregistered (by the observer).
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{

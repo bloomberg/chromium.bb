@@ -8,7 +8,6 @@
 #include <set>
 
 #include "chromeos/components/proximity_auth/logging/logging.h"
-#include "chromeos/components/tether/connection_reason.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/timer_factory.h"
 
@@ -44,9 +43,12 @@ const uint32_t MessageTransferOperation::kMaxGattConnectionAttemptsPerDevice =
 
 MessageTransferOperation::MessageTransferOperation(
     const cryptauth::RemoteDeviceRefList& devices_to_connect,
+    ConnectionPriority connection_priority,
     BleConnectionManager* connection_manager)
     : remote_devices_(RemoveDuplicatesFromVector(devices_to_connect)),
       connection_manager_(connection_manager),
+      connection_priority_(connection_priority),
+      request_id_(base::UnguessableToken::Create()),
       timer_factory_(std::make_unique<TimerFactory>()),
       weak_ptr_factory_(this) {}
 
@@ -86,8 +88,7 @@ void MessageTransferOperation::Initialize() {
 
   for (const auto& remote_device : remote_devices_) {
     connection_manager_->RegisterRemoteDevice(
-        remote_device.GetDeviceId(),
-        MessageTypeToConnectionReason(message_type_for_connection_));
+        remote_device.GetDeviceId(), request_id_, connection_priority_);
 
     cryptauth::SecureChannel::Status status;
     if (connection_manager_->GetStatusForDevice(remote_device.GetDeviceId(),
@@ -165,9 +166,8 @@ void MessageTransferOperation::UnregisterDevice(
                         remote_devices_.end());
   StopTimerForDeviceIfRunning(remote_device_copy);
 
-  connection_manager_->UnregisterRemoteDevice(
-      remote_device_copy.GetDeviceId(),
-      MessageTypeToConnectionReason(message_type_for_connection_));
+  connection_manager_->UnregisterRemoteDevice(remote_device_copy.GetDeviceId(),
+                                              request_id_);
 
   if (!shutting_down_ && remote_devices_.empty())
     OnOperationFinished();

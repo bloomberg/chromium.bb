@@ -52,6 +52,7 @@ DisconnectTetheringOperation::DisconnectTetheringOperation(
     BleConnectionManager* connection_manager)
     : MessageTransferOperation(
           cryptauth::RemoteDeviceRefList{device_to_connect},
+          ConnectionPriority::CONNECTION_PRIORITY_HIGH,
           connection_manager),
       remote_device_(device_to_connect),
       has_sent_message_(false),
