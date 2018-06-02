@@ -867,10 +867,8 @@ bool operator!=(const StackSamplingProfiler::Sample& a,
 
 bool operator<(const StackSamplingProfiler::Sample& a,
                const StackSamplingProfiler::Sample& b) {
-  if (a.process_milestones < b.process_milestones)
-    return true;
-  if (a.process_milestones > b.process_milestones)
-    return false;
+  if (a.process_milestones != b.process_milestones)
+    return a.process_milestones < b.process_milestones;
 
   return a.frames < b.frames;
 }
