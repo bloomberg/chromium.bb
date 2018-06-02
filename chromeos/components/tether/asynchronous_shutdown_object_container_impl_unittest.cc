@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/components/tether/fake_ad_hoc_ble_advertiser.h"
 #include "chromeos/components/tether/fake_ble_advertiser.h"
 #include "chromeos/components/tether/fake_ble_scanner.h"
 #include "chromeos/components/tether/fake_disconnect_tethering_request_sender.h"
@@ -93,13 +92,11 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
         new FakeBleScanner(false /* automatically_update_discovery_session */);
     fake_disconnect_tethering_request_sender_ =
         new FakeDisconnectTetheringRequestSender();
-    fake_ad_hoc_ble_advertisement_ = new FakeAdHocBleAdvertiser();
 
     container_->SetTestDoubles(
         base::WrapUnique(fake_ble_advertiser_),
         base::WrapUnique(fake_ble_scanner_),
-        base::WrapUnique(fake_disconnect_tethering_request_sender_),
-        base::WrapUnique(fake_ad_hoc_ble_advertisement_));
+        base::WrapUnique(fake_disconnect_tethering_request_sender_));
   }
 
   bool MockIsAdapterPowered() { return is_adapter_powered_; }
@@ -125,7 +122,6 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
   FakeBleScanner* fake_ble_scanner_;
   FakeDisconnectTetheringRequestSender*
       fake_disconnect_tethering_request_sender_;
-  FakeAdHocBleAdvertiser* fake_ad_hoc_ble_advertisement_;
 
   bool was_shutdown_callback_invoked_;
   bool is_adapter_powered_;
@@ -197,23 +193,6 @@ TEST_F(AsynchronousShutdownObjectContainerImplTest,
 }
 
 TEST_F(AsynchronousShutdownObjectContainerImplTest,
-       TestShutdown_AsyncAdHocBleAdvertiserShutdown) {
-  fake_ad_hoc_ble_advertisement_->set_has_pending_requests(true);
-  EXPECT_TRUE(fake_ad_hoc_ble_advertisement_->HasPendingRequests());
-
-  // Start the shutdown; it should not yet succeed since there are pending
-  // requests.
-  CallShutdown();
-  EXPECT_FALSE(was_shutdown_callback_invoked_);
-
-  // Now, finish the pending requests; this should cause the shutdown to
-  // complete.
-  fake_ad_hoc_ble_advertisement_->set_has_pending_requests(false);
-  fake_ad_hoc_ble_advertisement_->NotifyAsynchronousShutdownComplete();
-  EXPECT_TRUE(was_shutdown_callback_invoked_);
-}
-
-TEST_F(AsynchronousShutdownObjectContainerImplTest,
        TestShutdown_MultipleSimultaneousAsyncShutdowns) {
   fake_ble_advertiser_->set_are_advertisements_registered(true);
   EXPECT_TRUE(fake_ble_advertiser_->AreAdvertisementsRegistered());
@@ -225,9 +204,6 @@ TEST_F(AsynchronousShutdownObjectContainerImplTest,
   fake_disconnect_tethering_request_sender_->set_has_pending_requests(true);
   EXPECT_TRUE(fake_disconnect_tethering_request_sender_->HasPendingRequests());
 
-  fake_ad_hoc_ble_advertisement_->set_has_pending_requests(true);
-  EXPECT_TRUE(fake_ad_hoc_ble_advertisement_->HasPendingRequests());
-
   // Start the shutdown; it should not yet succeed since there are pending
   // requests.
   CallShutdown();
@@ -238,12 +214,6 @@ TEST_F(AsynchronousShutdownObjectContainerImplTest,
   // requests.
   fake_ble_advertiser_->set_are_advertisements_registered(false);
   fake_ble_advertiser_->NotifyAllAdvertisementsUnregistered();
-  EXPECT_FALSE(was_shutdown_callback_invoked_);
-
-  // Now, finish GATT services workaround shutdown; this should not cause the
-  // shutdown to complete since there are still pending requests
-  fake_ad_hoc_ble_advertisement_->set_has_pending_requests(false);
-  fake_ad_hoc_ble_advertisement_->NotifyAsynchronousShutdownComplete();
   EXPECT_FALSE(was_shutdown_callback_invoked_);
 
   // Now, remove the discovery session; this should not cause the shutdown to

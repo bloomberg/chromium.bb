@@ -44,13 +44,6 @@ void FakeSecureChannel::CompleteSendingMessage(int sequence_number) {
     observer->OnMessageSent(this, sequence_number);
 }
 
-void FakeSecureChannel::NotifyGattCharacteristicsNotAvailable() {
-  // Copy to prevent channel from being removed during handler.
-  std::vector<Observer*> observers_copy = observers_;
-  for (auto* observer : observers_copy)
-    observer->OnGattCharacteristicsNotAvailable();
-}
-
 void FakeSecureChannel::Initialize() {
   ChangeStatus(Status::CONNECTING);
 }
