@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -187,8 +188,9 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
 
 TEST_F(SubresourceFilterComponentInstallerTest,
        TestComponentRegistrationWhenFeatureDisabled) {
-  subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
-      scoped_feature(base::FeatureList::OVERRIDE_DISABLE_FEATURE);
+  base::test::ScopedFeatureList scoped_disable;
+  scoped_disable.InitAndDisableFeature(
+      subresource_filter::kSafeBrowsingSubresourceFilter);
   std::unique_ptr<SubresourceFilterMockComponentUpdateService>
       component_updater(new SubresourceFilterMockComponentUpdateService());
   EXPECT_CALL(*component_updater, RegisterComponent(testing::_)).Times(0);
@@ -198,8 +200,9 @@ TEST_F(SubresourceFilterComponentInstallerTest,
 
 TEST_F(SubresourceFilterComponentInstallerTest,
        TestComponentRegistrationWhenFeatureEnabled) {
-  subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
-      scoped_feature(base::FeatureList::OVERRIDE_ENABLE_FEATURE);
+  base::test::ScopedFeatureList scoped_enable;
+  scoped_enable.InitAndEnableFeature(
+      subresource_filter::kSafeBrowsingSubresourceFilter);
   std::unique_ptr<SubresourceFilterMockComponentUpdateService>
       component_updater(new SubresourceFilterMockComponentUpdateService());
   EXPECT_CALL(*component_updater, RegisterComponent(testing::_))
