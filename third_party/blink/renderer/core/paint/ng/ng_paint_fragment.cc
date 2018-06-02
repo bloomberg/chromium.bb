@@ -169,12 +169,12 @@ bool NGPaintFragment::ShouldClipOverflow() const {
          ToNGPhysicalBoxFragment(*physical_fragment_).ShouldClipOverflow();
 }
 
-LayoutRect NGPaintFragment::VisualOverflowRect() const {
-  return physical_fragment_->VisualRectWithContents().ToLayoutRect();
+LayoutRect NGPaintFragment::SelfInkOverflow() const {
+  return physical_fragment_->InkOverflow().ToLayoutRect();
 }
 
-LayoutRect NGPaintFragment::VisualContentsRect() const {
-  return physical_fragment_->VisualRectWithContents(false).ToLayoutRect();
+LayoutRect NGPaintFragment::ChildrenInkOverflow() const {
+  return physical_fragment_->InkOverflow(false).ToLayoutRect();
 }
 
 // Populate descendants from NGPhysicalFragment tree.
@@ -271,7 +271,7 @@ bool NGPaintFragment::FlippedLocalVisualRectFor(
 
   for (NGPaintFragment* fragment : fragments) {
     NGPhysicalOffsetRect child_visual_rect =
-        fragment->PhysicalFragment().SelfVisualRect();
+        fragment->PhysicalFragment().SelfInkOverflow();
     child_visual_rect.offset += fragment->InlineOffsetToContainerBox();
     visual_rect->Unite(child_visual_rect.ToLayoutRect());
   }

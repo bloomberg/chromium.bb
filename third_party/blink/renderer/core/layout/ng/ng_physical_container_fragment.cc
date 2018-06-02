@@ -14,7 +14,7 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     NGFragmentType type,
     unsigned sub_type,
     Vector<scoped_refptr<NGPhysicalFragment>>& children,
-    const NGPhysicalOffsetRect& contents_visual_rect,
+    const NGPhysicalOffsetRect& contents_ink_overflow,
     scoped_refptr<NGBreakToken> break_token)
     : NGPhysicalFragment(layout_object,
                          style,
@@ -24,7 +24,7 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
                          sub_type,
                          std::move(break_token)),
       children_(std::move(children)),
-      contents_visual_rect_(contents_visual_rect) {
+      contents_ink_overflow_(contents_ink_overflow) {
   DCHECK(children.IsEmpty());  // Ensure move semantics is used.
 }
 

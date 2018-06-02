@@ -76,13 +76,13 @@ void LayoutNGMixin<Base>::AddOverflowFromChildren() {
     if (const NGPhysicalBoxFragment* physical_fragment = CurrentFragment()) {
       AddScrollingOverflowFromChildren();
       Base::AddSelfVisualOverflow(
-          physical_fragment->SelfVisualRect().ToLayoutFlippedRect(
+          physical_fragment->SelfInkOverflow().ToLayoutFlippedRect(
               physical_fragment->Style(), physical_fragment->Size()));
       // TODO(kojii): If |RecalcOverflowAfterStyleChange()|, we need to
       // re-compute glyph bounding box. How to detect it and how to re-compute
       // is TBD.
       Base::AddContentsVisualOverflow(
-          physical_fragment->ContentsVisualRect().ToLayoutFlippedRect(
+          physical_fragment->ContentsInkOverflow().ToLayoutFlippedRect(
               physical_fragment->Style(), physical_fragment->Size()));
       // TODO(kojii): The above code computes visual overflow only, we fallback
       // to LayoutBlock for AddLayoutOverflow() for now. It doesn't compute

@@ -433,8 +433,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, PositionFloatsWithMargins) {
   EXPECT_EQ(LayoutUnit(53), span->OffsetLeft());
 }
 
-// Test glyph bounding box causes visual overflow.
-TEST_F(NGInlineLayoutAlgorithmTest, VisualRect) {
+// Test glyph bounding box causes ink overflow.
+TEST_F(NGInlineLayoutAlgorithmTest, InkOverflow) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -452,9 +452,9 @@ TEST_F(NGInlineLayoutAlgorithmTest, VisualRect) {
 
   EXPECT_EQ(LayoutUnit(10), box_fragment->Size().height);
 
-  NGPhysicalOffsetRect visual_rect = box_fragment->ContentsVisualRect();
-  EXPECT_EQ(LayoutUnit(-5), visual_rect.offset.top);
-  EXPECT_EQ(LayoutUnit(20), visual_rect.size.height);
+  NGPhysicalOffsetRect ink_overflow = box_fragment->ContentsInkOverflow();
+  EXPECT_EQ(LayoutUnit(-5), ink_overflow.offset.top);
+  EXPECT_EQ(LayoutUnit(20), ink_overflow.size.height);
 }
 
 TEST_F(NGInlineLayoutAlgorithmTest,

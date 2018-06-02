@@ -42,7 +42,7 @@ are treated in different ways during painting:
         elements because `z-index:auto` and `z-index:0` are considered equal for
         stacking context sorting and they may interleave by DOM order.
 
-        The difference of a stacked element of this type from a real stacking 
+        The difference of a stacked element of this type from a real stacking
         context is that it doesn't manage z-ordering of stacked descendants.
         These descendants are managed by the parent stacking context of this
         stacked element.
@@ -528,3 +528,25 @@ needs all paint phases that its container self-painting layer needs.
 We could update the `NeedsPaintPhaseXXX` flags in a separate tree walk, but that
 would regress performance of the first paint. For slimming paint v2, we can
 update the flags during the pre-painting tree walk to simplify the logics.
+
+### PaintNG
+
+[LayoutNG](../layout/ng/README.md]) is a project that will change how Layout
+generates geometry/style information for painting. Instead of modifying
+LayoutObjects, LayoutNG will generate an NGFragment tree.
+
+NGPaintFragments are:
+* immutable
+* all coordinates are physical. See
+[layout_box_model_object.h](../layout/layout_box_model_object.h).
+* instead of Location(), NGFragment has Offset(), a physical offset from parent
+fragment.
+
+The goal is for PaintNG to eventually paint from NGFragment tree,
+and not see LayoutObjects at all. Until this goal is reached,
+LegacyPaint, and NGPaint will coexist.
+
+When a particular LayoutObject subclass fully migrates to NG, its LayoutObject
+geometry information might no longer be updated\(\*\), and its
+painter needs to be rewritten to paint NGFragments.
+For example, see how BlockPainter is being rewritten as NGBoxFragmentPainter.

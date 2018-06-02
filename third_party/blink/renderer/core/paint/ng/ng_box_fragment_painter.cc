@@ -256,7 +256,7 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
 
   DCHECK(PhysicalFragment().ChildrenInline());
 
-  LayoutRect overflow_rect(box_fragment_.VisualContentsRect());
+  LayoutRect overflow_rect(box_fragment_.ChildrenInkOverflow());
   overflow_rect.MoveBy(paint_offset);
   if (!paint_info.GetCullRect().IntersectsCullRect(overflow_rect))
     return;
@@ -732,7 +732,7 @@ bool NGBoxFragmentPainter::IntersectsPaintRect(
     const LayoutPoint& adjusted_paint_offset) const {
   // TODO(layout-dev): Add support for scrolling, see
   // BlockPainter::IntersectsPaintRect.
-  LayoutRect overflow_rect(box_fragment_.VisualOverflowRect());
+  LayoutRect overflow_rect(box_fragment_.SelfInkOverflow());
   overflow_rect.MoveBy(adjusted_paint_offset);
   return paint_info.GetCullRect().IntersectsCullRect(overflow_rect);
 }

@@ -132,13 +132,13 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   WritingMode writing_mode(node_.Style().GetWritingMode());
   NGPhysicalSize physical_size = Size().ConvertToPhysical(writing_mode);
 
-  NGPhysicalOffsetRect contents_visual_rect({}, physical_size);
+  NGPhysicalOffsetRect contents_ink_overflow({}, physical_size);
   NGPhysicalOffsetRect scrollable_overflow({}, physical_size);
   for (size_t i = 0; i < children_.size(); ++i) {
     NGPhysicalFragment* child = children_[i].get();
     child->SetOffset(offsets_[i].ConvertToPhysical(
         writing_mode, Direction(), physical_size, child->Size()));
-    child->PropagateContentsVisualRect(&contents_visual_rect);
+    child->PropagateContentsInkOverflow(&contents_ink_overflow);
     NGPhysicalOffsetRect child_scroll_overflow = child->ScrollableOverflow();
     child_scroll_overflow.offset += child->Offset();
     scrollable_overflow.Unite(child_scroll_overflow);
@@ -147,7 +147,7 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   scoped_refptr<NGPhysicalLineBoxFragment> fragment =
       base::AdoptRef(new NGPhysicalLineBoxFragment(
           Style(), style_variant_, physical_size, children_,
-          contents_visual_rect, scrollable_overflow, metrics_, base_direction_,
+          contents_ink_overflow, scrollable_overflow, metrics_, base_direction_,
           break_token_ ? std::move(break_token_)
                        : NGInlineBreakToken::Create(node_)));
 
