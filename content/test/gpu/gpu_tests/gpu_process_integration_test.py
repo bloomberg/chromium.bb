@@ -224,9 +224,9 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     self.RestartBrowserIfNecessaryWithArgs([])
     self._NavigateAndWait(test_path)
     tab = self.tab
-    if not tab.browser.supports_system_info:
-      self.fail('Browser must support system info')
     system_info = tab.browser.GetSystemInfo()
+    if not system_info:
+      self.fail('Browser must support system info')
     if not system_info.gpu:
       self.fail('Target machine must have a GPU')
     if not system_info.gpu.aux_attributes:
@@ -410,9 +410,10 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       if 'SwiftShader' not in renderer:
         self.fail('Expected SwiftShader renderer; instead got ' + renderer)
       # Validate GPU info.
-      if not self.browser.supports_system_info:
+      system_info = self.browser.GetSystemInfo()
+      if not system_info:
         self.fail("Browser doesn't support GetSystemInfo")
-      gpu = self.browser.GetSystemInfo().gpu
+      gpu = system_info.gpu
       if not gpu:
         self.fail('Target machine must have a GPU')
       if not gpu.aux_attributes:

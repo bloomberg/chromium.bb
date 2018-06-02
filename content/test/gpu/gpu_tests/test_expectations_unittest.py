@@ -22,10 +22,6 @@ class StubBrowser(object):
     self.platform = platform
     self.browser_type = browser_type
 
-  @property
-  def supports_system_info(self):
-    return False
-
 
 class SampleExpectationSubclass(test_expectations.Expectation):
   def __init__(self, expectation, pattern, conditions=None, bug=None):

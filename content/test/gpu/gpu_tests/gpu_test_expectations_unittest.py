@@ -45,10 +45,6 @@ class StubBrowser(object):
       }
     self.system_info = system_info.SystemInfo.FromDict(sys_info)
 
-  @property
-  def supports_system_info(self):
-    return False if not self.system_info else True
-
   def GetSystemInfo(self):
     return self.system_info
 
