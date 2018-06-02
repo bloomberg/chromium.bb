@@ -31,6 +31,8 @@ class AwFieldTrialCreator {
   void SetUpFieldTrials();
 
  private:
+  void DoSetUpFieldTrials();
+
   // A/B testing infrastructure for the entire application. empty until
   // |SetupFieldTrials()| is called.
   std::unique_ptr<base::FieldTrialList> field_trial_list_;

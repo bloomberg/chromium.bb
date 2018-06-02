@@ -11,6 +11,7 @@
 
 #include "android_webview/browser/aw_metrics_service_client.h"
 #include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
@@ -69,6 +70,22 @@ std::unique_ptr<PrefService> AwFieldTrialCreator::CreateLocalState() {
 }
 
 void AwFieldTrialCreator::SetUpFieldTrials() {
+  DoSetUpFieldTrials();
+
+  // If DoSetUpFieldTrials failed, it might have skipped creating
+  // FeatureList. If so, create a FeatureList without field trials.
+  if (!base::FeatureList::GetInstance()) {
+    const base::CommandLine* command_line =
+        base::CommandLine::ForCurrentProcess();
+    auto feature_list = std::make_unique<base::FeatureList>();
+    feature_list->InitializeFromCommandLine(
+        command_line->GetSwitchValueASCII(switches::kEnableFeatures),
+        command_line->GetSwitchValueASCII(switches::kDisableFeatures));
+    base::FeatureList::SetInstance(std::move(feature_list));
+  }
+}
+
+void AwFieldTrialCreator::DoSetUpFieldTrials() {
   // If the client ID isn't available yet, don't delay startup by creating it.
   // Instead, variations will be disabled for this run.
   std::string client_id;
