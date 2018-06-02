@@ -606,7 +606,8 @@ def LoadAndPostProcessSizeInfo(path):
   return size_info
 
 
-def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory):
+def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory,
+                   linker_name):
   metadata = None
   if elf_path:
     logging.debug('Constructing metadata')
@@ -623,6 +624,7 @@ def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory):
         models.METADATA_ELF_ARCHITECTURE: architecture,
         models.METADATA_ELF_MTIME: timestamp,
         models.METADATA_ELF_BUILD_ID: build_id,
+        models.METADATA_LINKER_NAME: linker_name,
         models.METADATA_TOOL_PREFIX: relative_tool_prefix,
     }
 
@@ -1337,18 +1339,18 @@ def DeduceMainPaths(args, parser):
   if not args.no_source_paths:
     output_directory = output_directory_finder.Finalized()
   return (output_directory, tool_prefix, apk_path, apk_so_path, elf_path,
-          map_path)
+          map_path, linker_name)
 
 
 def Run(args, parser):
   if not args.size_file.endswith('.size'):
     parser.error('size_file must end with .size')
 
-  (output_directory, tool_prefix, apk_path, apk_so_path, elf_path, map_path) = (
-      DeduceMainPaths(args, parser))
+  (output_directory, tool_prefix, apk_path, apk_so_path, elf_path, map_path,
+       linker_name) = (DeduceMainPaths(args, parser))
 
   metadata = CreateMetadata(map_path, elf_path, apk_path, tool_prefix,
-                            output_directory)
+                            output_directory, linker_name)
 
   section_sizes, raw_symbols = CreateSectionSizesAndSymbols(
       map_path=map_path, tool_prefix=tool_prefix, elf_path=elf_path,

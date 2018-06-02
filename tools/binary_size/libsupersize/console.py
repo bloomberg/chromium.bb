@@ -304,9 +304,11 @@ class _Session(object):
         size_info, tool_prefix, elf_path)
 
     args = [path_util.GetObjDumpPath(tool_prefix), '--disassemble', '--source',
-            '--line-numbers', '--demangle',
-            '--start-address=0x%x' % symbol.address,
+            '--line-numbers', '--start-address=0x%x' % symbol.address,
             '--stop-address=0x%x' % symbol.end_address, elf_path]
+    # llvm-objdump does not support '--demangle' switch.
+    if not self._tool_prefix_finder.IsLld():
+      args.append('--demangle')
     if self._disassemble_prefix_len is None:
       prefix_len = self._DetectDisassemblePrefixLen(args)
       if prefix_len is not None:
@@ -469,9 +471,11 @@ def Run(args, parser):
   output_directory_finder = path_util.OutputDirectoryFinder(
       value=args.output_directory,
       any_path_within_output_directory=args.inputs[0])
+  linker_name = size_infos[-1].metadata.get(models.METADATA_LINKER_NAME)
   tool_prefix_finder = path_util.ToolPrefixFinder(
       value=args.tool_prefix,
-      output_directory_finder=output_directory_finder)
+      output_directory_finder=output_directory_finder,
+      linker_name=linker_name)
   session = _Session(size_infos, output_directory_finder, tool_prefix_finder)
 
   if args.query:
