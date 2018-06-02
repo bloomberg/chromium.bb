@@ -14,36 +14,6 @@
 
 namespace media_router {
 
-namespace {
-
-UIMediaSink ConvertToUISink(const MediaSinkWithCastModes& sink,
-                            const MediaRoute* route) {
-  UIMediaSink ui_sink;
-  ui_sink.id = sink.sink.id();
-  ui_sink.friendly_name = base::UTF8ToUTF16(sink.sink.name());
-  ui_sink.icon_type = sink.sink.icon_type();
-
-  if (route) {
-    ui_sink.status_text = base::UTF8ToUTF16(route->description());
-    ui_sink.route_id = route->media_route_id();
-    ui_sink.state = UIMediaSinkState::CONNECTED;
-    ui_sink.allowed_actions = static_cast<int>(UICastAction::STOP);
-  } else {
-    ui_sink.state = UIMediaSinkState::AVAILABLE;
-    if (base::ContainsKey(sink.cast_modes, PRESENTATION) ||
-        base::ContainsKey(sink.cast_modes, TAB_MIRROR)) {
-      ui_sink.allowed_actions |= static_cast<int>(UICastAction::CAST_TAB);
-    }
-    if (base::ContainsKey(sink.cast_modes, DESKTOP_MIRROR))
-      ui_sink.allowed_actions |= static_cast<int>(UICastAction::CAST_DESKTOP);
-    // TODO(takumif): Add support for local media casting.
-  }
-  DCHECK(ui_sink.allowed_actions);
-  return ui_sink;
-}
-
-}  // namespace
-
 MediaRouterViewsUI::MediaRouterViewsUI() = default;
 
 MediaRouterViewsUI::~MediaRouterViewsUI() {
@@ -64,6 +34,7 @@ void MediaRouterViewsUI::RemoveObserver(
 void MediaRouterViewsUI::StartCasting(const std::string& sink_id,
                                       MediaCastMode cast_mode) {
   CreateRoute(sink_id, cast_mode);
+  UpdateSinks();
 }
 
 void MediaRouterViewsUI::StopCasting(const std::string& route_id) {
@@ -104,6 +75,36 @@ void MediaRouterViewsUI::UpdateSinks() {
   }
   for (CastDialogController::Observer& observer : observers_)
     observer.OnModelUpdated(model_);
+}
+
+UIMediaSink MediaRouterViewsUI::ConvertToUISink(
+    const MediaSinkWithCastModes& sink,
+    const MediaRoute* route) {
+  UIMediaSink ui_sink;
+  ui_sink.id = sink.sink.id();
+  ui_sink.friendly_name = base::UTF8ToUTF16(sink.sink.name());
+  ui_sink.icon_type = sink.sink.icon_type();
+
+  if (route) {
+    ui_sink.status_text = base::UTF8ToUTF16(route->description());
+    ui_sink.route_id = route->media_route_id();
+    ui_sink.state = UIMediaSinkState::CONNECTED;
+    ui_sink.allowed_actions = static_cast<int>(UICastAction::STOP);
+  } else {
+    ui_sink.state = current_route_request() &&
+                            sink.sink.id() == current_route_request()->sink_id
+                        ? UIMediaSinkState::CONNECTING
+                        : UIMediaSinkState::AVAILABLE;
+    if (base::ContainsKey(sink.cast_modes, PRESENTATION) ||
+        base::ContainsKey(sink.cast_modes, TAB_MIRROR)) {
+      ui_sink.allowed_actions |= static_cast<int>(UICastAction::CAST_TAB);
+    }
+    if (base::ContainsKey(sink.cast_modes, DESKTOP_MIRROR))
+      ui_sink.allowed_actions |= static_cast<int>(UICastAction::CAST_DESKTOP);
+    // TODO(takumif): Add support for local media casting.
+  }
+  DCHECK(ui_sink.allowed_actions);
+  return ui_sink;
 }
 
 }  // namespace media_router

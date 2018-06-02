@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/atomic_sequence_num.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -60,10 +61,7 @@ MediaSource GetSourceForRouteObserver(const std::vector<MediaSource>& sources) {
 }  // namespace
 
 MediaRouterUIBase::MediaRouterUIBase()
-    : current_route_request_id_(-1),
-      route_request_counter_(0),
-      initiator_(nullptr),
-      weak_factory_(this) {}
+    : initiator_(nullptr), weak_factory_(this) {}
 
 MediaRouterUIBase::~MediaRouterUIBase() {
   if (query_result_manager_.get())
@@ -194,6 +192,14 @@ std::string MediaRouterUIBase::GetTruncatedPresentationRequestSourceName()
              : TruncateHost(GetHostFromURL(gurl));
 }
 
+MediaRouterUIBase::RouteRequest::RouteRequest(const MediaSink::Id& sink_id)
+    : sink_id(sink_id) {
+  static base::AtomicSequenceNumber g_next_request_id;
+  id = g_next_request_id.GetNext();
+}
+
+MediaRouterUIBase::RouteRequest::~RouteRequest() = default;
+
 std::vector<MediaSource> MediaRouterUIBase::GetSourcesForCastMode(
     MediaCastMode cast_mode) const {
   return query_result_manager_->GetSourcesForCastMode(cast_mode);
@@ -242,7 +248,7 @@ void MediaRouterUIBase::OnRouteResponseReceived(
     const RouteRequestResult& result) {
   DVLOG(1) << "OnRouteResponseReceived";
   // If we receive a new route that we aren't expecting, do nothing.
-  if (route_request_id != current_route_request_id_)
+  if (!current_route_request_ || route_request_id != current_route_request_->id)
     return;
 
   const MediaRoute* route = result.route();
@@ -251,7 +257,7 @@ void MediaRouterUIBase::OnRouteResponseReceived(
     DVLOG(1) << "MediaRouteResponse returned error: " << result.error();
   }
 
-  current_route_request_id_ = -1;
+  current_route_request_.reset();
 }
 
 void MediaRouterUIBase::HandleCreateSessionRequestRouteResponse(
@@ -370,7 +376,7 @@ base::Optional<RouteParameters> MediaRouterUIBase::GetRouteParameters(
     return base::nullopt;
   }
 
-  current_route_request_id_ = ++route_request_counter_;
+  current_route_request_ = base::make_optional<RouteRequest>(sink_id);
   params.origin = for_presentation_source ? presentation_request_->frame_origin
                                           : url::Origin::Create(GURL());
   DVLOG(1) << "DoCreateRoute: origin: " << params.origin;
@@ -389,7 +395,7 @@ base::Optional<RouteParameters> MediaRouterUIBase::GetRouteParameters(
   if (!for_presentation_source || !start_presentation_context_) {
     params.route_response_callbacks.push_back(base::BindOnce(
         &MediaRouterUIBase::OnRouteResponseReceived, weak_factory_.GetWeakPtr(),
-        current_route_request_id_, sink_id, cast_mode,
+        current_route_request_->id, sink_id, cast_mode,
         base::UTF8ToUTF16(GetTruncatedPresentationRequestSourceName())));
   }
   if (for_presentation_source) {
@@ -433,7 +439,7 @@ MediaRouterUIBase::UIMediaRoutesObserver::UIMediaRoutesObserver(
   DCHECK(!callback_.is_null());
 }
 
-MediaRouterUIBase::UIMediaRoutesObserver::~UIMediaRoutesObserver() {}
+MediaRouterUIBase::UIMediaRoutesObserver::~UIMediaRoutesObserver() = default;
 
 void MediaRouterUIBase::UIMediaRoutesObserver::OnRoutesUpdated(
     const std::vector<MediaRoute>& routes,

@@ -80,7 +80,7 @@ class MediaRouterUI
   // Returns the hostname of the PresentationRequest's parent frame URL.
   virtual std::string GetPresentationRequestSourceName() const;
   bool HasPendingRouteRequest() const {
-    return current_route_request_id() != -1;
+    return current_route_request().has_value();
   }
   const std::vector<MediaRoute::Id>& joinable_route_ids() const {
     return joinable_route_ids_;
