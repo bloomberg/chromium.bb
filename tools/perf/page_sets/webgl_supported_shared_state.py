@@ -16,8 +16,9 @@ class WebGLSupportedSharedState(shared_page_state.SharedPageState):
     # Check the skipped GPUs list.
     # Requires the page provide a "skipped_gpus" property.
     browser = browser_info.browser
-    if browser.supports_system_info:
-      gpu_info = browser.GetSystemInfo().gpu
+    system_info = browser.GetSystemInfo()
+    if system_info:
+      gpu_info = system_info.gpu
       gpu_vendor = self._GetGpuVendorString(gpu_info)
       if gpu_vendor in page.skipped_gpus:
         return False

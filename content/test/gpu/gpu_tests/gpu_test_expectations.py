@@ -114,8 +114,7 @@ class GpuTestExpectations(test_expectations.TestExpectations):
       self._cached_system_info = None
 
     if self._cached_system_info is None:
-      if browser.supports_system_info:
-        self._cached_system_info = browser.GetSystemInfo()
+      self._cached_system_info = browser.GetSystemInfo()
 
     if self._cached_system_info is not None:
       gpu_info = self._cached_system_info.gpu

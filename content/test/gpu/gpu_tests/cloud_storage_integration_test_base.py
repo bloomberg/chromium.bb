@@ -222,9 +222,9 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     if cls._reference_image_parameters:
       return
     browser = cls.browser
-    if not browser.supports_system_info:
-      raise Exception('System info must be supported by the browser')
     system_info = browser.GetSystemInfo()
+    if not system_info:
+      raise Exception('System info must be supported by the browser')
     if not system_info.gpu:
       raise Exception('GPU information was absent')
     device = system_info.gpu.devices[0]

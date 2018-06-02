@@ -162,7 +162,8 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         self.fail('Test failed (context not restored properly?)')
 
   def _CheckCrashCount(self, tab, expected_kills):
-    if not tab.browser.supports_system_info:
+    system_info = tab.browser.GetSystemInfo()
+    if not system_info:
       self.fail('Browser must support system info')
 
     if not tab.EvaluateJavaScript(

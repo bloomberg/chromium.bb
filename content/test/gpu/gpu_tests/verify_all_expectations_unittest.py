@@ -59,10 +59,6 @@ class StubBrowser(object):
       gl_renderer, passthrough_cmd_decoder)
     self.browser_type = browser_type
 
-  @property
-  def supports_system_info(self):
-    return True
-
   def GetSystemInfo(self):
     return self._system_info
 
