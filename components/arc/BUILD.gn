@@ -118,7 +118,23 @@ static_library("prefs") {
   defines = [ "ARC_IMPLEMENTATION" ]
 
   deps = [
+    ":arc_base_enums",
     "//components/prefs",
+  ]
+}
+
+static_library("arc_base_enums") {
+  sources = [
+    "arc_instance_mode.cc",
+    "arc_instance_mode.h",
+    "arc_stop_reason.cc",
+    "arc_stop_reason.h",
+    "arc_supervision_transition.cc",
+    "arc_supervision_transition.h",
+  ]
+
+  deps = [
+    "//base",
   ]
 }
 
@@ -135,8 +151,6 @@ static_library("arc_base") {
     "arc_data_remover.h",
     "arc_features.cc",
     "arc_features.h",
-    "arc_instance_mode.cc",
-    "arc_instance_mode.h",
     "arc_service_manager.cc",
     "arc_service_manager.h",
     "arc_session.cc",
@@ -145,8 +159,6 @@ static_library("arc_base") {
     "arc_session_impl.h",
     "arc_session_runner.cc",
     "arc_session_runner.h",
-    "arc_stop_reason.cc",
-    "arc_stop_reason.h",
     "arc_util.cc",
     "arc_util.h",
   ]
@@ -167,6 +179,7 @@ static_library("arc_base") {
   ]
 
   public_deps = [
+    ":arc_base_enums",
     ":connection_holder",
     ":prefs",
     "//components/arc/common",

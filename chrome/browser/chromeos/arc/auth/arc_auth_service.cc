@@ -23,6 +23,7 @@
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_supervision_transition.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -204,6 +205,27 @@ void ArcAuthService::ReportMetrics(mojom::MetricsType metrics_type,
 void ArcAuthService::ReportAccountCheckStatus(
     mojom::AccountCheckStatus status) {
   UpdateAuthAccountCheckStatus(status);
+}
+
+void ArcAuthService::ReportSupervisionChangeStatus(
+    mojom::SupervisionChangeStatus status) {
+  switch (status) {
+    case mojom::SupervisionChangeStatus::CLOUD_DPC_DISABLED:
+    case mojom::SupervisionChangeStatus::CLOUD_DPC_ALREADY_DISABLED:
+    case mojom::SupervisionChangeStatus::CLOUD_DPC_ENABLED:
+    case mojom::SupervisionChangeStatus::CLOUD_DPC_ALREADY_ENABLED:
+      profile_->GetPrefs()->SetInteger(
+          prefs::kArcSupervisionTransition,
+          static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
+      // TODO(brunokim): notify potential observers.
+      break;
+    case mojom::SupervisionChangeStatus::INVALID_SUPERVISION_STATE:
+    case mojom::SupervisionChangeStatus::CLOUD_DPC_DISABLING_FAILED:
+    case mojom::SupervisionChangeStatus::CLOUD_DPC_ENABLING_FAILED:
+    default:
+      LOG(WARNING) << "Failed to changed supervision: " << status;
+      // TODO(crbug/841939): Block ARC++ in case of Unicorn graduation failure.
+  }
 }
 
 void ArcAuthService::OnAccountInfoReady(mojom::AccountInfoPtr account_info,
