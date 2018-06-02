@@ -49,6 +49,23 @@
       },
     },
   },
+  'angle_end2end_tests': {
+    'remove_from': [
+      # chromium.gpu.fyi
+      # TODO(ynovikov) Investigate why the test breaks on older devices.
+      'Android FYI Release (Nexus 5)',
+      'Android FYI Release (Nexus 6)',
+      'Android FYI Release (Nexus 9)',
+      # Temporarily disabled due to AMDGPU-PRO issues crbug.com/786219
+      'Linux FYI Release (AMD R7 240)',
+    ],
+  },
+  'angle_perftests': {
+    'remove_from': [
+      # anglebug.com/2433
+      'Android FYI Release (Nexus 6)',
+    ],
+  },
   'angle_unittests': {
     'remove_from': [
       # chromium.fyi
@@ -56,6 +73,15 @@
       'Chromium Mac 10.11',
       'Chromium Mac 10.11 Force Mac Toolchain',
       'Chromium Mac 10.13',
+      # chromium.gpu and chromium.gpu.fyi
+      # On Android, these are already run on the main waterfall.
+      # Run them on the one-off Android FYI bots, though.
+      'Android Release (Nexus 5X)',
+      'Android FYI Release (Nexus 5X)',
+      # Remove these from the optional GPU tryservers as they're
+      # already run on the main ones.
+      'Optional Linux Release (Intel HD 630)',
+      'Optional Linux Release (NVIDIA)',
     ],
     'modifications': {
       'Linux ASan LSan Tests (1)': {
@@ -1212,6 +1238,15 @@
       'UBSanVptr Linux',
       # chromium.fyi
       'Out of Process Profiling Linux',
+      # chromium.gpu
+      # On Android, these are already run on the main waterfall.
+      # Run them on the one-off Android FYI bots, though.
+      'Android Release (Nexus 5X)',
+      # chromium.gpu.fyi
+      'Android FYI 32 Vk Release (Nexus 5X)',
+      'Android FYI 64 Vk Release (Nexus 5X)',
+      'Android FYI Release (Nexus 5X)',
+      'Linux FYI Ozone (Intel)',
       # chromium.memory
       # Can't run on MSAN because gl_tests uses the hardware driver,
       # which isn't instrumented.
@@ -1302,6 +1337,12 @@
     'remove_from': [
       # chromium.fyi
       'Out of Process Profiling Linux',
+      # chromium.gpu.fyi
+      # On Android, these are already run on the main waterfall.
+      # Run them on the one-off Android FYI bots, though.
+      'Android FYI Release (Nexus 5X)',
+      # Temporarily disabled due to AMDGPU-PRO issues crbug.com/786219
+      'Linux FYI Release (AMD R7 240)',
     ],
     'modifications': {
       # chromium.android
@@ -1407,6 +1448,20 @@
       'Mac10.11 Tests',
       # client.v8.chromium
       'Linux - Future (dbg)'
+    ],
+  },
+  'info_collection_tests': {
+    'remove_from': [
+      # chromium.gpu.fyi
+      # The Mac ASAN swarming bot runs tests on two different GPU
+      # types, so we can't have one expected vendor ID / device ID.
+      'Mac FYI GPU ASAN Release',
+      # client.v8.fyi
+      'Android V8 FYI Release (Nexus 5X)',
+      'Linux V8 FYI Release (NVIDIA)',
+      'Linux V8 FYI Release - concurrent marking (NVIDIA)',
+      'Mac V8 FYI Release (Intel)',
+      'Win V8 FYI Release (NVIDIA)',
     ],
   },
   'install_static_unittests': {
@@ -1850,6 +1905,9 @@
     'remove_from': [
       # chromium.clang
       'ToTLinuxMSan',  # https://crbug.com/831676
+      # chromium.gpu.fyi
+      # The face and barcode detection tests fail on the Mac Pros.
+      'Mac Pro FYI Release (AMD)',
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.11',
@@ -2110,7 +2168,34 @@
           '--browser=debug',
         ],
       },
-    }
+    },
+  },
+  'swiftshader_unittests': {
+    'remove_from': [
+      # Save capacity on the hardware where we have only a few machines.
+      'Mac FYI Experimental Release (Intel)',
+      'Mac FYI Experimental Retina Release (AMD)',
+      'Mac FYI Experimental Retina Release (NVIDIA)',
+      'Mac Pro FYI Release (AMD)',
+    ],
+  },
+  'tab_capture_end2end_tests': {
+    # Run these only on Release bots, and don't run them on TSAN.
+    'remove_from': [
+      # chromium.gpu
+      'Linux Debug (NVIDIA)',
+      'Mac Debug (Intel)',
+      'Mac Retina Debug (AMD)',
+      'Win10 Debug (NVIDIA)',
+      # chromium.gpu.fyi
+      'Linux FYI Debug (NVIDIA)',
+      'Linux FYI GPU TSAN Release',
+      'Mac FYI Debug (Intel)',
+      'Mac FYI Retina Debug (AMD)',
+      'Mac FYI Retina Debug (NVIDIA)',
+      'Win10 FYI Debug (NVIDIA)',
+      'Win7 FYI Debug (AMD)',
+    ],
   },
   'telemetry_perf_unittests': {
     'modifications': {
@@ -2376,6 +2461,14 @@
       },
     },
   },
+  'video_decode_accelerator_gl_unittest': {
+    'remove_from': [
+      # chromium.gpu.fyi
+      # Windows Intel doesn't have the GL extensions to support this test.
+      'Win10 FYI Release (Intel HD 630)',
+      'Win10 FYI Exp Release (Intel HD 630)',
+    ],
+  },
   'views_unittests': {
     'remove_from': [
       # chromium.linux
@@ -2396,6 +2489,12 @@
       'Win7 Tests (1)',
       'Win7 Tests (dbg)(1)',
       'Win10 Tests x64 (dbg)',
+    ],
+  },
+  'viz_screenshot_sync_tests': {
+    'remove_from': [
+      # These tests don't work on TSAN right now.
+      'Linux FYI GPU TSAN Release',
     ],
   },
   'viz_unittests': {
@@ -2462,6 +2561,18 @@
       },
     },
   },
+  'vr_browser_tests': {
+    'remove_from': [
+      # chromium.gpu.fyi
+      # TODO(kbr): remove the following two exceptions after switching
+      # to the new generate_buildbot_json script.
+      'Win10 FYI Exp Release (Intel HD 630)',
+      'Win7 FYI Release (AMD)',
+      # This exception probably needs to stay due to lack of capacity
+      # on the Win AMD bots.
+      'Win7 FYI Debug (AMD)',
+    ],
+  },
   'vr_pixeltests': {
     'remove_from': [
       # chromium.fyi
@@ -2474,6 +2585,59 @@
       'Win7 Tests (1)',
       'Win7 Tests (dbg)(1)',
     ],
+  },
+  'webgl_conformance_d3d9_passthrough_tests': {
+    'remove_from': [
+      # TODO(jdarpinian): Re-enable when http://crbug.com/841789 is fixed.
+      'Win10 FYI Exp Release (Intel HD 630)',
+    ],
+  },
+  'webgl_conformance_d3d9_tests': {
+    'remove_from': [
+      # TODO(jdarpinian): Re-enable when http://crbug.com/841789 is fixed.
+      'Win10 FYI Exp Release (Intel HD 630)',
+    ],
+  },
+  'webgl_conformance_tests': {
+    'modifications': {
+      # On desktop platforms these don't take very long (~7 minutes),
+      # but on Android they take ~30 minutes and we want to use more
+      # shards than on desktop.
+      # chromium.gpu
+      'Android Release (Nexus 5X)': {
+        'swarming': {
+          'shards': 6,
+        },
+      },
+      'Mac FYI GPU ASAN Release': {
+        'args': [
+          '--is-asan',
+        ]
+      },
+    },
+  },
+  'webgl_conformance_gl_passthrough_tests': {
+    'remove_from': [
+      # crbug.com/555545 and crbug.com/649824:
+      # Disable webgl_conformance_gl_tests on some Win/AMD cards.
+      # Always fails on older cards, flaky on newer cards.
+      'Win7 FYI Debug (AMD)',
+      'Win7 FYI Release (AMD)',
+    ],
+  },
+  'webgl2_conformance_tests': {
+    'remove_from': [
+      # The Mac NVIDIA Retina bots don't have the capacity to run
+      # this test suite on mac_optional_gpu_tests_rel.
+      'Optional Mac Retina Release (NVIDIA)',
+    ],
+    'modifications': {
+      'Mac FYI GPU ASAN Release': {
+        'args': [
+          '--is-asan',
+        ]
+      },
+    },
   },
   'webkit_layout_tests': {
     'remove_from': [
