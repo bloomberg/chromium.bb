@@ -27,6 +27,9 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
   FakeDeviceSyncClient();
   ~FakeDeviceSyncClient() override;
 
+  using DeviceSyncClient::NotifyEnrollmentFinished;
+  using DeviceSyncClient::NotifyNewDevicesSynced;
+
   void InvokePendingSetSoftwareFeatureStateCallback(
       const base::Optional<std::string>& error_code);
   void InvokePendingFindEligibleDevicesCallback(
