@@ -16,11 +16,8 @@ class Widget;
 
 namespace ash {
 
+class AssistantBubbleView;
 class AssistantController;
-
-namespace {
-class AssistantContainerView;
-}  // namespace
 
 class ASH_EXPORT AssistantBubble : public views::WidgetObserver,
                                    public AssistantInteractionModelObserver {
@@ -44,8 +41,7 @@ class ASH_EXPORT AssistantBubble : public views::WidgetObserver,
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
-  // Owned by view hierarchy.
-  AssistantContainerView* container_view_ = nullptr;
+  AssistantBubbleView* bubble_view_ = nullptr;  // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(AssistantBubble);
 };

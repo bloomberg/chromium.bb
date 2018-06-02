@@ -105,6 +105,8 @@ component("ash") {
     "assistant/model/assistant_ui_element.h",
     "assistant/ui/assistant_bubble.cc",
     "assistant/ui/assistant_bubble.h",
+    "assistant/ui/assistant_bubble_view.cc",
+    "assistant/ui/assistant_bubble_view.h",
     "assistant/ui/assistant_main_view.cc",
     "assistant/ui/assistant_main_view.h",
     "assistant/ui/assistant_ui_constants.h",
