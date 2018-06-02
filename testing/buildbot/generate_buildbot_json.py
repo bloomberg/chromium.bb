@@ -485,8 +485,7 @@ class BBJSONGenerator(object):
     if self.is_android(tester_config) and tester_config.get('use_swarming',
                                                             True):
       args = result.get('args', [])
-      if not tester_config.get('skip_gs_results_bucket', False):
-        args.append('--gs-results-bucket=chromium-result-details')
+      args.append('--gs-results-bucket=chromium-result-details')
       if (result['swarming']['can_use_on_swarming_builders'] and not
           tester_config.get('skip_merge_script', False)):
         result['merge'] = {
@@ -518,8 +517,7 @@ class BBJSONGenerator(object):
             'name': 'shard #${SHARD_INDEX} logcats',
           },
         ]
-      if not tester_config.get('skip_device_recovery', False):
-        args.append('--recover-devices')
+      args.append('--recover-devices')
       if args:
         result['args'] = args
 

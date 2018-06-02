@@ -4,6 +4,10 @@
   "Android FYI 32 Vk Release (Nexus 5X)": {
     "gtest_tests": [
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -35,6 +39,10 @@
         "test": "angle_end2end_tests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -94,7 +102,9 @@
         "args": [
           "--deqp-egl-display-type=angle-vulkan",
           "--enable-xml-result-parsing",
-          "--shard-timeout=500"
+          "--shard-timeout=500",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "name": "angle_deqp_gles2_vulkan_tests",
         "swarming": {
@@ -133,6 +143,10 @@
   "Android FYI 64 Vk Release (Nexus 5X)": {
     "gtest_tests": [
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -164,6 +178,10 @@
         "test": "angle_end2end_tests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -223,7 +241,9 @@
         "args": [
           "--deqp-egl-display-type=angle-vulkan",
           "--enable-xml-result-parsing",
-          "--shard-timeout=500"
+          "--shard-timeout=500",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "name": "angle_deqp_gles2_vulkan_tests",
         "swarming": {
@@ -262,6 +282,10 @@
   "Android FYI Release (NVIDIA Shield TV)": {
     "gtest_tests": [
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -293,6 +317,10 @@
         "test": "angle_end2end_tests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -324,6 +352,10 @@
         "test": "angle_unittests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -355,6 +387,10 @@
         "test": "gl_tests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -386,6 +422,10 @@
         "test": "gl_unittests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -701,6 +741,10 @@
   "Android FYI Release (Nexus 5)": {
     "gtest_tests": [
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -732,6 +776,10 @@
         "test": "angle_unittests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -763,6 +811,10 @@
         "test": "gl_tests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -794,6 +846,10 @@
         "test": "gl_unittests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1109,6 +1165,10 @@
   "Android FYI Release (Nexus 5X)": {
     "gtest_tests": [
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1139,6 +1199,10 @@
         "test": "angle_end2end_tests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1442,6 +1506,10 @@
   "Android FYI Release (Nexus 6)": {
     "gtest_tests": [
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1473,6 +1541,10 @@
         "test": "angle_unittests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1504,6 +1576,10 @@
         "test": "gl_tests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1535,6 +1611,10 @@
         "test": "gl_unittests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1831,6 +1911,10 @@
   "Android FYI Release (Nexus 6P)": {
     "gtest_tests": [
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1862,6 +1946,10 @@
         "test": "angle_end2end_tests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1893,6 +1981,10 @@
         "test": "angle_unittests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1924,6 +2016,10 @@
         "test": "gl_tests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1955,6 +2051,10 @@
         "test": "gl_unittests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2270,6 +2370,10 @@
   "Android FYI Release (Nexus 9)": {
     "gtest_tests": [
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2301,6 +2405,10 @@
         "test": "angle_unittests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2332,6 +2440,10 @@
         "test": "gl_tests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2363,6 +2475,10 @@
         "test": "gl_unittests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2680,7 +2796,9 @@
       {
         "args": [
           "--enable-xml-result-parsing",
-          "--shard-timeout=500"
+          "--shard-timeout=500",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "name": "angle_deqp_egl_gles_tests",
         "swarming": {
@@ -2717,7 +2835,9 @@
         "args": [
           "--deqp-egl-display-type=angle-gles",
           "--enable-xml-result-parsing",
-          "--shard-timeout=500"
+          "--shard-timeout=500",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "name": "angle_deqp_gles2_gles_tests",
         "swarming": {
@@ -2753,7 +2873,9 @@
       {
         "args": [
           "--enable-xml-result-parsing",
-          "--shard-timeout=500"
+          "--shard-timeout=500",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "name": "angle_deqp_gles3_gles_tests",
         "swarming": {
