@@ -196,7 +196,7 @@ void BlockPainter::PaintScrollHitTestDisplayItem(const PaintInfo& paint_info) {
         DisplayItem::kScrollHitTest);
     ScrollHitTestDisplayItem::Record(paint_info.context, layout_block_,
                                      DisplayItem::kScrollHitTest,
-                                     properties->ScrollTranslation());
+                                     *properties->ScrollTranslation());
   }
 }
 

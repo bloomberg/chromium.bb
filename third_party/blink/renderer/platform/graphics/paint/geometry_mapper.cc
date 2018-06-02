@@ -101,7 +101,7 @@ GeometryMapper::SourceToDestinationProjectionInternal(
 
   // Case 3: Compute:
   // flatten(destination_to_screen)^-1 * flatten(source_to_screen)
-  const auto* root = TransformPaintPropertyNode::Root();
+  const auto* root = &TransformPaintPropertyNode::Root();
   success = true;
   if (source == root)
     return destination_cache.projection_from_screen();

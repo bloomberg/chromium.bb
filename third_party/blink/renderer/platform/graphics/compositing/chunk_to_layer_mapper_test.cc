@@ -27,27 +27,29 @@ class ChunkToLayerMapperTest : public testing::Test {
   // A state containing arbitrary values which should not affect test results
   // if the state is used as a layer state.
   PropertyTreeState LayerState() {
-    DEFINE_STATIC_REF(
-        TransformPaintPropertyNode, transform,
-        CreateTransform(TransformPaintPropertyNode::Root(),
-                        TransformationMatrix().Translate(123, 456),
-                        FloatPoint3D(1, 2, 3)));
-    DEFINE_STATIC_REF(ClipPaintPropertyNode, clip,
-                      CreateClip(ClipPaintPropertyNode::Root(), transform,
-                                 FloatRoundedRect(12, 34, 56, 78)));
-    DEFINE_STATIC_REF(
-        EffectPaintPropertyNode, effect,
-        EffectPaintPropertyNode::Create(
-            EffectPaintPropertyNode::Root(),
-            EffectPaintPropertyNode::State{
-                transform, clip, kColorFilterLuminanceToAlpha,
-                CompositorFilterOperations(), 0.789f, SkBlendMode::kSrcIn}));
-    return PropertyTreeState(transform, clip, effect);
+    if (!layer_transform_) {
+      layer_transform_ =
+          CreateTransform(t0(), TransformationMatrix().Translate(123, 456),
+                          FloatPoint3D(1, 2, 3));
+      layer_clip_ = CreateClip(c0(), layer_transform_.get(),
+                               FloatRoundedRect(12, 34, 56, 78));
+      layer_effect_ = EffectPaintPropertyNode::Create(
+          e0(), EffectPaintPropertyNode::State{
+                    layer_transform_.get(), layer_clip_.get(),
+                    kColorFilterLuminanceToAlpha, CompositorFilterOperations(),
+                    0.789f, SkBlendMode::kSrcIn});
+    }
+    return PropertyTreeState(layer_transform_.get(), layer_clip_.get(),
+                             layer_effect_.get());
   }
 
   bool HasFilterThatMovesPixels(const ChunkToLayerMapper& mapper) {
     return mapper.has_filter_that_moves_pixels_;
   }
+
+  std::unique_ptr<TransformPaintPropertyNode> layer_transform_;
+  std::unique_ptr<ClipPaintPropertyNode> layer_clip_;
+  std::unique_ptr<EffectPaintPropertyNode> layer_effect_;
 };
 
 TEST_F(ChunkToLayerMapperTest, OneChunkUsingLayerState) {
@@ -92,9 +94,9 @@ TEST_F(ChunkToLayerMapperTest, TwoChunkUsingLayerState) {
 
 TEST_F(ChunkToLayerMapperTest, TwoChunkSameState) {
   ChunkToLayerMapper mapper(LayerState(), gfx::Vector2dF(10, 20));
-  auto transform = CreateTransform(LayerState().Transform(),
+  auto transform = CreateTransform(*LayerState().Transform(),
                                    TransformationMatrix().Scale(2));
-  auto clip = CreateClip(LayerState().Clip(), LayerState().Transform(),
+  auto clip = CreateClip(*LayerState().Clip(), LayerState().Transform(),
                          FloatRoundedRect(10, 10, 100, 100));
   auto* effect = LayerState().Effect();
   auto chunk1 = Chunk(PropertyTreeState(transform.get(), clip.get(), effect));
@@ -123,16 +125,16 @@ TEST_F(ChunkToLayerMapperTest, TwoChunkSameState) {
 
 TEST_F(ChunkToLayerMapperTest, TwoChunkDifferentState) {
   ChunkToLayerMapper mapper(LayerState(), gfx::Vector2dF(10, 20));
-  auto transform1 = CreateTransform(LayerState().Transform(),
+  auto transform1 = CreateTransform(*LayerState().Transform(),
                                     TransformationMatrix().Scale(2));
-  auto clip1 = CreateClip(LayerState().Clip(), LayerState().Transform(),
+  auto clip1 = CreateClip(*LayerState().Clip(), LayerState().Transform(),
                           FloatRoundedRect(10, 10, 100, 100));
   auto* effect = LayerState().Effect();
   auto chunk1 = Chunk(PropertyTreeState(transform1.get(), clip1.get(), effect));
 
   auto transform2 =
-      CreateTransform(transform1, TransformationMatrix().Translate(20, 30));
-  auto clip2 = CreateClip(LayerState().Clip(), transform2,
+      CreateTransform(*transform1, TransformationMatrix().Translate(20, 30));
+  auto clip2 = CreateClip(*LayerState().Clip(), transform2.get(),
                           FloatRoundedRect(0, 0, 20, 20));
   auto chunk2 = Chunk(PropertyTreeState(transform2.get(), clip2.get(), effect));
 
@@ -165,13 +167,13 @@ TEST_F(ChunkToLayerMapperTest, SlowPath) {
   // Chunk2 has a blur filter. Should use the slow path.
   CompositorFilterOperations filter2;
   filter2.AppendBlurFilter(20);
-  auto effect2 = CreateFilterEffect(LayerState().Effect(), std::move(filter2));
+  auto effect2 = CreateFilterEffect(*LayerState().Effect(), std::move(filter2));
   auto chunk2 = Chunk(PropertyTreeState(LayerState().Transform(),
                                         LayerState().Clip(), effect2.get()));
 
   // Chunk3 has a different effect which inherits from chunk2's effect.
   // Should use the slow path.
-  auto effect3 = CreateOpacityEffect(effect2, 1.f);
+  auto effect3 = CreateOpacityEffect(*effect2, 1.f);
   auto chunk3 = Chunk(PropertyTreeState(LayerState().Transform(),
                                         LayerState().Clip(), effect3.get()));
 
@@ -179,7 +181,7 @@ TEST_F(ChunkToLayerMapperTest, SlowPath) {
   // Should use the fast path.
   CompositorFilterOperations filter4;
   filter4.AppendOpacityFilter(0.5);
-  auto effect4 = CreateFilterEffect(LayerState().Effect(), std::move(filter4));
+  auto effect4 = CreateFilterEffect(*LayerState().Effect(), std::move(filter4));
   auto chunk4 = Chunk(PropertyTreeState(LayerState().Transform(),
                                         LayerState().Clip(), effect4.get()));
 

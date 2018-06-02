@@ -56,7 +56,7 @@ class FindPaintOffsetNeedingUpdateScope {
   const FragmentData& fragment_data_;
   const bool& is_actually_needed_;
   LayoutPoint old_paint_offset_;
-  scoped_refptr<const TransformPaintPropertyNode> old_paint_offset_translation_;
+  std::unique_ptr<TransformPaintPropertyNode> old_paint_offset_translation_;
 };
 
 class FindVisualRectNeedingUpdateScopeBase {

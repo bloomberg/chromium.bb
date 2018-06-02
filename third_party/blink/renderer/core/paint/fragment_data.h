@@ -7,7 +7,7 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
-#include "third_party/blink/renderer/platform/graphics/paint/ref_counted_property_tree_state.h"
+#include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 
 namespace blink {
 
@@ -147,9 +147,9 @@ class CORE_EXPORT FragmentData {
   //   node. Even though the div has no transform, its local border box
   //   properties would have a transform node that points to the div's
   //   ancestor transform space.
-  PropertyTreeState LocalBorderBoxProperties() const {
+  const PropertyTreeState& LocalBorderBoxProperties() const {
     DCHECK(HasLocalBorderBoxProperties());
-    return rare_data_->local_border_box_properties->GetPropertyTreeState();
+    return *rare_data_->local_border_box_properties;
   }
   bool HasLocalBorderBoxProperties() const {
     return rare_data_ && rare_data_->local_border_box_properties;
@@ -162,9 +162,9 @@ class CORE_EXPORT FragmentData {
     EnsureRareData();
     if (!rare_data_->local_border_box_properties) {
       rare_data_->local_border_box_properties =
-          std::make_unique<RefCountedPropertyTreeState>(state);
+          std::make_unique<PropertyTreeState>(state);
     } else {
-      *rare_data_->local_border_box_properties = std::move(state);
+      *rare_data_->local_border_box_properties = state;
     }
   }
 
@@ -226,7 +226,7 @@ class CORE_EXPORT FragmentData {
     LayoutPoint pagination_offset;
     LayoutUnit logical_top_in_flow_thread;
     std::unique_ptr<ObjectPaintProperties> paint_properties;
-    std::unique_ptr<RefCountedPropertyTreeState> local_border_box_properties;
+    std::unique_ptr<PropertyTreeState> local_border_box_properties;
     bool is_clip_path_cache_valid = false;
     base::Optional<IntRect> clip_path_bounding_box;
     scoped_refptr<const RefCountedPath> clip_path_path;

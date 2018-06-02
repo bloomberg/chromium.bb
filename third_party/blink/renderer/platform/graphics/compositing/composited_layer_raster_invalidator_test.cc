@@ -39,19 +39,16 @@ class CompositedLayerRasterInvalidatorTest
   }
 
   CompositedLayerRasterInvalidatorTest& Properties(
-      const TransformPaintPropertyNode* t,
-      const ClipPaintPropertyNode* c = ClipPaintPropertyNode::Root(),
-      const EffectPaintPropertyNode* e = EffectPaintPropertyNode::Root()) {
-    auto& state = data_.chunks.back().properties;
-    state.SetTransform(t);
-    state.SetClip(c);
-    state.SetEffect(e);
+      const PropertyTreeState& state) {
+    data_.chunks.back().properties = state;
     return *this;
   }
 
   CompositedLayerRasterInvalidatorTest& Properties(
-      const RefCountedPropertyTreeState& state) {
-    data_.chunks.back().properties = state;
+      const TransformPaintPropertyNode& t,
+      const ClipPaintPropertyNode& c,
+      const EffectPaintPropertyNode& e) {
+    Properties(PropertyTreeState(&t, &c, &e));
     return *this;
   }
 
@@ -351,22 +348,17 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeRounded) {
   FloatRoundedRect::Radii radii(FloatSize(1, 2), FloatSize(2, 3),
                                 FloatSize(3, 4), FloatSize(4, 5));
   FloatRoundedRect clip_rect(FloatRect(-1000, -1000, 2000, 2000), radii);
-  scoped_refptr<ClipPaintPropertyNode> clip0 =
-      CreateClip(ClipPaintPropertyNode::Root(),
-                 TransformPaintPropertyNode::Root(), clip_rect);
-  scoped_refptr<ClipPaintPropertyNode> clip2 =
-      CreateClip(clip0, TransformPaintPropertyNode::Root(), clip_rect);
+  auto clip0 = CreateClip(c0(), &t0(), clip_rect);
+  auto clip2 = CreateClip(*clip0, &t0(), clip_rect);
 
-  PropertyTreeState layer_state(TransformPaintPropertyNode::Root(), clip0.get(),
-                                EffectPaintPropertyNode::Root());
-  auto artifact =
-      Chunk(0)
-          .Properties(layer_state)
-          .Chunk(1)
-          .Properties(layer_state)
-          .Chunk(2)
-          .Properties(TransformPaintPropertyNode::Root(), clip2.get())
-          .Build();
+  PropertyTreeState layer_state(&t0(), clip0.get(), &e0());
+  auto artifact = Chunk(0)
+                      .Properties(layer_state)
+                      .Chunk(1)
+                      .Properties(layer_state)
+                      .Chunk(2)
+                      .Properties(t0(), *clip2, e0())
+                      .Build();
 
   GeometryMapperClipCache::ClearCache();
   invalidator.SetTracksRasterInvalidations(true);
@@ -382,10 +374,10 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeRounded) {
                           .Properties(artifact.PaintChunks()[2].properties)
                           .Build();
   FloatRoundedRect new_clip_rect(FloatRect(-2000, -2000, 4000, 4000), radii);
-  clip0->Update(clip0->Parent(),
+  clip0->Update(*clip0->Parent(),
                 ClipPaintPropertyNode::State{clip0->LocalTransformSpace(),
                                              new_clip_rect});
-  clip2->Update(clip2->Parent(),
+  clip2->Update(*clip2->Parent(),
                 ClipPaintPropertyNode::State{clip2->LocalTransformSpace(),
                                              new_clip_rect});
 
@@ -423,21 +415,17 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeRounded) {
 TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeSimple) {
   CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
   FloatRoundedRect clip_rect(-1000, -1000, 2000, 2000);
-  scoped_refptr<ClipPaintPropertyNode> clip0 =
-      CreateClip(ClipPaintPropertyNode::Root(),
-                 TransformPaintPropertyNode::Root(), clip_rect);
-  scoped_refptr<ClipPaintPropertyNode> clip1 =
-      CreateClip(clip0, TransformPaintPropertyNode::Root(), clip_rect);
+  auto clip0 = CreateClip(c0(), &t0(), clip_rect);
+  auto clip1 = CreateClip(*clip0, &t0(), clip_rect);
 
   PropertyTreeState layer_state = PropertyTreeState::Root();
-  auto artifact =
-      Chunk(0)
-          .Properties(TransformPaintPropertyNode::Root(), clip0.get())
-          .Bounds(clip_rect.Rect())
-          .Chunk(1)
-          .Properties(TransformPaintPropertyNode::Root(), clip1.get())
-          .Bounds(clip_rect.Rect())
-          .Build();
+  auto artifact = Chunk(0)
+                      .Properties(t0(), *clip0, e0())
+                      .Bounds(clip_rect.Rect())
+                      .Chunk(1)
+                      .Properties(t0(), *clip1, e0())
+                      .Bounds(clip_rect.Rect())
+                      .Build();
 
   GeometryMapperClipCache::ClearCache();
   invalidator.SetTracksRasterInvalidations(true);
@@ -447,7 +435,7 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeSimple) {
   // Change clip1 to bigger, which is still bound by clip0, resulting no actual
   // visual change.
   FloatRoundedRect new_clip_rect1(-2000, -2000, 4000, 4000);
-  clip1->Update(clip1->Parent(),
+  clip1->Update(*clip1->Parent(),
                 ClipPaintPropertyNode::State{clip1->LocalTransformSpace(),
                                              new_clip_rect1});
   auto new_artifact1 = Chunk(0)
@@ -465,7 +453,7 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeSimple) {
 
   // Change clip1 to smaller.
   FloatRoundedRect new_clip_rect2(-500, -500, 1000, 1000);
-  clip1->Update(clip1->Parent(),
+  clip1->Update(*clip1->Parent(),
                 ClipPaintPropertyNode::State{clip1->LocalTransformSpace(),
                                              new_clip_rect2});
   auto new_artifact2 = Chunk(0)
@@ -498,7 +486,7 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeSimple) {
 
   // Change clip1 bigger at one side.
   FloatRoundedRect new_clip_rect3(-500, -500, 2000, 1000);
-  clip1->Update(clip1->Parent(),
+  clip1->Update(*clip1->Parent(),
                 ClipPaintPropertyNode::State{clip1->LocalTransformSpace(),
                                              new_clip_rect3});
   auto new_artifact3 = Chunk(0)
@@ -525,20 +513,17 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeSimple) {
 TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyChange) {
   CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
 
-  auto layer_transform = CreateTransform(TransformPaintPropertyNode::Root(),
-                                         TransformationMatrix().Scale(5));
-  auto transform0 = CreateTransform(layer_transform,
+  auto layer_transform = CreateTransform(t0(), TransformationMatrix().Scale(5));
+  auto transform0 = CreateTransform(*layer_transform,
                                     TransformationMatrix().Translate(10, 20));
   auto transform1 =
-      CreateTransform(transform0, TransformationMatrix().Translate(-50, -60));
+      CreateTransform(*transform0, TransformationMatrix().Translate(-50, -60));
 
-  PropertyTreeState layer_state(layer_transform.get(),
-                                ClipPaintPropertyNode::Root(),
-                                EffectPaintPropertyNode::Root());
+  PropertyTreeState layer_state(layer_transform.get(), &c0(), &e0());
   auto artifact = Chunk(0)
-                      .Properties(transform0.get())
+                      .Properties(*transform0, c0(), e0())
                       .Chunk(1)
-                      .Properties(transform1.get())
+                      .Properties(*transform1, c0(), e0())
                       .Build();
 
   GeometryMapperTransformCache::ClearCache();
@@ -548,7 +533,7 @@ TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyChange) {
 
   // Change layer_transform should not cause raster invalidation in the layer.
   layer_transform->Update(
-      layer_transform->Parent(),
+      *layer_transform->Parent(),
       TransformPaintPropertyNode::State{TransformationMatrix().Scale(10)});
   auto new_artifact = Chunk(0)
                           .Properties(artifact.PaintChunks()[0].properties)
@@ -565,11 +550,9 @@ TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyChange) {
   // raster invalidation in the layer. This simulates a composited layer is
   // scrolled from its original location.
   auto new_layer_transform = CreateTransform(
-      layer_transform, TransformationMatrix().Translate(-100, -200));
-  layer_state = PropertyTreeState(new_layer_transform.get(),
-                                  ClipPaintPropertyNode::Root(),
-                                  EffectPaintPropertyNode::Root());
-  transform0->Update(new_layer_transform,
+      *layer_transform, TransformationMatrix().Translate(-100, -200));
+  layer_state = PropertyTreeState(new_layer_transform.get(), &c0(), &e0());
+  transform0->Update(*new_layer_transform,
                      TransformPaintPropertyNode::State{transform0->Matrix()});
   auto new_artifact1 = Chunk(0)
                            .Properties(artifact.PaintChunks()[0].properties)
@@ -584,7 +567,7 @@ TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyChange) {
   // Removing transform nodes above the layer state should not cause raster
   // invalidation in the layer.
   layer_state = DefaultPropertyTreeState();
-  transform0->Update(layer_state.Transform(),
+  transform0->Update(*layer_state.Transform(),
                      TransformPaintPropertyNode::State{transform0->Matrix()});
   auto new_artifact2 = Chunk(0)
                            .Properties(artifact.PaintChunks()[0].properties)
@@ -600,11 +583,11 @@ TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyChange) {
   // and transform1 unchanged for chunk 2. We should invalidate only chunk 0
   // for changed paint property.
   transform0->Update(
-      layer_state.Transform(),
+      *layer_state.Transform(),
       TransformPaintPropertyNode::State{
           TransformationMatrix(transform0->Matrix()).Translate(20, 30)});
   transform1->Update(
-      transform0,
+      *transform0,
       TransformPaintPropertyNode::State{
           TransformationMatrix(transform1->Matrix()).Translate(-20, -30)});
   auto new_artifact3 = Chunk(0)
@@ -631,15 +614,12 @@ TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyChange) {
 TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyTinyChange) {
   CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
 
-  auto layer_transform = CreateTransform(TransformPaintPropertyNode::Root(),
-                                         TransformationMatrix().Scale(5));
+  auto layer_transform = CreateTransform(t0(), TransformationMatrix().Scale(5));
   auto chunk_transform = CreateTransform(
-      layer_transform, TransformationMatrix().Translate(10, 20));
+      *layer_transform, TransformationMatrix().Translate(10, 20));
 
-  PropertyTreeState layer_state(layer_transform.get(),
-                                ClipPaintPropertyNode::Root(),
-                                EffectPaintPropertyNode::Root());
-  auto artifact = Chunk(0).Properties(chunk_transform.get()).Build();
+  PropertyTreeState layer_state(layer_transform.get(), &c0(), &e0());
+  auto artifact = Chunk(0).Properties(*chunk_transform, c0(), e0()).Build();
 
   GeometryMapperTransformCache::ClearCache();
   invalidator.SetTracksRasterInvalidations(true);
@@ -647,13 +627,13 @@ TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyTinyChange) {
   EXPECT_TRUE(TrackedRasterInvalidations(invalidator).IsEmpty());
 
   // Change chunk_transform by tiny difference, which should be ignored.
-  chunk_transform->Update(layer_state.Transform(),
+  chunk_transform->Update(*layer_state.Transform(),
                           TransformPaintPropertyNode::State{
                               TransformationMatrix(chunk_transform->Matrix())
                                   .Translate(0.0000001, -0.0000001)
                                   .Scale(1.0000001)
                                   .Rotate(0.0000001)});
-  auto new_artifact = Chunk(0).Properties(chunk_transform.get()).Build();
+  auto new_artifact = Chunk(0).Properties(*chunk_transform, c0(), e0()).Build();
 
   GeometryMapperTransformCache::ClearCache();
   invalidator.Generate(new_artifact, kDefaultLayerBounds, layer_state);
@@ -663,13 +643,14 @@ TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyTinyChange) {
   // accumulation is large enough.
   bool invalidated = false;
   for (int i = 0; i < 100 && !invalidated; i++) {
-    chunk_transform->Update(layer_state.Transform(),
+    chunk_transform->Update(*layer_state.Transform(),
                             TransformPaintPropertyNode::State{
                                 TransformationMatrix(chunk_transform->Matrix())
                                     .Translate(0.0000001, -0.0000001)
                                     .Scale(1.0000001)
                                     .Rotate(0.0000001)});
-    auto new_artifact = Chunk(0).Properties(chunk_transform.get()).Build();
+    auto new_artifact =
+        Chunk(0).Properties(*chunk_transform, c0(), e0()).Build();
 
     GeometryMapperTransformCache::ClearCache();
     invalidator.Generate(new_artifact, kDefaultLayerBounds, layer_state);

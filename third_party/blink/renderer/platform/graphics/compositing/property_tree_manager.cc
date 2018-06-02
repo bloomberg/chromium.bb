@@ -91,7 +91,7 @@ void PropertyTreeManager::SetupRootTransformNode() {
   transform_tree.SetFromScreen(kRealRootNodeId, from_screen);
   transform_tree.set_needs_update(true);
 
-  transform_node_map_.Set(TransformPaintPropertyNode::Root(),
+  transform_node_map_.Set(&TransformPaintPropertyNode::Root(),
                           transform_node.id);
   root_layer_->SetTransformTreeIndex(transform_node.id);
 }
@@ -109,7 +109,7 @@ void PropertyTreeManager::SetupRootClipNode() {
       gfx::SizeF(root_layer_->layer_tree_host()->device_viewport_size()));
   clip_node.transform_id = kRealRootNodeId;
 
-  clip_node_map_.Set(ClipPaintPropertyNode::Root(), clip_node.id);
+  clip_node_map_.Set(&ClipPaintPropertyNode::Root(), clip_node.id);
   root_layer_->SetClipTreeIndex(clip_node.id);
 }
 
@@ -133,7 +133,7 @@ void PropertyTreeManager::SetupRootEffectNode() {
 
   current_effect_id_ = effect_node.id;
   current_effect_type_ = CcEffectType::kEffect;
-  current_effect_ = EffectPaintPropertyNode::Root();
+  current_effect_ = &EffectPaintPropertyNode::Root();
   current_clip_ = current_effect_->OutputClip();
 }
 
@@ -146,7 +146,7 @@ void PropertyTreeManager::SetupRootScrollNode() {
   DCHECK_EQ(scroll_node.id, kSecondaryRootNodeId);
   scroll_node.transform_id = kSecondaryRootNodeId;
 
-  scroll_node_map_.Set(ScrollPaintPropertyNode::Root(), scroll_node.id);
+  scroll_node_map_.Set(&ScrollPaintPropertyNode::Root(), scroll_node.id);
   root_layer_->SetScrollTreeIndex(scroll_node.id);
 }
 
@@ -314,8 +314,7 @@ void PropertyTreeManager::EmitClipMaskLayer() {
   mask_effect.has_render_surface = true;
   mask_effect.blend_mode = SkBlendMode::kDstIn;
 
-  const TransformPaintPropertyNode* clip_space =
-      current_clip_->LocalTransformSpace();
+  const auto* clip_space = current_clip_->LocalTransformSpace();
   root_layer_->AddChild(mask_layer);
   mask_layer->set_property_tree_sequence_number(sequence_number_);
   mask_layer->SetTransformTreeIndex(EnsureCompositorTransformNode(clip_space));

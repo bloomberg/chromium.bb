@@ -100,7 +100,7 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithSinglePropertyChanging) {
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
 
   auto simple_transform_node = CreateTransform(
-      nullptr, TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
+      t0(), TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
   auto simple_transform = DefaultPaintChunkProperties();
   simple_transform.SetTransform(simple_transform_node.get());
 
@@ -109,7 +109,7 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithSinglePropertyChanging) {
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
 
   auto another_transform_node = CreateTransform(
-      nullptr, TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
+      t0(), TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
   auto another_transform = DefaultPaintChunkProperties();
   another_transform.SetTransform(another_transform_node.get());
   PaintChunk::Id id3(client_, DisplayItemType(3));
@@ -130,7 +130,7 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
 
   auto simple_transform_node = CreateTransform(
-      nullptr, TransformationMatrix(0, 0, 0, 0, 0, 0), FloatPoint3D(9, 8, 7));
+      t0(), TransformationMatrix(0, 0, 0, 0, 0, 0), FloatPoint3D(9, 8, 7));
   auto simple_transform = DefaultPaintChunkProperties();
   simple_transform.SetTransform(simple_transform_node.get());
   PaintChunk::Id id2(client_, DisplayItemType(2));
@@ -138,8 +138,7 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
 
-  auto simple_effect_node =
-      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5f);
+  auto simple_effect_node = CreateOpacityEffect(e0(), 0.5f);
   auto simple_transform_and_effect = DefaultPaintChunkProperties();
   simple_transform_and_effect.SetTransform(simple_transform_node.get());
   simple_transform_and_effect.SetEffect(simple_effect_node.get());
@@ -149,11 +148,10 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
 
   auto new_transform_node = CreateTransform(
-      nullptr, TransformationMatrix(1, 1, 0, 0, 0, 0), FloatPoint3D(9, 8, 7));
+      t0(), TransformationMatrix(1, 1, 0, 0, 0, 0), FloatPoint3D(9, 8, 7));
   auto simple_transform_and_effect_with_updated_transform =
       DefaultPaintChunkProperties();
-  auto new_effect_node =
-      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5f);
+  auto new_effect_node = CreateOpacityEffect(e0(), 0.5f);
   simple_transform_and_effect_with_updated_transform.SetTransform(
       new_transform_node.get());
   simple_transform_and_effect_with_updated_transform.SetEffect(
@@ -200,7 +198,7 @@ TEST_F(PaintChunkerTest, BuildChunksFromNestedTransforms) {
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
 
   auto simple_transform_node = CreateTransform(
-      nullptr, TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
+      t0(), TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
   auto simple_transform = DefaultPaintChunkProperties();
   simple_transform.SetTransform(simple_transform_node.get());
   PaintChunk::Id id2(client_, DisplayItemType(2));
@@ -229,14 +227,14 @@ TEST_F(PaintChunkerTest, ChangingPropertiesWithoutItems) {
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
 
   auto first_transform_node = CreateTransform(
-      nullptr, TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
+      t0(), TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
   auto first_transform = DefaultPaintChunkProperties();
   first_transform.SetTransform(first_transform_node.get());
   PaintChunk::Id id2(client_, DisplayItemType(2));
   chunker.UpdateCurrentPaintChunkProperties(base::nullopt, first_transform);
 
   auto second_transform_node = CreateTransform(
-      nullptr, TransformationMatrix(9, 8, 7, 6, 5, 4), FloatPoint3D(3, 2, 1));
+      t0(), TransformationMatrix(9, 8, 7, 6, 5, 4), FloatPoint3D(3, 2, 1));
   auto second_transform = DefaultPaintChunkProperties();
   second_transform.SetTransform(second_transform_node.get());
   PaintChunk::Id id3(client_, DisplayItemType(3));
@@ -407,7 +405,7 @@ TEST_F(PaintChunkerTest, ChunkIdsSkippingCache) {
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
 
   auto simple_transform_node = CreateTransform(
-      nullptr, TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
+      t0(), TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
   auto simple_transform = DefaultPaintChunkProperties();
   simple_transform.SetTransform(simple_transform_node.get());
   PaintChunk::Id id2(client_, DisplayItemType(2));

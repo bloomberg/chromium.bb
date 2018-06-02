@@ -39,13 +39,13 @@ namespace blink {
 
 PaintPropertyTreeBuilderFragmentContext::
     PaintPropertyTreeBuilderFragmentContext()
-    : current_effect(EffectPaintPropertyNode::Root()) {
+    : current_effect(&EffectPaintPropertyNode::Root()) {
   current.clip = absolute_position.clip = fixed_position.clip =
-      ClipPaintPropertyNode::Root();
+      &ClipPaintPropertyNode::Root();
   current.transform = absolute_position.transform = fixed_position.transform =
-      TransformPaintPropertyNode::Root();
+      &TransformPaintPropertyNode::Root();
   current.scroll = absolute_position.scroll = fixed_position.scroll =
-      ScrollPaintPropertyNode::Root();
+      &ScrollPaintPropertyNode::Root();
 }
 
 void PaintPropertyTreeBuilder::SetupContextForFrame(
@@ -295,7 +295,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
         RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
       state.rendering_context_id = context_.current.rendering_context_id;
     OnUpdate(properties_->UpdatePaintOffsetTranslation(
-        context_.current.transform, std::move(state)));
+        *context_.current.transform, std::move(state)));
     context_.current.transform = properties_->PaintOffsetTranslation();
     if (object_.IsLayoutView()) {
       context_.absolute_position.transform =
@@ -331,7 +331,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformForNonRootSVG() {
     if (NeedsTransformForNonRootSVG(object_)) {
       // The origin is included in the local transform, so leave origin empty.
       OnUpdate(properties_->UpdateTransform(
-          context_.current.transform,
+          *context_.current.transform,
           TransformPaintPropertyNode::State{transform}));
     } else {
       OnClear(properties_->ClearTransform());
@@ -449,7 +449,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
             object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
       }
 
-      OnUpdate(properties_->UpdateTransform(context_.current.transform,
+      OnUpdate(properties_->UpdateTransform(*context_.current.transform,
                                             std::move(state)));
     } else {
       OnClear(properties_->ClearTransform());
@@ -578,7 +578,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           combined_clip.Intersect(*clip_path_clip);
 
         OnUpdateClip(properties_->UpdateMaskClip(
-            context_.current.clip,
+            *context_.current.clip,
             ClipPaintPropertyNode::State{context_.current.transform,
                                          FloatRoundedRect(combined_clip)}));
         output_clip = properties_->MaskClip();
@@ -607,8 +607,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
             object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
       }
-      OnUpdate(
-          properties_->UpdateEffect(context_.current_effect, std::move(state)));
+      OnUpdate(properties_->UpdateEffect(*context_.current_effect,
+                                         std::move(state)));
 
       if (mask_clip || has_spv1_composited_clip_path) {
         EffectPaintPropertyNode::State mask_state;
@@ -623,16 +623,16 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
                   object_.UniqueId(),
                   CompositorElementIdNamespace::kEffectMask);
         }
-        OnUpdate(properties_->UpdateMask(properties_->Effect(),
+        OnUpdate(properties_->UpdateMask(*properties_->Effect(),
                                          std::move(mask_state)));
       } else {
         OnClear(properties_->ClearMask());
       }
 
       if (has_mask_based_clip_path) {
-        const EffectPaintPropertyNode* parent = has_spv1_composited_clip_path
-                                                    ? properties_->Mask()
-                                                    : properties_->Effect();
+        const EffectPaintPropertyNode& parent = has_spv1_composited_clip_path
+                                                    ? *properties_->Mask()
+                                                    : *properties_->Effect();
         EffectPaintPropertyNode::State clip_path_state;
         clip_path_state.local_transform_space = context_.current.transform;
         clip_path_state.output_clip = output_clip;
@@ -746,8 +746,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
             object_.UniqueId(), CompositorElementIdNamespace::kEffectFilter);
       }
 
-      OnUpdate(
-          properties_->UpdateFilter(context_.current_effect, std::move(state)));
+      OnUpdate(properties_->UpdateFilter(*context_.current_effect,
+                                         std::move(state)));
     } else {
       OnClear(properties_->ClearFilter());
     }
@@ -775,7 +775,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateFragmentClip() {
   if (NeedsPaintPropertyUpdate()) {
     if (context_.fragment_clip) {
       OnUpdateClip(properties_->UpdateFragmentClip(
-          context_.current.clip,
+          *context_.current.clip,
           ClipPaintPropertyNode::State{context_.current.transform,
                                        ToClipRect(*context_.fragment_clip)}));
     } else {
@@ -802,7 +802,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateCssClip() {
       // copy from in-flow context later at updateOutOfFlowContext() step.
       DCHECK(object_.CanContainAbsolutePositionObjects());
       OnUpdateClip(properties_->UpdateCssClip(
-          context_.current.clip,
+          *context_.current.clip,
           ClipPaintPropertyNode::State{context_.current.transform,
                                        ToClipRect(ToLayoutBox(object_).ClipRect(
                                            context_.current.paint_offset))}));
@@ -835,7 +835,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateClipPathClip(
       state.clip_rect =
           FloatRoundedRect(FloatRect(*fragment_data_.ClipPathBoundingBox()));
       state.clip_path = fragment_data_.ClipPathPath();
-      OnUpdateClip(properties_->UpdateClipPathClip(context_.current.clip,
+      OnUpdateClip(properties_->UpdateClipPathClip(*context_.current.clip,
                                                    std::move(state)));
     }
   }
@@ -964,7 +964,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowControlsClip() {
     // Clip overflow controls to the border box rect. Not wrapped with
     // OnUpdateClip() because this clip doesn't affect descendants.
     properties_->UpdateOverflowControlsClip(
-        context_.current.clip,
+        *context_.current.clip,
         ClipPaintPropertyNode::State{
             context_.current.transform,
             ToClipRect(LayoutRect(context_.current.paint_offset,
@@ -1000,7 +1000,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateInnerBorderRadiusClip() {
             LayoutRect(context_.current.paint_offset, box.Size()));
       }
       OnUpdateClip(properties_->UpdateInnerBorderRadiusClip(
-          context_.current.clip, std::move(state)));
+          *context_.current.clip, std::move(state)));
     } else {
       OnClearClip(properties_->ClearInnerBorderRadiusClip());
     }
@@ -1071,7 +1071,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
       bool equal_ignoring_hit_test_rects =
           !!existing &&
           existing->EqualIgnoringHitTestRects(context_.current.clip, state);
-      OnUpdateClip(properties_->UpdateOverflowClip(context_.current.clip,
+      OnUpdateClip(properties_->UpdateOverflowClip(*context_.current.clip,
                                                    std::move(state)),
                    equal_ignoring_hit_test_rects);
     } else {
@@ -1113,7 +1113,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePerspective() {
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
         state.rendering_context_id = context_.current.rendering_context_id;
-      OnUpdate(properties_->UpdatePerspective(context_.current.transform,
+      OnUpdate(properties_->UpdatePerspective(*context_.current.transform,
                                               std::move(state)));
     } else {
       OnClear(properties_->ClearPerspective());
@@ -1138,7 +1138,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateSvgLocalToBorderBoxTransform() {
     if (!transform_to_border_box.IsIdentity() &&
         NeedsSVGLocalToBorderBoxTransform(object_)) {
       OnUpdate(properties_->UpdateSvgLocalToBorderBoxTransform(
-          context_.current.transform,
+          *context_.current.transform,
           TransformPaintPropertyNode::State{transform_to_border_box}));
     } else {
       OnClear(properties_->ClearSvgLocalToBorderBoxTransform());
@@ -1220,8 +1220,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
         state.compositor_element_id = scrollable_area->GetCompositorElementId();
 
-      OnUpdate(
-          properties_->UpdateScroll(context_.current.scroll, std::move(state)));
+      OnUpdate(properties_->UpdateScroll(*context_.current.scroll,
+                                         std::move(state)));
     } else {
       OnClear(properties_->ClearScroll());
     }
@@ -1241,7 +1241,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
         state.rendering_context_id = context_.current.rendering_context_id;
       }
       state.scroll = properties_->Scroll();
-      OnUpdate(properties_->UpdateScrollTranslation(context_.current.transform,
+      OnUpdate(properties_->UpdateScrollTranslation(*context_.current.transform,
                                                     std::move(state)));
     } else {
       OnClear(properties_->ClearScrollTranslation());
@@ -1296,7 +1296,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
     } else {
       if (NeedsPaintPropertyUpdate()) {
         OnUpdate(properties_->UpdateCssClipFixedPosition(
-            context_.fixed_position.clip,
+            *context_.fixed_position.clip,
             ClipPaintPropertyNode::State{css_clip->LocalTransformSpace(),
                                          css_clip->ClipRect()}));
       }
