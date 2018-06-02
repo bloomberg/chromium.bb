@@ -53,7 +53,8 @@ OfflineItem::OfflineItem()
       is_resumable(false),
       allow_metered(false),
       received_bytes(0),
-      time_remaining_ms(0) {}
+      time_remaining_ms(0),
+      is_dangerous(false) {}
 
 OfflineItem::OfflineItem(const OfflineItem& other) = default;
 
@@ -86,7 +87,8 @@ bool OfflineItem::operator==(const OfflineItem& offline_item) const {
          allow_metered == offline_item.allow_metered &&
          received_bytes == offline_item.received_bytes &&
          progress == offline_item.progress &&
-         time_remaining_ms == offline_item.time_remaining_ms;
+         time_remaining_ms == offline_item.time_remaining_ms &&
+         is_dangerous == offline_item.is_dangerous;
 }
 
 OfflineItemVisuals::OfflineItemVisuals() = default;

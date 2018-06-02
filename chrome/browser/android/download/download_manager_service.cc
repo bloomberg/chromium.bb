@@ -119,7 +119,7 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
       ConvertUTF8ToJavaString(env, item->GetReferrerUrl().spec()),
       time_remaining_known ? time_delta.InMilliseconds()
                            : kUnknownRemainingTime,
-      item->GetLastAccessTime().ToJavaTime());
+      item->GetLastAccessTime().ToJavaTime(), item->IsDangerous());
 }
 
 static jlong JNI_DownloadManagerService_Init(

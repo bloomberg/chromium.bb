@@ -180,6 +180,10 @@ struct OfflineItem {
   // represents an unknown time remaining.  This field is not used if |state| is
   // COMPLETE.
   int64_t time_remaining_ms;
+
+  // Whether the download might be dangerous and will require additional
+  // validation from user.
+  bool is_dangerous;
 };
 
 // This struct holds any potentially expensive visuals for an OfflineItem.  If
