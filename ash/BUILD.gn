@@ -116,6 +116,8 @@ component("ash") {
     "assistant/ui/dialog_plate/dialog_plate.h",
     "assistant/ui/logo_view/base_logo_view.cc",
     "assistant/ui/logo_view/base_logo_view.h",
+    "assistant/ui/main_stage/assistant_query_view.cc",
+    "assistant/ui/main_stage/assistant_query_view.h",
     "assistant/ui/main_stage/assistant_text_element_view.cc",
     "assistant/ui/main_stage/assistant_text_element_view.h",
     "assistant/ui/main_stage/ui_element_container_view.cc",
