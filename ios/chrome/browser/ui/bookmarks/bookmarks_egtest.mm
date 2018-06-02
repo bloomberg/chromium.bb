@@ -17,14 +17,18 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/legacy/toolbar_controller_constants.h"
+#include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/bookmarks_test_util.h"
@@ -144,14 +148,6 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                     nil);
 }
 
-// Matcher for the button to close the tools menu.
-id<GREYMatcher> CloseToolsMenuButton() {
-  NSString* closeMenuButtonText =
-      l10n_util::GetNSString(IDS_IOS_TOOLBAR_CLOSE_MENU);
-  return grey_allOf(grey_accessibilityID(kToolbarToolsMenuButtonIdentifier),
-                    grey_accessibilityLabel(closeMenuButtonText), nil);
-}
-
 }  // namespace
 
 // Bookmark integration tests for Chrome.
@@ -185,7 +181,10 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Verifies that adding a bookmark and removing a bookmark via the UI properly
 // updates the BookmarkModel.
-- (void)testAddRemoveBookmark {
+- (void)testAddRemoveBookmarkLegacy {
+  if (IsUIRefreshPhase1Enabled()) {
+    EARL_GREY_TEST_SKIPPED(@"This test is non UIRefresh only.");
+  }
   const GURL bookmarkedURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/pony.html");
   std::string expectedURLContent = bookmarkedURL.GetContent();
@@ -234,13 +233,83 @@ id<GREYMatcher> CloseToolsMenuButton() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(kStarUnlitLabel)]
       assertWithMatcher:grey_notNil()];
 
-  // TODO(crbug.com/617652): This code should be removed when a common helper
-  // is added to close any menus, which should be run as test setup.
+  // Close the opened tab.
+  [chrome_test_util::BrowserCommandDispatcherForMainBVC() closeCurrentTab];
+}
+
+// Verifies that adding a bookmark and removing a bookmark via the UI properly
+// updates the BookmarkModel.
+- (void)testAddRemoveBookmark {
+  if (!IsUIRefreshPhase1Enabled()) {
+    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
+  }
+  const GURL bookmarkedURL = web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/pony.html");
+  std::string expectedURLContent = bookmarkedURL.GetContent();
+  NSString* bookmarkTitle = @"my bookmark";
+
+  [ChromeEarlGrey loadURL:bookmarkedURL];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          expectedURLContent)]
+      assertWithMatcher:grey_notNil()];
+
+  // Add the bookmark from the UI.
+  [BookmarksTestCase bookmarkCurrentTabWithTitle:bookmarkTitle];
+
+  // Verify the bookmark is set.
+  [BookmarksTestCase assertBookmarksWithTitle:bookmarkTitle expectedCount:1];
+
+  // Verify the star is lit.
+  if (!IsCompactWidth()) {
+    [[EarlGrey
+        selectElementWithMatcher:grey_accessibilityLabel(
+                                     l10n_util::GetNSString(IDS_TOOLTIP_STAR))]
+        assertWithMatcher:grey_notNil()];
+  }
+
+  // Open the BookmarkEditor.
   if (IsCompactWidth()) {
-    [[EarlGrey selectElementWithMatcher:CloseToolsMenuButton()]
+    [ChromeEarlGreyUI openToolsMenu];
+    [[[EarlGrey
+        selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                                kToolsMenuEditBookmark),
+                                            grey_sufficientlyVisible(), nil)]
+           usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+        onElementWithMatcher:grey_accessibilityID(
+                                 kPopupMenuToolsMenuTableViewId)]
+        performAction:grey_tap()];
+  } else {
+    [[EarlGrey
+        selectElementWithMatcher:grey_accessibilityLabel(
+                                     l10n_util::GetNSString(IDS_TOOLTIP_STAR))]
         performAction:grey_tap()];
   }
 
+  // Delete the Bookmark.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkEditDeleteButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Verify the bookmark is not in the BookmarkModel.
+  [BookmarksTestCase assertBookmarksWithTitle:bookmarkTitle expectedCount:0];
+
+  // Verify the the page is no longer bookmarked.
+  if (IsCompactWidth()) {
+    [ChromeEarlGreyUI openToolsMenu];
+    [[[EarlGrey
+        selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                                kToolsMenuAddToBookmarks),
+                                            grey_sufficientlyVisible(), nil)]
+           usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+        onElementWithMatcher:grey_accessibilityID(
+                                 kPopupMenuToolsMenuTableViewId)]
+        assertWithMatcher:grey_notNil()];
+  } else {
+    [[EarlGrey
+        selectElementWithMatcher:grey_accessibilityLabel(
+                                     l10n_util::GetNSString(IDS_TOOLTIP_STAR))]
+        assertWithMatcher:grey_notNil()];
+  }
   // Close the opened tab.
   [chrome_test_util::BrowserCommandDispatcherForMainBVC() closeCurrentTab];
 }
@@ -553,8 +622,19 @@ id<GREYMatcher> CloseToolsMenuButton() {
     [[EarlGrey selectElementWithMatcher:StarButton()] performAction:grey_tap()];
   } else {
     [ChromeEarlGreyUI openToolsMenu];
-    [[EarlGrey selectElementWithMatcher:LitStarButtoniPhone()]
-        performAction:grey_tap()];
+    if (IsUIRefreshPhase1Enabled()) {
+      [[[EarlGrey
+          selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                                  kToolsMenuEditBookmark),
+                                              grey_sufficientlyVisible(), nil)]
+             usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+          onElementWithMatcher:grey_accessibilityID(
+                                   kPopupMenuToolsMenuTableViewId)]
+          performAction:grey_tap()];
+    } else {
+      [[EarlGrey selectElementWithMatcher:LitStarButtoniPhone()]
+          performAction:grey_tap()];
+    }
   }
   GREYAssertTrue(chrome_test_util::GetRegisteredKeyCommandsCount() == 0,
                  @"No keyboard commands are registered.");
@@ -3107,12 +3187,25 @@ id<GREYMatcher> CloseToolsMenuButton() {
 
 // Adds a bookmark for the current tab. Must be called when on a tab.
 + (void)starCurrentTab {
-  if (!IsCompactWidth()) {
-    [[EarlGrey selectElementWithMatcher:StarButton()] performAction:grey_tap()];
-  } else {
+  if (IsUIRefreshPhase1Enabled()) {
     [ChromeEarlGreyUI openToolsMenu];
-    [[EarlGrey selectElementWithMatcher:AddBookmarkButton()]
+    [[[EarlGrey
+        selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                                kToolsMenuAddToBookmarks),
+                                            grey_sufficientlyVisible(), nil)]
+           usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+        onElementWithMatcher:grey_accessibilityID(
+                                 kPopupMenuToolsMenuTableViewId)]
         performAction:grey_tap()];
+  } else {
+    if (!IsCompactWidth()) {
+      [[EarlGrey selectElementWithMatcher:StarButton()]
+          performAction:grey_tap()];
+    } else {
+      [ChromeEarlGreyUI openToolsMenu];
+      [[EarlGrey selectElementWithMatcher:AddBookmarkButton()]
+          performAction:grey_tap()];
+    }
   }
 }
 
