@@ -942,6 +942,621 @@
     },
   },
 
+  'goma_gtests': {
+    'base_unittests': {},
+    'content_unittests': {},
+  },
+
+  'goma_mac_gtests': {
+    'base_unittests': {
+      'swarming': {
+        'dimension_sets': [
+          {
+            'os': 'Mac',
+          },
+        ],
+      }
+    },
+    'content_unittests': {
+      'swarming': {
+        'dimension_sets': [
+          {
+            'os': 'Mac',
+          },
+        ],
+      },
+    },
+  },
+
+  # BEGIN tests which run on the GPU bots
+
+  'gpu_angle_deqp_egl_d3d11_tests': {
+    'angle_deqp_egl_d3d11_tests': {
+      'args': [
+        '--test-launcher-batch-limit=400',
+        '--deqp-egl-display-type=angle-d3d11',
+      ],
+      'swarming': {
+        'shards': 4,
+      },
+      'test': 'angle_deqp_egl_tests',
+    },
+  },
+
+  'gpu_angle_deqp_egl_gl_tests': {
+    'angle_deqp_egl_gl_tests': {
+      'args': [
+        '--test-launcher-batch-limit=400',
+        '--deqp-egl-display-type=angle-gl',
+      ],
+      'swarming': {
+        'shards': 4,
+      },
+      'test': 'angle_deqp_egl_tests',
+    },
+  },
+
+  'gpu_angle_deqp_egl_gles_tests': {
+    'angle_deqp_egl_gles_tests': {
+      # Only pass the display type to desktop. The Android runner doesn't support
+      # passing args to the executable but only one display type is supported on
+      # Android anyways. Regardless, this test is only run on Android right now.
+      'desktop_args': [
+        '--test-launcher-batch-limit=400',
+        '--deqp-egl-display-type=angle-gles',
+      ],
+      'android_args': [
+        '--enable-xml-result-parsing',
+        '--shard-timeout=500',
+      ],
+      'swarming': {
+        'shards': 4,
+      },
+      'test': 'angle_deqp_egl_tests',
+    },
+  },
+
+  'gpu_angle_deqp_gles2_d3d11_tests': {
+    'angle_deqp_gles2_d3d11_tests': {
+      'swarming': {
+        'shards': 4,
+      },
+      'test': 'angle_deqp_gles2_tests',
+      'args': [
+        '--test-launcher-batch-limit=400',
+        '--deqp-egl-display-type=angle-d3d11',
+      ],
+    },
+  },
+
+  'gpu_angle_deqp_gles2_gl_tests': {
+    'angle_deqp_gles2_gl_tests': {
+      'swarming': {
+        'shards': 4,
+      },
+      'test': 'angle_deqp_gles2_tests',
+      'args': [
+        '--test-launcher-batch-limit=400',
+        '--deqp-egl-display-type=angle-gl',
+      ],
+    },
+  },
+
+  'gpu_angle_deqp_gles2_vulkan_tests': {
+    'angle_deqp_gles2_vulkan_tests': {
+      'swarming': {
+        'shards': 4,
+      },
+      'test': 'angle_deqp_gles2_tests',
+      'args': [
+        '--deqp-egl-display-type=angle-vulkan',
+      ],
+      'desktop_args': [
+        '--test-launcher-batch-limit=400',
+      ],
+      'android_args': [
+        '--enable-xml-result-parsing',
+        '--shard-timeout=500'
+      ],
+    },
+  },
+
+  'gpu_angle_deqp_gles3_d3d11_tests': {
+    # TODO(jmadill): Run this on ANGLE roll tryservers.
+    # Temporarily disabled on AMD Win 7 to prevent a recipe engine crash.
+    # TODO(jmadill): Re-enable there when http://crbug.com/713196 is fixed.
+    'angle_deqp_gles3_d3d11_tests': {
+      'swarming': {
+        'shards': 12,
+      },
+      'test': 'angle_deqp_gles3_tests',
+      'args': [
+        '--test-launcher-batch-limit=400',
+        '--deqp-egl-display-type=angle-d3d11',
+      ],
+    },
+  },
+
+  'gpu_angle_deqp_gles3_gl_tests': {
+    'angle_deqp_gles3_gl_tests': {
+      'swarming': {
+        'shards': 12,
+      },
+      'test': 'angle_deqp_gles3_tests',
+      'args': [
+        '--test-launcher-batch-limit=400',
+        '--deqp-egl-display-type=angle-gl',
+      ],
+    },
+  },
+
+  'gpu_angle_deqp_gles31_d3d11_tests': {
+    'angle_deqp_gles31_d3d11_tests': {
+      'swarming': {
+        'shards': 6,
+      },
+      'test': 'angle_deqp_gles31_tests',
+      'args': [
+        '--test-launcher-batch-limit=400',
+        '--deqp-egl-display-type=angle-d3d11'
+      ],
+    },
+  },
+
+  'gpu_angle_deqp_gles31_gl_tests': {
+    'angle_deqp_gles31_gl_tests': {
+      'swarming': {
+        'shards': 6,
+      },
+      'test': 'angle_deqp_gles31_tests',
+      'args': [
+        '--test-launcher-batch-limit=400',
+        '--deqp-egl-display-type=angle-gl'
+      ],
+    },
+  },
+
+  'gpu_angle_deqp_gles_gtests': {
+    'angle_deqp_gles2_gles_tests': {
+      'swarming': {
+        'shards': 4,
+      },
+      'test': 'angle_deqp_gles2_tests',
+      'args': [
+        '--deqp-egl-display-type=angle-gles'
+      ],
+      'desktop_args': [
+        '--test-launcher-batch-limit=400',
+      ],
+      'android_args': [
+        '--enable-xml-result-parsing',
+        '--shard-timeout=500'
+      ],
+    },
+    'angle_deqp_gles3_gles_tests': {
+      'swarming': {
+        'shards': 12,
+      },
+      'test': 'angle_deqp_gles3_tests',
+      # Only pass the display type to desktop. The Android runner doesn't support
+      # passing args to the executable but only one display type is supported on
+      # Android anyways.
+      'desktop_args': [
+        '--test-launcher-batch-limit=400',
+        '--deqp-egl-display-type=angle-gles'
+      ],
+      'android_args': [
+        '--enable-xml-result-parsing',
+        '--shard-timeout=500'
+      ],
+    },
+  },
+
+  'gpu_angle_fyi_and_optional_win_specific_isolated_scripts': {
+    # TODO(jmadill): Run on Linux bots when possible.
+    'passthrough_command_buffer_perftests': {
+      'isolate_name': 'command_buffer_perftests',
+      'args': [
+        '-v',
+        '--use-cmd-decoder=passthrough',
+        '--use-angle=gl-null',
+      ],
+    },
+    # TODO(jmadill): Run on Linux bots when possible.
+    'validating_command_buffer_perftests': {
+      'isolate_name': 'command_buffer_perftests',
+      'args': [
+        '-v',
+        '--use-cmd-decoder=validating',
+        '--use-stub',
+      ],
+    },
+  },
+
+  'gpu_angle_unittests': {
+    'angle_unittests': {
+      'desktop_args': [
+        '--use-gpu-in-tests',
+        # ANGLE test retries deliberately disabled to prevent flakiness.
+        # http://crbug.com/669196
+        '--test-launcher-retry-limit=0'
+      ],
+      'linux_args': ['--no-xvfb'],
+    },
+  },
+
+  'gpu_common_and_optional_telemetry_tests': {
+    'info_collection': {
+      'args': [
+        '--expected-vendor-id',
+        '${gpu_vendor_id}',
+        '--expected-device-id',
+        '${gpu_device_id}',
+      ],
+    },
+  },
+
+  # GPU gtests which run on both the main and FYI waterfalls.
+  'gpu_common_gtests': {
+    'gl_tests': {
+      'desktop_args': [
+        '--use-gpu-in-tests',
+        '--use-cmd-decoder=validating',
+      ],
+    },
+    'gl_unittests': {
+      'desktop_args': ['--use-gpu-in-tests'],
+      'linux_args': ['--no-xvfb'],
+    },
+  },
+
+  'gpu_default_and_optional_win_specific_gtests': {
+    'vr_browser_tests': {
+      'args': [
+      '--enable-gpu',
+        '--test-launcher-bot-mode',
+        '--test-launcher-jobs=1',
+        '--gtest_filter=VrBrowserTest*:XrBrowserTest*',
+        '--enable-pixel-output-in-tests',
+        '--gtest_also_run_disabled_tests',
+      ],
+      'test': 'browser_tests',
+    },
+  },
+
+  'gpu_default_win_and_linux_specific_telemetry_tests': {
+    'viz_screenshot_sync': {
+      'args': [
+        '--dont-restore-color-profile-after-test',
+        # This test confirms that GPU compositing is working with OOP-D.
+        '--extra-browser-args=--enable-features=VizDisplayCompositor',
+      ],
+      'telemetry_test_name': 'screenshot_sync',
+    },
+  },
+
+  'gpu_desktop_specific_gtests': {
+    'tab_capture_end2end_tests': {
+      'args': [
+        '--enable-gpu',
+        '--test-launcher-bot-mode',
+        '--test-launcher-jobs=1',
+        '--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*',
+      ],
+      'linux_args': [ '--no-xvfb' ],
+      'test': 'browser_tests',
+    },
+  },
+
+  'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests': {
+    'webgl_conformance_d3d11_passthrough': {
+      'telemetry_test_name': 'webgl_conformance',
+      'args': [
+        '--extra-browser-args=--use-angle=d3d11 --use-cmd-decoder=passthrough',
+      ],
+      'swarming': {
+        'shards': 2,
+      },
+    },
+    'webgl_conformance_d3d9_passthrough': {
+      'telemetry_test_name': 'webgl_conformance',
+      'args': [
+        '--extra-browser-args=--use-angle=d3d9 --use-cmd-decoder=passthrough',
+      ],
+      'swarming': {
+        'shards': 2,
+      },
+    },
+  },
+
+  # These run everywhere ANGLE does; currently, Win and Linux NVIDIA
+  # bots and Android, but not macOS yet.
+  'gpu_fyi_and_optional_isolated_scripts': {
+    'angle_perftests': {
+      'args': [
+        '-v',
+        # Tell the tests to exit after one frame for faster iteration.
+        '--one-frame-only',
+      ],
+    },
+  },
+
+  'gpu_fyi_and_optional_non_linux_gtests': {
+    # gpu_unittests is killing the Swarmed Linux GPU bots similarly to
+    # how content_unittests was: http://crbug.com/763498 .
+    'gpu_unittests': {
+    },
+  },
+
+  'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests': {
+    'webgl_conformance_d3d9_tests': {
+      'telemetry_test_name': 'webgl_conformance',
+      'args': [
+        '--extra-browser-args=--use-angle=d3d9 --use-cmd-decoder=validating',
+      ],
+      'swarming': {
+        'shards': 2,
+      },
+    },
+  },
+
+  'gpu_fyi_and_optional_and_win_angle_amd_gtests': {
+    'angle_end2end_tests': {
+      'desktop_args': [
+        '--use-gpu-in-tests',
+        # ANGLE test retries deliberately disabled to prevent flakiness.
+        # http://crbug.com/669196
+        '--test-launcher-retry-limit=0'
+      ],
+    },
+  },
+
+  'gpu_fyi_and_optional_and_win_angle_amd_win_and_linux_specific_gtests': {
+    # TODO(ynovikov): the old generator script said the white box
+    # tests are supposed to run everywhere angle_end2end_tests do, but
+    # they actually ran only on Windows and Linux.
+    'angle_white_box_tests': {
+      'desktop_args': [
+        # ANGLE test retries deliberately disabled to prevent flakiness.
+        # http://crbug.com/669196
+      '--test-launcher-retry-limit=0'
+      ],
+    },
+  },
+
+  'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests': {
+    'webgl_conformance_gl_passthrough': {
+      'telemetry_test_name': 'webgl_conformance',
+      'args': [
+        '--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough',
+      ],
+      'swarming': {
+        'shards': 2,
+      },
+    },
+  },
+
+  'gpu_fyi_and_optional_win_specific_gtests': {
+    'gles2_conform_d3d9_test': {
+      'args': [
+        '--use-gpu-in-tests',
+        '--use-angle=d3d9',
+      ],
+      'test': 'gles2_conform_test',
+    },
+    'gles2_conform_gl_test': {
+      'args': [
+        '--use-gpu-in-tests',
+        '--use-angle=gl',
+        '--disable-gpu-sandbox',
+      ],
+      'test': 'gles2_conform_test',
+    },
+  },
+
+  'gpu_fyi_desktop_specific_gtests': {
+    # The gles2_conform_tests are closed-source and deliberately only
+    # run on the FYI waterfall and the optional tryservers.
+    'gles2_conform_test': {
+      'args': ['--use-gpu-in-tests'],
+    },
+    'swiftshader_unittests': {
+    },
+  },
+
+  'gpu_fyi_mac_specific_gtests': {
+    # Face and barcode detection unit tests, which currently only run on
+    # Mac OS, and require physical hardware.
+    'services_unittests': {
+      'args': [
+        '--gtest_filter=*Detection*',
+        '--use-gpu-in-tests'
+      ],
+    },
+  },
+
+  'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests': {
+    'webgl2_conformance_gl_passthrough_tests': {
+      'telemetry_test_name': 'webgl_conformance',
+      'args': [
+        '--webgl-conformance-version=2.0.1',
+        # The current working directory when run via isolate is
+        # out/Debug or out/Release. Reference this file relatively to
+        # it.
+        '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
+        '--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough',
+      ],
+      'swarming': {
+        # These tests currently take about an hour and fifteen minutes
+        # to run. Split them into roughly 5-minute shards.
+        'shards': 20,
+      },
+    },
+  },
+
+  'gpu_fyi_only_win_nvidia_release_specific_telemetry_tests': {
+    'webgl2_conformance_d3d11_passthrough_tests': {
+      'args': [
+        '--webgl-conformance-version=2.0.1',
+        # The current working directory when run via isolate is
+        # out/Debug or out/Release. Reference this file relatively to
+        # it.
+        '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
+        '--extra-browser-args=--use-angle=d3d11 --use-cmd-decoder=passthrough',
+      ],
+      'telemetry_test_name': 'webgl_conformance',
+      'swarming': {
+        # These tests currently take about an hour and fifteen minutes
+        # to run. Split them into roughly 5-minute shards.
+        'shards': 20,
+      },
+    },
+  },
+
+  'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests': {
+    'webgl2_conformance_tests': {
+      'telemetry_test_name': 'webgl_conformance',
+      'args': [
+        '--webgl-conformance-version=2.0.1',
+        # The current working directory when run via isolate is
+        # out/Debug or out/Release. Reference this file relatively to
+        # it.
+        '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
+        '--extra-browser-args=--use-cmd-decoder=validating',
+      ],
+      'swarming': {
+        # These tests currently take about an hour and fifteen minutes
+        # to run. Split them into roughly 5-minute shards.
+        'shards': 20,
+      },
+    },
+  },
+
+  # TODO(kbr): merge into gpu_fyi_and_optional_win_specific_gtests.
+  'gpu_fyi_win_specific_gtests': {
+    'angle_gles1_conformance_tests': {
+      'args': ['--use-gpu-in-tests']
+    },
+    'gl_tests_passthrough': {
+      'test': 'gl_tests',
+      'args': [
+        '--use-gpu-in-tests',
+        '--use-cmd-decoder=passthrough',
+      ],
+    },
+    'video_decode_accelerator_d3d9_unittest': {
+      'args': [
+        '--use-angle=d3d9',
+        '--use-test-data-path',
+        '--test_video_data=test-25fps.h264:320:240:250:258:::1',
+      ],
+      'test': 'video_decode_accelerator_unittest',
+    },
+    'video_decode_accelerator_gl_unittest': {
+      'args': [
+        '--use-angle=gl',
+        '--use-test-data-path',
+        '--test_video_data=test-25fps.h264:320:240:250:258:::1',
+      ],
+      'test': 'video_decode_accelerator_unittest',
+    },
+  },
+
+  'gpu_noop_sleep_telemetry_test': {
+    # The former GPU-specific generator script contained logic to
+    # detect whether the so-called "experimental" GPU bots, which test
+    # newer driver versions, were identical to the "stable" versions
+    # of the bots, and if so to mirror their configurations. We prefer
+    # to keep this new script simpler and to just configure this by
+    # hand in waterfalls.pyl.
+    'noop_sleep': {
+    }
+  },
+
+  'gpu_telemetry_tests': {
+    'context_lost': {},
+    'depth_capture': {},
+    'gpu_process': {
+      'name': 'gpu_process_launch_tests',
+    },
+    'hardware_accelerated_feature': {},
+    'maps': {
+      'name': 'maps_pixel_test',
+      'args': [
+        '--dont-restore-color-profile-after-test',
+        '--os-type',
+        '${os_type}',
+        '--build-revision',
+        '${got_revision}',
+        '--test-machine-name',
+        '${buildername}',
+      ],
+    },
+    'pixel': {
+      'name': 'pixel_test',
+      'args': [
+        '--dont-restore-color-profile-after-test',
+        '--refimg-cloud-storage-bucket',
+        'chromium-gpu-archive/reference-images',
+        '--os-type',
+        '${os_type}',
+        '--build-revision',
+        '${got_revision}',
+        '--test-machine-name',
+        '${buildername}',
+      ],
+      'non_precommit_args': [
+        '--upload-refimg-to-cloud-storage',
+      ],
+      'precommit_args': [
+        '--download-refimg-from-cloud-storage',
+      ],
+    },
+    'screenshot_sync': {
+      'args': [
+        '--dont-restore-color-profile-after-test',
+      ],
+    },
+    'trace_test': {},
+    'webgl_conformance': {
+      'android_args': [
+        # The current working directory when run via isolate is
+        # out/Debug or out/Release. Reference this file relatively to
+        # it.
+        '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
+      ],
+      'args': [
+        '--extra-browser-args=--use-cmd-decoder=validating',
+      ],
+      'swarming': {
+        'shards': 2,
+      },
+      'android_swarming': {
+        'shards': 6,
+      },
+    },
+  },
+
+  'gpu_win_specific_gtests': {
+    'gl_tests_passthrough': {
+      'test': 'gl_tests',
+      'desktop_args': [
+        '--use-gpu-in-tests',
+        '--use-cmd-decoder=passthrough',
+      ]
+    },
+    'video_decode_accelerator_d3d11_unittest': {
+      'args': [
+        '--use-angle=d3d11',
+        '--use-test-data-path',
+        '--test_video_data=test-25fps.h264:320:240:250:258:::1',
+      ],
+      'test': 'video_decode_accelerator_unittest',
+    },
+  },
+
+  # END tests which run on the GPU bots
+
   'headless_linux_gtests': {
     'headless_browsertests': {},
     'headless_unittests': {},
@@ -971,32 +1586,6 @@
         'hard_timeout': 10800,
         'ignore_task_failure': False,
         'io_timeout': 3600,
-      },
-    },
-  },
-
-  'goma_gtests': {
-    'base_unittests': {},
-    'content_unittests': {},
-  },
-
-  'goma_mac_gtests': {
-    'base_unittests': {
-      'swarming': {
-        'dimension_sets': [
-          {
-            'os': 'Mac',
-          },
-        ],
-      }
-    },
-    'content_unittests': {
-      'swarming': {
-        'dimension_sets': [
-          {
-            'os': 'Mac',
-          },
-        ],
       },
     },
   },
@@ -2036,6 +2625,279 @@
     'vr_platform_specific_non_clang_win_chromium_gtests',
     'win_specific_chromium_gtests',
   ],
+
+  # BEGIN composition test suites used by the GPU bots
+
+  'gpu_angle_deqp_android_gtests': [
+    'gpu_angle_deqp_egl_gles_tests',
+    'gpu_angle_deqp_gles_gtests',
+  ],
+
+  'gpu_angle_deqp_linux_nvidia_gtests': [
+    'gpu_angle_deqp_egl_gl_tests',
+    'gpu_angle_deqp_gles2_gl_tests',
+    'gpu_angle_deqp_gles2_vulkan_tests',
+    'gpu_angle_deqp_gles3_gl_tests',
+    'gpu_angle_deqp_gles31_gl_tests',
+  ],
+
+  'gpu_angle_deqp_mac_gtests': [
+    'gpu_angle_deqp_egl_gl_tests',
+    'gpu_angle_deqp_gles2_gl_tests',
+    'gpu_angle_deqp_gles3_gl_tests',
+  ],
+
+  'gpu_angle_deqp_win_amd_gtests': [
+    'gpu_angle_deqp_gles2_d3d11_tests',
+    'gpu_angle_deqp_gles2_vulkan_tests',
+  ],
+
+  'gpu_angle_deqp_win_nvidia_gtests': [
+    'gpu_angle_deqp_egl_d3d11_tests',
+    'gpu_angle_deqp_egl_gl_tests',
+    'gpu_angle_deqp_gles2_d3d11_tests',
+    # TODO(kbr): why is gpu_angle_deqp_gles2_gl_tests not here?
+    'gpu_angle_deqp_gles2_vulkan_tests',
+    'gpu_angle_deqp_gles31_d3d11_tests',
+    'gpu_angle_deqp_gles31_gl_tests',
+    'gpu_angle_deqp_gles3_d3d11_tests',
+    # TODO(kbr): why is gpu_angle_deqp_gles3_gl_tests not here?
+  ],
+
+  'gpu_angle_gtests': [
+    'gpu_angle_unittests',
+    'gpu_fyi_and_optional_and_win_angle_amd_gtests',
+  ],
+
+  'gpu_common_telemetry_tests': [
+    'gpu_common_and_optional_telemetry_tests',
+    'gpu_telemetry_tests',
+  ],
+
+  'gpu_common_win_and_linux_telemetry_tests': [
+    'gpu_common_and_optional_telemetry_tests',
+    'gpu_default_win_and_linux_specific_telemetry_tests',
+    'gpu_telemetry_tests',
+  ],
+
+  'gpu_desktop_gtests': [
+    'gpu_angle_unittests',
+    'gpu_common_gtests',
+    'gpu_desktop_specific_gtests',
+  ],
+
+  'gpu_fyi_and_optional_win_isolated_scripts': [
+    'gpu_angle_fyi_and_optional_win_specific_isolated_scripts',
+    'gpu_fyi_and_optional_isolated_scripts',
+  ],
+
+  'gpu_fyi_android_and_mac_gtests': [
+    'gpu_angle_unittests',
+    'gpu_common_gtests',
+    'gpu_fyi_and_optional_and_win_angle_amd_gtests',
+    'gpu_fyi_and_optional_non_linux_gtests',
+  ],
+
+  'gpu_fyi_linux_debug_gtests': [
+    'gpu_angle_unittests',
+    'gpu_common_gtests',
+    'gpu_fyi_and_optional_and_win_angle_amd_gtests',
+    'gpu_fyi_and_optional_and_win_angle_amd_win_and_linux_specific_gtests',
+    'gpu_fyi_desktop_specific_gtests',
+  ],
+
+  'gpu_fyi_linux_optional_gtests': [
+    'gpu_fyi_and_optional_and_win_angle_amd_gtests',
+    'gpu_fyi_and_optional_and_win_angle_amd_win_and_linux_specific_gtests',
+    'gpu_fyi_desktop_specific_gtests',
+  ],
+
+  'gpu_fyi_linux_release_gtests': [
+    'gpu_angle_unittests',
+    'gpu_common_gtests',
+    'gpu_desktop_specific_gtests',
+    'gpu_fyi_and_optional_and_win_angle_amd_gtests',
+    'gpu_fyi_and_optional_and_win_angle_amd_win_and_linux_specific_gtests',
+    'gpu_fyi_desktop_specific_gtests',
+  ],
+
+  'gpu_fyi_mac_debug_gtests': [
+    'gpu_angle_unittests',
+    'gpu_common_gtests',
+    'gpu_fyi_and_optional_and_win_angle_amd_gtests',
+    'gpu_fyi_and_optional_non_linux_gtests',
+    'gpu_fyi_desktop_specific_gtests',
+    'gpu_fyi_mac_specific_gtests',
+  ],
+
+  'gpu_fyi_mac_optional_gtests': [
+    'gpu_fyi_and_optional_and_win_angle_amd_gtests',
+    'gpu_fyi_and_optional_non_linux_gtests',
+    'gpu_fyi_desktop_specific_gtests',
+    'gpu_fyi_mac_specific_gtests',
+  ],
+
+  'gpu_fyi_mac_release_gtests': [
+    'gpu_angle_unittests',
+    'gpu_common_gtests',
+    'gpu_desktop_specific_gtests',
+    'gpu_fyi_and_optional_and_win_angle_amd_gtests',
+    'gpu_fyi_and_optional_non_linux_gtests',
+    'gpu_fyi_desktop_specific_gtests',
+    'gpu_fyi_mac_specific_gtests',
+  ],
+
+  'gpu_fyi_mac_release_telemetry_tests': [
+    'gpu_common_and_optional_telemetry_tests',
+    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_telemetry_tests',
+  ],
+
+  'gpu_fyi_optional_linux_telemetry_tests': [
+    'gpu_common_and_optional_telemetry_tests',
+    'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
+    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+  ],
+
+  'gpu_fyi_optional_telemetry_tests': [
+    'gpu_common_and_optional_telemetry_tests',
+    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+  ],
+
+  'gpu_fyi_win_and_linux_intel_and_nvidia_release_telemetry_tests': [
+    'gpu_common_and_optional_telemetry_tests',
+    'gpu_default_win_and_linux_specific_telemetry_tests',
+    'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
+    'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests',
+    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_telemetry_tests',
+  ],
+
+  'gpu_fyi_win_and_linux_release_telemetry_tests': [
+    'gpu_common_and_optional_telemetry_tests',
+    'gpu_default_win_and_linux_specific_telemetry_tests',
+    'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
+    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_telemetry_tests',
+  ],
+
+  'gpu_fyi_win_and_linux_telemetry_tests': [
+    'gpu_common_and_optional_telemetry_tests',
+    'gpu_default_win_and_linux_specific_telemetry_tests',
+    'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
+    'gpu_telemetry_tests',
+  ],
+
+  'gpu_fyi_win_debug_telemetry_tests': [
+    'gpu_common_and_optional_telemetry_tests',
+    'gpu_default_win_and_linux_specific_telemetry_tests',
+    'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
+    'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
+    'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
+    'gpu_telemetry_tests',
+  ],
+
+  'gpu_fyi_win_gtests': [
+    'gpu_angle_unittests',
+    'gpu_common_gtests',
+    'gpu_default_and_optional_win_specific_gtests',
+    'gpu_desktop_specific_gtests',
+    'gpu_fyi_and_optional_and_win_angle_amd_gtests',
+    'gpu_fyi_and_optional_and_win_angle_amd_win_and_linux_specific_gtests',
+    'gpu_fyi_and_optional_non_linux_gtests',
+    'gpu_fyi_and_optional_win_specific_gtests',
+    'gpu_fyi_desktop_specific_gtests',
+    'gpu_fyi_win_specific_gtests',
+    'gpu_win_specific_gtests',
+  ],
+
+  'gpu_fyi_win_nvidia_release_telemetry_tests': [
+    'gpu_common_and_optional_telemetry_tests',
+    'gpu_default_win_and_linux_specific_telemetry_tests',
+    'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
+    'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
+    'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
+    'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests',
+    'gpu_fyi_only_win_nvidia_release_specific_telemetry_tests',
+    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_telemetry_tests',
+  ],
+
+  'gpu_fyi_win_optional_gtests': [
+    'gpu_default_and_optional_win_specific_gtests',
+    'gpu_fyi_and_optional_and_win_angle_amd_gtests',
+    'gpu_fyi_and_optional_and_win_angle_amd_win_and_linux_specific_gtests',
+    'gpu_fyi_and_optional_non_linux_gtests',
+    'gpu_fyi_and_optional_win_specific_gtests',
+    'gpu_fyi_desktop_specific_gtests',
+  ],
+
+  'gpu_fyi_win_telemetry_tests': [
+    'gpu_common_and_optional_telemetry_tests',
+    'gpu_default_win_and_linux_specific_telemetry_tests',
+    'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
+    'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
+    'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
+    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_telemetry_tests',
+  ],
+
+  'gpu_fyi_win7_gtests': [
+    'gpu_angle_unittests',
+    'gpu_common_gtests',
+    'gpu_desktop_specific_gtests',
+    'gpu_fyi_and_optional_and_win_angle_amd_gtests',
+    'gpu_fyi_and_optional_and_win_angle_amd_win_and_linux_specific_gtests',
+    'gpu_fyi_and_optional_non_linux_gtests',
+    'gpu_fyi_and_optional_win_specific_gtests',
+    'gpu_fyi_desktop_specific_gtests',
+    'gpu_fyi_win_specific_gtests',
+    'gpu_win_specific_gtests',
+  ],
+
+  'gpu_fyi_win7_nvidia_release_telemetry_tests': [
+    'gpu_common_and_optional_telemetry_tests',
+    'gpu_default_win_and_linux_specific_telemetry_tests',
+    'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
+    'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
+    'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
+    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_telemetry_tests',
+  ],
+
+  'gpu_optional_win_telemetry_tests': [
+    'gpu_common_and_optional_telemetry_tests',
+    'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
+    'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
+    'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
+    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+  ],
+
+  'gpu_v8_desktop_telemetry_tests': [
+    'gpu_common_and_optional_telemetry_tests',
+    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_telemetry_tests',
+  ],
+
+  'gpu_win_angle_amd_gtests': [
+    'gpu_fyi_and_optional_and_win_angle_amd_gtests',
+    'gpu_fyi_and_optional_and_win_angle_amd_win_and_linux_specific_gtests',
+  ],
+
+  'gpu_win_angle_amd_telemetry_tests': [
+    'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
+    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+  ],
+
+  'gpu_win_gtests': [
+    'gpu_angle_unittests',
+    'gpu_common_gtests',
+    'gpu_default_and_optional_win_specific_gtests',
+    'gpu_desktop_specific_gtests',
+    'gpu_win_specific_gtests',
+  ],
+
+  # END composition test suites used by the GPU bots
 
   'marshmallow_isolated_scripts': [
     'components_perftests_isolated_scripts',

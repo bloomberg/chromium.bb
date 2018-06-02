@@ -199,13 +199,13 @@ In the [chromium/src] workspace:
         build.
 *   [`src/tools/mb/mb_config.pyl`][mb_config.pyl]
     *   Defines the GN arguments for all of the bots.
-*   [`src/content/test/gpu/generate_buildbot_json.py`][generate_buildbot_json.py]
-    *   The generator script for `chromium.gpu.json` and
+*   [`src/testing/buildbot/generate_buildbot_json.py`][generate_buildbot_json.py]
+    *   The generator script for all the waterfalls, including `chromium.gpu.json` and
         `chromium.gpu.fyi.json`. It defines on which GPUs various tests run.
-    *   It's completely self-contained and should hopefully be fairly
-        comprehensible.
+    *   See the [README for generate_buildbot_json.py] for documentation
+        on this script and the descriptions of the waterfalls and test suites.
     *   When modifying this script, don't forget to also run it, to regenerate
-        the JSON files.
+        the JSON files. Don't worry; the presubmit step will catch this if you forget.
     *   See [Adding new steps to the GPU bots] for more details.
 
 [chromium/src]:              https://chromium.googlesource.com/chromium/src/
@@ -214,7 +214,9 @@ In the [chromium/src] workspace:
 [chromium.gpu.fyi.json]:     https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/chromium.gpu.fyi.json
 [gn_isolate_map.pyl]:        https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/gn_isolate_map.pyl
 [mb_config.pyl]:             https://chromium.googlesource.com/chromium/src/+/master/tools/mb/mb_config.pyl
-[generate_buildbot_json.py]: https://chromium.googlesource.com/chromium/src/+/master/content/test/gpu/generate_buildbot_json.py
+[generate_buildbot_json.py]: https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/generate_buildbot_json.py
+[waterfalls.pyl]:            https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/waterfalls.pyl
+[README for generate_buildbot_json.py]: ../../testing/buildbot/README.md
 
 In the [infradata/config] workspace (Google internal only, sorry):
 
@@ -292,15 +294,12 @@ Builder].
 
 1.  Create a CL in the Chromium workspace which does the following. Here's an
     [example CL](https://chromium-review.googlesource.com/1041164).
-    1.  Adds the new machines to
-        `src/content/test/gpu/generate_buildbot_json.py`.
+    1.  Adds the new machines to [waterfalls.pyl].
         1.  The swarming dimensions are crucial. These must match the GPU and
             OS type of the physical hardware in the Swarming pool. This is what
             causes the VMs to spawn their tests on the correct hardware. Make
             sure to use the Chrome-GPU pool, and that the new machines were
             specifically added to that pool.
-        1.  Make sure to set the `swarming` property to `True` for both the
-            Release and Debug bots.
         1.  Make triply sure that there are no collisions between the new
             hardware you're adding and hardware already in the Swarming pool.
             For example, it used to be the case that all of the Windows NVIDIA
@@ -312,11 +311,12 @@ Builder].
             data center). Similarly, the Win8 bots had to have a very precise
             OS description (`Windows-2012ServerR2-SP0`).
         1.  If you're deploying a new bot that's similar to another existing
-            configuration, please search around in the file for references to
+            configuration, please search around in
+            `src/testing/buildbot/test_suite_exceptions.pyl` for references to
             the other bot's name and see if your new bot needs to be added to
             any exclusion lists. For example, some of the tests don't run on
             certain Win bots because of missing OpenGL extensions.
-        1.  Run this script to regenerate
+        1.  Run [generate_buildbot_json.py] to regenerate
             `src/testing/buildbot/chromium.gpu.fyi.json`.
     1. Updates [`cr-buildbucket.cfg`][cr-buildbucket.cfg]:
         *   Add the two new machines (Release and Debug) inside the
@@ -549,7 +549,7 @@ an entire new optional try bot.
 1.  Create a CL in the Chromium workspace:
     1.  Add your new bot (for example, "Optional Win7 Release
         (CoolNewGPUType)") to the chromium.gpu.fyi waterfall in
-        [generate_buildbot_json.py]. (Note, this is a bad example: the
+        [waterfalls.pyl]. (Note, this is a bad example: the
         "optional" bots have special semantics in this script. You'd probably
         want to define some new category of bot if you didn't intend to add
         this to `win_optional_gpu_tests_rel`.) 
@@ -584,7 +584,7 @@ everywhere. To do this:
 
 1.  Make sure that all of the current Swarming jobs for this OS and GPU
     configuration are targeted at the "stable" version of the driver in
-    `src/testing/gpu/generate_buildbot_json.py`.
+    [waterfalls.pyl].
 1.  File a `Build Infrastructure` bug, component `Infra>Labs`, to have ~4 of the
     physical machines already in the Swarming pool upgraded to the new version
     of the driver.
@@ -593,14 +593,14 @@ everywhere. To do this:
     waterfall](#How-to-add-a-new-tester-bot-to-the-chromium_gpu_fyi-waterfall)
     to deploy one.
 1.  Have this experimental bot target the new version of the driver in
-    `src/testing/gpu/generate_buildbot_json.py`.
+    [waterfalls.pyl].
 1.  Hopefully, the new machine will pass the pixel tests. If it doesn't, then
     unfortunately, it'll be necessary to follow the instructions on
     [updating the pixel tests] to temporarily suppress the failures on this
     particular configuration. Keep the time window for these test suppressions
     as narrow as possible.
 1.  Watch the new machine for a day or two to make sure it's stable.
-1.  When it is, update `src/testing/gpu/generate_buildbot_json.py` to use the
+1.  When it is, update [waterfalls.pyl] to use the
     "gpu trigger script" functionality to select *either* the stable *or* the
     new driver version on the stable version of the bot. See [this
     CL](https://chromium-review.googlesource.com/882344) for an example, though
@@ -611,7 +611,7 @@ everywhere. To do this:
 1.  If necessary, update pixel test expectations and remove the suppressions
     added above.
 1.  Remove the alternate swarming dimensions for the stable bot from
-    `generate_buildbot_json.py`, locking it to the new driver version.
+    [waterfalls.pyl], locking it to the new driver version.
 
 Note that we leave the experimental bot in place. We could reclaim it, but it
 seems worthwhile to continuously test the "next" version of graphics drivers as

@@ -91,7 +91,9 @@ test the code that is actually shipped. As of this writing, the tests included:
 *   `gl_tests`: see `src/gpu/BUILD.gn`
 *   `gl_unittests`: see `src/ui/gl/BUILD.gn`
 
-And more. See `src/content/test/gpu/generate_buildbot_json.py` for the
+And more. See
+[`src/testing/buildbot/README.md`](../../testing/buildbot/README.md)
+and the GPU sections of `test_suites.pyl` and `waterfalls.pyl` for the
 complete description of bots and tests.
 
 Additionally, the Release bots run:
