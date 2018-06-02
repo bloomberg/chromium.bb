@@ -5,8 +5,7 @@
 // https://drafts.css-houdini.org/css-paint-api/#paintworkletglobalscope
 
 [
-    Exposed=PaintWorklet,
-    RuntimeEnabled=CSSPaintAPI
+    Exposed=PaintWorklet
 ] interface PaintSize {
     readonly attribute double width;
     readonly attribute double height;

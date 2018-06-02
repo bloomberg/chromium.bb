@@ -7,7 +7,6 @@
 // Spec: https://drafts.css-houdini.org/css-typed-om/#unparsedvalue-objects
 [
   Constructor(sequence<CSSUnparsedSegment> members),
-  RuntimeEnabled=CSSTypedOM,
   Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSUnparsedValue : CSSStyleValue {
     iterable<CSSUnparsedSegment>;

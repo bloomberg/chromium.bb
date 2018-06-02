@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 [
-  RuntimeEnabled=CSSTypedOM,
   Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] enum CSSNumericBaseType {
     "length",

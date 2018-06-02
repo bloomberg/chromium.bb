@@ -7,7 +7,6 @@
 // Spec: https://drafts.css-houdini.org/css-typed-om/#cssscale
 [
     Constructor(CSSNumberish x, CSSNumberish y, optional CSSNumberish z),
-    RuntimeEnabled=CSSTypedOM,
     Exposed=(Window,LayoutWorklet,PaintWorklet),
     RaisesException=Constructor
 ] interface CSSScale : CSSTransformComponent {

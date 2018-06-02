@@ -8,7 +8,6 @@
 [
     Constructor(CSSNumericValue x, CSSNumericValue y,
         optional CSSNumericValue z),
-    RuntimeEnabled=CSSTypedOM,
     Exposed=(Window,LayoutWorklet,PaintWorklet),
     RaisesException=Constructor
 ] interface CSSTranslate : CSSTransformComponent {

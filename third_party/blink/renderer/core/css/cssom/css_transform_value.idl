@@ -5,7 +5,6 @@
 [
     Constructor(sequence<CSSTransformComponent> transforms),
     RaisesException=Constructor,
-    RuntimeEnabled=CSSTypedOM,
     Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSTransformValue : CSSStyleValue {
     iterable<CSSTransformComponent>;

@@ -5,7 +5,6 @@
 // https://drafts.css-houdini.org/css-typed-om/#the-stylepropertymap
 
 [
-    RuntimeEnabled=CSSTypedOM,
     Exposed=(Window)
 ] interface StylePropertyMap : StylePropertyMapReadOnly {
     // TODO(https://crbug.com/838890): DOMString should be CSSOMString

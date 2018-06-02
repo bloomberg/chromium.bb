@@ -6,8 +6,7 @@
 
 [
     Exposed=PaintWorklet,
-    Global=(Worklet,PaintWorklet),
-    RuntimeEnabled=CSSPaintAPI
+    Global=(Worklet,PaintWorklet)
 ] interface PaintWorkletGlobalScope : WorkletGlobalScope {
     [Measure] readonly attribute unrestricted double devicePixelRatio;
     [Measure, RaisesException] void registerPaint(DOMString name, Function paintCtor);

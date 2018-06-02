@@ -7,7 +7,6 @@
 // Spec: https://drafts.css-houdini.org/css-typed-om/#cssskewx
 [
     Constructor(CSSNumericValue ax),
-    RuntimeEnabled=CSSTypedOM,
     Exposed=(Window, Worker, PaintWorklet, LayoutWorklet),
     RaisesException=Constructor]
 interface CSSSkewX : CSSTransformComponent {

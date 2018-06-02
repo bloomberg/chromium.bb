@@ -105,7 +105,6 @@
     },
     {
       name: "AudioWorklet",
-      depends_on: ["Worklet"],
       status: "stable",
     },
     {
@@ -310,13 +309,7 @@
       status: "stable",
     },
     {
-      name: "CSSPaintAPI",
-      depends_on: ["Worklet"],
-      status: "stable",
-    },
-    {
       name: "CSSPaintAPIArguments",
-      depends_on: ["CSSPaintAPI"],
       status: "experimental",
     },
     {
@@ -337,10 +330,6 @@
     },
     {
       name: "CSSTransformBox",
-      status: "stable",
-    },
-    {
-      name: "CSSTypedOM",
       status: "stable",
     },
     {
@@ -1385,10 +1374,6 @@
       name: "WorkerNosniffWarn",
       status: "test",
       implied_by: ["WorkerNosniffBlock"],
-    },
-    {
-      name: "Worklet",
-      status: "stable",
     },
     {
       name: "WorkStealingInScriptRunner",

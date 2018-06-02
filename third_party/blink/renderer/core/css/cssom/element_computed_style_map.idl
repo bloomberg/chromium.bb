@@ -5,8 +5,7 @@
 // https://drafts.css-houdini.org/css-typed-om/#computed-stylepropertymapreadonly-objects
 
 [
-    ImplementedAs=ElementComputedStyleMap,
-    RuntimeEnabled=CSSTypedOM
+    ImplementedAs=ElementComputedStyleMap
 ] partial interface Element {
     [MeasureAs=CSSTypedOMStylePropertyMap] StylePropertyMapReadOnly computedStyleMap();
 };
