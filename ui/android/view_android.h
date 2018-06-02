@@ -211,7 +211,6 @@ class UI_ANDROID_EXPORT ViewAndroid {
 
   void SetLayoutForTesting(int x, int y, int width, int height);
 
-  // TODO(jinsukkim): Use OnceCallback, as it is used at most once.
   template <typename E>
   using EventHandlerCallback =
       const base::RepeatingCallback<bool(EventHandlerAndroid*, const E&)>;
