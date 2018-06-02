@@ -4,6 +4,25 @@
 
 /**
  * @fileoverview 'cr-input' is a component similar to native input.
+ *
+ * Native input attributes that are currently supported by cr-inputs are:
+ *   autofocus
+ *   disabled
+ *   maxlength
+ *   type (only 'text' and 'password')
+ *   readonly
+ *   pattern
+ *   required
+ *   value
+ *   placeholder
+ *   tabindex as 'tab-index' (e.g.: <cr-input tab-index="-1">)
+ *
+ * Additional attributes that you can use with cr-input:
+ *   label
+ *   auto-validate - triggers validation based on |pattern| and |required|,
+ *                   whenever |value| changes.
+ *   error-message - message displayed under the input when |invalid| is true.
+ *   invalid
  */
 Polymer({
   is: 'cr-input',
@@ -14,6 +33,8 @@ Polymer({
       value: false,
       reflectToAttribute: true,
     },
+
+    autoValidate: Boolean,
 
     disabled: {
       type: Boolean,
@@ -33,6 +54,16 @@ Polymer({
       reflectToAttribute: true,
     },
 
+    maxlength: {
+      type: Number,
+      reflectToAttribute: true,
+    },
+
+    pattern: {
+      type: String,
+      reflectToAttribute: true,
+    },
+
     label: {
       type: String,
       value: '',
@@ -43,7 +74,15 @@ Polymer({
       observer: 'placeholderChanged_',
     },
 
-    readonly: Boolean,
+    readonly: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
+
+    required: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
 
     tabIndex: String,
 
@@ -56,6 +95,7 @@ Polymer({
       type: String,
       value: '',
       notify: true,
+      observer: 'onValueChanged_',
     },
   },
 
@@ -96,6 +136,12 @@ Polymer({
   focus: function() {
     if (this.shadowRoot.activeElement != this.inputElement)
       this.inputElement.focus();
+  },
+
+  /** @private */
+  onValueChanged_: function() {
+    if (this.autoValidate)
+      this.invalid = !this.inputElement.checkValidity();
   },
 
   /**
