@@ -29,6 +29,7 @@ class ConnectionDetails {
   ConnectionMedium connection_medium() const { return connection_medium_; }
 
   bool operator==(const ConnectionDetails& other) const;
+  bool operator!=(const ConnectionDetails& other) const;
   bool operator<(const ConnectionDetails& other) const;
 
  private:

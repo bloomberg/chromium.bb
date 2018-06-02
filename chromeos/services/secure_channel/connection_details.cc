@@ -24,6 +24,10 @@ bool ConnectionDetails::operator==(const ConnectionDetails& other) const {
          connection_medium() == other.connection_medium();
 }
 
+bool ConnectionDetails::operator!=(const ConnectionDetails& other) const {
+  return !(*this == other);
+}
+
 bool ConnectionDetails::operator<(const ConnectionDetails& other) const {
   if (device_id() != other.device_id())
     return device_id() < other.device_id();

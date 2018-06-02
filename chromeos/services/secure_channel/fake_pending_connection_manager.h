@@ -30,8 +30,13 @@ class FakePendingConnectionManager : public PendingConnectionManager {
                              ConnectionRole>>;
   HandledRequestsList& handled_requests() { return handled_requests_; }
 
-  // Make NotifyOnConnection() public for testing.
-  using PendingConnectionManager::NotifyOnConnection;
+  // Notifies the delegate that the a connection was successful for the attempt
+  // associated with |connection_details|. Before this call can complete, there
+  // must be at least one handled request with those details. This call removes
+  // the relevant handled requests from the list returned by handled_requests().
+  void NotifyConnectionForHandledRequests(
+      std::unique_ptr<AuthenticatedChannel> authenticated_channel,
+      const ConnectionDetails& connection_details);
 
  private:
   void HandleConnectionRequest(
