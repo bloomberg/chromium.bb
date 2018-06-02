@@ -42,7 +42,6 @@ MixerInput::MixerInput(Source* source,
       primary_(source->primary()),
       device_id_(source->device_id()),
       content_type_(source->content_type()),
-      output_samples_per_second_(output_samples_per_second),
       filter_group_(filter_group),
       stream_volume_multiplier_(1.0f),
       type_volume_multiplier_(1.0f),
@@ -52,10 +51,10 @@ MixerInput::MixerInput(Source* source,
   DCHECK(source_);
   DCHECK_GT(num_channels_, 0);
   DCHECK_GT(input_samples_per_second_, 0);
-  DCHECK_GT(output_samples_per_second_, 0);
 
   int source_read_size = read_size;
-  if (output_samples_per_second != input_samples_per_second_) {
+  if (output_samples_per_second > 0 &&
+      output_samples_per_second != input_samples_per_second_) {
     // Round up to nearest multiple of SincResampler::kKernelSize. The read size
     // must be > kKernelSize, so we round up to at least 2 * kKernelSize.
     source_read_size = std::max(source_->desired_read_size(),
