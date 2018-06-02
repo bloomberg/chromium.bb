@@ -55,6 +55,6 @@ endforeach()
 # legacy
 add_custom_target(install-headers
     COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/include/spirv
-        ${CMAKE_INSTALL_PREFIX}/include/spirv)
+        $ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/include/spirv)
 
 add_subdirectory(example)
