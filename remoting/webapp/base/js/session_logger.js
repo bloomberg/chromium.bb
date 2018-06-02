@@ -68,6 +68,9 @@ remoting.SessionLogger = function(role, writeLogEntry) {
   /** @private {remoting.ChromotingEvent.FeatureTracker} */
   this.featureTracker_ = null;
 
+  /** @private {number} */
+  this.networkInterfaceCount_;
+
   this.setSessionId_();
 };
 
@@ -167,6 +170,13 @@ remoting.SessionLogger.prototype.setAuthMethod = function(method) {
 remoting.SessionLogger.prototype.setPreviousSessionSummary =
     function(summary) {
   this.previousSessionSummary_ = summary;
+};
+
+/**
+ * @param {number} count
+ */
+remoting.SessionLogger.prototype.setNetworkInterfaceCount = function(count) {
+  this.networkInterfaceCount_ = count;
 };
 
 /**
@@ -402,6 +412,9 @@ remoting.SessionLogger.prototype.fillEvent_ = function(entry) {
   entry.host_version = this.hostVersion_;
   entry.host_os = this.hostOs_;
   entry.host_os_version = this.hostOsVersion_;
+  if (this.networkInterfaceCount_ != undefined) {
+    entry.number_of_network_interfaces = this.networkInterfaceCount_;
+  }
 };
 
 /**

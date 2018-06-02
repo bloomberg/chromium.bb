@@ -96,11 +96,14 @@ void PepperNetworkManager::OnNetworkList(int32_t result,
   bool changed = false;
   MergeNetworkList(networks, &changed);
   if (changed)
-    SignalNetworksChanged();
+    SendNetworksChangedSignal();
 }
 
 void PepperNetworkManager::SendNetworksChangedSignal() {
   SignalNetworksChanged();
+  if (network_info_callback_) {
+    network_info_callback_.Run();
+  }
 }
 
 }  // namespace remoting

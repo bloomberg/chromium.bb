@@ -130,6 +130,8 @@ remoting.ChromotingEvent = function(type) {
   this.client_fullscreen;
   /** @type {remoting.ChromotingEvent.ChromotingDotComMigration} */
   this.chromoting_dot_com_migration;
+  /** @type {number} */
+  this.number_of_network_interfaces;
 
   this.init_();
 };

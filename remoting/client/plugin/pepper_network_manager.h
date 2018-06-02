@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/cpp/instance_handle.h"
@@ -25,12 +26,18 @@ namespace remoting {
 // monitor the host system's network interfaces.
 class PepperNetworkManager : public rtc::NetworkManagerBase {
  public:
+  typedef base::RepeatingCallback<void()> NetworkInfoCallback;
+
   PepperNetworkManager(const pp::InstanceHandle& instance);
   ~PepperNetworkManager() override;
 
   // NetworkManager interface.
   void StartUpdating() override;
   void StopUpdating() override;
+
+  void set_network_info_callback(NetworkInfoCallback callback) {
+    network_info_callback_ = callback;
+  }
 
  private:
   static void OnNetworkListCallbackHandler(void* user_data,
@@ -43,6 +50,7 @@ class PepperNetworkManager : public rtc::NetworkManagerBase {
   pp::NetworkMonitor monitor_;
   int start_count_;
   bool network_list_received_;
+  NetworkInfoCallback network_info_callback_;
 
   pp::CompletionCallbackFactory<PepperNetworkManager> callback_factory_;
 

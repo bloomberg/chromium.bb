@@ -10,13 +10,16 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ppapi/cpp/instance_handle.h"
+#include "remoting/client/plugin/pepper_network_manager.h"
 #include "remoting/protocol/port_allocator_factory.h"
 
 namespace remoting {
 
 class PepperPortAllocatorFactory : public protocol::PortAllocatorFactory {
  public:
-  PepperPortAllocatorFactory(pp::InstanceHandle pp_instance);
+  PepperPortAllocatorFactory(
+      pp::InstanceHandle pp_instance,
+      PepperNetworkManager::NetworkInfoCallback callback);
   ~PepperPortAllocatorFactory() override;
 
    // PortAllocatorFactory interface.
@@ -25,6 +28,7 @@ class PepperPortAllocatorFactory : public protocol::PortAllocatorFactory {
 
  private:
   pp::InstanceHandle pp_instance_;
+  PepperNetworkManager::NetworkInfoCallback network_info_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPortAllocatorFactory);
 };
