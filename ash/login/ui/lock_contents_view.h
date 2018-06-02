@@ -25,6 +25,7 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/view.h"
@@ -384,6 +385,11 @@ class ASH_EXPORT LockContentsView
 
   // Expanded view for public account user to select language and keyboard.
   LoginExpandedPublicAccountView* expanded_view_ = nullptr;
+
+  // Whether the virtual keyboard is currently shown. Only changes when the
+  // keyboard state changes to KeyboardControllerState::SHOWN or to
+  // KeyboardControllerState::HIDDEN.
+  bool keyboard_shown_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LockContentsView);
 };
