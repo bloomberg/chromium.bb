@@ -87,9 +87,6 @@ vars = {
   # as an expression.
   'cros_download_vm': '"{cros_board}" == "amd64-generic"',
 
-  # ANGLE's deps are relative to the angle_root variable.
-  'angle_root': 'src/third_party/angle',
-
   'android_git': 'https://android.googlesource.com',
   'aomedia_git': 'https://aomedia.googlesource.com',
   'chromium_git': 'https://chromium.googlesource.com',
@@ -2137,7 +2134,7 @@ recursedeps = [
   # buildtools provides clang_format, libc++, and libc++abi
   'src/buildtools',
   # ANGLE manages DEPS that it also owns the build files for, such as dEQP.
-  "src/third_party/angle",
+  ("src/third_party/angle", "DEPS.chromium"),
   # src-internal has its own DEPS file to pull additional internal repos
   'src-internal',
 ]
