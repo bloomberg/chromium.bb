@@ -12,6 +12,8 @@ source_set("cells") {
     "byo_textfield_item.mm",
     "card_multiline_item.h",
     "card_multiline_item.mm",
+    "clear_browsing_data_constants.h",
+    "clear_browsing_data_constants.mm",
     "copied_to_chrome_item.h",
     "copied_to_chrome_item.mm",
     "encryption_item.h",

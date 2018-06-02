@@ -51,6 +51,7 @@
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
+#import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/time_range_selector_collection_view_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -66,14 +67,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-NSString* const kClearBrowsingDataCollectionViewId =
-    @"kClearBrowsingDataCollectionViewId";
-NSString* const kClearBrowsingHistoryCellId = @"kClearBrowsingHistoryCellId";
-NSString* const kClearCookiesCellId = @"kClearCookiesCellId";
-NSString* const kClearCacheCellId = @"kClearCacheCellId";
-NSString* const kClearSavedPasswordsCellId = @"kClearSavedPasswordsCellId";
-NSString* const kClearAutofillCellId = @"kClearAutofillCellId";
 
 namespace {
 
@@ -255,7 +248,7 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
 
     self.title = l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
     self.collectionViewAccessibilityIdentifier =
-        kClearBrowsingDataCollectionViewId;
+        kClearBrowsingDataCollectionViewAccessibilityIdentifier;
 
     if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
       constexpr int maxValue =
@@ -770,15 +763,15 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
 - (NSString*)getAccessibilityIdentifierFromItemType:(NSInteger)itemType {
   switch (itemType) {
     case ItemTypeDataTypeBrowsingHistory:
-      return kClearBrowsingHistoryCellId;
+      return kClearBrowsingHistoryCellAccessibilityIdentifier;
     case ItemTypeDataTypeCookiesSiteData:
-      return kClearCookiesCellId;
+      return kClearCookiesCellAccessibilityIdentifier;
     case ItemTypeDataTypeCache:
-      return kClearCacheCellId;
+      return kClearCacheCellAccessibilityIdentifier;
     case ItemTypeDataTypeSavedPasswords:
-      return kClearSavedPasswordsCellId;
+      return kClearSavedPasswordsCellAccessibilityIdentifier;
     case ItemTypeDataTypeAutofill:
-      return kClearAutofillCellId;
+      return kClearAutofillCellAccessibilityIdentifier;
     default: {
       NOTREACHED();
       return nil;
