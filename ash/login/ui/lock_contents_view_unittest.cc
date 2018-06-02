@@ -1021,6 +1021,53 @@ TEST_F(LockContentsViewKeyboardUnitTest, SwitchPinAndVirtualKeyboard) {
   EXPECT_TRUE(pin_view->visible());
 }
 
+// Verifies that swapping auth users while the virtual keyboard is active
+// focuses the other user's password field.
+TEST_F(LockContentsViewKeyboardUnitTest, SwitchUserWhileKeyboardShown) {
+  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
+  LockContentsView* contents =
+      LockScreen::TestApi(LockScreen::Get()).contents_view();
+  ASSERT_NE(nullptr, contents);
+
+  LoadUsers(2);
+
+  LoginAuthUserView::TestApi primary_user(
+      LockContentsView::TestApi(contents).primary_big_view()->auth_user());
+  LoginAuthUserView::TestApi secondary_user(LockContentsView::TestApi(contents)
+                                                .opt_secondary_big_view()
+                                                ->auth_user());
+
+  ASSERT_NO_FATAL_FAILURE(ShowKeyboard());
+  EXPECT_TRUE(LoginPasswordView::TestApi(primary_user.password_view())
+                  .textfield()
+                  ->HasFocus());
+
+  // Simulate a button click on the secondary UserView.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(
+      secondary_user.user_view()->GetBoundsInScreen().CenterPoint());
+  generator.ClickLeftButton();
+
+  EXPECT_TRUE(LoginPasswordView::TestApi(secondary_user.password_view())
+                  .textfield()
+                  ->HasFocus());
+  EXPECT_FALSE(LoginPasswordView::TestApi(primary_user.password_view())
+                   .textfield()
+                   ->HasFocus());
+
+  // Simulate a button click on the primary UserView.
+  generator.MoveMouseTo(
+      primary_user.user_view()->GetBoundsInScreen().CenterPoint());
+  generator.ClickLeftButton();
+
+  EXPECT_TRUE(LoginPasswordView::TestApi(primary_user.password_view())
+                  .textfield()
+                  ->HasFocus());
+  EXPECT_FALSE(LoginPasswordView::TestApi(secondary_user.password_view())
+                   .textfield()
+                   ->HasFocus());
+}
+
 // Verify that swapping works in two user layout between one regular auth user
 // and one public account user.
 TEST_F(LockContentsViewUnitTest, SwapAuthAndPublicAccountUserInTwoUserLayout) {

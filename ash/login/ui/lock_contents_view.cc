@@ -780,7 +780,17 @@ void LockContentsView::OnStateChanged(
     const keyboard::KeyboardControllerState state) {
   if (state == keyboard::KeyboardControllerState::SHOWN ||
       state == keyboard::KeyboardControllerState::HIDDEN) {
-    LayoutAuth(primary_big_view_, opt_secondary_big_view_, false /*animate*/);
+    bool keyboard_will_be_shown =
+        state == keyboard::KeyboardControllerState::SHOWN;
+    // Keyboard state can go from SHOWN -> SomeStateOtherThanShownOrHidden ->
+    // SHOWN when we click on the inactive BigUser while the virtual keyboard is
+    // active. In this case, we should do nothing, since
+    // SwapActiveAuthBetweenPrimaryAndSecondary handles the re-layout.
+    if (keyboard_shown_ == keyboard_will_be_shown)
+      return;
+    keyboard_shown_ = keyboard_will_be_shown;
+    LayoutAuth(CurrentBigUserView(), nullptr /*opt_to_hide*/,
+               false /*animate*/);
   }
 }
 
