@@ -865,6 +865,9 @@ typedef TestParams<SubpixVarMxNFunc> SubpelVarianceParams;
 INSTANTIATE_TEST_CASE_P(
     C, AvxSubpelVarianceTest,
     ::testing::Values(
+        SubpelVarianceParams(7, 7, &aom_sub_pixel_variance128x128_c, 0),
+        SubpelVarianceParams(7, 6, &aom_sub_pixel_variance128x64_c, 0),
+        SubpelVarianceParams(6, 7, &aom_sub_pixel_variance64x128_c, 0),
         SubpelVarianceParams(6, 6, &aom_sub_pixel_variance64x64_c, 0),
         SubpelVarianceParams(6, 5, &aom_sub_pixel_variance64x32_c, 0),
         SubpelVarianceParams(5, 6, &aom_sub_pixel_variance32x64_c, 0),
@@ -883,6 +886,9 @@ typedef TestParams<SubpixAvgVarMxNFunc> SubpelAvgVarianceParams;
 INSTANTIATE_TEST_CASE_P(
     C, AvxSubpelAvgVarianceTest,
     ::testing::Values(
+        SubpelAvgVarianceParams(7, 7, &aom_sub_pixel_avg_variance128x128_c, 0),
+        SubpelAvgVarianceParams(7, 6, &aom_sub_pixel_avg_variance128x64_c, 0),
+        SubpelAvgVarianceParams(6, 7, &aom_sub_pixel_avg_variance64x128_c, 0),
         SubpelAvgVarianceParams(6, 6, &aom_sub_pixel_avg_variance64x64_c, 0),
         SubpelAvgVarianceParams(6, 5, &aom_sub_pixel_avg_variance64x32_c, 0),
         SubpelAvgVarianceParams(5, 6, &aom_sub_pixel_avg_variance32x64_c, 0),
@@ -1193,6 +1199,9 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     SSE2, AvxSubpelVarianceTest,
     ::testing::Values(
+        SubpelVarianceParams(7, 7, &aom_sub_pixel_variance128x128_sse2, 0),
+        SubpelVarianceParams(7, 6, &aom_sub_pixel_variance128x64_sse2, 0),
+        SubpelVarianceParams(6, 7, &aom_sub_pixel_variance64x128_sse2, 0),
         SubpelVarianceParams(6, 6, &aom_sub_pixel_variance64x64_sse2, 0),
         SubpelVarianceParams(6, 5, &aom_sub_pixel_variance64x32_sse2, 0),
         SubpelVarianceParams(5, 6, &aom_sub_pixel_variance32x64_sse2, 0),
@@ -1210,6 +1219,12 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     SSE2, AvxSubpelAvgVarianceTest,
     ::testing::Values(
+        SubpelAvgVarianceParams(7, 7, &aom_sub_pixel_avg_variance128x128_sse2,
+                                0),
+        SubpelAvgVarianceParams(7, 6, &aom_sub_pixel_avg_variance128x64_sse2,
+                                0),
+        SubpelAvgVarianceParams(6, 7, &aom_sub_pixel_avg_variance64x128_sse2,
+                                0),
         SubpelAvgVarianceParams(6, 6, &aom_sub_pixel_avg_variance64x64_sse2, 0),
         SubpelAvgVarianceParams(6, 5, &aom_sub_pixel_avg_variance64x32_sse2, 0),
         SubpelAvgVarianceParams(5, 6, &aom_sub_pixel_avg_variance32x64_sse2, 0),
@@ -1415,6 +1430,9 @@ INSTANTIATE_TEST_CASE_P(SSE2, AvxHBDSubpelAvgVarianceTest,
 INSTANTIATE_TEST_CASE_P(
     SSSE3, AvxSubpelVarianceTest,
     ::testing::Values(
+        SubpelVarianceParams(7, 7, &aom_sub_pixel_variance128x128_ssse3, 0),
+        SubpelVarianceParams(7, 6, &aom_sub_pixel_variance128x64_ssse3, 0),
+        SubpelVarianceParams(6, 7, &aom_sub_pixel_variance64x128_ssse3, 0),
         SubpelVarianceParams(6, 6, &aom_sub_pixel_variance64x64_ssse3, 0),
         SubpelVarianceParams(6, 5, &aom_sub_pixel_variance64x32_ssse3, 0),
         SubpelVarianceParams(5, 6, &aom_sub_pixel_variance32x64_ssse3, 0),
@@ -1432,6 +1450,12 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     SSSE3, AvxSubpelAvgVarianceTest,
     ::testing::Values(
+        SubpelAvgVarianceParams(7, 7, &aom_sub_pixel_avg_variance128x128_ssse3,
+                                0),
+        SubpelAvgVarianceParams(7, 6, &aom_sub_pixel_avg_variance128x64_ssse3,
+                                0),
+        SubpelAvgVarianceParams(6, 7, &aom_sub_pixel_avg_variance64x128_ssse3,
+                                0),
         SubpelAvgVarianceParams(6, 6, &aom_sub_pixel_avg_variance64x64_ssse3,
                                 0),
         SubpelAvgVarianceParams(6, 5, &aom_sub_pixel_avg_variance64x32_ssse3,
@@ -1520,14 +1544,29 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     AVX2, AvxSubpelVarianceTest,
     ::testing::Values(
+        SubpelVarianceParams(7, 7, &aom_sub_pixel_variance128x128_avx2, 0),
+        SubpelVarianceParams(7, 6, &aom_sub_pixel_variance128x64_avx2, 0),
+        SubpelVarianceParams(6, 7, &aom_sub_pixel_variance64x128_avx2, 0),
         SubpelVarianceParams(6, 6, &aom_sub_pixel_variance64x64_avx2, 0),
-        SubpelVarianceParams(5, 5, &aom_sub_pixel_variance32x32_avx2, 0)));
+        SubpelVarianceParams(6, 5, &aom_sub_pixel_variance64x32_avx2, 0),
+        SubpelVarianceParams(5, 6, &aom_sub_pixel_variance32x64_avx2, 0),
+        SubpelVarianceParams(5, 5, &aom_sub_pixel_variance32x32_avx2, 0),
+        SubpelVarianceParams(5, 4, &aom_sub_pixel_variance32x16_avx2, 0)));
 
 INSTANTIATE_TEST_CASE_P(
     AVX2, AvxSubpelAvgVarianceTest,
     ::testing::Values(
+        SubpelAvgVarianceParams(7, 7, &aom_sub_pixel_avg_variance128x128_avx2,
+                                0),
+        SubpelAvgVarianceParams(7, 6, &aom_sub_pixel_avg_variance128x64_avx2,
+                                0),
+        SubpelAvgVarianceParams(6, 7, &aom_sub_pixel_avg_variance64x128_avx2,
+                                0),
         SubpelAvgVarianceParams(6, 6, &aom_sub_pixel_avg_variance64x64_avx2, 0),
-        SubpelAvgVarianceParams(5, 5, &aom_sub_pixel_avg_variance32x32_avx2,
+        SubpelAvgVarianceParams(6, 5, &aom_sub_pixel_avg_variance64x32_avx2, 0),
+        SubpelAvgVarianceParams(5, 6, &aom_sub_pixel_avg_variance32x64_avx2, 0),
+        SubpelAvgVarianceParams(5, 5, &aom_sub_pixel_avg_variance32x32_avx2, 0),
+        SubpelAvgVarianceParams(5, 4, &aom_sub_pixel_avg_variance32x16_avx2,
                                 0)));
 #endif  // HAVE_AVX2
 
