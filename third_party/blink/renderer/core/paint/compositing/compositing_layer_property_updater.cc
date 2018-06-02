@@ -43,9 +43,12 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
   // that all of its ancestors have a visible subtree. An ancestor with no
   // visible subtree can be non-composited despite we expected it to, this
   // resulted in the paint offset used by CompositedLayerMapping to mismatch.
+#if 0
+  // TODO(crbug.com/838018): Re-enable this check.
   bool subpixel_accumulation_may_be_bogus = paint_layer->SubtreeIsInvisible();
   DCHECK(layout_snapped_paint_offset == snapped_paint_offset ||
          subpixel_accumulation_may_be_bogus);
+#endif
 
   base::Optional<PropertyTreeState> container_layer_state;
   auto SetContainerLayerState =
