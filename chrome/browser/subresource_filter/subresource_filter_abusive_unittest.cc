@@ -72,9 +72,7 @@ class SubresourceFilterAbusiveTest
         subresource_filter::Configuration::
             MakePresetForLiveRunOnPhishingSites(),
         subresource_filter::Configuration::MakePresetForLiveRunForBetterAds()};
-    scoped_configuration().ResetConfiguration(
-        base::MakeRefCounted<subresource_filter::ConfigurationList>(configs));
-    EXPECT_TRUE(base::FeatureList::IsEnabled(kAbusiveExperienceEnforce));
+    scoped_configuration().ResetConfiguration(configs);
 
     popup_blocker_ =
         SafeBrowsingTriggeredPopupBlocker::MaybeCreate(web_contents());
