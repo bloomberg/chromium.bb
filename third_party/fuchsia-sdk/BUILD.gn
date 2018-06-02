@@ -250,6 +250,9 @@ fuchsia_sdk_fidl_pkg("mem") {
 }
 
 fuchsia_sdk_fidl_pkg("netstack") {
+  namespace = "fuchsia"
+  namespace_path = "fuchsia"
+
   sources = [
     "net_address.fidl",
     "netstack.fidl",
