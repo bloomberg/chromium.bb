@@ -14,12 +14,12 @@ namespace blink {
 class PaintPropertyNodeTest : public testing::Test {
  protected:
   void SetUp() override {
-    root = ClipPaintPropertyNode::Root();
-    node = CreateClip(root, nullptr, FloatRoundedRect());
-    child1 = CreateClip(node, nullptr, FloatRoundedRect());
-    child2 = CreateClip(node, nullptr, FloatRoundedRect());
-    grandchild1 = CreateClip(child1, nullptr, FloatRoundedRect());
-    grandchild2 = CreateClip(child2, nullptr, FloatRoundedRect());
+    root = &ClipPaintPropertyNode::Root();
+    node = CreateClip(*root, nullptr, FloatRoundedRect());
+    child1 = CreateClip(*node, nullptr, FloatRoundedRect());
+    child2 = CreateClip(*node, nullptr, FloatRoundedRect());
+    grandchild1 = CreateClip(*child1, nullptr, FloatRoundedRect());
+    grandchild2 = CreateClip(*child2, nullptr, FloatRoundedRect());
 
     //          root
     //           |
@@ -35,10 +35,10 @@ class PaintPropertyNodeTest : public testing::Test {
     grandchild2->ClearChangedToRoot();
   }
 
-  static void Update(scoped_refptr<ClipPaintPropertyNode> node,
-                     scoped_refptr<const ClipPaintPropertyNode> new_parent,
+  static void Update(std::unique_ptr<ClipPaintPropertyNode>& node,
+                     const ClipPaintPropertyNode& new_parent,
                      const FloatRoundedRect& new_clip_rect) {
-    node->Update(std::move(new_parent),
+    node->Update(new_parent,
                  ClipPaintPropertyNode::State{nullptr, new_clip_rect});
   }
 
@@ -60,30 +60,30 @@ class PaintPropertyNodeTest : public testing::Test {
     EXPECT_FALSE(grandchild2->Changed(*root));
   }
 
-  scoped_refptr<ClipPaintPropertyNode> root;
-  scoped_refptr<ClipPaintPropertyNode> node;
-  scoped_refptr<ClipPaintPropertyNode> child1;
-  scoped_refptr<ClipPaintPropertyNode> child2;
-  scoped_refptr<ClipPaintPropertyNode> grandchild1;
-  scoped_refptr<ClipPaintPropertyNode> grandchild2;
+  const ClipPaintPropertyNode* root;
+  std::unique_ptr<ClipPaintPropertyNode> node;
+  std::unique_ptr<ClipPaintPropertyNode> child1;
+  std::unique_ptr<ClipPaintPropertyNode> child2;
+  std::unique_ptr<ClipPaintPropertyNode> grandchild1;
+  std::unique_ptr<ClipPaintPropertyNode> grandchild2;
 };
 
 TEST_F(PaintPropertyNodeTest, LowestCommonAncestor) {
-  EXPECT_EQ(node, &LowestCommonAncestor(*node, *node));
+  EXPECT_EQ(node.get(), &LowestCommonAncestor(*node, *node));
   EXPECT_EQ(root, &LowestCommonAncestor(*root, *root));
 
-  EXPECT_EQ(node, &LowestCommonAncestor(*grandchild1, *grandchild2));
-  EXPECT_EQ(node, &LowestCommonAncestor(*grandchild1, *child2));
+  EXPECT_EQ(node.get(), &LowestCommonAncestor(*grandchild1, *grandchild2));
+  EXPECT_EQ(node.get(), &LowestCommonAncestor(*grandchild1, *child2));
   EXPECT_EQ(root, &LowestCommonAncestor(*grandchild1, *root));
-  EXPECT_EQ(child1, &LowestCommonAncestor(*grandchild1, *child1));
+  EXPECT_EQ(child1.get(), &LowestCommonAncestor(*grandchild1, *child1));
 
-  EXPECT_EQ(node, &LowestCommonAncestor(*grandchild2, *grandchild1));
-  EXPECT_EQ(node, &LowestCommonAncestor(*grandchild2, *child1));
+  EXPECT_EQ(node.get(), &LowestCommonAncestor(*grandchild2, *grandchild1));
+  EXPECT_EQ(node.get(), &LowestCommonAncestor(*grandchild2, *child1));
   EXPECT_EQ(root, &LowestCommonAncestor(*grandchild2, *root));
-  EXPECT_EQ(child2, &LowestCommonAncestor(*grandchild2, *child2));
+  EXPECT_EQ(child2.get(), &LowestCommonAncestor(*grandchild2, *child2));
 
-  EXPECT_EQ(node, &LowestCommonAncestor(*child1, *child2));
-  EXPECT_EQ(node, &LowestCommonAncestor(*child2, *child1));
+  EXPECT_EQ(node.get(), &LowestCommonAncestor(*child1, *child2));
+  EXPECT_EQ(node.get(), &LowestCommonAncestor(*child2, *child1));
 }
 
 TEST_F(PaintPropertyNodeTest, InitialStateAndReset) {
@@ -94,7 +94,7 @@ TEST_F(PaintPropertyNodeTest, InitialStateAndReset) {
 
 TEST_F(PaintPropertyNodeTest, ChangeNode) {
   ResetAllChanged();
-  Update(node, root, FloatRoundedRect(1, 2, 3, 4));
+  Update(node, *root, FloatRoundedRect(1, 2, 3, 4));
   EXPECT_TRUE(node->Changed(*root));
   EXPECT_FALSE(node->Changed(*node));
   EXPECT_TRUE(child1->Changed(*root));
@@ -111,7 +111,7 @@ TEST_F(PaintPropertyNodeTest, ChangeNode) {
 
 TEST_F(PaintPropertyNodeTest, ChangeOneChild) {
   ResetAllChanged();
-  Update(child1, node, FloatRoundedRect(1, 2, 3, 4));
+  Update(child1, *node, FloatRoundedRect(1, 2, 3, 4));
   EXPECT_FALSE(node->Changed(*root));
   EXPECT_FALSE(node->Changed(*node));
   EXPECT_TRUE(child1->Changed(*root));
@@ -136,7 +136,7 @@ TEST_F(PaintPropertyNodeTest, ChangeOneChild) {
 
 TEST_F(PaintPropertyNodeTest, Reparent) {
   ResetAllChanged();
-  Update(child1, child2, FloatRoundedRect(1, 2, 3, 4));
+  Update(child1, *child2, FloatRoundedRect(1, 2, 3, 4));
   EXPECT_FALSE(node->Changed(*root));
   EXPECT_TRUE(child1->Changed(*node));
   EXPECT_TRUE(child1->Changed(*child2));

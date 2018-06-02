@@ -517,7 +517,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
     properties_before_subsequence =
         new_paint_chunks_.CurrentPaintChunkProperties();
     UpdateCurrentPaintChunkPropertiesUsingIdWithFragment(
-        cached_chunk->id, cached_chunk->properties.GetPropertyTreeState());
+        cached_chunk->id, cached_chunk->properties);
   } else {
     // Avoid uninitialized variable error on Windows.
     cached_chunk = current_paint_artifact_.PaintChunks().begin();
@@ -537,7 +537,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
       DCHECK(cached_chunk != current_paint_artifact_.PaintChunks().end());
       new_paint_chunks_.ForceNewChunk();
       UpdateCurrentPaintChunkPropertiesUsingIdWithFragment(
-          cached_chunk->id, cached_chunk->properties.GetPropertyTreeState());
+          cached_chunk->id, cached_chunk->properties);
     }
 
 #if DCHECK_IS_ON()

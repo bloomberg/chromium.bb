@@ -8,14 +8,13 @@ namespace blink {
 
 // The root of the transform tree. The root transform node references the root
 // scroll node.
-TransformPaintPropertyNode* TransformPaintPropertyNode::Root() {
-  DEFINE_STATIC_REF(
+const TransformPaintPropertyNode& TransformPaintPropertyNode::Root() {
+  DEFINE_STATIC_LOCAL(
       TransformPaintPropertyNode, root,
-      base::AdoptRef(new TransformPaintPropertyNode(
-          nullptr,
-          State{TransformationMatrix(), FloatPoint3D(), false,
-                BackfaceVisibility::kVisible, 0, CompositingReason::kNone,
-                CompositorElementId(), ScrollPaintPropertyNode::Root()})));
+      (nullptr,
+       State{TransformationMatrix(), FloatPoint3D(), false,
+             BackfaceVisibility::kVisible, 0, CompositingReason::kNone,
+             CompositorElementId(), &ScrollPaintPropertyNode::Root()}));
   return root;
 }
 
@@ -61,7 +60,7 @@ std::unique_ptr<JSONObject> TransformPaintPropertyNode::ToJSON() const {
                     state_.compositor_element_id.ToString().c_str());
   }
   if (state_.scroll)
-    json->SetString("scroll", String::Format("%p", state_.scroll.get()));
+    json->SetString("scroll", String::Format("%p", state_.scroll));
   return json;
 }
 

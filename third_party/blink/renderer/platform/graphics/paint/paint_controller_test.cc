@@ -482,7 +482,7 @@ TEST_P(PaintControllerTest, UpdateClip) {
   FakeDisplayItemClient second("second", LayoutRect(100, 100, 200, 200));
   GraphicsContext context(GetPaintController());
 
-  auto clip = CreateClip(nullptr, nullptr, FloatRoundedRect(1, 1, 2, 2));
+  auto clip = CreateClip(c0(), &t0(), FloatRoundedRect(1, 1, 2, 2));
   auto properties = DefaultPaintChunkProperties();
   properties.SetClip(clip.get());
   GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -522,7 +522,7 @@ TEST_P(PaintControllerTest, UpdateClip) {
   second.SetDisplayItemsUncached();
   DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
 
-  auto clip2 = CreateClip(nullptr, nullptr, FloatRoundedRect(1, 1, 2, 2));
+  auto clip2 = CreateClip(c0(), &t0(), FloatRoundedRect(1, 1, 2, 2));
   auto properties2 = DefaultPaintChunkProperties();
   properties2.SetClip(clip2.get());
   GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -798,13 +798,11 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
   FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
 
-  auto container1_effect =
-      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5);
+  auto container1_effect = CreateOpacityEffect(e0(), 0.5);
   auto container1_properties = DefaultPaintChunkProperties();
   container1_properties.SetEffect(container1_effect.get());
 
-  auto container2_effect =
-      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5);
+  auto container2_effect = CreateOpacityEffect(e0(), 0.5);
   auto container2_properties = DefaultPaintChunkProperties();
   container2_properties.SetEffect(container2_effect.get());
 
@@ -1117,13 +1115,11 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
   FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
 
-  auto container1_effect =
-      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5);
+  auto container1_effect = CreateOpacityEffect(e0(), 0.5);
   auto container1_properties = DefaultPaintChunkProperties();
   container1_properties.SetEffect(container1_effect.get());
 
-  auto container2_effect =
-      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5);
+  auto container2_effect = CreateOpacityEffect(e0(), 0.5);
   auto container2_properties = DefaultPaintChunkProperties();
   container2_properties.SetEffect(container2_effect.get());
 
@@ -1230,25 +1226,21 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
   FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
 
-  auto container1_effect =
-      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5);
+  auto container1_effect = CreateOpacityEffect(e0(), 0.5);
   auto container1_background_properties = DefaultPaintChunkProperties();
   container1_background_properties.SetEffect(container1_effect.get());
   auto container1_foreground_properties = DefaultPaintChunkProperties();
   container1_foreground_properties.SetEffect(container1_effect.get());
 
-  auto content1_effect =
-      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.6);
+  auto content1_effect = CreateOpacityEffect(e0(), 0.6);
   auto content1_properties = DefaultPaintChunkProperties();
   content1_properties.SetEffect(content1_effect.get());
 
-  auto container2_effect =
-      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.7);
+  auto container2_effect = CreateOpacityEffect(e0(), 0.7);
   auto container2_background_properties = DefaultPaintChunkProperties();
   container2_background_properties.SetEffect(container2_effect.get());
 
-  auto content2_effect =
-      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.8);
+  auto content2_effect = CreateOpacityEffect(e0(), 0.8);
   auto content2_properties = DefaultPaintChunkProperties();
   content2_properties.SetEffect(content2_effect.get());
 

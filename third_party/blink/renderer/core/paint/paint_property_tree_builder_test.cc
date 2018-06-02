@@ -845,7 +845,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesInSVG) {
       PaintPropertiesForElement("groupWithOpacity");
   EXPECT_EQ(0.6f, group_with_opacity_properties->Effect()->Opacity());
   EXPECT_EQ(svg_clip, group_with_opacity_properties->Effect()->OutputClip());
-  EXPECT_EQ(EffectPaintPropertyNode::Root(),
+  EXPECT_EQ(&EffectPaintPropertyNode::Root(),
             group_with_opacity_properties->Effect()->Parent());
 
   EXPECT_EQ(nullptr, PaintPropertiesForElement("rectWithoutOpacity"));
@@ -4626,7 +4626,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGResource) {
 
   // The <marker> object resets to a new paint property tree, so the
   // transform within it should have the root as parent.
-  EXPECT_EQ(TransformPaintPropertyNode::Root(),
+  EXPECT_EQ(&TransformPaintPropertyNode::Root(),
             transform_inside_marker_properties->Transform()->Parent());
 
   // Whereas this is not true of the transform above the path.
@@ -4659,7 +4659,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGHiddenResource) {
 
   // The <marker> object resets to a new paint property tree, so the
   // transform within it should have the root as parent.
-  EXPECT_EQ(TransformPaintPropertyNode::Root(),
+  EXPECT_EQ(&TransformPaintPropertyNode::Root(),
             transform_inside_symbol_properties->Transform()->Parent());
 
   // Whereas this is not true of the transform above the path.
@@ -4680,7 +4680,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootBlending) {
   const ObjectPaintProperties* svg_root_properties =
       svg_root.FirstFragment().PaintProperties();
   EXPECT_TRUE(svg_root_properties->Effect());
-  EXPECT_EQ(EffectPaintPropertyNode::Root(),
+  EXPECT_EQ(&EffectPaintPropertyNode::Root(),
             svg_root_properties->Effect()->Parent());
 }
 

@@ -5,10 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_PROPERTY_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_PROPERTY_NODE_H_
 
-#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #if DCHECK_IS_ON()
@@ -55,10 +53,12 @@ PLATFORM_EXPORT const TransformPaintPropertyNode& LowestCommonAncestorInternal(
     const TransformPaintPropertyNode&);
 
 template <typename NodeType>
-class PaintPropertyNode : public RefCounted<NodeType> {
+class PaintPropertyNode {
+  USING_FAST_MALLOC(NodeType);
+
  public:
   // Parent property node, or nullptr if this is the root node.
-  const NodeType* Parent() const { return parent_.get(); }
+  const NodeType* Parent() const { return parent_; }
   bool IsRoot() const { return !parent_; }
 
   bool IsAncestorOf(const NodeType& other) const {
@@ -115,24 +115,23 @@ class PaintPropertyNode : public RefCounted<NodeType> {
 #endif
 
  protected:
-  PaintPropertyNode(scoped_refptr<const NodeType> parent)
-      : parent_(std::move(parent)) {}
+  PaintPropertyNode(const NodeType* parent) : parent_(parent) {}
 
-  bool SetParent(scoped_refptr<const NodeType> parent) {
+  bool SetParent(const NodeType* parent) {
     DCHECK(!IsRoot());
     DCHECK(parent != this);
     if (parent == parent_)
       return false;
 
     SetChanged();
-    parent_ = std::move(parent);
+    parent_ = parent;
     return true;
   }
 
   void SetChanged() { changed_ = true; }
 
  private:
-  scoped_refptr<const NodeType> parent_;
+  const NodeType* parent_;
   mutable bool changed_ = true;
 
 #if DCHECK_IS_ON()

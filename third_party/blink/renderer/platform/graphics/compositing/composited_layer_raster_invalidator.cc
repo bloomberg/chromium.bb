@@ -56,7 +56,7 @@ static bool ApproximatelyEqual(const SkMatrix& a, const SkMatrix& b) {
 
 PaintInvalidationReason
 CompositedLayerRasterInvalidator::ChunkPropertiesChanged(
-    const RefCountedPropertyTreeState& new_chunk_state,
+    const PropertyTreeState& new_chunk_state,
     const PaintChunkInfo& new_chunk,
     const PaintChunkInfo& old_chunk,
     const PropertyTreeState& layer_state) const {

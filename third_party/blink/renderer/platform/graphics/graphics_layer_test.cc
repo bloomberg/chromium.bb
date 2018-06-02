@@ -223,11 +223,11 @@ TEST_P(GraphicsLayerTest, Paint) {
 
 TEST_P(GraphicsLayerTest, PaintRecursively) {
   IntRect interest_rect(1, 2, 3, 4);
-  auto* transform_root = TransformPaintPropertyNode::Root();
+  const auto& transform_root = TransformPaintPropertyNode::Root();
   auto transform1 =
       CreateTransform(transform_root, TransformationMatrix().Translate(10, 20));
   auto transform2 =
-      CreateTransform(transform1, TransformationMatrix().Scale(2));
+      CreateTransform(*transform1, TransformationMatrix().Scale(2));
 
   client_.SetPainter([&](const GraphicsLayer* layer, GraphicsContext& context,
                          GraphicsLayerPaintingPhase, const IntRect&) {
@@ -250,13 +250,13 @@ TEST_P(GraphicsLayerTest, PaintRecursively) {
   transform1->Update(transform_root,
                      TransformPaintPropertyNode::State{
                          TransformationMatrix().Translate(20, 30)});
-  EXPECT_TRUE(transform1->Changed(*transform_root));
-  EXPECT_TRUE(transform2->Changed(*transform_root));
+  EXPECT_TRUE(transform1->Changed(transform_root));
+  EXPECT_TRUE(transform2->Changed(transform_root));
   client_.SetNeedsRepaint(true);
   graphics_layer_->PaintRecursively();
 
-  EXPECT_FALSE(transform1->Changed(*transform_root));
-  EXPECT_FALSE(transform2->Changed(*transform_root));
+  EXPECT_FALSE(transform1->Changed(transform_root));
+  EXPECT_FALSE(transform2->Changed(transform_root));
 }
 
 TEST_P(GraphicsLayerTest, SetDrawsContentFalse) {

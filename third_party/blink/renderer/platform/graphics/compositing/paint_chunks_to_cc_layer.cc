@@ -653,7 +653,7 @@ void ConversionContext::Convert(const PaintChunkSubset& paint_chunks,
       // "draw" this record in order to ensure that the effect has correct
       // visual rects.
       if ((!record || record->size() == 0) &&
-          chunk_state.Effect() == EffectPaintPropertyNode::Root()) {
+          chunk_state.Effect() == &EffectPaintPropertyNode::Root()) {
         continue;
       }
 
