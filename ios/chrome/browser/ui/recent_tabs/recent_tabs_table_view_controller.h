@@ -40,6 +40,8 @@ class ChromeBrowserState;
 
 // Initializers.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
+// Initializes the view controller without the recently closed tabs section.
+- (instancetype)initWithoutRecentlyClosedSection;
 - (instancetype)initWithTableViewStyle:(UITableViewStyle)style
                            appBarStyle:
                                (ChromeTableViewControllerStyle)appBarStyle

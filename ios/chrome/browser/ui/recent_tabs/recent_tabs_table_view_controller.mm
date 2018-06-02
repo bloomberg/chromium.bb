@@ -83,8 +83,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 NSString* const kOtherDeviceCollapsedKey = @"OtherDevicesCollapsed";
 // Key for saving whether the Recently Closed section is collapsed.
 NSString* const kRecentlyClosedCollapsedKey = @"RecentlyClosedCollapsed";
-// There are 2 static sections before the first SessionSection.
-int const kNumberOfSectionsBeforeSessions = 1;
 // Estimated Table Row height.
 const CGFloat kEstimatedRowHeight = 56;
 // The UI displays relative time for up to this number of hours and then
@@ -109,6 +107,10 @@ const int kRelativeTimeMaxHours = 4;
 @property(nonatomic, strong) SigninPromoViewMediator* signinPromoViewMediator;
 // The sectionIdentifier for the last tapped header, 0 if no header was tapped.
 @property(nonatomic, assign) NSInteger lastTappedHeaderSectionIdentifier;
+// YES if recently closed section should be displayed.
+@property(nonatomic, assign, readonly) BOOL shouldDisplayRecentlyClosedSection;
+// If there is a recently closed section, there is 1 section before sessions.
+@property(nonatomic, assign, readonly) NSInteger numberOfSectionsBeforeSessions;
 @end
 
 @implementation RecentTabsTableViewController : ChromeTableViewController
@@ -124,6 +126,8 @@ const int kRelativeTimeMaxHours = 4;
 @synthesize sessionState = _sessionState;
 @synthesize signinPromoViewMediator = _signinPromoViewMediator;
 @synthesize tabRestoreService = _tabRestoreService;
+@synthesize shouldDisplayRecentlyClosedSection =
+    _shouldDisplayRecentlyClosedSection;
 
 #pragma mark - Public Interface
 
@@ -134,6 +138,14 @@ const int kRelativeTimeMaxHours = 4;
     _sessionState = SessionsSyncUserState::USER_SIGNED_OUT;
     _syncedSessions.reset(new synced_sessions::SyncedSessions());
     _lastTappedHeaderSectionIdentifier = 0;
+    _shouldDisplayRecentlyClosedSection = YES;
+  }
+  return self;
+}
+
+- (instancetype)initWithoutRecentlyClosedSection {
+  if (self = [self init]) {
+    _shouldDisplayRecentlyClosedSection = NO;
   }
   return self;
 }
@@ -173,11 +185,16 @@ const int kRelativeTimeMaxHours = 4;
   self.title = l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS);
 }
 
+- (NSInteger)numberOfSectionsBeforeSessions {
+  return self.shouldDisplayRecentlyClosedSection ? 1 : 0;
+}
+
 #pragma mark - TableViewModel
 
 - (void)loadModel {
   [super loadModel];
-  [self addRecentlyClosedSection];
+  if (self.shouldDisplayRecentlyClosedSection)
+    [self addRecentlyClosedSection];
 
   if (self.sessionState ==
       SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) {
@@ -315,9 +332,9 @@ const int kRelativeTimeMaxHours = 4;
   // SectionIdentifier could've been deleted previously, do not rely on these
   // being in sequential order at this point.
   NSInteger sectionIdentifierToRemove = kFirstSessionSectionIdentifier;
-  NSInteger sectionToDelete = kNumberOfSectionsBeforeSessions;
+  NSInteger sectionToDelete = self.numberOfSectionsBeforeSessions;
   while ([self.tableViewModel numberOfSections] >
-         kNumberOfSectionsBeforeSessions) {
+         self.numberOfSectionsBeforeSessions) {
     if ([self.tableViewModel
             hasSectionForSectionIdentifier:sectionIdentifierToRemove]) {
       [self.tableView
@@ -490,7 +507,7 @@ const int kRelativeTimeMaxHours = 4;
 - (NSIndexSet*)sessionSectionIndexSet {
   // Create a range of all Session Sections.
   NSRange rangeOfSessionSections =
-      NSMakeRange(kNumberOfSectionsBeforeSessions, [self numberOfSessions]);
+      NSMakeRange(self.numberOfSectionsBeforeSessions, [self numberOfSessions]);
   NSIndexSet* sessionSectionIndexes =
       [NSIndexSet indexSetWithIndexesInRange:rangeOfSessionSections];
   return sessionSectionIndexes;
@@ -558,7 +575,8 @@ const int kRelativeTimeMaxHours = 4;
 }
 
 - (void)refreshRecentlyClosedTabs {
-  [self.tableView reloadData];
+  if (self.shouldDisplayRecentlyClosedSection)
+    [self.tableView reloadData];
 }
 
 - (void)setTabRestoreService:(sessions::TabRestoreService*)tabRestoreService {
@@ -712,7 +730,8 @@ const int kRelativeTimeMaxHours = 4;
   NSInteger sectionIdentifer =
       [self.tableViewModel sectionIdentifierForSection:section];
   DCHECK([self isSessionSectionIdentifier:sectionIdentifer]);
-  return _syncedSessions->GetSession(section - kNumberOfSectionsBeforeSessions);
+  return _syncedSessions->GetSession(section -
+                                     self.numberOfSectionsBeforeSessions);
 }
 
 - (synced_sessions::DistantTab const*)distantTabAtIndexPath:
@@ -976,7 +995,7 @@ const int kRelativeTimeMaxHours = 4;
       syncService->GetOpenTabsUIDelegate();
 
   [self.tableViewModel removeSectionWithIdentifier:sectionIdentifier];
-  _syncedSessions->EraseSession(section - kNumberOfSectionsBeforeSessions);
+  _syncedSessions->EraseSession(section - self.numberOfSectionsBeforeSessions);
 
   void (^tableUpdates)(void) = ^{
     [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:section]
