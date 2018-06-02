@@ -302,7 +302,6 @@ ANDROID_WATERFALL = """\
           ],
         },
         'os_type': 'android',
-        'skip_device_recovery': True,
         'test_suites': {
           'gtest_tests': 'foo_tests',
         },
@@ -979,7 +978,8 @@ ANDROID_WATERFALL_OUTPUT = """\
     "gtest_tests": [
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,

@@ -1007,10 +1007,6 @@
       'Android FYI 32 Vk Release (Nexus 5X)': {
         'os_type': 'android',
         'skip_merge_script': True,
-        # TODO(kbr): the following two skips are only to reduce differences
-        # during conversion to the new script. Remove them.
-        'skip_gs_results_bucket': True,
-        'skip_device_recovery': True,
         'swarming': {
           'dimension_sets': [
             {
@@ -1029,10 +1025,6 @@
       'Android FYI 32 dEQP Vk Release (Nexus 5X)': {
         'os_type': 'android',
         'skip_merge_script': True,
-        # TODO(kbr): the following two skips are only to reduce differences
-        # during conversion to the new script. Remove them.
-        'skip_gs_results_bucket': True,
-        'skip_device_recovery': True,
         'swarming': {
           'dimension_sets': [
             {
@@ -1050,10 +1042,6 @@
       'Android FYI 64 Vk Release (Nexus 5X)': {
         'os_type': 'android',
         'skip_merge_script': True,
-        # TODO(kbr): the following two skips are only to reduce differences
-        # during conversion to the new script. Remove them.
-        'skip_gs_results_bucket': True,
-        'skip_device_recovery': True,
         'swarming': {
           'dimension_sets': [
             {
@@ -1072,10 +1060,6 @@
       'Android FYI 64 dEQP Vk Release (Nexus 5X)': {
         'os_type': 'android',
         'skip_merge_script': True,
-        # TODO(kbr): the following two skips are only to reduce differences
-        # during conversion to the new script. Remove them.
-        'skip_gs_results_bucket': True,
-        'skip_device_recovery': True,
         'swarming': {
           'dimension_sets': [
             {
@@ -1094,10 +1078,6 @@
         'browser_config': 'android-chromium',
         'os_type': 'android',
         'skip_merge_script': True,
-        # TODO(kbr): the following two skips are only to reduce differences
-        # during conversion to the new script. Remove them.
-        'skip_gs_results_bucket': True,
-        'skip_device_recovery': True,
         'swarming': {
           'dimension_sets': [
             {
@@ -1118,10 +1098,6 @@
         'browser_config': 'android-chromium',
         'os_type': 'android',
         'skip_merge_script': True,
-        # TODO(kbr): the following two skips are only to reduce differences
-        # during conversion to the new script. Remove them.
-        'skip_gs_results_bucket': True,
-        'skip_device_recovery': True,
         'swarming': {
           'dimension_sets': [
             {
@@ -1142,10 +1118,6 @@
         'browser_config': 'android-chromium',
         'os_type': 'android',
         'skip_merge_script': True,
-        # TODO(kbr): the following two skips are only to reduce differences
-        # during conversion to the new script. Remove them.
-        'skip_gs_results_bucket': True,
-        'skip_device_recovery': True,
         'swarming': {
           'dimension_sets': [
             {
@@ -1165,10 +1137,6 @@
         'browser_config': 'android-chromium',
         'os_type': 'android',
         'skip_merge_script': True,
-        # TODO(kbr): the following two skips are only to reduce differences
-        # during conversion to the new script. Remove them.
-        'skip_gs_results_bucket': True,
-        'skip_device_recovery': True,
         'swarming': {
           'dimension_sets': [
             {
@@ -1189,10 +1157,6 @@
         'browser_config': 'android-chromium',
         'os_type': 'android',
         'skip_merge_script': True,
-        # TODO(kbr): the following two skips are only to reduce differences
-        # during conversion to the new script. Remove them.
-        'skip_gs_results_bucket': True,
-        'skip_device_recovery': True,
         'swarming': {
           'dimension_sets': [
             {
@@ -1213,10 +1177,6 @@
         'browser_config': 'android-chromium',
         'os_type': 'android',
         'skip_merge_script': True,
-        # TODO(kbr): the following two skips are only to reduce differences
-        # during conversion to the new script. Remove them.
-        'skip_gs_results_bucket': True,
-        'skip_device_recovery': True,
         'swarming': {
           'dimension_sets': [
             {
@@ -1236,10 +1196,6 @@
       'Android FYI dEQP Release (Nexus 5X)': {
         'os_type': 'android',
         'skip_merge_script': True,
-        # TODO(kbr): the following two skips are only to reduce differences
-        # during conversion to the new script. Remove them.
-        'skip_gs_results_bucket': True,
-        'skip_device_recovery': True,
         'swarming': {
           'dimension_sets': [
             {
