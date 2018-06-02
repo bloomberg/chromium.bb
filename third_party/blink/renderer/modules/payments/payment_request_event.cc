@@ -140,9 +140,14 @@ PaymentRequestEvent::PaymentRequestEvent(
       top_origin_(initializer.topOrigin()),
       payment_request_origin_(initializer.paymentRequestOrigin()),
       payment_request_id_(initializer.paymentRequestId()),
-      method_data_(std::move(initializer.methodData())),
-      total_(initializer.total()),
-      modifiers_(initializer.modifiers()),
+      method_data_(initializer.hasMethodData()
+                       ? initializer.methodData()
+                       : HeapVector<PaymentMethodData>()),
+      total_(initializer.hasTotal() ? initializer.total()
+                                    : PaymentCurrencyAmount()),
+      modifiers_(initializer.hasModifiers()
+                     ? initializer.modifiers()
+                     : HeapVector<PaymentDetailsModifier>()),
       instrument_key_(initializer.instrumentKey()),
       observer_(respond_with_observer) {}
 
