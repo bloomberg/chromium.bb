@@ -125,6 +125,15 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
 #endif
 
  protected:
+  struct RouteRequest {
+   public:
+    explicit RouteRequest(const MediaSink::Id& sink_id);
+    ~RouteRequest();
+
+    int id;
+    MediaSink::Id sink_id;
+  };
+
   std::vector<MediaSource> GetSourcesForCastMode(MediaCastMode cast_mode) const;
 
   // QueryResultManager::Observer:
@@ -171,7 +180,9 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
   // Otherwise returns an empty GURL.
   GURL GetFrameURL() const;
 
-  int current_route_request_id() const { return current_route_request_id_; }
+  const base::Optional<RouteRequest> current_route_request() const {
+    return current_route_request_;
+  }
 
   StartPresentationContext* start_presentation_context() const {
     return start_presentation_context_.get();
@@ -221,12 +232,8 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
   // updates from them.
   std::unique_ptr<MediaRoutesObserver> routes_observer_;
 
-  // Set to -1 if not tracking a pending route request.
-  int current_route_request_id_;
-
-  // Sequential counter for route requests. Used to update
-  // |current_route_request_id_| when there is a new route request.
-  int route_request_counter_;
+  // This contains a value only when tracking a pending route request.
+  base::Optional<RouteRequest> current_route_request_;
 
   // Used for locale-aware sorting of sinks by name. Set during |InitCommon()|
   // using the current locale.

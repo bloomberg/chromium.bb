@@ -33,12 +33,16 @@ class MediaRouterViewsUI : public MediaRouterUIBase,
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, NotifyObserver);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, RemovePseudoSink);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, ConnectingState);
 
   // MediaRouterUIBase:
   void OnRoutesUpdated(
       const std::vector<MediaRoute>& routes,
       const std::vector<MediaRoute::Id>& joinable_route_ids) override;
   void UpdateSinks() override;
+
+  UIMediaSink ConvertToUISink(const MediaSinkWithCastModes& sink,
+                              const MediaRoute* route);
 
   // Contains up-to-date data to show in the dialog.
   CastDialogModel model_;

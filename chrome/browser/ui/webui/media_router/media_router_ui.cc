@@ -620,9 +620,10 @@ base::Optional<RouteParameters> MediaRouterUI::GetLocalFileRouteParameters(
   // essentially mirroring.
   params.origin = url::Origin::Create(GURL(chrome::kChromeUIMediaRouterURL));
 
+  int request_id = current_route_request() ? current_route_request()->id : -1;
   params.route_response_callbacks.push_back(base::BindOnce(
       &MediaRouterUI::OnRouteResponseReceived, weak_factory_.GetWeakPtr(),
-      current_route_request_id(), sink_id, MediaCastMode::LOCAL_FILE,
+      request_id, sink_id, MediaCastMode::LOCAL_FILE,
       base::UTF8ToUTF16(GetTruncatedPresentationRequestSourceName())));
 
   params.route_response_callbacks.push_back(

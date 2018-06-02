@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
 #include "chrome/common/media_router/media_source_helper.h"
+#include "chrome/common/media_router/route_request_result.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -156,6 +157,35 @@ TEST_F(MediaRouterViewsUITest, RemovePseudoSink) {
         EXPECT_EQ(sink.id(), model.media_sinks[0].id);
       })));
   ui_->OnResultsUpdated({sink_with_cast_modes, pseudo_sink_with_cast_modes});
+  ui_->RemoveObserver(&observer);
+}
+
+TEST_F(MediaRouterViewsUITest, ConnectingState) {
+  MockControllerObserver observer;
+  ui_->AddObserver(&observer);
+
+  MediaSink sink(kSinkId, kSinkName, SinkIconType::GENERIC);
+  for (MediaSinksObserver* sinks_observer : media_sinks_observers_)
+    sinks_observer->OnSinksUpdated({sink}, std::vector<url::Origin>());
+
+  // When a request to Cast to a sink is made, its state should become
+  // CONNECTING.
+  EXPECT_CALL(observer, OnModelUpdated(_))
+      .WillOnce(WithArg<0>(Invoke([&sink](const CastDialogModel& model) {
+        ASSERT_EQ(1u, model.media_sinks.size());
+        EXPECT_EQ(UIMediaSinkState::CONNECTING, model.media_sinks[0].state);
+      })));
+  ui_->StartCasting(kSinkId, MediaCastMode::TAB_MIRROR);
+
+  // Once a route is created for the sink, its state should become CONNECTED.
+  EXPECT_CALL(observer, OnModelUpdated(_))
+      .WillOnce(WithArg<0>(Invoke([&sink](const CastDialogModel& model) {
+        ASSERT_EQ(1u, model.media_sinks.size());
+        EXPECT_EQ(UIMediaSinkState::CONNECTED, model.media_sinks[0].state);
+      })));
+  MediaRoute route(kRouteId, MediaSource(kSourceId), kSinkId, "", true, true);
+  ui_->OnRoutesUpdated({route}, {});
+
   ui_->RemoveObserver(&observer);
 }
 
