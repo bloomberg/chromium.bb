@@ -420,6 +420,7 @@ remoting_webapp_template_background = "crd/html/template_background.html"
 # These JS files are specific to the background page and are not part of
 # the main JS files.
 remoting_webapp_background_html_js_files = [
+  "base/js/website_usage_tracker.js",
   "crd/js/activation_handler.js",
   "crd/js/app_launcher.js",
   "crd/js/background.js",

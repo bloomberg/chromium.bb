@@ -20,11 +20,25 @@ var logger = null;
  *  @param {number} index
  *  @param {Object} expected
  */
-function verifyEvent(stub, assert, index, expected) {
+function verifyEventAtIndex(stub, assert, index, expected) {
   var event = /** @type {Object} */ (stub.getCall(index).args[0]);
   for (var key in expected) {
-    assert.equal(event[key], expected[key], 'Verifying ChromotingEvent.' + key);
+    if (event[key] != expected[key]) {
+      return false;
+    }
   }
+  return true;
+}
+
+function verifyEvent(stub, assert, expected) {
+  var match = false;
+  for (var index = 0; index < stub.callCount; ++ index) {
+    if (verifyEventAtIndex(stub, assert, index, expected)) {
+      match = true;
+      break;
+    }
+  }
+  assert.ok(match, 'No logged event matches expected.');
 }
 
 QUnit.module('TelemetryEventWriter', {
@@ -44,6 +58,12 @@ QUnit.module('TelemetryEventWriter', {
     fakeHost.hostVersion = 'host_version';
     logger.setHost(fakeHost);
     logger.setConnectionType('stun');
+    chrome.storage = {
+      sync: {
+        get: sinon.stub(),
+      }
+    };
+    chrome.storage.sync.get.callsArgWith(1, 0);
   },
   afterEach: function() {
     base.dispose(service);
@@ -56,7 +76,10 @@ QUnit.module('TelemetryEventWriter', {
 QUnit.test('Client.write() should write request.', function(assert){
   var mockEventWriter = sinon.mock(eventWriter);
   return service.init().then(function(){
-    mockEventWriter.expects('write').once().withArgs({id: '1'});
+    mockEventWriter.expects('write').once().withArgs({
+      id: '1',
+      website_and_app_user: false
+    });
     return remoting.TelemetryEventWriter.Client.write({id: '1'});
   }).then(function(){
     mockEventWriter.verify();
@@ -99,7 +122,7 @@ QUnit.test('should send CANCELED event when window is closed while started.',
     return service.unbindSession('fake-window-id');
   }).then(function() {
     var Event = remoting.ChromotingEvent;
-    verifyEvent(writeStub, assert, 1, {
+    verifyEvent(writeStub, assert, {
       type: Event.Type.SESSION_STATE,
       session_state: Event.SessionState.CONNECTION_CANCELED,
       connection_error: Event.ConnectionError.NONE,
@@ -126,7 +149,7 @@ QUnit.test('should send CANCELED event when window is closed while connecting.',
     return service.unbindSession('fake-window-id');
   }).then(function() {
     var Event = remoting.ChromotingEvent;
-    verifyEvent(writeStub, assert, 1, {
+    verifyEvent(writeStub, assert, {
       type: Event.Type.SESSION_STATE,
       session_state: Event.SessionState.CONNECTION_CANCELED,
       connection_error: Event.ConnectionError.NONE,
@@ -157,7 +180,7 @@ QUnit.test('should send CLOSED event when window is closed while connected.',
     return service.unbindSession('fake-window-id');
   }).then(function() {
     var Event = remoting.ChromotingEvent;
-    verifyEvent(writeStub, assert, 2, {
+    verifyEvent(writeStub, assert, {
       type: Event.Type.SESSION_STATE,
       session_state: Event.SessionState.CLOSED,
       connection_error: Event.ConnectionError.NONE,

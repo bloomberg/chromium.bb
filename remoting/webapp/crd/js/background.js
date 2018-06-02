@@ -21,6 +21,8 @@ var BackgroundPage = function() {
   this.telemetryService_ = null;
   /** @private {remoting.OptionsExporter} */
   this.optionsExporter_ = null;
+  /** @private {remoting.WebsiteUsageTracker} */
+  this.websiteUsageTracker_ = null;
   /** @private */
   this.disposables_ = new base.Disposables();
   this.preInit_();
@@ -52,6 +54,7 @@ BackgroundPage.prototype.preInit_ = function() {
         this.activationHandler_, remoting.ActivationHandler.Events.windowClosed,
         this.telemetryService_.unbindSession.bind(this.telemetryService_)));
     this.optionsExporter_ = new remoting.OptionsExporter();
+    this.websiteUsageTracker_ = new remoting.WebsiteUsageTracker();
   } else {
     this.appLauncher_ = new remoting.V1AppLauncher();
   }

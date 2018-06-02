@@ -75,7 +75,15 @@ remoting.TelemetryEventWriter.Service.prototype.unbindSession =
 remoting.TelemetryEventWriter.Service.prototype.write =
     function(windowId, event) {
   this.sessionMonitor_.trackSessionStateChanges(windowId, event);
-  this.eventWriter_.write(event);
+      remoting.WebsiteUsageTracker.getVisitCount().then(
+          (count) => {
+            // This field is only available asynchronously, which makes it
+            // difficult to add as part of the ChromotingEvent class in the
+            // app page; adding it here is much simper, as background page
+            // telemetry is already asynchronous.
+            event['website_and_app_user'] = count > 0;
+            this.eventWriter_.write(event);
+          });
 };
 
 /**
