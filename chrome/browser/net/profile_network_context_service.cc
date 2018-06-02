@@ -45,9 +45,6 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
       prefs::kAcceptLanguages, profile->GetPrefs(),
       base::BindRepeating(&ProfileNetworkContextService::UpdateAcceptLanguage,
                           base::Unretained(this)));
-  // The system context must be initialized before any other network contexts.
-  // TODO(mmenke): Figure out a way to enforce this.
-  g_browser_process->system_network_context_manager()->GetContext();
   DisableQuicIfNotAllowed();
 }
 
@@ -149,7 +146,6 @@ network::mojom::NetworkContextParamsPtr
 ProfileNetworkContextService::CreateNetworkContextParams(
     bool in_memory,
     const base::FilePath& relative_partition_path) {
-  // TODO(mmenke): Set up parameters here.
   network::mojom::NetworkContextParamsPtr network_context_params =
       CreateDefaultNetworkContextParams();
 

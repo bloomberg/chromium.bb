@@ -100,10 +100,6 @@
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #endif
 
-#if defined(USE_NSS_CERTS)
-#include "net/cert_net/nss_ocsp.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
@@ -121,12 +117,6 @@
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
 #include "crypto/openssl_util.h"
 #include "third_party/boringssl/src/include/openssl/cpu.h"
-#endif
-
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
-#include "net/cert/cert_net_fetcher.h"
-#include "net/cert_net/cert_net_fetcher_impl.h"
 #endif
 
 using content::BrowserThread;
@@ -523,15 +513,6 @@ void IOThread::CleanUp() {
 
   globals_->system_request_context->proxy_resolution_service()->OnShutdown();
 
-#if defined(USE_NSS_CERTS)
-  net::SetURLRequestContextForNSSHttpIO(nullptr);
-#endif
-
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
-  net::ShutdownGlobalCertNetFetcher();
-#endif
-
   // Release objects that the net::URLRequestContext could have been pointing
   // to.
 
@@ -747,15 +728,6 @@ void IOThread::ConstructSystemRequestContext() {
   // NetworkQualityEstimator.  Fix that.
   globals_->network_quality_observer = content::CreateNetworkQualityObserver(
       globals_->system_request_context->network_quality_estimator());
-
-#if defined(USE_NSS_CERTS)
-  net::SetURLRequestContextForNSSHttpIO(globals_->system_request_context);
-#endif
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
-  net::SetGlobalCertNetFetcher(
-      net::CreateCertNetFetcher(globals_->system_request_context));
-#endif
 }
 
 metrics::UpdateUsagePrefCallbackType IOThread::GetMetricsDataUseForwarder() {

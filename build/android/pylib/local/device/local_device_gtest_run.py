@@ -51,11 +51,13 @@ _SECONDS_TO_NANOS = int(1e9)
 # The amount of time a test executable may run before it gets killed.
 _TEST_TIMEOUT_SECONDS = 30*60
 
+# Tests that use SpawnedTestServer must run the LocalTestServerSpawner on the
+# host machine.
 # TODO(jbudorick): Move this up to the test instance if the net test server is
 # handled outside of the APK for the remote_device environment.
 _SUITE_REQUIRES_TEST_SERVER_SPAWNER = [
   'components_browsertests', 'content_unittests', 'content_browsertests',
-  'net_unittests', 'unit_tests'
+  'net_unittests', 'services_unittests', 'unit_tests'
 ]
 
 # No-op context manager. If we used Python 3, we could change this to

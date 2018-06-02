@@ -143,6 +143,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
+  void DestroyNetworkContexts();
+
   // Called by a NetworkContext when its mojo pipe is closed. Deletes the
   // context.
   void OnNetworkContextConnectionClosed(NetworkContext* network_context);

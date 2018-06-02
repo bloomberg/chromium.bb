@@ -203,6 +203,14 @@ source_set("tests") {
       "proxy_resolver_factory_mojo_unittest.cc",
       "websocket_throttler_unittest.cc",
     ]
+
+    data = [
+      "//net/tools/testserver/",
+      "//services/test/data",
+      "//third_party/pyftpdlib/",
+      "//third_party/pywebsocket/",
+      "//third_party/tlslite/",
+    ]
   }
 
   deps = [

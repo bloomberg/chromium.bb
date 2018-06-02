@@ -87,6 +87,16 @@
 #include "net/reporting/reporting_service.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
+#if defined(USE_NSS_CERTS)
+#include "net/cert_net/nss_ocsp.h"
+#endif  // defined(USE_NSS_CERTS)
+
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+#include "net/cert/cert_net_fetcher.h"
+#include "net/cert_net/cert_net_fetcher_impl.h"
+#endif
+
 namespace network {
 
 namespace {
@@ -287,6 +297,17 @@ NetworkContext::~NetworkContext() {
   if (network_service_)
     network_service_->DeregisterNetworkContext(this);
 
+  if (UseToValidateCerts()) {
+#if defined(USE_NSS_CERTS)
+    net::SetURLRequestContextForNSSHttpIO(nullptr);
+#endif
+
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+    net::ShutdownGlobalCertNetFetcher();
+#endif
+  }
+
   if (url_request_context_ &&
       url_request_context_->transport_security_state()) {
     if (certificate_report_sender_) {
@@ -318,6 +339,10 @@ NetworkContext::~NetworkContext() {
 void NetworkContext::SetCertVerifierForTesting(
     net::CertVerifier* cert_verifier) {
   g_cert_verifier_for_testing = cert_verifier;
+}
+
+bool NetworkContext::UseToValidateCerts() const {
+  return params_ && params_->use_to_validate_certs;
 }
 
 void NetworkContext::CreateURLLoaderFactory(
@@ -863,6 +888,19 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         std::make_unique<certificate_transparency::ChromeRequireCTDelegate>();
     result.url_request_context->transport_security_state()
         ->SetRequireCTDelegate(out_require_ct_delegate->get());
+  }
+
+  // These must be matched by cleanup code just before the URLRequestContext is
+  // destroyed.
+  if (network_context_params->use_to_validate_certs) {
+#if defined(USE_NSS_CERTS)
+    net::SetURLRequestContextForNSSHttpIO(result.url_request_context.get());
+#endif
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+    net::SetGlobalCertNetFetcher(
+        net::CreateCertNetFetcher(result.url_request_context.get()));
+#endif
   }
 
   return result;
