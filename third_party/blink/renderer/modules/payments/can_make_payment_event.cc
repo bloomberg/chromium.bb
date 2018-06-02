@@ -85,8 +85,12 @@ CanMakePaymentEvent::CanMakePaymentEvent(
     : ExtendableEvent(type, initializer, wait_until_observer),
       top_origin_(initializer.topOrigin()),
       payment_request_origin_(initializer.paymentRequestOrigin()),
-      method_data_(std::move(initializer.methodData())),
-      modifiers_(initializer.modifiers()),
+      method_data_(initializer.hasMethodData()
+                       ? initializer.methodData()
+                       : HeapVector<PaymentMethodData>()),
+      modifiers_(initializer.hasModifiers()
+                     ? initializer.modifiers()
+                     : HeapVector<PaymentDetailsModifier>()),
       observer_(respond_with_observer) {}
 
 }  // namespace blink
