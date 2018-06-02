@@ -8,7 +8,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/components/tether/connection_reason.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto_test_util.h"
@@ -36,7 +35,9 @@ class TestOperation : public MessageTransferOperation {
  public:
   TestOperation(const cryptauth::RemoteDeviceRefList& devices_to_connect,
                 BleConnectionManager* connection_manager)
-      : MessageTransferOperation(devices_to_connect, connection_manager) {}
+      : MessageTransferOperation(devices_to_connect,
+                                 ConnectionPriority::CONNECTION_PRIORITY_LOW,
+                                 connection_manager) {}
   ~TestOperation() override = default;
 
   bool HasDeviceAuthenticated(cryptauth::RemoteDeviceRef remote_device) {
@@ -546,8 +547,8 @@ TEST_F(MessageTransferOperationTest, TestReceiveEventForOtherDevice) {
   // operation was only constructed with |test_devices_[0]|, this operation
   // should not be affected.
   fake_ble_connection_manager_->RegisterRemoteDevice(
-      test_devices_[1].GetDeviceId(),
-      ConnectionReason::CONNECT_TETHERING_REQUEST);
+      test_devices_[1].GetDeviceId(), base::UnguessableToken::Create(),
+      ConnectionPriority::CONNECTION_PRIORITY_LOW);
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[1]);
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
@@ -572,8 +573,8 @@ TEST_F(MessageTransferOperationTest,
   // Simulate the authentication of |test_devices_[0]|'s channel before
   // initialization.
   fake_ble_connection_manager_->RegisterRemoteDevice(
-      test_devices_[0].GetDeviceId(),
-      ConnectionReason::CONNECT_TETHERING_REQUEST);
+      test_devices_[0].GetDeviceId(), base::UnguessableToken::Create(),
+      ConnectionPriority::CONNECTION_PRIORITY_LOW);
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[0]);
 
   // Now initialize; the authentication handler should have been invoked.
@@ -604,8 +605,8 @@ TEST_F(MessageTransferOperationTest,
   // Simulate the authentication of |test_devices_[0]|'s channel before
   // initialization.
   fake_ble_connection_manager_->RegisterRemoteDevice(
-      test_devices_[0].GetDeviceId(),
-      ConnectionReason::CONNECT_TETHERING_REQUEST);
+      test_devices_[0].GetDeviceId(), base::UnguessableToken::Create(),
+      ConnectionPriority::CONNECTION_PRIORITY_LOW);
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[0]);
 
   // Now initialize; the authentication handler should have been invoked.
@@ -638,8 +639,8 @@ TEST_F(MessageTransferOperationTest, MultipleDevices) {
 
   // Authenticate |test_devices_[0]|'s channel.
   fake_ble_connection_manager_->RegisterRemoteDevice(
-      test_devices_[0].GetDeviceId(),
-      ConnectionReason::CONNECT_TETHERING_REQUEST);
+      test_devices_[0].GetDeviceId(), base::UnguessableToken::Create(),
+      ConnectionPriority::CONNECTION_PRIORITY_LOW);
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[0]);
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[0]));
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
@@ -659,8 +660,8 @@ TEST_F(MessageTransferOperationTest, MultipleDevices) {
 
   // Authenticate |test_devices_[2]|'s channel.
   fake_ble_connection_manager_->RegisterRemoteDevice(
-      test_devices_[2].GetDeviceId(),
-      ConnectionReason::CONNECT_TETHERING_REQUEST);
+      test_devices_[2].GetDeviceId(), base::UnguessableToken::Create(),
+      ConnectionPriority::CONNECTION_PRIORITY_LOW);
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[2]);
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[2]));
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(

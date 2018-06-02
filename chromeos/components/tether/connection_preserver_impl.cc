@@ -26,6 +26,7 @@ ConnectionPreserverImpl::ConnectionPreserverImpl(
       network_state_handler_(network_state_handler),
       active_host_(active_host),
       tether_host_response_recorder_(tether_host_response_recorder),
+      request_id_(base::UnguessableToken::Create()),
       preserved_connection_timer_(std::make_unique<base::OneShotTimer>()),
       weak_ptr_factory_(this) {
   active_host_->AddObserver(this);
@@ -124,7 +125,7 @@ void ConnectionPreserverImpl::SetPreservedConnection(
 
   preserved_connection_device_id_ = device_id;
   ble_connection_manager_->RegisterRemoteDevice(
-      device_id, ConnectionReason::PRESERVE_CONNECTION);
+      device_id, request_id_, ConnectionPriority::CONNECTION_PRIORITY_LOW);
 
   preserved_connection_timer_->Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kTimeoutSeconds),
@@ -142,7 +143,7 @@ void ConnectionPreserverImpl::RemovePreservedConnectionIfPresent() {
                << ".";
 
   ble_connection_manager_->UnregisterRemoteDevice(
-      preserved_connection_device_id_, ConnectionReason::PRESERVE_CONNECTION);
+      preserved_connection_device_id_, request_id_);
   preserved_connection_device_id_.clear();
   preserved_connection_timer_->Stop();
 }

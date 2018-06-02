@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/timer/timer.h"
+#include "base/unguessable_token.h"
 #include "chromeos/components/tether/active_host.h"
 #include "chromeos/components/tether/connection_preserver.h"
 
@@ -63,6 +64,8 @@ class ConnectionPreserverImpl : public ConnectionPreserver,
   NetworkStateHandler* network_state_handler_;
   ActiveHost* active_host_;
   TetherHostResponseRecorder* tether_host_response_recorder_;
+  const base::UnguessableToken request_id_;
+
   std::unique_ptr<base::Timer> preserved_connection_timer_;
 
   std::string preserved_connection_device_id_;

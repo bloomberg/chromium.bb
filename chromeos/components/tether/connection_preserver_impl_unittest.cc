@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/components/tether/connection_reason.h"
+#include "chromeos/components/tether/connection_priority.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
@@ -90,16 +90,16 @@ class ConnectionPreserverImplTest : public NetworkStateTest {
 
   void SimulateSuccessfulHostScan(const std::string& device_id,
                                   bool should_remain_registered) {
+    base::UnguessableToken request_id = base::UnguessableToken::Create();
     fake_ble_connection_manager_->RegisterRemoteDevice(
-        device_id, ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+        device_id, request_id, ConnectionPriority::CONNECTION_PRIORITY_LOW);
     EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(device_id));
 
     connection_preserver_->HandleSuccessfulTetherAvailabilityResponse(
         device_id);
     EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(device_id));
 
-    fake_ble_connection_manager_->UnregisterRemoteDevice(
-        device_id, ConnectionReason::TETHER_AVAILABILITY_REQUEST);
+    fake_ble_connection_manager_->UnregisterRemoteDevice(device_id, request_id);
     EXPECT_EQ(should_remain_registered,
               fake_ble_connection_manager_->IsRegistered(device_id));
   }

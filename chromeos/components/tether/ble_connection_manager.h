@@ -8,17 +8,18 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "base/unguessable_token.h"
 #include "chromeos/components/tether/ble_advertisement_device_queue.h"
 #include "chromeos/components/tether/ble_advertiser.h"
 #include "chromeos/components/tether/ble_scanner.h"
 #include "chromeos/components/tether/connection_priority.h"
-#include "chromeos/components/tether/connection_reason.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "components/cryptauth/secure_channel.h"
 
@@ -52,9 +53,9 @@ class TimerFactory;
 // messages. To send a message, call SendMessage(), and to listen for received
 // messages, implement the OnMessageReceived() callback.
 //
-// Note that a single device can be registered for multiple connection reasons.
-// If a device is registered for more than one reason, its connections (and
-// connection attempts) will remain active until all connection reasons have
+// Note that a single device can be registered for multiple connection requests.
+// If a device is registered for more than one request, its connections (and
+// connection attempts) will remain active until all connection requests have
 // been unregistered for the device.
 class BleConnectionManager : public BleScanner::Observer {
  public:
@@ -108,18 +109,18 @@ class BleConnectionManager : public BleScanner::Observer {
       AdHocBleAdvertiser* ad_hoc_ble_advertisement);
   virtual ~BleConnectionManager();
 
-  // Registers |device_id| for |connection_reason|. Once registered, this
+  // Registers |device_id| for |request_id|. Once registered, this
   // instance will continue to attempt to connect and authenticate to that
   // device until the device is unregistered.
   virtual void RegisterRemoteDevice(const std::string& device_id,
-                                    const ConnectionReason& connection_reason);
+                                    const base::UnguessableToken& request_id,
+                                    ConnectionPriority connection_priority);
 
-  // Unregisters |device_id| for |connection_reason|. Once registered, a device
-  // will continue trying to connect until *ALL* of its ConnectionReasons have
+  // Unregisters |device_id| for |request_id|. Once registered, a device
+  // will continue trying to connect until *ALL* of its connection reasons have
   // been unregistered.
-  virtual void UnregisterRemoteDevice(
-      const std::string& device_id,
-      const ConnectionReason& connection_reason);
+  virtual void UnregisterRemoteDevice(const std::string& device_id,
+                                      const base::UnguessableToken& request_id);
 
   // Sends |message| to the device with ID |device_id|. This function can only
   // be called if the given device is authenticated. This function returns a
@@ -177,10 +178,11 @@ class BleConnectionManager : public BleScanner::Observer {
                        base::WeakPtr<BleConnectionManager> manager);
     ~ConnectionMetadata();
 
-    void RegisterConnectionReason(const ConnectionReason& connection_reason);
-    void UnregisterConnectionReason(const ConnectionReason& connection_reason);
+    void RegisterConnectionRequest(const base::UnguessableToken& request_id,
+                                   ConnectionPriority connection_priority);
+    void UnregisterConnectionRequest(const base::UnguessableToken& request_id);
     ConnectionPriority GetConnectionPriority();
-    bool HasReasonForConnection() const;
+    bool HasPendingConnectionRequests() const;
 
     bool HasEstablishedConnection() const;
     cryptauth::SecureChannel::Status GetStatus() const;
@@ -211,7 +213,10 @@ class BleConnectionManager : public BleScanner::Observer {
     void OnConnectionAttemptTimeout();
 
     std::string device_id_;
-    std::set<ConnectionReason> active_connection_reasons_;
+    std::unordered_map<base::UnguessableToken,
+                       ConnectionPriority,
+                       base::UnguessableTokenHash>
+        request_id_to_priority_map_;
     std::unique_ptr<cryptauth::SecureChannel> secure_channel_;
     std::unique_ptr<base::Timer> connection_attempt_timeout_timer_;
     base::WeakPtr<BleConnectionManager> manager_;
