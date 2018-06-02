@@ -114,34 +114,20 @@ struct ShapeResult::RunInfo {
     DCHECK(end > start);
     unsigned number_of_characters = std::min(end - start, num_characters_);
 
-    // This ends up looping over the glyphs twice if we don't know the glyph
-    // count up front. Once to count the number of glyphs and allocate the new
-    // RunInfo object and then a second time to copy the glyphs over.
-    // TODO: Compared to the cost of allocation and copying the extra loop is
-    // probably fine but we might want to try to eliminate it if we can.
-    unsigned number_of_glyphs;
-    if (start == 0 && end == num_characters_) {
-      number_of_glyphs = glyph_data_.size();
-    } else {
-      number_of_glyphs = 0;
-      ForEachGlyphInRange(
-          0, start_index_ + start, start_index_ + end, 0,
-          [&](const HarfBuzzRunGlyphData&, float, uint16_t) -> bool {
-            number_of_glyphs++;
-            return true;
-          });
-    }
-
+    // This is incorrect but is a resonable guess for the initial size of the
+    // glyph_data_ vector. It'll be resized once we've determined the number of
+    // glyphs in the sub run.
+    unsigned number_of_glyphs = number_of_characters;
     auto run = std::make_unique<RunInfo>(
         font_data_.get(), direction_, canvas_rotation_, script_,
         start_index_ + start, number_of_glyphs, number_of_characters);
 
-    unsigned sub_glyph_index = 0;
+    number_of_glyphs = 0;
     float total_advance = 0;
     ForEachGlyphInRange(
         0, start_index_ + start, start_index_ + end, 0,
         [&](const HarfBuzzRunGlyphData& glyph_data, float, uint16_t) -> bool {
-          HarfBuzzRunGlyphData& sub_glyph = run->glyph_data_[sub_glyph_index++];
+          auto& sub_glyph = run->glyph_data_[number_of_glyphs++];
           sub_glyph.glyph = glyph_data.glyph;
           sub_glyph.character_index = glyph_data.character_index - start;
           sub_glyph.safe_to_break_before = glyph_data.safe_to_break_before;
@@ -150,6 +136,11 @@ struct ShapeResult::RunInfo {
           total_advance += glyph_data.advance;
           return true;
         });
+
+    // Shrink glyph_data_ as the number of glyphs in the sub run is likely
+    // smaller than in the original.
+    DCHECK(run->glyph_data_.size() >= number_of_glyphs);
+    run->glyph_data_.resize(number_of_glyphs);
 
     run->width_ = total_advance;
     run->num_characters_ = number_of_characters;
