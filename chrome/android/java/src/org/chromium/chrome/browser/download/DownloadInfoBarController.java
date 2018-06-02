@@ -340,6 +340,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         if (offlineItem.isTransient) return false;
         if (offlineItem.isOffTheRecord != mIsIncognito) return false;
         if (offlineItem.isSuggested) return false;
+        if (offlineItem.isDangerous) return false;
         if (LegacyHelpers.isLegacyDownload(offlineItem.id)) {
             if (TextUtils.isEmpty(offlineItem.filePath)) {
                 return false;

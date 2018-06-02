@@ -97,6 +97,7 @@ public class OfflineItem {
     public long receivedBytes;
     public Progress progress;
     public long timeRemainingMs;
+    public boolean isDangerous;
     @FailState
     public int failState;
     @PendingState

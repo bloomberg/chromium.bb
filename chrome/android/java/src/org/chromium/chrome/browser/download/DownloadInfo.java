@@ -45,6 +45,7 @@ public final class DownloadInfo {
     private final boolean mIsOfflinePage;
     private final int mState;
     private final long mLastAccessTime;
+    private final boolean mIsDangerous;
 
     // New variables to assist with the migration to OfflineItems.
     private final ContentId mContentId;
@@ -79,6 +80,7 @@ public final class DownloadInfo {
         mIsOfflinePage = builder.mIsOfflinePage;
         mState = builder.mState;
         mLastAccessTime = builder.mLastAccessTime;
+        mIsDangerous = builder.mIsDangerous;
 
         if (builder.mContentId != null) {
             mContentId = builder.mContentId;
@@ -187,6 +189,10 @@ public final class DownloadInfo {
         return mLastAccessTime;
     }
 
+    public boolean getIsDangerous() {
+        return mIsDangerous;
+    }
+
     public ContentId getContentId() {
         return mContentId;
     }
@@ -258,6 +264,7 @@ public final class DownloadInfo {
                 .setBytesTotalSize(item.totalSizeBytes)
                 .setProgress(item.progress)
                 .setTimeRemainingInMillis(item.timeRemainingMs)
+                .setIsDangerous(item.isDangerous)
                 .setIsParallelDownload(item.isAccelerated)
                 .setIcon(visuals == null ? null : visuals.icon)
                 .setPendingState(item.pendingState)
@@ -287,6 +294,7 @@ public final class DownloadInfo {
         offlineItem.isOffTheRecord = downloadInfo.isOffTheRecord();
         offlineItem.mimeType = downloadInfo.getMimeType();
         offlineItem.progress = downloadInfo.getProgress();
+        offlineItem.isDangerous = downloadInfo.getIsDangerous();
         switch (downloadInfo.state()) {
             case DownloadState.IN_PROGRESS:
                 offlineItem.state = downloadInfo.isPaused() ? OfflineItemState.PAUSED
@@ -337,6 +345,7 @@ public final class DownloadInfo {
         private boolean mIsOfflinePage;
         private int mState = DownloadState.IN_PROGRESS;
         private long mLastAccessTime;
+        private boolean mIsDangerous;
         private ContentId mContentId;
         private boolean mIsOpenable = true;
         private boolean mIsTransient;
@@ -460,6 +469,11 @@ public final class DownloadInfo {
             return this;
         }
 
+        public Builder setIsDangerous(boolean isDangerous) {
+            mIsDangerous = isDangerous;
+            return this;
+        }
+
         public Builder setContentId(ContentId contentId) {
             mContentId = contentId;
             return this;
@@ -518,6 +532,7 @@ public final class DownloadInfo {
                     .setIsGETRequest(downloadInfo.isGETRequest())
                     .setProgress(downloadInfo.getProgress())
                     .setTimeRemainingInMillis(downloadInfo.getTimeRemainingInMillis())
+                    .setIsDangerous(downloadInfo.getIsDangerous())
                     .setIsResumable(downloadInfo.isResumable())
                     .setIsPaused(downloadInfo.isPaused())
                     .setIsOffTheRecord(downloadInfo.isOffTheRecord())
@@ -537,7 +552,8 @@ public final class DownloadInfo {
             String filePath, String url, String mimeType, long bytesReceived, long bytesTotalSize,
             boolean isIncognito, int state, int percentCompleted, boolean isPaused,
             boolean hasUserGesture, boolean isResumable, boolean isParallelDownload,
-            String originalUrl, String referrerUrl, long timeRemainingInMs, long lastAccessTime) {
+            String originalUrl, String referrerUrl, long timeRemainingInMs, long lastAccessTime,
+            boolean isDangerous) {
         String remappedMimeType = ChromeDownloadDelegate.remapGenericMimeType(
                 mimeType, url, fileName);
 
@@ -563,6 +579,7 @@ public final class DownloadInfo {
                 .setState(state)
                 .setTimeRemainingInMillis(timeRemainingInMs)
                 .setLastAccessTime(lastAccessTime)
+                .setIsDangerous(isDangerous)
                 .setUrl(url)
                 .build();
     }
