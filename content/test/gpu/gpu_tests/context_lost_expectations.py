@@ -54,12 +54,3 @@ class ContextLostExpectations(GpuTestExpectations):
     self.Fail('ContextLost_WebGLContextLostFromQuantity',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611906)
 
-    # Android WebGLBlocked/Unblocked
-    self.Fail('ContextLost_WebGLBlockedAfterJSNavigation',
-              ['android', 'nvidia'], bug=832886)
-    self.Flaky('ContextLost_WebGLBlockedAfterJSNavigation',
-              ['android', 'qualcomm'], bug=832886)
-    self.Fail('ContextLost_WebGLUnblockedAfterUserInitiatedReload',
-              ['android', 'nvidia'], bug=832886)
-    self.Flaky('ContextLost_WebGLUnblockedAfterUserInitiatedReload',
-              ['android', 'qualcomm'], bug=832886)
