@@ -7,7 +7,6 @@
 // Spec: https://drafts.css-houdini.org/css-typed-om/#positionvalue-objects
 [
   Constructor(CSSNumericValue x, CSSNumericValue y),
-  RuntimeEnabled=CSSTypedOM,
   Exposed=(Window,LayoutWorklet,PaintWorklet),
   RaisesException=Constructor
 ] interface CSSPositionValue : CSSStyleValue {

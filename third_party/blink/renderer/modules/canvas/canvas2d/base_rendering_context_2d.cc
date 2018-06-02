@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/stroke_data.h"
 #include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
@@ -938,10 +937,7 @@ static inline CanvasImageSource* ToImageSourceInternal(
     const CanvasImageSourceUnion& value,
     ExceptionState& exception_state) {
   if (value.IsCSSImageValue()) {
-    if (RuntimeEnabledFeatures::CSSPaintAPIEnabled())
-      return value.GetAsCSSImageValue();
-    exception_state.ThrowTypeError("CSSImageValue is not yet supported");
-    return nullptr;
+    return value.GetAsCSSImageValue();
   }
   if (value.IsHTMLImageElement())
     return value.GetAsHTMLImageElement();

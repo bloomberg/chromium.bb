@@ -25,5 +25,5 @@
 ] interface CSSStyleRule : CSSRule {
     [SetterCallWith=ExecutionContext] attribute DOMString selectorText;
     [SameObject, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
-    [SameObject, RuntimeEnabled=CSSTypedOM, MeasureAs=CSSTypedOMStylePropertyMap] readonly attribute StylePropertyMap styleMap;
+    [SameObject, MeasureAs=CSSTypedOMStylePropertyMap] readonly attribute StylePropertyMap styleMap;
 };

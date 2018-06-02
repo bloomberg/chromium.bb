@@ -7,7 +7,6 @@
 // before they can be used as a value for properties like "transform".
 // Spec: https://drafts.css-houdini.org/css-typed-om/#csstransformcomponent
 [
-    RuntimeEnabled=CSSTypedOM,
     Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSTransformComponent {
     stringifier;

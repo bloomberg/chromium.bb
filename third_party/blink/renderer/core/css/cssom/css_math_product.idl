@@ -6,7 +6,6 @@
 // https://drafts.css-houdini.org/css-typed-om/#cssmathsub
 [
   Constructor(CSSNumberish... args),
-  RuntimeEnabled=CSSTypedOM,
   Exposed=(Window,LayoutWorklet,PaintWorklet),
   RaisesException=Constructor
 ] interface CSSMathProduct : CSSMathValue {

@@ -7,7 +7,6 @@
 typedef (double or CSSNumericValue) CSSNumberish;
 
 [
-  RuntimeEnabled=CSSTypedOM,
   Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSNumericValue : CSSStyleValue {
   [RaisesException, NewObject] CSSNumericValue add(CSSNumberish... values);

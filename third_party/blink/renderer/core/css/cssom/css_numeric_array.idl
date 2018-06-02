@@ -5,7 +5,6 @@
 // Represents the sum of one or more CSSNumericValues.
 // https://drafts.css-houdini.org/css-typed-om/#cssmathsum
 [
-  RuntimeEnabled=CSSTypedOM,
   Exposed=(Window,LayoutWorklet,PaintWorklet),
   RaisesException=Constructor
 ] interface CSSNumericArray {

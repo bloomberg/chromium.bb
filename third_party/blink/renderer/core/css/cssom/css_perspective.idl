@@ -7,7 +7,6 @@
 // Spec: https://drafts.css-houdini.org/css-typed-om/#cssperspective
 [
     Constructor(CSSNumericValue length),
-    RuntimeEnabled=CSSTypedOM,
     Exposed=(Window,LayoutWorklet,PaintWorklet),
     RaisesException=Constructor
 ] interface CSSPerspective : CSSTransformComponent {

@@ -6,7 +6,6 @@
 // https://drafts.css-houdini.org/css-typed-om/#cssmathsum
 [
   Constructor(CSSNumberish... args),
-  RuntimeEnabled=CSSTypedOM,
   Exposed=(Window,LayoutWorklet,PaintWorklet),
   RaisesException=Constructor
 ] interface CSSMathMax : CSSMathValue {

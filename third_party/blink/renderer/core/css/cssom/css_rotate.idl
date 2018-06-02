@@ -8,7 +8,6 @@
 [
     Constructor(CSSNumericValue angleValue),
     Constructor(CSSNumberish x, CSSNumberish y, CSSNumberish z, CSSNumericValue angle),
-    RuntimeEnabled=CSSTypedOM,
     Exposed=(Window,LayoutWorklet,PaintWorklet),
     RaisesException=Constructor
 ] interface CSSRotate : CSSTransformComponent {

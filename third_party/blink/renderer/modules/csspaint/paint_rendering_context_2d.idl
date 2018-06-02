@@ -5,8 +5,7 @@
 // https://drafts.css-houdini.org/css-paint-api/#paintrenderingcontext2d
 
 [
-    Exposed=PaintWorklet,
-    RuntimeEnabled=CSSPaintAPI
+    Exposed=PaintWorklet
 ] interface PaintRenderingContext2D {
     // state
     void save(); // push state on state stack
