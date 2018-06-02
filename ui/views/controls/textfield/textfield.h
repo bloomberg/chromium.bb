@@ -187,6 +187,10 @@ class VIEWS_EXPORT Textfield : public View,
     placeholder_text_draw_flags_ = flags;
   }
 
+  void set_placeholder_text_hidden_on_focus(bool hidden) {
+    placeholder_text_hidden_on_focus_ = hidden;
+  }
+
   // Sets whether to indicate the textfield has invalid content.
   void SetInvalid(bool invalid);
   bool invalid() const { return invalid_; }
@@ -544,6 +548,10 @@ class VIEWS_EXPORT Textfield : public View,
   // The font used for the placeholder text. If this value is null, the
   // placeholder text uses the same font list as the underlying RenderText.
   base::Optional<gfx::FontList> placeholder_font_list_;
+
+  // If this is true, the placeholder text is never drawn when the Textfield is
+  // focused, regardless of whether or not it's empty.
+  bool placeholder_text_hidden_on_focus_ = false;
 
   // True when the contents are deemed unacceptable and should be indicated as
   // such.

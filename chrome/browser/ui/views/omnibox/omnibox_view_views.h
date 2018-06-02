@@ -16,6 +16,7 @@
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/search_engines/template_url_service_observer.h"
 #include "components/security_state/core/security_state.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/compositor/compositor.h"
@@ -52,7 +53,8 @@ class OmniboxViewViews : public OmniboxView,
                              CandidateWindowObserver,
 #endif
                          public views::TextfieldController,
-                         public ui::CompositorObserver {
+                         public ui::CompositorObserver,
+                         public TemplateURLServiceObserver {
  public:
   // The internal view class name.
   static const char kViewClassName[];
@@ -83,6 +85,11 @@ class OmniboxViewViews : public OmniboxView,
 
   // Called to clear the saved state for |web_contents|.
   void ResetTabState(content::WebContents* web_contents);
+
+  // Installs the placeholder text with the name of the current default search
+  // provider. For example, if Google is the default search provider, this shows
+  // "Search Google or type a URL" when the Omnibox is empty and unfocused.
+  void InstallPlaceholderText();
 
   // OmniboxView:
   void EmphasizeURLComponents() override;
@@ -257,6 +264,9 @@ class OmniboxViewViews : public OmniboxView,
   void OnCompositingChildResizing(ui::Compositor* compositor) override;
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
+  // TemplateURLServiceObserver:
+  void OnTemplateURLServiceChanged() override;
+
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (smaller font size). This is used for popups.
   bool popup_window_mode_;
@@ -323,7 +333,10 @@ class OmniboxViewViews : public OmniboxView,
   // this is set to 7 (the length of "Google ").
   int friendly_suggestion_text_prefix_length_;
 
-  ScopedObserver<ui::Compositor, ui::CompositorObserver> scoped_observer_;
+  ScopedObserver<ui::Compositor, ui::CompositorObserver>
+      scoped_compositor_observer_{this};
+  ScopedObserver<TemplateURLService, TemplateURLServiceObserver>
+      scoped_template_url_service_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };
