@@ -20,6 +20,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_list_iterator.h"
 #include "cc/resources/ui_resource_client.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/swap_promise.h"
@@ -219,6 +220,14 @@ class CC_EXPORT LayerTreeImpl {
 
   gfx::ScrollOffset TotalScrollOffset() const;
   gfx::ScrollOffset TotalMaxScrollOffset() const;
+
+  void AddPresentationCallbacks(
+      std::vector<LayerTreeHost::PresentationTimeCallback> callbacks);
+  std::vector<LayerTreeHost::PresentationTimeCallback>
+  TakePresentationCallbacks();
+  bool has_presentation_callbacks() const {
+    return !presentation_callbacks_.empty();
+  }
 
   ScrollNode* CurrentlyScrollingNode();
   const ScrollNode* CurrentlyScrollingNode() const;
@@ -565,11 +574,6 @@ class CC_EXPORT LayerTreeImpl {
 
   LayerTreeLifecycle& lifecycle() { return lifecycle_; }
 
-  bool request_presentation_time() const { return request_presentation_time_; }
-  void set_request_presentation_time(bool value) {
-    request_presentation_time_ = value;
-  }
-
  protected:
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
   void PushPageScaleFactorAndLimits(const float* page_scale_factor,
@@ -695,9 +699,7 @@ class CC_EXPORT LayerTreeImpl {
   // lifecycle states. See: |LayerTreeLifecycle|.
   LayerTreeLifecycle lifecycle_;
 
-  // If true LayerTreeHostImpl requests a presentation token for the current
-  // frame.
-  bool request_presentation_time_ = false;
+  std::vector<LayerTreeHost::PresentationTimeCallback> presentation_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);
 };

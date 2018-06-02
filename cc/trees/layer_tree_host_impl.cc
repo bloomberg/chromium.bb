@@ -134,6 +134,14 @@ bool IsMobileOptimized(LayerTreeImpl* active_tree) {
   return has_fixed_page_scale || has_mobile_viewport;
 }
 
+// Compares two presentation tokens, handling cases where the token
+// wraps around the 32-bit max value.
+bool PresentationTokenGT(uint32_t token1, uint32_t token2) {
+  // There will be underflow in the subtraction if token1 was created
+  // after token2.
+  return (token2 - token1) > 0x80000000u;
+}
+
 viz::ResourceFormat TileRasterBufferFormat(
     const LayerTreeSettings& settings,
     viz::ContextProvider* context_provider,
@@ -1728,26 +1736,27 @@ void LayerTreeHostImpl::DidReceiveCompositorFrameAck() {
   client_->DidReceiveCompositorFrameAckOnImplThread();
 }
 
-void LayerTreeHostImpl::DidPresentCompositorFrame(uint32_t presentation_token,
+void LayerTreeHostImpl::DidPresentCompositorFrame(uint32_t frame_token,
                                                   base::TimeTicks time,
                                                   base::TimeDelta refresh,
                                                   uint32_t flags) {
   TRACE_EVENT_MARK_WITH_TIMESTAMP0("cc,benchmark", "FramePresented", time);
-  std::vector<int> source_frames;
-  auto iter = presentation_token_to_frame_.begin();
-  for (; iter != presentation_token_to_frame_.end() &&
-         iter->first <= presentation_token;
-       ++iter) {
-    source_frames.push_back(iter->second);
+  std::vector<LayerTreeHost::PresentationTimeCallback> all_callbacks;
+  while (!presentation_callbacks_.empty()) {
+    auto iter = presentation_callbacks_.begin();
+    if (PresentationTokenGT(iter->first, frame_token))
+      break;
+    auto& callbacks = iter->second;
+    std::copy(std::make_move_iterator(callbacks.begin()),
+              std::make_move_iterator(callbacks.end()),
+              std::back_inserter(all_callbacks));
+    presentation_callbacks_.erase(iter);
   }
-  presentation_token_to_frame_.erase(presentation_token_to_frame_.begin(),
-                                     iter);
-  client_->DidPresentCompositorFrameOnImplThread(source_frames, time, refresh,
-                                                 flags);
+  client_->DidPresentCompositorFrameOnImplThread(
+      frame_token, std::move(all_callbacks), time, refresh, flags);
 }
 
-void LayerTreeHostImpl::DidDiscardCompositorFrame(uint32_t presentation_token) {
-}
+void LayerTreeHostImpl::DidDiscardCompositorFrame(uint32_t frame_token) {}
 
 void LayerTreeHostImpl::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
@@ -1833,11 +1842,8 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   metadata.frame_token = next_frame_token_++;
   if (!next_frame_token_)
     next_frame_token_ = 1u;
-  if (active_tree_->request_presentation_time()) {
+  if (active_tree_->has_presentation_callbacks())
     metadata.request_presentation_feedback = true;
-    presentation_token_to_frame_[metadata.frame_token] =
-        active_tree_->source_frame_number();
-  }
 
   metadata.device_scale_factor = active_tree_->painted_device_scale_factor() *
                                  active_tree_->device_scale_factor();
@@ -1859,6 +1865,11 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   metadata.content_source_id = active_tree_->content_source_id();
 
   active_tree_->GetViewportSelection(&metadata.selection);
+  if (active_tree_->has_presentation_callbacks()) {
+    presentation_callbacks_.push_back(
+        {metadata.frame_token, active_tree_->TakePresentationCallbacks()});
+    DCHECK_LE(presentation_callbacks_.size(), 25u);
+  }
 
   if (const auto* outer_viewport_scroll_node = OuterViewportScrollNode()) {
     metadata.root_overflow_y_hidden =
