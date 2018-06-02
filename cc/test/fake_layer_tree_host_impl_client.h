@@ -39,7 +39,8 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void RequestBeginMainFrameNotExpected(bool new_state) override {}
   void NotifyImageDecodeRequestFinished() override {}
   void DidPresentCompositorFrameOnImplThread(
-      const std::vector<int>& source_frames,
+      uint32_t frame_token,
+      std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       base::TimeTicks time,
       base::TimeDelta refresh,
       uint32_t flags) override {}

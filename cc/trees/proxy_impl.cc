@@ -479,14 +479,15 @@ void ProxyImpl::NotifyImageDecodeRequestFinished() {
 }
 
 void ProxyImpl::DidPresentCompositorFrameOnImplThread(
-    const std::vector<int>& source_frames,
+    uint32_t frame_token,
+    std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
     base::TimeTicks time,
     base::TimeDelta refresh,
     uint32_t flags) {
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&ProxyMain::DidPresentCompositorFrame,
-                                proxy_main_weak_ptr_, source_frames, time,
-                                refresh, flags));
+                                proxy_main_weak_ptr_, frame_token,
+                                std::move(callbacks), time, refresh, flags));
 }
 
 bool ProxyImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {

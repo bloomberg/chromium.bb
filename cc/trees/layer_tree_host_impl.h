@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
@@ -36,6 +37,7 @@
 #include "cc/tiles/image_decode_cache.h"
 #include "cc/tiles/tile_manager.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/managed_memory_policy.h"
@@ -143,10 +145,11 @@ class LayerTreeHostImplClient {
 
   virtual void RequestBeginMainFrameNotExpected(bool new_state) = 0;
 
-  // Called when a presentation time is requested. |source_frames| identifies
-  // the frames that correspond to the request.
+  // Called when a presentation time is requested. |frame_token| identifies
+  // the frame that was presented.
   virtual void DidPresentCompositorFrameOnImplThread(
-      const std::vector<int>& source_frames,
+      uint32_t frame_token,
+      std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       base::TimeTicks time,
       base::TimeDelta refresh,
       uint32_t flags) = 0;
@@ -429,11 +432,11 @@ class CC_EXPORT LayerTreeHostImpl
   base::Optional<viz::HitTestRegionList> BuildHitTestData() override;
   void DidLoseLayerTreeFrameSink() override;
   void DidReceiveCompositorFrameAck() override;
-  void DidPresentCompositorFrame(uint32_t presentation_token,
+  void DidPresentCompositorFrame(uint32_t frame_token,
                                  base::TimeTicks time,
                                  base::TimeDelta refresh,
                                  uint32_t flags) override;
-  void DidDiscardCompositorFrame(uint32_t presentation_token) override;
+  void DidDiscardCompositorFrame(uint32_t frame_token) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
@@ -487,6 +490,8 @@ class CC_EXPORT LayerTreeHostImpl
   ImageAnimationController* image_animation_controller() {
     return &image_animation_controller_;
   }
+
+  uint32_t next_frame_token() const { return next_frame_token_; }
 
   virtual bool WillBeginImplFrame(const viz::BeginFrameArgs& args);
   virtual void DidFinishImplFrame();
@@ -1060,11 +1065,6 @@ class CC_EXPORT LayerTreeHostImpl
   // each CompositorFrame.
   std::unique_ptr<RenderFrameMetadataObserver> render_frame_metadata_observer_;
 
-  // Maps from presentation_token set on CF to the source frame that requested
-  // it. Presentation tokens are requested if the active tree has
-  // request_presentation_time() set.
-  base::flat_map<uint32_t, int> presentation_token_to_frame_;
-
   uint32_t next_frame_token_ = 1u;
 
   viz::LocalSurfaceId last_draw_local_surface_id_;
@@ -1075,6 +1075,10 @@ class CC_EXPORT LayerTreeHostImpl
   const gfx::ColorSpace default_color_space_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+
+  base::circular_deque<
+      std::pair<uint32_t, std::vector<LayerTreeHost::PresentationTimeCallback>>>
+      presentation_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

@@ -101,7 +101,8 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   void NeedsImplSideInvalidation(bool needs_first_draw_on_activation) override;
   void NotifyImageDecodeRequestFinished() override;
   void DidPresentCompositorFrameOnImplThread(
-      const std::vector<int>& source_frames,
+      uint32_t frame_token,
+      std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       base::TimeTicks time,
       base::TimeDelta refresh,
       uint32_t flags) override;

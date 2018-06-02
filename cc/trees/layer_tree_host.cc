@@ -299,21 +299,13 @@ void LayerTreeHost::FinishCommitOnImplThread(
   }
 
   sync_tree->set_source_frame_number(SourceFrameNumber());
-
-  // Set presentation token if any pending .
-  bool request_presentation_time = settings_.always_request_presentation_time;
-  if (!pending_presentation_time_callbacks_.empty()) {
-    request_presentation_time = true;
-    frame_to_presentation_time_callbacks_[SourceFrameNumber()] =
-        std::move(pending_presentation_time_callbacks_);
-    pending_presentation_time_callbacks_.clear();
-  } else if (!frame_to_presentation_time_callbacks_.empty()) {
-    // There are pending callbacks. Keep requesting the presentation callback
-    // in case a previous frame was dropped (the callbacks run when the frame
-    // makes it to screen).
-    request_presentation_time = true;
-  }
-  sync_tree->set_request_presentation_time(request_presentation_time);
+  bool request_presentation_time =
+      settings_.always_request_presentation_time ||
+      !pending_presentation_time_callbacks_.empty();
+  if (request_presentation_time && pending_presentation_time_callbacks_.empty())
+    pending_presentation_time_callbacks_.push_back(base::DoNothing());
+  sync_tree->AddPresentationCallbacks(
+      std::move(pending_presentation_time_callbacks_));
 
   if (needs_full_tree_sync_)
     TreeSynchronizer::SynchronizeTrees(root_layer(), sync_tree);
@@ -689,19 +681,13 @@ bool LayerTreeHost::UpdateLayers() {
 }
 
 void LayerTreeHost::DidPresentCompositorFrame(
-    const std::vector<int>& source_frames,
+    uint32_t frame_token,
+    std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
     base::TimeTicks time,
     base::TimeDelta refresh,
     uint32_t flags) {
-  for (int frame : source_frames) {
-    if (!frame_to_presentation_time_callbacks_.count(frame))
-      continue;
-
-    for (auto& callback : frame_to_presentation_time_callbacks_[frame])
-      std::move(callback).Run(time, refresh, flags);
-
-    frame_to_presentation_time_callbacks_.erase(frame);
-  }
+  for (auto& callback : callbacks)
+    std::move(callback).Run(time, refresh, flags);
 }
 
 void LayerTreeHost::DidCompletePageScaleAnimation() {

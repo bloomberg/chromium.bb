@@ -473,12 +473,13 @@ void SingleThreadProxy::NotifyImageDecodeRequestFinished() {
 }
 
 void SingleThreadProxy::DidPresentCompositorFrameOnImplThread(
-    const std::vector<int>& source_frames,
+    uint32_t frame_token,
+    std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
     base::TimeTicks time,
     base::TimeDelta refresh,
     uint32_t flags) {
-  layer_tree_host_->DidPresentCompositorFrame(source_frames, time, refresh,
-                                              flags);
+  layer_tree_host_->DidPresentCompositorFrame(frame_token, std::move(callbacks),
+                                              time, refresh, flags);
 }
 
 void SingleThreadProxy::RequestBeginMainFrameNotExpected(bool new_state) {

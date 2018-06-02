@@ -454,10 +454,12 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     client_->DidReceiveCompositorFrameAck();
   }
   bool UpdateLayers();
-  void DidPresentCompositorFrame(const std::vector<int>& source_frames,
-                                 base::TimeTicks time,
-                                 base::TimeDelta refresh,
-                                 uint32_t flags);
+  void DidPresentCompositorFrame(
+      uint32_t frame_token,
+      std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
+      base::TimeTicks time,
+      base::TimeDelta refresh,
+      uint32_t flags);
   // Called when the compositor completed page scale animation.
   void DidCompletePageScaleAnimation();
   void ApplyScrollAndScale(ScrollAndScaleSet* info);
@@ -707,11 +709,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Presentation time callbacks requested for the next frame are initially
   // added here.
   std::vector<PresentationTimeCallback> pending_presentation_time_callbacks_;
-
-  // Maps from the source frame presentation callbacks are requested for to
-  // the callbacks.
-  std::map<int, std::vector<PresentationTimeCallback>>
-      frame_to_presentation_time_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };

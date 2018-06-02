@@ -468,7 +468,6 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->elastic_overscroll()->PushPendingToActive();
 
   target_tree->set_content_source_id(content_source_id());
-  target_tree->set_request_presentation_time(request_presentation_time());
 
   if (TakeNewLocalSurfaceIdRequest())
     target_tree->RequestNewLocalSurfaceId();
@@ -510,6 +509,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   // Note: this needs to happen after SetPropertyTrees.
   target_tree->HandleTickmarksVisibilityChange();
   target_tree->HandleScrollbarShowRequestsFromMain();
+  target_tree->AddPresentationCallbacks(std::move(presentation_callbacks_));
 }
 
 void LayerTreeImpl::HandleTickmarksVisibilityChange() {
@@ -664,6 +664,20 @@ void LayerTreeImpl::SetFilterMutated(ElementId element_id,
   element_id_to_filter_animations_[element_id] = filters;
   if (property_trees()->effect_tree.OnFilterAnimated(element_id, filters))
     set_needs_update_draw_properties();
+}
+
+void LayerTreeImpl::AddPresentationCallbacks(
+    std::vector<LayerTreeHost::PresentationTimeCallback> callbacks) {
+  std::copy(std::make_move_iterator(callbacks.begin()),
+            std::make_move_iterator(callbacks.end()),
+            std::back_inserter(presentation_callbacks_));
+}
+
+std::vector<LayerTreeHost::PresentationTimeCallback>
+LayerTreeImpl::TakePresentationCallbacks() {
+  std::vector<LayerTreeHost::PresentationTimeCallback> callbacks;
+  callbacks.swap(presentation_callbacks_);
+  return callbacks;
 }
 
 ScrollNode* LayerTreeImpl::CurrentlyScrollingNode() {

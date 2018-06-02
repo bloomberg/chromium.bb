@@ -57,7 +57,8 @@ void FakeOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
 void FakeOutputSurface::SwapBuffersAck(bool need_presentation_feedback) {
   client_->DidReceiveSwapBuffersAck();
   if (need_presentation_feedback)
-    client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
+    client_->DidReceivePresentationFeedback(
+        {base::TimeTicks::Now(), base::TimeDelta(), 0});
 }
 
 void FakeOutputSurface::BindFramebuffer() {
