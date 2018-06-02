@@ -103,9 +103,7 @@ WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host,
     : host_(host),
       are_events_in_pixels_(are_events_in_pixels),
       observer_manager_(this),
-      event_targeter_(std::make_unique<WindowTargeter>()),
-      repost_event_factory_(this),
-      held_event_factory_(this) {
+      event_targeter_(std::make_unique<WindowTargeter>()) {
   ui::GestureRecognizer::Get()->AddGestureEventHelper(this);
   Env::GetInstance()->AddObserver(this);
   if (Env::GetInstance()->mode() == Env::Mode::MUS)
