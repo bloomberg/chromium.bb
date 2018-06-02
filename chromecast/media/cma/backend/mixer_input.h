@@ -143,7 +143,6 @@ class MixerInput {
   const bool primary_;
   const std::string device_id_;
   const AudioContentType content_type_;
-  const int output_samples_per_second_;
 
   FilterGroup* filter_group_;
 
