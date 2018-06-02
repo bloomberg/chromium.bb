@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASSISTANT_UI_ASSISTANT_BUBBLE_VIEW_H_
-#define ASH_ASSISTANT_UI_ASSISTANT_BUBBLE_VIEW_H_
+#ifndef ASH_ASSISTANT_UI_ASSISTANT_MAIN_VIEW_H_
+#define ASH_ASSISTANT_UI_ASSISTANT_MAIN_VIEW_H_
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "base/macros.h"
@@ -16,11 +16,11 @@ class DialogPlate;
 class SuggestionContainerView;
 class UiElementContainerView;
 
-class AssistantBubbleView : public views::View,
-                            public AssistantInteractionModelObserver {
+class AssistantMainView : public views::View,
+                          public AssistantInteractionModelObserver {
  public:
-  explicit AssistantBubbleView(AssistantController* assistant_controller);
-  ~AssistantBubbleView() override;
+  explicit AssistantMainView(AssistantController* assistant_controller);
+  ~AssistantMainView() override;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
@@ -37,16 +37,16 @@ class AssistantBubbleView : public views::View,
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
-  views::View* caption_bar_;                     // Owned by view hierarchy.
+  views::View* caption_bar_;                        // Owned by view hierarchy.
   UiElementContainerView* ui_element_container_;    // Owned by view hierarchy.
   SuggestionContainerView* suggestions_container_;  // Owned by view hierarchy.
-  DialogPlate* dialog_plate_;                    // Owned by view hierarchy.
+  DialogPlate* dialog_plate_;                       // Owned by view hierarchy.
 
   int min_height_dip_;
 
-  DISALLOW_COPY_AND_ASSIGN(AssistantBubbleView);
+  DISALLOW_COPY_AND_ASSIGN(AssistantMainView);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ASSISTANT_UI_ASSISTANT_BUBBLE_VIEW_H_
+#endif  // ASH_ASSISTANT_UI_ASSISTANT_MAIN_VIEW_H_

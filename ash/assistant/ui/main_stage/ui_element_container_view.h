@@ -21,7 +21,7 @@ class AssistantQueryView;
 class AssistantTextElement;
 class AssistantUiElement;
 
-// UiElementContainerView is the child of AssistantBubbleView concerned with
+// UiElementContainerView is the child of AssistantMainView concerned with
 // laying out text views and embedded card views in response to Assistant
 // interaction model UI element events.
 class UiElementContainerView : public views::View,

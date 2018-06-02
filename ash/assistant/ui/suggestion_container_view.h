@@ -16,7 +16,7 @@ namespace ash {
 
 class AssistantController;
 
-// SuggestionContainerView is the child of AssistantBubbleView concerned with
+// SuggestionContainerView is the child of AssistantMainView concerned with
 // laying out SuggestionChipViews in response to Assistant interaction model
 // suggestion events.
 class SuggestionContainerView : public views::ScrollView,

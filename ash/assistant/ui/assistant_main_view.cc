@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/assistant/ui/assistant_bubble_view.h"
+#include "ash/assistant/ui/assistant_main_view.h"
 
 #include <memory>
 
@@ -25,8 +25,7 @@ constexpr int kMaxHeightDip = 640;
 
 }  // namespace
 
-AssistantBubbleView::AssistantBubbleView(
-    AssistantController* assistant_controller)
+AssistantMainView::AssistantMainView(AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
       caption_bar_(new CaptionBar()),
       ui_element_container_(new UiElementContainerView(assistant_controller)),
@@ -39,11 +38,11 @@ AssistantBubbleView::AssistantBubbleView(
   assistant_controller_->AddInteractionModelObserver(this);
 }
 
-AssistantBubbleView::~AssistantBubbleView() {
+AssistantMainView::~AssistantMainView() {
   assistant_controller_->RemoveInteractionModelObserver(this);
 }
 
-gfx::Size AssistantBubbleView::CalculatePreferredSize() const {
+gfx::Size AssistantMainView::CalculatePreferredSize() const {
   // |min_height_dip_| <= |preferred_height| <= |kMaxHeightDip|.
   int preferred_height = GetHeightForWidth(kPreferredWidthDip);
   preferred_height = std::min(preferred_height, kMaxHeightDip);
@@ -51,28 +50,28 @@ gfx::Size AssistantBubbleView::CalculatePreferredSize() const {
   return gfx::Size(kPreferredWidthDip, preferred_height);
 }
 
-void AssistantBubbleView::OnBoundsChanged(const gfx::Rect& prev_bounds) {
+void AssistantMainView::OnBoundsChanged(const gfx::Rect& prev_bounds) {
   // Until Assistant UI is hidden, the view may grow in height but not shrink.
   min_height_dip_ = std::max(min_height_dip_, height());
 }
 
-void AssistantBubbleView::ChildPreferredSizeChanged(views::View* child) {
+void AssistantMainView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 
   // We force a layout here because, though we are receiving a
   // ChildPreferredSizeChanged event, it may be that the
   // |ui_element_container_|'s bounds will not actually change due to the height
-  // restrictions imposed by AssistantBubbleView. When this is the case, we
+  // restrictions imposed by AssistantMainView. When this is the case, we
   // need to force a layout to see |ui_element_container_|'s new contents.
   if (child == ui_element_container_)
     Layout();
 }
 
-void AssistantBubbleView::ChildVisibilityChanged(views::View* child) {
+void AssistantMainView::ChildVisibilityChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-void AssistantBubbleView::InitLayout() {
+void AssistantMainView::InitLayout() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -94,7 +93,7 @@ void AssistantBubbleView::InitLayout() {
   AddChildView(dialog_plate_);
 }
 
-void AssistantBubbleView::OnInteractionStateChanged(
+void AssistantMainView::OnInteractionStateChanged(
     InteractionState interaction_state) {
   if (interaction_state != InteractionState::kInactive)
     return;
@@ -106,7 +105,7 @@ void AssistantBubbleView::OnInteractionStateChanged(
   PreferredSizeChanged();
 }
 
-void AssistantBubbleView::RequestFocus() {
+void AssistantMainView::RequestFocus() {
   dialog_plate_->RequestFocus();
 }
 

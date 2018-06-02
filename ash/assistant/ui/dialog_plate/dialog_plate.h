@@ -15,7 +15,7 @@ namespace ash {
 
 class AssistantController;
 
-// DialogPlate is the child of AssistantBubbleView concerned with providing the
+// DialogPlate is the child of AssistantMainView concerned with providing the
 // means by which a user converses with Assistant. To this end, DialogPlate
 // provides a textfield for use with the keyboard input modality, and an
 // ActionView which serves to either commit a text query, or toggle voice
