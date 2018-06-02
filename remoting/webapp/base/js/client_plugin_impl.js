@@ -51,7 +51,7 @@ remoting.ClientPluginImpl = function(container, capabilities) {
   /** @private {Array<string>} */
   this.capabilities_ = capabilities;
 
-  /** @private {remoting.ClientPlugin.ConnectionEventHandler} */
+  /** @private {remoting.ClientSession} */
   this.connectionEventHandler_ = null;
 
   /** @private {?function(string, number, number)} */
@@ -265,6 +265,9 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     } else if (message.method == 'onFirstFrameReceived') {
       handler.onFirstFrameReceived();
 
+    } else if (message.method == 'networkInfo') {
+      handler.getLogger().setNetworkInterfaceCount(
+          base.getNumberAttr(message.data, 'interfaceCount'));
     }
   }
 

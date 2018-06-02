@@ -242,6 +242,8 @@ class ChromotingInstance : public ClientUserInterface,
       bool pairing_supported,
       const protocol::SecretFetchedCallback& secret_fetched_callback);
 
+  void SendNetworkInfo();
+
   bool initialized_;
 
   scoped_refptr<base::SingleThreadTaskRunner> plugin_task_runner_;
@@ -259,6 +261,8 @@ class ChromotingInstance : public ClientUserInterface,
   std::unique_ptr<DelegatingSignalStrategy> signal_strategy_;
 
   std::unique_ptr<ChromotingClient> client_;
+
+  scoped_refptr<protocol::TransportContext> transport_context_;
 
   // Input pipeline components, in reverse order of distance from input source.
   protocol::MouseInputFilter mouse_input_filter_;
