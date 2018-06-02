@@ -18,6 +18,8 @@ namespace features {
 CHROMEOS_EXPORT extern const base::Feature kEnableUnifiedMultiDeviceSettings;
 CHROMEOS_EXPORT extern const base::Feature kEnableUnifiedMultiDeviceSetup;
 
+CHROMEOS_EXPORT extern const base::Feature kMultiDeviceApi;
+
 }  // namespace features
 
 }  // namespace chromeos

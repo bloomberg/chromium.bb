@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/common/chrome_features.h"
+#include "chromeos/chromeos_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
@@ -43,7 +43,7 @@ KeyedService* ChromeCryptAuthServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   // If DeviceSync Mojo Service is being used to get remote device information,
   // CryptAuthService is not needed, and should not be used.
-  if (base::FeatureList::IsEnabled(features::kMultiDeviceApi))
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
     return nullptr;
 
   Profile* profile = Profile::FromBrowserContext(context);

@@ -1513,7 +1513,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kMultidevice)},
     {"multidevice-service", flag_descriptions::kMultiDeviceApiName,
      flag_descriptions::kMultiDeviceApiDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kMultiDeviceApi)},
+     FEATURE_VALUE_TYPE(chromeos::features::kMultiDeviceApi)},
     {"mash", flag_descriptions::kUseMashName,
      flag_descriptions::kUseMashDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kMash)},
