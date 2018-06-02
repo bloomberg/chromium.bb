@@ -381,10 +381,13 @@ void KeyboardController::HideKeyboard(HideReason reason) {
     case KeyboardControllerState::SHOWN: {
       SetTouchEventLogging(true /* enable */);
 
-      keyboard::LogKeyboardControlEvent(
-          reason == HIDE_REASON_AUTOMATIC
-              ? keyboard::KEYBOARD_CONTROL_HIDE_AUTO
-              : keyboard::KEYBOARD_CONTROL_HIDE_USER);
+      if (reason == HIDE_REASON_AUTOMATIC) {
+        keyboard::LogKeyboardControlEvent(keyboard::KEYBOARD_CONTROL_HIDE_AUTO);
+        time_of_last_blur_ = base::Time::Now();
+      } else {
+        keyboard::LogKeyboardControlEvent(keyboard::KEYBOARD_CONTROL_HIDE_USER);
+        time_of_last_blur_ = base::Time::UnixEpoch();
+      }
 
       NotifyContentsBoundsChanging(gfx::Rect());
 
@@ -742,8 +745,6 @@ void KeyboardController::ChangeState(KeyboardControllerState state) {
   if (state_ == state)
     return;
 
-  KeyboardControllerState original_state = state_;
-
   state_ = state;
 
   if (state != KeyboardControllerState::WILL_HIDE)
@@ -757,16 +758,11 @@ void KeyboardController::ChangeState(KeyboardControllerState state) {
   switch (state_) {
     case KeyboardControllerState::LOADING_EXTENSION:
     case KeyboardControllerState::WILL_HIDE:
-      if (state_ == KeyboardControllerState::WILL_HIDE &&
-          original_state == KeyboardControllerState::SHOWN) {
-        time_of_last_blur_ = base::Time::Now();
-      }
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&KeyboardController::ReportLingeringState,
                          weak_factory_report_lingering_state_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kReportLingeringStateDelayMs));
-
       break;
     default:
       // Do nothing
@@ -855,7 +851,7 @@ bool KeyboardController::DisplayVirtualKeyboard() {
 }
 
 void KeyboardController::DismissVirtualKeyboard() {
-  HideKeyboard(HIDE_REASON_AUTOMATIC);
+  HideKeyboard(HIDE_REASON_MANUAL);
 }
 
 void KeyboardController::AddObserver(

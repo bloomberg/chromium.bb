@@ -153,6 +153,11 @@ bool ChromeVirtualKeyboardDelegate::SendKeyEvent(const std::string& type,
 
 bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::GetInstance();
+  if (controller) {
+    controller->DismissVirtualKeyboard();
+  }
   base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
   chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
                                         chrome::kLanguageOptionsSubPage);
