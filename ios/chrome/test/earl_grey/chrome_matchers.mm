@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
@@ -258,7 +259,8 @@ id<GREYMatcher> SignOutAccountsButton() {
 }
 
 id<GREYMatcher> ClearBrowsingDataCollectionView() {
-  return grey_accessibilityID(kClearBrowsingDataCollectionViewId);
+  return grey_accessibilityID(
+      kClearBrowsingDataCollectionViewAccessibilityIdentifier);
 }
 
 id<GREYMatcher> SettingsMenuButton() {
@@ -346,19 +348,19 @@ id<GREYMatcher> SettingsCollectionView() {
 }
 
 id<GREYMatcher> ClearBrowsingHistoryButton() {
-  return grey_accessibilityID(kClearBrowsingHistoryCellId);
+  return grey_accessibilityID(kClearBrowsingHistoryCellAccessibilityIdentifier);
 }
 
 id<GREYMatcher> ClearCookiesButton() {
-  return grey_accessibilityID(kClearCookiesCellId);
+  return grey_accessibilityID(kClearCookiesCellAccessibilityIdentifier);
 }
 
 id<GREYMatcher> ClearCacheButton() {
-  return grey_accessibilityID(kClearCacheCellId);
+  return grey_accessibilityID(kClearCacheCellAccessibilityIdentifier);
 }
 
 id<GREYMatcher> ClearSavedPasswordsButton() {
-  return grey_accessibilityID(kClearSavedPasswordsCellId);
+  return grey_accessibilityID(kClearSavedPasswordsCellAccessibilityIdentifier);
 }
 
 id<GREYMatcher> ContentSuggestionCollectionView() {
