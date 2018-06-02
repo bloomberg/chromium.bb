@@ -108,13 +108,14 @@ network::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
 
   if (!network_service_network_context_ ||
       network_service_network_context_.encountered_error()) {
-    network::mojom::NetworkService* network_service =
-        content::GetNetworkService();
-    if (!is_quic_allowed_)
-      network_service->DisableQuic();
-    network_service->CreateNetworkContext(
-        MakeRequest(&network_service_network_context_),
-        CreateNetworkContextParams());
+    // This should call into OnNetworkServiceCreated(), which will re-create
+    // the network service, if needed. There's a chance that it won't be
+    // invoked, if the NetworkContext has encountered an error but the
+    // NetworkService has not yet noticed its pipe was closed. In that case,
+    // trying to create a new NetworkContext would fail, anyways, and hopefully
+    // a new NetworkContext will be created on the next GetContext() call.
+    content::GetNetworkService();
+    DCHECK(network_service_network_context_);
   }
   return network_service_network_context_.get();
 }
@@ -170,6 +171,20 @@ SystemNetworkContextManager::SystemNetworkContextManager()
 
 SystemNetworkContextManager::~SystemNetworkContextManager() {
   shared_url_loader_factory_->Shutdown();
+}
+
+void SystemNetworkContextManager::OnNetworkServiceCreated(
+    network::mojom::NetworkService* network_service) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+  // Disable QUIC globally, if needed.
+  if (!is_quic_allowed_)
+    network_service->DisableQuic();
+  // The system NetworkContext must be created first, since it sets
+  // |use_to_validate_certs| to true.
+  network_service->CreateNetworkContext(
+      MakeRequest(&network_service_network_context_),
+      CreateNetworkContextParams());
 }
 
 void SystemNetworkContextManager::DisableQuic() {
@@ -233,6 +248,8 @@ SystemNetworkContextManager::CreateNetworkContextParams() {
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   network_context_params->enable_ftp_url_support = true;
 #endif
+
+  network_context_params->use_to_validate_certs = true;
 
   proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
 

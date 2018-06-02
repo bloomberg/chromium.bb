@@ -121,11 +121,6 @@
 -IOThreadBrowserTestWithHangingPacRequest.Shutdown
 -ProxySettingsApiTest.ProxyEventsParseError
 
-# SetURLRequestContextForNSSHttpIO / SetGlobalCertNetFetcher are not called
-# in the network process.
--SSLUITest.TestHTTPSOCSPRevoked/0
--SSLUITest.TestHTTPSOCSPRevoked/1
-
 # http://crbug.com/721414
 # TODO(rockot): add support for webRequest API.
 -ExtensionWebRequestApiTest.WebRequestBlocking

@@ -13,6 +13,7 @@
 #include "net/base/mock_network_change_notifier.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
@@ -29,6 +30,9 @@ namespace network {
 namespace {
 
 const char kNetworkServiceName[] = "network";
+
+const base::FilePath::CharType kServicesTestData[] =
+    FILE_PATH_LITERAL("services/test/data");
 
 mojom::NetworkContextParamsPtr CreateContextParams() {
   mojom::NetworkContextParamsPtr params = mojom::NetworkContextParams::New();
@@ -145,16 +149,25 @@ class NetworkServiceTestWithService
                     base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
   ~NetworkServiceTestWithService() override {}
 
-  void LoadURL(const GURL& url) {
+  void CreateNetworkContext() {
+    mojom::NetworkContextParamsPtr context_params =
+        mojom::NetworkContextParams::New();
+    network_service_->CreateNetworkContext(mojo::MakeRequest(&network_context_),
+                                           std::move(context_params));
+  }
+
+  void LoadURL(const GURL& url, int options = mojom::kURLLoadOptionNone) {
     ResourceRequest request;
     request.url = url;
     request.method = "GET";
     request.request_initiator = url::Origin();
-    StartLoadingURL(request, 0);
+    StartLoadingURL(request, 0 /* process_id */, options);
     client_->RunUntilComplete();
   }
 
-  void StartLoadingURL(const ResourceRequest& request, uint32_t process_id) {
+  void StartLoadingURL(const ResourceRequest& request,
+                       uint32_t process_id,
+                       int options = mojom::kURLLoadOptionNone) {
     client_.reset(new TestURLLoaderClient());
     mojom::URLLoaderFactoryPtr loader_factory;
     mojom::URLLoaderFactoryParamsPtr params =
@@ -165,7 +178,7 @@ class NetworkServiceTestWithService
                                              std::move(params));
 
     loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader_), 1, 1, mojom::kURLLoadOptionNone, request,
+        mojo::MakeRequest(&loader_), 1, 1, options, request,
         client_->CreateInterfacePtr(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
@@ -176,21 +189,16 @@ class NetworkServiceTestWithService
   mojom::NetworkService* service() { return network_service_.get(); }
   mojom::NetworkContext* context() { return network_context_.get(); }
 
- private:
+ protected:
   std::unique_ptr<service_manager::Service> CreateService() override {
     return std::make_unique<ServiceTestClient>(this);
   }
 
   void SetUp() override {
-    base::FilePath services_test_data(FILE_PATH_LITERAL("services/test/data"));
-    test_server_.AddDefaultHandlers(services_test_data);
+    test_server_.AddDefaultHandlers(base::FilePath(kServicesTestData));
     ASSERT_TRUE(test_server_.Start());
     service_manager::test::ServiceTest::SetUp();
     connector()->BindInterface(kNetworkServiceName, &network_service_);
-    mojom::NetworkContextParamsPtr context_params =
-        mojom::NetworkContextParams::New();
-    network_service_->CreateNetworkContext(mojo::MakeRequest(&network_context_),
-                                           std::move(context_params));
   }
 
   net::EmbeddedTestServer test_server_;
@@ -205,12 +213,14 @@ class NetworkServiceTestWithService
 // Verifies that loading a URL through the network service's mojo interface
 // works.
 TEST_F(NetworkServiceTestWithService, Basic) {
+  CreateNetworkContext();
   LoadURL(test_server()->GetURL("/echo"));
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
 }
 
 // Verifies that raw headers are only reported if requested.
 TEST_F(NetworkServiceTestWithService, RawRequestHeadersAbsent) {
+  CreateNetworkContext();
   ResourceRequest request;
   request.url = test_server()->GetURL("/server-redirect?/echo");
   request.method = "GET";
@@ -225,6 +235,7 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersAbsent) {
 }
 
 TEST_F(NetworkServiceTestWithService, RawRequestHeadersPresent) {
+  CreateNetworkContext();
   ResourceRequest request;
   request.url = test_server()->GetURL("/server-redirect?/echo");
   request.method = "GET";
@@ -268,6 +279,7 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersPresent) {
 
 TEST_F(NetworkServiceTestWithService, RawRequestAccessControl) {
   const uint32_t process_id = 42;
+  CreateNetworkContext();
   ResourceRequest request;
   request.url = test_server()->GetURL("/nocache.html");
   request.method = "GET";
@@ -295,6 +307,7 @@ TEST_F(NetworkServiceTestWithService, RawRequestAccessControl) {
 }
 
 TEST_F(NetworkServiceTestWithService, SetNetworkConditions) {
+  CreateNetworkContext();
   mojom::NetworkConditionsPtr network_conditions =
       mojom::NetworkConditions::New();
   network_conditions->offline = true;
@@ -336,6 +349,118 @@ TEST_F(NetworkServiceTestWithService, SetNetworkConditions) {
   StartLoadingURL(request, 0);
   client()->RunUntilComplete();
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
+}
+
+// The SpawnedTestServer does not work on iOS.
+#if !defined(OS_IOS)
+
+class AllowBadCertsNetworkServiceClient : public mojom::NetworkServiceClient {
+ public:
+  explicit AllowBadCertsNetworkServiceClient(
+      network::mojom::NetworkServiceClientRequest
+          network_service_client_request)
+      : binding_(this, std::move(network_service_client_request)) {}
+  ~AllowBadCertsNetworkServiceClient() override {}
+
+  // network::mojom::NetworkServiceClient implementation:
+  void OnAuthRequired(uint32_t process_id,
+                      uint32_t routing_id,
+                      uint32_t request_id,
+                      const GURL& url,
+                      const GURL& site_for_cookies,
+                      bool first_auth_attempt,
+                      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+                      int32_t resource_type,
+                      network::mojom::AuthChallengeResponderPtr
+                          auth_challenge_responder) override {
+    NOTREACHED();
+  }
+
+  void OnCertificateRequested(
+      uint32_t process_id,
+      uint32_t routing_id,
+      uint32_t request_id,
+      const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
+      network::mojom::NetworkServiceClient::OnCertificateRequestedCallback
+          callback) override {
+    NOTREACHED();
+  }
+
+  void OnSSLCertificateError(uint32_t process_id,
+                             uint32_t routing_id,
+                             uint32_t request_id,
+                             int32_t resource_type,
+                             const GURL& url,
+                             const net::SSLInfo& ssl_info,
+                             bool fatal,
+                             OnSSLCertificateErrorCallback response) override {
+    std::move(response).Run(net::OK);
+  }
+
+ private:
+  mojo::Binding<network::mojom::NetworkServiceClient> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(AllowBadCertsNetworkServiceClient);
+};
+
+// Test |use_to_validate_certs|, which is required by AIA fetching, among other
+// things.
+TEST_F(NetworkServiceTestWithService, AIAFetching) {
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  mojom::NetworkServiceClientPtr network_service_client;
+  context_params->use_to_validate_certs = true;
+
+  // Have to allow bad certs when using
+  // SpawnedTestServer::SSLOptions::CERT_AUTO_AIA_INTERMEDIATE.
+  AllowBadCertsNetworkServiceClient allow_bad_certs_client(
+      mojo::MakeRequest(&network_service_client));
+
+  network_service_->CreateNetworkContext(mojo::MakeRequest(&network_context_),
+                                         std::move(context_params));
+
+  net::SpawnedTestServer::SSLOptions ssl_options(
+      net::SpawnedTestServer::SSLOptions::CERT_AUTO_AIA_INTERMEDIATE);
+  net::SpawnedTestServer test_server(net::SpawnedTestServer::TYPE_HTTPS,
+                                     ssl_options,
+                                     base::FilePath(kServicesTestData));
+  ASSERT_TRUE(test_server.Start());
+
+  LoadURL(test_server.GetURL("/echo"),
+          mojom::kURLLoadOptionSendSSLInfoWithResponse);
+  EXPECT_EQ(net::OK, client()->completion_status().error_code);
+  EXPECT_EQ(
+      0u, client()->response_head().cert_status & net::CERT_STATUS_ALL_ERRORS);
+  ASSERT_TRUE(client()->ssl_info());
+  ASSERT_TRUE(client()->ssl_info()->cert);
+  EXPECT_EQ(2u, client()->ssl_info()->cert->intermediate_buffers().size());
+  ASSERT_TRUE(client()->ssl_info()->unverified_cert);
+  EXPECT_EQ(
+      0u, client()->ssl_info()->unverified_cert->intermediate_buffers().size());
+}
+#endif  // !defined(OS_IOS)
+
+// Check that destroying a NetworkContext with |use_to_validate_certs| set
+// destroys all other NetworkContexts.
+TEST_F(NetworkServiceTestWithService,
+       DestryingUseToValidateCertsContextDestroysOtherContexts) {
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  context_params->use_to_validate_certs = true;
+  mojom::NetworkContextPtr cert_validating_network_context;
+  network_service_->CreateNetworkContext(
+      mojo::MakeRequest(&cert_validating_network_context),
+      std::move(context_params));
+
+  base::RunLoop run_loop;
+  mojom::NetworkContextPtr network_context;
+  network_service_->CreateNetworkContext(mojo::MakeRequest(&network_context),
+                                         CreateContextParams());
+  network_context.set_connection_error_handler(run_loop.QuitClosure());
+
+  // Destroying |cert_validating_network_context| should result in destroying
+  // |network_context| as well.
+  cert_validating_network_context.reset();
+  run_loop.Run();
+  EXPECT_TRUE(network_context.encountered_error());
 }
 
 class TestNetworkChangeManagerClient

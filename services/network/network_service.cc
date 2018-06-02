@@ -159,7 +159,7 @@ NetworkService::NetworkService(
 
 NetworkService::~NetworkService() {
   // Destroy owned network contexts.
-  owned_network_contexts_.clear();
+  DestroyNetworkContexts();
 
   // All NetworkContexts (Owned and unowned) must have been deleted by this
   // point.
@@ -197,6 +197,10 @@ std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
 }
 
 void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
+  // If UseToValidateCerts() is true, there must be no other NetworkContexts
+  // created yet.
+  DCHECK(!network_context->UseToValidateCerts() || network_contexts_.empty());
+
   DCHECK_EQ(0u, network_contexts_.count(network_context));
   network_contexts_.insert(network_context);
   if (quic_disabled_)
@@ -204,6 +208,11 @@ void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
 }
 
 void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
+  // If the NetworkContext is being used to validate certs, all other
+  // NetworkContexts must already have been destroyed.
+  DCHECK(!network_context->UseToValidateCerts() ||
+         network_contexts_.size() == 1);
+
   DCHECK_EQ(1u, network_contexts_.count(network_context));
   network_contexts_.erase(network_context);
 }
@@ -223,6 +232,10 @@ void NetworkService::SetClient(mojom::NetworkServiceClientPtr client) {
 void NetworkService::CreateNetworkContext(
     mojom::NetworkContextRequest request,
     mojom::NetworkContextParamsPtr params) {
+  // Only the first created NetworkContext can have |use_to_validate_certs| set
+  // to true.
+  DCHECK(!params->use_to_validate_certs || network_contexts_.empty());
+
   owned_network_contexts_.emplace(std::make_unique<NetworkContext>(
       this, std::move(request), std::move(params),
       base::BindOnce(&NetworkService::OnNetworkContextConnectionClosed,
@@ -282,8 +295,28 @@ void NetworkService::OnBindInterface(
   registry_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
+void NetworkService::DestroyNetworkContexts() {
+  // Delete NetworkContexts. If there's a NetworkContext that's being used to
+  // validate certs, it must be deleted after all other NetworkContexts, to
+  // avoid use-after-frees.
+  for (auto it = owned_network_contexts_.begin();
+       it != owned_network_contexts_.end();) {
+    const auto last = it;
+    ++it;
+    if (!(*last)->UseToValidateCerts())
+      owned_network_contexts_.erase(last);
+  }
+  DCHECK_LE(owned_network_contexts_.size(), 1u);
+  owned_network_contexts_.clear();
+}
+
 void NetworkService::OnNetworkContextConnectionClosed(
     NetworkContext* network_context) {
+  if (network_context->UseToValidateCerts()) {
+    DestroyNetworkContexts();
+    return;
+  }
+
   auto it = owned_network_contexts_.find(network_context);
   DCHECK(it != owned_network_contexts_.end());
   owned_network_contexts_.erase(it);

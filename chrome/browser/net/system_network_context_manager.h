@@ -72,6 +72,10 @@ class SystemNetworkContextManager {
   // that is backed by the SystemNetworkContext.
   scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory();
 
+  // Called when content creates a NetworkService. Creates the
+  // SystemNetworkContext, if the network service is enabled.
+  void OnNetworkServiceCreated(network::mojom::NetworkService* network_service);
+
   // Permanently disables QUIC, both for NetworkContexts using the IOThread's
   // NetworkService, and for those using the network service (if enabled).
   void DisableQuic();

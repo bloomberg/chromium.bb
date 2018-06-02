@@ -30,6 +30,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "ui/gfx/image/image_skia.h"
@@ -625,6 +626,16 @@ void ContentBrowserClient::WillCreateWebSocket(
     RenderFrameHost* frame,
     network::mojom::WebSocketRequest* request) {}
 
+std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
+ContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
+    NavigationUIData* navigation_ui_data,
+    int frame_tree_node_id) {
+  return std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>();
+}
+
+void ContentBrowserClient::OnNetworkServiceCreated(
+    network::mojom::NetworkService* network_service) {}
+
 network::mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
     BrowserContext* context,
     bool in_memory,
@@ -737,13 +748,6 @@ std::unique_ptr<OverlayWindow>
 ContentBrowserClient::CreateWindowForPictureInPicture(
     PictureInPictureWindowController* controller) {
   return nullptr;
-}
-
-std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
-ContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
-    NavigationUIData* navigation_ui_data,
-    int frame_tree_node_id) {
-  return std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>();
 }
 
 }  // namespace content

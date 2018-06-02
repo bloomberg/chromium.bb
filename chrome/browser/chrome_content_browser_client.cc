@@ -61,6 +61,7 @@
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/net_benchmarking.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/page_load_metrics/metrics_navigation_throttle.h"
@@ -4190,6 +4191,13 @@ void ChromeContentBrowserClient::WillCreateWebSocket(
 
   web_request_api->MaybeProxyWebSocket(frame, request);
 #endif
+}
+
+void ChromeContentBrowserClient::OnNetworkServiceCreated(
+    network::mojom::NetworkService* network_service) {
+  // Need to set up global NetworkService state before anything else uses it.
+  g_browser_process->system_network_context_manager()->OnNetworkServiceCreated(
+      network_service);
 }
 
 network::mojom::NetworkContextPtr

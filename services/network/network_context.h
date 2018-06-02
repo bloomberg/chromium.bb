@@ -101,6 +101,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Sets a global CertVerifier to use when initializing all profiles.
   static void SetCertVerifierForTesting(net::CertVerifier* cert_verifier);
 
+  // Whether the NetworkContext should be used by all NetworkContexts to
+  // validate certs on some platforms.  May only be set to true the first
+  // NetworkContext created using the NetworkService.  Destroying the
+  // NetworkContext with this set to true will destroy all other
+  // NetworkContexts.
+  bool UseToValidateCerts() const;
+
   net::URLRequestContext* url_request_context() { return url_request_context_; }
 
   NetworkService* network_service() { return network_service_; }

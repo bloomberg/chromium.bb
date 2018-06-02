@@ -24,7 +24,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/resource/data_pack.h"
 
@@ -401,7 +401,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       int frame_tree_node_id) override;
   void WillCreateWebSocket(content::RenderFrameHost* frame,
                            network::mojom::WebSocketRequest* request) override;
-
+  void OnNetworkServiceCreated(
+      network::mojom::NetworkService* network_service) override;
   network::mojom::NetworkContextPtr CreateNetworkContext(
       content::BrowserContext* context,
       bool in_memory,

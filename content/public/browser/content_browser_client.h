@@ -33,7 +33,7 @@
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
-#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "services/service_manager/embedder/embedded_service_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -106,7 +106,7 @@ class URLRequestContextGetter;
 
 namespace network {
 namespace mojom {
-class NetworkContext;
+class NetworkService;
 }
 struct ResourceRequest;
 }  // namespace network
@@ -1056,6 +1056,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
   WillCreateURLLoaderRequestInterceptors(NavigationUIData* navigation_ui_data,
                                          int frame_tree_node_id);
+
+  // Called when the NetworkService, accessible through
+  // content::GetNetworkService(), is created. Implementations should avoid
+  // calling into GetNetworkService() again to avoid re-entrancy if the service
+  // fails to start.
+  virtual void OnNetworkServiceCreated(
+      network::mojom::NetworkService* network_service);
 
   // Creates a NetworkContext for a BrowserContext's StoragePartition. If the
   // network service is enabled, it must return a NetworkContext using the
