@@ -637,7 +637,7 @@ void av1_inter_mode_data_fit(int rdmult) {
 static void inter_mode_data_push(BLOCK_SIZE bsize, int64_t sse, int64_t dist,
                                  int residue_cost, int all_cost,
                                  int64_t ref_best_rd) {
-  if (residue_cost == 0) return;
+  if (residue_cost == 0 || sse == dist) return;
   const int block_idx = inter_mode_data_block_idx(bsize);
   if (block_idx == -1) return;
   if (inter_mode_data_idx[block_idx] < INTER_MODE_RD_DATA_OVERALL_SIZE) {
@@ -8090,6 +8090,12 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
         mbmi->skip = 0;
       }
       *disable_skip = 0;
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+      inter_mode_data_push(mbmi->sb_type, rd_stats->sse, rd_stats->dist,
+                           rd_stats_y->rate + rd_stats_uv->rate +
+                               x->skip_cost[skip_ctx][mbmi->skip],
+                           rd_stats->rate, ref_best_rd);
+#endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
     } else {
       x->skip = 1;
       *disable_skip = 1;
@@ -8112,12 +8118,6 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
             av1_unswitchable_filter(cm->interp_filter));
       }
     }
-
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
-    inter_mode_data_push(mbmi->sb_type, rd_stats->sse, rd_stats->dist,
-                         rd_stats_y->rate + rd_stats_uv->rate, rd_stats->rate,
-                         ref_best_rd);
-#endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
 
     tmp_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
     if ((mbmi->motion_mode == SIMPLE_TRANSLATION &&
