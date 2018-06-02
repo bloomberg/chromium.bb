@@ -1136,7 +1136,7 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
   }
 #endif
 
-  if (base::FeatureList::IsEnabled(features::kMultiDeviceApi)) {
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     service_manager::EmbeddedServiceInfo info;
     info.task_runner = base::ThreadTaskRunnerHandle::Get();
     info.factory = base::BindRepeating(&ProfileImpl::CreateDeviceSyncService,
