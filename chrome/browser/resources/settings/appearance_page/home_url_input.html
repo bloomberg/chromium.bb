@@ -27,8 +27,9 @@
       }
     </style>
     <div id="outerDiv" class="settings-row">
+      <!-- Max length of 100 KB to prevent browser from freezing. -->
       <cr-input id="input" value="{{value}}" error-message="$i18n{notValid}"
-          placeholder="$i18n{enterCustomWebAddress}"
+          placeholder="$i18n{enterCustomWebAddress}" maxlength="102400"
           on-change="onChange_" on-keydown="onKeydown_" on-input="validate_"
           invalid="{{invalid}}" tab-index$="[[getTabindex_(canTab)]]"
           disabled="[[isDisabled_(disabled, pref.*)]]"

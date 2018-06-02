@@ -40,6 +40,10 @@ suite('cr-input', function() {
     assertEquals('text', input.type);
     crInput.setAttribute('type', 'password');
     assertEquals('password', input.type);
+
+    assertEquals(-1, input.maxLength);
+    crInput.setAttribute('maxlength', 5);
+    assertEquals(5, input.maxLength);
   });
 
   test('placeholderCorrectlyBound', function() {
@@ -111,5 +115,41 @@ suite('cr-input', function() {
       assertEquals('1', getComputedStyle(underline).opacity);
       assertTrue(0 != underline.offsetWidth);
     });
+  });
+
+  test('validation', function() {
+    crInput.value = 'FOO';
+    // Note that even with |autoValidate|, crInput.invalid only updates after
+    // |value| is changed.
+    crInput.autoValidate = true;
+    assertFalse(crInput.hasAttribute('required'));
+    assertFalse(crInput.invalid);
+
+    crInput.setAttribute('required', 'required');
+    assertTrue(input.required);
+    assertFalse(crInput.invalid);
+
+    crInput.value = '';
+    assertTrue(crInput.invalid);
+    crInput.value = 'BAR';
+    assertFalse(crInput.invalid);
+
+    const testPattern = '[a-z]+';
+    crInput.setAttribute('pattern', testPattern);
+    assertEquals(testPattern, input.pattern);
+    crInput.value = 'FOO';
+    assertTrue(crInput.invalid);
+    crInput.value = 'foo';
+    assertFalse(crInput.invalid);
+
+    // Without |autoValidate|, crInput.invalid should not change even if input
+    // value is not valid.
+    crInput.autoValidate = false;
+    crInput.value = 'ALL CAPS';
+    assertFalse(crInput.invalid);
+    assertFalse(input.checkValidity());
+    crInput.value = '';
+    assertFalse(crInput.invalid);
+    assertFalse(input.checkValidity());
   });
 });
