@@ -4,6 +4,7 @@ elf_file_name=elf
 elf_mtime={redacted}
 git_revision=abc123
 gn_args=var1=true var2="foo"
+linker_name=gold
 map_file_name=../test.map
 tool_prefix=tools/binary_size/libsupersize/testdata/mock_toolchain/
 Section .text: has 100.0% of 35900712 bytes accounted for from 19 symbols. 0 bytes are unaccounted for.

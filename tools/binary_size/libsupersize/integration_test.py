@@ -185,7 +185,7 @@ class IntegrationTest(unittest.TestCase):
         with _AddMocksToPath():
           metadata = archive.CreateMetadata(
               _TEST_MAP_PATH, elf_path, apk_path, _TEST_TOOL_PREFIX,
-              output_directory)
+              output_directory, 'gold')
       section_sizes, raw_symbols = archive.CreateSectionSizesAndSymbols(
           map_path=_TEST_MAP_PATH, tool_prefix=_TEST_TOOL_PREFIX,
           elf_path=elf_path, output_directory=output_directory,
