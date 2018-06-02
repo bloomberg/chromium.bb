@@ -17,6 +17,7 @@ namespace ash {
 
 class AssistantCardElement;
 class AssistantController;
+class AssistantQueryView;
 class AssistantTextElement;
 class AssistantUiElement;
 
@@ -54,6 +55,7 @@ class UiElementContainerView : public views::View,
   void ReleaseAllCards();
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
+  std::unique_ptr<AssistantQueryView> assistant_query_view_;
 
   // Uniquely identifies cards owned by AssistantCardRenderer.
   std::vector<base::UnguessableToken> id_token_list_;

@@ -7,6 +7,7 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/main_stage/assistant_query_view.h"
 #include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "base/callback.h"
@@ -18,6 +19,8 @@ namespace ash {
 UiElementContainerView::UiElementContainerView(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
+      assistant_query_view_(
+          std::make_unique<AssistantQueryView>(assistant_controller)),
       render_request_weak_factory_(this) {
   InitLayout();
 
@@ -43,6 +46,10 @@ void UiElementContainerView::InitLayout() {
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_START);
+
+  // Query.
+  assistant_query_view_->set_owned_by_client();
+  AddChildView(assistant_query_view_.get());
 }
 
 void UiElementContainerView::OnUiElementAdded(
@@ -69,6 +76,8 @@ void UiElementContainerView::OnUiElementsCleared() {
   render_request_weak_factory_.InvalidateWeakPtrs();
 
   RemoveAllChildViews(/*delete_children=*/true);
+  AddChildView(assistant_query_view_.get());
+
   PreferredSizeChanged();
 
   ReleaseAllCards();
@@ -115,6 +124,7 @@ void UiElementContainerView::OnCardReady(
   // When the card has been rendered in the same process, its view is
   // available in the AnswerCardContentsRegistry's token-to-view map.
   if (app_list::AnswerCardContentsRegistry::Get()) {
+    RemoveChildView(assistant_query_view_.get());
     AddChildView(
         app_list::AnswerCardContentsRegistry::Get()->GetView(embed_token));
   }
@@ -131,7 +141,9 @@ void UiElementContainerView::OnTextElementAdded(
     const AssistantTextElement* text_element) {
   DCHECK(!is_processing_ui_element_);
 
+  RemoveChildView(assistant_query_view_.get());
   AddChildView(new AssistantTextElementView(text_element));
+
   PreferredSizeChanged();
 }
 
