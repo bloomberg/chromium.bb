@@ -26,7 +26,6 @@ FakeBleConnectionManager::FakeBleConnectionManager()
     : BleConnectionManager(nullptr,
                            nullptr,
                            nullptr,
-                           nullptr,
                            nullptr) {}
 
 FakeBleConnectionManager::~FakeBleConnectionManager() = default;

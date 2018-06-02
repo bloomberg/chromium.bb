@@ -68,10 +68,6 @@ class TestObserver final : public SecureChannel::Observer {
     return sent_sequence_numbers_;
   }
 
-  int num_gatt_services_unavailable_events() {
-    return num_gatt_services_unavailable_events_;
-  }
-
   // SecureChannel::Observer:
   void OnSecureChannelStatusChanged(
       SecureChannel* secure_channel,
@@ -95,16 +91,11 @@ class TestObserver final : public SecureChannel::Observer {
     sent_sequence_numbers_.push_back(sequence_number);
   }
 
-  void OnGattCharacteristicsNotAvailable() override {
-    ++num_gatt_services_unavailable_events_;
-  }
-
  private:
   SecureChannel* secure_channel_;
   std::vector<SecureChannelStatusChange> connection_status_changes_;
   std::vector<ReceivedMessage> received_messages_;
   std::vector<int> sent_sequence_numbers_;
-  int num_gatt_services_unavailable_events_ = 0;
 };
 
 // Observer used in the ObserverDeletesChannel test. This Observer deletes the
@@ -171,8 +162,6 @@ class CryptAuthSecureChannelTest : public testing::Test {
         weak_ptr_factory_(this) {}
 
   void SetUp() override {
-    has_verified_gatt_services_event_ = false;
-
     test_authenticator_factory_ = std::make_unique<TestAuthenticatorFactory>();
     DeviceToDeviceAuthenticator::Factory::SetInstanceForTesting(
         test_authenticator_factory_.get());
@@ -208,9 +197,6 @@ class CryptAuthSecureChannelTest : public testing::Test {
     // Same with messages being sent.
     if (secure_channel_)
       VerifyNoMessageBeingSent();
-
-    if (!has_verified_gatt_services_event_)
-      EXPECT_EQ(0, test_observer_->num_gatt_services_unavailable_events());
 
     cryptauth::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
         nullptr);
@@ -359,13 +345,6 @@ class CryptAuthSecureChannelTest : public testing::Test {
     EXPECT_EQ(expected_payload, wire_message->payload());
   }
 
-  void VerifyGattServicesUnavailableEvent() {
-    EXPECT_EQ(1, test_observer_->num_gatt_services_unavailable_events());
-    has_verified_gatt_services_event_ = true;
-  }
-
-  bool has_verified_gatt_services_event_;
-
   // Owned by secure_channel_.
   FakeConnection* fake_connection_;
 
@@ -409,21 +388,6 @@ TEST_F(CryptAuthSecureChannelTest, ConnectionAttemptFails) {
         SecureChannel::Status::DISCONNECTED
       }
   });
-}
-
-TEST_F(CryptAuthSecureChannelTest, GattServicesUnavailable) {
-  secure_channel_->Initialize();
-  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
-      {SecureChannel::Status::DISCONNECTED,
-       SecureChannel::Status::CONNECTING}});
-
-  fake_connection_->NotifyGattCharacteristicsNotAvailable();
-  VerifyGattServicesUnavailableEvent();
-
-  fake_connection_->CompleteInProgressConnection(/* success */ false);
-  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
-      {SecureChannel::Status::CONNECTING,
-       SecureChannel::Status::DISCONNECTED}});
 }
 
 TEST_F(CryptAuthSecureChannelTest, DisconnectBeforeAuthentication) {

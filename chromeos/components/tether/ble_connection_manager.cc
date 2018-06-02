@@ -7,7 +7,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
-#include "chromeos/components/tether/ad_hoc_ble_advertiser.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/timer_factory.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
@@ -221,22 +220,15 @@ void BleConnectionManager::ConnectionMetadata::OnMessageSent(
   manager_->NotifyMessageSent(sequence_number);
 }
 
-void BleConnectionManager::ConnectionMetadata::
-    OnGattCharacteristicsNotAvailable() {
-  manager_->OnGattCharacteristicsNotAvailable(device_id_);
-}
-
 BleConnectionManager::BleConnectionManager(
     scoped_refptr<device::BluetoothAdapter> adapter,
     BleAdvertisementDeviceQueue* ble_advertisement_device_queue,
     BleAdvertiser* ble_advertiser,
-    BleScanner* ble_scanner,
-    AdHocBleAdvertiser* ad_hoc_ble_advertisement)
+    BleScanner* ble_scanner)
     : adapter_(adapter),
       ble_advertisement_device_queue_(ble_advertisement_device_queue),
       ble_advertiser_(ble_advertiser),
       ble_scanner_(ble_scanner),
-      ad_hoc_ble_advertisement_(ad_hoc_ble_advertisement),
       timer_factory_(std::make_unique<TimerFactory>()),
       has_registered_observer_(false),
       weak_ptr_factory_(this) {}
@@ -585,16 +577,6 @@ void BleConnectionManager::OnSecureChannelStatusChanged(
   NotifySecureChannelStatusChanged(device_id_copy, old_status_copy,
                                    new_status_copy, state_change_detail);
   UpdateConnectionAttempts();
-}
-
-void BleConnectionManager::OnGattCharacteristicsNotAvailable(
-    const std::string& device_id) {
-  PA_LOG(WARNING) << "Previous connection attempt failed due to unavailable "
-                  << "GATT services for device ID \""
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                         device_id)
-                  << "\".";
-  ad_hoc_ble_advertisement_->RequestGattServicesForDevice(device_id);
 }
 
 void BleConnectionManager::NotifyAdvertisementReceived(

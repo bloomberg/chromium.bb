@@ -268,7 +268,6 @@ class MockConnectionObserver : public ConnectionObserver {
   MockConnectionObserver(Connection* connection)
       : connection_(connection),
         num_send_completed_(0),
-        num_gatt_services_unavailable_events_(0),
         delete_on_disconnect_(false),
         delete_on_message_sent_(false) {}
 
@@ -279,10 +278,6 @@ class MockConnectionObserver : public ConnectionObserver {
   bool last_send_success() { return last_send_success_; }
 
   int num_send_completed() { return num_send_completed_; }
-
-  int num_gatt_services_unavailable_events() {
-    return num_gatt_services_unavailable_events_;
-  }
 
   bool delete_on_disconnect() { return delete_on_disconnect_; }
 
@@ -316,16 +311,11 @@ class MockConnectionObserver : public ConnectionObserver {
       delete connection_;
   }
 
-  void OnGattCharacteristicsNotAvailable() override {
-    ++num_gatt_services_unavailable_events_;
-  }
-
  private:
   Connection* connection_;
   std::string last_deserialized_message_;
   bool last_send_success_;
   int num_send_completed_;
-  int num_gatt_services_unavailable_events_;
   bool delete_on_disconnect_;
   bool delete_on_message_sent_;
 };
@@ -347,7 +337,6 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
     generator_ = nullptr;
     receiver_ = nullptr;
     has_verified_connection_result_ = false;
-    has_verified_gatt_services_event_ = false;
     connection_observer_.reset();
 
     adapter_ = base::MakeRefCounted<NiceMock<device::MockBluetoothAdapter>>();
@@ -386,11 +375,6 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
   }
 
   void TearDown() override {
-    ASSERT_TRUE(has_verified_connection_result_);
-    if (connection_observer_ && !has_verified_gatt_services_event_) {
-      EXPECT_EQ(0,
-                connection_observer_->num_gatt_services_unavailable_events());
-    }
     connection_observer_.reset();
   }
 
@@ -634,11 +618,6 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
     has_verified_connection_result_ = true;
   }
 
-  void VerifyGattServicesUnavailableEventSent() {
-    EXPECT_EQ(1, connection_observer_->num_gatt_services_unavailable_events());
-    has_verified_gatt_services_event_ = true;
-  }
-
   BluetoothLowEnergyWeaveClientConnection::GattServiceOperationResult
   GattServiceOperationResultSuccessOrFailure(bool success) {
     return success ? BluetoothLowEnergyWeaveClientConnection::
@@ -668,7 +647,6 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
   base::MessageLoop message_loop_;
   bool last_wire_message_success_;
   bool has_verified_connection_result_;
-  bool has_verified_gatt_services_event_;
   NiceMock<MockBluetoothLowEnergyWeavePacketGenerator>* generator_;
   NiceMock<MockBluetoothLowEnergyWeavePacketReceiver>* receiver_;
   std::unique_ptr<MockConnectionObserver> connection_observer_;
@@ -853,7 +831,6 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
   EXPECT_EQ(connection->status(), Connection::Status::DISCONNECTED);
 
-  VerifyGattServicesUnavailableEventSent();
   VerifyBleWeaveConnectionResult(
       BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
           BLE_WEAVE_CONNECTION_RESULT_ERROR_FINDING_GATT_CHARACTERISTICS);
@@ -880,7 +857,6 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
   EXPECT_EQ(connection->status(), Connection::Status::DISCONNECTED);
 
-  VerifyGattServicesUnavailableEventSent();
   VerifyBleWeaveConnectionResult(
       BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
           BLE_WEAVE_CONNECTION_RESULT_ERROR_GATT_CHARACTERISTIC_NOT_AVAILABLE);
@@ -1509,7 +1485,6 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
   EXPECT_EQ(connection->status(), Connection::Status::DISCONNECTED);
 
-  VerifyGattServicesUnavailableEventSent();
   VerifyBleWeaveConnectionResult(
       BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
           BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_FINDING_GATT_CHARACTERISTICS);

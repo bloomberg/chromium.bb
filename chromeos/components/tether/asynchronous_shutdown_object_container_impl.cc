@@ -5,7 +5,6 @@
 #include "chromeos/components/tether/asynchronous_shutdown_object_container_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/tether/ad_hoc_ble_advertiser_impl.h"
 #include "chromeos/components/tether/ble_advertisement_device_queue.h"
 #include "chromeos/components/tether/ble_advertiser_impl.h"
 #include "chromeos/components/tether/ble_connection_manager.h"
@@ -101,16 +100,11 @@ AsynchronousShutdownObjectContainerImpl::
           remote_beacon_seed_fetcher_.get(),
           ble_synchronizer_.get(),
           tether_host_fetcher_)),
-      ad_hoc_ble_advertiser_(std::make_unique<AdHocBleAdvertiserImpl>(
-          local_device_data_provider_.get(),
-          remote_beacon_seed_fetcher_.get(),
-          ble_synchronizer_.get())),
       ble_connection_manager_(std::make_unique<BleConnectionManager>(
           adapter,
           ble_advertisement_device_queue_.get(),
           ble_advertiser_.get(),
-          ble_scanner_.get(),
-          ad_hoc_ble_advertiser_.get())),
+          ble_scanner_.get())),
       ble_connection_metrics_logger_(
           std::make_unique<BleConnectionMetricsLogger>()),
       disconnect_tethering_request_sender_(
@@ -137,7 +131,6 @@ AsynchronousShutdownObjectContainerImpl::
   ble_advertiser_->RemoveObserver(this);
   ble_scanner_->RemoveObserver(this);
   disconnect_tethering_request_sender_->RemoveObserver(this);
-  ad_hoc_ble_advertiser_->RemoveObserver(this);
 }
 
 void AsynchronousShutdownObjectContainerImpl::Shutdown(
@@ -151,7 +144,6 @@ void AsynchronousShutdownObjectContainerImpl::Shutdown(
   ble_advertiser_->AddObserver(this);
   ble_scanner_->AddObserver(this);
   disconnect_tethering_request_sender_->AddObserver(this);
-  ad_hoc_ble_advertiser_->AddObserver(this);
 
   ShutdownIfPossible();
 }
@@ -191,10 +183,6 @@ void AsynchronousShutdownObjectContainerImpl::
   ShutdownIfPossible();
 }
 
-void AsynchronousShutdownObjectContainerImpl::OnAsynchronousShutdownComplete() {
-  ShutdownIfPossible();
-}
-
 void AsynchronousShutdownObjectContainerImpl::OnDiscoverySessionStateChanged(
     bool discovery_session_active) {
   ShutdownIfPossible();
@@ -209,7 +197,6 @@ void AsynchronousShutdownObjectContainerImpl::ShutdownIfPossible() {
   ble_advertiser_->RemoveObserver(this);
   ble_scanner_->RemoveObserver(this);
   disconnect_tethering_request_sender_->RemoveObserver(this);
-  ad_hoc_ble_advertiser_->RemoveObserver(this);
 
   shutdown_complete_callback_.Run();
 }
@@ -237,10 +224,6 @@ bool AsynchronousShutdownObjectContainerImpl::
   if (ble_advertiser_->AreAdvertisementsRegistered())
     return true;
 
-  // Likewise, the ad hoc BLE advertiser must be shut down.
-  if (ad_hoc_ble_advertiser_->HasPendingRequests())
-    return true;
-
   return false;
 }
 
@@ -248,13 +231,11 @@ void AsynchronousShutdownObjectContainerImpl::SetTestDoubles(
     std::unique_ptr<BleAdvertiser> ble_advertiser,
     std::unique_ptr<BleScanner> ble_scanner,
     std::unique_ptr<DisconnectTetheringRequestSender>
-        disconnect_tethering_request_sender,
-    std::unique_ptr<AdHocBleAdvertiser> ad_hoc_ble_advertiser) {
+        disconnect_tethering_request_sender) {
   ble_advertiser_ = std::move(ble_advertiser);
   ble_scanner_ = std::move(ble_scanner);
   disconnect_tethering_request_sender_ =
       std::move(disconnect_tethering_request_sender);
-  ad_hoc_ble_advertiser_ = std::move(ad_hoc_ble_advertiser);
 }
 
 }  // namespace tether

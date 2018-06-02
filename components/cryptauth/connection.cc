@@ -104,11 +104,6 @@ std::unique_ptr<WireMessage> Connection::DeserializeWireMessage(
   return WireMessage::Deserialize(received_bytes_, is_incomplete_message);
 }
 
-void Connection::NotifyGattCharacteristicsNotAvailable() {
-  for (auto& observer : observers_)
-    observer.OnGattCharacteristicsNotAvailable();
-}
-
 std::string Connection::GetDeviceInfoLogString() {
   std::stringstream ss;
   ss << "{id: \"" << remote_device().GetTruncatedDeviceIdForLogs()
