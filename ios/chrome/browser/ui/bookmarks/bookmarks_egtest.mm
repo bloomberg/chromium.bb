@@ -2407,7 +2407,9 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       selectElementWithMatcher:grey_allOf(PrimarySignInButton(),
                                           grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_buttonTitle(@"Cancel")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_buttonTitle(@"Cancel"),
+                                          grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
 
   // Check that the bookmarks UI reappeared and the cell is still here.
