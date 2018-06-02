@@ -214,7 +214,14 @@ IN_PROC_BROWSER_TEST_F(RuntimeAPIUpdateTest,
     ASSERT_TRUE(extension_v1);
     EXPECT_TRUE(catcher.GetNextResult());
   }
+
   ASSERT_TRUE(CrashEnabledExtension(extension_id));
+
+  // The process-terminated notification may be received immediately before
+  // the task that will actually update the active-extensions count, so spin
+  // the message loop to ensure we are up-to-date.
+  base::RunLoop().RunUntilIdle();
+
   {
     // Update to version 2, expect runtime.onInstalled with
     // previousVersion = '1'.

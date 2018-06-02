@@ -76,7 +76,6 @@ class BrowserContext;
 struct FrameVisualProperties;
 class FrameTreeNode;
 class InterstitialPage;
-class MessageLoopRunner;
 class NavigationHandle;
 class RenderViewHost;
 class RenderWidgetHost;
@@ -612,7 +611,8 @@ class RenderProcessHostWatcher : public RenderProcessHostObserver {
   WatchType type_;
   bool did_exit_normally_;
 
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  base::RunLoop run_loop_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostWatcher);
 };
@@ -655,7 +655,7 @@ class DOMMessageQueue : public NotificationObserver,
  private:
   NotificationRegistrar registrar_;
   base::queue<std::string> message_queue_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  base::OnceClosure quit_closure_;
   bool renderer_crashed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DOMMessageQueue);
@@ -685,7 +685,7 @@ class WebContentsAddedObserver {
 
   WebContents* web_contents_;
   std::unique_ptr<RenderViewCreatedObserver> child_observer_;
-  scoped_refptr<MessageLoopRunner> runner_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsAddedObserver);
 };
@@ -772,7 +772,7 @@ class RenderFrameSubmissionObserver
   bool break_on_any_frame_ = false;
 
   RenderFrameMetadataProvider* render_frame_metadata_provider_ = nullptr;
-  std::unique_ptr<base::RunLoop> run_loop_;
+  base::OnceClosure quit_closure_;
   int render_frame_count_ = 0;
 };
 
@@ -804,7 +804,7 @@ class MainThreadFrameObserver : public IPC::Listener {
   void Quit();
 
   RenderWidgetHost* render_widget_host_;
-  std::unique_ptr<base::RunLoop> run_loop_;
+  base::OnceClosure quit_closure_;
   int routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadFrameObserver);
@@ -839,7 +839,7 @@ class InputMsgWatcher : public RenderWidgetHost::InputEventObserver {
   blink::WebInputEvent::Type wait_for_type_;
   InputEventAckState ack_result_;
   InputEventAckSource ack_source_;
-  base::Closure quit_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMsgWatcher);
 };
@@ -874,7 +874,7 @@ class InputEventAckWaiter : public RenderWidgetHost::InputEventObserver {
   RenderWidgetHost* render_widget_host_;
   InputEventAckPredicate predicate_;
   bool event_received_;
-  base::Closure quit_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(InputEventAckWaiter);
 };
@@ -1016,8 +1016,8 @@ class TestNavigationManager : public WebContentsObserver {
   bool navigation_paused_;
   NavigationState current_state_;
   NavigationState desired_state_;
-  scoped_refptr<MessageLoopRunner> loop_runner_;
   bool was_successful_ = false;
+  base::OnceClosure quit_closure_;
 
   base::WeakPtrFactory<TestNavigationManager> weak_factory_;
 
@@ -1067,8 +1067,7 @@ class ConsoleObserverDelegate : public WebContentsDelegate {
   std::string filter_;
   std::string message_;
 
-  // The MessageLoopRunner used to spin the message loop.
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ConsoleObserverDelegate);
 };
@@ -1145,9 +1144,9 @@ class ContextMenuFilter : public content::BrowserMessageFilter {
 
   void OnContextMenu(const content::ContextMenuParams& params);
 
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  base::OnceClosure quit_closure_;
   content::ContextMenuParams last_params_;
-  bool handled_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuFilter);
 };
