@@ -8,6 +8,8 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kHistorySearchControllerSearchBarIdentifier =
+    @"kHistorySearchControllerSearchBarIdentifier";
 NSString* const kHistoryNavigationControllerDoneButtonIdentifier =
     @"kHistoryNavigationControllerDoneButtonIdentifier";
 NSString* const kHistoryToolbarDeleteButtonIdentifier =

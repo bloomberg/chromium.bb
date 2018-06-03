@@ -120,8 +120,7 @@ id<GREYMatcher> DeleteHistoryEntriesButton() {
 // Matcher for the search button.
 id<GREYMatcher> SearchIconButton() {
   if (IsUIRefreshPhase1Enabled()) {
-    return grey_accessibilityID(
-        l10n_util::GetNSStringWithFixup(IDS_IOS_ICON_SEARCH));
+    return grey_accessibilityID(kHistorySearchControllerSearchBarIdentifier);
   } else {
     return ButtonWithAccessibilityLabelId(IDS_IOS_ICON_SEARCH);
   }
@@ -271,8 +270,13 @@ id<GREYMatcher> ConfirmClearBrowsingDataButton() {
 
   NSString* searchString =
       [NSString stringWithFormat:@"%s", _URL1.path().c_str()];
-  [[EarlGrey selectElementWithMatcher:grey_keyWindow()]
-      performAction:grey_typeText(searchString)];
+  if (IsUIRefreshPhase1Enabled()) {
+    [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+        performAction:grey_typeText(searchString)];
+  } else {
+    [[EarlGrey selectElementWithMatcher:grey_keyWindow()]
+        performAction:grey_typeText(searchString)];
+  }
   [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL2, kTitle2)]
