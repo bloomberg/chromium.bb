@@ -35,8 +35,8 @@ typedef struct aom_dec_model_info {
 typedef struct aom_dec_model_op_parameters {
   int decoder_model_operating_point_idc;
   int decoder_model_param_present_flag;
-  int bitrate;
-  int buffer_size;
+  uint32_t bitrate;
+  uint32_t buffer_size;
   int cbr_flag;
   int decoder_buffer_delay;
   int encoder_buffer_delay;
