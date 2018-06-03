@@ -990,12 +990,17 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, NavigationOnCorrectTab) {
   WebContents* active_web_contents = GetActiveWebContents();
   ASSERT_NE(web_contents, active_web_contents);
 
+  content::TestNavigationObserver active_navigation_observer(
+      active_web_contents);
+  content::TestNavigationObserver navigation_observer(web_contents);
   ASSERT_TRUE(content::ExecuteScript(
       guest_contents,
       "viewer.navigator_.navigate("
       "    'www.example.com', Navigator.WindowOpenDisposition.CURRENT_TAB);"));
+  navigation_observer.Wait();
 
-  EXPECT_TRUE(web_contents->GetController().GetPendingEntry());
+  EXPECT_FALSE(navigation_observer.last_navigation_url().is_empty());
+  EXPECT_TRUE(active_navigation_observer.last_navigation_url().is_empty());
   EXPECT_FALSE(active_web_contents->GetController().GetPendingEntry());
 }
 
