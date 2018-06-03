@@ -19,6 +19,30 @@ class NoDestructor;
 
 namespace ui {
 
+// CATransactionCoordinator is an interface to undocumented macOS APIs which
+// run callbacks at different stages of committing a CATransaction to the
+// window server. There is no guarantee that it will call registered observers
+// at all: it does nothing on macOS older than 10.11.
+//
+// - Pre-commit: After all outstanding CATransactions have committed and after
+//   layout, but before the new layer tree has been sent to the window server.
+//   Safe to block here waiting for drawing/layout in other processes (but
+//   you're on the main thread, so be reasonable).
+//
+// - Post-commit: After the new layer tree has been sent to the server but
+//   before the transaction has been finalized. In post-commit, the screen area
+//   occupied by the window and its shadow are frozen, so it's important to
+//   block as briefly as possible (well under a frame) or else artifacts will
+//   be visible around affected windows if screen content is changing behind
+//   them (think resizing a browser window while a video plays in a second
+//   window behind it). This is a great place to call -[CATransaction commit]
+//   (or otherwise flush pending changes to the screen) in other processes,
+//   because their updates will appear atomically.
+//
+// It has been observed that committing a CATransaction in the GPU process
+// which changes which IOSurfaces are assigned to layers' contents is *faster*
+// if done during the browser's post-commit phase vs. its pre-commit phase.
+
 class ACCELERATED_WIDGET_MAC_EXPORT CATransactionCoordinator {
  public:
   class PreCommitObserver {
