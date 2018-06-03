@@ -18,7 +18,9 @@ class RemoteDeviceCacheTest : public testing::Test {
         test_remote_device_ref_list_(CreateRemoteDeviceRefListForTest(5)){};
 
   // testing::Test:
-  void SetUp() override { cache_ = std::make_unique<RemoteDeviceCache>(); }
+  void SetUp() override {
+    cache_ = RemoteDeviceCache::Factory::Get()->BuildInstance();
+  }
 
   void VerifyCacheRemoteDevices(
       RemoteDeviceRefList expected_remote_device_ref_list) {

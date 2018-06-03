@@ -10,7 +10,8 @@
 namespace cryptauth {
 
 ExpiringRemoteDeviceCache::ExpiringRemoteDeviceCache()
-    : remote_device_cache_(std::make_unique<RemoteDeviceCache>()) {}
+    : remote_device_cache_(RemoteDeviceCache::Factory::Get()->BuildInstance()) {
+}
 
 ExpiringRemoteDeviceCache::~ExpiringRemoteDeviceCache() = default;
 

@@ -40,6 +40,9 @@ RemoteDeviceList CreateRemoteDeviceListForTest(size_t num_to_create);
 
 RemoteDeviceRefList CreateRemoteDeviceRefListForTest(size_t num_to_create);
 
+bool IsSameDevice(const cryptauth::RemoteDevice& remote_device,
+                  cryptauth::RemoteDeviceRef remote_device_ref);
+
 }  // namespace cryptauth
 
 #endif  // COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_TEST_UTIL_H_
