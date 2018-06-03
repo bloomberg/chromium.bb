@@ -466,6 +466,15 @@ if(ENABLE_EXAMPLES AND CONFIG_AV1_ENCODER)
 endif()
 
 if(ENABLE_EXAMPLES AND CONFIG_AV1_DECODER)
+  add_executable(lightfield_tile_list_decoder
+                 "${AOM_ROOT}/examples/lightfield_tile_list_decoder.c"
+                 $<TARGET_OBJECTS:aom_common_app_util>
+                 $<TARGET_OBJECTS:aom_decoder_app_util>)
+  list(APPEND AOM_EXAMPLE_TARGETS lightfield_tile_list_decoder)
+  list(APPEND AOM_APP_TARGETS lightfield_tile_list_decoder)
+endif()
+
+if(ENABLE_EXAMPLES AND CONFIG_AV1_DECODER)
   add_executable(lightfield_decoder "${AOM_ROOT}/examples/lightfield_decoder.c"
                  $<TARGET_OBJECTS:aom_common_app_util>
                  $<TARGET_OBJECTS:aom_decoder_app_util>)

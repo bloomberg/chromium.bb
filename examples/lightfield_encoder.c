@@ -24,7 +24,7 @@
 // image for MCP.
 // Run "make test" to download lightfield test data: vase10x10.yuv.
 // Run lightfield encoder to encode whole lightfield:
-// examples/lightfield_encoder 1024 1024 vase10x10.yuv vase10x10.webm 10 10 5
+// examples/lightfield_encoder 1024 1024 vase10x10.yuv vase10x10.ivf 10 10 5
 
 // Note: In bitstream.c and encoder.c, define EXT_TILE_DEBUG as 1 will print
 // out the uncompressed header and the frame contexts, which can be used to

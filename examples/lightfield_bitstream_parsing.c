@@ -50,7 +50,7 @@ void usage_exit(void) {
 // SB size: 64x64
 const uint8_t output_frame_width_in_tiles_minus_1 = 512 / 64;
 const uint8_t output_frame_height_in_tiles_minus_1 = 512 / 64;
-const uint16_t tile_count_minus_1 = 5;
+const uint16_t tile_count_minus_1 = 3;
 
 // Spec:
 // typedef struct {
@@ -166,8 +166,6 @@ int main(int argc, char **argv) {
 
   // Process 1 tile list.
   for (n = 0; n < num_tile_lists; n++) {
-    // Number of tiles in the tile list.
-    int num_tiles = 4;
     unsigned char *tl = tl_buf;
     uint32_t tile_list_obu_size = 0;
     int frame_cnt = -1;
@@ -195,7 +193,7 @@ int main(int argc, char **argv) {
     tile_list_obu_size += 4;
 
     // Write each tile's data
-    for (i = 0; i < num_tiles; i++) {
+    for (i = 0; i <= tile_count_minus_1; i++) {
       aom_tile_data tile_data = { 0, NULL };
 
       int image_idx = tile_list[n][i].image_idx;
