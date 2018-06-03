@@ -73,7 +73,7 @@ ConnectTetheringOperation::ConnectTetheringOperation(
     bool setup_required)
     : MessageTransferOperation(
           cryptauth::RemoteDeviceRefList{device_to_connect},
-          ConnectionPriority::CONNECTION_PRIORITY_HIGH,
+          secure_channel::ConnectionPriority::kHigh,
           connection_manager),
       remote_device_(device_to_connect),
       tether_host_response_recorder_(tether_host_response_recorder),

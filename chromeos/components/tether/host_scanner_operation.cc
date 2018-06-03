@@ -138,7 +138,7 @@ HostScannerOperation::HostScannerOperation(
     ConnectionPreserver* connection_preserver)
     : MessageTransferOperation(
           PrioritizeDevices(devices_to_connect, host_scan_device_prioritizer),
-          ConnectionPriority::CONNECTION_PRIORITY_LOW,
+          secure_channel::ConnectionPriority::kLow,
           connection_manager),
       tether_host_response_recorder_(tether_host_response_recorder),
       connection_preserver_(connection_preserver),

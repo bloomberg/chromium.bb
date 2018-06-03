@@ -12,6 +12,7 @@
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/connection_role.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
 namespace chromeos {
 
@@ -42,7 +43,8 @@ class PendingConnectionManager {
   virtual void HandleConnectionRequest(
       const ConnectionDetails& connection_details,
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
-      ConnectionRole connection_role) = 0;
+      ConnectionRole connection_role,
+      ConnectionPriority connection_priority) = 0;
 
  protected:
   PendingConnectionManager(Delegate* delegate);

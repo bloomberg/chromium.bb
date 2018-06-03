@@ -46,7 +46,7 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestEmptyQueue) {
 TEST_F(BleAdvertisementDeviceQueueTest, TestSingleDevice) {
   EXPECT_TRUE(device_queue_->SetPrioritizedDeviceIds(
       {PrioritizedDeviceId(test_devices_[0].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH)}));
+                           secure_channel::ConnectionPriority::kHigh)}));
   EXPECT_EQ(1u, device_queue_->GetSize());
 
   EXPECT_THAT(device_queue_->GetDeviceIdsToWhichToAdvertise(),
@@ -56,7 +56,7 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestSingleDevice) {
 TEST_F(BleAdvertisementDeviceQueueTest, TestSingleDevice_MoveToEnd) {
   EXPECT_TRUE(device_queue_->SetPrioritizedDeviceIds(
       {PrioritizedDeviceId(test_devices_[0].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH)}));
+                           secure_channel::ConnectionPriority::kHigh)}));
   EXPECT_EQ(1u, device_queue_->GetSize());
 
   EXPECT_THAT(device_queue_->GetDeviceIdsToWhichToAdvertise(),
@@ -70,9 +70,9 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestSingleDevice_MoveToEnd) {
 TEST_F(BleAdvertisementDeviceQueueTest, TestTwoDevices) {
   EXPECT_TRUE(device_queue_->SetPrioritizedDeviceIds(
       {PrioritizedDeviceId(test_devices_[0].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH),
+                           secure_channel::ConnectionPriority::kHigh),
        PrioritizedDeviceId(test_devices_[1].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH)}));
+                           secure_channel::ConnectionPriority::kHigh)}));
   EXPECT_EQ(2u, device_queue_->GetSize());
 
   EXPECT_THAT(device_queue_->GetDeviceIdsToWhichToAdvertise(),
@@ -83,9 +83,9 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestTwoDevices) {
 TEST_F(BleAdvertisementDeviceQueueTest, TestTwoDevices_MoveToEnd) {
   EXPECT_TRUE(device_queue_->SetPrioritizedDeviceIds(
       {PrioritizedDeviceId(test_devices_[0].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH),
+                           secure_channel::ConnectionPriority::kHigh),
        PrioritizedDeviceId(test_devices_[1].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH)}));
+                           secure_channel::ConnectionPriority::kHigh)}));
   EXPECT_EQ(2u, device_queue_->GetSize());
 
   EXPECT_THAT(device_queue_->GetDeviceIdsToWhichToAdvertise(),
@@ -110,11 +110,11 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestThreeDevices) {
 
   EXPECT_TRUE(device_queue_->SetPrioritizedDeviceIds(
       {PrioritizedDeviceId(test_devices_[0].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH),
+                           secure_channel::ConnectionPriority::kHigh),
        PrioritizedDeviceId(test_devices_[1].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH),
+                           secure_channel::ConnectionPriority::kHigh),
        PrioritizedDeviceId(test_devices_[2].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH)}));
+                           secure_channel::ConnectionPriority::kHigh)}));
   EXPECT_EQ(3u, device_queue_->GetSize());
 
   EXPECT_THAT(device_queue_->GetDeviceIdsToWhichToAdvertise(),
@@ -144,9 +144,9 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestAddingDevices) {
 
   EXPECT_TRUE(device_queue_->SetPrioritizedDeviceIds(
       {PrioritizedDeviceId(test_devices_[0].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH),
+                           secure_channel::ConnectionPriority::kHigh),
        PrioritizedDeviceId(test_devices_[1].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH)}));
+                           secure_channel::ConnectionPriority::kHigh)}));
   EXPECT_EQ(2u, device_queue_->GetSize());
   EXPECT_THAT(device_queue_->GetDeviceIdsToWhichToAdvertise(),
               ElementsAre(test_devices_[0].GetDeviceId(),
@@ -160,13 +160,13 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestAddingDevices) {
   // Device 0 has been unregistered; devices 3 and 4 have been registered.
   EXPECT_TRUE(device_queue_->SetPrioritizedDeviceIds(
       {PrioritizedDeviceId(test_devices_[1].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH),
+                           secure_channel::ConnectionPriority::kHigh),
        PrioritizedDeviceId(test_devices_[2].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH),
+                           secure_channel::ConnectionPriority::kHigh),
        PrioritizedDeviceId(test_devices_[3].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH),
+                           secure_channel::ConnectionPriority::kHigh),
        PrioritizedDeviceId(test_devices_[4].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH)}));
+                           secure_channel::ConnectionPriority::kHigh)}));
   EXPECT_EQ(4u, device_queue_->GetSize());
   EXPECT_THAT(device_queue_->GetDeviceIdsToWhichToAdvertise(),
               ElementsAre(test_devices_[1].GetDeviceId(),
@@ -190,15 +190,15 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestMultiplePriorityLevels) {
 
   EXPECT_TRUE(device_queue_->SetPrioritizedDeviceIds(
       {PrioritizedDeviceId(test_devices_[0].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH),
+                           secure_channel::ConnectionPriority::kHigh),
        PrioritizedDeviceId(test_devices_[1].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH),
+                           secure_channel::ConnectionPriority::kHigh),
        PrioritizedDeviceId(test_devices_[2].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_MEDIUM),
+                           secure_channel::ConnectionPriority::kMedium),
        PrioritizedDeviceId(test_devices_[3].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_MEDIUM),
+                           secure_channel::ConnectionPriority::kMedium),
        PrioritizedDeviceId(test_devices_[4].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_LOW)}));
+                           secure_channel::ConnectionPriority::kLow)}));
   EXPECT_EQ(5u, device_queue_->GetSize());
   EXPECT_THAT(device_queue_->GetDeviceIdsToWhichToAdvertise(),
               ElementsAre(test_devices_[0].GetDeviceId(),
@@ -214,13 +214,13 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestMultiplePriorityLevels) {
   // Device 0 has been unregistered; device 2 has moved to low-priority.
   EXPECT_TRUE(device_queue_->SetPrioritizedDeviceIds(
       {PrioritizedDeviceId(test_devices_[1].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_HIGH),
+                           secure_channel::ConnectionPriority::kHigh),
        PrioritizedDeviceId(test_devices_[2].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_LOW),
+                           secure_channel::ConnectionPriority::kLow),
        PrioritizedDeviceId(test_devices_[3].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_MEDIUM),
+                           secure_channel::ConnectionPriority::kMedium),
        PrioritizedDeviceId(test_devices_[4].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_LOW)}));
+                           secure_channel::ConnectionPriority::kLow)}));
   EXPECT_EQ(4u, device_queue_->GetSize());
   EXPECT_THAT(device_queue_->GetDeviceIdsToWhichToAdvertise(),
               ElementsAre(test_devices_[1].GetDeviceId(),
@@ -245,13 +245,13 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestMultiplePriorityLevels) {
   // were just added.
   EXPECT_TRUE(device_queue_->SetPrioritizedDeviceIds(
       {PrioritizedDeviceId(test_devices_[1].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_MEDIUM),
+                           secure_channel::ConnectionPriority::kMedium),
        PrioritizedDeviceId(test_devices_[2].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_MEDIUM),
+                           secure_channel::ConnectionPriority::kMedium),
        PrioritizedDeviceId(test_devices_[3].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_MEDIUM),
+                           secure_channel::ConnectionPriority::kMedium),
        PrioritizedDeviceId(test_devices_[4].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_MEDIUM)}));
+                           secure_channel::ConnectionPriority::kMedium)}));
   EXPECT_EQ(4u, device_queue_->GetSize());
   EXPECT_THAT(device_queue_->GetDeviceIdsToWhichToAdvertise(),
               ElementsAre(test_devices_[3].GetDeviceId(),
@@ -267,7 +267,7 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestMultiplePriorityLevels) {
   // Leave only one low-priority device left.
   EXPECT_TRUE(device_queue_->SetPrioritizedDeviceIds(
       {PrioritizedDeviceId(test_devices_[1].GetDeviceId(),
-                           ConnectionPriority::CONNECTION_PRIORITY_LOW)}));
+                           secure_channel::ConnectionPriority::kLow)}));
   EXPECT_EQ(1u, device_queue_->GetSize());
   EXPECT_THAT(device_queue_->GetDeviceIdsToWhichToAdvertise(),
               ElementsAre(test_devices_[1].GetDeviceId()));
@@ -282,7 +282,7 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestMultiplePriorityLevels) {
 TEST_F(BleAdvertisementDeviceQueueTest, TestSettingSameDevices) {
   std::vector<PrioritizedDeviceId> prioritized_devices = {
       PrioritizedDeviceId(test_devices_[0].GetDeviceId(),
-                          ConnectionPriority::CONNECTION_PRIORITY_HIGH)};
+                          secure_channel::ConnectionPriority::kHigh)};
   EXPECT_TRUE(device_queue_->SetPrioritizedDeviceIds(prioritized_devices));
 
   // Setting the same devices again should return false.
@@ -291,7 +291,7 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestSettingSameDevices) {
 
   prioritized_devices.push_back(
       PrioritizedDeviceId(test_devices_[1].GetDeviceId(),
-                          ConnectionPriority::CONNECTION_PRIORITY_HIGH));
+                          secure_channel::ConnectionPriority::kHigh));
   EXPECT_TRUE(device_queue_->SetPrioritizedDeviceIds(prioritized_devices));
 }
 

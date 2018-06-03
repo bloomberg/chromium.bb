@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/components/tether/connection_priority.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
@@ -19,6 +18,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -92,7 +92,7 @@ class ConnectionPreserverImplTest : public NetworkStateTest {
                                   bool should_remain_registered) {
     base::UnguessableToken request_id = base::UnguessableToken::Create();
     fake_ble_connection_manager_->RegisterRemoteDevice(
-        device_id, request_id, ConnectionPriority::CONNECTION_PRIORITY_LOW);
+        device_id, request_id, secure_channel::ConnectionPriority::kLow);
     EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(device_id));
 
     connection_preserver_->HandleSuccessfulTetherAvailabilityResponse(

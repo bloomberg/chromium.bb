@@ -19,8 +19,8 @@
 #include "chromeos/components/tether/ble_advertisement_device_queue.h"
 #include "chromeos/components/tether/ble_advertiser.h"
 #include "chromeos/components/tether/ble_scanner.h"
-#include "chromeos/components/tether/connection_priority.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "components/cryptauth/secure_channel.h"
 
 namespace device {
@@ -110,9 +110,10 @@ class BleConnectionManager : public BleScanner::Observer {
   // Registers |device_id| for |request_id|. Once registered, this
   // instance will continue to attempt to connect and authenticate to that
   // device until the device is unregistered.
-  virtual void RegisterRemoteDevice(const std::string& device_id,
-                                    const base::UnguessableToken& request_id,
-                                    ConnectionPriority connection_priority);
+  virtual void RegisterRemoteDevice(
+      const std::string& device_id,
+      const base::UnguessableToken& request_id,
+      secure_channel::ConnectionPriority connection_priority);
 
   // Unregisters |device_id| for |request_id|. Once registered, a device
   // will continue trying to connect until *ALL* of its connection reasons have
@@ -176,10 +177,11 @@ class BleConnectionManager : public BleScanner::Observer {
                        base::WeakPtr<BleConnectionManager> manager);
     ~ConnectionMetadata();
 
-    void RegisterConnectionRequest(const base::UnguessableToken& request_id,
-                                   ConnectionPriority connection_priority);
+    void RegisterConnectionRequest(
+        const base::UnguessableToken& request_id,
+        secure_channel::ConnectionPriority connection_priority);
     void UnregisterConnectionRequest(const base::UnguessableToken& request_id);
-    ConnectionPriority GetConnectionPriority();
+    secure_channel::ConnectionPriority GetConnectionPriority();
     bool HasPendingConnectionRequests() const;
 
     bool HasEstablishedConnection() const;
@@ -211,7 +213,7 @@ class BleConnectionManager : public BleScanner::Observer {
 
     std::string device_id_;
     std::unordered_map<base::UnguessableToken,
-                       ConnectionPriority,
+                       secure_channel::ConnectionPriority,
                        base::UnguessableTokenHash>
         request_id_to_priority_map_;
     std::unique_ptr<cryptauth::SecureChannel> secure_channel_;

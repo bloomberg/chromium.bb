@@ -47,7 +47,7 @@ KeepAliveOperation::KeepAliveOperation(
     BleConnectionManager* connection_manager)
     : MessageTransferOperation(
           cryptauth::RemoteDeviceRefList{device_to_connect},
-          ConnectionPriority::CONNECTION_PRIORITY_MEDIUM,
+          secure_channel::ConnectionPriority::kMedium,
           connection_manager),
       remote_device_(device_to_connect),
       clock_(base::DefaultClock::GetInstance()) {}
