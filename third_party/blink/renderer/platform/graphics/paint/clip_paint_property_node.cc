@@ -9,11 +9,12 @@
 namespace blink {
 
 const ClipPaintPropertyNode& ClipPaintPropertyNode::Root() {
-  DEFINE_STATIC_LOCAL(
+  DEFINE_STATIC_REF(
       ClipPaintPropertyNode, root,
-      (nullptr, State{&TransformPaintPropertyNode::Root(),
-                      FloatRoundedRect(LayoutRect::InfiniteIntRect())}));
-  return root;
+      base::AdoptRef(new ClipPaintPropertyNode(
+          nullptr, State{&TransformPaintPropertyNode::Root(),
+                         FloatRoundedRect(LayoutRect::InfiniteIntRect())})));
+  return *root;
 }
 
 std::unique_ptr<JSONObject> ClipPaintPropertyNode::ToJSON() const {
@@ -21,7 +22,7 @@ std::unique_ptr<JSONObject> ClipPaintPropertyNode::ToJSON() const {
   if (Parent())
     json->SetString("parent", String::Format("%p", Parent()));
   json->SetString("localTransformSpace",
-                  String::Format("%p", state_.local_transform_space));
+                  String::Format("%p", state_.local_transform_space.get()));
   json->SetString("rect", state_.clip_rect.ToString());
   if (state_.clip_rect_excluding_overlay_scrollbars) {
     json->SetString("rectExcludingOverlayScrollbars",

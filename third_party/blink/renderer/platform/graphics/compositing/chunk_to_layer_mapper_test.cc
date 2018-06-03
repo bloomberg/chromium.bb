@@ -47,9 +47,9 @@ class ChunkToLayerMapperTest : public testing::Test {
     return mapper.has_filter_that_moves_pixels_;
   }
 
-  std::unique_ptr<TransformPaintPropertyNode> layer_transform_;
-  std::unique_ptr<ClipPaintPropertyNode> layer_clip_;
-  std::unique_ptr<EffectPaintPropertyNode> layer_effect_;
+  scoped_refptr<TransformPaintPropertyNode> layer_transform_;
+  scoped_refptr<ClipPaintPropertyNode> layer_clip_;
+  scoped_refptr<EffectPaintPropertyNode> layer_effect_;
 };
 
 TEST_F(ChunkToLayerMapperTest, OneChunkUsingLayerState) {

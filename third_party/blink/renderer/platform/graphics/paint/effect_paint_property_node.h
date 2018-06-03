@@ -32,10 +32,10 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     //    and effects under the same parent.
     // 2. Some effects are spatial (namely blur filter and reflection), the
     //    effect parameters will be specified in the local space.
-    const TransformPaintPropertyNode* local_transform_space = nullptr;
+    scoped_refptr<const TransformPaintPropertyNode> local_transform_space;
     // The output of the effect can be optionally clipped when composited onto
     // the current backdrop.
-    const ClipPaintPropertyNode* output_clip = nullptr;
+    scoped_refptr<const ClipPaintPropertyNode> output_clip;
     // Optionally a number of effects can be applied to the composited output.
     // The chain of effects will be applied in the following order:
     // === Begin of effects ===
@@ -65,10 +65,10 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   // This node is really a sentinel, and does not represent a real effect.
   static const EffectPaintPropertyNode& Root();
 
-  static std::unique_ptr<EffectPaintPropertyNode> Create(
+  static scoped_refptr<EffectPaintPropertyNode> Create(
       const EffectPaintPropertyNode& parent,
       State&& state) {
-    return base::WrapUnique(
+    return base::AdoptRef(
         new EffectPaintPropertyNode(&parent, std::move(state)));
   }
 
@@ -83,9 +83,11 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   }
 
   const TransformPaintPropertyNode* LocalTransformSpace() const {
-    return state_.local_transform_space;
+    return state_.local_transform_space.get();
   }
-  const ClipPaintPropertyNode* OutputClip() const { return state_.output_clip; }
+  const ClipPaintPropertyNode* OutputClip() const {
+    return state_.output_clip.get();
+  }
 
   SkBlendMode BlendMode() const { return state_.blend_mode; }
   float Opacity() const { return state_.opacity; }
@@ -118,9 +120,8 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // an effect node before it has been updated, to later detect changes.
-  std::unique_ptr<EffectPaintPropertyNode> Clone() const {
-    return base::WrapUnique(
-        new EffectPaintPropertyNode(Parent(), State(state_)));
+  scoped_refptr<EffectPaintPropertyNode> Clone() const {
+    return base::AdoptRef(new EffectPaintPropertyNode(Parent(), State(state_)));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking

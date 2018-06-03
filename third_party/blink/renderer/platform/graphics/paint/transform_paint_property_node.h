@@ -48,7 +48,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     unsigned rendering_context_id = 0;
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
-    const ScrollPaintPropertyNode* scroll = nullptr;
+    scoped_refptr<const ScrollPaintPropertyNode> scroll;
 
     bool operator==(const State& o) const {
       return matrix == o.matrix && origin == o.origin &&
@@ -65,10 +65,10 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   // space.
   static const TransformPaintPropertyNode& Root();
 
-  static std::unique_ptr<TransformPaintPropertyNode> Create(
+  static scoped_refptr<TransformPaintPropertyNode> Create(
       const TransformPaintPropertyNode& parent,
       State&& state) {
-    return base::WrapUnique(
+    return base::AdoptRef(
         new TransformPaintPropertyNode(&parent, std::move(state)));
   }
 
@@ -87,7 +87,9 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   const FloatPoint3D& Origin() const { return state_.origin; }
 
   // The associated scroll node, or nullptr otherwise.
-  const ScrollPaintPropertyNode* ScrollNode() const { return state_.scroll; }
+  const ScrollPaintPropertyNode* ScrollNode() const {
+    return state_.scroll.get();
+  }
 
   // If this is a scroll offset translation (i.e., has an associated scroll
   // node), returns this. Otherwise, returns the transform node that this node
@@ -126,8 +128,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a transform node before it has been updated, to later detect changes.
-  std::unique_ptr<TransformPaintPropertyNode> Clone() const {
-    return base::WrapUnique(
+  scoped_refptr<TransformPaintPropertyNode> Clone() const {
+    return base::AdoptRef(
         new TransformPaintPropertyNode(Parent(), State(state_)));
   }
 

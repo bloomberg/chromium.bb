@@ -58,10 +58,10 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // This node is really a sentinel, and does not represent a real scroll.
   static const ScrollPaintPropertyNode& Root();
 
-  static std::unique_ptr<ScrollPaintPropertyNode> Create(
+  static scoped_refptr<ScrollPaintPropertyNode> Create(
       const ScrollPaintPropertyNode& parent,
       State&& state) {
-    return base::WrapUnique(
+    return base::AdoptRef(
         new ScrollPaintPropertyNode(&parent, std::move(state)));
   }
 
@@ -117,9 +117,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a scroll node before it has been updated, to later detect changes.
-  std::unique_ptr<ScrollPaintPropertyNode> Clone() const {
-    return base::WrapUnique(
-        new ScrollPaintPropertyNode(Parent(), State(state_)));
+  scoped_refptr<ScrollPaintPropertyNode> Clone() const {
+    return base::AdoptRef(new ScrollPaintPropertyNode(Parent(), State(state_)));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking

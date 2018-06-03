@@ -325,7 +325,7 @@ class CORE_EXPORT ObjectPaintProperties {
   // deleted), and false otherwise. See the class-level comment ("update & clear
   // implementation note") for details about why this is needed for efficiency.
   template <typename PaintPropertyNode>
-  bool Clear(std::unique_ptr<PaintPropertyNode>& field) {
+  bool Clear(scoped_refptr<PaintPropertyNode>& field) {
     if (field) {
       field = nullptr;
       return true;
@@ -337,7 +337,7 @@ class CORE_EXPORT ObjectPaintProperties {
   // created), and false otherwise. See the class-level comment ("update & clear
   // implementation note") for details about why this is needed for efficiency.
   template <typename PaintPropertyNode>
-  UpdateResult Update(std::unique_ptr<PaintPropertyNode>& field,
+  UpdateResult Update(scoped_refptr<PaintPropertyNode>& field,
                       const PaintPropertyNode& parent,
                       typename PaintPropertyNode::State&& state) {
     if (field) {
@@ -351,26 +351,25 @@ class CORE_EXPORT ObjectPaintProperties {
 
   // ATTENTION! Make sure to keep FindPropertiesNeedingUpdate.h in sync when
   // new properites are added!
-  std::unique_ptr<TransformPaintPropertyNode> paint_offset_translation_;
-  std::unique_ptr<TransformPaintPropertyNode> transform_;
-  std::unique_ptr<EffectPaintPropertyNode> effect_;
-  std::unique_ptr<EffectPaintPropertyNode> filter_;
-  std::unique_ptr<EffectPaintPropertyNode> mask_;
-  std::unique_ptr<EffectPaintPropertyNode> clip_path_;
-  std::unique_ptr<ClipPaintPropertyNode> fragment_clip_;
-  std::unique_ptr<ClipPaintPropertyNode> clip_path_clip_;
-  std::unique_ptr<ClipPaintPropertyNode> mask_clip_;
-  std::unique_ptr<ClipPaintPropertyNode> css_clip_;
-  std::unique_ptr<ClipPaintPropertyNode> css_clip_fixed_position_;
-  std::unique_ptr<ClipPaintPropertyNode> overflow_controls_clip_;
-  std::unique_ptr<ClipPaintPropertyNode> inner_border_radius_clip_;
-  std::unique_ptr<ClipPaintPropertyNode> overflow_clip_;
-  std::unique_ptr<TransformPaintPropertyNode> perspective_;
+  scoped_refptr<TransformPaintPropertyNode> paint_offset_translation_;
+  scoped_refptr<TransformPaintPropertyNode> transform_;
+  scoped_refptr<EffectPaintPropertyNode> effect_;
+  scoped_refptr<EffectPaintPropertyNode> filter_;
+  scoped_refptr<EffectPaintPropertyNode> mask_;
+  scoped_refptr<EffectPaintPropertyNode> clip_path_;
+  scoped_refptr<ClipPaintPropertyNode> fragment_clip_;
+  scoped_refptr<ClipPaintPropertyNode> clip_path_clip_;
+  scoped_refptr<ClipPaintPropertyNode> mask_clip_;
+  scoped_refptr<ClipPaintPropertyNode> css_clip_;
+  scoped_refptr<ClipPaintPropertyNode> css_clip_fixed_position_;
+  scoped_refptr<ClipPaintPropertyNode> overflow_controls_clip_;
+  scoped_refptr<ClipPaintPropertyNode> inner_border_radius_clip_;
+  scoped_refptr<ClipPaintPropertyNode> overflow_clip_;
+  scoped_refptr<TransformPaintPropertyNode> perspective_;
   // TODO(pdr): Only LayoutSVGRoot needs this and it should be moved there.
-  std::unique_ptr<TransformPaintPropertyNode>
-      svg_local_to_border_box_transform_;
-  std::unique_ptr<ScrollPaintPropertyNode> scroll_;
-  std::unique_ptr<TransformPaintPropertyNode> scroll_translation_;
+  scoped_refptr<TransformPaintPropertyNode> svg_local_to_border_box_transform_;
+  scoped_refptr<ScrollPaintPropertyNode> scroll_;
+  scoped_refptr<TransformPaintPropertyNode> scroll_translation_;
 
   DISALLOW_COPY_AND_ASSIGN(ObjectPaintProperties);
 };

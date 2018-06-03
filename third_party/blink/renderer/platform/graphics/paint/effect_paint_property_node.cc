@@ -7,10 +7,11 @@
 namespace blink {
 
 const EffectPaintPropertyNode& EffectPaintPropertyNode::Root() {
-  DEFINE_STATIC_LOCAL(EffectPaintPropertyNode, root,
-                      (nullptr, State{&TransformPaintPropertyNode::Root(),
-                                      &ClipPaintPropertyNode::Root()}));
-  return root;
+  DEFINE_STATIC_REF(EffectPaintPropertyNode, root,
+                    base::AdoptRef(new EffectPaintPropertyNode(
+                        nullptr, State{&TransformPaintPropertyNode::Root(),
+                                       &ClipPaintPropertyNode::Root()})));
+  return *root;
 }
 
 FloatRect EffectPaintPropertyNode::MapRect(const FloatRect& input_rect) const {
@@ -26,8 +27,8 @@ std::unique_ptr<JSONObject> EffectPaintPropertyNode::ToJSON() const {
   if (Parent())
     json->SetString("parent", String::Format("%p", Parent()));
   json->SetString("localTransformSpace",
-                  String::Format("%p", state_.local_transform_space));
-  json->SetString("outputClip", String::Format("%p", state_.output_clip));
+                  String::Format("%p", state_.local_transform_space.get()));
+  json->SetString("outputClip", String::Format("%p", state_.output_clip.get()));
   if (state_.color_filter != kColorFilterNone)
     json->SetInteger("colorFilter", state_.color_filter);
   if (!state_.filter.IsEmpty())

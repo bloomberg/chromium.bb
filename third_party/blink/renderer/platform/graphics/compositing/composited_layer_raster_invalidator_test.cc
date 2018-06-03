@@ -45,6 +45,12 @@ class CompositedLayerRasterInvalidatorTest
   }
 
   CompositedLayerRasterInvalidatorTest& Properties(
+      const RefCountedPropertyTreeState& state) {
+    data_.chunks.back().properties = state.GetPropertyTreeState();
+    return *this;
+  }
+
+  CompositedLayerRasterInvalidatorTest& Properties(
       const TransformPaintPropertyNode& t,
       const ClipPaintPropertyNode& c,
       const EffectPaintPropertyNode& e) {

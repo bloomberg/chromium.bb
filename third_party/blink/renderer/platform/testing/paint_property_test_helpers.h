@@ -23,7 +23,7 @@ inline const EffectPaintPropertyNode& e0() {
   return EffectPaintPropertyNode::Root();
 }
 
-inline std::unique_ptr<EffectPaintPropertyNode> CreateOpacityEffect(
+inline scoped_refptr<EffectPaintPropertyNode> CreateOpacityEffect(
     const EffectPaintPropertyNode& parent,
     const TransformPaintPropertyNode* local_transform_space,
     const ClipPaintPropertyNode* output_clip,
@@ -37,7 +37,7 @@ inline std::unique_ptr<EffectPaintPropertyNode> CreateOpacityEffect(
   return EffectPaintPropertyNode::Create(parent, std::move(state));
 }
 
-inline std::unique_ptr<EffectPaintPropertyNode> CreateOpacityEffect(
+inline scoped_refptr<EffectPaintPropertyNode> CreateOpacityEffect(
     const EffectPaintPropertyNode& parent,
     float opacity,
     CompositingReasons compositing_reasons = CompositingReason::kNone) {
@@ -45,7 +45,7 @@ inline std::unique_ptr<EffectPaintPropertyNode> CreateOpacityEffect(
                              parent.OutputClip(), opacity, compositing_reasons);
 }
 
-inline std::unique_ptr<EffectPaintPropertyNode> CreateFilterEffect(
+inline scoped_refptr<EffectPaintPropertyNode> CreateFilterEffect(
     const EffectPaintPropertyNode& parent,
     const TransformPaintPropertyNode* local_transform_space,
     const ClipPaintPropertyNode* output_clip,
@@ -61,7 +61,7 @@ inline std::unique_ptr<EffectPaintPropertyNode> CreateFilterEffect(
   return EffectPaintPropertyNode::Create(parent, std::move(state));
 }
 
-inline std::unique_ptr<EffectPaintPropertyNode> CreateFilterEffect(
+inline scoped_refptr<EffectPaintPropertyNode> CreateFilterEffect(
     const EffectPaintPropertyNode& parent,
     CompositorFilterOperations filter,
     const FloatPoint& paint_offset = FloatPoint(),
@@ -71,7 +71,7 @@ inline std::unique_ptr<EffectPaintPropertyNode> CreateFilterEffect(
                             compositing_reasons);
 }
 
-inline std::unique_ptr<ClipPaintPropertyNode> CreateClip(
+inline scoped_refptr<ClipPaintPropertyNode> CreateClip(
     const ClipPaintPropertyNode& parent,
     const TransformPaintPropertyNode* local_transform_space,
     const FloatRoundedRect& clip_rect,
@@ -83,7 +83,7 @@ inline std::unique_ptr<ClipPaintPropertyNode> CreateClip(
   return ClipPaintPropertyNode::Create(parent, std::move(state));
 }
 
-inline std::unique_ptr<ClipPaintPropertyNode> CreateClipPathClip(
+inline scoped_refptr<ClipPaintPropertyNode> CreateClipPathClip(
     const ClipPaintPropertyNode& parent,
     const TransformPaintPropertyNode* local_transform_space,
     const FloatRoundedRect& clip_rect) {
@@ -94,7 +94,7 @@ inline std::unique_ptr<ClipPaintPropertyNode> CreateClipPathClip(
   return ClipPaintPropertyNode::Create(parent, std::move(state));
 }
 
-inline std::unique_ptr<TransformPaintPropertyNode> CreateTransform(
+inline scoped_refptr<TransformPaintPropertyNode> CreateTransform(
     const TransformPaintPropertyNode& parent,
     const TransformationMatrix& matrix,
     const FloatPoint3D& origin = FloatPoint3D(),
@@ -106,7 +106,7 @@ inline std::unique_ptr<TransformPaintPropertyNode> CreateTransform(
   return TransformPaintPropertyNode::Create(parent, std::move(state));
 }
 
-inline std::unique_ptr<TransformPaintPropertyNode> CreateScrollTranslation(
+inline scoped_refptr<TransformPaintPropertyNode> CreateScrollTranslation(
     const TransformPaintPropertyNode& parent,
     float offset_x,
     float offset_y,
