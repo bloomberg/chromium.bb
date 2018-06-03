@@ -25,6 +25,9 @@ class Profile;
 
 namespace chromeos {
 class NetworkStateHandler;
+namespace device_sync {
+class DeviceSyncClient;
+}  // namespace device_sync
 namespace tether {
 class GmsCoreNotificationsStateTracker;
 class GmsCoreNotificationsStateTrackerImpl;
@@ -61,6 +64,7 @@ class TetherService : public KeyedService,
   TetherService(Profile* profile,
                 chromeos::PowerManagerClient* power_manager_client,
                 cryptauth::CryptAuthService* cryptauth_service,
+                chromeos::device_sync::DeviceSyncClient* device_sync_client,
                 chromeos::NetworkStateHandler* network_state_handler,
                 session_manager::SessionManager* session_manager);
   ~TetherService() override;
@@ -138,6 +142,9 @@ class TetherService : public KeyedService,
                            TestBleAdvertisingSupportedButIncorrectlyRecorded);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest,
                            TestGet_PrimaryUser_FeatureFlagEnabled);
+  FRIEND_TEST_ALL_PREFIXES(
+      TetherServiceTest,
+      TestGet_PrimaryUser_FeatureFlagEnabled_MultiDeviceApiFlagEnabled);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestNoTetherHosts);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestProhibitedByPolicy);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestIsBluetoothPowered);
@@ -254,6 +261,7 @@ class TetherService : public KeyedService,
   Profile* profile_;
   chromeos::PowerManagerClient* power_manager_client_;
   cryptauth::CryptAuthService* cryptauth_service_;
+  chromeos::device_sync::DeviceSyncClient* device_sync_client_;
   chromeos::NetworkStateHandler* network_state_handler_;
   session_manager::SessionManager* session_manager_;
   std::unique_ptr<chromeos::tether::NotificationPresenter>

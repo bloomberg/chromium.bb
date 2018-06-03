@@ -39,6 +39,18 @@ namespace device_sync {
 class DeviceSyncClientImpl : public DeviceSyncClient,
                              public device_sync::mojom::DeviceSyncObserver {
  public:
+  class Factory {
+   public:
+    static Factory* Get();
+    static void SetInstanceForTesting(Factory* test_factory);
+    virtual ~Factory();
+    virtual std::unique_ptr<DeviceSyncClient> BuildInstance(
+        service_manager::Connector* connector);
+
+   private:
+    static Factory* test_factory_;
+  };
+
   explicit DeviceSyncClientImpl(service_manager::Connector* connector);
   ~DeviceSyncClientImpl() override;
 

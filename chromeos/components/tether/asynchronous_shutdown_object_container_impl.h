@@ -33,6 +33,10 @@ class ManagedNetworkConfigurationHandler;
 class NetworkConnectionHandler;
 class NetworkStateHandler;
 
+namespace device_sync {
+class DeviceSyncClient;
+}  // namespace device_sync
+
 namespace tether {
 
 class BleAdvertisementDeviceQueue;
@@ -55,6 +59,7 @@ class AsynchronousShutdownObjectContainerImpl
     static std::unique_ptr<AsynchronousShutdownObjectContainer> NewInstance(
         scoped_refptr<device::BluetoothAdapter> adapter,
         cryptauth::CryptAuthService* cryptauth_service,
+        chromeos::device_sync::DeviceSyncClient* device_sync_client,
         TetherHostFetcher* tether_host_fetcher,
         NetworkStateHandler* network_state_handler,
         ManagedNetworkConfigurationHandler*
@@ -67,6 +72,7 @@ class AsynchronousShutdownObjectContainerImpl
     virtual std::unique_ptr<AsynchronousShutdownObjectContainer> BuildInstance(
         scoped_refptr<device::BluetoothAdapter> adapter,
         cryptauth::CryptAuthService* cryptauth_service,
+        chromeos::device_sync::DeviceSyncClient* device_sync_client,
         TetherHostFetcher* tether_host_fetcher,
         NetworkStateHandler* network_state_handler,
         ManagedNetworkConfigurationHandler*
@@ -94,6 +100,7 @@ class AsynchronousShutdownObjectContainerImpl
   AsynchronousShutdownObjectContainerImpl(
       scoped_refptr<device::BluetoothAdapter> adapter,
       cryptauth::CryptAuthService* cryptauth_service,
+      chromeos::device_sync::DeviceSyncClient* device_sync_client,
       TetherHostFetcher* tether_host_fetcher,
       NetworkStateHandler* network_state_handler,
       ManagedNetworkConfigurationHandler* managed_network_configuration_handler,

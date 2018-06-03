@@ -8,6 +8,7 @@
 
 #include "chromeos/services/device_sync/public/cpp/device_sync_client_impl.h"
 
+#include "base/no_destructor.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/device_sync/public/mojom/constants.mojom.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
@@ -18,6 +19,32 @@
 namespace chromeos {
 
 namespace device_sync {
+
+// static
+DeviceSyncClientImpl::Factory* DeviceSyncClientImpl::Factory::test_factory_ =
+    nullptr;
+
+// static
+DeviceSyncClientImpl::Factory* DeviceSyncClientImpl::Factory::Get() {
+  if (test_factory_)
+    return test_factory_;
+
+  static base::NoDestructor<Factory> factory;
+  return factory.get();
+}
+
+// static
+void DeviceSyncClientImpl::Factory::SetInstanceForTesting(
+    Factory* test_factory) {
+  test_factory_ = test_factory;
+}
+
+DeviceSyncClientImpl::Factory::~Factory() = default;
+
+std::unique_ptr<DeviceSyncClient> DeviceSyncClientImpl::Factory::BuildInstance(
+    service_manager::Connector* connector) {
+  return base::WrapUnique(new DeviceSyncClientImpl(connector));
+}
 
 DeviceSyncClientImpl::DeviceSyncClientImpl(
     service_manager::Connector* connector)
