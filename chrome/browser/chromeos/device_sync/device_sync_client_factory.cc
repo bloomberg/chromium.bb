@@ -37,7 +37,7 @@ namespace device_sync {
 class DeviceSyncClientHolder : public KeyedService {
  public:
   explicit DeviceSyncClientHolder(content::BrowserContext* context)
-      : device_sync_client_(std::make_unique<DeviceSyncClientImpl>(
+      : device_sync_client_(DeviceSyncClientImpl::Factory::Get()->BuildInstance(
             content::BrowserContext::GetConnectorFor(context))) {}
 
   DeviceSyncClient* device_sync_client() { return device_sync_client_.get(); }

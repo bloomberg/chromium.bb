@@ -14,6 +14,7 @@
 #include "chromeos/components/tether/disconnect_tethering_request_sender_impl.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/wifi_hotspot_disconnector_impl.h"
+#include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/local_device_data_provider.h"
 #include "components/cryptauth/remote_beacon_seed_fetcher.h"
@@ -32,6 +33,7 @@ std::unique_ptr<AsynchronousShutdownObjectContainer>
 AsynchronousShutdownObjectContainerImpl::Factory::NewInstance(
     scoped_refptr<device::BluetoothAdapter> adapter,
     cryptauth::CryptAuthService* cryptauth_service,
+    chromeos::device_sync::DeviceSyncClient* device_sync_client,
     TetherHostFetcher* tether_host_fetcher,
     NetworkStateHandler* network_state_handler,
     ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
@@ -41,9 +43,9 @@ AsynchronousShutdownObjectContainerImpl::Factory::NewInstance(
     factory_instance_ = new Factory();
 
   return factory_instance_->BuildInstance(
-      adapter, cryptauth_service, tether_host_fetcher, network_state_handler,
-      managed_network_configuration_handler, network_connection_handler,
-      pref_service);
+      adapter, cryptauth_service, device_sync_client, tether_host_fetcher,
+      network_state_handler, managed_network_configuration_handler,
+      network_connection_handler, pref_service);
 }
 
 // static
@@ -58,21 +60,23 @@ std::unique_ptr<AsynchronousShutdownObjectContainer>
 AsynchronousShutdownObjectContainerImpl::Factory::BuildInstance(
     scoped_refptr<device::BluetoothAdapter> adapter,
     cryptauth::CryptAuthService* cryptauth_service,
+    chromeos::device_sync::DeviceSyncClient* device_sync_client,
     TetherHostFetcher* tether_host_fetcher,
     NetworkStateHandler* network_state_handler,
     ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
     NetworkConnectionHandler* network_connection_handler,
     PrefService* pref_service) {
   return base::WrapUnique(new AsynchronousShutdownObjectContainerImpl(
-      adapter, cryptauth_service, tether_host_fetcher, network_state_handler,
-      managed_network_configuration_handler, network_connection_handler,
-      pref_service));
+      adapter, cryptauth_service, device_sync_client, tether_host_fetcher,
+      network_state_handler, managed_network_configuration_handler,
+      network_connection_handler, pref_service));
 }
 
 AsynchronousShutdownObjectContainerImpl::
     AsynchronousShutdownObjectContainerImpl(
         scoped_refptr<device::BluetoothAdapter> adapter,
         cryptauth::CryptAuthService* cryptauth_service,
+        chromeos::device_sync::DeviceSyncClient* device_sync_client,
         TetherHostFetcher* tether_host_fetcher,
         NetworkStateHandler* network_state_handler,
         ManagedNetworkConfigurationHandler*

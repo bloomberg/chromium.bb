@@ -231,6 +231,7 @@ static_library("test_support") {
     "//base",
     "//chromeos",
     "//chromeos/components/tether/proto",
+    "//chromeos/services/device_sync/public/cpp:test_support",
     "//components/cryptauth",
     "//components/cryptauth:test_support",
     "//components/cryptauth/ble:test_support",

@@ -2204,6 +2204,7 @@ source_set("unit_tests") {
     "//chromeos:login_manager_proto",
     "//chromeos/components/tether:test_support",
     "//chromeos/ime:gencode",
+    "//chromeos/services/device_sync/public/cpp:test_support",
     "//components/cryptauth:test_support",
     "//components/drive",
     "//components/drive:drive_chromeos",
