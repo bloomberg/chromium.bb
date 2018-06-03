@@ -9,10 +9,16 @@ namespace chromeos {
 namespace secure_channel {
 
 FakeClientConnectionParameters::FakeClientConnectionParameters(
-    const std::string& feature)
-    : ClientConnectionParameters(feature), weak_ptr_factory_(this) {}
+    const std::string& feature,
+    base::OnceCallback<void(const base::UnguessableToken&)> destructor_callback)
+    : ClientConnectionParameters(feature),
+      destructor_callback_(std::move(destructor_callback)),
+      weak_ptr_factory_(this) {}
 
-FakeClientConnectionParameters::~FakeClientConnectionParameters() = default;
+FakeClientConnectionParameters::~FakeClientConnectionParameters() {
+  if (destructor_callback_)
+    std::move(destructor_callback_).Run(id());
+}
 
 void FakeClientConnectionParameters::CancelClientRequest() {
   DCHECK(!has_canceled_client_request_);

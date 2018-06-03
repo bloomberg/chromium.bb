@@ -19,7 +19,12 @@ namespace secure_channel {
 // Test ClientConnectionParameters implementation.
 class FakeClientConnectionParameters : public ClientConnectionParameters {
  public:
-  FakeClientConnectionParameters(const std::string& feature);
+  FakeClientConnectionParameters(
+      const std::string& feature,
+      base::OnceCallback<void(const base::UnguessableToken&)>
+          destructor_callback =
+              base::OnceCallback<void(const base::UnguessableToken&)>());
+
   ~FakeClientConnectionParameters() override;
 
   const base::Optional<mojom::ConnectionAttemptFailureReason>&
@@ -61,6 +66,8 @@ class FakeClientConnectionParameters : public ClientConnectionParameters {
 
   base::Optional<mojom::ChannelPtr> channel_;
   uint32_t disconnection_reason_ = 0u;
+
+  base::OnceCallback<void(const base::UnguessableToken&)> destructor_callback_;
 
   base::WeakPtrFactory<FakeClientConnectionParameters> weak_ptr_factory_;
 
