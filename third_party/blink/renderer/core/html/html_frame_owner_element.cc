@@ -391,8 +391,8 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
 
   if (ContentFrame()) {
     // TODO(sclittle): Support lazily loading frame navigations.
-    ContentFrame()->Navigate(GetDocument(), url, replace_current_item,
-                             UserGestureStatus::kNone);
+    ContentFrame()->ScheduleNavigation(GetDocument(), url, replace_current_item,
+                                       UserGestureStatus::kNone);
     return true;
   }
 
