@@ -10,8 +10,8 @@
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/hit_test_data.h"
-#include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
+#include "third_party/blink/renderer/platform/graphics/paint/ref_counted_property_tree_state.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -100,7 +100,7 @@ struct PLATFORM_EXPORT PaintChunk {
   Id id;
 
   // The paint properties which apply to this chunk.
-  PropertyTreeState properties;
+  RefCountedPropertyTreeState properties;
 
   // The total bounds of this paint chunk's contents, in the coordinate space of
   // the containing transform node.

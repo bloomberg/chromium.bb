@@ -5,8 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_PROPERTY_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_PROPERTY_NODE_H_
 
+#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #if DCHECK_IS_ON()
@@ -53,12 +55,10 @@ PLATFORM_EXPORT const TransformPaintPropertyNode& LowestCommonAncestorInternal(
     const TransformPaintPropertyNode&);
 
 template <typename NodeType>
-class PaintPropertyNode {
-  USING_FAST_MALLOC(NodeType);
-
+class PaintPropertyNode : public RefCounted<NodeType> {
  public:
   // Parent property node, or nullptr if this is the root node.
-  const NodeType* Parent() const { return parent_; }
+  const NodeType* Parent() const { return parent_.get(); }
   bool IsRoot() const { return !parent_; }
 
   bool IsAncestorOf(const NodeType& other) const {
@@ -131,7 +131,7 @@ class PaintPropertyNode {
   void SetChanged() { changed_ = true; }
 
  private:
-  const NodeType* parent_;
+  scoped_refptr<const NodeType> parent_;
   mutable bool changed_ = true;
 
 #if DCHECK_IS_ON()

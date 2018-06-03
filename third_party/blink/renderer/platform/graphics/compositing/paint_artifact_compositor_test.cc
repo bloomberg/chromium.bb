@@ -579,7 +579,7 @@ TEST_F(PaintArtifactCompositorTest, NestedClips) {
 }
 
 TEST_F(PaintArtifactCompositorTest, DeeplyNestedClips) {
-  Vector<std::unique_ptr<ClipPaintPropertyNode>> clips;
+  Vector<scoped_refptr<ClipPaintPropertyNode>> clips;
   for (unsigned i = 1; i <= 10; i++) {
     clips.push_back(CreateClip(clips.IsEmpty() ? c0() : *clips.back(), &t0(),
                                FloatRoundedRect(5 * i, 0, 100, 200 - 10 * i)));
@@ -750,7 +750,7 @@ static ScrollPaintPropertyNode::State ScrollState2() {
   return state;
 }
 
-static std::unique_ptr<ScrollPaintPropertyNode> CreateScroll(
+static scoped_refptr<ScrollPaintPropertyNode> CreateScroll(
     const ScrollPaintPropertyNode& parent,
     const ScrollPaintPropertyNode::State& state_arg,
     MainThreadScrollingReasons main_thread_scrolling_reasons =
@@ -1689,7 +1689,7 @@ TEST_F(PaintArtifactCompositorTest, PendingLayerKnownOpaque_DISABLED) {
   EXPECT_EQ(pending_layer.bounds, pending_layer.rect_known_to_be_opaque);
 }
 
-std::unique_ptr<EffectPaintPropertyNode> CreateSampleEffectNodeWithElementId() {
+scoped_refptr<EffectPaintPropertyNode> CreateSampleEffectNodeWithElementId() {
   EffectPaintPropertyNode::State state;
   state.local_transform_space = &t0();
   state.output_clip = &c0();
@@ -1699,7 +1699,7 @@ std::unique_ptr<EffectPaintPropertyNode> CreateSampleEffectNodeWithElementId() {
   return EffectPaintPropertyNode::Create(e0(), std::move(state));
 }
 
-std::unique_ptr<TransformPaintPropertyNode>
+scoped_refptr<TransformPaintPropertyNode>
 CreateSampleTransformNodeWithElementId() {
   TransformPaintPropertyNode::State state;
   state.matrix.Rotate(90);

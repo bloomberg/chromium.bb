@@ -30,7 +30,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   // To make it less verbose and more readable to construct and update a node,
   // a struct with default values is used to represent the state.
   struct State {
-    const TransformPaintPropertyNode* local_transform_space = nullptr;
+    scoped_refptr<const TransformPaintPropertyNode> local_transform_space;
     FloatRoundedRect clip_rect;
     base::Optional<FloatRoundedRect> clip_rect_excluding_overlay_scrollbars;
     scoped_refptr<const RefCountedPath> clip_path;
@@ -56,11 +56,10 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   // This node is really a sentinel, and does not represent a real clip space.
   static const ClipPaintPropertyNode& Root();
 
-  static std::unique_ptr<ClipPaintPropertyNode> Create(
+  static scoped_refptr<ClipPaintPropertyNode> Create(
       const ClipPaintPropertyNode& parent,
       State&& state) {
-    return base::WrapUnique(
-        new ClipPaintPropertyNode(&parent, std::move(state)));
+    return base::AdoptRef(new ClipPaintPropertyNode(&parent, std::move(state)));
   }
 
   bool Update(const ClipPaintPropertyNode& parent, State&& state) {
@@ -79,7 +78,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   }
 
   const TransformPaintPropertyNode* LocalTransformSpace() const {
-    return state_.local_transform_space;
+    return state_.local_transform_space.get();
   }
   const FloatRoundedRect& ClipRect() const { return state_.clip_rect; }
   const FloatRoundedRect& ClipRectExcludingOverlayScrollbars() const {
@@ -97,8 +96,8 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a clip node before it has been updated, to later detect changes.
-  std::unique_ptr<ClipPaintPropertyNode> Clone() const {
-    return base::WrapUnique(new ClipPaintPropertyNode(Parent(), State(state_)));
+  scoped_refptr<ClipPaintPropertyNode> Clone() const {
+    return base::AdoptRef(new ClipPaintPropertyNode(Parent(), State(state_)));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking

@@ -10,7 +10,7 @@ namespace blink {
 
 class PropertyTreeStateTest : public testing::Test {};
 
-static std::unique_ptr<TransformPaintPropertyNode>
+static scoped_refptr<TransformPaintPropertyNode>
 CreateTransformWithCompositorElementId(
     const CompositorElementId& compositor_element_id) {
   TransformPaintPropertyNode::State state;
@@ -19,7 +19,7 @@ CreateTransformWithCompositorElementId(
                                             std::move(state));
 }
 
-static std::unique_ptr<EffectPaintPropertyNode>
+static scoped_refptr<EffectPaintPropertyNode>
 CreateEffectWithCompositorElementId(
     const CompositorElementId& compositor_element_id) {
   EffectPaintPropertyNode::State state;

@@ -7,8 +7,10 @@
 namespace blink {
 
 const ScrollPaintPropertyNode& ScrollPaintPropertyNode::Root() {
-  DEFINE_STATIC_LOCAL(ScrollPaintPropertyNode, root, (nullptr, State{}));
-  return root;
+  DEFINE_STATIC_REF(
+      ScrollPaintPropertyNode, root,
+      base::AdoptRef(new ScrollPaintPropertyNode(nullptr, State{})));
+  return *root;
 }
 
 std::unique_ptr<JSONObject> ScrollPaintPropertyNode::ToJSON() const {
