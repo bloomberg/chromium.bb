@@ -36,7 +36,10 @@ class FakePendingConnectionManager : public PendingConnectionManager {
   // associated with |connection_details|. Before this call can complete, there
   // must be at least one handled request with those details. This call removes
   // the relevant handled requests from the list returned by handled_requests().
-  void NotifyConnectionForHandledRequests(
+  //
+  // The return value of this function is the raw pointers of all
+  // ClientConnectionParameters that were passed to the delegate function.
+  std::vector<ClientConnectionParameters*> NotifyConnectionForHandledRequests(
       std::unique_ptr<AuthenticatedChannel> authenticated_channel,
       const ConnectionDetails& connection_details);
 
