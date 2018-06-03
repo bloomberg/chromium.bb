@@ -59,6 +59,10 @@ using blink::WebMouseEvent;
 using blink::WebGestureEvent;
 using blink::WebTouchEvent;
 
+namespace {
+constexpr auto kContentPaintTimeout = base::TimeDelta::FromMilliseconds(167);
+}  // namespace
+
 namespace content {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -193,9 +197,11 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   // startup raciness and decrease latency.
   needs_begin_frames_ = needs_begin_frames;
   UpdateNeedsBeginFramesInternal();
+  ui::CATransactionCoordinator::Get().AddPreCommitObserver(this);
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
+  ui::CATransactionCoordinator::Get().RemovePreCommitObserver(this);
 }
 
 void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
@@ -325,6 +331,7 @@ void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
       LOG(ERROR) << "Failed to create display link.";
     }
   }
+  ui::CATransactionCoordinator::Get().Synchronize();
 
   // During auto-resize it is the responsibility of the caller to ensure that
   // the NSView and RenderWidgetHostImpl are kept in sync.
@@ -548,6 +555,14 @@ void RenderWidgetHostViewMac::OnTextSelectionChanged(
     return;
   ns_view_bridge_->SetTextSelection(selection->text(), selection->offset(),
                                     selection->range());
+}
+
+bool RenderWidgetHostViewMac::ShouldWaitInPreCommit() {
+  return ShouldContinueToPauseForFrame();
+}
+
+base::TimeDelta RenderWidgetHostViewMac::PreCommitTimeout() {
+  return kContentPaintTimeout;
 }
 
 void RenderWidgetHostViewMac::OnGestureEvent(
@@ -1283,6 +1298,8 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 }
 
 void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
+  return;  // TODO(https://crbug.com/682825): Delete this during cleanup.
+
   if (!host() || !browser_compositor_ || host()->is_hidden()) {
     return;
   }

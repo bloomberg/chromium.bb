@@ -23,6 +23,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_sender.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
+#include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
@@ -68,6 +69,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       public RenderWidgetHostNSViewClient,
       public BrowserCompositorMacClient,
       public TextInputManager::Observer,
+      public ui::CATransactionCoordinator::PreCommitObserver,
       public ui::GestureProviderClient,
       public ui::AcceleratedWidgetMacNSView,
       public IPC::Sender {
@@ -219,6 +221,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       RenderWidgetHostViewBase* updated_view) override;
   void OnTextSelectionChanged(TextInputManager* text_input_manager,
                               RenderWidgetHostViewBase* updated_view) override;
+
+  // ui::CATransactionCoordinator::PreCommitObserver implementation
+  bool ShouldWaitInPreCommit() override;
+  base::TimeDelta PreCommitTimeout() override;
 
   // ui::GestureProviderClient implementation.
   void OnGestureEvent(const ui::GestureEventData& gesture) override;
