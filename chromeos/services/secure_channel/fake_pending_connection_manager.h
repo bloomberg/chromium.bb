@@ -13,6 +13,7 @@
 #include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/connection_role.h"
 #include "chromeos/services/secure_channel/pending_connection_manager.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
 namespace chromeos {
 
@@ -27,7 +28,8 @@ class FakePendingConnectionManager : public PendingConnectionManager {
   using HandledRequestsList =
       std::vector<std::tuple<ConnectionDetails,
                              std::unique_ptr<ClientConnectionParameters>,
-                             ConnectionRole>>;
+                             ConnectionRole,
+                             ConnectionPriority>>;
   HandledRequestsList& handled_requests() { return handled_requests_; }
 
   // Notifies the delegate that the a connection was successful for the attempt
@@ -42,7 +44,8 @@ class FakePendingConnectionManager : public PendingConnectionManager {
   void HandleConnectionRequest(
       const ConnectionDetails& connection_details,
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
-      ConnectionRole connection_role) override;
+      ConnectionRole connection_role,
+      ConnectionPriority connection_priority) override;
 
   HandledRequestsList handled_requests_;
 

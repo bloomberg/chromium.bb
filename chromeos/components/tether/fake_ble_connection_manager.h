@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "chromeos/components/tether/ble_connection_manager.h"
-#include "chromeos/components/tether/connection_priority.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
 namespace chromeos {
 
@@ -56,9 +56,10 @@ class FakeBleConnectionManager : public BleConnectionManager {
   bool IsRegistered(const std::string& device_id);
 
   // BleConnectionManager:
-  void RegisterRemoteDevice(const std::string& device_id,
-                            const base::UnguessableToken& request_id,
-                            ConnectionPriority connection_priority) override;
+  void RegisterRemoteDevice(
+      const std::string& device_id,
+      const base::UnguessableToken& request_id,
+      secure_channel::ConnectionPriority connection_priority) override;
   void UnregisterRemoteDevice(
       const std::string& device_id,
       const base::UnguessableToken& request_id) override;

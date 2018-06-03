@@ -16,7 +16,7 @@ namespace tether {
 
 BleAdvertisementDeviceQueue::PrioritizedDeviceId::PrioritizedDeviceId(
     const std::string& device_id,
-    const ConnectionPriority& connection_priority)
+    const secure_channel::ConnectionPriority& connection_priority)
     : device_id(device_id), connection_priority(connection_priority) {}
 
 BleAdvertisementDeviceQueue::PrioritizedDeviceId::~PrioritizedDeviceId() =
@@ -62,7 +62,7 @@ bool BleAdvertisementDeviceQueue::RemoveMapEntriesIfNecessary(
   // were not provided as part of the |prioritized_ids| parameter. If any such
   // entries exist, remove them from the map.
   for (auto& map_entry : priority_to_device_ids_map_) {
-    ConnectionPriority priority = map_entry.first;
+    secure_channel::ConnectionPriority priority = map_entry.first;
     std::vector<std::string>& device_ids_for_priority = map_entry.second;
 
     auto device_ids_it = device_ids_for_priority.begin();
@@ -109,11 +109,11 @@ void BleAdvertisementDeviceQueue::MoveDeviceToEnd(
 std::vector<std::string>
 BleAdvertisementDeviceQueue::GetDeviceIdsToWhichToAdvertise() const {
   std::vector<std::string> device_ids;
-  AddDevicesToVectorForPriority(ConnectionPriority::CONNECTION_PRIORITY_HIGH,
+  AddDevicesToVectorForPriority(secure_channel::ConnectionPriority::kHigh,
                                 &device_ids);
-  AddDevicesToVectorForPriority(ConnectionPriority::CONNECTION_PRIORITY_MEDIUM,
+  AddDevicesToVectorForPriority(secure_channel::ConnectionPriority::kMedium,
                                 &device_ids);
-  AddDevicesToVectorForPriority(ConnectionPriority::CONNECTION_PRIORITY_LOW,
+  AddDevicesToVectorForPriority(secure_channel::ConnectionPriority::kLow,
                                 &device_ids);
   DCHECK(device_ids.size() <= kMaxConcurrentAdvertisements);
   return device_ids;
@@ -127,7 +127,7 @@ size_t BleAdvertisementDeviceQueue::GetSize() const {
 }
 
 void BleAdvertisementDeviceQueue::AddDevicesToVectorForPriority(
-    ConnectionPriority connection_priority,
+    secure_channel::ConnectionPriority connection_priority,
     std::vector<std::string>* device_ids_out) const {
   if (priority_to_device_ids_map_.find(connection_priority) ==
       priority_to_device_ids_map_.end()) {

@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chromeos/components/tether/connection_priority.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
 namespace chromeos {
 
@@ -26,12 +26,13 @@ class BleAdvertisementDeviceQueue {
   virtual ~BleAdvertisementDeviceQueue();
 
   struct PrioritizedDeviceId {
-    PrioritizedDeviceId(const std::string& device_id,
-                        const ConnectionPriority& connection_priority);
+    PrioritizedDeviceId(
+        const std::string& device_id,
+        const secure_channel::ConnectionPriority& connection_priority);
     ~PrioritizedDeviceId();
 
     std::string device_id;
-    ConnectionPriority connection_priority;
+    secure_channel::ConnectionPriority connection_priority;
   };
 
   // Updates the queue with the given |prioritized_ids|. Devices which are
@@ -71,10 +72,10 @@ class BleAdvertisementDeviceQueue {
       const std::vector<PrioritizedDeviceId>& prioritized_ids);
 
   void AddDevicesToVectorForPriority(
-      ConnectionPriority connection_priority,
+      secure_channel::ConnectionPriority connection_priority,
       std::vector<std::string>* device_ids_out) const;
 
-  std::map<ConnectionPriority, std::vector<std::string>>
+  std::map<secure_channel::ConnectionPriority, std::vector<std::string>>
       priority_to_device_ids_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BleAdvertisementDeviceQueue);

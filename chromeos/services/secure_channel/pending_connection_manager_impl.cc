@@ -46,7 +46,8 @@ PendingConnectionManagerImpl::~PendingConnectionManagerImpl() = default;
 void PendingConnectionManagerImpl::HandleConnectionRequest(
     const ConnectionDetails& connection_details,
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
-    ConnectionRole connection_role) {
+    ConnectionRole connection_role,
+    ConnectionPriority connection_priority) {
   NOTIMPLEMENTED();
 }
 

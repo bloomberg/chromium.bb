@@ -2,30 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/connection_priority.h"
-
-#include "base/logging.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
 namespace chromeos {
 
-namespace tether {
+namespace secure_channel {
 
 std::ostream& operator<<(std::ostream& stream,
                          const ConnectionPriority& connection_priority) {
   switch (connection_priority) {
-    case ConnectionPriority::CONNECTION_PRIORITY_LOW:
+    case ConnectionPriority::kLow:
       stream << "[low priority]";
       break;
-    case ConnectionPriority::CONNECTION_PRIORITY_MEDIUM:
+    case ConnectionPriority::kMedium:
       stream << "[medium priority]";
       break;
-    case ConnectionPriority::CONNECTION_PRIORITY_HIGH:
+    case ConnectionPriority::kHigh:
       stream << "[high priority]";
       break;
   }
   return stream;
 }
 
-}  // namespace tether
+}  // namespace secure_channel
 
 }  // namespace chromeos

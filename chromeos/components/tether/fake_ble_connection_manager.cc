@@ -94,7 +94,7 @@ bool FakeBleConnectionManager::IsRegistered(const std::string& device_id) {
 void FakeBleConnectionManager::RegisterRemoteDevice(
     const std::string& device_id,
     const base::UnguessableToken& request_id,
-    ConnectionPriority connection_priority) {
+    secure_channel::ConnectionPriority connection_priority) {
   StatusAndRegisteredConnectionRequestIds& value = device_id_map_[device_id];
   value.registered_request_ids.insert(request_id);
 }

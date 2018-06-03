@@ -42,10 +42,11 @@ void FakePendingConnectionManager::NotifyConnectionForHandledRequests(
 void FakePendingConnectionManager::HandleConnectionRequest(
     const ConnectionDetails& connection_details,
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
-    ConnectionRole connection_role) {
+    ConnectionRole connection_role,
+    ConnectionPriority connection_priority) {
   handled_requests_.push_back(std::make_tuple(
       connection_details, std::move(client_connection_parameters),
-      connection_role));
+      connection_role, connection_priority));
 }
 
 FakePendingConnectionManagerDelegate::FakePendingConnectionManagerDelegate() =

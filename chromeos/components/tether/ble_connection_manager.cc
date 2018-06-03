@@ -62,7 +62,7 @@ BleConnectionManager::ConnectionMetadata::~ConnectionMetadata() = default;
 
 void BleConnectionManager::ConnectionMetadata::RegisterConnectionRequest(
     const base::UnguessableToken& request_id,
-    ConnectionPriority connection_priority) {
+    secure_channel::ConnectionPriority connection_priority) {
   DCHECK(!base::ContainsKey(request_id_to_priority_map_, request_id));
   request_id_to_priority_map_.insert(
       std::make_pair(request_id, connection_priority));
@@ -73,12 +73,12 @@ void BleConnectionManager::ConnectionMetadata::UnregisterConnectionRequest(
   request_id_to_priority_map_.erase(request_id);
 }
 
-ConnectionPriority
+secure_channel::ConnectionPriority
 BleConnectionManager::ConnectionMetadata::GetConnectionPriority() {
   DCHECK(HasPendingConnectionRequests());
 
-  ConnectionPriority highest_priority =
-      ConnectionPriority::CONNECTION_PRIORITY_LOW;
+  secure_channel::ConnectionPriority highest_priority =
+      secure_channel::ConnectionPriority::kLow;
   for (const auto& map_entry : request_id_to_priority_map_) {
     if (map_entry.second > highest_priority)
       highest_priority = map_entry.second;
@@ -242,7 +242,7 @@ BleConnectionManager::~BleConnectionManager() {
 void BleConnectionManager::RegisterRemoteDevice(
     const std::string& device_id,
     const base::UnguessableToken& request_id,
-    ConnectionPriority connection_priority) {
+    secure_channel::ConnectionPriority connection_priority) {
   if (!has_registered_observer_) {
     ble_scanner_->AddObserver(this);
   }

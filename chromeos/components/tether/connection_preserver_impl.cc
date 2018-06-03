@@ -125,7 +125,7 @@ void ConnectionPreserverImpl::SetPreservedConnection(
 
   preserved_connection_device_id_ = device_id;
   ble_connection_manager_->RegisterRemoteDevice(
-      device_id, request_id_, ConnectionPriority::CONNECTION_PRIORITY_LOW);
+      device_id, request_id_, secure_channel::ConnectionPriority::kLow);
 
   preserved_connection_timer_->Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kTimeoutSeconds),

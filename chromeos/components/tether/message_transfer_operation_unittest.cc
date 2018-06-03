@@ -36,7 +36,7 @@ class TestOperation : public MessageTransferOperation {
   TestOperation(const cryptauth::RemoteDeviceRefList& devices_to_connect,
                 BleConnectionManager* connection_manager)
       : MessageTransferOperation(devices_to_connect,
-                                 ConnectionPriority::CONNECTION_PRIORITY_LOW,
+                                 secure_channel::ConnectionPriority::kLow,
                                  connection_manager) {}
   ~TestOperation() override = default;
 
@@ -548,7 +548,7 @@ TEST_F(MessageTransferOperationTest, TestReceiveEventForOtherDevice) {
   // should not be affected.
   fake_ble_connection_manager_->RegisterRemoteDevice(
       test_devices_[1].GetDeviceId(), base::UnguessableToken::Create(),
-      ConnectionPriority::CONNECTION_PRIORITY_LOW);
+      secure_channel::ConnectionPriority::kLow);
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[1]);
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
@@ -574,7 +574,7 @@ TEST_F(MessageTransferOperationTest,
   // initialization.
   fake_ble_connection_manager_->RegisterRemoteDevice(
       test_devices_[0].GetDeviceId(), base::UnguessableToken::Create(),
-      ConnectionPriority::CONNECTION_PRIORITY_LOW);
+      secure_channel::ConnectionPriority::kLow);
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[0]);
 
   // Now initialize; the authentication handler should have been invoked.
@@ -606,7 +606,7 @@ TEST_F(MessageTransferOperationTest,
   // initialization.
   fake_ble_connection_manager_->RegisterRemoteDevice(
       test_devices_[0].GetDeviceId(), base::UnguessableToken::Create(),
-      ConnectionPriority::CONNECTION_PRIORITY_LOW);
+      secure_channel::ConnectionPriority::kLow);
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[0]);
 
   // Now initialize; the authentication handler should have been invoked.
@@ -640,7 +640,7 @@ TEST_F(MessageTransferOperationTest, MultipleDevices) {
   // Authenticate |test_devices_[0]|'s channel.
   fake_ble_connection_manager_->RegisterRemoteDevice(
       test_devices_[0].GetDeviceId(), base::UnguessableToken::Create(),
-      ConnectionPriority::CONNECTION_PRIORITY_LOW);
+      secure_channel::ConnectionPriority::kLow);
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[0]);
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[0]));
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
@@ -661,7 +661,7 @@ TEST_F(MessageTransferOperationTest, MultipleDevices) {
   // Authenticate |test_devices_[2]|'s channel.
   fake_ble_connection_manager_->RegisterRemoteDevice(
       test_devices_[2].GetDeviceId(), base::UnguessableToken::Create(),
-      ConnectionPriority::CONNECTION_PRIORITY_LOW);
+      secure_channel::ConnectionPriority::kLow);
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[2]);
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[2]));
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
