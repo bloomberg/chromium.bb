@@ -34,7 +34,15 @@
 namespace blink {
 
 struct WebMediaPlayerAction {
-  enum Type { kUnknown, kPlay, kMute, kLoop, kControls, kTypeLast = kControls };
+  enum Type {
+    kUnknown,
+    kPlay,
+    kMute,
+    kLoop,
+    kControls,
+    kPictureInPicture,
+    kTypeLast = kPictureInPicture
+  };
 
   Type type;
   bool enable;
