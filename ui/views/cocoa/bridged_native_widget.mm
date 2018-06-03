@@ -51,6 +51,9 @@ CGError CGSSetWindowBackgroundBlurRadius(CGSConnection connection,
                                          int radius);
 
 }
+namespace {
+constexpr auto kUIPaintTimeout = base::TimeDelta::FromMilliseconds(250);
+}  // namespace
 
 // The NSView that hosts the composited CALayer drawing the UI. It fills the
 // window but is not hittable so that accessibility hit tests always go to the
@@ -251,6 +254,7 @@ BridgedNativeWidget::BridgedNativeWidget(NativeWidgetMac* parent)
   DCHECK(parent);
   window_delegate_.reset(
       [[ViewsNSWindowDelegate alloc] initWithBridgedNativeWidget:this]);
+  ui::CATransactionCoordinator::Get().AddPreCommitObserver(this);
 }
 
 BridgedNativeWidget::~BridgedNativeWidget() {
@@ -259,6 +263,7 @@ BridgedNativeWidget::~BridgedNativeWidget() {
   // destructor is called.
   DCHECK(![window_ delegate]);
 
+  ui::CATransactionCoordinator::Get().RemovePreCommitObserver(this);
   RemoveOrDestroyChildren();
   DCHECK(child_windows_.empty());
   SetFocusManager(nullptr);
@@ -481,6 +486,9 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
   }
 
   DCHECK(wants_to_be_visible_);
+
+  ui::CATransactionCoordinator::Get().Synchronize();
+
   // If the parent (or an ancestor) is hidden, return and wait for it to become
   // visible.
   if (parent() && !parent()->IsVisibleParent())
@@ -491,6 +499,7 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
     return;
   }
 
+  // TODO(https://crbug.com/682825): Delete this during cleanup.
   // Non-modal windows are not animated. Hence opaque non-modal windows can
   // appear with a "flash" if they are made visible before the frame from the
   // compositor arrives. To get around this, set the alpha value of the window
@@ -500,7 +509,7 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
   // there is an active GPU process.
   // TODO(karandeepb): Investigate whether similar technique is needed for other
   // dialog types.
-  if (layer() && [window_ isOpaque] && !window_visible_ &&
+  if (false && layer() && [window_ isOpaque] && !window_visible_ &&
       !native_widget_mac_->GetWidget()->IsModal() &&
       ui::WindowResizeHelperMac::Get()->task_runner()) {
     initial_visibility_suppressed_ = true;
@@ -971,6 +980,19 @@ void BridgedNativeWidget::ReparentNativeView(NSView* native_view,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// BridgedNativeWidget, ui::CATransactionObserver
+
+bool BridgedNativeWidget::ShouldWaitInPreCommit() {
+  return window_visible_ &&
+         (!compositor_widget_ ||
+          !compositor_widget_->HasFrameOfSize(GetClientAreaSize()));
+}
+
+base::TimeDelta BridgedNativeWidget::PreCommitTimeout() {
+  return kUIPaintTimeout;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidget, internal::InputMethodDelegate:
 
 ui::EventDispatchDetails BridgedNativeWidget::DispatchKeyEventPostIME(
@@ -1261,6 +1283,8 @@ void BridgedNativeWidget::UpdateLayerProperties() {
   gfx::Size size_in_dip = GetClientAreaSize();
   gfx::Size size_in_pixel = ConvertSizeToPixel(scale_factor, size_in_dip);
 
+  ui::CATransactionCoordinator::Get().Synchronize();
+
   layer()->SetBounds(gfx::Rect(size_in_dip));
 
   if (compositor_->size() != size_in_pixel ||
@@ -1277,6 +1301,8 @@ void BridgedNativeWidget::UpdateLayerProperties() {
 }
 
 void BridgedNativeWidget::MaybeWaitForFrame(const gfx::Size& size_in_dip) {
+  return;  // TODO(https://crbug.com/682825): Delete this during cleanup.
+
   if (!layer()->IsDrawn() || compositor_widget_->HasFrameOfSize(size_in_dip))
     return;
 

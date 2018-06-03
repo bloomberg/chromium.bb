@@ -1898,7 +1898,13 @@ class WidgetInputMethodInteractiveTest : public WidgetTestInteractive {
 };
 
 // Test input method focus changes affected by top window activaction.
-TEST_F(WidgetInputMethodInteractiveTest, Activation) {
+TEST_F(WidgetInputMethodInteractiveTest,
+#if defined(OS_MACOSX)
+       DISABLED_Activation
+#else
+       Activation
+#endif
+       ) {
   if (IsMus())
     return;
 

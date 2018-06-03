@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #import "ui/accelerated_widget_mac/accelerated_widget_mac.h"
+#include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/compositor/layer_owner.h"
@@ -47,7 +48,8 @@ class View;
 // DesktopNativeWidgetMac. Serves as a helper class to bridge requests from the
 // NativeWidgetMac to the Cocoa window. Behaves a bit like an aura::Window.
 class VIEWS_EXPORT BridgedNativeWidget
-    : public ui::LayerDelegate,
+    : public ui::CATransactionCoordinator::PreCommitObserver,
+      public ui::LayerDelegate,
       public ui::LayerOwner,
       public ui::internal::InputMethodDelegate,
       public CocoaMouseCaptureDelegate,
@@ -211,6 +213,10 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   bool animate() const { return animate_; }
   void set_animate(bool animate) { animate_ = animate; }
+
+  // ui::CATransactionCoordinator::PreCommitObserver implementation
+  bool ShouldWaitInPreCommit() override;
+  base::TimeDelta PreCommitTimeout() override;
 
   // Overridden from ui::internal::InputMethodDelegate:
   ui::EventDispatchDetails DispatchKeyEventPostIME(ui::KeyEvent* key) override;
