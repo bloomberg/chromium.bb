@@ -2644,10 +2644,15 @@ void RenderViewContextMenu::ExecPictureInPicture() {
   if (!base::FeatureList::IsEnabled(media::kPictureInPicture))
     return;
 
-  // TODO(apacible): Re-enable contextual menu entry point for
-  // Picture-in-Picture after end to end flow through the media controls is
-  // stable. http://crbug/817613.
-  NOTIMPLEMENTED();
+  bool picture_in_picture =
+      !!(params_.media_flags & WebContextMenuData::kMediaCanPictureInPicture);
+
+  base::RecordAction(
+      UserMetricsAction("MediaContextMenu_EnterPictureInPicture"));
+  MediaPlayerActionAt(
+      gfx::Point(params_.x, params_.y),
+      WebMediaPlayerAction(WebMediaPlayerAction::kPictureInPicture,
+                           picture_in_picture));
 }
 
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {

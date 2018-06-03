@@ -43,9 +43,6 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
   // request Picture-in-Picture.
   Status IsDocumentAllowed() const;
 
-  // Enter Picture-in-Picture for a video element and resolve promise.
-  void EnterPictureInPicture(HTMLVideoElement*, ScriptPromiseResolver*);
-
   // Meant to be called internally when an element has entered successfully
   // Picture-in-Picture.
   void OnEnteredPictureInPicture(HTMLVideoElement*,
@@ -59,6 +56,8 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
   Element* PictureInPictureElement(TreeScope&) const;
 
   // Implementation of PictureInPictureController.
+  void EnterPictureInPicture(HTMLVideoElement*,
+                             ScriptPromiseResolver*) override;
   void OnExitedPictureInPicture(ScriptPromiseResolver*) override;
   Status IsElementAllowed(const HTMLVideoElement&) const override;
   bool IsPictureInPictureElement(const Element*) const override;
