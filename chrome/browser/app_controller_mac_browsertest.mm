@@ -630,6 +630,11 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
   Profile* profile2 = profile_manager->GetProfileByPath(profile2_path);
   ASSERT_TRUE(profile2);
 
+  // Load profile1's History Service backend so it will be assigned to the
+  // HistoryMenuBridge when windowChangedToProfile is called, or else this test
+  // will fail flaky.
+  ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
+      profile1, ServiceAccessType::EXPLICIT_ACCESS));
   // Switch the controller to profile1.
   [ac windowChangedToProfile:profile1];
   base::RunLoop().RunUntilIdle();
