@@ -36,8 +36,8 @@ class FakeActiveConnectionManager : public ActiveConnectionManager {
                  std::vector<std::unique_ptr<ClientConnectionParameters>>>,
       ConnectionDetailsHash>;
 
-  DetailsToMetadataMap& connection_details_to_channel_map() {
-    return connection_details_to_channel_map_;
+  DetailsToMetadataMap& connection_details_to_active_metadata_map() {
+    return connection_details_to_active_metadata_map_;
   }
 
   void SetDisconnecting(const ConnectionDetails& connection_details);
@@ -55,7 +55,7 @@ class FakeActiveConnectionManager : public ActiveConnectionManager {
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       const ConnectionDetails& connection_details) override;
 
-  DetailsToMetadataMap connection_details_to_channel_map_;
+  DetailsToMetadataMap connection_details_to_active_metadata_map_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeActiveConnectionManager);
 };
