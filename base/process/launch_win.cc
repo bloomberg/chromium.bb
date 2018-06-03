@@ -255,12 +255,6 @@ Process LaunchProcess(const string16& cmdline,
     startup_info->hStdError = options.stderr_handle;
   }
 
-  const bool launch_suspended =
-      options.job_handle || options.grant_foreground_privilege;
-
-  if (launch_suspended)
-    flags |= CREATE_SUSPENDED;
-
   if (options.job_handle) {
     // If this code is run under a debugger, the launched process is
     // automatically associated with a job object created by the debugger.
@@ -323,9 +317,6 @@ Process LaunchProcess(const string16& cmdline,
       !AllowSetForegroundWindow(GetProcId(process_info.process_handle()))) {
     DPLOG(ERROR) << "Failed to grant foreground privilege to launched process";
   }
-
-  if (launch_suspended)
-    ResumeThread(process_info.thread_handle());
 
   if (options.wait)
     WaitForSingleObject(process_info.process_handle(), INFINITE);
