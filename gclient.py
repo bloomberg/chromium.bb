@@ -1268,6 +1268,7 @@ class GClient(GitDependency):
     "linux3": "unix",
     "android": "android",
     "ios": "ios",
+    "fuchsia": "fuchsia",
   }
 
   DEFAULT_CLIENT_FILE_TEXT = ("""\
