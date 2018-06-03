@@ -4,6 +4,9 @@
 
 #include "chromeos/services/secure_channel/fake_pending_connection_manager.h"
 
+#include <algorithm>
+#include <iterator>
+
 #include "base/logging.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/authenticated_channel.h"
 
@@ -16,7 +19,8 @@ FakePendingConnectionManager::FakePendingConnectionManager(Delegate* delegate)
 
 FakePendingConnectionManager::~FakePendingConnectionManager() = default;
 
-void FakePendingConnectionManager::NotifyConnectionForHandledRequests(
+std::vector<ClientConnectionParameters*>
+FakePendingConnectionManager::NotifyConnectionForHandledRequests(
     std::unique_ptr<AuthenticatedChannel> authenticated_channel,
     const ConnectionDetails& connection_details) {
   std::vector<std::unique_ptr<ClientConnectionParameters>> client_list;
@@ -35,8 +39,16 @@ void FakePendingConnectionManager::NotifyConnectionForHandledRequests(
   // There must be at least one client in the list.
   DCHECK_LT(0u, client_list.size());
 
+  // Make a copy of the client list to pass as a return value for this function.
+  std::vector<ClientConnectionParameters*> client_list_raw;
+  std::transform(client_list.begin(), client_list.end(),
+                 std::back_inserter(client_list_raw),
+                 [](auto& client) { return client.get(); });
+
   NotifyOnConnection(std::move(authenticated_channel), std::move(client_list),
                      connection_details);
+
+  return client_list_raw;
 }
 
 void FakePendingConnectionManager::HandleConnectionRequest(
