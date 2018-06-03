@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+// Accessibility identifier of the search controller search bar.
+extern NSString* const kHistorySearchControllerSearchBarIdentifier;
 // Accessibility identifier of the navigation controller done button.
 extern NSString* const kHistoryNavigationControllerDoneButtonIdentifier;
 // Accessibility identifier of the delete toolbar button.

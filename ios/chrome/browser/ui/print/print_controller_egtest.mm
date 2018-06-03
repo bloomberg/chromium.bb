@@ -31,6 +31,21 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
 
 // A test HTML URL.
 const char kHTMLURL[] = "http://test";
+
+// Returns the collection view for the activity services menu. Since this is a
+// system widget, it does not have an a11y id.  Instead, search for a
+// UICollectionView that is the superview of the "Copy" menu item.  There are
+// two nested UICollectionViews in the activity services menu, so choose the
+// innermost one.
+id<GREYMatcher> ShareMenuCollectionView() {
+  id<GREYMatcher> copyButton =
+      chrome_test_util::ButtonWithAccessibilityLabel(@"Copy");
+  return grey_allOf(
+      grey_kindOfClass([UICollectionView class]), grey_descendant(copyButton),
+      // Looking for a nested UICollectionView.
+      grey_descendant(grey_kindOfClass([UICollectionView class])), nil);
+}
+
 }  // namespace
 
 // Print test cases. These are Earl Grey integration tests.
@@ -92,9 +107,11 @@ const char kHTMLURL[] = "http://test";
   } else {
     [ChromeEarlGreyUI openShareMenu];
     id<GREYMatcher> printButton =
-        grey_allOf(grey_accessibilityLabel(@"Print"),
-                   grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
-    [[EarlGrey selectElementWithMatcher:printButton] performAction:grey_tap()];
+        chrome_test_util::ButtonWithAccessibilityLabel(@"Print");
+    [[[EarlGrey selectElementWithMatcher:printButton]
+           usingSearchAction:grey_scrollInDirection(kGREYDirectionRight, 100)
+        onElementWithMatcher:ShareMenuCollectionView()]
+        performAction:grey_tap()];
   }
 
   id<GREYMatcher> printerOptionButton = grey_allOf(

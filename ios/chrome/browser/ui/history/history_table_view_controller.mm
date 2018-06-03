@@ -165,7 +165,7 @@ const int kMaxFetchCount = 100;
   self.searchController.searchResultsUpdater = self;
   self.searchController.searchBar.backgroundColor = [UIColor whiteColor];
   self.searchController.searchBar.accessibilityIdentifier =
-      l10n_util::GetNSStringWithFixup(IDS_IOS_ICON_SEARCH);
+      kHistorySearchControllerSearchBarIdentifier;
   // UIKit needs to know which controller will be presenting the
   // searchController. If we don't add this trying to dismiss while
   // SearchController is active will fail.
