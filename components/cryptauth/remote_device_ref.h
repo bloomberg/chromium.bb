@@ -92,6 +92,8 @@ class RemoteDeviceRef {
   friend class RemoteDeviceCache;
   friend class RemoteDeviceRefBuilder;
   friend class RemoteDeviceRefTest;
+  friend bool IsSameDevice(const cryptauth::RemoteDevice& remote_device,
+                           cryptauth::RemoteDeviceRef remote_device_ref);
   FRIEND_TEST_ALL_PREFIXES(RemoteDeviceRefTest, TestFields);
   FRIEND_TEST_ALL_PREFIXES(RemoteDeviceRefTest, TestCopyAndAssign);
 

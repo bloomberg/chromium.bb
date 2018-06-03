@@ -4,9 +4,34 @@
 
 #include "components/cryptauth/remote_device_cache.h"
 
+#include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 
 namespace cryptauth {
+
+// static
+RemoteDeviceCache::Factory* RemoteDeviceCache::Factory::test_factory_ = nullptr;
+
+// static
+RemoteDeviceCache::Factory* RemoteDeviceCache::Factory::Get() {
+  if (test_factory_)
+    return test_factory_;
+
+  static base::NoDestructor<Factory> factory;
+  return factory.get();
+}
+
+// static
+void RemoteDeviceCache::Factory::SetFactoryForTesting(Factory* test_factory) {
+  test_factory_ = test_factory;
+}
+
+RemoteDeviceCache::Factory::~Factory() = default;
+
+std::unique_ptr<RemoteDeviceCache> RemoteDeviceCache::Factory::BuildInstance() {
+  return base::WrapUnique(new RemoteDeviceCache());
+}
 
 RemoteDeviceCache::RemoteDeviceCache() = default;
 

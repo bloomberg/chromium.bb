@@ -58,12 +58,14 @@ RemoteDeviceRef RemoteDeviceRefBuilder::Build() {
 }
 
 RemoteDevice CreateRemoteDeviceForTest() {
-  return RemoteDevice(kTestRemoteDeviceUserId, kTestRemoteDeviceName,
+  RemoteDevice device(kTestRemoteDeviceUserId, kTestRemoteDeviceName,
                       kTestRemoteDevicePublicKey, kTestRemoteDevicePSK,
                       kTestRemoteDeviceUnlockKey,
                       kTestRemoteDeviceSupportsMobileHotspot,
                       kTestRemoteDeviceLastUpdateTimeMillis,
                       std::map<SoftwareFeature, SoftwareFeatureState>());
+  device.LoadBeaconSeeds({});
+  return device;
 }
 
 RemoteDeviceRef CreateRemoteDeviceRefForTest() {
@@ -94,6 +96,14 @@ RemoteDeviceList CreateRemoteDeviceListForTest(size_t num_to_create) {
   }
 
   return generated_devices;
+}
+
+bool IsSameDevice(const cryptauth::RemoteDevice& remote_device,
+                  cryptauth::RemoteDeviceRef remote_device_ref) {
+  if (!remote_device_ref.remote_device_)
+    return false;
+
+  return remote_device == *remote_device_ref.remote_device_;
 }
 
 }  // namespace cryptauth

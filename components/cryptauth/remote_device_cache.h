@@ -21,7 +21,17 @@ namespace cryptauth {
 // devices are not deleted from the cache).
 class RemoteDeviceCache {
  public:
-  RemoteDeviceCache();
+  class Factory {
+   public:
+    static Factory* Get();
+    static void SetFactoryForTesting(Factory* test_factory);
+    virtual ~Factory();
+    virtual std::unique_ptr<RemoteDeviceCache> BuildInstance();
+
+   private:
+    static Factory* test_factory_;
+  };
+
   virtual ~RemoteDeviceCache();
 
   void SetRemoteDevices(const RemoteDeviceList& remote_devices);
@@ -32,6 +42,8 @@ class RemoteDeviceCache {
       const std::string& device_id) const;
 
  private:
+  RemoteDeviceCache();
+
   std::unordered_map<std::string, std::shared_ptr<RemoteDevice>>
       remote_device_map_;
 
