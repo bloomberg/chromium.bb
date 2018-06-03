@@ -494,9 +494,10 @@ DOMWindow* CreateWindow(const String& url_string,
     request.GetResourceRequest().SetHasUserGesture(has_user_gesture);
     new_frame->Navigate(request);
   } else if (!url_string.IsEmpty()) {
-    new_frame->Navigate(*calling_window.document(), completed_url, false,
-                        has_user_gesture ? UserGestureStatus::kActive
-                                         : UserGestureStatus::kNone);
+    new_frame->ScheduleNavigation(*calling_window.document(), completed_url,
+                                  false,
+                                  has_user_gesture ? UserGestureStatus::kActive
+                                                   : UserGestureStatus::kNone);
   }
   return window_features.noopener ? nullptr : new_frame->DomWindow();
 }

@@ -29,10 +29,10 @@ class CORE_EXPORT RemoteFrame final : public Frame {
 
   // Frame overrides:
   void Trace(blink::Visitor*) override;
-  void Navigate(Document& origin_document,
-                const KURL&,
-                bool replace_current_item,
-                UserGestureStatus) override;
+  void ScheduleNavigation(Document& origin_document,
+                          const KURL&,
+                          bool replace_current_item,
+                          UserGestureStatus) override;
   void Navigate(const FrameLoadRequest& passed_request) override;
   void Reload(FrameLoadType, ClientRedirectPolicy) override;
   void Detach(FrameDetachType) override;

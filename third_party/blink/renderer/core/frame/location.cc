@@ -301,7 +301,7 @@ void Location::SetLocation(const String& url,
     argv.push_back(completed_url);
     activity_logger->LogEvent("blinkSetAttribute", argv.size(), argv.data());
   }
-  dom_window_->GetFrame()->Navigate(
+  dom_window_->GetFrame()->ScheduleNavigation(
       *current_window->document(), completed_url,
       set_location_policy == SetLocationPolicy::kReplaceThisFrame,
       UserGestureStatus::kNone);
