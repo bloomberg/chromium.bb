@@ -36,7 +36,10 @@ class ACCELERATED_WIDGET_MAC_EXPORT CATransactionCoordinator {
 
   static CATransactionCoordinator& Get();
 
-  void Synchronize();
+  void Synchronize() {
+    if (@available(macos 10.11, *))
+      SynchronizeImpl();
+  }
 
   void AddPreCommitObserver(PreCommitObserver*);
   void RemovePreCommitObserver(PreCommitObserver*);
@@ -48,6 +51,9 @@ class ACCELERATED_WIDGET_MAC_EXPORT CATransactionCoordinator {
   friend class base::NoDestructor<CATransactionCoordinator>;
   CATransactionCoordinator();
   ~CATransactionCoordinator();
+
+  API_AVAILABLE(macos(10.11))
+  void SynchronizeImpl();
 
   bool active_ = false;
   base::ObserverList<PreCommitObserver> pre_commit_observers_;

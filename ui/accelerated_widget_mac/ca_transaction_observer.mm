@@ -16,6 +16,7 @@ typedef enum {
   kCATransactionPhasePostCommit,
 } CATransactionPhase;
 
+API_AVAILABLE(macos(10.11))
 @interface CATransaction ()
 + (void)addCommitHandler:(void (^)(void))block
                 forPhase:(CATransactionPhase)phase;
@@ -32,7 +33,7 @@ CATransactionCoordinator& CATransactionCoordinator::Get() {
   return *instance;
 }
 
-void CATransactionCoordinator::Synchronize() {
+void CATransactionCoordinator::SynchronizeImpl() {
   if (active_)
     return;
   active_ = true;
