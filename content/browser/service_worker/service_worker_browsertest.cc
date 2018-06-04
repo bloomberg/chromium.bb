@@ -2642,7 +2642,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserV8CacheTest, Restart) {
   }
 
   // The V8 code cache should be stored to the storage. It must have size
-  // greater than 12 bytes.
+  // greater than 16 bytes.
   EXPECT_GT(static_cast<int>(metadata_size_), kV8CacheTimeStampDataSize);
 
   // Stop the worker.
@@ -2700,7 +2700,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserV8FullCodeCacheTest,
   cached_metadata_run_loop.Run();
 
   // The V8 code cache should be stored to the storage. It must have size
-  // greater than 12 bytes.
+  // greater than 16 bytes.
   EXPECT_GT(static_cast<int>(metadata_size_), kV8CacheTimeStampDataSize);
 
   // Stop the worker.
@@ -2875,7 +2875,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CodeCacheForCacheStorageTest,
   WaitUntilSideDataSizeIs(0);
 
   // Second load: The V8 code cache should be stored in CacheStorage. It must
-  // have size greater than 12 bytes.
+  // have size greater than 16 bytes.
   NavigateToTestPage();
   WaitUntilSideDataSizeIsBiggerThan(kV8CacheTimeStampDataSize);
 }

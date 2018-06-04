@@ -7,10 +7,6 @@
 -ServiceWorkerNavigationPreloadTest.RespondWithNavigationPreloadWithMimeSniffing
 -ServiceWorkerV8CodeCacheForCacheStorageTest.V8CacheOnCacheStorage
 
-# ServiceWorker restart needs to read installed scripts.
-# https://crbug.com/756312
--ServiceWorkerVersionBrowserV8CacheTest.Restart
-
 # https://crbug.com/721398
 -ClearSiteDataThrottleBrowserTest.CacheIntegrationTest
 -ClearSiteDataThrottleBrowserTest.CookiesIntegrationTest
