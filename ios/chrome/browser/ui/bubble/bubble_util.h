@@ -9,6 +9,11 @@
 
 namespace bubble_util {
 
+// The fixed distance from the leading edge of the bubble to the anchor point if
+// leading aligned, and from the trailing edge of the bubble to the anchor point
+// if trailing aligned.
+CGFloat BubbleAlignmentOffset();
+
 // Calculate the coordinates of the point of the bubble's arrow based on the
 // |targetFrame| of the target UI element and the bubble's |arrowDirection|. The
 // returned point is in the same coordinate system as |targetFrame|.

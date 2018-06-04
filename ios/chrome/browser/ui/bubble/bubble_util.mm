@@ -6,8 +6,8 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/bubble/bubble_view.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -31,13 +31,13 @@ CGFloat LeadingDistance(CGPoint anchorPoint,
   CGFloat leadingOffset;
   switch (alignment) {
     case BubbleAlignmentLeading:
-      leadingOffset = kBubbleAlignmentOffset;
+      leadingOffset = bubble_util::BubbleAlignmentOffset();
       break;
     case BubbleAlignmentCenter:
       leadingOffset = bubbleWidth / 2.0f;
       break;
     case BubbleAlignmentTrailing:
-      leadingOffset = bubbleWidth - kBubbleAlignmentOffset;
+      leadingOffset = bubbleWidth - bubble_util::BubbleAlignmentOffset();
       break;
     default:
       NOTREACHED() << "Invalid bubble alignment " << alignment;
@@ -83,12 +83,13 @@ CGFloat BubbleMaxWidth(CGFloat anchorPointX,
     case BubbleAlignmentLeading:
       if (isRTL) {
         // The bubble is aligned right, and can use space to the left of the
-        // anchor point and within |kBubbleAlignmentOffset| from the right.
-        maxWidth = anchorPointX + kBubbleAlignmentOffset;
+        // anchor point and within |BubbleAlignmentOffset()| from the right.
+        maxWidth = anchorPointX + bubble_util::BubbleAlignmentOffset();
       } else {
         // The bubble is aligned left, and can use space to the right of the
-        // anchor point and within |kBubbleAlignmentOffset| from the left.
-        maxWidth = boundingWidth - anchorPointX + kBubbleAlignmentOffset;
+        // anchor point and within |BubbleAlignmentOffset()| from the left.
+        maxWidth =
+            boundingWidth - anchorPointX + bubble_util::BubbleAlignmentOffset();
       }
       break;
     case BubbleAlignmentCenter:
@@ -99,12 +100,13 @@ CGFloat BubbleMaxWidth(CGFloat anchorPointX,
     case BubbleAlignmentTrailing:
       if (isRTL) {
         // The bubble is aligned left, and can use space to the right of the
-        // anchor point and within |kBubbleAlignmentOffset| from the left.
-        maxWidth = boundingWidth - anchorPointX + kBubbleAlignmentOffset;
+        // anchor point and within |BubbleAlignmentOffset()| from the left.
+        maxWidth =
+            boundingWidth - anchorPointX + bubble_util::BubbleAlignmentOffset();
       } else {
         // The bubble is aligned right, and can use space to the left of the
-        // anchor point and within |kBubbleAlignmentOffset| from the right.
-        maxWidth = anchorPointX + kBubbleAlignmentOffset;
+        // anchor point and within |BubbleAlignmentOffset()| from the right.
+        maxWidth = anchorPointX + bubble_util::BubbleAlignmentOffset();
       }
       break;
     default:
@@ -141,6 +143,15 @@ CGFloat BubbleMaxHeight(CGFloat anchorPointY,
 }  // namespace
 
 namespace bubble_util {
+
+CGFloat BubbleAlignmentOffset() {
+  // This is used to replace a constant that would change based on the flag.
+  if (IsUIRefreshPhase1Enabled()) {
+    return 29;
+  } else {
+    return 26;
+  }
+}
 
 CGPoint AnchorPoint(CGRect targetFrame, BubbleArrowDirection arrowDirection) {
   CGPoint anchorPoint;
