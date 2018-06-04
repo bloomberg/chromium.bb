@@ -474,7 +474,6 @@ TEST_F(PacFileDeciderQuickCheckTest, ShutdownDuringResolve) {
 // This test lets the state machine get into state QUICK_CHECK_COMPLETE, then
 // destroys the decider, causing a cancel.
 TEST_F(PacFileDeciderQuickCheckTest, CancelPartway) {
-  resolver_.set_synchronous_mode(false);
   resolver_.set_ondemand_mode(true);
   EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   decider_.reset(NULL);

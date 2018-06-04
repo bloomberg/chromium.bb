@@ -1351,7 +1351,6 @@ TEST_F(HttpStreamFactoryJobControllerTest, InvalidPortForQuic) {
 TEST_F(HttpStreamFactoryJobControllerTest, HostResolutionHang) {
   auto hanging_resolver = std::make_unique<MockHostResolver>();
   hanging_resolver->set_ondemand_mode(true);
-  hanging_resolver->set_synchronous_mode(false);
   session_deps_.host_resolver = std::move(hanging_resolver);
 
   HttpRequestInfo request_info;

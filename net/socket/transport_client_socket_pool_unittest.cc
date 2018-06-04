@@ -807,9 +807,6 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketFailAfterStall) {
               IsError(ERR_CONNECTION_FAILED));
   EXPECT_EQ(0, pool_.IdleSocketCount());
   handle.Reset();
-
-  // Reset for the next case.
-  host_resolver_->set_synchronous_mode(false);
 }
 
 // Test the case where a socket took long enough to start the creation
@@ -858,9 +855,6 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketFailAfterDelay) {
   EXPECT_THAT(handle.connection_attempts()[0].result,
               IsError(ERR_CONNECTION_FAILED));
   handle.Reset();
-
-  // Reset for the next case.
-  host_resolver_->set_synchronous_mode(false);
 }
 
 // Test the case of the IPv6 address stalling, and falling back to the IPv4
