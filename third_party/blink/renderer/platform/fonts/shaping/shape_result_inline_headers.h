@@ -127,6 +127,8 @@ struct ShapeResult::RunInfo {
     ForEachGlyphInRange(
         0, start_index_ + start, start_index_ + end, 0,
         [&](const HarfBuzzRunGlyphData& glyph_data, float, uint16_t) -> bool {
+          if (UNLIKELY(run->glyph_data_.size() == number_of_glyphs))
+            run->glyph_data_.resize(run->glyph_data_.size() * 2);
           auto& sub_glyph = run->glyph_data_[number_of_glyphs++];
           sub_glyph.glyph = glyph_data.glyph;
           sub_glyph.character_index = glyph_data.character_index - start;
