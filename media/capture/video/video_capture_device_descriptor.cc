@@ -90,6 +90,8 @@ const char* VideoCaptureDeviceDescriptor::GetCaptureApiTypeString() const {
       return "Camera API2 Full";
     case VideoCaptureApi::ANDROID_API2_LIMITED:
       return "Camera API2 Limited";
+    case VideoCaptureApi::VIRTUAL_DEVICE:
+      return "Virtual Device";
     case VideoCaptureApi::UNKNOWN:
       return "Unknown";
   }
