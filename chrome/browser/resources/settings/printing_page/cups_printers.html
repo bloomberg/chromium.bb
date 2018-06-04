@@ -47,7 +47,8 @@
       <template is="dom-if" if="[[!addPrinterButtonActive_(canAddPrinter_,
           prefs.native_printing.user_native_printers_allowed.value)]]">
         <cr-policy-pref-indicator
-            pref="[[prefs.native_printing.user_native_printers_allowed]]">
+            pref="[[prefs.native_printing.user_native_printers_allowed]]"
+            icon-aria-label="$i18n{printingPageTitle}">
         </cr-policy-pref-indicator>
       </template>
       <paper-button class="action-button" id="addPrinter"
