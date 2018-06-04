@@ -94,11 +94,19 @@ function checkOrientation(event, expectedOrientationData) {
 }
 
 function waitForOrientation(expectedOrientationData, targetWindow = window) {
-  let eventType = expectedOrientationData.absolute
-      ? 'deviceorientationabsolute'
-      : 'deviceorientation';
   return waitForEvent(
-      new DeviceOrientationEvent(eventType, {
+      new DeviceOrientationEvent('deviceorientation', {
+        alpha: expectedOrientationData.alpha,
+        beta: expectedOrientationData.beta,
+        gamma: expectedOrientationData.gamma,
+        absolute: expectedOrientationData.absolute,
+      }),
+      targetWindow);
+}
+
+function waitForAbsoluteOrientation(expectedOrientationData, targetWindow = window) {
+  return waitForEvent(
+      new DeviceOrientationEvent('deviceorientationabsolute', {
         alpha: expectedOrientationData.alpha,
         beta: expectedOrientationData.beta,
         gamma: expectedOrientationData.gamma,

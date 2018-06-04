@@ -11,7 +11,7 @@ function runGenericSensorTests(sensorType,
                                verifyRemappedReading,
                                featurePolicies) {
   sensor_test(sensor => {
-    sensor.mockSensorProvider.setGetSensorShouldFail(true);
+    sensor.mockSensorProvider.setGetSensorShouldFail(mojomSensorType, true);
     let sensorObject = new sensorType;
     sensorObject.start();
     return new Promise((resolve, reject) => {
@@ -27,7 +27,7 @@ function runGenericSensorTests(sensorType,
   }, `${sensorType.name}: Test that onerror is sent when sensor is not supported.`);
 
   sensor_test(sensor => {
-    sensor.mockSensorProvider.setPermissionsDenied(true);
+    sensor.mockSensorProvider.setPermissionsDenied(mojomSensorType, true);
     let sensorObject = new sensorType;
     sensorObject.start();
     return new Promise((resolve, reject) => {
