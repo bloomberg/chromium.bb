@@ -35,6 +35,8 @@ class FakeArcBridgeHost : public mojom::ArcBridgeHost {
       mojom::ClipboardInstancePtr clipboard_ptr) override;
   void OnCrashCollectorInstanceReady(
       mojom::CrashCollectorInstancePtr crash_collector_ptr) override;
+  void OnDiskQuotaInstanceReady(
+      mojom::DiskQuotaInstancePtr disk_quota_ptr) override;
   void OnEnterpriseReportingInstanceReady(
       mojom::EnterpriseReportingInstancePtr enterprise_reporting_ptr) override;
   void OnFileSystemInstanceReady(

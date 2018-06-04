@@ -41,6 +41,9 @@ void FakeArcBridgeHost::OnClipboardInstanceReady(
 void FakeArcBridgeHost::OnCrashCollectorInstanceReady(
     mojom::CrashCollectorInstancePtr crash_collector_ptr) {}
 
+void FakeArcBridgeHost::OnDiskQuotaInstanceReady(
+    mojom::DiskQuotaInstancePtr disk_quota_ptr) {}
+
 void FakeArcBridgeHost::OnEnterpriseReportingInstanceReady(
     mojom::EnterpriseReportingInstancePtr enterprise_reporting_ptr) {}
 
