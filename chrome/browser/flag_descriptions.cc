@@ -1417,7 +1417,8 @@ const char kSecondaryUiMd[] =
 const char kSecondaryUiMdDescription[] =
     "Extends the --top-chrome-md setting to secondary UI (bubbles, dialogs, "
     "etc.). On Mac, this enables MacViews, which uses toolkit-views for native "
-    "browser dialogs.";
+    "browser dialogs. If --top-chrome-md is effectively Material Design "
+    "refresh, this option is enabled.";
 
 const char kServiceWorkerNavigationPreloadName[] =
     "Service worker navigation preload.";
@@ -1658,7 +1659,8 @@ const char kTopChromeMdDescription[] =
     "Toggles between 1) Normal - for clamshell devices, 2) Hybrid (previously "
     "touch) - middle point for devices with a touch screen, 3) Touchable "
     "- new unified interface for touch and convertibles (Chrome OS), 4) "
-    "Material Design refresh and 5) Touchable Material Design refresh.";
+    "Material Design refresh and 5) Touchable Material Design refresh. "
+    "Enabling #uifood forces the Material Design refresh option.";
 const char kTopChromeMdMaterial[] = "Normal";
 const char kTopChromeMdMaterialAuto[] = "Auto";
 const char kTopChromeMdMaterialHybrid[] = "Hybrid";
