@@ -57,7 +57,11 @@ class WindowServiceClientTestHelper {
       base::flat_map<std::string, std::vector<uint8_t>> properties = {});
   bool SetCapture(aura::Window* window);
   bool ReleaseCapture(aura::Window* window);
-  bool SetWindowBounds(aura::Window* window, const gfx::Rect& bounds);
+  bool SetWindowBounds(
+      aura::Window* window,
+      const gfx::Rect& bounds,
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id =
+          base::Optional<viz::LocalSurfaceId>());
   // Same as SetWindowBounds(), but called in such a way that the ack
   // (OnChangeCompleted()) is called on the client.
   void SetWindowBoundsWithAck(aura::Window* window,

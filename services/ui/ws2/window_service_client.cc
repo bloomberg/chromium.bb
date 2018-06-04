@@ -132,7 +132,7 @@ ClientRoot* WindowServiceClient::CreateClientRoot(
     window_tree_client_->OnEmbed(WindowToWindowData(window),
                                  std::move(window_tree), display_id,
                                  ClientWindowIdToTransportId(focused_window_id),
-                                 drawn, client_root->GetLocalSurfaceId());
+                                 drawn, client_window->local_surface_id());
 
     // Reset the frame sink id locally (after calling OnEmbed()). This is
     // needed so that the id used by the client matches the id used locally.
@@ -409,14 +409,6 @@ void WindowServiceClient::OnWillBecomeClientRootWindow(aura::Window* window) {
     window->RemoveChild(window->children().front());
 }
 
-base::Optional<viz::LocalSurfaceId> WindowServiceClient::GetLocalSurfaceId(
-    aura::Window* window) {
-  auto iter = FindClientRootWithRoot(window);
-  if (iter == client_roots_.end())
-    return base::nullopt;
-  return iter->get()->GetLocalSurfaceId();
-}
-
 bool WindowServiceClient::NewWindowImpl(
     const ClientWindowId& client_window_id,
     const std::map<std::string, std::vector<uint8_t>>& properties) {
@@ -670,12 +662,15 @@ bool WindowServiceClient::SetWindowOpacityImpl(const ClientWindowId& window_id,
   return false;
 }
 
+bool WindowServiceClient::IsLocalSurfaceIdAssignedByClient(
+    aura::Window* window) {
+  return !IsTopLevel(window) && IsClientCreatedWindow(window);
+}
+
 bool WindowServiceClient::SetWindowBoundsImpl(
     const ClientWindowId& window_id,
     const gfx::Rect& bounds,
     const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
-  // TODO: |local_surface_id| needs to be routed correctly.
-  // https://crbug.com/844789.
   aura::Window* window = GetWindowByClientId(window_id);
 
   DVLOG(3) << "SetWindowBounds window_id=" << window_id
@@ -693,13 +688,19 @@ bool WindowServiceClient::SetWindowBoundsImpl(
     return false;
   }
 
+  ClientWindow* client_window = ClientWindow::GetMayBeNull(window);
+
   if (window->bounds() == bounds &&
-      GetLocalSurfaceId(window) == local_surface_id) {
+      client_window->local_surface_id() == local_surface_id) {
     return true;
   }
 
   ClientChange change(property_change_tracker_.get(), window,
                       ClientChangeType::kBounds);
+
+  if (IsLocalSurfaceIdAssignedByClient(window))
+    client_window->set_local_surface_id(local_surface_id);
+
   const gfx::Rect original_bounds = window->bounds();
   window->SetBounds(bounds);
   if (!change.window())
@@ -716,6 +717,11 @@ bool WindowServiceClient::SetWindowBoundsImpl(
 
   if (window->bounds() == original_bounds)
     return false;
+
+  if (window->bounds() == bounds &&
+      client_window->local_surface_id() == local_surface_id) {
+    return true;
+  }
 
   // The window's bounds changed, but not to the value the client requested.
   // Tell the client the new value, and return false, which triggers the client
@@ -905,16 +911,17 @@ void WindowServiceClient::NewTopLevelWindow(
   const bool is_top_level = true;
   aura::Window* top_level = AddClientCreatedWindow(
       client_window_id, is_top_level, std::move(top_level_ptr));
-  ClientWindow::GetMayBeNull(top_level)->set_frame_sink_id(client_window_id);
+  ClientWindow* top_level_client_window = ClientWindow::GetMayBeNull(top_level);
+  top_level_client_window->set_frame_sink_id(client_window_id);
   const int64_t display_id =
       display::Screen::GetScreen()->GetDisplayNearestWindow(top_level).id();
   // This passes null for the mojom::WindowTreePtr because the client has
   // already been given the mojom::WindowTreePtr that is backed by this
   // WindowServiceClient.
-  ClientRoot* client_root = CreateClientRoot(top_level, is_top_level, nullptr);
+  CreateClientRoot(top_level, is_top_level, nullptr);
   window_tree_client_->OnTopLevelCreated(
       change_id, WindowToWindowData(top_level), display_id,
-      top_level->IsVisible(), client_root->GetLocalSurfaceId());
+      top_level->IsVisible(), top_level_client_window->local_surface_id());
 }
 
 void WindowServiceClient::DeleteWindow(uint32_t change_id,

@@ -43,12 +43,17 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
 
   aura::Window* window() { return window_; }
 
-  const viz::LocalSurfaceId& GetLocalSurfaceId();
-
   bool is_top_level() const { return is_top_level_; }
 
  private:
   void UpdatePrimarySurfaceId();
+
+  // Returns true if the WindowService should assign the LocalSurfaceId. A value
+  // of false means the client is expected to providate the LocalSurfaceId.
+  bool ShouldAssignLocalSurfaceId();
+
+  // If necessary, this updates the LocalSurfaceId.
+  void UpdateLocalSurfaceIdIfNecessary();
 
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
@@ -59,13 +64,17 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
 
- private:
   WindowServiceClient* window_service_client_;
   aura::Window* window_;
   const bool is_top_level_;
+
+  // |last_surface_size_in_pixels_| and |last_device_scale_factor_| are only
+  // used if a LocalSurfaceId is needed for the window. They represent the size
+  // and device scale factor at the time the LocalSurfaceId was generated.
   gfx::Size last_surface_size_in_pixels_;
-  viz::LocalSurfaceId local_surface_id_;
+  float last_device_scale_factor_ = 1.0f;
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
+
   std::unique_ptr<aura::ClientSurfaceEmbedder> client_surface_embedder_;
   // viz::HostFrameSinkClient registered with the HostFrameSinkManager for the
   // window.

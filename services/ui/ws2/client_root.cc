@@ -33,6 +33,8 @@ ClientRoot::ClientRoot(WindowServiceClient* window_service_client,
   // guttering.
   client_surface_embedder_ = std::make_unique<aura::ClientSurfaceEmbedder>(
       window_, is_top_level, gfx::Insets());
+  // Ensure there is a valid LocalSurfaceId (if necessary).
+  UpdateLocalSurfaceIdIfNecessary();
 }
 
 ClientRoot::~ClientRoot() {
@@ -66,22 +68,42 @@ void ClientRoot::RegisterVizEmbeddingSupport() {
   UpdatePrimarySurfaceId();
 }
 
-const viz::LocalSurfaceId& ClientRoot::GetLocalSurfaceId() {
+bool ClientRoot::ShouldAssignLocalSurfaceId() {
+  // First level embeddings have their LocalSurfaceId assigned by the
+  // WindowService. First level embeddings have no embeddings above them.
+  if (is_top_level_)
+    return true;
+  ClientWindow* client_window = ClientWindow::GetMayBeNull(window_);
+  return client_window->owning_window_service_client() == nullptr;
+}
+
+void ClientRoot::UpdateLocalSurfaceIdIfNecessary() {
+  if (!ShouldAssignLocalSurfaceId())
+    return;
+
   gfx::Size size_in_pixels =
       ui::ConvertSizeToPixel(window_->layer(), window_->bounds().size());
+  ClientWindow* client_window = ClientWindow::GetMayBeNull(window_);
   // It's expected by cc code that any time the size changes a new
   // LocalSurfaceId is used.
   if (last_surface_size_in_pixels_ != size_in_pixels ||
-      !local_surface_id_.is_valid()) {
-    local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
+      !client_window->local_surface_id().has_value() ||
+      !client_window->local_surface_id()->is_valid() ||
+      last_device_scale_factor_ != window_->layer()->device_scale_factor()) {
+    client_window->set_local_surface_id(
+        parent_local_surface_id_allocator_.GenerateId());
     last_surface_size_in_pixels_ = size_in_pixels;
+    last_device_scale_factor_ = window_->layer()->device_scale_factor();
   }
-  return local_surface_id_;
 }
 
 void ClientRoot::UpdatePrimarySurfaceId() {
-  client_surface_embedder_->SetPrimarySurfaceId(
-      viz::SurfaceId(window_->GetFrameSinkId(), GetLocalSurfaceId()));
+  UpdateLocalSurfaceIdIfNecessary();
+  ClientWindow* client_window = ClientWindow::GetMayBeNull(window_);
+  if (client_window->local_surface_id().has_value()) {
+    client_surface_embedder_->SetPrimarySurfaceId(viz::SurfaceId(
+        window_->GetFrameSinkId(), *client_window->local_surface_id()));
+  }
 }
 
 void ClientRoot::OnWindowPropertyChanged(aura::Window* window,
@@ -113,12 +135,11 @@ void ClientRoot::OnWindowBoundsChanged(aura::Window* window,
                                        ui::PropertyChangeReason reason) {
   UpdatePrimarySurfaceId();
   client_surface_embedder_->UpdateSizeAndGutters();
-  base::Optional<viz::LocalSurfaceId> surface_id = GetLocalSurfaceId();
   // See comments in WindowServiceClient::SetWindowBoundsImpl() for details on
   // why this always notifies the client.
   window_service_client_->window_tree_client_->OnWindowBoundsChanged(
       window_service_client_->TransportIdForWindow(window), old_bounds,
-      new_bounds, std::move(surface_id));
+      new_bounds, ClientWindow::GetMayBeNull(window_)->local_surface_id());
 }
 
 }  // namespace ws2

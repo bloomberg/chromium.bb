@@ -9,6 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/ui/ws2/ids.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
@@ -103,6 +104,14 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
       viz::mojom::CompositorFrameSinkRequest compositor_frame_sink,
       viz::mojom::CompositorFrameSinkClientPtr client);
 
+  void set_local_surface_id(
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+    local_surface_id_ = local_surface_id;
+  }
+  const base::Optional<viz::LocalSurfaceId>& local_surface_id() const {
+    return local_surface_id_;
+  }
+
  private:
   friend class ClientWindowTestHelper;
 
@@ -158,6 +167,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
   // TODO(sky): provide way for client code to make use of this. It's needed
   // when client code creates the top-level. http://crbug.com/837703.
   bool can_focus_ = true;
+
+  base::Optional<viz::LocalSurfaceId> local_surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientWindow);
 };
