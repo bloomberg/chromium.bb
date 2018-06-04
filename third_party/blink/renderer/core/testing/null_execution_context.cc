@@ -18,7 +18,7 @@ class NullEventQueue final : public EventQueue {
   NullEventQueue() = default;
   ~NullEventQueue() override = default;
   bool EnqueueEvent(const base::Location&, Event*) override { return true; }
-  bool CancelEvent(Event*) override { return true; }
+  void CancelAllEvents() override {}
   void Close() override {}
 };
 

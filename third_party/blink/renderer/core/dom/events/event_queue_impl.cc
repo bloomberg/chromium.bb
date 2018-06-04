@@ -74,22 +74,17 @@ bool EventQueueImpl::EnqueueEvent(const base::Location& from_here,
   return true;
 }
 
-bool EventQueueImpl::CancelEvent(Event* event) {
-  if (!RemoveEvent(event))
-    return false;
-  probe::AsyncTaskCanceled(event->target()->GetExecutionContext(), event);
-  return true;
+void EventQueueImpl::CancelAllEvents() {
+  for (const auto& queued_event : queued_events_) {
+    probe::AsyncTaskCanceled(queued_event->target()->GetExecutionContext(),
+                             queued_event);
+  }
+  queued_events_.clear();
 }
 
 void EventQueueImpl::Close() {
   is_closed_ = true;
-  for (const auto& queued_event : queued_events_) {
-    if (queued_event) {
-      probe::AsyncTaskCanceled(queued_event->target()->GetExecutionContext(),
-                               queued_event);
-    }
-  }
-  queued_events_.clear();
+  CancelAllEvents();
 }
 
 bool EventQueueImpl::RemoveEvent(Event* event) {

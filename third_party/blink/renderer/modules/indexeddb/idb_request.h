@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/idb_object_store_or_idb_index_or_idb_cursor.h"
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/dom/pausable_object.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
@@ -335,7 +336,6 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
  protected:
   IDBRequest(ScriptState*, const Source&, IDBTransaction*, AsyncTraceState);
   void EnqueueEvent(Event*);
-  void DequeueEvent(Event*);
   virtual bool ShouldEnqueueEvent() const;
   void EnqueueResultInternal(IDBAny*);
   void SetResult(IDBAny*);
@@ -388,7 +388,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   Member<DOMException> error_;
 
   bool has_pending_activity_ = true;
-  HeapVector<Member<Event>> enqueued_events_;
+  Member<EventQueue> event_queue_;
 
   // Only used if the result type will be a cursor.
   IndexedDB::CursorType cursor_type_ = IndexedDB::kCursorKeyAndValue;

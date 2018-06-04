@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_idb_observer_callback.h"
-#include "third_party/blink/renderer/core/dom/events/event_queue.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_any.h"
@@ -108,6 +108,8 @@ IDBDatabase::IDBDatabase(ExecutionContext* context,
                          v8::Isolate* isolate)
     : ContextLifecycleObserver(context),
       backend_(std::move(backend)),
+      event_queue_(
+          EventQueueImpl::Create(context, TaskType::kInternalIndexedDB)),
       database_callbacks_(callbacks),
       isolate_(isolate) {
   database_callbacks_->Connect(this);
@@ -122,7 +124,7 @@ void IDBDatabase::Trace(blink::Visitor* visitor) {
   visitor->Trace(version_change_transaction_);
   visitor->Trace(transactions_);
   visitor->Trace(observers_);
-  visitor->Trace(enqueued_events_);
+  visitor->Trace(event_queue_);
   visitor->Trace(database_callbacks_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
@@ -461,15 +463,11 @@ void IDBDatabase::CloseConnection() {
   if (!GetExecutionContext())
     return;
 
-  EventQueue* event_queue = GetExecutionContext()->GetEventQueue();
   // Remove any pending versionchange events scheduled to fire on this
   // connection. They would have been scheduled by the backend when another
   // connection attempted an upgrade, but the frontend connection is being
   // closed before they could fire.
-  for (size_t i = 0; i < enqueued_events_.size(); ++i) {
-    bool removed = event_queue->CancelEvent(enqueued_events_[i].Get());
-    DCHECK(removed);
-  }
+  event_queue_->CancelAllEvents();
 }
 
 void IDBDatabase::OnVersionChange(int64_t old_version, int64_t new_version) {
@@ -495,10 +493,8 @@ void IDBDatabase::OnVersionChange(int64_t old_version, int64_t new_version) {
 
 void IDBDatabase::EnqueueEvent(Event* event) {
   DCHECK(GetExecutionContext());
-  EventQueue* event_queue = GetExecutionContext()->GetEventQueue();
   event->SetTarget(this);
-  event_queue->EnqueueEvent(FROM_HERE, event);
-  enqueued_events_.push_back(event);
+  event_queue_->EnqueueEvent(FROM_HERE, event);
 }
 
 DispatchEventResult IDBDatabase::DispatchEventInternal(Event* event) {
@@ -507,10 +503,6 @@ DispatchEventResult IDBDatabase::DispatchEventInternal(Event* event) {
     return DispatchEventResult::kCanceledBeforeDispatch;
   DCHECK(event->type() == EventTypeNames::versionchange ||
          event->type() == EventTypeNames::close);
-  for (size_t i = 0; i < enqueued_events_.size(); ++i) {
-    if (enqueued_events_[i].Get() == event)
-      enqueued_events_.EraseAt(i);
-  }
 
   DispatchEventResult dispatch_result =
       EventTarget::DispatchEventInternal(event);

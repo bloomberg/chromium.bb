@@ -39,7 +39,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/to_v8_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/events/event_queue.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
@@ -138,7 +138,9 @@ IDBRequest::IDBRequest(ScriptState* script_state,
       transaction_(transaction),
       isolate_(script_state->GetIsolate()),
       metrics_(std::move(metrics)),
-      source_(source) {}
+      source_(source),
+      event_queue_(EventQueueImpl::Create(ExecutionContext::From(script_state),
+                                          TaskType::kInternalIndexedDB)) {}
 
 IDBRequest::~IDBRequest() {
   DCHECK((ready_state_ == DONE && metrics_.IsEmpty()) ||
@@ -150,7 +152,7 @@ void IDBRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(source_);
   visitor->Trace(result_);
   visitor->Trace(error_);
-  visitor->Trace(enqueued_events_);
+  visitor->Trace(event_queue_);
   visitor->Trace(pending_cursor_);
   EventTargetWithInlineData::Trace(visitor);
   PausableObject::Trace(visitor);
@@ -225,12 +227,7 @@ void IDBRequest::Abort() {
   if (ready_state_ == DONE)
     return;
 
-  EventQueue* event_queue = GetExecutionContext()->GetEventQueue();
-  for (size_t i = 0; i < enqueued_events_.size(); ++i) {
-    bool removed = event_queue->CancelEvent(enqueued_events_[i].Get());
-    DCHECK(removed);
-  }
-  enqueued_events_.clear();
+  event_queue_->CancelAllEvents();
 
   error_.Clear();
   result_.Clear();
@@ -613,7 +610,7 @@ void IDBRequest::ContextDestroyed(ExecutionContext*) {
       transaction_->UnregisterRequest(this);
   }
 
-  enqueued_events_.clear();
+  event_queue_->CancelAllEvents();
   if (source_.IsIDBCursor())
     source_.GetAsIDBCursor()->ContextWillBeDestroyed();
   if (result_)
@@ -640,12 +637,10 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event* event) {
     return DispatchEventResult::kCanceledBeforeDispatch;
   DCHECK_EQ(ready_state_, PENDING);
   DCHECK(has_pending_activity_);
-  DCHECK(enqueued_events_.size());
   DCHECK_EQ(event->target(), this);
 
   if (event->type() != EventTypeNames::blocked)
     ready_state_ = DONE;
-  DequeueEvent(event);
 
   HeapVector<Member<EventTarget>> targets;
   targets.push_back(this);
@@ -763,21 +758,9 @@ void IDBRequest::EnqueueEvent(Event* event) {
       << "When queueing event " << event->type() << ", ready_state_ was "
       << ready_state_;
 
-  EventQueue* event_queue = GetExecutionContext()->GetEventQueue();
   event->SetTarget(this);
 
-  // Keep track of enqueued events in case we need to abort prior to dispatch,
-  // in which case these must be cancelled. If the events not dispatched for
-  // other reasons they must be removed from this list via DequeueEvent().
-  if (event_queue->EnqueueEvent(FROM_HERE, event))
-    enqueued_events_.push_back(event);
-}
-
-void IDBRequest::DequeueEvent(Event* event) {
-  for (size_t i = 0; i < enqueued_events_.size(); ++i) {
-    if (enqueued_events_[i].Get() == event)
-      enqueued_events_.EraseAt(i);
-  }
+  event_queue_->EnqueueEvent(FROM_HERE, event);
 }
 
 }  // namespace blink
