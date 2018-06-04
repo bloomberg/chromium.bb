@@ -7,6 +7,7 @@
 #import <WebKit/WebKit.h>
 #import <XCTest/XCTest.h>
 
+#include "base/ios/ios_util.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -81,6 +82,10 @@ void AssertURLIs(const GURL& expectedURL) {
 // Verifies that the content offset of the web view is set up at the correct
 // initial value when initially displaying a PDF.
 - (void)testLongPDFInitialState {
+  if (IsUIRefreshPhase1Enabled() && !base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(
+        @"crbug.com/849132 Test broken in iOS10 with UI refresh.");
+  }
   web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/two_pages.pdf");
