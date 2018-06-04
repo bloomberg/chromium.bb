@@ -231,8 +231,10 @@ void RenderFrameHostManager::DidNavigateFrame(
                            is_same_document_navigation);
 
   // Make sure any dynamic changes to this frame's sandbox flags and feature
-  // policy that were made prior to navigation take effect.
-  CommitPendingFramePolicy();
+  // policy that were made prior to navigation take effect.  This should only
+  // happen for cross-document navigations.
+  if (!is_same_document_navigation)
+    CommitPendingFramePolicy();
 }
 
 void RenderFrameHostManager::CommitPendingIfNecessary(
