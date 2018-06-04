@@ -12,17 +12,17 @@ testRunner.notifyDone = function() {
   this.isDone = true;
 };
 
-testRunner.supportTracing = true;
+testRunner.telemetryIsRunning = true;
 
-// If this is true, blink_perf tests is put on paused waiting for tracing to
-// be started. |scheduleTestRun| should be invoked after tracing is started
-// to continue blink perf test.
-testRunner.isWaitingForTracingStart = false;
+// If this is true, blink_perf tests are paused waiting for telemetry to set up
+// measurements (tracing, profiling, etc.). After this setup, the test driver
+// should invoke |scheduleTestRun| to start the actual test procedure.
+testRunner.isWaitingForTelemetry = false;
 
-testRunner.startTracing = function(tracingCategories, scheduleTestRun) {
+testRunner.waitForTelemetry = function(tracingCategories, scheduleTestRun) {
   this.tracingCategories = tracingCategories;
   this.scheduleTestRun = scheduleTestRun;
-  this.isWaitingForTracingStart = true;
+  this.isWaitingForTelemetry = true;
 }
 
 testRunner.stopTracingAndMeasure = function(traceEventsToMeasure, callback) {
