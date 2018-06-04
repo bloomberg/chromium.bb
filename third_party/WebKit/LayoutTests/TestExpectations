@@ -4830,3 +4830,5 @@ crbug.com/841567 fast/scrolling/scrollbar-tickmarks-hittest.html [ Failure Pass 
 crbug.com/847870 fast/webgl/texImage-imageBitmap-from-canvas-resize.html [ Timeout Pass ]
 crbug.com/847787 external/wpt/service-workers/service-worker/fetch-event.https.html [ Timeout Pass ]
 crbug.com/847697 virtual/video-surface-layer/media/controls/overflow-menu-always-visible.html [ Pass Failure ]
+crbug.com/849256 [ Mac ] virtual/gpu-rasterization/images/color-profile-iframe.html [ Pass Failure ]
+crbug.com/849258 [ Mac ] virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color.html [ Pass Failure ]
