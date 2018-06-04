@@ -10692,25 +10692,6 @@
           ]
         },
         "test": "video_decode_accelerator_unittest"
-      },
-      {
-        "args": [
-          "--use-angle=gl",
-          "--use-test-data-path",
-          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
-        ],
-        "name": "video_decode_accelerator_gl_unittest",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-23.20.16.4877",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "video_decode_accelerator_unittest"
       }
     ],
     "isolated_scripts": [

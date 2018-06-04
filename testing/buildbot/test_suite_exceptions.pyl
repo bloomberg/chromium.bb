@@ -2465,6 +2465,7 @@
     'remove_from': [
       # chromium.gpu.fyi
       # Windows Intel doesn't have the GL extensions to support this test.
+      'Optional Win10 Release (Intel HD 630)',
       'Win10 FYI Release (Intel HD 630)',
       'Win10 FYI Exp Release (Intel HD 630)',
     ],
