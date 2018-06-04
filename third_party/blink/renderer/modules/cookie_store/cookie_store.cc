@@ -668,7 +668,7 @@ void CookieStore::StartObserving() {
   network::mojom::blink::CookieChangeListenerPtr change_listener;
   change_listener_binding_.Bind(mojo::MakeRequest(&change_listener));
   backend_->AddChangeListener(default_cookie_url_, default_site_for_cookies_,
-                              std::move(change_listener));
+                              std::move(change_listener), {});
 }
 
 void CookieStore::StopObserving() {

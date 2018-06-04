@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -94,22 +95,15 @@ void ForwardServiceRequest(const char* service_name,
   connector->BindInterface(service_name, std::move(request));
 }
 
-void GetRestrictedCookieManagerForWorker(
+void GetRestrictedCookieManager(
     network::mojom::RestrictedCookieManagerRequest request,
     RenderProcessHost* render_process_host,
     const url::Origin& origin) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    return;
-  }
-
   StoragePartition* storage_partition =
       render_process_host->GetStoragePartition();
   network::mojom::NetworkContext* network_context =
       storage_partition->GetNetworkContext();
-  uint32_t render_process_id = render_process_host->GetID();
-  network_context->GetRestrictedCookieManager(
-      std::move(request), render_process_id, MSG_ROUTING_NONE);
+  network_context->GetRestrictedCookieManager(std::move(request), origin);
 }
 
 // Register renderer-exposed interfaces. Each registered interface binder is
@@ -179,7 +173,7 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(&BackgroundFetchServiceImpl::Create));
   parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(GetRestrictedCookieManagerForWorker));
+      base::BindRepeating(GetRestrictedCookieManager));
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(&QuotaDispatcherHost::CreateForWorker));
   parameterized_binder_registry_.AddInterface(base::BindRepeating(

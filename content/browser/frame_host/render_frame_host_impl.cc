@@ -154,7 +154,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "services/network/restricted_cookie_manager.h"
 #include "services/resource_coordinator/public/cpp/frame_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -3157,30 +3156,6 @@ void RenderFrameHostImpl::ResourceLoadComplete(
   delegate_->ResourceLoadComplete(this, std::move(resource_load_info));
 }
 
-namespace {
-
-void GetRestrictedCookieManager(
-    RenderFrameHostImpl* render_frame_host_impl,
-    network::mojom::RestrictedCookieManagerRequest request) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    return;
-  }
-
-  BrowserContext* browser_context =
-      render_frame_host_impl->GetProcess()->GetBrowserContext();
-  StoragePartition* storage_partition =
-      BrowserContext::GetDefaultStoragePartition(browser_context);
-  network::mojom::NetworkContext* network_context =
-      storage_partition->GetNetworkContext();
-  uint32_t render_process_id = render_frame_host_impl->GetProcess()->GetID();
-  uint32_t render_frame_id = render_frame_host_impl->GetRoutingID();
-  network_context->GetRestrictedCookieManager(
-      std::move(request), render_process_id, render_frame_id);
-}
-
-}  // anonymous namespace
-
 void RenderFrameHostImpl::RegisterMojoInterfaces() {
 #if !defined(OS_ANDROID)
   // The default (no-op) implementation of InstalledAppProvider. On Android, the
@@ -3339,9 +3314,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     registry_->AddInterface(
         base::Bind(&InputInjectorImpl::Create, weak_ptr_factory_.GetWeakPtr()));
   }
-
-  registry_->AddInterface(
-      base::BindRepeating(GetRestrictedCookieManager, base::Unretained(this)));
 
   // TODO(crbug.com/775792): Move to RendererInterfaceBinders.
   registry_->AddInterface(base::BindRepeating(

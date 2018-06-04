@@ -39,8 +39,7 @@ class TestNetworkContext : public mojom::NetworkContext {
   void GetCookieManager(mojom::CookieManagerRequest cookie_manager) override {}
   void GetRestrictedCookieManager(
       mojom::RestrictedCookieManagerRequest restricted_cookie_manager,
-      int32_t render_process_id,
-      int32_t render_frame_id) override {}
+      const url::Origin& origin) override {}
   void ClearNetworkingHistorySince(
       base::Time start_time,
       ClearNetworkingHistorySinceCallback callback) override {}

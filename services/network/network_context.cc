@@ -376,15 +376,11 @@ void NetworkContext::GetCookieManager(mojom::CookieManagerRequest request) {
 
 void NetworkContext::GetRestrictedCookieManager(
     mojom::RestrictedCookieManagerRequest request,
-    int32_t render_process_id,
-    int32_t render_frame_id) {
-  // TODO(crbug.com/729800): RestrictedCookieManager should own its bindings
-  //     and NetworkContext should own the RestrictedCookieManager
-  //     instances.
-  mojo::MakeStrongBinding(std::make_unique<RestrictedCookieManager>(
-                              url_request_context_->cookie_store(),
-                              render_process_id, render_frame_id),
-                          std::move(request));
+    const url::Origin& origin) {
+  restricted_cookie_manager_bindings_.AddBinding(
+      std::make_unique<RestrictedCookieManager>(
+          url_request_context_->cookie_store(), origin),
+      std::move(request));
 }
 
 void NetworkContext::DisableQuic() {
