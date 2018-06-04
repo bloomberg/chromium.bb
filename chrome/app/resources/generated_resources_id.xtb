@@ -577,7 +577,6 @@
 <translation id="184823282865851239">Blokir jika situs cenderung menampilkan iklan mengganggu</translation>
 <translation id="1849186935225320012">Halaman ini memiliki kontrol penuh perangkat MIDI.</translation>
 <translation id="1850508293116537636">Putar &amp;searah jarum jam</translation>
-<translation id="1851361118452499663">Foto Saya</translation>
 <translation id="1852799913675865625">Terdapat kesalahan saat mencoba membaca file: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Tab penyamaran baru</translation>
 <translation id="1856715684130786728">+ lokasi...</translation>
@@ -2950,7 +2949,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="5559719557406102971">Memulai Termina VM.</translation>
 <translation id="55601339223879446">Menyesuaikan batas desktop Anda dalam tampilan</translation>
 <translation id="5562781907504170924">Tab ini terhubung ke Perangkat Bluetooth.</translation>
-<translation id="5563234215388768762">Telusuri Google atau ketik URL</translation>
 <translation id="5565871407246142825">Kartu kredit</translation>
 <translation id="5567989639534621706">Cache aplikasi</translation>
 <translation id="5568069709869097550">Tidak dapat sign in</translation>
@@ -3497,6 +3495,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="6410668567036790476">Tambahkan mesin telusur</translation>
 <translation id="641081527798843608">Kecocokan subjek</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Telusuri Google atau ketik alamat web</translation>
 <translation id="6412931879992742813">Jendela samaran baru</translation>
 <translation id="6417265370957905582">Asisten Google</translation>
 <translation id="6418160186546245112">Mengembalikan ke versi <ph name="IDS_SHORT_PRODUCT_NAME" /> yang terpasang sebelumnya</translation>

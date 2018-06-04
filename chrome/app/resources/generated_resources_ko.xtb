@@ -578,7 +578,6 @@
 <translation id="184823282865851239">사이트에 방해가 되는 광고를 표시하는 경향이 있는 경우 차단</translation>
 <translation id="1849186935225320012">이 페이지는 MIDI 기기를 완전히 제어할 수 있습니다.</translation>
 <translation id="1850508293116537636">시계 방향으로 회전(&amp;C)</translation>
-<translation id="1851361118452499663">내 사진</translation>
 <translation id="1852799913675865625">파일을 읽는 중에 오류가 발생했습니다. <ph name="ERROR_TEXT" /></translation>
 <translation id="1853692000353488670">새 시크릿 탭</translation>
 <translation id="1856715684130786728">위치 추가...</translation>
@@ -2950,7 +2949,6 @@
 <translation id="5559719557406102971">Termina VM을 시작합니다.</translation>
 <translation id="55601339223879446">디스플레이에서 바탕화면 경계를 조정합니다.</translation>
 <translation id="5562781907504170924">이 탭이 블루투스 기기에 연결되었습니다.</translation>
-<translation id="5563234215388768762">Google 검색 또는 URL 입력</translation>
 <translation id="5565871407246142825">신용카드</translation>
 <translation id="5567989639534621706">애플리케이션 캐시</translation>
 <translation id="5568069709869097550">로그인할 수 없음</translation>
@@ -3497,6 +3495,7 @@
 <translation id="6410668567036790476">검색 엔진 추가</translation>
 <translation id="641081527798843608">주제 일치</translation>
 <translation id="641105183165925463">$1MB</translation>
+<translation id="6411517327772365857">Google 검색 또는 웹 주소 입력</translation>
 <translation id="6412931879992742813">새 시크릿 창</translation>
 <translation id="6417265370957905582">Google 어시스턴트</translation>
 <translation id="6418160186546245112"><ph name="IDS_SHORT_PRODUCT_NAME" />의 이전 설치 버전으로 되돌리는 중</translation>

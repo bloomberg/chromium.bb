@@ -577,7 +577,6 @@
 <translation id="184823282865851239">針對經常顯示侵入式廣告的網站封鎖廣告</translation>
 <translation id="1849186935225320012">這個網頁可完整控制 MIDI 裝置。</translation>
 <translation id="1850508293116537636">順時針旋轉(&amp;C)</translation>
-<translation id="1851361118452499663">我的相片</translation>
 <translation id="1852799913675865625">嘗試讀取檔案時發生錯誤：<ph name="ERROR_TEXT" /></translation>
 <translation id="1853692000353488670">新增無痕式分頁</translation>
 <translation id="1856715684130786728">新增位置...</translation>
@@ -2948,7 +2947,6 @@
 <translation id="5559719557406102971">正在啟動 Termina VM。</translation>
 <translation id="55601339223879446">調整顯示畫面中的桌面邊界</translation>
 <translation id="5562781907504170924">這個分頁已連線至藍牙裝置。</translation>
-<translation id="5563234215388768762">搜尋 Google 或輸入網址</translation>
 <translation id="5565871407246142825">信用卡</translation>
 <translation id="5567989639534621706">應用程式快取</translation>
 <translation id="5568069709869097550">無法登入</translation>
@@ -3495,6 +3493,7 @@
 <translation id="6410668567036790476">新增搜尋引擎</translation>
 <translation id="641081527798843608">主題比對</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">搜尋 Google 或輸入網址</translation>
 <translation id="6412931879992742813">新增無痕式視窗</translation>
 <translation id="6417265370957905582">Google 助理</translation>
 <translation id="6418160186546245112">還原至先前安裝的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 版本</translation>

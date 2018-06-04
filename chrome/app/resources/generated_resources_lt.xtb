@@ -577,7 +577,6 @@
 <translation id="184823282865851239">Blokuoti, jei svetainėje bandoma rodyti nepageidaujamus skelbimus</translation>
 <translation id="1849186935225320012">Šiame puslapyje visiškai valdomi MIDI įrenginiai.</translation>
 <translation id="1850508293116537636">Sukti pagal &amp;laikrodžio rodyklę</translation>
-<translation id="1851361118452499663">Mano nuotraukos</translation>
 <translation id="1852799913675865625">Bandant skaityti failą įvyko klaida: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Naujas inkognito skirtukas</translation>
 <translation id="1856715684130786728">Pridėti vietą...</translation>
@@ -2950,7 +2949,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5559719557406102971">Paleidžiama „Termina“ VM.</translation>
 <translation id="55601339223879446">Sureguliuokite stalinio kompiuterio ribas pagal vaizdą</translation>
 <translation id="5562781907504170924">Šis skirtukas susietas su „Bluetooth“ įrenginiu.</translation>
-<translation id="5563234215388768762">Ieškoti sistemoje „Google“ arba įvesti URL</translation>
 <translation id="5565871407246142825">Kredito kortelės</translation>
 <translation id="5567989639534621706">Programos talpyklos</translation>
 <translation id="5568069709869097550">Nepavyksta prisijungti</translation>
@@ -3498,6 +3496,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6410668567036790476">Paieškos variklio pridėjimas</translation>
 <translation id="641081527798843608">Temos atitiktis</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Ieškoti „Google“ arba įvesti žiniatinklio adresą</translation>
 <translation id="6412931879992742813">Naujas inkognito langas</translation>
 <translation id="6417265370957905582">„Google“ padėjėjas</translation>
 <translation id="6418160186546245112">Atkuriama anksčiau įdiegta „<ph name="IDS_SHORT_PRODUCT_NAME" />“ versija</translation>

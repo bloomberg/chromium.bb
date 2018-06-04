@@ -578,7 +578,6 @@
 <translation id="184823282865851239">Chặn nếu trang web thường hiển thị quảng cáo xâm nhập</translation>
 <translation id="1849186935225320012">Trang này có quyền kiểm soát toàn bộ thiết bị MIDI.</translation>
 <translation id="1850508293116537636">Xoay &amp;theo chiều kim đồng hồ</translation>
-<translation id="1851361118452499663">Ảnh của tôi</translation>
 <translation id="1852799913675865625">Đã có lỗi khi tìm cách đọc tệp: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Tab ẩn danh mới</translation>
 <translation id="1856715684130786728">Thêm vị trí...</translation>
@@ -2951,7 +2950,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="5559719557406102971">Đang khởi động máy ảo Termina.</translation>
 <translation id="55601339223879446">Điều chỉnh các ranh giới của màn hình trong vòng hiển thị</translation>
 <translation id="5562781907504170924">Tab này được kết nối với thiết bị Bluetooth.</translation>
-<translation id="5563234215388768762">Tìm kiếm trên Google hoặc nhập một URL</translation>
 <translation id="5565871407246142825">Thẻ tín dụng</translation>
 <translation id="5567989639534621706">Bộ nhớ đệm của ứng dụng</translation>
 <translation id="5568069709869097550">Không thể đăng nhập</translation>
@@ -3498,6 +3496,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="6410668567036790476">Thêm công cụ tìm kiếm</translation>
 <translation id="641081527798843608">Khớp với chủ đề</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Tìm kiếm trên Google hoặc nhập địa chỉ web</translation>
 <translation id="6412931879992742813">Cửa sổ ẩn danh mới</translation>
 <translation id="6417265370957905582">Trợ lý Google</translation>
 <translation id="6418160186546245112">Hoàn nguyên về phiên bản được cài đặt trước của <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

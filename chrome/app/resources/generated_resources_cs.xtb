@@ -578,7 +578,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="184823282865851239">Blokovat, pokud web často zobrazuje rušivé reklamy</translation>
 <translation id="1849186935225320012">Tato stránka má úplnou kontrolu nad zařízeními MIDI.</translation>
 <translation id="1850508293116537636">Otočit &amp;ve směru hodinových ručiček</translation>
-<translation id="1851361118452499663">Moje fotky</translation>
 <translation id="1852799913675865625">Došlo k chybě při čtení souboru: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Nová anonymní karta</translation>
 <translation id="1856715684130786728">Přidat polohu...</translation>
@@ -2947,7 +2946,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5559719557406102971">Spouštění virtuálního počítače Termina.</translation>
 <translation id="55601339223879446">Úprava ohraničení plochy v rámci obrazovky</translation>
 <translation id="5562781907504170924">Tato karta je propojena se zařízením Bluetooth.</translation>
-<translation id="5563234215388768762">Hledejte na Googlu nebo zadejte adresu URL</translation>
 <translation id="5565871407246142825">Platební karty</translation>
 <translation id="5567989639534621706">Mezipaměti aplikací</translation>
 <translation id="5568069709869097550">Nepodařilo se přihlásit</translation>
@@ -3494,6 +3492,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6410668567036790476">Přidat vyhledávač</translation>
 <translation id="641081527798843608">Shoda předmětu</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Hledejte na Googlu nebo zadejte webovou adresu</translation>
 <translation id="6412931879992742813">Nové anonymní okno</translation>
 <translation id="6417265370957905582">Asistent Google</translation>
 <translation id="6418160186546245112">Obnovování předchozí nainstalované verze aplikace <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

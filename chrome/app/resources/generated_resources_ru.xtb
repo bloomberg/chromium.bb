@@ -576,7 +576,6 @@
 <translation id="184823282865851239">Блокировать, если на сайте много навязчивой рекламы</translation>
 <translation id="1849186935225320012">Эта страница имеет полный контроль над устройствами MIDI.</translation>
 <translation id="1850508293116537636">Повернуть &amp;по часовой стрелке</translation>
-<translation id="1851361118452499663">Мои фотографии</translation>
 <translation id="1852799913675865625">Произошла ошибка при чтении файла: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Новая вкладка инкогнито</translation>
 <translation id="1856715684130786728">Добавить папку...</translation>
@@ -2951,7 +2950,6 @@
 <translation id="5559719557406102971">Запуск виртуальной машины Termina…</translation>
 <translation id="55601339223879446">Подогнать границы рабочего стола под размер экрана</translation>
 <translation id="5562781907504170924">Эта вкладка подключена к одному устройству по Bluetooth.</translation>
-<translation id="5563234215388768762">Введите поисковый запрос или URL</translation>
 <translation id="5565871407246142825">Банковские карты</translation>
 <translation id="5567989639534621706">Кеш приложений</translation>
 <translation id="5568069709869097550">Не удается войти</translation>
@@ -3498,6 +3496,7 @@
 <translation id="6410668567036790476">Добавить поисковую систему</translation>
 <translation id="641081527798843608">Совпадение тем</translation>
 <translation id="641105183165925463">$1 МБ</translation>
+<translation id="6411517327772365857">Введите поисковый запрос или веб-адрес</translation>
 <translation id="6412931879992742813">Новое окно в режиме инкогнито</translation>
 <translation id="6417265370957905582">Google Ассистент</translation>
 <translation id="6418160186546245112">Возврат к предыдущей версии <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

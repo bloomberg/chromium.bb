@@ -574,7 +574,6 @@
 <translation id="184823282865851239">సైట్ అనుచితమైన ప్రకటనలను చూపడానికి ప్రయత్నిస్తే బ్లాక్ చేస్తుంది</translation>
 <translation id="1849186935225320012">ఈ పేజీ MIDI పరికరాలకు పూర్తి నియంత్రణను కలిగి ఉంది.</translation>
 <translation id="1850508293116537636">&amp;సవ్యదిశలో తిప్పు</translation>
-<translation id="1851361118452499663">నా ఫోటోలు</translation>
 <translation id="1852799913675865625">ఫైల్‌ను చదవడానికి ప్రయత్నించడంలో లోపం ఉంది: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">కొత్త అజ్ఞాత ట్యాబ్</translation>
 <translation id="1856715684130786728">స్థానాన్ని జోడించు...</translation>
@@ -2939,7 +2938,6 @@
 <translation id="5559719557406102971">Termina VMని ప్రారంభిస్తోంది.</translation>
 <translation id="55601339223879446">డిస్‌ప్లేలో మీ డెస్క్‌టాప్ సరిహద్దులను సర్దుబాటు చేయండి</translation>
 <translation id="5562781907504170924">ఈ ట్యాబ్ బ్లూటూత్ పరికరానికి కనెక్ట్ చేయబడింది.</translation>
-<translation id="5563234215388768762">Googleలో వెతకండి లేదా URLను టైప్ చేయండి</translation>
 <translation id="5565871407246142825">క్రెడిట్ కార్డ్‌లు</translation>
 <translation id="5567989639534621706">అనువర్తన కాష్‌లు</translation>
 <translation id="5568069709869097550">సైన్ ఇన్ చెయ్యలేరు</translation>
@@ -3482,6 +3480,7 @@
 <translation id="6410668567036790476">శోధన ఇంజిన్‌ను జోడించండి</translation>
 <translation id="641081527798843608">విషయ సరిపోలిక</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Googleలో వెతకండి లేదా వెబ్ చిరునామాను టైప్ చేయండి</translation>
 <translation id="6412931879992742813">క్రొత్త అజ్ఞాత విండో</translation>
 <translation id="6417265370957905582">Google సహాయకం</translation>
 <translation id="6418160186546245112">మునుపు ఇన్‌స్టాల్ చేసిన <ph name="IDS_SHORT_PRODUCT_NAME" /> సంస్కరణకు తిరిగి మారుస్తోంది</translation>

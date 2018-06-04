@@ -574,7 +574,6 @@
 <translation id="184823282865851239">Blockieren, wenn Website für gewöhnlich aufdringliche Werbung anzeigt</translation>
 <translation id="1849186935225320012">Diese Seite hat vollständige Kontrolle über MIDI-Geräte.</translation>
 <translation id="1850508293116537636">Im &amp;Uhrzeigersinn drehen</translation>
-<translation id="1851361118452499663">Meine Fotos</translation>
 <translation id="1852799913675865625">Beim Versuch, die Datei <ph name="ERROR_TEXT" /> zu lesen, ist ein Fehler aufgetreten.</translation>
 <translation id="1853692000353488670">Neuer Inkognito-Tab</translation>
 <translation id="1856715684130786728">Speicherort hinzufügen...</translation>
@@ -2946,7 +2945,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5559719557406102971">VM wird gestartet.</translation>
 <translation id="55601339223879446">Desktopbegrenzungen auf dem Bildschirm anpassen</translation>
 <translation id="5562781907504170924">Dieser Tab ist mit einem Bluetooth-Gerät verbunden.</translation>
-<translation id="5563234215388768762">Mit Google suchen oder eine URL eingeben</translation>
 <translation id="5565871407246142825">Kreditkarten</translation>
 <translation id="5567989639534621706">Caches</translation>
 <translation id="5568069709869097550">Anmeldung nicht möglich</translation>
@@ -3493,6 +3491,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6410668567036790476">Suchmaschine hinzufügen</translation>
 <translation id="641081527798843608">subject-match</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Mit Google suchen oder Webadresse eingeben</translation>
 <translation id="6412931879992742813">Neues Inkognitofenster</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6418160186546245112">Zuvor installierte Version von <ph name="IDS_SHORT_PRODUCT_NAME" /> wird wiederhergestellt...</translation>

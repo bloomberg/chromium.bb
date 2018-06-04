@@ -118,6 +118,7 @@
 <translation id="3236488194889173876">هیچ شبکه تلفن همراهی دردسترس نیست</translation>
 <translation id="3294437725009624529">مهمان</translation>
 <translation id="332587331255250389">لطفاً باتری را تعویض کنید</translation>
+<translation id="3351879221545518001">درحال ارسال محتوای صفحه هستید.</translation>
 <translation id="3364721542077212959">ابزارهای قلم</translation>
 <translation id="3368922792935385530">متصل</translation>
 <translation id="3371140690572404006">‏دستگاه USB-C (درگاه جلوی سمت راست)</translation>
@@ -173,6 +174,7 @@
 <translation id="4527045527269911712">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> مانده تا کامل شود</translation>
 <translation id="4544944664594876241">کلیدهای میان‌بر قفل کردن صفحه تغییر کرده است. لطفاً از <ph name="NEW_SHORTCUT" /> به جای <ph name="OLD_SHORTCUT" /> استفاده کنید.</translation>
+<translation id="4564869809620998694">سرویس قلم</translation>
 <translation id="4570957409596482333">دکمه «انتخاب کنید تا بتوانید صحبت کنید»</translation>
 <translation id="4659419629803378708">‏ChromeVox فعال شد</translation>
 <translation id="4776917500594043016">گذرواژه <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -209,11 +211,13 @@
 <translation id="5744083938413354016">کشیدن با ضربه زدن</translation>
 <translation id="5777841717266010279">اشتراک‌گذاری صفحه نمایش متوقف شود؟</translation>
 <translation id="57838592816432529">بی‌صدا کردن</translation>
+<translation id="5805697420284793859">مدیر پنجره</translation>
 <translation id="5820394555380036790">‏سیستم عامل Chromium </translation>
 <translation id="5832805196449965646">افزودن شخص</translation>
 <translation id="5860033963881614850">خاموش</translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5911533659001334206">نمایشگر میان‌بر</translation>
 <translation id="5916664084637901428">روشن</translation>
 <translation id="5927132638760172455">در حال فرستادن به گیرنده ناشناس</translation>
 <translation id="5947494881799873997">برگرداندن</translation>
@@ -252,6 +256,7 @@
 <translation id="6521655319214113338">ورودی دست‌نویس</translation>
 <translation id="6528179044667508675">مزاحم نشوید</translation>
 <translation id="6537270692134705506">ضبط کردن صفحه</translation>
+<translation id="6542521951477560771">ارسال محتوا به <ph name="RECEIVER_NAME" /></translation>
 <translation id="6585808820553845416">جلسه در <ph name="SESSION_TIME_REMAINING" /> به پایان می‌رسد.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کلیدواژه را در آن دستگاه وارد کنید: <ph name="PASSKEY" /></translation>
@@ -263,6 +268,8 @@
 <translation id="6715542151869432661">هیچ دستگاه همراهی پیدا نشد.</translation>
 <translation id="671928215901716392">قفل صفحه</translation>
 <translation id="6723839937902243910">نیرو</translation>
+<translation id="6725073593266469338">سرویس رابط کاربری</translation>
+<translation id="6751826523481687655">ردیابی عملکرد روشن است</translation>
 <translation id="6785414152754474415">باتری <ph name="PERCENTAGE" /> درصد پر و درحال شارژ است.</translation>
 <translation id="6803622936009808957">نمایش یک تصویر واحد در چند صفحه نمایش ممکن نیست زیرا وضوح تصویر پشتیبانی شده‌ای وجود ندارد. بجای آن حالت نمایش دسک‌تاپ چند بخشی استفاده می‌شود.</translation>
 <translation id="6820676911989879663">استراحت کنید!</translation>
@@ -327,6 +334,7 @@
 <translation id="8351131234907093545">یادداشت ایجاد کنید</translation>
 <translation id="8392451568018454956">منوی گزینه‌ها برای <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">تنظیمات</translation>
+<translation id="8431190899827883166">نمایش ضربه‌ها</translation>
 <translation id="8433186206711564395">تنظیمات شبکه</translation>
 <translation id="8433977262951327081">میان‌بر نمایش ابزارک اعلان گزینه‌های ورودی در قفسه تغییر کرده است. لطفاً به‌جای <ph name="OLD_SHORTCUT" /> از <ph name="NEW_SHORTCUT" /> استفاده کنید.</translation>
 <translation id="8452135315243592079">سیم‌کارت وجود ندارد</translation>
@@ -340,6 +348,7 @@
 <translation id="8652175077544655965">بستن تنظیمات</translation>
 <translation id="8673028979667498656">‎۲۷۰°‎</translation>
 <translation id="8676770494376880701">شارژر برق متصل شده ضعیف است</translation>
+<translation id="8683506306463609433">ردیابی عملکرد فعال است</translation>
 <translation id="8734991477317290293">ممکن است تلاش کند ضربه‌کلیدهای شما را به سرقت ببرد</translation>
 <translation id="8809737090443522491">نام برنامه یا سندی را وارد کنید</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
@@ -352,7 +361,9 @@
 <translation id="8921624153894383499">‏«دستیار Google» به این زبان صحبت نمی‌کند.</translation>
 <translation id="8938800817013097409">‏دستگاه USB-C (درگاه عقب سمت راست)</translation>
 <translation id="8940956008527784070">باتری ضعیف است (<ph name="PERCENTAGE" />٪)</translation>
+<translation id="8984179138335769204">راه‌اندازی سریع</translation>
 <translation id="8995603266996330174">مدیریت شده توسط <ph name="DOMAIN" /></translation>
+<translation id="9033907480196064950">درحال ارسال محتوای <ph name="TAB_NAME" /> هستید</translation>
 <translation id="9074739597929991885">بلوتوث</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">میکروفون در حال استفاده است.</translation>
@@ -368,4 +379,5 @@
 <translation id="923686485342484400">‏برای خروج از سیستم Control Shift Q را دو بار فشار دهید.</translation>
 <translation id="945522503751344254">ارسال بازخورد</translation>
 <translation id="98515147261107953">افقی</translation>
+<translation id="995927048686010764">کلیک خودکار</translation>
 </translationbundle>

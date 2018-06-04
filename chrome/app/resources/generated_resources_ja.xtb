@@ -578,7 +578,6 @@
 <translation id="184823282865851239">煩わしい広告がよく表示されるサイトの場合にブロック</translation>
 <translation id="1849186935225320012">このページは MIDI デバイスのフル コントロールが許可されています。</translation>
 <translation id="1850508293116537636">時計回りに回転(&amp;C)</translation>
-<translation id="1851361118452499663">マイ フォト</translation>
 <translation id="1852799913675865625">ファイルの読み込み中にエラーが発生しました: <ph name="ERROR_TEXT" /></translation>
 <translation id="1853692000353488670">新しいシークレット タブ</translation>
 <translation id="1856715684130786728">位置情報を追加...</translation>
@@ -2951,7 +2950,6 @@
 <translation id="5559719557406102971">Termina VM を起動しています。</translation>
 <translation id="55601339223879446">ディスプレイ内のデスクトップの境界線を調整します</translation>
 <translation id="5562781907504170924">このタブは Bluetooth デバイスに接続しています。</translation>
-<translation id="5563234215388768762">Google で検索または URL を入力</translation>
 <translation id="5565871407246142825">クレジットカード</translation>
 <translation id="5567989639534621706">アプリケーション キャッシュ</translation>
 <translation id="5568069709869097550">ログインできない</translation>
@@ -3498,6 +3496,7 @@
 <translation id="6410668567036790476">検索エンジンの追加</translation>
 <translation id="641081527798843608">件名の一致</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Google で検索またはウェブアドレスを入力</translation>
 <translation id="6412931879992742813">新しいシークレット ウィンドウ</translation>
 <translation id="6417265370957905582">Google アシスタント</translation>
 <translation id="6418160186546245112"><ph name="IDS_SHORT_PRODUCT_NAME" /> の以前のインストール バージョンに戻しています</translation>

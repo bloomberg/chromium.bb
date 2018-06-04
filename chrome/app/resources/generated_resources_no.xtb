@@ -574,7 +574,6 @@
 <translation id="184823282865851239">Blokkér hvis nettstedet ofte viser forstyrrende annonser</translation>
 <translation id="1849186935225320012">Denne siden har full kontroll over MIDI-enheter.</translation>
 <translation id="1850508293116537636">Rotér &amp;med klokken</translation>
-<translation id="1851361118452499663">Mine bilder</translation>
 <translation id="1852799913675865625">Det oppstod en feil under forsøket på å lese filen: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Ny inkognitofane</translation>
 <translation id="1856715684130786728">Legg til plassering</translation>
@@ -2942,7 +2941,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="5559719557406102971">Starter Termina VM.</translation>
 <translation id="55601339223879446">Juster grensene for skrivebordet på skjermen</translation>
 <translation id="5562781907504170924">Denne fanen er koblet til en Bluetooth-enhet.</translation>
-<translation id="5563234215388768762">Søk i Google eller skriv inn en nettadresse</translation>
 <translation id="5565871407246142825">Kredittkort</translation>
 <translation id="5567989639534621706">Programbuffere</translation>
 <translation id="5568069709869097550">Kan ikke logge på</translation>
@@ -3489,6 +3487,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="6410668567036790476">Legg til søkemotor</translation>
 <translation id="641081527798843608">Emnetreff</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Søk på Google, eller skriv inn en nettadresse</translation>
 <translation id="6412931879992742813">Nytt inkognitovindu</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
 <translation id="6418160186546245112">Tilbakestiller til den forrige installerte versjonen av <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

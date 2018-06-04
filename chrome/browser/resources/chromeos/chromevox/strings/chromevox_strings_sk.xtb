@@ -145,6 +145,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="2416512023405990736">Nezačiarknuté políčko</translation>
 <translation id="2417569100218200841">Informácie o obsahu</translation>
 <translation id="2417948780551741035">Vysvetlivky</translation>
+<translation id="2421113964388408478">Odstránenie</translation>
 <translation id="2422937916923936891">Začiarkavacie políčko položky ponuky</translation>
 <translation id="2428534162001909979">Ponuky s príkazmi</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -178,6 +179,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">zvuk</translation>
 <translation id="2732718972699418926">AM</translation>
+<translation id="2737520612859577214">Koniec horného indexu</translation>
 <translation id="2749275490991666823">Začiarknuté</translation>
 <translation id="27527859628328957">Prejsť na ďalšiu zamerateľnú položku</translation>
 <translation id="276402504937943375">obsah</translation>
@@ -202,6 +204,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="288178314850623291">Ak chcete prejsť na konkrétne typy prvkov, použite príkazy na preskočenie. Ak chcete prechádzať dopredu medzi nadpismi, stlačte kombináciu klávesov Hľadať + H. Ak chcete prejsť dozadu, stlačte kombináciu klávesov Hľadať + Shift + H.</translation>
 <translation id="2894654529758326923">Informácie</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{ľavá zložená zátvorka}few{# ľavé zložené zátvorky}many{# left braces}other{# ľavých zložených zátvoriek}}</translation>
+<translation id="2909478709401302630">Začiatok horného indexu</translation>
 <translation id="2911433807131383493">Otvoriť príručku rozšírenia ChromeVox</translation>
 <translation id="2932083475399492303">Prepnúť typ riadku medzi riadkom štruktúry a rozloženia</translation>
 <translation id="2944762337049891859">Po načítaní stránku automaticky prečítať.</translation>
@@ -383,6 +386,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4148180433151187540">{COUNT,plural, =1{pravá zložená zátvorka}few{# pravé zložené zátvorky}many{# right braces}other{# pravých zložených zátvoriek}}</translation>
 <translation id="4158704014418536539">Rozlišujú sa malé a veľké písmená.</translation>
 <translation id="4161663686871496107">Hovorená spätná väzba ChromeVox je pripravená</translation>
+<translation id="4166192625054637755">Koniec dolného indexu</translation>
 <translation id="4173994908659439270">Žiadne ďalšie upraviteľné textové pole</translation>
 <translation id="4176463684765177261">Deaktivované</translation>
 <translation id="4188530942454211480">Predchádzajúca veta</translation>
@@ -422,6 +426,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4476183483923481720">nový riadok</translation>
 <translation id="4482330759234983253">Predchádzajúca tabuľka</translation>
 <translation id="4491109536499578614">Obrázok</translation>
+<translation id="4505167975768625962">Vloženie</translation>
 <translation id="4517854969512651305">Zvýšiť hodnotu</translation>
 <translation id="4529987814483543472">Klasická klávesová mapa</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{lomka}few{# lomky}many{# slashes}other{# lomiek}}</translation>
@@ -526,6 +531,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="5330443287809544590"><ph name="NAME" />, odkaz</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Spätný odkaz</translation>
+<translation id="5350654862897073517">Začiatok dolného indexu</translation>
 <translation id="536031132345979795">Prejsť späť počas nepretržitého čítania</translation>
 <translation id="5368000168321181111">Zvukové signály sú vypnuté</translation>
 <translation id="5374320867641260420">Žiadne ďalšie tlačidlo</translation>

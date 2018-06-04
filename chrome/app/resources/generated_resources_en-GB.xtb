@@ -583,7 +583,6 @@
 <translation id="184823282865851239">Block if site tends to show intrusive ads</translation>
 <translation id="1849186935225320012">This page has full control of MIDI devices.</translation>
 <translation id="1850508293116537636">Rotate &amp;clockwise</translation>
-<translation id="1851361118452499663">My Photos</translation>
 <translation id="1852799913675865625">There was an error while trying to read the file: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">New incognito tab</translation>
 <translation id="1856715684130786728">Add location...</translation>
@@ -2962,7 +2961,6 @@ I don't think this site should be blocked!</translation>
 <translation id="5559719557406102971">Starting Termina VM.</translation>
 <translation id="55601339223879446">Adjust the boundaries of your desktop within the display</translation>
 <translation id="5562781907504170924">This tab is connected to a Bluetooth device.</translation>
-<translation id="5563234215388768762">Search Google or type a URL</translation>
 <translation id="5565871407246142825">Credit cards</translation>
 <translation id="5567989639534621706">Application Caches</translation>
 <translation id="5568069709869097550">Can't sign in</translation>
@@ -3510,6 +3508,7 @@ I don't think this site should be blocked!</translation>
 <translation id="6410668567036790476">Add search engine</translation>
 <translation id="641081527798843608">Subject match</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Search Google or type a web address</translation>
 <translation id="6412931879992742813">New incognito window</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6418160186546245112">Reverting to the previously installed version of <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

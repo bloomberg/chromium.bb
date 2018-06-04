@@ -248,7 +248,7 @@
 <translation id="1367951781824006909">בחר קובץ</translation>
 <translation id="1368265273904755308">דיווח על בעיה</translation>
 <translation id="1370646789215800222">האם להסיר את המשתמש?</translation>
-<translation id="1371301976177520732">הסימניות, הסיסמאות, ההיסטוריה ונתונים נוספים שלך בכל המכשירים שברשותך</translation>
+<translation id="1371301976177520732">הסימניות, הסיסמאות, ההיסטוריה ונתונים נוספים שלך - בכל המכשירים שברשותך</translation>
 <translation id="1372681413396468867">{NUM_ITEMS,plural, =1{פריט אחד להסרה}two{# פריטים להסרה}many{# פריטים להסרה}other{# פריטים להסרה}}</translation>
 <translation id="1372841398847029212">סנכרון עם החשבון שלך</translation>
 <translation id="1374844444528092021">האישור הנדרש על ידי הרשת "<ph name="NETWORK_NAME" />" אינו מותקן או שכבר אינו חוקי. קבל אישור חדש ונסה להתחבר שוב.</translation>
@@ -574,7 +574,6 @@
 <translation id="184823282865851239">חסום אם האתר נוטה להציג מודעות שמפריעות</translation>
 <translation id="1849186935225320012">‏לדף זה יש שליטה מלאה על מכשירי MIDI.</translation>
 <translation id="1850508293116537636">סובב &amp;בכיוון השעון</translation>
-<translation id="1851361118452499663">התמונות שלי</translation>
 <translation id="1852799913675865625">אירעה שגיאה בעת ניסיון לקרוא את הקובץ: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">כרטיסייה חדשה לגלישה בסתר</translation>
 <translation id="1856715684130786728">הוסף מיקום...</translation>
@@ -617,7 +616,7 @@
 <translation id="1919345977826869612">מודעות</translation>
 <translation id="1919814239594435008">פלאגין ללא ארגז חול הותר</translation>
 <translation id="1921584744613111023">‏dpi‏ <ph name="DPI" /></translation>
-<translation id="1924559387127953748">‏גישה ליכולות החכמות של Google ב-<ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
+<translation id="1924559387127953748">‏ליהנות מהיכולות החכמות של Google ב-<ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="192494336144674234">פתח באמצעות</translation>
 <translation id="1925021887439448749">הזן כתובת אינטרנט מותאמת אישית</translation>
 <translation id="1926339101652878330">ההגדרות האלה נשלטות על פי מדיניות הארגון. צור קשר עם מנהל המערכת שלך לקבלת מידע נוסף.</translation>
@@ -2948,7 +2947,6 @@
 <translation id="5559719557406102971">‏הפעלת Termina VM.</translation>
 <translation id="55601339223879446">שנה את גבולות שולחן העבודה שלך בצג</translation>
 <translation id="5562781907504170924">‏הכרטיסייה הזו מחוברת להתקן Bluetooth.</translation>
-<translation id="5563234215388768762">‏אפשר לחפש ב-Google או להקליד כתובת אתר</translation>
 <translation id="5565871407246142825">כרטיסי אשראי</translation>
 <translation id="5567989639534621706">קובצי מטמון של יישום</translation>
 <translation id="5568069709869097550">אי אפשר להיכנס</translation>
@@ -3495,6 +3493,7 @@
 <translation id="6410668567036790476">הוספת מנוע חיפוש</translation>
 <translation id="641081527798843608">התאמת נושא</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">‏אפשר לחפש ב-Google או להקליד כתובת אינטרנט</translation>
 <translation id="6412931879992742813">חלון חדש של גלישה בסתר</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6418160186546245112">חוזר לגרסה המותקנת הקודמת של <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
