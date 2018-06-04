@@ -79,11 +79,13 @@ public class DownloadInfoBarControllerTest {
         @Override
         protected void showInfoBar(DownloadInfoBarState state, DownloadProgressInfoBarData info) {
             mInfo = info;
+            super.showInfoBar(state, info);
         }
 
         @Override
         protected void closePreviousInfoBar() {
             mInfo = null;
+            super.closePreviousInfoBar();
         }
 
         @Override
@@ -94,6 +96,16 @@ public class DownloadInfoBarControllerTest {
         @Override
         protected long getDurationShowResult() {
             return TEST_DURATION_SHOW_RESULT;
+        }
+
+        @Override
+        protected boolean isSpeedingUpMessageEnabled() {
+            return true;
+        }
+
+        @Override
+        public void onItemUpdated(OfflineItem item) {
+            super.onItemUpdated(item.clone());
         }
 
         void verify(String message) {
@@ -116,7 +128,17 @@ public class DownloadInfoBarControllerTest {
         String uuid = UUID.randomUUID().toString();
         item.id = LegacyHelpers.buildLegacyContentId(true, uuid);
         item.state = state;
+        if (item.state == OfflineItemState.COMPLETE) {
+            markItemComplete(item);
+        }
         return item;
+    }
+
+    private static void markItemComplete(OfflineItem item) {
+        item.state = OfflineItemState.COMPLETE;
+        item.title = TEST_FILE_NAME;
+        item.receivedBytes = 10L;
+        item.totalSizeBytes = 10L;
     }
 
     private void waitForMessage(String message) {
@@ -180,8 +202,7 @@ public class DownloadInfoBarControllerTest {
         mTestController.onItemUpdated(item);
         mTestController.verify(MESSAGE_DOWNLOADING_FILE);
 
-        item.state = OfflineItemState.COMPLETE;
-        item.title = TEST_FILE_NAME;
+        markItemComplete(item);
         mTestController.onItemUpdated(item);
         mTestController.verify(TEST_FILE_NAME);
     }
@@ -194,8 +215,7 @@ public class DownloadInfoBarControllerTest {
         mTestController.onItemUpdated(item);
         mTestController.verify(MESSAGE_DOWNLOADING_FILE);
 
-        item.state = OfflineItemState.COMPLETE;
-        item.title = TEST_FILE_NAME;
+        markItemComplete(item);
         mTestController.onItemUpdated(item);
         mTestController.verify(TEST_FILE_NAME);
 
@@ -253,7 +273,6 @@ public class DownloadInfoBarControllerTest {
     @Feature({"Download"})
     public void testNewDownloadShowsUpImmediately() {
         OfflineItem item1 = createOfflineItem(OfflineItemState.COMPLETE);
-        item1.title = TEST_FILE_NAME;
         mTestController.onItemUpdated(item1);
         mTestController.verify(TEST_FILE_NAME);
 
@@ -279,7 +298,7 @@ public class DownloadInfoBarControllerTest {
         mTestController.onItemUpdated(item);
         mTestController.verifyInfoBarClosed();
 
-        item.state = OfflineItemState.COMPLETE;
+        markItemComplete(item);
         mTestController.onItemUpdated(item);
         mTestController.verifyInfoBarClosed();
     }
@@ -306,7 +325,6 @@ public class DownloadInfoBarControllerTest {
     @Feature({"Download"})
     public void testCompleteFailedComplete() {
         OfflineItem item1 = createOfflineItem(OfflineItemState.COMPLETE);
-        item1.title = TEST_FILE_NAME;
         mTestController.onItemUpdated(item1);
         mTestController.verify(TEST_FILE_NAME);
 
@@ -347,7 +365,6 @@ public class DownloadInfoBarControllerTest {
         mTestController.verify(MESSAGE_DOWNLOADING_FILE);
 
         OfflineItem item2 = createOfflineItem(OfflineItemState.COMPLETE);
-        item2.title = TEST_FILE_NAME;
         mTestController.onItemUpdated(item2);
         mTestController.verify(TEST_FILE_NAME);
 
@@ -371,9 +388,29 @@ public class DownloadInfoBarControllerTest {
         mTestController.onItemUpdated(item2);
         mTestController.verify(MESSAGE_DOWNLOAD_FAILED);
 
-        item2.state = OfflineItemState.COMPLETE;
-        item2.title = TEST_FILE_NAME;
+        markItemComplete(item2);
         mTestController.onItemUpdated(item2);
         mTestController.verify(TEST_FILE_NAME);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Download"})
+    public void testResumeFromPendingShowsUpImmediately() {
+        OfflineItem item1 = createOfflineItem(OfflineItemState.PENDING);
+        mTestController.onItemUpdated(item1);
+        mTestController.verify(MESSAGE_DOWNLOAD_PENDING);
+
+        OfflineItem item2 = createOfflineItem(OfflineItemState.PENDING);
+        mTestController.onItemUpdated(item2);
+        mTestController.verify(MESSAGE_TWO_DOWNLOAD_PENDING);
+
+        item2.state = OfflineItemState.IN_PROGRESS;
+        mTestController.onItemUpdated(item2);
+        mTestController.verify(MESSAGE_DOWNLOAD_PENDING);
+
+        item1.state = OfflineItemState.IN_PROGRESS;
+        mTestController.onItemUpdated(item1);
+        mTestController.verify(MESSAGE_DOWNLOADING_TWO_FILES);
     }
 }
