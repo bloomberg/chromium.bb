@@ -411,7 +411,6 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
         (constants.TEST_IMAGE_TAR, test_basename, 'tar.xz'),
         ('debug.tgz', 'debug-%s' % boardpath, 'tgz'),
         (hwqual_tarball, '', ''),
-        ('au-generator.zip', '', ''),
         ('stateful.tgz', '', ''),
     )
 

@@ -64,11 +64,6 @@ class UnitTestStage(generic_stages.BoardSpecificBuilderStage,
         self._build_root, self._current_board, self.archive_path)
     self.UploadArtifact(tarball, archive=False)
 
-    if os.path.exists(os.path.join(self.GetImageDirSymlink(),
-                                   'au-generator.zip')):
-      commands.TestAuZip(self._build_root,
-                         self.GetImageDirSymlink())
-
 
 class HWTestStage(generic_stages.BoardSpecificBuilderStage,
                   generic_stages.ArchivingStageMixin):

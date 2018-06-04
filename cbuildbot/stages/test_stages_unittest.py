@@ -42,7 +42,6 @@ class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase,
         commands, 'BuildUnitTestTarball', return_value='unit_tests.tar')
     self.uploadartifact_mock = self.PatchObject(
         generic_stages.ArchivingStageMixin, 'UploadArtifact')
-    self.testauzip_mock = self.PatchObject(commands, 'TestAuZip')
     self.image_dir = os.path.join(
         self.build_root, 'src/build/images/amd64-generic/latest-cbuildbot')
 
@@ -54,13 +53,10 @@ class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
-    exists_mock = self.PatchObject(os.path, 'exists', return_value=True)
     makedirs_mock = self.PatchObject(osutils, 'SafeMakedirs')
 
     self.RunStage()
     makedirs_mock.assert_called_once_with(self._run.GetArchive().archive_path)
-    exists_mock.assert_called_once_with(
-        os.path.join(self.image_dir, 'au-generator.zip'))
     self.rununittests_mock.assert_called_once_with(
         self.build_root, self._current_board, blacklist=[], extra_env=mock.ANY)
     self.buildunittests_mock.assert_called_once_with(
@@ -68,7 +64,6 @@ class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase,
         self._run.GetArchive().archive_path)
     self.uploadartifact_mock.assert_called_once_with(
         'unit_tests.tar', archive=False)
-    self.testauzip_mock.assert_called_once_with(self.build_root, self.image_dir)
 
 
 class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,

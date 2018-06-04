@@ -249,16 +249,10 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
 
       This includes:
         - image.zip (all images in one big zip file)
-        - the au-generator.zip used for update payload generation.
       """
       # Zip up everything in the image directory.
       image_zip = commands.BuildImageZip(archive_path, image_dir)
       self._release_upload_queue.put([image_zip])
-
-      # Archive au-generator.zip.
-      filename = 'au-generator.zip'
-      shutil.copy(os.path.join(image_dir, filename), archive_path)
-      self._release_upload_queue.put([filename])
 
     def ArchiveHWQual():
       """Build and archive the HWQual images."""

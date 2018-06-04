@@ -35,7 +35,6 @@ Here is a typical flow for using the setup.
   ./dut_image/boot.config
   ./dut_image/umount_image.sh
   ./dut_image/partition_script.sh
-  ./dut_image/au-generator.zip
   ./dut_image/mount_image.sh
   ./dut_image/unpack_partitions.sh
   ./moblab_image/
@@ -51,7 +50,6 @@ Here is a typical flow for using the setup.
   ./moblab_image/boot.config
   ./moblab_image/umount_image.sh
   ./moblab_image/partition_script.sh
-  ./moblab_image/au-generator.zip
   ./moblab_image/moblab_disk
   ./moblab_image/mount_image.sh
   ./moblab_image/unpack_partitions.sh
@@ -89,7 +87,6 @@ Here is a typical flow for using the setup.
       inflating: boot.desc
       inflating: partition_script.sh
       inflating: unpack_partitions.sh
-    extracting: au-generator.zip
       inflating: vmlinuz.bin
       inflating: mount_image.sh
       inflating: pack_partitions.sh
@@ -107,7 +104,6 @@ Here is a typical flow for using the setup.
   Archive:  image.zip
     inflating: chromiumos_test_image.bin
     inflating: partition_script.sh
-  extracting: au-generator.zip
     inflating: umount_image.sh
     inflating: license_credits.html
     inflating: mount_image.sh

@@ -1138,18 +1138,6 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
     commands.BuildImage(self._buildroot, self._board, None)
     self.assertCommandContains(['./build_image'])
 
-  def testGenerateAuZip(self):
-    """Test Basic generate_au_zip Command."""
-    with mock.patch.object(path_util, 'ToChrootPath',
-                           side_effect=lambda x: x):
-      commands.GenerateAuZip(self._buildroot, '/tmp/taco', None)
-    self.assertCommandContains(['./build_library/generate_au_zip.py'])
-
-  def testTestAuZip(self):
-    """Test Basic generate_au_zip Command."""
-    commands.TestAuZip(self._buildroot, '/tmp/taco', None)
-    self.assertCommandContains(['./build_library/test_au_zip.py'])
-
   def testCompleteBuildImage(self):
     """Test Complete BuildImage Command."""
     images_to_build = ['bob', 'carol', 'ted', 'alice']

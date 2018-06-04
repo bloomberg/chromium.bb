@@ -100,8 +100,7 @@ class PaygenPayloadLibTest(cros_test_lib.MoxTempDirTestCase):
 class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
   """PaygenPayloadLib basic (and quick) testing."""
 
-  def _GetStdGenerator(self, work_dir=None, payload=None, sign=True,
-                       au_generator_uri_override=None):
+  def _GetStdGenerator(self, work_dir=None, payload=None, sign=True):
     """Helper function to create a standardized PayloadGenerator."""
     if payload is None:
       payload = self.full_payload
@@ -109,23 +108,17 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     if work_dir is None:
       work_dir = self.tempdir
 
-    if not au_generator_uri_override:
-      au_generator_uri_override = gspaths.ChromeosReleases.GeneratorUri(
-          payload.tgt_image.channel, payload.tgt_image.board, '7587.0.0')
-
     return paygen_payload_lib._PaygenPayload(
         payload=payload,
         cache=self.cache,
         work_dir=work_dir,
         sign=sign,
-        verify=False,
-        au_generator_uri_override=au_generator_uri_override)
+        verify=False)
 
   def testWorkingDirNames(self):
     """Make sure that some of the files we create have the expected names."""
     gen = self._GetStdGenerator(work_dir='/foo')
 
-    self.assertEqual(gen.generator_dir, '/foo/au-generator')
     self.assertEqual(gen.src_image_file, '/foo/src_image.bin')
     self.assertEqual(gen.tgt_image_file, '/foo/tgt_image.bin')
     self.assertEqual(gen.payload_file, '/foo/delta.bin')
@@ -156,21 +149,8 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.assertEqual(gen._JsonUri('gs://foo/bar'),
                      'gs://foo/bar.json')
 
-  @cros_test_lib.NetworkTest()
-  def testPrepareGenerator(self):
-    """Validate that we can download an unzip a generator artifact."""
-    gen = self._GetStdGenerator()
-    gen._PrepareGenerator()
-
-    # Ensure that the expected executables in the au-generator are available.
-    expected = os.path.join(gen.generator_dir, 'cros_generate_update_payload')
-    self.assertExists(expected)
-
-    expected = os.path.join(gen.generator_dir, 'delta_generator')
-    self.assertExists(expected)
-
   def testRunGeneratorCmd(self):
-    """Test the specialized command to run programs from au-generate.zip."""
+    """Test the specialized command to run programs in chroot."""
     expected_cmd = ['cmd', 'bar', 'jo nes']
     original_environ = os.environ.copy()
     gen = self._GetStdGenerator(work_dir='/foo')
@@ -617,8 +597,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Set up stubs.
     self.mox.StubOutWithMock(paygen_payload_lib._PaygenPayload,
-                             '_PrepareGenerator')
-    self.mox.StubOutWithMock(paygen_payload_lib._PaygenPayload,
                              '_PrepareImage')
     self.mox.StubOutWithMock(paygen_payload_lib._PaygenPayload,
                              '_GenerateUnsignedPayload')
@@ -628,7 +606,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
                              '_StorePayloadJson')
 
     # Record expected calls.
-    gen._PrepareGenerator()
     gen._PrepareImage(payload.tgt_image, gen.tgt_image_file)
     gen._PrepareImage(payload.src_image, gen.src_image_file)
     gen._GenerateUnsignedPayload()
@@ -772,8 +749,6 @@ class PaygenPayloadLibEndToEndTest(PaygenPayloadLibTest):
         payload=payload,
         cache=self.cache,
         work_dir=self.tempdir,
-        au_generator_uri=gspaths.ChromeosReleases.GeneratorUri(
-            payload.tgt_image.channel, payload.tgt_image.board, '7587.0.0'),
         sign=sign)
 
     self.assertExists(output_uri)

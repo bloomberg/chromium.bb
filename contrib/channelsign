@@ -191,8 +191,6 @@ for f in ${FILELIST}; do
     # Copy it and other bits up to TOCHANNEL
     GSCp "${LOCALI}" "${TARGET}"
     GSCp "${f%/*}/${archive}" "${TARGET%/*}/${archive}"
-    GSCp "$(dirname "${f}")/au-generator.zip" \
-      "$(dirname "${TARGET}")/"
     GSCp "$(dirname "${f}")/ChromeOS-test*.tar.xz" \
       "$(dirname "${TARGET}")/"
     GSCp "$(dirname "${f}")/stateful.tgz" \

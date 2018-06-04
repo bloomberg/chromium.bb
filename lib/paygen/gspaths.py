@@ -184,25 +184,6 @@ class ChromeosReleases(object):
     return 'gs://%s/%s/%s/%s' % (bucket, channel, board, version)
 
   @staticmethod
-  def GeneratorUri(channel, board, version, bucket=None):
-    """Creates the gspath for a given build image.
-
-    Args:
-      channel: What channel does the build belong too. Usually "xxx-channel".
-      board: What board is the build for? "x86-alex", "lumpy", etc.
-      version: What is the build version. "3015.0.0", "1945.76.3", etc
-      bucket: What bucket is the build in? Usually "chromeos-releases".
-
-    Returns:
-      The url for the specified build's delta generator zip file.
-    """
-    return os.path.join(ChromeosReleases.BuildUri(channel,
-                                                  board,
-                                                  version,
-                                                  bucket=bucket),
-                        'au-generator.zip')
-
-  @staticmethod
   def BuildPayloadsUri(channel, board, version, bucket=None):
     """Creates the gspath for the payloads of a given build.
 

@@ -742,9 +742,7 @@ class BuildImageStage(BuildPackagesStage):
 
     self.board_runattrs.SetParallel('images_generated', True)
 
-    parallel.RunParallelSteps(
-        [self._BuildVMImage, lambda: self._GenerateAuZip(cbuildbot_image_link),
-         self._BuildGceTarballs])
+    parallel.RunParallelSteps([self._BuildVMImage, self._BuildGceTarballs])
 
   def _BuildVMImage(self):
     if self._run.config.vm_tests and not self._afdo_generate_min:
@@ -753,13 +751,6 @@ class BuildImageStage(BuildPackagesStage):
           self._current_board,
           extra_env=self._portage_extra_env,
           disk_layout=self._run.config.disk_layout)
-
-  def _GenerateAuZip(self, image_dir):
-    """Create au-generator.zip."""
-    if not self._afdo_generate_min:
-      commands.GenerateAuZip(self._build_root,
-                             image_dir,
-                             extra_env=self._portage_extra_env)
 
   def _BuildGceTarballs(self):
     """Creates .tar.gz files that can be converted to GCE images.

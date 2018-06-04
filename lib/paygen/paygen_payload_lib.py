@@ -55,8 +55,7 @@ class _PaygenPayload(object):
   _KERNEL = 'kernel'
   _ROOTFS = 'rootfs'
 
-  def __init__(self, payload, cache, work_dir, sign, verify,
-               au_generator_uri_override, dry_run=False):
+  def __init__(self, payload, cache, work_dir, sign, verify, dry_run=False):
     """Init for _PaygenPayload.
 
     Args:
@@ -66,18 +65,14 @@ class _PaygenPayload(object):
       work_dir: A working directory for output files. Can NOT be shared.
       sign: Boolean saying if the payload should be signed (normally, you do).
       verify: whether the payload should be verified after being generated
-      au_generator_uri_override: URI to override standard au_generator.zip
-          rules.
       dry_run: do not do any actual work
     """
     self.payload = payload
     self.cache = cache
     self.work_dir = work_dir
     self._verify = verify
-    self._au_generator_uri_override = au_generator_uri_override
     self._drm = dryrun_lib.DryRunMgr(dry_run)
 
-    self.generator_dir = os.path.join(work_dir, 'au-generator')
     self.src_image_file = os.path.join(work_dir, 'src_image.bin')
     self.tgt_image_file = os.path.join(work_dir, 'tgt_image.bin')
 
@@ -122,41 +117,15 @@ class _PaygenPayload(object):
     """Given a payload uri, find the uri for the json payload description."""
     return uri + '.json'
 
-  def _PrepareGenerator(self):
-    """Download, and extract au-generator.zip into self.generator_dir."""
-    if self._au_generator_uri_override:
-      generator_uri = self._au_generator_uri_override
-    else:
-      generator_uri = gspaths.ChromeosReleases.GeneratorUri(
-          self.payload.tgt_image.channel,
-          self.payload.tgt_image.board,
-          self.payload.tgt_image.version,
-          self.payload.tgt_image.bucket)
-
-    logging.info('Preparing au-generator.zip from %s.', generator_uri)
-
-    # Extract zipped delta generator files to the expected directory.
-    tmp_zip = self.cache.GetFileInTempFile(generator_uri)
-    cros_build_lib.RunCommand(
-        ['unzip', '-o', '-d', self.generator_dir, tmp_zip.name],
-        redirect_stdout=True, redirect_stderr=True)
-    tmp_zip.close()
-
   def _RunGeneratorCmd(self, cmd):
-    """Wrapper for RunCommand for programs in self.generator_dir.
+    """Wrapper for RunCommand in chroot.
 
-    Adjusts the program name for the current self.au_generator directory, and
-    sets up the special requirements needed for these 'out of chroot'
-    programs. Will automatically log the command output if execution resulted
-    in a nonzero exit code. Note that the command's stdout and stderr are
-    combined into a single string. This also sets the TMPDIR variable
-    accordingly in the spawned process' environment.
+    Run the given command inside the chroot. It will automatically log the
+    command output. Note that the command's stdout and stderr are combined into
+    a single string.
 
     Args:
       cmd: Program and argument list in a list. ['delta_generator', '--help']
-
-    Returns:
-      The output of the executed command.
 
     Raises:
       cros_build_lib.RunCommandError if the command exited with a nonzero code.
@@ -557,9 +526,6 @@ class _PaygenPayload(object):
     logging.info('Generating %s payload %s',
                  'delta' if self.payload.src_image else 'full', self.payload)
 
-    # Fetch and extract the delta generator.
-    self._PrepareGenerator()
-
     # Fetch and prepare the tgt image.
     self._PrepareImage(self.payload.tgt_image, self.tgt_image_file)
 
@@ -742,7 +708,7 @@ def FindCacheDir():
 
 
 def CreateAndUploadPayload(payload, cache, work_dir, sign=True, verify=True,
-                           dry_run=False, au_generator_uri=None):
+                           dry_run=False):
   """Helper to create a PaygenPayloadLib instance and use it.
 
   Args:
@@ -753,7 +719,6 @@ def CreateAndUploadPayload(payload, cache, work_dir, sign=True, verify=True,
     sign: Boolean saying if the payload should be signed (normally, you do).
     verify: whether the payload should be verified (default: True)
     dry_run: don't perform actual work
-    au_generator_uri: URI to override standard au_generator.zip rules.
   """
   # We need to create a temp directory inside the chroot so be able to access
   # from both inside and outside the chroot.
@@ -766,8 +731,7 @@ def CreateAndUploadPayload(payload, cache, work_dir, sign=True, verify=True,
     logging.info('* Starting payload generation')
     start_time = datetime.datetime.now()
 
-    _PaygenPayload(payload, cache, gen_dir, sign, verify, au_generator_uri,
-                   dry_run=dry_run).Run()
+    _PaygenPayload(payload, cache, gen_dir, sign, verify, dry_run=dry_run).Run()
 
     end_time = datetime.datetime.now()
     logging.info('* Finished payload generation in %s', end_time - start_time)

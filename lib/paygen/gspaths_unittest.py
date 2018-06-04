@@ -40,7 +40,6 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
   """Tests for gspaths.ChromeosReleases."""
   # Standard Chrome OS releases names.
   _CHROMEOS_RELEASES_BUCKET = 'chromeos-releases'
-  _AU_GENERATOR_FILE_NAME = 'au-generator.zip'
 
   # Google Storage path, image and payload name base templates.
   _GS_BUILD_PATH_TEMPLATE = 'gs://%(bucket)s/%(channel)s/%(board)s/%(version)s'
@@ -160,23 +159,6 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
                                           self.board,
                                           self.version),
         self._PopulateGsPath(self._GS_BUILD_PATH_TEMPLATE,
-                             bucket=self._CHROMEOS_RELEASES_BUCKET))
-
-  def testGeneratorUri(self):
-    self.assertEquals(
-        gspaths.ChromeosReleases.GeneratorUri(self.channel,
-                                              self.board,
-                                              self.version,
-                                              bucket=self.bucket),
-        self._PopulateGsPath(self._GS_BUILD_PATH_TEMPLATE,
-                             suffix=self._AU_GENERATOR_FILE_NAME))
-
-    self.assertEquals(
-        gspaths.ChromeosReleases.GeneratorUri(self.channel,
-                                              self.board,
-                                              self.version),
-        self._PopulateGsPath(self._GS_BUILD_PATH_TEMPLATE,
-                             suffix=self._AU_GENERATOR_FILE_NAME,
                              bucket=self._CHROMEOS_RELEASES_BUCKET))
 
   def testBuildPayloadsUri(self):
