@@ -63,6 +63,7 @@ crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-prct-vlr-in-ht
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-prct-vrl-in-htb-002.xht [ Pass ]
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-001.xht [ Pass ]
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-004.xht [ Pass ]
+crbug.com/774229 editing/pasteboard/copy-paste-white-space.html [ Pass ]
 crbug.com/591099 fast/dom/inner-text-first-letter.html [ Pass ]
 
 # The position of writing-mode:vertical inline image is different from legacy.
@@ -162,7 +163,6 @@ crbug.com/591099 css3/selectors3/xml/css3-modsel-38.xml [ Failure ]
 crbug.com/591099 editing/caret/caret-color-014.html [ Failure Pass ]
 crbug.com/591099 editing/caret/caret-color-015.html [ Failure Pass ]
 crbug.com/714962 editing/pasteboard/copy-paste-pre-line-content.html [ Failure ]
-crbug.com/591099 editing/pasteboard/copy-paste-white-space.html [ Failure ]
 crbug.com/591099 editing/pasteboard/dragstart-contains-default-content.html [ Failure ]
 crbug.com/591099 editing/selection/4402375.html [ Failure ]
 crbug.com/591099 editing/selection/4776665.html [ Failure ]
