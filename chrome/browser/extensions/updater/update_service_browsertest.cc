@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/extensions/content_verifier_test_utils.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -14,6 +15,7 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/update_client/url_request_post_interceptor.h"
+#include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/external_install_info.h"
@@ -21,6 +23,7 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
+#include "extensions/common/extension_updater_uma.h"
 #include "extensions/common/extension_urls.h"
 #include "net/url_request/test_url_request_interceptor.h"
 
@@ -52,6 +55,7 @@ class UpdateServiceTest : public ExtensionUpdateClientBaseTest {
 IN_PROC_BROWSER_TEST_F(UpdateServiceTest, NoUpdate) {
   // Verify that UpdateService runs correctly when there's no update.
   base::ScopedAllowBlockingForTesting allow_io;
+  base::HistogramTester histogram_tester;
 
   // Mock a no-update response.
   const base::FilePath update_response =
@@ -70,9 +74,21 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, NoUpdate) {
   params.ids = {kExtensionId};
   extension_service()->updater()->CheckNow(std::move(params));
 
-  // UpdateService should emit an not-updated event.
+  // UpdateService should emit a not-updated event.
   EXPECT_EQ(UpdateClientEvents::COMPONENT_NOT_UPDATED,
             WaitOnComponentUpdaterCompleteEvent(kExtensionId));
+
+  content::FetchHistogramsFromChildProcesses();
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
+      testing::ElementsAre(base::Bucket(1, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Extensions.ExtensionUpdaterUpdateResults"),
+      testing::ElementsAre(base::Bucket(
+          static_cast<int>(ExtensionUpdaterUpdateResult::NO_UPDATE), 1)));
+  histogram_tester.ExpectTotalCount(
+      "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors", 0);
 
   ASSERT_EQ(1, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();
@@ -90,8 +106,120 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, NoUpdate) {
   EXPECT_THAT(update_request, ::testing::HasSubstr(R"(enabled="1")"));
 }
 
+IN_PROC_BROWSER_TEST_F(UpdateServiceTest, UpdateCheckError) {
+  // Verify that UpdateService works correctly when there's an error in the
+  // update check phase.
+  base::ScopedAllowBlockingForTesting allow_io;
+  base::HistogramTester histogram_tester;
+
+  // Mock an update check error.
+  ASSERT_TRUE(update_interceptor_->ExpectRequest(
+      std::make_unique<update_client::PartialMatch>("<updatecheck/>"), 403));
+
+  const base::FilePath crx_path = test_data_dir_.AppendASCII("updater/v1.crx");
+  const Extension* extension =
+      InstallExtension(crx_path, 1, Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  ASSERT_TRUE(extension);
+  EXPECT_EQ(kExtensionId, extension->id());
+
+  extensions::ExtensionUpdater::CheckParams params;
+  params.ids = {kExtensionId};
+  extension_service()->updater()->CheckNow(std::move(params));
+
+  // UpdateService should emit an error update event.
+  EXPECT_EQ(UpdateClientEvents::COMPONENT_UPDATE_ERROR,
+            WaitOnComponentUpdaterCompleteEvent(kExtensionId));
+
+  content::FetchHistogramsFromChildProcesses();
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
+      testing::ElementsAre(base::Bucket(1, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Extensions.ExtensionUpdaterUpdateResults"),
+      testing::ElementsAre(base::Bucket(
+          static_cast<int>(ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR),
+          1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors"),
+              testing::ElementsAre(base::Bucket(403, 1)));
+
+  ASSERT_EQ(1, update_interceptor_->GetCount())
+      << update_interceptor_->GetRequestsAsString();
+
+  // Error, thus no download nor ping activities.
+  EXPECT_EQ(0, get_interceptor_->GetHitCount());
+  EXPECT_EQ(0, ping_interceptor_->GetCount())
+      << ping_interceptor_->GetRequestsAsString();
+
+  const std::string update_request =
+      update_interceptor_->GetRequests()[0].first;
+  EXPECT_THAT(update_request,
+              ::testing::HasSubstr(base::StringPrintf(
+                  R"(<app appid="%s" version="1")", kExtensionId)));
+  EXPECT_THAT(update_request, ::testing::HasSubstr(R"(enabled="1")"));
+}
+
+IN_PROC_BROWSER_TEST_F(UpdateServiceTest, TwoUpdateCheckErrors) {
+  // Verify that the UMA counters are emitted properly when there are 2 update
+  // checks with different number of extensions, both of which result in errors.
+  base::ScopedAllowBlockingForTesting allow_io;
+  base::HistogramTester histogram_tester;
+
+  // Mock update check errors.
+  ASSERT_TRUE(update_interceptor_->ExpectRequest(
+      std::make_unique<update_client::PartialMatch>("<updatecheck/>"), 304));
+  ASSERT_TRUE(update_interceptor_->ExpectRequest(
+      std::make_unique<update_client::PartialMatch>("<updatecheck/>"), 305));
+
+  const base::FilePath crx_path1 = test_data_dir_.AppendASCII("updater/v1.crx");
+  const base::FilePath crx_path2 = test_data_dir_.AppendASCII("updater/v2.crx");
+  const Extension* extension1 =
+      InstallExtension(crx_path1, 1, Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  const Extension* extension2 =
+      InstallExtension(crx_path2, 1, Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  ASSERT_TRUE(extension1 && extension2);
+
+  extensions::ExtensionUpdater::CheckParams params;
+
+  base::RunLoop run_loop1;
+  params.ids = {extension1->id(), extension2->id()};
+  params.callback = run_loop1.QuitClosure();
+  extension_service()->updater()->CheckNow(std::move(params));
+  run_loop1.Run();
+
+  base::RunLoop run_loop2;
+  params.ids = {extension1->id()};
+  params.callback = run_loop2.QuitClosure();
+  extension_service()->updater()->CheckNow(std::move(params));
+  run_loop2.Run();
+
+  content::FetchHistogramsFromChildProcesses();
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
+      testing::ElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Extensions.ExtensionUpdaterUpdateResults"),
+      testing::ElementsAre(base::Bucket(
+          static_cast<int>(ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR),
+          3)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors"),
+              testing::ElementsAre(base::Bucket(304, 2), base::Bucket(305, 1)));
+
+  ASSERT_EQ(2, update_interceptor_->GetCount())
+      << update_interceptor_->GetRequestsAsString();
+
+  // Error, thus no download nor ping activities.
+  EXPECT_EQ(0, get_interceptor_->GetHitCount());
+  EXPECT_EQ(0, ping_interceptor_->GetCount())
+      << ping_interceptor_->GetRequestsAsString();
+}
+
 IN_PROC_BROWSER_TEST_F(UpdateServiceTest, SuccessfulUpdate) {
   base::ScopedAllowBlockingForTesting allow_io;
+  base::HistogramTester histogram_tester;
 
   // Mock an update response.
   const base::FilePath update_response =
@@ -125,6 +253,18 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, SuccessfulUpdate) {
             WaitOnComponentUpdaterCompleteEvent(kExtensionId));
 
   run_loop.Run();
+
+  content::FetchHistogramsFromChildProcesses();
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
+      testing::ElementsAre(base::Bucket(1, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Extensions.ExtensionUpdaterUpdateResults"),
+      testing::ElementsAre(base::Bucket(
+          static_cast<int>(ExtensionUpdaterUpdateResult::UPDATE_SUCCESS), 1)));
+  histogram_tester.ExpectTotalCount(
+      "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors", 0);
 
   ASSERT_EQ(1, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();
