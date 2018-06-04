@@ -15,15 +15,13 @@
 #define BUF_MAX 27720
 
 static widechar inputText[BUF_MAX], output1Text[BUF_MAX], output2Text[BUF_MAX],
-		expectText[BUF_MAX], expectDots[BUF_MAX], empText[BUF_MAX], etnText[BUF_MAX],
-		tmpText[BUF_MAX];
+		expectText[BUF_MAX], empText[BUF_MAX], etnText[BUF_MAX], tmpText[BUF_MAX];
 static int inputLen, output1Len, output2Len, expectLen, empLen = 0, etnLen = 0, etnHave,
 														tmpLen;
 static formtype emphasis[BUF_MAX];
 static formtype emp1[BUF_MAX], emp2[BUF_MAX];
 static const char table_default[] = "en-ueb-g2.ctb", *table = table_default;
-static char *charText, inputLine[BUF_MAX], origInput[BUF_MAX], origEmp[BUF_MAX],
-		origEtn[BUF_MAX];
+static char inputLine[BUF_MAX], origInput[BUF_MAX], origEmp[BUF_MAX], origEtn[BUF_MAX];
 static FILE *input, *passFile;
 static int inputPos[BUF_MAX], outputPos[BUF_MAX];
 static int failFile, outFile;
@@ -31,8 +29,7 @@ static int pass_cnt = 0, fail_cnt = 0;
 static int blank_out = 0, blank_pass = 1, blank_fail = 0;
 static int out_more = 0, out_pos = 0, in_line = 0, paused = 0;
 
-static unsigned short uni = 0xfeff, space = 0x0020, dash = 0x002d, bar = 0x007c,
-					  plus = 0x002b, tab = 0x0009;
+static unsigned short uni = 0xfeff, plus = 0x002b;
 static unsigned int nl = 0x000a000d;  // TODO:  doall.pl chokes on ueb-08
 // static unsigned int nl = 0x000a;//TODO:  doall.pl chokes on ueb-08
 

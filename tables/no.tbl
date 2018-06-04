@@ -1,3 +1,5 @@
+#-display-name: Norwegian grade 3 contracted braille
+
 #+locale:no
 #+type:literary
 #+contraction:full

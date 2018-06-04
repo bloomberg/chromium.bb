@@ -22,10 +22,12 @@
 
 ### Table Metadata
 
+#-display-name: Danish 6-dot partially contracted braille
+
 #+locale: da
 #+type: literary
-# #+contraction: partial
-# #+grade: 1.5
+#+contraction: partial
+#+grade: 1.5
 #+dots: 6
 #+direction: forward
 

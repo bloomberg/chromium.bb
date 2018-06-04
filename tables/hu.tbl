@@ -1,6 +1,8 @@
+#-display-name: Hungarian partially contracted braille
+
 #+locale:hu
 #+type:literary
-#+contraction:full
+#+contraction:partial
 #+grade:1
 #+hyphenation:yes
 

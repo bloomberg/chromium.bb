@@ -1,5 +1,22 @@
 # liblouis: U.K. English 8 dot Computer braille table
 #
+# -----------
+#-display-name: U.K. English computer braille
+#
+#+locale:en-GB
+#+type:computer
+#+dots:8
+#
+# TODO: Please correct the metadata above. It is not meant to be
+# accurate nor complete. It hasn't been verified by the table
+# author yet. It is merely an attempt by the liblouis maintainers
+# to get some sensible initial values in place.
+#
+# TODO: Please add a reference to official documentation about
+# the implemented braille code. Preferably submit the documents
+# to https://github.com/liblouis/braille-specs.
+# -----------
+#
 #  Copyright (C) 2013 David Reynolds <dkreynolds@ntlworld.com>
 #
 #  This file is part of liblouis.

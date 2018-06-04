@@ -1,0 +1,8 @@
+display: unicode.dis
+table:
+  locale: mn
+  __assert-match: mn-MN-g1.utb
+tests:
+  - # Hello world  
+    - Сайн байна уу дэлхий
+    - ⠠⠎⠁⠯⠝ ⠃⠁⠯⠝⠁ ⠥⠥ ⠙⠪⠇⠓⠊⠯

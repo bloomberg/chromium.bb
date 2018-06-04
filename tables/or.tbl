@@ -1,3 +1,5 @@
+#-display-name: Oriya braille
+
 #+locale:or
 #+type:literary
 #+grade:1

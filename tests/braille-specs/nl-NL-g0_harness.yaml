@@ -1,0 +1,9 @@
+display: unicode.dis
+table:
+  locale: nl
+  grade: 0
+  __assert-match: nl.tbl # nl-NL-g0.utb
+tests:
+  - - Some Greek uppercase
+    - Α Β Γ
+    - ⠰⠨⠁ ⠰⠨⠃ ⠰⠨⠛

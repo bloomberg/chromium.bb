@@ -1,3 +1,5 @@
+#-display-name: Polish braille
+
 #+locale:pl
 #+type:literary
 #+grade:1

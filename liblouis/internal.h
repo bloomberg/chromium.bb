@@ -549,14 +549,14 @@ typedef enum {
 	alloc_typebuf,
 	alloc_wordBuffer,
 	alloc_emphasisBuffer,
-	alloc_transNoteBuffer,
 	alloc_destSpacing,
-	alloc_passbuf1,
-	alloc_passbuf2,
+	alloc_passbuf,
 	alloc_posMapping1,
 	alloc_posMapping2,
 	alloc_posMapping3
 } AllocBuf;
+
+#define MAXPASSBUF 3
 
 typedef enum {
 	capsRule = 0,
@@ -583,6 +583,20 @@ typedef enum {
 	endWordOffset = 7,
 	lenPhraseOffset = 8
 } EmphCodeOffset;
+
+/* Grouping the begin, end, word and symbol bits and using the type of
+ * a single bit group for representing the emphasis classes allows us
+ * to do simple bit operations. */
+
+typedef struct {
+	unsigned int begin : 16;
+	unsigned int end : 16;
+	unsigned int word : 16;
+	unsigned int symbol : 16;
+} EmphasisInfo;
+
+/* An emphasis class is a bit field that contains a single "1" */
+typedef unsigned int EmphasisClass;
 
 typedef enum { noEncoding, bigEndian, littleEndian, ascii8 } EncodingType;
 
@@ -645,7 +659,7 @@ _lou_getCharFromDots(widechar d);
  * TODO: move to utils.c
  */
 void *EXPORT_CALL
-_lou_allocMem(AllocBuf buffer, int srcmax, int destmax);
+_lou_allocMem(AllocBuf buffer, int index, int srcmax, int destmax);
 
 /**
  * Hash function for character strings

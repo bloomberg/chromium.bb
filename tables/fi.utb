@@ -1,5 +1,23 @@
 # Finnish 6-dot braille based on the official specification document
 #
+# -----------
+#-display-name: Finnish braille
+#
+#+locale:fi
+#+type:literary
+#+contraction:no
+#+dots:6
+#
+# TODO: Please correct the metadata above. It is not meant to be
+# accurate nor complete. It hasn't been verified by the table
+# author yet. It is merely an attempt by the liblouis maintainers
+# to get some sensible initial values in place.
+#
+# TODO: Please add a reference to official documentation about
+# the implemented braille code. Preferably submit the documents
+# to https://github.com/liblouis/braille-specs.
+# -----------
+#
 #  Copyright (C) 2014,2015 Celia Library https://www.celia.fi
 #
 #  This file is part of liblouis.
@@ -26,6 +44,7 @@
 # Includes
 include latinLetterDef6Dots.uti
 include digits6Dots.uti
+include litdigits6Dots.uti
 include braille-patterns.cti
 
 # Finnish-specific letters

@@ -1,3 +1,5 @@
+#-display-name: Bengali braille
+
 #+locale:bn
 #+type:literary
 #+grade:1

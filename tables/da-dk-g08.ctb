@@ -27,6 +27,9 @@
 
 ### Table Metadata
 
+#-name: Dansk computer
+#-display-name: Danish computer braille
+
 #+locale: da
 #+type: computer
 #+contraction: no

@@ -18,7 +18,7 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
-# Uppercase cyrillic letters:
+# Use uppercase letters for representation of cyrillic:
 display A 179
 display B 1279
 display C 1479
@@ -53,7 +53,6 @@ display { 24679
 display | 125679
 display $ 124679
 
-# Lowercase cyrillic letters:
 display A 19
 display B 129
 display C 149
@@ -117,3 +116,30 @@ display w 24567
 display x 13467
 display y 134567
 display z 13567
+
+display a 1
+display b 12
+display c 14
+display d 145
+display e 15
+display f 124
+display g 1245
+display h 125
+display i 24
+display j 245
+display k 13
+display l 123
+display m 134
+display n 1345
+display o 135
+display p 1234
+display q 12345
+display r 1235
+display s 234
+display t 2345
+display u 136
+display v 1236
+display w 2456
+display x 1346
+display y 13456
+display z 1356

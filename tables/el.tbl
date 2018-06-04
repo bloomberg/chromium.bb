@@ -1,3 +1,5 @@
+#-display-name: Greek braille
+
 #+locale: el
 #+type: literary
 #+dots: 6

@@ -1,7 +1,11 @@
+#-name: U.S. English grade 2 (EBAE)
+#-display-name: U.S. English (EBAE) contracted braille
+
 #+locale:en-US
 #+type:literary
 #+contraction:full
 #+grade:2
+#+system:ebae
 #+hyphenation:yes
 
 # TODO: Please correct the metadata above. It is not meant to be

@@ -1,3 +1,5 @@
+#-display-name: Irish contracted braille
+
 #+locale:ga
 #+type:literary
 #+contraction:full

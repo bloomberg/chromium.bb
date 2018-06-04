@@ -23,8 +23,8 @@
 # - Code braille français uniformisé pour la transcription des textes imprimés (CBFU) - Deuxième édition Septembre 2008
 # - Notation mathématique braille - Première édition janvier 2007
 # - IPA Braille: An Updated Tactile Representation of the International Phonetic Alphabet - Edited by Robert Englebretson, Ph.D. <http://www.iceb.org/icebipa.htm>
+# updated 2018-02-24
 
-# Last updated on August 8, 2017
 ################################################################################
 
 # lettres grecques
@@ -99,11 +99,7 @@ noback math \X22C3 456-456-235 ⋃ grande union
 noback math \X2229 45-235 ∩ intersection
 noback math \X22C2 45-45-235 ⋂ grande intersection
 noback math \X2212 36 − moins
-noback math \X00B1 235-36 ± plus ou moins
 noback math \X2213 36-235 ∓ moins ou plus
-noback math \X00D7 35 × multiplié par
-noback math \X2715 35 ✕ multiplié par
-noback math \X00B7 35-35 · point multiplicatif ; produit scalaire
 noback math \X22C5 35-35 ⋅ point multiplicatif ; produit scalaire
      # astérisque, étoile... 5-35 *
      # unicode manquant (?) pour "grande croix de multiplication"
@@ -116,7 +112,6 @@ noback math \X22C0 45-45-35 ⋀ grand et logique
 noback math \X2228 45-26 ∨ ou logique
 noback math \X22C1 45-45-26 ⋁ grand ou logique
 noback math \X2218 456-3456 ∘ rond
-noback math \X00F7 25 ÷ divisé par
      # divisé par (slash) 34 /
      # exposant 4
 
@@ -273,14 +268,10 @@ noback math \x215e 12456-34-1256 ⅞ 7/8
 noback math \x2151 16-34-246 ⅑ 1/9
 noback math \x2152 16-34-16-3456 ⅒ 1/10
 
-# phonèmes français de l'alphabet phonétique international
-noback sign \X0283 156         # ʃ - esh - voiceless postalveolar fricative
-noback sign \X0292 2346        # ʒ - ezh - voiced postalveolar fricative
-noback sign \X0272 123456      # ɲ - left-tail n (at left) - voiced palatal nasal
-# sign \X025B 345       # ɛ - epsilon - open-mid front unrounded vowel - Ligne commentée car conflit avec l'alphabet grec, à prendre en compte dans vos transcriptions.
-noback sign \X0251 16          # ɑ - script a - open back unrounded vowel
-noback sign \X0254 126         # ɔ - open o - open-mid back rounded vowel
-noback sign \X00F8 1256        # ø - slashed o - close-mid front rounded vowel
-noback sign \X0259 26          # ə - schwa - mid central vowel
-noback sign \X0265 256-125     # ɥ - turned h - voiced labial-palatal approximant
-noback sign \X0303 4-12456     # ̃  - tilde above - nasalized
+# Alphabet phonétique international
+include IPA-unicode-range.uti
+# ajouts issus de la table IPA.utb :
+# Conflit avec une autre table ? noback sign \X00F8 1256 # ø - slashed o - close-mid front rounded vowel
+# Conflit avec une autre table ? noback sign \X00E6 146  # æ - ash - near-open front unrounded vowel
+# ATTENTION ! Le symbole ci-dessous est très utilisé en phonétique (son anglais 'th' dans 'the' par exemple) mais le code braille phonétique entre en conflit avec la lettre grecque thêta.
+# sign \X03B8 46-1456   # θ - theta - voiceless dental fricative (WARNING: greek letter)

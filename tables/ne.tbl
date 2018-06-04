@@ -1,3 +1,5 @@
+#-display-name: Nepali braille
+
 #+locale:ne
 #+type:literary
 #+grade:1
