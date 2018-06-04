@@ -834,7 +834,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux NVIDIA Quadro P400
     # This test causes a lost device and then the next test fails.
     self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
-        ['linux', ('nvidia', 0x1cb3), 'passthrough'], bug=709320)
+        ['linux', ('nvidia', 0x1cb3)], bug=709320)
     # Observed flaky on Swarmed bots. Some of these were directly
     # observed, some not. We can't afford any flakes on the tryservers
     # so mark them all flaky.
