@@ -21,7 +21,8 @@
 
 namespace syncer {
 
-class ConsentSyncBridgeImpl : public ConsentSyncBridge {
+class ConsentSyncBridgeImpl : public ConsentSyncBridge,
+                              public ModelTypeSyncBridge {
  public:
   ConsentSyncBridgeImpl(
       OnceModelTypeStoreFactory store_factory,
@@ -29,7 +30,7 @@ class ConsentSyncBridgeImpl : public ConsentSyncBridge {
       base::RepeatingCallback<std::string()> authenticated_account_id_callback);
   ~ConsentSyncBridgeImpl() override;
 
-  // ModelTypeSyncBridge (through ConsentSyncBridge) implementation.
+  // ModelTypeSyncBridge implementation.
   void OnSyncStarting() override;
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
   base::Optional<ModelError> MergeSyncData(
@@ -48,6 +49,8 @@ class ConsentSyncBridgeImpl : public ConsentSyncBridge {
   // ConsentSyncBridge implementation.
   void RecordConsent(
       std::unique_ptr<sync_pb::UserConsentSpecifics> specifics) override;
+  base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  GetControllerDelegateOnUIThread() override;
 
  private:
   void RecordConsentImpl(

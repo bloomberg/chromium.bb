@@ -66,7 +66,7 @@ ConsentSyncBridgeImpl::ConsentSyncBridgeImpl(
     OnceModelTypeStoreFactory store_factory,
     std::unique_ptr<ModelTypeChangeProcessor> change_processor,
     base::RepeatingCallback<std::string()> authenticated_account_id_callback)
-    : ConsentSyncBridge(std::move(change_processor)),
+    : ModelTypeSyncBridge(std::move(change_processor)),
       authenticated_account_id_callback_(authenticated_account_id_callback),
       is_sync_starting_or_started_(false) {
   DCHECK(authenticated_account_id_callback_);
@@ -221,6 +221,11 @@ void ConsentSyncBridgeImpl::RecordConsentImpl(
   store_->CommitWriteBatch(
       std::move(batch),
       base::BindOnce(&ConsentSyncBridgeImpl::OnCommit, base::AsWeakPtr(this)));
+}
+
+base::WeakPtr<syncer::ModelTypeControllerDelegate>
+ConsentSyncBridgeImpl::GetControllerDelegateOnUIThread() {
+  return change_processor()->GetControllerDelegateOnUIThread();
 }
 
 void ConsentSyncBridgeImpl::ProcessQueuedEvents() {
