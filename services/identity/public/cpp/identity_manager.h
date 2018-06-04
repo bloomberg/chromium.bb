@@ -23,7 +23,7 @@ class ArcTermsOfServiceDefaultNegotiatorTest;
 
 // Necessary to declare this class as a friend.
 namespace browser_sync {
-class ProfileSyncServiceStartupCrosTest;
+class ProfileSyncServiceStartupTest;
 }
 
 // Necessary to declare these classes as friends.
@@ -160,7 +160,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   friend arc::ArcTermsOfServiceDefaultNegotiatorTest;
   friend chromeos::ChromeSessionManager;
   friend chromeos::UserSessionManager;
-  friend browser_sync::ProfileSyncServiceStartupCrosTest;
+  friend browser_sync::ProfileSyncServiceStartupTest;
 
   // Sets the primary account info synchronously with both the IdentityManager
   // and its backing SigninManager/ProfileOAuth2TokenService instances.
