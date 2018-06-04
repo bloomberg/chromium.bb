@@ -25,6 +25,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -214,14 +215,17 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 
   // See if we're in the sysmenu region.  We still have to check the tabstrip
   // first so that clicks in a tab don't get treated as sysmenu clicks.
-  gfx::Rect sysmenu_rect(IconBounds());
-  // In maximized mode we extend the rect to the screen corner to take advantage
-  // of Fitts' Law.
-  if (layout_->IsTitleBarCondensed())
-    sysmenu_rect.SetRect(0, 0, sysmenu_rect.right(), sysmenu_rect.bottom());
-  sysmenu_rect = GetMirroredRect(sysmenu_rect);
-  if (sysmenu_rect.Contains(point))
-    return (frame_component == HTCLIENT) ? HTCLIENT : HTSYSMENU;
+  using MD = ui::MaterialDesignController;
+  if (!MD::IsRefreshUi() && (frame_component != HTCLIENT)) {
+    gfx::Rect sysmenu_rect(IconBounds());
+    // In maximized mode we extend the rect to the screen corner to take
+    // advantage of Fitts' Law.
+    if (layout_->IsTitleBarCondensed())
+      sysmenu_rect.SetRect(0, 0, sysmenu_rect.right(), sysmenu_rect.bottom());
+    sysmenu_rect = GetMirroredRect(sysmenu_rect);
+    if (sysmenu_rect.Contains(point))
+      return HTSYSMENU;
+  }
 
   if (frame_component != HTNOWHERE)
     return frame_component;
