@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_util.h"
-#include "net/dns/host_resolver_impl.h"
 
 namespace cronet {
 
