@@ -29,15 +29,6 @@ public:
 
 } // blink namespace
 
-namespace WTF {
-
-template<>
-struct VectorTraits<blink::C> {
-    static const bool needsDestruction = false;
-};
-
-} // WTF namespace
-
 namespace blink {
 
 // Off-heap vectors always need to be finalized.
@@ -63,16 +54,6 @@ public:
     void Trace(Visitor*);
 private:
     HeapVector<B> m_bs;
-};
-
-// On-heap vectors with inlined objects that don't need destruction
-// don't need to be finalized.
-class AlsoDoesNotNeedFinalizer : public A {
-public:
-    void Trace(Visitor*);
-private:
-    HeapVector<Member<A>, 10> m_as;
-    HeapVector<C, 10> m_cs;
 };
 
 }

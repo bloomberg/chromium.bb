@@ -150,6 +150,8 @@ class RecordInfo {
   Edge* CreateEdge(const clang::Type* type);
   Edge* CreateEdgeFromOriginalType(const clang::Type* type);
 
+  bool HasOptionalFinalizer();
+
   RecordCache* cache_;
   clang::CXXRecordDecl* record_;
   const std::string name_;
