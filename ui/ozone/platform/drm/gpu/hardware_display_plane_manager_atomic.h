@@ -40,6 +40,8 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
 
  private:
   std::unique_ptr<HardwareDisplayPlane> CreatePlane(uint32_t plane_id) override;
+  bool CommitColorMatrix(const CrtcProperties& crtc_props) override;
+  bool CommitGammaCorrection(const CrtcProperties& crtc_props) override;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneManagerAtomic);
 };

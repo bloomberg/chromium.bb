@@ -78,10 +78,11 @@ class HardwareDisplayPlaneManager {
   // calls.
   void BeginFrame(HardwareDisplayPlaneList* plane_list);
 
-  // TODO(dnicoara): Split this into atomic and legacy implementation.
+  // Sets the color transform matrix (a 3x3 matrix represented in vector form)
+  // on the CRTC with ID |crtc_id|.
   bool SetColorMatrix(uint32_t crtc_id, const std::vector<float>& color_matrix);
 
-  // TODO(dnicoara): Split this into atomic and legacy implementation.
+  // Sets the degamma/gamma luts on the CRTC object with ID |crtc_id|.
   bool SetGammaCorrection(
       uint32_t crtc_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
@@ -173,6 +174,10 @@ class HardwareDisplayPlaneManager {
 
   // Populates scanout formats supported by all planes.
   void PopulateSupportedFormats();
+
+  virtual bool CommitColorMatrix(const CrtcProperties& crtc_props) = 0;
+
+  virtual bool CommitGammaCorrection(const CrtcProperties& crtc_props) = 0;
 
   // Object containing the connection to the graphics device and wraps the API
   // calls to control it. Not owned.

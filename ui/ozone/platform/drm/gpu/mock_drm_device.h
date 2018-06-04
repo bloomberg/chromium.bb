@@ -63,6 +63,9 @@ class MockDrmDevice : public DrmDevice {
   int get_overlay_flip_call_count() const { return overlay_flip_call_count_; }
   int get_overlay_clear_call_count() const { return overlay_clear_call_count_; }
   int get_commit_count() const { return commit_count_; }
+  int get_set_object_property_count() const {
+    return set_object_property_count_;
+  }
   void set_set_crtc_expectation(bool state) { set_crtc_expectation_ = state; }
   void set_page_flip_expectation(bool state) { page_flip_expectation_ = state; }
   void set_add_framebuffer_expectation(bool state) {
@@ -70,6 +73,9 @@ class MockDrmDevice : public DrmDevice {
   }
   void set_create_dumb_buffer_expectation(bool state) {
     create_dumb_buffer_expectation_ = state;
+  }
+  void set_legacy_gamma_ramp_expectation(bool state) {
+    legacy_gamma_ramp_expectation_ = state;
   }
 
   uint32_t current_framebuffer() const { return current_framebuffer_; }
@@ -135,6 +141,10 @@ class MockDrmDevice : public DrmDevice {
   ScopedDrmPropertyBlobPtr GetPropertyBlob(uint32_t property_id) override;
   ScopedDrmPropertyBlobPtr GetPropertyBlob(drmModeConnector* connector,
                                            const char* name) override;
+  bool SetObjectProperty(uint32_t object_id,
+                         uint32_t object_type,
+                         uint32_t property_id,
+                         uint32_t property_value) override;
   bool SetCursor(uint32_t crtc_id,
                  uint32_t handle,
                  const gfx::Size& size) override;
@@ -168,11 +178,13 @@ class MockDrmDevice : public DrmDevice {
   int overlay_clear_call_count_;
   int allocate_buffer_count_;
   int commit_count_ = 0;
+  int set_object_property_count_ = 0;
 
   bool set_crtc_expectation_;
   bool add_framebuffer_expectation_;
   bool page_flip_expectation_;
   bool create_dumb_buffer_expectation_;
+  bool legacy_gamma_ramp_expectation_ = false;
 
   bool use_sync_flips_;
 

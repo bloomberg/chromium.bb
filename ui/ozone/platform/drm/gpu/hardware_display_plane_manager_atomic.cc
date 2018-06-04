@@ -207,4 +207,59 @@ HardwareDisplayPlaneManagerAtomic::CreatePlane(uint32_t plane_id) {
   return std::make_unique<HardwareDisplayPlaneAtomic>(plane_id);
 }
 
+bool HardwareDisplayPlaneManagerAtomic::CommitColorMatrix(
+    const CrtcProperties& crtc_props) {
+  ScopedDrmAtomicReqPtr property_set(drmModeAtomicAlloc());
+  int ret = drmModeAtomicAddProperty(property_set.get(), crtc_props.id,
+                                     crtc_props.ctm.id, crtc_props.ctm.value);
+  if (ret < 0) {
+    LOG(ERROR) << "Failed to set CTM property for crtc=" << crtc_props.id;
+    return false;
+  }
+
+  // If we try to do this in a non-blocking fashion this can return EBUSY since
+  // there is a pending page flip. Do a blocking commit (the same as the legacy
+  // API) to ensure the properties are applied.
+  // TODO(dnicoara): Should cache these values locally and aggregate them with
+  // the page flip event otherwise this "steals" a vsync to apply the property.
+  return drm_->CommitProperties(property_set.get(), 0, 0,
+                                DrmDevice::PageFlipCallback());
+}
+
+bool HardwareDisplayPlaneManagerAtomic::CommitGammaCorrection(
+    const CrtcProperties& crtc_props) {
+  DCHECK(crtc_props.degamma_lut.id || crtc_props.gamma_lut.id);
+
+  ScopedDrmAtomicReqPtr property_set(drmModeAtomicAlloc());
+  if (crtc_props.degamma_lut.id) {
+    int ret = drmModeAtomicAddProperty(property_set.get(), crtc_props.id,
+                                       crtc_props.degamma_lut.id,
+                                       crtc_props.degamma_lut.value);
+    if (ret < 0) {
+      LOG(ERROR) << "Failed to set DEGAMMA_LUT property for crtc="
+                 << crtc_props.id;
+      return false;
+    }
+  }
+
+  if (crtc_props.gamma_lut.id) {
+    int ret = drmModeAtomicAddProperty(property_set.get(), crtc_props.id,
+                                       crtc_props.gamma_lut.id,
+                                       crtc_props.gamma_lut.value);
+    if (ret < 0) {
+      LOG(ERROR) << "Failed to set GAMMA_LUT property for crtc="
+                 << crtc_props.id;
+      return false;
+    }
+  }
+
+  // If we try to do this in a non-blocking fashion this can return EBUSY since
+  // there is a pending page flip. Do a blocking commit (the same as the legacy
+  // API) to ensure the properties are applied.
+  // TODO(dnicoara): Should cache these values locally and aggregate them with
+  // the page flip event otherwise this "steals" a vsync to apply the property.
+  return drm_->CommitProperties(property_set.get(), 0, 0,
+                                DrmDevice::PageFlipCallback());
+}
+
 }  // namespace ui

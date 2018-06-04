@@ -186,6 +186,15 @@ class DrmDevice : public GbmDeviceLinux,
   virtual ScopedDrmPropertyBlobPtr GetPropertyBlob(drmModeConnector* connector,
                                                    const char* name);
 
+  // Sets a property (defined by {|property_id|, |property_value|} on an object
+  // with ID |object_id| and type |object_type|.
+  // |object_id| and |property_id| are unique identifiers.
+  // |object_type| is one of DRM_MODE_OBJECT_*.
+  virtual bool SetObjectProperty(uint32_t object_id,
+                                 uint32_t object_type,
+                                 uint32_t property_id,
+                                 uint32_t property_value);
+
   // Can be used to query device/driver |capability|. Sets the value of
   // |capability| to |value|. Returns true in case of a succesful query.
   virtual bool GetCapability(uint64_t capability, uint64_t* value);

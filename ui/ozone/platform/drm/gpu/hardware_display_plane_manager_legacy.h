@@ -42,6 +42,8 @@ class HardwareDisplayPlaneManagerLegacy : public HardwareDisplayPlaneManager {
   bool IsCompatible(HardwareDisplayPlane* plane,
                     const OverlayPlane& overlay,
                     uint32_t crtc_index) const override;
+  bool CommitColorMatrix(const CrtcProperties& crtc_props) override;
+  bool CommitGammaCorrection(const CrtcProperties& crtc_props) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneManagerLegacy);
