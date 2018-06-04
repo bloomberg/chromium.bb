@@ -78,13 +78,6 @@ jumbo_component("mus") {
     "//ui/wm",
     "//ui/wm/public",
   ]
-
-  if (is_linux && !is_android) {
-    deps += [ "//components/services/font/public/cpp" ]
-    data_deps = [
-      "//components/services/font:font_service",
-    ]
-  }
 }
 
 repack("resources") {
