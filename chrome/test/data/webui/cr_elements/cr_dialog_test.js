@@ -22,7 +22,9 @@ suite('cr-dialog', function() {
     dialog.showModal();
     const whenFired = test_util.eventToPromise('close', dialog);
     dialog.close();
-    return whenFired;
+    return whenFired.then(() => {
+      assertEquals('success', dialog.getNative().returnValue);
+    });
   });
 
   test('cancel event bubbles', function() {
@@ -36,7 +38,9 @@ suite('cr-dialog', function() {
     dialog.showModal();
     const whenFired = test_util.eventToPromise('cancel', dialog);
     dialog.cancel();
-    return whenFired;
+    return whenFired.then(() => {
+      assertEquals('', dialog.getNative().returnValue);
+    });
   });
 
   test('focuses title on show', function() {
@@ -266,14 +270,14 @@ suite('cr-dialog', function() {
 
     // Hitting escape fires a 'cancel' event. Cancelling that event prevents the
     // dialog from closing.
-    let e = new Event('cancel', {cancelable: true});
-    dialog.dispatchEvent(e);
+    let e = new CustomEvent('cancel', {cancelable: true});
+    dialog.getNative().dispatchEvent(e);
     assertTrue(e.defaultPrevented);
 
     dialog.noCancel = false;
 
-    e = new Event('cancel', {cancelable: true});
-    dialog.dispatchEvent(e);
+    e = new CustomEvent('cancel', {cancelable: true});
+    dialog.getNative().dispatchEvent(e);
     assertFalse(e.defaultPrevented);
   });
 
