@@ -113,6 +113,7 @@ void MouseEventManager::Clear() {
   drag_start_pos_ = LayoutPoint();
   fake_mouse_move_event_timer_.Stop();
   ResetDragState();
+  ClearDragDataTransfer();
 }
 
 MouseEventManager::~MouseEventManager() = default;
