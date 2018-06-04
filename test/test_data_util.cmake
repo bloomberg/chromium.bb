@@ -37,8 +37,28 @@ if(CONFIG_DECODE_PERF_TESTS AND CONFIG_AV1_ENCODER)
 endif()
 
 if(CONFIG_AV1_DECODER)
-  set(AOM_TEST_DATA_FILE_NAMES ${AOM_TEST_DATA_FILE_NAMES}
-      "av1-1-b8-00-quantizer-00.ivf" "av1-1-b8-00-quantizer-00.ivf.md5")
+  set(AOM_TEST_DATA_FILE_NAMES
+      ${AOM_TEST_DATA_FILE_NAMES}
+      "av1-1-b8-00-quantizer-00.ivf"
+      "av1-1-b8-00-quantizer-00.ivf.md5"
+      "av1-1-b8-00-quantizer-01.ivf"
+      "av1-1-b8-00-quantizer-01.ivf.md5"
+      "av1-1-b8-00-quantizer-02.ivf"
+      "av1-1-b8-00-quantizer-02.ivf.md5"
+      "av1-1-b8-00-quantizer-03.ivf"
+      "av1-1-b8-00-quantizer-03.ivf.md5"
+      "av1-1-b8-00-quantizer-04.ivf"
+      "av1-1-b8-00-quantizer-04.ivf.md5"
+      "av1-1-b8-00-quantizer-05.ivf"
+      "av1-1-b8-00-quantizer-05.ivf.md5"
+      "av1-1-b8-00-quantizer-06.ivf"
+      "av1-1-b8-00-quantizer-06.ivf.md5"
+      "av1-1-b8-00-quantizer-07.ivf"
+      "av1-1-b8-00-quantizer-07.ivf.md5"
+      "av1-1-b8-00-quantizer-08.ivf"
+      "av1-1-b8-00-quantizer-08.ivf.md5"
+      "av1-1-b8-00-quantizer-09.ivf"
+      "av1-1-b8-00-quantizer-09.ivf.md5")
 endif()
 
 if(CONFIG_ENCODE_PERF_TESTS AND CONFIG_AV1_ENCODER)

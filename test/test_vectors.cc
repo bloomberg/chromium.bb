@@ -16,7 +16,13 @@ namespace libaom_test {
 #define NELEMENTS(x) static_cast<int>(sizeof(x) / sizeof(x[0]))
 
 #if CONFIG_AV1_DECODER
-const char *const kAV1TestVectors[] = { "av1-1-b8-00-quantizer-00.ivf" };
+const char *const kAV1TestVectors[] = {
+  "av1-1-b8-00-quantizer-00.ivf", "av1-1-b8-00-quantizer-01.ivf",
+  "av1-1-b8-00-quantizer-02.ivf", "av1-1-b8-00-quantizer-03.ivf",
+  "av1-1-b8-00-quantizer-04.ivf", "av1-1-b8-00-quantizer-05.ivf",
+  "av1-1-b8-00-quantizer-06.ivf", "av1-1-b8-00-quantizer-07.ivf",
+  "av1-1-b8-00-quantizer-08.ivf", "av1-1-b8-00-quantizer-09.ivf"
+};
 const int kNumAV1TestVectors = NELEMENTS(kAV1TestVectors);
 #endif  // CONFIG_AV1_DECODER
 
