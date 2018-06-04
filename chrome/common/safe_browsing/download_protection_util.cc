@@ -30,6 +30,9 @@ ClientDownloadRequest::DownloadType GetDownloadType(
     // placeholder. The correct DownloadType will be determined based on the
     // result of analyzing the ZIP file.
     return ClientDownloadRequest::ZIPPED_EXECUTABLE;
+  else if (file.MatchesExtension(FILE_PATH_LITERAL(".rar")))
+    // See the comment for .zip files.
+    return ClientDownloadRequest::RAR_COMPRESSED_EXECUTABLE;
   else if (file.MatchesExtension(FILE_PATH_LITERAL(".dmg")) ||
            file.MatchesExtension(FILE_PATH_LITERAL(".img")) ||
            file.MatchesExtension(FILE_PATH_LITERAL(".iso")) ||

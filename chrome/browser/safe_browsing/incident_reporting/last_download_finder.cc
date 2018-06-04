@@ -61,7 +61,7 @@ bool IsBinaryDownloadForCurrentOS(
   // should also be updated so that the IsBinaryDownloadForCurrentOS() will
   // return true for that DownloadType as appropriate.
   static_assert(ClientDownloadRequest::DownloadType_MAX ==
-                    ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE,
+                    ClientDownloadRequest::INVALID_RAR,
                 "Update logic below");
 
 // Platform-specific types are relevant only for their own platforms.
@@ -83,6 +83,9 @@ bool IsBinaryDownloadForCurrentOS(
   if (download_type == ClientDownloadRequest::ZIPPED_EXECUTABLE ||
       download_type == ClientDownloadRequest::ZIPPED_ARCHIVE ||
       download_type == ClientDownloadRequest::INVALID_ZIP ||
+      download_type == ClientDownloadRequest::RAR_COMPRESSED_EXECUTABLE ||
+      download_type == ClientDownloadRequest::RAR_COMPRESSED_ARCHIVE ||
+      download_type == ClientDownloadRequest::INVALID_RAR ||
       download_type == ClientDownloadRequest::ARCHIVE ||
       download_type == ClientDownloadRequest::PPAPI_SAVE_REQUEST) {
     return true;

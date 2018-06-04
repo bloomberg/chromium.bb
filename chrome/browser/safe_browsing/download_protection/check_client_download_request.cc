@@ -509,9 +509,45 @@ void CheckClientDownloadRequest::OnRarAnalysisFinished(
   }
   if (!service_)
     return;
+
+  archive_is_valid_ =
+      (results.success ? ArchiveValid::VALID : ArchiveValid::INVALID);
+  archived_executable_ = results.has_executable;
+  CopyArchivedBinaries(results.archived_binary, &archived_binaries_);
+  DVLOG(1) << "Rar analysis finished for " << item_->GetFullPath().value()
+           << ", has_executable=" << results.has_executable
+           << ", has_archive=" << results.has_archive
+           << ", success=" << results.success;
+
+  if (archived_executable_) {
+    UMA_HISTOGRAM_COUNTS_100("SBClientDownload.RarFileArchivedBinariesCount",
+                             results.archived_binary.size());
+  }
+  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarFileSuccess", results.success);
+  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarFileHasExecutable",
+                        archived_executable_);
+  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarFileHasArchiveButNoExecutable",
+                        results.has_archive && !archived_executable_);
   UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractRarFeaturesTime",
                       base::TimeTicks::Now() - rar_analysis_start_time_);
-  // TODO(crbug/750327): Use information from |results|.
+  for (const auto& file_name : results.archived_archive_filenames)
+    RecordArchivedArchiveFileExtensionType(file_name);
+
+  if (!archived_executable_) {
+    if (results.has_archive) {
+      type_ = ClientDownloadRequest::RAR_COMPRESSED_ARCHIVE;
+    } else if (!results.success) {
+      // .rar files that look invalid to Chrome may be successfully unpacked by
+      // other archive tools, so they may be a real threat.
+      type_ = ClientDownloadRequest::INVALID_RAR;
+    } else {
+      // Normal rar w/o EXEs, or invalid rar and not extended-reporting.
+      PostFinishTask(DownloadCheckResult::UNKNOWN,
+                     REASON_ARCHIVE_WITHOUT_BINARIES);
+      return;
+    }
+  }
+
   OnFileFeatureExtractionDone();
 }
 
