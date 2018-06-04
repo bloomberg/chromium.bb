@@ -8,7 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chromeos/components/tether/connect_tethering_operation.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_active_host.h"

@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
