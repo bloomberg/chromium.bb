@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_graph.h"
 #include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
@@ -27,13 +28,6 @@ class CoordinationUnitGraph;
 // this class and can override shared funtionality when needed.
 class CoordinationUnitBase {
  public:
-  // Add the newly created coordination unit to the global coordination unit
-  // storage.
-  static CoordinationUnitBase* AddNewCoordinationUnit(
-      std::unique_ptr<CoordinationUnitBase> new_cu);
-  static void AssertNoActiveCoordinationUnits();
-  static void ClearAllCoordinationUnits();
-
   CoordinationUnitBase(const CoordinationUnitID& id,
                        CoordinationUnitGraph* graph);
   virtual ~CoordinationUnitBase();
@@ -63,17 +57,16 @@ class CoordinationUnitBase {
   }
 
  protected:
-  static CoordinationUnitBase* GetCoordinationUnitByID(
-      const CoordinationUnitID cu_id);
-  static std::vector<CoordinationUnitBase*> GetCoordinationUnitsOfType(
-      CoordinationUnitType cu_type);
-
   virtual void OnEventReceived(mojom::Event event);
   virtual void OnPropertyChanged(mojom::PropertyType property_type,
                                  int64_t value);
 
   void SendEvent(mojom::Event event);
   void SetProperty(mojom::PropertyType property_type, int64_t value);
+
+  // Passes the ownership of the newly created |new_cu| to its graph.
+  static CoordinationUnitBase* PassOwnershipToGraph(
+      std::unique_ptr<CoordinationUnitBase> new_cu);
 
   CoordinationUnitGraph* const graph_;
   const CoordinationUnitID id_;
@@ -99,7 +92,7 @@ class CoordinationUnitInterface : public CoordinationUnitBase,
         std::make_unique<CoordinationUnitClass>(id, graph,
                                                 std::move(service_ref));
     return static_cast<CoordinationUnitClass*>(
-        CoordinationUnitBase::AddNewCoordinationUnit(std::move(new_cu)));
+        PassOwnershipToGraph(std::move(new_cu)));
   }
 
   static const CoordinationUnitClass* FromCoordinationUnitBase(
@@ -138,9 +131,10 @@ class CoordinationUnitInterface : public CoordinationUnitBase,
 
  protected:
   static CoordinationUnitClass* GetCoordinationUnitByID(
+      CoordinationUnitGraph* graph,
       const CoordinationUnitID cu_id) {
     DCHECK(cu_id.type == CoordinationUnitClass::Type());
-    auto* cu = CoordinationUnitBase::GetCoordinationUnitByID(cu_id);
+    auto* cu = graph->GetCoordinationUnitByID(cu_id);
     DCHECK(cu->id().type == CoordinationUnitClass::Type());
     return static_cast<CoordinationUnitClass*>(cu);
   }

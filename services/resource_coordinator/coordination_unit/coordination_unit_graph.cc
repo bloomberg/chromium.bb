@@ -26,16 +26,8 @@ class UkmEntryBuilder;
 
 namespace resource_coordinator {
 
-CoordinationUnitGraph::CoordinationUnitGraph() {
-  CoordinationUnitBase::AssertNoActiveCoordinationUnits();
-}
-
-CoordinationUnitGraph::~CoordinationUnitGraph() {
-  // TODO(oysteine): Keep the map of coordination units as a member of this
-  // class, rather than statically inside CoordinationUnitBase, to avoid this
-  // manual lifetime management.
-  CoordinationUnitBase::ClearAllCoordinationUnits();
-}
+CoordinationUnitGraph::CoordinationUnitGraph() = default;
+CoordinationUnitGraph::~CoordinationUnitGraph() = default;
 
 void CoordinationUnitGraph::OnStart(
     service_manager::BinderRegistryWithArgs<
@@ -93,6 +85,53 @@ CoordinationUnitGraph::CreateProcessCoordinationUnit(
     const CoordinationUnitID& id,
     std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
   return ProcessCoordinationUnitImpl::Create(id, this, std::move(service_ref));
+}
+
+CoordinationUnitBase* CoordinationUnitGraph::GetCoordinationUnitByID(
+    const CoordinationUnitID cu_id) {
+  const auto& it = coordination_units_.find(cu_id);
+  if (it == coordination_units_.end())
+    return nullptr;
+  return it->second.get();
+}
+
+std::vector<CoordinationUnitBase*>
+CoordinationUnitGraph::GetCoordinationUnitsOfType(CoordinationUnitType type) {
+  std::vector<CoordinationUnitBase*> results;
+  for (const auto& el : coordination_units_) {
+    if (el.first.type == type)
+      results.push_back(el.second.get());
+  }
+  return results;
+}
+
+std::vector<ProcessCoordinationUnitImpl*>
+CoordinationUnitGraph::GetAllProcessCoordinationUnits() {
+  auto cus = GetCoordinationUnitsOfType(CoordinationUnitType::kProcess);
+  std::vector<ProcessCoordinationUnitImpl*> process_cus;
+  for (auto* process_cu : cus) {
+    process_cus.push_back(
+        ProcessCoordinationUnitImpl::FromCoordinationUnitBase(process_cu));
+  }
+  return process_cus;
+}
+
+CoordinationUnitBase* CoordinationUnitGraph::AddNewCoordinationUnit(
+    std::unique_ptr<CoordinationUnitBase> new_cu) {
+  auto it = coordination_units_.emplace(new_cu->id(), std::move(new_cu));
+  DCHECK(it.second);  // Inserted successfully
+
+  CoordinationUnitBase* added_cu = it.first->second.get();
+  OnCoordinationUnitCreated(added_cu);
+
+  return added_cu;
+}
+
+void CoordinationUnitGraph::DestroyCoordinationUnit(CoordinationUnitBase* cu) {
+  OnBeforeCoordinationUnitDestroyed(cu);
+
+  size_t erased = coordination_units_.erase(cu->id());
+  DCHECK_EQ(1u, erased);
 }
 
 }  // namespace resource_coordinator

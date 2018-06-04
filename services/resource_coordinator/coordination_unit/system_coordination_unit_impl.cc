@@ -29,7 +29,7 @@ void SystemCoordinationUnitImpl::DistributeMeasurementBatch(
     mojom::ProcessResourceMeasurementBatchPtr measurement_batch) {
   // Grab all the processes.
   std::vector<ProcessCoordinationUnitImpl*> processes =
-      ProcessCoordinationUnitImpl::GetAllProcessCoordinationUnits();
+      graph_->GetAllProcessCoordinationUnits();
 
   base::TimeDelta time_since_last_measurement;
   if (!last_measurement_batch_time_.is_null()) {
