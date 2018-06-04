@@ -352,8 +352,9 @@ WorkerGlobalScope::WorkerGlobalScope(
         creation_params->starter_origin->CreatePrivilegeData());
   }
   SetSecurityOrigin(std::move(security_origin));
-  ApplyContentSecurityPolicyFromVector(
+  InitContentSecurityPolicyFromVector(
       creation_params->content_security_policy_parsed_headers);
+  BindContentSecurityPolicyToExecutionContext();
   SetWorkerSettings(std::move(creation_params->worker_settings));
   SetReferrerPolicy(creation_params->referrer_policy);
   SetAddressSpace(creation_params->address_space);

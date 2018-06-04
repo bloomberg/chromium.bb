@@ -29,7 +29,9 @@ MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
           frame->GetFrameScheduler()->GetTaskRunner(TaskType::kInternalLoading),
           frame->GetFrameScheduler()->GetTaskRunner(
               TaskType::kInternalLoading)),
-      ContextClient(frame) {}
+      ContextClient(frame) {
+  BindContentSecurityPolicyToExecutionContext();
+}
 
 MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope() = default;
 

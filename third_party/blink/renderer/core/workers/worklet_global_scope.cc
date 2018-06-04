@@ -52,17 +52,8 @@ WorkletGlobalScope::WorkletGlobalScope(
   // https://drafts.css-houdini.org/worklets/#creating-a-workletglobalscope
   // Step 6: "Invoke the initialize a global object's CSP list algorithm given
   // workletGlobalScope."
-  ApplyContentSecurityPolicyFromVector(
+  InitContentSecurityPolicyFromVector(
       creation_params->content_security_policy_parsed_headers);
-  // CSP checks should resolve self based on the 'fetch client settings object'
-  // (i.e., the document's origin), not the 'module map settings object' (i.e.,
-  // the opaque origin of this worklet global scope). The current implementation
-  // doesn't have separate CSP objects for these two contexts. Therefore,
-  // we initialize the worklet global scope's CSP object (which would naively
-  // appear to be a CSP object for the 'module map settings object') entirely
-  // based on state from the document (the origin and CSP headers it passed
-  // here), and use the document's origin for 'self' CSP checks.
-  GetContentSecurityPolicy()->SetupSelf(*document_security_origin_);
 
   OriginTrialContext::AddTokens(this,
                                 creation_params->origin_trial_tokens.get());
@@ -126,6 +117,20 @@ KURL WorkletGlobalScope::CompleteURL(const String& url) const {
     return KURL();
   // Always use UTF-8 in Worklets.
   return KURL(BaseURL(), url);
+}
+
+void WorkletGlobalScope::BindContentSecurityPolicyToExecutionContext() {
+  WorkerOrWorkletGlobalScope::BindContentSecurityPolicyToExecutionContext();
+
+  // CSP checks should resolve self based on the 'fetch client settings object'
+  // (i.e., the document's origin), not the 'module map settings object' (i.e.,
+  // the opaque origin of this worklet global scope). The current implementation
+  // doesn't have separate CSP objects for these two contexts. Therefore,
+  // we initialize the worklet global scope's CSP object (which would naively
+  // appear to be a CSP object for the 'module map settings object') entirely
+  // based on state from the document (the origin and CSP headers it passed
+  // here), and use the document's origin for 'self' CSP checks.
+  GetContentSecurityPolicy()->SetupSelf(*document_security_origin_);
 }
 
 void WorkletGlobalScope::Trace(blink::Visitor* visitor) {

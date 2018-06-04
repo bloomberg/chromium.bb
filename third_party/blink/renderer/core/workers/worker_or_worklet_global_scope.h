@@ -108,8 +108,9 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
  protected:
-  void ApplyContentSecurityPolicyFromVector(
+  void InitContentSecurityPolicyFromVector(
       const Vector<CSPHeaderAndType>& headers);
+  virtual void BindContentSecurityPolicyToExecutionContext();
 
   // Implementation of the "fetch a module worker script graph" algorithm in the
   // HTML spec:

@@ -188,7 +188,7 @@ WorkerOrWorkletGlobalScope::GetTaskRunner(TaskType type) {
   return GetThread()->GetTaskRunner(type);
 }
 
-void WorkerOrWorkletGlobalScope::ApplyContentSecurityPolicyFromVector(
+void WorkerOrWorkletGlobalScope::InitContentSecurityPolicyFromVector(
     const Vector<CSPHeaderAndType>& headers) {
   if (!GetContentSecurityPolicy()) {
     ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
@@ -199,6 +199,10 @@ void WorkerOrWorkletGlobalScope::ApplyContentSecurityPolicyFromVector(
         policy_and_type.first, policy_and_type.second,
         kContentSecurityPolicyHeaderSourceHTTP);
   }
+}
+
+void WorkerOrWorkletGlobalScope::BindContentSecurityPolicyToExecutionContext() {
+  DCHECK(IsContextThread());
   GetContentSecurityPolicy()->BindToExecutionContext(GetExecutionContext());
 }
 

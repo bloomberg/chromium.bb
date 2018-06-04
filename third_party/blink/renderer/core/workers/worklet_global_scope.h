@@ -97,6 +97,8 @@ class CORE_EXPORT WorkletGlobalScope
       scoped_refptr<base::SingleThreadTaskRunner> document_loading_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> worklet_loading_task_runner);
 
+  void BindContentSecurityPolicyToExecutionContext() override;
+
  private:
   EventTarget* ErrorEventTarget() final { return nullptr; }
 
