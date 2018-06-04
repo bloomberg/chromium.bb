@@ -7,12 +7,23 @@
 
 <script>
 
-var worker = getWorker("worker_common.js");
-worker.postMessage("ping");
-worker.onmessage = function(evt) {
+var parms = new URLSearchParams(location.search);
+var workerUrl = parms.get("workerUrl");
+
+if (!workerUrl) {
+  workerUrl = "worker_common.js";
+}
+
+try {
+  var worker = getWorker(workerUrl);
+  worker.postMessage("ping");
+  worker.onmessage = function(evt) {
   if (evt.data == "pong")
     onSuccess();
   else
+    onFailure();
+}
+} catch (err) {
     onFailure();
 }
 
