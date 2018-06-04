@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1972 tests; 1951 PASS, 21 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1972 tests; 1952 PASS, 20 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Event interface: existence and properties of interface object
 PASS Event interface object length
@@ -185,7 +185,7 @@ PASS Unscopable handled correctly for onabort property on AbortSignal
 PASS AbortSignal must be primary interface of new AbortController().signal
 PASS Stringification of new AbortController().signal
 PASS AbortSignal interface: new AbortController().signal must inherit property "aborted" with the proper type
-FAIL AbortSignal interface: new AbortController().signal must inherit property "onabort" with the proper type Unrecognized type EventHandler
+PASS AbortSignal interface: new AbortController().signal must inherit property "onabort" with the proper type
 PASS EventTarget interface: new AbortController().signal must inherit property "addEventListener(DOMString, EventListener, [object Object],[object Object])" with the proper type
 PASS EventTarget interface: calling addEventListener(DOMString, EventListener, [object Object],[object Object]) on new AbortController().signal with too few arguments must throw TypeError
 PASS EventTarget interface: new AbortController().signal must inherit property "removeEventListener(DOMString, EventListener, [object Object],[object Object])" with the proper type
