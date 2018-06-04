@@ -134,7 +134,8 @@ class NotificationPlatformBridgeWinUITest : public InProcessBrowserTest {
   }
 
  protected:
-  void ProcessLaunchIdViaCmdLine(const std::string& launch_id) {
+  void ProcessLaunchIdViaCmdLine(const std::string& launch_id,
+                                 const std::string& inline_reply) {
     base::RunLoop run_loop;
     display_service_tester_->SetProcessNotificationOperationDelegate(
         base::BindRepeating(
@@ -144,6 +145,10 @@ class NotificationPlatformBridgeWinUITest : public InProcessBrowserTest {
     // Simulate clicks on the toast.
     base::CommandLine command_line = base::CommandLine::FromString(L"");
     command_line.AppendSwitchASCII(switches::kNotificationLaunchId, launch_id);
+    if (!inline_reply.empty()) {
+      command_line.AppendSwitchASCII(switches::kNotificationInlineReply,
+                                     inline_reply);
+    }
     ASSERT_TRUE(NotificationPlatformBridgeWin::HandleActivation(command_line));
 
     run_loop.Run();
@@ -468,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, CmdLineClick) {
   if (base::win::GetVersion() < kMinimumWindowsVersion)
     return;
 
-  ASSERT_NO_FATAL_FAILURE(ProcessLaunchIdViaCmdLine(kLaunchId));
+  ASSERT_NO_FATAL_FAILURE(ProcessLaunchIdViaCmdLine(kLaunchId, /*reply=*/""));
 
   // Validate the click values.
   EXPECT_EQ(NotificationCommon::CLICK, last_operation_);
@@ -480,11 +485,30 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, CmdLineClick) {
   EXPECT_TRUE(last_by_user_);
 }
 
+IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest,
+                       CmdLineInlineReply) {
+  if (base::win::GetVersion() < kMinimumWindowsVersion)
+    return;
+
+  ASSERT_NO_FATAL_FAILURE(
+      ProcessLaunchIdViaCmdLine(kLaunchIdButtonClick, "Inline reply"));
+
+  // Validate the click values.
+  EXPECT_EQ(NotificationCommon::CLICK, last_operation_);
+  EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT, last_notification_type_);
+  EXPECT_EQ(GURL("https://example.com/"), last_origin_);
+  EXPECT_EQ("notification_id", last_notification_id_);
+  EXPECT_EQ(0, last_action_index_);
+  EXPECT_EQ(L"Inline reply", last_reply_);
+  EXPECT_TRUE(last_by_user_);
+}
+
 IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, CmdLineButton) {
   if (base::win::GetVersion() < kMinimumWindowsVersion)
     return;
 
-  ASSERT_NO_FATAL_FAILURE(ProcessLaunchIdViaCmdLine(kLaunchIdButtonClick));
+  ASSERT_NO_FATAL_FAILURE(
+      ProcessLaunchIdViaCmdLine(kLaunchIdButtonClick, /*reply=*/""));
 
   // Validate the click values.
   EXPECT_EQ(NotificationCommon::CLICK, last_operation_);
@@ -500,7 +524,8 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, CmdLineSettings) {
   if (base::win::GetVersion() < kMinimumWindowsVersion)
     return;
 
-  ASSERT_NO_FATAL_FAILURE(ProcessLaunchIdViaCmdLine(kLaunchIdSettings));
+  ASSERT_NO_FATAL_FAILURE(
+      ProcessLaunchIdViaCmdLine(kLaunchIdSettings, /*reply=*/""));
 
   // Validate the click values.
   EXPECT_EQ(NotificationCommon::SETTINGS, last_operation_);
