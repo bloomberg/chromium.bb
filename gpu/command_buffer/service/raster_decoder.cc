@@ -944,6 +944,7 @@ ContextResult RasterDecoderImpl::Initialize(
     if (!features().chromium_raster_transport) {
       LOG(ERROR) << "ContextResult::kFatalFailure: "
                     "chromium_raster_transport not present";
+      Destroy(true);
       return ContextResult::kFatalFailure;
     }
 
@@ -984,6 +985,7 @@ ContextResult RasterDecoderImpl::Initialize(
         if (was_lost) {
           DLOG(ERROR)
               << "ContextResult::kTransientFailure: Could not create GrContext";
+          Destroy(true);
           return ContextResult::kTransientFailure;
         }
         DLOG(ERROR) << "OOP raster support disabled: GrContext creation "
