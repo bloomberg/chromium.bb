@@ -30,8 +30,8 @@ class BrowserContext;
 // track of all state.
 class TtsControllerImpl : public TtsController {
  public:
-  // Get the single instance of this class.
-  static TtsControllerImpl* GetInstance();
+  TtsControllerImpl();
+  ~TtsControllerImpl() override;
 
   // TtsController methods
   bool IsSpeaking() override;
@@ -53,10 +53,6 @@ class TtsControllerImpl : public TtsController {
   int QueueSize() override;
 
   std::string GetApplicationLocale() const;
-
- protected:
-  TtsControllerImpl();
-  ~TtsControllerImpl() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TtsControllerTest, TestGetMatchingVoice);

@@ -239,8 +239,7 @@ class Utterance {
 // track of all state.
 class TtsController {
  public:
-  // Get the single instance of this class.
-  static TtsController* GetInstance();
+  virtual ~TtsController() = default;
 
   // Returns true if we're currently speaking an utterance.
   virtual bool IsSpeaking() = 0;
@@ -295,9 +294,6 @@ class TtsController {
   // For unit testing.
   virtual void SetPlatformImpl(TtsPlatformImpl* platform_impl) = 0;
   virtual int QueueSize() = 0;
-
- protected:
-  virtual ~TtsController() {}
 };
 
 #endif  // CHROMECAST_BROWSER_TTS_TTS_CONTROLLER_H_

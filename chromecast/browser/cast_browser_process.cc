@@ -11,6 +11,7 @@
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
+#include "chromecast/browser/tts/tts_controller.h"
 #include "chromecast/net/connectivity_checker.h"
 #include "chromecast/service/cast_service.h"
 #include "components/prefs/pref_service.h"
@@ -106,6 +107,12 @@ void CastBrowserProcess::SetConnectivityChecker(
 void CastBrowserProcess::SetNetLog(net::NetLog* net_log) {
   DCHECK(!net_log_);
   net_log_ = net_log;
+}
+
+void CastBrowserProcess::SetTtsController(
+    std::unique_ptr<TtsController> tts_controller) {
+  DCHECK(!tts_controller_);
+  tts_controller_ = std::move(tts_controller);
 }
 
 }  // namespace shell
