@@ -15,6 +15,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -536,7 +537,14 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, SessionCookieDeletion) {
   TestSiteData("SessionCookie");
 }
 
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, LocalStorageDeletion) {
+// TODO(crbug.com/849238): This test is flaky on Mac (dbg) builds.
+#if defined(OS_MACOSX)
+#define MAYBE_LocalStorageDeletion DISABLED_LocalStorageDeletion
+#else
+#define MAYBE_LocalStorageDeletion LocalStorageDeletion
+#endif
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+                       MAYBE_LocalStorageDeletion) {
   TestSiteData("LocalStorage");
 }
 
