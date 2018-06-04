@@ -111,6 +111,7 @@ if(NOT BUILD_SHARED_LIBS)
                 "${AOM_ROOT}/test/coding_path_sync.cc"
                 "${AOM_ROOT}/test/decode_multithreaded_test.cc"
                 "${AOM_ROOT}/test/divu_small_test.cc"
+                "${AOM_ROOT}/test/dr_prediction_test.cc"
                 "${AOM_ROOT}/test/ec_test.cc"
                 "${AOM_ROOT}/test/ethread_test.cc"
                 "${AOM_ROOT}/test/film_grain_table_test.cc"
