@@ -314,6 +314,19 @@ TEST_F(EventsMacTest, NativeTitlebarEventLocation) {
             gfx::ToFlooredPoint(ui::EventLocationFromNative(event)));
 }
 
+// Test that window-less events preserve location (are in screen coordinates).
+TEST_F(EventsMacTest, NoWindowLocation) {
+  const CGPoint location = CGPointMake(5, 10);
+
+  base::ScopedCFTypeRef<CGEventRef> mouse(CGEventCreateMouseEvent(
+      nullptr, kCGEventMouseMoved, location, kCGMouseButtonLeft));
+
+  NSEvent* event = [NSEvent eventWithCGEvent:mouse];
+  EXPECT_FALSE(event.window);
+  EXPECT_EQ(gfx::Point(location),
+            gfx::ToFlooredPoint(ui::EventLocationFromNative(event)));
+}
+
 // Testing for ui::EventTypeFromNative() not covered by ButtonEvents.
 TEST_F(EventsMacTest, EventTypeFromNative) {
   NSEvent* event = cocoa_test_event_utils::KeyEventWithType(NSKeyDown, 0);
