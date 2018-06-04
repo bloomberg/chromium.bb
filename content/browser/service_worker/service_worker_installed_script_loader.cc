@@ -82,6 +82,14 @@ void ServiceWorkerInstalledScriptLoader::OnHttpInfoRead(
     head.ssl_info = info->ssl_info;
 
   client_->OnReceiveResponse(head, nullptr /* downloaded_file */);
+
+  if (info->metadata) {
+    const uint8_t* data =
+        reinterpret_cast<const uint8_t*>(info->metadata->data());
+    client_->OnReceiveCachedMetadata(
+        std::vector<uint8_t>(data, data + info->metadata->size()));
+  }
+
   client_->OnStartLoadingResponseBody(std::move(body_handle_));
   // We continue in OnFinished().
 }
