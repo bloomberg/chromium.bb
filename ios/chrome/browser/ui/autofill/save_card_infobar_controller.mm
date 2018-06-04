@@ -150,13 +150,11 @@ base::string16 GetTitleForButton(ConfirmInfoBarDelegate* delegate,
     [self.infoBarView setLegalMessages:legalMessages];
   }
 
-  // Cancel button, if any.
-  if (!self.saveCardInfobarDelegate->IsGooglePayBrandingEnabled()) {
-    const base::string16 cancelButtonTitle = GetTitleForButton(
-        self.saveCardInfobarDelegate, ConfirmInfoBarDelegate::BUTTON_CANCEL);
-    [self.infoBarView
-        setCancelButtonTitle:base::SysUTF16ToNSString(cancelButtonTitle)];
-  }
+  // Cancel button.
+  const base::string16 cancelButtonTitle = GetTitleForButton(
+      self.saveCardInfobarDelegate, ConfirmInfoBarDelegate::BUTTON_CANCEL);
+  [self.infoBarView
+      setCancelButtonTitle:base::SysUTF16ToNSString(cancelButtonTitle)];
 
   // Confirm button.
   const base::string16 confirmButtonTitle = GetTitleForButton(

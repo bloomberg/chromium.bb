@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -123,22 +124,24 @@ void AutofillSaveCardInfoBarDelegateMobile::InfoBarDismissed() {
   LogUserAction(AutofillMetrics::INFOBAR_DENIED);
 }
 
+int AutofillSaveCardInfoBarDelegateMobile::GetButtons() const {
+  return BUTTON_OK;
+}
+
 base::string16 AutofillSaveCardInfoBarDelegateMobile::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16(button == BUTTON_OK
-                                       ? IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT
-                                       : IDS_NO_THANKS);
+  if (button != BUTTON_OK) {
+    NOTREACHED() << "Unsupported button label requested.";
+    return base::string16();
+  }
+
+  return l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
 }
 
 bool AutofillSaveCardInfoBarDelegateMobile::Accept() {
   save_card_callback_.Run();
   save_card_callback_.Reset();
   LogUserAction(AutofillMetrics::INFOBAR_ACCEPTED);
-  return true;
-}
-
-bool AutofillSaveCardInfoBarDelegateMobile::Cancel() {
-  LogUserAction(AutofillMetrics::INFOBAR_DENIED);
   return true;
 }
 
