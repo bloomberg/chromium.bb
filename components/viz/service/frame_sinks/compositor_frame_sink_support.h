@@ -103,6 +103,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // most |local_surface_id|.
   std::vector<std::unique_ptr<CopyOutputRequest>> TakeCopyOutputRequests(
       const LocalSurfaceId& local_surface_id) override;
+  void OnFrameTokenChanged(uint32_t frame_token) override;
 
   // mojom::CompositorFrameSink helpers.
   void SetNeedsBeginFrame(bool needs_begin_frame);

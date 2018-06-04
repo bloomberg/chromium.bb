@@ -336,6 +336,12 @@ void Surface::ActivateFrame(FrameData frame_data,
   }
 
   surface_manager_->SurfaceActivated(this, duration);
+
+  // Defer notifying the embedder of an updated token until the frame has been
+  // completely processed.
+  const auto& metadata = GetActiveFrame().metadata;
+  if (surface_client_ && metadata.send_frame_token_to_embedder)
+    surface_client_->OnFrameTokenChanged(metadata.frame_token);
 }
 
 FrameDeadline Surface::UpdateActivationDependencies(
