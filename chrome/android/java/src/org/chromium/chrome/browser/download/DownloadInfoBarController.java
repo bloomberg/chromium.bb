@@ -18,6 +18,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.infobar.DownloadProgressInfoBar;
@@ -51,6 +52,7 @@ import java.util.Set;
  * downloads and computing the the state of the {@link DownloadProgressInfoBar} .
  */
 public class DownloadInfoBarController implements OfflineContentProvider.Observer {
+    private static final String SPEEDING_UP_MESSAGE_ENABLED = "speeding_up_message_enabled";
     private static final long DURATION_ACCELERATED_INFOBAR_IN_MS = 3000;
     private static final long DURATION_SHOW_RESULT_IN_MS = 6000;
 
@@ -400,8 +402,8 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
             case CANCELLED:
                 if (isNewDownload) {
                     nextState = DownloadInfoBarState.DOWNLOADING;
-                    shouldShowAccelerating = updatedItem != null && updatedItem.isAccelerated
-                            && downloadCount.inProgress == 1;
+                    shouldShowAccelerating =
+                            isAccelerated(updatedItem) && downloadCount.inProgress == 1;
                 } else if (shouldShowResult) {
                     nextState = DownloadInfoBarState.SHOW_RESULT;
                 }
@@ -422,8 +424,8 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
             case SHOW_RESULT:
                 if (isNewDownload) {
                     nextState = DownloadInfoBarState.DOWNLOADING;
-                    shouldShowAccelerating = updatedItem != null && updatedItem.isAccelerated
-                            && downloadCount.inProgress == 1;
+                    shouldShowAccelerating =
+                            isAccelerated(updatedItem) && downloadCount.inProgress == 1;
                 } else if (!shouldShowResult) {
                     if (mEndTimerRunnable == null && downloadCount.inProgress > 0) {
                         nextState = DownloadInfoBarState.DOWNLOADING;
@@ -663,6 +665,16 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         return DURATION_SHOW_RESULT_IN_MS;
     }
 
+    @VisibleForTesting
+    protected boolean isSpeedingUpMessageEnabled() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.DOWNLOAD_PROGRESS_INFOBAR, SPEEDING_UP_MESSAGE_ENABLED, false);
+    }
+
+    private boolean isAccelerated(OfflineItem offlineItem) {
+        return isSpeedingUpMessageEnabled() && offlineItem != null && offlineItem.isAccelerated;
+    }
+
     /**
      * Central function called to show an InfoBar. If the previous InfoBar was on a different
      * tab which is currently not active, based on the value of |info.forceReparent|, it is
@@ -781,7 +793,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
         if (!(activity instanceof ChromeTabbedActivity)) return null;
         Tab tab = ((ChromeTabbedActivity) activity).getActivityTab();
-        if (tab.isIncognito() != mIsIncognito) return null;
+        if (tab == null || tab.isIncognito() != mIsIncognito) return null;
         return tab;
     }
 
@@ -843,11 +855,21 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                 Profile.getLastUsedProfile().getOriginalProfile());
     }
 
+    private void removeNotification(ContentId contentId) {
+        if (!mNotificationIds.containsKey(contentId)) return;
+
+        DownloadInfo downloadInfo = new DownloadInfo.Builder().setContentId(contentId).build();
+        DownloadManagerService.getDownloadManagerService()
+                .getDownloadNotifier()
+                .removeDownloadNotification(mNotificationIds.get(contentId), downloadInfo);
+        mNotificationIds.remove(contentId);
+    }
+
     private class DownloadProgressInfoBarClient implements DownloadProgressInfoBar.Client {
         @Override
         public void onLinkClicked(ContentId itemId) {
             mTrackedItems.remove(itemId);
-            mNotificationIds.remove(itemId);
+            removeNotification(itemId);
             if (itemId != null) {
                 DownloadUtils.openItem(
                         itemId, mIsIncognito, DownloadMetrics.DOWNLOAD_PROGRESS_INFO_BAR);

@@ -11,7 +11,7 @@ package org.chromium.components.offline_items_collection;
  * For all member variable descriptions see the C++ class.
  * TODO(dtrainor): Investigate making all class members for this and the C++ counterpart const.
  */
-public class OfflineItem {
+public class OfflineItem implements Cloneable {
     /**
      * This class is the Java counterpart to the C++ OfflineItemProgress
      * (components/offline_items_collection/core/offline_item.h) class.
@@ -107,5 +107,40 @@ public class OfflineItem {
         id = new ContentId();
         filter = OfflineItemFilter.FILTER_OTHER;
         state = OfflineItemState.COMPLETE;
+    }
+
+    @Override
+    public OfflineItem clone() {
+        OfflineItem clone = new OfflineItem();
+        clone.id = (id == null ? null : new ContentId(id.namespace, id.id));
+        clone.title = title;
+        clone.description = description;
+        clone.filter = filter;
+        clone.isTransient = isTransient;
+        clone.isSuggested = isSuggested;
+        clone.isAccelerated = isAccelerated;
+        clone.totalSizeBytes = totalSizeBytes;
+        clone.externallyRemoved = externallyRemoved;
+        clone.creationTimeMs = creationTimeMs;
+        clone.lastAccessedTimeMs = lastAccessedTimeMs;
+        clone.isOpenable = isOpenable;
+        clone.filePath = filePath;
+        clone.mimeType = mimeType;
+        clone.pageUrl = pageUrl;
+        clone.originalUrl = originalUrl;
+        clone.isOffTheRecord = isOffTheRecord;
+        clone.state = state;
+        clone.isResumable = isResumable;
+        clone.allowMetered = allowMetered;
+        clone.receivedBytes = receivedBytes;
+        clone.timeRemainingMs = timeRemainingMs;
+        clone.failState = failState;
+        clone.pendingState = pendingState;
+
+        if (progress != null) {
+            clone.progress = new Progress(progress.value, progress.max, progress.unit);
+        }
+
+        return clone;
     }
 }

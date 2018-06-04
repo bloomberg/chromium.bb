@@ -610,9 +610,11 @@ public class DownloadUtils {
             return true;
         } catch (ActivityNotFoundException e) {
             // Can't launch the Intent.
-            Toast.makeText(context, context.getString(R.string.download_cant_open_file),
-                         Toast.LENGTH_SHORT)
-                    .show();
+            if (source != DownloadMetrics.DOWNLOAD_PROGRESS_INFO_BAR) {
+                Toast.makeText(context, context.getString(R.string.download_cant_open_file),
+                             Toast.LENGTH_SHORT)
+                        .show();
+            }
             return false;
         }
     }
