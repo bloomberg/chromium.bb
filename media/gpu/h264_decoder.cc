@@ -20,8 +20,10 @@ H264Decoder::H264Accelerator::H264Accelerator() = default;
 
 H264Decoder::H264Accelerator::~H264Accelerator() = default;
 
-H264Decoder::H264Decoder(std::unique_ptr<H264Accelerator> accelerator)
+H264Decoder::H264Decoder(std::unique_ptr<H264Accelerator> accelerator,
+                         const VideoColorSpace& container_color_space)
     : state_(kNeedStreamMetadata),
+      container_color_space_(container_color_space),
       max_frame_num_(0),
       max_pic_num_(0),
       max_long_term_frame_idx_(0),
@@ -620,6 +622,12 @@ bool H264Decoder::ModifyReferencePicList(const H264SliceHeader* slice_hdr,
 void H264Decoder::OutputPic(scoped_refptr<H264Picture> pic) {
   DCHECK(!pic->outputted);
   pic->outputted = true;
+
+  VideoColorSpace colorspace_for_frame = container_color_space_;
+  const H264SPS* sps = parser_.GetSPS(curr_sps_id_);
+  if (sps && sps->GetColorSpace().IsSpecified())
+    colorspace_for_frame = sps->GetColorSpace();
+  pic->set_colorspace(colorspace_for_frame);
 
   if (pic->nonexisting) {
     DVLOG(4) << "Skipping output, non-existing frame_num: " << pic->frame_num;

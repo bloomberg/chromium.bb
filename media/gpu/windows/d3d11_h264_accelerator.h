@@ -29,7 +29,8 @@ class D3D11PictureBuffer;
 class D3D11VideoDecoderClient {
  public:
   virtual D3D11PictureBuffer* GetPicture() = 0;
-  virtual void OutputResult(D3D11PictureBuffer* picture) = 0;
+  virtual void OutputResult(D3D11PictureBuffer* picture,
+                            const VideoColorSpace& buffer_colorspace) = 0;
 };
 
 class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
