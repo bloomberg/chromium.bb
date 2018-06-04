@@ -1397,7 +1397,14 @@ void RenderWidgetHostViewMac::OnNSViewBoundsInWindowChanged(
 
 void RenderWidgetHostViewMac::OnNSViewWindowFrameInScreenChanged(
     const gfx::Rect& window_frame_in_screen_dip) {
+  if (window_frame_in_screen_dip_ == window_frame_in_screen_dip)
+    return;
+
   window_frame_in_screen_dip_ = window_frame_in_screen_dip;
+  if (host()->delegate())
+    host()->delegate()->SendScreenRects();
+  else
+    host()->SendScreenRects();
 }
 
 void RenderWidgetHostViewMac::OnNSViewDisplayChanged(
