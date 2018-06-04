@@ -12385,4 +12385,84 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAndProcessPerSiteBrowserTest,
   EXPECT_EQ("foo=bar", cookie);
 }
 
+namespace {
+
+// Helper for waiting until next same-document navigation commits in
+// |web_contents|.
+class SameDocumentCommitObserver : public WebContentsObserver {
+ public:
+  SameDocumentCommitObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents),
+        message_loop_runner_(new MessageLoopRunner) {
+    EXPECT_TRUE(web_contents);
+  }
+
+  void Wait() { message_loop_runner_->Run(); }
+
+  const GURL& last_committed_url() { return last_committed_url_; }
+
+ private:
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    if (navigation_handle->IsSameDocument()) {
+      last_committed_url_ = navigation_handle->GetURL();
+      message_loop_runner_->Quit();
+    }
+  }
+
+  GURL last_committed_url_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(SameDocumentCommitObserver);
+};
+
+}  // namespace
+
+// Ensure that a same-document navigation does not cancel an ongoing
+// cross-process navigation.  See https://crbug.com/825677.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       ReplaceStateDoesNotCancelCrossSiteNavigation) {
+  GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Give the page a beforeunload handler that does a replaceState.  Do this
+  // from setTimeout so that the navigation that triggers beforeunload is
+  // already started when the replaceState happens.
+  EXPECT_TRUE(ExecuteScript(root,
+                            "window.onbeforeunload = function (e) {"
+                            "  setTimeout(() => {"
+                            "    history.replaceState({}, 'footitle', 'foo');"
+                            "  }, 0);"
+                            "};\n"));
+
+  GURL url2 = embedded_test_server()->GetURL("b.com", "/title1.html");
+  TestNavigationManager cross_site_navigation(web_contents(), url2);
+  SameDocumentCommitObserver replace_state_observer(web_contents());
+
+  // Start a cross-site navigation.  Using a renderer-initiated navigation
+  // rather than a browser-initiated one is important here, since
+  // https://crbug.com/825677 was triggered only when replaceState ran while
+  // having a user gesture, which will be the case here since ExecuteScript
+  // runs with a user gesture.
+  EXPECT_TRUE(ExecuteScript(root, "location.href = '" + url2.spec() + "';"));
+  EXPECT_TRUE(cross_site_navigation.WaitForRequestStart());
+
+  // Now wait for the replaceState to commit while the cross-process navigation
+  // is paused.
+  replace_state_observer.Wait();
+  GURL replace_state_url = embedded_test_server()->GetURL("a.com", "/foo");
+  EXPECT_EQ(replace_state_url, replace_state_observer.last_committed_url());
+
+  // The cross-process navigation should not be canceled after the
+  // replaceState.
+  ASSERT_TRUE(root->IsLoading());
+  ASSERT_TRUE(root->navigation_request());
+
+  // Resume and finish the cross-process navigation.
+  cross_site_navigation.ResumeNavigation();
+  cross_site_navigation.WaitForNavigationFinished();
+  EXPECT_TRUE(cross_site_navigation.was_successful());
+  EXPECT_EQ(url2, web_contents()->GetLastCommittedURL());
+}
+
 }  // namespace content

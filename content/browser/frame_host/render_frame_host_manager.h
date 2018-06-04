@@ -283,7 +283,8 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Called when a renderer's frame navigates.
   void DidNavigateFrame(RenderFrameHostImpl* render_frame_host,
-                        bool was_caused_by_user_gesture);
+                        bool was_caused_by_user_gesture,
+                        bool is_same_document_navigation);
 
   // Called when this frame's opener is changed to the frame specified by
   // |opener_routing_id| in |source_site_instance|'s process.  This change
@@ -693,7 +694,9 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Helper to call CommitPending() in all necessary cases.
   void CommitPendingIfNecessary(RenderFrameHostImpl* render_frame_host,
-                                bool was_caused_by_user_gesture);
+                                bool was_caused_by_user_gesture,
+                                bool is_same_document_navigation);
+
   // Commits any pending sandbox flag or feature policy updates when the
   // renderer's frame navigates.
   void CommitPendingFramePolicy();
