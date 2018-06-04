@@ -345,6 +345,7 @@ CrostiniMounter.prototype.__proto__ = ContentScanner.prototype;
  */
 CrostiniMounter.prototype.scan = function(
     entriesCallback, successCallback, errorCallback) {
+  metrics.startInterval('MountCrostiniContainer');
   chrome.fileManagerPrivate.mountCrostiniContainer(() => {
     if (chrome.runtime.lastError) {
       console.error(
@@ -354,6 +355,7 @@ CrostiniMounter.prototype.scan = function(
           chrome.runtime.lastError.message));
       return;
     }
+    metrics.recordInterval('MountCrostiniContainer');
     successCallback();
   });
 };
@@ -383,7 +385,7 @@ FileFilter.prototype = {__proto__: cr.EventTarget.prototype};
 
 /**
  * @param {string} name Filter identifier.
- * @param {function(Entry)} callback A filter — a function receiving an Entry,
+ * @param {function(Entry)} callback A filter - a function receiving an Entry,
  *     and returning bool.
  */
 FileFilter.prototype.addFilter = function(name, callback) {

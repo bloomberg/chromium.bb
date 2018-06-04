@@ -70,15 +70,18 @@ chrome = {
 
   metricsPrivate: {
     userActions_: [],
+    times_: [],
     MetricTypeType: {
       HISTOGRAM_LINEAR: 'histogram-linear',
     },
     recordMediumCount: () => {},
     recordPercentage: () => {},
     recordSmallCount: () => {},
-    recordTime: () => {},
-    recordUserAction: (action) => {
-      chrome.metricsPrivate.userActions_.push(action);
+    recordTime: function(metricName, value) {
+      this.times_.push([metricName, value]);
+    },
+    recordUserAction: function(action) {
+      this.userActions_.push(action);
     },
     recordValue: () => {},
   },
