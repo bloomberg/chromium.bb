@@ -64,6 +64,7 @@
 #include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
+#include "third_party/blink/public/mojom/loader/prefetch_url_loader_service.mojom.h"
 #include "third_party/blink/public/platform/dedicated_worker_factory.mojom.h"
 #include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
@@ -1047,6 +1048,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CreateDedicatedWorkerHostFactory(
       blink::mojom::DedicatedWorkerFactoryRequest request);
 
+  void ConnectToPrefetchURLLoaderService(
+      blink::mojom::PrefetchURLLoaderServiceRequest request);
+
   // Callback for connection error on the media::mojom::InterfaceFactory client.
   void OnMediaInterfaceFactoryConnectionError();
 
@@ -1159,6 +1163,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // commit request.
   void OnCrossDocumentCommitProcessed(int64_t navigation_id,
                                       blink::mojom::CommitResult result);
+
+  // Saves and clones URLLoaderFactoryBundleInfo for subresource loading.
+  // Must be called every time subresource_factories_bundle is updated.
+  void SaveSubresourceFactories(
+      std::unique_ptr<URLLoaderFactoryBundleInfo> bundle_info);
+  std::unique_ptr<URLLoaderFactoryBundleInfo> CloneSubresourceFactories();
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
@@ -1408,6 +1418,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // committed navigation.
   ContentBrowserClient::NonNetworkURLLoaderFactoryMap
       non_network_url_loader_factories_;
+
+  // A bundle of subresource loader factories used by this frame.
+  // A clone of this bundle is sent to the renderer process.
+  scoped_refptr<URLLoaderFactoryBundle> subresource_loader_factories_bundle_;
 
   // Bitfield for renderer-side state that blocks fast shutdown of the frame.
   blink::WebSuddenTerminationDisablerType

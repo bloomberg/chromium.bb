@@ -670,8 +670,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
       partition->url_loader_factory_getter_.get());
 
   partition->prefetch_url_loader_service_ =
-      base::MakeRefCounted<PrefetchURLLoaderService>(
-          partition->url_loader_factory_getter_);
+      base::MakeRefCounted<PrefetchURLLoaderService>();
 
   partition->cookie_store_context_ = base::MakeRefCounted<CookieStoreContext>();
   // Unit tests use the Initialize() callback to crash early if restoring the
