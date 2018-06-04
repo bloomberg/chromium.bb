@@ -37,30 +37,19 @@ public:
     static const bool isGarbageCollected = false;
 };
 
-template<typename T>
-struct VectorTraits {
-    static const bool needsDestruction = true;
+template <bool noDestructor>
+class ConditionalDestructor {
+ public:
+  ~ConditionalDestructor() {}
 };
 
-template<size_t inlineCapacity, bool isGarbageCollected, bool tNeedsDestruction>
-class VectorDestructorBase {
-public:
-    ~VectorDestructorBase() {}
-};
+template <>
+class ConditionalDestructor<true> {};
 
-template<size_t inlineCapacity>
-class VectorDestructorBase<inlineCapacity, true, false> {};
-
-template<>
-class VectorDestructorBase<0, true, true> {};
-
-template<
-    typename T,
-    size_t inlineCapacity = 0,
-    typename Allocator = DefaultAllocator>
-class Vector : public VectorDestructorBase<inlineCapacity,
-                                           Allocator::isGarbageCollected,
-                                           VectorTraits<T>::needsDestruction> {
+template <typename T,
+          size_t inlineCapacity = 0,
+          typename Allocator = DefaultAllocator>
+class Vector : public ConditionalDestructor<Allocator::isGarbageCollected> {
  public:
   using iterator = T*;
   using const_iterator = const T*;
@@ -74,7 +63,7 @@ class Vector : public VectorDestructorBase<inlineCapacity,
 template <typename T,
           size_t inlineCapacity = 0,
           typename Allocator = DefaultAllocator>
-class Deque {
+class Deque : public ConditionalDestructor<Allocator::isGarbageCollected> {
  public:
   using iterator = T*;
   using const_iterator = const T*;
@@ -86,7 +75,7 @@ template <typename ValueArg,
           typename HashArg = void,
           typename TraitsArg = void,
           typename Allocator = DefaultAllocator>
-class HashSet {
+class HashSet : public ConditionalDestructor<Allocator::isGarbageCollected> {
  public:
   typedef ValueArg* iterator;
   typedef const ValueArg* const_iterator;
@@ -98,7 +87,8 @@ template <typename ValueArg,
           typename HashArg = void,
           typename TraitsArg = void,
           typename Allocator = DefaultAllocator>
-class ListHashSet {
+class ListHashSet
+    : public ConditionalDestructor<Allocator::isGarbageCollected> {
  public:
   typedef ValueArg* iterator;
   typedef const ValueArg* const_iterator;
@@ -110,7 +100,8 @@ template <typename ValueArg,
           typename HashArg = void,
           typename TraitsArg = void,
           typename Allocator = DefaultAllocator>
-class LinkedHashSet {
+class LinkedHashSet
+    : public ConditionalDestructor<Allocator::isGarbageCollected> {
  public:
   typedef ValueArg* iterator;
   typedef const ValueArg* const_iterator;
@@ -118,12 +109,12 @@ class LinkedHashSet {
   typedef const ValueArg* const_reverse_iterator;
 };
 
-template<
-    typename ValueArg,
-    typename HashArg = void,
-    typename TraitsArg = void,
-    typename Allocator = DefaultAllocator>
-class HashCountedSet {};
+template <typename ValueArg,
+          typename HashArg = void,
+          typename TraitsArg = void,
+          typename Allocator = DefaultAllocator>
+class HashCountedSet
+    : public ConditionalDestructor<Allocator::isGarbageCollected> {};
 
 template <typename KeyArg,
           typename MappedArg,
@@ -131,7 +122,7 @@ template <typename KeyArg,
           typename KeyTraitsArg = void,
           typename MappedTraitsArg = void,
           typename Allocator = DefaultAllocator>
-class HashMap {
+class HashMap : public ConditionalDestructor<Allocator::isGarbageCollected> {
  public:
   typedef MappedArg* iterator;
   typedef const MappedArg* const_iterator;
@@ -318,15 +309,6 @@ class ScriptWrappable : public TraceWrapperBase {
  public:
   void TraceWrappers(const ScriptWrappableVisitor*) const override {}
 };
-}
-
-namespace WTF {
-
-template<typename T>
-struct VectorTraits<blink::Member<T> > {
-    static const bool needsDestruction = false;
-};
-
 }
 
 #endif

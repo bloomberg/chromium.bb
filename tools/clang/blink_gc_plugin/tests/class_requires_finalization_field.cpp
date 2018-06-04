@@ -24,11 +24,4 @@ void DoesNotNeedFinalizer::Trace(Visitor* visitor)
     A::Trace(visitor);
 }
 
-void AlsoDoesNotNeedFinalizer::Trace(Visitor* visitor)
-{
-    visitor->Trace(m_as);
-    visitor->Trace(m_cs);
-    A::Trace(visitor);
-}
-
 }

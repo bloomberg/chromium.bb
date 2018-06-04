@@ -78,6 +78,35 @@ bool RecordInfo::IsHeapAllocatedCollection() {
   return Config::IsGCCollection(name_);
 }
 
+bool RecordInfo::HasOptionalFinalizer() {
+  if (!IsHeapAllocatedCollection())
+    return false;
+  // Heap collections may have a finalizer but it is optional (i.e. may be
+  // delayed until FinalizeGarbageCollectedObject() gets called), unless there
+  // is an inline buffer. Vector, Deque, and ListHashSet can have an inline
+  // buffer.
+  if (name_ != "Vector" && name_ != "Deque" && name_ != "ListHashSet" &&
+      name_ != "HeapVector" && name_ != "HeapDeque" &&
+      name_ != "HeapListHashSet")
+    return true;
+  ClassTemplateSpecializationDecl* tmpl =
+      dyn_cast<ClassTemplateSpecializationDecl>(record_);
+  // These collections require template specialization so tmpl should always be
+  // non-null for valid code.
+  if (!tmpl)
+    return false;
+  const TemplateArgumentList& args = tmpl->getTemplateArgs();
+  if (args.size() < 2)
+    return true;
+  TemplateArgument arg = args[1];
+  // The second template argument must be void or 0 so there is no inline
+  // buffer.
+  return (arg.getKind() == TemplateArgument::Type &&
+          arg.getAsType()->isVoidType()) ||
+         (arg.getKind() == TemplateArgument::Integral &&
+          arg.getAsIntegral().getExtValue() == 0);
+}
+
 // Test if a record is derived from a garbage collected base.
 bool RecordInfo::IsGCDerived() {
   // If already computed, return the known result.
@@ -579,6 +608,11 @@ void RecordInfo::DetermineTracingMethods() {
 // TODO: Add classes with a finalize() method that specialize FinalizerTrait.
 bool RecordInfo::NeedsFinalization() {
   if (does_need_finalization_ == kNotComputed) {
+    if (HasOptionalFinalizer()) {
+      does_need_finalization_ = kFalse;
+      return does_need_finalization_;
+    }
+
     // Rely on hasNonTrivialDestructor(), but if the only
     // identifiable reason for it being true is the presence
     // of a safely ignorable class as a direct base,
