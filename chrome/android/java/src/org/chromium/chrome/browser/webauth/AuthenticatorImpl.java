@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.webauth;
 
 import org.chromium.content_public.browser.RenderFrameHost;
-import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.webauth.mojom.Authenticator;
 import org.chromium.webauth.mojom.AuthenticatorStatus;
@@ -20,7 +18,6 @@ import org.chromium.webauth.mojom.PublicKeyCredentialRequestOptions;
  */
 public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback {
     private final RenderFrameHost mRenderFrameHost;
-    private final WebContents mWebContents;
 
     /** Ensures only one request is processed at a time. */
     boolean mIsOperationPending = false;
@@ -38,7 +35,6 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
     public AuthenticatorImpl(RenderFrameHost renderFrameHost) {
         assert renderFrameHost != null;
         mRenderFrameHost = renderFrameHost;
-        mWebContents = WebContentsStatics.fromRenderFrameHost(renderFrameHost);
     }
 
     @Override
