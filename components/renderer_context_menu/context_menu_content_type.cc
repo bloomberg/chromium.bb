@@ -63,10 +63,9 @@ bool ContextMenuContentType::SupportsGroup(int group) {
   if (IsDevToolsURL(params_.page_url)) {
     // DevTools mostly provides custom context menu and uses
     // only the following default options.
-    if (group != ITEM_GROUP_CUSTOM &&
-        group != ITEM_GROUP_EDITABLE &&
-        group != ITEM_GROUP_COPY &&
-        group != ITEM_GROUP_DEVELOPER) {
+    if (group != ITEM_GROUP_CUSTOM && group != ITEM_GROUP_EDITABLE &&
+        group != ITEM_GROUP_COPY && group != ITEM_GROUP_DEVELOPER &&
+        group != ITEM_GROUP_SEARCH_PROVIDER) {
       return false;
     }
   }
