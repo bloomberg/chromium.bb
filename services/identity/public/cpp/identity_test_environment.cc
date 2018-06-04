@@ -97,10 +97,23 @@ IdentityManager* IdentityTestEnvironment::identity_manager() {
   return internals_->identity_manager();
 }
 
-void IdentityTestEnvironment::MakePrimaryAccountAvailable(std::string email) {
-  identity::MakePrimaryAccountAvailable(internals_->signin_manager(),
-                                        internals_->token_service(),
-                                        internals_->identity_manager(), email);
+std::string IdentityTestEnvironment::SetPrimaryAccount(
+    const std::string& email) {
+  return identity::SetPrimaryAccount(internals_->signin_manager(),
+                                     internals_->identity_manager(), email);
+}
+
+void IdentityTestEnvironment::SetRefreshTokenForAccount(
+    const std::string& account_id) {
+  identity::SetRefreshTokenForAccount(
+      internals_->token_service(), internals_->identity_manager(), account_id);
+}
+
+std::string IdentityTestEnvironment::MakePrimaryAccountAvailable(
+    const std::string& email) {
+  return identity::MakePrimaryAccountAvailable(
+      internals_->signin_manager(), internals_->token_service(),
+      internals_->identity_manager(), email);
 }
 
 void IdentityTestEnvironment::ClearPrimaryAccount() {
