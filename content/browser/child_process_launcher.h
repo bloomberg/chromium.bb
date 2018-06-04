@@ -22,8 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_termination_info.h"
 #include "content/public/common/result_codes.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/system/invitation.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/child_process_importance.h"
@@ -101,9 +100,8 @@ class CONTENT_EXPORT ChildProcessLauncher {
       std::unique_ptr<base::CommandLine> cmd_line,
       int child_process_id,
       Client* client,
-      std::unique_ptr<mojo::edk::OutgoingBrokerClientInvitation>
-          broker_client_invitation,
-      const mojo::edk::ProcessErrorCallback& process_error_callback,
+      mojo::OutgoingInvitation mojo_invitation,
+      const mojo::ProcessErrorCallback& process_error_callback,
       bool terminate_on_shutdown = true);
   ~ChildProcessLauncher();
 

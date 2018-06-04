@@ -14,9 +14,8 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
-#include "mojo/edk/embedder/named_platform_channel_pair.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "services/service_manager/embedder/result_codes.h"
 #include "services/service_manager/sandbox/win/sandbox_win.h"
@@ -28,16 +27,17 @@ void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
   DCHECK_CURRENTLY_ON(client_thread_id_);
 }
 
-mojo::edk::ScopedInternalPlatformHandle
-ChildProcessLauncherHelper::PrepareMojoPipeHandlesOnClientThread() {
+base::Optional<mojo::NamedPlatformChannel>
+ChildProcessLauncherHelper::CreateNamedPlatformChannelOnClientThread() {
   DCHECK_CURRENTLY_ON(client_thread_id_);
 
   if (!delegate_->ShouldLaunchElevated())
-    return mojo::edk::ScopedInternalPlatformHandle();
+    return base::nullopt;
 
-  mojo::edk::NamedPlatformChannelPair named_pair;
-  named_pair.PrepareToPassClientHandleToChildProcess(command_line());
-  return named_pair.PassServerHandle();
+  mojo::NamedPlatformChannel::Options options;
+  mojo::NamedPlatformChannel named_channel(options);
+  named_channel.PassServerNameOnCommandLine(command_line());
+  return named_channel;
 }
 
 std::unique_ptr<FileMappedForLaunch>
@@ -70,11 +70,8 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     return process;
   }
   base::HandlesToInheritVector handles;
-  handles.push_back(mojo_client_handle().handle);
+  mojo_channel_->PrepareToPassRemoteEndpoint(&handles, command_line());
   base::FieldTrialList::AppendFieldTrialHandleIfNeeded(&handles);
-  command_line()->AppendSwitchASCII(
-      mojo::edk::PlatformChannelPair::kMojoPlatformChannelHandleSwitch,
-      base::UintToString(base::win::HandleToUint32(handles[0])));
   ChildProcessLauncherHelper::Process process;
   *launch_result = StartSandboxedProcess(
       delegate_.get(),

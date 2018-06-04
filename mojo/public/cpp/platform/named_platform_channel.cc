@@ -16,7 +16,13 @@ NamedPlatformChannel::NamedPlatformChannel(const Options& options) {
       CreateServerEndpoint(options, &server_name_));
 }
 
+NamedPlatformChannel::NamedPlatformChannel(NamedPlatformChannel&& other) =
+    default;
+
 NamedPlatformChannel::~NamedPlatformChannel() = default;
+
+NamedPlatformChannel& NamedPlatformChannel::operator=(
+    NamedPlatformChannel&& other) = default;
 
 void NamedPlatformChannel::PassServerNameOnCommandLine(
     base::CommandLine* command_line) {

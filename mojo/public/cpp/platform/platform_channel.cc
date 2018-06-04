@@ -66,7 +66,8 @@ void CreateChannel(PlatformHandle* local_endpoint,
   const DWORD kDesiredAccess = GENERIC_READ | GENERIC_WRITE;
   // The SECURITY_ANONYMOUS flag means that the server side cannot impersonate
   // the client.
-  DWORD kFlags = SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS;
+  DWORD kFlags =
+      SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS | FILE_FLAG_OVERLAPPED;
   // Allow the handle to be inherited by child processes.
   SECURITY_ATTRIBUTES security_attributes = {sizeof(SECURITY_ATTRIBUTES),
                                              nullptr, TRUE};

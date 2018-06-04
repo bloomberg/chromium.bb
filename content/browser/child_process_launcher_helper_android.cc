@@ -59,9 +59,9 @@ void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
          !command_line()->HasSwitch(service_manager::switches::kNoSandbox));
 }
 
-mojo::edk::ScopedInternalPlatformHandle
-ChildProcessLauncherHelper::PrepareMojoPipeHandlesOnClientThread() {
-  return mojo::edk::ScopedInternalPlatformHandle();
+base::Optional<mojo::NamedPlatformChannel>
+ChildProcessLauncherHelper::CreateNamedPlatformChannelOnClientThread() {
+  return base::nullopt;
 }
 
 std::unique_ptr<PosixFileDescriptorInfo>
@@ -73,7 +73,8 @@ ChildProcessLauncherHelper::GetFilesToMap() {
   CHECK(!command_line()->HasSwitch(switches::kSingleProcess));
 
   std::unique_ptr<PosixFileDescriptorInfo> files_to_register =
-      CreateDefaultPosixFilesToMap(child_process_id(), mojo_client_handle(),
+      CreateDefaultPosixFilesToMap(child_process_id(),
+                                   mojo_channel_->remote_endpoint(),
                                    true /* include_service_required_files */,
                                    GetProcessType(), command_line());
 

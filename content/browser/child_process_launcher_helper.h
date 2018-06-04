@@ -9,14 +9,15 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/result_codes.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "services/catalog/public/cpp/manifest_parsing_util.h"
 #include "services/service_manager/zygote/common/zygote_buildflags.h"
 
@@ -90,9 +91,8 @@ class ChildProcessLauncherHelper :
       std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
       const base::WeakPtr<ChildProcessLauncher>& child_process_launcher,
       bool terminate_on_shutdown,
-      std::unique_ptr<mojo::edk::OutgoingBrokerClientInvitation>
-          broker_client_invitation,
-      const mojo::edk::ProcessErrorCallback& process_error_callback);
+      mojo::OutgoingInvitation mojo_invitation,
+      const mojo::ProcessErrorCallback& process_error_callback);
 
   // The methods below are defined in the order they are called.
 
@@ -102,10 +102,11 @@ class ChildProcessLauncherHelper :
   // Platform specific.
   void BeforeLaunchOnClientThread();
 
-  // Called in to give implementors a chance at creating a server pipe.
-  // Platform specific.
-  mojo::edk::ScopedInternalPlatformHandle
-  PrepareMojoPipeHandlesOnClientThread();
+  // Called to give implementors a chance at creating a server pipe. Platform-
+  // specific. Returns |base::nullopt| if the helper should initialize
+  // a regular PlatformChannel for communication instead.
+  base::Optional<mojo::NamedPlatformChannel>
+  CreateNamedPlatformChannelOnClientThread();
 
   // Returns the list of files that should be mapped in the child process.
   // Platform specific.
@@ -189,9 +190,6 @@ class ChildProcessLauncherHelper :
 
   void LaunchOnLauncherThread();
 
-  const mojo::edk::InternalPlatformHandle& mojo_client_handle() const {
-    return mojo_client_handle_.get();
-  }
   base::CommandLine* command_line() { return command_line_.get(); }
   int child_process_id() const { return child_process_id_; }
 
@@ -212,12 +210,21 @@ class ChildProcessLauncherHelper :
   std::unique_ptr<base::CommandLine> command_line_;
   std::unique_ptr<SandboxedProcessLauncherDelegate> delegate_;
   base::WeakPtr<ChildProcessLauncher> child_process_launcher_;
-  mojo::edk::ScopedInternalPlatformHandle mojo_client_handle_;
-  mojo::edk::ScopedInternalPlatformHandle mojo_server_handle_;
+
+  // The PlatformChannel that will be used to transmit an invitation to the
+  // child process in most cases. Only used if the platform's helper
+  // implementation doesn't return a server endpoint from
+  // |CreateNamedPlatformChannelOnClientThread()|.
+  base::Optional<mojo::PlatformChannel> mojo_channel_;
+
+  // May be used in exclusion to the above if the platform helper implementation
+  // returns a valid server endpoint from
+  // |CreateNamedPlatformChannelOnClientThread()|.
+  base::Optional<mojo::NamedPlatformChannel> mojo_named_channel_;
+
   bool terminate_on_shutdown_;
-  std::unique_ptr<mojo::edk::OutgoingBrokerClientInvitation>
-      broker_client_invitation_;
-  const mojo::edk::ProcessErrorCallback process_error_callback_;
+  mojo::OutgoingInvitation mojo_invitation_;
+  const mojo::ProcessErrorCallback process_error_callback_;
 
 #if defined(OS_MACOSX)
   std::unique_ptr<sandbox::SeatbeltExecClient> seatbelt_exec_client_;

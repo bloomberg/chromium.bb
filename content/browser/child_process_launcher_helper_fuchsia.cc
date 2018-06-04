@@ -10,7 +10,6 @@
 #include "content/common/sandbox_policy_fuchsia.h"
 #include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "services/service_manager/embedder/result_codes.h"
 
 namespace content {
@@ -57,13 +56,10 @@ void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
   DCHECK_CURRENTLY_ON(client_thread_id_);
 }
 
-mojo::edk::ScopedInternalPlatformHandle
-ChildProcessLauncherHelper::PrepareMojoPipeHandlesOnClientThread() {
+base::Optional<mojo::NamedPlatformChannel>
+ChildProcessLauncherHelper::CreateNamedPlatformChannelOnClientThread() {
   DCHECK_CURRENTLY_ON(client_thread_id_);
-
-  // By doing nothing here, StartLaunchOnClientThread() will construct a channel
-  // pair instead.
-  return mojo::edk::ScopedInternalPlatformHandle();
+  return base::nullopt;
 }
 
 std::unique_ptr<FileMappedForLaunch>
@@ -77,11 +73,9 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
     base::LaunchOptions* options) {
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
 
-  mojo::edk::PlatformChannelPair::PrepareToPassHandleToChildProcess(
-      mojo_client_handle(), command_line(), &options->handles_to_transfer);
-
+  mojo_channel_->PrepareToPassRemoteEndpoint(&options->handles_to_transfer,
+                                             command_line());
   UpdateLaunchOptionsForSandbox(delegate_->GetSandboxType(), options);
-
   return true;
 }
 
@@ -92,7 +86,8 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     bool* is_synchronous_launch,
     int* launch_result) {
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
-  DCHECK(mojo_client_handle().is_valid());
+  DCHECK(mojo_channel_);
+  DCHECK(mojo_channel_->remote_endpoint().is_valid());
 
   // TODO(750938): Implement sandboxed/isolated subprocess launching.
   Process child_process;
@@ -103,14 +98,6 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
 void ChildProcessLauncherHelper::AfterLaunchOnLauncherThread(
     const ChildProcessLauncherHelper::Process& process,
     const base::LaunchOptions& options) {
-  DCHECK(CurrentlyOnProcessLauncherTaskRunner());
-
-  if (process.process.IsValid()) {
-    // |mojo_client_handle_| has already been transferred to the child process
-    // by this point. Remove it from the scoped container so that we don't
-    // erroneously delete it.
-    ignore_result(mojo_client_handle_.release());
-  }
 }
 
 // static

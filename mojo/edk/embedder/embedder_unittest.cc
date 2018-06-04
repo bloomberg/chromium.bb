@@ -22,7 +22,6 @@
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
@@ -30,7 +29,6 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/named_platform_handle.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/peer_connection.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/system/core.h"
@@ -168,37 +166,6 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
   ASSERT_EQ(MOJO_RESULT_OK, MojoClose(client_mp));
   ASSERT_EQ(MOJO_RESULT_OK, MojoClose(h0));
   ASSERT_EQ(MOJO_RESULT_OK, MojoClose(h1));
-}
-
-TEST_F(EmbedderTest, PipeSetup_LaunchDeath) {
-  PlatformChannelPair pair;
-
-  OutgoingBrokerClientInvitation invitation;
-  ScopedMessagePipeHandle parent_mp = invitation.AttachMessagePipe("unused");
-  invitation.Send(
-      base::GetCurrentProcessHandle(),
-      ConnectionParams(TransportProtocol::kLegacy, pair.PassServerHandle()));
-
-  // Close the remote end, simulating child death before the child extracts the
-  // attached message pipe.
-  ignore_result(pair.PassClientHandle());
-
-  EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(parent_mp.get().value(),
-                                           MOJO_HANDLE_SIGNAL_PEER_CLOSED));
-}
-
-TEST_F(EmbedderTest, PipeSetup_LaunchFailure) {
-  PlatformChannelPair pair;
-
-  auto invitation = std::make_unique<OutgoingBrokerClientInvitation>();
-  ScopedMessagePipeHandle parent_mp = invitation->AttachMessagePipe("unused");
-
-  // Ensure that if an OutgoingBrokerClientInvitation goes away before Send() is
-  // called, any message pipes attachde to it detect peer closure.
-  invitation.reset();
-
-  EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(parent_mp.get().value(),
-                                           MOJO_HANDLE_SIGNAL_PEER_CLOSED));
 }
 
 // The sequence of messages sent is:

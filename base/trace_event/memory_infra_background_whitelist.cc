@@ -115,6 +115,7 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "mojo",
     "mojo/data_pipe_consumer",
     "mojo/data_pipe_producer",
+    "mojo/invitation",
     "mojo/messages",
     "mojo/message_pipe",
     "mojo/platform_handle",
