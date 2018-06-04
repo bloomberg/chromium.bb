@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/link.h"
@@ -77,6 +78,12 @@ class MDStyledLabelTest
 
   // StyledLabelTest:
   void SetUp() override {
+    if (GetParam() == SecondaryUiMode::NON_MD) {
+      // Force Refresh UI to be off, since that mode implies MD secondary UI.
+      // Must be done before ViewsTestBase::SetUp().
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kTopChromeMD, switches::kTopChromeMDMaterial);
+    }
     // This works while StyledLabelTest has no SetUp() of its own. Otherwise the
     // mode should be set after ViewsTestBase::SetUp(), but before the rest of
     // StyledLabelTest::SetUp(), so that StyledLabelTest::SetUp() obeys the MD

@@ -16,6 +16,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/canvas_painter.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -276,10 +277,14 @@ class MDLabelTest : public LabelTest,
 
   // LabelTest:
   void SetUp() override {
-    if (GetParam() == SecondaryUiMode::MD)
+    if (GetParam() == SecondaryUiMode::MD) {
       scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
-    else
+    } else {
+      // Force Refresh UI to be off, since that mode implies MD secondary UI.
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kTopChromeMD, switches::kTopChromeMDMaterial);
       scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
+    }
     LabelTest::SetUp();
   }
 
