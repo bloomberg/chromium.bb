@@ -4557,6 +4557,10 @@ includeFile(FileInfo *nested, CharsString *includedFile,
 	int rv;
 	for (k = 0; k < includedFile->length; k++)
 		includeThis[k] = (char)includedFile->chars[k];
+	if (k >= MAXSTRING) {
+		compileError(nested, "Include statement too long: 'include %s'", includeThis);
+		return 0;
+	}
 	includeThis[k] = 0;
 	tableFiles = _lou_resolveTable(includeThis, nested->fileName);
 	if (tableFiles == NULL) {
@@ -4564,9 +4568,8 @@ includeFile(FileInfo *nested, CharsString *includedFile,
 		return 0;
 	}
 	if (tableFiles[1] != NULL) {
-		errorCount++;
 		free_tablefiles(tableFiles);
-		_lou_logMessage(LOG_ERROR,
+		compileError(nested,
 				"Table list not supported in include statement: 'include %s'",
 				includeThis);
 		return 0;

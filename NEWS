@@ -20,6 +20,8 @@ issues]].
 - Fix a memory leak in default table resolver thanks to Timothy Lee.
 - Fix an array out of bounds error which caused a crash on i386 thanks
   to Samuel Thibault.
+- Fix numerous stack-based buffer overflow in table parsing thanks
+  that were reported by Henri Salo thanks to Christian Egli.
 
 ** Braille table improvements
 - Fix some forward- and back-translation errors in Unified French Grade
