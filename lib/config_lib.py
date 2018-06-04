@@ -1502,6 +1502,29 @@ class SiteConfig(dict):
 
     return result
 
+  def ApplyForBoards(self, suffix, boards, *args, **kwargs):
+    """Update configs for all boards in |boards|.
+
+    Args:
+      suffix: Config name is <board>-<suffix>.
+      boards: A list of board names as strings.
+      *args: Mixin templates to apply.
+      **kwargs: Additional keyword arguments to be used in AddConfig.
+
+    Returns:
+      List of the configs updated.
+    """
+    result = []
+
+    for board in boards:
+      config_name = '%s-%s' % (board, suffix)
+      assert config_name in self, ('%s does not exist.' % config_name)
+
+      # Update the config for this board.
+      result.append(self[config_name].apply(*args, **kwargs))
+
+    return result
+
   def AddTemplate(self, name, *args, **kwargs):
     """Create a template named |name|.
 

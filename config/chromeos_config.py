@@ -16,38 +16,6 @@ from chromite.lib import constants
 from chromite.lib import factory
 
 
-def GetDefaultWaterfall(build_config, is_release_branch):
-  if not (build_config['important'] or build_config['master']):
-    return None
-  if build_config['branch']:
-    return None
-  b_type = build_config['build_type']
-
-  # Build types that, absent other cues, go on the internal waterfall.
-  INTERNAL_TYPES = (constants.PRE_CQ_LAUNCHER_TYPE, constants.TOOLCHAIN_TYPE)
-
-  if config_lib.IsCanaryType(b_type):
-    # If this is a canary build, it may fall on different waterfalls:
-    # - If we're building for a release branch, it belongs on a release
-    #   waterfall.
-    # - Otherwise, it belongs on the internal waterfall.
-    if is_release_branch:
-      return waterfall.WATERFALL_RELEASE
-    else:
-      return waterfall.WATERFALL_INTERNAL
-  elif config_lib.IsCQType(b_type):
-    # A Paladin can appear on the public or internal waterfall depending on its
-    # 'internal' status.
-    return (waterfall.WATERFALL_INTERNAL if build_config['internal'] else
-            waterfall.WATERFALL_EXTERNAL)
-  elif config_lib.IsPFQType(b_type) or b_type in INTERNAL_TYPES:
-    # These builder types belong on the internal waterfall.
-    return waterfall.WATERFALL_INTERNAL
-  else:
-    # No default active waterfall.
-    return None
-
-
 def getInfoVMTest():
   suites = [
       'vmtest-informational4'
@@ -744,31 +712,6 @@ _vmtest_boards = frozenset([
     'novato',        # Like betty but with GMSCore but not the Play Store
     'novato-arc64',  # 64 bit x86_64 ARC++ ABI
 ]) | _lakitu_boards  # All lakitu boards have VM support.
-
-# This is a list of configs that should be included on the main waterfall, but
-# aren't included by default (see IsDefaultMainWaterfall). This loosely
-# corresponds to the set of experimental or self-standing configs.
-_waterfall_config_map = {
-    waterfall.WATERFALL_SWARMING: frozenset([
-        # Full
-        'amd64-generic-full',
-        'arm-generic-full',
-        'daisy-full',
-        'kevin-full',
-        'lakitu-full',
-        'oak-full',
-        'tael-full',
-        'tatl-full',
-
-        # ASAN.
-        'amd64-generic-asan',
-        'amd64-generic-fuzzer',
-
-        # Firmware Builders.
-        'link-depthcharge-full-firmware',
-        'betty-asan',
-    ]),
-}
 
 
 def GetBoardTypeToBoardsDict(ge_build_config):
@@ -2277,6 +2220,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       constants.MST_ANDROID_PFQ_MASTER,
       site_config.templates.mst_android_pfq,
       site_config.templates.master_android_pfq_mixin,
+      active_waterfall=waterfall.WATERFALL_INTERNAL,
   )
 
   _mst_hwtest_boards = frozenset([])
@@ -2291,6 +2235,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.pi_android_pfq,
       site_config.templates.master_android_pfq_mixin,
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+      active_waterfall=waterfall.WATERFALL_INTERNAL,
   )
 
   _pi_no_hwtest_boards = frozenset([])
@@ -2312,6 +2257,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       constants.NYC_ANDROID_PFQ_MASTER,
       site_config.templates.nyc_android_pfq,
       site_config.templates.master_android_pfq_mixin,
+      active_waterfall=waterfall.WATERFALL_INTERNAL,
   )
 
   _nyc_hwtest_boards = frozenset([
@@ -2375,12 +2321,14 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           board_configs,
           site_config.templates.pi_android_pfq,
           hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
       ) +
       site_config.AddForBoards(
           'pi-android-pfq',
           _pi_no_hwtest_boards,
           board_configs,
           site_config.templates.pi_android_pfq,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
       ) +
       site_config.AddForBoards(
           'pi-android-pfq',
@@ -2432,12 +2380,14 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           board_configs,
           site_config.templates.nyc_android_pfq,
           hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
       ) +
       site_config.AddForBoards(
           'nyc-android-pfq',
           _nyc_no_hwtest_boards,
           board_configs,
           site_config.templates.nyc_android_pfq,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
       ) +
       site_config.AddForBoards(
           'nyc-android-pfq',
@@ -2455,6 +2405,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
                                             test_suite='smoke'),
                     config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
       )
   )
 
@@ -2468,6 +2419,17 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
     boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  active_builders = frozenset([
+      'amd64-generic',
+      'arm-generic',
+      'daisy',
+      'kevin',
+      'lakitu',
+      'oak',
+      'tael',
+      'tatl',
+  ])
+
   external_board_configs = CreateBoardConfigs(
       site_config, boards_dict, ge_build_config)
 
@@ -2481,6 +2443,12 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       manifest_repo_url=site_config.params['MANIFEST_URL'],
       overlays=constants.PUBLIC_OVERLAYS,
       prebuilts=constants.PUBLIC)
+
+  site_config.ApplyForBoards(
+      config_lib.CONFIG_TYPE_FULL,
+      active_builders,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+  )
 
 
 def CqBuilders(site_config, boards_dict, ge_build_config):
@@ -2679,6 +2647,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       # TODO(mtennant): Fix this.  There should be some amount of auto-
       # configuration in the board_config.py code.
       auto_reboot=True,  # TODO(dgarrett): Disable chroot.img stable.
+      active_waterfall=waterfall.WATERFALL_INTERNAL,
   )
 
   ### Other paladins (CQ builders).
@@ -3169,6 +3138,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build with Address Sanitizer (Clang)',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
+      active_waterfall=waterfall.WATERFALL_SWARMING,
   )
 
   site_config.Add(
@@ -3191,6 +3161,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build with Address Sanitizer (Clang)',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
+      active_waterfall=waterfall.WATERFALL_SWARMING,
   )
 
   site_config.Add(
@@ -3209,6 +3180,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build for fuzzing testing',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
+      active_waterfall=waterfall.WATERFALL_SWARMING,
   )
 
   site_config.Add(
@@ -3316,6 +3288,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       chrome_sdk=False,
       health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
                                'chrome'],
+      active_waterfall=waterfall.WATERFALL_INTERNAL,
   )
 
   # Create important configs, then non-important configs.
@@ -3325,7 +3298,9 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           _chromium_pfq_important_boards,
           external_board_configs,
           site_config.templates.chromium_pfq,
-          site_config.templates.build_external_chrome)
+          site_config.templates.build_external_chrome,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
+      )
   )
   site_config.AddForBoards(
       'chromium-pfq',
@@ -3438,6 +3413,7 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
         site_config.templates.depthcharge_full_firmware,
         board_configs[board],
         site_config.templates.no_vmtest_builder,
+        active_waterfall=waterfall.WATERFALL_SWARMING,
     )
 
 
@@ -3484,6 +3460,11 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
   unified_board_names = set([b[config_lib.CONFIG_TEMPLATE_REFERENCE_BOARD_NAME]
                              for b in unified_builds])
 
+  if is_release_branch:
+    master_waterfall = waterfall.WATERFALL_RELEASE
+  else:
+    master_waterfall = waterfall.WATERFALL_INTERNAL
+
   ### Master release config.
   master_config = site_config.Add(
       'master-release',
@@ -3496,6 +3477,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       afdo_use=False,
       branch_util_test=True,
       important=True,
+      active_waterfall=master_waterfall,
   )
 
   ### Release configs.
@@ -3710,27 +3692,6 @@ def InsertHwTestsOverrideDefaults(build):
       hw_config.pool = constants.HWTEST_TRYBOT_POOL
       hw_config.file_bugs = False
       hw_config.priority = constants.HWTEST_DEFAULT_PRIORITY
-
-
-def InsertWaterfallDefaults(site_config, ge_build_config):
-  """Method with un-refactored build configs/templates.
-
-  Args:
-    site_config: config_lib.SiteConfig containing builds to have their
-                 waterfall values updated.
-    ge_build_config: Dictionary containing the decoded GE configuration file.
-  """
-  is_release_branch = ge_build_config[config_lib.CONFIG_TEMPLATE_RELEASE_BRANCH]
-
-  for name, c in site_config.iteritems():
-    if not c.get('active_waterfall'):
-      c['active_waterfall'] = GetDefaultWaterfall(c, is_release_branch)
-
-  # Apply manual configs, not used for release branches.
-  if not is_release_branch:
-    for wfall, names in _waterfall_config_map.iteritems():
-      for name in names:
-        site_config[name]['active_waterfall'] = wfall
 
 
 def ApplyCustomOverrides(site_config, ge_build_config):
@@ -4296,9 +4257,6 @@ def GetConfig():
   # Insert default HwTests for tryjobs.
   for build in site_config.itervalues():
     InsertHwTestsOverrideDefaults(build)
-
-  # Assign waterfalls to builders that don't have them yet.
-  InsertWaterfallDefaults(site_config, ge_build_config)
 
   ApplyCustomOverrides(site_config, ge_build_config)
 

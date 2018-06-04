@@ -1114,46 +1114,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
           '%s timeout %s is greater than 24h'
           % (build_name, config.build_timeout))
 
-  def testWaterfallManualConfigIsValid(self):
-    """Verify the correctness of the manual waterfall configuration."""
-
-    # TODO: Start setting this value for the test, instead of just reading.
-    if self.isReleaseBranch():
-      return
-
-    all_build_names = set(self.site_config.iterkeys())
-    redundant = set()
-    seen = set()
-    for wfall, names in chromeos_config._waterfall_config_map.iteritems():
-      for build_name in names:
-        # Every build in the configuration map must be valid.
-        self.assertTrue(build_name in all_build_names,
-                        "Invalid build name in manual waterfall config: %s" % (
-                            build_name,))
-        # No build should appear in multiple waterfalls.
-        self.assertFalse(build_name in seen,
-                         "Duplicate manual config for board: %s" % (
-                             build_name,))
-        seen.add(build_name)
-
-        # The manual configuration must be applied and override any default
-        # configuration.
-        config = self.site_config[build_name]
-        self.assertEqual(config['active_waterfall'], wfall,
-                         "Manual waterfall membership is not in the "
-                         "configuration for: %s" % (build_name,))
-
-
-        default_waterfall = chromeos_config.GetDefaultWaterfall(config, False)
-        if config['active_waterfall'] == default_waterfall:
-          redundant.add(build_name)
-
-    # No configurations should be redundant with defaults.
-    self.assertFalse(redundant,
-                     "Manual waterfall membership in "
-                     "`_waterfall_config_map` is redundant for these "
-                     "configs: %s" % (sorted(redundant),))
-
   def testNoDuplicateCanaryBuildersOnWaterfall(self):
     seen = {}
     for config in self.site_config.itervalues():
