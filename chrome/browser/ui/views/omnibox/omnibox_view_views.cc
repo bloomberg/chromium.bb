@@ -134,7 +134,9 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       select_all_on_mouse_release_(false),
       select_all_on_gesture_tap_(false),
       latency_histogram_state_(NOT_ACTIVE),
-      friendly_suggestion_text_prefix_length_(0) {
+      friendly_suggestion_text_prefix_length_(0),
+      scoped_compositor_observer_(this),
+      scoped_template_url_service_observer_(this) {
   set_id(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
 
