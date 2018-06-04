@@ -50,4 +50,8 @@ f3.outerHTML:
 
 () => UI.html`<div>${[1, 2, 3].map(x => UI.html`<span>${x}</span>`)}</div>`.childNodes.length === 3
   true
+() => UI.html`first ${UI.html`<b>bold</b>`} second`.textContent === 'first bold second'
+  true
+() => UI.html`<a href='${url}'></a>`.href === url
+  true
 
