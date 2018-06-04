@@ -122,7 +122,7 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream final
 
   // Owned by another object.
   // |connect_delegate| will live during the lifetime of this object.
-  WebSocketStream::ConnectDelegate* connect_delegate_;
+  WebSocketStream::ConnectDelegate* const connect_delegate_;
 
   // This is stored in SendRequest() for use by ReadResponseHeaders().
   HttpResponseInfo* http_response_info_;

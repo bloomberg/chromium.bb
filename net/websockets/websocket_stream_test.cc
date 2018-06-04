@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
 #include "net/base/net_errors.h"
@@ -102,6 +103,12 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
     stream_request_.reset();
     stream_.reset();
     base::RunLoop().RunUntilIdle();
+  }
+
+  // Normally it's easier to use CreateAndConnectRawExpectations() instead. This
+  // method is only needed when multiple sockets are involved.
+  void AddRawExpectations(std::unique_ptr<SequencedSocketData> socket_data) {
+    url_request_context_host_.AddRawExpectations(std::move(socket_data));
   }
 
   void AddSSLData() {
@@ -269,7 +276,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
 
     auto socket_data = std::make_unique<SequencedSocketData>(reads_, writes_);
     socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
-    url_request_context_host_.AddRawExpectations(std::move(socket_data));
+    AddRawExpectations(std::move(socket_data));
 
     // Send first request.  This makes sure server's
     // spdy::SETTINGS_ENABLE_CONNECT_PROTOCOL advertisement is read.
@@ -346,7 +353,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
       std::unique_ptr<SequencedSocketData> socket_data) {
     ASSERT_EQ(BASIC_HANDSHAKE_STREAM, stream_type_);
 
-    url_request_context_host_.AddRawExpectations(std::move(socket_data));
+    AddRawExpectations(std::move(socket_data));
     CreateAndConnectStream(GURL(url), sub_protocols, Origin(), SiteForCookies(),
                            additional_headers, std::move(timer_));
   }
@@ -465,10 +472,9 @@ class WebSocketStreamCreateBasicAuthTest : public WebSocketStreamCreateTest {
   void CreateAndConnectAuthHandshake(const std::string& url,
                                      const std::string& base64_user_pass,
                                      const std::string& response2) {
-    url_request_context_host_.AddRawExpectations(
-        helper_.BuildSocketData1(kUnauthorizedResponse));
+    AddRawExpectations(helper_.BuildSocketData1(kUnauthorizedResponse));
 
-    static const char request2format[] =
+    static constexpr char request2format[] =
         "GET / HTTP/1.1\r\n"
         "Host: www.example.org\r\n"
         "Connection: Upgrade\r\n"
@@ -1428,7 +1434,7 @@ TEST_P(WebSocketStreamCreateTest, SelfSignedCertificateSuccess) {
       std::move(ssl_socket_data));
   url_request_context_host_.AddSSLSocketDataProvider(
       std::make_unique<SSLSocketDataProvider>(ASYNC, OK));
-  url_request_context_host_.AddRawExpectations(BuildNullSocketData());
+  AddRawExpectations(BuildNullSocketData());
   CreateAndConnectStandard("wss://www.example.org/", NoSubProtocols(), {}, {},
                            {});
   // WaitUntilConnectDone doesn't work in this case.
@@ -1470,12 +1476,70 @@ TEST_P(WebSocketStreamCreateBasicAuthTest, FailureIncorrectPasswordInUrl) {
   EXPECT_TRUE(response_info_);
 }
 
+TEST_P(WebSocketStreamCreateBasicAuthTest, SuccessfulConnectionReuse) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      WebSocketBasicHandshakeStream ::kWebSocketHandshakeReuseConnection);
+
+  std::string request1 =
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "Connection: Keep-Alive, Upgrade\r\n"
+      "Pragma: no-cache\r\n"
+      "Cache-Control: no-cache\r\n"
+      "Upgrade: websocket\r\n"
+      "Origin: http://www.example.org\r\n"
+      "Sec-WebSocket-Version: 13\r\n"
+      "User-Agent:\r\n"
+      "Accept-Encoding: gzip, deflate\r\n"
+      "Accept-Language: en-us,fr\r\n"
+      "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+      "Sec-WebSocket-Extensions: permessage-deflate; "
+      "client_max_window_bits\r\n"
+      "\r\n";
+  std::string response1 = kUnauthorizedResponse;
+  std::string request2 =
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "Connection: Keep-Alive, Upgrade\r\n"
+      "Pragma: no-cache\r\n"
+      "Cache-Control: no-cache\r\n"
+      "Authorization: Basic Zm9vOmJhcg==\r\n"
+      "Upgrade: websocket\r\n"
+      "Origin: http://www.example.org\r\n"
+      "Sec-WebSocket-Version: 13\r\n"
+      "User-Agent:\r\n"
+      "Accept-Encoding: gzip, deflate\r\n"
+      "Accept-Language: en-us,fr\r\n"
+      "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+      "Sec-WebSocket-Extensions: permessage-deflate; "
+      "client_max_window_bits\r\n"
+      "\r\n";
+  std::string response2 = WebSocketStandardResponse(std::string());
+  MockWrite writes[] = {
+      MockWrite(SYNCHRONOUS, 0, request1.c_str()),
+      MockWrite(SYNCHRONOUS, 2, request2.c_str()),
+  };
+  MockRead reads[3] = {
+      MockRead(SYNCHRONOUS, 1, response1.c_str()),
+      MockRead(SYNCHRONOUS, 3, response2.c_str()),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 4),
+  };
+  CreateAndConnectRawExpectations("ws://foo:bar@www.example.org/",
+                                  NoSubProtocols(), HttpRequestHeaders(),
+                                  BuildSocketData(reads, writes));
+  WaitUntilConnectDone();
+  EXPECT_FALSE(has_failed());
+  EXPECT_TRUE(stream_);
+  ASSERT_TRUE(response_info_);
+  EXPECT_EQ(101, response_info_->headers->response_code());
+}
+
 // Digest auth has the same connection semantics as Basic auth, so we can
 // generally assume that whatever works for Basic auth will also work for
 // Digest. There's just one test here, to confirm that it works at all.
 TEST_P(WebSocketStreamCreateDigestAuthTest, DigestPasswordInUrl) {
-  url_request_context_host_.AddRawExpectations(
-      helper_.BuildSocketData1(kUnauthorizedResponse));
+  AddRawExpectations(helper_.BuildSocketData1(kUnauthorizedResponse));
 
   CreateAndConnectRawExpectations(
       "ws://FooBar:pass@www.example.org/", NoSubProtocols(),
