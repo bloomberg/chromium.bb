@@ -8,7 +8,6 @@ import android.support.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
 
-import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -33,9 +32,9 @@ public class DirectoryOption {
     public final String name;
 
     /**
-     * The file location of download directory.
+     * The absolute path of the download location.
      */
-    public final File location;
+    public final String location;
 
     /**
      * The available space in this download directory.
@@ -43,16 +42,22 @@ public class DirectoryOption {
     public final long availableSpace;
 
     /**
+     * The total disk space of the partition.
+     */
+    public final long totalSpace;
+
+    /**
      * The type of the directory option.
      */
     public final int type;
 
-    public DirectoryOption(String directoryName, File directoryLocation, long directorySpace,
-            @DownloadLocationDirectoryType int directoryType) {
-        name = directoryName;
-        location = directoryLocation;
-        availableSpace = directorySpace;
-        type = directoryType;
+    public DirectoryOption(String name, String location, long availableSpace, long totalSpace,
+            @DownloadLocationDirectoryType int type) {
+        this.name = name;
+        this.location = location;
+        this.availableSpace = availableSpace;
+        this.totalSpace = totalSpace;
+        this.type = type;
     }
 
     /**

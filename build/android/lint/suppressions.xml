@@ -339,7 +339,6 @@ Still reading?
     <!-- TODO(xingliu): Remove these. see crbug.com/840464. -->
     <ignore regexp="The resource `R.string.download_location_not_enough_space_sd_card_full` appears to be unused"/>
     <ignore regexp="The resource `R.string.download_location_notification_retry*` appears to be unused"/>
-    <ignore regexp="The resource `R.string.download_manager_ui_space_using*` appears to be unused"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->
   </issue>
   <issue id="UseCompoundDrawables">

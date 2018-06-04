@@ -100,7 +100,7 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
         // Update native with new path.
         if (mNativeDownloadLocationDialogBridge != 0) {
             PrefServiceBridge.getInstance().setDownloadAndSaveFileDefaultDirectory(
-                    directoryOption.location.getAbsolutePath());
+                    directoryOption.location);
             directoryOption.recordDirectoryOptionType();
 
             File file = new File(directoryOption.location, fileName);
