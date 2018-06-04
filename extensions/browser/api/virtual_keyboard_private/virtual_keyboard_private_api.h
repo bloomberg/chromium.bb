@@ -140,22 +140,6 @@ class VirtualKeyboardPrivateOpenSettingsFunction
   ResponseAction Run() override;
 };
 
-class VirtualKeyboardPrivateSetModeFunction
-    : public VirtualKeyboardPrivateFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.setMode",
-                             VIRTUALKEYBOARDPRIVATE_SETMODE);
-
- protected:
-  ~VirtualKeyboardPrivateSetModeFunction() override {}
-
-  // ExtensionFunction:
-  ResponseAction Run() override;
-
- private:
-  void OnSetMode(bool success);
-};
-
 class VirtualKeyboardPrivateSetContainerBehaviorFunction
     : public VirtualKeyboardPrivateFunction {
  public:

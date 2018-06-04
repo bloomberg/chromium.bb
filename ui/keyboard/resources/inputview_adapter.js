@@ -359,12 +359,7 @@ function registerInputviewApi() {
     else
       defaultSendMessage(message);
   });
-
-  registerFunction('chrome.runtime.setContainerMode', function(mode, callback) {
-    chrome.virtualKeyboardPrivate.setMode(mode, callback);
-  });
 }
-
 
 registerFunction('chrome.runtime.getBackgroundPage', function() {
   var callback = arguments[0];
@@ -379,7 +374,6 @@ if (!chrome.i18n) {
     return name;
   }
 }
-
 
 /**
  * Trigger loading the virtual keyboard on completion of page load.
