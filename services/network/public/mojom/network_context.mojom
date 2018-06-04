@@ -289,13 +289,17 @@ interface NetworkContext {
                          URLLoaderFactoryParams params);
 
   // Gets the CookieManager associated with this network context.
+  //
+  // The CookieManager must only be passed to trusted processes. Whenever
+  // possible, a RestrictedCookieManager should be handed out instead.
   GetCookieManager(CookieManager& cookie_manager);
 
-  // TODO(crbug.com/729800): Switch from {process,frame}_id to the network
-  //                         service's representation of security principals.
-  GetRestrictedCookieManager(
-      RestrictedCookieManager& restricted_cookie_manager,
-      int32 render_process_id, int32 render_frame_id);
+  // Gets a RestrictedCookieManager scoped to a given origin.
+  //
+  // This interface can be safely handed out to a process that is known to
+  // represent the given origin, such as a renderer process.
+  GetRestrictedCookieManager(RestrictedCookieManager& restricted_cookie_manager,
+                             url.mojom.Origin origin);
 
   // Clears network objects with implicit URL history information. Data related
   // to events that happened prior to |start_time| may be retained. Only applies

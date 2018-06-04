@@ -24,6 +24,7 @@
 #include "services/network/cookie_manager.h"
 #include "services/network/http_cache_data_remover.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -130,8 +131,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       network::mojom::URLLoaderFactoryParamsPtr params) override;
   void GetCookieManager(mojom::CookieManagerRequest request) override;
   void GetRestrictedCookieManager(mojom::RestrictedCookieManagerRequest request,
-                                  int32_t render_process_id,
-                                  int32_t render_frame_id) override;
+                                  const url::Origin& origin) override;
   void ClearNetworkingHistorySince(
       base::Time time,
       base::OnceClosure completion_callback) override;
@@ -268,6 +268,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       url_loader_factories_;
 
   mojo::StrongBindingSet<mojom::NetLogExporter> net_log_exporter_bindings_;
+
+  mojo::StrongBindingSet<mojom::RestrictedCookieManager>
+      restricted_cookie_manager_bindings_;
 
   int current_resource_scheduler_client_id_ = 0;
 
