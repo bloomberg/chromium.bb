@@ -981,6 +981,8 @@ void RenderWidgetHostViewAura::GestureEventAck(
     }
   }
   event_handler_->GestureEventAck(event, ack_result);
+
+  ForwardTouchpadPinchIfNecessary(event, ack_result);
 }
 
 void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
