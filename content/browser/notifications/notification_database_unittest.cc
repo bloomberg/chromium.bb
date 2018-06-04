@@ -408,6 +408,12 @@ TEST_F(NotificationDatabaseTest, ReadNotificationUpdateInteraction) {
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->WriteNotificationData(origin, database_data));
 
+  // Check that the time deltas have not yet been set.
+  EXPECT_EQ(false,
+            read_database_data.time_until_first_click_millis.has_value());
+  EXPECT_EQ(false, read_database_data.time_until_last_click_millis.has_value());
+  EXPECT_EQ(false, read_database_data.time_until_close_millis.has_value());
+
   // Check that when a notification has an interaction, the appropriate field is
   // updated on the read.
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
@@ -430,6 +436,19 @@ TEST_F(NotificationDatabaseTest, ReadNotificationUpdateInteraction) {
                 PlatformNotificationContext::Interaction::ACTION_BUTTON_CLICKED,
                 &read_database_data));
   EXPECT_EQ(2, read_database_data.num_action_button_clicks);
+
+  // Check that the click timestamps are correctly updated.
+  EXPECT_EQ(true, read_database_data.time_until_first_click_millis.has_value());
+  EXPECT_EQ(true, read_database_data.time_until_last_click_millis.has_value());
+
+  // Check that when a read with a CLOSED interaction occurs, the correct
+  // field is updated.
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->ReadNotificationDataAndRecordInteraction(
+                database_data.notification_id, origin,
+                PlatformNotificationContext::Interaction::CLOSED,
+                &read_database_data));
+  EXPECT_EQ(true, read_database_data.time_until_close_millis.has_value());
 }
 
 TEST_F(NotificationDatabaseTest, DeleteInvalidNotificationData) {

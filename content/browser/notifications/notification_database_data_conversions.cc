@@ -208,12 +208,18 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
   message.set_num_action_button_clicks(input.num_action_button_clicks);
   message.set_creation_time_millis(
       input.creation_time_millis.ToDeltaSinceWindowsEpoch().InMicroseconds());
-  message.set_time_until_first_click_millis(
-      input.time_until_first_click_millis.InMilliseconds());
-  message.set_time_until_last_click_millis(
-      input.time_until_last_click_millis.InMilliseconds());
-  message.set_time_until_close_millis(
-      input.time_until_close_millis.InMilliseconds());
+  if (input.time_until_first_click_millis.has_value()) {
+    message.set_time_until_first_click_millis(
+        input.time_until_first_click_millis.value().InMilliseconds());
+  }
+  if (input.time_until_last_click_millis.has_value()) {
+    message.set_time_until_last_click_millis(
+        input.time_until_last_click_millis.value().InMilliseconds());
+  }
+  if (input.time_until_close_millis.has_value()) {
+    message.set_time_until_close_millis(
+        input.time_until_close_millis.value().InMilliseconds());
+  }
 
   switch (input.closed_reason) {
     case NotificationDatabaseData::ClosedReason::USER:

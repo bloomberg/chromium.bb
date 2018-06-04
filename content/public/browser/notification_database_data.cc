@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/time/time.h"
 #include "content/public/browser/notification_database_data.h"
 
 namespace content {
 
-NotificationDatabaseData::NotificationDatabaseData() = default;
+NotificationDatabaseData::NotificationDatabaseData()
+    : creation_time_millis(base::Time::Now()) {}
 
 NotificationDatabaseData::NotificationDatabaseData(
     const NotificationDatabaseData& other) = default;
