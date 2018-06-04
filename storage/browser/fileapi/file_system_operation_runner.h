@@ -302,6 +302,8 @@ class STORAGE_EXPORT FileSystemOperationRunner
   // These must be called at the beginning and end of any async operations.
   OperationHandle BeginOperation(std::unique_ptr<FileSystemOperation> operation,
                                  base::WeakPtr<BeginOperationScoper> scope);
+  // Cleans up the FileSystemOperation for |id|, which may result in the
+  // FileSystemContext, and |this| being deleted, by the time the call returns.
   void FinishOperation(OperationID id);
 
   // Not owned; file_system_context owns this.
