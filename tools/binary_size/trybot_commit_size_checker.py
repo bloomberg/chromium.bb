@@ -33,7 +33,10 @@ def main():
   print 'Increase:', size_delta
 
   if size_delta > _MAX_UNNOTICED_INCREASE and not is_roller:
+    # Failure message printed to stderr, so flush first.
+    sys.stdout.flush()
     failure_message = """
+
 Binary size increase is non-trivial (where "non-trivial" means the normalized \
 size increased by more than {} bytes).
 
@@ -57,6 +60,8 @@ Binary-Size: Increase needed to reduce runtime of a common user flow.
 Binary-Size: Increase needed to implement a feature, and I've already spent a
     non-trivial amount of time trying to reduce its size.
 """.format(_MAX_UNNOTICED_INCREASE)
+    # Make blank lines have a space to prevent them from being stripped.
+    failure_message.replace('\n\n', '\n \n')
     sys.exit(failure_message)
 
 
