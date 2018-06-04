@@ -8,16 +8,13 @@ from telemetry import story
 
 class KeySilkCasesPage(page_module.Page):
 
-  def __init__(self, url, page_set, run_no_page_interactions):
+  def __init__(self, name, url, page_set, run_no_page_interactions):
     """ Base class for all key silk cases pages.
 
     Args:
       run_no_page_interactions: whether the page will run any interactions after
         navigate steps.
     """
-    name = url
-    if not name.startswith('http'):
-      name = url.split('/')[-1]
     super(KeySilkCasesPage, self).__init__(
         url=url, page_set=page_set,
         shared_page_state_class=shared_page_state.SharedMobilePageState,
@@ -49,6 +46,7 @@ class Page1(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page1, self).__init__(
+      name='list_recycle_transform',
       url='http://groupcloned.com/test/plain/list-recycle-transform.html',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -63,6 +61,7 @@ class Page2(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page2, self).__init__(
+      name='list_animation_simple',
       url='file://key_silk_cases/list_animation_simple.html',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -80,6 +79,7 @@ class Page3(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page3, self).__init__(
+      name='sticky_using_webkit',
       # pylint: disable=line-too-long
       url='http://groupcloned.com/test/plain/sticky-using-webkit-backface-visibility.html',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
@@ -98,6 +98,7 @@ class Page4(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page4, self).__init__(
+      name='card_expansion',
       url='http://jsfiddle.net/3yDKh/15/show/',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -114,6 +115,7 @@ class Page5(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page5, self).__init__(
+      name='card_expansion_animated',
       url='http://jsfiddle.net/jx5De/14/show/',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -133,6 +135,7 @@ class Page6(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page6, self).__init__(
+      name='card_flying',
       url='http://jsfiddle.net/3yDKh/16/show/',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -151,6 +154,7 @@ class Page7(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page7, self).__init__(
+      name='zoom_in_animation',
       url='http://jsfiddle.net/R8DX9/4/show/',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -169,6 +173,7 @@ class Page8(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page8, self).__init__(
+      name='swipe_to_dismiss',
       url='http://jsfiddle.net/rF9Gh/7/show/',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -186,6 +191,7 @@ class Page9(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page9, self).__init__(
+      name='horizontal_vertical_expansion',
       url='http://jsfiddle.net/TLXLu/3/show/',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -205,6 +211,7 @@ class Page10(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page10, self).__init__(
+      name='vertical_expansion',
       url='http://jsfiddle.net/cKB9D/7/show/',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -224,6 +231,7 @@ class Page11(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page11, self).__init__(
+      name='parallax_effect',
       url='http://jsfiddle.net/vBQHH/11/show/',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -240,6 +248,7 @@ class Page12(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page12, self).__init__(
+      name='coordinated_animation',
       url='http://jsfiddle.net/ugkd4/10/show/',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -254,6 +263,7 @@ class Page13(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page13, self).__init__(
+      name='mask_transition_animation',
       url='http://jsfiddle.net/xLuvC/1/show/',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -270,6 +280,7 @@ class Page14(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page14, self).__init__(
+      name='card_expansion_images_text',
       url='http://jsfiddle.net/bNp2h/3/show/',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -286,6 +297,7 @@ class Page15(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page15, self).__init__(
+      name='font_wipe',
       url='file://key_silk_cases/font_wipe.html',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -298,6 +310,7 @@ class Page16(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page16, self).__init__(
+      name='swipe_action',
       url='file://key_silk_cases/inbox_app.html?swipe_to_dismiss',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -316,6 +329,7 @@ class Page17(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page17, self).__init__(
+      name='stress_hidey_bars',
       url='file://key_silk_cases/inbox_app.html?stress_hidey_bars',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -345,6 +359,7 @@ class Page18(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page18, self).__init__(
+      name='toggle_drawer',
       url='file://key_silk_cases/inbox_app.html?toggle_drawer',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -362,6 +377,7 @@ class Page19(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page19, self).__init__(
+      name='slide_drawer',
       url='file://key_silk_cases/inbox_app.html?slide_drawer',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -399,6 +415,7 @@ class Page20(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page20, self).__init__(
+      name='infinite_scrolling',
       url='file://key_silk_cases/infinite_scrolling.html',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -438,6 +455,7 @@ class GwsGoogleExpansion(GwsExpansionPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(GwsGoogleExpansion, self).__init__(
+      name='gws_google_expansion',
       url='http://www.google.com/#q=google',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -452,6 +470,7 @@ class GwsBoogieExpansion(GwsExpansionPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(GwsBoogieExpansion, self).__init__(
+      name='gws_boogie_expansion',
       url='https://www.google.com/search?hl=en&q=define%3Aboogie',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -464,6 +483,7 @@ class Page22(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page22, self).__init__(
+      name='basic_stream',
       url='http://plus.google.com/app/basic/stream',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -487,6 +507,7 @@ class Page23(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page23, self).__init__(
+      name='physical_simulation',
       url='http://jsbin.com/UVIgUTa/38/quiet',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -510,6 +531,7 @@ class Page24(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page24, self).__init__(
+      name='google_news_ios',
       url='http://mobile-news.sandbox.google.com/news/pt0?scroll',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -531,6 +553,7 @@ class Page25(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page25, self).__init__(
+      name='mobile_news_sandbox',
       url='http://mobile-news.sandbox.google.com/news/pt0?swipe',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -555,6 +578,7 @@ class Page26(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Page26, self).__init__(
+      name='famo_us_twitter_demo',
       url='http://s.codepen.io/befamous/fullpage/pFsqb?scroll',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -582,6 +606,7 @@ class SVGIconRaster(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(SVGIconRaster, self).__init__(
+      name='svg_icon_raster',
       url='http://wiltzius.github.io/shape-shifter/',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -606,6 +631,7 @@ class UpdateHistoryState(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(UpdateHistoryState, self).__init__(
+      name='update_history_state',
       url='file://key_silk_cases/pushState.html',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -630,6 +656,7 @@ class SilkFinance(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(SilkFinance, self).__init__(
+      name='silk_finance',
       url='file://key_silk_cases/silk_finance.html',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -644,6 +671,7 @@ class PolymerTopeka(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(PolymerTopeka, self).__init__(
+      name='polymer_topeka',
       url='https://polymer-topeka.appspot.com/',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
@@ -711,6 +739,7 @@ class Masonry(KeySilkCasesPage):
 
   def __init__(self, page_set, run_no_page_interactions):
     super(Masonry, self).__init__(
+      name='masonry',
       url='file://key_silk_cases/masonry.html',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
