@@ -272,11 +272,9 @@ void ContextualSuggestionsFetch::OnURLLoaderComplete(
     std::unique_ptr<std::string> result) {
   ContextualSuggestionsResult suggestions_result;
 
-  int32_t response_code = 0;
-  int32_t error_code = url_loader_->NetError();
   if (result) {
-    response_code = url_loader_->ResponseInfo()->headers->response_code();
-
+    int32_t response_code =
+        url_loader_->ResponseInfo()->headers->response_code();
     if (response_code == net::HTTP_OK) {
       // The response comes in the format (length, bytes) where length is a
       // varint32 encoded int. Rather than hand-rolling logic to skip the
@@ -292,22 +290,38 @@ void ContextualSuggestionsFetch::OnURLLoaderComplete(
         }
       }
     }
-
-    UMA_HISTOGRAM_COUNTS_1M("ContextualSuggestions.FetchResponseSizeKB",
-                            static_cast<int>(result->length() / 1024));
   }
 
-  ReportFetchMetrics(error_code, response_code,
-                     suggestions_result.clusters.size(),
+  ReportFetchMetrics(suggestions_result.clusters.size(),
                      std::move(metrics_callback));
   std::move(request_completed_callback_).Run(std::move(suggestions_result));
 }
 
 void ContextualSuggestionsFetch::ReportFetchMetrics(
-    int32_t error_code,
-    int32_t response_code,
     size_t clusters_size,
     ReportFetchMetricsCallback metrics_callback) {
+  int32_t error_code = url_loader_->NetError();
+  int32_t response_code = 0;
+
+  base::UmaHistogramSparse("ContextualSuggestions.FetchErrorCode", error_code);
+  if (error_code == net::OK) {
+    const network::ResourceResponseHead* response_info =
+        url_loader_->ResponseInfo();
+    response_code = response_info->headers->response_code();
+    if (response_code > 0) {
+      base::UmaHistogramSparse("ContextualSuggestions.FetchResponseCode",
+                               response_code);
+
+      UMA_HISTOGRAM_COUNTS_1M("ContextualSuggestions.FetchResponseNetworkBytes",
+                              response_info->encoded_data_length);
+    }
+
+    base::TimeDelta latency_delta =
+        response_info->response_time - response_info->request_time;
+    UMA_HISTOGRAM_COUNTS_1M("ContextualSuggestions.FetchLatencyMilliseconds",
+                            latency_delta.InMilliseconds());
+  }
+
   ContextualSuggestionsEvent event;
   if (error_code != net::OK) {
     event = FETCH_ERROR;
@@ -319,12 +333,6 @@ void ContextualSuggestionsFetch::ReportFetchMetrics(
     event = FETCH_EMPTY;
   } else {
     event = FETCH_COMPLETED;
-  }
-
-  base::UmaHistogramSparse("ContextualSuggestions.FetchErrorCode", error_code);
-  if (response_code > 0) {
-    base::UmaHistogramSparse("ContextualSuggestions.FetchResponseCode",
-                             response_code);
   }
 
   std::move(metrics_callback).Run(event);

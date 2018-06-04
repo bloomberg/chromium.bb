@@ -306,8 +306,10 @@ TEST_F(ContextualSuggestionsFetcherTest,
       ContextualSuggestionsResult("Peek Text", std::move(clusters_copy),
                                   PeekConditions()));
 
-  histogram_tester.ExpectTotalCount("ContextualSuggestions.FetchResponseSizeKB",
-                                    1);
+  histogram_tester.ExpectTotalCount(
+      "ContextualSuggestions.FetchResponseNetworkBytes", 1);
+  histogram_tester.ExpectTotalCount(
+      "ContextualSuggestions.FetchLatencyMilliseconds", 1);
 }
 
 TEST_F(ContextualSuggestionsFetcherTest, FlatResponse) {
