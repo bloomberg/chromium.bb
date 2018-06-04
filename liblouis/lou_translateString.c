@@ -47,7 +47,6 @@
 #define WORD_RESET 0x00000002
 #define WORD_STOP 0x00000004
 #define WORD_WHOLE 0x00000008
-#define LAST_WORD_AFTER 0x01000000
 
 typedef struct {
 	int size;

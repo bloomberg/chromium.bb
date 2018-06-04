@@ -30,7 +30,7 @@
 #include "brl_checks.h"
 #include "unistr.h"
 
-void
+static void
 print_int_array(const char *prefix, int *pos_list, int len) {
 	int i;
 	fprintf(stderr, "%s ", prefix);
@@ -38,7 +38,7 @@ print_int_array(const char *prefix, int *pos_list, int len) {
 	fprintf(stderr, "\n");
 }
 
-void
+static void
 print_typeform(const formtype *typeform, int len) {
 	int i;
 	fprintf(stderr, "Typeform:  ");
@@ -46,7 +46,7 @@ print_typeform(const formtype *typeform, int len) {
 	fprintf(stderr, "\n");
 }
 
-void
+static void
 print_widechars(widechar *buffer, int length) {
 	uint8_t *result_buf;
 	size_t result_len;

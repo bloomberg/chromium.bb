@@ -85,9 +85,6 @@ const char *encoding_names[] = { "YAML_ANY_ENCODING", "YAML_UTF8_ENCODING",
 
 const char *inline_table_prefix = "checkyaml_inline_";
 
-yaml_parser_t parser;
-yaml_event_t event;
-
 char *file_name;
 
 int errors = 0;
@@ -95,7 +92,7 @@ int count = 0;
 
 static char const **emph_classes = NULL;
 
-void
+static void
 simple_error(const char *msg, yaml_parser_t *parser, yaml_event_t *event) {
 	error_at_line(EXIT_FAILURE, 0, file_name,
 			event->start_mark.line ? event->start_mark.line + 1
@@ -103,19 +100,19 @@ simple_error(const char *msg, yaml_parser_t *parser, yaml_event_t *event) {
 			"%s", msg);
 }
 
-void
+static void
 yaml_parse_error(yaml_parser_t *parser) {
 	error_at_line(EXIT_FAILURE, 0, file_name, parser->problem_mark.line + 1, "%s",
 			parser->problem);
 }
 
-void
+static void
 yaml_error(yaml_event_type_t expected, yaml_event_t *event) {
 	error_at_line(EXIT_FAILURE, 0, file_name, event->start_mark.line + 1,
 			"Expected %s (actual %s)", event_names[expected], event_names[event->type]);
 }
 
-char *
+static char *
 read_table_query(yaml_parser_t *parser, const char **table_file_name_check) {
 	yaml_event_t event;
 	char *query_as_string = malloc(sizeof(char) * MAXSTRING);
@@ -156,7 +153,7 @@ read_table_query(yaml_parser_t *parser, const char **table_file_name_check) {
 	return query_as_string;
 }
 
-char *
+static char *
 read_table(yaml_event_t *start_event, yaml_parser_t *parser, const char *display_table) {
 	char *table = NULL;
 	if (start_event->type != YAML_SCALAR_EVENT ||
@@ -260,7 +257,7 @@ read_table(yaml_event_t *start_event, yaml_parser_t *parser, const char *display
 	return table;
 }
 
-void
+static void
 read_flags(yaml_parser_t *parser, int *direction, int *hyphenation) {
 	yaml_event_t event;
 	int parse_error = 1;
@@ -299,7 +296,7 @@ read_flags(yaml_parser_t *parser, int *direction, int *hyphenation) {
 	yaml_event_delete(&event);
 }
 
-int
+static int
 read_xfail(yaml_parser_t *parser) {
 	yaml_event_t event;
 	/* assume xfail true if there is an xfail key */
@@ -313,7 +310,7 @@ read_xfail(yaml_parser_t *parser) {
 	return xfail;
 }
 
-translationModes
+static translationModes
 read_mode(yaml_parser_t *parser) {
 	yaml_event_t event;
 	translationModes mode = 0;
@@ -352,8 +349,8 @@ read_mode(yaml_parser_t *parser) {
 	return mode;
 }
 
-int
-parse_number(const char *number, char *name, int file_line) {
+static int
+parse_number(const char *number, const char *name, int file_line) {
 	char *tail;
 	errno = 0;
 
@@ -367,7 +364,7 @@ parse_number(const char *number, char *name, int file_line) {
 	return val;
 }
 
-int *
+static int *
 read_inPos(yaml_parser_t *parser, int translen) {
 	int *pos = malloc(sizeof(int) * translen);
 	int i = 0;
@@ -399,7 +396,7 @@ read_inPos(yaml_parser_t *parser, int translen) {
 	return pos;
 }
 
-int *
+static int *
 read_outPos(yaml_parser_t *parser, int wrdlen, int translen) {
 	int *pos = malloc(sizeof(int) * wrdlen);
 	int i = 0;
@@ -431,7 +428,7 @@ read_outPos(yaml_parser_t *parser, int wrdlen, int translen) {
 	return pos;
 }
 
-void
+static void
 read_cursorPos(yaml_parser_t *parser, int *cursorPos, int *expected_cursorPos, int wrdlen,
 		int translen) {
 	yaml_event_t event;
@@ -483,7 +480,7 @@ read_cursorPos(yaml_parser_t *parser, int *cursorPos, int *expected_cursorPos, i
 	}
 }
 
-void
+static void
 read_typeform_string(yaml_parser_t *parser, formtype *typeform, typeforms kind, int len) {
 	yaml_event_t event;
 	int typeform_len;
@@ -499,7 +496,7 @@ read_typeform_string(yaml_parser_t *parser, formtype *typeform, typeforms kind, 
 	yaml_event_delete(&event);
 }
 
-formtype *
+static formtype *
 read_typeforms(yaml_parser_t *parser, int len) {
 	yaml_event_t event;
 	formtype *typeform = calloc(len, sizeof(formtype));
@@ -545,7 +542,7 @@ read_typeforms(yaml_parser_t *parser, int len) {
 	return typeform;
 }
 
-void
+static void
 read_options(yaml_parser_t *parser, int wordLen, int translationLen, int *xfail,
 		translationModes *mode, formtype **typeform, int **inPos, int **outPos,
 		int *cursorPos, int *cursorOutPos, int *maxOutputLen) {
@@ -610,7 +607,7 @@ read_options(yaml_parser_t *parser, int wordLen, int translationLen, int *xfail,
 }
 
 /* see http://stackoverflow.com/questions/5117393/utf-8-strings-length-in-linux-c */
-int
+static int
 my_strlen_utf8_c(char *s) {
 	int i = 0, j = 0;
 	while (s[i]) {
@@ -620,7 +617,7 @@ my_strlen_utf8_c(char *s) {
 	return j;
 }
 
-void
+static void
 read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) {
 	yaml_event_t event;
 	char *description = NULL;
@@ -711,7 +708,7 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 	free(outPos);
 }
 
-void
+static void
 read_tests(yaml_parser_t *parser, char **tables, int direction, int hyphenation) {
 	yaml_event_t event;
 	if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SEQUENCE_START_EVENT))
