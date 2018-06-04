@@ -10,7 +10,6 @@ static_library("consent_auditor") {
   sources = [
     "consent_auditor.cc",
     "consent_auditor.h",
-    "consent_sync_bridge.cc",
     "consent_sync_bridge.h",
     "consent_sync_bridge_impl.cc",
     "consent_sync_bridge_impl.h",

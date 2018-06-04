@@ -7,21 +7,22 @@
 
 #include <memory>
 
-#include "components/sync/model/model_type_change_processor.h"
-#include "components/sync/model/model_type_sync_bridge.h"
+#include "base/memory/weak_ptr.h"
+#include "components/sync/model/model_type_controller_delegate.h"
 
 namespace syncer {
 
-// TODO(vitaliii): Don't inherit from ModelTypeSyncBridge, but add
-// GetControllerDelegateOnUIThread() method instead.
-class ConsentSyncBridge : public ModelTypeSyncBridge {
+class ConsentSyncBridge {
  public:
-  explicit ConsentSyncBridge(
-      std::unique_ptr<ModelTypeChangeProcessor> change_processor);
-  ~ConsentSyncBridge() override = default;
+  ConsentSyncBridge() = default;
+  virtual ~ConsentSyncBridge() = default;
 
   virtual void RecordConsent(
       std::unique_ptr<sync_pb::UserConsentSpecifics> specifics) = 0;
+
+  // Returns the delegate for the controller, i.e. sync integration point.
+  virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  GetControllerDelegateOnUIThread() = 0;
 };
 
 }  // namespace syncer
