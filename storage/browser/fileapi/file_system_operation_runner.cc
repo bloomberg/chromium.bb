@@ -45,6 +45,8 @@ FileSystemOperationRunner::OperationHandle::~OperationHandle() = default;
 FileSystemOperationRunner::~FileSystemOperationRunner() = default;
 
 void FileSystemOperationRunner::Shutdown() {
+  // Clearing |operations_| may release our owning FileSystemContext, causing
+  // |this| to be deleted, so do not touch |this| after clear()ing it.
   operations_.clear();
 }
 
@@ -705,6 +707,11 @@ FileSystemOperationRunner::BeginOperation(
 }
 
 void FileSystemOperationRunner::FinishOperation(OperationID id) {
+  // Deleting the |operations_| entry may release the FileSystemContext which
+  // owns this runner, so take a reference to keep both alive until the end of
+  // this call.
+  scoped_refptr<FileSystemContext> context(file_system_context_);
+
   OperationToURLSet::iterator found = write_target_urls_.find(id);
   if (found != write_target_urls_.end()) {
     const FileSystemURLSet& urls = found->second;

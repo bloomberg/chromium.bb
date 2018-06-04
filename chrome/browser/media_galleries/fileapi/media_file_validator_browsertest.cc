@@ -106,6 +106,14 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
   }
 
  private:
+  // BrowserTestBase interface.
+  void PostRunTestOnMainThread() override {
+    // Trigger release of the FileSystemContext before the IO thread is gone,
+    // so it can teardown there correctly.
+    file_system_context_ = nullptr;
+    InProcessBrowserTest::PostRunTestOnMainThread();
+  }
+
   // Create the test files, filesystem objects, etc.
   void SetupBlocking(const std::string& filename,
                      const std::string& content,
