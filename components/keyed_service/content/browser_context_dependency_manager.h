@@ -16,7 +16,7 @@ class BrowserContextKeyedBaseFactory;
 
 namespace base {
 template <typename T>
-struct DefaultSingletonTraits;
+class NoDestructor;
 }  // namespace base
 
 namespace content {
@@ -85,7 +85,7 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
 
  private:
   friend class BrowserContextDependencyManagerUnittests;
-  friend struct base::DefaultSingletonTraits<BrowserContextDependencyManager>;
+  friend class base::NoDestructor<BrowserContextDependencyManager>;
 
   // Helper function used by CreateBrowserContextServices[ForTest].
   void DoCreateBrowserContextServices(content::BrowserContext* context,
