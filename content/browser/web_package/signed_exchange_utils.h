@@ -23,11 +23,10 @@ class SignedExchangeDevToolsProxy;
 namespace signed_exchange_utils {
 
 // Utility method to call SignedExchangeDevToolsProxy::ReportError() and
-// TRACE_EVENT_END() to report the error to both DevTools and about:tracing. If
-// |devtools_proxy| is nullptr, it just calls TRACE_EVENT_END().
-void ReportErrorAndEndTraceEvent(
+// TRACE_EVENT_INSTANT1 to report the error to both DevTools and about:tracing.
+// If |devtools_proxy| is nullptr, it just calls TRACE_EVENT_INSTANT1().
+void ReportErrorAndTraceEvent(
     SignedExchangeDevToolsProxy* devtools_proxy,
-    const char* trace_event_name,
     const std::string& error_message,
     base::Optional<SignedExchangeError::FieldIndexPair> error_field =
         base::nullopt);

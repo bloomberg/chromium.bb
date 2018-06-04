@@ -17,15 +17,15 @@
 namespace content {
 namespace signed_exchange_utils {
 
-void ReportErrorAndEndTraceEvent(
+void ReportErrorAndTraceEvent(
     SignedExchangeDevToolsProxy* devtools_proxy,
-    const char* trace_event_name,
     const std::string& error_message,
     base::Optional<SignedExchangeError::FieldIndexPair> error_field) {
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("loading"),
+                       "SignedExchangeError", TRACE_EVENT_SCOPE_THREAD, "error",
+                       error_message);
   if (devtools_proxy)
     devtools_proxy->ReportError(error_message, std::move(error_field));
-  TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"), trace_event_name,
-                   "error", error_message);
 }
 
 bool IsSignedExchangeHandlingEnabled() {

@@ -194,16 +194,15 @@ base::Optional<std::vector<SignedExchangeSignatureHeaderField::Signature>>
 SignedExchangeSignatureHeaderField::ParseSignature(
     base::StringPiece signature_str,
     SignedExchangeDevToolsProxy* devtools_proxy) {
-  TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                     "SignedExchangeSignatureHeaderField::ParseSignature");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "SignedExchangeSignatureHeaderField::ParseSignature");
 
   StructuredHeaderParser parser(signature_str);
   std::vector<ParameterisedIdentifier> values;
   parser.ParseParameterisedList(&values);
   if (!parser.ParsedSuccessfully()) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeSignatureHeaderField::ParseSignature",
-        "Failed to parse signature header.");
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy, "Failed to parse signature header.");
     return base::nullopt;
   }
 
@@ -215,34 +214,30 @@ SignedExchangeSignatureHeaderField::ParseSignature(
     sig.label = value.identifier;
     sig.sig = value.params[kSig];
     if (sig.sig.empty()) {
-      signed_exchange_utils::ReportErrorAndEndTraceEvent(
-          devtools_proxy, "SignedExchangeSignatureHeaderField::ParseSignature",
-          "'sig' parameter is not set,");
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy, "'sig' parameter is not set,");
       return base::nullopt;
     }
     sig.integrity = value.params[kIntegrity];
     if (sig.integrity.empty()) {
-      signed_exchange_utils::ReportErrorAndEndTraceEvent(
-          devtools_proxy, "SignedExchangeSignatureHeaderField::ParseSignature",
-          "'integrity' parameter is not set.");
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy, "'integrity' parameter is not set.");
       return base::nullopt;
     }
     sig.cert_url = GURL(value.params[kCertUrl]);
     if (!sig.cert_url.is_valid() || sig.cert_url.has_ref()) {
       // TODO(https://crbug.com/819467) : When we will support "ed25519Key", the
       // params may not have "cert-url".
-      signed_exchange_utils::ReportErrorAndEndTraceEvent(
-          devtools_proxy, "SignedExchangeSignatureHeaderField::ParseSignature",
-          "'cert-url' parameter is not a valid URL.");
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy, "'cert-url' parameter is not a valid URL.");
       return base::nullopt;
     }
     const std::string cert_sha256_string = value.params[kCertSha256Key];
     if (cert_sha256_string.size() != crypto::kSHA256Length) {
       // TODO(https://crbug.com/819467) : When we will support "ed25519Key", the
       // params may not have "cert-sha256".
-      signed_exchange_utils::ReportErrorAndEndTraceEvent(
-          devtools_proxy, "SignedExchangeSignatureHeaderField::ParseSignature",
-          "'cert-sha256' parameter is not a SHA-256 digest.");
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy, "'cert-sha256' parameter is not a SHA-256 digest.");
       return base::nullopt;
     }
     net::SHA256HashValue cert_sha256;
@@ -252,32 +247,26 @@ SignedExchangeSignatureHeaderField::ParseSignature(
     // sig.ed25519_key = value.params["ed25519Key"];
     sig.validity_url = GURL(value.params[kValidityUrlKey]);
     if (!sig.validity_url.is_valid()) {
-      signed_exchange_utils::ReportErrorAndEndTraceEvent(
-          devtools_proxy, "SignedExchangeSignatureHeaderField::ParseSignature",
-          "'validity-url' parameter is not a valid URL.");
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy, "'validity-url' parameter is not a valid URL.");
       return base::nullopt;
     }
     if (sig.validity_url.has_ref()) {
-      signed_exchange_utils::ReportErrorAndEndTraceEvent(
-          devtools_proxy, "SignedExchangeSignatureHeaderField::ParseSignature",
-          "'validity-url' parameter can't have a fragment.");
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy, "'validity-url' parameter can't have a fragment.");
       return base::nullopt;
     }
     if (!base::StringToUint64(value.params[kDateKey], &sig.date)) {
-      signed_exchange_utils::ReportErrorAndEndTraceEvent(
-          devtools_proxy, "SignedExchangeSignatureHeaderField::ParseSignature",
-          "'date' parameter is not a number.");
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy, "'date' parameter is not a number.");
       return base::nullopt;
     }
     if (!base::StringToUint64(value.params[kExpiresKey], &sig.expires)) {
-      signed_exchange_utils::ReportErrorAndEndTraceEvent(
-          devtools_proxy, "SignedExchangeSignatureHeaderField::ParseSignature",
-          "'expires' parameter is not a number.");
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy, "'expires' parameter is not a number.");
       return base::nullopt;
     }
   }
-  TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                   "SignedExchangeSignatureHeaderField::ParseSignature");
   return signatures;
 }
 
