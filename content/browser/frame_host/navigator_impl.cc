@@ -890,8 +890,6 @@ void NavigatorImpl::DidStartMainFrameNavigation(
     // update it instead of replacing it and copying over things like this.
     // That will allow us to skip the NavigationHandle update below as well.
     if (pending_entry) {
-      entry->set_transferred_global_request_id(
-          pending_entry->transferred_global_request_id());
       entry->set_should_replace_entry(pending_entry->should_replace_entry());
       entry->SetRedirectChain(pending_entry->GetRedirectChain());
     }
