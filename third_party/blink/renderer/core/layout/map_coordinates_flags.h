@@ -29,6 +29,10 @@ enum MapCoordinatesMode {
   // Ignore offset adjustments caused by position:sticky calculations when
   // walking the chain.
   kIgnoreStickyOffset = 1 << 5,
+
+  // Ignore scroll offset from container, i.e. scrolling has no effect on mapped
+  // position.
+  kIgnoreScrollOffset = 1 << 6,
 };
 typedef unsigned MapCoordinatesFlags;
 

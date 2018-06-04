@@ -812,7 +812,11 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   while (containing_block->IsAnonymous()) {
     containing_block = containing_block->ContainingBlock();
   }
-  MapCoordinatesFlags flags = kIgnoreStickyOffset;
+
+  // The sticky position constraint rects should be independent of the current
+  // scroll position therefore we should ignore the scroll offset when
+  // calculating the quad.
+  MapCoordinatesFlags flags = kIgnoreScrollOffset | kIgnoreStickyOffset;
   skipped_containers_offset =
       ToFloatSize(location_container
                       ->LocalToAncestorQuadWithoutTransforms(
@@ -846,13 +850,6 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
             ->LocalToAncestorQuadWithoutTransforms(local_quad, &scroll_ancestor,
                                                    flags)
             .BoundingBox();
-
-    // The sticky position constraint rects should be independent of the current
-    // scroll position, so after mapping we add in the scroll position to get
-    // the container's position within the ancestor scroller's unscrolled layout
-    // overflow.
-    scroll_container_relative_padding_box_rect.Move(
-        ToFloatSize(scroll_ancestor.GetScrollableArea()->ScrollPosition()));
   }
   // Remove top-left border offset from overflow scroller.
   scroll_container_relative_padding_box_rect.Move(
