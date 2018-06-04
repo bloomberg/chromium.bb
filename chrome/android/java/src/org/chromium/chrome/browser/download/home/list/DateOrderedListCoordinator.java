@@ -25,13 +25,15 @@ public class DateOrderedListCoordinator {
 
     /** Creates an instance of a DateOrderedListCoordinator, which will visually represent
      * {@code provider} as a list of items.
-     * @param context  The {@link Context} to use to build the views.
-     * @param provider The {@link OfflineContentProvider} to visually represent.
+     * @param context      The {@link Context} to use to build the views.
+     * @param offTheRecord Whether or not to include off the record items.
+     * @param provider     The {@link OfflineContentProvider} to visually represent.
      */
-    public DateOrderedListCoordinator(Context context, OfflineContentProvider provider) {
+    public DateOrderedListCoordinator(
+            Context context, Boolean offTheRecord, OfflineContentProvider provider) {
         mModel = new ListItemModel();
         mDecoratedModel = new DecoratedListItemModel(mModel);
-        mMediator = new DateOrderedListMediator(provider, mModel);
+        mMediator = new DateOrderedListMediator(offTheRecord, provider, mModel);
         mView = new DateOrderedListView(context, mDecoratedModel);
 
         // Hook up the FilterCoordinator with our mediator.
@@ -48,5 +50,10 @@ public class DateOrderedListCoordinator {
     /** @return The {@link View} representing downloads home. */
     public View getView() {
         return mView.getView();
+    }
+
+    /** Sets the string filter query to {@code query}. */
+    public void setSearchQuery(String query) {
+        mMediator.onFilterStringChanged(query);
     }
 }
