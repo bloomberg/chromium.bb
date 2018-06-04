@@ -67,6 +67,9 @@
   TestRunner.addResult('');
 
   check(() => UI.html`<div>${[1, 2, 3].map(x => UI.html`<span>${x}</span>`)}</div>`.childNodes.length === 3);
+  check(() => UI.html`first ${UI.html`<b>bold</b>`} second`.textContent === 'first bold second');
+  const url = 'http://example.com/';
+  check(() => UI.html`<a href='${url}'></a>`.href === url);
 
   TestRunner.completeTest();
 })();
