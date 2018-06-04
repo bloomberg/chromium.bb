@@ -1796,6 +1796,8 @@ static_library("test_support") {
   sources = [
     "app_mode/test_kiosk_extension_builder.cc",
     "app_mode/test_kiosk_extension_builder.h",
+    "crostini/crostini_test_helper.cc",
+    "crostini/crostini_test_helper.h",
     "extensions/test_external_cache.cc",
     "extensions/test_external_cache.h",
     "lock_screen_apps/fake_lock_screen_profile_creator.cc",
@@ -1824,6 +1826,7 @@ static_library("test_support") {
     ":chromeos",
     "//chrome/test:test_support",
     "//chromeos",
+    "//components/crx_file",
     "//components/policy/proto",
     "//crypto:platform",
     "//google_apis",
