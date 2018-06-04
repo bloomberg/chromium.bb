@@ -147,17 +147,6 @@ TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics_Local_Main) {
                                         AutofillMetrics::INFOBAR_ACCEPTED, 1);
   }
 
-  // Cancel the infobar.
-  {
-    std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(
-        /* is_uploading= */ false));
-
-    base::HistogramTester histogram_tester;
-    EXPECT_TRUE(infobar->Cancel());
-    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar.Local",
-                                        AutofillMetrics::INFOBAR_DENIED, 1);
-  }
-
   // Dismiss the infobar.
   {
     std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(
@@ -247,17 +236,6 @@ TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics_Server_Main) {
     ASSERT_EQ(1U, personal_data_->GetCreditCards().size());
     histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar.Server",
                                         AutofillMetrics::INFOBAR_ACCEPTED, 1);
-  }
-
-  // Cancel the infobar.
-  {
-    std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(
-        /* is_uploading= */ true));
-
-    base::HistogramTester histogram_tester;
-    EXPECT_TRUE(infobar->Cancel());
-    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar.Server",
-                                        AutofillMetrics::INFOBAR_DENIED, 1);
   }
 
   // Dismiss the infobar.

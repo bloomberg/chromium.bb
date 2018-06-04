@@ -62,9 +62,9 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
   void InfoBarDismissed() override;
+  int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
-  bool Cancel() override;
 
  private:
   void LogUserAction(AutofillMetrics::InfoBarMetric user_action);

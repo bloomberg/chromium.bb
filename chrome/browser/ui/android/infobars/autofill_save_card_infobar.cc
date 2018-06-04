@@ -48,11 +48,6 @@ AutofillSaveCardInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   autofill::AutofillSaveCardInfoBarDelegateMobile* delegate =
       GetSaveCardDelegate();
 
-  base::string16 cancel_button_text =
-      GetTextFor(ConfirmInfoBarDelegate::BUTTON_CANCEL);
-  if (delegate->IsGooglePayBrandingEnabled()) {
-    cancel_button_text = GetTextFor(ConfirmInfoBarDelegate::BUTTON_NONE);
-  }
   base::android::ScopedJavaLocalRef<jobject> java_delegate =
       Java_AutofillSaveCardInfoBar_create(
           env, reinterpret_cast<intptr_t>(this), GetEnumeratedIconId(),
@@ -62,7 +57,8 @@ AutofillSaveCardInfoBar::CreateRenderInfoBar(JNIEnv* env) {
           base::android::ConvertUTF16ToJavaString(env, delegate->GetLinkText()),
           base::android::ConvertUTF16ToJavaString(
               env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_OK)),
-          base::android::ConvertUTF16ToJavaString(env, cancel_button_text),
+          base::android::ConvertUTF16ToJavaString(
+              env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_CANCEL)),
           delegate->IsGooglePayBrandingEnabled());
 
   Java_AutofillSaveCardInfoBar_setDescriptionText(
