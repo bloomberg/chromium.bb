@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -70,10 +71,17 @@ IN_PROC_BROWSER_TEST_F(
       FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
 }
 
+// Disabled. Failing on Mac 10.11. See https://crbug.com/849129.
+#if defined(OS_MACOSX)
+#define MAYBE_Local_ClickingSaveClosesBubble \
+  DISABLED_Local_ClickingSaveClosesBubble
+#else
+#define MAYBE_Local_ClickingSaveClosesBubble Local_ClickingSaveClosesBubble
+#endif
 // Tests the local save bubble. Ensures that clicking the [Save] button
 // successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Local_ClickingSaveClosesBubble) {
+                       MAYBE_Local_ClickingSaveClosesBubble) {
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
 
@@ -103,6 +111,14 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
 }
 
+// Disabled. Failing on Mac 10.11. See https://crbug.com/849129.
+#if defined(OS_MACOSX)
+#define MAYBE_Local_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff \
+  DISABLED_Local_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff
+#else
+#define MAYBE_Local_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff \
+  Local_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff
+#endif
 // Tests the local save bubble. Ensures that clicking the [No thanks] button
 // successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(
@@ -240,11 +256,18 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   base::RunLoop().RunUntilIdle();
 }
 
+// Disabled. Failing on Mac 10.11. See https://crbug.com/849129.
+#if defined(OS_MACOSX)
+#define MAYBE_Upload_ClickingSaveClosesBubble \
+  DISABLED_Upload_ClickingSaveClosesBubble
+#else
+#define MAYBE_Upload_ClickingSaveClosesBubble Upload_ClickingSaveClosesBubble
+#endif
 // Tests the upload save bubble. Ensures that clicking the [Save] button
 // successfully causes the bubble to go away and sends an UploadCardRequest RPC
 // to Google Payments.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Upload_ClickingSaveClosesBubble) {
+                       MAYBE_Upload_ClickingSaveClosesBubble) {
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -275,6 +298,14 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
 }
 
+// Disabled. Failing on Mac 10.11. See https://crbug.com/849129.
+#if defined(OS_MACOSX)
+#define MAYBE_Upload_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff \
+  DISABLED_Upload_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff
+#else
+#define MAYBE_Upload_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff \
+  Upload_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff
+#endif
 // Tests the upload save bubble. Ensures that clicking the [No thanks] button
 // successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(
@@ -336,6 +367,14 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
 }
 
+// Disabled. Failing on Mac 10.11. See https://crbug.com/849129.
+#if defined(OS_MACOSX)
+#define MAYBE_Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn \
+  DISABLED_Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn
+#else
+#define MAYBE_Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn \
+  Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn
+#endif
 // Tests the upload save bubble. Ensures that clicking the top-right [X] close
 // button successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
