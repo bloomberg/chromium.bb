@@ -45,7 +45,7 @@ BluetoothChooserController::BluetoothChooserController(
 BluetoothChooserController::~BluetoothChooserController() {}
 
 bool BluetoothChooserController::ShouldShowIconBeforeText() const {
-  return devices_.size() > 0;
+  return true;
 }
 
 bool BluetoothChooserController::ShouldShowReScanButton() const {
