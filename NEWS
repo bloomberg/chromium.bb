@@ -55,6 +55,7 @@ issues]].
   - Combine =emphasisBuffer= and =transnoteBuffer=
   - Group match related vars in a struct =PassRuleMatch=
   - Remove dead code
+- Fixed many warnings thanks to Christian Egli
 
 ** Deprecation notice
 - The =mode= parameter in =lou_dotsToChar= never had any effect and is
