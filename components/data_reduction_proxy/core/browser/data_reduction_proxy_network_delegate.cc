@@ -147,8 +147,6 @@ void RecordContentLengthHistograms(bool is_https,
 
   UMA_HISTOGRAM_COUNTS_1M("Net.HttpOriginalContentLength",
                           original_content_length);
-  UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthDifference",
-                          original_content_length - received_content_length);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Net.HttpContentFreshnessLifetime",
                               freshness_lifetime.InSeconds(),
                               base::TimeDelta::FromHours(1).InSeconds(),

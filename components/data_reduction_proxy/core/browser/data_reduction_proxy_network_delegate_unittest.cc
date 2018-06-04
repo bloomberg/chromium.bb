@@ -159,7 +159,6 @@ const char kReceivedVideoSecureBypassedHistogramName[] =
 const char kReceivedVideoSecureOtherHistogramName[] =
     "Net.HttpContentLengthV2.Https.Other.Video";
 const char kOriginalHistogramName[] = "Net.HttpOriginalContentLength";
-const char kDifferenceHistogramName[] = "Net.HttpContentLengthDifference";
 const char kFreshnessLifetimeHistogramName[] =
     "Net.HttpContentFreshnessLifetime";
 const int64_t kResponseContentLength = 100;
@@ -1246,9 +1245,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
                                       kResponseContentLength, 1);
   histogram_tester.ExpectUniqueSample(kOriginalHistogramName,
                                       kOriginalContentLength, 1);
-  histogram_tester.ExpectUniqueSample(
-      kDifferenceHistogramName,
-      kOriginalContentLength - kResponseContentLength, 1);
   histogram_tester.ExpectUniqueSample(kFreshnessLifetimeHistogramName,
                                       freshness_lifetime.InSeconds(), 1);
 }
