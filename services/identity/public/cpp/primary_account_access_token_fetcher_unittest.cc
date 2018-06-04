@@ -279,56 +279,6 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForSignIn) {
       base::Time::Now() + base::TimeDelta::FromHours(1));
 }
 
-TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForSignInInProgress) {
-  base::RunLoop run_loop;
-  set_on_access_token_request_callback(run_loop.QuitClosure());
-
-  TestTokenCallback callback;
-
-  signin_manager()->set_auth_in_progress("account");
-
-  // A sign-in is currently in progress, so this should wait for the sign-in to
-  // complete.
-  auto fetcher = CreateFetcher(
-      callback.Get(),
-      PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
-
-  SignIn("account");
-  token_service()->UpdateCredentials("account", "refresh token");
-
-  run_loop.Run();
-
-  // Once the access token request is fulfilled, we should get called back with
-  // the access token.
-  EXPECT_CALL(callback,
-              Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
-  token_service()->IssueAllTokensForAccount(
-      "account", "access token",
-      base::Time::Now() + base::TimeDelta::FromHours(1));
-}
-
-TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForFailedSignIn) {
-  TestTokenCallback callback;
-
-  signin_manager()->set_auth_in_progress("account");
-
-  // A sign-in is currently in progress, so this should wait for the sign-in to
-  // complete.
-  auto fetcher = CreateFetcher(
-      callback.Get(),
-      PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
-
-  // The fetcher should detect the failed sign-in and call us with an empty
-  // access token.
-  EXPECT_CALL(
-      callback,
-      Run(GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED),
-          std::string()));
-
-  signin_manager()->FailSignin(
-      GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED));
-}
-
 #endif  // !OS_CHROMEOS
 
 TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForRefreshToken) {
