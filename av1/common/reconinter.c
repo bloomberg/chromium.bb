@@ -256,18 +256,6 @@ static const uint8_t *get_wedge_mask_inplace(int wedge_index, int neg,
   return master;
 }
 
-static uint8_t *invert_mask(uint8_t *mask_inv_buffer, const uint8_t *const mask,
-                            int h, int w, int stride) {
-  int i, j;
-
-  for (i = 0; i < h; ++i)
-    for (j = 0; j < w; ++j) {
-      mask_inv_buffer[i * stride + j] =
-          AOM_BLEND_A64_MAX_ALPHA - mask[i * stride + j];
-    }
-  return mask_inv_buffer;
-}
-
 const uint8_t *av1_get_compound_type_mask(
     const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE sb_type) {
   assert(is_masked_compound_type(comp_data->interinter_compound_type));
