@@ -4,6 +4,8 @@
 
 #include "gpu/ipc/service/gpu_init.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -40,11 +42,11 @@ namespace gpu {
 
 namespace {
 #if !defined(OS_MACOSX)
-bool CollectGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectGraphicsInfo(GPUInfo* gpu_info, GpuPreferences* gpu_preferences) {
   DCHECK(gpu_info);
   TRACE_EVENT0("gpu,startup", "Collect Graphics Info");
   base::TimeTicks before_collect_context_graphics_info = base::TimeTicks::Now();
-  bool success = CollectContextGraphicsInfo(gpu_info);
+  bool success = CollectContextGraphicsInfo(gpu_info, gpu_preferences);
   if (!success)
     LOG(ERROR) << "gpu::CollectGraphicsInfo failed.";
 
@@ -114,10 +116,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     // Compute blacklist and driver bug workaround decisions based on basic GPU
     // info.
     gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(
-        gpu_info_, gpu_preferences.ignore_gpu_blacklist,
-        gpu_preferences.disable_gpu_driver_bug_workarounds,
-        gpu_preferences.log_gpu_control_list_decisions, command_line,
-        &needs_more_info);
+        gpu_info_, gpu_preferences, command_line, &needs_more_info);
   }
 #endif  // !OS_ANDROID && !IS_CHROMECAST
   gpu_info_.in_process_gpu = false;
@@ -225,13 +224,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // because the basic GPU information is passed down from the host process.
 #if !defined(OS_MACOSX)
   if (!gl_disabled && !use_swiftshader) {
-    if (!CollectGraphicsInfo(&gpu_info_))
+    if (!CollectGraphicsInfo(&gpu_info_, &gpu_preferences_))
       return false;
     gpu::SetKeysForCrashLogging(gpu_info_);
-    gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(
-        gpu_info_, gpu_preferences.ignore_gpu_blacklist,
-        gpu_preferences.disable_gpu_driver_bug_workarounds,
-        gpu_preferences.log_gpu_control_list_decisions, command_line, nullptr);
+    gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, gpu_preferences,
+                                                   command_line, nullptr);
     use_swiftshader = ShouldEnableSwiftShader(
         command_line, gpu_feature_info_,
         gpu_preferences.disable_software_rasterizer, false);
@@ -320,10 +317,8 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
                                   gpu_preferences.disable_software_rasterizer,
                                   false));
 
-  InitializeGLThreadSafe(command_line, gpu_preferences.ignore_gpu_blacklist,
-                         gpu_preferences.disable_gpu_driver_bug_workarounds,
-                         gpu_preferences.log_gpu_control_list_decisions,
-                         &gpu_info_, &gpu_feature_info_);
+  InitializeGLThreadSafe(command_line, &gpu_preferences_, &gpu_info_,
+                         &gpu_feature_info_);
 }
 #else
 void GpuInit::InitializeInProcess(base::CommandLine* command_line,
@@ -348,11 +343,8 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
     CollectBasicGraphicsInfo(command_line, &gpu_info_);
   }
   if (!PopGpuFeatureInfoCache(&gpu_feature_info_)) {
-    gpu_feature_info_ = ComputeGpuFeatureInfo(
-        gpu_info_, gpu_preferences.ignore_gpu_blacklist,
-        gpu_preferences.disable_gpu_driver_bug_workarounds,
-        gpu_preferences.log_gpu_control_list_decisions, command_line,
-        &needs_more_info);
+    gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences,
+                                              command_line, &needs_more_info);
   }
   if (SwitchableGPUsSupported(gpu_info_, *command_line)) {
     InitializeSwitchableGPUs(
@@ -370,11 +362,9 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   bool gl_disabled = gl::GetGLImplementation() == gl::kGLImplementationDisabled;
 
   if (!gl_disabled && !use_swiftshader) {
-    CollectContextGraphicsInfo(&gpu_info_);
-    gpu_feature_info_ = ComputeGpuFeatureInfo(
-        gpu_info_, gpu_preferences.ignore_gpu_blacklist,
-        gpu_preferences.disable_gpu_driver_bug_workarounds,
-        gpu_preferences.log_gpu_control_list_decisions, command_line, nullptr);
+    CollectContextGraphicsInfo(&gpu_info_, &gpu_preferences_);
+    gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences,
+                                              command_line, nullptr);
     use_swiftshader = ShouldEnableSwiftShader(
         command_line, gpu_feature_info_,
         gpu_preferences.disable_software_rasterizer, false);

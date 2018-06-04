@@ -88,13 +88,12 @@ GPUInfo::GPUInfo()
       sandboxed(false),
       in_process_gpu(true),
       passthrough_cmd_decoder(false),
-      jpeg_decode_accelerator_supported(false)
+      jpeg_decode_accelerator_supported(false),
 #if defined(USE_X11)
-      ,
       system_visual(0),
-      rgba_visual(0)
+      rgba_visual(0),
 #endif
-{
+      oop_rasterization_supported(false) {
 }
 
 GPUInfo::GPUInfo(const GPUInfo& other) = default;
@@ -165,6 +164,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     VisualID system_visual;
     VisualID rgba_visual;
 #endif
+    bool oop_rasterization_supported;
   };
 
   // If this assert fails then most likely something below needs to be updated.
@@ -178,7 +178,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddString("machineModelName", machine_model_name);
   enumerator->AddString("machineModelVersion", machine_model_version);
   EnumerateGPUDevice(gpu, enumerator);
-  for (const auto& secondary_gpu: secondary_gpus)
+  for (const auto& secondary_gpu : secondary_gpus)
     EnumerateGPUDevice(secondary_gpu, enumerator);
 
   enumerator->BeginAuxAttributes();
@@ -229,6 +229,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddInt64("systemVisual", system_visual);
   enumerator->AddInt64("rgbaVisual", rgba_visual);
 #endif
+  enumerator->AddBool("oopRasterizationSupported", oop_rasterization_supported);
   enumerator->EndAuxAttributes();
 }
 

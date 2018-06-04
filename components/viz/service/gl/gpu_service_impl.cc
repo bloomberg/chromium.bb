@@ -5,6 +5,7 @@
 #include "components/viz/service/gl/gpu_service_impl.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -534,7 +535,9 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
   if (in_host_process())
     return;
 
-  bool success = gpu::CollectContextGraphicsInfo(&gpu_info_);
+  // TODO(https://crbug.com/847543): Unfold the OSX specific codepath so that we
+  // can call this earlier and leave gpu_preferences_ const.
+  bool success = gpu::CollectContextGraphicsInfo(&gpu_info_, &gpu_preferences_);
   if (!success) {
     LOG(ERROR) << "gpu::CollectGraphicsInfo failed.";
     // TODO(piman): can we signal overall failure?

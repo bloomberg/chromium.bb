@@ -26,6 +26,7 @@ struct GLVersionInfo;
 }
 
 namespace gpu {
+struct GpuPreferences;
 namespace gles2 {
 
 // FeatureInfo records the features that are available for a ContextGroup.
@@ -133,8 +134,8 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   FeatureInfo();
 
   // Constructor with workarounds taken from the current process's CommandLine
-  explicit FeatureInfo(
-      const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds);
+  FeatureInfo(const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds,
+              const GpuPreferences& gpu_preferences);
 
   // Initializes the feature information. Needs a current GL context.
   void Initialize(ContextType context_type,

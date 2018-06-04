@@ -342,7 +342,7 @@ class CommandBufferSetup {
 
     context_->MakeCurrent(surface_.get());
     scoped_refptr<gles2::FeatureInfo> feature_info =
-        new gles2::FeatureInfo(config_.workarounds);
+        new gles2::FeatureInfo(config_.workarounds, gpu_preferences_);
     scoped_refptr<gles2::ContextGroup> context_group = new gles2::ContextGroup(
         gpu_preferences_, true, &mailbox_manager_, nullptr /* memory_tracker */,
         &translator_cache_, &completeness_cache_, feature_info,

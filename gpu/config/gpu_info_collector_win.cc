@@ -108,7 +108,7 @@ inline VulkanVersion ConvertToHistogramVulkanVersion(uint32_t vulkan_version) {
   }
 }
 
-}  // namespace anonymous
+}  // namespace
 
 #if defined(GOOGLE_CHROME_BUILD) && defined(OFFICIAL_BUILD)
 // This function has a real implementation for official builds that can
@@ -335,7 +335,7 @@ bool InitVulkan(base::NativeLibrary* vulkan_library,
 
 bool InitVulkanInstanceProc(
     const VkInstance& vk_instance,
-    PFN_vkGetInstanceProcAddr& vkGetInstanceProcAddr,
+    const PFN_vkGetInstanceProcAddr& vkGetInstanceProcAddr,
     PFN_vkDestroyInstance* vkDestroyInstance,
     PFN_vkEnumeratePhysicalDevices* vkEnumeratePhysicalDevices,
     PFN_vkEnumerateDeviceExtensionProperties*
@@ -479,12 +479,13 @@ void RecordGpuSupportedRuntimeVersionHistograms(GPUInfo* gpu_info) {
   }
 }
 
-bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectContextGraphicsInfo(GPUInfo* gpu_info,
+                                GpuPreferences* gpu_preferences) {
   TRACE_EVENT0("gpu", "CollectGraphicsInfo");
 
   DCHECK(gpu_info);
 
-  if (!CollectGraphicsInfoGL(gpu_info))
+  if (!CollectGraphicsInfoGL(gpu_info, gpu_preferences))
     return false;
 
   // ANGLE's renderer strings are of the form:

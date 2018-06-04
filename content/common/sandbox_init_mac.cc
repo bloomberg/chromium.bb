@@ -52,10 +52,7 @@ base::OnceClosure MaybeWrapWithGPUSandboxHook(
         }
         bool needs_more_info = false;
         gpu::GpuFeatureInfo gpu_feature_info = gpu::ComputeGpuFeatureInfo(
-            gpu_info, gpu_preferences.ignore_gpu_blacklist,
-            gpu_preferences.disable_gpu_driver_bug_workarounds,
-            gpu_preferences.log_gpu_control_list_decisions, command_line,
-            &needs_more_info);
+            gpu_info, gpu_preferences, command_line, &needs_more_info);
         gpu::CacheGpuFeatureInfo(gpu_feature_info);
         if (gpu::SwitchableGPUsSupported(gpu_info, *command_line)) {
           gpu::InitializeSwitchableGPUs(

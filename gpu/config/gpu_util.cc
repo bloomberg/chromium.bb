@@ -5,6 +5,8 @@
 #include "gpu/config/gpu_util.h"
 
 #include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/command_line.h"
@@ -19,6 +21,7 @@
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_info_collector.h"
+#include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "ui/gl/extension_set.h"
 #include "ui/gl/gl_features.h"
@@ -185,7 +188,7 @@ void AdjustGpuFeatureStatusToWorkarounds(GpuFeatureInfo* gpu_feature_info) {
 GPUInfo* g_gpu_info_cache = nullptr;
 GpuFeatureInfo* g_gpu_feature_info_cache = nullptr;
 
-}  // namespace anonymous
+}  // namespace
 
 GpuFeatureInfo ComputeGpuFeatureInfoWithHardwareAccelerationDisabled() {
   GpuFeatureInfo gpu_feature_info;
@@ -278,9 +281,7 @@ GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader() {
 }
 
 GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
-                                     bool ignore_gpu_blacklist,
-                                     bool disable_gpu_driver_bug_workarounds,
-                                     bool log_gpu_control_list_decisions,
+                                     const GpuPreferences& gpu_preferences,
                                      base::CommandLine* command_line,
                                      bool* needs_more_info) {
   DCHECK(!needs_more_info || !(*needs_more_info));
@@ -298,10 +299,10 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
 
   GpuFeatureInfo gpu_feature_info;
   std::set<int> blacklisted_features;
-  if (!ignore_gpu_blacklist &&
+  if (!gpu_preferences.ignore_gpu_blacklist &&
       !command_line->HasSwitch(switches::kUseGpuInTests)) {
     std::unique_ptr<GpuBlacklist> list(GpuBlacklist::Create());
-    if (log_gpu_control_list_decisions)
+    if (gpu_preferences.log_gpu_control_list_decisions)
       list->EnableControlListLogging("gpu_blacklist");
     unsigned target_test_group = 0u;
     if (command_line->HasSwitch(switches::kGpuBlacklistTestGroup)) {
@@ -361,7 +362,7 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
 
   std::set<int> enabled_driver_bug_workarounds;
   std::vector<std::string> driver_bug_disabled_extensions;
-  if (!disable_gpu_driver_bug_workarounds) {
+  if (!gpu_preferences.disable_gpu_driver_bug_workarounds) {
     std::unique_ptr<gpu::GpuDriverBugList> list(GpuDriverBugList::Create());
     unsigned target_test_group = 0u;
     if (command_line->HasSwitch(switches::kGpuDriverBugListTestGroup)) {
@@ -462,9 +463,7 @@ bool PopGpuFeatureInfoCache(GpuFeatureInfo* gpu_feature_info) {
 
 #if defined(OS_ANDROID)
 bool InitializeGLThreadSafe(base::CommandLine* command_line,
-                            bool ignore_gpu_blacklist,
-                            bool disable_gpu_driver_bug_workarounds,
-                            bool log_gpu_control_list_decisions,
+                            GpuPreferences* gpu_preferences,
                             GPUInfo* out_gpu_info,
                             GpuFeatureInfo* out_gpu_feature_info) {
   static base::NoDestructor<base::Lock> gl_bindings_initialization_lock;
@@ -486,10 +485,9 @@ bool InitializeGLThreadSafe(base::CommandLine* command_line,
       return false;
     }
   }
-  CollectContextGraphicsInfo(out_gpu_info);
-  *out_gpu_feature_info = ComputeGpuFeatureInfo(
-      *out_gpu_info, ignore_gpu_blacklist, disable_gpu_driver_bug_workarounds,
-      log_gpu_control_list_decisions, command_line, nullptr);
+  CollectContextGraphicsInfo(out_gpu_info, gpu_preferences);
+  *out_gpu_feature_info = ComputeGpuFeatureInfo(*out_gpu_info, *gpu_preferences,
+                                                command_line, nullptr);
   if (!out_gpu_feature_info->disabled_extensions.empty()) {
     gl::init::SetDisabledExtensionsPlatform(
         out_gpu_feature_info->disabled_extensions);

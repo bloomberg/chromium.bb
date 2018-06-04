@@ -4,16 +4,18 @@
 
 #include "base/trace_event/trace_event.h"
 #include "gpu/config/gpu_info_collector.h"
+#include "gpu/config/gpu_preferences.h"
 #include "third_party/angle/src/gpu_info_util/SystemInfo.h"
 
 namespace gpu {
 
-bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectContextGraphicsInfo(GPUInfo* gpu_info,
+                                GpuPreferences* gpu_preferences) {
   DCHECK(gpu_info);
 
   TRACE_EVENT0("gpu", "gpu_info_collector::CollectGraphicsInfo");
 
-  return CollectGraphicsInfoGL(gpu_info);
+  return CollectGraphicsInfoGL(gpu_info, gpu_preferences);
 }
 
 bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {

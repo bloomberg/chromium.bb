@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,7 +18,7 @@ TEST(GpuUtilTest, GetGpuFeatureInfo_WorkaroundFromCommandLine) {
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     GPUInfo gpu_info;
     GpuFeatureInfo gpu_feature_info = ComputeGpuFeatureInfo(
-        gpu_info, false, false, false, &command_line, nullptr);
+        gpu_info, GpuPreferences(), &command_line, nullptr);
     EXPECT_FALSE(gpu_feature_info.IsWorkaroundEnabled(
         USE_GPU_DRIVER_WORKAROUND_FOR_TESTING));
   }
@@ -29,7 +30,7 @@ TEST(GpuUtilTest, GetGpuFeatureInfo_WorkaroundFromCommandLine) {
                                    "1");
     GPUInfo gpu_info;
     GpuFeatureInfo gpu_feature_info = ComputeGpuFeatureInfo(
-        gpu_info, false, false, false, &command_line, nullptr);
+        gpu_info, GpuPreferences(), &command_line, nullptr);
     EXPECT_TRUE(gpu_feature_info.IsWorkaroundEnabled(
         USE_GPU_DRIVER_WORKAROUND_FOR_TESTING));
   }
@@ -40,7 +41,7 @@ TEST(GpuUtilTest, GetGpuFeatureInfo_WorkaroundFromCommandLine) {
     // See gpu/config/gpu_driver_bug_list.json, test_group 1, entry 215.
     GPUInfo gpu_info;
     GpuFeatureInfo gpu_feature_info = ComputeGpuFeatureInfo(
-        gpu_info, false, false, false, &command_line, nullptr);
+        gpu_info, GpuPreferences(), &command_line, nullptr);
     EXPECT_TRUE(gpu_feature_info.IsWorkaroundEnabled(
         USE_GPU_DRIVER_WORKAROUND_FOR_TESTING));
   }
@@ -54,7 +55,7 @@ TEST(GpuUtilTest, GetGpuFeatureInfo_WorkaroundFromCommandLine) {
     // See gpu/config/gpu_driver_bug_list.json, test_group 1, entry 215.
     GPUInfo gpu_info;
     GpuFeatureInfo gpu_feature_info = ComputeGpuFeatureInfo(
-        gpu_info, false, false, false, &command_line, nullptr);
+        gpu_info, GpuPreferences(), &command_line, nullptr);
     EXPECT_FALSE(gpu_feature_info.IsWorkaroundEnabled(
         USE_GPU_DRIVER_WORKAROUND_FOR_TESTING));
   }

@@ -36,6 +36,7 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
+#include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -327,7 +328,7 @@ void GLManager::InitializeWithWorkaroundsImpl(
 
   if (!context_group) {
     scoped_refptr<gles2::FeatureInfo> feature_info =
-        new gles2::FeatureInfo(workarounds);
+        new gles2::FeatureInfo(workarounds, GpuPreferences());
     // Always mark the passthrough command decoder as supported so that tests do
     // not unexpectedly use the wrong command decoder
     context_group = new gles2::ContextGroup(

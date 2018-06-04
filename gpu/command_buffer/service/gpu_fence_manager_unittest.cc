@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/test_helper.h"
+#include "gpu/config/gpu_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_fence_handle.h"
@@ -33,7 +34,8 @@ class GpuFenceManagerTest : public GpuServiceTest {
  public:
   GpuFenceManagerTest() {
     GpuDriverBugWorkarounds gpu_driver_bug_workaround;
-    feature_info_ = new FeatureInfo(gpu_driver_bug_workaround);
+    feature_info_ =
+        new FeatureInfo(gpu_driver_bug_workaround, GpuPreferences());
   }
 
   ~GpuFenceManagerTest() override {}

@@ -15999,7 +15999,8 @@ error::Error GLES2DecoderImpl::HandleGetRequestableExtensionsCHROMIUM(
           const volatile gles2::cmds::GetRequestableExtensionsCHROMIUM*>(
           cmd_data);
   Bucket* bucket = CreateBucket(c.bucket_id);
-  scoped_refptr<FeatureInfo> info(new FeatureInfo(workarounds()));
+  scoped_refptr<FeatureInfo> info(
+      new FeatureInfo(workarounds(), group_->gpu_preferences()));
   DisallowedFeatures disallowed_features = feature_info_->disallowed_features();
   disallowed_features.AllowExtensions();
   info->Initialize(feature_info_->context_type(),

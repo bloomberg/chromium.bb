@@ -289,6 +289,10 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
 #endif
     return 0;
   }
+
+  static bool oop_rasterization_supported(const gpu::GPUInfo& input) {
+    return input.oop_rasterization_supported;
+  }
 };
 
 }  // namespace mojo

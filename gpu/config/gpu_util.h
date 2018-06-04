@@ -16,6 +16,7 @@ class CommandLine;
 namespace gpu {
 
 struct GPUInfo;
+struct GpuPreferences;
 
 // Set GPU feature status if hardware acceleration is disabled.
 GPU_EXPORT GpuFeatureInfo
@@ -33,9 +34,7 @@ GPU_EXPORT GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader();
 // This function also appends a few commandline switches caused by driver bugs.
 GPU_EXPORT GpuFeatureInfo
 ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
-                      bool ignore_gpu_blacklist,
-                      bool disable_gpu_driver_bug_workarounds,
-                      bool log_gpu_control_list_decisions,
+                      const GpuPreferences& gpu_preferences,
                       base::CommandLine* command_line,
                       bool* needs_more_info);
 
@@ -61,9 +60,7 @@ GPU_EXPORT bool PopGpuFeatureInfoCache(GpuFeatureInfo* gpu_feature_info);
 // GPU driver bug workaround decisions. This is intended to be called
 // by Android WebView render thread and in-process GPU thread.
 GPU_EXPORT bool InitializeGLThreadSafe(base::CommandLine* command_line,
-                                       bool ignore_gpu_blacklist,
-                                       bool disable_gpu_driver_bug_workarounds,
-                                       bool log_gpu_control_list_decisions,
+                                       GpuPreferences* gpu_preferences,
                                        GPUInfo* out_gpu_info,
                                        GpuFeatureInfo* out_gpu_feature_info);
 #endif  // OS_ANDROID
