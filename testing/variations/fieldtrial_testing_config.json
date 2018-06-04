@@ -4137,6 +4137,21 @@
             ]
         }
     ],
+    "Use_AImageReaderVideoOutput_V1": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Use_AImageReaderVideoOutput_V1",
+                    "enable_features": [
+                        "AImageReaderVideoOutput"
+                    ]
+                }
+            ]
+        }
+    ],
     "UserActivityEventLogging": [
         {
             "platforms": [
