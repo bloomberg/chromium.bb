@@ -13,7 +13,7 @@ features support for computer, literary and math braille, supports
 contracted and uncontracted translation for many, many languages[1].
 It plays an important role in an open source accessibility stack and
 is used by screenreaders such as NVDA, Orca and JAWS. A companion
-project liblouisutdml[2][2] deals with formatting of braille.
+project liblouisutdml[2] deals with formatting of braille.
 
 Changes in this release
 =======================
