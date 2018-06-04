@@ -36,12 +36,10 @@ class BackendMigrator {
   enum State {
     IDLE,
     WAITING_TO_START,  // Waiting for previous configuration to finish.
-    DISABLING_TYPES,   // Exit criteria: SYNC_CONFIGURE_DONE for
-                       // enabled types _excluding_ |to_migrate_| and
-                       // empty download progress markers for types
-                       // in |to_migrate_|.
-    REENABLING_TYPES,  // Exit criteria: SYNC_CONFIGURE_DONE for enabled
-                       // types.
+    DISABLING_TYPES,   // Exit criteria: OnConfigureDone for enabled types
+                       // _excluding_ |to_migrate_| and empty download progress
+                       // markers for types in |to_migrate_|.
+    REENABLING_TYPES,  // Exit criteria: OnConfigureDone for enabled types.
   };
 
   // TODO(akalin): Remove the dependency on |user_share|.
