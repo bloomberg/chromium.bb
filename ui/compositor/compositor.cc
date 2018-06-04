@@ -351,7 +351,7 @@ void Compositor::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
 
 void Compositor::DisableSwapUntilResize() {
   DCHECK(context_factory_private_);
-  context_factory_private_->DisableSwapUntilResize(this);
+  context_factory_private_->ResizeDisplay(this, gfx::Size());
 }
 
 void Compositor::ReenableSwap() {
@@ -370,7 +370,6 @@ void Compositor::SetScaleAndSize(float scale,
                                  const viz::LocalSurfaceId& local_surface_id) {
   DCHECK_GT(scale, 0);
   bool device_scale_factor_changed = device_scale_factor_ != scale;
-  bool size_changed = size_ != size_in_pixel;
   device_scale_factor_ = scale;
 
   if (size_ != size_in_pixel && local_surface_id.is_valid()) {
@@ -383,7 +382,7 @@ void Compositor::SetScaleAndSize(float scale,
     host_->SetViewportSizeAndScale(size_in_pixel, scale, local_surface_id);
     root_web_layer_->SetBounds(size_in_pixel);
     // TODO(fsamuel): Get rid of ContextFactoryPrivate.
-    if (context_factory_private_ && size_changed)
+    if (context_factory_private_)
       context_factory_private_->ResizeDisplay(this, size_in_pixel);
   }
   if (device_scale_factor_changed) {
