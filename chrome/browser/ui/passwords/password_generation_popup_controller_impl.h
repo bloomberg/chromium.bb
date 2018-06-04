@@ -92,7 +92,6 @@ class PasswordGenerationPopupControllerImpl
   void SetSelectionAtPoint(const gfx::Point& point) override;
   bool AcceptSelectedLine() override;
   void SelectionCleared() override;
-  bool HasSelection() const override;
   void PasswordAccepted() override;
   void OnSavedPasswordsLinkClicked() override;
   int GetMinimumWidth() override;
