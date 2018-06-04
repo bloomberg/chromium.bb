@@ -351,7 +351,7 @@ def _buildbucket_retry(operation_name, http, *args, **kwargs):
       raise BuildbucketResponseException(msg)
 
     if response.status == 200:
-      if not content_json:
+      if content_json is None:
         raise BuildbucketResponseException(
             'Buildbucket returns invalid json content: %s.\n'
             'Please file bugs at http://crbug.com, '
