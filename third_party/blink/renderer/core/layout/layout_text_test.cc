@@ -679,4 +679,39 @@ TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectVerticalRTL) {
                 "f^oo ba|r baz</div>"));
 }
 
+TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectLineHeight) {
+  LoadAhem();
+  EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(10, 0, 10, 50)
+                              : LayoutRect(10, 20, 10, 10),
+            GetSelectionRectFor("<div style='line-height: 50px; width:1em;'>"
+                                "f^o|o bar baz</div>"));
+  EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(10, 50, 10, 50)
+                              : LayoutRect(10, 30, 10, 50),
+            GetSelectionRectFor("<div style='line-height: 50px; width:1em;'>"
+                                "foo b^a|r baz</div>"));
+  EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(10, 100, 10, 50)
+                              : LayoutRect(10, 80, 10, 50),
+            GetSelectionRectFor("<div style='line-height: 50px; width:1em;'>"
+                                "foo bar b^a|</div>"));
+}
+
+TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectLineHeightVertical) {
+  LoadAhem();
+  EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(0, 10, 50, 10)
+                              : LayoutRect(20, 10, 50, 10),
+            GetSelectionRectFor("<div style='line-height: 50px; height:1em; "
+                                "writing-mode:vertical-lr'>"
+                                "f^o|o bar baz</div>"));
+  EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(50, 10, 50, 10)
+                              : LayoutRect(70, 10, 50, 10),
+            GetSelectionRectFor("<div style='line-height: 50px; height:1em; "
+                                "writing-mode:vertical-lr'>"
+                                "foo b^a|r baz</div>"));
+  EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(100, 10, 50, 10)
+                              : LayoutRect(120, 10, 10, 10),
+            GetSelectionRectFor("<div style='line-height: 50px; height:1em; "
+                                "writing-mode:vertical-lr'>"
+                                "foo bar b^a|z</div>"));
+}
+
 }  // namespace blink

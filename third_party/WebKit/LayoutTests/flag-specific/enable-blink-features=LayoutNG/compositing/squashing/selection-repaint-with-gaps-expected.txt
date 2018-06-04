@@ -34,12 +34,12 @@
       "paintInvalidations": [
         {
           "object": "NGPaintFragment",
-          "rect": [0, 80, 40, 19],
+          "rect": [0, 80, 40, 20],
           "reason": "selection"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [0, 100, 39, 39],
+          "rect": [0, 100, 39, 40],
           "reason": "selection"
         }
       ]
@@ -104,17 +104,17 @@
       "paintInvalidations": [
         {
           "object": "NGPaintFragment",
-          "rect": [0, 100, 42, 39],
+          "rect": [0, 100, 42, 40],
           "reason": "selection"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [0, 160, 40, 19],
+          "rect": [0, 160, 40, 20],
           "reason": "selection"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [0, 80, 40, 19],
+          "rect": [0, 80, 40, 20],
           "reason": "selection"
         },
         {
