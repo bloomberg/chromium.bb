@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.os.Build;
 import android.preference.SwitchPreference;
 import android.support.v7.widget.SwitchCompat;
 import android.text.TextUtils;
@@ -34,6 +35,13 @@ public class ChromeSwitchPreference extends SwitchPreference {
     public ChromeSwitchPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         setWidgetLayoutResource(R.layout.preference_switch);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Fix animations. Background: setWidgetLayout resource call above disables view
+            // recycling, thus breaking SwitchCompat animations. Views recycling is safe in this
+            // case, as ChromeSwitchPreference doesn't change view types on the fly.
+            setRecycleEnabled(true);
+        }
 
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ChromeSwitchPreference);
         mDontUseSummaryAsTitle =
