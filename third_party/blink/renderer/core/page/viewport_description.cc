@@ -27,7 +27,7 @@
  *
  */
 
-#include "third_party/blink/renderer/core/dom/viewport_description.h"
+#include "third_party/blink/renderer/core/page/viewport_description.h"
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -239,7 +239,6 @@ PageScaleConstraints ViewportDescription::Resolve(
 
 void ViewportDescription::ReportMobilePageStats(
     const LocalFrame* main_frame) const {
-
   if (!main_frame || !main_frame->GetPage() || !main_frame->View() ||
       !main_frame->GetDocument())
     return;
