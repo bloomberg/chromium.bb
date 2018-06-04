@@ -85,6 +85,7 @@ class ASH_EXPORT DisplayColorManager
 
     std::vector<display::GammaRampRGBEntry> degamma_lut;
     std::vector<display::GammaRampRGBEntry> gamma_lut;
+    // Initialized to identity to reset color correction.
     std::vector<float> correction_matrix;
   };
 
