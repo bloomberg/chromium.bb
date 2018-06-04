@@ -32,7 +32,7 @@ FakePendingConnectionManager::NotifyConnectionForHandledRequests(
       continue;
     }
 
-    client_list.push_back(std::move(std::get<1>(*it)));
+    client_list.push_back(std::move(std::get<2>(*it)));
     it = handled_requests_.erase(it);
   }
 
@@ -53,12 +53,14 @@ FakePendingConnectionManager::NotifyConnectionForHandledRequests(
 
 void FakePendingConnectionManager::HandleConnectionRequest(
     const ConnectionDetails& connection_details,
+    const std::string& local_device_id,
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
     ConnectionRole connection_role,
     ConnectionPriority connection_priority) {
-  handled_requests_.push_back(std::make_tuple(
-      connection_details, std::move(client_connection_parameters),
-      connection_role, connection_priority));
+  handled_requests_.push_back(
+      std::make_tuple(connection_details, local_device_id,
+                      std::move(client_connection_parameters), connection_role,
+                      connection_priority));
 }
 
 FakePendingConnectionManagerDelegate::FakePendingConnectionManagerDelegate() =

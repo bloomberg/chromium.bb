@@ -27,6 +27,7 @@ class FakePendingConnectionManager : public PendingConnectionManager {
 
   using HandledRequestsList =
       std::vector<std::tuple<ConnectionDetails,
+                             std::string,  // Local device ID.
                              std::unique_ptr<ClientConnectionParameters>,
                              ConnectionRole,
                              ConnectionPriority>>;
@@ -46,6 +47,7 @@ class FakePendingConnectionManager : public PendingConnectionManager {
  private:
   void HandleConnectionRequest(
       const ConnectionDetails& connection_details,
+      const std::string& local_device_id,
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       ConnectionRole connection_role,
       ConnectionPriority connection_priority) override;
