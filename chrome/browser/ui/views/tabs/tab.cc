@@ -98,6 +98,13 @@ constexpr double kSelectedTabThrobScale = 0.95 - kSelectedTabOpacity;
 constexpr int kTabSeparatorHeight = 20;
 constexpr int kTabSeparatorTouchHeight = 24;
 
+// Under material refresh, the spec for the favicon or title text is 12dips from
+// the left vertical edge of the tab. This edge is in the middle of the tab end
+// cap. The end cap is 16dips, the middle of which is 8dips. This value is the
+// additional spacing that is added from that distance to come up with the
+// spec's 12dips.
+constexpr int kRefreshExtraLeftFavIconPadding = 4;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Drawing and utility functions
 
@@ -806,9 +813,13 @@ void Tab::Layout() {
   const bool was_showing_icon = showing_icon_;
   UpdateIconVisibility();
 
-  const int extra_padding = extra_padding_before_content_
-                                ? kExtraLeftPaddingToBalanceCloseButtonPadding
-                                : 0;
+  int extra_padding = 0;
+
+  if (MD::IsRefreshUi())
+    extra_padding = kRefreshExtraLeftFavIconPadding;
+  else if (extra_padding_before_content_)
+    extra_padding = kExtraLeftPaddingToBalanceCloseButtonPadding;
+
   const int start = lb.x() + extra_padding;
 
   // The bounds for the favicon will include extra width for the attention
