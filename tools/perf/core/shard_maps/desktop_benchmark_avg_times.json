@@ -1,0 +1,5270 @@
+[
+    {
+        "avg_duration": "5.302031819047618E-4",
+        "name": "battor.steady_state/http://abcnews.go.com/"
+    },
+    {
+        "avg_duration": "53.98835522222223",
+        "name": "battor.steady_state/http://www.indiatimes.com"
+    },
+    {
+        "avg_duration": "54.39300617171719",
+        "name": "battor.steady_state/http://www.microsoft.com"
+    },
+    {
+        "avg_duration": "56.97899307070704",
+        "name": "battor.steady_state/http://www.sina.com.cn"
+    },
+    {
+        "avg_duration": "60.737736949494945",
+        "name": "battor.steady_state/http://www.slideshare.net/patrickmeenan"
+    },
+    {
+        "avg_duration": "66.46961935353536",
+        "name": "battor.steady_state/http://www.uol.com.br"
+    },
+    {
+        "avg_duration": "56.18560269696972",
+        "name": "battor.steady_state/https://instagram.com/cnn/"
+    },
+    {
+        "avg_duration": "81.35751621212121",
+        "name": "battor.trivial_pages/TrivialAnimationPageSharedPageState"
+    },
+    {
+        "avg_duration": "78.61233286868686",
+        "name": "battor.trivial_pages/TrivialBlinkingCursorPageSharedPageState"
+    },
+    {
+        "avg_duration": "80.04742334343432",
+        "name": "battor.trivial_pages/TrivialBlurAnimationPageSharedPageState"
+    },
+    {
+        "avg_duration": "84.9719728787879",
+        "name": "battor.trivial_pages/TrivialCanvasPageSharedPageState"
+    },
+    {
+        "avg_duration": "79.85430667676768",
+        "name": "battor.trivial_pages/TrivialFullscreenVideoPageSharedPageState"
+    },
+    {
+        "avg_duration": "78.05467134343439",
+        "name": "battor.trivial_pages/TrivialGifPageSharedPageState"
+    },
+    {
+        "avg_duration": "80.37248601010101",
+        "name": "battor.trivial_pages/TrivialScrollingPageSharedPageState"
+    },
+    {
+        "avg_duration": "80.72836950505052",
+        "name": "battor.trivial_pages/TrivialWebGLPageSharedPageState"
+    },
+    {
+        "avg_duration": "16.773022914141414",
+        "name": "blink_perf.bindings/append-child.html"
+    },
+    {
+        "avg_duration": "8.716282465656565",
+        "name": "blink_perf.bindings/create-element.html"
+    },
+    {
+        "avg_duration": "8.118593769696972",
+        "name": "blink_perf.bindings/document-implementation.html"
+    },
+    {
+        "avg_duration": "8.06025010808081",
+        "name": "blink_perf.bindings/dom-attribute-on-prototoype.html"
+    },
+    {
+        "avg_duration": "8.125574681818179",
+        "name": "blink_perf.bindings/first-child.html"
+    },
+    {
+        "avg_duration": "4.937952378787881",
+        "name": "blink_perf.bindings/gc-forest.html"
+    },
+    {
+        "avg_duration": "5.583934774747474",
+        "name": "blink_perf.bindings/gc-mini-tree.html"
+    },
+    {
+        "avg_duration": "16.874073318181818",
+        "name": "blink_perf.bindings/gc-tree.html"
+    },
+    {
+        "avg_duration": "7.999108751515151",
+        "name": "blink_perf.bindings/get-attribute-rare.html"
+    },
+    {
+        "avg_duration": "7.984979027272734",
+        "name": "blink_perf.bindings/get-attribute.html"
+    },
+    {
+        "avg_duration": "8.006428053535357",
+        "name": "blink_perf.bindings/get-element-by-id.html"
+    },
+    {
+        "avg_duration": "8.041794737373735",
+        "name": "blink_perf.bindings/get-elements-by-tag-name.html"
+    },
+    {
+        "avg_duration": "8.86276114848485",
+        "name": "blink_perf.bindings/id-getter.html"
+    },
+    {
+        "avg_duration": "8.738682066666664",
+        "name": "blink_perf.bindings/id-setter.html"
+    },
+    {
+        "avg_duration": "8.287429955555558",
+        "name": "blink_perf.bindings/indexed-getter.html"
+    },
+    {
+        "avg_duration": "8.004031334343434",
+        "name": "blink_perf.bindings/insert-before.html"
+    },
+    {
+        "avg_duration": "7.981697240404043",
+        "name": "blink_perf.bindings/named-property-enumerator.html"
+    },
+    {
+        "avg_duration": "22.758668151515163",
+        "name": "blink_perf.bindings/node-list-access.html"
+    },
+    {
+        "avg_duration": "8.082139729292928",
+        "name": "blink_perf.bindings/node-type.html"
+    },
+    {
+        "avg_duration": "2.942233206060606",
+        "name": "blink_perf.bindings/post-message.html"
+    },
+    {
+        "avg_duration": "8.095300461616164",
+        "name": "blink_perf.bindings/sequence-conversion-array.html"
+    },
+    {
+        "avg_duration": "9.4018578010101",
+        "name": "blink_perf.bindings/sequence-conversion-custom-iterator.html"
+    },
+    {
+        "avg_duration": "2.9943871717171704",
+        "name": "blink_perf.bindings/serialize-array.html"
+    },
+    {
+        "avg_duration": "2.7931550505050495",
+        "name": "blink_perf.bindings/serialize-long-string.html"
+    },
+    {
+        "avg_duration": "4.213973845454545",
+        "name": "blink_perf.bindings/serialize-map.html"
+    },
+    {
+        "avg_duration": "2.9242801070707065",
+        "name": "blink_perf.bindings/serialize-nested-array.html"
+    },
+    {
+        "avg_duration": "8.303823129292928",
+        "name": "blink_perf.bindings/set-attribute-rare.html"
+    },
+    {
+        "avg_duration": "8.094254244444445",
+        "name": "blink_perf.bindings/set-attribute.html"
+    },
+    {
+        "avg_duration": "7.870054220202021",
+        "name": "blink_perf.bindings/structured-clone-json-deserialize.html"
+    },
+    {
+        "avg_duration": "7.9102691303030275",
+        "name": "blink_perf.bindings/structured-clone-json-serialize.html"
+    },
+    {
+        "avg_duration": "4.678272586868685",
+        "name": "blink_perf.bindings/structured-clone-long-string-deserialize.html"
+    },
+    {
+        "avg_duration": "4.705334503030302",
+        "name": "blink_perf.bindings/structured-clone-long-string-serialize.html"
+    },
+    {
+        "avg_duration": "8.444386767676768",
+        "name": "blink_perf.bindings/typed-array-construct-from-array.html"
+    },
+    {
+        "avg_duration": "8.178032686868688",
+        "name": "blink_perf.bindings/typed-array-construct-from-same-type.html"
+    },
+    {
+        "avg_duration": "8.147242687878789",
+        "name": "blink_perf.bindings/typed-array-construct-from-typed.html"
+    },
+    {
+        "avg_duration": "8.16015957979798",
+        "name": "blink_perf.bindings/typed-array-set-from-typed.html"
+    },
+    {
+        "avg_duration": "8.081441251515157",
+        "name": "blink_perf.bindings/undefined-first-child.html"
+    },
+    {
+        "avg_duration": "8.015433060606062",
+        "name": "blink_perf.bindings/undefined-get-element-by-id.html"
+    },
+    {
+        "avg_duration": "8.142836812121214",
+        "name": "blink_perf.bindings/undefined-id-getter.html"
+    },
+    {
+        "avg_duration": "14.236904306060609",
+        "name": "blink_perf.canvas/createImageBitmapFromImageData.html"
+    },
+    {
+        "avg_duration": "4.995624249494951",
+        "name": "blink_perf.canvas/draw-dynamic-canvas-2d-to-hw-accelerated-canvas-2d.html"
+    },
+    {
+        "avg_duration": "8.894809848484847",
+        "name": "blink_perf.canvas/draw-dynamic-webgl-to-hw-accelerated-canvas-2d.html"
+    },
+    {
+        "avg_duration": "2.8643702919191933",
+        "name": "blink_perf.canvas/draw-hw-accelerated-canvas-2d-to-sw-canvas-2d.html"
+    },
+    {
+        "avg_duration": "4.585784591919192",
+        "name": "blink_perf.canvas/draw-static-canvas-2d-to-hw-accelerated-canvas-2d.html"
+    },
+    {
+        "avg_duration": "3.466747397979797",
+        "name": "blink_perf.canvas/draw-static-webgl-to-hw-accelerated-canvas-2d.html"
+    },
+    {
+        "avg_duration": "4.826577683838384",
+        "name": "blink_perf.canvas/draw-video-to-hw-accelerated-canvas-2d.html"
+    },
+    {
+        "avg_duration": "7.55687335151515",
+        "name": "blink_perf.canvas/drawimage-not-pixelaligned.html"
+    },
+    {
+        "avg_duration": "7.335447341414141",
+        "name": "blink_perf.canvas/drawimage.html"
+    },
+    {
+        "avg_duration": "7.64779133838384",
+        "name": "blink_perf.canvas/getImageData.html"
+    },
+    {
+        "avg_duration": "8.800404815151513",
+        "name": "blink_perf.canvas/getImageDataColorManaged.html"
+    },
+    {
+        "avg_duration": "7.401786830303029",
+        "name": "blink_perf.canvas/putImageData.html"
+    },
+    {
+        "avg_duration": "4.612158217171714",
+        "name": "blink_perf.canvas/toBlob_duration.html"
+    },
+    {
+        "avg_duration": "3.2985377838383854",
+        "name": "blink_perf.canvas/toBlob_duration_jpeg.html"
+    },
+    {
+        "avg_duration": "3.3772829252525245",
+        "name": "blink_perf.canvas/transferFromImageBitmap.html"
+    },
+    {
+        "avg_duration": "4.161765300000004",
+        "name": "blink_perf.canvas/upload-canvas-2d-to-texture.html"
+    },
+    {
+        "avg_duration": "8.860451266666667",
+        "name": "blink_perf.canvas/upload-video-to-sub-texture.html"
+    },
+    {
+        "avg_duration": "4.039678795959598",
+        "name": "blink_perf.canvas/upload-video-to-texture.html"
+    },
+    {
+        "avg_duration": "4.166316069696968",
+        "name": "blink_perf.canvas/upload-webgl-to-texture.html"
+    },
+    {
+        "avg_duration": "20.776238691919197",
+        "name": "blink_perf.css/AttributeDescendantSelector.html"
+    },
+    {
+        "avg_duration": "8.240761166666665",
+        "name": "blink_perf.css/CSSPropertySetterGetter.html"
+    },
+    {
+        "avg_duration": "8.271032160606062",
+        "name": "blink_perf.css/CSSPropertySetterGetterMethods.html"
+    },
+    {
+        "avg_duration": "8.257586206060607",
+        "name": "blink_perf.css/CSSPropertyUpdateValue.html"
+    },
+    {
+        "avg_duration": "8.48535281111111",
+        "name": "blink_perf.css/ChangeStyleChildClassSelector.html"
+    },
+    {
+        "avg_duration": "8.490432706060604",
+        "name": "blink_perf.css/ChangeStyleChildElementSelectors.html"
+    },
+    {
+        "avg_duration": "8.383557843434344",
+        "name": "blink_perf.css/ChangeStyleElementSelector.html"
+    },
+    {
+        "avg_duration": "8.380746948484845",
+        "name": "blink_perf.css/ChangeStyleGrandChildElementSelector.html"
+    },
+    {
+        "avg_duration": "8.350103655555555",
+        "name": "blink_perf.css/ChangeStyleMultipleClassSelector.html"
+    },
+    {
+        "avg_duration": "8.376173821212122",
+        "name": "blink_perf.css/ChangeStyleMultipleQualifiedDataAttributesWithValuesSelector.html"
+    },
+    {
+        "avg_duration": "8.400705159595956",
+        "name": "blink_perf.css/ChangeStyleNestedPseudoSelector.html"
+    },
+    {
+        "avg_duration": "8.376654993939393",
+        "name": "blink_perf.css/ChangeStylePairOfNthChildSelector.html"
+    },
+    {
+        "avg_duration": "8.428886806060607",
+        "name": "blink_perf.css/ChangeStylePartialAttributeMatchingSelector.html"
+    },
+    {
+        "avg_duration": "8.382177380808082",
+        "name": "blink_perf.css/ChangeStyleQualifiedDataAttributeSelector.html"
+    },
+    {
+        "avg_duration": "8.409009067676765",
+        "name": "blink_perf.css/ChangeStyleQualifiedDataAttributeWithValueSelector.html"
+    },
+    {
+        "avg_duration": "9.466456000000003",
+        "name": "blink_perf.css/ChangeStyleShallowTree.html"
+    },
+    {
+        "avg_duration": "8.336727115151515",
+        "name": "blink_perf.css/ChangeStyleSingleClassSelector.html"
+    },
+    {
+        "avg_duration": "8.338422672727269",
+        "name": "blink_perf.css/ChangeStyleSingleNthChildSelector.html"
+    },
+    {
+        "avg_duration": "8.354532946464644",
+        "name": "blink_perf.css/ChangeStyleSinglePseudoSelector.html"
+    },
+    {
+        "avg_duration": "8.36928337676768",
+        "name": "blink_perf.css/ChangeStyleUniversalSelector.html"
+    },
+    {
+        "avg_duration": "8.34756862121212",
+        "name": "blink_perf.css/ChangeStyleUnqualifiedDataAttributeSelector.html"
+    },
+    {
+        "avg_duration": "9.197208310101006",
+        "name": "blink_perf.css/ChangeStyleUnqualifiedDataAttributeWithValueSelector.html"
+    },
+    {
+        "avg_duration": "11.975508757575763",
+        "name": "blink_perf.css/ClassDescendantSelector.html"
+    },
+    {
+        "avg_duration": "8.877939627272724",
+        "name": "blink_perf.css/ClassInvalidation.html"
+    },
+    {
+        "avg_duration": "10.871572898989902",
+        "name": "blink_perf.css/FocusUpdate.html"
+    },
+    {
+        "avg_duration": "8.64706868888889",
+        "name": "blink_perf.css/LoadBootstrapBlog.html"
+    },
+    {
+        "avg_duration": "8.765137048484847",
+        "name": "blink_perf.css/LoadMaterializeStarterPage.html"
+    },
+    {
+        "avg_duration": "9.043712960606062",
+        "name": "blink_perf.css/LoadSemanticPageExample.html"
+    },
+    {
+        "avg_duration": "8.154615455555554",
+        "name": "blink_perf.css/PseudoClassSelectors.html"
+    },
+    {
+        "avg_duration": "9.077009935353534",
+        "name": "blink_perf.css/SelectorCountScaling.html"
+    },
+    {
+        "avg_duration": "17.04508574747475",
+        "name": "blink_perf.dom/addRange.html"
+    },
+    {
+        "avg_duration": "3.323301005050504",
+        "name": "blink_perf.dom/delete-in-password-field.html"
+    },
+    {
+        "avg_duration": "9.185517664646467",
+        "name": "blink_perf.dom/div-editable.html"
+    },
+    {
+        "avg_duration": "2.9128276228282837",
+        "name": "blink_perf.dom/inner_html_with_selection.html"
+    },
+    {
+        "avg_duration": "15.81343821717171",
+        "name": "blink_perf.dom/long-sibling-list.html"
+    },
+    {
+        "avg_duration": "3.7322596313131315",
+        "name": "blink_perf.dom/modify-element-classname.html"
+    },
+    {
+        "avg_duration": "3.2765141404040414",
+        "name": "blink_perf.dom/modify-element-id.html"
+    },
+    {
+        "avg_duration": "3.266949967676767",
+        "name": "blink_perf.dom/modify-element-title.html"
+    },
+    {
+        "avg_duration": "3.008963382828284",
+        "name": "blink_perf.dom/move-down-with-hidden-elements.html"
+    },
+    {
+        "avg_duration": "2.978461224242425",
+        "name": "blink_perf.dom/move-up-with-hidden-elements.html"
+    },
+    {
+        "avg_duration": "3.6961337717171703",
+        "name": "blink_perf.dom/remove_child_with_selection.html"
+    },
+    {
+        "avg_duration": "8.565711615151514",
+        "name": "blink_perf.dom/select-multiple-add.html"
+    },
+    {
+        "avg_duration": "8.455364243434342",
+        "name": "blink_perf.dom/select-single-add.html"
+    },
+    {
+        "avg_duration": "8.631446456565657",
+        "name": "blink_perf.dom/select-single-remove.html"
+    },
+    {
+        "avg_duration": "8.447328528282831",
+        "name": "blink_perf.dom/textarea-dom.html"
+    },
+    {
+        "avg_duration": "8.302876743434343",
+        "name": "blink_perf.dom/textarea-edit.html"
+    },
+    {
+        "avg_duration": "14.758635984848487",
+        "name": "blink_perf.events/EventsDispatching.html"
+    },
+    {
+        "avg_duration": "9.41202722525253",
+        "name": "blink_perf.events/EventsDispatchingInDeeplyNestedShadowTrees.html"
+    },
+    {
+        "avg_duration": "16.716974964646464",
+        "name": "blink_perf.events/EventsDispatchingInShadowTrees.html"
+    },
+    {
+        "avg_duration": "12.02576745959596",
+        "name": "blink_perf.events/hit-test-lots-of-layers.html"
+    },
+    {
+        "avg_duration": "27.46352823232325",
+        "name": "blink_perf.image_decoder/decode-gif.html"
+    },
+    {
+        "avg_duration": "11.39665317171717",
+        "name": "blink_perf.image_decoder/decode-jpeg.html"
+    },
+    {
+        "avg_duration": "15.983880969696973",
+        "name": "blink_perf.image_decoder/decode-lossless-webp.html"
+    },
+    {
+        "avg_duration": "9.576698281818182",
+        "name": "blink_perf.image_decoder/decode-lossy-webp.html"
+    },
+    {
+        "avg_duration": "12.270531040404038",
+        "name": "blink_perf.image_decoder/decode-png-palette-opaque.html"
+    },
+    {
+        "avg_duration": "10.38577244949495",
+        "name": "blink_perf.image_decoder/decode-png-palette.html"
+    },
+    {
+        "avg_duration": "15.558344636363634",
+        "name": "blink_perf.image_decoder/decode-png.html"
+    },
+    {
+        "avg_duration": "9.612785195959596",
+        "name": "blink_perf.layout/ArabicLineLayout.html"
+    },
+    {
+        "avg_duration": "2.9082444868686865",
+        "name": "blink_perf.layout/Shapes/MultipleShapes.html"
+    },
+    {
+        "avg_duration": "8.161499794949492",
+        "name": "blink_perf.layout/SimpleTextPathLineLayout.html"
+    },
+    {
+        "avg_duration": "17.201968555555545",
+        "name": "blink_perf.layout/add-remove-inline-floats.html"
+    },
+    {
+        "avg_duration": "8.496584162626267",
+        "name": "blink_perf.layout/attach-inlines-2.html"
+    },
+    {
+        "avg_duration": "8.224137477777774",
+        "name": "blink_perf.layout/attach-inlines.html"
+    },
+    {
+        "avg_duration": "9.055423787878793",
+        "name": "blink_perf.layout/auto-grid-lots-of-data.html"
+    },
+    {
+        "avg_duration": "8.581141229292934",
+        "name": "blink_perf.layout/chapter-reflow-once-random.html"
+    },
+    {
+        "avg_duration": "10.400743852525254",
+        "name": "blink_perf.layout/chapter-reflow-once.html"
+    },
+    {
+        "avg_duration": "8.565095359595965",
+        "name": "blink_perf.layout/chapter-reflow-thrice.html"
+    },
+    {
+        "avg_duration": "8.884877741414144",
+        "name": "blink_perf.layout/chapter-reflow-twice.html"
+    },
+    {
+        "avg_duration": "8.477073050505053",
+        "name": "blink_perf.layout/chapter-reflow.html"
+    },
+    {
+        "avg_duration": "4.3225059303030315",
+        "name": "blink_perf.layout/character_fallback.html"
+    },
+    {
+        "avg_duration": "2.8864314454545426",
+        "name": "blink_perf.layout/character_fallback_aat.html"
+    },
+    {
+        "avg_duration": "9.1291994040404",
+        "name": "blink_perf.layout/fixed-grid-lots-of-data.html"
+    },
+    {
+        "avg_duration": "9.097260567676772",
+        "name": "blink_perf.layout/fixed-grid-lots-of-stretched-data.html"
+    },
+    {
+        "avg_duration": "8.17292342525253",
+        "name": "blink_perf.layout/flexbox-column-nowrap.html"
+    },
+    {
+        "avg_duration": "8.164697651515151",
+        "name": "blink_perf.layout/flexbox-column-wrap.html"
+    },
+    {
+        "avg_duration": "8.172700752525252",
+        "name": "blink_perf.layout/flexbox-deeply-nested-column-flow.html"
+    },
+    {
+        "avg_duration": "9.922518389898988",
+        "name": "blink_perf.layout/flexbox-lots-of-data.html"
+    },
+    {
+        "avg_duration": "8.144036452525254",
+        "name": "blink_perf.layout/flexbox-row-nowrap.html"
+    },
+    {
+        "avg_duration": "8.173872342424245",
+        "name": "blink_perf.layout/flexbox-row-wrap.html"
+    },
+    {
+        "avg_duration": "9.064281669696966",
+        "name": "blink_perf.layout/flexbox-with-stretch-layout.html"
+    },
+    {
+        "avg_duration": "8.358032324242425",
+        "name": "blink_perf.layout/floats_100_100.html"
+    },
+    {
+        "avg_duration": "8.403397812121213",
+        "name": "blink_perf.layout/floats_100_100_nested.html"
+    },
+    {
+        "avg_duration": "6.08735914848485",
+        "name": "blink_perf.layout/floats_10_1000.html"
+    },
+    {
+        "avg_duration": "4.319120286868686",
+        "name": "blink_perf.layout/floats_20_100.html"
+    },
+    {
+        "avg_duration": "4.793291721212119",
+        "name": "blink_perf.layout/floats_20_100_nested.html"
+    },
+    {
+        "avg_duration": "3.5669449060606055",
+        "name": "blink_perf.layout/floats_2_100.html"
+    },
+    {
+        "avg_duration": "3.5200132010101015",
+        "name": "blink_perf.layout/floats_2_100_nested.html"
+    },
+    {
+        "avg_duration": "5.007788923232323",
+        "name": "blink_perf.layout/floats_50_100.html"
+    },
+    {
+        "avg_duration": "5.129166725252525",
+        "name": "blink_perf.layout/floats_50_100_nested.html"
+    },
+    {
+        "avg_duration": "9.949663414141419",
+        "name": "blink_perf.layout/hindi-line-layout.html"
+    },
+    {
+        "avg_duration": "8.026973660606064",
+        "name": "blink_perf.layout/large-table-with-collapsed-borders-and-colspans-wider-than-table.html"
+    },
+    {
+        "avg_duration": "8.00178643232323",
+        "name": "blink_perf.layout/large-table-with-collapsed-borders-and-colspans.html"
+    },
+    {
+        "avg_duration": "7.955311985858583",
+        "name": "blink_perf.layout/large-table-with-collapsed-borders-and-no-colspans.html"
+    },
+    {
+        "avg_duration": "3.0793970929292938",
+        "name": "blink_perf.layout/latin-complex-text.html"
+    },
+    {
+        "avg_duration": "3.282991826262625",
+        "name": "blink_perf.layout/layers_overlap_2d.html"
+    },
+    {
+        "avg_duration": "3.3675922222222217",
+        "name": "blink_perf.layout/layers_overlap_3d.html"
+    },
+    {
+        "avg_duration": "7.887447313131314",
+        "name": "blink_perf.layout/line-layout-line-height.html"
+    },
+    {
+        "avg_duration": "8.161259202020203",
+        "name": "blink_perf.layout/line-layout-repeat-append.html"
+    },
+    {
+        "avg_duration": "7.925117391919194",
+        "name": "blink_perf.layout/line-layout.html"
+    },
+    {
+        "avg_duration": "2.984637953535355",
+        "name": "blink_perf.layout/long-line-nowrap-collapse.html"
+    },
+    {
+        "avg_duration": "3.008405839393939",
+        "name": "blink_perf.layout/long-line-nowrap-spans-collapse.html"
+    },
+    {
+        "avg_duration": "4.863557156565656",
+        "name": "blink_perf.layout/long-line-nowrap.html"
+    },
+    {
+        "avg_duration": "8.237180292929295",
+        "name": "blink_perf.layout/multicol/deeply-nested-tables.html"
+    },
+    {
+        "avg_duration": "8.095231237373737",
+        "name": "blink_perf.layout/multicol/fixed-height-with-spanner-and-nested-tables.html"
+    },
+    {
+        "avg_duration": "7.9935902212121235",
+        "name": "blink_perf.layout/multicol/lots-of-text-autofill.html"
+    },
+    {
+        "avg_duration": "8.13422524040404",
+        "name": "blink_perf.layout/multicol/lots-of-text-balanced-orphans-widows.html"
+    },
+    {
+        "avg_duration": "7.9059005989898985",
+        "name": "blink_perf.layout/multicol/lots-of-text-balanced.html"
+    },
+    {
+        "avg_duration": "8.4439984969697",
+        "name": "blink_perf.layout/multicol/tall-content-short-columns-realistic.html"
+    },
+    {
+        "avg_duration": "8.385950247474748",
+        "name": "blink_perf.layout/multicol/tall-content-short-columns.html"
+    },
+    {
+        "avg_duration": "8.091126237373732",
+        "name": "blink_perf.layout/nested-blocks-with-percent-height-and-max-height.html"
+    },
+    {
+        "avg_duration": "8.211111664646463",
+        "name": "blink_perf.layout/nested-grid.html"
+    },
+    {
+        "avg_duration": "9.172431075757578",
+        "name": "blink_perf.layout/nested-percent-height-tables.html"
+    },
+    {
+        "avg_duration": "42.900172999999995",
+        "name": "blink_perf.layout/subtree-detaching.html"
+    },
+    {
+        "avg_duration": "3.7028767363636375",
+        "name": "blink_perf.layout/vertical-japanese-kokoro-insert.html"
+    },
+    {
+        "avg_duration": "4.255294450505051",
+        "name": "blink_perf.layout/word-break-break-all.html"
+    },
+    {
+        "avg_duration": "4.26417021111111",
+        "name": "blink_perf.layout/word-break-break-word.html"
+    },
+    {
+        "avg_duration": "4.256407837373739",
+        "name": "blink_perf.layout/word-wrap-break-word.html"
+    },
+    {
+        "avg_duration": "21.503413595959593",
+        "name": "blink_perf.owp_storage/blob-perf-files.html"
+    },
+    {
+        "avg_duration": "11.512120666666672",
+        "name": "blink_perf.owp_storage/blob-perf-ipc.html"
+    },
+    {
+        "avg_duration": "9.439906111111108",
+        "name": "blink_perf.owp_storage/blob-perf-shm.html"
+    },
+    {
+        "avg_duration": "10.6695953989899",
+        "name": "blink_perf.owp_storage/blob-perf-tiny.html"
+    },
+    {
+        "avg_duration": "12.670256156565653",
+        "name": "blink_perf.owp_storage/idb-load-docs.html"
+    },
+    {
+        "avg_duration": "16.748638611111108",
+        "name": "blink_perf.paint/appending-text.html"
+    },
+    {
+        "avg_duration": "14.907952484848483",
+        "name": "blink_perf.paint/color-changes.html"
+    },
+    {
+        "avg_duration": "14.605819969696972",
+        "name": "blink_perf.paint/complex-content-slow-scroll.html"
+    },
+    {
+        "avg_duration": "12.428782873737372",
+        "name": "blink_perf.paint/containment-resize.html"
+    },
+    {
+        "avg_duration": "12.29746341414141",
+        "name": "blink_perf.paint/fixed-and-many-layers-scroll.html"
+    },
+    {
+        "avg_duration": "13.771671141414142",
+        "name": "blink_perf.paint/large-table-background-change-with-invisible-collapsed-borders.html"
+    },
+    {
+        "avg_duration": "11.344751696969702",
+        "name": "blink_perf.paint/large-table-background-change-with-visible-collapsed-borders.html"
+    },
+    {
+        "avg_duration": "14.399643757575765",
+        "name": "blink_perf.paint/large-table-background-change-with-zero-width-collapsed-borders.html"
+    },
+    {
+        "avg_duration": "11.999382429292929",
+        "name": "blink_perf.paint/large-table-collapsed-border-change-with-backgrounds.html"
+    },
+    {
+        "avg_duration": "12.72212498989899",
+        "name": "blink_perf.paint/large-table-collapsed-border-change-with-text.html"
+    },
+    {
+        "avg_duration": "10.595035075757572",
+        "name": "blink_perf.paint/large-table-collapsed-border-change.html"
+    },
+    {
+        "avg_duration": "13.825203333333329",
+        "name": "blink_perf.paint/large-table-repaint.html"
+    },
+    {
+        "avg_duration": "10.318830171717167",
+        "name": "blink_perf.paint/move-text-with-mask.html"
+    },
+    {
+        "avg_duration": "12.172590141414137",
+        "name": "blink_perf.paint/paint-offset-changes.html"
+    },
+    {
+        "avg_duration": "16.04461566161616",
+        "name": "blink_perf.paint/transform-changes.html"
+    },
+    {
+        "avg_duration": "17.179161292929287",
+        "name": "blink_perf.parser/css-parser-yui.html"
+    },
+    {
+        "avg_duration": "8.56719642929293",
+        "name": "blink_perf.parser/html-parser-threaded.html"
+    },
+    {
+        "avg_duration": "7.985291129292931",
+        "name": "blink_perf.parser/html-parser.html"
+    },
+    {
+        "avg_duration": "27.350605393939386",
+        "name": "blink_perf.parser/html5-full-render.html"
+    },
+    {
+        "avg_duration": "8.752782847474746",
+        "name": "blink_perf.parser/iframe-append-remove.html"
+    },
+    {
+        "avg_duration": "8.543882695959596",
+        "name": "blink_perf.parser/innerHTML-setter-siblings.html"
+    },
+    {
+        "avg_duration": "8.540866556565657",
+        "name": "blink_perf.parser/innerHTML-setter.html"
+    },
+    {
+        "avg_duration": "8.476234859595962",
+        "name": "blink_perf.parser/query-selector-all-attribute-complex.html"
+    },
+    {
+        "avg_duration": "8.425073442424242",
+        "name": "blink_perf.parser/query-selector-all-attribute.html"
+    },
+    {
+        "avg_duration": "8.260514586868688",
+        "name": "blink_perf.parser/query-selector-all-class-deep.html"
+    },
+    {
+        "avg_duration": "9.296937440404038",
+        "name": "blink_perf.parser/query-selector-all-class-first.html"
+    },
+    {
+        "avg_duration": "8.291204864646469",
+        "name": "blink_perf.parser/query-selector-all-class-last.html"
+    },
+    {
+        "avg_duration": "8.54160734848485",
+        "name": "blink_perf.parser/query-selector-all-class.html"
+    },
+    {
+        "avg_duration": "8.264857709090911",
+        "name": "blink_perf.parser/query-selector-all-deep.html"
+    },
+    {
+        "avg_duration": "9.222030328282834",
+        "name": "blink_perf.parser/query-selector-all-first.html"
+    },
+    {
+        "avg_duration": "9.30724493131313",
+        "name": "blink_perf.parser/query-selector-all-id-deep.html"
+    },
+    {
+        "avg_duration": "9.291835893939396",
+        "name": "blink_perf.parser/query-selector-all-id-first.html"
+    },
+    {
+        "avg_duration": "9.480865242424244",
+        "name": "blink_perf.parser/query-selector-all-id-last.html"
+    },
+    {
+        "avg_duration": "8.382565568686868",
+        "name": "blink_perf.parser/query-selector-all-last.html"
+    },
+    {
+        "avg_duration": "8.21404118181818",
+        "name": "blink_perf.parser/query-selector-deep.html"
+    },
+    {
+        "avg_duration": "8.128832775757573",
+        "name": "blink_perf.parser/query-selector-first.html"
+    },
+    {
+        "avg_duration": "9.04393113131313",
+        "name": "blink_perf.parser/query-selector-id-deep.html"
+    },
+    {
+        "avg_duration": "8.38492974141414",
+        "name": "blink_perf.parser/query-selector-id-last.html"
+    },
+    {
+        "avg_duration": "8.395543107070704",
+        "name": "blink_perf.parser/query-selector-last.html"
+    },
+    {
+        "avg_duration": "7.969514906060604",
+        "name": "blink_perf.parser/simple-url.html"
+    },
+    {
+        "avg_duration": "8.617393844444447",
+        "name": "blink_perf.parser/textarea-parsing.html"
+    },
+    {
+        "avg_duration": "8.36028874848485",
+        "name": "blink_perf.parser/tiny-innerHTML.html"
+    },
+    {
+        "avg_duration": "9.126411107070707",
+        "name": "blink_perf.parser/url-parser.html"
+    },
+    {
+        "avg_duration": "8.047724416161621",
+        "name": "blink_perf.parser/xml-parser.html"
+    },
+    {
+        "avg_duration": "11.048984967676766",
+        "name": "blink_perf.shadow_dom/shadow-style-share-attr-selectors.html"
+    },
+    {
+        "avg_duration": "3.0641409",
+        "name": "blink_perf.shadow_dom/shadow-style-share-media-query.html"
+    },
+    {
+        "avg_duration": "3.1729644636363643",
+        "name": "blink_perf.shadow_dom/shadow-style-share-with-distribution.html"
+    },
+    {
+        "avg_duration": "2.7396156686868687",
+        "name": "blink_perf.shadow_dom/shadow-style-share.html"
+    },
+    {
+        "avg_duration": "2.857006583838385",
+        "name": "blink_perf.shadow_dom/style-sheet-insert.html"
+    },
+    {
+        "avg_duration": "2.6088636101010096",
+        "name": "blink_perf.shadow_dom/v0-changing-classname-with-shadow-dom.html"
+    },
+    {
+        "avg_duration": "3.118839016161617",
+        "name": "blink_perf.shadow_dom/v0-changing-classname-without-shadow-dom.html"
+    },
+    {
+        "avg_duration": "4.198366514141415",
+        "name": "blink_perf.shadow_dom/v0-changing-select-with-shadow-dom.html"
+    },
+    {
+        "avg_duration": "4.453216229292929",
+        "name": "blink_perf.shadow_dom/v0-changing-select-without-shadow-dom.html"
+    },
+    {
+        "avg_duration": "2.663110354545454",
+        "name": "blink_perf.shadow_dom/v0-content-reprojection.html"
+    },
+    {
+        "avg_duration": "2.479458371717172",
+        "name": "blink_perf.shadow_dom/v0-large-distribution-without-layout.html"
+    },
+    {
+        "avg_duration": "2.4826591505050506",
+        "name": "blink_perf.shadow_dom/v0-multiple-insertion-points.html"
+    },
+    {
+        "avg_duration": "2.6306750595959594",
+        "name": "blink_perf.shadow_dom/v0-shadow-reprojection.html"
+    },
+    {
+        "avg_duration": "2.5741712929292926",
+        "name": "blink_perf.shadow_dom/v0-small-distribution-with-layout.html"
+    },
+    {
+        "avg_duration": "13.282517075757575",
+        "name": "blink_perf.shadow_dom/v1-distribution-disconnected-and-reconnected.html"
+    },
+    {
+        "avg_duration": "2.3484554040404038",
+        "name": "blink_perf.shadow_dom/v1-distribution.html"
+    },
+    {
+        "avg_duration": "2.37601325959596",
+        "name": "blink_perf.shadow_dom/v1-host-child-append.html"
+    },
+    {
+        "avg_duration": "13.598006388888896",
+        "name": "blink_perf.shadow_dom/v1-large-deep-distribution.html"
+    },
+    {
+        "avg_duration": "25.804457545454536",
+        "name": "blink_perf.shadow_dom/v1-large-deep-layout.html"
+    },
+    {
+        "avg_duration": "2.302250147474748",
+        "name": "blink_perf.shadow_dom/v1-large-shallow-distribution.html"
+    },
+    {
+        "avg_duration": "2.362692618181818",
+        "name": "blink_perf.shadow_dom/v1-large-shallow-layout.html"
+    },
+    {
+        "avg_duration": "2.6838765161616163",
+        "name": "blink_perf.shadow_dom/v1-mutate-deep-tree-then-re-layout.html"
+    },
+    {
+        "avg_duration": "2.5099529767676763",
+        "name": "blink_perf.shadow_dom/v1-mutate-deep-tree-then-slot-assigned-nodes.html"
+    },
+    {
+        "avg_duration": "2.500188935353534",
+        "name": "blink_perf.shadow_dom/v1-mutate-deep-tree-then-slot-flatten.html"
+    },
+    {
+        "avg_duration": "2.5474127989899005",
+        "name": "blink_perf.shadow_dom/v1-mutate-shallow-tree-then-re-layout.html"
+    },
+    {
+        "avg_duration": "2.394710485858586",
+        "name": "blink_perf.shadow_dom/v1-mutate-shallow-tree-then-slot-assigned-nodes.html"
+    },
+    {
+        "avg_duration": "2.458080154545454",
+        "name": "blink_perf.shadow_dom/v1-mutate-shallow-tree-then-slot-flatten.html"
+    },
+    {
+        "avg_duration": "2.464575471717172",
+        "name": "blink_perf.shadow_dom/v1-slot-append.html"
+    },
+    {
+        "avg_duration": "3.5802945161616164",
+        "name": "blink_perf.shadow_dom/v1-small-deep-distribution.html"
+    },
+    {
+        "avg_duration": "3.5385489676767676",
+        "name": "blink_perf.shadow_dom/v1-small-deep-layout.html"
+    },
+    {
+        "avg_duration": "2.332901873737375",
+        "name": "blink_perf.shadow_dom/v1-small-shallow-distribution.html"
+    },
+    {
+        "avg_duration": "2.438151573737374",
+        "name": "blink_perf.shadow_dom/v1-small-shallow-layout.html"
+    },
+    {
+        "avg_duration": "10.736709205050506",
+        "name": "blink_perf.svg/AzLizardBenjiPark.html"
+    },
+    {
+        "avg_duration": "4.553785876767679",
+        "name": "blink_perf.svg/Bamboo.html"
+    },
+    {
+        "avg_duration": "3.2235910353535355",
+        "name": "blink_perf.svg/Cactus.html"
+    },
+    {
+        "avg_duration": "3.231468716161616",
+        "name": "blink_perf.svg/Cowboy.html"
+    },
+    {
+        "avg_duration": "4.396290931313131",
+        "name": "blink_perf.svg/Cowboy_transform.html"
+    },
+    {
+        "avg_duration": "2.940060709090909",
+        "name": "blink_perf.svg/CrawFishGanson.html"
+    },
+    {
+        "avg_duration": "3.0202295434343434",
+        "name": "blink_perf.svg/Debian.html"
+    },
+    {
+        "avg_duration": "2.99058754949495",
+        "name": "blink_perf.svg/DropsOnABlade.html"
+    },
+    {
+        "avg_duration": "3.1717513575757583",
+        "name": "blink_perf.svg/FlowerFromMyGarden.html"
+    },
+    {
+        "avg_duration": "3.113728554545454",
+        "name": "blink_perf.svg/FoodLeifLodahl.html"
+    },
+    {
+        "avg_duration": "3.009731938383837",
+        "name": "blink_perf.svg/France.html"
+    },
+    {
+        "avg_duration": "2.958613517171719",
+        "name": "blink_perf.svg/FrancoBolloGnomeEzechi.html"
+    },
+    {
+        "avg_duration": "3.1093663030303027",
+        "name": "blink_perf.svg/GearFlowers.html"
+    },
+    {
+        "avg_duration": "3.1087998909090917",
+        "name": "blink_perf.svg/HarveyRayner.html"
+    },
+    {
+        "avg_duration": "3.060517882828283",
+        "name": "blink_perf.svg/HereGear.html"
+    },
+    {
+        "avg_duration": "5.072709896969697",
+        "name": "blink_perf.svg/MtSaintHelens.html"
+    },
+    {
+        "avg_duration": "2.8198144929292934",
+        "name": "blink_perf.svg/Samurai.html"
+    },
+    {
+        "avg_duration": "30.342954272727283",
+        "name": "blink_perf.svg/SierpinskiCarpet.html"
+    },
+    {
+        "avg_duration": "3.408611788888889",
+        "name": "blink_perf.svg/SvgCubics.html"
+    },
+    {
+        "avg_duration": "3.252221430303033",
+        "name": "blink_perf.svg/SvgHitTesting.html"
+    },
+    {
+        "avg_duration": "9.260763322222221",
+        "name": "blink_perf.svg/SvgNestedUse.html"
+    },
+    {
+        "avg_duration": "2.978896241414142",
+        "name": "blink_perf.svg/UnderTheSee.html"
+    },
+    {
+        "avg_duration": "3.2542273454545447",
+        "name": "blink_perf.svg/WorldIso.html"
+    },
+    {
+        "avg_duration": "4.026546466666669",
+        "name": "blink_perf.svg/Worldcup.html"
+    },
+    {
+        "avg_duration": "42.223021686868684",
+        "name": "dromaeo/http://dromaeo.com?dom-attr"
+    },
+    {
+        "avg_duration": "33.643220838383854",
+        "name": "dromaeo/http://dromaeo.com?dom-modify"
+    },
+    {
+        "avg_duration": "48.6303281919192",
+        "name": "dromaeo/http://dromaeo.com?dom-query"
+    },
+    {
+        "avg_duration": "29.485233202020197",
+        "name": "dromaeo/http://dromaeo.com?dom-traverse"
+    },
+    {
+        "avg_duration": "19.709514797979807",
+        "name": "dummy_benchmark.histogram_benchmark_1/dummy_page.html"
+    },
+    {
+        "avg_duration": "11.105253877777775",
+        "name": "dummy_benchmark.noisy_benchmark_1/dummy_page.html"
+    },
+    {
+        "avg_duration": "8.960481487878784",
+        "name": "dummy_benchmark.stable_benchmark_1/dummy_page.html"
+    },
+    {
+        "avg_duration": "191.61576151515152",
+        "name": "jetstream/http://browserbench.org/JetStream/"
+    },
+    {
+        "avg_duration": "30.56688854545453",
+        "name": "kraken/http://krakenbenchmark.mozilla.org/kraken-1.1/driver.html"
+    },
+    {
+        "avg_duration": "17.796277247474755",
+        "name": "loading.desktop/24h"
+    },
+    {
+        "avg_duration": "6.053167176470588E-4",
+        "name": "loading.desktop/2ch"
+    },
+    {
+        "avg_duration": "23.32977772727273",
+        "name": "loading.desktop/AirBnB"
+    },
+    {
+        "avg_duration": "14.35587063636363",
+        "name": "loading.desktop/Aljayyash"
+    },
+    {
+        "avg_duration": "25.69859237373737",
+        "name": "loading.desktop/AllRecipes"
+    },
+    {
+        "avg_duration": "23.967720909090897",
+        "name": "loading.desktop/ArsTechnica"
+    },
+    {
+        "avg_duration": "14.484889469696979",
+        "name": "loading.desktop/Baidu"
+    },
+    {
+        "avg_duration": "21.470289984848495",
+        "name": "loading.desktop/Bhaskar"
+    },
+    {
+        "avg_duration": "18.273458545454545",
+        "name": "loading.desktop/Chosun"
+    },
+    {
+        "avg_duration": "17.120065191919192",
+        "name": "loading.desktop/Colorado.edu"
+    },
+    {
+        "avg_duration": "16.772643863636368",
+        "name": "loading.desktop/Danawa"
+    },
+    {
+        "avg_duration": "16.382558186868685",
+        "name": "loading.desktop/Daum"
+    },
+    {
+        "avg_duration": "18.68032998484848",
+        "name": "loading.desktop/Donga"
+    },
+    {
+        "avg_duration": "22.094248080808086",
+        "name": "loading.desktop/Economist"
+    },
+    {
+        "avg_duration": "28.238622393939387",
+        "name": "loading.desktop/Elmundo"
+    },
+    {
+        "avg_duration": "16.790820515151506",
+        "name": "loading.desktop/FC2Blog"
+    },
+    {
+        "avg_duration": "5.716193733333335E-4",
+        "name": "loading.desktop/FDA"
+    },
+    {
+        "avg_duration": "17.361459186868693",
+        "name": "loading.desktop/FIFA"
+    },
+    {
+        "avg_duration": "40.36078966666667",
+        "name": "loading.desktop/FarsNews"
+    },
+    {
+        "avg_duration": "16.743160757575755",
+        "name": "loading.desktop/Flickr"
+    },
+    {
+        "avg_duration": "16.321034707070705",
+        "name": "loading.desktop/FlipKart"
+    },
+    {
+        "avg_duration": "14.682688106060613",
+        "name": "loading.desktop/Free.fr"
+    },
+    {
+        "avg_duration": "13.883316282828279",
+        "name": "loading.desktop/HTML5Rocks"
+    },
+    {
+        "avg_duration": "14.732891873737373",
+        "name": "loading.desktop/Haraj"
+    },
+    {
+        "avg_duration": "18.699535343434338",
+        "name": "loading.desktop/HatenaBookmark"
+    },
+    {
+        "avg_duration": "18.63500644444445",
+        "name": "loading.desktop/IGN"
+    },
+    {
+        "avg_duration": "18.404064242424237",
+        "name": "loading.desktop/IMDB"
+    },
+    {
+        "avg_duration": "17.078999020202012",
+        "name": "loading.desktop/IndiaTimes"
+    },
+    {
+        "avg_duration": "18.299065792929294",
+        "name": "loading.desktop/Kakaku"
+    },
+    {
+        "avg_duration": "26.364479767676755",
+        "name": "loading.desktop/Kenh14"
+    },
+    {
+        "avg_duration": "6.699826959259259E-4",
+        "name": "loading.desktop/Leboncoin"
+    },
+    {
+        "avg_duration": "6.735722163888891E-4",
+        "name": "loading.desktop/MLB"
+    },
+    {
+        "avg_duration": "16.75509259595959",
+        "name": "loading.desktop/Mercadolivre"
+    },
+    {
+        "avg_duration": "10.425556988888891",
+        "name": "loading.desktop/NatGeo"
+    },
+    {
+        "avg_duration": "16.084199015151512",
+        "name": "loading.desktop/Naver"
+    },
+    {
+        "avg_duration": "13.306234318181819",
+        "name": "loading.desktop/Orange"
+    },
+    {
+        "avg_duration": "16.383443353535355",
+        "name": "loading.desktop/Pantip"
+    },
+    {
+        "avg_duration": "18.824666085858585",
+        "name": "loading.desktop/PremierLeague"
+    },
+    {
+        "avg_duration": "20.873495560606067",
+        "name": "loading.desktop/QQ"
+    },
+    {
+        "avg_duration": "17.756320070707066",
+        "name": "loading.desktop/REI"
+    },
+    {
+        "avg_duration": "5.671536477777775E-4",
+        "name": "loading.desktop/Rambler"
+    },
+    {
+        "avg_duration": "15.540136848484838",
+        "name": "loading.desktop/Ruten"
+    },
+    {
+        "avg_duration": "21.22598319191919",
+        "name": "loading.desktop/Sina"
+    },
+    {
+        "avg_duration": "20.91638601515151",
+        "name": "loading.desktop/Taobao"
+    },
+    {
+        "avg_duration": "21.258698010101007",
+        "name": "loading.desktop/TheOnion"
+    },
+    {
+        "avg_duration": "21.38990183838383",
+        "name": "loading.desktop/TheVerge"
+    },
+    {
+        "avg_duration": "22.450392171717166",
+        "name": "loading.desktop/TicketMaster"
+    },
+    {
+        "avg_duration": "29.81191333333334",
+        "name": "loading.desktop/Vietnamnet"
+    },
+    {
+        "avg_duration": "23.136903939393946",
+        "name": "loading.desktop/Vnexpress"
+    },
+    {
+        "avg_duration": "24.069781343434347",
+        "name": "loading.desktop/Walgreens"
+    },
+    {
+        "avg_duration": "14.709329474747472",
+        "name": "loading.desktop/Yandex"
+    },
+    {
+        "avg_duration": "0.0011434201837037033",
+        "name": "loading.desktop/Ynet"
+    },
+    {
+        "avg_duration": "20.243895636363625",
+        "name": "loading.desktop/amazon.co.jp"
+    },
+    {
+        "avg_duration": "5.454439027272728E-4",
+        "name": "loading.desktop/goo.ne.jp"
+    },
+    {
+        "avg_duration": "15.653099813131314",
+        "name": "loading.desktop/ja.wikipedia"
+    },
+    {
+        "avg_duration": "24.017602959595955",
+        "name": "loading.desktop/money.cnn"
+    },
+    {
+        "avg_duration": "15.870605075757581",
+        "name": "loading.desktop/ru.wikipedia"
+    },
+    {
+        "avg_duration": "26.81979053535353",
+        "name": "loading.desktop/uol.com.br"
+    },
+    {
+        "avg_duration": "17.995120010101008",
+        "name": "loading.desktop/yahoo.co.jp"
+    },
+    {
+        "avg_duration": "16.986887727272723",
+        "name": "media.desktop/mse.html?media=aac_audio.mp4"
+    },
+    {
+        "avg_duration": "17.899610424242432",
+        "name": "media.desktop/mse.html?media=aac_audio.mp4,h264_video.mp4"
+    },
+    {
+        "avg_duration": "17.873924747474753",
+        "name": "media.desktop/mse.html?media=aac_audio.mp4,h264_video.mp4&waitForPageLoaded=true"
+    },
+    {
+        "avg_duration": "16.98963155050504",
+        "name": "media.desktop/mse.html?media=h264_video.mp4"
+    },
+    {
+        "avg_duration": "30.339194444444434",
+        "name": "media.desktop/video.html?src=crowd.ogg&type=audio"
+    },
+    {
+        "avg_duration": "26.675061444444445",
+        "name": "media.desktop/video.html?src=crowd1080.mp4"
+    },
+    {
+        "avg_duration": "26.26268078787879",
+        "name": "media.desktop/video.html?src=crowd1080.webm"
+    },
+    {
+        "avg_duration": "24.37151872727272",
+        "name": "media.desktop/video.html?src=crowd1080_vp9.webm"
+    },
+    {
+        "avg_duration": "15.165228141414142",
+        "name": "media.desktop/video.html?src=crowd1080_vp9.webm&seek"
+    },
+    {
+        "avg_duration": "24.315737777777784",
+        "name": "media.desktop/video.html?src=crowd720_vp9.webm"
+    },
+    {
+        "avg_duration": "27.20205337373738",
+        "name": "media.desktop/video.html?src=garden2_10s.mp4"
+    },
+    {
+        "avg_duration": "17.236390333333333",
+        "name": "media.desktop/video.html?src=garden2_10s.mp4&seek"
+    },
+    {
+        "avg_duration": "25.054333858585856",
+        "name": "media.desktop/video.html?src=garden2_10s.webm"
+    },
+    {
+        "avg_duration": "15.082535828282833",
+        "name": "media.desktop/video.html?src=garden2_10s.webm&seek"
+    },
+    {
+        "avg_duration": "18.85643757070707",
+        "name": "media.desktop/video.html?src=smpte_3840x2160_60fps_vp9.webm&seek"
+    },
+    {
+        "avg_duration": "32.22215992929294",
+        "name": "media.desktop/video.html?src=tulip2.m4a&type=audio"
+    },
+    {
+        "avg_duration": "32.21110791919193",
+        "name": "media.desktop/video.html?src=tulip2.mp3&type=audio"
+    },
+    {
+        "avg_duration": "13.515092808080809",
+        "name": "media.desktop/video.html?src=tulip2.mp3&type=audio&seek"
+    },
+    {
+        "avg_duration": "33.86674483838383",
+        "name": "media.desktop/video.html?src=tulip2.mp4"
+    },
+    {
+        "avg_duration": "35.592176333333335",
+        "name": "media.desktop/video.html?src=tulip2.mp4&busyjs"
+    },
+    {
+        "avg_duration": "15.15670805050505",
+        "name": "media.desktop/video.html?src=tulip2.mp4&seek"
+    },
+    {
+        "avg_duration": "32.209504404040395",
+        "name": "media.desktop/video.html?src=tulip2.ogg&type=audio"
+    },
+    {
+        "avg_duration": "13.45914174747475",
+        "name": "media.desktop/video.html?src=tulip2.ogg&type=audio&seek"
+    },
+    {
+        "avg_duration": "33.91589607070707",
+        "name": "media.desktop/video.html?src=tulip2.vp9.webm"
+    },
+    {
+        "avg_duration": "26.105682575757577",
+        "name": "media.desktop/video.html?src=tulip2.vp9.webm&background"
+    },
+    {
+        "avg_duration": "16.367539904040402",
+        "name": "media.desktop/video.html?src=tulip2.vp9.webm&seek"
+    },
+    {
+        "avg_duration": "39.29338516161616",
+        "name": "media.desktop/video.html?src=tulip2.vp9.webm_Regular-3G"
+    },
+    {
+        "avg_duration": "32.441990909090904",
+        "name": "media.desktop/video.html?src=tulip2.wav&type=audio"
+    },
+    {
+        "avg_duration": "13.604958843434344",
+        "name": "media.desktop/video.html?src=tulip2.wav&type=audio&seek"
+    },
+    {
+        "avg_duration": "24.63618251515151",
+        "name": "memory.desktop/TrivialAnimationPageSharedPageState"
+    },
+    {
+        "avg_duration": "23.35281334343434",
+        "name": "memory.desktop/TrivialBlinkingCursorPageSharedPageState"
+    },
+    {
+        "avg_duration": "27.360383646464655",
+        "name": "memory.desktop/TrivialBlurAnimationPageSharedPageState"
+    },
+    {
+        "avg_duration": "24.567629575757582",
+        "name": "memory.desktop/TrivialCanvasPageSharedPageState"
+    },
+    {
+        "avg_duration": "23.836052383838393",
+        "name": "memory.desktop/TrivialFullscreenVideoPageSharedPageState"
+    },
+    {
+        "avg_duration": "23.607972030303024",
+        "name": "memory.desktop/TrivialGifPageSharedPageState"
+    },
+    {
+        "avg_duration": "33.95000451515153",
+        "name": "memory.desktop/TrivialScrollingPageSharedPageState"
+    },
+    {
+        "avg_duration": "25.206339363636367",
+        "name": "memory.desktop/TrivialWebGLPageSharedPageState"
+    },
+    {
+        "avg_duration": "160.525265959596",
+        "name": "memory.long_running_idle_gmail_background_tbmv2/https://mail.google.com/mail/"
+    },
+    {
+        "avg_duration": "160.1974557575758",
+        "name": "memory.long_running_idle_gmail_tbmv2/https://mail.google.com/mail/"
+    },
+    {
+        "avg_duration": "47.731232868686874",
+        "name": "octane/http://chromium.github.io/octane/index.html?auto=1"
+    },
+    {
+        "avg_duration": "76.16149284848484",
+        "name": "oortonline_tbmv2/http://oortonline.gl/#run"
+    },
+    {
+        "avg_duration": "53.77012491304347",
+        "name": "power.desktop/TrivialAnimationPageSharedPageState"
+    },
+    {
+        "avg_duration": "47.06500773913041",
+        "name": "power.desktop/TrivialBlinkingCursorPageSharedPageState"
+    },
+    {
+        "avg_duration": "57.39386284782609",
+        "name": "power.desktop/TrivialBlurAnimationPageSharedPageState"
+    },
+    {
+        "avg_duration": "51.68192066304348",
+        "name": "power.desktop/TrivialCanvasPageSharedPageState"
+    },
+    {
+        "avg_duration": "48.297374771739136",
+        "name": "power.desktop/TrivialFullscreenVideoPageSharedPageState"
+    },
+    {
+        "avg_duration": "46.90243145652175",
+        "name": "power.desktop/TrivialGifPageSharedPageState"
+    },
+    {
+        "avg_duration": "58.830163793478235",
+        "name": "power.desktop/TrivialScrollingPageSharedPageState"
+    },
+    {
+        "avg_duration": "52.85900113043477",
+        "name": "power.desktop/TrivialWebGLPageSharedPageState"
+    },
+    {
+        "avg_duration": "137.25834413043475",
+        "name": "power.desktop/abcnews"
+    },
+    {
+        "avg_duration": "47.34948593478261",
+        "name": "power.desktop/indiatimes"
+    },
+    {
+        "avg_duration": "51.88114372826089",
+        "name": "power.desktop/instagram"
+    },
+    {
+        "avg_duration": "47.84216095652173",
+        "name": "power.desktop/microsoft"
+    },
+    {
+        "avg_duration": "49.606469456521744",
+        "name": "power.desktop/sina"
+    },
+    {
+        "avg_duration": "49.940412347826076",
+        "name": "power.desktop/slideshare"
+    },
+    {
+        "avg_duration": "61.285550010869535",
+        "name": "power.desktop/uol"
+    },
+    {
+        "avg_duration": "23.015368969696976",
+        "name": "power.idle_platform/IdleStory_10s"
+    },
+    {
+        "avg_duration": "136.58828583838377",
+        "name": "power.idle_platform/IdleStory_120s"
+    },
+    {
+        "avg_duration": "72.56164295959597",
+        "name": "power.idle_platform/IdleStory_60s"
+    },
+    {
+        "avg_duration": "13.939839732323236",
+        "name": "rasterize_and_record_micro.partial_invalidation/800_relpos_divs.html"
+    },
+    {
+        "avg_duration": "24.60178244444445",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/amazon.html"
+    },
+    {
+        "avg_duration": "10.062929842424241",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/blogger.html"
+    },
+    {
+        "avg_duration": "11.009921340404043",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/booking.html"
+    },
+    {
+        "avg_duration": "13.322416137373741",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/cnn.html"
+    },
+    {
+        "avg_duration": "10.717329493939392",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/ebay.html"
+    },
+    {
+        "avg_duration": "19.20029315151514",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/espn.html"
+    },
+    {
+        "avg_duration": "10.453902502020199",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/facebook.html"
+    },
+    {
+        "avg_duration": "11.29588626262626",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/gmail.html"
+    },
+    {
+        "avg_duration": "10.29865538080808",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/google.html"
+    },
+    {
+        "avg_duration": "8.560305636363639",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/googlecalendar.html"
+    },
+    {
+        "avg_duration": "10.424668083838382",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/googledocs.html"
+    },
+    {
+        "avg_duration": "13.572645570707067",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/googleimagesearch.html"
+    },
+    {
+        "avg_duration": "22.58585426262627",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/googleplus.html"
+    },
+    {
+        "avg_duration": "9.336152664646466",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/linkedin.html"
+    },
+    {
+        "avg_duration": "8.940455361616165",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/pinterest.html"
+    },
+    {
+        "avg_duration": "27.212685383838387",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/techcrunch.html"
+    },
+    {
+        "avg_duration": "16.507937090909092",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/twitter.html"
+    },
+    {
+        "avg_duration": "14.031394323232323",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/weather.html"
+    },
+    {
+        "avg_duration": "5.062736279310344E-4",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/wikipedia.html"
+    },
+    {
+        "avg_duration": "15.321374190909088",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/wordpress.html"
+    },
+    {
+        "avg_duration": "10.890456581818185",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/yahooanswers.html"
+    },
+    {
+        "avg_duration": "23.34685303030304",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/yahoogames.html"
+    },
+    {
+        "avg_duration": "100.98689316161611",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/yahoonews.html"
+    },
+    {
+        "avg_duration": "85.29090675757575",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/yahoosports.html"
+    },
+    {
+        "avg_duration": "24.792838454545457",
+        "name": "rasterize_and_record_micro.top_25/file://static_top_25/youtube.html"
+    },
+    {
+        "avg_duration": "3.44342653E-4",
+        "name": "rendering.desktop/amazon"
+    },
+    {
+        "avg_duration": "32.23481807070707",
+        "name": "rendering.desktop/analog_clock_svg"
+    },
+    {
+        "avg_duration": "22.84507216304348",
+        "name": "rendering.desktop/balls_css_key_frame_animations"
+    },
+    {
+        "avg_duration": "26.77139425000001",
+        "name": "rendering.desktop/balls_css_key_frame_animations_composited_transform"
+    },
+    {
+        "avg_duration": "26.14243802173914",
+        "name": "rendering.desktop/balls_css_transition_2_properties"
+    },
+    {
+        "avg_duration": "26.23570299999999",
+        "name": "rendering.desktop/balls_css_transition_40_properties"
+    },
+    {
+        "avg_duration": "26.237633130434787",
+        "name": "rendering.desktop/balls_css_transition_all_properties"
+    },
+    {
+        "avg_duration": "25.419334771739123",
+        "name": "rendering.desktop/balls_javascript_canvas"
+    },
+    {
+        "avg_duration": "22.605375619565212",
+        "name": "rendering.desktop/balls_javascript_css"
+    },
+    {
+        "avg_duration": "26.34060051086956",
+        "name": "rendering.desktop/balls_svg_animations"
+    },
+    {
+        "avg_duration": "27.77739368686869",
+        "name": "rendering.desktop/blogspot"
+    },
+    {
+        "avg_duration": "16.513189308080815",
+        "name": "rendering.desktop/booking.com"
+    },
+    {
+        "avg_duration": "17.163900070707072",
+        "name": "rendering.desktop/bouncing_balls_15"
+    },
+    {
+        "avg_duration": "16.40321768686869",
+        "name": "rendering.desktop/bouncing_balls_shadow"
+    },
+    {
+        "avg_duration": "16.761407101010096",
+        "name": "rendering.desktop/bouncing_clipped_rectangles"
+    },
+    {
+        "avg_duration": "17.91543892424243",
+        "name": "rendering.desktop/bouncing_gradient_circles"
+    },
+    {
+        "avg_duration": "13.388183570707074",
+        "name": "rendering.desktop/bouncing_png_images"
+    },
+    {
+        "avg_duration": "22.2694844949495",
+        "name": "rendering.desktop/bouncing_svg_images"
+    },
+    {
+        "avg_duration": "24.263730530303043",
+        "name": "rendering.desktop/canvas_animation_no_clear"
+    },
+    {
+        "avg_duration": "17.431412318181813",
+        "name": "rendering.desktop/canvas_arcs"
+    },
+    {
+        "avg_duration": "16.217379646464636",
+        "name": "rendering.desktop/canvas_font_cycler"
+    },
+    {
+        "avg_duration": "16.737339752525248",
+        "name": "rendering.desktop/canvas_lines"
+    },
+    {
+        "avg_duration": "16.622581393939395",
+        "name": "rendering.desktop/canvas_to_blob"
+    },
+    {
+        "avg_duration": "20.71951031313132",
+        "name": "rendering.desktop/chip_tune"
+    },
+    {
+        "avg_duration": "6.033615554545455E-4",
+        "name": "rendering.desktop/cnn"
+    },
+    {
+        "avg_duration": "26.953036217391308",
+        "name": "rendering.desktop/compositor_heavy_animation"
+    },
+    {
+        "avg_duration": "19.732214020202026",
+        "name": "rendering.desktop/crafty_mind"
+    },
+    {
+        "avg_duration": "22.162743010869566",
+        "name": "rendering.desktop/css_animations_many_keyframes"
+    },
+    {
+        "avg_duration": "21.74792739130434",
+        "name": "rendering.desktop/css_animations_simultaneous_inline_style"
+    },
+    {
+        "avg_duration": "22.383995793478256",
+        "name": "rendering.desktop/css_animations_simultaneous_new_element"
+    },
+    {
+        "avg_duration": "21.731999749999996",
+        "name": "rendering.desktop/css_animations_simultaneous_style_element"
+    },
+    {
+        "avg_duration": "21.75569220652173",
+        "name": "rendering.desktop/css_animations_simultaneous_updating_class"
+    },
+    {
+        "avg_duration": "21.14137066304348",
+        "name": "rendering.desktop/css_animations_staggered_infinite_iterations"
+    },
+    {
+        "avg_duration": "24.34902766304348",
+        "name": "rendering.desktop/css_animations_staggered_inline_style"
+    },
+    {
+        "avg_duration": "28.746734097826092",
+        "name": "rendering.desktop/css_animations_staggered_new_element"
+    },
+    {
+        "avg_duration": "25.247548521739127",
+        "name": "rendering.desktop/css_animations_staggered_style_element"
+    },
+    {
+        "avg_duration": "24.469455999999997",
+        "name": "rendering.desktop/css_animations_staggered_updating_class"
+    },
+    {
+        "avg_duration": "24.944197826086956",
+        "name": "rendering.desktop/css_animations_triggered_inline_style"
+    },
+    {
+        "avg_duration": "35.431130152173914",
+        "name": "rendering.desktop/css_animations_triggered_new_element"
+    },
+    {
+        "avg_duration": "25.689787586956527",
+        "name": "rendering.desktop/css_animations_triggered_style_element"
+    },
+    {
+        "avg_duration": "24.915712847826086",
+        "name": "rendering.desktop/css_animations_triggered_updating_class"
+    },
+    {
+        "avg_duration": "21.888190728260867",
+        "name": "rendering.desktop/css_transitions_inline_style"
+    },
+    {
+        "avg_duration": "22.436129184782605",
+        "name": "rendering.desktop/css_transitions_new_element"
+    },
+    {
+        "avg_duration": "22.335085913043475",
+        "name": "rendering.desktop/css_transitions_staggered_inline_style"
+    },
+    {
+        "avg_duration": "23.227262336956525",
+        "name": "rendering.desktop/css_transitions_staggered_new_element"
+    },
+    {
+        "avg_duration": "22.671832260869575",
+        "name": "rendering.desktop/css_transitions_staggered_style_element"
+    },
+    {
+        "avg_duration": "22.346157554347823",
+        "name": "rendering.desktop/css_transitions_staggered_updating_class"
+    },
+    {
+        "avg_duration": "22.01950536956522",
+        "name": "rendering.desktop/css_transitions_style_element"
+    },
+    {
+        "avg_duration": "25.343238597826076",
+        "name": "rendering.desktop/css_transitions_triggered_inline_style"
+    },
+    {
+        "avg_duration": "25.478697043478267",
+        "name": "rendering.desktop/css_transitions_triggered_new_element"
+    },
+    {
+        "avg_duration": "25.549056532608702",
+        "name": "rendering.desktop/css_transitions_triggered_style_element"
+    },
+    {
+        "avg_duration": "25.467266706521745",
+        "name": "rendering.desktop/css_transitions_triggered_updating_class"
+    },
+    {
+        "avg_duration": "21.92593485869566",
+        "name": "rendering.desktop/css_transitions_updating_class"
+    },
+    {
+        "avg_duration": "21.65085111956522",
+        "name": "rendering.desktop/css_value_type_color"
+    },
+    {
+        "avg_duration": "48.9700790652174",
+        "name": "rendering.desktop/css_value_type_filter"
+    },
+    {
+        "avg_duration": "22.80907332608696",
+        "name": "rendering.desktop/css_value_type_length"
+    },
+    {
+        "avg_duration": "24.512565108695654",
+        "name": "rendering.desktop/css_value_type_length_complex"
+    },
+    {
+        "avg_duration": "24.16843460869566",
+        "name": "rendering.desktop/css_value_type_length_simple"
+    },
+    {
+        "avg_duration": "23.768057999999996",
+        "name": "rendering.desktop/css_value_type_path"
+    },
+    {
+        "avg_duration": "24.95825792391305",
+        "name": "rendering.desktop/css_value_type_shadow"
+    },
+    {
+        "avg_duration": "22.718714597826082",
+        "name": "rendering.desktop/css_value_type_transform_complex"
+    },
+    {
+        "avg_duration": "22.4806019347826",
+        "name": "rendering.desktop/css_value_type_transform_simple"
+    },
+    {
+        "avg_duration": "13.303307055555551",
+        "name": "rendering.desktop/ebay"
+    },
+    {
+        "avg_duration": "20.786806626262628",
+        "name": "rendering.desktop/effect_games"
+    },
+    {
+        "avg_duration": "17.878968282828286",
+        "name": "rendering.desktop/espn"
+    },
+    {
+        "avg_duration": "14.307120464646468",
+        "name": "rendering.desktop/facebook"
+    },
+    {
+        "avg_duration": "17.145088813131313",
+        "name": "rendering.desktop/fill_shapes"
+    },
+    {
+        "avg_duration": "29.07482417171717",
+        "name": "rendering.desktop/filter_terrain_svg"
+    },
+    {
+        "avg_duration": "17.026026323232323",
+        "name": "rendering.desktop/geo_apis"
+    },
+    {
+        "avg_duration": "23.924797595959593",
+        "name": "rendering.desktop/gmail"
+    },
+    {
+        "avg_duration": "28.33538300000001",
+        "name": "rendering.desktop/gmail_move"
+    },
+    {
+        "avg_duration": "15.92227727777778",
+        "name": "rendering.desktop/google_calendar"
+    },
+    {
+        "avg_duration": "31.63932657575758",
+        "name": "rendering.desktop/google_docs"
+    },
+    {
+        "avg_duration": "19.767774686868684",
+        "name": "rendering.desktop/google_image_search"
+    },
+    {
+        "avg_duration": "21.736239242424247",
+        "name": "rendering.desktop/google_plus"
+    },
+    {
+        "avg_duration": "14.199730959595955",
+        "name": "rendering.desktop/google_web_search"
+    },
+    {
+        "avg_duration": "26.895519161616168",
+        "name": "rendering.desktop/guimark_vector_chart"
+    },
+    {
+        "avg_duration": "19.366948747474744",
+        "name": "rendering.desktop/hakim"
+    },
+    {
+        "avg_duration": "34.281546212121214",
+        "name": "rendering.desktop/ie_chalkboard"
+    },
+    {
+        "avg_duration": "28.129559838383837",
+        "name": "rendering.desktop/ie_pirate_mark"
+    },
+    {
+        "avg_duration": "23.04584223232323",
+        "name": "rendering.desktop/jarro_doverson"
+    },
+    {
+        "avg_duration": "16.68955993434343",
+        "name": "rendering.desktop/kevs_3d"
+    },
+    {
+        "avg_duration": "21.33538952173913",
+        "name": "rendering.desktop/keyframed_animations"
+    },
+    {
+        "avg_duration": "16.512718343434347",
+        "name": "rendering.desktop/linkedin"
+    },
+    {
+        "avg_duration": "21.6931847979798",
+        "name": "rendering.desktop/man_in_blue"
+    },
+    {
+        "avg_duration": "21.743285838383837",
+        "name": "rendering.desktop/many_images"
+    },
+    {
+        "avg_duration": "19.132848030303027",
+        "name": "rendering.desktop/maps_move"
+    },
+    {
+        "avg_duration": "15.54562393939394",
+        "name": "rendering.desktop/megi_dish"
+    },
+    {
+        "avg_duration": "18.244211525252528",
+        "name": "rendering.desktop/microsoft_asteroid_belt"
+    },
+    {
+        "avg_duration": "25.3127308888889",
+        "name": "rendering.desktop/microsoft_fireflies"
+    },
+    {
+        "avg_duration": "18.430522308080814",
+        "name": "rendering.desktop/microsoft_fish_ie_tank"
+    },
+    {
+        "avg_duration": "21.49526712626263",
+        "name": "rendering.desktop/microsoft_snow"
+    },
+    {
+        "avg_duration": "16.02544925252525",
+        "name": "rendering.desktop/microsoft_speed_reading"
+    },
+    {
+        "avg_duration": "17.045696727272727",
+        "name": "rendering.desktop/microsoft_tweet_map"
+    },
+    {
+        "avg_duration": "24.33272039393939",
+        "name": "rendering.desktop/microsoft_video_city"
+    },
+    {
+        "avg_duration": "18.21287603030303",
+        "name": "rendering.desktop/microsoft_worker_fountains"
+    },
+    {
+        "avg_duration": "15.91745314141414",
+        "name": "rendering.desktop/mix_10k"
+    },
+    {
+        "avg_duration": "21.12254688607596",
+        "name": "rendering.desktop/mix_blend_mode_animation_difference"
+    },
+    {
+        "avg_duration": "21.149859101265815",
+        "name": "rendering.desktop/mix_blend_mode_animation_hue"
+    },
+    {
+        "avg_duration": "23.769520989130434",
+        "name": "rendering.desktop/mix_blend_mode_animation_propagating_isolation"
+    },
+    {
+        "avg_duration": "24.06873829347827",
+        "name": "rendering.desktop/mix_blend_mode_animation_screen"
+    },
+    {
+        "avg_duration": "23.948956808080812",
+        "name": "rendering.desktop/motion_mark_canvas_fill_shapes"
+    },
+    {
+        "avg_duration": "24.675626010101013",
+        "name": "rendering.desktop/motion_mark_canvas_stroke_shapes"
+    },
+    {
+        "avg_duration": "30.004777515151513",
+        "name": "rendering.desktop/motion_mark_focus"
+    },
+    {
+        "avg_duration": "43.38852559782608",
+        "name": "rendering.desktop/overlay_background_color_css_transitions_page"
+    },
+    {
+        "avg_duration": "22.833681828282828",
+        "name": "rendering.desktop/pinterest"
+    },
+    {
+        "avg_duration": "17.211929757575756",
+        "name": "rendering.desktop/put_get_image_data"
+    },
+    {
+        "avg_duration": "17.435395353535352",
+        "name": "rendering.desktop/runway"
+    },
+    {
+        "avg_duration": "19.09892994444444",
+        "name": "rendering.desktop/smash_cat"
+    },
+    {
+        "avg_duration": "15.77969653030303",
+        "name": "rendering.desktop/spielzeugz"
+    },
+    {
+        "avg_duration": "17.801805909090906",
+        "name": "rendering.desktop/stroke_shapes"
+    },
+    {
+        "avg_duration": "40.69789875757574",
+        "name": "rendering.desktop/techcrunch"
+    },
+    {
+        "avg_duration": "24.991641260869567",
+        "name": "rendering.desktop/transform_transitions"
+    },
+    {
+        "avg_duration": "20.655563695652173",
+        "name": "rendering.desktop/transform_transitions_js_block"
+    },
+    {
+        "avg_duration": "16.018982737373733",
+        "name": "rendering.desktop/twitter"
+    },
+    {
+        "avg_duration": "19.931932530303026",
+        "name": "rendering.desktop/weather.com"
+    },
+    {
+        "avg_duration": "22.34548729347826",
+        "name": "rendering.desktop/web_animation_value_type_color"
+    },
+    {
+        "avg_duration": "23.28671939130435",
+        "name": "rendering.desktop/web_animation_value_type_length_3d"
+    },
+    {
+        "avg_duration": "24.31206143478261",
+        "name": "rendering.desktop/web_animation_value_type_length_complex"
+    },
+    {
+        "avg_duration": "24.313030228260875",
+        "name": "rendering.desktop/web_animation_value_type_length_simple"
+    },
+    {
+        "avg_duration": "23.85834029347826",
+        "name": "rendering.desktop/web_animation_value_type_path"
+    },
+    {
+        "avg_duration": "24.863936152173913",
+        "name": "rendering.desktop/web_animation_value_type_shadow"
+    },
+    {
+        "avg_duration": "22.778717836956528",
+        "name": "rendering.desktop/web_animation_value_type_transform_complex"
+    },
+    {
+        "avg_duration": "22.44251680434782",
+        "name": "rendering.desktop/web_animation_value_type_transform_simple"
+    },
+    {
+        "avg_duration": "23.026747815217387",
+        "name": "rendering.desktop/web_animations_many_keyframes"
+    },
+    {
+        "avg_duration": "22.26854544565217",
+        "name": "rendering.desktop/web_animations_set_current_time"
+    },
+    {
+        "avg_duration": "22.206556282608688",
+        "name": "rendering.desktop/web_animations_simultaneous"
+    },
+    {
+        "avg_duration": "24.555969217391315",
+        "name": "rendering.desktop/web_animations_staggered_chaining"
+    },
+    {
+        "avg_duration": "21.325846206521742",
+        "name": "rendering.desktop/web_animations_staggered_infinite_iterations"
+    },
+    {
+        "avg_duration": "25.101195782608695",
+        "name": "rendering.desktop/web_animations_staggered_triggering_page"
+    },
+    {
+        "avg_duration": "20.364619969696975",
+        "name": "rendering.desktop/wikipedia"
+    },
+    {
+        "avg_duration": "23.659137787878787",
+        "name": "rendering.desktop/wordpress"
+    },
+    {
+        "avg_duration": "14.043235414141417",
+        "name": "rendering.desktop/yahoo_answers"
+    },
+    {
+        "avg_duration": "25.72189804040405",
+        "name": "rendering.desktop/yahoo_games"
+    },
+    {
+        "avg_duration": "19.26464831818181",
+        "name": "rendering.desktop/yahoo_news"
+    },
+    {
+        "avg_duration": "21.380682151515153",
+        "name": "rendering.desktop/yahoo_sports"
+    },
+    {
+        "avg_duration": "20.872036868686873",
+        "name": "rendering.desktop/youtube"
+    },
+    {
+        "avg_duration": "17.478642222222213",
+        "name": "scheduler.tough_scheduling_cases/raf.html"
+    },
+    {
+        "avg_duration": "17.48852294949495",
+        "name": "scheduler.tough_scheduling_cases/raf_animation.html"
+    },
+    {
+        "avg_duration": "17.015820772727274",
+        "name": "scheduler.tough_scheduling_cases/raf_canvas.html"
+    },
+    {
+        "avg_duration": "16.263381909090906",
+        "name": "scheduler.tough_scheduling_cases/raf_touch_animation.html"
+    },
+    {
+        "avg_duration": "10.41283162626263",
+        "name": "scheduler.tough_scheduling_cases/second_batch_js.html?heavy"
+    },
+    {
+        "avg_duration": "10.317407484848486",
+        "name": "scheduler.tough_scheduling_cases/second_batch_js.html?light"
+    },
+    {
+        "avg_duration": "10.370052313131312",
+        "name": "scheduler.tough_scheduling_cases/second_batch_js.html?medium"
+    },
+    {
+        "avg_duration": "21.380705727272723",
+        "name": "scheduler.tough_scheduling_cases/simple_text_page.html"
+    },
+    {
+        "avg_duration": "10.924102466666671",
+        "name": "scheduler.tough_scheduling_cases/simple_touch_drag.html"
+    },
+    {
+        "avg_duration": "13.309566813131319",
+        "name": "scheduler.tough_scheduling_cases/sync_scroll_offset.html"
+    },
+    {
+        "avg_duration": "15.489430944444441",
+        "name": "scheduler.tough_scheduling_cases/touch_handler_scrolling.html"
+    },
+    {
+        "avg_duration": "14.102468540404036",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/Blogger"
+    },
+    {
+        "avg_duration": "15.041881651515151",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/ESPN"
+    },
+    {
+        "avg_duration": "14.10240523232323",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/Facebook"
+    },
+    {
+        "avg_duration": "13.622143166666666",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/LinkedIn"
+    },
+    {
+        "avg_duration": "16.103051959595966",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/Twitter"
+    },
+    {
+        "avg_duration": "15.889530505050505",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/Weather.com"
+    },
+    {
+        "avg_duration": "13.999643249999998",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/amazon_pinch"
+    },
+    {
+        "avg_duration": "14.50147525",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/blogspot_pinch"
+    },
+    {
+        "avg_duration": "14.837971687500001",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/booking_pinch"
+    },
+    {
+        "avg_duration": "16.376194437500004",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/cnn_pinch"
+    },
+    {
+        "avg_duration": "16.500532624999998",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/ebay_pinch"
+    },
+    {
+        "avg_duration": "15.91411371875",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/espn_pinch"
+    },
+    {
+        "avg_duration": "14.509050312499998",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/facebook_pinch"
+    },
+    {
+        "avg_duration": "16.667279250000004",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/gmail_pinch"
+    },
+    {
+        "avg_duration": "16.110508",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/google_calendar_pinch"
+    },
+    {
+        "avg_duration": "14.428805500000001",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/google_image_pinch"
+    },
+    {
+        "avg_duration": "16.720629",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/google_search_pinch"
+    },
+    {
+        "avg_duration": "14.151752919191921",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/http://booking.com"
+    },
+    {
+        "avg_duration": "21.15502472727272",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/http://games.yahoo.com"
+    },
+    {
+        "avg_duration": "14.483797803030301",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/http://news.yahoo.com"
+    },
+    {
+        "avg_duration": "17.566921156565662",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/http://sports.yahoo.com/"
+    },
+    {
+        "avg_duration": "13.57856017676768",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/http://www.amazon.com"
+    },
+    {
+        "avg_duration": "15.43905115151516",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/http://www.cnn.com"
+    },
+    {
+        "avg_duration": "15.257356843434343",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/http://www.ebay.com"
+    },
+    {
+        "avg_duration": "16.178363843434344",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/http://www.youtube.com"
+    },
+    {
+        "avg_duration": "15.901054888888893",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/https://mail.google.com/mail/"
+    },
+    {
+        "avg_duration": "14.635385540404041",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/https://www.google.com/#hl=en&q=barack+obama"
+    },
+    {
+        "avg_duration": "15.73644109090909",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/https://www.google.com/calendar/"
+    },
+    {
+        "avg_duration": "13.924579469696974",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/https://www.google.com/search?q=cats&tbm=isch"
+    },
+    {
+        "avg_duration": "13.898394156250001",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/linkedin_pinch"
+    },
+    {
+        "avg_duration": "16.7541483125",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/twitter_pinch"
+    },
+    {
+        "avg_duration": "17.1845795625",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/weather_pinch"
+    },
+    {
+        "avg_duration": "22.829458374999998",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/yahoo_games_pinch"
+    },
+    {
+        "avg_duration": "15.499808937500001",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/yahoo_news_pinch"
+    },
+    {
+        "avg_duration": "19.3829574375",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/yahoo_sports_pinch"
+    },
+    {
+        "avg_duration": "16.7619159375",
+        "name": "smoothness.desktop_tough_pinch_zoom_cases/youtube_pinch"
+    },
+    {
+        "avg_duration": "25.7057951111111",
+        "name": "smoothness.gpu_rasterization.tough_filters_cases/Analog_Clock_SVG"
+    },
+    {
+        "avg_duration": "24.358386717171722",
+        "name": "smoothness.gpu_rasterization.tough_filters_cases/Filter_Terrain_SVG"
+    },
+    {
+        "avg_duration": "24.096294121212132",
+        "name": "smoothness.gpu_rasterization.tough_filters_cases/IE_PirateMark"
+    },
+    {
+        "avg_duration": "29.290757232323234",
+        "name": "smoothness.gpu_rasterization.tough_filters_cases/MotionMark_Focus"
+    },
+    {
+        "avg_duration": "23.740482323232335",
+        "name": "smoothness.gpu_rasterization.tough_filters_cases/analog_clock_svg"
+    },
+    {
+        "avg_duration": "23.903764161616156",
+        "name": "smoothness.gpu_rasterization.tough_filters_cases/filter_terrain_svg"
+    },
+    {
+        "avg_duration": "23.66255340404041",
+        "name": "smoothness.gpu_rasterization.tough_filters_cases/ie_pirate_mark"
+    },
+    {
+        "avg_duration": "30.651896181818174",
+        "name": "smoothness.gpu_rasterization.tough_filters_cases/motion_mark_focus"
+    },
+    {
+        "avg_duration": "24.802073737373735",
+        "name": "smoothness.gpu_rasterization.tough_path_rendering_cases/GUIMark_Vector_Chart_Test"
+    },
+    {
+        "avg_duration": "30.626049434343436",
+        "name": "smoothness.gpu_rasterization.tough_path_rendering_cases/IE_Chalkboard"
+    },
+    {
+        "avg_duration": "20.15231878787878",
+        "name": "smoothness.gpu_rasterization.tough_path_rendering_cases/MotionMark_Canvas_Fill_Shapes"
+    },
+    {
+        "avg_duration": "20.43747068686869",
+        "name": "smoothness.gpu_rasterization.tough_path_rendering_cases/MotionMark_Canvas_Stroke_Shapes"
+    },
+    {
+        "avg_duration": "29.384177555555546",
+        "name": "smoothness.gpu_rasterization.tough_path_rendering_cases/guimark_vector_chart"
+    },
+    {
+        "avg_duration": "31.296670282828288",
+        "name": "smoothness.gpu_rasterization.tough_path_rendering_cases/ie_chalkboard"
+    },
+    {
+        "avg_duration": "20.76249540404041",
+        "name": "smoothness.gpu_rasterization.tough_path_rendering_cases/motion_mark_canvas_fill_shapes"
+    },
+    {
+        "avg_duration": "20.46850056565657",
+        "name": "smoothness.gpu_rasterization.tough_path_rendering_cases/motion_mark_canvas_stroke_shapes"
+    },
+    {
+        "avg_duration": "17.20702480303031",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/canvas_05000_pixels_per_second"
+    },
+    {
+        "avg_duration": "16.69641657575757",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/canvas_10000_pixels_per_second"
+    },
+    {
+        "avg_duration": "14.485236843434349",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/canvas_15000_pixels_per_second"
+    },
+    {
+        "avg_duration": "13.320695984848488",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/canvas_20000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.23233838383838",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/canvas_30000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.705608939393938",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/canvas_40000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.386289020202023",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/canvas_50000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.064250641414139",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/canvas_60000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.925364732323231",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/canvas_75000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.789570106060605",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/canvas_90000_pixels_per_second"
+    },
+    {
+        "avg_duration": "23.93210795454546",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_05000_pixels_per_second"
+    },
+    {
+        "avg_duration": "15.964597848484853",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_10000_pixels_per_second"
+    },
+    {
+        "avg_duration": "13.110332575757583",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_15000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.964903803030307",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_20000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.440399696969695",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_30000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.83936691919192",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_40000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.962159757575755",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_50000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.65616229292929",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_60000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.491587792929293",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_75000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.323780962626262",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_90000_pixels_per_second"
+    },
+    {
+        "avg_duration": "18.480147232323226",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_constant_full_page_raster_05000_pixels_per_second"
+    },
+    {
+        "avg_duration": "17.790991318181824",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_constant_full_page_raster_10000_pixels_per_second"
+    },
+    {
+        "avg_duration": "15.511747393939396",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_constant_full_page_raster_15000_pixels_per_second"
+    },
+    {
+        "avg_duration": "14.414810212121209",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_constant_full_page_raster_20000_pixels_per_second"
+    },
+    {
+        "avg_duration": "13.315803545454541",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_constant_full_page_raster_30000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.706241080808079",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_constant_full_page_raster_40000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.407853757575758",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_constant_full_page_raster_50000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.155457313131315",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_constant_full_page_raster_60000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.39892254545454",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_constant_full_page_raster_75000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.339273489898988",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_constant_full_page_raster_90000_pixels_per_second"
+    },
+    {
+        "avg_duration": "15.685731747474748",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_hover_05000_pixels_per_second"
+    },
+    {
+        "avg_duration": "15.052804797979801",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_hover_10000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.958962242424242",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_hover_15000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.90668604545455",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_hover_20000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.756206232323235",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_hover_30000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.178428262626264",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_hover_40000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.865516540404037",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_hover_50000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.641958469696966",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_hover_60000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.40877238282828",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_hover_75000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.260978202020203",
+        "name": "smoothness.gpu_rasterization.tough_scrolling_cases/text_hover_90000_pixels_per_second"
+    },
+    {
+        "avg_duration": "28.5860754949495",
+        "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases/yuv_decoding.html"
+    },
+    {
+        "avg_duration": "27.778140313131317",
+        "name": "smoothness.image_decoding_cases/yuv_decoding.html"
+    },
+    {
+        "avg_duration": "19.922734707070703",
+        "name": "smoothness.key_desktop_move_cases/Maps"
+    },
+    {
+        "avg_duration": "22.579443404761903",
+        "name": "smoothness.key_desktop_move_cases/gmail_move"
+    },
+    {
+        "avg_duration": "25.88235309090909",
+        "name": "smoothness.key_desktop_move_cases/https://mail.google.com/mail/"
+    },
+    {
+        "avg_duration": "23.37720471717171",
+        "name": "smoothness.key_desktop_move_cases/maps_move"
+    },
+    {
+        "avg_duration": "24.551472985858588",
+        "name": "smoothness.maps/maps_perf_test"
+    },
+    {
+        "avg_duration": "5.351962700344829E-4",
+        "name": "smoothness.top_25_smooth/amazon"
+    },
+    {
+        "avg_duration": "18.52020870707071",
+        "name": "smoothness.top_25_smooth/blogspot"
+    },
+    {
+        "avg_duration": "14.266362535353533",
+        "name": "smoothness.top_25_smooth/booking.com"
+    },
+    {
+        "avg_duration": "7.075019440579713E-4",
+        "name": "smoothness.top_25_smooth/cnn"
+    },
+    {
+        "avg_duration": "12.118431732323229",
+        "name": "smoothness.top_25_smooth/ebay"
+    },
+    {
+        "avg_duration": "15.765459843434343",
+        "name": "smoothness.top_25_smooth/espn"
+    },
+    {
+        "avg_duration": "12.940324989898993",
+        "name": "smoothness.top_25_smooth/facebook"
+    },
+    {
+        "avg_duration": "24.654850424242408",
+        "name": "smoothness.top_25_smooth/gmail"
+    },
+    {
+        "avg_duration": "14.028745449494952",
+        "name": "smoothness.top_25_smooth/google_calendar"
+    },
+    {
+        "avg_duration": "22.5047492020202",
+        "name": "smoothness.top_25_smooth/google_docs"
+    },
+    {
+        "avg_duration": "16.404584904040412",
+        "name": "smoothness.top_25_smooth/google_image_search"
+    },
+    {
+        "avg_duration": "18.448493090909093",
+        "name": "smoothness.top_25_smooth/google_plus"
+    },
+    {
+        "avg_duration": "11.240640434343428",
+        "name": "smoothness.top_25_smooth/google_web_search"
+    },
+    {
+        "avg_duration": "15.38301813636364",
+        "name": "smoothness.top_25_smooth/linkedin"
+    },
+    {
+        "avg_duration": "17.114487565656564",
+        "name": "smoothness.top_25_smooth/pinterest"
+    },
+    {
+        "avg_duration": "21.7880092020202",
+        "name": "smoothness.top_25_smooth/techcrunch"
+    },
+    {
+        "avg_duration": "16.64673301515151",
+        "name": "smoothness.top_25_smooth/twitter"
+    },
+    {
+        "avg_duration": "14.284436797979795",
+        "name": "smoothness.top_25_smooth/weather.com"
+    },
+    {
+        "avg_duration": "18.341946424242416",
+        "name": "smoothness.top_25_smooth/wikipedia"
+    },
+    {
+        "avg_duration": "17.88175111111111",
+        "name": "smoothness.top_25_smooth/wordpress"
+    },
+    {
+        "avg_duration": "12.42694668181818",
+        "name": "smoothness.top_25_smooth/yahoo_answers"
+    },
+    {
+        "avg_duration": "20.35017104040404",
+        "name": "smoothness.top_25_smooth/yahoo_games"
+    },
+    {
+        "avg_duration": "14.949772065656557",
+        "name": "smoothness.top_25_smooth/yahoo_news"
+    },
+    {
+        "avg_duration": "15.947523919191916",
+        "name": "smoothness.top_25_smooth/yahoo_sports"
+    },
+    {
+        "avg_duration": "17.31190335353535",
+        "name": "smoothness.top_25_smooth/youtube"
+    },
+    {
+        "avg_duration": "25.427441545454542",
+        "name": "smoothness.tough_ad_cases/http://localhost:8000/CICAgICQ15a9NxDIARjIASgBMghBC1XuTk8ezw.swiffy72.html"
+    },
+    {
+        "avg_duration": "20.684610141414144",
+        "name": "smoothness.tough_ad_cases/http://localhost:8000/CICAgIDQ2Pb-MxCsAhj6ASgBMgi5DLoSO0gPbQ.swiffy72.html"
+    },
+    {
+        "avg_duration": "20.75189987878788",
+        "name": "smoothness.tough_ad_cases/http://localhost:8000/CICAgKCN39CopQEQoAEY2AQoATIID59gK5hjjIg.swiffy72.html"
+    },
+    {
+        "avg_duration": "20.68451311111111",
+        "name": "smoothness.tough_ad_cases/http://localhost:8000/CICAgKCNj4HgyAEQeBjYBCgBMgjQpPkOjyWNdw.1.swiffy72.html"
+    },
+    {
+        "avg_duration": "20.697630616161625",
+        "name": "smoothness.tough_ad_cases/http://localhost:8000/CICAgMDOrcnRGRB4GNgEKAEyCP_ZBSfwUFsj.swiffy72.html"
+    },
+    {
+        "avg_duration": "20.713541333333335",
+        "name": "smoothness.tough_ad_cases/http://localhost:8000/CNP2xe_LmqPEKBCsAhj6ASgBMggnyMqth81h8Q.swiffy72.html"
+    },
+    {
+        "avg_duration": "20.79310641414141",
+        "name": "smoothness.tough_ad_cases/http://localhost:8000/clip-paths-CICAgMDO7Ye9-gEQ2AUYWigBMgjZxDii6aoK9w.swiffy72.html"
+    },
+    {
+        "avg_duration": "20.68882041414141",
+        "name": "smoothness.tough_ad_cases/http://localhost:8000/clip-paths-CILZhLqO_-27bxB4GNgEKAEyCC46kMLBXnMT.swiffy72.html"
+    },
+    {
+        "avg_duration": "20.727818393939394",
+        "name": "smoothness.tough_ad_cases/http://localhost:8000/filters-CNLa0t2T47qJ_wEQoAEY2AQoATIIFaIdc7VMBr4.swiffy72.html"
+    },
+    {
+        "avg_duration": "20.695565111111115",
+        "name": "smoothness.tough_ad_cases/http://localhost:8000/shapes-CICAgMDO7cfIzwEQ1AMYPCgBMghqY8tqyRCArQ.swiffy72.html"
+    },
+    {
+        "avg_duration": "20.924979515151513",
+        "name": "smoothness.tough_ad_cases/http://localhost:8000/shapes-CK7ptO3F8bi2KxDQAhiYAigBMgij6QBQtD2gyA.swiffy72.html"
+    },
+    {
+        "avg_duration": "20.72931501010101",
+        "name": "smoothness.tough_animation_cases/balls_css_key_frame_animations"
+    },
+    {
+        "avg_duration": "22.029601292929296",
+        "name": "smoothness.tough_animation_cases/balls_css_key_frame_animations_composited_transform"
+    },
+    {
+        "avg_duration": "20.33082168686869",
+        "name": "smoothness.tough_animation_cases/balls_css_keyframe_animations.html"
+    },
+    {
+        "avg_duration": "22.54135391919192",
+        "name": "smoothness.tough_animation_cases/balls_css_keyframe_animations_composited_transform.html"
+    },
+    {
+        "avg_duration": "22.816800585858584",
+        "name": "smoothness.tough_animation_cases/balls_css_transition_2_properties"
+    },
+    {
+        "avg_duration": "22.270674949494953",
+        "name": "smoothness.tough_animation_cases/balls_css_transition_2_properties.html"
+    },
+    {
+        "avg_duration": "23.272130646464635",
+        "name": "smoothness.tough_animation_cases/balls_css_transition_40_properties"
+    },
+    {
+        "avg_duration": "22.30194813131314",
+        "name": "smoothness.tough_animation_cases/balls_css_transition_40_properties.html"
+    },
+    {
+        "avg_duration": "22.839448959595963",
+        "name": "smoothness.tough_animation_cases/balls_css_transition_all_properties"
+    },
+    {
+        "avg_duration": "22.2889395050505",
+        "name": "smoothness.tough_animation_cases/balls_css_transition_all_properties.html"
+    },
+    {
+        "avg_duration": "20.597736010101013",
+        "name": "smoothness.tough_animation_cases/balls_javascript_canvas"
+    },
+    {
+        "avg_duration": "20.55900861616161",
+        "name": "smoothness.tough_animation_cases/balls_javascript_canvas.html"
+    },
+    {
+        "avg_duration": "20.262476676767676",
+        "name": "smoothness.tough_animation_cases/balls_javascript_css"
+    },
+    {
+        "avg_duration": "19.708901454545458",
+        "name": "smoothness.tough_animation_cases/balls_javascript_css.html"
+    },
+    {
+        "avg_duration": "27.304045050505053",
+        "name": "smoothness.tough_animation_cases/balls_svg_animations"
+    },
+    {
+        "avg_duration": "24.145910676767674",
+        "name": "smoothness.tough_animation_cases/balls_svg_animations.html"
+    },
+    {
+        "avg_duration": "23.867585388888887",
+        "name": "smoothness.tough_animation_cases/compositor_heavy_animation"
+    },
+    {
+        "avg_duration": "25.117134161616157",
+        "name": "smoothness.tough_animation_cases/compositor_heavy_animation.html?N=0200"
+    },
+    {
+        "avg_duration": "19.805703020202024",
+        "name": "smoothness.tough_animation_cases/css_animations_many_keyframes"
+    },
+    {
+        "avg_duration": "19.249797434343428",
+        "name": "smoothness.tough_animation_cases/css_animations_many_keyframes.html?N=0316"
+    },
+    {
+        "avg_duration": "19.843873020202025",
+        "name": "smoothness.tough_animation_cases/css_animations_simultaneous_by_inserting_new_element.html?N=0316"
+    },
+    {
+        "avg_duration": "19.266266161616162",
+        "name": "smoothness.tough_animation_cases/css_animations_simultaneous_by_inserting_style_element.html?N=0316"
+    },
+    {
+        "avg_duration": "19.240896050505057",
+        "name": "smoothness.tough_animation_cases/css_animations_simultaneous_by_updating_class.html?N=0316"
+    },
+    {
+        "avg_duration": "19.251082474747477",
+        "name": "smoothness.tough_animation_cases/css_animations_simultaneous_by_updating_inline_style.html?N=0316"
+    },
+    {
+        "avg_duration": "19.980121191919185",
+        "name": "smoothness.tough_animation_cases/css_animations_simultaneous_inline_style"
+    },
+    {
+        "avg_duration": "20.522001161616164",
+        "name": "smoothness.tough_animation_cases/css_animations_simultaneous_new_element"
+    },
+    {
+        "avg_duration": "19.981653555555557",
+        "name": "smoothness.tough_animation_cases/css_animations_simultaneous_style_element"
+    },
+    {
+        "avg_duration": "20.045240010101008",
+        "name": "smoothness.tough_animation_cases/css_animations_simultaneous_updating_class"
+    },
+    {
+        "avg_duration": "24.18597062626263",
+        "name": "smoothness.tough_animation_cases/css_animations_staggered_chaining_by_inserting_new_element.html?N=0316"
+    },
+    {
+        "avg_duration": "21.83513900000001",
+        "name": "smoothness.tough_animation_cases/css_animations_staggered_chaining_by_inserting_style_element.html?N=0316"
+    },
+    {
+        "avg_duration": "21.254668676767686",
+        "name": "smoothness.tough_animation_cases/css_animations_staggered_chaining_by_updating_class.html?N=0316"
+    },
+    {
+        "avg_duration": "21.2781091919192",
+        "name": "smoothness.tough_animation_cases/css_animations_staggered_chaining_by_updating_inline_style.html?N=0316"
+    },
+    {
+        "avg_duration": "19.88947425252525",
+        "name": "smoothness.tough_animation_cases/css_animations_staggered_infinite_iterations"
+    },
+    {
+        "avg_duration": "18.651829494949492",
+        "name": "smoothness.tough_animation_cases/css_animations_staggered_infinite_iterations.html?N=0316"
+    },
+    {
+        "avg_duration": "21.889274474747477",
+        "name": "smoothness.tough_animation_cases/css_animations_staggered_inline_style"
+    },
+    {
+        "avg_duration": "25.696701090909094",
+        "name": "smoothness.tough_animation_cases/css_animations_staggered_new_element"
+    },
+    {
+        "avg_duration": "22.61742122222223",
+        "name": "smoothness.tough_animation_cases/css_animations_staggered_style_element"
+    },
+    {
+        "avg_duration": "28.005393424242435",
+        "name": "smoothness.tough_animation_cases/css_animations_staggered_triggering_by_inserting_new_element.html?N=0316"
+    },
+    {
+        "avg_duration": "22.007449919191917",
+        "name": "smoothness.tough_animation_cases/css_animations_staggered_triggering_by_inserting_style_element.html?N=0316"
+    },
+    {
+        "avg_duration": "21.65072099999999",
+        "name": "smoothness.tough_animation_cases/css_animations_staggered_triggering_by_updating_class.html?N=0316"
+    },
+    {
+        "avg_duration": "21.67086817171717",
+        "name": "smoothness.tough_animation_cases/css_animations_staggered_triggering_by_updating_inline_style.html?N=0316"
+    },
+    {
+        "avg_duration": "21.868782878787883",
+        "name": "smoothness.tough_animation_cases/css_animations_staggered_updating_class"
+    },
+    {
+        "avg_duration": "22.164024252525262",
+        "name": "smoothness.tough_animation_cases/css_animations_triggered_inline_style"
+    },
+    {
+        "avg_duration": "30.665086232323215",
+        "name": "smoothness.tough_animation_cases/css_animations_triggered_new_element"
+    },
+    {
+        "avg_duration": "22.350055525252518",
+        "name": "smoothness.tough_animation_cases/css_animations_triggered_style_element"
+    },
+    {
+        "avg_duration": "22.190895565656565",
+        "name": "smoothness.tough_animation_cases/css_animations_triggered_updating_class"
+    },
+    {
+        "avg_duration": "20.117356151515146",
+        "name": "smoothness.tough_animation_cases/css_transitions_inline_style"
+    },
+    {
+        "avg_duration": "21.20347986868686",
+        "name": "smoothness.tough_animation_cases/css_transitions_new_element"
+    },
+    {
+        "avg_duration": "20.019149282828284",
+        "name": "smoothness.tough_animation_cases/css_transitions_simultaneous_by_inserting_new_element.html?N=0316"
+    },
+    {
+        "avg_duration": "19.591567141414135",
+        "name": "smoothness.tough_animation_cases/css_transitions_simultaneous_by_inserting_style_element.html?N=0316"
+    },
+    {
+        "avg_duration": "19.391697040404047",
+        "name": "smoothness.tough_animation_cases/css_transitions_simultaneous_by_updating_class.html?N=0316"
+    },
+    {
+        "avg_duration": "20.152232373737373",
+        "name": "smoothness.tough_animation_cases/css_transitions_simultaneous_by_updating_inline_style.html?N=0316"
+    },
+    {
+        "avg_duration": "20.230183939393935",
+        "name": "smoothness.tough_animation_cases/css_transitions_staggered_chaining_by_inserting_new_element.html?N=0316"
+    },
+    {
+        "avg_duration": "19.675483676767673",
+        "name": "smoothness.tough_animation_cases/css_transitions_staggered_chaining_by_inserting_style_element.html?N=0316"
+    },
+    {
+        "avg_duration": "19.592879141414137",
+        "name": "smoothness.tough_animation_cases/css_transitions_staggered_chaining_by_updating_class.html?N=0316"
+    },
+    {
+        "avg_duration": "19.585286181818184",
+        "name": "smoothness.tough_animation_cases/css_transitions_staggered_chaining_by_updating_inline_style.html?N=0316"
+    },
+    {
+        "avg_duration": "20.817858202020208",
+        "name": "smoothness.tough_animation_cases/css_transitions_staggered_inline_style"
+    },
+    {
+        "avg_duration": "20.8190513939394",
+        "name": "smoothness.tough_animation_cases/css_transitions_staggered_new_element"
+    },
+    {
+        "avg_duration": "20.356800828282836",
+        "name": "smoothness.tough_animation_cases/css_transitions_staggered_style_element"
+    },
+    {
+        "avg_duration": "21.924275757575757",
+        "name": "smoothness.tough_animation_cases/css_transitions_staggered_triggering_by_inserting_new_element.html?N=0316"
+    },
+    {
+        "avg_duration": "21.865035686868683",
+        "name": "smoothness.tough_animation_cases/css_transitions_staggered_triggering_by_inserting_style_element.html?N=0316"
+    },
+    {
+        "avg_duration": "21.933537292929287",
+        "name": "smoothness.tough_animation_cases/css_transitions_staggered_triggering_by_updating_class.html?N=0316"
+    },
+    {
+        "avg_duration": "21.828485353535353",
+        "name": "smoothness.tough_animation_cases/css_transitions_staggered_triggering_by_updating_inline_style.html?N=0316"
+    },
+    {
+        "avg_duration": "20.282889949494955",
+        "name": "smoothness.tough_animation_cases/css_transitions_staggered_updating_class"
+    },
+    {
+        "avg_duration": "20.205512727272723",
+        "name": "smoothness.tough_animation_cases/css_transitions_style_element"
+    },
+    {
+        "avg_duration": "22.146159989898983",
+        "name": "smoothness.tough_animation_cases/css_transitions_triggered_inline_style"
+    },
+    {
+        "avg_duration": "22.625836858585856",
+        "name": "smoothness.tough_animation_cases/css_transitions_triggered_new_element"
+    },
+    {
+        "avg_duration": "22.040797595959596",
+        "name": "smoothness.tough_animation_cases/css_transitions_triggered_style_element"
+    },
+    {
+        "avg_duration": "22.129561626262625",
+        "name": "smoothness.tough_animation_cases/css_transitions_triggered_updating_class"
+    },
+    {
+        "avg_duration": "20.536039717171718",
+        "name": "smoothness.tough_animation_cases/css_transitions_updating_class"
+    },
+    {
+        "avg_duration": "19.48575651515151",
+        "name": "smoothness.tough_animation_cases/css_value_type_color"
+    },
+    {
+        "avg_duration": "18.635115525252527",
+        "name": "smoothness.tough_animation_cases/css_value_type_color.html?api=css_animations&N=0316"
+    },
+    {
+        "avg_duration": "18.59557777777778",
+        "name": "smoothness.tough_animation_cases/css_value_type_color.html?api=web_animations&N=0316"
+    },
+    {
+        "avg_duration": "21.552717757575753",
+        "name": "smoothness.tough_animation_cases/css_value_type_filter"
+    },
+    {
+        "avg_duration": "21.44867075757575",
+        "name": "smoothness.tough_animation_cases/css_value_type_filter.html?api=css_animations&N=0316"
+    },
+    {
+        "avg_duration": "20.31625244444445",
+        "name": "smoothness.tough_animation_cases/css_value_type_length"
+    },
+    {
+        "avg_duration": "19.414654767676772",
+        "name": "smoothness.tough_animation_cases/css_value_type_length_3d.html?api=css_animations&N=0316"
+    },
+    {
+        "avg_duration": "19.231903808080805",
+        "name": "smoothness.tough_animation_cases/css_value_type_length_3d.html?api=web_animations&N=0316"
+    },
+    {
+        "avg_duration": "21.256938535353534",
+        "name": "smoothness.tough_animation_cases/css_value_type_length_complex"
+    },
+    {
+        "avg_duration": "20.169262676767673",
+        "name": "smoothness.tough_animation_cases/css_value_type_length_complex.html?api=css_animations&N=0316"
+    },
+    {
+        "avg_duration": "20.087911707070713",
+        "name": "smoothness.tough_animation_cases/css_value_type_length_complex.html?api=web_animations&N=0316"
+    },
+    {
+        "avg_duration": "21.181893484848487",
+        "name": "smoothness.tough_animation_cases/css_value_type_length_simple"
+    },
+    {
+        "avg_duration": "20.010342969696968",
+        "name": "smoothness.tough_animation_cases/css_value_type_length_simple.html?api=css_animations&N=0316"
+    },
+    {
+        "avg_duration": "20.069618040404038",
+        "name": "smoothness.tough_animation_cases/css_value_type_length_simple.html?api=web_animations&N=0316"
+    },
+    {
+        "avg_duration": "20.709780898989905",
+        "name": "smoothness.tough_animation_cases/css_value_type_path"
+    },
+    {
+        "avg_duration": "19.731114222222224",
+        "name": "smoothness.tough_animation_cases/css_value_type_path.html?api=css_animations&N=0316"
+    },
+    {
+        "avg_duration": "19.70664002020202",
+        "name": "smoothness.tough_animation_cases/css_value_type_path.html?api=web_animations&N=0316"
+    },
+    {
+        "avg_duration": "21.509252969696973",
+        "name": "smoothness.tough_animation_cases/css_value_type_shadow"
+    },
+    {
+        "avg_duration": "21.35838207070707",
+        "name": "smoothness.tough_animation_cases/css_value_type_shadow.html?api=css_animations&N=0316"
+    },
+    {
+        "avg_duration": "21.33587556565656",
+        "name": "smoothness.tough_animation_cases/css_value_type_shadow.html?api=web_animations&N=0316"
+    },
+    {
+        "avg_duration": "20.33879624242424",
+        "name": "smoothness.tough_animation_cases/css_value_type_transform_complex"
+    },
+    {
+        "avg_duration": "19.51641103030303",
+        "name": "smoothness.tough_animation_cases/css_value_type_transform_complex.html?api=css_animations&N=0316"
+    },
+    {
+        "avg_duration": "19.436825878787882",
+        "name": "smoothness.tough_animation_cases/css_value_type_transform_complex.html?api=web_animations&N=0316"
+    },
+    {
+        "avg_duration": "20.386949040404044",
+        "name": "smoothness.tough_animation_cases/css_value_type_transform_simple"
+    },
+    {
+        "avg_duration": "19.19156432323231",
+        "name": "smoothness.tough_animation_cases/css_value_type_transform_simple.html?api=css_animations&N=0316"
+    },
+    {
+        "avg_duration": "19.137003050505047",
+        "name": "smoothness.tough_animation_cases/css_value_type_transform_simple.html?api=web_animations&N=0316"
+    },
+    {
+        "avg_duration": "19.599594303030308",
+        "name": "smoothness.tough_animation_cases/keyframed_animations"
+    },
+    {
+        "avg_duration": "19.132103171717173",
+        "name": "smoothness.tough_animation_cases/keyframed_animations.html"
+    },
+    {
+        "avg_duration": "19.86910092929293",
+        "name": "smoothness.tough_animation_cases/mix_blend_mode_animation_difference"
+    },
+    {
+        "avg_duration": "20.370881343434352",
+        "name": "smoothness.tough_animation_cases/mix_blend_mode_animation_difference.html"
+    },
+    {
+        "avg_duration": "19.900191191919195",
+        "name": "smoothness.tough_animation_cases/mix_blend_mode_animation_hue"
+    },
+    {
+        "avg_duration": "20.413504656565657",
+        "name": "smoothness.tough_animation_cases/mix_blend_mode_animation_hue.html"
+    },
+    {
+        "avg_duration": "21.131431525252523",
+        "name": "smoothness.tough_animation_cases/mix_blend_mode_animation_propagating_isolation"
+    },
+    {
+        "avg_duration": "20.187679181818183",
+        "name": "smoothness.tough_animation_cases/mix_blend_mode_animation_screen"
+    },
+    {
+        "avg_duration": "19.845335171717174",
+        "name": "smoothness.tough_animation_cases/mix_blend_mode_animation_screen.html"
+    },
+    {
+        "avg_duration": "19.5461165050505",
+        "name": "smoothness.tough_animation_cases/mix_blend_mode_propagating_isolation.html"
+    },
+    {
+        "avg_duration": "32.22767561616162",
+        "name": "smoothness.tough_animation_cases/overlay_background_color_css_transitions.html"
+    },
+    {
+        "avg_duration": "33.20080795959595",
+        "name": "smoothness.tough_animation_cases/overlay_background_color_css_transitions_page"
+    },
+    {
+        "avg_duration": "4.8455595767857155E-4",
+        "name": "smoothness.tough_animation_cases/robohornetpro"
+    },
+    {
+        "avg_duration": "17.972939474747474",
+        "name": "smoothness.tough_animation_cases/transform_transition_js_block.html"
+    },
+    {
+        "avg_duration": "19.30439973737375",
+        "name": "smoothness.tough_animation_cases/transform_transitions"
+    },
+    {
+        "avg_duration": "18.755499161616164",
+        "name": "smoothness.tough_animation_cases/transform_transitions.html"
+    },
+    {
+        "avg_duration": "18.67489663636364",
+        "name": "smoothness.tough_animation_cases/transform_transitions_js_block"
+    },
+    {
+        "avg_duration": "19.473717414141415",
+        "name": "smoothness.tough_animation_cases/web_animation_value_type_color"
+    },
+    {
+        "avg_duration": "20.168445252525256",
+        "name": "smoothness.tough_animation_cases/web_animation_value_type_length_3d"
+    },
+    {
+        "avg_duration": "21.21062104040404",
+        "name": "smoothness.tough_animation_cases/web_animation_value_type_length_complex"
+    },
+    {
+        "avg_duration": "21.261173383838386",
+        "name": "smoothness.tough_animation_cases/web_animation_value_type_length_simple"
+    },
+    {
+        "avg_duration": "21.080833535353534",
+        "name": "smoothness.tough_animation_cases/web_animation_value_type_path"
+    },
+    {
+        "avg_duration": "21.378515292929293",
+        "name": "smoothness.tough_animation_cases/web_animation_value_type_shadow"
+    },
+    {
+        "avg_duration": "20.269837080808088",
+        "name": "smoothness.tough_animation_cases/web_animation_value_type_transform_complex"
+    },
+    {
+        "avg_duration": "20.10208724242425",
+        "name": "smoothness.tough_animation_cases/web_animation_value_type_transform_simple"
+    },
+    {
+        "avg_duration": "20.526850353535348",
+        "name": "smoothness.tough_animation_cases/web_animations_many_keyframes"
+    },
+    {
+        "avg_duration": "20.01270072727274",
+        "name": "smoothness.tough_animation_cases/web_animations_many_keyframes.html?N=0316"
+    },
+    {
+        "avg_duration": "20.012832191919205",
+        "name": "smoothness.tough_animation_cases/web_animations_set_current_time"
+    },
+    {
+        "avg_duration": "19.18994384848485",
+        "name": "smoothness.tough_animation_cases/web_animations_set_current_time_in_raf.html?N=0316"
+    },
+    {
+        "avg_duration": "20.206273292929303",
+        "name": "smoothness.tough_animation_cases/web_animations_simultaneous"
+    },
+    {
+        "avg_duration": "19.400241252525248",
+        "name": "smoothness.tough_animation_cases/web_animations_simultaneous.html?N=0316"
+    },
+    {
+        "avg_duration": "21.733926222222212",
+        "name": "smoothness.tough_animation_cases/web_animations_staggered_chaining"
+    },
+    {
+        "avg_duration": "21.070184010101006",
+        "name": "smoothness.tough_animation_cases/web_animations_staggered_chaining.html?N=0316"
+    },
+    {
+        "avg_duration": "19.501389666666665",
+        "name": "smoothness.tough_animation_cases/web_animations_staggered_infinite_iterations"
+    },
+    {
+        "avg_duration": "18.54585196969697",
+        "name": "smoothness.tough_animation_cases/web_animations_staggered_infinite_iterations.html?N=0316"
+    },
+    {
+        "avg_duration": "21.3411191010101",
+        "name": "smoothness.tough_animation_cases/web_animations_staggered_triggering.html?N=0316"
+    },
+    {
+        "avg_duration": "22.24820121212121",
+        "name": "smoothness.tough_animation_cases/web_animations_staggered_triggering_page"
+    },
+    {
+        "avg_duration": "16.97109825757576",
+        "name": "smoothness.tough_canvas_cases/../../../chrome/test/data/perf/canvas_bench/many_images.html"
+    },
+    {
+        "avg_duration": "15.538356575757577",
+        "name": "smoothness.tough_canvas_cases/bouncing_balls_15"
+    },
+    {
+        "avg_duration": "15.720745090909087",
+        "name": "smoothness.tough_canvas_cases/bouncing_balls_shadow"
+    },
+    {
+        "avg_duration": "15.245964232323232",
+        "name": "smoothness.tough_canvas_cases/bouncing_clipped_rectangles"
+    },
+    {
+        "avg_duration": "15.494264762626255",
+        "name": "smoothness.tough_canvas_cases/bouncing_gradient_circles"
+    },
+    {
+        "avg_duration": "13.239104550505049",
+        "name": "smoothness.tough_canvas_cases/bouncing_png_images"
+    },
+    {
+        "avg_duration": "20.56157848484848",
+        "name": "smoothness.tough_canvas_cases/bouncing_svg_images"
+    },
+    {
+        "avg_duration": "20.488119636363635",
+        "name": "smoothness.tough_canvas_cases/canvas_animation_no_clear"
+    },
+    {
+        "avg_duration": "15.099083020202018",
+        "name": "smoothness.tough_canvas_cases/canvas_arcs"
+    },
+    {
+        "avg_duration": "14.708627131313127",
+        "name": "smoothness.tough_canvas_cases/canvas_font_cycler"
+    },
+    {
+        "avg_duration": "15.006874752525253",
+        "name": "smoothness.tough_canvas_cases/canvas_lines"
+    },
+    {
+        "avg_duration": "15.454984131313129",
+        "name": "smoothness.tough_canvas_cases/canvas_to_blob"
+    },
+    {
+        "avg_duration": "15.830254590909096",
+        "name": "smoothness.tough_canvas_cases/chip_tune"
+    },
+    {
+        "avg_duration": "16.37808577777777",
+        "name": "smoothness.tough_canvas_cases/crafty_mind"
+    },
+    {
+        "avg_duration": "15.295616560606065",
+        "name": "smoothness.tough_canvas_cases/effect_games"
+    },
+    {
+        "avg_duration": "15.303718626262631",
+        "name": "smoothness.tough_canvas_cases/fill_shapes"
+    },
+    {
+        "avg_duration": "21.22070805050505",
+        "name": "smoothness.tough_canvas_cases/geo_apis"
+    },
+    {
+        "avg_duration": "14.725042464646462",
+        "name": "smoothness.tough_canvas_cases/hakim"
+    },
+    {
+        "avg_duration": "17.873728191919195",
+        "name": "smoothness.tough_canvas_cases/http://geoapis.appspot.com/agdnZW9hcGlzchMLEgtFeGFtcGxlQ29kZRjh1wIM"
+    },
+    {
+        "avg_duration": "14.327840186868686",
+        "name": "smoothness.tough_canvas_cases/http://hakim.se/experiments/html5/magnetic/02/"
+    },
+    {
+        "avg_duration": "15.016141116161611",
+        "name": "smoothness.tough_canvas_cases/http://ie.microsoft.com/testdrive/Graphics/TweetMap/Default.html"
+    },
+    {
+        "avg_duration": "18.092686353535345",
+        "name": "smoothness.tough_canvas_cases/http://ie.microsoft.com/testdrive/Graphics/VideoCity/Default.html"
+    },
+    {
+        "avg_duration": "16.27687405555556",
+        "name": "smoothness.tough_canvas_cases/http://ie.microsoft.com/testdrive/Graphics/WorkerFountains/Default.html"
+    },
+    {
+        "avg_duration": "16.23176753535353",
+        "name": "smoothness.tough_canvas_cases/http://ie.microsoft.com/testdrive/Performance/AsteroidBelt/Default.html"
+    },
+    {
+        "avg_duration": "15.996415777777782",
+        "name": "smoothness.tough_canvas_cases/http://ie.microsoft.com/testdrive/Performance/FishIETank/Default.html"
+    },
+    {
+        "avg_duration": "16.678581666666666",
+        "name": "smoothness.tough_canvas_cases/http://ie.microsoft.com/testdrive/Performance/LetItSnow/"
+    },
+    {
+        "avg_duration": "14.578852136363633",
+        "name": "smoothness.tough_canvas_cases/http://ie.microsoft.com/testdrive/Performance/SpeedReading/Default.html"
+    },
+    {
+        "avg_duration": "18.561154525252526",
+        "name": "smoothness.tough_canvas_cases/http://jarrodoverson.com/static/demos/particleSystem/"
+    },
+    {
+        "avg_duration": "13.65435204545454",
+        "name": "smoothness.tough_canvas_cases/http://mix10k.visitmix.com/Entry/Details/169"
+    },
+    {
+        "avg_duration": "12.91898266161616",
+        "name": "smoothness.tough_canvas_cases/http://runway.countlessprojects.com/prototype/performance_test.html"
+    },
+    {
+        "avg_duration": "14.191666898989906",
+        "name": "smoothness.tough_canvas_cases/http://spielzeugz.de/html5/liquid-particles.html"
+    },
+    {
+        "avg_duration": "16.512002121212127",
+        "name": "smoothness.tough_canvas_cases/http://themaninblue.com/experiment/AnimationBenchmark/canvas/"
+    },
+    {
+        "avg_duration": "15.916070868686866",
+        "name": "smoothness.tough_canvas_cases/http://www.chiptune.com/starfield/starfield.html"
+    },
+    {
+        "avg_duration": "16.094371313131305",
+        "name": "smoothness.tough_canvas_cases/http://www.craftymind.com/factory/guimark2/HTML5ChartingTest.html"
+    },
+    {
+        "avg_duration": "15.279647075757573",
+        "name": "smoothness.tough_canvas_cases/http://www.effectgames.com/demos/canvascycle/"
+    },
+    {
+        "avg_duration": "14.155126570707068",
+        "name": "smoothness.tough_canvas_cases/http://www.kevs3d.co.uk/dev/canvask3d/k3d_test.html"
+    },
+    {
+        "avg_duration": "13.687673974747469",
+        "name": "smoothness.tough_canvas_cases/http://www.megidish.net/awjs/"
+    },
+    {
+        "avg_duration": "16.762573949494946",
+        "name": "smoothness.tough_canvas_cases/http://www.smashcat.org/av/canvas_test/"
+    },
+    {
+        "avg_duration": "19.762025681818173",
+        "name": "smoothness.tough_canvas_cases/jarro_doverson"
+    },
+    {
+        "avg_duration": "14.637509353535355",
+        "name": "smoothness.tough_canvas_cases/kevs_3d"
+    },
+    {
+        "avg_duration": "16.356347752525252",
+        "name": "smoothness.tough_canvas_cases/man_in_blue"
+    },
+    {
+        "avg_duration": "17.426727262626255",
+        "name": "smoothness.tough_canvas_cases/many_images"
+    },
+    {
+        "avg_duration": "14.308331959595959",
+        "name": "smoothness.tough_canvas_cases/megi_dish"
+    },
+    {
+        "avg_duration": "16.321057101010105",
+        "name": "smoothness.tough_canvas_cases/microsoft_asteroid_belt"
+    },
+    {
+        "avg_duration": "15.864297222222218",
+        "name": "smoothness.tough_canvas_cases/microsoft_fish_ie_tank"
+    },
+    {
+        "avg_duration": "18.011851843434346",
+        "name": "smoothness.tough_canvas_cases/microsoft_snow"
+    },
+    {
+        "avg_duration": "14.284111949494955",
+        "name": "smoothness.tough_canvas_cases/microsoft_speed_reading"
+    },
+    {
+        "avg_duration": "14.98003592424243",
+        "name": "smoothness.tough_canvas_cases/microsoft_tweet_map"
+    },
+    {
+        "avg_duration": "18.007255909090905",
+        "name": "smoothness.tough_canvas_cases/microsoft_video_city"
+    },
+    {
+        "avg_duration": "15.702358747474753",
+        "name": "smoothness.tough_canvas_cases/microsoft_worker_fountains"
+    },
+    {
+        "avg_duration": "14.357012328282824",
+        "name": "smoothness.tough_canvas_cases/mix_10k"
+    },
+    {
+        "avg_duration": "15.41180637373737",
+        "name": "smoothness.tough_canvas_cases/put_get_image_data"
+    },
+    {
+        "avg_duration": "13.613691797979799",
+        "name": "smoothness.tough_canvas_cases/runway"
+    },
+    {
+        "avg_duration": "16.755570808080815",
+        "name": "smoothness.tough_canvas_cases/smash_cat"
+    },
+    {
+        "avg_duration": "14.532395055555549",
+        "name": "smoothness.tough_canvas_cases/spielzeugz"
+    },
+    {
+        "avg_duration": "15.41411887878788",
+        "name": "smoothness.tough_canvas_cases/stroke_shapes"
+    },
+    {
+        "avg_duration": "20.054326540404045",
+        "name": "smoothness.tough_canvas_cases/tough_canvas_cases/canvas-animation-no-clear.html"
+    },
+    {
+        "avg_duration": "14.101594818181812",
+        "name": "smoothness.tough_canvas_cases/tough_canvas_cases/canvas-font-cycler.html"
+    },
+    {
+        "avg_duration": "15.412620070707074",
+        "name": "smoothness.tough_canvas_cases/tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=image_with_shadow&back=image"
+    },
+    {
+        "avg_duration": "15.63554960606061",
+        "name": "smoothness.tough_canvas_cases/tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=text&back=white&ball_count=15"
+    },
+    {
+        "avg_duration": "14.723285803030306",
+        "name": "smoothness.tough_canvas_cases/tough_canvas_cases/canvas_toBlob.html"
+    },
+    {
+        "avg_duration": "14.860972863636366",
+        "name": "smoothness.tough_canvas_cases/tough_canvas_cases/rendering_throughput/bouncing_clipped_rectangles.html"
+    },
+    {
+        "avg_duration": "15.230798515151516",
+        "name": "smoothness.tough_canvas_cases/tough_canvas_cases/rendering_throughput/bouncing_gradient_circles.html"
+    },
+    {
+        "avg_duration": "12.513170196969696",
+        "name": "smoothness.tough_canvas_cases/tough_canvas_cases/rendering_throughput/bouncing_png_images.html"
+    },
+    {
+        "avg_duration": "20.379388156565657",
+        "name": "smoothness.tough_canvas_cases/tough_canvas_cases/rendering_throughput/bouncing_svg_images.html"
+    },
+    {
+        "avg_duration": "14.934645621212125",
+        "name": "smoothness.tough_canvas_cases/tough_canvas_cases/rendering_throughput/canvas_arcs.html"
+    },
+    {
+        "avg_duration": "14.733427994949492",
+        "name": "smoothness.tough_canvas_cases/tough_canvas_cases/rendering_throughput/canvas_lines.html"
+    },
+    {
+        "avg_duration": "15.068431050505058",
+        "name": "smoothness.tough_canvas_cases/tough_canvas_cases/rendering_throughput/fill_shapes.html"
+    },
+    {
+        "avg_duration": "15.120008510101007",
+        "name": "smoothness.tough_canvas_cases/tough_canvas_cases/rendering_throughput/put_get_image_data.html"
+    },
+    {
+        "avg_duration": "15.179336010101013",
+        "name": "smoothness.tough_canvas_cases/tough_canvas_cases/rendering_throughput/stroke_shapes.html"
+    },
+    {
+        "avg_duration": "22.727957838383833",
+        "name": "smoothness.tough_filters_cases/Analog_Clock_SVG"
+    },
+    {
+        "avg_duration": "22.67620416161616",
+        "name": "smoothness.tough_filters_cases/Filter_Terrain_SVG"
+    },
+    {
+        "avg_duration": "23.08172914141414",
+        "name": "smoothness.tough_filters_cases/IE_PirateMark"
+    },
+    {
+        "avg_duration": "28.46426723232322",
+        "name": "smoothness.tough_filters_cases/MotionMark_Focus"
+    },
+    {
+        "avg_duration": "23.285338616161617",
+        "name": "smoothness.tough_filters_cases/analog_clock_svg"
+    },
+    {
+        "avg_duration": "24.16397927272728",
+        "name": "smoothness.tough_filters_cases/filter_terrain_svg"
+    },
+    {
+        "avg_duration": "24.253582171717163",
+        "name": "smoothness.tough_filters_cases/ie_pirate_mark"
+    },
+    {
+        "avg_duration": "30.587078949494956",
+        "name": "smoothness.tough_filters_cases/motion_mark_focus"
+    },
+    {
+        "avg_duration": "15.585223045454546",
+        "name": "smoothness.tough_image_decode_cases/http://localhost:9000/cats-unscaled.html"
+    },
+    {
+        "avg_duration": "10.104114913131314",
+        "name": "smoothness.tough_image_decode_cases/http://localhost:9000/cats-viewport-width.html"
+    },
+    {
+        "avg_duration": "25.255139696969703",
+        "name": "smoothness.tough_path_rendering_cases/GUIMark_Vector_Chart_Test"
+    },
+    {
+        "avg_duration": "29.456434151515147",
+        "name": "smoothness.tough_path_rendering_cases/IE_Chalkboard"
+    },
+    {
+        "avg_duration": "20.348708040404045",
+        "name": "smoothness.tough_path_rendering_cases/MotionMark_Canvas_Fill_Shapes"
+    },
+    {
+        "avg_duration": "20.199610969696977",
+        "name": "smoothness.tough_path_rendering_cases/MotionMark_Canvas_Stroke_Shapes"
+    },
+    {
+        "avg_duration": "29.06890104040404",
+        "name": "smoothness.tough_path_rendering_cases/guimark_vector_chart"
+    },
+    {
+        "avg_duration": "30.640856222222226",
+        "name": "smoothness.tough_path_rendering_cases/ie_chalkboard"
+    },
+    {
+        "avg_duration": "20.625455080808084",
+        "name": "smoothness.tough_path_rendering_cases/motion_mark_canvas_fill_shapes"
+    },
+    {
+        "avg_duration": "20.417677454545455",
+        "name": "smoothness.tough_path_rendering_cases/motion_mark_canvas_stroke_shapes"
+    },
+    {
+        "avg_duration": "17.238790444444444",
+        "name": "smoothness.tough_scrolling_cases/canvas_05000_pixels_per_second"
+    },
+    {
+        "avg_duration": "16.739972484848497",
+        "name": "smoothness.tough_scrolling_cases/canvas_10000_pixels_per_second"
+    },
+    {
+        "avg_duration": "14.558255898989902",
+        "name": "smoothness.tough_scrolling_cases/canvas_15000_pixels_per_second"
+    },
+    {
+        "avg_duration": "13.419603904040411",
+        "name": "smoothness.tough_scrolling_cases/canvas_20000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.281880525252527",
+        "name": "smoothness.tough_scrolling_cases/canvas_30000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.730005388888891",
+        "name": "smoothness.tough_scrolling_cases/canvas_40000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.333403070707075",
+        "name": "smoothness.tough_scrolling_cases/canvas_50000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.157241106060603",
+        "name": "smoothness.tough_scrolling_cases/canvas_60000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.998777262626264",
+        "name": "smoothness.tough_scrolling_cases/canvas_75000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.751525414141412",
+        "name": "smoothness.tough_scrolling_cases/canvas_90000_pixels_per_second"
+    },
+    {
+        "avg_duration": "23.956693641414134",
+        "name": "smoothness.tough_scrolling_cases/text_05000_pixels_per_second"
+    },
+    {
+        "avg_duration": "15.471544207070703",
+        "name": "smoothness.tough_scrolling_cases/text_10000_pixels_per_second"
+    },
+    {
+        "avg_duration": "13.055524484848483",
+        "name": "smoothness.tough_scrolling_cases/text_15000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.016709434343435",
+        "name": "smoothness.tough_scrolling_cases/text_20000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.860229146464645",
+        "name": "smoothness.tough_scrolling_cases/text_30000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.291745373737374",
+        "name": "smoothness.tough_scrolling_cases/text_40000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.914364974747475",
+        "name": "smoothness.tough_scrolling_cases/text_50000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.687836404040405",
+        "name": "smoothness.tough_scrolling_cases/text_60000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.456424206060607",
+        "name": "smoothness.tough_scrolling_cases/text_75000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.330212476767677",
+        "name": "smoothness.tough_scrolling_cases/text_90000_pixels_per_second"
+    },
+    {
+        "avg_duration": "18.553055444444443",
+        "name": "smoothness.tough_scrolling_cases/text_constant_full_page_raster_05000_pixels_per_second"
+    },
+    {
+        "avg_duration": "17.924506070707064",
+        "name": "smoothness.tough_scrolling_cases/text_constant_full_page_raster_10000_pixels_per_second"
+    },
+    {
+        "avg_duration": "15.610034106060615",
+        "name": "smoothness.tough_scrolling_cases/text_constant_full_page_raster_15000_pixels_per_second"
+    },
+    {
+        "avg_duration": "14.571982964646464",
+        "name": "smoothness.tough_scrolling_cases/text_constant_full_page_raster_20000_pixels_per_second"
+    },
+    {
+        "avg_duration": "13.399331171717172",
+        "name": "smoothness.tough_scrolling_cases/text_constant_full_page_raster_30000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.926660883838377",
+        "name": "smoothness.tough_scrolling_cases/text_constant_full_page_raster_40000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.553170378787879",
+        "name": "smoothness.tough_scrolling_cases/text_constant_full_page_raster_50000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.330210712121211",
+        "name": "smoothness.tough_scrolling_cases/text_constant_full_page_raster_60000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.132675595959599",
+        "name": "smoothness.tough_scrolling_cases/text_constant_full_page_raster_75000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.996525459595958",
+        "name": "smoothness.tough_scrolling_cases/text_constant_full_page_raster_90000_pixels_per_second"
+    },
+    {
+        "avg_duration": "15.637217287878789",
+        "name": "smoothness.tough_scrolling_cases/text_hover_05000_pixels_per_second"
+    },
+    {
+        "avg_duration": "15.013510984848477",
+        "name": "smoothness.tough_scrolling_cases/text_hover_10000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.932072560606056",
+        "name": "smoothness.tough_scrolling_cases/text_hover_15000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.891085045454547",
+        "name": "smoothness.tough_scrolling_cases/text_hover_20000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.715879035353531",
+        "name": "smoothness.tough_scrolling_cases/text_hover_30000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.152733813131311",
+        "name": "smoothness.tough_scrolling_cases/text_hover_40000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.834022005050508",
+        "name": "smoothness.tough_scrolling_cases/text_hover_50000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.687693368686869",
+        "name": "smoothness.tough_scrolling_cases/text_hover_60000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.411259032323231",
+        "name": "smoothness.tough_scrolling_cases/text_hover_75000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.328577730303032",
+        "name": "smoothness.tough_scrolling_cases/text_hover_90000_pixels_per_second"
+    },
+    {
+        "avg_duration": "29.898551515151507",
+        "name": "smoothness.tough_texture_upload_cases/background_color_animation.html"
+    },
+    {
+        "avg_duration": "26.97655106060606",
+        "name": "smoothness.tough_texture_upload_cases/background_color_animation_with_gradient.html"
+    },
+    {
+        "avg_duration": "21.937712414141416",
+        "name": "smoothness.tough_texture_upload_cases/extra_large_texture_uploads.html"
+    },
+    {
+        "avg_duration": "23.010325434343436",
+        "name": "smoothness.tough_texture_upload_cases/large_texture_uploads.html"
+    },
+    {
+        "avg_duration": "20.144559727272725",
+        "name": "smoothness.tough_texture_upload_cases/medium_texture_uploads.html"
+    },
+    {
+        "avg_duration": "19.173596474747477",
+        "name": "smoothness.tough_texture_upload_cases/small_texture_uploads.html"
+    },
+    {
+        "avg_duration": "26.835263686868682",
+        "name": "smoothness.tough_webgl_ad_cases/http://localhost:8000/CICAgICQ15a9NxDIARjIASgBMghBC1XuTk8ezw.swf.webglbeta.html"
+    },
+    {
+        "avg_duration": "20.65970282828284",
+        "name": "smoothness.tough_webgl_ad_cases/http://localhost:8000/CICAgIDQ2Pb-MxCsAhj6ASgBMgi5DLoSO0gPbQ.swf.webglbeta.html"
+    },
+    {
+        "avg_duration": "20.663596636363636",
+        "name": "smoothness.tough_webgl_ad_cases/http://localhost:8000/CICAgKCN39CopQEQoAEY2AQoATIID59gK5hjjIg.swf.webglbeta.html"
+    },
+    {
+        "avg_duration": "20.676733939393934",
+        "name": "smoothness.tough_webgl_ad_cases/http://localhost:8000/CICAgKCNj4HgyAEQeBjYBCgBMgjQpPkOjyWNdw.1.swf.webglbeta.html"
+    },
+    {
+        "avg_duration": "20.675622323232318",
+        "name": "smoothness.tough_webgl_ad_cases/http://localhost:8000/CICAgMDOrcnRGRB4GNgEKAEyCP_ZBSfwUFsj.swf.webglbeta.html"
+    },
+    {
+        "avg_duration": "20.71086863636363",
+        "name": "smoothness.tough_webgl_ad_cases/http://localhost:8000/CNP2xe_LmqPEKBCsAhj6ASgBMggnyMqth81h8Q.swf.webglbeta.html"
+    },
+    {
+        "avg_duration": "20.667169020202017",
+        "name": "smoothness.tough_webgl_ad_cases/http://localhost:8000/clip-paths-CICAgMDO7Ye9-gEQ2AUYWigBMgjZxDii6aoK9w.swf.webglbeta.html"
+    },
+    {
+        "avg_duration": "20.6848757979798",
+        "name": "smoothness.tough_webgl_ad_cases/http://localhost:8000/clip-paths-CILZhLqO_-27bxB4GNgEKAEyCC46kMLBXnMT.swf.webglbeta.html"
+    },
+    {
+        "avg_duration": "20.69032996969697",
+        "name": "smoothness.tough_webgl_ad_cases/http://localhost:8000/filters-CNLa0t2T47qJ_wEQoAEY2AQoATIIFaIdc7VMBr4.swf.webglbeta.html"
+    },
+    {
+        "avg_duration": "20.63939316161616",
+        "name": "smoothness.tough_webgl_ad_cases/http://localhost:8000/shapes-CICAgMDO7cfIzwEQ1AMYPCgBMghqY8tqyRCArQ.swf.webglbeta.html"
+    },
+    {
+        "avg_duration": "20.83241933333334",
+        "name": "smoothness.tough_webgl_ad_cases/http://localhost:8000/shapes-CK7ptO3F8bi2KxDQAhiYAigBMgij6QBQtD2gyA.swf.webglbeta.html"
+    },
+    {
+        "avg_duration": "15.171302206060602",
+        "name": "smoothness.tough_webgl_cases/animometer_webgl"
+    },
+    {
+        "avg_duration": "22.39897465353535",
+        "name": "smoothness.tough_webgl_cases/aquarium"
+    },
+    {
+        "avg_duration": "19.40566771919192",
+        "name": "smoothness.tough_webgl_cases/aquarium_20k"
+    },
+    {
+        "avg_duration": "15.418316095959597",
+        "name": "smoothness.tough_webgl_cases/blob"
+    },
+    {
+        "avg_duration": "16.78242027979798",
+        "name": "smoothness.tough_webgl_cases/dynamic_cube_map"
+    },
+    {
+        "avg_duration": "14.551259337373732",
+        "name": "smoothness.tough_webgl_cases/earth"
+    },
+    {
+        "avg_duration": "16.12191535959596",
+        "name": "smoothness.tough_webgl_cases/http://kenrussell.github.io/webgl-animometer/Animometer/tests/3d/webgl.html"
+    },
+    {
+        "avg_duration": "24.400172367676767",
+        "name": "smoothness.tough_webgl_cases/http://webglsamples.org/aquarium/aquarium.html"
+    },
+    {
+        "avg_duration": "15.875539536363634",
+        "name": "smoothness.tough_webgl_cases/http://webglsamples.org/blob/blob.html"
+    },
+    {
+        "avg_duration": "16.65242191111111",
+        "name": "smoothness.tough_webgl_cases/http://webglsamples.org/dynamic-cubemap/dynamic-cubemap.html"
+    },
+    {
+        "avg_duration": "19.3204608989899",
+        "name": "smoothness.tough_webgl_cases/http://www.khronos.org/registry/webgl/sdk/demos/google/nvidia-vertex-buffer-object/index.html"
+    },
+    {
+        "avg_duration": "15.888718343434338",
+        "name": "smoothness.tough_webgl_cases/http://www.khronos.org/registry/webgl/sdk/demos/google/particles/index.html"
+    },
+    {
+        "avg_duration": "17.34557523030303",
+        "name": "smoothness.tough_webgl_cases/http://www.khronos.org/registry/webgl/sdk/demos/google/san-angeles/index.html"
+    },
+    {
+        "avg_duration": "14.812420464646463",
+        "name": "smoothness.tough_webgl_cases/http://www.khronos.org/registry/webgl/sdk/demos/webkit/Earth.html"
+    },
+    {
+        "avg_duration": "15.137208694949496",
+        "name": "smoothness.tough_webgl_cases/http://www.khronos.org/registry/webgl/sdk/demos/webkit/ManyPlanetsDeep.html"
+    },
+    {
+        "avg_duration": "15.981114429032262",
+        "name": "smoothness.tough_webgl_cases/ken_russell"
+    },
+    {
+        "avg_duration": "15.064020697979801",
+        "name": "smoothness.tough_webgl_cases/many_planets_deep"
+    },
+    {
+        "avg_duration": "23.52423369999999",
+        "name": "smoothness.tough_webgl_cases/nvidia_vertex_buffer_object"
+    },
+    {
+        "avg_duration": "16.78399364545454",
+        "name": "smoothness.tough_webgl_cases/particles"
+    },
+    {
+        "avg_duration": "19.17932523030303",
+        "name": "smoothness.tough_webgl_cases/san_angeles"
+    },
+    {
+        "avg_duration": "18.439315783870963",
+        "name": "smoothness.tough_webgl_cases/sans_angeles"
+    },
+    {
+        "avg_duration": "51.34675094949495",
+        "name": "speedometer-future/http://browserbench.org/Speedometer/"
+    },
+    {
+        "avg_duration": "50.92902790909092",
+        "name": "speedometer/http://browserbench.org/Speedometer/"
+    },
+    {
+        "avg_duration": "94.09177914141412",
+        "name": "speedometer2-future/Speedometer2"
+    },
+    {
+        "avg_duration": "94.40510892929296",
+        "name": "speedometer2/Speedometer2"
+    },
+    {
+        "avg_duration": "82.3368541919192",
+        "name": "system_health.common_desktop/browse:media:flickr_infinite_scroll"
+    },
+    {
+        "avg_duration": "114.199672979798",
+        "name": "system_health.common_desktop/browse:media:imgur"
+    },
+    {
+        "avg_duration": "76.68722123232325",
+        "name": "system_health.common_desktop/browse:media:pinterest"
+    },
+    {
+        "avg_duration": "5.139589276E-4",
+        "name": "system_health.common_desktop/browse:media:tumblr"
+    },
+    {
+        "avg_duration": "83.1258405757576",
+        "name": "system_health.common_desktop/browse:media:youtube"
+    },
+    {
+        "avg_duration": "89.7009535858586",
+        "name": "system_health.common_desktop/browse:news:cnn"
+    },
+    {
+        "avg_duration": "60.783960141414134",
+        "name": "system_health.common_desktop/browse:news:flipboard"
+    },
+    {
+        "avg_duration": "54.17100810101009",
+        "name": "system_health.common_desktop/browse:news:hackernews"
+    },
+    {
+        "avg_duration": "93.92613203030301",
+        "name": "system_health.common_desktop/browse:news:nytimes"
+    },
+    {
+        "avg_duration": "74.04722950505051",
+        "name": "system_health.common_desktop/browse:news:reddit"
+    },
+    {
+        "avg_duration": "61.00552963636365",
+        "name": "system_health.common_desktop/browse:search:google"
+    },
+    {
+        "avg_duration": "43.49988181818182",
+        "name": "system_health.common_desktop/browse:search:google_india"
+    },
+    {
+        "avg_duration": "79.3170623232323",
+        "name": "system_health.common_desktop/browse:social:facebook_infinite_scroll"
+    },
+    {
+        "avg_duration": "92.21371959595956",
+        "name": "system_health.common_desktop/browse:social:tumblr_infinite_scroll"
+    },
+    {
+        "avg_duration": "54.536502686868694",
+        "name": "system_health.common_desktop/browse:social:twitter"
+    },
+    {
+        "avg_duration": "93.12901788888887",
+        "name": "system_health.common_desktop/browse:social:twitter_infinite_scroll"
+    },
+    {
+        "avg_duration": "81.3542751313131",
+        "name": "system_health.common_desktop/browse:tech:discourse_infinite_scroll"
+    },
+    {
+        "avg_duration": "66.36275320202014",
+        "name": "system_health.common_desktop/browse:tools:earth"
+    },
+    {
+        "avg_duration": "51.19878194949495",
+        "name": "system_health.common_desktop/browse:tools:maps"
+    },
+    {
+        "avg_duration": "26.438733101010126",
+        "name": "system_health.common_desktop/browse_accessibility:tech:codesearch"
+    },
+    {
+        "avg_duration": "6.959592072580643E-4",
+        "name": "system_health.common_desktop/browse_accessibility:tools:gmail_compose"
+    },
+    {
+        "avg_duration": "20.498148757575763",
+        "name": "system_health.common_desktop/load:chrome:blank"
+    },
+    {
+        "avg_duration": "23.657834606060597",
+        "name": "system_health.common_desktop/load:games:alphabetty"
+    },
+    {
+        "avg_duration": "26.60185096969698",
+        "name": "system_health.common_desktop/load:games:bubbles"
+    },
+    {
+        "avg_duration": "22.550100707070712",
+        "name": "system_health.common_desktop/load:games:lazors"
+    },
+    {
+        "avg_duration": "28.25394541414142",
+        "name": "system_health.common_desktop/load:games:miniclip"
+    },
+    {
+        "avg_duration": "31.449059858585862",
+        "name": "system_health.common_desktop/load:games:spychase"
+    },
+    {
+        "avg_duration": "38.108721494949485",
+        "name": "system_health.common_desktop/load:media:9gag"
+    },
+    {
+        "avg_duration": "25.831872272727274",
+        "name": "system_health.common_desktop/load:media:dailymotion"
+    },
+    {
+        "avg_duration": "24.407848686868682",
+        "name": "system_health.common_desktop/load:media:google_images"
+    },
+    {
+        "avg_duration": "30.662335959595946",
+        "name": "system_health.common_desktop/load:media:imgur"
+    },
+    {
+        "avg_duration": "31.20423959595959",
+        "name": "system_health.common_desktop/load:media:soundcloud"
+    },
+    {
+        "avg_duration": "27.025370494949495",
+        "name": "system_health.common_desktop/load:media:youtube"
+    },
+    {
+        "avg_duration": "25.268706818181816",
+        "name": "system_health.common_desktop/load:news:bbc"
+    },
+    {
+        "avg_duration": "31.48729373737373",
+        "name": "system_health.common_desktop/load:news:cnn"
+    },
+    {
+        "avg_duration": "24.8549688080808",
+        "name": "system_health.common_desktop/load:news:flipboard"
+    },
+    {
+        "avg_duration": "22.198739515151512",
+        "name": "system_health.common_desktop/load:news:hackernews"
+    },
+    {
+        "avg_duration": "29.012636151515146",
+        "name": "system_health.common_desktop/load:news:nytimes"
+    },
+    {
+        "avg_duration": "32.84296372727271",
+        "name": "system_health.common_desktop/load:news:qq"
+    },
+    {
+        "avg_duration": "24.114319313131308",
+        "name": "system_health.common_desktop/load:news:reddit"
+    },
+    {
+        "avg_duration": "24.452644808080798",
+        "name": "system_health.common_desktop/load:news:wikipedia"
+    },
+    {
+        "avg_duration": "25.183808939393945",
+        "name": "system_health.common_desktop/load:search:amazon"
+    },
+    {
+        "avg_duration": "23.196135676767675",
+        "name": "system_health.common_desktop/load:search:baidu"
+    },
+    {
+        "avg_duration": "26.03403817171716",
+        "name": "system_health.common_desktop/load:search:ebay"
+    },
+    {
+        "avg_duration": "23.733672323232327",
+        "name": "system_health.common_desktop/load:search:google"
+    },
+    {
+        "avg_duration": "25.097237101010098",
+        "name": "system_health.common_desktop/load:search:taobao"
+    },
+    {
+        "avg_duration": "23.240718767676764",
+        "name": "system_health.common_desktop/load:search:yahoo"
+    },
+    {
+        "avg_duration": "23.24786594949495",
+        "name": "system_health.common_desktop/load:search:yandex"
+    },
+    {
+        "avg_duration": "25.43468824242425",
+        "name": "system_health.common_desktop/load:social:instagram"
+    },
+    {
+        "avg_duration": "26.404636090909086",
+        "name": "system_health.common_desktop/load:social:pinterest"
+    },
+    {
+        "avg_duration": "24.782769080808084",
+        "name": "system_health.common_desktop/load:social:vk"
+    },
+    {
+        "avg_duration": "42.88676370707072",
+        "name": "system_health.common_desktop/load:tools:docs"
+    },
+    {
+        "avg_duration": "36.499996141414144",
+        "name": "system_health.common_desktop/load:tools:drive"
+    },
+    {
+        "avg_duration": "25.988827888888896",
+        "name": "system_health.common_desktop/load:tools:dropbox"
+    },
+    {
+        "avg_duration": "31.304849868686865",
+        "name": "system_health.common_desktop/load:tools:gmail"
+    },
+    {
+        "avg_duration": "24.93964053535354",
+        "name": "system_health.common_desktop/load:tools:stackoverflow"
+    },
+    {
+        "avg_duration": "29.95352874747475",
+        "name": "system_health.common_desktop/load:tools:weather"
+    },
+    {
+        "avg_duration": "24.104244505050495",
+        "name": "system_health.common_desktop/load_accessibility:media:wikipedia"
+    },
+    {
+        "avg_duration": "30.78014754545453",
+        "name": "system_health.common_desktop/load_accessibility:shopping:amazon"
+    },
+    {
+        "avg_duration": "142.47029868686872",
+        "name": "system_health.common_desktop/long_running:tools:gmail-background"
+    },
+    {
+        "avg_duration": "227.13041292929293",
+        "name": "system_health.common_desktop/long_running:tools:gmail-foreground"
+    },
+    {
+        "avg_duration": "156.25515313131314",
+        "name": "system_health.common_desktop/multitab:misc:typical24"
+    },
+    {
+        "avg_duration": "3.4683483846153845E-4",
+        "name": "system_health.common_desktop/play:media:google_play_music"
+    },
+    {
+        "avg_duration": "6.63543563448276E-4",
+        "name": "system_health.common_desktop/play:media:pandora"
+    },
+    {
+        "avg_duration": "60.47353866666664",
+        "name": "system_health.common_desktop/play:media:soundcloud"
+    },
+    {
+        "avg_duration": "62.540415717171726",
+        "name": "system_health.memory_desktop/browse:media:flickr_infinite_scroll"
+    },
+    {
+        "avg_duration": "73.17505626262624",
+        "name": "system_health.memory_desktop/browse:media:imgur"
+    },
+    {
+        "avg_duration": "65.55952032323233",
+        "name": "system_health.memory_desktop/browse:media:pinterest"
+    },
+    {
+        "avg_duration": "63.901727717171724",
+        "name": "system_health.memory_desktop/browse:media:tumblr"
+    },
+    {
+        "avg_duration": "63.57714311111111",
+        "name": "system_health.memory_desktop/browse:media:youtube"
+    },
+    {
+        "avg_duration": "60.451394080808086",
+        "name": "system_health.memory_desktop/browse:news:cnn"
+    },
+    {
+        "avg_duration": "48.577630929292944",
+        "name": "system_health.memory_desktop/browse:news:flipboard"
+    },
+    {
+        "avg_duration": "49.652371212121224",
+        "name": "system_health.memory_desktop/browse:news:hackernews"
+    },
+    {
+        "avg_duration": "60.24062453535355",
+        "name": "system_health.memory_desktop/browse:news:nytimes"
+    },
+    {
+        "avg_duration": "58.30893571717173",
+        "name": "system_health.memory_desktop/browse:news:reddit"
+    },
+    {
+        "avg_duration": "48.3390072222222",
+        "name": "system_health.memory_desktop/browse:search:google"
+    },
+    {
+        "avg_duration": "38.33019343434345",
+        "name": "system_health.memory_desktop/browse:search:google_india"
+    },
+    {
+        "avg_duration": "65.8463427171717",
+        "name": "system_health.memory_desktop/browse:social:facebook_infinite_scroll"
+    },
+    {
+        "avg_duration": "66.58066644444442",
+        "name": "system_health.memory_desktop/browse:social:tumblr_infinite_scroll"
+    },
+    {
+        "avg_duration": "46.90201471717174",
+        "name": "system_health.memory_desktop/browse:social:twitter"
+    },
+    {
+        "avg_duration": "5.771389978571429E-4",
+        "name": "system_health.memory_desktop/browse:social:twitter_infinite_scroll"
+    },
+    {
+        "avg_duration": "64.16041628282828",
+        "name": "system_health.memory_desktop/browse:tech:discourse_infinite_scroll"
+    },
+    {
+        "avg_duration": "48.39082823232322",
+        "name": "system_health.memory_desktop/browse:tools:earth"
+    },
+    {
+        "avg_duration": "40.98182826262629",
+        "name": "system_health.memory_desktop/browse:tools:maps"
+    },
+    {
+        "avg_duration": "22.609168292929287",
+        "name": "system_health.memory_desktop/browse_accessibility:tech:codesearch"
+    },
+    {
+        "avg_duration": "7.160620196363636E-4",
+        "name": "system_health.memory_desktop/browse_accessibility:tools:gmail_compose"
+    },
+    {
+        "avg_duration": "17.987341237373737",
+        "name": "system_health.memory_desktop/load:chrome:blank"
+    },
+    {
+        "avg_duration": "20.48097976767676",
+        "name": "system_health.memory_desktop/load:games:alphabetty"
+    },
+    {
+        "avg_duration": "23.22872671717172",
+        "name": "system_health.memory_desktop/load:games:bubbles"
+    },
+    {
+        "avg_duration": "19.74540738383838",
+        "name": "system_health.memory_desktop/load:games:lazors"
+    },
+    {
+        "avg_duration": "22.72987362626263",
+        "name": "system_health.memory_desktop/load:games:miniclip"
+    },
+    {
+        "avg_duration": "25.78747860606061",
+        "name": "system_health.memory_desktop/load:games:spychase"
+    },
+    {
+        "avg_duration": "29.139935939393922",
+        "name": "system_health.memory_desktop/load:media:9gag"
+    },
+    {
+        "avg_duration": "21.76572581818184",
+        "name": "system_health.memory_desktop/load:media:dailymotion"
+    },
+    {
+        "avg_duration": "21.194054626262623",
+        "name": "system_health.memory_desktop/load:media:google_images"
+    },
+    {
+        "avg_duration": "24.956811464646467",
+        "name": "system_health.memory_desktop/load:media:imgur"
+    },
+    {
+        "avg_duration": "24.08559647474747",
+        "name": "system_health.memory_desktop/load:media:soundcloud"
+    },
+    {
+        "avg_duration": "21.931889818181826",
+        "name": "system_health.memory_desktop/load:media:youtube"
+    },
+    {
+        "avg_duration": "22.139209707070712",
+        "name": "system_health.memory_desktop/load:news:bbc"
+    },
+    {
+        "avg_duration": "25.07644933333334",
+        "name": "system_health.memory_desktop/load:news:cnn"
+    },
+    {
+        "avg_duration": "21.04197846464646",
+        "name": "system_health.memory_desktop/load:news:flipboard"
+    },
+    {
+        "avg_duration": "19.308445282828288",
+        "name": "system_health.memory_desktop/load:news:hackernews"
+    },
+    {
+        "avg_duration": "22.910361060606053",
+        "name": "system_health.memory_desktop/load:news:nytimes"
+    },
+    {
+        "avg_duration": "26.24032229292928",
+        "name": "system_health.memory_desktop/load:news:qq"
+    },
+    {
+        "avg_duration": "20.63625094949495",
+        "name": "system_health.memory_desktop/load:news:reddit"
+    },
+    {
+        "avg_duration": "21.339096181818185",
+        "name": "system_health.memory_desktop/load:news:wikipedia"
+    },
+    {
+        "avg_duration": "21.09931973737374",
+        "name": "system_health.memory_desktop/load:search:amazon"
+    },
+    {
+        "avg_duration": "20.080840383838392",
+        "name": "system_health.memory_desktop/load:search:baidu"
+    },
+    {
+        "avg_duration": "21.5326737979798",
+        "name": "system_health.memory_desktop/load:search:ebay"
+    },
+    {
+        "avg_duration": "20.245210585858583",
+        "name": "system_health.memory_desktop/load:search:google"
+    },
+    {
+        "avg_duration": "21.467310151515147",
+        "name": "system_health.memory_desktop/load:search:taobao"
+    },
+    {
+        "avg_duration": "20.289292959595954",
+        "name": "system_health.memory_desktop/load:search:yahoo"
+    },
+    {
+        "avg_duration": "20.155686191919195",
+        "name": "system_health.memory_desktop/load:search:yandex"
+    },
+    {
+        "avg_duration": "21.69161568686868",
+        "name": "system_health.memory_desktop/load:social:instagram"
+    },
+    {
+        "avg_duration": "22.68231987878788",
+        "name": "system_health.memory_desktop/load:social:pinterest"
+    },
+    {
+        "avg_duration": "21.298487202020205",
+        "name": "system_health.memory_desktop/load:social:vk"
+    },
+    {
+        "avg_duration": "25.276945767676764",
+        "name": "system_health.memory_desktop/load:tools:docs"
+    },
+    {
+        "avg_duration": "26.12457269696969",
+        "name": "system_health.memory_desktop/load:tools:drive"
+    },
+    {
+        "avg_duration": "21.425068696969696",
+        "name": "system_health.memory_desktop/load:tools:dropbox"
+    },
+    {
+        "avg_duration": "24.685946939393943",
+        "name": "system_health.memory_desktop/load:tools:gmail"
+    },
+    {
+        "avg_duration": "21.492869202020206",
+        "name": "system_health.memory_desktop/load:tools:stackoverflow"
+    },
+    {
+        "avg_duration": "23.8091004949495",
+        "name": "system_health.memory_desktop/load:tools:weather"
+    },
+    {
+        "avg_duration": "20.61608703030303",
+        "name": "system_health.memory_desktop/load_accessibility:media:wikipedia"
+    },
+    {
+        "avg_duration": "26.48231772727273",
+        "name": "system_health.memory_desktop/load_accessibility:shopping:amazon"
+    },
+    {
+        "avg_duration": "155.32871151515158",
+        "name": "system_health.memory_desktop/long_running:tools:gmail-background"
+    },
+    {
+        "avg_duration": "153.4656069696969",
+        "name": "system_health.memory_desktop/long_running:tools:gmail-foreground"
+    },
+    {
+        "avg_duration": "110.54936367676765",
+        "name": "system_health.memory_desktop/multitab:misc:typical24"
+    },
+    {
+        "avg_duration": "5.100965390625E-4",
+        "name": "system_health.memory_desktop/play:media:google_play_music"
+    },
+    {
+        "avg_duration": "6.563242638235293E-4",
+        "name": "system_health.memory_desktop/play:media:pandora"
+    },
+    {
+        "avg_duration": "44.85171574747477",
+        "name": "system_health.memory_desktop/play:media:soundcloud"
+    },
+    {
+        "avg_duration": "110.98863632323229",
+        "name": "tab_switching.typical_25/multitab:misc:typical24"
+    },
+    {
+        "avg_duration": "34.149533383838396",
+        "name": "thread_times.tough_compositor_cases/http://jsbin.com/beqojupo/1/quiet?JS_FULL_SCREEN_INVALIDATION"
+    },
+    {
+        "avg_duration": "30.843939171717167",
+        "name": "thread_times.tough_compositor_cases/http://jsbin.com/covoqi/1/quiet?NEW_TILINGS"
+    },
+    {
+        "avg_duration": "24.387449161616154",
+        "name": "thread_times.tough_compositor_cases/http://jsbin.com/falefice/1/quiet?CC_POSTER_CIRCLE"
+    },
+    {
+        "avg_duration": "25.694355505050503",
+        "name": "thread_times.tough_compositor_cases/http://jsbin.com/giqafofe/1/quiet?JS_POSTER_CIRCLE"
+    },
+    {
+        "avg_duration": "21.990855666666672",
+        "name": "thread_times.tough_compositor_cases/http://jsbin.com/jevibahi/4/quiet?JS_SCROLL_200_LAYER_GRID"
+    },
+    {
+        "avg_duration": "25.600268939393935",
+        "name": "thread_times.tough_compositor_cases/http://jsbin.com/pixavefe/1/quiet?CC_SCROLL_TEXT_ONLY"
+    },
+    {
+        "avg_duration": "22.239103838383834",
+        "name": "thread_times.tough_compositor_cases/http://jsbin.com/wixadinu/2/quiet?JS_SCROLL_TEXT_ONLY"
+    },
+    {
+        "avg_duration": "21.8991898989899",
+        "name": "thread_times.tough_compositor_cases/http://jsbin.com/yakagevo/1/quiet?CC_SCROLL_200_LAYER_GRID"
+    },
+    {
+        "avg_duration": "19.36332038383839",
+        "name": "thread_times.tough_scrolling_cases/canvas_05000_pixels_per_second"
+    },
+    {
+        "avg_duration": "18.944455050505052",
+        "name": "thread_times.tough_scrolling_cases/canvas_10000_pixels_per_second"
+    },
+    {
+        "avg_duration": "16.132776828282832",
+        "name": "thread_times.tough_scrolling_cases/canvas_15000_pixels_per_second"
+    },
+    {
+        "avg_duration": "14.716707888888882",
+        "name": "thread_times.tough_scrolling_cases/canvas_20000_pixels_per_second"
+    },
+    {
+        "avg_duration": "13.274723732323233",
+        "name": "thread_times.tough_scrolling_cases/canvas_30000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.619827611111107",
+        "name": "thread_times.tough_scrolling_cases/canvas_40000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.097747136363642",
+        "name": "thread_times.tough_scrolling_cases/canvas_50000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.751150651515152",
+        "name": "thread_times.tough_scrolling_cases/canvas_60000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.513722232323232",
+        "name": "thread_times.tough_scrolling_cases/canvas_75000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.28553542424243",
+        "name": "thread_times.tough_scrolling_cases/canvas_90000_pixels_per_second"
+    },
+    {
+        "avg_duration": "24.900535383838406",
+        "name": "thread_times.tough_scrolling_cases/text_05000_pixels_per_second"
+    },
+    {
+        "avg_duration": "16.877746686868687",
+        "name": "thread_times.tough_scrolling_cases/text_10000_pixels_per_second"
+    },
+    {
+        "avg_duration": "14.138678474747481",
+        "name": "thread_times.tough_scrolling_cases/text_15000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.818808818181818",
+        "name": "thread_times.tough_scrolling_cases/text_20000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.470634833333335",
+        "name": "thread_times.tough_scrolling_cases/text_30000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.768681949494953",
+        "name": "thread_times.tough_scrolling_cases/text_40000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.404906333333335",
+        "name": "thread_times.tough_scrolling_cases/text_50000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.077428035353538",
+        "name": "thread_times.tough_scrolling_cases/text_60000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.842940550505048",
+        "name": "thread_times.tough_scrolling_cases/text_75000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.679638830303038",
+        "name": "thread_times.tough_scrolling_cases/text_90000_pixels_per_second"
+    },
+    {
+        "avg_duration": "21.54457829292929",
+        "name": "thread_times.tough_scrolling_cases/text_constant_full_page_raster_05000_pixels_per_second"
+    },
+    {
+        "avg_duration": "20.98124339393939",
+        "name": "thread_times.tough_scrolling_cases/text_constant_full_page_raster_10000_pixels_per_second"
+    },
+    {
+        "avg_duration": "17.95952094444445",
+        "name": "thread_times.tough_scrolling_cases/text_constant_full_page_raster_15000_pixels_per_second"
+    },
+    {
+        "avg_duration": "16.430293747474757",
+        "name": "thread_times.tough_scrolling_cases/text_constant_full_page_raster_20000_pixels_per_second"
+    },
+    {
+        "avg_duration": "14.841692257575756",
+        "name": "thread_times.tough_scrolling_cases/text_constant_full_page_raster_30000_pixels_per_second"
+    },
+    {
+        "avg_duration": "14.169464277777791",
+        "name": "thread_times.tough_scrolling_cases/text_constant_full_page_raster_40000_pixels_per_second"
+    },
+    {
+        "avg_duration": "13.605584282828282",
+        "name": "thread_times.tough_scrolling_cases/text_constant_full_page_raster_50000_pixels_per_second"
+    },
+    {
+        "avg_duration": "13.225295873737373",
+        "name": "thread_times.tough_scrolling_cases/text_constant_full_page_raster_60000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.941363888888894",
+        "name": "thread_times.tough_scrolling_cases/text_constant_full_page_raster_75000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.738944398989894",
+        "name": "thread_times.tough_scrolling_cases/text_constant_full_page_raster_90000_pixels_per_second"
+    },
+    {
+        "avg_duration": "17.13551661111111",
+        "name": "thread_times.tough_scrolling_cases/text_hover_05000_pixels_per_second"
+    },
+    {
+        "avg_duration": "16.534765737373732",
+        "name": "thread_times.tough_scrolling_cases/text_hover_10000_pixels_per_second"
+    },
+    {
+        "avg_duration": "14.062752171717182",
+        "name": "thread_times.tough_scrolling_cases/text_hover_15000_pixels_per_second"
+    },
+    {
+        "avg_duration": "12.701652040404042",
+        "name": "thread_times.tough_scrolling_cases/text_hover_20000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.357989202020201",
+        "name": "thread_times.tough_scrolling_cases/text_hover_30000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.66951190909091",
+        "name": "thread_times.tough_scrolling_cases/text_hover_40000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.301456666666668",
+        "name": "thread_times.tough_scrolling_cases/text_hover_50000_pixels_per_second"
+    },
+    {
+        "avg_duration": "10.745966434343432",
+        "name": "thread_times.tough_scrolling_cases/text_hover_60000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.723813595959594",
+        "name": "thread_times.tough_scrolling_cases/text_hover_75000_pixels_per_second"
+    },
+    {
+        "avg_duration": "9.553528681818182",
+        "name": "thread_times.tough_scrolling_cases/text_hover_90000_pixels_per_second"
+    },
+    {
+        "avg_duration": "11.759683878787877",
+        "name": "tracing.tracing_with_background_memory_infra/Facebook"
+    },
+    {
+        "avg_duration": "12.269666929292931",
+        "name": "tracing.tracing_with_background_memory_infra/Wikipedia"
+    },
+    {
+        "avg_duration": "10.292047621212122",
+        "name": "tracing.tracing_with_background_memory_infra/http://www.amazon.com"
+    },
+    {
+        "avg_duration": "10.897554914141413",
+        "name": "tracing.tracing_with_background_memory_infra/http://www.ask.com/"
+    },
+    {
+        "avg_duration": "10.410087525252523",
+        "name": "tracing.tracing_with_background_memory_infra/http://www.bing.com/"
+    },
+    {
+        "avg_duration": "10.963668171717181",
+        "name": "tracing.tracing_with_background_memory_infra/http://www.yahoo.com/"
+    },
+    {
+        "avg_duration": "12.867173823232323",
+        "name": "tracing.tracing_with_background_memory_infra/http://www.youtube.com"
+    },
+    {
+        "avg_duration": "18.63103838383838",
+        "name": "tracing.tracing_with_background_memory_infra/https://www.google.com/#hl=en&q=barack+obama"
+    },
+    {
+        "avg_duration": "13.57200807070707",
+        "name": "tracing.tracing_with_background_memory_infra/https://www.google.com/calendar/"
+    },
+    {
+        "avg_duration": "86.8862782323232",
+        "name": "v8.browsing_desktop-future/browse:media:flickr_infinite_scroll"
+    },
+    {
+        "avg_duration": "265.3043401010102",
+        "name": "v8.browsing_desktop-future/browse:media:imgur"
+    },
+    {
+        "avg_duration": "88.4343057979798",
+        "name": "v8.browsing_desktop-future/browse:media:pinterest"
+    },
+    {
+        "avg_duration": "100.77457501010095",
+        "name": "v8.browsing_desktop-future/browse:media:tumblr"
+    },
+    {
+        "avg_duration": "107.1324632121213",
+        "name": "v8.browsing_desktop-future/browse:media:youtube"
+    },
+    {
+        "avg_duration": "146.1861557373738",
+        "name": "v8.browsing_desktop-future/browse:news:cnn"
+    },
+    {
+        "avg_duration": "69.01329135353538",
+        "name": "v8.browsing_desktop-future/browse:news:flipboard"
+    },
+    {
+        "avg_duration": "57.35667355555554",
+        "name": "v8.browsing_desktop-future/browse:news:hackernews"
+    },
+    {
+        "avg_duration": "135.74188761616162",
+        "name": "v8.browsing_desktop-future/browse:news:nytimes"
+    },
+    {
+        "avg_duration": "87.9440824242425",
+        "name": "v8.browsing_desktop-future/browse:news:reddit"
+    },
+    {
+        "avg_duration": "61.98612421212122",
+        "name": "v8.browsing_desktop-future/browse:search:google"
+    },
+    {
+        "avg_duration": "46.10064057575759",
+        "name": "v8.browsing_desktop-future/browse:search:google_india"
+    },
+    {
+        "avg_duration": "103.75746748484845",
+        "name": "v8.browsing_desktop-future/browse:social:facebook_infinite_scroll"
+    },
+    {
+        "avg_duration": "114.25329769696967",
+        "name": "v8.browsing_desktop-future/browse:social:tumblr_infinite_scroll"
+    },
+    {
+        "avg_duration": "60.74103158585857",
+        "name": "v8.browsing_desktop-future/browse:social:twitter"
+    },
+    {
+        "avg_duration": "97.95393153535356",
+        "name": "v8.browsing_desktop-future/browse:social:twitter_infinite_scroll"
+    },
+    {
+        "avg_duration": "119.90146006060604",
+        "name": "v8.browsing_desktop-future/browse:tech:discourse_infinite_scroll"
+    },
+    {
+        "avg_duration": "92.68529465656566",
+        "name": "v8.browsing_desktop-future/browse:tools:earth"
+    },
+    {
+        "avg_duration": "70.27434320202018",
+        "name": "v8.browsing_desktop-future/browse:tools:maps"
+    },
+    {
+        "avg_duration": "86.72092447474748",
+        "name": "v8.browsing_desktop/browse:media:flickr_infinite_scroll"
+    },
+    {
+        "avg_duration": "257.50523424242425",
+        "name": "v8.browsing_desktop/browse:media:imgur"
+    },
+    {
+        "avg_duration": "88.19363127272732",
+        "name": "v8.browsing_desktop/browse:media:pinterest"
+    },
+    {
+        "avg_duration": "99.07795723232324",
+        "name": "v8.browsing_desktop/browse:media:tumblr"
+    },
+    {
+        "avg_duration": "106.48767910101009",
+        "name": "v8.browsing_desktop/browse:media:youtube"
+    },
+    {
+        "avg_duration": "144.25491795959593",
+        "name": "v8.browsing_desktop/browse:news:cnn"
+    },
+    {
+        "avg_duration": "51.23079594185878",
+        "name": "v8.browsing_desktop/browse:news:flipboard"
+    },
+    {
+        "avg_duration": "43.78456548728386",
+        "name": "v8.browsing_desktop/browse:news:hackernews"
+    },
+    {
+        "avg_duration": "134.13734256565655",
+        "name": "v8.browsing_desktop/browse:news:nytimes"
+    },
+    {
+        "avg_duration": "87.5141026868687",
+        "name": "v8.browsing_desktop/browse:news:reddit"
+    },
+    {
+        "avg_duration": "62.04862045454543",
+        "name": "v8.browsing_desktop/browse:search:google"
+    },
+    {
+        "avg_duration": "46.19492078787879",
+        "name": "v8.browsing_desktop/browse:search:google_india"
+    },
+    {
+        "avg_duration": "104.50446749494951",
+        "name": "v8.browsing_desktop/browse:social:facebook_infinite_scroll"
+    },
+    {
+        "avg_duration": "114.82597389898987",
+        "name": "v8.browsing_desktop/browse:social:tumblr_infinite_scroll"
+    },
+    {
+        "avg_duration": "60.68723423232323",
+        "name": "v8.browsing_desktop/browse:social:twitter"
+    },
+    {
+        "avg_duration": "97.92195691919194",
+        "name": "v8.browsing_desktop/browse:social:twitter_infinite_scroll"
+    },
+    {
+        "avg_duration": "121.61664322222221",
+        "name": "v8.browsing_desktop/browse:tech:discourse_infinite_scroll"
+    },
+    {
+        "avg_duration": "93.83666450505046",
+        "name": "v8.browsing_desktop/browse:tools:earth"
+    },
+    {
+        "avg_duration": "69.7128163989899",
+        "name": "v8.browsing_desktop/browse:tools:maps"
+    },
+    {
+        "avg_duration": "31.977842505050504",
+        "name": "v8.runtime_stats.top_25/AdsAMPAds"
+    },
+    {
+        "avg_duration": "31.562849333333325",
+        "name": "v8.runtime_stats.top_25/AdsAdSenseAsyncAds"
+    },
+    {
+        "avg_duration": "30.304836090909102",
+        "name": "v8.runtime_stats.top_25/AdsAsyncAdSenseImage"
+    },
+    {
+        "avg_duration": "32.387147202020195",
+        "name": "v8.runtime_stats.top_25/AdsDoubleClickAsyncAds"
+    },
+    {
+        "avg_duration": "30.973827585858558",
+        "name": "v8.runtime_stats.top_25/AdsMultipleAdSlots"
+    },
+    {
+        "avg_duration": "30.404232313131303",
+        "name": "v8.runtime_stats.top_25/AdsOnScreenDetection"
+    },
+    {
+        "avg_duration": "31.206053676767688",
+        "name": "v8.runtime_stats.top_25/AdsSyncAdSenseImage"
+    },
+    {
+        "avg_duration": "30.55591422222223",
+        "name": "v8.runtime_stats.top_25/AdsSyncLoadAsyncRenderAdSenseImage"
+    },
+    {
+        "avg_duration": "40.59781237373735",
+        "name": "v8.runtime_stats.top_25/AdsViewOptimizedRendering"
+    },
+    {
+        "avg_duration": "35.376139262626275",
+        "name": "v8.runtime_stats.top_25/http://edition.cnn.com"
+    },
+    {
+        "avg_duration": "31.127331565656565",
+        "name": "v8.runtime_stats.top_25/http://hi.wikipedia.org/wiki/%E0%A4%AE%E0%A5%81%E0%A4%96%E0%A4%AA%E0%A5%83%E0%A4%B7%E0%A5%8D%E0%A4%A0"
+    },
+    {
+        "avg_duration": "32.79572127272727",
+        "name": "v8.runtime_stats.top_25/http://inbox.google.com"
+    },
+    {
+        "avg_duration": "31.80995276767676",
+        "name": "v8.runtime_stats.top_25/http://maps.google.co.jp/maps/search/restaurant+tokyo"
+    },
+    {
+        "avg_duration": "32.130399010100994",
+        "name": "v8.runtime_stats.top_25/http://meta.discourse.org"
+    },
+    {
+        "avg_duration": "30.462735555555565",
+        "name": "v8.runtime_stats.top_25/http://pollouer.muc/Speedometer/CustomRunner.html?angular"
+    },
+    {
+        "avg_duration": "30.232333686868685",
+        "name": "v8.runtime_stats.top_25/http://pollouer.muc/Speedometer/CustomRunner.html?backbone"
+    },
+    {
+        "avg_duration": "30.37380113131312",
+        "name": "v8.runtime_stats.top_25/http://pollouer.muc/Speedometer/CustomRunner.html?ember"
+    },
+    {
+        "avg_duration": "30.198748737373744",
+        "name": "v8.runtime_stats.top_25/http://pollouer.muc/Speedometer/CustomRunner.html?jquery"
+    },
+    {
+        "avg_duration": "30.153131545454546",
+        "name": "v8.runtime_stats.top_25/http://pollouer.muc/Speedometer/CustomRunner.html?vanilla"
+    },
+    {
+        "avg_duration": "33.029896989899",
+        "name": "v8.runtime_stats.top_25/http://reddit.musicplayer.io"
+    },
+    {
+        "avg_duration": "32.92650995959597",
+        "name": "v8.runtime_stats.top_25/http://weibo.com"
+    },
+    {
+        "avg_duration": "31.843477747474736",
+        "name": "v8.runtime_stats.top_25/http://world.taobao.com"
+    },
+    {
+        "avg_duration": "30.792920505050503",
+        "name": "v8.runtime_stats.top_25/http://www.amazon.com/s/?field-keywords=v8"
+    },
+    {
+        "avg_duration": "30.872393111111112",
+        "name": "v8.runtime_stats.top_25/http://www.baidu.com/s?wd=v8"
+    },
+    {
+        "avg_duration": "30.37419947474747",
+        "name": "v8.runtime_stats.top_25/http://www.bing.com/search?q=v8+engine"
+    },
+    {
+        "avg_duration": "35.00979769696969",
+        "name": "v8.runtime_stats.top_25/http://www.ebay.fr/sch/i.html?_nkw=v8"
+    },
+    {
+        "avg_duration": "31.877609454545468",
+        "name": "v8.runtime_stats.top_25/http://www.instagram.com/archdigest"
+    },
+    {
+        "avg_duration": "34.29373953535353",
+        "name": "v8.runtime_stats.top_25/http://www.msn.com/ar-ae"
+    },
+    {
+        "avg_duration": "32.01835513131312",
+        "name": "v8.runtime_stats.top_25/http://www.pinterest.com/categories/popular"
+    },
+    {
+        "avg_duration": "64.3208128686869",
+        "name": "v8.runtime_stats.top_25/http://www.qq.com"
+    },
+    {
+        "avg_duration": "31.598082393939407",
+        "name": "v8.runtime_stats.top_25/http://www.reddit.com"
+    },
+    {
+        "avg_duration": "32.1831180909091",
+        "name": "v8.runtime_stats.top_25/http://www.twitter.com/taylorswift13"
+    },
+    {
+        "avg_duration": "31.739804232323237",
+        "name": "v8.runtime_stats.top_25/http://www.wikiwand.com/en/hill"
+    },
+    {
+        "avg_duration": "31.03223385858586",
+        "name": "v8.runtime_stats.top_25/http://www.yahoo.co.jp"
+    },
+    {
+        "avg_duration": "30.99851531313131",
+        "name": "v8.runtime_stats.top_25/http://yandex.ru/search/?text=v8"
+    },
+    {
+        "avg_duration": "55.903774333333324",
+        "name": "v8.runtime_stats.top_25/https://adwords.google.com"
+    },
+    {
+        "avg_duration": "30.068539878787874",
+        "name": "v8.runtime_stats.top_25/https://cdn.ampproject.org/c/www.bbc.co.uk/news/amp/37344292#log=3"
+    },
+    {
+        "avg_duration": "35.59601106060607",
+        "name": "v8.runtime_stats.top_25/https://en.wikipedia.org/w/index.php?title=Barack_Obama&veaction=edit"
+    },
+    {
+        "avg_duration": "31.766680191919168",
+        "name": "v8.runtime_stats.top_25/https://www.facebook.com/shakira"
+    },
+    {
+        "avg_duration": "36.41602893939393",
+        "name": "v8.runtime_stats.top_25/https://www.google.de/search?q=v8"
+    },
+    {
+        "avg_duration": "32.18308850505051",
+        "name": "v8.runtime_stats.top_25/https://www.linkedin.com/m/"
+    },
+    {
+        "avg_duration": "34.8667446060606",
+        "name": "v8.runtime_stats.top_25/https://www.youtube.com"
+    },
+    {
+        "avg_duration": "36.90751096969696",
+        "name": "v8.runtime_stats.top_25/https://www.youtube.com/watch?v=_kZsOISarzg"
+    },
+    {
+        "avg_duration": "70.70299275757571",
+        "name": "wasm/AsmJsZenGarden"
+    },
+    {
+        "avg_duration": "24.037755505050516",
+        "name": "wasm/WasmSpaceBuggy"
+    },
+    {
+        "avg_duration": "58.932792272727305",
+        "name": "wasm/WasmStylizedRenderer"
+    },
+    {
+        "avg_duration": "55.11374985050506",
+        "name": "wasm/WasmSunTemple"
+    },
+    {
+        "avg_duration": "39.24113844444443",
+        "name": "wasm/WasmTanks"
+    },
+    {
+        "avg_duration": "55.70884981010103",
+        "name": "wasm/WasmZenGarden"
+    },
+    {
+        "avg_duration": "106.24800352525254",
+        "name": "webrtc/10s_datachannel_transfer"
+    },
+    {
+        "avg_duration": "24.09367597979798",
+        "name": "webrtc/canvas_capture_peer_connection"
+    },
+    {
+        "avg_duration": "33.10214334343434",
+        "name": "webrtc/codec_constraints_h264"
+    },
+    {
+        "avg_duration": "33.134536404040404",
+        "name": "webrtc/codec_constraints_vp8"
+    },
+    {
+        "avg_duration": "33.076898575757575",
+        "name": "webrtc/codec_constraints_vp9"
+    },
+    {
+        "avg_duration": "21.60273815151515",
+        "name": "webrtc/hd_local_stream_10s"
+    },
+    {
+        "avg_duration": "82.12761175757578",
+        "name": "webrtc/multiple_peerconnections"
+    },
+    {
+        "avg_duration": "80.00451425252524",
+        "name": "webrtc/pause_play_peerconnections"
+    }
+]

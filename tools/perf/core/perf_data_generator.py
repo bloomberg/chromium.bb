@@ -798,8 +798,10 @@ def get_all_benchmarks_metadata(metadata):
 # that live in tools/perf/core.  We need to verify off of that list.
 def get_tests_in_performance_test_suite():
   tests = sets.Set()
-  add_benchmarks_from_sharding_map(tests, "benchmark_desktop_bot_map.json")
-  add_benchmarks_from_sharding_map(tests, "benchmark_android_bot_map.json")
+  add_benchmarks_from_sharding_map(
+      tests, "shard_maps/desktop_26_shard_map.json")
+  add_benchmarks_from_sharding_map(
+      tests, "shard_maps/mobile_39_shard_map.json")
   return tests
 
 
@@ -939,7 +941,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'isolate': 'performance_test_suite',
           'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=benchmark_desktop_bot_map.json',
+            '--test-shard-map-filename=desktop_5_shard_map.json',
           ],
           'num_shards': 26
         },
@@ -997,7 +999,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'isolate': 'performance_test_suite',
           'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=benchmark_android_bot_map.json',
+            '--test-shard-map-filename=mobile_39_shard_map.json',
           ],
           'num_shards': 14
         }
@@ -1018,7 +1020,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         {
           'isolate': 'performance_webview_test_suite',
           'extra_args': [
-            '--test-shard-map-filename=benchmark_android_bot_map.json',
+            '--test-shard-map-filename=mobile_39_shard_map.json',
           ],
           'num_shards': 7
         }
@@ -1040,7 +1042,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'isolate': 'performance_test_suite',
           'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=benchmark_android_bot_map.json',
+            '--test-shard-map-filename=mobile_39_shard_map.json',
           ],
           'num_shards': 7
         }
