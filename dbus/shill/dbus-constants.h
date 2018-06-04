@@ -581,6 +581,7 @@ const char kErrorEapLocalTlsFailed[] = "eap-local-tls-failed";
 const char kErrorEapRemoteTlsFailed[] = "eap-remote-tls-failed";
 
 // Manager property names.
+const char kAlwaysOnVpnPackageProperty[] = "AlwaysOnVpnPackage";
 const char kDefaultServiceProperty[] = "DefaultService";
 const char kDisableWiFiVHTProperty[] = "DisableWiFiVHT";
 const char kHostNameProperty[] = "HostName";
