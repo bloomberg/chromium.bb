@@ -23,15 +23,16 @@ class AwFieldTrialCreator {
   AwFieldTrialCreator();
   ~AwFieldTrialCreator();
 
-  // Creates the PrefService object that stores the variations prefs needed by
-  // VariationsFieldTrialCreator.
-  std::unique_ptr<PrefService> CreateLocalState();
-
   // Sets up the field trials and related initialization.
   void SetUpFieldTrials();
 
  private:
   void DoSetUpFieldTrials();
+  PrefService* GetLocalState();
+
+  // Stores the seed. VariationsSeedStore keeps a raw pointer to this, so it
+  // must persist for the process lifetime. Not persisted accross runs.
+  std::unique_ptr<PrefService> local_state_;
 
   // A/B testing infrastructure for the entire application. empty until
   // |SetupFieldTrials()| is called.
@@ -45,9 +46,6 @@ class AwFieldTrialCreator {
       variations_field_trial_creator_;
 
   std::unique_ptr<AwVariationsServiceClient> client_;
-
-  // Used to create a PrefService for variations prefs.
-  PrefServiceFactory pref_service_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AwFieldTrialCreator);
 };

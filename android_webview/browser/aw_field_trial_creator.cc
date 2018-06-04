@@ -59,16 +59,6 @@ AwFieldTrialCreator::AwFieldTrialCreator()
 
 AwFieldTrialCreator::~AwFieldTrialCreator() {}
 
-std::unique_ptr<PrefService> AwFieldTrialCreator::CreateLocalState() {
-  scoped_refptr<PrefRegistrySimple> pref_registry =
-      base::MakeRefCounted<PrefRegistrySimple>();
-  variations::VariationsService::RegisterPrefs(pref_registry.get());
-
-  pref_service_factory_.set_user_prefs(
-      base::MakeRefCounted<InMemoryPrefStore>());
-  return pref_service_factory_.Create(pref_registry.get());
-}
-
 void AwFieldTrialCreator::SetUpFieldTrials() {
   DoSetUpFieldTrials();
 
@@ -97,13 +87,11 @@ void AwFieldTrialCreator::DoSetUpFieldTrials() {
   field_trial_list_ = std::make_unique<base::FieldTrialList>(
       CreateLowEntropyProvider(client_id));
 
-  std::unique_ptr<PrefService> local_state = CreateLocalState();
-
   variations::UIStringOverrider ui_string_overrider;
   client_ = std::make_unique<AwVariationsServiceClient>();
   variations_field_trial_creator_ =
       std::make_unique<variations::VariationsFieldTrialCreator>(
-          local_state.get(), client_.get(), ui_string_overrider);
+          GetLocalState(), client_.get(), ui_string_overrider);
 
   variations_field_trial_creator_->OverrideVariationsPlatform(
       variations::Study::PLATFORM_ANDROID_WEBVIEW);
@@ -113,9 +101,7 @@ void AwFieldTrialCreator::DoSetUpFieldTrials() {
   // TODO(isherman): We might want a more genuine SafeSeedManager:
   // https://crbug.com/801771
   std::set<std::string> unforceable_field_trials;
-  variations::SafeSeedManager ignored_safe_seed_manager(true,
-                                                        local_state.get());
-
+  variations::SafeSeedManager ignored_safe_seed_manager(true, GetLocalState());
   // Populates the FieldTrialList singleton via the static member functions.
   variations_field_trial_creator_->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
@@ -125,6 +111,19 @@ void AwFieldTrialCreator::DoSetUpFieldTrials() {
       &ignored_safe_seed_manager);
 
   LogTestExperiment();
+}
+
+PrefService* AwFieldTrialCreator::GetLocalState() {
+  if (!local_state_) {
+    scoped_refptr<PrefRegistrySimple> pref_registry =
+        base::MakeRefCounted<PrefRegistrySimple>();
+    variations::VariationsService::RegisterPrefs(pref_registry.get());
+
+    PrefServiceFactory factory;
+    factory.set_user_prefs(base::MakeRefCounted<InMemoryPrefStore>());
+    local_state_ = factory.Create(pref_registry.get());
+  }
+  return local_state_.get();
 }
 
 }  // namespace android_webview
