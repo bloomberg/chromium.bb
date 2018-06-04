@@ -17,8 +17,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/values.h"
-#include "chromecast/browser/extensions/api/tts/tts_engine_extension_api.h"
-#include "chromecast/browser/extensions/api/tts/tts_engine_extension_observer.h"
 #include "chromecast/browser/extensions/api/tts/tts_extension_api_constants.h"
 #include "chromecast/browser/tts/tts_controller.h"
 #include "extensions/browser/event_router.h"
@@ -346,17 +344,12 @@ ExtensionFunction::ResponseAction TtsGetVoicesFunction::Run() {
 TtsAPI::TtsAPI(content::BrowserContext* context) {
   ExtensionFunctionRegistry& registry =
       ExtensionFunctionRegistry::GetInstance();
-  registry.RegisterFunction<ExtensionTtsEngineUpdateVoicesFunction>();
-  registry.RegisterFunction<ExtensionTtsEngineSendTtsEventFunction>();
   registry.RegisterFunction<TtsGetVoicesFunction>();
   registry.RegisterFunction<TtsIsSpeakingFunction>();
   registry.RegisterFunction<TtsSpeakFunction>();
   registry.RegisterFunction<TtsStopSpeakingFunction>();
   registry.RegisterFunction<TtsPauseFunction>();
   registry.RegisterFunction<TtsResumeFunction>();
-
-  // Ensure we're observing newly added engines for the given context.
-  TtsEngineExtensionObserver::GetInstance(context);
 }
 
 TtsAPI::~TtsAPI() {}

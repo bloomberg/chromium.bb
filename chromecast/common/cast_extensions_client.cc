@@ -18,7 +18,6 @@
 #include "chromecast/common/extensions_api/cast_manifest_features.h"
 #include "chromecast/common/extensions_api/cast_permission_features.h"
 #include "chromecast/common/extensions_api/generated_schemas.h"
-#include "chromecast/common/extensions_api/tts/tts_engine_manifest_handler.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/common/api/generated_schemas.h"
@@ -47,7 +46,6 @@ void RegisterCastManifestHandlers() {
   (new AutomationHandler)->Register();  // TODO(crbug/837773) De-dupe later.
   (new chromecast::CastRedirectHandler)->Register();
   (new ContentScriptsHandler)->Register();
-  (new TtsEngineManifestHandler)->Register();
 }
 
 // TODO(jamescook): Refactor ChromePermissionsMessageProvider so we can share

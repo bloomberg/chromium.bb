@@ -38,8 +38,6 @@ cast_source_set("common") {
       "extensions_api/cast_api_permissions.h",
       "extensions_api/cast_extension_messages.cc",
       "extensions_api/cast_extension_messages.h",
-      "extensions_api/tts/tts_engine_manifest_handler.cc",
-      "extensions_api/tts/tts_engine_manifest_handler.h",
     ]
 
     deps += [
