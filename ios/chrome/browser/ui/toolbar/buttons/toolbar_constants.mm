@@ -46,6 +46,7 @@ const CGFloat kBackButtonImageInset = -9;
 const CGFloat kForwardButtonImageInset = -7;
 const CGFloat kLeadingLocationBarButtonImageInset = 15;
 const CGFloat kCancelButtonHorizontalInset = 8;
+const CGFloat kToolbarDimmedButtonAlpha = 0.5;
 
 const CGFloat kBlurBackgroundGrayscaleComponent = 0.98;
 const CGFloat kBlurBackgroundAlpha = 0.4;

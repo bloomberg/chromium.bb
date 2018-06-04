@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_visibility_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_search_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
@@ -40,10 +41,6 @@ typedef NS_ENUM(NSInteger, ToolbarButtonState) {
 
 // Number of style used for the buttons.
 const int styleCount = 2;
-// Omnibox background.
-const CGFloat kOmniboxBackgroundHeight = 38;
-const CGFloat kOmniboxBackgroundCornerRadius = 13;
-const CGFloat kOmniboxButtonBackgroundAlphaFactor = 0.5;
 }  // namespace
 
 @implementation ToolbarButtonFactory
@@ -411,7 +408,7 @@ const CGFloat kOmniboxButtonBackgroundAlphaFactor = 0.5;
 }
 
 - (ToolbarButton*)omniboxButton {
-  ToolbarButton* omniboxButton = [ToolbarButton
+  ToolbarSearchButton* omniboxButton = [ToolbarSearchButton
       toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_search"]];
 
   [self configureButton:omniboxButton width:kOmniboxButtonWidth];
@@ -421,20 +418,6 @@ const CGFloat kOmniboxButtonBackgroundAlphaFactor = 0.5;
   omniboxButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_TOOLBAR_SEARCH);
   omniboxButton.accessibilityIdentifier = kToolbarOmniboxButtonIdentifier;
-
-  UIView* background = [[UIView alloc] init];
-  background.translatesAutoresizingMaskIntoConstraints = NO;
-  background.userInteractionEnabled = NO;
-  background.backgroundColor =
-      [self.toolbarConfiguration locationBarBackgroundColorWithVisibility:
-                                     kOmniboxButtonBackgroundAlphaFactor];
-  background.layer.cornerRadius = kOmniboxBackgroundCornerRadius;
-  [omniboxButton addSubview:background];
-  AddSameCenterConstraints(omniboxButton, background);
-  [background.heightAnchor constraintEqualToConstant:kOmniboxBackgroundHeight]
-      .active = YES;
-  [background.widthAnchor constraintEqualToAnchor:omniboxButton.widthAnchor]
-      .active = YES;
 
   omniboxButton.visibilityMask =
       self.visibilityConfiguration.omniboxButtonVisibility;
