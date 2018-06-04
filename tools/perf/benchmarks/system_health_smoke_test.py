@@ -68,9 +68,6 @@ _DISABLED_TESTS = frozenset({
   # crbug.com/725386
   'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_desktop/browse:social:twitter', # pylint: disable=line-too-long
 
-  # crbug.com/799734
-  'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_desktop/browse:media:tumblr', # pylint: disable=line-too-long
-
   # crbug.com/816482
   'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_desktop/load:news:nytimes', # pylint: disable=line-too-long
 })
