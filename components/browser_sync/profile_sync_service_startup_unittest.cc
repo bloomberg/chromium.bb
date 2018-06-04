@@ -95,6 +95,9 @@ class ProfileSyncServiceStartupTest : public testing::Test {
         profile_sync_service_bundle_.identity_manager(), kEmail);
   }
 
+  // TODO(treib): This doesn't notify observers of
+  // SigninManager/IdentityManager, so it really only works before creating
+  // anything.
   void SimulateTestUserSigninWithoutRefreshToken() {
     // Set the primary account *without* providing an OAuth token.
     // TODO(https://crbug.com/814787): Change this flow to go through a
@@ -226,35 +229,27 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 }
 #endif  // OS_CHROMEOS
 
-// TODO(pavely): Reenable test once android is switched to oauth2.
-TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
-  // We've never completed startup.
-  pref_service()->ClearPref(syncer::prefs::kSyncFirstSetupComplete);
+TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
+  // We're already signed in, but don't have a refresh token.
+  SimulateTestUserSigninWithoutRefreshToken();
+
   CreateSyncService(ProfileSyncService::MANUAL_START);
 
-  // Should not actually start, rather just clean things up and wait
-  // to be enabled.
-  EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
-      .Times(0);
+  sync_service()->SetFirstSetupComplete();
+  SetUpFakeSyncEngine();
+  DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
+  EXPECT_CALL(*data_type_manager, Configure(_, _));
+  EXPECT_CALL(*data_type_manager, state())
+      .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
+
   sync_service()->Initialize();
 
-  // Preferences should be back to defaults.
-  EXPECT_EQ(0, pref_service()->GetInt64(syncer::prefs::kSyncLastSyncedTime));
-  EXPECT_FALSE(
-      pref_service()->GetBoolean(syncer::prefs::kSyncFirstSetupComplete));
-
-  // Then start things up.
-  auto sync_blocker = sync_service()->GetSetupInProgressHandle();
-
-  // Simulate successful signin as test_user.
-  SimulateTestUserSignin();
-
-  sync_blocker.reset();
-  // ProfileSyncService should try to start by requesting access token.
-  // This request should fail as login token was not issued.
-  EXPECT_FALSE(sync_service()->IsSyncActive());
-  EXPECT_EQ(GoogleServiceAuthError::USER_NOT_SIGNED_UP,
-            sync_service()->GetAuthError().state());
+  // ProfileSyncService should now be active, but of course not have an access
+  // token.
+  EXPECT_TRUE(sync_service()->IsSyncActive());
+  EXPECT_TRUE(sync_service()->GetAccessTokenForTest().empty());
+  // Note that ProfileSyncService is not in an auth error state - no auth was
+  // attempted, so no error.
 }
 
 // TODO(pavely): Reenable test once android is switched to oauth2.
