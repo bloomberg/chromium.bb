@@ -42,8 +42,7 @@ WebSocketHandshakeStreamCreateHelper::CreateBasicStream(
       std::move(connection), connect_delegate_, using_proxy,
       requested_subprotocols_, extensions, request_,
       websocket_endpoint_lock_manager);
-  OnBasicStreamCreated(stream.get());
-  request_->OnHandshakeStreamCreated(stream.get());
+  request_->OnBasicHandshakeStreamCreated(stream.get());
   return std::move(stream);
 }
 
@@ -54,15 +53,11 @@ WebSocketHandshakeStreamCreateHelper::CreateHttp2Stream(
 
   std::vector<std::string> extensions(
       1, "permessage-deflate; client_max_window_bits");
-  std::unique_ptr<WebSocketHandshakeStreamBase> stream =
-      std::make_unique<WebSocketHttp2HandshakeStream>(
-          session, connect_delegate_, requested_subprotocols_, extensions,
-          request_);
-  request_->OnHandshakeStreamCreated(stream.get());
+  auto stream = std::make_unique<WebSocketHttp2HandshakeStream>(
+      session, connect_delegate_, requested_subprotocols_, extensions,
+      request_);
+  request_->OnHttp2HandshakeStreamCreated(stream.get());
   return stream;
 }
-
-void WebSocketHandshakeStreamCreateHelper::OnBasicStreamCreated(
-    WebSocketBasicHandshakeStream* stream) {}
 
 }  // namespace net

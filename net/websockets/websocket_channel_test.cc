@@ -54,6 +54,9 @@
 
 namespace net {
 
+class WebSocketBasicHandshakeStream;
+class WebSocketHttp2HandshakeStream;
+
 // Printing helpers to allow GoogleMock to print frames. These are explicitly
 // designed to look like the static initialisation format we use in these
 // tests. They have to live in the net namespace in order to be found by
@@ -686,8 +689,10 @@ class MockWebSocketStream : public WebSocketStream {
 
 class MockWebSocketStreamRequest : public WebSocketStreamRequest {
  public:
-  MOCK_METHOD1(OnHandshakeStreamCreated,
-               void(WebSocketHandshakeStreamBase* handshake_stream));
+  MOCK_METHOD1(OnBasicHandshakeStreamCreated,
+               void(WebSocketBasicHandshakeStream* handshake_stream));
+  MOCK_METHOD1(OnHttp2HandshakeStreamCreated,
+               void(WebSocketHttp2HandshakeStream* handshake_stream));
   MOCK_METHOD1(OnFailure, void(const std::string& message));
 };
 

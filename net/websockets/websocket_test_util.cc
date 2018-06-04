@@ -253,9 +253,12 @@ WebSocketTestURLRequestContextHost::GetURLRequestContext() {
   return &url_request_context_;
 }
 
-void TestWebSocketHandshakeStreamCreateHelper::OnBasicStreamCreated(
-    WebSocketBasicHandshakeStream* stream) {
-  stream->SetWebSocketKeyForTesting("dGhlIHNhbXBsZSBub25jZQ==");
+void TestWebSocketStreamRequestAPI::OnBasicHandshakeStreamCreated(
+    WebSocketBasicHandshakeStream* handshake_stream) {
+  handshake_stream->SetWebSocketKeyForTesting("dGhlIHNhbXBsZSBub25jZQ==");
 }
+
+void TestWebSocketStreamRequestAPI::OnHttp2HandshakeStreamCreated(
+    WebSocketHttp2HandshakeStream* handshake_stream) {}
 
 }  // namespace net

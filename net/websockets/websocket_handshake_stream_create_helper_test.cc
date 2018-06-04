@@ -99,12 +99,14 @@ class TestConnectDelegate : public WebSocketStream::ConnectDelegate {
       bool fatal) override {}
 };
 
-class MockWebSocketStreamRequest : public WebSocketStreamRequest {
+class MockWebSocketStreamRequestAPI : public WebSocketStreamRequestAPI {
  public:
-  ~MockWebSocketStreamRequest() override = default;
+  ~MockWebSocketStreamRequestAPI() override = default;
 
-  MOCK_METHOD1(OnHandshakeStreamCreated,
-               void(WebSocketHandshakeStreamBase* handshake_stream));
+  MOCK_METHOD1(OnBasicHandshakeStreamCreated,
+               void(WebSocketBasicHandshakeStream* handshake_stream));
+  MOCK_METHOD1(OnHttp2HandshakeStreamCreated,
+               void(WebSocketHttp2HandshakeStream* handshake_stream));
   MOCK_METHOD1(OnFailure, void(const std::string& message));
 };
 
@@ -125,7 +127,19 @@ class WebSocketHandshakeStreamCreateHelperTest
                                                        sub_protocols);
     create_helper.set_stream_request(&stream_request_);
 
-    EXPECT_CALL(stream_request_, OnHandshakeStreamCreated(_)).Times(1);
+    switch (GetParam()) {
+      case BASIC_HANDSHAKE_STREAM:
+        EXPECT_CALL(stream_request_, OnBasicHandshakeStreamCreated(_)).Times(1);
+        break;
+
+      case HTTP2_HANDSHAKE_STREAM:
+        EXPECT_CALL(stream_request_, OnHttp2HandshakeStreamCreated(_)).Times(1);
+        break;
+
+      default:
+        NOTREACHED();
+    }
+
     EXPECT_CALL(stream_request_, OnFailure(_)).Times(0);
 
     HttpRequestInfo request_info;
@@ -255,7 +269,7 @@ class WebSocketHandshakeStreamCreateHelperTest
  private:
   MockClientSocketHandleFactory socket_handle_factory_;
   TestConnectDelegate connect_delegate_;
-  StrictMock<MockWebSocketStreamRequest> stream_request_;
+  StrictMock<MockWebSocketStreamRequestAPI> stream_request_;
   WebSocketEndpointLockManager websocket_endpoint_lock_manager_;
 };
 

@@ -171,7 +171,7 @@ WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
     bool using_proxy,
     std::vector<std::string> requested_sub_protocols,
     std::vector<std::string> requested_extensions,
-    WebSocketStreamRequest* request,
+    WebSocketStreamRequestAPI* request,
     WebSocketEndpointLockManager* websocket_endpoint_lock_manager)
     : result_(HandshakeResult::INCOMPLETE),
       state_(std::move(connection),

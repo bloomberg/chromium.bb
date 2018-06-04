@@ -37,20 +37,29 @@ class NetLogWithSource;
 class URLRequest;
 class URLRequestContext;
 struct WebSocketFrame;
-class WebSocketHandshakeStreamBase;
+class WebSocketBasicHandshakeStream;
+class WebSocketHttp2HandshakeStream;
 class WebSocketHandshakeStreamCreateHelper;
 
 // WebSocketStreamRequest is the caller's handle to the process of creation of a
-// WebSocketStream. Deleting the object before the OnSuccess or OnFailure
-// callbacks are called will cancel the request (and neither callback will be
-// called). After OnSuccess or OnFailure have been called, this object may be
-// safely deleted without side-effects.
+// WebSocketStream. Deleting the object before the ConnectDelegate OnSuccess or
+// OnFailure callbacks are called will cancel the request (and neither callback
+// will be called). After OnSuccess or OnFailure have been called, this object
+// may be safely deleted without side-effects.
 class NET_EXPORT_PRIVATE WebSocketStreamRequest {
  public:
   virtual ~WebSocketStreamRequest();
+};
 
-  virtual void OnHandshakeStreamCreated(
-      WebSocketHandshakeStreamBase* handshake_stream) = 0;
+// A subclass of WebSocketStreamRequest that exposes methods that are used as
+// part of the handshake.
+class NET_EXPORT_PRIVATE WebSocketStreamRequestAPI
+    : public WebSocketStreamRequest {
+ public:
+  virtual void OnBasicHandshakeStreamCreated(
+      WebSocketBasicHandshakeStream* handshake_stream) = 0;
+  virtual void OnHttp2HandshakeStreamCreated(
+      WebSocketHttp2HandshakeStream* handshake_stream) = 0;
   virtual void OnFailure(const std::string& message) = 0;
 };
 
@@ -131,7 +140,9 @@ class NET_EXPORT_PRIVATE WebSocketStream {
       std::unique_ptr<ConnectDelegate> connect_delegate);
 
   // Alternate version of CreateAndConnectStream() for testing use only. It
-  // takes |timer| as the handshake timeout timer.
+  // takes |timer| as the handshake timeout timer, and for methods on
+  // WebSocketStreamRequestAPI calls the |api_delegate| object before the
+  // in-built behaviour if non-null.
   static std::unique_ptr<WebSocketStreamRequest>
   CreateAndConnectStreamForTesting(
       const GURL& socket_url,
@@ -142,7 +153,8 @@ class NET_EXPORT_PRIVATE WebSocketStream {
       URLRequestContext* url_request_context,
       const NetLogWithSource& net_log,
       std::unique_ptr<ConnectDelegate> connect_delegate,
-      std::unique_ptr<base::Timer> timer);
+      std::unique_ptr<base::Timer> timer,
+      std::unique_ptr<WebSocketStreamRequestAPI> api_delegate);
 
   // Derived classes must make sure Close() is called when the stream is not
   // closed on destruction.

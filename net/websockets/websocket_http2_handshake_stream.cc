@@ -41,7 +41,7 @@ WebSocketHttp2HandshakeStream::WebSocketHttp2HandshakeStream(
     WebSocketStream::ConnectDelegate* connect_delegate,
     std::vector<std::string> requested_sub_protocols,
     std::vector<std::string> requested_extensions,
-    WebSocketStreamRequest* request)
+    WebSocketStreamRequestAPI* request)
     : result_(HandshakeResult::HTTP2_INCOMPLETE),
       session_(session),
       connect_delegate_(connect_delegate),
