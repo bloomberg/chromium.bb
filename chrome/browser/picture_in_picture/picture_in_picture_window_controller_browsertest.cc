@@ -377,4 +377,59 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(video_paused);
 }
 
+// Checks entering Picture-in-Picture on multiple tabs, where the initial tab
+// has been closed.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       PictureInPictureAfterClosingTab) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents != nullptr);
+
+  SetUpWindowController(active_web_contents);
+
+  EXPECT_TRUE(
+      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
+
+  // Wait for resize event from the page.
+  base::string16 expected_title = base::ASCIIToUTF16("1");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  ASSERT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  // Open a new tab in the browser.
+  AddTabAtIndex(1, test_page_url, ui::PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+
+  // Once the initiator tab is closed, the controller should also be torn down.
+  browser()->tab_strip_model()->CloseWebContentsAt(0, 0);
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
+
+  // Open video in Picture-in-Picture mode again, on the new tab.
+  active_web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents != nullptr);
+
+  SetUpWindowController(active_web_contents);
+
+  EXPECT_TRUE(
+      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
+
+  // Wait for resize event from the page.
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  ASSERT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+}
+
 #endif  // !defined(OS_LINUX) && !defined(OS_WIN)
