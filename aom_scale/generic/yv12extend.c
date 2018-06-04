@@ -320,3 +320,92 @@ void aom_yv12_copy_v_c(const YV12_BUFFER_CONFIG *src_bc,
     dst += dst_bc->uv_stride;
   }
 }
+
+void aom_yv12_partial_copy_y_c(const YV12_BUFFER_CONFIG *src_ybc,
+                               YV12_BUFFER_CONFIG *dst_ybc, int hstart,
+                               int hend, int vstart, int vend) {
+  int row;
+  const uint8_t *src = src_ybc->y_buffer;
+  uint8_t *dst = dst_ybc->y_buffer;
+
+  if (src_ybc->flags & YV12_FLAG_HIGHBITDEPTH) {
+    const uint16_t *src16 =
+        CONVERT_TO_SHORTPTR(src + vstart * src_ybc->y_stride + hstart);
+    uint16_t *dst16 =
+        CONVERT_TO_SHORTPTR(dst + vstart * dst_ybc->y_stride + hstart);
+    for (row = vstart; row < vend; ++row) {
+      memcpy(dst16, src16, (hend - hstart) * sizeof(uint16_t));
+      src16 += src_ybc->y_stride;
+      dst16 += dst_ybc->y_stride;
+    }
+    return;
+  }
+  src = (src + vstart * src_ybc->y_stride + hstart);
+  dst = (dst + vstart * dst_ybc->y_stride + hstart);
+
+  for (row = vstart; row < vend; ++row) {
+    memcpy(dst, src, (hend - hstart));
+    src += src_ybc->y_stride;
+    dst += dst_ybc->y_stride;
+  }
+}
+
+void aom_yv12_partial_copy_u_c(const YV12_BUFFER_CONFIG *src_bc,
+                               YV12_BUFFER_CONFIG *dst_bc, int hstart, int hend,
+                               int vstart, int vend) {
+  int row;
+  const uint8_t *src = src_bc->u_buffer;
+  uint8_t *dst = dst_bc->u_buffer;
+
+  if (src_bc->flags & YV12_FLAG_HIGHBITDEPTH) {
+    const uint16_t *src16 =
+        CONVERT_TO_SHORTPTR(src + vstart * src_bc->uv_stride + hstart);
+    uint16_t *dst16 =
+        CONVERT_TO_SHORTPTR(dst + vstart * dst_bc->uv_stride + hstart);
+    for (row = vstart; row < vend; ++row) {
+      memcpy(dst16, src16, (hend - hstart) * sizeof(uint16_t));
+      src16 += src_bc->uv_stride;
+      dst16 += dst_bc->uv_stride;
+    }
+    return;
+  }
+
+  src = (src + vstart * src_bc->uv_stride + hstart);
+  dst = (dst + vstart * dst_bc->uv_stride + hstart);
+
+  for (row = vstart; row < vend; ++row) {
+    memcpy(dst, src, (hend - hstart));
+    src += src_bc->uv_stride;
+    dst += dst_bc->uv_stride;
+  }
+}
+
+void aom_yv12_partial_copy_v_c(const YV12_BUFFER_CONFIG *src_bc,
+                               YV12_BUFFER_CONFIG *dst_bc, int hstart, int hend,
+                               int vstart, int vend) {
+  int row;
+  const uint8_t *src = src_bc->v_buffer;
+  uint8_t *dst = dst_bc->v_buffer;
+
+  if (src_bc->flags & YV12_FLAG_HIGHBITDEPTH) {
+    const uint16_t *src16 =
+        CONVERT_TO_SHORTPTR(src + vstart * src_bc->uv_stride + hstart);
+    uint16_t *dst16 =
+        CONVERT_TO_SHORTPTR(dst + vstart * dst_bc->uv_stride + hstart);
+    for (row = vstart; row < vend; ++row) {
+      memcpy(dst16, src16, (hend - hstart) * sizeof(uint16_t));
+      src16 += src_bc->uv_stride;
+      dst16 += dst_bc->uv_stride;
+    }
+    return;
+  }
+
+  src = (src + vstart * src_bc->uv_stride + hstart);
+  dst = (dst + vstart * dst_bc->uv_stride + hstart);
+
+  for (row = vstart; row < vend; ++row) {
+    memcpy(dst, src, (hend - hstart));
+    src += src_bc->uv_stride;
+    dst += dst_bc->uv_stride;
+  }
+}

@@ -1243,7 +1243,7 @@ static double search_rest_type(RestSearchCtxt *rsc, RestorationType rtype) {
   };
 
   reset_rsc(rsc);
-  rsc_on_tile(0, 0, rsc);
+  rsc_on_tile(LR_TILE_ROW, LR_TILE_COL, rsc);
   av1_foreach_rest_unit_in_plane(rsc->cm, rsc->plane, funs[rtype], rsc,
                                  &rsc->tile_rect, rsc->cm->rst_tmpbuf, NULL);
   return RDCOST_DBL(rsc->x->rdmult, rsc->bits >> 4, rsc->sse);

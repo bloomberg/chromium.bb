@@ -171,6 +171,10 @@ extern "C" {
 #error "Wiener filter currently only works if WIENER_FILT_PREC_BITS == 7"
 #endif
 
+#define LR_TILE_ROW 0
+#define LR_TILE_COL 0
+#define LR_TILE_COLS 1
+
 typedef struct {
   int r[2];  // radii
   int s[2];  // sgr parameters for r[0] and r[1], based on GenSgrprojVtable()
@@ -317,6 +321,11 @@ void av1_loop_restoration_precal();
 typedef void (*rest_tile_start_visitor_t)(int tile_row, int tile_col,
                                           void *priv);
 
+typedef void (*sync_read_fn_t)(void *const lr_sync, int r, int c, int plane);
+
+typedef void (*sync_write_fn_t)(void *const lr_sync, int r, int c,
+                                const int sb_cols, int plane);
+
 // Call on_rest_unit for each loop restoration unit in the plane.
 void av1_foreach_rest_unit_in_plane(const struct AV1Common *cm, int plane,
                                     rest_unit_visitor_t on_rest_unit,
@@ -351,10 +360,15 @@ void av1_foreach_rest_unit_in_row(RestorationTileLimits *limits,
                                   const AV1PixelRect *tile_rect,
                                   rest_unit_visitor_t on_rest_unit,
                                   int row_number, int unit_size, int unit_idx0,
-                                  int hunits_per_tile, void *priv,
-                                  int32_t *tmpbuf,
-                                  RestorationLineBuffers *rlbs);
+                                  int hunits_per_tile, int plane, void *priv,
+                                  int32_t *tmpbuf, RestorationLineBuffers *rlbs,
+                                  sync_read_fn_t on_sync_read,
+                                  sync_write_fn_t on_sync_write);
 AV1PixelRect av1_whole_frame_rect(const struct AV1Common *cm, int is_uv);
+int av1_lr_count_units_in_tile(int unit_size, int tile_size);
+void av1_lr_sync_read_dummy(void *const lr_sync, int r, int c, int plane);
+void av1_lr_sync_write_dummy(void *const lr_sync, int r, int c,
+                             const int sb_cols, int plane);
 #ifdef __cplusplus
 }  // extern "C"
 #endif
