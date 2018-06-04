@@ -583,6 +583,11 @@
     "args": ["--autoplay-policy=document-user-activation-required"]
   },
   {
+    "prefix": "threaded",
+    "base": "external/wpt/feature-policy/experimental-features",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
     "prefix": "sampling-heap-profiler",
     "base": "inspector-protocol/memory",
     "args": ["--sampling-heap-profiler"]
