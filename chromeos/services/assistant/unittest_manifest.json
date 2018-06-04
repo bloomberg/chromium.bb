@@ -9,7 +9,9 @@
         ]
       },
       "requires": {
-        "assistant": []
+        "assistant": [
+            "assistant"
+        ]
       }
     }
   }

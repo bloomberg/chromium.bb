@@ -12,7 +12,9 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "components/account_id/account_id.h"
@@ -36,6 +38,7 @@ class AssistantManagerService;
 class AssistantSettingsManager;
 
 class Service : public service_manager::Service,
+                public chromeos::PowerManagerClient::Observer,
                 public ash::mojom::SessionActivationObserver,
                 public mojom::AssistantPlatform {
  public:
@@ -59,6 +62,9 @@ class Service : public service_manager::Service,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
   void BindAssistantConnection(mojom::AssistantRequest request);
   void BindAssistantPlatformConnection(mojom::AssistantPlatformRequest request);
+
+  // chromeos::PowerManagerClient::Observer overrides:
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // mojom::AssistantPlatform overrides:
   void Init(mojom::ClientPtr client,
@@ -104,7 +110,11 @@ class Service : public service_manager::Service,
   std::unique_ptr<AssistantManagerService> assistant_manager_service_;
   AssistantSettingsManager* assistant_settings_manager_;
   std::unique_ptr<base::OneShotTimer> token_refresh_timer_;
+  int token_refresh_error_backoff_factor = 1;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  ScopedObserver<chromeos::PowerManagerClient,
+                 chromeos::PowerManagerClient::Observer>
+      power_manager_observer_;
 
   // Whether the current user session is active.
   bool session_active_ = false;
