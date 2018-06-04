@@ -43,7 +43,7 @@ class OutputStream final : public media::mojom::AudioOutputStream,
  public:
   using DeleteCallback = base::OnceCallback<void(OutputStream*)>;
   using CreatedCallback =
-      base::OnceCallback<void(media::mojom::AudioDataPipePtr)>;
+      base::OnceCallback<void(media::mojom::ReadWriteAudioDataPipePtr)>;
 
   OutputStream(CreatedCallback created_callback,
                DeleteCallback delete_callback,

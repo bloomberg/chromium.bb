@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/process/process.h"
 #include "base/sync_socket.h"
 #include "base/time/time.h"
@@ -43,10 +43,12 @@ class SyncReader : public OutputController::SyncReader {
   ~SyncReader() override;
 
   // Returns true if the SyncReader initialized successfully, and
-  // shared_memory() will return a valid pointer.
+  // TakeSharedMemoryRegion() will return a valid region.
   bool IsValid() const;
 
-  const base::SharedMemory* shared_memory() const { return &shared_memory_; }
+  // Transfers shared memory region ownership to a caller. It shouldn't be
+  // called more than once.
+  base::UnsafeSharedMemoryRegion TakeSharedMemoryRegion();
 
   // OutputController::SyncReader implementation.
   void RequestMoreData(base::TimeDelta delay,
@@ -62,7 +64,8 @@ class SyncReader : public OutputController::SyncReader {
 
   const base::RepeatingCallback<void(const std::string&)> log_callback_;
 
-  base::SharedMemory shared_memory_;
+  base::UnsafeSharedMemoryRegion shared_memory_region_;
+  base::WritableSharedMemoryMapping shared_memory_mapping_;
 
   // Mutes all incoming samples. This is used to prevent audible sound
   // during automated testing.

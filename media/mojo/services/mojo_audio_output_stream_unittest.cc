@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
@@ -96,8 +96,8 @@ class MockClient {
  public:
   MockClient() = default;
 
-  void Initialize(mojom::AudioDataPipePtr data_pipe) {
-    ASSERT_TRUE(data_pipe->shared_memory.is_valid());
+  void Initialize(mojom::ReadWriteAudioDataPipePtr data_pipe) {
+    ASSERT_TRUE(data_pipe->shared_memory.IsValid());
     ASSERT_TRUE(data_pipe->socket.is_valid());
 
     base::PlatformFile fd;
@@ -105,17 +105,7 @@ class MockClient {
     socket_ = std::make_unique<base::CancelableSyncSocket>(fd);
     EXPECT_NE(socket_->handle(), base::CancelableSyncSocket::kInvalidHandle);
 
-    size_t memory_length;
-    base::SharedMemoryHandle shmem_handle;
-    mojo::UnwrappedSharedMemoryHandleProtection protection;
-    EXPECT_EQ(mojo::UnwrapSharedMemoryHandle(
-                  std::move(data_pipe->shared_memory), &shmem_handle,
-                  &memory_length, &protection),
-              MOJO_RESULT_OK);
-    EXPECT_EQ(protection,
-              mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
-    buffer_ = std::make_unique<base::SharedMemory>(shmem_handle,
-                                                   false /* read_only */);
+    shared_memory_region_ = std::move(data_pipe->shared_memory);
 
     GotNotification();
   }
@@ -123,7 +113,7 @@ class MockClient {
   MOCK_METHOD0(GotNotification, void());
 
  private:
-  std::unique_ptr<base::SharedMemory> buffer_;
+  base::UnsafeSharedMemoryRegion shared_memory_region_;
   std::unique_ptr<base::CancelableSyncSocket> socket_;
 };
 
@@ -132,7 +122,7 @@ std::unique_ptr<AudioOutputDelegate> CreateNoDelegate(
   return nullptr;
 }
 
-void NotCalled(mojom::AudioOutputStreamPtr, mojom::AudioDataPipePtr) {
+void NotCalled(mojom::AudioOutputStreamPtr, mojom::ReadWriteAudioDataPipePtr) {
   ADD_FAILURE() << "The StreamCreated callback was called despite the test "
                    "expecting it not to.";
 }
@@ -159,7 +149,7 @@ class MojoAudioOutputStreamTest : public Test {
 
  protected:
   void CreatedStream(mojom::AudioOutputStreamPtr stream,
-                     mojom::AudioDataPipePtr data_pipe) {
+                     mojom::ReadWriteAudioDataPipePtr data_pipe) {
     EXPECT_EQ(mojo::FuseMessagePipes(pending_stream_request_.PassMessagePipe(),
                                      stream.PassInterface().PassHandle()),
               MOJO_RESULT_OK);

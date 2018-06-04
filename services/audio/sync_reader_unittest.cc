@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/sync_socket.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
@@ -66,10 +66,11 @@ TEST_P(SyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {
   auto socket = std::make_unique<base::CancelableSyncSocket>();
   SyncReader reader(base::BindRepeating(&NoLog), params, socket.get());
   ASSERT_TRUE(reader.IsValid());
-  auto* const shmem = reader.shared_memory();
-  ASSERT_TRUE(shmem);
+  const base::WritableSharedMemoryMapping shmem =
+      reader.TakeSharedMemoryRegion().Map();
+  ASSERT_TRUE(shmem.IsValid());
   auto* const buffer =
-      reinterpret_cast<media::AudioOutputBuffer*>(shmem->memory());
+      reinterpret_cast<media::AudioOutputBuffer*>(shmem.memory());
   ASSERT_TRUE(buffer);
   reader.RequestMoreData(base::TimeDelta(), base::TimeTicks(), 0);
 
@@ -85,15 +86,15 @@ TEST_P(SyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {
       break;
     case kNoOverflow:
       buffer->params.bitstream_data_size =
-          shmem->mapped_size() - sizeof(AudioOutputBufferParameters);
+          shmem.mapped_size() - sizeof(AudioOutputBufferParameters);
       break;
     case kOverflowByOne:
       buffer->params.bitstream_data_size =
-          shmem->mapped_size() - sizeof(AudioOutputBufferParameters) + 1;
+          shmem.mapped_size() - sizeof(AudioOutputBufferParameters) + 1;
       break;
     case kOverflowByOneThousand:
       buffer->params.bitstream_data_size =
-          shmem->mapped_size() - sizeof(AudioOutputBufferParameters) + 1000;
+          shmem.mapped_size() - sizeof(AudioOutputBufferParameters) + 1000;
       break;
     case kOverflowByMax:
       buffer->params.bitstream_data_size = std::numeric_limits<decltype(

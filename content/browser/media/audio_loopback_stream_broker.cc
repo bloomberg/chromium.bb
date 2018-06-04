@@ -141,7 +141,7 @@ void AudioLoopbackStreamBroker::DidStartRecording() {
 
 void AudioLoopbackStreamBroker::StreamCreated(
     media::mojom::AudioInputStreamPtr stream,
-    media::mojom::AudioDataPipePtr data_pipe) {
+    media::mojom::ReadOnlyAudioDataPipePtr data_pipe) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!data_pipe) {

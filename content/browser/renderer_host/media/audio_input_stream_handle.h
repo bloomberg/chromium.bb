@@ -37,7 +37,7 @@ class CONTENT_EXPORT AudioInputStreamHandle {
   void SetOutputDeviceForAec(const std::string& raw_output_device_id);
 
  private:
-  void OnCreated(media::mojom::AudioDataPipePtr, bool initially_muted);
+  void OnCreated(media::mojom::ReadOnlyAudioDataPipePtr, bool initially_muted);
 
   void CallDeleter();
 

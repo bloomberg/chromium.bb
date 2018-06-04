@@ -62,8 +62,7 @@ class FakeStreamFactory : public audio::mojom::StreamFactory {
     auto h = mojo::SharedBufferHandle::Create(kShMemSize);
     std::move(created_callback)
         .Run({base::in_place,
-              mojo::WrapReadOnlySharedMemoryRegion(
-                  base::ReadOnlySharedMemoryRegion::Create(kShMemSize).region),
+              base::ReadOnlySharedMemoryRegion::Create(kShMemSize).region,
               mojo::WrapPlatformFile(socket1.Release())},
              initially_muted_, base::UnguessableToken::Create());
   }

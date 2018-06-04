@@ -97,8 +97,9 @@ class MockClient : public mojom::AudioInputStreamClient {
  public:
   MockClient() = default;
 
-  void Initialized(mojom::AudioDataPipePtr data_pipe, bool initially_muted) {
-    ASSERT_TRUE(data_pipe->shared_memory.is_valid());
+  void Initialized(mojom::ReadOnlyAudioDataPipePtr data_pipe,
+                   bool initially_muted) {
+    ASSERT_TRUE(data_pipe->shared_memory.IsValid());
     ASSERT_TRUE(data_pipe->socket.is_valid());
 
     base::PlatformFile fd;
@@ -106,8 +107,7 @@ class MockClient : public mojom::AudioInputStreamClient {
     socket_ = std::make_unique<base::CancelableSyncSocket>(fd);
     EXPECT_NE(socket_->handle(), base::CancelableSyncSocket::kInvalidHandle);
 
-    region_ = mojo::UnwrapReadOnlySharedMemoryRegion(
-        std::move(data_pipe->shared_memory));
+    region_ = std::move(data_pipe->shared_memory);
     EXPECT_TRUE(region_.IsValid());
 
     GotNotification(initially_muted);
@@ -131,7 +131,8 @@ std::unique_ptr<AudioInputDelegate> CreateNoDelegate(
   return nullptr;
 }
 
-void NotCalled(mojom::AudioDataPipePtr data_pipe, bool initially_muted) {
+void NotCalled(mojom::ReadOnlyAudioDataPipePtr data_pipe,
+               bool initially_muted) {
   EXPECT_TRUE(false) << "The StreamCreated callback was called despite the "
                         "test expecting it not to.";
 }

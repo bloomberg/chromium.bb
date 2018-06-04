@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/sync_socket.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -74,12 +74,9 @@ void MojoAudioOutputStream::OnStreamCreated(
     return;
   }
 
-  mojo::ScopedSharedBufferHandle buffer_handle =
-      mojo::WrapUnsafeSharedMemoryRegion(std::move(shared_memory_region));
   mojo::ScopedHandle socket_handle =
       mojo::WrapPlatformFile(foreign_socket->Release());
 
-  DCHECK(buffer_handle.is_valid());
   DCHECK(socket_handle.is_valid());
 
   mojom::AudioOutputStreamPtr stream;
@@ -89,7 +86,7 @@ void MojoAudioOutputStream::OnStreamCreated(
       &MojoAudioOutputStream::StreamConnectionLost, base::Unretained(this)));
 
   std::move(stream_created_callback_)
-      .Run(std::move(stream), {base::in_place, std::move(buffer_handle),
+      .Run(std::move(stream), {base::in_place, std::move(shared_memory_region),
                                std::move(socket_handle)});
 }
 

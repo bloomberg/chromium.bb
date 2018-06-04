@@ -85,16 +85,14 @@ void MojoAudioInputStream::OnStreamCreated(
     return;
   }
 
-  mojo::ScopedSharedBufferHandle buffer_handle =
-      mojo::WrapReadOnlySharedMemoryRegion(std::move(shared_memory_region));
   mojo::ScopedHandle socket_handle =
       mojo::WrapPlatformFile(foreign_socket->Release());
 
-  DCHECK(buffer_handle.is_valid());
   DCHECK(socket_handle.is_valid());
 
   base::ResetAndReturn(&stream_created_callback_)
-      .Run({base::in_place, std::move(buffer_handle), std::move(socket_handle)},
+      .Run({base::in_place, std::move(shared_memory_region),
+            std::move(socket_handle)},
            initially_muted);
 }
 
