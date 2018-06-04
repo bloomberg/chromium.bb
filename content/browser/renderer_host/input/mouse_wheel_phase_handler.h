@@ -80,6 +80,12 @@ class MouseWheelPhaseHandler {
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result);
 
+  // Used to verify the correctness of touchpad_scroll_phase_state_'s value in
+  // testing.
+  TouchpadScrollPhaseState touchpad_scroll_phase_state_for_test() const {
+    return touchpad_scroll_phase_state_;
+  }
+
  private:
   void SendSyntheticWheelEventWithPhaseEnded(
       bool should_route_event);
