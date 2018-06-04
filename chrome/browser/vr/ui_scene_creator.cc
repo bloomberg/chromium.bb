@@ -899,14 +899,11 @@ std::unique_ptr<UiElement> CreateHostedUi(
 std::unique_ptr<Grid> CreateGrid(Model* model, UiElementName name) {
   auto grid = Create<Grid>(name, kPhaseBackground);
   grid->SetSize(kSceneSize, kSceneSize);
-  grid->SetTranslate(0.0, -kSceneHeight / 2, 0.0);
+  grid->SetTranslate(0.0, kFloorHeight, 0.0);
   grid->SetRotate(1, 0, 0, -base::kPiFloat / 2);
   grid->set_gridline_count(kFloorGridlineCount);
   grid->SetGridColor(model->color_scheme().floor_grid);
   grid->set_focusable(false);
-  grid->AddBinding(VR_BIND(
-      float, Model, model, model->floor_height, Grid, grid.get(),
-      view->SetTranslate(0, value ? value : -kSceneHeight / 2.0f, 0.0)));
   return grid;
 }
 
@@ -1094,6 +1091,9 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
           base::Unretained(model_)),
       VR_BIND_LAMBDA([](UiElement* e, const bool& v) { e->SetVisible(v); },
                      base::Unretained(element.get()))));
+  element->AddBinding(VR_BIND(
+      float, Model, model_, model->floor_height, UiElement, element.get(),
+      view->SetTranslate(0, value ? value - kFloorHeight : 0.0, 0.0)));
 
   scene_->AddUiElement(kRoot, std::move(element));
 
@@ -1168,6 +1168,9 @@ void UiSceneCreator::CreateWebVrRoot() {
   auto element = std::make_unique<UiElement>();
   element->SetName(kWebVrRoot);
   VR_BIND_VISIBILITY(element, model->web_vr_enabled());
+  element->AddBinding(VR_BIND(
+      float, Model, model_, model->floor_height, UiElement, element.get(),
+      view->SetTranslate(0, value ? value - kFloorHeight : 0.0, 0.0)));
   scene_->AddUiElement(kRoot, std::move(element));
 }
 

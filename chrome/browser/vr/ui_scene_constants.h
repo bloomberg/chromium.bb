@@ -108,6 +108,7 @@ static constexpr float kCloseButtonFullscreenDiameter =
 
 static constexpr float kSceneSize = 25.0f;
 static constexpr float kSceneHeight = 4.0f;
+static constexpr float kFloorHeight = -kSceneHeight / 2.0f;
 static constexpr int kFloorGridlineCount = 40;
 
 static constexpr float kVoiceSearchCloseButtonDiameterDMM = 0.096f;
