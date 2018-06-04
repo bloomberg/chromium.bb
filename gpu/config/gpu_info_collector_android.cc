@@ -12,7 +12,8 @@
 
 namespace gpu {
 
-bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectContextGraphicsInfo(GPUInfo* gpu_info,
+                                GpuPreferences* gpu_preferences) {
   // When command buffer is compiled as a standalone library, the process might
   // not have a Java environment.
   if (base::android::IsVMInitialized()) {
@@ -21,7 +22,7 @@ bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   }
 
   // At this point GL bindings have been initialized already.
-  return CollectGraphicsInfoGL(gpu_info);
+  return CollectGraphicsInfoGL(gpu_info, gpu_preferences);
 }
 
 bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {

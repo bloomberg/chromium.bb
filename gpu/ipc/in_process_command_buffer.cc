@@ -326,7 +326,8 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   } else {
     GpuDriverBugWorkarounds workarounds(
         service_->gpu_feature_info().enabled_gpu_driver_bug_workarounds);
-    auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(workarounds);
+    auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
+        workarounds, service_->gpu_preferences());
 
     context_group_ = base::MakeRefCounted<gles2::ContextGroup>(
         service_->gpu_preferences(),

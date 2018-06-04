@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_info_collector.h"
+#include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
@@ -49,14 +50,10 @@ bool GLTestHelper::InitializeGL(gl::GLImplementation gl_impl) {
 
   gpu::GPUInfo gpu_info;
   gpu::CollectGraphicsInfoForTesting(&gpu_info);
-  gpu::GLManager::g_gpu_feature_info =
-      gpu::ComputeGpuFeatureInfo(gpu_info,
-                                 false,  // ignore_gpu_blacklist
-                                 false,  // disable_gpu_driver_bug_workarounds
-                                 false,  // log_gpu_control_list_decisions
-                                 base::CommandLine::ForCurrentProcess(),
-                                 nullptr  // needs_more_info
-                                 );
+  gpu::GLManager::g_gpu_feature_info = gpu::ComputeGpuFeatureInfo(
+      gpu_info, gpu::GpuPreferences(), base::CommandLine::ForCurrentProcess(),
+      nullptr  // needs_more_info
+      );
 
   gl::init::SetDisabledExtensionsPlatform(
       gpu::GLManager::g_gpu_feature_info.disabled_extensions);
@@ -376,7 +373,8 @@ bool GpuCommandBufferTestEGL::InitializeEGLGLES2(int width, int height) {
     }
 
     gpu::GPUInfo gpu_info;
-    gpu::CollectContextGraphicsInfo(&gpu_info);
+    gpu::GpuPreferences gpu_preferences;
+    gpu::CollectContextGraphicsInfo(&gpu_info, &gpu_preferences);
     // See crbug.com/822716, the ATI proprietary driver has eglGetProcAddress
     // but eglInitialize crashes with x11.
     if (gpu_info.gl_vendor.find("ATI Technologies Inc.") != std::string::npos) {

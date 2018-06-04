@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -18,14 +19,19 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
+#include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "third_party/angle/src/gpu_info_util/SystemInfo.h"  // nogncheck
+#include "third_party/skia/include/core/SkGraphics.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gl_version_info.h"
+#include "ui/gl/init/create_gr_gl_interface.h"
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_ANDROID)
@@ -108,6 +114,29 @@ int StringContainsName(
   return -1;
 }
 
+bool SupportsOOPRaster(const gl::GLVersionInfo& gl_info) {
+  // TODO(backer): Thread-safe and idempotent. Still, see if we consolidate with
+  // call in content/gpu/gpu_main.cc?
+  SkGraphics::Init();
+
+  sk_sp<const GrGLInterface> interface(gl::init::CreateGrGLInterface(gl_info));
+  if (!interface) {
+    DLOG(ERROR) << "OOP raster support disabled: GrGLInterface creation "
+                   "failed.";
+    return false;
+  }
+
+  sk_sp<GrContext> gr_context = GrContext::MakeGL(std::move(interface));
+  if (gr_context) {
+    // TODO(backer): Stash this GrContext for future use. For now, destroy.
+    return true;
+  }
+
+  DLOG(ERROR) << "OOP raster support disabled: GrContext creation "
+                 "failed.";
+  return false;
+}
+
 }  // namespace
 
 namespace gpu {
@@ -138,7 +167,7 @@ bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
   return CollectBasicGraphicsInfo(gpu_info);
 }
 
-bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
+bool CollectGraphicsInfoGL(GPUInfo* gpu_info, GpuPreferences* gpu_preferences) {
   TRACE_EVENT0("startup", "gpu_info_collector::CollectGraphicsInfoGL");
   DCHECK_NE(gl::GetGLImplementation(), gl::kGLImplementationNone);
 
@@ -216,6 +245,12 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
     gpu_info->rgba_visual = visual_picker->rgba_visual().visualid;
   }
 #endif
+
+  if (gpu_preferences->enable_oop_rasterization) {
+    gpu_preferences->enable_oop_rasterization = SupportsOOPRaster(gl_info);
+  }
+  gpu_info->oop_rasterization_supported =
+      gpu_preferences->enable_oop_rasterization;
 
   // TODO(kbr): remove once the destruction of a current context automatically
   // clears the current context.
@@ -345,7 +380,8 @@ void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
 void CollectGraphicsInfoForTesting(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 #if defined(OS_ANDROID)
-  CollectContextGraphicsInfo(gpu_info);
+  GpuPreferences gpu_preferences;
+  CollectContextGraphicsInfo(gpu_info, &gpu_preferences);
 #else
   CollectBasicGraphicsInfo(gpu_info);
 #endif  // OS_ANDROID

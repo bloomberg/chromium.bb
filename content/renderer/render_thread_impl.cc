@@ -2383,7 +2383,10 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider() {
   }
 
   bool support_locking = true;
+  // TODO(backer): Remove checking the command line. GpuInfo is coming
+  // from a trusted source so the command line check is unnecessary.
   bool support_oop_rasterization =
+      gpu_channel_host->gpu_info().oop_rasterization_supported &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableOOPRasterization);
   bool support_gles2_interface = !support_oop_rasterization;

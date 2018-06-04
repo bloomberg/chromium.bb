@@ -93,8 +93,8 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
     DCHECK(context_group_->bind_generates_resource() ==
            init_params.attribs.bind_generates_resource);
   } else {
-    scoped_refptr<gles2::FeatureInfo> feature_info =
-        new gles2::FeatureInfo(manager->gpu_driver_bug_workarounds());
+    scoped_refptr<gles2::FeatureInfo> feature_info = new gles2::FeatureInfo(
+        manager->gpu_driver_bug_workarounds(), manager->gpu_preferences());
     gpu::GpuMemoryBufferFactory* gmb_factory =
         manager->gpu_memory_buffer_factory();
     context_group_ = new gles2::ContextGroup(

@@ -229,6 +229,7 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
   out->system_visual = data.system_visual();
   out->rgba_visual = data.rgba_visual();
 #endif
+  out->oop_rasterization_supported = data.oop_rasterization_supported();
 
 #if defined(OS_WIN)
   out->supports_dx12 = data.supports_dx12();

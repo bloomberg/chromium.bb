@@ -14,6 +14,7 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "gpu/config/gpu_info_collector.h"
+#include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "media/base/media.h"
@@ -90,12 +91,8 @@ void ContentTestSuite::Initialize() {
     gl::GLSurfaceTestSupport::InitializeNoExtensionsOneOff();
     gpu::GPUInfo gpu_info;
     gpu::CollectGraphicsInfoForTesting(&gpu_info);
-    gpu::GpuFeatureInfo gpu_feature_info =
-        gpu::ComputeGpuFeatureInfo(gpu_info,
-                                   false,  // ignore_gpu_blacklist
-                                   false,  // disable_gpu_driver_bug_workarounds
-                                   false,  // log_gpu_control_list_decisions
-                                   command_line, nullptr);
+    gpu::GpuFeatureInfo gpu_feature_info = gpu::ComputeGpuFeatureInfo(
+        gpu_info, gpu::GpuPreferences(), command_line, nullptr);
     gpu::InProcessCommandBuffer::InitializeDefaultServiceForTesting(
         gpu_feature_info);
     gl::init::SetDisabledExtensionsPlatform(

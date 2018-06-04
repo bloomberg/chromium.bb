@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/texture_definition.h"
+#include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_fence.h"
@@ -217,11 +218,14 @@ FeatureInfo::FeatureInfo() {
 }
 
 FeatureInfo::FeatureInfo(
-    const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds)
+    const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds,
+    const GpuPreferences& gpu_preferences)
     : workarounds_(gpu_driver_bug_workarounds) {
   InitializeBasicState(base::CommandLine::InitializedForCurrentProcess()
                            ? base::CommandLine::ForCurrentProcess()
                            : nullptr);
+  feature_flags_.chromium_raster_transport =
+      gpu_preferences.enable_oop_rasterization;
 }
 
 void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
@@ -238,9 +242,6 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
   feature_flags_.is_swiftshader =
       (command_line->GetSwitchValueASCII(switches::kUseGL) ==
        gl::kGLImplementationSwiftShaderName);
-
-  feature_flags_.chromium_raster_transport =
-      command_line->HasSwitch(switches::kEnableOOPRasterization);
 
   // The shader translator is needed to translate from WebGL-conformant GLES SL
   // to normal GLES SL, enforce WebGL conformance, translate from GLES SL 1.0 to

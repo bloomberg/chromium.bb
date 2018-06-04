@@ -246,6 +246,8 @@ struct GPU_EXPORT GPUInfo {
   VisualID rgba_visual;
 #endif
 
+  bool oop_rasterization_supported;
+
   // Note: when adding new members, please remember to update EnumerateFields
   // in gpu_info.cc.
 

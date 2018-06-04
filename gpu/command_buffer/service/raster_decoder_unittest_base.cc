@@ -26,6 +26,7 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
+#include "gpu/config/gpu_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
 #include "ui/gl/init/gl_factory.h"
@@ -184,7 +185,8 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   gl_.reset(new StrictMock<MockGLInterface>());
   ::gl::MockGLInterface::SetGLInterface(gl_.get());
 
-  scoped_refptr<FeatureInfo> feature_info = new FeatureInfo(init.workarounds);
+  scoped_refptr<FeatureInfo> feature_info =
+      new FeatureInfo(init.workarounds, GpuPreferences());
 
   group_ = scoped_refptr<ContextGroup>(new ContextGroup(
       gpu_preferences_, false, &mailbox_manager_, memory_tracker_,
