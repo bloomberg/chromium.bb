@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string>
 
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/common/platform_notification_data.h"
@@ -69,14 +70,14 @@ struct CONTENT_EXPORT NotificationDatabaseData {
 
   // Amount of time, in ms, between when the notification is shown and the
   // first click.
-  base::TimeDelta time_until_first_click_millis;
+  base::Optional<base::TimeDelta> time_until_first_click_millis;
 
   // Amount of time, in ms, between when the notification is shown and the
   // last click.
-  base::TimeDelta time_until_last_click_millis;
+  base::Optional<base::TimeDelta> time_until_last_click_millis;
 
   // Amount of time, in ms, between when the notification is shown and closed.
-  base::TimeDelta time_until_close_millis;
+  base::Optional<base::TimeDelta> time_until_close_millis;
 
   // Why the notification was closed.
   ClosedReason closed_reason = ClosedReason::UNKNOWN;

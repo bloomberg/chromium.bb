@@ -100,6 +100,15 @@ NotificationDatabase::Status DeserializedNotificationData(
   return NotificationDatabase::STATUS_ERROR_CORRUPTED;
 }
 
+// Updates the time of the last click on the notification, and the first if
+// necessary.
+void UpdateNotificationClickTimestamps(NotificationDatabaseData* data) {
+  base::TimeDelta delta = base::Time::Now() - data->creation_time_millis;
+  if (!data->time_until_first_click_millis.has_value())
+    data->time_until_first_click_millis = delta;
+  data->time_until_last_click_millis = delta;
+}
+
 }  // namespace
 
 NotificationDatabase::NotificationDatabase(const base::FilePath& path)
@@ -183,14 +192,18 @@ NotificationDatabase::ReadNotificationDataAndRecordInteraction(
   // Update the appropriate fields for UKM logging purposes.
   switch (interaction) {
     case PlatformNotificationContext::Interaction::CLOSED:
-      return status;
+      notification_database_data->time_until_close_millis =
+          base::Time::Now() - notification_database_data->creation_time_millis;
+      break;
     case PlatformNotificationContext::Interaction::NONE:
       return status;
     case PlatformNotificationContext::Interaction::ACTION_BUTTON_CLICKED:
       notification_database_data->num_action_button_clicks += 1;
+      UpdateNotificationClickTimestamps(notification_database_data);
       break;
     case PlatformNotificationContext::Interaction::CLICKED:
       notification_database_data->num_clicks += 1;
+      UpdateNotificationClickTimestamps(notification_database_data);
       break;
   }
 
