@@ -86,14 +86,21 @@ void MaterialDesignController::Initialize() {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kTopChromeMD);
 
-  if (switch_value == switches::kTopChromeMDMaterial) {
+  bool force_material_refresh = false;
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  force_material_refresh =
+      base::FeatureList::IsEnabled(features::kExperimentalUi);
+#endif
+
+  if (force_material_refresh ||
+      switch_value == switches::kTopChromeMDMaterialRefresh) {
+    SetMode(MATERIAL_REFRESH);
+  } else if (switch_value == switches::kTopChromeMDMaterial) {
     SetMode(MATERIAL_NORMAL);
   } else if (switch_value == switches::kTopChromeMDMaterialHybrid) {
     SetMode(MATERIAL_HYBRID);
   } else if (switch_value == switches::kTopChromeMDMaterialTouchOptimized) {
     SetMode(MATERIAL_TOUCH_OPTIMIZED);
-  } else if (switch_value == switches::kTopChromeMDMaterialRefresh) {
-    SetMode(MATERIAL_REFRESH);
   } else if (switch_value ==
              switches::kTopChromeMDMaterialRefreshTouchOptimized) {
     SetMode(MATERIAL_TOUCH_REFRESH);
