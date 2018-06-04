@@ -74,9 +74,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 @property(nonatomic, weak) TabGridNewTabButton* newTabButton;
 @property(nonatomic, weak) TabGridNewTabButton* floatingButton;
 @property(nonatomic, assign) TabGridConfiguration configuration;
-// The page that was shown when entering the tab grid from the tab view.
-// This is used to decide whether the Done button is enabled.
-@property(nonatomic, assign) TabGridPage originalPage;
+// Setting the current page will adjust the scroll view to the correct position.
+@property(nonatomic, assign) TabGridPage currentPage;
 @end
 
 @implementation TabGridViewController
@@ -87,7 +86,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 @synthesize regularTabsImageDataSource = _regularTabsImageDataSource;
 @synthesize incognitoTabsImageDataSource = _incognitoTabsImageDataSource;
 // TabGridPaging property.
-@synthesize currentPage = _currentPage;
+@synthesize activePage = _activePage;
 // Private properties.
 @synthesize regularTabsViewController = _regularTabsViewController;
 @synthesize incognitoTabsViewController = _incognitoTabsViewController;
@@ -102,7 +101,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 @synthesize newTabButton = _newTabButton;
 @synthesize floatingButton = _floatingButton;
 @synthesize configuration = _configuration;
-@synthesize originalPage = _originalPage;
+@synthesize currentPage = _currentPage;
 
 - (instancetype)init {
   if (self = [super init]) {
@@ -131,7 +130,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // Call the current page setter to sync the scroll view offset to the current
   // page value.
   self.currentPage = _currentPage;
-  self.originalPage = _currentPage;
   [self.topToolbar.pageControl setSelectedPage:self.currentPage animated:YES];
   [self configureViewControllerForCurrentSizeClassesAndPage];
   if (animated && self.transitionCoordinator) {
@@ -204,14 +202,14 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     TabGridPage page = GetPageFromScrollView(scrollView);
     if (page != _currentPage) {
       _currentPage = page;
-      [self configureButtonsForOriginalAndCurrentPage];
+      [self configureButtonsForActiveAndCurrentPage];
     }
   }
 }
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView*)scrollView {
   _currentPage = GetPageFromScrollView(scrollView);
-  [self configureButtonsForOriginalAndCurrentPage];
+  [self configureButtonsForActiveAndCurrentPage];
 }
 
 #pragma mark - UIScrollViewAccessibilityDelegate
@@ -236,7 +234,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 #pragma mark - GridTransitionStateProviding properties
 
 - (BOOL)isSelectedCellVisible {
-  switch (self.currentPage) {
+  if (self.activePage != self.currentPage)
+    return NO;
+  switch (self.activePage) {
     case TabGridPageIncognitoTabs:
       return self.incognitoTabsViewController.selectedCellVisible;
     case TabGridPageRegularTabs:
@@ -297,6 +297,13 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 #pragma mark - TabGridPaging
 
+- (void)setActivePage:(TabGridPage)activePage {
+  self.currentPage = activePage;
+  _activePage = activePage;
+}
+
+#pragma mark - Private
+
 - (void)setCurrentPage:(TabGridPage)currentPage {
   // This method should never early return if |currentPage| == |_currentPage|;
   // the ivar may have been set before the scroll view could be updated. Calling
@@ -319,8 +326,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     // _currentPage is set in scrollViewDidEndScrollingAnimation:
   }
 }
-
-#pragma mark - Private
 
 // Adds the scroll view and sets constraints.
 - (void)setupScrollView {
@@ -593,12 +598,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self.newTabButton addTarget:self
                         action:@selector(newTabButtonTapped:)
               forControlEvents:UIControlEventTouchUpInside];
-  [self configureButtonsForOriginalAndCurrentPage];
+  [self configureButtonsForActiveAndCurrentPage];
 }
 
-- (void)configureButtonsForOriginalAndCurrentPage {
+- (void)configureButtonsForActiveAndCurrentPage {
   self.newTabButton.page = self.currentPage;
-  switch (self.originalPage) {
+  switch (self.activePage) {
     case TabGridPageIncognitoTabs:
       self.doneButton.enabled = !self.incognitoTabsViewController.gridEmpty;
       break;
@@ -731,6 +736,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   } else if (gridViewController == self.incognitoTabsViewController) {
     [self.incognitoTabsDelegate selectItemWithID:itemID];
   }
+  self.activePage = self.currentPage;
   [self.tabPresentationDelegate showActiveTabInPage:self.currentPage];
 }
 
@@ -755,7 +761,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)gridViewController:(GridViewController*)gridViewController
         didChangeItemCount:(NSUInteger)count {
-  [self configureButtonsForOriginalAndCurrentPage];
+  [self configureButtonsForActiveAndCurrentPage];
   if (gridViewController == self.regularTabsViewController) {
     self.topToolbar.pageControl.regularTabCount = count;
   }
@@ -764,7 +770,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 #pragma mark - Control actions
 
 - (void)doneButtonTapped:(id)sender {
-  [self.tabPresentationDelegate showActiveTabInPage:self.originalPage];
+  [self.tabPresentationDelegate showActiveTabInPage:self.activePage];
 }
 
 - (void)closeAllButtonTapped:(id)sender {
@@ -802,6 +808,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       NOTREACHED() << "It is invalid to call insert new tab on remote tabs.";
       break;
   }
+  self.activePage = self.currentPage;
   [self.tabPresentationDelegate showActiveTabInPage:self.currentPage];
 }
 
