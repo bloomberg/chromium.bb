@@ -255,13 +255,21 @@ void ThreadCondition::Wait(Mutex& mutex) {
 }
 
 bool ThreadCondition::TimedWait(Mutex& mutex, double absolute_time) {
-  DWORD interval = AbsoluteTimeToWaitTimeoutInterval(absolute_time);
+  double current_time = WTF::CurrentTime();
 
-  if (!interval) {
+  // Time is in the past - return immediately.
+  if (absolute_time <= current_time) {
     // Consider the wait to have timed out, even if our condition has already
     // been signaled, to match the pthreads implementation.
     return false;
   }
+
+  // If time is too far in the future (and would overflow unsigned long), wait
+  // forever.
+  DWORD interval =
+      (absolute_time - current_time > static_cast<double>(INT_MAX) / 1000.0)
+          ? INFINITE
+          : ((absolute_time - current_time) * 1000.0);
 
   PlatformMutex& platform_mutex = mutex.Impl();
   BOOL result = SleepConditionVariableCS(
@@ -277,21 +285,6 @@ void ThreadCondition::Signal() {
 
 void ThreadCondition::Broadcast() {
   WakeAllConditionVariable(&condition_);
-}
-
-DWORD AbsoluteTimeToWaitTimeoutInterval(double absolute_time) {
-  double current_time = WTF::CurrentTime();
-
-  // Time is in the past - return immediately.
-  if (absolute_time < current_time)
-    return 0;
-
-  // Time is too far in the future (and would overflow unsigned long) - wait
-  // forever.
-  if (absolute_time - current_time > static_cast<double>(INT_MAX) / 1000.0)
-    return INFINITE;
-
-  return static_cast<DWORD>((absolute_time - current_time) * 1000.0);
 }
 
 #if DCHECK_IS_ON()
