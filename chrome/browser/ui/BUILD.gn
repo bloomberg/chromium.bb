@@ -2135,7 +2135,6 @@ split_static_library("ui") {
     deps += [
       "//ash",
       "//ash:ash_with_content",
-      "//ash/app_list/presenter",
       "//ash/components/shortcut_viewer:lib",
       "//ash/components/shortcut_viewer/public/mojom",
       "//ash/public/cpp",

@@ -13,17 +13,14 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "chrome/test/base/in_process_browser_test.h"
+#include "ash/test/ash_interactive_ui_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
 
-using AppListTest = InProcessBrowserTest;
+using AppListTest = ash::AshInteractiveUITestBase;
 
 // An integration test to toggle the app list by pressing the shelf button.
-// TODO(jamescook|newcomer): Replace this with a unit test in //ash/app_list
-// after app list ownership moves out of the browser process into ash.
-// http://crbug.com/733662
-IN_PROC_BROWSER_TEST_F(AppListTest, PressAppListButtonToShowAndDismiss) {
+TEST_F(AppListTest, PressAppListButtonToShowAndDismiss) {
   aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
   ash::Shelf* shelf = ash::Shelf::ForWindow(root_window);
   ash::ShelfWidget* shelf_widget = shelf->shelf_widget();
