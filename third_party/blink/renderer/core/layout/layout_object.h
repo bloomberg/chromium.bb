@@ -2663,21 +2663,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   DISALLOW_COPY_AND_ASSIGN(LayoutObject);
 };
 
-// FIXME: remove this once the layout object lifecycle ASSERTS are no longer
-// hit.
-class DeprecatedDisableModifyLayoutTreeStructureAsserts {
-  STACK_ALLOCATED();
-
- public:
-  DeprecatedDisableModifyLayoutTreeStructureAsserts();
-
-  static bool CanModifyLayoutTreeStateInAnyState();
-
- private:
-  base::AutoReset<bool> disabler_;
-  DISALLOW_COPY_AND_ASSIGN(DeprecatedDisableModifyLayoutTreeStructureAsserts);
-};
-
 // Allow equality comparisons of LayoutObjects by reference or pointer,
 // interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(LayoutObject)

@@ -114,8 +114,6 @@ namespace blink {
 
 namespace {
 
-static bool g_modify_layout_tree_structure_any_state = false;
-
 inline bool ShouldUseNewLayout(const ComputedStyle& style) {
   return RuntimeEnabledFeatures::LayoutNGEnabled() &&
          !style.ForceLegacyLayout();
@@ -3827,18 +3825,7 @@ void LayoutObject::ClearPaintInvalidationFlags() {
 }
 
 bool LayoutObject::IsAllowedToModifyLayoutTreeStructure(Document& document) {
-  return DeprecatedDisableModifyLayoutTreeStructureAsserts::
-             CanModifyLayoutTreeStateInAnyState() ||
-         document.Lifecycle().StateAllowsLayoutTreeMutations();
-}
-
-DeprecatedDisableModifyLayoutTreeStructureAsserts::
-    DeprecatedDisableModifyLayoutTreeStructureAsserts()
-    : disabler_(&g_modify_layout_tree_structure_any_state, true) {}
-
-bool DeprecatedDisableModifyLayoutTreeStructureAsserts::
-    CanModifyLayoutTreeStateInAnyState() {
-  return g_modify_layout_tree_structure_any_state;
+  return document.Lifecycle().StateAllowsLayoutTreeMutations();
 }
 
 void LayoutObject::
