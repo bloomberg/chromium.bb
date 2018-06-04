@@ -1307,6 +1307,7 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 					}
 					outpos = k;
 				}
+			if (inpos < 0) inpos = 0;
 			while (inpos < *inlen) outputPos[inpos++] = outpos;
 		}
 	}
