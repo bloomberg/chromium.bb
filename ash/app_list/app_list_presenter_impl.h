@@ -33,7 +33,6 @@ class AnimationMetricsReporter;
 namespace app_list {
 class AppListView;
 class AppListViewDelegate;
-class AppListPresenterDelegateFactory;
 
 namespace test {
 class AppListPresenterImplTestApi;
@@ -52,7 +51,7 @@ class ASH_EXPORT AppListPresenterImpl
       public PaginationModelObserver {
  public:
   explicit AppListPresenterImpl(
-      std::unique_ptr<AppListPresenterDelegateFactory> factory,
+      std::unique_ptr<AppListPresenterDelegate> delegate,
       ash::AppListControllerImpl* controller);
   ~AppListPresenterImpl() override;
 
@@ -140,14 +139,8 @@ class ASH_EXPORT AppListPresenterImpl
   void RequestPresentationTime(int64_t display_id,
                                base::TimeTicks event_time_stamp);
 
-  // The factory for the presenter's delegate.
-  std::unique_ptr<AppListPresenterDelegateFactory> factory_;
-
   // Responsible for laying out the app list UI.
   std::unique_ptr<AppListPresenterDelegate> presenter_delegate_;
-
-  // The view delegate owned by AppListService.
-  AppListViewDelegate* view_delegate_ = nullptr;
 
   // Used to report visibility changes to chrome. Not owned, owns this class.
   ash::AppListControllerImpl* const controller_;

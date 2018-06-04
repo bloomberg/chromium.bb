@@ -7,11 +7,9 @@
 #include <utility>
 #include <vector>
 
-#include "ash/app_list/app_list_presenter_delegate_factory.h"
+#include "ash/app_list/app_list_presenter_delegate.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
-#include "ash/app_list/presenter/app_list_presenter_delegate_factory.h"
-#include "ash/app_list/presenter/app_list_view_delegate_factory.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/config.h"
@@ -37,21 +35,6 @@ int64_t GetDisplayIdToShowAppListOn() {
       .id();
 }
 
-class ViewDelegateFactoryImpl : public app_list::AppListViewDelegateFactory {
- public:
-  explicit ViewDelegateFactoryImpl(app_list::AppListViewDelegate* delegate)
-      : delegate_(delegate) {}
-  ~ViewDelegateFactoryImpl() override {}
-
-  // app_list::AppListViewDelegateFactory:
-  app_list::AppListViewDelegate* GetDelegate() override { return delegate_; }
-
- private:
-  app_list::AppListViewDelegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewDelegateFactoryImpl);
-};
-
 }  // namespace
 
 namespace ash {
@@ -59,9 +42,7 @@ namespace ash {
 // TODO(hejq): Get rid of AppListPresenterDelegateFactory and pass in
 // ash::AppListPresenterDelegate directly.
 AppListControllerImpl::AppListControllerImpl()
-    : presenter_(std::make_unique<AppListPresenterDelegateFactory>(
-                     std::make_unique<ViewDelegateFactoryImpl>(this)),
-                 this),
+    : presenter_(std::make_unique<AppListPresenterDelegate>(), this),
       keyboard_observer_(this),
       is_home_launcher_enabled_(app_list::features::IsHomeLauncherEnabled()) {
   model_.AddObserver(this);

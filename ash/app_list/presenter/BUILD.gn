@@ -12,10 +12,7 @@ component("presenter") {
     "app_list_delegate.h",
     "app_list_presenter_delegate.cc",
     "app_list_presenter_delegate.h",
-    "app_list_presenter_delegate_factory.h",
     "app_list_presenter_export.h",
-    "app_list_view_delegate_factory.cc",
-    "app_list_view_delegate_factory.h",
   ]
 
   defines = [ "APP_LIST_PRESENTER_IMPLEMENTATION" ]

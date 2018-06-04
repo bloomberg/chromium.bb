@@ -16,7 +16,6 @@
 namespace app_list {
 class AppListPresenterImpl;
 class AppListView;
-class AppListViewDelegateFactory;
 }
 
 namespace ui {
@@ -34,13 +33,10 @@ class ASH_EXPORT AppListPresenterDelegate
     : public app_list::AppListPresenterDelegate,
       public ui::EventHandler {
  public:
-  AppListPresenterDelegate(
-      app_list::AppListPresenterImpl* presenter,
-      app_list::AppListViewDelegateFactory* view_delegate_factory);
+  AppListPresenterDelegate();
   ~AppListPresenterDelegate() override;
 
   // app_list::AppListPresenterDelegate:
-  app_list::AppListViewDelegate* GetViewDelegate() override;
   void Init(app_list::AppListView* view,
             int64_t display_id,
             int current_apps_page) override;
@@ -50,6 +46,7 @@ class ASH_EXPORT AppListPresenterDelegate
       aura::Window* root_window) override;
   base::TimeDelta GetVisibilityAnimationDuration(aura::Window* root_window,
                                                  bool is_visible) override;
+  void SetPresenter(app_list::AppListPresenterImpl* presenter) override;
 
  private:
   void ProcessLocatedEvent(ui::LocatedEvent* event);
@@ -63,9 +60,6 @@ class ASH_EXPORT AppListPresenterDelegate
 
   // Not owned. Pointer is guaranteed to be valid while this object is alive.
   app_list::AppListPresenterImpl* presenter_;
-
-  // Not owned. Pointer is guaranteed to be valid while this object is alive.
-  app_list::AppListViewDelegateFactory* view_delegate_factory_;
 
   // Owned by its widget.
   app_list::AppListView* view_ = nullptr;

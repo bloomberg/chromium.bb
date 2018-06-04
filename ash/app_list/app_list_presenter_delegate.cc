@@ -6,7 +6,6 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_presenter_impl.h"
-#include "ash/app_list/presenter/app_list_view_delegate_factory.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -53,19 +52,15 @@ bool IsSideShelf(aura::Window* root_window) {
 ////////////////////////////////////////////////////////////////////////////////
 // AppListPresenterDelegate, public:
 
-AppListPresenterDelegate::AppListPresenterDelegate(
-    app_list::AppListPresenterImpl* presenter,
-    app_list::AppListViewDelegateFactory* view_delegate_factory)
-    : presenter_(presenter), view_delegate_factory_(view_delegate_factory) {
-}
+AppListPresenterDelegate::AppListPresenterDelegate() = default;
 
 AppListPresenterDelegate::~AppListPresenterDelegate() {
-  DCHECK(view_);
   Shell::Get()->RemovePreTargetHandler(this);
 }
 
-app_list::AppListViewDelegate* AppListPresenterDelegate::GetViewDelegate() {
-  return view_delegate_factory_->GetDelegate();
+void AppListPresenterDelegate::SetPresenter(
+    app_list::AppListPresenterImpl* presenter) {
+  presenter_ = presenter;
 }
 
 void AppListPresenterDelegate::Init(app_list::AppListView* view,

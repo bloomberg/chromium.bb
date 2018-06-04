@@ -23,8 +23,8 @@ class Vector2d;
 
 namespace app_list {
 
+class AppListPresenterImpl;
 class AppListView;
-class AppListViewDelegate;
 
 // Delegate of the app list presenter which allows customizing its behavior.
 // The design of this interface was heavily influenced by the needs of Ash's
@@ -33,8 +33,8 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterDelegate {
  public:
   virtual ~AppListPresenterDelegate() {}
 
-  // Returns the delegate for the app list view, possibly creating one.
-  virtual AppListViewDelegate* GetViewDelegate() = 0;
+  // Sets the owner presenter of this delegate
+  virtual void SetPresenter(AppListPresenterImpl* presenter) = 0;
 
   // Called to initialize the layout of the app list.
   virtual void Init(AppListView* view,
