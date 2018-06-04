@@ -206,8 +206,6 @@ void ContextualSuggestionsFetch::Start(
 
 std::unique_ptr<network::SimpleURLLoader>
 ContextualSuggestionsFetch::MakeURLLoader() const {
-  // TODO(pnoland, https://crbug.com/831693): Update this once there's an
-  // opt-out setting.
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("ntp_contextual_suggestions_fetch",
                                           R"(
@@ -226,8 +224,8 @@ ContextualSuggestionsFetch::MakeURLLoader() const {
         policy {
           cookies_allowed: NO
           setting:
-            "This feature can be disabled by the flag "
-            "enable-contextual-suggestions-bottom-sheet."
+            "This feature can be disabled by turning off the "
+            "'Suggest related pages' in Chrome for Android settings"
           policy_exception_justification: "Not implemented. The feature is "
           "currently Android-only and disabled for all enterprise users. "
           "A policy will be added before enabling for enterprise users."
