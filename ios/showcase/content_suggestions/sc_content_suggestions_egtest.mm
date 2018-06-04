@@ -81,12 +81,16 @@ NSString* ReadingListEmptySection() {
 // Tests launching ContentSuggestionsViewController.
 - (void)testLaunch {
   showcase_utils::Open(@"ContentSuggestionsViewController");
+  NSString* section_header = l10n_util::GetNSStringWithFixup(
+      IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER);
+  if (IsUIRefreshPhase1Enabled()) {
+    section_header = [section_header uppercaseString];
+  }
+  [CellWithMatcher(chrome_test_util::StaticTextWithAccessibilityLabel(
+      section_header)) assertWithMatcher:grey_notNil()];
   [CellWithMatcher(chrome_test_util::ButtonWithAccessibilityLabelId(
       IDS_IOS_CONTENT_SUGGESTIONS_FOOTER_TITLE))
       assertWithMatcher:grey_interactable()];
-  [CellWithMatcher(chrome_test_util::StaticTextWithAccessibilityLabelId(
-      IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER))
-      assertWithMatcher:grey_notNil()];
   showcase_utils::Close();
 }
 
@@ -152,6 +156,10 @@ NSString* ReadingListEmptySection() {
 
 // Tests that swipe-to-dismiss on empty item does nothing.
 - (void)testNoSwipeToDismissEmptyItem {
+  if (IsUIRefreshPhase1Enabled()) {
+    EARL_GREY_TEST_DISABLED(
+        @"Test disabled in UI Refresh as there's no reading list.");
+  }
   showcase_utils::Open(@"ContentSuggestionsViewController");
   [CellWithID([SCContentSuggestionsDataSource titleReadingListItem])
       performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
