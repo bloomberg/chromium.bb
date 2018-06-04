@@ -530,14 +530,10 @@ TEST_F(WorkspaceLayoutManagerTest, SizeToWorkArea) {
   gfx::Size work_area(GetPrimaryDisplay().work_area().size());
   const gfx::Rect window_bounds(100, 101, work_area.width() + 1,
                                 work_area.height() + 2);
-  std::unique_ptr<aura::Window> window(CreateTestWindow(window_bounds));
-  // TODO: fix. This test verifies that when a window is added the bounds are
-  // adjusted. CreateTestWindow() for mus adds, then sets the bounds (this comes
-  // from NativeWidgetAura), which means this test now fails for aura-mus.
-  if (Shell::GetAshConfig() == Config::CLASSIC) {
-    EXPECT_EQ(gfx::Rect(gfx::Point(100, 101), work_area).ToString(),
-              window->bounds().ToString());
-  }
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(window_bounds));
+  EXPECT_EQ(gfx::Rect(gfx::Point(100, 101), work_area).ToString(),
+            window->bounds().ToString());
 
   // Directly setting the bounds triggers a slightly different code path. Verify
   // that too.

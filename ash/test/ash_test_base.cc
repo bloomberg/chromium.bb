@@ -31,12 +31,18 @@
 #include "ash/window_manager_service.h"
 #include "ash/wm/top_level_window_factory.h"
 #include "ash/wm/window_positioner.h"
+#include "ash/ws/window_service_owner.h"
 #include "base/memory/ptr_util.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
+#include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
+#include "services/ui/ws2/test_window_tree_client.h"
+#include "services/ui/ws2/window_service.h"
+#include "services/ui/ws2/window_service_client.h"
+#include "services/ui/ws2/window_service_client_test_helper.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -180,6 +186,11 @@ void AshTestBase::TearDown() {
   teardown_called_ = true;
   Shell::Get()->session_controller()->NotifyChromeTerminating();
 
+  // These depend upon WindowService, which is owned by Shell, so they must
+  // be destroyed before the Shell (owned by AshTestHelper).
+  client_test_helper_.reset();
+  window_service_client_.reset();
+
   // Flush the message loop to finish pending release tasks.
   RunAllPendingInMessageLoop();
 
@@ -254,14 +265,7 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
     const gfx::Rect& bounds_in_screen,
     aura::client::WindowType type,
     int shell_window_id) {
-  if (AshTestHelper::config() != Config::MASH) {
-    return base::WrapUnique<aura::Window>(
-        CreateTestWindowInShellWithDelegateAndType(
-            nullptr, type, shell_window_id, bounds_in_screen));
-  }
-
-  // For mash route creation through the window manager. This better simulates
-  // what happens when a client creates a top level window.
+  // The following simulates what happens when a client creates a window.
   std::map<std::string, std::vector<uint8_t>> properties;
   if (!bounds_in_screen.IsEmpty()) {
     properties[ui::mojom::WindowManager::kBounds_InitProperty] =
@@ -277,14 +281,36 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
 
   const ui::mojom::WindowType mus_window_type =
       MusWindowTypeFromWindowType(type);
-  WindowManager* window_manager =
-      ash_test_helper_->window_manager_service()->window_manager();
-  aura::Window* window = CreateAndParentTopLevelWindow(
-      window_manager, mus_window_type, window_manager->property_converter(),
-      &properties);
+  if (AshTestHelper::config() == Config::MASH) {
+    // For mash route creation through the window manager. This better simulates
+    // what happens when a client creates a top level window.
+    return CreateTestWindowMash(mus_window_type, shell_window_id, &properties);
+  }
+
+  properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          static_cast<int32_t>(mus_window_type));
+
+  if (!window_tree_client_) {
+    // Lazily create a single client.
+    window_tree_client_ = std::make_unique<ui::ws2::TestWindowTreeClient>();
+    window_service_client_ =
+        Shell::Get()
+            ->window_service_owner()
+            ->window_service()
+            ->CreateWindowServiceClient(window_tree_client_.get());
+    window_service_client_->InitFromFactory();
+    client_test_helper_ =
+        std::make_unique<ui::ws2::WindowServiceClientTestHelper>(
+            window_service_client_.get());
+  }
+  // WindowServiceClientTestHelper maps 0 to a unique id.
+  const ui::Id window_id = 0;
+  std::unique_ptr<aura::Window> window(client_test_helper_->NewTopLevelWindow(
+      window_id, mojo::MapToFlatMap(std::move(properties))));
   window->set_id(shell_window_id);
   window->Show();
-  return base::WrapUnique<aura::Window>(window);
+  return window;
 }
 
 std::unique_ptr<aura::Window> AshTestBase::CreateToplevelTestWindow(
@@ -521,6 +547,20 @@ display::Display AshTestBase::GetPrimaryDisplay() {
 
 display::Display AshTestBase::GetSecondaryDisplay() {
   return ash_test_helper_->GetSecondaryDisplay();
+}
+
+std::unique_ptr<aura::Window> AshTestBase::CreateTestWindowMash(
+    ui::mojom::WindowType window_type,
+    int shell_window_id,
+    std::map<std::string, std::vector<uint8_t>>* properties) {
+  WindowManager* window_manager =
+      ash_test_helper_->window_manager_service()->window_manager();
+  aura::Window* window = CreateAndParentTopLevelWindow(
+      window_manager, window_type, window_manager->property_converter(),
+      properties);
+  window->set_id(shell_window_id);
+  window->Show();
+  return base::WrapUnique<aura::Window>(window);
 }
 
 void AshTestBase::OnWindowInitialized(aura::Window* window) {}
