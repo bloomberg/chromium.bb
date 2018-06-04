@@ -61,7 +61,7 @@ issues]].
 
 ** Other changes
 - Refactoring thanks to Bert Frees
-  - Simplify the emphasis class handling by cobining all related vars
+  - Simplify the emphasis class handling by combining all related vars
     in a struct =EmphasisClass=
   - Simplify input/output buffer handling
   - Combine =emphasisBuffer= and =transnoteBuffer=
