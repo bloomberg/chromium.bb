@@ -16257,6 +16257,24 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Unfused; lot ID NZVR7"/>
 </enum>
 
+<enum name="FactoryPingEmbargoEndDateValidity">
+  <summary>
+    Defines the validity of the factory ping embargo end date in RW_VPD.
+  </summary>
+  <int value="0" label="Malformed">
+    The value does not have a correct format.
+  </int>
+  <int value="1" label="Invalid">
+    The value has a correct format, but it is semantically invalid. This means
+    that it is more than 14 days in the future.
+  </int>
+  <int value="2" label="Valid">
+    The value is present and valid. This could either mean that the device is in
+    the factory ping embargo period, or that the factory ping embargo period has
+    passed.
+  </int>
+</enum>
+
 <enum name="FallbackDNSTestResult">
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
