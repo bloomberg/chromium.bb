@@ -269,15 +269,10 @@ void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
 ////////////////////////////////////////////////////////////////////////////////
 // Overridden from arc::ArcImeBridge::Delegate
 
-void ArcImeService::OnTextInputTypeChanged(
-    ui::TextInputType type,
-    bool is_personalized_learning_allowed) {
-  if (ime_type_ == type &&
-      is_personalized_learning_allowed_ == is_personalized_learning_allowed) {
+void ArcImeService::OnTextInputTypeChanged(ui::TextInputType type) {
+  if (ime_type_ == type)
     return;
-  }
   ime_type_ = type;
-  is_personalized_learning_allowed_ = is_personalized_learning_allowed;
 
   ui::InputMethod* const input_method = GetInputMethod();
   if (input_method)
@@ -524,7 +519,9 @@ const std::string& ArcImeService::GetClientSourceInfo() const {
 }
 
 bool ArcImeService::ShouldDoLearning() {
-  return is_personalized_learning_allowed_;
+  // TODO(https://crbug.com/311180): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return true;
 }
 
 // static
