@@ -3356,20 +3356,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    StoragePartitionImpl* storage_partition =
-        static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
-            GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
-    // TODO(https://crbug.com/813479): Investigate why we need to explicitly
-    // specify task runner for BrowserThread::IO here.
-    // Bind calls to the BindRegistry should come on to the IO thread by
-    // default, but it looks we need this in browser tests (but not in full
-    // chrome build), i.e. in content/browser/loader/prefetch_browsertest.cc.
-    registry_->AddInterface(
-        base::BindRepeating(
-            &PrefetchURLLoaderService::ConnectToService,
-            base::RetainedRef(storage_partition->GetPrefetchURLLoaderService()),
-            frame_tree_node_->frame_tree_node_id()),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+    registry_->AddInterface(base::BindRepeating(
+        &RenderFrameHostImpl::ConnectToPrefetchURLLoaderService,
+        base::Unretained(this)));
   }
 }
 
@@ -3758,19 +3747,19 @@ void RenderFrameHostImpl::CommitNavigation(
       }
     }
 
+    SaveSubresourceFactories(std::move(subresource_loader_factories));
+
     if (IsPerNavigationMojoInterfaceEnabled() && navigation_request_ &&
         navigation_request_->GetCommitNavigationClient()) {
       navigation_request_->GetCommitNavigationClient()->CommitNavigation(
           head, common_params, request_params,
-          std::move(url_loader_client_endpoints),
-          std::move(subresource_loader_factories),
+          std::move(url_loader_client_endpoints), CloneSubresourceFactories(),
           std::move(subresource_overrides), std::move(controller),
           devtools_navigation_token);
     } else {
       GetNavigationControl()->CommitNavigation(
           head, common_params, request_params,
-          std::move(url_loader_client_endpoints),
-          std::move(subresource_loader_factories),
+          std::move(url_loader_client_endpoints), CloneSubresourceFactories(),
           std::move(subresource_overrides), std::move(controller),
           devtools_navigation_token,
           navigation_request_
@@ -3829,16 +3818,17 @@ void RenderFrameHostImpl::FailedNavigation(
         std::move(default_factory_info),
         std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>());
   }
+  SaveSubresourceFactories(std::move(subresource_loader_factories));
 
   if (IsPerNavigationMojoInterfaceEnabled() && navigation_request_ &&
       navigation_request_->GetCommitNavigationClient()) {
     navigation_request_->GetCommitNavigationClient()->CommitFailedNavigation(
         common_params, request_params, has_stale_copy_in_cache, error_code,
-        error_page_content, std::move(subresource_loader_factories));
+        error_page_content, CloneSubresourceFactories());
   } else {
     GetNavigationControl()->CommitFailedNavigation(
         common_params, request_params, has_stale_copy_in_cache, error_code,
-        error_page_content, std::move(subresource_loader_factories),
+        error_page_content, CloneSubresourceFactories(),
         base::BindOnce(
             &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
             base::Unretained(this),
@@ -4335,8 +4325,9 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
       std::make_unique<URLLoaderFactoryBundleInfo>();
   subresource_loader_factories->default_factory_info() =
       std::move(default_factory_info);
+  SaveSubresourceFactories(std::move(subresource_loader_factories));
   GetNavigationControl()->UpdateSubresourceLoaderFactories(
-      std::move(subresource_loader_factories));
+      CloneSubresourceFactories());
 }
 
 void RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
@@ -4633,6 +4624,30 @@ void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
   content::CreateDedicatedWorkerHostFactory(process_->GetID(), routing_id_,
                                             last_committed_origin_,
                                             std::move(request));
+}
+
+void RenderFrameHostImpl::ConnectToPrefetchURLLoaderService(
+    blink::mojom::PrefetchURLLoaderServiceRequest request) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  auto* storage_partition =
+      static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
+          GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
+  auto subresource_factories = CloneSubresourceFactories();
+  // Make sure that file: URL is available only when the origin of the last
+  // commited URL is for file:. This should be always true as far as
+  // SaveSubresourceFactories() is called appropriately whenever the set of
+  // available subresource factories is updated. (Using CHECK as breaking this
+  // could break our security assumptions)
+  CHECK(subresource_factories->factories_info().find(url::kFileScheme) ==
+            subresource_factories->factories_info().end() ||
+        last_committed_url_.SchemeIsFile());
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PrefetchURLLoaderService::ConnectToService,
+                     storage_partition->GetPrefetchURLLoaderService(),
+                     std::move(request), frame_tree_node_->frame_tree_node_id(),
+                     std::move(subresource_factories)));
 }
 
 void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {
@@ -5101,6 +5116,24 @@ void RenderFrameHostImpl::OnCrossDocumentCommitProcessed(
     return;
 
   navigation_request_.reset();
+}
+
+void RenderFrameHostImpl::SaveSubresourceFactories(
+    std::unique_ptr<URLLoaderFactoryBundleInfo> bundle_info) {
+  subresource_loader_factories_bundle_ = nullptr;
+  if (bundle_info) {
+    subresource_loader_factories_bundle_ =
+        base::MakeRefCounted<URLLoaderFactoryBundle>(std::move(bundle_info));
+  }
+}
+
+std::unique_ptr<URLLoaderFactoryBundleInfo>
+RenderFrameHostImpl::CloneSubresourceFactories() {
+  if (subresource_loader_factories_bundle_) {
+    return base::WrapUnique(static_cast<URLLoaderFactoryBundleInfo*>(
+        subresource_loader_factories_bundle_->Clone().release()));
+  }
+  return nullptr;
 }
 
 }  // namespace content
