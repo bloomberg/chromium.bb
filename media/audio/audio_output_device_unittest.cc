@@ -350,6 +350,8 @@ struct TestEnvironment {
         /*log callback*/ base::DoNothing(), params,
         std::move(shared_memory_region), std::move(shared_memory_mapping),
         std::move(browser_socket));
+    reader->set_max_wait_timeout_for_test(
+        base::TimeDelta::FromMilliseconds(500));
     time_stamp = base::TimeTicks::Now();
 
 #if defined(OS_FUCHSIA)
@@ -529,7 +531,9 @@ TEST_F(AudioOutputDeviceTest, MAYBE_CreateBitStreamStream) {
     EXPECT_EQ(kBitstreamFrames, test_bus->GetBitstreamFrames());
     EXPECT_EQ(kBitstreamDataSize, test_bus->GetBitstreamDataSize());
     for (size_t i = 0; i < kBitstreamDataSize / sizeof(float); ++i) {
-      EXPECT_EQ(kAudioData, test_bus->channel(0)[i]);
+      // Note: if all of these fail, the bots will behave strangely due to the
+      // large amount of text output. Assert is used to avoid this.
+      ASSERT_EQ(kAudioData, test_bus->channel(0)[i]);
     }
   }
 
