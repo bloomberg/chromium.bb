@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/html/forms/file_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_proxy.h"
 
 namespace blink {
 
