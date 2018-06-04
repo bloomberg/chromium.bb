@@ -2024,7 +2024,7 @@ public class LocationBarLayout
     protected void updateFadingBackgroundView(boolean visible, boolean ignoreNtpChecks) {
         if (mFadingView == null) {
             // Some uses of the location bar do not have a tab backing them (like SearchActivity).
-            if (getCurrentTab() == null) return;
+            if (getCurrentTab() == null || getCurrentTab().getActivity() == null) return;
             mFadingView = getCurrentTab().getActivity().getFadingBackgroundView();
         }
         NewTabPage ntp = mToolbarDataProvider.getNewTabPageForCurrentTab();
