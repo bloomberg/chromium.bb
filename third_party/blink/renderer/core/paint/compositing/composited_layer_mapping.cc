@@ -1520,6 +1520,7 @@ void CompositedLayerMapping::UpdateChildContainmentLayerGeometry() {
     child_clipping_mask_layer_->SetSize(child_containment_layer_->Size());
     child_clipping_mask_layer_->SetOffsetFromLayoutObject(
         child_containment_layer_->OffsetFromLayoutObject());
+    child_clipping_mask_layer_->SetNeedsDisplay();
   }
 }
 
