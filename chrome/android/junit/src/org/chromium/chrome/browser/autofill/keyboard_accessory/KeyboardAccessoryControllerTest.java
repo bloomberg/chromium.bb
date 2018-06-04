@@ -145,8 +145,7 @@ public class KeyboardAccessoryControllerTest {
 
         // If the coordinator receives a new set of actions, the model should report a change.
         testProvider.notifyObservers(new Action[] {testAction});
-        verify(mMockActionListObserver)
-                .onItemRangeChanged(mModel.getActionList(), 0, 1, mModel.getActionList());
+        verify(mMockActionListObserver).onItemRangeChanged(mModel.getActionList(), 0, 1, null);
         assertThat(mModel.getActionList().getItemCount(), is(1));
         assertThat(mModel.getActionList().get(0), is(equalTo(testAction)));
 
