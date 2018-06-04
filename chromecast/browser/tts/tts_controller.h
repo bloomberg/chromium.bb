@@ -241,6 +241,10 @@ class TtsController {
  public:
   virtual ~TtsController() = default;
 
+  // Set the TTS platform implementation to use.
+  virtual void SetPlatformImpl(
+      std::unique_ptr<TtsPlatformImpl> platform_impl) = 0;
+
   // Returns true if we're currently speaking an utterance.
   virtual bool IsSpeaking() = 0;
 
@@ -292,7 +296,6 @@ class TtsController {
       UtteranceEventDelegate* delegate) = 0;
 
   // For unit testing.
-  virtual void SetPlatformImpl(TtsPlatformImpl* platform_impl) = 0;
   virtual int QueueSize() = 0;
 };
 

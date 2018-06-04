@@ -30,7 +30,7 @@ class BrowserContext;
 // track of all state.
 class TtsControllerImpl : public TtsController {
  public:
-  TtsControllerImpl();
+  explicit TtsControllerImpl(std::unique_ptr<TtsPlatformImpl> platform_impl);
   ~TtsControllerImpl() override;
 
   // TtsController methods
@@ -49,7 +49,7 @@ class TtsControllerImpl : public TtsController {
   void AddVoicesChangedDelegate(VoicesChangedDelegate* delegate) override;
   void RemoveVoicesChangedDelegate(VoicesChangedDelegate* delegate) override;
   void RemoveUtteranceEventDelegate(UtteranceEventDelegate* delegate) override;
-  void SetPlatformImpl(TtsPlatformImpl* platform_impl) override;
+  void SetPlatformImpl(std::unique_ptr<TtsPlatformImpl> platform_impl) override;
   int QueueSize() override;
 
   std::string GetApplicationLocale() const;
@@ -100,9 +100,8 @@ class TtsControllerImpl : public TtsController {
   // A set of delegates that want to be notified when the voices change.
   std::set<VoicesChangedDelegate*> voices_changed_delegates_;
 
-  // A pointer to the platform implementation of text-to-speech, for
-  // dependency injection.
-  TtsPlatformImpl* platform_impl_;
+  // A pointer to the platform implementation of text-to-speech.
+  std::unique_ptr<TtsPlatformImpl> platform_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsControllerImpl);
 };
