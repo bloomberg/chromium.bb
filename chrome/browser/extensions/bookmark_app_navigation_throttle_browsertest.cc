@@ -1093,9 +1093,14 @@ IN_PROC_BROWSER_TEST_P(
 
 // Tests that same-origin or cross-origin apps created with window.open() from
 // another app window have an opener.
+#if defined(OS_MACOSX)
+#define MAYBE_WindowOpenInApp DISABLED_WindowOpenInApp
+#else
+#define MAYBE_WindowOpenInApp WindowOpenInApp
+#endif
 IN_PROC_BROWSER_TEST_P(
     BookmarkAppNavigationThrottleExperimentalWindowOpenBrowserTest,
-    WindowOpenInApp) {
+    MAYBE_WindowOpenInApp) {
   InstallTestBookmarkApp();
   InstallOtherTestBookmarkApp();
 
