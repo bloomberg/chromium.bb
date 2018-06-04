@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -462,8 +463,11 @@ TEST_F(UpdateServiceTest, UpdateFoundNotification) {
 }
 
 TEST_F(UpdateServiceTest, InProgressUpdate_Successful) {
+  base::HistogramTester histogram_tester;
   update_client()->set_delay_update();
   ExtensionUpdateCheckParams update_check_params;
+
+  // Extensions with empty IDs will be ignored.
   update_check_params.update_info["A"] = ExtensionUpdateData();
   update_check_params.update_info["B"] = ExtensionUpdateData();
   update_check_params.update_info["C"] = ExtensionUpdateData();
@@ -479,12 +483,20 @@ TEST_F(UpdateServiceTest, InProgressUpdate_Successful) {
   const auto& request = update_client()->update_request(0);
   EXPECT_THAT(request.extension_ids,
               testing::ElementsAre("A", "B", "C", "D", "E"));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
+      testing::ElementsAre(base::Bucket(5, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
+              testing::ElementsAre(base::Bucket(5, 1)));
 
   update_client()->RunDelayedUpdate(0);
   EXPECT_TRUE(executed);
+  EXPECT_FALSE(update_service()->IsBusy());
 }
 
 TEST_F(UpdateServiceTest, InProgressUpdate_Duplicate) {
+  base::HistogramTester histogram_tester;
   update_client()->set_delay_update();
   ExtensionUpdateCheckParams uc1, uc2;
   uc1.update_info["A"] = ExtensionUpdateData();
@@ -516,14 +528,22 @@ TEST_F(UpdateServiceTest, InProgressUpdate_Duplicate) {
   const auto& request = update_client()->update_request(0);
   EXPECT_THAT(request.extension_ids,
               testing::ElementsAre("A", "B", "C", "D", "E"));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
+      testing::ElementsAre(base::Bucket(5, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
+              testing::ElementsAre(base::Bucket(5, 1)));
 
   update_client()->RunDelayedUpdate(0);
   EXPECT_TRUE(executed1);
   EXPECT_TRUE(executed2);
+  EXPECT_FALSE(update_service()->IsBusy());
 }
 
 TEST_F(UpdateServiceTest, InProgressUpdate_NonOverlapped) {
   // 2 non-overallped update requests.
+  base::HistogramTester histogram_tester;
   update_client()->set_delay_update();
   ExtensionUpdateCheckParams uc1, uc2;
 
@@ -552,16 +572,25 @@ TEST_F(UpdateServiceTest, InProgressUpdate_NonOverlapped) {
 
   EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
   EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D", "E"));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
+      testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
+              testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1)));
 
   update_client()->RunDelayedUpdate(0);
   EXPECT_TRUE(executed1);
   EXPECT_FALSE(executed2);
+  EXPECT_TRUE(update_service()->IsBusy());
 
   update_client()->RunDelayedUpdate(1);
   EXPECT_TRUE(executed2);
+  EXPECT_FALSE(update_service()->IsBusy());
 }
 
 TEST_F(UpdateServiceTest, InProgressUpdate_Overlapped) {
+  base::HistogramTester histogram_tester;
   update_client()->set_delay_update();
   ExtensionUpdateCheckParams uc1, uc2;
 
@@ -589,18 +618,27 @@ TEST_F(UpdateServiceTest, InProgressUpdate_Overlapped) {
 
   EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
   EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D"));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
+      testing::ElementsAre(base::Bucket(1, 1), base::Bucket(3, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
+              testing::ElementsAre(base::Bucket(1, 1), base::Bucket(3, 1)));
 
   update_client()->RunDelayedUpdate(0);
   ASSERT_TRUE(executed1);
   ASSERT_FALSE(executed2);
+  EXPECT_TRUE(update_service()->IsBusy());
 
   update_client()->RunDelayedUpdate(1);
   ASSERT_TRUE(executed2);
+  EXPECT_FALSE(update_service()->IsBusy());
 }
 
 TEST_F(UpdateServiceTest, InProgressUpdate_3Overlapped) {
   // 3 overlapped requests. The 3rd request have all of its IDs in request1 and
   // request2.
+  base::HistogramTester histogram_tester;
   update_client()->set_delay_update();
   ExtensionUpdateCheckParams uc1, uc2, uc3;
 
@@ -642,20 +680,29 @@ TEST_F(UpdateServiceTest, InProgressUpdate_3Overlapped) {
 
   EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
   EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D", "E"));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
+      testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
+              testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1)));
 
   update_client()->RunDelayedUpdate(0);
   ASSERT_TRUE(executed1);
   ASSERT_FALSE(executed2);
   ASSERT_FALSE(executed3);
+  EXPECT_TRUE(update_service()->IsBusy());
 
   update_client()->RunDelayedUpdate(1);
   ASSERT_TRUE(executed2);
   ASSERT_TRUE(executed3);
+  EXPECT_FALSE(update_service()->IsBusy());
 }
 
 TEST_F(UpdateServiceTest, InProgressUpdate_4Overlapped) {
   // Similar to 3Overlapped, but the 4th request doesn't overlap with the first
   // 3 requests.
+  base::HistogramTester histogram_tester;
   update_client()->set_delay_update();
   ExtensionUpdateCheckParams uc1, uc2, uc3, uc4;
 
@@ -710,29 +757,41 @@ TEST_F(UpdateServiceTest, InProgressUpdate_4Overlapped) {
   EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
   EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D", "E"));
   EXPECT_THAT(request3.extension_ids, testing::ElementsAre("G", "H", "I", "J"));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
+      testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1),
+                           base::Bucket(4, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
+              testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1),
+                                   base::Bucket(4, 1)));
 
   update_client()->RunDelayedUpdate(0);
   ASSERT_TRUE(executed1);
   ASSERT_FALSE(executed2);
   ASSERT_FALSE(executed3);
   ASSERT_FALSE(executed4);
+  EXPECT_TRUE(update_service()->IsBusy());
 
   update_client()->RunDelayedUpdate(1);
   ASSERT_TRUE(executed2);
   ASSERT_TRUE(executed3);
   ASSERT_FALSE(executed4);
+  EXPECT_TRUE(update_service()->IsBusy());
 
   update_client()->RunDelayedUpdate(2);
   ASSERT_TRUE(executed4);
+  EXPECT_FALSE(update_service()->IsBusy());
 }
 
 TEST_F(UpdateServiceTest, InProgressUpdate_Batch) {
   // Verify that extensions are batched when the number of extensions exceeds
-  // 20.
+  // 23.
+  base::HistogramTester histogram_tester;
   update_client()->set_delay_update();
   ExtensionUpdateCheckParams uc;
 
-  for (int i = 0; i < 50; ++i)
+  for (int i = 0; i < 60; ++i)
     uc.update_info[base::StringPrintf("A%02d", i)] = ExtensionUpdateData();
 
   bool executed = false;
@@ -746,31 +805,43 @@ TEST_F(UpdateServiceTest, InProgressUpdate_Batch) {
   const auto& request2 = update_client()->update_request(1);
   const auto& request3 = update_client()->update_request(2);
 
+  EXPECT_THAT(request1.extension_ids,
+              testing::ElementsAre("A00", "A01", "A02", "A03", "A04", "A05",
+                                   "A06", "A07", "A08", "A09", "A10", "A11",
+                                   "A12", "A13", "A14", "A15", "A16", "A17",
+                                   "A18", "A19", "A20", "A21", "A22"));
+  EXPECT_THAT(request2.extension_ids,
+              testing::ElementsAre("A23", "A24", "A25", "A26", "A27", "A28",
+                                   "A29", "A30", "A31", "A32", "A33", "A34",
+                                   "A35", "A36", "A37", "A38", "A39", "A40",
+                                   "A41", "A42", "A43", "A44", "A45"));
   EXPECT_THAT(
-      request1.extension_ids,
-      testing::ElementsAre("A00", "A01", "A02", "A03", "A04", "A05", "A06",
-                           "A07", "A08", "A09", "A10", "A11", "A12", "A13",
-                           "A14", "A15", "A16", "A17", "A18", "A19"));
+      request3.extension_ids,
+      testing::ElementsAre("A46", "A47", "A48", "A49", "A50", "A51", "A52",
+                           "A53", "A54", "A55", "A56", "A57", "A58", "A59"));
+
   EXPECT_THAT(
-      request2.extension_ids,
-      testing::ElementsAre("A20", "A21", "A22", "A23", "A24", "A25", "A26",
-                           "A27", "A28", "A29", "A30", "A31", "A32", "A33",
-                           "A34", "A35", "A36", "A37", "A38", "A39"));
-  EXPECT_THAT(request3.extension_ids,
-              testing::ElementsAre("A40", "A41", "A42", "A43", "A44", "A45",
-                                   "A46", "A47", "A48", "A49"));
+      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
+      testing::ElementsAre(base::Bucket(14, 1), base::Bucket(23, 2)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
+              testing::ElementsAre(base::Bucket(14, 1), base::Bucket(23, 2)));
 
   update_client()->RunDelayedUpdate(0);
   EXPECT_FALSE(executed);
+  EXPECT_TRUE(update_service()->IsBusy());
 
   update_client()->RunDelayedUpdate(1);
   EXPECT_FALSE(executed);
+  EXPECT_TRUE(update_service()->IsBusy());
 
   update_client()->RunDelayedUpdate(2);
   EXPECT_TRUE(executed);
+  EXPECT_FALSE(update_service()->IsBusy());
 }
 
 TEST_F(UpdateServiceTest, InProgressUpdate_NoBatchAndBatch) {
+  base::HistogramTester histogram_tester;
   update_client()->set_delay_update();
   ExtensionUpdateCheckParams uc1;
   ExtensionUpdateCheckParams uc2;
@@ -780,7 +851,7 @@ TEST_F(UpdateServiceTest, InProgressUpdate_NoBatchAndBatch) {
   uc1.update_info["CC"] = ExtensionUpdateData();
   uc1.update_info["DD"] = ExtensionUpdateData();
 
-  for (int i = 0; i < 50; ++i)
+  for (int i = 0; i < 55; ++i)
     uc2.update_info[base::StringPrintf("A%02d", i)] = ExtensionUpdateData();
 
   bool executed1 = false;
@@ -804,33 +875,45 @@ TEST_F(UpdateServiceTest, InProgressUpdate_NoBatchAndBatch) {
 
   EXPECT_THAT(request1.extension_ids,
               testing::ElementsAre("AA", "BB", "CC", "DD"));
+  EXPECT_THAT(request2.extension_ids,
+              testing::ElementsAre("A00", "A01", "A02", "A03", "A04", "A05",
+                                   "A06", "A07", "A08", "A09", "A10", "A11",
+                                   "A12", "A13", "A14", "A15", "A16", "A17",
+                                   "A18", "A19", "A20", "A21", "A22"));
+  EXPECT_THAT(request3.extension_ids,
+              testing::ElementsAre("A23", "A24", "A25", "A26", "A27", "A28",
+                                   "A29", "A30", "A31", "A32", "A33", "A34",
+                                   "A35", "A36", "A37", "A38", "A39", "A40",
+                                   "A41", "A42", "A43", "A44", "A45"));
+  EXPECT_THAT(request4.extension_ids,
+              testing::ElementsAre("A46", "A47", "A48", "A49", "A50", "A51",
+                                   "A52", "A53", "A54"));
 
   EXPECT_THAT(
-      request2.extension_ids,
-      testing::ElementsAre("A00", "A01", "A02", "A03", "A04", "A05", "A06",
-                           "A07", "A08", "A09", "A10", "A11", "A12", "A13",
-                           "A14", "A15", "A16", "A17", "A18", "A19"));
-  EXPECT_THAT(
-      request3.extension_ids,
-      testing::ElementsAre("A20", "A21", "A22", "A23", "A24", "A25", "A26",
-                           "A27", "A28", "A29", "A30", "A31", "A32", "A33",
-                           "A34", "A35", "A36", "A37", "A38", "A39"));
-  EXPECT_THAT(request4.extension_ids,
-              testing::ElementsAre("A40", "A41", "A42", "A43", "A44", "A45",
-                                   "A46", "A47", "A48", "A49"));
+      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
+      testing::ElementsAre(base::Bucket(4, 1), base::Bucket(9, 1),
+                           base::Bucket(23, 2)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
+              testing::ElementsAre(base::Bucket(4, 1), base::Bucket(9, 1),
+                                   base::Bucket(23, 2)));
 
   update_client()->RunDelayedUpdate(0);
   EXPECT_TRUE(executed1);
   EXPECT_FALSE(executed2);
+  EXPECT_TRUE(update_service()->IsBusy());
 
   update_client()->RunDelayedUpdate(1);
   EXPECT_FALSE(executed2);
+  EXPECT_TRUE(update_service()->IsBusy());
 
   update_client()->RunDelayedUpdate(2);
   EXPECT_FALSE(executed2);
+  EXPECT_TRUE(update_service()->IsBusy());
 
   update_client()->RunDelayedUpdate(3);
   EXPECT_TRUE(executed2);
+  EXPECT_FALSE(update_service()->IsBusy());
 }
 
 class UpdateServiceCanUpdateTest : public UpdateServiceTest,
@@ -865,6 +948,15 @@ class UpdateServiceCanUpdateTest : public UpdateServiceTest,
                     .Set("update_url", "http://localhost/test/updates.xml")
                     .Build())
             .Build();
+    emptyurl_extension_ = ExtensionBuilder("emptyurl_extension")
+                              .MergeManifest(DictionaryBuilder().Build())
+                              .Build();
+    userscript_extension_ =
+        ExtensionBuilder("userscript_extension")
+            .MergeManifest(DictionaryBuilder()
+                               .Set("converted_from_user_script", true)
+                               .Build())
+            .Build();
 
     ASSERT_TRUE(store_extension_.get());
     ASSERT_TRUE(ExtensionRegistry::Get(browser_context())
@@ -872,12 +964,20 @@ class UpdateServiceCanUpdateTest : public UpdateServiceTest,
     ASSERT_TRUE(offstore_extension_.get());
     ASSERT_TRUE(ExtensionRegistry::Get(browser_context())
                     ->AddEnabled(offstore_extension_));
+    ASSERT_TRUE(emptyurl_extension_.get());
+    ASSERT_TRUE(ExtensionRegistry::Get(browser_context())
+                    ->AddEnabled(emptyurl_extension_));
+    ASSERT_TRUE(userscript_extension_.get());
+    ASSERT_TRUE(ExtensionRegistry::Get(browser_context())
+                    ->AddEnabled(userscript_extension_));
   }
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_refptr<Extension> store_extension_;
   scoped_refptr<Extension> offstore_extension_;
+  scoped_refptr<Extension> emptyurl_extension_;
+  scoped_refptr<Extension> userscript_extension_;
 };
 
 class UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl
@@ -899,10 +999,16 @@ class UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl
 TEST_P(UpdateServiceCanUpdateTest, UpdateService_CanUpdate) {
   // Update service can only update webstore extensions when enabled.
   EXPECT_EQ(GetParam(), update_service()->CanUpdate(store_extension_->id()));
+  // ... and extensions with empty update URL.
+  EXPECT_EQ(GetParam(), update_service()->CanUpdate(emptyurl_extension_->id()));
   // It can't update off-store extrensions.
   EXPECT_FALSE(update_service()->CanUpdate(offstore_extension_->id()));
+  // ... or extensions with empty update URL converted from user script.
+  EXPECT_FALSE(update_service()->CanUpdate(userscript_extension_->id()));
   // ... or extensions that don't exist.
   EXPECT_FALSE(update_service()->CanUpdate(std::string(32, 'a')));
+  // ... or extensions with empty ID (is it possible?).
+  EXPECT_FALSE(update_service()->CanUpdate(""));
 }
 
 TEST_P(UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl,
@@ -910,8 +1016,11 @@ TEST_P(UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl,
   // Update service cannot update extensions when the default webstore update
   // url is changed.
   EXPECT_FALSE(update_service()->CanUpdate(store_extension_->id()));
+  EXPECT_FALSE(update_service()->CanUpdate(emptyurl_extension_->id()));
   EXPECT_FALSE(update_service()->CanUpdate(offstore_extension_->id()));
+  EXPECT_FALSE(update_service()->CanUpdate(userscript_extension_->id()));
   EXPECT_FALSE(update_service()->CanUpdate(std::string(32, 'a')));
+  EXPECT_FALSE(update_service()->CanUpdate(""));
 }
 
 INSTANTIATE_TEST_CASE_P(CanUpdateTest,

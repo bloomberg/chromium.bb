@@ -66,6 +66,9 @@ class UpdateService : public KeyedService,
   // Overriden from |update_client::UpdateClient::Observer|.
   void OnEvent(Events event, const std::string& id) override;
 
+  // Returns true if the update service is updating one or more extensions.
+  bool IsBusy() const { return !updating_extension_ids_.empty(); }
+
  private:
   friend class ExtensionUpdateClientBaseTest;
   friend class UpdateServiceFactory;
