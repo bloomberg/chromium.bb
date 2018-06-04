@@ -18,6 +18,13 @@
 // subclassed by specific implementations on Win, Mac, etc.
 class TtsPlatformImpl {
  public:
+  TtsPlatformImpl() {}
+
+  virtual ~TtsPlatformImpl() {}
+
+  // TODO(rdaum): Delete declaration after downstream implementation is using
+  // SetPlatformImpl. (This is no longer used and the platform used is selected
+  // by SetPlatformImpl on TtsController instead)
   static TtsPlatformImpl* GetInstance();
 
   // Returns true if this platform implementation is supported and available.
@@ -71,12 +78,6 @@ class TtsPlatformImpl {
   virtual void set_error(const std::string& error);
 
  protected:
-  TtsPlatformImpl() {}
-
-  // On some platforms this may be a leaky singleton - do not rely on the
-  // destructor being called!  http://crbug.com/122026
-  virtual ~TtsPlatformImpl() {}
-
   std::string error_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImpl);

@@ -136,8 +136,11 @@ void Utterance::set_options(const base::Value* options) {
 // TtsControllerImpl
 //
 
-TtsControllerImpl::TtsControllerImpl()
-    : current_utterance_(nullptr), paused_(false), platform_impl_(nullptr) {}
+TtsControllerImpl::TtsControllerImpl(
+    std::unique_ptr<TtsPlatformImpl> platform_impl)
+    : current_utterance_(nullptr),
+      paused_(false),
+      platform_impl_(std::move(platform_impl)) {}
 
 TtsControllerImpl::~TtsControllerImpl() {
   if (current_utterance_) {
@@ -396,8 +399,9 @@ void TtsControllerImpl::ClearUtteranceQueue(bool send_events) {
   }
 }
 
-void TtsControllerImpl::SetPlatformImpl(TtsPlatformImpl* platform_impl) {
-  platform_impl_ = platform_impl;
+void TtsControllerImpl::SetPlatformImpl(
+    std::unique_ptr<TtsPlatformImpl> platform_impl) {
+  platform_impl_ = std::move(platform_impl);
 }
 
 int TtsControllerImpl::QueueSize() {
@@ -405,9 +409,7 @@ int TtsControllerImpl::QueueSize() {
 }
 
 TtsPlatformImpl* TtsControllerImpl::GetPlatformImpl() {
-  if (!platform_impl_)
-    platform_impl_ = TtsPlatformImpl::GetInstance();
-  return platform_impl_;
+  return platform_impl_.get();
 }
 
 std::string TtsControllerImpl::GetApplicationLocale() const {
@@ -527,7 +529,7 @@ void TtsControllerImpl::UpdateUtteranceDefaults(Utterance* utterance) {
 void TtsControllerImpl::VoicesChanged() {
   // Existence of platform tts indicates explicit requests to tts. Since
   // |VoicesChanged| can occur implicitly, only send if needed.
-  if (!platform_impl_)
+  if (!GetPlatformImpl())
     return;
 
   for (std::set<VoicesChangedDelegate*>::iterator iter =

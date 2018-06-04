@@ -42,6 +42,7 @@
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
 #include "chromecast/browser/pref_service_helper.h"
 #include "chromecast/browser/tts/tts_controller_impl.h"
+#include "chromecast/browser/tts/tts_platform_stub.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/common/global_descriptors.h"
@@ -555,8 +556,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   ::media::InitializeMediaLibrary();
   media_caps_->Initialize();
 
-  cast_browser_process_->SetTtsController(
-      std::make_unique<TtsControllerImpl>());
+  cast_browser_process_->SetTtsController(std::make_unique<TtsControllerImpl>(
+      std::make_unique<TtsPlatformImplStub>()));
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   user_pref_service_ = extensions::cast_prefs::CreateUserPrefService(
