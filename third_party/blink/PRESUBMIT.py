@@ -214,6 +214,8 @@ def _AreLayoutNGDirectoriesModified(change):  # pylint: disable=C0103
                      'ng'),
         os.path.join('third_party', 'blink', 'renderer', 'core', 'paint',
                      'ng'),
+        os.path.join('third_party', 'blink', 'renderer', 'platform', 'fonts',
+                     'shaping'),
         os.path.join('third_party', 'blink', 'web_tests', 'FlagExpectations',
                      'enable-blink-features=LayoutNG'),
         os.path.join('third_party', 'blink', 'web_tests', 'flag-specific',
