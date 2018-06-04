@@ -74,6 +74,14 @@ Polymer({
   },
 
   /**
+   * @return {boolean}
+   * @private
+   */
+  hasError_: function() {
+    return this.error_ != UrlInputError.NONE;
+  },
+
+  /**
    * @param {string} invalidUrl
    * @param {string} tooLong
    * @return {string}
@@ -100,11 +108,6 @@ Polymer({
       // If the URL was invalid, there is nothing to do, just leave the dialog
       // open and let the user fix the URL or cancel.
     });
-  },
-
-  /** @private */
-  showCharCounter_: function() {
-    return this.error_ == UrlInputError.TOO_LONG;
   },
 
   /** @private */

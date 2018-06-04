@@ -67,7 +67,7 @@ cr.define('settings_startup_urls_page', function() {
     /**
      * Triggers an 'input' event on the given text input field, which triggers
      * validation to occur.
-     * @param {!PaperInputElement} element
+     * @param {!CrInputElement} element
      */
     function pressSpace(element) {
       // The actual key code is irrelevant for these tests.
