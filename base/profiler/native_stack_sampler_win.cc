@@ -86,7 +86,7 @@ const TEB* GetThreadEnvironmentBlock(HANDLE thread_handle) {
 // to the corresponding location in the copied stack.
 void RewritePointerIfInOriginalStack(uintptr_t top, uintptr_t bottom,
                                      void* stack_copy, const void** pointer) {
-  const uintptr_t value = reinterpret_cast<uintptr_t>(*pointer);
+  const auto value = reinterpret_cast<uintptr_t>(*pointer);
   if (value >= bottom && value < top) {
     *pointer = reinterpret_cast<const void*>(
         static_cast<unsigned char*>(stack_copy) + (value - bottom));
@@ -344,7 +344,7 @@ void SuspendThreadAndRecordStack(
   // The stack bounds are saved to uintptr_ts for use outside
   // ScopedSuspendThread, as the thread's memory is not safe to dereference
   // beyond that point.
-  const uintptr_t top = reinterpret_cast<uintptr_t>(base_address);
+  const auto top = reinterpret_cast<uintptr_t>(base_address);
   uintptr_t bottom = 0u;
 
   {
