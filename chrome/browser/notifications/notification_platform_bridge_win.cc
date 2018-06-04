@@ -702,8 +702,8 @@ class NotificationPlatformBridgeWinImpl
     HRESULT hr = arguments->get_ErrorCode(&error_code);
     if (SUCCEEDED(hr)) {
       LogOnFailedStatus(OnFailedStatus::SUCCESS);
-      DLOG(WARNING) << "Failed to raise the toast notification, error code: "
-                    << std::hex << error_code;
+      DLOG(ERROR) << "Failed to raise the toast notification, error code: "
+                  << std::hex << error_code;
     } else {
       LogOnFailedStatus(OnFailedStatus::GET_ERROR_CODE_FAILED);
       DLOG(ERROR) << "Failed to raise the toast notification; failed to get "
