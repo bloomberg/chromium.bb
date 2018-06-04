@@ -354,7 +354,8 @@ def _buildbucket_retry(operation_name, http, *args, **kwargs):
       if not content_json:
         raise BuildbucketResponseException(
             'Buildbucket returns invalid json content: %s.\n'
-            'Please file bugs at http://crbug.com, label "Infra-BuildBucket".' %
+            'Please file bugs at http://crbug.com, '
+            'component "Infra>Platform>BuildBucket".' %
             content)
       return content_json
     if response.status < 500 or try_count >= 2:
