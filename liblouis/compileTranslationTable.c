@@ -2991,7 +2991,7 @@ compileHyphenation(FileInfo *nested, CharsString *encoding, int *lastToken,
 	HyphenationTrans *holdPointer;
 	HyphenHashTab *hashTab;
 	CharsString word;
-	char pattern[MAXSTRING];
+	char pattern[MAXSTRING + 1];
 	unsigned int stateNum = 0, lastState = 0;
 	int i, j, k = encoding->length;
 	widechar ch;
