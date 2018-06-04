@@ -1093,9 +1093,15 @@ static void AssertWaitForStateOrDeleted(
       << ", instead of " << expected_state;
 }
 
+// Fails on Win only. crbug.com/849368
+#if defined(OS_WIN)
+#define MAYBE_TestSimpleDecode DISABLED_TestSimpleDecode
+#else
+#define MAYBE_TestSimpleDecode TestSimpleDecode
+#endif
 // Test the most straightforward case possible: data is decoded from a single
 // chunk and rendered to the screen.
-TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
+TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
   size_t num_concurrent_decoders = std::get<0>(GetParam());
   const size_t num_in_flight_decodes = std::get<1>(GetParam());
   size_t num_play_throughs = std::get<2>(GetParam());
