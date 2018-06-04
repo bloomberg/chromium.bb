@@ -522,7 +522,6 @@ void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
     request.SetFetchCredentialsMode(
         network::mojom::FetchCredentialsMode::kOmit);
     ImageResource* image_resource = ImageResource::Create(request);
-    image_resource->SetStatus(ResourceStatus::kPending);
     image_resource->NotifyStartLoad();
     SetImageForImageDocument(image_resource);
     return;
