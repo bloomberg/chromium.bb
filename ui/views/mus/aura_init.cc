@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
@@ -22,11 +21,6 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/views_delegate.h"
-
-#if defined(OS_LINUX)
-#include "components/services/font/public/cpp/font_loader.h"
-#include "ui/gfx/platform_font_linux.h"
-#endif
 
 namespace views {
 
@@ -57,17 +51,7 @@ AuraInit::AuraInit() {
     views_delegate_ = std::make_unique<MusViewsDelegate>();
 }
 
-AuraInit::~AuraInit() {
-#if defined(OS_LINUX)
-  if (font_loader_.get()) {
-    SkFontConfigInterface::SetGlobal(nullptr);
-    // FontLoader is ref counted. We need to explicitly shutdown the background
-    // thread, otherwise the background thread may be shutdown after the app is
-    // torn down, when we're in a bad state.
-    font_loader_->Shutdown();
-  }
-#endif
-}
+AuraInit::~AuraInit() = default;
 
 std::unique_ptr<AuraInit> AuraInit::Create(
     service_manager::Connector* connector,
@@ -113,20 +97,6 @@ bool AuraInit::Init(service_manager::Connector* connector,
                            register_path_provider)) {
     return false;
   }
-
-// Initialize the skia font code to go ask fontconfig underneath.
-#if defined(OS_LINUX)
-  font_loader_ = sk_make_sp<font_service::FontLoader>(connector);
-  SkFontConfigInterface::SetGlobal(font_loader_);
-
-  // Initialize static default font, by running this now, before any other apps
-  // load, we ensure all the state is set up.
-  bool success = gfx::PlatformFontLinux::InitDefaultFont();
-
-  // If a remote service manager has shut down, initializing the font will fail.
-  if (!success)
-    return false;
-#endif  // defined(OS_LINUX)
 
   ui::InitializeInputMethodForTesting();
   return true;

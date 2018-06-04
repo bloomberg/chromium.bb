@@ -9,8 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "build/build_config.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/aura/env.h"
 #include "ui/views/mus/mus_export.h"
 
@@ -20,10 +18,6 @@ class Env;
 
 namespace base {
 class SingleThreadTaskRunner;
-}
-
-namespace font_service {
-class FontLoader;
 }
 
 namespace service_manager {
@@ -91,10 +85,6 @@ class VIEWS_MUS_EXPORT AuraInit {
                            const std::string& resource_file,
                            const std::string& resource_file_200,
                            bool register_path_provider);
-
-#if defined(OS_LINUX)
-  sk_sp<font_service::FontLoader> font_loader_;
-#endif
 
   std::unique_ptr<aura::Env> env_;
   std::unique_ptr<MusClient> mus_client_;
