@@ -107,7 +107,7 @@ class LocalNTPTest : public InProcessBrowserTest {
     feature_list_.InitAndEnableFeature(features::kUseGoogleLocalNtp);
   }
 
-  LocalNTPTest(const std::vector<base::Feature>& enabled_features) {
+  explicit LocalNTPTest(const std::vector<base::Feature>& enabled_features) {
     feature_list_.InitWithFeatures(enabled_features, {});
   }
 
