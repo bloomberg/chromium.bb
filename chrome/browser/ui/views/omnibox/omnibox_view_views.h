@@ -334,9 +334,9 @@ class OmniboxViewViews : public OmniboxView,
   int friendly_suggestion_text_prefix_length_;
 
   ScopedObserver<ui::Compositor, ui::CompositorObserver>
-      scoped_compositor_observer_{this};
+      scoped_compositor_observer_;
   ScopedObserver<TemplateURLService, TemplateURLServiceObserver>
-      scoped_template_url_service_observer_{this};
+      scoped_template_url_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };
