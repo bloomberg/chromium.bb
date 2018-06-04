@@ -59,6 +59,16 @@ class DownloadManagerMediatorTest : public PlatformTest {
   web::FakeDownloadTask task_;
 };
 
+// Tests starting the download and immediately destroying the task.
+// DownloadManagerMediator should not crash.
+TEST_F(DownloadManagerMediatorTest, DestoryTaskAfterStart) {
+  auto task =
+      std::make_unique<web::FakeDownloadTask>(GURL(kTestUrl), kTestMimeType);
+  mediator_.SetDownloadTask(task.get());
+  mediator_.StartDowloading();
+  task.reset();
+}
+
 // Tests starting the download. Verifies that download task is started and its
 // file writer is configured to write into download directory.
 TEST_F(DownloadManagerMediatorTest, Start) {
