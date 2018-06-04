@@ -62,10 +62,7 @@ class DataTypeManager {
   // running data types that are not in the desired_types set will be
   // stopped.  Any stopped data types that are in the desired_types
   // set will be started.  All other data types are left in their
-  // current state.  A SYNC_CONFIGURE_START notification will be sent
-  // to the UI thread when configuration is started and a
-  // SYNC_CONFIGURE_DONE notification will be sent (with a
-  // ConfigureResult detail) when configuration is complete.
+  // current state.
   //
   // Note that you may call Configure() while configuration is in
   // progress.  Configuration will be complete only when the
