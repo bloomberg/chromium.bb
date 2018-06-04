@@ -2465,14 +2465,22 @@ ShadowRoot& Element::CreateAndAttachShadowRoot(ShadowRootType type) {
   DCHECK(!GetShadowRoot());
 
   ShadowRoot* shadow_root = ShadowRoot::Create(GetDocument(), type);
+
+  if (type != ShadowRootType::V0) {
+    // Detach the host's children here for v1 (including UA shadow root),
+    // because we skip SetNeedsDistributionRecalc() in attaching v1 shadow root.
+    // See https://crrev.com/2822113002 for details.
+    // We need to call child.LazyReattachIfAttached() before setting a shadow
+    // root to the element because detach must use the original flat tree
+    // structure before attachShadow happens.
+    for (Node& child : NodeTraversal::ChildrenOf(*this))
+      child.LazyReattachIfAttached();
+  }
   EnsureElementRareData().SetShadowRoot(*shadow_root);
   shadow_root->SetParentOrShadowHostNode(this);
   shadow_root->SetParentTreeScope(GetTreeScope());
   if (type == ShadowRootType::V0) {
     shadow_root->SetNeedsDistributionRecalc();
-  } else {
-    for (Node& child : NodeTraversal::ChildrenOf(*this))
-      child.LazyReattachIfAttached();
   }
 
   shadow_root->InsertedInto(this);

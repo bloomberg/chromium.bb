@@ -278,10 +278,7 @@ void ListItemOrdinal::ItemInsertedOrRemoved(
     return;
 
   Node* list_node = EnclosingList(item_node);
-  // TODO(kochi): Change this to CHECK(list_node) once crbug.com/734908
-  // is resolved.
-  if (!list_node)
-    return;
+  CHECK(list_node);
 
   bool is_list_reversed = false;
   if (auto* o_list_element = ToHTMLOListElementOrNull(list_node)) {
