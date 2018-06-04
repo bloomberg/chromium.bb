@@ -17,6 +17,7 @@ source_set("content_suggestions") {
     "//base",
     "//components/strings",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui",
     "//ios/chrome/browser/ui/content_suggestions/cells:cells_ui",
