@@ -7,10 +7,9 @@
 
 #include <memory>
 
-#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen_view.h"
-#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 
 namespace chromeos {
 
@@ -18,9 +17,8 @@ class BaseScreenDelegate;
 
 // Controlls demo mode setup. The screen can be shown during OOBE. It allows
 // user to setup retail demo mode on the device.
-class DemoSetupScreen
-    : public BaseScreen,
-      public EnterpriseEnrollmentHelper::EnrollmentStatusConsumer {
+class DemoSetupScreen : public BaseScreen,
+                        public DemoSetupController::Delegate {
  public:
   DemoSetupScreen(BaseScreenDelegate* base_screen_delegate,
                   DemoSetupScreenView* view);
@@ -31,24 +29,17 @@ class DemoSetupScreen
   void Hide() override;
   void OnUserAction(const std::string& action_id) override;
 
+  // DemoSetupManager::Delegate:
+  void OnSetupError() override;
+  void OnSetupSuccess() override;
+
   // Called when view is being destroyed. If Screen is destroyed earlier
   // then it has to call Bind(nullptr).
   void OnViewDestroyed(DemoSetupScreenView* view);
 
-  // EnterpriseEnrollmentHelper::EnterpriseStatusConsumer:
-  void OnAuthError(const GoogleServiceAuthError& error) override;
-  void OnMultipleLicensesAvailable(
-      const EnrollmentLicenseMap& licenses) override;
-  void OnEnrollmentError(policy::EnrollmentStatus status) override;
-  void OnOtherError(EnterpriseEnrollmentHelper::OtherError error) override;
-  void OnDeviceEnrolled(const std::string& additional_token) override;
-  void OnDeviceAttributeUpdatePermission(bool granted) override;
-  void OnDeviceAttributeUploadCompleted(bool success) override;
-
  private:
   DemoSetupScreenView* view_;
-
-  std::unique_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
+  std::unique_ptr<DemoSetupController> demo_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSetupScreen);
 };
