@@ -51,6 +51,7 @@ class WPTGitHubTest(unittest.TestCase):
         self.assertIsNone(self.wpt_github.extract_link_next(''))
 
     def test_all_pull_requests_single_page(self):
+        self.wpt_github = WPTGitHub(MockHost(), user='rutabaga', token='decafbad', pr_history_window=1)
         self.wpt_github.host.web.responses = [
             {'status_code': 200,
              'headers': {'Link': ''},
@@ -59,6 +60,7 @@ class WPTGitHubTest(unittest.TestCase):
         self.assertEqual(len(self.wpt_github.all_pull_requests()), 1)
 
     def test_all_pull_requests_all_pages(self):
+        self.wpt_github = WPTGitHub(MockHost(), user='rutabaga', token='decafbad', pr_history_window=2)
         self.wpt_github.host.web.responses = [
             {'status_code': 200,
              'headers': {'Link': '<https://api.github.com/resources?page=2>; rel="next"'},
@@ -89,9 +91,19 @@ class WPTGitHubTest(unittest.TestCase):
             self.wpt_github.all_pull_requests()
 
     def test_all_pull_requests_throws_github_error_when_incomplete(self):
+        self.wpt_github = WPTGitHub(MockHost(), user='rutabaga', token='decafbad', pr_history_window=1)
         self.wpt_github.host.web.responses = [
             {'status_code': 200,
              'body': json.dumps({'incomplete_results': True, 'items': [self.generate_pr_item(1)]})},
+        ]
+        with self.assertRaises(GitHubError):
+            self.wpt_github.all_pull_requests()
+
+    def test_all_pull_requests_throws_github_error_when_too_few_prs(self):
+        self.wpt_github = WPTGitHub(MockHost(), user='rutabaga', token='decafbad', pr_history_window=2)
+        self.wpt_github.host.web.responses = [
+            {'status_code': 200,
+             'body': json.dumps({'incomplete_results': False, 'items': [self.generate_pr_item(1)]})},
         ]
         with self.assertRaises(GitHubError):
             self.wpt_github.all_pull_requests()
