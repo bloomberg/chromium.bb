@@ -879,8 +879,6 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
     entry->set_should_replace_entry(true);
   entry->set_should_clear_history_list(params.should_clear_history_list);
   entry->SetIsOverridingUserAgent(override);
-  entry->set_transferred_global_request_id(
-      params.transferred_global_request_id);
 
 // Always propagate `has_user_gesture` on Android but only when the request
 // was originated by the renderer on other platforms. This is merely for

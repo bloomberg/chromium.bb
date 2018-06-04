@@ -358,15 +358,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   void set_reload_type(ReloadType type) { reload_type_ = type; }
   ReloadType reload_type() const { return reload_type_; }
 
-  void set_transferred_global_request_id(
-      const GlobalRequestID& transferred_global_request_id) {
-    transferred_global_request_id_ = transferred_global_request_id;
-  }
-
-  GlobalRequestID transferred_global_request_id() const {
-    return transferred_global_request_id_;
-  }
-
   // Whether this (pending) navigation needs to replace current entry.
   // Resets to false after commit.
   bool should_replace_entry() const {
@@ -504,16 +495,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // displayed. When the URL, virtual URL, or title is set, this should be
   // cleared to force a refresh.
   mutable base::string16 cached_display_title_;
-
-  // In case a navigation is transferred to a new RVH but the request has
-  // been generated in the renderer already, this identifies the old request so
-  // that it can be resumed. The old request is stored until the
-  // ResourceDispatcher receives the navigation from the renderer which
-  // carries this |transferred_global_request_id_| annotation. Once the request
-  // is transferred to the new process, this is cleared and the request
-  // continues as normal.
-  // Cleared in |ResetForCommit|.
-  GlobalRequestID transferred_global_request_id_;
 
   // This is set to true when this entry is being reloaded and due to changes in
   // the state of the URL, it has to be reloaded in a different site instance.
