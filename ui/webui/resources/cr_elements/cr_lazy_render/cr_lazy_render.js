@@ -48,7 +48,7 @@ Polymer({
   /** @private */
   render_: function() {
     var template = this.getContentChildren()[0];
-    if (!template.ctor)
+    if (!this.ctor)
       this.templatize(template);
     var parentNode = this.parentNode;
     if (parentNode && !this.child_) {

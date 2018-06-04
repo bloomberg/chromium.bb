@@ -36,11 +36,14 @@ TEST_F('SettingsIdleLoadBrowserTest', 'All', function() {
   // Register mocha tests.
   suite('Settings idle load tests', function() {
     setup(function() {
-      const template = '<template is="settings-idle-load" id="idleTemplate" ' +
-          '    url="chrome://resources/html/polymer.html">' +
-          '  <div></div>' +
-          '</template>';
-      document.body.innerHTML = template;
+      document.body.innerHTML = `
+        <settings-idle-load id="idleTemplate"
+            url="chrome://resources/html/polymer.html">
+          <template>
+            <div></div>
+          </template>
+        </settings-idle-load>
+      `;
       // The div should not be initially accesible.
       assertFalse(!!document.body.querySelector('div'));
     });

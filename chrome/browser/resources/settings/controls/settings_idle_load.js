@@ -10,7 +10,6 @@
  */
 Polymer({
   is: 'settings-idle-load',
-  extends: 'template',
 
   behaviors: [Polymer.Templatizer],
 
@@ -22,7 +21,7 @@ Polymer({
     url: String,
   },
 
-  /** @private {TemplatizerNode} */
+  /** @private {?Element} */
   child_: null,
 
   /** @private {number} */
@@ -50,7 +49,7 @@ Polymer({
     this.loading_ = new Promise((resolve, reject) => {
       this.importHref(this.url, () => {
         assert(!this.ctor);
-        this.templatize(this);
+        this.templatize(this.getContentChildren()[0]);
         assert(this.ctor);
 
         const instance = this.stamp({});
