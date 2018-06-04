@@ -7,7 +7,7 @@
           "--browser=android-chromium",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=benchmark_android_bot_map.json"
+          "--test-shard-map-filename=mobile_39_shard_map.json"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -531,7 +531,7 @@
           "--browser=release",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=benchmark_desktop_bot_map.json"
+          "--test-shard-map-filename=desktop_5_shard_map.json"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -710,7 +710,7 @@
           "--browser=android-chromium",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=benchmark_android_bot_map.json"
+          "--test-shard-map-filename=mobile_39_shard_map.json"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -760,7 +760,7 @@
           "--browser=android-webview",
           "--upload-results",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
-          "--test-shard-map-filename=benchmark_android_bot_map.json"
+          "--test-shard-map-filename=mobile_39_shard_map.json"
         ],
         "isolate_name": "performance_webview_test_suite",
         "merge": {

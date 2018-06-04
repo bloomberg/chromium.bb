@@ -61,7 +61,7 @@ import run_gtest_perf_test
 def get_sharding_map_path(args):
   return os.path.join(
       os.path.dirname(__file__), '..', '..', 'tools', 'perf', 'core',
-      args.test_shard_map_filename)
+      'shard_maps', args.test_shard_map_filename)
 
 def write_results(
     perf_test_name, perf_results, json_test_results, benchmark_log,
@@ -175,7 +175,7 @@ def main():
                       ' to run in lieu of indexing into our benchmark bot maps',
                       required=False)
   # Some executions may have a different sharding scheme and/or set of tests.
-  # These files must live in src/tools/perf/core/
+  # These files must live in src/tools/perf/core/shard_maps
   parser.add_argument('--test-shard-map-filename', type=str, required=False)
   parser.add_argument('--output-format', action='append')
   parser.add_argument('--run-ref-build',
