@@ -336,6 +336,7 @@ by a child template that "extends" this file.
             {{ self.supports_video_persistence() }}
         >
             {{ self.supports_vr() }}
+            {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
         <activity android:name="org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity"
             android:theme="@style/MainTheme"
@@ -469,6 +470,9 @@ by a child template that "extends" this file.
                 <category android:name="com.google.intent.category.CARDBOARD" />
             </intent-filter>
             {% endblock %}
+
+            {% block extra_web_rendering_activity_definitions %}
+            {% endblock %}
         </activity>
         <!-- TODO(crbug.com/780674): retarget .Main back to CTA for non-modern APK -->
         <activity-alias android:name="com.google.android.apps.chrome.Main"
@@ -501,6 +505,7 @@ by a child template that "extends" this file.
             {{ self.supports_video_persistence() }}
         >
             {{ self.supports_vr() }}
+            {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
         <activity android:name="org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity"
             android:theme="@style/TabbedModeTheme"
@@ -653,6 +658,7 @@ by a child template that "extends" this file.
             {{ self.chrome_activity_common() }}
         >
             {{ self.supports_vr() }}
+            {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
         <activity-alias android:name="com.google.android.apps.chrome.webapps.WebappActivity"
             android:targetActivity="org.chromium.chrome.browser.webapps.WebappActivity"
@@ -671,6 +677,7 @@ by a child template that "extends" this file.
             {{ self.chrome_activity_common() }}
         >
            {{ self.supports_vr() }}
+           {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
         <activity-alias android:name="com.google.android.apps.chrome.webapps.WebappActivity{{ i }}"
             android:targetActivity="org.chromium.chrome.browser.webapps.WebappActivity{{ i }}"
@@ -689,6 +696,7 @@ by a child template that "extends" this file.
             {{ self.chrome_activity_common() }}
         >
             {{ self.supports_vr() }}
+            {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
         {% for i in range(10) %}
         <activity android:name="org.chromium.chrome.browser.webapps.WebApkActivity{{ i }}"
@@ -702,6 +710,7 @@ by a child template that "extends" this file.
             {{ self.chrome_activity_common() }}
         >
             {{ self.supports_vr() }}
+            {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
         {% endfor %}
 
