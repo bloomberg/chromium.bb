@@ -69,7 +69,7 @@ SettingsPageBrowserTest.prototype = {
     const pageType = 'settings-' + type + '-page';
     const page = settingsMain.$$(pageType);
 
-    const idleRender = page && page.$$('template[is=settings-idle-load]');
+    const idleRender = page && page.$$('settings-idle-load');
     if (!idleRender)
       return Promise.resolve(page);
 
