@@ -14,7 +14,12 @@ issues]].
 - Add metadata fields =name= and =display-name= to tables thanks to
   Bert Frees. The =name= contains a description of the table in the
   native language. =display-name= contains an English description.
-- Add =maxOutputLength= option in YAML tests.
+- YAML test enhancements
+  - You can now test both forward and backwards translation with in
+    the same YAML file and for the same set of tables tests thanks to
+    Bue Vester-Andersen. See the documentation for the
+    ~bothDirections~ testmode.
+  - Add =maxOutputLength= option in YAML tests.
 
 ** Bug fixes
 - Fix a bunch of buffer overflow errors in table parsing thanks to
