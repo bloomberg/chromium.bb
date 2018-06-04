@@ -50,6 +50,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
     static final String NOTIFICATIONS_KEY = "notifications";
     static final String POPUPS_KEY = "popups";
     static final String PROTECTED_CONTENT_KEY = "protected_content";
+    static final String SENSORS_KEY = "sensors";
     static final String SOUND_KEY = "sound";
     static final String STORAGE_KEY = "use_storage";
     static final String TRANSLATE_KEY = "translate";
@@ -107,6 +108,8 @@ public class SiteSettingsPreferences extends PreferenceFragment
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS;
         } else if (PROTECTED_CONTENT_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
+        } else if (SENSORS_KEY.equals(key)) {
+            return ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS;
         } else if (SOUND_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND;
         } else if (USB_KEY.equals(key)) {
@@ -137,6 +140,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(findPreference(MICROPHONE_KEY));
             getPreferenceScreen().removePreference(findPreference(NOTIFICATIONS_KEY));
             getPreferenceScreen().removePreference(findPreference(POPUPS_KEY));
+            getPreferenceScreen().removePreference(findPreference(SENSORS_KEY));
             getPreferenceScreen().removePreference(findPreference(SOUND_KEY));
             getPreferenceScreen().removePreference(findPreference(STORAGE_KEY));
             getPreferenceScreen().removePreference(findPreference(TRANSLATE_KEY));
@@ -167,6 +171,9 @@ public class SiteSettingsPreferences extends PreferenceFragment
             // preference. Once Languages Preference is enabled, remove this setting.
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.LANGUAGES_PREFERENCE)) {
                 getPreferenceScreen().removePreference(findPreference(TRANSLATE_KEY));
+            }
+            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.GENERIC_SENSOR_EXTRA_CLASSES)) {
+                getPreferenceScreen().removePreference(findPreference(SENSORS_KEY));
             }
         }
     }
@@ -203,6 +210,9 @@ public class SiteSettingsPreferences extends PreferenceFragment
             websitePrefs.add(MICROPHONE_KEY);
             websitePrefs.add(NOTIFICATIONS_KEY);
             websitePrefs.add(POPUPS_KEY);
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.GENERIC_SENSOR_EXTRA_CLASSES)) {
+                websitePrefs.add(SENSORS_KEY);
+            }
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.SOUND_CONTENT_SETTING)) {
                 websitePrefs.add(SOUND_KEY);
             }
@@ -238,6 +248,8 @@ public class SiteSettingsPreferences extends PreferenceFragment
                 checked = PrefServiceBridge.getInstance().popupsEnabled();
             } else if (PROTECTED_CONTENT_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().isProtectedMediaIdentifierEnabled();
+            } else if (SENSORS_KEY.equals(prefName)) {
+                checked = PrefServiceBridge.getInstance().areSensorsEnabled();
             } else if (SOUND_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().isSoundEnabled();
             } else if (USB_KEY.equals(prefName)) {

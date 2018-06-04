@@ -173,6 +173,12 @@ public class ContentSettingsResources {
                             R.string.website_settings_usb, ContentSetting.ASK, ContentSetting.BLOCK,
                             R.string.website_settings_category_usb_ask,
                             R.string.website_settings_category_usb_blocked));
+            localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS,
+                    new ResourceItem(R.drawable.settings_sensors, R.string.sensors_permission_title,
+                            R.string.sensors_permission_title, ContentSetting.ALLOW,
+                            ContentSetting.BLOCK,
+                            R.string.website_settings_category_sensors_allowed,
+                            R.string.website_settings_category_sensors_blocked));
             sResourceInfo = localMap;
         }
         return sResourceInfo;

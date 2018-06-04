@@ -380,6 +380,13 @@ public class PrefServiceBridge {
     }
 
     /**
+     * @return true if websites are allowed to access device's sensors.
+     */
+    public boolean areSensorsEnabled() {
+        return nativeGetSensorsEnabled();
+    }
+
+    /**
      * @return true if websites are allowed to play sound.
      */
     public boolean isSoundEnabled() {
@@ -752,6 +759,10 @@ public class PrefServiceBridge {
 
     public void setPasswordEchoEnabled(boolean enabled) {
         nativeSetPasswordEchoEnabled(enabled);
+    }
+
+    public void setSensorsEnabled(boolean allow) {
+        nativeSetSensorsEnabled(allow);
     }
 
     public void setSoundEnabled(boolean allow) {
@@ -1135,6 +1146,7 @@ public class PrefServiceBridge {
     private native boolean nativeGetIncognitoModeManaged();
     private native boolean nativeGetPrintingEnabled();
     private native boolean nativeGetPrintingManaged();
+    private native boolean nativeGetSensorsEnabled();
     private native boolean nativeGetSoundEnabled();
     private native boolean nativeGetSupervisedUserSafeSitesEnabled();
     private native void nativeSetTranslateEnabled(boolean enabled);
@@ -1165,6 +1177,7 @@ public class PrefServiceBridge {
     private native void nativeSetNotificationsEnabled(boolean allow);
     private native void nativeSetNotificationsVibrateEnabled(boolean enabled);
     private native void nativeSetPasswordEchoEnabled(boolean enabled);
+    private native void nativeSetSensorsEnabled(boolean allow);
     private native void nativeSetSoundEnabled(boolean allow);
     private native boolean nativeCanPrefetchAndPrerender();
     private native AboutVersionStrings nativeGetAboutVersionStrings();

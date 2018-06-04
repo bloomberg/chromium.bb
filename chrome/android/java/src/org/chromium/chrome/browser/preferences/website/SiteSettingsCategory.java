@@ -47,6 +47,7 @@ public class SiteSettingsCategory {
     public static final String CATEGORY_NOTIFICATIONS = "notifications";
     public static final String CATEGORY_POPUPS = "popups";
     public static final String CATEGORY_PROTECTED_MEDIA = "protected_content";
+    public static final String CATEGORY_SENSORS = "sensors";
     public static final String CATEGORY_SOUND = "sound";
     public static final String CATEGORY_USE_STORAGE = "use_storage";
     public static final String CATEGORY_USB = "usb";
@@ -137,6 +138,10 @@ public class SiteSettingsCategory {
             return new SiteSettingsCategory(CATEGORY_PROTECTED_MEDIA, "",
                     ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
         }
+        if (CATEGORY_SENSORS.equals(category)) {
+            return new SiteSettingsCategory(
+                    CATEGORY_SENSORS, "", ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS);
+        }
         if (CATEGORY_SOUND.equals(category)) {
             return new SiteSettingsCategory(
                     CATEGORY_SOUND, "", ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND);
@@ -194,6 +199,9 @@ public class SiteSettingsCategory {
         if (contentSettingsType
                 == ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER) {
             return fromString(CATEGORY_PROTECTED_MEDIA);
+        }
+        if (contentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS) {
+            return fromString(CATEGORY_SENSORS);
         }
         if (contentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND) {
             return fromString(CATEGORY_SOUND);
@@ -304,6 +312,13 @@ public class SiteSettingsCategory {
     public boolean showProtectedMediaSites() {
         return mContentSettingsType
                 == ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
+    }
+
+    /**
+     * Returns whether this category is the Sensors category.
+     */
+    public boolean showSensorsSites() {
+        return mContentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS;
     }
 
     /**
