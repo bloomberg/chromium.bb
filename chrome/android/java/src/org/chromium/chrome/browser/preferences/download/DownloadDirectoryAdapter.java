@@ -166,7 +166,7 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         for (int i = 0; i < getCount(); i++) {
             DirectoryOption option = (DirectoryOption) getItem(i);
             if (option == null) continue;
-            if (defaultLocation.equals(option.location.getAbsolutePath())) return i;
+            if (defaultLocation.equals(option.location)) return i;
         }
         return NO_SELECTED_ITEM_ID;
     }
@@ -184,7 +184,7 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
             if (option == null) continue;
             if (option.availableSpace > 0) {
                 PrefServiceBridge.getInstance().setDownloadAndSaveFileDefaultDirectory(
-                        option.location.getAbsolutePath());
+                        option.location);
                 mSelectedPosition = i;
                 return i;
             }
@@ -209,9 +209,9 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         mCanonicalOptions.clear();
         File directoryLocation =
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        mCanonicalOptions.add(
-                new DirectoryOption(mContext.getString(R.string.menu_downloads), directoryLocation,
-                        directoryLocation.getUsableSpace(), DirectoryOption.DEFAULT_OPTION));
+        mCanonicalOptions.add(new DirectoryOption(mContext.getString(R.string.menu_downloads),
+                directoryLocation.getAbsolutePath(), directoryLocation.getUsableSpace(),
+                directoryLocation.getTotalSpace(), DirectoryOption.DEFAULT_OPTION));
     }
 
     private void setAdditionalDirectoryOptions() {
@@ -236,8 +236,9 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
                     : mContext.getString(org.chromium.chrome.R.string.downloads_location_sd_card);
 
             File file = new File(dir);
-            mAdditionalOptions.add(new DirectoryOption(
-                    directoryName, file, file.getUsableSpace(), DirectoryOption.ADDITIONAL_OPTION));
+            mAdditionalOptions.add(new DirectoryOption(directoryName, file.getAbsolutePath(),
+                    file.getUsableSpace(), file.getTotalSpace(),
+                    DirectoryOption.ADDITIONAL_OPTION));
             numOtherAdditionalDirectories++;
         }
     }
@@ -248,7 +249,7 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         } else {
             mErrorOptions.add(new DirectoryOption(
                     mContext.getString(R.string.download_location_no_available_locations), null, 0,
-                    DirectoryOption.ERROR_OPTION));
+                    0, DirectoryOption.ERROR_OPTION));
         }
     }
 }

@@ -48,7 +48,7 @@ public class DownloadLocationPreference extends DialogPreference {
         final SpannableStringBuilder summaryBuilder = new SpannableStringBuilder();
         summaryBuilder.append(directoryOption.name);
         summaryBuilder.append(" ");
-        summaryBuilder.append(directoryOption.location.getAbsolutePath());
+        summaryBuilder.append(directoryOption.location);
         summaryBuilder.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0,
                 directoryOption.name.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 

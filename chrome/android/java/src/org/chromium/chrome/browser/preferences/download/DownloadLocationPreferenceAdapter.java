@@ -93,13 +93,11 @@ public class DownloadLocationPreferenceAdapter
         if (option == null) return;
 
         // Update the native pref, which persists the download directory selected by the user.
-        PrefServiceBridge.getInstance().setDownloadAndSaveFileDefaultDirectory(
-                option.location.getAbsolutePath());
+        PrefServiceBridge.getInstance().setDownloadAndSaveFileDefaultDirectory(option.location);
 
         // Update the android pref and update the summary in download settings page.
         SharedPreferences.Editor editor = ContextUtils.getAppSharedPreferences().edit();
-        editor.putString(
-                DownloadPreferences.PREF_LOCATION_CHANGE, option.location.getAbsolutePath());
+        editor.putString(DownloadPreferences.PREF_LOCATION_CHANGE, option.location);
         editor.apply();
 
         mSelectedPosition = selectedId;
