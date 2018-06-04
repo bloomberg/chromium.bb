@@ -2453,8 +2453,8 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
     }
   }
 
-  LayoutSize container_offset = OffsetFromContainer(container);
-
+  LayoutSize container_offset =
+      OffsetFromContainer(container, mode & kIgnoreScrollOffset);
   // TODO(smcgruer): This is inefficient. Instead we should avoid including
   // offsetForInFlowPosition in offsetFromContainer when ignoring sticky.
   if (mode & kIgnoreStickyOffset && IsStickyPositioned()) {
@@ -2702,11 +2702,32 @@ TransformationMatrix LayoutObject::LocalToAncestorTransform(
   return transform_state.AccumulatedTransform();
 }
 
-LayoutSize LayoutObject::OffsetFromContainer(const LayoutObject* o) const {
+LayoutSize LayoutObject::OffsetFromContainer(const LayoutObject* o,
+                                             bool ignore_scroll_offset) const {
+  return OffsetFromContainerInternal(o, ignore_scroll_offset);
+}
+
+LayoutSize LayoutObject::OffsetFromContainerInternal(
+    const LayoutObject* o,
+    bool ignore_scroll_offset) const {
   DCHECK_EQ(o, Container());
   return o->HasOverflowClip()
-             ? LayoutSize(-ToLayoutBox(o)->ScrolledContentOffset())
+             ? OffsetFromScrollableContainer(o, ignore_scroll_offset)
              : LayoutSize();
+}
+
+LayoutSize LayoutObject::OffsetFromScrollableContainer(
+    const LayoutObject* container,
+    bool ignore_scroll_offset) const {
+  DCHECK(container->HasOverflowClip());
+  const LayoutBox* box = ToLayoutBox(container);
+  if (!ignore_scroll_offset)
+    return -LayoutSize(box->ScrolledContentOffset());
+
+  // ScrollOrigin accounts for other writing modes whose content's origin is not
+  // at the top-left.
+  return LayoutSize(ToIntSize(box->GetScrollableArea()->ScrollOrigin()) -
+                    box->OriginAdjustmentForScrollbars());
 }
 
 LayoutSize LayoutObject::OffsetFromAncestorContainer(

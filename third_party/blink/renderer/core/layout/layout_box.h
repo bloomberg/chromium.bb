@@ -710,8 +710,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void SetOverrideContainingBlockContentLogicalHeight(LayoutUnit);
   void ClearOverrideContainingBlockContentSize();
 
-  LayoutSize OffsetFromContainer(const LayoutObject*) const override;
-
   LayoutUnit AdjustBorderBoxLogicalWidthForBoxSizing(float width) const;
   LayoutUnit AdjustBorderBoxLogicalHeightForBoxSizing(float height) const;
   LayoutUnit AdjustContentBoxLogicalWidthForBoxSizing(float width) const;
@@ -1532,6 +1530,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const LayoutBox* containing_block) const;
 
   LayoutRect LocalVisualRectIgnoringVisibility() const override;
+
+  LayoutSize OffsetFromContainerInternal(
+      const LayoutObject*,
+      bool ignore_scroll_offset) const override;
 
   // For atomic inlines, returns its resolved direction in text flow. Not to be
   // confused with the CSS property 'direction'.

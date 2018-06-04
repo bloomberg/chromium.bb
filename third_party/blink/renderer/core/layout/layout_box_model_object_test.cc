@@ -117,6 +117,115 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionVerticalRLConstraints) {
             EnclosingIntRect(sticky->ComputeStickyConstrainingRect()));
 }
 
+// Verifies that the sticky constraints are correctly computed for inline.
+TEST_F(LayoutBoxModelObjectTest, StickyPositionInlineConstraints) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      .scroller { overflow: scroll; width: 100px; height: 100px; top: 100px;
+          position: absolute; }
+      .container { position: relative; top: 100px; height: 400px;
+        width: 200px; }
+      .sticky_box { width: 10px; height: 10px; top: 10px; position: sticky; }
+      .inline { display: inline-block; }
+      .spacer { height: 2000px; }
+    </style>
+    <div class='scroller' id='scroller'>
+      <div class='container'>
+        <div class='inline sticky_box' id='sticky'></div>
+      </div>
+      <div class='spacer'></div>
+    </div>
+  )HTML");
+
+  LayoutBoxModelObject* scroller =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  scrollable_area->ScrollToAbsolutePosition(
+      FloatPoint(scrollable_area->ScrollOffsetInt().Width(), 50));
+  EXPECT_EQ(50.f, scrollable_area->ScrollPosition().Y());
+  LayoutBoxModelObject* sticky =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
+
+  sticky->UpdateStickyPositionConstraints();
+
+  EXPECT_EQ(scroller->Layer(), sticky->Layer()->AncestorOverflowLayer());
+
+  const StickyPositionScrollingConstraints& constraints =
+      scrollable_area->GetStickyConstraintsMap().at(sticky->Layer());
+
+  EXPECT_EQ(10.f, constraints.TopOffset());
+
+  // The coordinates of the constraint rects should all be with respect to the
+  // unscrolled scroller.
+  EXPECT_EQ(IntRect(0, 100, 200, 400),
+            EnclosingIntRect(
+                GetScrollContainerRelativeContainingBlockRect(constraints)));
+  EXPECT_EQ(
+      IntRect(0, 100, 10, 10),
+      EnclosingIntRect(GetScrollContainerRelativeStickyBoxRect(constraints)));
+  EXPECT_EQ(IntRect(0, 50, 100, 100), sticky->ComputeStickyConstrainingRect());
+}
+
+// Verifies that the sticky constraints are correctly computed for sticky with
+// writing mode.
+TEST_F(LayoutBoxModelObjectTest, StickyPositionVerticalRLInlineConstraints) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      .scroller { writing-mode: vertical-rl; overflow: scroll; width: 100px;
+          height: 100px; top: 100px; position: absolute; }
+      .container { position: relative; top: 100px; height: 400px;
+        width: 200px; }
+      .sticky_box { width: 10px; height: 10px; top: 10px; position: sticky; }
+      .inline { display: inline-block; }
+      .spacer { width: 2000px; height: 2000px; }
+    </style>
+    <div class='scroller' id='scroller'>
+      <div class='container'>
+        <div class='inline sticky_box' id='sticky'></div>
+      </div>
+      <div class='spacer'></div>
+    </div>
+  )HTML");
+  // Initial layout:
+  // 0---------------2000----2200
+  // -----spacer-----
+  //                 container---
+  //                 ----2100----
+  //                     scroller
+  //                     ----2190
+  //                         sticky
+  LayoutBoxModelObject* scroller =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  scrollable_area->ScrollToAbsolutePosition(
+      FloatPoint(scrollable_area->ScrollPosition().X(), 50));
+  EXPECT_EQ(50.f, scrollable_area->ScrollPosition().Y());
+  LayoutBoxModelObject* sticky =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
+
+  sticky->UpdateStickyPositionConstraints();
+
+  EXPECT_EQ(scroller->Layer(), sticky->Layer()->AncestorOverflowLayer());
+
+  const StickyPositionScrollingConstraints& constraints =
+      scrollable_area->GetStickyConstraintsMap().at(sticky->Layer());
+
+  EXPECT_EQ(10.f, constraints.TopOffset());
+
+  // The coordinates of the constraint rects should all be with respect to the
+  // unscrolled scroller.
+  EXPECT_EQ(IntRect(2000, 100, 200, 400),
+            EnclosingIntRect(
+                GetScrollContainerRelativeContainingBlockRect(constraints)));
+  EXPECT_EQ(
+      IntRect(2190, 100, 10, 10),
+      EnclosingIntRect(GetScrollContainerRelativeStickyBoxRect(constraints)));
+  EXPECT_EQ(IntRect(2100, 50, 100, 100),
+            sticky->ComputeStickyConstrainingRect());
+}
+
 // Verifies that the sticky constraints are not affected by transforms
 TEST_F(LayoutBoxModelObjectTest, StickyPositionTransforms) {
   SetBodyInnerHTML(R"HTML(
@@ -949,12 +1058,11 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionNestedFixedPos) {
       FloatPoint(scrollable_area->ScrollPosition().X(), 100));
   ASSERT_EQ(100.0, scrollable_area->ScrollPosition().Y());
 
-  // TODO(smcgruer): Until http://crbug.com/686164 is fixed, we need to update
+  // TODO(smcgruer): Until http://crbug.com/686164 is fixed, the sticky position
+  // offset of the inner sticky stays 75 instead of 25.
   // the constraints here before calculations will be correct.
-  inner_sticky->UpdateStickyPositionConstraints();
-
   EXPECT_EQ(LayoutSize(0, 100), outer_sticky->StickyPositionOffset());
-  EXPECT_EQ(LayoutSize(0, 25), inner_sticky->StickyPositionOffset());
+  EXPECT_EQ(LayoutSize(0, 75), inner_sticky->StickyPositionOffset());
 }
 
 TEST_F(LayoutBoxModelObjectTest, NoCrashStackingContextChangeNonRooted) {

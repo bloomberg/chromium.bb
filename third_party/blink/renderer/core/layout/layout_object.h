@@ -1342,7 +1342,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Return the offset from the container() layoutObject (excluding transforms
   // and multicol).
-  virtual LayoutSize OffsetFromContainer(const LayoutObject*) const;
+  LayoutSize OffsetFromContainer(const LayoutObject*,
+                                 bool ignore_scroll_offset = false) const;
   // Return the offset from an object up the container() chain. Asserts that
   // none of the intermediate objects have transforms.
   LayoutSize OffsetFromAncestorContainer(const LayoutObject*) const;
@@ -2166,6 +2167,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual LayoutRect LocalVisualRectIgnoringVisibility() const;
 
   virtual bool CanBeSelectionLeafInternal() const { return false; }
+
+  virtual LayoutSize OffsetFromContainerInternal(
+      const LayoutObject*,
+      bool ignore_scroll_offset) const;
+  LayoutSize OffsetFromScrollableContainer(const LayoutObject*,
+                                           bool ignore_scroll_offset) const;
 
  private:
   // Used only by applyFirstLineChanges to get a first line style based off of a

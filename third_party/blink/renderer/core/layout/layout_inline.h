@@ -146,8 +146,6 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
                      const LayoutPoint& accumulated_offset) const final;
   FloatRect LocalBoundingBoxRectForAccessibility() const final;
 
-  LayoutSize OffsetFromContainer(const LayoutObject*) const final;
-
   LayoutRect LinesBoundingBox() const;
   LayoutRect VisualOverflowRect() const final;
 
@@ -229,6 +227,9 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   void AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
                             MapCoordinatesFlags mode = 0) const override;
+
+  LayoutSize OffsetFromContainerInternal(const LayoutObject*,
+                                         bool ignore_scroll_offset) const final;
 
  private:
   LayoutObjectChildList* VirtualChildren() final { return Children(); }

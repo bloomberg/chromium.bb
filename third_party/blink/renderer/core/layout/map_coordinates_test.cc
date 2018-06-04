@@ -1692,4 +1692,150 @@ TEST_F(MapCoordinatesTest, LocalToAbsoluteTransformFlattens) {
               LayoutUnit::Epsilon());
 }
 
+// This test verifies that the mapped location of a div within a scroller
+// remains the same after scroll when ignoring scroll offset.
+TEST_F(MapCoordinatesTest, IgnoreScrollOffset) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      .scroller { overflow: scroll; height: 100px; width: 100px;
+        top: 100px; position: absolute; }
+      .box { width: 10px; height: 10px; top: 10px; position: absolute; }
+      .spacer { height: 2000px; }
+    </style>
+    <div class='scroller' id='scroller'>
+      <div class='box' id='box'></div>
+      <div class='spacer'></div>
+    </div>
+  )HTML");
+
+  LayoutBox* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
+  LayoutBox* box = ToLayoutBox(GetLayoutObjectByElementId("box"));
+
+  EXPECT_EQ(FloatPoint(0, 10), MapLocalToAncestor(box, scroller, FloatPoint()));
+  EXPECT_EQ(FloatPoint(0, 10), MapLocalToAncestor(box, scroller, FloatPoint(),
+                                                  kIgnoreScrollOffset));
+
+  scroller->ScrollToPosition(FloatPoint(0, 50));
+
+  EXPECT_EQ(FloatPoint(0, -40),
+            MapLocalToAncestor(box, scroller, FloatPoint()));
+  EXPECT_EQ(FloatPoint(0, 10), MapLocalToAncestor(box, scroller, FloatPoint(),
+                                                  kIgnoreScrollOffset));
+}
+
+// This test verifies that the mapped location of an inline div within a
+// scroller remains the same after scroll when ignoring scroll offset.
+TEST_F(MapCoordinatesTest, IgnoreScrollOffsetForInline) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      .scroller { overflow: scroll; width: 100px; height: 100px; top: 100px;
+        position: absolute; }
+      .box { width: 10px; height: 10px; top: 10px; position: sticky; }
+      .inline { display: inline; }
+      .spacer { height: 2000px; }
+    </style>
+    <div class='scroller' id='scroller'>
+      <div class='inline box' id='box'></div>
+      <div class='spacer'></div>
+    </div>
+  )HTML");
+
+  LayoutBox* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
+  LayoutInline* box = ToLayoutInline(GetLayoutObjectByElementId("box"));
+
+  EXPECT_EQ(FloatPoint(0, 10), MapLocalToAncestor(box, scroller, FloatPoint()));
+  EXPECT_EQ(FloatPoint(0, 10), MapLocalToAncestor(box, scroller, FloatPoint(),
+                                                  kIgnoreScrollOffset));
+
+  scroller->ScrollToPosition(FloatPoint(0, 50));
+
+  EXPECT_EQ(FloatPoint(0, 10), MapLocalToAncestor(box, scroller, FloatPoint()));
+  EXPECT_EQ(FloatPoint(0, 60), MapLocalToAncestor(box, scroller, FloatPoint(),
+                                                  kIgnoreScrollOffset));
+}
+
+// This test verifies that ignoring scroll offset works with writing modes.
+TEST_F(MapCoordinatesTest, IgnoreScrollOffsetWithWritingModes) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      .scroller { writing-mode: vertical-rl; overflow: scroll; height: 100px;
+        width: 100px; top: 100px; position: absolute; }
+      .box { width: 10px; height: 10px; top: 10px; position: absolute; }
+      .spacer { width: 2000px; height: 2000px; }
+    </style>
+    <div class='scroller' id='scroller'>
+      <div class='box' id='box'></div>
+      <div class='spacer'></div>
+    </div>
+  )HTML");
+
+  LayoutBox* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
+  LayoutBox* box = ToLayoutBox(GetLayoutObjectByElementId("box"));
+
+  EXPECT_EQ(FloatPoint(90, 10),
+            MapLocalToAncestor(box, scroller, FloatPoint()));
+  EXPECT_EQ(
+      FloatPoint(1990, 10),
+      MapLocalToAncestor(box, scroller, FloatPoint(), kIgnoreScrollOffset));
+
+  scroller->ScrollToPosition(FloatPoint(0, 50));
+
+  EXPECT_EQ(FloatPoint(1990, -40),
+            MapLocalToAncestor(box, scroller, FloatPoint()));
+  EXPECT_EQ(
+      FloatPoint(1990, 10),
+      MapLocalToAncestor(box, scroller, FloatPoint(), kIgnoreScrollOffset));
+
+  scroller->ScrollToPosition(FloatPoint(1900, 50));
+
+  EXPECT_EQ(FloatPoint(90, -40),
+            MapLocalToAncestor(box, scroller, FloatPoint()));
+  EXPECT_EQ(
+      FloatPoint(1990, 10),
+      MapLocalToAncestor(box, scroller, FloatPoint(), kIgnoreScrollOffset));
+}
+
+// This test verifies that ignoring scroll offset works with writing modes and
+// non-overlay scrollbar.
+TEST_F(MapCoordinatesTest,
+       IgnoreScrollOffsetWithWritingModesAndNonOverlayScrollbar) {
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      .scroller { writing-mode: vertical-rl; overflow: scroll; height: 100px;
+        width: 100px; top: 100px; position: absolute; }
+      .box { width: 10px; height: 10px; top: 10px; position: absolute; }
+      .spacer { width: 2000px; height: 2000px; }
+    </style>
+    <div class='scroller' id='scroller'>
+      <div class='box' id='box'></div>
+      <div class='spacer'></div>
+    </div>
+  )HTML");
+
+  LayoutBox* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
+  LayoutBox* box = ToLayoutBox(GetLayoutObjectByElementId("box"));
+
+  // The box is on the left of the scrollbar so the width of the scrollbar
+  // affects the location of the box.
+  EXPECT_EQ(FloatPoint(75, 10),
+            MapLocalToAncestor(box, scroller, FloatPoint()));
+  EXPECT_EQ(
+      FloatPoint(1990, 10),
+      MapLocalToAncestor(box, scroller, FloatPoint(), kIgnoreScrollOffset));
+
+  scroller->ScrollToPosition(FloatPoint(0, 0));
+  // The box is now on the right of the scrollbar therefore there is nothing
+  // between the box and the right border of the content.
+  EXPECT_EQ(FloatPoint(1990, 10),
+            MapLocalToAncestor(box, scroller, FloatPoint()));
+  EXPECT_EQ(
+      FloatPoint(1990, 10),
+      MapLocalToAncestor(box, scroller, FloatPoint(), kIgnoreScrollOffset));
+}
+
 }  // namespace blink
