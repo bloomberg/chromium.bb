@@ -225,8 +225,8 @@ function sensorMocks() {
       this.sharedBufferHandle_ = rv.handle;
       this.activeSensors_ = new Map();
       this.resolveFuncs_ = new Map();
-      this.getSensorShouldFail_ = false;
-      this.permissionsDenied_ = false;
+      this.getSensorShouldFail_ = new Map();
+      this.permissionsDenied_ = new Map();
       this.isContinuous_ = false;
       this.maxFrequency_ = 60;
       this.minFrequency_ = 1;
@@ -242,11 +242,11 @@ function sensorMocks() {
 
     // Returns initialized Sensor proxy to the client.
     async getSensor(type) {
-      if (this.getSensorShouldFail_) {
+      if (this.getSensorShouldFail_.get(type)) {
         return {result: device.mojom.SensorCreationResult.ERROR_NOT_AVAILABLE,
                 initParams: null};
       }
-      if (this.permissionsDenied_) {
+      if (this.permissionsDenied_.get(type)) {
         return {result: device.mojom.SensorCreationResult.ERROR_NOT_ALLOWED,
                 initParams: null};
       }
@@ -319,8 +319,8 @@ function sensorMocks() {
       }
       this.activeSensors_.clear();
       this.resolveFuncs_.clear();
-      this.getSensorShouldFail_ = false;
-      this.permissionsDenied_ = false;
+      this.getSensorShouldFail_.clear();
+      this.permissionsDenied_.clear();
       this.maxFrequency_ = 60;
       this.minFrequency_ = 1;
       this.isContinuous_ = false;
@@ -330,12 +330,12 @@ function sensorMocks() {
 
     // Sets flag that forces mock SensorProvider to fail when getSensor() is
     // invoked.
-    setGetSensorShouldFail(shouldFail) {
-      this.getSensorShouldFail_ = shouldFail;
+    setGetSensorShouldFail(type, shouldFail) {
+      this.getSensorShouldFail_.set(type, shouldFail);
     }
 
-    setPermissionsDenied(permissionsDenied) {
-      this.permissionsDenied_ = permissionsDenied;
+    setPermissionsDenied(type, permissionsDenied) {
+      this.permissionsDenied_.set(type, permissionsDenied);
     }
 
     // Returns mock sensor that was created in getSensor to the layout test.
