@@ -36,7 +36,7 @@ NGLogicalRect ComputeLogicalRectFor(const NGPhysicalOffsetRect& physical_rect,
           .ResolvedDirection();
   const NGPhysicalSize outer_size = paint_fragment.Size();
   const NGLogicalOffset logical_offset = physical_rect.offset.ConvertToLogical(
-      writing_mode, text_direction, outer_size, paint_fragment.Size());
+      writing_mode, text_direction, outer_size, physical_rect.size);
   const NGLogicalSize logical_size =
       physical_rect.size.ConvertToLogical(writing_mode);
   return {logical_offset, logical_size};
@@ -59,8 +59,8 @@ NGPhysicalOffsetRect ComputePhysicalRectFor(
   return {physical_offset, physical_size};
 }
 
-NGPhysicalOffsetRect ExpandedSelectionRectForLineBreakIfNeeded(
-    const NGPhysicalOffsetRect& rect,
+NGLogicalRect ExpandedSelectionRectForLineBreakIfNeeded(
+    const NGLogicalRect& rect,
     const NGPaintFragment& paint_fragment,
     const LayoutSelectionStatus& selection_status) {
   // Expand paint rect if selection covers multiple lines and
@@ -71,16 +71,26 @@ NGPhysicalOffsetRect ExpandedSelectionRectForLineBreakIfNeeded(
           ->EnclosingNGBlockFlow()
           ->ShouldTruncateOverflowingText())
     return rect;
-  // Copy from InlineTextBoxPainter.
-  const NGLogicalRect logical_rect =
-      ComputeLogicalRectFor(rect, paint_fragment);
+  // Copy from InlineTextBoxPainter::PaintSelection.
   const LayoutUnit space_width(paint_fragment.Style().GetFont().SpaceWidth());
-  const NGLogicalSize logical_expanded_size(
-      logical_rect.size.inline_size + space_width,
-      logical_rect.size.block_size);
-  const NGPhysicalOffsetRect physical_rect = ComputePhysicalRectFor(
-      {logical_rect.offset, logical_expanded_size}, paint_fragment);
-  return physical_rect;
+  return {rect.offset,
+          {rect.size.inline_size + space_width, rect.size.block_size}};
+}
+
+// Expands selection height so that the selection rect fills entire line.
+NGLogicalRect ExpandSelectionRectToLineHeight(
+    const NGLogicalRect& rect,
+    const NGPaintFragment& paint_fragment) {
+  const NGPaintFragment* current_line = paint_fragment.ContainerLineBox();
+  DCHECK(current_line);
+  const NGPhysicalOffsetRect line_physical_rect(
+      current_line->InlineOffsetToContainerBox() -
+          paint_fragment.InlineOffsetToContainerBox(),
+      current_line->Size());
+  const NGLogicalRect line_logical_rect =
+      ComputeLogicalRectFor(line_physical_rect, paint_fragment);
+  return {{rect.offset.inline_offset, line_logical_rect.offset.block_offset},
+          {rect.size.inline_size, line_logical_rect.size.block_size}};
 }
 
 NGLogicalOffset ChildLogicalOffsetInParent(const NGPaintFragment& child) {
@@ -376,10 +386,16 @@ NGPhysicalOffsetRect NGPaintFragment::ComputeLocalSelectionRect(
   const NGPhysicalOffsetRect& selection_rect =
       ToNGPhysicalTextFragmentOrDie(PhysicalFragment())
           .LocalRect(selection_status.start, selection_status.end);
-  const NGPhysicalOffsetRect line_break_extended_rect =
-      ExpandedSelectionRectForLineBreakIfNeeded(selection_rect, *this,
+  const NGLogicalRect logical_rect =
+      ComputeLogicalRectFor(selection_rect, *this);
+  const NGLogicalRect line_break_extended_rect =
+      ExpandedSelectionRectForLineBreakIfNeeded(logical_rect, *this,
                                                 selection_status);
-  return line_break_extended_rect;
+  const NGLogicalRect line_height_expanded_rect =
+      ExpandSelectionRectToLineHeight(line_break_extended_rect, *this);
+  const NGPhysicalOffsetRect physical_rect =
+      ComputePhysicalRectFor(line_height_expanded_rect, *this);
+  return physical_rect;
 }
 
 PositionWithAffinity NGPaintFragment::PositionForPointInText(
