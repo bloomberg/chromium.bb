@@ -8,11 +8,11 @@ from telemetry import story
 
 class ToughSchedulingCasesPage(page_module.Page):
 
-  def __init__(self, url, page_set):
+  def __init__(self, name, url, page_set):
     super(ToughSchedulingCasesPage, self).__init__(
         url=url, page_set=page_set,
         shared_page_state_class=shared_page_state.SharedMobilePageState,
-        name=url.split('/')[-1])
+        name=name)
 
   def RunPageInteractions(self, action_runner):
     with action_runner.CreateGestureInteraction('ScrollAction'):
@@ -25,6 +25,7 @@ class TouchDraggingPage(ToughSchedulingCasesPage):
 
   def __init__(self, page_set):
     super(TouchDraggingPage, self).__init__(
+        name='simple_touch_drag',
         url='file://tough_scheduling_cases/simple_touch_drag.html',
         page_set=page_set)
 
@@ -44,6 +45,7 @@ class SynchronizedScrollOffsetPage(ToughSchedulingCasesPage):
 
   def __init__(self, page_set):
     super(SynchronizedScrollOffsetPage, self).__init__(
+        name='sync_scroll_offset',
         url='file://tough_scheduling_cases/sync_scroll_offset.html',
         page_set=page_set)
 
@@ -60,6 +62,7 @@ class SecondBatchJsPage(ToughSchedulingCasesPage):
 
   def __init__(self, page_set, variant='medium'):
     super(SecondBatchJsPage, self).__init__(
+        name='second_batch_js_%s' % variant,
         url='file://tough_scheduling_cases/second_batch_js.html?%s' % variant,
         page_set=page_set)
 
@@ -90,28 +93,34 @@ class ToughSchedulingCasesPageSet(story.StorySet):
 
     # Why: Simple scrolling baseline
     self.AddStory(ToughSchedulingCasesPage(
-        'file://tough_scheduling_cases/simple_text_page.html',
-        self))
+        name='simple_text_page',
+        url='file://tough_scheduling_cases/simple_text_page.html',
+        page_set=self))
     # Why: Touch handler scrolling baseline
     self.AddStory(ToughSchedulingCasesPage(
-        'file://tough_scheduling_cases/touch_handler_scrolling.html',
-        self))
+        name='touch_handler_scrolling',
+        url='file://tough_scheduling_cases/touch_handler_scrolling.html',
+        page_set=self))
     # Why: requestAnimationFrame scrolling baseline
     self.AddStory(ToughSchedulingCasesPage(
-        'file://tough_scheduling_cases/raf.html',
-        self))
+        name='raf',
+        url='file://tough_scheduling_cases/raf.html',
+        page_set=self))
     # Why: Test canvas blocking behavior
     self.AddStory(ToughSchedulingCasesPage(
-        'file://tough_scheduling_cases/raf_canvas.html',
-        self))
+        name='raf_canvas',
+        url='file://tough_scheduling_cases/raf_canvas.html',
+        page_set=self))
     # Why: Test a requestAnimationFrame handler with concurrent CSS animation
     self.AddStory(ToughSchedulingCasesPage(
-        'file://tough_scheduling_cases/raf_animation.html',
-        self))
+        name="raf_animation",
+        url='file://tough_scheduling_cases/raf_animation.html',
+        page_set=self))
     # Why: Stress test for the scheduler
     self.AddStory(ToughSchedulingCasesPage(
-        'file://tough_scheduling_cases/raf_touch_animation.html',
-        self))
+        name="raf_touch_animation",
+        url='file://tough_scheduling_cases/raf_touch_animation.html',
+        page_set=self))
     self.AddStory(TouchDraggingPage(self))
     # Why: For measuring the latency of scroll-synchronized effects.
     self.AddStory(SynchronizedScrollOffsetPage(page_set=self))
