@@ -45,9 +45,7 @@ class ContextualSuggestionsFetch {
   net::HttpRequestHeaders MakeHeaders() const;
   void OnURLLoaderComplete(ReportFetchMetricsCallback metrics_callback,
                            std::unique_ptr<std::string> result);
-  void ReportFetchMetrics(int32_t error_code,
-                          int32_t response_code,
-                          size_t clusters_size,
+  void ReportFetchMetrics(size_t clusters_size,
                           ReportFetchMetricsCallback metrics_callback);
 
   // The url for which we're fetching suggestions.
