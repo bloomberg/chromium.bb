@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.compositor.scene_layer;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.graphics.RectF;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -89,13 +88,11 @@ public class TabListSceneLayer extends SceneLayer {
             int defaultThemeColor =
                     ColorUtils.getDefaultThemeColor(res, useModernDesign, t.isIncognito());
 
-            int toolbarBackgroundColor = getTabThemeColor(context, t);
-
             // In the modern design, the text box is always drawn opaque in the compositor.
             float textBoxAlpha = useModernDesign ? 1.f : t.getTextBoxAlpha();
 
             int closeButtonColor =
-                    ColorUtils.getThemedAssetColor(toolbarBackgroundColor, t.isIncognito());
+                    ColorUtils.getThemedAssetColor(defaultThemeColor, t.isIncognito());
 
             int borderColorResource =
                     t.isIncognito() ? R.color.tab_back_incognito : R.color.tab_back;
@@ -119,7 +116,7 @@ public class TabListSceneLayer extends SceneLayer {
                     t.getBorderCloseButtonAlpha() * decoration,
                     LayoutTab.CLOSE_BUTTON_WIDTH_DP * dpToPx, t.getStaticToViewBlend(),
                     t.getBorderScale(), t.getSaturation(), t.getBrightness(), t.showToolbar(),
-                    defaultThemeColor, toolbarBackgroundColor, closeButtonColor,
+                    defaultThemeColor, t.getToolbarBackgroundColor(), closeButtonColor,
                     t.anonymizeToolbar(), t.isTitleNeeded(), urlBarBackgroundId,
                     t.getTextBoxBackgroundColor(), textBoxAlpha, t.getToolbarAlpha(),
                     t.getToolbarYOffset() * dpToPx, t.getSideBorderScale(),
@@ -135,25 +132,6 @@ public class TabListSceneLayer extends SceneLayer {
         if (FeatureUtilities.isChromeModernDesignEnabled()) return R.drawable.btn_close_white;
 
         return R.drawable.btn_tab_close;
-    }
-
-    /**
-     * @param context An android context for resources.
-     * @param t The layout tab to determine the color of.
-     * @return The theme color for the provided tab. This accounts for features like Chrome Modern.
-     */
-    private int getTabThemeColor(Context context, LayoutTab t) {
-        int themeColor = t.getToolbarBackgroundColor();
-
-        // The only time we need to override the theme color is if modern is enabled and the theme
-        // color is the old default theme color.
-        if (FeatureUtilities.isChromeModernDesignEnabled()
-                && ColorUtils.isUsingDefaultToolbarColor(
-                           context.getResources(), false, false, t.getToolbarBackgroundColor())) {
-            themeColor = Color.WHITE;
-        }
-
-        return themeColor;
     }
 
     /**

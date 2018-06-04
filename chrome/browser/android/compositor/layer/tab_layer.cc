@@ -154,7 +154,7 @@ void TabLayer::SetProperties(int id,
   // Grab required resources
   ui::NinePatchResource* border_resource =
       ui::NinePatchResource::From(resource_manager_->GetStaticResourceWithTint(
-          border_resource_id, toolbar_background_color));
+          border_resource_id, default_theme_color));
   ui::NinePatchResource* border_inner_shadow_resource =
       ui::NinePatchResource::From(resource_manager_->GetResource(
           ui::ANDROID_RESOURCE_TYPE_STATIC, border_inner_shadow_resource_id));
