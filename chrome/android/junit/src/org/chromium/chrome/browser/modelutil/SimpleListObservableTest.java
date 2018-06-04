@@ -7,8 +7,7 @@ package org.chromium.chrome.browser.modelutil;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
-
-import android.support.test.filters.SmallTest;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import org.junit.After;
 import org.junit.Before;
@@ -19,7 +18,6 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Feature;
 
 /**
  * Basic test ensuring the {@link SimpleListObservable} notifies listeners properly.
@@ -44,10 +42,8 @@ public class SimpleListObservableTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"keyboard-accessory"})
     public void testNotifiesSuccessfulInsertions() {
-        // Setting an empty list ist always an insertion.
+        // Replacing an empty list with a non-empty one is always an insertion.
         assertThat(mIntegerList.getItemCount(), is(0));
         mIntegerList.set(new Integer[] {333, 88888888, 22});
         verify(mObserver).onItemRangeInserted(mIntegerList, 0, 3);
@@ -62,8 +58,6 @@ public class SimpleListObservableTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"keyboard-accessory"})
     public void testModelNotifiesSuccessfulRemoval() {
         Integer eightEights = 88888888;
         mIntegerList.set(new Integer[] {333, eightEights, 22});
@@ -79,23 +73,34 @@ public class SimpleListObservableTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"keyboard-accessory"})
-    public void testModelNotifiesReplacedData() {
+    public void testModelNotifiesReplacedDataAndRemoval() {
         // The initial setting is an insertion.
         mIntegerList.set(new Integer[] {333, 88888888, 22});
         verify(mObserver).onItemRangeInserted(mIntegerList, 0, 3);
 
-        // Setting non-empty data is a change of all elements.
+        // Setting a smaller number of items is a removal and a change.
         mIntegerList.set(new Integer[] {4444, 22});
-        verify(mObserver).onItemRangeChanged(mIntegerList, 0, 3, mIntegerList);
+        verify(mObserver).onItemRangeChanged(mIntegerList, 0, 2, null);
+        verify(mObserver).onItemRangeRemoved(mIntegerList, 2, 1);
+    }
 
-        // Setting data of same values is a change.
+    @Test
+    public void testModelNotifiesReplacedDataAndInsertion() {
+        // The initial setting is an insertion.
+        mIntegerList.set(new Integer[] {1234, 56});
+        verify(mObserver).onItemRangeInserted(mIntegerList, 0, 2);
+
+        // Setting a larger number of items is an insertion and a change.
         mIntegerList.set(new Integer[] {4444, 22, 1, 666666});
-        verify(mObserver).onItemRangeChanged(mIntegerList, 0, 4, mIntegerList);
+        verify(mObserver).onItemRangeChanged(mIntegerList, 0, 2, null);
+        verify(mObserver).onItemRangeInserted(mIntegerList, 2, 2);
 
         // Setting empty data is a removal.
         mIntegerList.set(new Integer[] {});
         verify(mObserver).onItemRangeRemoved(mIntegerList, 0, 4);
+
+        // Replacing an empty list with another empty list is a no-op.
+        mIntegerList.set(new Integer[] {});
+        verifyNoMoreInteractions(mObserver);
     }
 }

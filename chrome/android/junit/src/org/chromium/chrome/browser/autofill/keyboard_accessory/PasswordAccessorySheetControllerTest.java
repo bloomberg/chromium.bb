@@ -105,7 +105,7 @@ public class PasswordAccessorySheetControllerTest {
 
         // If the coordinator receives a new set of items, the model should report a change.
         testProvider.notifyObservers(new KeyboardAccessoryData.Item[] {testItem});
-        verify(mMockItemListObserver).onItemRangeChanged(mModel, 0, 1, mModel);
+        verify(mMockItemListObserver).onItemRangeChanged(mModel, 0, 1, null);
         assertThat(mModel.getItemCount(), is(1));
         assertThat(mModel.get(0), is(equalTo(testItem)));
 
