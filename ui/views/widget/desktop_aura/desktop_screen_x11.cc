@@ -216,8 +216,13 @@ display::Display DesktopScreenX11::GetDisplayNearestWindow(
   if (host) {
     DesktopWindowTreeHostX11* rwh = DesktopWindowTreeHostX11::GetHostForXID(
         host->GetAcceleratedWidget());
-    if (rwh)
-      return GetDisplayMatching(rwh->GetX11RootWindowBounds());
+    if (rwh) {
+      const float scale = 1.0f / GetDeviceScaleFactor();
+      const gfx::Rect pixel_rect = rwh->GetX11RootWindowBounds();
+      return GetDisplayMatching(
+          gfx::Rect(gfx::ScaleToFlooredPoint(pixel_rect.origin(), scale),
+                    gfx::ScaleToCeiledSize(pixel_rect.size(), scale)));
+    }
   }
 
   return GetPrimaryDisplay();
