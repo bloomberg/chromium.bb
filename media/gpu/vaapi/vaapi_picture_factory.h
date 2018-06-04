@@ -15,6 +15,7 @@
 
 namespace media {
 
+class PictureBuffer;
 class VaapiWrapper;
 
 // Factory of platform dependent VaapiPictures.
@@ -29,18 +30,13 @@ class MEDIA_GPU_EXPORT VaapiPictureFactory {
   VaapiPictureFactory();
   virtual ~VaapiPictureFactory();
 
-  // Creates a VaapiPicture of |size| associated with |picture_buffer_id|. If
-  // provided, bind it to |texture_id|, as well as to |client_texture_id| using
-  // |bind_image_cb|.
+  // Creates a VaapiPicture of picture_buffer.size() associated with
+  // picture_buffer.id().
   virtual std::unique_ptr<VaapiPicture> Create(
       const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb,
-      int32_t picture_buffer_id,
-      const gfx::Size& size,
-      uint32_t texture_id,
-      uint32_t client_texture_id,
-      uint32_t texture_target);
+      const PictureBuffer& picture_buffer);
 
   // Return the type of the VaapiPicture implementation for the given GL
   // implementation.
