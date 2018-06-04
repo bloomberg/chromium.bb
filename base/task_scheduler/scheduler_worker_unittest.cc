@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/environment_config.h"
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/scheduler_worker_observer.h"
 #include "base/task_scheduler/sequence.h"
@@ -731,16 +732,15 @@ class ExpectThreadPriorityDelegate : public SchedulerWorkerDefaultDelegate {
 }  // namespace
 
 TEST(TaskSchedulerWorkerTest, BumpPriorityOfAliveThreadDuringShutdown) {
+  if (!CanUseBackgroundPriorityForSchedulerWorker())
+    return;
+
   TaskTracker task_tracker("Test");
 
   std::unique_ptr<ExpectThreadPriorityDelegate> delegate(
       new ExpectThreadPriorityDelegate);
   ExpectThreadPriorityDelegate* delegate_raw = delegate.get();
-  delegate_raw->SetExpectedThreadPriority(
-      PlatformThread::CanIncreaseCurrentThreadPriority()
-          ? ThreadPriority::BACKGROUND
-          : ThreadPriority::NORMAL);
-
+  delegate_raw->SetExpectedThreadPriority(ThreadPriority::BACKGROUND);
   auto worker = MakeRefCounted<SchedulerWorker>(ThreadPriority::BACKGROUND,
                                                 std::move(delegate),
                                                 task_tracker.GetTrackedRef());

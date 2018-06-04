@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
+#include "base/task_scheduler/environment_config.h"
 #include "base/task_scheduler/scheduler_worker_observer.h"
 #include "base/task_scheduler/task_tracker.h"
 #include "base/trace_event/trace_event.h"
@@ -55,6 +56,8 @@ SchedulerWorker::SchedulerWorker(
 {
   DCHECK(delegate_);
   DCHECK(task_tracker_);
+  DCHECK(CanUseBackgroundPriorityForSchedulerWorker() ||
+         priority_hint_ != ThreadPriority::BACKGROUND);
 }
 
 bool SchedulerWorker::Start(
@@ -139,20 +142,9 @@ bool SchedulerWorker::ShouldExit() const {
 }
 
 ThreadPriority SchedulerWorker::GetDesiredThreadPriority() const {
-  // All threads have a NORMAL priority when Lock doesn't handle multiple thread
-  // priorities.
-  if (!Lock::HandlesMultipleThreadPriorities())
+  // To avoid shutdown hangs, disallow a priority below NORMAL during shutdown
+  if (task_tracker_->HasShutdownStarted())
     return ThreadPriority::NORMAL;
-
-  // To avoid shutdown hangs, disallow a priority below NORMAL during shutdown.
-  // If thread priority cannot be increased, never allow a priority below
-  // NORMAL.
-  if (static_cast<int>(priority_hint_) <
-          static_cast<int>(ThreadPriority::NORMAL) &&
-      (task_tracker_->HasShutdownStarted() ||
-       !PlatformThread::CanIncreaseCurrentThreadPriority())) {
-    return ThreadPriority::NORMAL;
-  }
 
   return priority_hint_;
 }

@@ -15,10 +15,13 @@ namespace base {
 namespace internal {
 
 enum EnvironmentType {
-  BACKGROUND = 0,
-  BACKGROUND_BLOCKING,
-  FOREGROUND,
+  FOREGROUND = 0,
   FOREGROUND_BLOCKING,
+  // Pools will only be created for the environment above on platforms that
+  // don't support SchedulerWorkers running with a background priority.
+  ENVIRONMENT_COUNT_WITHOUT_BACKGROUND_PRIORITY,
+  BACKGROUND = ENVIRONMENT_COUNT_WITHOUT_BACKGROUND_PRIORITY,
+  BACKGROUND_BLOCKING,
   ENVIRONMENT_COUNT  // Always last.
 };
 
@@ -32,13 +35,17 @@ constexpr struct {
   // priority depends on shutdown state and platform capabilities.
   ThreadPriority priority_hint;
 } kEnvironmentParams[] = {
-    {"Background", base::ThreadPriority::BACKGROUND},
-    {"BackgroundBlocking", base::ThreadPriority::BACKGROUND},
     {"Foreground", base::ThreadPriority::NORMAL},
     {"ForegroundBlocking", base::ThreadPriority::NORMAL},
+    {"Background", base::ThreadPriority::BACKGROUND},
+    {"BackgroundBlocking", base::ThreadPriority::BACKGROUND},
 };
 
 size_t BASE_EXPORT GetEnvironmentIndexForTraits(const TaskTraits& traits);
+
+// Returns true if this platform supports having SchedulerWorkers running with a
+// background priority.
+bool BASE_EXPORT CanUseBackgroundPriorityForSchedulerWorker();
 
 }  // namespace internal
 }  // namespace base

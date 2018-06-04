@@ -230,7 +230,8 @@ class BASE_EXPORT TaskScheduler {
   friend class content::BrowserMainLoopTest_CreateThreadsInSingleProcess_Test;
 
   // Returns the maximum number of non-single-threaded non-blocked tasks posted
-  // with |traits| that can run concurrently in this TaskScheduler.
+  // with |traits| that can run concurrently in this TaskScheduler. |traits|
+  // can't contain TaskPriority::BACKGROUND.
   //
   // Do not use this method. To process n items, post n tasks that each process
   // 1 item rather than GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated()
