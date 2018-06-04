@@ -5,7 +5,14 @@
 """Updates TestExpectations based on results in builder bots.
 
 Scans the TestExpectations file and uses results from actual builder bots runs
-to remove tests that are marked as flaky but don't fail in the specified way.
+to remove tests that are marked as flaky or failing but don't fail in the
+specified way.
+
+--type=flake updates only lines that incude a 'Pass' expectation plus at
+least one other expectation.
+
+--type=fail updates lines that include only 'Failure', 'Timeout', or
+'Crash' expectations.
 
 E.g. If a test has this expectation:
     bug(test) fast/test.html [ Failure Pass ]
@@ -36,6 +43,10 @@ _log = logging.getLogger(__name__)
 
 def main(host, bot_test_expectations_factory, argv):
     parser = argparse.ArgumentParser(epilog=__doc__, formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('--type',
+                        choices=['flake', 'fail', 'all'],
+                        default='all',
+                        help='type of expectations to update (default: %(default)s)')
     parser.add_argument('--verbose', '-v', action='store_true', default=False, help='enable more verbose logging')
     parser.add_argument('--show-results',
                         '-s',
@@ -52,28 +63,29 @@ def main(host, bot_test_expectations_factory, argv):
         _log.warning("Didn't find generic expectations file at: " + expectations_file)
         return 1
 
-    remove_flakes_o_matic = RemoveFlakesOMatic(
-        host, port, bot_test_expectations_factory, webbrowser)
+    remover = ExpectationsRemover(
+        host, port, bot_test_expectations_factory, webbrowser, args.type)
 
-    test_expectations = remove_flakes_o_matic.get_updated_test_expectations()
+    test_expectations = remover.get_updated_test_expectations()
 
     if args.show_results:
-        remove_flakes_o_matic.show_removed_results()
+        remover.show_removed_results()
 
-    remove_flakes_o_matic.write_test_expectations(test_expectations, expectations_file)
-    remove_flakes_o_matic.print_suggested_commit_description()
+    remover.write_test_expectations(test_expectations, expectations_file)
+    remover.print_suggested_commit_description()
     return 0
 
 
-class RemoveFlakesOMatic(object):
+class ExpectationsRemover(object):
 
-    def __init__(self, host, port, bot_test_expectations_factory, browser):
+    def __init__(self, host, port, bot_test_expectations_factory, browser, type_flag='all'):
         self._host = host
         self._port = port
         self._expectations_factory = bot_test_expectations_factory
         self._builder_results_by_path = {}
         self._browser = browser
         self._expectations_to_remove_list = None
+        self._type = type_flag
 
     def _can_delete_line(self, test_expectation_line):
         """Returns whether a given line in the expectations can be removed.
@@ -92,15 +104,23 @@ class RemoveFlakesOMatic(object):
             True if the line can be removed, False otherwise.
         """
         expectations = test_expectation_line.expectations
-        if len(expectations) < 2:
+        if not expectations:
             return False
 
         # Don't check lines that have expectations like Skip.
         if self._has_unstrippable_expectations(expectations):
             return False
 
-        # Don't check lines unless they're flaky. i.e. At least one expectation is a PASS.
-        if not self._has_pass_expectation(expectations):
+        # Don't check consistent passes.
+        if self._pass_expectation_only(expectations):
+            return False
+
+        # Don't check flakes in fail mode.
+        if self._type == 'fail' and self._has_pass_expectation(expectations):
+            return False
+
+        # Don't check failures in flake mode.
+        if self._type == 'flake' and not self._has_pass_expectation(expectations):
             return False
 
         # Don't check lines that have expectations for directories, since
@@ -150,6 +170,9 @@ class RemoveFlakesOMatic(object):
 
     def _has_pass_expectation(self, expectations):
         return 'PASS' in expectations
+
+    def _pass_expectation_only(self, expectations):
+        return len(expectations) == 1 and self._has_pass_expectation(expectations)
 
     def _expectations_that_were_met(self, test_expectation_line, results_for_single_test):
         """Returns the set of expectations that appear in the given results.
@@ -347,12 +370,16 @@ class RemoveFlakesOMatic(object):
 
     def print_suggested_commit_description(self):
         """Prints the body of a suggested CL description after removing some lines."""
+
+        expectation_type = ''
+        if self._type != 'all':
+            expectation_type = self._type + ' '
         dashboard_url = self._flakiness_dashboard_url()
         bugs = ', '.join(self._bug_numbers())
-        message = ('Remove flaky TestExpectations for tests which appear non-flaky recently.\n\n'
-                   'This change was made by the update-test-expectations script.\n\n'
+        message = ('Remove %sTestExpectations which are not failing in the specified way.\n\n'
+                   'This change was made by the update_expectations.py script.\n\n'
                    'Recent test results history:\n%s\n\n'
-                   'Bug: %s') % (dashboard_url, bugs)
+                   'Bug: %s') % (expectation_type, dashboard_url, bugs)
         _log.info('Suggested commit description:\n' + message)
 
     def _flakiness_dashboard_url(self):
