@@ -176,7 +176,7 @@ void AutofillPopupViewViews::OnSelectedRowChanged(
   if (current_row_selection) {
     AutofillPopupChildView* current_row = GetChildRow(*current_row_selection);
     current_row->OnSelected();
-    current_row->NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
+    current_row->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   }
 }
 
