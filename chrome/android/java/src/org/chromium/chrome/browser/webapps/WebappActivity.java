@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.browserservices.BrowserSessionDataProvider;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
+import org.chromium.chrome.browser.browserservices.UkmRecorder;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabNavigationEventObserver;
@@ -127,6 +128,7 @@ public class WebappActivity extends SingleTabActivity {
             implements BrowserSessionContentHandler, OriginVerificationListener {
         private boolean mVerificationFailed;
         private OriginVerifier mOriginVerifier;
+        private final UkmRecorder mUkmRecorder = new UkmRecorder.Bridge();
 
         @Override
         public void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp) {}
@@ -184,7 +186,16 @@ public class WebappActivity extends SingleTabActivity {
                 Boolean online) {
             mVerificationFailed = !verified;
             mOriginVerifier = null;
-            if (mVerificationFailed) getFullscreenManager().setPositionsForTabToNonFullscreen();
+
+            if (mVerificationFailed) {
+                getFullscreenManager().setPositionsForTabToNonFullscreen();
+                return;
+            }
+
+            // Occasionally verification occurs in the background while there is no active Tab.
+            if (areTabModelsInitialized() && getActivityTab() != null) {
+                mUkmRecorder.recordTwaOpened(getActivityTab().getWebContents());
+            }
         }
 
         /**
