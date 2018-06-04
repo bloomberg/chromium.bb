@@ -22,7 +22,7 @@ class ImageDecodingCasesPageSet(story.StorySet):
     super(ImageDecodingCasesPageSet, self).__init__()
 
     urls_list = [
-      ('file://image_decoding_cases/yuv_decoding.html', 'yuv_decoding.html')
+      ('file://image_decoding_cases/yuv_decoding.html', 'yuv_decoding')
     ]
 
     for url, name in urls_list:
