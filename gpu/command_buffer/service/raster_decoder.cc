@@ -549,16 +549,16 @@ class RasterDecoderImpl final : public RasterDecoder,
   void DoTraceEndCHROMIUM();
   void DoProduceTextureDirect(GLuint texture, const volatile GLbyte* key);
   void DoReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id);
-  void TexStorage2DImage(TextureRef* texture_ref,
+  bool TexStorage2DImage(TextureRef* texture_ref,
                          const TextureMetadata& texture_metadata,
                          GLsizei width,
                          GLsizei height);
-  void TexStorage2D(TextureRef* texture_ref,
+  bool TexStorage2D(TextureRef* texture_ref,
                     const TextureMetadata& texture_metadata,
                     GLint levels,
                     GLsizei width,
                     GLsizei height);
-  void TexImage2D(TextureRef* texture_ref,
+  bool TexImage2D(TextureRef* texture_ref,
                   const TextureMetadata& texture_metadata,
                   GLsizei width,
                   GLsizei height);
@@ -2276,7 +2276,7 @@ void RasterDecoderImpl::DoProduceTextureDirect(GLuint client_id,
   group_->mailbox_manager()->ProduceTexture(mailbox, produced);
 }
 
-void RasterDecoderImpl::TexStorage2DImage(
+bool RasterDecoderImpl::TexStorage2DImage(
     TextureRef* texture_ref,
     const TextureMetadata& texture_metadata,
     GLsizei width,
@@ -2288,7 +2288,7 @@ void RasterDecoderImpl::TexStorage2DImage(
   if (texture->IsImmutable()) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImage",
                        "texture is immutable");
-    return;
+    return false;
   }
 
   gfx::BufferFormat buffer_format =
@@ -2302,14 +2302,14 @@ void RasterDecoderImpl::TexStorage2DImage(
     default:
       LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "glTexStorage2DImage",
                          "Invalid buffer format");
-      return;
+      return false;
   }
   GLint untyped_format = viz::GLDataFormat(texture_metadata.format());
 
   if (!GetContextGroup()->image_factory()) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImage",
                        "Cannot create GL image");
-    return;
+    return false;
   }
 
   bool is_cleared = false;
@@ -2324,12 +2324,12 @@ void RasterDecoderImpl::TexStorage2DImage(
                                          height, 1)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2DImage",
                        "dimensions out of range");
-    return;
+    return false;
   }
   if (!image || !image->BindTexImage(texture_metadata.target())) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImage",
                        "Failed to create or bind GL Image");
-    return;
+    return false;
   }
 
   gfx::Rect cleared_rect;
@@ -2342,9 +2342,10 @@ void RasterDecoderImpl::TexStorage2DImage(
                                   GL_UNSIGNED_BYTE, cleared_rect);
   texture_manager()->SetLevelImage(texture_ref, texture_metadata.target(), 0,
                                    image.get(), gpu::gles2::Texture::BOUND);
+  return true;
 }
 
-void RasterDecoderImpl::TexStorage2D(TextureRef* texture_ref,
+bool RasterDecoderImpl::TexStorage2D(TextureRef* texture_ref,
                                      const TextureMetadata& texture_metadata,
                                      GLint levels,
                                      GLsizei width,
@@ -2358,7 +2359,13 @@ void RasterDecoderImpl::TexStorage2D(TextureRef* texture_ref,
                                          height, 1 /* depth */) < levels) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2D",
                        "dimensions out of range");
-    return;
+    return false;
+  }
+
+  if (viz::IsResourceFormatCompressed(texture_metadata.format())) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glTexStorage2D", texture_metadata.format(),
+                                    "resource_format");
+    return false;
   }
 
   ScopedTextureBinder binder(&state_, texture_manager(), texture_ref,
@@ -2408,9 +2415,10 @@ void RasterDecoderImpl::TexStorage2D(TextureRef* texture_ref,
     }
     texture->ApplyFormatWorkarounds(feature_info_.get());
   }
+  return true;
 }
 
-void RasterDecoderImpl::TexImage2D(TextureRef* texture_ref,
+bool RasterDecoderImpl::TexImage2D(TextureRef* texture_ref,
                                    const TextureMetadata& texture_metadata,
                                    GLsizei width,
                                    GLsizei height) {
@@ -2440,11 +2448,13 @@ void RasterDecoderImpl::TexImage2D(TextureRef* texture_ref,
       0 /* padding */,
       TextureManager::DoTexImageArguments::kTexImage2D};
   texture_manager()->ValidateAndDoTexImage(
-      &texture_state_, &state_, &framebuffer_state_, "glTexStorage2D", args);
+      &texture_state_, &state_, &framebuffer_state_, "glTexImage2D", args);
 
   // This may be a slow command.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
   ExitCommandProcessingEarly();
+
+  return LOCAL_PEEK_GL_ERROR("glTexImage2D") == GL_NO_ERROR;
 }
 
 void RasterDecoderImpl::DoTexStorage2D(GLuint client_id,
@@ -2470,8 +2480,9 @@ void RasterDecoderImpl::DoTexStorage2D(GLuint client_id,
     return;
   }
 
-  if (levels == 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2D", "levels == 0");
+  // TODO(backer): Support more than 1 texture level.
+  if (levels != 1) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2D", "levels != 1");
     return;
   }
 
@@ -2531,22 +2542,24 @@ void RasterDecoderImpl::DoTexStorage2D(GLuint client_id,
     return;
   }
 
+  bool success = false;
   if (texture_metadata->use_buffer()) {
-    if (!GetCapabilities().texture_storage_image) {
+    if (GetCapabilities().texture_storage_image) {
+      success =
+          TexStorage2DImage(texture_ref, *texture_metadata, width, height);
+    } else {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2DImage", "use_buffer");
-      return;
     }
-    DCHECK_EQ(levels, 1);
-    TexStorage2DImage(texture_ref, *texture_metadata, width, height);
   } else if (GetCapabilities().texture_storage) {
-    TexStorage2D(texture_ref, *texture_metadata, levels, width, height);
+    success =
+        TexStorage2D(texture_ref, *texture_metadata, levels, width, height);
   } else {
-    // TODO(backer): Support more than one texture level.
-    DCHECK_EQ(levels, 1);
-    TexImage2D(texture_ref, *texture_metadata, width, height);
+    success = TexImage2D(texture_ref, *texture_metadata, width, height);
   }
 
-  texture->SetImmutable(true);
+  if (success) {
+    texture->SetImmutable(true);
+  }
 }
 
 bool RasterDecoderImpl::InitializeCopyTexImageBlitter() {

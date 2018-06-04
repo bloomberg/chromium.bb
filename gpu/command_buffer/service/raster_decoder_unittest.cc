@@ -242,12 +242,20 @@ TEST_P(RasterDecoderTest, TexStorage2D) {
   EXPECT_EQ(height, kHeight);
 }
 
+TEST_P(RasterDecoderTest, TexStorage2DTooManyLevels) {
+  cmds::TexStorage2D tex_storage_cmd;
+  tex_storage_cmd.Init(client_texture_id_, /*levels=*/2, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(tex_storage_cmd));
+
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
 TEST_P(RasterDecoderManualInitTest, TexStorage2DWithEXTTextureStorage) {
   InitState init;
   init.extensions.push_back("GL_EXT_texture_storage");
   InitDecoder(init);
 
-  DoTexStorage2D(client_texture_id_, 2 /* levels */, kWidth, kHeight);
+  DoTexStorage2D(client_texture_id_, 1 /* levels */, kWidth, kHeight);
 
   gles2::TextureRef* texture_ref =
       group().texture_manager()->GetTexture(client_texture_id_);
@@ -262,11 +270,29 @@ TEST_P(RasterDecoderManualInitTest, TexStorage2DWithEXTTextureStorage) {
       texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr));
   EXPECT_EQ(width, kWidth);
   EXPECT_EQ(height, kHeight);
+}
 
-  EXPECT_TRUE(
-      texture->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height, nullptr));
-  EXPECT_EQ(width, kWidth / 2);
-  EXPECT_EQ(height, kHeight / 2);
+TEST_P(RasterDecoderManualInitTest, TexStorage2DWithEXTNoCompressed) {
+  InitState init;
+  init.extensions.push_back("GL_EXT_texture_storage");
+  InitDecoder(init);
+
+  // Create uninitialized source texture.
+  GLuint source_texture_id = kNewClientId;
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
+  cmds::CreateTexture cmd;
+  cmd.Init(false /* use_buffer */, gfx::BufferUsage::GPU_READ,
+           viz::ResourceFormat::ETC1, source_texture_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  cmds::TexStorage2D tex_storage_cmd;
+  tex_storage_cmd.Init(kNewClientId, /*levels=*/1, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(tex_storage_cmd));
+
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_P(RasterDecoderManualInitTest, TexStorage2DOutOfMemory) {
