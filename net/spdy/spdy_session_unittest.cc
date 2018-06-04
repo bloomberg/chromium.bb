@@ -3562,11 +3562,13 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   HostResolver::RequestInfo info(key2.host_port_pair());
   AddressList addresses;
   std::unique_ptr<HostResolver::Request> request;
-  // Pre-populate the DNS cache, since a synchronous resolution is required in
-  // order to create the alias.
-  session_deps_.host_resolver->Resolve(info, DEFAULT_PRIORITY, &addresses,
-                                       CompletionCallback(), &request,
-                                       NetLogWithSource());
+  // Pre-populate the DNS cache, since a cached entry is required in order to
+  // create the alias.
+  int rv = session_deps_.host_resolver->Resolve(
+      info, DEFAULT_PRIORITY, &addresses, CompletionCallback(), &request,
+      NetLogWithSource());
+  EXPECT_THAT(rv, IsOk());
+
   // Get a session for |key2|, which should return the session created earlier.
   base::WeakPtr<SpdySession> session2 =
       spdy_session_pool_->FindAvailableSession(
