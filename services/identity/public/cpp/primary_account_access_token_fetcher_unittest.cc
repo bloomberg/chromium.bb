@@ -37,6 +37,7 @@ using SigninManagerForTest = FakeSigninManager;
 namespace identity {
 
 namespace {
+
 void OnAccessTokenFetchComplete(base::OnceClosure done_closure,
                                 const GoogleServiceAuthError& expected_error,
                                 const std::string& expected_access_token,
@@ -98,12 +99,15 @@ class PrimaryAccountAccessTokenFetcherTest
   FakeProfileOAuth2TokenService* token_service() { return &token_service_; }
   SigninManagerForTest* signin_manager() { return signin_manager_.get(); }
 
-  void SignIn(const std::string& account) {
+  // Signs the user in to the primary account, returning the account ID.
+  const std::string& SignIn() {
 #if defined(OS_CHROMEOS)
-    signin_manager_->SignIn(account);
+    signin_manager_->SignIn("me@gmail.com");
 #else
-    signin_manager_->SignIn(account, "user", "pass");
+    signin_manager_->SignIn("my_gaia_id", "me@gmail.com", "my_password");
 #endif  // OS_CHROMEOS
+
+    return signin_manager_->GetAuthenticatedAccountId();
   }
 
   void set_on_access_token_request_callback(base::OnceClosure callback) {
@@ -136,8 +140,8 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, OneShotShouldReturnAccessToken) {
   base::RunLoop run_loop;
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
-  SignIn("account");
-  token_service()->UpdateCredentials("account", "refresh token");
+  std::string account_id = SignIn();
+  token_service()->UpdateCredentials(account_id, "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -151,7 +155,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, OneShotShouldReturnAccessToken) {
   EXPECT_CALL(callback,
               Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
   token_service()->IssueAllTokensForAccount(
-      "account", "access token",
+      account_id, "access token",
       base::Time::Now() + base::TimeDelta::FromHours(1));
 }
 
@@ -162,8 +166,8 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   base::RunLoop run_loop;
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
-  SignIn("account");
-  token_service()->UpdateCredentials("account", "refresh token");
+  std::string account_id = SignIn();
+  token_service()->UpdateCredentials(account_id, "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -178,7 +182,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   EXPECT_CALL(callback,
               Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
   token_service()->IssueAllTokensForAccount(
-      "account", "access token",
+      account_id, "access token",
       base::Time::Now() + base::TimeDelta::FromHours(1));
 }
 
@@ -188,8 +192,8 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
   base::RunLoop run_loop;
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
-  SignIn("account");
-  token_service()->UpdateCredentials("account", "refresh token");
+  std::string account_id = SignIn();
+  token_service()->UpdateCredentials(account_id, "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -203,7 +207,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
 
   // Now fulfilling the access token request should have no effect.
   token_service()->IssueAllTokensForAccount(
-      "account", "access token",
+      account_id, "access token",
       base::Time::Now() + base::TimeDelta::FromHours(1));
 }
 
@@ -225,7 +229,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
        OneShotCallsBackWhenNoRefreshToken) {
   base::RunLoop run_loop;
 
-  SignIn("account");
+  SignIn();
 
   // Signed in, but there is no refresh token -> we should get called back.
   auto fetcher = CreateFetcher(
@@ -264,9 +268,9 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForSignIn) {
       callback.Get(),
       PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 
-  SignIn("account");
+  std::string account_id = SignIn();
 
-  token_service()->UpdateCredentials("account", "refresh token");
+  token_service()->UpdateCredentials(account_id, "refresh token");
 
   run_loop.Run();
 
@@ -275,7 +279,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForSignIn) {
   EXPECT_CALL(callback,
               Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
   token_service()->IssueAllTokensForAccount(
-      "account", "access token",
+      account_id, "access token",
       base::Time::Now() + base::TimeDelta::FromHours(1));
 }
 
@@ -287,7 +291,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForRefreshToken) {
 
   TestTokenCallback callback;
 
-  SignIn("account");
+  std::string account_id = SignIn();
 
   // Signed in, but there is no refresh token -> we should not get called back
   // (yet).
@@ -296,7 +300,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForRefreshToken) {
       PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 
   // Getting a refresh token should result in a request for an access token.
-  token_service()->UpdateCredentials("account", "refresh token");
+  token_service()->UpdateCredentials(account_id, "refresh token");
 
   run_loop.Run();
 
@@ -305,7 +309,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForRefreshToken) {
   EXPECT_CALL(callback,
               Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
   token_service()->IssueAllTokensForAccount(
-      "account", "access token",
+      account_id, "access token",
       base::Time::Now() + base::TimeDelta::FromHours(1));
 }
 
@@ -313,10 +317,10 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
        ShouldIgnoreRefreshTokensForOtherAccounts) {
   TestTokenCallback callback;
 
-  // Signed-in to "account", but there's only a refresh token for a different
+  // Signed-in to account_id, but there's only a refresh token for a different
   // account.
-  SignIn("account");
-  token_service()->UpdateCredentials("account 2", "refresh");
+  std::string account_id = SignIn();
+  token_service()->UpdateCredentials(account_id + "2", "refresh");
 
   // The fetcher should wait for the correct refresh token.
   auto fetcher = CreateFetcher(
@@ -324,14 +328,14 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 
   // A refresh token for yet another account shouldn't matter either.
-  token_service()->UpdateCredentials("account 3", "refresh");
+  token_service()->UpdateCredentials(account_id + "3", "refresh");
 }
 
 TEST_F(PrimaryAccountAccessTokenFetcherTest,
        ShouldNotReturnEarlyWhenRefreshTokensLoaded) {
   TestTokenCallback callback;
 
-  SignIn("account");
+  std::string account_id = SignIn();
 
   // Signed in, but there is no refresh token -> we should not get called back
   // (yet).
@@ -342,7 +346,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   // Getting a refresh token for some other account should have no effect.
   // TODO(blundell): Move this into its own test case; while a useful check,
   // it's orthogonal to the main purpose of this test case.
-  token_service()->UpdateCredentials("different account", "refresh token");
+  token_service()->UpdateCredentials(account_id + "2", "refresh token");
 
   // The notification that all refresh tokens have been loaded by the token
   // service should have no effect either.
@@ -356,7 +360,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
   // Getting a refresh token should result in a request for an access token.
-  token_service()->UpdateCredentials("account", "refresh token");
+  token_service()->UpdateCredentials(account_id, "refresh token");
   run_loop.Run();
 
   // Once the access token request is fulfilled, we should get called back with
@@ -364,7 +368,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   EXPECT_CALL(callback,
               Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
   token_service()->IssueAllTokensForAccount(
-      "account", "access token",
+      account_id, "access token",
       base::Time::Now() + base::TimeDelta::FromHours(1));
 }
 
@@ -373,8 +377,8 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   base::RunLoop run_loop;
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
-  SignIn("account");
-  token_service()->UpdateCredentials("account", "refresh token");
+  std::string account_id = SignIn();
+  token_service()->UpdateCredentials(account_id, "refresh token");
 
   base::RunLoop run_loop2;
 
@@ -390,7 +394,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 
   // A canceled access token request should result in a callback.
   token_service()->IssueErrorForAllPendingRequestsForAccount(
-      "account",
+      account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 
   run_loop2.Run();
@@ -403,8 +407,8 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 
   TestTokenCallback callback;
 
-  SignIn("account");
-  token_service()->UpdateCredentials("account", "refresh token");
+  std::string account_id = SignIn();
+  token_service()->UpdateCredentials(account_id, "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -420,7 +424,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 
   // A canceled access token request should get retried once.
   token_service()->IssueErrorForAllPendingRequestsForAccount(
-      "account",
+      account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 
   run_loop2.Run();
@@ -430,7 +434,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   EXPECT_CALL(callback,
               Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
   token_service()->IssueAllTokensForAccount(
-      "account", "access token",
+      account_id, "access token",
       base::Time::Now() + base::TimeDelta::FromHours(1));
 }
 
@@ -441,8 +445,8 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 
   TestTokenCallback callback;
 
-  SignIn("account");
-  token_service()->UpdateCredentials("account", "refresh token");
+  std::string account_id = SignIn();
+  token_service()->UpdateCredentials(account_id, "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -458,7 +462,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 
   // A canceled access token request should get retried once.
   token_service()->IssueErrorForAllPendingRequestsForAccount(
-      "account",
+      account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 
   run_loop2.Run();
@@ -470,7 +474,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       Run(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
           std::string()));
   token_service()->IssueErrorForAllPendingRequestsForAccount(
-      "account",
+      account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 }
 
@@ -483,8 +487,8 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 
   TestTokenCallback callback;
 
-  SignIn("account");
-  token_service()->UpdateCredentials("account", "refresh token");
+  std::string account_id = SignIn();
+  token_service()->UpdateCredentials(account_id, "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -503,7 +507,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       Run(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
           std::string()));
   token_service()->IssueErrorForAllPendingRequestsForAccount(
-      "account",
+      account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 }
 
@@ -516,8 +520,8 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 
   TestTokenCallback callback;
 
-  SignIn("account");
-  token_service()->UpdateCredentials("account", "refresh token");
+  std::string account_id = SignIn();
+  token_service()->UpdateCredentials(account_id, "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -529,13 +533,13 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 
   // Simulate the refresh token getting invalidated. In this case, pending
   // access token requests get canceled, and the fetcher should *not* retry.
-  token_service()->RevokeCredentials("account");
+  token_service()->RevokeCredentials(account_id);
   EXPECT_CALL(
       callback,
       Run(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
           std::string()));
   token_service()->IssueErrorForAllPendingRequestsForAccount(
-      "account",
+      account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 }
 
@@ -546,8 +550,8 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 
   TestTokenCallback callback;
 
-  SignIn("account");
-  token_service()->UpdateCredentials("account", "refresh token");
+  std::string account_id = SignIn();
+  token_service()->UpdateCredentials(account_id, "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -564,7 +568,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       Run(GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE),
           std::string()));
   token_service()->IssueErrorForAllPendingRequestsForAccount(
-      "account",
+      account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
 }
 
