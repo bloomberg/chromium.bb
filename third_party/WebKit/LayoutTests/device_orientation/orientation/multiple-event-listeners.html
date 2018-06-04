@@ -10,7 +10,7 @@
 <script>
 'use strict';
 
-sensor_test(async sensor => {
+sensor_test(async sensorProvider => {
   const orientationData1 = generateOrientationData(1, 2, 3, false);
   const orientationData2 = generateOrientationData(11, 12, 13, false);
 
@@ -22,13 +22,13 @@ sensor_test(async sensor => {
   // because we want the listener to stay active after the first event fires.
   window.addEventListener('deviceorientation', firstListener);
   let secondEventPromise = waitForOrientation(orientationData1);
-  setMockOrientationData(sensor, orientationData1);
+  setMockOrientationData(sensorProvider, orientationData1);
   let firstEvent = await firstEventPromise;
   checkOrientation(firstEvent, orientationData1);
   await secondEventPromise;
 
   // At this point only the first listener is still active.
-  setMockOrientationData(sensor, orientationData2);
+  setMockOrientationData(sensorProvider, orientationData2);
   let childFrame = document.createElement('iframe');
   document.body.appendChild(childFrame);
   // Expect the cached event because Device Orientation was already active

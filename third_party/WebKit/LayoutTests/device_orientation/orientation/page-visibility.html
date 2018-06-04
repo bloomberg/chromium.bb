@@ -14,10 +14,10 @@ function sleep(time_ms) {
   return new Promise(resolve => window.setTimeout(resolve, time_ms));
 }
 
-sensor_test(async sensor => {
+sensor_test(async sensorProvider => {
   const orientationData = generateOrientationData(1, 2, 3, false);
 
-  setMockOrientationData(sensor, orientationData);
+  setMockOrientationData(sensorProvider, orientationData);
   await waitForOrientation(orientationData);
 
   testRunner.setPageVisibility('hidden');

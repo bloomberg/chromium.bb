@@ -10,7 +10,7 @@
 <script>
 'use strict';
 
-sensor_test(async sensor => {
+sensor_test(async sensorProvider => {
   const motionData1 = generateMotionData(1, 2, 3,
                                          null, null, null,
                                          null, null, null);
@@ -27,16 +27,16 @@ sensor_test(async sensor => {
                                          null, null, null,
                                          null, null, null);
 
-  setMockMotionData(sensor, motionData1);
+  setMockMotionData(sensorProvider, motionData1);
   await waitForMotion(motionData1);
 
-  setMockMotionData(sensor, motionData2);
+  setMockMotionData(sensorProvider, motionData2);
   await waitForMotion(motionData2);
 
-  setMockMotionData(sensor, motionData3);
+  setMockMotionData(sensorProvider, motionData3);
   await waitForMotion(motionData3);
 
-  setMockMotionData(sensor, motionData4);
+  setMockMotionData(sensorProvider, motionData4);
   return waitForMotion(motionData4);
 }, 'Tests using null values for some or all of the event properties.');
 </script>

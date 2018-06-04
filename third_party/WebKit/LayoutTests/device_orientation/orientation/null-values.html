@@ -10,7 +10,7 @@
 <script>
 'use strict';
 
-sensor_test(async sensor => {
+sensor_test(async sensorProvider => {
   const orientationData1 = generateOrientationData(1.1, null, null, false);
   const orientationData2 = generateOrientationData(null, 2.2, null, false);
   const orientationData3 = generateOrientationData(null, null, 3.3, false);
@@ -18,16 +18,16 @@ sensor_test(async sensor => {
   // will stop updating the sensor when it sees a null event.
   const orientationData4 = generateOrientationData(null, null, null, false);
 
-  setMockOrientationData(sensor, orientationData1);
+  setMockOrientationData(sensorProvider, orientationData1);
   await waitForOrientation(orientationData1);
 
-  setMockOrientationData(sensor, orientationData2);
+  setMockOrientationData(sensorProvider, orientationData2);
   await waitForOrientation(orientationData2);
 
-  setMockOrientationData(sensor, orientationData3);
+  setMockOrientationData(sensorProvider, orientationData3);
   await waitForOrientation(orientationData3);
 
-  setMockOrientationData(sensor, orientationData4);
+  setMockOrientationData(sensorProvider, orientationData4);
   return waitForOrientation(orientationData4);
 }, 'Tests using null values for some of the event properties.');
 </script>

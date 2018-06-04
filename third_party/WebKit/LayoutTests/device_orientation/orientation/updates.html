@@ -10,14 +10,14 @@
 <script>
 'use strict';
 
-sensor_test(async sensor => {
+sensor_test(async sensorProvider => {
   const orientationData1 = generateOrientationData(1.1, 2.2, 3.3, false);
   const orientationData2 = generateOrientationData(11.1, 22.2, 33.3, false);
 
-  setMockOrientationData(sensor, orientationData1);
+  setMockOrientationData(sensorProvider, orientationData1);
   await waitForOrientation(orientationData1);
 
-  setMockOrientationData(sensor, orientationData2);
+  setMockOrientationData(sensorProvider, orientationData2);
   return waitForOrientation(orientationData2);
 }, 'Tests that updates to the orientation causes new events to fire.');
 </script>

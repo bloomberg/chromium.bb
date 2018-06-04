@@ -27,7 +27,7 @@ function update_sensor_reading(buffer) {
   buffer.set(kQuaternion, 2);
 }
 
-async function checkPopulateMatrix(sensor, sensorType, mojomSensorType) {
+async function checkPopulateMatrix(sensorProvider, sensorType, mojomSensorType) {
   let sensorObject = new sensorType();
 
   // Throws with insufficient buffer space.
@@ -43,7 +43,7 @@ async function checkPopulateMatrix(sensor, sensorType, mojomSensorType) {
 
   sensorObject.start();
 
-  let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
+  let mockSensor = await sensorProvider.getCreatedSensor(mojomSensorType);
   await mockSensor.setUpdateSensorReadingFunction(update_sensor_reading);
   await new Promise((resolve, reject) => {
     let wrapper = new CallbackWrapper(() => {
@@ -84,9 +84,9 @@ runGenericSensorTests(
     verify_quat_sensor_reading.bind(null, kMappedQuaternion),
     ['accelerometer', 'gyroscope', 'magnetometer']);
 
-sensor_test(sensor => {
+sensor_test(sensorProvider => {
   return checkPopulateMatrix(
-      sensor,
+      sensorProvider,
       AbsoluteOrientationSensor,
       device.mojom.SensorType.ABSOLUTE_ORIENTATION_QUATERNION);
 }, 'Test AbsoluteOrientationSensor.populateMatrix() method works correctly.');
@@ -99,9 +99,9 @@ runGenericSensorTests(
     verify_quat_sensor_reading.bind(null, kMappedQuaternion),
     ['accelerometer', 'gyroscope']);
 
-sensor_test(sensor => {
+sensor_test(sensorProvider => {
   return checkPopulateMatrix(
-      sensor,
+      sensorProvider,
       RelativeOrientationSensor,
       device.mojom.SensorType.RELATIVE_ORIENTATION_QUATERNION);
 }, 'Test RelativeOrientationSensor.populateMatrix() method works correctly.');

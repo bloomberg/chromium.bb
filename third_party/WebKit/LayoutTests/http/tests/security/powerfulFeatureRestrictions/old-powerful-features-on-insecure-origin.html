@@ -21,14 +21,14 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
 
     // Tests for APIs that are deprecated, but still allowed, on
     // insecure origins
-    sensor_test(async sensor => {
+    sensor_test(async sensorProvider => {
         const fakeAccelerometerData = [1, 2, 3];
         const fakeLinearAccelerationData = [4, 5, 6];
         const fakeGyroscopeData = [7, 8, 9];
 
-        setMockSensorDataForType(sensor, device.mojom.SensorType.ACCELEROMETER, fakeAccelerometerData);
-        setMockSensorDataForType(sensor, device.mojom.SensorType.LINEAR_ACCELERATION, fakeLinearAccelerationData);
-        setMockSensorDataForType(sensor, device.mojom.SensorType.GYROSCOPE, fakeGyroscopeData);
+        setMockSensorDataForType(sensorProvider, device.mojom.SensorType.ACCELEROMETER, fakeAccelerometerData);
+        setMockSensorDataForType(sensorProvider, device.mojom.SensorType.LINEAR_ACCELERATION, fakeLinearAccelerationData);
+        setMockSensorDataForType(sensorProvider, device.mojom.SensorType.GYROSCOPE, fakeGyroscopeData);
 
         const radToDeg = 180 / Math.PI;
         return waitForEvent(new DeviceMotionEvent('devicemotion', {
@@ -51,9 +51,9 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
         }));
     }, 'device motion');
 
-    sensor_test(async sensor => {
+    sensor_test(async sensorProvider => {
         const fakeOrientationData = [1.1, 2.2, 3.3];
-        setMockSensorDataForType(sensor, device.mojom.SensorType.RELATIVE_ORIENTATION_EULER_ANGLES, fakeOrientationData);
+        setMockSensorDataForType(sensorProvider, device.mojom.SensorType.RELATIVE_ORIENTATION_EULER_ANGLES, fakeOrientationData);
 
         return waitForEvent(new DeviceOrientationEvent('deviceorientation', {
             alpha: fakeOrientationData[2],
