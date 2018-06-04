@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.webauth;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.webauth.mojom.PublicKeyCredentialCreationOptions;
 import org.chromium.webauth.mojom.PublicKeyCredentialRequestOptions;
 
@@ -26,6 +27,12 @@ public class Fido2ApiHandler {
         }
         return sInstance;
     }
+
+    protected void makeCredential(PublicKeyCredentialCreationOptions options,
+            RenderFrameHost frameHost, HandlerResponseCallback callback) {}
+
+    protected void getAssertion(PublicKeyCredentialRequestOptions options,
+            RenderFrameHost frameHost, HandlerResponseCallback callback) {}
 
     protected void makeCredential(
             PublicKeyCredentialCreationOptions options, HandlerResponseCallback callback) {}
