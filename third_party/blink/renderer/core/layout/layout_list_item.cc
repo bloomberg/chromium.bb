@@ -213,7 +213,7 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
   // Create marker_container, set its height to 0px, and add it to li.
   if (!marker_parent) {
     LayoutObject* before_child = FirstNonMarkerChild(this);
-    if (!marker_->IsInside() && before_child && before_child->IsLayoutBlock()) {
+    if (!marker_->IsInside() && before_child && !before_child->IsInline()) {
       // Create marker_container and set its LogicalHeight to 0px.
       LayoutBlock* marker_container = CreateAnonymousBlock();
       if (line_box_parent)
@@ -297,19 +297,26 @@ void LayoutListItem::AddOverflowFromChildren() {
 // Align marker_inline_box in block direction according to line_box_root's
 // baseline.
 void LayoutListItem::AlignMarkerInBlockDirection() {
+  // Specify wether need to restore to the original baseline which is the
+  // baseline of marker parent. Because we might adjust the position at the last
+  // layout pass. So if there's no line box in line_box_parent make sure it
+  // back to its original position.
+  bool back_to_original_baseline = false;
   LayoutObject* line_box_parent = GetParentOfFirstLineBox(this, marker_);
-  if (!line_box_parent || !line_box_parent->IsBox())
-    return;
-
-  LayoutBox* line_box_parent_block = ToLayoutBox(line_box_parent);
-  // Don't align marker if line_box_parent has a different writing-mode.
-  // Just let marker positioned at the left-top of line_box_parent.
-  if (line_box_parent_block->IsWritingModeRoot())
-    return;
+  LayoutBox* line_box_parent_block = nullptr;
+  if (!line_box_parent || !line_box_parent->IsBox()) {
+    back_to_original_baseline = true;
+  } else {
+    line_box_parent_block = ToLayoutBox(line_box_parent);
+    // Don't align marker if line_box_parent has a different writing-mode.
+    // Just let marker positioned at the left-top of line_box_parent.
+    if (line_box_parent_block->IsWritingModeRoot())
+      back_to_original_baseline = true;
+  }
 
   InlineBox* marker_inline_box = marker_->InlineBoxWrapper();
   RootInlineBox& marker_root = marker_inline_box->Root();
-  if (line_box_parent_block->IsLayoutBlockFlow()) {
+  if (line_box_parent_block && line_box_parent_block->IsLayoutBlockFlow()) {
     // If marker_ and line_box_parent_block share a same RootInlineBox, no need
     // to align marker.
     if (ToLayoutBlockFlow(line_box_parent_block)->FirstRootBox() ==
@@ -317,7 +324,15 @@ void LayoutListItem::AlignMarkerInBlockDirection() {
       return;
   }
 
-  LayoutUnit offset = line_box_parent_block->FirstLineBoxBaseline();
+  LayoutUnit offset;
+  if (!back_to_original_baseline)
+    offset = line_box_parent_block->FirstLineBoxBaseline();
+
+  if (back_to_original_baseline || offset == -1) {
+    line_box_parent_block = marker_->ContainingBlock();
+    offset = line_box_parent_block->FirstLineBoxBaseline();
+  }
+
   if (offset != -1) {
     for (LayoutBox* o = line_box_parent_block; o != this; o = o->ParentBox())
       offset += o->LogicalTop();
@@ -345,7 +360,8 @@ void LayoutListItem::AlignMarkerInBlockDirection() {
       offset -= o->LogicalTop();
     }
 
-    marker_inline_box->MoveInBlockDirection(offset);
+    if (offset)
+      marker_inline_box->MoveInBlockDirection(offset);
   }
 }
 
