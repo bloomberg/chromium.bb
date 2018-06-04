@@ -28,7 +28,7 @@
 #include "services/network/restricted_cookie_manager.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/shape_detection/public/mojom/barcodedetection.mojom.h"
+#include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
 #include "services/shape_detection/public/mojom/constants.mojom.h"
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
 #include "services/shape_detection/public/mojom/textdetection.mojom.h"
@@ -120,7 +120,7 @@ void GetRestrictedCookieManagerForWorker(
 // override binders registered here.
 void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
   parameterized_binder_registry_.AddInterface(base::Bind(
-      &ForwardServiceRequest<shape_detection::mojom::BarcodeDetection>,
+      &ForwardServiceRequest<shape_detection::mojom::BarcodeDetectionProvider>,
       shape_detection::mojom::kServiceName));
   parameterized_binder_registry_.AddInterface(base::Bind(
       &ForwardServiceRequest<shape_detection::mojom::FaceDetectionProvider>,

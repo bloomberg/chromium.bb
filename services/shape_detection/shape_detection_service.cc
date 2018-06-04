@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "services/service_manager/public/cpp/service_context.h"
-#include "services/shape_detection/barcode_detection_impl.h"
+#include "services/shape_detection/barcode_detection_provider_impl.h"
 #if defined(OS_WIN)
 #include "services/shape_detection/face_detection_provider_win.h"
 #elif defined(OS_MACOSX)
@@ -42,24 +42,25 @@ void ShapeDetectionService::OnStart() {
 
 #if defined(OS_ANDROID)
   registry_.AddInterface(
-      GetJavaInterfaces()->CreateInterfaceFactory<mojom::BarcodeDetection>());
+      GetJavaInterfaces()
+          ->CreateInterfaceFactory<mojom::BarcodeDetectionProvider>());
   registry_.AddInterface(
       GetJavaInterfaces()
           ->CreateInterfaceFactory<mojom::FaceDetectionProvider>());
   registry_.AddInterface(
       GetJavaInterfaces()->CreateInterfaceFactory<mojom::TextDetection>());
 #elif defined(OS_WIN)
-  registry_.AddInterface(base::Bind(&BarcodeDetectionImpl::Create));
+  registry_.AddInterface(base::Bind(&BarcodeDetectionProviderImpl::Create));
   registry_.AddInterface(base::Bind(&TextDetectionImpl::Create));
   registry_.AddInterface(base::Bind(&FaceDetectionProviderWin::Create));
 #elif defined(OS_MACOSX)
-  registry_.AddInterface(base::Bind(&BarcodeDetectionImpl::Create));
+  registry_.AddInterface(base::Bind(&BarcodeDetectionProviderImpl::Create));
   registry_.AddInterface(base::Bind(&TextDetectionImpl::Create));
   registry_.AddInterface(base::Bind(&FaceDetectionProviderMac::Create));
 #else
-  registry_.AddInterface(base::Bind(&BarcodeDetectionImpl::Create));
-  registry_.AddInterface(base::Bind(&TextDetectionImpl::Create));
+  registry_.AddInterface(base::Bind(&BarcodeDetectionProviderImpl::Create));
   registry_.AddInterface(base::Bind(&FaceDetectionProviderImpl::Create));
+  registry_.AddInterface(base::Bind(&TextDetectionImpl::Create));
 #endif
 }
 
