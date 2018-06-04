@@ -17,6 +17,8 @@ source_set("buttons") {
     "toolbar_configuration.mm",
     "toolbar_constants.h",
     "toolbar_constants.mm",
+    "toolbar_search_button.h",
+    "toolbar_search_button.mm",
     "toolbar_style.h",
     "toolbar_tab_grid_button.h",
     "toolbar_tab_grid_button.mm",

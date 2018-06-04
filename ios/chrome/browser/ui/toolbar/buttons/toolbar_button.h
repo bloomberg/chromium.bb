@@ -35,6 +35,8 @@ const NSUInteger ControlStateSpotlighted = 0x00010000;
 // Whether this button is spotlighted, having a light gray background. This
 // state should not be used in the same time as the selected state.
 @property(nonatomic, assign) BOOL spotlighted;
+// View used to display the view used for the spotlight effect.
+@property(nonatomic, strong) UIView* spotlightView;
 // Whether this button is dimmed. When the button is dimmed, its tintColor is
 // changed to have a lower alpha.
 @property(nonatomic, assign) BOOL dimmed;
@@ -53,6 +55,11 @@ const NSUInteger ControlStateSpotlighted = 0x00010000;
 // afterwards it calls setHiddenForCurrentStateAndSizeClass if needed.
 - (void)updateHiddenInCurrentSizeClass;
 
+@end
+
+@interface ToolbarButton (Subclassing)
+// Creates the view used for the spotlight effect.
+- (void)configureSpotlightView;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_BUTTON_H_
