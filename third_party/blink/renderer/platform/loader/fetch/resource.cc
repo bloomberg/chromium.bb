@@ -224,7 +224,6 @@ void Resource::SetLoader(ResourceLoader* loader) {
   CHECK(!loader_);
   DCHECK(StillNeedsLoad());
   loader_ = loader;
-  status_ = ResourceStatus::kPending;
 }
 
 void Resource::CheckResourceIntegrity() {
@@ -336,6 +335,26 @@ void Resource::SetDataBufferingPolicy(
   SetEncodedSize(0);
 }
 
+static bool NeedsSynchronousCacheHit(Resource::Type type,
+                                     const ResourceLoaderOptions& options) {
+  // Synchronous requests must always succeed or fail synchronously.
+  if (options.synchronous_policy == kRequestSynchronously)
+    return true;
+  // Some resources types default to return data synchronously. For most of
+  // these, it's because there are layout tests that expect data to return
+  // synchronously in case of cache hit. In the case of fonts, there was a
+  // performance regression.
+  // FIXME: Get to the point where we don't need to special-case sync/async
+  // behavior for different resource types.
+  if (type == Resource::kCSSStyleSheet)
+    return true;
+  if (type == Resource::kScript)
+    return true;
+  if (type == Resource::kFont)
+    return true;
+  return false;
+}
+
 void Resource::FinishAsError(const ResourceError& error,
                              base::SingleThreadTaskRunner* task_runner) {
   error_ = error;
@@ -344,6 +363,7 @@ void Resource::FinishAsError(const ResourceError& error,
   if (IsMainThread())
     GetMemoryCache()->Remove(this);
 
+  bool failed_during_start = status_ == ResourceStatus::kNotStarted;
   if (!ErrorOccurred())
     SetStatus(ResourceStatus::kLoadError);
   DCHECK(ErrorOccurred());
@@ -351,7 +371,20 @@ void Resource::FinishAsError(const ResourceError& error,
   loader_ = nullptr;
   CheckResourceIntegrity();
   TriggerNotificationForFinishObservers(task_runner);
-  NotifyFinished();
+
+  // Most resource types don't expect to succeed or fail inside
+  // ResourceFetcher::RequestResource(). If the request does complete
+  // immediately, the convention is to notify the client asynchronously
+  // unless the type is exempted for historical reasons (mostly due to
+  // performance implications to making those notifications asynchronous).
+  // So if this is an immediate failure (i.e., before NotifyStartLoad()),
+  // post a task if the Resource::Type supports it.
+  if (failed_during_start && !NeedsSynchronousCacheHit(GetType(), options_)) {
+    task_runner->PostTask(FROM_HERE, WTF::Bind(&Resource::NotifyFinished,
+                                               WrapWeakPersistent(this)));
+  } else {
+    NotifyFinished();
+  }
 }
 
 void Resource::Finish(TimeTicks load_finish_time,
@@ -584,22 +617,6 @@ void Resource::DidAddClient(ResourceClient* c) {
   }
 }
 
-static bool TypeNeedsSynchronousCacheHit(Resource::Type type) {
-  // Some resources types default to return data synchronously. For most of
-  // these, it's because there are layout tests that expect data to return
-  // synchronously in case of cache hit. In the case of fonts, there was a
-  // performance regression.
-  // FIXME: Get to the point where we don't need to special-case sync/async
-  // behavior for different resource types.
-  if (type == Resource::kCSSStyleSheet)
-    return true;
-  if (type == Resource::kScript)
-    return true;
-  if (type == Resource::kFont)
-    return true;
-  return false;
-}
-
 void Resource::WillAddClientOrObserver() {
   if (!HasClientsOrObservers()) {
     is_alive_ = true;
@@ -620,7 +637,7 @@ void Resource::AddClient(ResourceClient* client,
   // If an error has occurred or we have existing data to send to the new client
   // and the resource type supports it, send it asynchronously.
   if ((ErrorOccurred() || !GetResponse().IsNull()) &&
-      !TypeNeedsSynchronousCacheHit(GetType())) {
+      !NeedsSynchronousCacheHit(GetType(), options_)) {
     clients_awaiting_callback_.insert(client);
     if (!async_finish_pending_clients_task_.IsActive()) {
       async_finish_pending_clients_task_ = PostCancellableTask(

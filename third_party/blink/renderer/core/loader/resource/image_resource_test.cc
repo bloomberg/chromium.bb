@@ -184,7 +184,6 @@ void ReceiveResponse(ImageResource* image_resource,
                      size_t data_size) {
   ResourceResponse response(url, mime_type);
   response.SetHTTPStatusCode(200);
-  image_resource->SetStatus(ResourceStatus::kPending);
   image_resource->NotifyStartLoad();
   image_resource->ResponseReceived(response, nullptr);
   image_resource->AppendData(data, data_size);
@@ -559,7 +558,6 @@ TEST(ImageResourceTest, CancelWithImageAndFinishObserver) {
 
 TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
   ImageResource* image_resource = ImageResource::CreateForTest(NullURL());
-  image_resource->SetStatus(ResourceStatus::kPending);
   image_resource->NotifyStartLoad();
 
   std::unique_ptr<MockImageResourceObserver> observer =
@@ -600,7 +598,6 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
 
 TEST(ImageResourceTest, UpdateBitmapImages) {
   ImageResource* image_resource = ImageResource::CreateForTest(NullURL());
-  image_resource->SetStatus(ResourceStatus::kPending);
   image_resource->NotifyStartLoad();
 
   std::unique_ptr<MockImageResourceObserver> observer =
@@ -638,7 +635,6 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
-  image_resource->SetStatus(ResourceStatus::kPending);
   image_resource->NotifyStartLoad();
 
   std::unique_ptr<MockImageResourceObserver> observer =
@@ -686,7 +682,6 @@ TEST_P(ImageResourceReloadTest,
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
-  image_resource->SetStatus(ResourceStatus::kPending);
   image_resource->NotifyStartLoad();
 
   std::unique_ptr<MockImageResourceObserver> observer =
@@ -736,7 +731,6 @@ TEST_P(ImageResourceReloadTest,
   request.SetPreviewsState(WebURLRequest::kServerLoFiOn);
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
   ImageResource* image_resource = ImageResource::Create(request);
-  image_resource->SetStatus(ResourceStatus::kPending);
   image_resource->NotifyStartLoad();
 
   std::unique_ptr<MockImageResourceObserver> observer =
@@ -1835,7 +1829,6 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
       ResourceLoader::Create(fetcher, scheduler, image_resource);
   ALLOW_UNUSED_LOCAL(loader);
 
-  image_resource->SetStatus(ResourceStatus::kPending);
   image_resource->NotifyStartLoad();
 
   std::unique_ptr<MockImageResourceObserver> observer =

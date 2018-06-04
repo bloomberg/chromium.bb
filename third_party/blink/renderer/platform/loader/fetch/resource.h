@@ -346,7 +346,10 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // Used to notify ImageResourceContent of the start of actual loading.
   // JavaScript calls or client/observer notifications are disallowed inside
   // NotifyStartLoad().
-  virtual void NotifyStartLoad() {}
+  virtual void NotifyStartLoad() {
+    CHECK_EQ(status_, ResourceStatus::kNotStarted);
+    status_ = ResourceStatus::kPending;
+  }
 
   static const char* ResourceTypeToString(
       Type,

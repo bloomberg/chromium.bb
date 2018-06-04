@@ -538,9 +538,8 @@ Resource* ResourceFetcher::ResourceForStaticData(
 
   Resource* resource = factory.Create(
       params.GetResourceRequest(), params.Options(), params.DecoderOptions());
-  // FIXME: We should provide a body stream here.
-  resource->SetStatus(ResourceStatus::kPending);
   resource->NotifyStartLoad();
+  // FIXME: We should provide a body stream here.
   resource->ResponseReceived(response, nullptr);
   resource->SetDataBufferingPolicy(kBufferData);
   if (data->size())
@@ -563,21 +562,12 @@ Resource* ResourceFetcher::ResourceForBlockedRequest(
     ResourceClient* client) {
   Resource* resource = factory.Create(
       params.GetResourceRequest(), params.Options(), params.DecoderOptions());
-  // Sync requests need to be registered as a client before the fetch begins, so
-  // that they can process any redirects as they are received. Async requests,
-  // on the other hand, need to be registered after the fetch begins, because
-  // if the fetch fails during start, registering the client too early may lead
-  // to unexpected synchronous notifications.
-  if (client && params.Options().synchronous_policy == kRequestSynchronously)
+  if (client)
     client->SetResource(resource, Context().GetLoadingTaskRunner().get());
-  resource->SetStatus(ResourceStatus::kPending);
-  resource->NotifyStartLoad();
   resource->SetSourceOrigin(GetSourceOrigin(params.Options()));
   resource->FinishAsError(ResourceError::CancelledDueToAccessCheckError(
                               params.Url(), blocked_reason),
                           Context().GetLoadingTaskRunner().get());
-  if (client && params.Options().synchronous_policy == kRequestAsynchronously)
-    client->SetResource(resource, Context().GetLoadingTaskRunner().get());
   return resource;
 }
 
@@ -858,12 +848,7 @@ Resource* ResourceFetcher::RequestResource(
   if (policy != kUse)
     resource->SetIdentifier(identifier);
 
-  // Sync requests need to be registered as a client before the fetch begins, so
-  // that they can process any redirects as they are received. Async requests,
-  // on the other hand, need to be registered after the fetch begins, because
-  // if the fetch fails during start, registering the client too early may lead
-  // to unexpected synchronous notifications.
-  if (client && params.Options().synchronous_policy == kRequestSynchronously)
+  if (client)
     client->SetResource(resource, Context().GetLoadingTaskRunner().get());
 
   // TODO(yoav): It is not clear why preloads are exempt from this check. Can we
@@ -903,9 +888,6 @@ Resource* ResourceFetcher::RequestResource(
 
   if (policy != kUse)
     InsertAsPreloadIfNecessary(resource, params, resource_type);
-
-  if (client && params.Options().synchronous_policy == kRequestAsynchronously)
-    client->SetResource(resource, Context().GetLoadingTaskRunner().get());
 
   return resource;
 }
@@ -1628,15 +1610,21 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
       non_blocking_loaders_.insert(loader);
 
     StorePerformanceTimingInitiatorInformation(resource);
+  }
+
+  loader->Start();
+
+  {
+    Resource::RevalidationStartForbiddenScope
+        revalidation_start_forbidden_scope(resource);
+    ScriptForbiddenScope script_forbidden_scope;
 
     // NotifyStartLoad() shouldn't cause AddClient/RemoveClient().
     Resource::ProhibitAddRemoveClientInScope
         prohibit_add_remove_client_in_scope(resource);
-
-    resource->NotifyStartLoad();
+    if (!resource->IsLoaded())
+      resource->NotifyStartLoad();
   }
-
-  loader->Start();
   return true;
 }
 
