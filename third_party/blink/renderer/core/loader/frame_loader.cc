@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/viewport_description.h"
+#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/gesture_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
@@ -805,16 +806,8 @@ static WebURLRequest::RequestContext DetermineRequestContextFromNavigationType(
   return WebURLRequest::kRequestContextHyperlink;
 }
 
-static NavigationPolicy NavigationPolicyForRequest(
-    const FrameLoadRequest& request) {
+static NavigationPolicy NavigationPolicyForEvent(Event* event) {
   NavigationPolicy policy = kNavigationPolicyCurrentTab;
-  Event* event = request.TriggeringEvent();
-  if (!event)
-    return policy;
-
-  if (request.Form() && event->UnderlyingEvent())
-    event = event->UnderlyingEvent();
-
   if (event->IsMouseEvent()) {
     MouseEvent* mouse_event = ToMouseEvent(event);
     NavigationPolicyFromMouseEvent(
@@ -832,6 +825,27 @@ static NavigationPolicy NavigationPolicyForRequest(
     NavigationPolicyFromMouseEvent(
         0, gesture_event->ctrlKey(), gesture_event->shiftKey(),
         gesture_event->altKey(), gesture_event->metaKey(), &policy);
+  }
+  return policy;
+}
+
+static NavigationPolicy NavigationPolicyForRequest(
+    const FrameLoadRequest& request) {
+  NavigationPolicy policy = kNavigationPolicyCurrentTab;
+  Event* event = request.TriggeringEvent();
+  if (!event)
+    return policy;
+
+  if (request.Form() && event->UnderlyingEvent())
+    event = event->UnderlyingEvent();
+
+  policy = NavigationPolicyForEvent(event);
+
+  if (policy == kNavigationPolicyDownload &&
+      EffectiveNavigationPolicy(policy, CurrentInputEvent::Get(),
+                                WebWindowFeatures()) !=
+          kNavigationPolicyDownload) {
+    return kNavigationPolicyCurrentTab;
   }
   return policy;
 }
