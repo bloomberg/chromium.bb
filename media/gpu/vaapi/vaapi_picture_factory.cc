@@ -5,6 +5,7 @@
 #include "media/gpu/vaapi/vaapi_picture_factory.h"
 
 #include "media/gpu/vaapi/vaapi_wrapper.h"
+#include "media/video/picture.h"
 #include "ui/gl/gl_bindings.h"
 
 #if defined(USE_X11)
@@ -43,12 +44,13 @@ std::unique_ptr<VaapiPicture> VaapiPictureFactory::Create(
     const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
-    int32_t picture_buffer_id,
-    const gfx::Size& size,
-    uint32_t texture_id,
-    uint32_t client_texture_id,
-    uint32_t texture_target) {
-  DCHECK_EQ(texture_target, GetGLTextureTarget());
+    const PictureBuffer& picture_buffer) {
+  DCHECK_EQ(picture_buffer.texture_target(), GetGLTextureTarget());
+
+  DCHECK(!picture_buffer.service_texture_ids().empty());
+  const uint32_t service_texture_id = picture_buffer.service_texture_ids()[0];
+  DCHECK(!picture_buffer.client_texture_ids().empty());
+  const uint32_t client_texture_id = picture_buffer.client_texture_ids()[0];
 
   std::unique_ptr<VaapiPicture> picture;
 
@@ -61,25 +63,24 @@ std::unique_ptr<VaapiPicture> VaapiPictureFactory::Create(
     case kVaapiImplementationDrm:
       picture.reset(new VaapiPictureNativePixmapOzone(
           vaapi_wrapper, make_context_current_cb, bind_image_cb,
-          picture_buffer_id, size, texture_id, client_texture_id,
-          texture_target));
+          picture_buffer.id(), picture_buffer.size(), service_texture_id,
+          client_texture_id, picture_buffer.texture_target()));
       break;
 #elif defined(USE_EGL)
     case kVaapiImplementationDrm:
       picture.reset(new VaapiPictureNativePixmapEgl(
           vaapi_wrapper, make_context_current_cb, bind_image_cb,
-          picture_buffer_id, size, texture_id, client_texture_id,
-          texture_target));
+          picture_buffer.id(), picture_buffer.size(), service_texture_id,
+          client_texture_id, picture_buffer.texture_target()));
       break;
 #endif
 
 #if defined(USE_X11)
     case kVaapiImplementationX11:
-      picture.reset(new VaapiTFPPicture(vaapi_wrapper, make_context_current_cb,
-                                        bind_image_cb, picture_buffer_id, size,
-                                        texture_id, client_texture_id,
-                                        texture_target));
-
+      picture.reset(new VaapiTFPPicture(
+          vaapi_wrapper, make_context_current_cb, bind_image_cb,
+          picture_buffer.id(), picture_buffer.size(), service_texture_id,
+          client_texture_id, picture_buffer.texture_target()));
       break;
 #endif  // USE_X11
 
