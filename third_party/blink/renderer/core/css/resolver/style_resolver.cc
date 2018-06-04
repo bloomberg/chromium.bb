@@ -805,13 +805,6 @@ scoped_refptr<AnimatableValue> StyleResolver::CreateAnimatableValueSnapshot(
   return CSSAnimatableValueFactory::Create(property, *state.Style());
 }
 
-PseudoElement* StyleResolver::CreatePseudoElement(Element* parent,
-                                                  PseudoId pseudo_id) {
-  if (pseudo_id == kPseudoIdFirstLetter)
-    return FirstLetterPseudoElement::Create(parent);
-  return PseudoElement::Create(parent, pseudo_id);
-}
-
 PseudoElement* StyleResolver::CreatePseudoElementIfNeeded(Element& parent,
                                                           PseudoId pseudo_id) {
   if (!parent.CanGeneratePseudoElement(pseudo_id))
@@ -857,7 +850,7 @@ PseudoElement* StyleResolver::CreatePseudoElementIfNeeded(Element& parent,
           parent_style->GetCachedPseudoStyle(pseudo_id)) {
     if (!PseudoElementLayoutObjectIsNeeded(cached_style))
       return nullptr;
-    return CreatePseudoElement(&parent, pseudo_id);
+    return PseudoElement::Create(&parent, pseudo_id);
   }
 
   StyleResolverState state(GetDocument(), &parent, parent_style,
@@ -871,7 +864,7 @@ PseudoElement* StyleResolver::CreatePseudoElementIfNeeded(Element& parent,
   if (!PseudoElementLayoutObjectIsNeeded(style.get()))
     return nullptr;
 
-  PseudoElement* pseudo = CreatePseudoElement(&parent, pseudo_id);
+  PseudoElement* pseudo = PseudoElement::Create(&parent, pseudo_id);
 
   SetAnimationUpdateIfNeeded(state, *pseudo);
   if (ElementAnimations* element_animations = pseudo->GetElementAnimations())

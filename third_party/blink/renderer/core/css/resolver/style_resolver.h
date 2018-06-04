@@ -284,11 +284,7 @@ class CORE_EXPORT StyleResolver final
                                      StyleResolverState&);
 
   bool HasAuthorBorder(const StyleResolverState&);
-
-  PseudoElement* CreatePseudoElement(Element* parent, PseudoId);
-
   Document& GetDocument() const { return *document_; }
-
   bool WasViewportResized() const { return was_viewport_resized_; }
 
   static ComputedStyle* style_not_yet_available_;
