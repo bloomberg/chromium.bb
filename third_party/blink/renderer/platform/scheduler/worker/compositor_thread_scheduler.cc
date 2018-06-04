@@ -34,14 +34,15 @@ CompositorThreadScheduler::CompositorThreadScheduler(
 
 CompositorThreadScheduler::~CompositorThreadScheduler() = default;
 
-scoped_refptr<WorkerTaskQueue> CompositorThreadScheduler::DefaultTaskQueue() {
-  return helper_->DefaultWorkerTaskQueue();
+scoped_refptr<NonMainThreadTaskQueue>
+CompositorThreadScheduler::DefaultTaskQueue() {
+  return helper_->DefaultNonMainThreadTaskQueue();
 }
 
 void CompositorThreadScheduler::InitImpl() {}
 
 void CompositorThreadScheduler::OnTaskCompleted(
-    WorkerTaskQueue* worker_task_queue,
+    NonMainThreadTaskQueue* worker_task_queue,
     const base::sequence_manager::TaskQueue::Task& task,
     base::TimeTicks start,
     base::TimeTicks end,

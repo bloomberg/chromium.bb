@@ -6,7 +6,7 @@
 
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
-#include "third_party/blink/renderer/platform/scheduler/child/worker_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_task_queue.h"
 
 namespace blink {
 namespace scheduler {
@@ -33,8 +33,8 @@ NonMainThreadSchedulerHelper::~NonMainThreadSchedulerHelper() {
   default_task_queue_->ShutdownTaskQueue();
 }
 
-scoped_refptr<WorkerTaskQueue>
-NonMainThreadSchedulerHelper::DefaultWorkerTaskQueue() {
+scoped_refptr<NonMainThreadTaskQueue>
+NonMainThreadSchedulerHelper::DefaultNonMainThreadTaskQueue() {
   return default_task_queue_;
 }
 
@@ -42,8 +42,8 @@ scoped_refptr<TaskQueue> NonMainThreadSchedulerHelper::DefaultTaskQueue() {
   return default_task_queue_;
 }
 
-scoped_refptr<WorkerTaskQueue>
-NonMainThreadSchedulerHelper::ControlWorkerTaskQueue() {
+scoped_refptr<NonMainThreadTaskQueue>
+NonMainThreadSchedulerHelper::ControlNonMainThreadTaskQueue() {
   return control_task_queue_;
 }
 
@@ -51,9 +51,9 @@ scoped_refptr<TaskQueue> NonMainThreadSchedulerHelper::ControlTaskQueue() {
   return control_task_queue_;
 }
 
-scoped_refptr<WorkerTaskQueue> NonMainThreadSchedulerHelper::NewTaskQueue(
-    const TaskQueue::Spec& spec) {
-  return task_queue_manager_->CreateTaskQueue<WorkerTaskQueue>(
+scoped_refptr<NonMainThreadTaskQueue>
+NonMainThreadSchedulerHelper::NewTaskQueue(const TaskQueue::Spec& spec) {
+  return task_queue_manager_->CreateTaskQueue<NonMainThreadTaskQueue>(
       spec, non_main_thread_scheduler_);
 }
 

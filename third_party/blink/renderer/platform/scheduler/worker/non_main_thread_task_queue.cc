@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/child/worker_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_task_queue.h"
 
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_impl.h"
@@ -12,7 +12,7 @@ namespace scheduler {
 
 using base::sequence_manager::TaskQueue;
 
-WorkerTaskQueue::WorkerTaskQueue(
+NonMainThreadTaskQueue::NonMainThreadTaskQueue(
     std::unique_ptr<base::sequence_manager::internal::TaskQueueImpl> impl,
     const TaskQueue::Spec& spec,
     NonMainThreadSchedulerImpl* non_main_thread_scheduler)
@@ -21,13 +21,13 @@ WorkerTaskQueue::WorkerTaskQueue(
   if (GetTaskQueueImpl()) {
     // TaskQueueImpl may be null for tests.
     GetTaskQueueImpl()->SetOnTaskCompletedHandler(base::BindRepeating(
-        &WorkerTaskQueue::OnTaskCompleted, base::Unretained(this)));
+        &NonMainThreadTaskQueue::OnTaskCompleted, base::Unretained(this)));
   }
 }
 
-WorkerTaskQueue::~WorkerTaskQueue() = default;
+NonMainThreadTaskQueue::~NonMainThreadTaskQueue() = default;
 
-void WorkerTaskQueue::OnTaskCompleted(
+void NonMainThreadTaskQueue::OnTaskCompleted(
     const TaskQueue::Task& task,
     base::TimeTicks start,
     base::TimeTicks end,

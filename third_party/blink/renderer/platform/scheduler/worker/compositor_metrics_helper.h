@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_COMPOSITOR_METRICS_HELPER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_COMPOSITOR_METRICS_HELPER_H_
 
-#include "third_party/blink/renderer/platform/scheduler/child/worker_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/common/metrics_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_task_queue.h"
 
 namespace blink {
 namespace scheduler {
@@ -16,7 +16,7 @@ class PLATFORM_EXPORT CompositorMetricsHelper : public MetricsHelper {
   CompositorMetricsHelper();
   ~CompositorMetricsHelper();
 
-  void RecordTaskMetrics(WorkerTaskQueue* queue,
+  void RecordTaskMetrics(NonMainThreadTaskQueue* queue,
                          const base::sequence_manager::TaskQueue::Task& task,
                          base::TimeTicks start_time,
                          base::TimeTicks end_time,

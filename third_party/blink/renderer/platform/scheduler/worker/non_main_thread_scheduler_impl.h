@@ -13,11 +13,11 @@
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
-#include "third_party/blink/renderer/platform/scheduler/child/worker_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/common/thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_task_queue.h"
 
 namespace blink {
 namespace scheduler {
@@ -37,14 +37,14 @@ class PLATFORM_EXPORT NonMainThreadSchedulerImpl : public ThreadSchedulerImpl {
 
   // Blink should use NonMainThreadSchedulerImpl::DefaultTaskQueue instead of
   // WebThreadScheduler::DefaultTaskRunner.
-  virtual scoped_refptr<WorkerTaskQueue> DefaultTaskQueue() = 0;
+  virtual scoped_refptr<NonMainThreadTaskQueue> DefaultTaskQueue() = 0;
 
   // Must be called before the scheduler can be used. Does any post construction
   // initialization needed such as initializing idle period detection.
   void Init();
 
   virtual void OnTaskCompleted(
-      WorkerTaskQueue* worker_task_queue,
+      NonMainThreadTaskQueue* worker_task_queue,
       const base::sequence_manager::TaskQueue::Task& task,
       base::TimeTicks start,
       base::TimeTicks end,
@@ -88,7 +88,7 @@ class PLATFORM_EXPORT NonMainThreadSchedulerImpl : public ThreadSchedulerImpl {
   //
   // virtual void Shutdown();
 
-  scoped_refptr<WorkerTaskQueue> CreateTaskRunner();
+  scoped_refptr<NonMainThreadTaskQueue> CreateTaskRunner();
 
   // TaskQueueThrottler might be null if throttling is not enabled or
   // not supported.

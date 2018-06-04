@@ -36,7 +36,8 @@ void NonMainThreadSchedulerImpl::Init() {
   InitImpl();
 }
 
-scoped_refptr<WorkerTaskQueue> NonMainThreadSchedulerImpl::CreateTaskRunner() {
+scoped_refptr<NonMainThreadTaskQueue>
+NonMainThreadSchedulerImpl::CreateTaskRunner() {
   helper_->CheckOnValidThread();
   return helper_->NewTaskQueue(
       base::sequence_manager::TaskQueue::Spec("worker_tq")
@@ -94,7 +95,7 @@ void NonMainThreadSchedulerImpl::UnregisterWorkerScheduler(
 
 scoped_refptr<base::SingleThreadTaskRunner>
 NonMainThreadSchedulerImpl::ControlTaskRunner() {
-  return helper_->ControlWorkerTaskQueue();
+  return helper_->ControlNonMainThreadTaskQueue();
 }
 
 void NonMainThreadSchedulerImpl::RegisterTimeDomain(
