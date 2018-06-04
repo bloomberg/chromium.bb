@@ -197,9 +197,7 @@ class MODULES_EXPORT IDBDatabase final
 
   bool close_pending_ = false;
 
-  // Keep track of the versionchange events waiting to be fired on this
-  // database so that we can cancel them if the database closes.
-  HeapVector<Member<Event>> enqueued_events_;
+  Member<EventQueue> event_queue_;
 
   Member<IDBDatabaseCallbacks> database_callbacks_;
   // Maintain the isolate so that all externally allocated memory can be

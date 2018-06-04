@@ -36,7 +36,7 @@ namespace blink {
 class Event;
 class ExecutionContext;
 
-class EventQueueImpl final : public EventQueue {
+class CORE_EXPORT EventQueueImpl final : public EventQueue {
  public:
   // TODO(hajimehoshi): TaskType should be determined based on an event instead
   // of specifying here.
@@ -46,7 +46,7 @@ class EventQueueImpl final : public EventQueue {
   // EventQueue
   void Trace(blink::Visitor*) override;
   bool EnqueueEvent(const base::Location&, Event*) override;
-  bool CancelEvent(Event*) override;
+  void CancelAllEvents() override;
   void Close() override;
 
  private:

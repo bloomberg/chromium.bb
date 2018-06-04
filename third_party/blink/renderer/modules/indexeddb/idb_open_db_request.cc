@@ -193,7 +193,6 @@ DispatchEventResult IDBOpenDBRequest::DispatchEventInternal(Event* event) {
   if (event->type() == EventTypeNames::success &&
       ResultAsAny()->GetType() == IDBAny::kIDBDatabaseType &&
       ResultAsAny()->IdbDatabase()->IsClosePending()) {
-    DequeueEvent(event);
     SetResult(nullptr);
     HandleResponse(
         DOMException::Create(kAbortError, "The connection was closed."));
