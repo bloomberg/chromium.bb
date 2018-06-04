@@ -5,7 +5,6 @@
 # https://crbug.com/715640
 -ServiceWorkerNavigationPreloadTest.CanceledByInterceptor
 -ServiceWorkerNavigationPreloadTest.RespondWithNavigationPreloadWithMimeSniffing
--ServiceWorkerV8CodeCacheForCacheStorageTest.V8CacheOnCacheStorage
 
 # https://crbug.com/721398
 -ClearSiteDataThrottleBrowserTest.CacheIntegrationTest

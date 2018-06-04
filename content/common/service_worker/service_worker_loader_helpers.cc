@@ -92,6 +92,7 @@ void ServiceWorkerLoaderHelpers::SaveResponseInfo(
   out_head->was_fallback_required_by_service_worker = false;
   out_head->url_list_via_service_worker = response.url_list;
   out_head->response_type_via_service_worker = response.response_type;
+  out_head->response_time = response.response_time;
   out_head->is_in_cache_storage = response.is_in_cache_storage;
   out_head->cache_storage_cache_name = response.cache_storage_cache_name;
   out_head->cors_exposed_header_names = response.cors_exposed_header_names;
