@@ -134,6 +134,7 @@ class FileSystemBackend;
 namespace content {
 
 enum class PermissionType;
+class AuthenticatorRequestClientDelegate;
 class BrowserChildProcessHost;
 class BrowserContext;
 class BrowserMainParts;
@@ -1145,38 +1146,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // BrowserMainLoop, BrowserMainLoop itself is responsible for that.
   virtual bool ShouldCreateTaskScheduler();
 
-  // Returns true if the given Webauthn[1] RP ID[2] is permitted to receive
-  // individual attestation certificates. This a) triggers a signal to the
-  // security key that returning individual attestation certificates is
-  // permitted and b) skips any permission prompt for attestation.
-  //
-  // [1] https://www.w3.org/TR/webauthn/
-  // [2] https://www.w3.org/TR/webauthn/#relying-party-identifier
-  virtual bool ShouldPermitIndividualAttestationForWebauthnRPID(
-      content::BrowserContext* browser_context,
-      const std::string& rp_id);
-
-  // Invokes |callback| with |true| if the given Webauthn RP ID (see references
-  // above) is permitted to receive attestation certificates from a device.
-  // Otherwise invokes |callback| with |false|.
-  //
-  // Since these certificates may uniquely identify the authenticator, the
-  // embedder may choose to show a permissions prompt to the user, and only
-  // invoke |callback| afterwards. This may hairpin |callback|.
-  virtual void ShouldReturnAttestationForWebauthnRPID(
-      content::RenderFrameHost* rfh,
-      const std::string& rp_id,
-      const url::Origin& origin,
-      base::OnceCallback<void(bool)> callback);
-
-  // Returns whether |web_contents| is the active tab in the focused window.
-  // As an example, webauthn uses this because it doesn't want to allow
-  // authenticator operations to be triggered by background tabs.
-  //
-  // Note that the default implementation of this function, and the
-  // implementation in ChromeContentBrowserClient for Android, return |true| so
-  // that testing is possible.
-  virtual bool IsFocused(content::WebContents* web_contents);
+  // Returns an AuthenticatorRequestClientDelegate subclass instance to provide
+  // embedder-specific configuration for a single Web Authentication API request
+  // being serviced in a given RenderFrame. The instance is guaranteed to be
+  // destroyed before the RenderFrame goes out of scope.
+  virtual std::unique_ptr<AuthenticatorRequestClientDelegate>
+  GetWebAuthenticationRequestDelegate(RenderFrameHost* render_frame_host);
 
   // Get platform ClientCertStore. May return nullptr.
   virtual std::unique_ptr<net::ClientCertStore> CreateClientCertStore(

@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/webauth/authenticator_type_converters.h"
+#include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -436,10 +437,15 @@ void AuthenticatorImpl::MakeCredential(
     return;
   }
 
-  if (!GetContentClient()->browser()->IsFocused(
-          WebContents::FromRenderFrameHost(render_frame_host_))) {
-    std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
-                            nullptr);
+  DCHECK(!request_delegate_);
+  request_delegate_ =
+      GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
+          render_frame_host_);
+
+  if (!request_delegate_->IsFocused()) {
+    InvokeCallbackAndCleanup(std::move(callback),
+                             webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
+                             nullptr, Focus::kDontCheck);
     return;
   }
 
@@ -511,11 +517,7 @@ void AuthenticatorImpl::MakeCredential(
       base::nullopt);
 
   const bool individual_attestation =
-      GetContentClient()
-          ->browser()
-          ->ShouldPermitIndividualAttestationForWebauthnRPID(
-              render_frame_host_->GetProcess()->GetBrowserContext(),
-              relying_party_id_);
+      request_delegate_->ShouldPermitIndividualAttestation(relying_party_id_);
 
   attestation_preference_ = options->attestation;
 
@@ -563,6 +565,11 @@ void AuthenticatorImpl::GetAssertion(
         webauth::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
     return;
   }
+
+  DCHECK(!request_delegate_);
+  request_delegate_ =
+      GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
+          render_frame_host_);
 
   url::Origin caller_origin = render_frame_host_->GetLastCommittedOrigin();
 
@@ -742,8 +749,7 @@ void AuthenticatorImpl::OnRegisterResponse(
           webauth::mojom::AttestationConveyancePreference::NONE) {
         // Check for focus before (potentially) showing a permissions bubble
         // that might take focus.
-        if (!GetContentClient()->browser()->IsFocused(
-                WebContents::FromRenderFrameHost(render_frame_host_))) {
+        if (!request_delegate_->IsFocused()) {
           InvokeCallbackAndCleanup(
               std::move(make_credential_response_callback_),
               webauth::mojom::AuthenticatorStatus::NOT_FOCUSED, nullptr,
@@ -751,9 +757,8 @@ void AuthenticatorImpl::OnRegisterResponse(
           return;
         }
 
-        GetContentClient()->browser()->ShouldReturnAttestationForWebauthnRPID(
-            render_frame_host_, relying_party_id_,
-            render_frame_host_->GetLastCommittedOrigin(),
+        request_delegate_->ShouldReturnAttestation(
+            relying_party_id_,
             base::BindOnce(
                 &AuthenticatorImpl::OnRegisterResponseAttestationDecided,
                 weak_factory_.GetWeakPtr(), std::move(*response_data)));
@@ -803,11 +808,8 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
   // requesting direct attestation then it knows that it was one of the tokens
   // with inappropriate certs.
   if (response_data.IsAttestationCertificateInappropriatelyIdentifying() &&
-      !GetContentClient()
-           ->browser()
-           ->ShouldPermitIndividualAttestationForWebauthnRPID(
-               render_frame_host_->GetProcess()->GetBrowserContext(),
-               relying_party_id_)) {
+      !request_delegate_->ShouldPermitIndividualAttestation(
+          relying_party_id_)) {
     // The attestation response is incorrectly individually identifiable, but
     // the consent is for make & model information about a token, not for
     // individually-identifiable information. Erase the attestation to stop it
@@ -890,9 +892,8 @@ void AuthenticatorImpl::InvokeCallbackAndCleanup(
     webauth::mojom::AuthenticatorStatus status,
     webauth::mojom::MakeCredentialAuthenticatorResponsePtr response,
     Focus check_focus) {
-  if (check_focus != Focus::kDontCheck &&
-      !GetContentClient()->browser()->IsFocused(
-          WebContents::FromRenderFrameHost(render_frame_host_))) {
+  DCHECK(request_delegate_);
+  if (check_focus != Focus::kDontCheck && !request_delegate_->IsFocused()) {
     std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
                             nullptr);
   } else {
@@ -914,6 +915,7 @@ void AuthenticatorImpl::Cleanup() {
   timer_->Stop();
   u2f_request_.reset();
   ctap_request_.reset();
+  request_delegate_.reset();
   make_credential_response_callback_.Reset();
   get_assertion_response_callback_.Reset();
   client_data_json_.clear();

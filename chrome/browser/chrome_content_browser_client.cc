@@ -126,6 +126,7 @@
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
+#include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -900,25 +901,6 @@ chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(
     return nullptr;
 
   return prerender::PrerenderContents::FromWebContents(web_contents);
-}
-
-// Returns true iff |rp_id| is listed in the SecurityKeyPermitAttestation
-// policy.
-bool IsWebauthnRPIDListedInEnterprisePolicy(
-    content::BrowserContext* browser_context,
-    const std::string& rp_id) {
-#if defined(OS_ANDROID)
-  return false;
-#else
-  const Profile* profile = Profile::FromBrowserContext(browser_context);
-  const PrefService* prefs = profile->GetPrefs();
-  const base::ListValue* permit_attestation =
-      prefs->GetList(prefs::kSecurityKeyPermitAttestation);
-
-  return std::any_of(
-      permit_attestation->begin(), permit_attestation->end(),
-      [&rp_id](const base::Value& v) { return v.GetString() == rp_id; });
-#endif
 }
 
 void LaunchURL(
@@ -4307,6 +4289,13 @@ void ChromeContentBrowserClient::CreateUsbChooserService(
   tab_helper->CreateChooserService(render_frame_host, std::move(request));
 }
 
+std::unique_ptr<content::AuthenticatorRequestClientDelegate>
+ChromeContentBrowserClient::GetWebAuthenticationRequestDelegate(
+    content::RenderFrameHost* render_frame_host) {
+  return std::make_unique<ChromeAuthenticatorRequestDelegate>(
+      render_frame_host);
+}
+
 std::unique_ptr<net::ClientCertStore>
 ChromeContentBrowserClient::CreateClientCertStore(
     content::ResourceContext* resource_context) {
@@ -4428,67 +4417,6 @@ bool ChromeContentBrowserClient::ShowPaymentHandlerWindow(
       ->GetForBrowserContext(browser_context)
       ->ShowPaymentHandlerWindow(url, std::move(callback));
   return true;
-#endif
-}
-
-bool ChromeContentBrowserClient::
-    ShouldPermitIndividualAttestationForWebauthnRPID(
-        content::BrowserContext* browser_context,
-        const std::string& rp_id) {
-  // If the RP ID is listed in the policy, signal that individual attestation is
-  // permitted.
-  return IsWebauthnRPIDListedInEnterprisePolicy(browser_context, rp_id);
-}
-
-void ChromeContentBrowserClient::ShouldReturnAttestationForWebauthnRPID(
-    content::RenderFrameHost* rfh,
-    const std::string& rp_id,
-    const url::Origin& origin,
-    base::OnceCallback<void(bool)> callback) {
-#if defined(OS_ANDROID)
-  // Android is expected to use platform APIs for webauthn which will take care
-  // of prompting.
-  std::move(callback).Run(true);
-#else
-  WebContents* web_contents = WebContents::FromRenderFrameHost(rfh);
-  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
-
-  if (IsWebauthnRPIDListedInEnterprisePolicy(browser_context, rp_id)) {
-    std::move(callback).Run(true);
-    return;
-  }
-
-  // This does not use content::PermissionManager because that only works with
-  // content settings, while this permission is a non-persisted, per-attested-
-  // registration consent.
-  PermissionRequestManager* permission_request_manager =
-      PermissionRequestManager::FromWebContents(web_contents);
-  if (!permission_request_manager) {
-    std::move(callback).Run(false);
-    return;
-  }
-
-  // The created AttestationPermissionRequest deletes itself once complete.
-  permission_request_manager->AddRequest(
-      NewAttestationPermissionRequest(origin, std::move(callback)));
-#endif
-}
-
-bool ChromeContentBrowserClient::IsFocused(content::WebContents* web_contents) {
-#if defined(OS_ANDROID)
-  // Android is expected to use platform APIs for webauthn.
-  return true;
-#else
-  for (const auto* browser : *BrowserList::GetInstance()) {
-    const int tab_index =
-        browser->tab_strip_model()->GetIndexOfWebContents(web_contents);
-    if (tab_index != TabStripModel::kNoTab &&
-        browser->tab_strip_model()->active_index() == tab_index) {
-      return browser->window()->IsActive();
-    }
-  }
-
-  return false;
 #endif
 }
 

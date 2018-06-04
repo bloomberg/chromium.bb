@@ -1543,6 +1543,8 @@ jumbo_split_static_library("browser") {
     "vr/vr_tab_helper.h",
     "web_data_service_factory.cc",
     "web_data_service_factory.h",
+    "webauthn/chrome_authenticator_request_delegate.cc",
+    "webauthn/chrome_authenticator_request_delegate.h",
     "webshare/share_target_pref_helper.cc",
     "webshare/share_target_pref_helper.h",
     "webshare/webshare_target.cc",

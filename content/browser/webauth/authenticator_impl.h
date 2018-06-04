@@ -47,6 +47,7 @@ class Origin;
 
 namespace content {
 
+class AuthenticatorRequestClientDelegate;
 class RenderFrameHost;
 
 namespace client_data {
@@ -147,6 +148,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
 
   std::unique_ptr<device::U2fRequest> u2f_request_;
   std::unique_ptr<device::FidoRequestHandlerBase> ctap_request_;
+  std::unique_ptr<AuthenticatorRequestClientDelegate> request_delegate_;
   MakeCredentialCallback make_credential_response_callback_;
   GetAssertionCallback get_assertion_response_callback_;
   std::string client_data_json_;

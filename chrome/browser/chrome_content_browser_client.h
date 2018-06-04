@@ -421,17 +421,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       const GURL& url,
       base::OnceCallback<void(bool, int, int)> callback) override;
-
-  bool ShouldPermitIndividualAttestationForWebauthnRPID(
-      content::BrowserContext* browser_context,
-      const std::string& rp_id) override;
-  void ShouldReturnAttestationForWebauthnRPID(
-      content::RenderFrameHost* rfh,
-      const std::string& rp_id,
-      const url::Origin& origin,
-      base::OnceCallback<void(bool)> callback) override;
-  bool IsFocused(content::WebContents* web_contents) override;
-
+  std::unique_ptr<content::AuthenticatorRequestClientDelegate>
+  GetWebAuthenticationRequestDelegate(
+      content::RenderFrameHost* render_frame_host) override;
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
       content::ResourceContext* resource_context) override;
   scoped_refptr<content::LoginDelegate> CreateLoginDelegate(

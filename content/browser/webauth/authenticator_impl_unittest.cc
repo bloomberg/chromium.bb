@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "components/cbor/cbor_reader.h"
 #include "components/cbor/cbor_values.h"
+#include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_service_manager_context.h"
@@ -1006,44 +1007,54 @@ enum class AttestationConsent {
   DENIED,
 };
 
-// Implements ContentBrowserClient and allows webauthn-related calls to be
-// mocked.
-class AuthenticatorTestContentBrowserClient : public ContentBrowserClient {
+class TestAuthenticatorRequestDelegate
+    : public AuthenticatorRequestClientDelegate {
  public:
-  bool ShouldPermitIndividualAttestationForWebauthnRPID(
-      content::BrowserContext* browser_context,
-      const std::string& rp_id) override {
+  TestAuthenticatorRequestDelegate(RenderFrameHost* render_frame_host,
+                                   IndividualAttestation individual_attestation,
+                                   AttestationConsent attestation_consent,
+                                   bool is_focused)
+      : individual_attestation_(individual_attestation),
+        attestation_consent_(attestation_consent),
+        is_focused_(is_focused) {}
+  ~TestAuthenticatorRequestDelegate() override {}
+
+  bool ShouldPermitIndividualAttestation(
+      const std::string& relying_party_id) override {
     return individual_attestation_ == IndividualAttestation::REQUESTED;
   }
 
-  void ShouldReturnAttestationForWebauthnRPID(
-      content::RenderFrameHost* rfh,
-      const std::string& rp_id,
-      const url::Origin& origin,
+  void ShouldReturnAttestation(
+      const std::string& relying_party_id,
       base::OnceCallback<void(bool)> callback) override {
     std::move(callback).Run(attestation_consent_ ==
                             AttestationConsent::GRANTED);
   }
 
-  bool IsFocused(content::WebContents* web_contents) override {
-    return focused_;
-  }
+  bool IsFocused() override { return is_focused_; }
 
-  void set_individual_attestation(IndividualAttestation value) {
-    individual_attestation_ = value;
-  }
-
-  void set_attestation_consent(AttestationConsent value) {
-    attestation_consent_ = value;
-  }
-
-  void set_focused(bool is_focused) { focused_ = is_focused; }
+  const IndividualAttestation individual_attestation_;
+  const AttestationConsent attestation_consent_;
+  const bool is_focused_;
 
  private:
-  IndividualAttestation individual_attestation_ =
+  DISALLOW_COPY_AND_ASSIGN(TestAuthenticatorRequestDelegate);
+};
+
+class TestAuthenticatorContentBrowserClient : public ContentBrowserClient {
+ public:
+  std::unique_ptr<AuthenticatorRequestClientDelegate>
+  GetWebAuthenticationRequestDelegate(
+      RenderFrameHost* render_frame_host) override {
+    return std::make_unique<TestAuthenticatorRequestDelegate>(
+        render_frame_host, individual_attestation, attestation_consent,
+        is_focused);
+  }
+
+  IndividualAttestation individual_attestation =
       IndividualAttestation::NOT_REQUESTED;
-  AttestationConsent attestation_consent_ = AttestationConsent::DENIED;
-  bool focused_ = true;
+  AttestationConsent attestation_consent = AttestationConsent::DENIED;
+  bool is_focused = true;
 };
 
 // A test class that installs and removes an
@@ -1089,8 +1100,8 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
           AttestationConveyancePreferenceToString(test.attestation_requested));
       SCOPED_TRACE(i);
 
-      test_client_.set_individual_attestation(test.individual_attestation);
-      test_client_.set_attestation_consent(test.attestation_consent);
+      test_client_.individual_attestation = test.individual_attestation;
+      test_client_.attestation_consent = test.attestation_consent;
 
       PublicKeyCredentialCreationOptionsPtr options =
           GetTestPublicKeyCredentialCreationOptions();
@@ -1123,7 +1134,7 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
   }
 
  protected:
-  AuthenticatorTestContentBrowserClient test_client_;
+  TestAuthenticatorContentBrowserClient test_client_;
   device::test::ScopedVirtualFidoDevice virtual_device_;
 
  private:
@@ -1290,7 +1301,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, Unfocused) {
   // When the |ContentBrowserClient| considers the tab to be unfocused,
   // registration requests should fail with a |NOT_FOCUSED| error, but getting
   // assertions should still work.
-  test_client_.set_focused(false);
+  test_client_.is_focused = false;
 
   NavigateAndCommit(GURL(kTestOrigin1));
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
