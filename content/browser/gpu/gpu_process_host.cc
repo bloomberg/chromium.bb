@@ -846,7 +846,7 @@ bool GpuProcessHost::Init() {
     in_process_gpu_thread_.reset(GetGpuMainThreadFactory()(
         InProcessChildThreadParams(
             base::ThreadTaskRunnerHandle::Get(),
-            process_->GetInProcessBrokerClientInvitation(),
+            process_->GetInProcessMojoInvitation(),
             process_->child_connection()->service_token()),
         gpu_preferences));
     base::Thread::Options options;

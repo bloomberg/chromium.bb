@@ -47,7 +47,6 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_manager_connection.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/embedder/switches.h"
 
@@ -153,7 +152,6 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
     const std::string& service_name)
     : data_(process_type),
       delegate_(delegate),
-      broker_client_invitation_(new mojo::edk::OutgoingBrokerClientInvitation),
       channel_(nullptr),
       is_channel_connected_(false),
       notify_child_disconnected_(false),
@@ -172,7 +170,7 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
         service_name, service_manager::mojom::kInheritUserID,
         base::StringPrintf("%d", data_.id));
     child_connection_.reset(
-        new ChildConnection(child_identity, broker_client_invitation_.get(),
+        new ChildConnection(child_identity, &mojo_invitation_,
                             ServiceManagerContext::GetConnectorForIOThread(),
                             base::ThreadTaskRunnerHandle::Get()));
     data_.metrics_name = service_name;
@@ -268,13 +266,13 @@ void BrowserChildProcessHostImpl::Launch(
         child_connection_->service_token());
   }
 
-  DCHECK(broker_client_invitation_);
   // All processes should have a non-empty metrics name.
   DCHECK(!data_.metrics_name.empty());
+
   notify_child_disconnected_ = true;
   child_process_.reset(new ChildProcessLauncher(
       std::move(delegate), std::move(cmd_line), data_.id, this,
-      std::move(broker_client_invitation_),
+      std::move(mojo_invitation_),
       base::Bind(&BrowserChildProcessHostImpl::OnMojoError,
                  weak_factory_.GetWeakPtr(),
                  base::ThreadTaskRunnerHandle::Get()),
@@ -323,11 +321,9 @@ void BrowserChildProcessHostImpl::SetHandle(base::ProcessHandle handle) {
 
 service_manager::mojom::ServiceRequest
 BrowserChildProcessHostImpl::TakeInProcessServiceRequest() {
-  DCHECK(broker_client_invitation_);
-  auto invitation = std::move(broker_client_invitation_);
+  auto invitation = std::move(mojo_invitation_);
   return service_manager::mojom::ServiceRequest(
-      invitation->ExtractInProcessMessagePipe(
-          child_connection_->service_token()));
+      invitation.ExtractMessagePipe(child_connection_->service_token()));
 }
 
 void BrowserChildProcessHostImpl::ForceShutdown() {

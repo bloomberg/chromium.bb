@@ -54,7 +54,6 @@
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -320,7 +319,7 @@ ChildThreadImpl::Options::Builder::InBrowserProcess(
     const InProcessChildThreadParams& params) {
   options_.browser_process_io_runner = params.io_runner();
   options_.in_process_service_request_token = params.service_request_token();
-  options_.broker_client_invitation = params.broker_client_invitation();
+  options_.mojo_invitation = params.mojo_invitation();
   return *this;
 }
 
@@ -470,9 +469,8 @@ void ChildThreadImpl::Init(const Options& options) {
           invitation->ExtractMessagePipe(service_request_token);
     }
   } else {
-    service_request_pipe =
-        options.broker_client_invitation->ExtractInProcessMessagePipe(
-            options.in_process_service_request_token);
+    service_request_pipe = options.mojo_invitation->ExtractMessagePipe(
+        options.in_process_service_request_token);
   }
 
   if (service_request_pipe.is_valid()) {

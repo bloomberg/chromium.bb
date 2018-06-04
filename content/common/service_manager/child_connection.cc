@@ -8,9 +8,10 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/common/child.mojom.h"
 #include "content/public/common/service_manager_connection.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/identity.h"
@@ -113,15 +114,13 @@ class ChildConnection::IOThreadContext
 
 ChildConnection::ChildConnection(
     const service_manager::Identity& child_identity,
-    mojo::edk::OutgoingBrokerClientInvitation* invitation,
+    mojo::OutgoingInvitation* invitation,
     service_manager::Connector* connector,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : context_(new IOThreadContext),
       child_identity_(child_identity),
       weak_factory_(this) {
-  // TODO(rockot): Use a constant name for this pipe attachment rather than a
-  // randomly generated token.
-  service_token_ = mojo::edk::GenerateRandomToken();
+  service_token_ = base::NumberToString(base::RandUint64());
   context_->Initialize(child_identity_, connector,
                        invitation->AttachMessagePipe(service_token_),
                        io_task_runner);

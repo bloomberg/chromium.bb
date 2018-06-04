@@ -246,13 +246,10 @@ TEST_P(InvitationCppTest, ProcessErrors) {
   error_loop.Run();
   EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
 
-  // Now tell the child to die and wait for a disconnection notification.
-  base::RunLoop disconnect_loop;
-  actual_error_callback = base::BindLambdaForTesting(
-      [&](const std::string& error_message) { disconnect_loop.Quit(); });
+  // TODO(https://crbug.com/846833): Once we can rework the C++ invitation API
+  // to also notify on disconnect, this test should cover that too. For now we
+  // just tell the process to exit and wait for it to do.
   WriteMessage(pipe, kDisconnectMessage);
-  disconnect_loop.Run();
-
   WaitForChildExit();
 }
 

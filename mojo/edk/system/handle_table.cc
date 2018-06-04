@@ -171,6 +171,7 @@ bool HandleTable::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
   handle_count[Dispatcher::Type::SHARED_BUFFER];
   handle_count[Dispatcher::Type::WATCHER];
   handle_count[Dispatcher::Type::PLATFORM_HANDLE];
+  handle_count[Dispatcher::Type::INVITATION];
 
   // Count the number of each dispatcher type.
   {

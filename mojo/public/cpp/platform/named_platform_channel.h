@@ -64,7 +64,10 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) NamedPlatformChannel {
   };
 
   NamedPlatformChannel(const Options& options);
+  NamedPlatformChannel(NamedPlatformChannel&& other);
   ~NamedPlatformChannel();
+
+  NamedPlatformChannel& operator=(NamedPlatformChannel&& other);
 
   const PlatformChannelServerEndpoint& server_endpoint() const {
     return server_endpoint_;

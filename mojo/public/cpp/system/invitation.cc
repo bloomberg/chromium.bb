@@ -45,10 +45,10 @@ void RunErrorCallback(uintptr_t context,
   if (details->error_message) {
     error_message =
         std::string(details->error_message, details->error_message_length - 1);
-  }
-  callback->Run(error_message);
-  if (details->flags & MOJO_PROCESS_ERROR_FLAG_DISCONNECTED)
+    callback->Run(error_message);
+  } else if (details->flags & MOJO_PROCESS_ERROR_FLAG_DISCONNECTED) {
     delete callback;
+  }
 }
 
 void SendInvitation(ScopedInvitationHandle invitation,

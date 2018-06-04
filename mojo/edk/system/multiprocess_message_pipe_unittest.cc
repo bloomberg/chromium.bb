@@ -1348,58 +1348,6 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(BadMessageClient,
   EXPECT_EQ("bye", ReadMessage(parent));
 }
 
-void OnProcessError(std::string* out_error, const std::string& error) {
-  *out_error = error;
-}
-
-TEST_F(MultiprocessMessagePipeTest, NotifyBadMessage) {
-  const std::string kFirstErrorMessage = "everything is terrible!";
-  const std::string kSecondErrorMessage = "not the bits you're looking for";
-
-  std::string first_process_error;
-  std::string second_process_error;
-
-  set_process_error_callback(base::Bind(&OnProcessError, &first_process_error));
-  RunTestClient("BadMessageClient", [&](MojoHandle child1) {
-    set_process_error_callback(
-        base::Bind(&OnProcessError, &second_process_error));
-    RunTestClient("BadMessageClient", [&](MojoHandle child2) {
-      MojoHandle a, b, c, d;
-      CreateMessagePipe(&a, &b);
-      CreateMessagePipe(&c, &d);
-      WriteMessageWithHandles(child1, "hi", &b, 1);
-      WriteMessageWithHandles(child2, "hi", &d, 1);
-
-      // Read a message from the pipe we sent to child1 and flag it as bad.
-      ASSERT_EQ(MOJO_RESULT_OK, WaitForSignals(a, MOJO_HANDLE_SIGNAL_READABLE));
-      MojoMessageHandle message;
-      ASSERT_EQ(MOJO_RESULT_OK, ::MojoReadMessage(a, nullptr, &message));
-      EXPECT_EQ(MOJO_RESULT_OK,
-                MojoNotifyBadMessage(
-                    message, kFirstErrorMessage.data(),
-                    static_cast<uint32_t>(kFirstErrorMessage.size()), nullptr));
-      EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
-
-      // Read a message from the pipe we sent to child2 and flag it as bad.
-      ASSERT_EQ(MOJO_RESULT_OK, WaitForSignals(c, MOJO_HANDLE_SIGNAL_READABLE));
-      ASSERT_EQ(MOJO_RESULT_OK, ::MojoReadMessage(c, nullptr, &message));
-      EXPECT_EQ(
-          MOJO_RESULT_OK,
-          MojoNotifyBadMessage(
-              message, kSecondErrorMessage.data(),
-              static_cast<uint32_t>(kSecondErrorMessage.size()), nullptr));
-      EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
-
-      WriteMessage(child2, "bye");
-    });
-
-    WriteMessage(child1, "bye");
-  });
-
-  // The error messages should match the processes which triggered them.
-  EXPECT_NE(std::string::npos, first_process_error.find(kFirstErrorMessage));
-  EXPECT_NE(std::string::npos, second_process_error.find(kSecondErrorMessage));
-}
 INSTANTIATE_TEST_CASE_P(
     ,
     MultiprocessMessagePipeTestWithPeerSupport,

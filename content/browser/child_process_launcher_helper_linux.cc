@@ -24,10 +24,10 @@
 namespace content {
 namespace internal {
 
-mojo::edk::ScopedInternalPlatformHandle
-ChildProcessLauncherHelper::PrepareMojoPipeHandlesOnClientThread() {
+base::Optional<mojo::NamedPlatformChannel>
+ChildProcessLauncherHelper::CreateNamedPlatformChannelOnClientThread() {
   DCHECK_CURRENTLY_ON(client_thread_id_);
-  return mojo::edk::ScopedInternalPlatformHandle();
+  return base::nullopt;
 }
 
 void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
@@ -37,7 +37,8 @@ void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
 std::unique_ptr<FileMappedForLaunch>
 ChildProcessLauncherHelper::GetFilesToMap() {
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
-  return CreateDefaultPosixFilesToMap(child_process_id(), mojo_client_handle(),
+  return CreateDefaultPosixFilesToMap(child_process_id(),
+                                      mojo_channel_->remote_endpoint(),
                                       true /* include_service_required_files */,
                                       GetProcessType(), command_line());
 }

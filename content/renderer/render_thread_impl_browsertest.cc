@@ -51,8 +51,8 @@
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
@@ -212,7 +212,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
     mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
         io_task_runner, mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST));
     shell_context_.reset(new TestServiceManagerContext);
-    mojo::edk::OutgoingBrokerClientInvitation invitation;
+    mojo::OutgoingInvitation invitation;
     service_manager::Identity child_identity(
         mojom::kRendererServiceName, service_manager::mojom::kInheritUserID,
         "test");

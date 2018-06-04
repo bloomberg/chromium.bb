@@ -14,7 +14,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
-#include "mojo/edk/embedder/platform_handle.h"
+#include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "services/catalog/public/cpp/manifest_parsing_util.h"
 #include "services/service_manager/embedder/shared_file_util.h"
 #include "services/service_manager/embedder/switches.h"
@@ -73,7 +73,7 @@ base::PlatformFile OpenFileIfNecessary(const base::FilePath& path,
 
 std::unique_ptr<PosixFileDescriptorInfo> CreateDefaultPosixFilesToMap(
     int child_process_id,
-    const mojo::edk::InternalPlatformHandle& mojo_client_handle,
+    const mojo::PlatformChannelEndpoint& mojo_channel_remote_endpoint,
     bool include_service_required_files,
     const std::string& process_type,
     base::CommandLine* command_line) {
@@ -87,9 +87,10 @@ std::unique_ptr<PosixFileDescriptorInfo> CreateDefaultPosixFilesToMap(
         base::SharedMemory::GetFdFromSharedMemoryHandle(shm));
   }
 
-  DCHECK(mojo_client_handle.is_valid());
-  files_to_register->Share(service_manager::kMojoIPCChannel,
-                           mojo_client_handle.handle);
+  DCHECK(mojo_channel_remote_endpoint.is_valid());
+  files_to_register->Share(
+      service_manager::kMojoIPCChannel,
+      mojo_channel_remote_endpoint.platform_handle().GetFD().get());
 
   // TODO(jcivelli): remove this "if defined" by making
   // GetAdditionalMappedFilesForChildProcess a no op on Mac.
