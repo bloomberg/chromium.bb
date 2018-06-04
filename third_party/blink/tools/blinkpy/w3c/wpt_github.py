@@ -223,6 +223,14 @@ class WPTGitHub(object):
             else:
                 raise GitHubError(200, response.status_code, 'fetch all pull requests', path)
             path = self.extract_link_next(response.getheader('Link'))
+
+        # There are way more than 1000 exported PRs on GitHub, so we should
+        # always get at least pr_history_window PRs. This assertion is added to
+        # mitigate transient GitHub API issues (crbug.com/814617).
+        if len(all_prs) < self._pr_history_window:
+            raise GitHubError('at least %d commits' % self._pr_history_window,
+                              len(all_prs), 'fetch all pull requests')
+
         _log.info('Fetched %d PRs from GitHub.', len(all_prs))
         return all_prs
 
