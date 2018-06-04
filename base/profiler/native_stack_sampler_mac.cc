@@ -135,7 +135,7 @@ size_t GetModuleIndex(const uintptr_t instruction_pointer,
       base::FilePath(inf.dli_fname));
   modules->push_back(module);
 
-  uintptr_t base_module_address = reinterpret_cast<uintptr_t>(inf.dli_fbase);
+  auto base_module_address = reinterpret_cast<uintptr_t>(inf.dli_fbase);
   size_t index = modules->size() - 1;
   profile_module_index->emplace_back(
       base_module_address,
@@ -151,8 +151,7 @@ size_t GetModuleIndex(const uintptr_t instruction_pointer,
 // that no shared resources (e.g. memory allocators) are used for the duration
 // of this function.
 bool GetThreadState(thread_act_t target_thread, x86_thread_state64_t* state) {
-  mach_msg_type_number_t count =
-      static_cast<mach_msg_type_number_t>(x86_THREAD_STATE64_COUNT);
+  auto count = static_cast<mach_msg_type_number_t>(x86_THREAD_STATE64_COUNT);
   return thread_get_state(target_thread, x86_THREAD_STATE64,
                           reinterpret_cast<thread_state_t>(state),
                           &count) == KERN_SUCCESS;
@@ -169,12 +168,10 @@ uintptr_t RewritePointerIfInOriginalStack(
     const uintptr_t* original_stack_top,
     uintptr_t* stack_copy_bottom,
     uintptr_t pointer) {
-  uintptr_t original_stack_bottom_int =
+  auto original_stack_bottom_int =
       reinterpret_cast<uintptr_t>(original_stack_bottom);
-  uintptr_t original_stack_top_int =
-      reinterpret_cast<uintptr_t>(original_stack_top);
-  uintptr_t stack_copy_bottom_int =
-      reinterpret_cast<uintptr_t>(stack_copy_bottom);
+  auto original_stack_top_int = reinterpret_cast<uintptr_t>(original_stack_top);
+  auto stack_copy_bottom_int = reinterpret_cast<uintptr_t>(stack_copy_bottom);
 
   if ((pointer < original_stack_bottom_int) ||
       (pointer >= original_stack_top_int)) {
@@ -369,7 +366,7 @@ const char* LibSystemKernelName() {
 }
 
 void GetSigtrampRange(uintptr_t* start, uintptr_t* end) {
-  uintptr_t address = reinterpret_cast<uintptr_t>(&_sigtramp);
+  auto address = reinterpret_cast<uintptr_t>(&_sigtramp);
   DCHECK(address != 0);
 
   *start = address;
@@ -572,8 +569,7 @@ void NativeStackSamplerMac::SuspendThreadAndRecordStack(
 
     if (!GetThreadState(thread_port_, &thread_state))
       return;
-    uintptr_t stack_top =
-        reinterpret_cast<uintptr_t>(thread_stack_base_address_);
+    auto stack_top = reinterpret_cast<uintptr_t>(thread_stack_base_address_);
     uintptr_t stack_bottom = thread_state.__rsp;
     if (stack_bottom >= stack_top)
       return;
