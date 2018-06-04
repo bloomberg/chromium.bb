@@ -92,8 +92,6 @@
 
 using blink::Platform;
 using blink::WebContextMenuData;
-using device::MotionData;
-using device::OrientationData;
 using blink::WebElement;
 using blink::WebLocalFrame;
 using blink::WebHistoryItem;
@@ -221,14 +219,6 @@ void BlinkTestRunner::SetGamepadProvider(
   std::unique_ptr<MockGamepadProvider> provider(
       new MockGamepadProvider(controller));
   SetMockGamepadProvider(std::move(provider));
-}
-
-void BlinkTestRunner::SetDeviceMotionData(const MotionData& data) {
-  SetMockDeviceMotionData(data);
-}
-
-void BlinkTestRunner::SetDeviceOrientationData(const OrientationData& data) {
-  SetMockDeviceOrientationData(data);
 }
 
 void BlinkTestRunner::PrintMessageToStderr(const std::string& message) {

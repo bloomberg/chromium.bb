@@ -27,11 +27,6 @@ class WebView;
 class WebWidget;
 }
 
-namespace device {
-class MotionData;
-class OrientationData;
-}
-
 namespace gfx {
 class ColorSpace;
 }
@@ -107,18 +102,6 @@ void FetchManifest(blink::WebView* view, FetchManifestCallback callback);
 
 // Sets gamepad provider to be used for layout tests.
 void SetMockGamepadProvider(std::unique_ptr<RendererGamepadProvider> provider);
-
-// Sets a double that should be used when registering
-// a listener through BlinkPlatformImpl::setDeviceLightListener().
-void SetMockDeviceLightData(const double data);
-
-// Sets MotionData that should be used when registering
-// a listener through BlinkPlatformImpl::setDeviceMotionListener().
-void SetMockDeviceMotionData(const device::MotionData& data);
-
-// Sets OrientationData that should be used when registering
-// a listener through BlinkPlatformImpl::setDeviceOrientationListener().
-void SetMockDeviceOrientationData(const device::OrientationData& data);
 
 // Returns the length of the local session history of a render view.
 int GetLocalSessionHistoryLength(RenderView* render_view);

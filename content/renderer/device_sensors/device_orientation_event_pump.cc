@@ -110,15 +110,6 @@ void DeviceOrientationEventPump::SendStopMessage() {
   data_ = device::OrientationData();
 }
 
-void DeviceOrientationEventPump::SendFakeDataForTesting(void* fake_data) {
-  if (!listener())
-    return;
-
-  device::OrientationData data =
-      *static_cast<device::OrientationData*>(fake_data);
-  listener()->DidChangeDeviceOrientation(data);
-}
-
 void DeviceOrientationEventPump::FireEvent() {
   device::OrientationData data;
 

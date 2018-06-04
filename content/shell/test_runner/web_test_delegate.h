@@ -36,11 +36,6 @@ class WebURLRequest;
 class WebView;
 }
 
-namespace device {
-class MotionData;
-class OrientationData;
-}
-
 namespace test_runner {
 
 class GamepadController;
@@ -59,14 +54,6 @@ class WebTestDelegate {
 
   // Sets gamepad provider to be used for tests.
   virtual void SetGamepadProvider(GamepadController* controller) = 0;
-
-  // Set data to return when registering via
-  // Platform::setDeviceMotionListener().
-  virtual void SetDeviceMotionData(const device::MotionData& data) = 0;
-  // Set data to return when registering via
-  // Platform::setDeviceOrientationListener().
-  virtual void SetDeviceOrientationData(
-      const device::OrientationData& data) = 0;
 
   // Add a message to stderr (not saved to expected output files, for debugging
   // only).

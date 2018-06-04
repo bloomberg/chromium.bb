@@ -271,34 +271,6 @@ class TestRunner : public WebTestRunner {
                             int max_height);
   bool DisableAutoResizeMode(int new_width, int new_height);
 
-  // Device Motion / Device Orientation related functions
-  void SetMockDeviceMotion(bool has_acceleration_x,
-                           double acceleration_x,
-                           bool has_acceleration_y,
-                           double acceleration_y,
-                           bool has_acceleration_z,
-                           double acceleration_z,
-                           bool has_acceleration_including_gravity_x,
-                           double acceleration_including_gravity_x,
-                           bool has_acceleration_including_gravity_y,
-                           double acceleration_including_gravity_y,
-                           bool has_acceleration_including_gravity_z,
-                           double acceleration_including_gravity_z,
-                           bool has_rotation_rate_alpha,
-                           double rotation_rate_alpha,
-                           bool has_rotation_rate_beta,
-                           double rotation_rate_beta,
-                           bool has_rotation_rate_gamma,
-                           double rotation_rate_gamma,
-                           double interval);
-  void SetMockDeviceOrientation(bool has_alpha,
-                                double alpha,
-                                bool has_beta,
-                                double beta,
-                                bool has_gamma,
-                                double gamma,
-                                bool absolute);
-
   void SetMockScreenOrientation(const std::string& orientation);
   void DisableMockScreenOrientation();
 
