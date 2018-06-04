@@ -4,7 +4,7 @@
 
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_context.h"
 
@@ -73,7 +73,8 @@ void BrowserContextDependencyManager::MarkBrowserContextLive(
 // static
 BrowserContextDependencyManager*
 BrowserContextDependencyManager::GetInstance() {
-  return base::Singleton<BrowserContextDependencyManager>::get();
+  static base::NoDestructor<BrowserContextDependencyManager> factory;
+  return factory.get();
 }
 
 BrowserContextDependencyManager::BrowserContextDependencyManager() {
