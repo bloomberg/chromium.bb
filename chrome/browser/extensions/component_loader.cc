@@ -44,7 +44,6 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/chrome_apps/grit/chrome_apps_resources.h"
 #include "components/user_manager/user_manager.h"
@@ -366,11 +365,6 @@ void ComponentLoader::AddNetworkSpeechSynthesisExtension() {
 }
 
 #if defined(OS_CHROMEOS)
-void ComponentLoader::AddAssessmentAssistantExtension() {
-  Add(IDR_ASSESSMENT_ASSISTANT_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("chromeos/assessmentassistant")));
-}
-
 void ComponentLoader::AddChromeOsSpeechSynthesisExtension() {
   AddComponentFromDir(
       base::FilePath(extension_misc::kSpeechSynthesisExtensionPath),
@@ -470,10 +464,6 @@ void ComponentLoader::AddDefaultComponentExtensions(
   if (!skip_session_components) {
     Add(IDR_CROSH_BUILTIN_MANIFEST, base::FilePath(FILE_PATH_LITERAL(
         "/usr/share/chromeos-assets/crosh_builtin")));
-
-    // Only load the Assessment Assistant if the current session is managed.
-    if (policy::ProfilePolicyConnectorFactory::IsProfileManaged(profile_))
-      AddAssessmentAssistantExtension();
   }
 #else  // defined(OS_CHROMEOS)
   DCHECK(!skip_session_components);
