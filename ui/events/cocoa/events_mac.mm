@@ -86,13 +86,12 @@ base::TimeTicks EventTimeFromNative(const PlatformEvent& native_event) {
 
 gfx::PointF EventLocationFromNative(const PlatformEvent& native_event) {
   NSWindow* window = [native_event window];
-  if (!window) {
-    NOTIMPLEMENTED();  // Point will be in screen coordinates.
-    return gfx::PointF();
-  }
   NSPoint location = [native_event locationInWindow];
-  NSRect content_rect = [window contentRectForFrameRect:[window frame]];
-  return gfx::PointF(location.x, NSHeight(content_rect) - location.y);
+  // If there's no window, the event is in screen coordinates.
+  NSRect frame = window ? [window contentRectForFrameRect:[window frame]]
+                        : [[[NSScreen screens] firstObject] frame];
+  // In Cocoa, the y coordinate anchors to the bottom, so we need to flip it.
+  return gfx::PointF(location.x, NSHeight(frame) - location.y);
 }
 
 gfx::Point EventSystemLocationFromNative(const PlatformEvent& native_event) {
