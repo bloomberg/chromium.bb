@@ -55,6 +55,9 @@ import org.chromium.ui.UiUtils;
 public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     private static final String NTP_BUTTON_TRIAL_NAME = "NewTabPage";
     private static final String NTP_BUTTON_VARIATION_PARAM_NAME = "variation";
+    public static final String NTP_BUTTON_NEWS_FEED_VARIATION = "news_feed";
+    public static final String NTP_BUTTON_HOME_VARIATION = "home";
+    public static final String NTP_BUTTON_CHROME_VARIATION = "chrome";
 
     private Invalidator mInvalidator;
 
@@ -960,13 +963,13 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
 
         int iconResId = 0;
         switch (variation) {
-            case "home":
+            case NTP_BUTTON_HOME_VARIATION:
                 iconResId = R.drawable.ic_home;
                 break;
-            case "news_feed":
+            case NTP_BUTTON_NEWS_FEED_VARIATION:
                 iconResId = R.drawable.ic_library_news_feed;
                 break;
-            case "chrome":
+            case NTP_BUTTON_CHROME_VARIATION:
                 iconResId = R.drawable.ic_chrome;
                 break;
             default:

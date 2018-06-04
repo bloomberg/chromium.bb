@@ -999,6 +999,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         if (TextUtils.isEmpty(homePageUrl) || FeatureUtilities.isNewTabPageButtonEnabled()) {
             homePageUrl = UrlConstants.NTP_URL;
         }
+        if (TextUtils.equals(ToolbarLayout.getNTPButtonVariation(),
+                    ToolbarLayout.NTP_BUTTON_NEWS_FEED_VARIATION)) {
+            homePageUrl = homePageUrl + UrlConstants.CONTENT_SUGGESTIONS_SUFFIX;
+        }
         currentTab.loadUrl(new LoadUrlParams(homePageUrl, PageTransition.HOME_PAGE));
     }
 

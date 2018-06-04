@@ -134,6 +134,15 @@ public class NewTabPageView
     private int mSearchBoxBoundsVerticalInset;
 
     /**
+     * @return Whether the simplified NTP ablation experiment arm which removes the additional
+     *         suggestions sections without replacing them with shortcut buttons is enabled.
+     */
+    public static boolean isSimplifiedNtpAblationEnabled() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.SIMPLIFIED_NTP, PARAM_SIMPLIFIED_NTP_ABLATION, false);
+    }
+
+    /**
      * Manages the view interaction with the rest of the system.
      */
     public interface NewTabPageManager extends SuggestionsUiDelegate {
@@ -948,6 +957,69 @@ public class NewTabPageView
     }
 
     /**
+     * Scrolls to the top of content suggestions header if one exists. If not, scrolls to the top
+     * of the first article suggestion. Uses scrollToPositionWithOffset to position the suggestions
+     * below the toolbar and not below the status bar.
+     */
+    void scrollToSuggestions() {
+        int scrollPosition = getSuggestionsScrollPosition();
+        // Nothing to scroll to; return early.
+        if (scrollPosition == RecyclerView.NO_POSITION) return;
+
+        mRecyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
+                scrollPosition, getScrollToSuggestionsOffset());
+    }
+
+    /**
+     * Retrieves the position of articles or of their header in the NTP adapter to scroll to.
+     * @return The header's position if a header is present. Otherwise, the first
+     *         suggestion card's position.
+     */
+    private int getSuggestionsScrollPosition() {
+        // Header always exists.
+        if (ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)) {
+            return mRecyclerView.getNewTabPageAdapter().getArticleHeaderPosition();
+        }
+
+        // Only articles are visible. Headers are not present.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SIMPLIFIED_NTP)) {
+            return mRecyclerView.getNewTabPageAdapter().getFirstSnippetPosition();
+        }
+
+        // With Simplified NTP not enabled, bookmarks/downloads and their headers are added to the
+        // NTP if they're not empty.
+        int scrollPosition = mRecyclerView.getNewTabPageAdapter().getArticleHeaderPosition();
+        return scrollPosition == RecyclerView.NO_POSITION
+                ? mRecyclerView.getNewTabPageAdapter().getFirstSnippetPosition()
+                : scrollPosition;
+    }
+
+    private int getScrollToSuggestionsOffset() {
+        int offset = getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
+
+        if (needsExtraOffset()) {
+            offset += getResources().getDimensionPixelSize(
+                              R.dimen.content_suggestions_card_modern_margin)
+                    / 2;
+        }
+        return offset;
+    }
+
+    /**
+     * Checks if extra offset needs to be added for aesthetic reasons.
+     * @return True if modern is enabled (and space exists between each suggestion card) and no
+     *         header is showing.
+     */
+    private boolean needsExtraOffset() {
+        return SuggestionsConfig.useModernLayout()
+                && !ChromeFeatureList.isEnabled(
+                           ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
+                && mRecyclerView.getNewTabPageAdapter().getArticleHeaderPosition()
+                == RecyclerView.NO_POSITION;
+    }
+
+    /**
      * @return The adapter position the user has scrolled to.
      */
     public int getScrollPosition() {
@@ -1041,14 +1113,5 @@ public class NewTabPageView
         mShortcutsView.findViewById(R.id.downloads_button)
                 .setOnClickListener(
                         view -> mManager.getNavigationDelegate().navigateToDownloadManager());
-    }
-
-    /**
-     * @return Whether the simplified NTP ablation experiment arm which removes the additional
-     *         suggestions sections without replacing them with shortcut buttons is enabled.
-     */
-    public static boolean isSimplifiedNtpAblationEnabled() {
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.SIMPLIFIED_NTP, PARAM_SIMPLIFIED_NTP_ABLATION, false);
     }
 }
