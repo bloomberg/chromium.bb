@@ -6,10 +6,8 @@
 
 #include <memory>
 
-#include "ash/app_list/presenter/app_list_presenter_delegate_factory.h"
 #include "ash/app_list/presenter/test/app_list_presenter_impl_test_api.h"
 #include "base/memory/ptr_util.h"
-#include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -26,9 +24,8 @@ namespace {
 // Test stub for AppListPresenterDelegate
 class AppListPresenterDelegateTest : public AppListPresenterDelegate {
  public:
-  AppListPresenterDelegateTest(aura::Window* container,
-                               test::AppListTestViewDelegate* view_delegate)
-      : container_(container), view_delegate_(view_delegate) {}
+  explicit AppListPresenterDelegateTest(aura::Window* container)
+      : container_(container) {}
   ~AppListPresenterDelegateTest() override {}
 
   bool init_called() const { return init_called_; }
@@ -37,7 +34,9 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
 
  private:
   // AppListPresenterDelegate:
-  AppListViewDelegate* GetViewDelegate() override { return view_delegate_; }
+  void SetPresenter(AppListPresenterImpl* presenter) override {
+    presenter_ = presenter;
+  }
   void Init(AppListView* view,
             int64_t display_id,
             int current_apps_page) override {
@@ -60,7 +59,7 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
 
  private:
   aura::Window* container_;
-  test::AppListTestViewDelegate* view_delegate_;
+  AppListPresenterImpl* presenter_ = nullptr;
   AppListView* view_ = nullptr;
   bool init_called_ = false;
   bool on_shown_called_ = false;
@@ -68,29 +67,6 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   views::TestViewsDelegate views_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateTest);
-};
-
-// Test fake for AppListPresenterDelegateFactory, creates instances of
-// AppListPresenterDelegateTest.
-class AppListPresenterDelegateFactoryTest
-    : public AppListPresenterDelegateFactory {
- public:
-  explicit AppListPresenterDelegateFactoryTest(aura::Window* container)
-      : container_(container) {}
-  ~AppListPresenterDelegateFactoryTest() override {}
-
-  // AppListPresenterDelegateFactory:
-  std::unique_ptr<AppListPresenterDelegate> GetDelegate(
-      AppListPresenterImpl* presenter) override {
-    return std::make_unique<AppListPresenterDelegateTest>(
-        container_, &app_list_view_delegate_);
-  }
-
- private:
-  aura::Window* container_;
-  test::AppListTestViewDelegate app_list_view_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateFactoryTest);
 };
 
 }  // namespace
@@ -131,9 +107,10 @@ void AppListPresenterImplTest::SetUp() {
   AuraTestBase::SetUp();
   new wm::DefaultActivationClient(root_window());
   container_.reset(CreateNormalWindow(0, root_window(), nullptr));
+  std::unique_ptr<AppListPresenterDelegateTest> presenter_delegate =
+      std::make_unique<AppListPresenterDelegateTest>(container_.get());
   presenter_ = std::make_unique<AppListPresenterImpl>(
-      std::make_unique<AppListPresenterDelegateFactoryTest>(container_.get()),
-      nullptr);
+      std::move(presenter_delegate), nullptr);
   presenter_test_api_ =
       std::make_unique<test::AppListPresenterImplTestApi>(presenter());
 }

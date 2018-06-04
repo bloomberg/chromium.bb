@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/presenter/app_list_presenter_delegate_factory.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -72,13 +71,14 @@ void DidPresentCompositorFrame(base::TimeTicks event_time_stamp,
 }  // namespace
 
 AppListPresenterImpl::AppListPresenterImpl(
-    std::unique_ptr<AppListPresenterDelegateFactory> factory,
+    std::unique_ptr<AppListPresenterDelegate> delegate,
     ash::AppListControllerImpl* controller)
-    : factory_(std::move(factory)),
+    : presenter_delegate_(std::move(delegate)),
       controller_(controller),
       state_animation_metrics_reporter_(
           std::make_unique<StateAnimationMetricsReporter>()) {
-  DCHECK(factory_);
+  DCHECK(presenter_delegate_);
+  presenter_delegate_->SetPresenter(this);
 }
 
 AppListPresenterImpl::~AppListPresenterImpl() {
@@ -115,17 +115,14 @@ void AppListPresenterImpl::Show(int64_t display_id,
   if (view_) {
     ScheduleAnimation();
   } else {
-    presenter_delegate_ = factory_->GetDelegate(this);
-    view_delegate_ = presenter_delegate_->GetViewDelegate();
-    DCHECK(view_delegate_);
-    // Note the AppListViewDelegate outlives the AppListView. For Ash, the view
+    // Note |controller_| outlives the AppListView. For Ash, the view
     // is destroyed when dismissed.
-    AppListView* view = new AppListView(view_delegate_);
+    AppListView* view = new AppListView(controller_);
     presenter_delegate_->Init(view, display_id, current_apps_page_);
     SetView(view);
   }
   presenter_delegate_->OnShown(display_id);
-  view_delegate_->ViewShown(display_id);
+  controller_->ViewShown(display_id);
   NotifyTargetVisibilityChanged(GetTargetVisibility());
   NotifyVisibilityChanged(GetTargetVisibility(), display_id);
 }
@@ -149,7 +146,7 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   if (view_->GetWidget()->IsActive())
     view_->GetWidget()->Deactivate();
 
-  view_delegate_->ViewClosing();
+  controller_->ViewClosing();
   presenter_delegate_->OnDismissed();
   ScheduleAnimation();
   NotifyTargetVisibilityChanged(GetTargetVisibility());
@@ -238,7 +235,6 @@ void AppListPresenterImpl::ResetView() {
   views::Widget* widget = view_->GetWidget();
   widget->RemoveObserver(this);
   GetLayer(widget)->GetAnimator()->RemoveObserver(this);
-  presenter_delegate_.reset();
   aura::client::GetFocusClient(widget->GetNativeView())->RemoveObserver(this);
 
   view_->GetAppsPaginationModel()->RemoveObserver(this);
