@@ -288,17 +288,28 @@ class Qemu(object):
 
     if os.path.exists(self.binfmt_path):
       interp = 'interpreter %s\n' % self.build_path
-      for line in osutils.ReadFile(self.binfmt_path):
+      data = '\n' + osutils.ReadFile(self.binfmt_path)
+      for line in data:
         if line == interp:
           break
       else:
-        osutils.WriteFile(self.binfmt_path, '-1')
+        logging.info('recreating binfmt config: %s', self.binfmt_path)
+        logging.debug('config was missing line: %s', interp.strip())
+        logging.debug('existing config:\n%s', data.strip())
+        try:
+          osutils.WriteFile(self.binfmt_path, '-1')
+        except IOError as e:
+          logging.error('unregistering config failed: %s: %s',
+                        self.binfmt_path, e)
+          return
 
     if not os.path.exists(self.binfmt_path):
       register = self.GetRegisterBinfmtStr(self.arch, self.name,
                                            self.build_path)
       try:
         osutils.WriteFile(self._BINFMT_REGISTER_PATH, register)
-      except IOError:
-        logging.error('error: attempted to register: (len:%i) %s',
+      except IOError as e:
+        logging.error('binfmt register attempt failed: %s: %s',
+                      self._BINFMT_REGISTER_PATH, e)
+        logging.error('register data (len:%i): %s',
                       len(register), register)
