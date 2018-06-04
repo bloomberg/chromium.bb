@@ -116,6 +116,23 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
         FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
   }
 
+  // Test that having an invalid CSP does not result in an exception.
+  // See bugs: 844383,844317
+  void TestInvalidContentSecurityPolicy() {
+    EXPECT_TRUE(IsCurrentThread());
+
+    // At this point check that the CSP that was set is indeed invalid.
+    ContentSecurityPolicy* csp = GlobalScope()->GetContentSecurityPolicy();
+    EXPECT_EQ(1ul, csp->Headers().size());
+    EXPECT_EQ("invalid-csp", csp->Headers().at(0).first);
+    EXPECT_EQ(kContentSecurityPolicyHeaderTypeEnforce,
+              csp->Headers().at(0).second);
+
+    PostCrossThreadTask(
+        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
+        FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
+  }
+
   // Emulates API use on ThreadedWorkletGlobalScope.
   void CountFeature(WebFeature feature) {
     EXPECT_TRUE(IsCurrentThread());
@@ -263,6 +280,22 @@ TEST_F(ThreadedWorkletTest, ContentSecurityPolicy) {
       *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
       CrossThreadBind(&ThreadedWorkletThreadForTest::TestContentSecurityPolicy,
                       CrossThreadUnretained(GetWorkerThread())));
+  test::EnterRunLoop();
+}
+
+TEST_F(ThreadedWorkletTest, InvalidContentSecurityPolicy) {
+  ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+  csp->DidReceiveHeader("invalid-csp", kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  GetDocument().InitContentSecurityPolicy(csp);
+
+  MessagingProxy()->Start();
+
+  PostCrossThreadTask(
+      *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+      CrossThreadBind(
+          &ThreadedWorkletThreadForTest::TestInvalidContentSecurityPolicy,
+          CrossThreadUnretained(GetWorkerThread())));
   test::EnterRunLoop();
 }
 

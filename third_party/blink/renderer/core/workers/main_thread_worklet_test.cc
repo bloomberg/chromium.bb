@@ -46,6 +46,9 @@ class MainThreadWorkletReportingProxyForTest final
 class MainThreadWorkletTest : public PageTestBase {
  public:
   void SetUp() override {
+    SetUpScope("script-src 'self' https://allowed.example.com");
+  }
+  void SetUpScope(const String& csp_header) {
     PageTestBase::SetUp(IntSize());
     Document* document = &GetDocument();
     document->SetURL(KURL("https://example.com/"));
@@ -54,8 +57,7 @@ class MainThreadWorkletTest : public PageTestBase {
     // Set up the CSP for Document before starting MainThreadWorklet because
     // MainThreadWorklet inherits the owner Document's CSP.
     ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
-    csp->DidReceiveHeader("script-src 'self' https://allowed.example.com",
-                          kContentSecurityPolicyHeaderTypeEnforce,
+    csp->DidReceiveHeader(csp_header, kContentSecurityPolicyHeaderTypeEnforce,
                           kContentSecurityPolicyHeaderSourceHTTP);
     document->InitContentSecurityPolicy(csp);
 
@@ -78,6 +80,11 @@ class MainThreadWorkletTest : public PageTestBase {
  protected:
   std::unique_ptr<MainThreadWorkletReportingProxyForTest> reporting_proxy_;
   Persistent<MainThreadWorkletGlobalScope> global_scope_;
+};
+
+class MainThreadWorkletInvalidCSPTest : public MainThreadWorkletTest {
+ public:
+  void SetUp() override { SetUpScope("invalid-csp"); }
 };
 
 TEST_F(MainThreadWorkletTest, SecurityOrigin) {
@@ -137,6 +144,18 @@ TEST_F(MainThreadWorkletTest, TaskRunner) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       global_scope_->GetTaskRunner(TaskType::kInternalTest);
   EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
+}
+
+// Test that having an invalid CSP does not result in an exception.
+// See bugs: 844383,844317
+TEST_F(MainThreadWorkletInvalidCSPTest, InvalidContentSecurityPolicy) {
+  ContentSecurityPolicy* csp = global_scope_->GetContentSecurityPolicy();
+
+  // At this point check that the CSP that was set is indeed invalid.
+  EXPECT_EQ(1ul, csp->Headers().size());
+  EXPECT_EQ("invalid-csp", csp->Headers().at(0).first);
+  EXPECT_EQ(kContentSecurityPolicyHeaderTypeEnforce,
+            csp->Headers().at(0).second);
 }
 
 }  // namespace blink

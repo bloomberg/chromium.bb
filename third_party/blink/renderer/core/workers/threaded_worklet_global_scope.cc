@@ -31,7 +31,9 @@ ThreadedWorkletGlobalScope::ThreadedWorkletGlobalScope(
           thread->GetParentExecutionContextTaskRunners()->Get(
               TaskType::kInternalLoading),
           thread->GetTaskRunner(TaskType::kInternalLoading)),
-      thread_(thread) {}
+      thread_(thread) {
+  BindContentSecurityPolicyToExecutionContext();
+}
 
 ThreadedWorkletGlobalScope::~ThreadedWorkletGlobalScope() {
   DCHECK(!thread_);
