@@ -1304,8 +1304,14 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonBrowserTest,
 
 // Tests that popups to out-of-scope URLs are opened in regular popup windows
 // and not in app windows.
+// TODO(crbug.com/849163) Times out flakily on MacOS.
+#if defined(OS_MACOSX)
+#define MAYBE_OutOfScopePopup DISABLED_OutOfScopePopup
+#else
+#define MAYBE_OutOfScopePopup OutOfScopePopup
+#endif
 IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonBrowserTest,
-                       OutOfScopePopup) {
+                       MAYBE_OutOfScopePopup) {
   InstallTestBookmarkApp();
   Browser* app_browser = OpenTestBookmarkApp();
 
@@ -1354,8 +1360,14 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonBrowserTest,
 }
 
 // Tests that popups to in-scope URLs are opened in App windows.
+// TODO(crbug.com/849163) Times out flakily on MacOS.
+#if defined(OS_MACOSX)
+#define MAYBE_InScopePopup DISABLED_InScopePopup
+#else
+#define MAYBE_InScopePopup InScopePopup
+#endif
 IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonBrowserTest,
-                       InScopePopup) {
+                       MAYBE_InScopePopup) {
   InstallTestBookmarkApp();
   Browser* app_browser = OpenTestBookmarkApp();
 
