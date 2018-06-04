@@ -725,9 +725,11 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   WaitUntilRouteCreated();
 }
 
+// TODO(crbug.com/849216): Disabled due to crashes and timeouts.
+//
 // Tests that creating a route with a local file opens the file in a new tab.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       OpenLocalMediaFileInNewTab) {
+                       DISABLED_OpenLocalMediaFileInNewTab) {
   // Start at a tab with content in it, the file will open in a new tab.
   ui_test_utils::NavigateToURL(browser(), GURL("http://google.com"));
   // Make sure there is 1 tab.
