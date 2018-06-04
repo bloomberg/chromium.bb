@@ -736,6 +736,7 @@ void FileResource::RegisterJSONConverter(
       kOpenWithLinks,
       &FileResource::open_with_links_,
       GetOpenWithLinksFromDictionaryValue);
+  converter->RegisterStringField(kTeamDriveId, &FileResource::team_drive_id_);
 }
 
 // static
