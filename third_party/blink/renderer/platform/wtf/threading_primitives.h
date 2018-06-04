@@ -161,14 +161,6 @@ class WTF_EXPORT ThreadCondition final {
   DISALLOW_COPY_AND_ASSIGN(ThreadCondition);
 };
 
-#if defined(OS_WIN)
-// The absoluteTime is in seconds, starting on January 1, 1970. The time is
-// assumed to use the same time zone as WTF::currentTime().
-// Returns an interval in milliseconds suitable for passing to one of the Win32
-// wait functions (e.g., ::WaitForSingleObject).
-DWORD AbsoluteTimeToWaitTimeoutInterval(double absolute_time);
-#endif
-
 }  // namespace WTF
 
 using WTF::MutexBase;
@@ -178,9 +170,5 @@ using WTF::MutexLocker;
 using WTF::MutexTryLocker;
 using WTF::RecursiveMutexLocker;
 using WTF::ThreadCondition;
-
-#if defined(OS_WIN)
-using WTF::AbsoluteTimeToWaitTimeoutInterval;
-#endif
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREADING_PRIMITIVES_H_
