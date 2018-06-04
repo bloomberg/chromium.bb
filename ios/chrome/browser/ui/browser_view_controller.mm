@@ -5033,7 +5033,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   // Block that starts voice search at the end of new Tab animation if
   // necessary.
-  ProceduralBlock startVoiceSearchIfNecessaryBlock = ^void() {
+  ProceduralBlock startVoiceSearchIfNecessary = ^void() {
     if (_startVoiceSearchAfterNewTabAnimation) {
       _startVoiceSearchAfterNewTabAnimation = NO;
       [self startVoiceSearch];
@@ -5042,145 +5042,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   self.inNewTabAnimation = YES;
   if (!background) {
-    // Create the new page image, and load with the new tab snapshot except if
-    // it is the NTP.
-    CGFloat newPageOffset = 0;
-    UIView* newPage = nil;
-    CGFloat offset = 0;
-    if (tab.webState->GetLastCommittedURL() == kChromeUINewTabURL &&
-        !_isOffTheRecord && ![self canShowTabStrip]) {
-      offset = 0;
-      // Temporary expand content area to take whole view space. Otherwise the
-      // animated NTP will be clipped by content area bound. Previous frame will
-      // be reset back on the animation completion.
-      self.contentArea.frame = self.view.frame;
-      newPage = tab.view;
-      newPage.userInteractionEnabled = NO;
-      if (base::FeatureList::IsEnabled(
-              web::features::kBrowserContainerFullscreen)) {
-        newPage.frame = self.view.bounds;
-      } else {
-        // Compute a frame for the new page by removing the status bar height
-        // from the bounds of |self.view|.
-        CGRect viewBounds, remainder;
-        CGRectDivide(self.view.bounds, &remainder, &viewBounds,
-                     StatusBarHeight(), CGRectMinYEdge);
-        newPage.frame = viewBounds;
-      }
-    } else {
-      UIImageView* pageScreenshot = [self pageOpenCloseAnimationView];
-      tab.view.frame = self.contentArea.bounds;
-      pageScreenshot.image = SnapshotTabHelper::FromWebState(tab.webState)
-                                 ->UpdateSnapshot(/*with_overlays=*/true,
-                                                  /*visible_frame_only=*/true);
-      newPage = pageScreenshot;
-      offset =
-          pageScreenshot.frame.size.height - pageScreenshot.image.size.height;
-    }
-    newPageOffset = newPage.frame.origin.y;
-
-    [self.contentArea addSubview:newPage];
-    CGPoint origin = [self lastTapPoint];
-    page_animation_util::AnimateInPaperWithAnimationAndCompletion(
-        newPage, -newPageOffset, offset, origin, _isOffTheRecord, NULL, ^{
-          tab.view.frame = self.contentArea.bounds;
-          newPage.userInteractionEnabled = YES;
-          [newPage removeFromSuperview];
-          self.inNewTabAnimation = NO;
-          // Use the model's currentTab here because it is possible that it can
-          // be reset to a new value before the new Tab animation finished (e.g.
-          // if another Tab shows a dialog via |dialogPresenter|). However, that
-          // tab's view hasn't been displayed yet because it was in a new tab
-          // animation.
-          Tab* currentTab = [_model currentTab];
-          if (currentTab) {
-            [self tabSelected:currentTab notifyToolbar:NO];
-          }
-          startVoiceSearchIfNecessaryBlock();
-
-          if (self.foregroundTabWasAddedCompletionBlock) {
-            self.foregroundTabWasAddedCompletionBlock();
-            self.foregroundTabWasAddedCompletionBlock = nil;
-          }
-
-          // Restore content area frame, which was resized to fullscreen for
-          // NTP opening animation.
-          CGRect contentAreaFrame = self.view.bounds;
-          if (!self.usesFullscreenContainer) {
-            contentAreaFrame.origin.y += StatusBarHeight();
-            contentAreaFrame.size.height -= StatusBarHeight();
-          }
-          self.contentArea.frame = contentAreaFrame;
-        });
+    [self animateNewTab:tab
+        inForegroundWithCompletion:startVoiceSearchIfNecessary];
   } else {
-    // SnapshotTabHelper::UpdateSnapshot will force a screen redraw, so take the
-    // snapshot before adding the views needed for the background animation.
-    Tab* topTab = [_model currentTab];
-    UIImage* image =
-        SnapshotTabHelper::FromWebState(topTab.webState)
-            ->UpdateSnapshot(/*with_overlays=*/true,
-                             /*visible_frame_only=*/self.isToolbarOnScreen);
-
-    // The size of the |image| above can be wrong if the snapshot fails, grab
-    // the correct size here.
-    CGRect imageFrame = CGRectZero;
-    if (self.isToolbarOnScreen) {
-      imageFrame = UIEdgeInsetsInsetRect(
-          self.contentArea.bounds,
-          [self snapshotEdgeInsetsForWebState:topTab.webState]);
-    } else {
-      imageFrame = [topTab.webState->GetView() bounds];
-      if (self.usesFullscreenContainer) {
-        imageFrame.origin.y += StatusBarHeight();
-        imageFrame.size.height -= StatusBarHeight();
-      }
-    }
-
-    // Add three layers in order on top of the contentArea for the animation:
-    // 1. The black "background" screen.
-    UIView* background = [[UIView alloc] initWithFrame:self.contentArea.bounds];
-    InstallBackgroundInView(background);
-    [self.contentArea addSubview:background];
-
-    // 2. A CardView displaying the data from the current tab.
-    CardView* topCard = [self addCardViewInFullscreen:!self.isToolbarOnScreen];
-    NSString* title = [topTab title];
-    if (![title length])
-      title = [topTab urlDisplayString];
-    [topCard setTitle:title];
-    [topCard setImage:image];
-    [topCard setFavicon:nil];
-
-    favicon::FaviconDriver* faviconDriver =
-        favicon::WebFaviconDriver::FromWebState(topTab.webState);
-    if (faviconDriver && faviconDriver->FaviconIsValid()) {
-      gfx::Image favicon = faviconDriver->GetFavicon();
-      if (!favicon.IsEmpty())
-        [topCard setFavicon:favicon.ToUIImage()];
-    }
-
-    // 3. A new, blank CardView to represent the new tab being added.
-    // Launch the new background tab animation.
-    page_animation_util::AnimateNewBackgroundPageWithCompletion(
-        topCard, self.contentArea.frame, imageFrame, IsPortrait(), ^{
-          [background removeFromSuperview];
-          [topCard removeFromSuperview];
-          self.inNewTabAnimation = NO;
-          // Resnapshot the top card if it has its own toolbar, as the toolbar
-          // will be captured in the new tab animation, but isn't desired for
-          // the stack view snapshots.
-          id nativeController = [self nativeControllerForTab:topTab];
-          if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)]) {
-            SnapshotTabHelper::FromWebState(topTab.webState)
-                ->UpdateSnapshot(/*with_overlays=*/true,
-                                 /*visible_frame_only=*/true);
-          }
-          startVoiceSearchIfNecessaryBlock();
-        });
-    // Reset the foreground tab completion block so that it can never be
-    // called more than once regardless of foreground/background tab
-    // appearances.
-    self.foregroundTabWasAddedCompletionBlock = nil;
+    [self animateNewTab:tab
+        inBackgroundWithCompletion:startVoiceSearchIfNecessary];
   }
 }
 
@@ -5243,6 +5109,154 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if ([model count] == 1) {  // About to remove the last tab.
     [_paymentRequestManager setActiveWebState:nullptr];
   }
+}
+
+#pragma mark - TabModelObserver helpers (new tab animations)
+
+- (void)animateNewTab:(Tab*)tab
+    inForegroundWithCompletion:(ProceduralBlock)completion {
+  // Create the new page image, and load with the new tab snapshot except if
+  // it is the NTP.
+  CGFloat newPageOffset = 0;
+  UIView* newPage = nil;
+  CGFloat offset = 0;
+  if (tab.webState->GetLastCommittedURL() == kChromeUINewTabURL &&
+      !_isOffTheRecord && ![self canShowTabStrip]) {
+    offset = 0;
+    // Temporary expand content area to take whole view space. Otherwise the
+    // animated NTP will be clipped by content area bound. Previous frame will
+    // be reset back on the animation completion.
+    self.contentArea.frame = self.view.frame;
+    newPage = tab.view;
+    newPage.userInteractionEnabled = NO;
+    if (base::FeatureList::IsEnabled(
+            web::features::kBrowserContainerFullscreen)) {
+      newPage.frame = self.view.bounds;
+    } else {
+      // Compute a frame for the new page by removing the status bar height
+      // from the bounds of |self.view|.
+      CGRect viewBounds, remainder;
+      CGRectDivide(self.view.bounds, &remainder, &viewBounds, StatusBarHeight(),
+                   CGRectMinYEdge);
+      newPage.frame = viewBounds;
+    }
+  } else {
+    UIImageView* pageScreenshot = [self pageOpenCloseAnimationView];
+    tab.view.frame = self.contentArea.bounds;
+    pageScreenshot.image = SnapshotTabHelper::FromWebState(tab.webState)
+                               ->UpdateSnapshot(/*with_overlays=*/true,
+                                                /*visible_frame_only=*/true);
+    newPage = pageScreenshot;
+    offset =
+        pageScreenshot.frame.size.height - pageScreenshot.image.size.height;
+  }
+  newPageOffset = newPage.frame.origin.y;
+
+  [self.contentArea addSubview:newPage];
+  CGPoint origin = [self lastTapPoint];
+  page_animation_util::AnimateInPaperWithAnimationAndCompletion(
+      newPage, -newPageOffset, offset, origin, _isOffTheRecord, NULL, ^{
+        tab.view.frame = self.contentArea.bounds;
+        newPage.userInteractionEnabled = YES;
+        [newPage removeFromSuperview];
+        self.inNewTabAnimation = NO;
+        // Use the model's currentTab here because it is possible that it can
+        // be reset to a new value before the new Tab animation finished (e.g.
+        // if another Tab shows a dialog via |dialogPresenter|). However, that
+        // tab's view hasn't been displayed yet because it was in a new tab
+        // animation.
+        Tab* currentTab = [_model currentTab];
+        if (currentTab) {
+          [self tabSelected:currentTab notifyToolbar:NO];
+        }
+        completion();
+
+        if (self.foregroundTabWasAddedCompletionBlock) {
+          self.foregroundTabWasAddedCompletionBlock();
+          self.foregroundTabWasAddedCompletionBlock = nil;
+        }
+
+        // Restore content area frame, which was resized to fullscreen for
+        // NTP opening animation.
+        CGRect contentAreaFrame = self.view.bounds;
+        if (!self.usesFullscreenContainer) {
+          contentAreaFrame.origin.y += StatusBarHeight();
+          contentAreaFrame.size.height -= StatusBarHeight();
+        }
+        self.contentArea.frame = contentAreaFrame;
+      });
+}
+
+- (void)animateNewTab:(Tab*)tab
+    inBackgroundWithCompletion:(ProceduralBlock)completion {
+  // SnapshotTabHelper::UpdateSnapshot will force a screen redraw, so take the
+  // snapshot before adding the views needed for the background animation.
+  Tab* topTab = [_model currentTab];
+  UIImage* image =
+      SnapshotTabHelper::FromWebState(topTab.webState)
+          ->UpdateSnapshot(/*with_overlays=*/true,
+                           /*visible_frame_only=*/self.isToolbarOnScreen);
+
+  // The size of the |image| above can be wrong if the snapshot fails, grab
+  // the correct size here.
+  CGRect imageFrame = CGRectZero;
+  if (self.isToolbarOnScreen) {
+    imageFrame = UIEdgeInsetsInsetRect(
+        self.contentArea.bounds,
+        [self snapshotEdgeInsetsForWebState:topTab.webState]);
+  } else {
+    imageFrame = [topTab.webState->GetView() bounds];
+    if (self.usesFullscreenContainer) {
+      imageFrame.origin.y += StatusBarHeight();
+      imageFrame.size.height -= StatusBarHeight();
+    }
+  }
+
+  // Add three layers in order on top of the contentArea for the animation:
+  // 1. The black "background" screen.
+  UIView* background = [[UIView alloc] initWithFrame:self.contentArea.bounds];
+  InstallBackgroundInView(background);
+  [self.contentArea addSubview:background];
+
+  // 2. A CardView displaying the data from the current tab.
+  CardView* topCard = [self addCardViewInFullscreen:!self.isToolbarOnScreen];
+  NSString* title = [topTab title];
+  if (![title length])
+    title = [topTab urlDisplayString];
+  [topCard setTitle:title];
+  [topCard setImage:image];
+  [topCard setFavicon:nil];
+
+  favicon::FaviconDriver* faviconDriver =
+      favicon::WebFaviconDriver::FromWebState(topTab.webState);
+  if (faviconDriver && faviconDriver->FaviconIsValid()) {
+    gfx::Image favicon = faviconDriver->GetFavicon();
+    if (!favicon.IsEmpty())
+      [topCard setFavicon:favicon.ToUIImage()];
+  }
+
+  // 3. A new, blank CardView to represent the new tab being added.
+  // Launch the new background tab animation.
+  page_animation_util::AnimateNewBackgroundPageWithCompletion(
+      topCard, self.contentArea.frame, imageFrame, IsPortrait(), ^{
+        [background removeFromSuperview];
+        [topCard removeFromSuperview];
+        self.inNewTabAnimation = NO;
+        // Resnapshot the top card if it has its own toolbar, as the toolbar
+        // will be captured in the new tab animation, but isn't desired for
+        // the stack view snapshots.
+        id nativeController = [self nativeControllerForTab:topTab];
+        if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)]) {
+          SnapshotTabHelper::FromWebState(topTab.webState)
+              ->UpdateSnapshot(/*with_overlays=*/true,
+                               /*visible_frame_only=*/true);
+        }
+        completion();
+      });
+  // Reset the foreground tab completion block so that it can never be
+  // called more than once regardless of foreground/background tab
+  // appearances.
+  self.foregroundTabWasAddedCompletionBlock = nil;
 }
 
 #pragma mark - UpgradeCenterClient
