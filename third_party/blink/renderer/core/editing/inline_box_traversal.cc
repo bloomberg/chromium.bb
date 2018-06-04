@@ -441,49 +441,6 @@ AbstractInlineBox FindBoundaryOfEntireBidiRunIgnoringLineBreak(
       start, bidi_level, TraversalStrategy::ForwardIgnoringLineBreak);
 }
 
-// Shorthands for InlineBoxTraversal
-
-template <typename TraversalStrategy>
-const InlineBox* FindBidiRun(const InlineBox& start, unsigned bidi_level) {
-  const AbstractInlineBox& result =
-      FindBidiRun<TraversalStrategy>(AbstractInlineBox(start), bidi_level);
-  if (result.IsNull())
-    return nullptr;
-  DCHECK(result.IsOldLayout());
-  return &result.GetInlineBox();
-}
-
-template <typename TraversalStrategy>
-const InlineBox& FindBoundaryOfBidiRunIgnoringLineBreak(const InlineBox& start,
-                                                        unsigned bidi_level) {
-  const AbstractInlineBox& result =
-      FindBoundaryOfBidiRunIgnoringLineBreak<TraversalStrategy>(
-          AbstractInlineBox(start), bidi_level);
-  DCHECK(result.IsOldLayout());
-  return result.GetInlineBox();
-}
-
-template <typename TraversalStrategy>
-const InlineBox& FindBoundaryOfEntireBidiRun(const InlineBox& start,
-                                             unsigned bidi_level) {
-  const AbstractInlineBox& result =
-      FindBoundaryOfEntireBidiRun<TraversalStrategy>(AbstractInlineBox(start),
-                                                     bidi_level);
-  DCHECK(result.IsOldLayout());
-  return result.GetInlineBox();
-}
-
-template <typename TraversalStrategy>
-const InlineBox& FindBoundaryOfEntireBidiRunIgnoringLineBreak(
-    const InlineBox& start,
-    unsigned bidi_level) {
-  const AbstractInlineBox& result =
-      FindBoundaryOfEntireBidiRunIgnoringLineBreak<TraversalStrategy>(
-          AbstractInlineBox(start), bidi_level);
-  DCHECK(result.IsOldLayout());
-  return result.GetInlineBox();
-}
-
 // Adjustment algorithm at the end of caret position resolution.
 template <typename TraversalStrategy>
 class CaretPositionResolutionAdjuster {
@@ -845,55 +802,40 @@ RangeSelectionAdjuster::RenderedPosition::Create(
 
 const InlineBox* InlineBoxTraversal::FindLeftBidiRun(const InlineBox& box,
                                                      unsigned bidi_level) {
-  return FindBidiRun<TraverseLeft>(box, bidi_level);
+  const AbstractInlineBox& result =
+      FindBidiRun<TraverseLeft>(AbstractInlineBox(box), bidi_level);
+  if (result.IsNull())
+    return nullptr;
+  DCHECK(result.IsOldLayout());
+  return &result.GetInlineBox();
 }
 
 const InlineBox* InlineBoxTraversal::FindRightBidiRun(const InlineBox& box,
                                                       unsigned bidi_level) {
-  return FindBidiRun<TraverseRight>(box, bidi_level);
-}
-
-const InlineBox& InlineBoxTraversal::FindLeftBoundaryOfBidiRunIgnoringLineBreak(
-    const InlineBox& inline_box,
-    unsigned bidi_level) {
-  return FindBoundaryOfBidiRunIgnoringLineBreak<TraverseLeft>(inline_box,
-                                                              bidi_level);
+  const AbstractInlineBox& result =
+      FindBidiRun<TraverseRight>(AbstractInlineBox(box), bidi_level);
+  if (result.IsNull())
+    return nullptr;
+  DCHECK(result.IsOldLayout());
+  return &result.GetInlineBox();
 }
 
 const InlineBox& InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRun(
-    const InlineBox& inline_box,
+    const InlineBox& box,
     unsigned bidi_level) {
-  return FindBoundaryOfEntireBidiRun<TraverseLeft>(inline_box, bidi_level);
-}
-
-const InlineBox&
-InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
-    const InlineBox& inline_box,
-    unsigned bidi_level) {
-  return FindBoundaryOfEntireBidiRunIgnoringLineBreak<TraverseLeft>(inline_box,
-                                                                    bidi_level);
-}
-
-const InlineBox&
-InlineBoxTraversal::FindRightBoundaryOfBidiRunIgnoringLineBreak(
-    const InlineBox& inline_box,
-    unsigned bidi_level) {
-  return FindBoundaryOfBidiRunIgnoringLineBreak<TraverseRight>(inline_box,
-                                                               bidi_level);
+  const AbstractInlineBox& result = FindBoundaryOfEntireBidiRun<TraverseLeft>(
+      AbstractInlineBox(box), bidi_level);
+  DCHECK(result.IsOldLayout());
+  return result.GetInlineBox();
 }
 
 const InlineBox& InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(
-    const InlineBox& inline_box,
+    const InlineBox& box,
     unsigned bidi_level) {
-  return FindBoundaryOfEntireBidiRun<TraverseRight>(inline_box, bidi_level);
-}
-
-const InlineBox&
-InlineBoxTraversal::FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
-    const InlineBox& inline_box,
-    unsigned bidi_level) {
-  return FindBoundaryOfEntireBidiRunIgnoringLineBreak<TraverseRight>(
-      inline_box, bidi_level);
+  const AbstractInlineBox& result = FindBoundaryOfEntireBidiRun<TraverseRight>(
+      AbstractInlineBox(box), bidi_level);
+  DCHECK(result.IsOldLayout());
+  return result.GetInlineBox();
 }
 
 InlineBoxPosition BidiAdjustment::AdjustForCaretPositionResolution(
