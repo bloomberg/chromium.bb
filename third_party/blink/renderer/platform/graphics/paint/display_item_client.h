@@ -46,13 +46,15 @@ class PLATFORM_EXPORT DisplayItemClient {
   // effects that might expand the rastered pixel area.
   virtual float VisualRectOutsetForRasterEffects() const { return 0; }
 
-  // The rect that needs to be invalidated partially in this client. It's in the
-  // same coordinate space as VisualRect().
-  virtual LayoutRect PartialInvalidationRect() const { return LayoutRect(); }
+  // The rect that needs to be invalidated partially for rasterization in this
+  // client. It's in the same coordinate space as VisualRect().
+  virtual LayoutRect PartialInvalidationVisualRect() const {
+    return LayoutRect();
+  }
 
   // Called by PaintController::CommitNewDisplayItems() for all clients after
   // painting.
-  virtual void ClearPartialInvalidationRect() const {}
+  virtual void ClearPartialInvalidationVisualRect() const {}
 
   // This is declared here instead of in LayoutObject for verifying the
   // condition in DrawingRecorder.

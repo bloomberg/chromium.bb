@@ -334,12 +334,8 @@ void NGPaintFragment::PaintInlineBoxForDescendants(
   }
 }
 
-LayoutRect NGPaintFragment::PartialInvalidationRect() const {
-  // TODO(yochio): On SlimmingPaintV175, this function is used to invalidate old selected rect in
-  // this fragment by PaintController::GenerateRasterInvalidation.
-  // So far we just return enclosing block flow's visual rect to pass layout test
-  // but this makes performance worse. We should return LayoutRect on that
-  // ng_text_fragment_painter::PaintSelection paints selection.
+LayoutRect NGPaintFragment::PartialInvalidationVisualRect() const {
+  // TODO(crbug.com/849112): Fix selection raster invalidation for LayoutNG.
   DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
   const NGPaintFragment* block_fragment =
       GetLayoutObject()->EnclosingNGBlockFlow()->PaintFragment();

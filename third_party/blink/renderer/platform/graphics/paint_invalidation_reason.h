@@ -14,6 +14,7 @@ enum class PaintInvalidationReason : unsigned {
   kNone,
   kIncremental,
   kRectangle,
+  kSelection,
   // The following reasons will all cause full paint invalidation.
   kFull,  // Any unspecified reason of full invalidation.
   kStyle,
@@ -23,7 +24,6 @@ enum class PaintInvalidationReason : unsigned {
   kDisappeared,
   kScroll,
   kScrollControl,  // scroll bars, scroll corner, etc.
-  kSelection,
   kOutline,
   kSubtree,
   kSVGResource,

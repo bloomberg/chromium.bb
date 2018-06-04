@@ -131,7 +131,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   // DisplayItemClient methods
   String DebugName() const override;
   LayoutRect VisualRect() const override;
-  LayoutRect PartialInvalidationRect() const override;
+  LayoutRect PartialInvalidationVisualRect() const override;
 
   bool IsText() const { return bitfields_.IsText(); }
   void SetIsText(bool is_text) { bitfields_.SetIsText(is_text); }
