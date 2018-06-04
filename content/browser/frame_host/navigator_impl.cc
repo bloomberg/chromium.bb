@@ -251,7 +251,8 @@ void NavigatorImpl::DidNavigate(
   // run unload handlers.  Those unload handlers should still see the old
   // frame's origin.  See https://crbug.com/825283.
   frame_tree_node->render_manager()->DidNavigateFrame(
-      render_frame_host, params.gesture == NavigationGestureUser);
+      render_frame_host, params.gesture == NavigationGestureUser,
+      is_same_document_navigation);
 
   // Save the new page's origin and other properties, and replicate them to
   // proxies, including the proxy created in DidNavigateFrame() to replace the

@@ -225,8 +225,10 @@ void RenderFrameHostManager::OnBeforeUnloadACK(
 
 void RenderFrameHostManager::DidNavigateFrame(
     RenderFrameHostImpl* render_frame_host,
-    bool was_caused_by_user_gesture) {
-  CommitPendingIfNecessary(render_frame_host, was_caused_by_user_gesture);
+    bool was_caused_by_user_gesture,
+    bool is_same_document_navigation) {
+  CommitPendingIfNecessary(render_frame_host, was_caused_by_user_gesture,
+                           is_same_document_navigation);
 
   // Make sure any dynamic changes to this frame's sandbox flags and feature
   // policy that were made prior to navigation take effect.
@@ -235,7 +237,8 @@ void RenderFrameHostManager::DidNavigateFrame(
 
 void RenderFrameHostManager::CommitPendingIfNecessary(
     RenderFrameHostImpl* render_frame_host,
-    bool was_caused_by_user_gesture) {
+    bool was_caused_by_user_gesture,
+    bool is_same_document_navigation) {
   if (!speculative_render_frame_host_) {
     // There's no speculative RenderFrameHost so it must be that the current
     // renderer process completed a navigation.
@@ -267,11 +270,15 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     if (render_frame_host_->pending_web_ui())
       CommitPendingWebUI();
 
-    // A navigation in the original page has taken place. Cancel the speculative
-    // one. Only do it for user gesture originated navigations to prevent page
-    // doing any shenanigans to prevent user from navigating.  See
-    // https://code.google.com/p/chromium/issues/detail?id=75195
-    if (was_caused_by_user_gesture) {
+    // A navigation in the original process has taken place.  This should
+    // cancel the ongoing cross-process navigation if the commit is
+    // cross-document and has a user gesture (since the user might have clicked
+    // on a new link while waiting for a slow navigation), but it should not
+    // cancel it for same-document navigations (which might happen as
+    // bookkeeping) or when there is no user gesture (which might abusively try
+    // to prevent the user from leaving).  See https://crbug.com/825677 and
+    // https://crbug.com/75195 for examples.
+    if (!is_same_document_navigation && was_caused_by_user_gesture) {
       frame_tree_node_->ResetNavigationRequest(false, true);
       CleanUpNavigation();
     }
