@@ -55,9 +55,6 @@ bool MediaElementEventQueue::EnqueueEvent(const base::Location& from_here,
   if (is_closed_)
     return false;
 
-  if (event->target() == owner_)
-    event->SetTarget(nullptr);
-
   TRACE_EVENT_ASYNC_BEGIN1("event", "MediaElementEventQueue:enqueueEvent",
                            event, "type", event->type().Ascii());
   EventTarget* target = event->target() ? event->target() : owner_.Get();
