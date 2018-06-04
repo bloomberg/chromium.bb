@@ -2226,13 +2226,11 @@ int TabStrip::GenerateIdealBoundsForPinnedTabs(int* first_non_pinned_index) {
     return start_x;
 
   std::vector<gfx::Rect> tab_bounds(tab_count());
-  CalculateBoundsForPinnedTabs(GetTabSizeInfo(), num_pinned_tabs, tab_count(),
-                               start_x, &tab_bounds);
+  int non_pinned_x = CalculateBoundsForPinnedTabs(
+      GetTabSizeInfo(), num_pinned_tabs, tab_count(), start_x, &tab_bounds);
   for (int i = 0; i < num_pinned_tabs; ++i)
     tabs_.set_ideal_bounds(i, tab_bounds[i]);
-  return (num_pinned_tabs < tab_count())
-             ? tab_bounds[num_pinned_tabs].x()
-             : tab_bounds[num_pinned_tabs - 1].right() - Tab::GetOverlap();
+  return non_pinned_x;
 }
 
 int TabStrip::GetTabAreaWidth() const {
