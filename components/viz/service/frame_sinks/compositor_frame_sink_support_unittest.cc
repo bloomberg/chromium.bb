@@ -69,11 +69,10 @@ class MockFrameSinkManagerClient : public mojom::FrameSinkManagerClient {
   // mojom::FrameSinkManagerClient:
   MOCK_METHOD1(OnSurfaceCreated, void(const SurfaceId&));
   MOCK_METHOD1(OnFirstSurfaceActivation, void(const SurfaceInfo&));
+  MOCK_METHOD2(OnFrameTokenChanged, void(const FrameSinkId&, uint32_t));
   void OnAggregatedHitTestRegionListUpdated(
       const FrameSinkId& frame_sink_id,
       const std::vector<AggregatedHitTestRegion>& hit_test_data) override {}
-  void OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
-                           uint32_t frame_token) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockFrameSinkManagerClient);
@@ -1022,6 +1021,24 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_TRUE(requests_map.empty());
   GetSurfaceForId(id2)->TakeCopyOutputRequests(&requests_map);
   EXPECT_FALSE(requests_map.empty());
+}
+
+// Verifies that OnFrameTokenUpdate is issued after OnFirstSurfaceActivation.
+TEST_F(CompositorFrameSinkSupportTest,
+       OnFrameTokenUpdateAfterFirstSurfaceActivation) {
+  LocalSurfaceId local_surface_id(1, kArbitraryToken);
+  uint32_t frame_token = 2u;
+  auto frame = CompositorFrameBuilder()
+                   .AddDefaultRenderPass()
+                   .SetFrameToken(frame_token)
+                   .SetSendFrameTokenToEmbedder(true)
+                   .Build();
+
+  testing::InSequence sequence;
+  EXPECT_CALL(frame_sink_manager_client_, OnSurfaceCreated(_));
+  EXPECT_CALL(frame_sink_manager_client_, OnFirstSurfaceActivation(_));
+  EXPECT_CALL(frame_sink_manager_client_, OnFrameTokenChanged(_, frame_token));
+  support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 }
 
 }  // namespace

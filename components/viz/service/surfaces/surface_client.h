@@ -50,6 +50,9 @@ class VIZ_SERVICE_EXPORT SurfaceClient {
   virtual std::vector<std::unique_ptr<CopyOutputRequest>>
   TakeCopyOutputRequests(const LocalSurfaceId& latest_surface_id) = 0;
 
+  // Notifies the client that a frame with |token| has been activated.
+  virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SurfaceClient);
 };

@@ -129,11 +129,10 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
   DCHECK(surface->active_referenced_surfaces());
   UpdateSurfaceReferences(surface->surface_id().local_surface_id(),
                           *surface->active_referenced_surfaces());
-  const auto& metadata = surface->GetActiveFrame().metadata;
-  if (metadata.send_frame_token_to_embedder) {
-    frame_sink_manager_->OnFrameTokenChanged(frame_sink_id_,
-                                             metadata.frame_token);
-  }
+}
+
+void CompositorFrameSinkSupport::OnFrameTokenChanged(uint32_t frame_token) {
+  frame_sink_manager_->OnFrameTokenChanged(frame_sink_id_, frame_token);
 }
 
 void CompositorFrameSinkSupport::OnSurfaceDiscarded(Surface* surface) {
