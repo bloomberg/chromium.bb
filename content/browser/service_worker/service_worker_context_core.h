@@ -210,6 +210,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // have passed since the last update, bypasses the browser cache.
   void UpdateServiceWorker(ServiceWorkerRegistration* registration,
                            bool force_bypass_cache);
+  // |callback| is called when the promise for
+  // ServiceWorkerRegistration.update() would be resolved.
   void UpdateServiceWorker(ServiceWorkerRegistration* registration,
                            bool force_bypass_cache,
                            bool skip_script_comparison,

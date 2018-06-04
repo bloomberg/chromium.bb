@@ -205,6 +205,8 @@ class WorkerActivatedObserver
     const ServiceWorkerVersion* version = context_->GetLiveVersion(version_id);
     if (version->status() == ServiceWorkerVersion::ACTIVATED) {
       context_->RemoveObserver(this);
+      version_id_ = version_id;
+      registration_id_ = version->registration_id();
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::BindOnce(&WorkerActivatedObserver::Quit, this));
@@ -212,11 +214,17 @@ class WorkerActivatedObserver
   }
   void Wait() { run_loop_.Run(); }
 
+  int64_t registration_id() { return registration_id_; }
+  int64_t version_id() { return version_id_; }
+
  private:
   friend class base::RefCountedThreadSafe<WorkerActivatedObserver>;
   ~WorkerActivatedObserver() override {}
   void InitOnIOThread() { context_->AddObserver(this); }
   void Quit() { run_loop_.Quit(); }
+
+  int64_t registration_id_ = blink::mojom::kInvalidServiceWorkerRegistrationId;
+  int64_t version_id_ = blink::mojom::kInvalidServiceWorkerVersionId;
 
   base::RunLoop run_loop_;
   ServiceWorkerContextWrapper* context_;
@@ -388,6 +396,24 @@ net::HttpResponseInfo CreateHttpResponseInfo() {
   info.headers =
       new net::HttpResponseHeaders(std::string(data, arraysize(data)));
   return info;
+}
+
+// Returns a unique script for each request, to test service worker update.
+std::unique_ptr<net::test_server::HttpResponse> RequestHandlerForUpdateWorker(
+    const net::test_server::HttpRequest& request) {
+  static int counter = 0;
+
+  if (request.relative_url != "/service_worker/update_worker.js")
+    return std::unique_ptr<net::test_server::HttpResponse>();
+
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_OK);
+  http_response->set_content(
+      base::StringPrintf("// empty script. counter = %d\n", counter++));
+  http_response->set_content_type("text/javascript");
+  // Use a large max-age to test the browser cache.
+  http_response->AddCustomHeader("Cache-Control", "max-age=31536000");
+  return http_response;
 }
 
 const char kNavigationPreloadAbortError[] =
@@ -703,6 +729,20 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
                        base::Unretained(this), status));
   }
 
+  void UpdateRegistration(int64_t registration_id,
+                          ServiceWorkerStatusCode* out_status,
+                          bool* out_update_found) {
+    base::RunLoop update_run_loop;
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(
+            &self::UpdateOnIOThread, base::Unretained(this), registration_id,
+            base::BindOnce(
+                &self::ReceiveUpdateResultOnIOThread, base::Unretained(this),
+                update_run_loop.QuitClosure(), out_status, out_update_found)));
+    update_run_loop.Run();
+  }
+
   void FindRegistrationForId(int64_t id,
                              const GURL& origin,
                              ServiceWorkerStatusCode expected_status) {
@@ -828,6 +868,32 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         version_->CreateSimpleEventCallback(request_id));
   }
 
+  void UpdateOnIOThread(int registration_id,
+                        ServiceWorkerContextCore::UpdateCallback callback) {
+    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    ServiceWorkerRegistration* registration =
+        wrapper()->context()->GetLiveRegistration(registration_id);
+    ASSERT_TRUE(registration);
+    wrapper()->context()->UpdateServiceWorker(
+        registration, false /* force_bypass_cache */,
+        false /* skip_script_comparison */, std::move(callback));
+  }
+
+  void ReceiveUpdateResultOnIOThread(const base::RepeatingClosure& done_on_ui,
+                                     ServiceWorkerStatusCode* out_status,
+                                     bool* out_update_found,
+                                     ServiceWorkerStatusCode status,
+                                     const std::string& status_message,
+                                     int64_t registration_id) {
+    ServiceWorkerRegistration* registration =
+        wrapper()->context()->GetLiveRegistration(registration_id);
+    DCHECK(registration);
+
+    *out_status = status;
+    *out_update_found = !!registration->installing_version();
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done_on_ui);
+  }
+
   void FetchOnIOThread(const base::Closure& done,
                        bool* prepare_result,
                        FetchResult* result) {
@@ -848,6 +914,18 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         std::string() /* client_id */, version_, net::NetLogWithSource(),
         std::move(prepare_callback), std::move(fetch_callback));
     fetch_dispatcher_->Run();
+  }
+
+  void ResetLastUpdateCheckOnIOThread(
+      int64_t registration_id,
+      const base::RepeatingClosure& done_on_ui) {
+    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    ServiceWorkerRegistration* registration =
+        wrapper()->context()->GetLiveRegistration(registration_id);
+    ASSERT_TRUE(registration);
+    registration->set_last_update_check(base::Time::Now() -
+                                        base::TimeDelta::FromHours(24));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done_on_ui);
   }
 
   // Contrary to the style guide, the output parameter of this function comes
@@ -1317,6 +1395,64 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   EXPECT_EQ(0, response.status_code);
 
   ASSERT_FALSE(blob_data_handle);
+}
+
+// Tests that the browser cache is bypassed on update checks after 24 hours
+// elapsed since the last update check that accessed network.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       UpdateBypassesCacheAfter24Hours) {
+  const char kScope[] = "/service_worker/handle_fetch.html";
+  const char kWorkerUrl[] = "/service_worker/update_worker.js";
+
+  // Tell the server to return a new script for each `update_worker.js` request.
+  embedded_test_server()->RegisterRequestHandler(
+      base::BindRepeating(&RequestHandlerForUpdateWorker));
+  StartServerAndNavigateToSetup();
+
+  // Register a service worker.
+
+  // Make options. Set to kAll so updating exercises the browser cache.
+  blink::mojom::ServiceWorkerRegistrationOptions options(
+      embedded_test_server()->GetURL(kScope),
+      blink::mojom::ServiceWorkerUpdateViaCache::kAll);
+
+  // Register and wait for activation.
+  auto observer = base::MakeRefCounted<WorkerActivatedObserver>(wrapper());
+  observer->Init();
+  public_context()->RegisterServiceWorker(
+      embedded_test_server()->GetURL(kWorkerUrl), options,
+      base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
+  observer->Wait();
+  int64_t registration_id = observer->registration_id();
+
+  // Try to update. The request should hit the browser cache so no update should
+  // be found.
+  {
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+    bool update_found = true;
+    UpdateRegistration(registration_id, &status, &update_found);
+    EXPECT_EQ(SERVICE_WORKER_OK, status);
+    EXPECT_FALSE(update_found);
+  }
+
+  // Set the registration's last update time far in the past.
+  base::RunLoop time_run_loop;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&self::ResetLastUpdateCheckOnIOThread,
+                     base::Unretained(this), registration_id,
+                     time_run_loop.QuitClosure()));
+  time_run_loop.Run();
+
+  // Try to update again. The browser cache should be bypassed so the update
+  // should be found.
+  {
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+    bool update_found = false;
+    UpdateRegistration(registration_id, &status, &update_found);
+    EXPECT_EQ(SERVICE_WORKER_OK, status);
+    EXPECT_TRUE(update_found);
+  }
 }
 
 class MockContentBrowserClient : public TestContentBrowserClient {
