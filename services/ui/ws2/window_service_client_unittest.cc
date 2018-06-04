@@ -10,6 +10,7 @@
 #include <memory>
 #include <queue>
 
+#include "base/unguessable_token.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/ws2/client_window.h"
@@ -170,6 +171,55 @@ TEST(WindowServiceClientTest, SetTopLevelWindowBoundsFailsForSameSize) {
   // returns false.
   EXPECT_FALSE(setup.client_test_helper()->SetWindowBounds(top_level, bounds));
   EXPECT_TRUE(setup.changes()->empty());
+}
+
+TEST(WindowServiceClientTest, SetChildWindowBounds) {
+  WindowServiceTestSetup setup;
+  aura::Window* window = setup.client_test_helper()->NewWindow();
+  ASSERT_TRUE(window);
+  const gfx::Rect bounds = gfx::Rect(1, 2, 300, 400);
+  EXPECT_TRUE(setup.client_test_helper()->SetWindowBounds(window, bounds));
+  EXPECT_EQ(bounds, window->bounds());
+
+  // Setting to same bounds should return true.
+  EXPECT_TRUE(setup.client_test_helper()->SetWindowBounds(window, bounds));
+  EXPECT_EQ(bounds, window->bounds());
+}
+
+TEST(WindowServiceClientTest, SetBoundsAtEmbedWindow) {
+  WindowServiceTestSetup setup;
+  aura::Window* window = setup.client_test_helper()->NewWindow();
+  ASSERT_TRUE(window);
+  const gfx::Rect bounds1 = gfx::Rect(1, 2, 300, 400);
+  EXPECT_TRUE(setup.client_test_helper()->SetWindowBounds(window, bounds1));
+
+  std::unique_ptr<EmbeddingHelper> embedding_helper =
+      setup.CreateEmbedding(window);
+  ASSERT_TRUE(embedding_helper);
+
+  // Child client should not be able to change bounds of embed window.
+  EXPECT_FALSE(embedding_helper->client_test_helper->SetWindowBounds(
+      window, gfx::Rect()));
+  // Bounds should not have changed.
+  EXPECT_EQ(bounds1, window->bounds());
+
+  embedding_helper->window_tree_client.tracker()->changes()->clear();
+  embedding_helper->window_tree_client.set_track_root_bounds_changes(true);
+
+  // Set the bounds from the parent and ensure client is notified.
+  const gfx::Rect bounds2 = gfx::Rect(1, 2, 300, 401);
+  base::Optional<viz::LocalSurfaceId> local_surface_id(
+      viz::LocalSurfaceId(1, 2, base::UnguessableToken::Create()));
+  EXPECT_TRUE(setup.client_test_helper()->SetWindowBounds(window, bounds2,
+                                                          local_surface_id));
+  EXPECT_EQ(bounds2, window->bounds());
+  ASSERT_EQ(1u,
+            embedding_helper->window_tree_client.tracker()->changes()->size());
+  const Change bounds_change =
+      (*(embedding_helper->window_tree_client.tracker()->changes()))[0];
+  EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, bounds_change.type);
+  EXPECT_EQ(bounds2, bounds_change.bounds2);
+  EXPECT_EQ(local_surface_id, bounds_change.local_surface_id);
 }
 
 // Tests the ability of the client to change properties on the server.

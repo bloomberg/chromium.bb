@@ -185,6 +185,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   // mapping, there may not be a window with the returned id.
   ClientWindowId MakeClientWindowId(Id transport_window_id) const;
 
+  // Returns true if the local-surface id for |window| is assigned by this
+  // client. A return value of false means the LocalSurfaceId is assigned by
+  // either another client, or by the WindowService itself.
+  bool IsLocalSurfaceIdAssignedByClient(aura::Window* window);
+
   std::vector<mojom::WindowDataPtr> WindowsToWindowDatas(
       const std::vector<aura::Window*>& windows);
   mojom::WindowDataPtr WindowToWindowData(aura::Window* window);
@@ -193,10 +198,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   // destroys the existing ClientRoot if there is one (because a Window can
   // only be the root Window of a single ClientRoot).
   void OnWillBecomeClientRootWindow(aura::Window* window);
-
-  // Returns the LocalSurfaceId for |window|. If |window| is not a ClientRoot,
-  // this returns null.
-  base::Optional<viz::LocalSurfaceId> GetLocalSurfaceId(aura::Window* window);
 
   // Methods with the name Impl() mirror those of mojom::WindowTree. The return
   // value indicates whether they succeeded or not. Generally failure means the
