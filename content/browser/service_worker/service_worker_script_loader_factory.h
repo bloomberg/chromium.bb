@@ -55,7 +55,7 @@ class ServiceWorkerScriptLoaderFactory
   void Clone(network::mojom::URLLoaderFactoryRequest request) override;
 
  private:
-  bool ShouldHandleScriptRequest(
+  bool CheckIfScriptRequestIsValid(
       const network::ResourceRequest& resource_request);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;

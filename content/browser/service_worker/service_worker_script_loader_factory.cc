@@ -39,7 +39,7 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
-  if (!ShouldHandleScriptRequest(resource_request)) {
+  if (!CheckIfScriptRequestIsValid(resource_request)) {
     // If the request should not be handled, just do a passthrough load. This
     // needs a relaying as we use different associated message pipes.
     // TODO(kinuko): Record the reason like what we do with netlog in
@@ -50,12 +50,22 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
     return;
   }
 
-  // If we get here, the service worker is not installed, so the script is
-  // usually not yet installed. However, there is a special case when an
-  // installing worker that imports the same script twice (e.g.
-  // importScripts('dupe.js'); importScripts('dupe.js');) or if it recursively
-  // imports the main script. In this case, read the installed script from
-  // storage.
+  // There are four cases of how to handle the request for the script.
+  // A) service worker is installed, script is installed: serve from storage
+  //    (use ServceWorkerInstalledScriptLoader). Typically this case is handled
+  //    by ServiceWorkerInstalledScriptsSender, but we can still get here when a
+  //    new service worker starts up and becomes installed while it is running.
+  // B) service worker is installed, script is not installed: serve from direct
+  //    network. This happens when the script is newly imported after
+  //    installation.
+  //    TODO(crbug.com/719052): deprecate this.
+  // C) service worker is not installed, script is installed: serve from
+  //    storage (use ServceWorkerInstalledScriptLoader)
+  // D) service worker is not installed, script is not installed: serve from
+  //    network with installing the script (use ServceWorkerNewScriptLoader)
+  //    This is the common case: load the script and install it.
+
+  // Case A and C:
   scoped_refptr<ServiceWorkerVersion> version =
       provider_host_->running_hosted_version();
   int64_t resource_id =
@@ -70,7 +80,17 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
     return;
   }
 
-  // The common case: load the script and install it.
+  // Case B:
+  if (ServiceWorkerVersion::IsInstalled(version->status())) {
+    // TODO(kinuko): Record the reason like what we do with netlog in
+    // ServiceWorkerContextRequestHandler.
+    loader_factory_->CreateLoaderAndStart(
+        std::move(request), routing_id, request_id, options, resource_request,
+        std::move(client), traffic_annotation);
+    return;
+  }
+
+  // Case D:
   mojo::MakeStrongBinding(
       std::make_unique<ServiceWorkerNewScriptLoader>(
           routing_id, request_id, options, resource_request, std::move(client),
@@ -84,7 +104,7 @@ void ServiceWorkerScriptLoaderFactory::Clone(
   bindings_.AddBinding(this, std::move(request));
 }
 
-bool ServiceWorkerScriptLoaderFactory::ShouldHandleScriptRequest(
+bool ServiceWorkerScriptLoaderFactory::CheckIfScriptRequestIsValid(
     const network::ResourceRequest& resource_request) {
   if (!context_ || !provider_host_)
     return false;
@@ -127,14 +147,6 @@ bool ServiceWorkerScriptLoaderFactory::ShouldHandleScriptRequest(
   }
 
   // TODO(falken): Make sure we don't handle a redirected request.
-
-  // For installed service workers, typically all the scripts are served via
-  // script streaming, so we don't come here. However, we still come here when
-  // the service worker is importing a script that was never installed. For now,
-  // return false here to fallback to network. Eventually, it should be
-  // deprecated (https://crbug.com/719052).
-  if (ServiceWorkerVersion::IsInstalled(version->status()))
-    return false;
 
   return true;
 }
