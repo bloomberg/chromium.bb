@@ -320,6 +320,7 @@ void av1_loop_restoration_precal();
 
 typedef void (*rest_tile_start_visitor_t)(int tile_row, int tile_col,
                                           void *priv);
+struct AV1LrSyncData;
 
 typedef void (*sync_read_fn_t)(void *const lr_sync, int r, int c, int plane);
 
@@ -356,14 +357,12 @@ void av1_loop_restoration_filter_frame_init(AV1LrStruct *lr_ctxt,
                                             int optimized_lr, int num_planes);
 void av1_loop_restoration_copy_planes(AV1LrStruct *loop_rest_ctxt,
                                       struct AV1Common *cm, int num_planes);
-void av1_foreach_rest_unit_in_row(RestorationTileLimits *limits,
-                                  const AV1PixelRect *tile_rect,
-                                  rest_unit_visitor_t on_rest_unit,
-                                  int row_number, int unit_size, int unit_idx0,
-                                  int hunits_per_tile, int plane, void *priv,
-                                  int32_t *tmpbuf, RestorationLineBuffers *rlbs,
-                                  sync_read_fn_t on_sync_read,
-                                  sync_write_fn_t on_sync_write);
+void av1_foreach_rest_unit_in_row(
+    RestorationTileLimits *limits, const AV1PixelRect *tile_rect,
+    rest_unit_visitor_t on_rest_unit, int row_number, int unit_size,
+    int unit_idx0, int hunits_per_tile, int plane, void *priv, int32_t *tmpbuf,
+    RestorationLineBuffers *rlbs, sync_read_fn_t on_sync_read,
+    sync_write_fn_t on_sync_write, struct AV1LrSyncData *const lr_sync);
 AV1PixelRect av1_whole_frame_rect(const struct AV1Common *cm, int is_uv);
 int av1_lr_count_units_in_tile(int unit_size, int tile_size);
 void av1_lr_sync_read_dummy(void *const lr_sync, int r, int c, int plane);

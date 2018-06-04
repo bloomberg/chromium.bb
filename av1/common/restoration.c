@@ -1241,14 +1241,12 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
   av1_loop_restoration_copy_planes(loop_rest_ctxt, cm, num_planes);
 }
 
-void av1_foreach_rest_unit_in_row(RestorationTileLimits *limits,
-                                  const AV1PixelRect *tile_rect,
-                                  rest_unit_visitor_t on_rest_unit,
-                                  int row_number, int unit_size, int unit_idx0,
-                                  int hunits_per_tile, int plane, void *priv,
-                                  int32_t *tmpbuf, RestorationLineBuffers *rlbs,
-                                  sync_read_fn_t on_sync_read,
-                                  sync_write_fn_t on_sync_write) {
+void av1_foreach_rest_unit_in_row(
+    RestorationTileLimits *limits, const AV1PixelRect *tile_rect,
+    rest_unit_visitor_t on_rest_unit, int row_number, int unit_size,
+    int unit_idx0, int hunits_per_tile, int plane, void *priv, int32_t *tmpbuf,
+    RestorationLineBuffers *rlbs, sync_read_fn_t on_sync_read,
+    sync_write_fn_t on_sync_write, struct AV1LrSyncData *const lr_sync) {
   const int tile_w = tile_rect->right - tile_rect->left;
   const int ext_size = unit_size * 3 / 2;
   int x0 = 0, j = 0;
@@ -1262,11 +1260,11 @@ void av1_foreach_rest_unit_in_row(RestorationTileLimits *limits,
 
     const int unit_idx = unit_idx0 + row_number * hunits_per_tile + j;
 
-    on_sync_read(NULL, row_number, j, plane);
+    on_sync_read(lr_sync, row_number, j, plane);
 
     on_rest_unit(limits, tile_rect, unit_idx, priv, tmpbuf, rlbs);
 
-    on_sync_write(NULL, row_number, j, hunits_per_tile, plane);
+    on_sync_write(lr_sync, row_number, j, hunits_per_tile, plane);
 
     x0 += w;
     ++j;
@@ -1319,7 +1317,7 @@ static void foreach_rest_unit_in_tile(const AV1PixelRect *tile_rect,
     av1_foreach_rest_unit_in_row(&limits, tile_rect, on_rest_unit, i, unit_size,
                                  unit_idx0, hunits_per_tile, plane, priv,
                                  tmpbuf, rlbs, av1_lr_sync_read_dummy,
-                                 av1_lr_sync_write_dummy);
+                                 av1_lr_sync_write_dummy, NULL);
 
     y0 += h;
     ++i;
