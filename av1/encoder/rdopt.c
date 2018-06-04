@@ -7670,8 +7670,8 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
                               RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
                               int *disable_skip, int mi_row, int mi_col,
                               HandleInterModeArgs *const args,
-                              const int64_t ref_best_rd, const int *refs,
-                              int rate_mv, BUFFER_SET *orig_dst
+                              int64_t ref_best_rd, const int *refs, int rate_mv,
+                              BUFFER_SET *orig_dst
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
                               ,
                               int64_t *best_est_rd
@@ -8096,6 +8096,10 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
                                x->skip_cost[skip_ctx][mbmi->skip],
                            rd_stats->rate, ref_best_rd);
 #endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
+      int64_t curr_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
+      if (curr_rd < ref_best_rd) {
+        ref_best_rd = curr_rd;
+      }
     } else {
       x->skip = 1;
       *disable_skip = 1;
