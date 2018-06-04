@@ -485,6 +485,15 @@ ScopedDrmPropertyBlobPtr DrmDevice::GetPropertyBlob(drmModeConnector* connector,
   return ScopedDrmPropertyBlobPtr();
 }
 
+bool DrmDevice::SetObjectProperty(uint32_t object_id,
+                                  uint32_t object_type,
+                                  uint32_t property_id,
+                                  uint32_t property_value) {
+  DCHECK(file_.IsValid());
+  return !drmModeObjectSetProperty(file_.GetPlatformFile(), object_id,
+                                   object_type, property_id, property_value);
+}
+
 bool DrmDevice::SetCursor(uint32_t crtc_id,
                           uint32_t handle,
                           const gfx::Size& size) {

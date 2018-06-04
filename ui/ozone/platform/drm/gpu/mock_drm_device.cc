@@ -306,6 +306,14 @@ ScopedDrmPropertyBlobPtr MockDrmDevice::GetPropertyBlob(
   return ScopedDrmPropertyBlobPtr(DrmAllocator<drmModePropertyBlobRes>());
 }
 
+bool MockDrmDevice::SetObjectProperty(uint32_t object_id,
+                                      uint32_t object_type,
+                                      uint32_t property_id,
+                                      uint32_t property_value) {
+  set_object_property_count_++;
+  return true;
+}
+
 bool MockDrmDevice::SetCursor(uint32_t crtc_id,
                               uint32_t handle,
                               const gfx::Size& size) {
@@ -374,7 +382,7 @@ bool MockDrmDevice::CommitProperties(drmModeAtomicReq* properties,
 bool MockDrmDevice::SetGammaRamp(
     uint32_t crtc_id,
     const std::vector<display::GammaRampRGBEntry>& lut) {
-  return true;
+  return legacy_gamma_ramp_expectation_;
 }
 
 bool MockDrmDevice::SetCapability(uint64_t capability, uint64_t value) {

@@ -195,4 +195,39 @@ bool HardwareDisplayPlaneManagerLegacy::IsCompatible(
   return plane->IsSupportedFormat(format);
 }
 
+bool HardwareDisplayPlaneManagerLegacy::CommitColorMatrix(
+    const CrtcProperties& crtc_props) {
+  return drm_->SetObjectProperty(crtc_props.id, DRM_MODE_OBJECT_CRTC,
+                                 crtc_props.ctm.id, crtc_props.ctm.value);
+}
+
+bool HardwareDisplayPlaneManagerLegacy::CommitGammaCorrection(
+    const CrtcProperties& crtc_props) {
+  DCHECK(crtc_props.degamma_lut.id || crtc_props.gamma_lut.id);
+
+  if (crtc_props.degamma_lut.id) {
+    int ret = drm_->SetObjectProperty(crtc_props.id, DRM_MODE_OBJECT_CRTC,
+                                      crtc_props.degamma_lut.id,
+                                      crtc_props.degamma_lut.value);
+    if (ret < 0) {
+      LOG(ERROR) << "Failed to set DEGAMMA_LUT property for crtc="
+                 << crtc_props.id;
+      return false;
+    }
+  }
+
+  if (crtc_props.gamma_lut.id) {
+    int ret = drm_->SetObjectProperty(crtc_props.id, DRM_MODE_OBJECT_CRTC,
+                                      crtc_props.gamma_lut.id,
+                                      crtc_props.gamma_lut.value);
+    if (ret < 0) {
+      LOG(ERROR) << "Failed to set GAMMA_LUT property for crtc="
+                 << crtc_props.id;
+      return false;
+    }
+  }
+
+  return true;
+}
+
 }  // namespace ui
