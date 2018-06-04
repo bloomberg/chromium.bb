@@ -33,6 +33,13 @@ EventBoundary = collections.namedtuple('EventBoundary',
 MergedEvent = collections.namedtuple('MergedEvent',
                                      ['bounds', 'thread_or_wall_duration'])
 
+
+class _BlinkPerfPage(page_module.Page):
+  def RunPageInteractions(self, action_runner):
+    action_runner.ExecuteJavaScript('testRunner.scheduleTestRun()')
+    action_runner.WaitForJavaScriptCondition('testRunner.isDone', timeout=600)
+
+
 def CreateStorySetFromPath(path, skipped_file,
                            shared_page_state_class=(
                                shared_page_state.SharedPageState)):
@@ -79,7 +86,7 @@ def CreateStorySetFromPath(path, skipped_file,
   common_prefix = os.path.dirname(os.path.commonprefix(all_urls))
   for url in page_urls:
     name = url[len(common_prefix):].strip('/')
-    ps.AddStory(page_module.Page(
+    ps.AddStory(_BlinkPerfPage(
         url, ps, ps.base_dir,
         shared_page_state_class=shared_page_state_class,
         name=name))
@@ -236,6 +243,12 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     del tab  # unused
     page.script_to_evaluate_on_commit = self._blink_perf_js
 
+  def DidNavigateToPage(self, page, tab):
+    tab.WaitForJavaScriptCondition('testRunner.isWaitingForTelemetry')
+    tracing_categories = tab.EvaluateJavaScript('testRunner.tracingCategories')
+    if tracing_categories:
+      self._StartTracing(tab, tracing_categories)
+
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
         '--js-flags=--expose_gc',
@@ -253,9 +266,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     if options.enable_systrace:
       self._enable_systrace = True
 
-  def _ContinueTestRunWithTracing(self, tab):
-    tracing_categories = tab.EvaluateJavaScript(
-        'testRunner.tracingCategories')
+  def _StartTracing(self, tab, tracing_categories):
     config = tracing_config.TracingConfig()
     config.enable_chrome_trace = True
     config.chrome_trace_config.category_filter.AddFilterString(
@@ -268,11 +279,6 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     if self._enable_systrace:
       config.chrome_trace_config.SetEnableSystrace()
     tab.browser.platform.tracing_controller.StartTracing(config)
-    tab.EvaluateJavaScript('testRunner.scheduleTestRun()')
-    tab.WaitForJavaScriptCondition('testRunner.isDone')
-
-    trace_data = tab.browser.platform.tracing_controller.StopTracing()[0]
-    return trace_data
 
 
   def PrintAndCollectTraceEventMetrics(self, trace_cpu_time_metrics, results):
@@ -293,11 +299,9 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     print '\n'
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    tab.WaitForJavaScriptCondition(
-        'testRunner.isDone || testRunner.isWaitingForTracingStart', timeout=600)
     trace_cpu_time_metrics = {}
-    if tab.EvaluateJavaScript('testRunner.isWaitingForTracingStart'):
-      trace_data = self._ContinueTestRunWithTracing(tab)
+    if tab.EvaluateJavaScript('testRunner.tracingCategories'):
+      trace_data = tab.browser.platform.tracing_controller.StopTracing()[0]
       # TODO(#763375): Rely on results.telemetry_info.trace_local_path/etc.
       kwargs = {}
       if hasattr(results.telemetry_info, 'trace_local_path'):
