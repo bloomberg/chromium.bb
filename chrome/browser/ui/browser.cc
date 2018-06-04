@@ -1009,6 +1009,13 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
   // associated with their tab is still valid.
   WebContentsModalDialogManager::FromWebContents(contents)->CloseAllDialogs();
 
+  if (pip_window_controller_ &&
+      pip_window_controller_->GetInitiatorWebContents() == contents) {
+    // When |contents| is closed, the previously referred to
+    // |pip_window_controller_| will also be torn down.
+    pip_window_controller_ = nullptr;
+  }
+
   // Page load metrics need to be informed that the WebContents will soon be
   // destroyed, so that upcoming visiblity changes can be ignored.
   page_load_metrics::MetricsWebContentsObserver* metrics_observer =
