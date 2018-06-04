@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 
+class TtsController;
 class PrefService;
 
 namespace net {
@@ -61,6 +62,7 @@ class CastBrowserProcess {
   void SetConnectivityChecker(
       scoped_refptr<ConnectivityChecker> connectivity_checker);
   void SetNetLog(net::NetLog* net_log);
+  void SetTtsController(std::unique_ptr<TtsController> tts_controller);
 
   CastContentBrowserClient* browser_client() const {
     return cast_content_browser_client_;
@@ -84,6 +86,7 @@ class CastBrowserProcess {
     return remote_debugging_server_.get();
   }
   net::NetLog* net_log() const { return net_log_; }
+  TtsController* tts_controller() const { return tts_controller_.get(); }
 
  private:
   // Note: The following order should match the order they are set in
@@ -100,6 +103,7 @@ class CastBrowserProcess {
 
   CastContentBrowserClient* cast_content_browser_client_;
   net::NetLog* net_log_;
+  std::unique_ptr<TtsController> tts_controller_;
 
   // Note: CastService must be destroyed before others.
   std::unique_ptr<CastService> cast_service_;

@@ -132,18 +132,9 @@ void Utterance::set_options(const base::Value* options) {
   options_.reset(options->DeepCopy());
 }
 
-TtsController* TtsController::GetInstance() {
-  return TtsControllerImpl::GetInstance();
-}
-
 //
 // TtsControllerImpl
 //
-
-// static
-TtsControllerImpl* TtsControllerImpl::GetInstance() {
-  return base::Singleton<TtsControllerImpl>::get();
-}
 
 TtsControllerImpl::TtsControllerImpl()
     : current_utterance_(nullptr), paused_(false), platform_impl_(nullptr) {}

@@ -17,6 +17,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/values.h"
+#include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/extensions/api/tts/tts_extension_api_constants.h"
 #include "chromecast/browser/tts/tts_controller.h"
 #include "extensions/browser/event_router.h"
@@ -82,6 +83,12 @@ TtsEventType TtsEventTypeFromString(const std::string& str) {
   NOTREACHED();
   return TTS_EVENT_ERROR;
 }
+
+namespace {
+TtsController* GetTtsController() {
+  return chromecast::shell::CastBrowserProcess::GetInstance()->tts_controller();
+}
+}  // namespace
 
 namespace extensions {
 
@@ -282,34 +289,33 @@ ExtensionFunction::ResponseAction TtsSpeakFunction::Run() {
   utterance->set_options(options.get());
   utterance->set_event_delegate(new TtsExtensionEventHandler(extension_id()));
 
-  TtsController* controller = TtsController::GetInstance();
-  controller->SpeakOrEnqueue(utterance);
+  GetTtsController()->SpeakOrEnqueue(utterance);
   return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 ExtensionFunction::ResponseAction TtsStopSpeakingFunction::Run() {
-  TtsController::GetInstance()->Stop();
+  GetTtsController()->Stop();
   return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction TtsPauseFunction::Run() {
-  TtsController::GetInstance()->Pause();
+  GetTtsController()->Pause();
   return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction TtsResumeFunction::Run() {
-  TtsController::GetInstance()->Resume();
+  GetTtsController()->Resume();
   return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction TtsIsSpeakingFunction::Run() {
-  return RespondNow(OneArgument(std::make_unique<base::Value>(
-      TtsController::GetInstance()->IsSpeaking())));
+  return RespondNow(OneArgument(
+      std::make_unique<base::Value>(GetTtsController()->IsSpeaking())));
 }
 
 ExtensionFunction::ResponseAction TtsGetVoicesFunction::Run() {
   std::vector<VoiceData> voices;
-  TtsController::GetInstance()->GetVoices(browser_context(), &voices);
+  GetTtsController()->GetVoices(browser_context(), &voices);
 
   auto result_voices = std::make_unique<base::ListValue>();
   for (size_t i = 0; i < voices.size(); ++i) {
