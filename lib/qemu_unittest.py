@@ -30,7 +30,7 @@ class QemuTests(cros_test_lib.TestCase):
       arch = qemu.Qemu.DetectArch(test_file, test_dir)
       if arch is None:
         # See if we have a mask for it.
-        # pylint: disable=W0212
+        # pylint: disable=protected-access
         self.assertNotIn(exp_arch, qemu.Qemu._MAGIC_MASK.keys(),
                          msg='ELF "%s" did not match "%s", but should have' %
                          (test, exp_arch))
@@ -39,7 +39,7 @@ class QemuTests(cros_test_lib.TestCase):
 
   def testRegisterStr(self):
     """Verify the binfmt register string doesn't exceed kernel limits"""
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     for arch in qemu.Qemu._MAGIC_MASK.keys():
       name = 'qemu-%s' % arch
       interp = '/build/bin/%s' % name
@@ -47,3 +47,12 @@ class QemuTests(cros_test_lib.TestCase):
       self.assertGreaterEqual(256, len(register),
                               msg='arch "%s" has too long of a register string:'
                                   ' %i: %r' % (arch, len(register), register))
+
+  def testFullInterpPath(self):
+    """Sanity check for the interp helper."""
+    self.assertNotEqual('', qemu.Qemu.GetFullInterpPath('foo'))
+
+  def testInode(self):
+    """Sanity check for the inode helper."""
+    self.assertEqual(-1, qemu.Qemu.inode('/.....'))
+    self.assertLess(0, qemu.Qemu.inode('/'))

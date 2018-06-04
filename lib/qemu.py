@@ -209,7 +209,7 @@ class Qemu(object):
         ('/usr/bin/%s' % self.name,
          sysroot + self.build_path),
         ('/usr/bin/qemu-binfmt-wrapper',
-         sysroot + self.build_path + '-binfmt-wrapper'),
+         self.GetFullInterpPath(sysroot + self.build_path)),
     )
 
     for src_path, sysroot_path in paths:
@@ -227,6 +227,11 @@ class Qemu(object):
         except OSError as e:
           if e.errno != errno.ENOENT:
             raise
+
+  @staticmethod
+  def GetFullInterpPath(interp):
+    """Return the full interpreter path used in the sysroot."""
+    return '%s-binfmt-wrapper' % (interp,)
 
   @classmethod
   def GetRegisterBinfmtStr(cls, arch, name, interp):
@@ -269,7 +274,7 @@ class Qemu(object):
         'name': name,
         'magic': magic,
         'mask': mask,
-        'interp': '%s-binfmt-wrapper' % interp,
+        'interp': cls.GetFullInterpPath(interp),
         'flags': 'POC',
     }
 
@@ -287,12 +292,9 @@ class Qemu(object):
       osutils.Mount('binfmt_misc', self._BINFMT_PATH, 'binfmt_misc', 0)
 
     if os.path.exists(self.binfmt_path):
-      interp = 'interpreter %s\n' % self.build_path
+      interp = '\ninterpreter %s\n' % (self.GetFullInterpPath(self.build_path),)
       data = '\n' + osutils.ReadFile(self.binfmt_path)
-      for line in data:
-        if line == interp:
-          break
-      else:
+      if interp not in data:
         logging.info('recreating binfmt config: %s', self.binfmt_path)
         logging.debug('config was missing line: %s', interp.strip())
         logging.debug('existing config:\n%s', data.strip())
