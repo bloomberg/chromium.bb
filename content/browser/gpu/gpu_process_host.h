@@ -181,6 +181,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
     return wake_up_gpu_before_drawing_;
   }
 
+  CONTENT_EXPORT int GetIDForTesting() const;
+
  private:
   class ConnectionFilterImpl;
 

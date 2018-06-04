@@ -6,6 +6,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/content_browser_test.h"
@@ -32,9 +33,23 @@ class MemoryCoordinatorImplBrowserTest : public ContentBrowserTest {
 // implemented.
 #if !defined(OS_MACOSX)
 
+void GetGpuProcessIDOnIO(int* gpu_process_id, base::WaitableEvent* event) {
+  *gpu_process_id = GpuProcessHost::Get()->GetIDForTesting();
+  event->Signal();
+}
+
 IN_PROC_BROWSER_TEST_F(MemoryCoordinatorImplBrowserTest, HandleAdded) {
   GURL url = GetTestUrl("", "simple_page.html");
   NavigateToURL(shell(), url);
+
+  // Query the GPU process ID from the IO thread.
+  int gpu_process_id = -1;
+  base::WaitableEvent io_event;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&GetGpuProcessIDOnIO, &gpu_process_id, &io_event));
+  io_event.Wait();
+  ASSERT_NE(gpu_process_id, -1);
 
   size_t num_children = 0;
   for (auto const& it : MemoryCoordinatorImpl::GetInstance()->children()) {
@@ -44,6 +59,10 @@ IN_PROC_BROWSER_TEST_F(MemoryCoordinatorImplBrowserTest, HandleAdded) {
     RenderProcessHost* spare_process =
         RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
     if (spare_process && process_id == spare_process->GetID())
+      continue;
+
+    // Ignore the GPU process.
+    if (process_id == gpu_process_id)
       continue;
 
     num_children++;
