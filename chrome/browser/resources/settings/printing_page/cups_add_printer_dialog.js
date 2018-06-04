@@ -246,13 +246,6 @@ Polymer({
     SetManufacturerModelBehavior,
   ],
 
-  properties: {
-    setupFailed: {
-      type: Boolean,
-      value: false,
-    },
-  },
-
   close: function() {
     this.$$('add-printer-dialog').close();
   },
@@ -318,12 +311,6 @@ Polymer({
       type: Object,
     },
 
-    /** @type {boolean} whether the new printer setup is failed. */
-    setupFailed: {
-      type: Boolean,
-      value: false,
-    },
-
     configuringDialogTitle: String,
 
     /** @private {string} */
@@ -387,7 +374,6 @@ Polymer({
   resetData_: function() {
     if (this.newPrinter)
       this.newPrinter = getEmptyPrinter_();
-    this.setupFailed = false;
   },
 
   /** @private */
@@ -555,15 +541,7 @@ Polymer({
   onAddPrinter_: function(success, printerName) {
     // 'on-add-cups-printer' event might be triggered by editing an existing
     // printer, in which case there is no configuring dialog.
-    if (!this.$$('add-printer-configuring-dialog'))
-      return;
-
-    this.$$('add-printer-configuring-dialog').close();
-    if (success)
-      return;
-
-    if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
-      this.setupFailed = true;
-    }
+    if (this.$$('add-printer-configuring-dialog'))
+      this.$$('add-printer-configuring-dialog').close();
   },
 });
