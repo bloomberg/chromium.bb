@@ -260,6 +260,18 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnFacingMode) {
             result.failed_constraint_name());
 }
 
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       OverconstrainedOnEmptyFacingMode) {
+  constraint_factory_.Reset();
+  // Empty is not a valid facingMode value.
+  constraint_factory_.basic().facing_mode.SetExact(
+      blink::WebString::FromASCII(""));
+  auto result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+  EXPECT_EQ(constraint_factory_.basic().facing_mode.GetName(),
+            result.failed_constraint_name());
+}
+
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnVideoKind) {
   constraint_factory_.Reset();
   // No device in |capabilities_| has video kind infrared.
