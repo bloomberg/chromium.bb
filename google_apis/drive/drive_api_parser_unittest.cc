@@ -196,6 +196,7 @@ TEST(DriveAPIParserTest, FileListParser) {
   ASSERT_TRUE(util::GetTimeFromString("2012-07-27T05:30:20.269Z",
                                       &modified_by_me_time));
   EXPECT_EQ(modified_by_me_time, file1.modified_by_me_date());
+  EXPECT_EQ("team_drive_id_1", file1.team_drive_id());
 
   ASSERT_EQ(1U, file1.parents().size());
   EXPECT_EQ("0B4v7G8yEYAWHYW1OcExsUVZLABC", file1.parents()[0].file_id());
@@ -235,6 +236,7 @@ TEST(DriveAPIParserTest, FileListParser) {
   const FileResource& file2 = *filelist->items()[1];
   EXPECT_EQ("Test Google Document", file2.title());
   EXPECT_EQ("application/vnd.google-apps.document", file2.mime_type());
+  EXPECT_EQ("team_drive_id_2", file2.team_drive_id());
 
   EXPECT_TRUE(file2.labels().is_trashed());
   EXPECT_TRUE(file2.labels().is_starred());
@@ -266,6 +268,7 @@ TEST(DriveAPIParserTest, FileListParser) {
   EXPECT_FALSE(file3.IsHostedDocument());
   EXPECT_EQ("TestFolder", file3.title());
   EXPECT_EQ("application/vnd.google-apps.folder", file3.mime_type());
+  EXPECT_EQ("", file3.team_drive_id());
   ASSERT_TRUE(file3.IsDirectory());
   EXPECT_FALSE(file3.shared());
 

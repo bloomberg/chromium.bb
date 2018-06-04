@@ -58,6 +58,7 @@
    "ownerNames": [
     "Test User"
    ],
+   "teamDriveId": "team_drive_id_1",
    "lastModifyingUserName": "Test User",
    "editable": true,
    "shared": false,
@@ -121,6 +122,7 @@
    "ownerNames": [
     "Test User"
    ],
+   "teamDriveId": "team_drive_id_2",
    "lastModifyingUserName": "Test User",
    "editable": true,
    "shared": true,

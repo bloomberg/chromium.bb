@@ -887,6 +887,13 @@ class FileResource {
     capabilities_ = capabilities;
   }
 
+  // ID of the Team Drive the file resides in. Will be empty if the file
+  // is not in a team drive.
+  const std::string& team_drive_id() const { return team_drive_id_; }
+  void set_team_drive_id(const std::string& team_drive_id) {
+    team_drive_id_ = team_drive_id;
+  }
+
  private:
   friend class base::internal::RepeatedMessageConverter<FileResource>;
   friend class ChangeResource;
@@ -915,6 +922,7 @@ class FileResource {
   std::vector<ParentReference> parents_;
   std::vector<OpenWithLink> open_with_links_;
   FileResourceCapabilities capabilities_;
+  std::string team_drive_id_;
 };
 
 // FileList represents a collection of files and folders.
