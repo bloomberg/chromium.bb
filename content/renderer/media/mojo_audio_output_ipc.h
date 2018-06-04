@@ -52,7 +52,7 @@ class CONTENT_EXPORT MojoAudioOutputIPC
 
   // media::mojom::AudioOutputStreamProviderClient implementation.
   void Created(media::mojom::AudioOutputStreamPtr stream,
-               media::mojom::AudioDataPipePtr data_pipe) override;
+               media::mojom::ReadWriteAudioDataPipePtr data_pipe) override;
 
  private:
   static constexpr double kDefaultVolume = 1.0;

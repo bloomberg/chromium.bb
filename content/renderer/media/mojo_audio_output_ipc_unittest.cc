@@ -70,9 +70,7 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
         base::CancelableSyncSocket::CreatePair(&socket_, &foreign_socket));
     provider_client_->Created(
         std::move(stream_ptr),
-        {base::in_place,
-         mojo::WrapUnsafeSharedMemoryRegion(
-             base::UnsafeSharedMemoryRegion::Create(kMemoryLength)),
+        {base::in_place, base::UnsafeSharedMemoryRegion::Create(kMemoryLength),
          mojo::WrapPlatformFile(foreign_socket.Release())});
   }
 

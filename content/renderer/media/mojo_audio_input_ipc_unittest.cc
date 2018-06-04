@@ -86,8 +86,7 @@ class FakeStreamCreator {
     factory_client_->StreamCreated(
         std::move(stream_ptr), mojo::MakeRequest(&stream_client_),
         {base::in_place,
-         mojo::WrapReadOnlySharedMemoryRegion(
-             base::ReadOnlySharedMemoryRegion::Create(kMemoryLength).region),
+         base::ReadOnlySharedMemoryRegion::Create(kMemoryLength).region,
          mojo::WrapPlatformFile(foreign_socket.Release())},
         initially_muted_, base::UnguessableToken::Create());
   }

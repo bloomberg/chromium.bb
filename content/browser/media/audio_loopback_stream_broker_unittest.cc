@@ -71,7 +71,7 @@ class MockRendererAudioInputStreamFactoryClient
   void StreamCreated(
       media::mojom::AudioInputStreamPtr input_stream,
       media::mojom::AudioInputStreamClientRequest client_request,
-      media::mojom::AudioDataPipePtr data_pipe,
+      media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
       bool initially_muted,
       const base::Optional<base::UnguessableToken>& stream_id) override {
     // Loopback streams have no stream ids.
@@ -219,7 +219,8 @@ TEST(AudioLoopbackStreamBrokerTest, StreamCreationSuccess_Propagates) {
   base::SyncSocket socket1, socket2;
   base::SyncSocket::CreatePair(&socket1, &socket2);
   std::move(stream_request_data.created_callback)
-      .Run({base::in_place, mojo::SharedBufferHandle::Create(shmem_size),
+      .Run({base::in_place,
+            base::ReadOnlySharedMemoryRegion::Create(shmem_size).region,
             mojo::WrapPlatformFile(socket1.Release())});
 
   EXPECT_CALL(env.renderer_factory_client, OnStreamCreated());
@@ -248,7 +249,8 @@ TEST(AudioLoopbackStreamBrokerTest, MutedStreamCreation_Mutes) {
   base::SyncSocket socket1, socket2;
   base::SyncSocket::CreatePair(&socket1, &socket2);
   std::move(stream_request_data.created_callback)
-      .Run({base::in_place, mojo::SharedBufferHandle::Create(shmem_size),
+      .Run({base::in_place,
+            base::ReadOnlySharedMemoryRegion::Create(shmem_size).region,
             mojo::WrapPlatformFile(socket1.Release())});
 
   EXPECT_CALL(env.renderer_factory_client, OnStreamCreated());
@@ -277,7 +279,8 @@ TEST(AudioLoopbackStreamBrokerTest, SourceGone_CallsDeleter) {
   base::SyncSocket socket1, socket2;
   base::SyncSocket::CreatePair(&socket1, &socket2);
   std::move(stream_request_data.created_callback)
-      .Run({base::in_place, mojo::SharedBufferHandle::Create(shmem_size),
+      .Run({base::in_place,
+            base::ReadOnlySharedMemoryRegion::Create(shmem_size).region,
             mojo::WrapPlatformFile(socket1.Release())});
 
   EXPECT_CALL(env.renderer_factory_client, OnStreamCreated());

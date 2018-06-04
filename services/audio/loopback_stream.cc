@@ -76,15 +76,12 @@ LoopbackStream::LoopbackStream(
     if (writer) {
       base::ReadOnlySharedMemoryRegion shared_memory_region =
           writer->TakeSharedMemoryRegion();
-      mojo::ScopedSharedBufferHandle buffer_handle;
       mojo::ScopedHandle socket_handle;
       if (shared_memory_region.IsValid()) {
-        buffer_handle = mojo::WrapReadOnlySharedMemoryRegion(
-            std::move(shared_memory_region));
         socket_handle = mojo::WrapPlatformFile(foreign_socket.Release());
-        if (buffer_handle.is_valid() && socket_handle.is_valid()) {
+        if (socket_handle.is_valid()) {
           std::move(created_callback)
-              .Run({base::in_place, std::move(buffer_handle),
+              .Run({base::in_place, std::move(shared_memory_region),
                     std::move(socket_handle)});
           network_.reset(new FlowNetwork(std::move(flow_task_runner), params,
                                          std::move(writer)));

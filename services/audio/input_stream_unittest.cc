@@ -176,7 +176,7 @@ class AudioServiceInputStreamTest : public testing::Test {
 
   MockLog& log() { return log_; }
 
-  void OnCreated(media::mojom::AudioDataPipePtr ptr,
+  void OnCreated(media::mojom::ReadOnlyAudioDataPipePtr ptr,
                  bool initially_muted,
                  const base::Optional<base::UnguessableToken>& stream_id) {
     EXPECT_EQ(stream_id.has_value(), !!ptr);

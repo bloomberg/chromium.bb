@@ -46,7 +46,7 @@ class InputIPC : public media::AudioInputIPC,
   void OnError() override;
   void OnMutedStateChanged(bool is_muted) override;
 
-  void StreamCreated(media::mojom::AudioDataPipePtr data_pipe,
+  void StreamCreated(media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
                      bool is_muted,
                      const base::Optional<base::UnguessableToken>& stream_id);
 

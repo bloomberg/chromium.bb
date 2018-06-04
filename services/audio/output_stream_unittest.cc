@@ -92,7 +92,9 @@ class MockCreatedCallback {
 
   MOCK_METHOD1(Created, void(bool /*valid*/));
 
-  void OnCreated(media::mojom::AudioDataPipePtr ptr) { Created(!!ptr); }
+  void OnCreated(media::mojom::ReadWriteAudioDataPipePtr ptr) {
+    Created(!!ptr);
+  }
 
   OutputStream::CreatedCallback Get() {
     return base::BindOnce(&MockCreatedCallback::OnCreated,

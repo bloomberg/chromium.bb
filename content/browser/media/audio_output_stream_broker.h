@@ -44,7 +44,7 @@ class CONTENT_EXPORT AudioOutputStreamBroker final : public AudioStreamBroker {
 
  private:
   void StreamCreated(media::mojom::AudioOutputStreamPtr stream,
-                     media::mojom::AudioDataPipePtr data_pipe);
+                     media::mojom::ReadWriteAudioDataPipePtr data_pipe);
   void ObserverBindingLost(uint32_t reason, const std::string& description);
   void Cleanup();
 

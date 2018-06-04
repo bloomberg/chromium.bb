@@ -178,7 +178,7 @@ class MockClient : public AudioOutputStreamProviderClient {
   }
 
   void Created(AudioOutputStreamPtr stream,
-               media::mojom::AudioDataPipePtr data_pipe) override {
+               media::mojom::ReadWriteAudioDataPipePtr data_pipe) override {
     was_called_ = true;
     stream_ = std::move(stream);
   }

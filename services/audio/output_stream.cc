@@ -138,26 +138,19 @@ void OutputStream::CreateAudioPipe(CreatedCallback created_callback) {
   DCHECK(reader_.IsValid());
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("audio", "CreateAudioPipe", this);
 
-  const base::SharedMemory* memory = reader_.shared_memory();
-  base::SharedMemoryHandle foreign_memory_handle =
-      base::SharedMemory::DuplicateHandle(memory->handle());
-  mojo::ScopedSharedBufferHandle buffer_handle;
-  mojo::ScopedHandle socket_handle;
-  if (base::SharedMemory::IsHandleValid(foreign_memory_handle)) {
-    buffer_handle = mojo::WrapSharedMemoryHandle(
-        foreign_memory_handle, memory->requested_size(),
-        mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
-    socket_handle = mojo::WrapPlatformFile(foreign_socket_.Release());
-  }
-  if (!buffer_handle.is_valid() || !socket_handle.is_valid()) {
+  base::UnsafeSharedMemoryRegion shared_memory_region =
+      reader_.TakeSharedMemoryRegion();
+  mojo::ScopedHandle socket_handle =
+      mojo::WrapPlatformFile(foreign_socket_.Release());
+  if (!shared_memory_region.IsValid() || !socket_handle.is_valid()) {
     std::move(created_callback).Run(nullptr);
     OnError();
     return;
   }
 
   std::move(created_callback)
-      .Run(
-          {base::in_place, std::move(buffer_handle), std::move(socket_handle)});
+      .Run({base::in_place, std::move(shared_memory_region),
+            std::move(socket_handle)});
 }
 
 void OutputStream::OnControllerPlaying() {

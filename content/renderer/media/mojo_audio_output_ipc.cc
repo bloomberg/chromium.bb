@@ -214,8 +214,9 @@ void MojoAudioOutputIPC::ReceivedDeviceAuthorization(
   delegate_->OnDeviceAuthorized(status, params, device_id);
 }
 
-void MojoAudioOutputIPC::Created(media::mojom::AudioOutputStreamPtr stream,
-                                 media::mojom::AudioDataPipePtr data_pipe) {
+void MojoAudioOutputIPC::Created(
+    media::mojom::AudioOutputStreamPtr stream,
+    media::mojom::ReadWriteAudioDataPipePtr data_pipe) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate_);
 
@@ -228,8 +229,8 @@ void MojoAudioOutputIPC::Created(media::mojom::AudioOutputStreamPtr stream,
       mojo::UnwrapPlatformFile(std::move(data_pipe->socket), &socket_handle);
   DCHECK_EQ(result, MOJO_RESULT_OK);
 
-  auto shared_memory_region =
-      mojo::UnwrapUnsafeSharedMemoryRegion(std::move(data_pipe->shared_memory));
+  base::UnsafeSharedMemoryRegion& shared_memory_region =
+      data_pipe->shared_memory;
   DCHECK(shared_memory_region.IsValid());
 
   delegate_->OnStreamCreated(std::move(shared_memory_region), socket_handle,

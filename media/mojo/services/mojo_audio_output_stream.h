@@ -24,7 +24,7 @@ class MEDIA_MOJO_EXPORT MojoAudioOutputStream
  public:
   using StreamCreatedCallback =
       base::OnceCallback<void(mojom::AudioOutputStreamPtr,
-                              media::mojom::AudioDataPipePtr)>;
+                              media::mojom::ReadWriteAudioDataPipePtr)>;
   using CreateDelegateCallback =
       base::OnceCallback<std::unique_ptr<AudioOutputDelegate>(
           AudioOutputDelegate::EventHandler*)>;

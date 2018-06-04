@@ -44,7 +44,7 @@ interface RendererAudioInputStreamFactoryClient {
   StreamCreated(
       media.mojom.AudioInputStream stream,
       media.mojom.AudioInputStreamClient& client_request,
-      media.mojom.AudioDataPipe data_pipe,
+      media.mojom.ReadOnlyAudioDataPipe data_pipe,
       bool initially_muted,
       mojo_base.mojom.UnguessableToken? stream_id);
 };

@@ -170,7 +170,7 @@ void AudioInputStreamBroker::DidStartRecording() {
 
 void AudioInputStreamBroker::StreamCreated(
     media::mojom::AudioInputStreamPtr stream,
-    media::mojom::AudioDataPipePtr data_pipe,
+    media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
     bool initially_muted,
     const base::Optional<base::UnguessableToken>& stream_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

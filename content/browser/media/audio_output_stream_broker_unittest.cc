@@ -53,7 +53,7 @@ class MockAudioOutputStreamProviderClient
   ~MockAudioOutputStreamProviderClient() override {}
 
   void Created(media::mojom::AudioOutputStreamPtr,
-               media::mojom::AudioDataPipePtr) override {
+               media::mojom::ReadWriteAudioDataPipePtr) override {
     OnCreated();
   }
 
@@ -197,7 +197,7 @@ TEST(AudioOutputStreamBrokerTest, StreamCreationSuccess_Propagates) {
   base::SyncSocket socket1, socket2;
   base::SyncSocket::CreatePair(&socket1, &socket2);
   std::move(stream_request_data.created_callback)
-      .Run({base::in_place, mojo::SharedBufferHandle::Create(kShMemSize),
+      .Run({base::in_place, base::UnsafeSharedMemoryRegion::Create(kShMemSize),
             mojo::WrapPlatformFile(socket1.Release())});
 
   EXPECT_CALL(env.provider_client, OnCreated());

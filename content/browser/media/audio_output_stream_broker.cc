@@ -101,7 +101,7 @@ void AudioOutputStreamBroker::CreateStream(
 
 void AudioOutputStreamBroker::StreamCreated(
     media::mojom::AudioOutputStreamPtr stream,
-    media::mojom::AudioDataPipePtr data_pipe) {
+    media::mojom::ReadWriteAudioDataPipePtr data_pipe) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   TRACE_EVENT_NESTABLE_ASYNC_END1("audio", "CreateStream", this, "success",
                                   !!data_pipe);

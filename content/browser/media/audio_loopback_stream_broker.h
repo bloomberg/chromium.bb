@@ -47,7 +47,7 @@ class CONTENT_EXPORT AudioLoopbackStreamBroker final
 
  private:
   void StreamCreated(media::mojom::AudioInputStreamPtr stream,
-                     media::mojom::AudioDataPipePtr data_pipe);
+                     media::mojom::ReadOnlyAudioDataPipePtr data_pipe);
   void Cleanup();
 
   const std::unique_ptr<AudioStreamBrokerFactory::LoopbackSource> source_;

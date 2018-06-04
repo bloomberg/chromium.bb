@@ -56,8 +56,9 @@ void AudioInputStreamHandle::SetOutputDeviceForAec(
   stream_.SetOutputDeviceForAec(raw_output_device_id);
 }
 
-void AudioInputStreamHandle::OnCreated(media::mojom::AudioDataPipePtr data_pipe,
-                                       bool initially_muted) {
+void AudioInputStreamHandle::OnCreated(
+    media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
+    bool initially_muted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(client_);
   DCHECK(deleter_callback_)

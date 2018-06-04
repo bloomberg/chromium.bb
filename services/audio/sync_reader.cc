@@ -62,11 +62,16 @@ SyncReader::SyncReader(
       buffer_index_(0) {
   base::CheckedNumeric<size_t> memory_size =
       media::ComputeAudioOutputBufferSizeChecked(params);
-  if (memory_size.IsValid() &&
-      shared_memory_.CreateAndMapAnonymous(memory_size.ValueOrDie()) &&
+  if (!memory_size.IsValid())
+    return;
+
+  shared_memory_region_ =
+      base::UnsafeSharedMemoryRegion::Create(memory_size.ValueOrDie());
+  shared_memory_mapping_ = shared_memory_region_.Map();
+  if (shared_memory_region_.IsValid() && shared_memory_mapping_.IsValid() &&
       base::CancelableSyncSocket::CreatePair(&socket_, foreign_socket)) {
-    auto* const buffer =
-        reinterpret_cast<media::AudioOutputBuffer*>(shared_memory_.memory());
+    auto* const buffer = reinterpret_cast<media::AudioOutputBuffer*>(
+        shared_memory_mapping_.memory());
     output_bus_ = media::AudioBus::WrapMemory(params, buffer->audio);
     output_bus_->Zero();
     output_bus_->set_is_bitstream_format(params.IsBitstreamFormat());
@@ -115,11 +120,16 @@ SyncReader::~SyncReader() {
 
 bool SyncReader::IsValid() const {
   if (output_bus_) {
-    DCHECK(shared_memory_.memory());
+    DCHECK(shared_memory_region_.IsValid());
+    DCHECK(shared_memory_mapping_.IsValid());
     DCHECK_NE(socket_.handle(), base::SyncSocket::kInvalidHandle);
     return true;
   }
   return false;
+}
+
+base::UnsafeSharedMemoryRegion SyncReader::TakeSharedMemoryRegion() {
+  return std::move(shared_memory_region_);
 }
 
 // AudioOutputController::SyncReader implementations.
@@ -129,8 +139,8 @@ void SyncReader::RequestMoreData(base::TimeDelta delay,
   // We don't send arguments over the socket since sending more than 4
   // bytes might lead to being descheduled. The reading side will zero
   // them when consumed.
-  auto* const buffer =
-      reinterpret_cast<media::AudioOutputBuffer*>(shared_memory_.memory());
+  auto* const buffer = reinterpret_cast<media::AudioOutputBuffer*>(
+      shared_memory_mapping_.memory());
   // Increase the number of skipped frames stored in shared memory.
   buffer->params.frames_skipped += prior_frames_skipped;
   buffer->params.delay_us = delay.InMicroseconds();
@@ -195,8 +205,8 @@ void SyncReader::Read(media::AudioBus* dest) {
 
   if (output_bus_->is_bitstream_format()) {
     // For bitstream formats, we need the real data size and PCM frame count.
-    auto* const buffer =
-        reinterpret_cast<media::AudioOutputBuffer*>(shared_memory_.memory());
+    auto* const buffer = reinterpret_cast<media::AudioOutputBuffer*>(
+        shared_memory_mapping_.memory());
     uint32_t data_size = buffer->params.bitstream_data_size;
     uint32_t bitstream_frames = buffer->params.bitstream_frames;
     // |bitstream_frames| is cast to int below, so it must fit.

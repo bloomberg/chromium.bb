@@ -59,7 +59,7 @@ class CONTENT_EXPORT MojoAudioInputIPC
   void StreamCreated(
       media::mojom::AudioInputStreamPtr stream,
       media::mojom::AudioInputStreamClientRequest stream_client_request,
-      media::mojom::AudioDataPipePtr data_pipe,
+      media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
       bool initially_muted,
       const base::Optional<base::UnguessableToken>& stream_id) override;
   void OnError() override;
