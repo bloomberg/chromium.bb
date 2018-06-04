@@ -18,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using autofill::FieldPropertiesFlags;
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::PasswordForm;
@@ -56,6 +57,9 @@ struct FieldDataDescription {
   ElementRole role = ElementRole::NONE;
   bool is_focusable = true;
   bool is_enabled = true;
+  bool is_readonly = false;
+  autofill::FieldPropertiesMask properties_mask =
+      FieldPropertiesFlags::NO_FLAGS;
   const char* autocomplete_attribute = nullptr;
   const char* value = kNonimportantValue;
   const char* form_control_type = "text";
@@ -117,6 +121,8 @@ FormData GetFormDataAndExpectation(
     field.form_control_type = field_description.form_control_type;
     field.is_focusable = field_description.is_focusable;
     field.is_enabled = field_description.is_enabled;
+    field.is_readonly = field_description.is_readonly;
+    field.properties_mask = field_description.properties_mask;
     if (field_description.value == kNonimportantValue) {
       field.value = StampUniqueSuffix("value");
     } else {
@@ -737,6 +743,65 @@ TEST(FormParserTest, SkippingFieldsWithCreditCardFields) {
                .autocomplete_attribute = "cc-any-string"},
               {.role = ElementRole::CURRENT_PASSWORD,
                .form_control_type = "password"},
+          },
+      },
+  });
+}
+
+TEST(FormParserTest, ReadonlyFields) {
+  CheckTestData({
+      {
+          "For usernames, readonly does not matter",
+          {
+              {{.role = ElementRole::USERNAME,
+                .form_control_type = "text",
+                .is_readonly = true},
+               {.role = ElementRole::CURRENT_PASSWORD,
+                .form_control_type = "password"}},
+          },
+      },
+      {
+          "For passwords, readonly means: 'give up', perhaps there is a "
+          "virtual keyboard, filling might be ignored",
+          {
+              {{.form_control_type = "text"},
+               {.form_control_type = "password", .is_readonly = true}},
+          },
+      },
+      {
+          "But correctly marked passwords are accepted even if readonly",
+          {
+              {{.role = ElementRole::USERNAME,
+                .form_control_type = "text",
+                .autocomplete_attribute = "username"},
+               {.role = ElementRole::NEW_PASSWORD,
+                .autocomplete_attribute = "new-password",
+                .form_control_type = "password",
+                .is_readonly = true},
+               {.role = ElementRole::CONFIRMATION_PASSWORD,
+                .autocomplete_attribute = "new-password",
+                .form_control_type = "password",
+                .is_readonly = true},
+               {.role = ElementRole::CURRENT_PASSWORD,
+                .autocomplete_attribute = "current-password",
+                .form_control_type = "password",
+                .is_readonly = true}},
+          },
+      },
+      {
+          "And passwords already filled by user or Chrome are accepted even if "
+          "readonly",
+          {
+              {{.role = ElementRole::USERNAME, .form_control_type = "text"},
+               {.role = ElementRole::CURRENT_PASSWORD,
+                .properties_mask = FieldPropertiesFlags::AUTOFILLED,
+                .form_control_type = "password",
+                .is_readonly = true},
+               {.role = ElementRole::NEW_PASSWORD,
+                .properties_mask = FieldPropertiesFlags::USER_TYPED,
+                .form_control_type = "password",
+                .is_readonly = true},
+               {.form_control_type = "password", .is_readonly = true}},
           },
       },
   });
