@@ -1542,6 +1542,8 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
     overscroll_controller_->OnGestureEventAck(event, ack_result);
   mouse_wheel_phase_handler_.GestureEventAck(event, ack_result);
 
+  ForwardTouchpadPinchIfNecessary(event, ack_result);
+
   if (!gesture_listener_manager_)
     return;
   gesture_listener_manager_->GestureEventAck(event, ack_result);

@@ -1338,6 +1338,8 @@ jumbo_source_set("browser") {
     "renderer_host/input/touch_selection_controller_client_child_frame.h",
     "renderer_host/input/touch_timeout_handler.cc",
     "renderer_host/input/touch_timeout_handler.h",
+    "renderer_host/input/touchpad_pinch_event_queue.cc",
+    "renderer_host/input/touchpad_pinch_event_queue.h",
     "renderer_host/input/touchpad_tap_suppression_controller.cc",
     "renderer_host/input/touchpad_tap_suppression_controller.h",
     "renderer_host/input/touchscreen_tap_suppression_controller.cc",

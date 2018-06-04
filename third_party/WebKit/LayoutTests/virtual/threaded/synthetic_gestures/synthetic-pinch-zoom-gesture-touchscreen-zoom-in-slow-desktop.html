@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="../resources/gesture-util.js"></script>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/gesture-util.js"></script>
 <link href="synthetic-pinch-zoom-gesture.css" rel="stylesheet">
 <script src="synthetic-pinch-zoom-gesture.js"></script>
 
@@ -15,12 +15,9 @@
   const TOUCH_INPUT = 1;  // Gesture source type from synthetic_gesture_params.h
 
   const t = async_test(
-      "This tests that gpuBenchmarking.pinchBy is relatively accurate for quick touchscreen pinch gestures.");
+      "This tests that gpuBenchmarking.pinchBy is relatively accurate when zooming in slowly for touchscreen pinch.");
   const testCases = [
-    { startingScale: 1, scale: 3, speed: 1000, gestureSource: TOUCH_INPUT, msg: "Zooming in quickly" },
-    { startingScale: 3, scale: 0.5, speed: 1000, gestureSource: TOUCH_INPUT, msg: "Zooming out quickly" },
-    { startingScale: 1, scale: 3, speed: 50000, gestureSource: TOUCH_INPUT, msg: "Zooming in instantly" },
-    { startingScale: 4, scale: 0.5, speed: 50000, gestureSource: TOUCH_INPUT, msg: "Zooming out instantly" },
+    { startingScale: 1, scale: 3, speed: 100, gestureSource: TOUCH_INPUT, msg: "Zooming in slowly" },
   ];
   addEventListener('load', () => {
     runAllTestCasesDesktop(t, testCases).then(t.done.bind(t));
