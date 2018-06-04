@@ -4,6 +4,7 @@
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/mojo/public/mojom/base/big_buffer.mojom.js"></script>
 <script src="file:///gen/services/shape_detection/public/mojom/barcodedetection.mojom.js"></script>
+<script src="file:///gen/services/shape_detection/public/mojom/barcodedetection_provider.mojom.js"></script>
 <script src="file:///gen/services/shape_detection/public/mojom/facedetection.mojom.js"></script>
 <script src="file:///gen/services/shape_detection/public/mojom/facedetection_provider.mojom.js"></script>
 <script src="file:///gen/services/shape_detection/public/mojom/textdetection.mojom.js"></script>
@@ -66,7 +67,7 @@ generate_tests(createTestForImageBitmap, [
   [
     "Barcode - detect(ImageBitmap)",
     () => { return new BarcodeDetector(); },
-    mockBarcodeDetection,
+    mockBarcodeDetectionProvider,
     BarcodeDetectorDetectionResultTest
   ],
   [
