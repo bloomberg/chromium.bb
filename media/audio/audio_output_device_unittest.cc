@@ -468,13 +468,7 @@ TEST_F(AudioOutputDeviceTest, CreateNondefaultDevice) {
   task_env_.RunUntilIdle();
 }
 
-// TODO(https://crbug.com/848926): Flakes frequently on Fuchsia bots.
-#if defined(OS_FUCHSIA)
-#define MAYBE_CreateBitStreamStream DISABLED_CreateBitStreamStream
-#else
-#define MAYBE_CreateBitStreamStream CreateBitStreamStream
-#endif
-TEST_F(AudioOutputDeviceTest, MAYBE_CreateBitStreamStream) {
+TEST_F(AudioOutputDeviceTest, CreateBitStreamStream) {
   // The test fixture isn't used in this test, but we still have to clean up
   // after it.
   StopAudioDevice();
