@@ -655,13 +655,9 @@ void CrostiniManager::StartContainer(std::string vm_name,
     return;
   }
   if (!GetConciergeClient()->IsContainerStartedSignalConnected() ||
-      !GetCiceroneClient()->IsContainerStartedSignalConnected()) {
-    LOG(ERROR) << "Async call to StartContainer can't complete when signal "
-                  "is not connected.";
-    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
-    return;
-  }
-  if (!GetConciergeClient()->IsContainerStartupFailedSignalConnected()) {
+      !GetConciergeClient()->IsContainerStartupFailedSignalConnected() ||
+      !GetCiceroneClient()->IsContainerStartedSignalConnected() ||
+      !GetCiceroneClient()->IsContainerShutdownSignalConnected()) {
     LOG(ERROR) << "Async call to StartContainer can't complete when signal "
                   "is not connected.";
     std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
@@ -792,6 +788,16 @@ void CrostiniManager::AbortRestartCrostini(
     Profile* profile,
     CrostiniManager::RestartId restart_id) {
   CrostiniRestarterServiceFactory::GetForProfile(profile)->Abort(restart_id);
+}
+
+void CrostiniManager::AddShutdownContainerCallback(
+    Profile* profile,
+    std::string vm_name,
+    std::string container_name,
+    ShutdownContainerCallback shutdown_callback) {
+  shutdown_container_callbacks_.emplace(
+      std::make_tuple(CryptohomeIdForProfile(profile), vm_name, container_name),
+      std::move(shutdown_callback));
 }
 
 void CrostiniManager::OnCreateDiskImage(
@@ -956,6 +962,22 @@ void CrostiniManager::OnContainerStarted(
     std::move(it->second).Run(ConciergeClientResult::SUCCESS);
   }
   start_container_callbacks_.erase(range.first, range.second);
+}
+
+void CrostiniManager::OnContainerShutdown(
+    const vm_tools::cicerone::ContainerShutdownSignal& signal) {
+  // Find the callbacks to call, then erase them from the map.
+  std::string owner_id = signal.owner_id();
+  // TODO(joelhockey): remove this check once Cicerone always fills in owner_id.
+  if (owner_id.empty()) {
+    owner_id = CryptohomeIdForProfile(ProfileManager::GetPrimaryUserProfile());
+  }
+  auto range = shutdown_container_callbacks_.equal_range(
+      std::make_tuple(owner_id, signal.vm_name(), signal.container_name()));
+  for (auto it = range.first; it != range.second; ++it) {
+    std::move(it->second).Run();
+  }
+  shutdown_container_callbacks_.erase(range.first, range.second);
 }
 
 void CrostiniManager::OnLaunchContainerApplication(

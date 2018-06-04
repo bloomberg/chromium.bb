@@ -32,6 +32,10 @@ class CiceroneClientImpl : public CiceroneClient {
     return is_container_started_signal_connected_;
   }
 
+  bool IsContainerShutdownSignalConnected() override {
+    return is_container_shutdown_signal_connected_;
+  }
+
   void LaunchContainerApplication(
       const vm_tools::cicerone::LaunchContainerApplicationRequest& request,
       DBusMethodCallback<vm_tools::cicerone::LaunchContainerApplicationResponse>
@@ -100,6 +104,13 @@ class CiceroneClientImpl : public CiceroneClient {
                             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&CiceroneClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
+    cicerone_proxy_->ConnectToSignal(
+        vm_tools::cicerone::kVmCiceroneInterface,
+        vm_tools::cicerone::kContainerShutdownSignal,
+        base::BindRepeating(&CiceroneClientImpl::OnContainerShutdownSignal,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&CiceroneClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -132,6 +143,18 @@ class CiceroneClientImpl : public CiceroneClient {
     }
   }
 
+  void OnContainerShutdownSignal(dbus::Signal* signal) {
+    vm_tools::cicerone::ContainerShutdownSignal container_shutdown_signal;
+    dbus::MessageReader reader(signal);
+    if (!reader.PopArrayOfBytesAsProto(&container_shutdown_signal)) {
+      LOG(ERROR) << "Failed to parse proto from DBus Signal";
+      return;
+    }
+    for (auto& observer : observer_list_) {
+      observer.OnContainerShutdown(container_shutdown_signal);
+    }
+  }
+
   void OnSignalConnected(const std::string& interface_name,
                          const std::string& signal_name,
                          bool is_connected) {
@@ -140,8 +163,13 @@ class CiceroneClientImpl : public CiceroneClient {
           << "Failed to connect to Signal. Async StartContainer will not work";
     }
     DCHECK_EQ(interface_name, vm_tools::cicerone::kVmCiceroneInterface);
-    DCHECK_EQ(signal_name, vm_tools::cicerone::kContainerStartedSignal);
-    is_container_started_signal_connected_ = is_connected;
+    if (signal_name == vm_tools::cicerone::kContainerStartedSignal) {
+      is_container_started_signal_connected_ = is_connected;
+    } else if (signal_name == vm_tools::cicerone::kContainerShutdownSignal) {
+      is_container_shutdown_signal_connected_ = is_connected;
+    } else {
+      NOTREACHED();
+    }
   }
 
   dbus::ObjectProxy* cicerone_proxy_ = nullptr;
@@ -149,6 +177,7 @@ class CiceroneClientImpl : public CiceroneClient {
   base::ObserverList<Observer> observer_list_;
 
   bool is_container_started_signal_connected_ = false;
+  bool is_container_shutdown_signal_connected_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
