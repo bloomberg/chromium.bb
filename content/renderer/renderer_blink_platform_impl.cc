@@ -184,10 +184,6 @@ namespace content {
 namespace {
 
 bool g_sandbox_enabled = true;
-base::LazyInstance<device::MotionData>::Leaky g_test_device_motion_data =
-    LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<device::OrientationData>::Leaky
-    g_test_device_orientation_data = LAZY_INSTANCE_INITIALIZER;
 
 media::AudioParameters GetAudioHardwareParams() {
   blink::WebLocalFrame* const web_frame =
@@ -1118,22 +1114,6 @@ void RendererBlinkPlatformImpl::RecordRapporURL(const char* metric,
 //------------------------------------------------------------------------------
 
 // static
-void RendererBlinkPlatformImpl::SetMockDeviceMotionDataForTesting(
-    const device::MotionData& data) {
-  g_test_device_motion_data.Get() = data;
-}
-
-//------------------------------------------------------------------------------
-
-// static
-void RendererBlinkPlatformImpl::SetMockDeviceOrientationDataForTesting(
-    const device::OrientationData& data) {
-  g_test_device_orientation_data.Get() = data;
-}
-
-//------------------------------------------------------------------------------
-
-// static
 std::unique_ptr<PlatformEventObserverBase>
 RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
     blink::WebPlatformEventType type) {
@@ -1196,49 +1176,6 @@ void RendererBlinkPlatformImpl::StartListening(
                                         static_cast<int32_t>(type));
   }
   observer->Start(listener);
-
-  // Device events (motion and orientation) expect to get an event fired
-  // as soon as a listener is registered if a fake data was passed before.
-  // TODO(mlamouri,timvolodine): make those send mock values directly instead of
-  // using this broken pattern.
-  if (RenderThreadImpl::current() &&
-      RenderThreadImpl::current()->layout_test_mode() &&
-      (type == blink::kWebPlatformEventTypeDeviceMotion ||
-       type == blink::kWebPlatformEventTypeDeviceOrientation ||
-       type == blink::kWebPlatformEventTypeDeviceOrientationAbsolute)) {
-    SendFakeDeviceEventDataForTesting(type);
-  }
-}
-
-void RendererBlinkPlatformImpl::SendFakeDeviceEventDataForTesting(
-    blink::WebPlatformEventType type) {
-  PlatformEventObserverBase* observer = platform_event_observers_.Lookup(type);
-  CHECK(observer);
-
-  void* data = nullptr;
-
-  switch (type) {
-    case blink::kWebPlatformEventTypeDeviceMotion:
-      if (g_test_device_motion_data.IsCreated())
-        data = &g_test_device_motion_data.Get();
-      break;
-    case blink::kWebPlatformEventTypeDeviceOrientation:
-    case blink::kWebPlatformEventTypeDeviceOrientationAbsolute:
-      if (g_test_device_orientation_data.IsCreated())
-        data = &g_test_device_orientation_data.Get();
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  if (!data)
-    return;
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PlatformEventObserverBase::SendFakeDataForTesting,
-                     base::Unretained(observer), data));
 }
 
 void RendererBlinkPlatformImpl::StopListening(

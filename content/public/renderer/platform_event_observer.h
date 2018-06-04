@@ -28,10 +28,6 @@ class PlatformEventObserverBase {
 
   virtual void Start(blink::WebPlatformEventListener* listener) = 0;
   virtual void Stop() = 0;
-
-  // Helper method that allows an sub-class to write its own test helper.
-  // The |data| type MUST be known from the caller.
-  virtual void SendFakeDataForTesting(void* data) { }
 };
 
 // PlatformEventObserver<> defines the basic skeleton for an object requesting

@@ -49,8 +49,6 @@ class WebSecurityOrigin;
 
 namespace device {
 class Gamepads;
-class MotionData;
-class OrientationData;
 }
 
 namespace network {
@@ -224,13 +222,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // Returns the previous |enable| value.
   static bool SetSandboxEnabledForTesting(bool enable);
 
-  // Set MotionData to return when setDeviceMotionListener is invoked.
-  static void SetMockDeviceMotionDataForTesting(const device::MotionData& data);
-  // Set OrientationData to return when setDeviceOrientationListener
-  // is invoked.
-  static void SetMockDeviceOrientationDataForTesting(
-      const device::OrientationData& data);
-
   WebDatabaseObserverImpl* web_database_observer_impl() {
     return web_database_observer_impl_.get();
   }
@@ -274,10 +265,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // it.
   static std::unique_ptr<PlatformEventObserverBase>
   CreatePlatformEventObserverFromType(blink::WebPlatformEventType type);
-
-  // Use the data previously set via SetMockDevice...DataForTesting() and send
-  // them to the registered listener.
-  void SendFakeDeviceEventDataForTesting(blink::WebPlatformEventType type);
 
   // Ensure that the WebDatabaseHost has been initialized.
   void InitializeWebDatabaseHostIfNeeded();

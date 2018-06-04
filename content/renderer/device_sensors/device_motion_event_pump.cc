@@ -57,14 +57,6 @@ void DeviceMotionEventPump::SendStopMessage() {
   gyroscope_.Stop();
 }
 
-void DeviceMotionEventPump::SendFakeDataForTesting(void* fake_data) {
-  if (!listener())
-    return;
-
-  device::MotionData data = *static_cast<device::MotionData*>(fake_data);
-  listener()->DidChangeDeviceMotion(data);
-}
-
 void DeviceMotionEventPump::FireEvent() {
   device::MotionData data;
   // The device orientation spec states that interval should be in milliseconds.

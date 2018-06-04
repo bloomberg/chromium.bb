@@ -259,14 +259,6 @@ void SetMockGamepadProvider(std::unique_ptr<RendererGamepadProvider> provider) {
                                            std::move(provider));
 }
 
-void SetMockDeviceMotionData(const MotionData& data) {
-  RendererBlinkPlatformImpl::SetMockDeviceMotionDataForTesting(data);
-}
-
-void SetMockDeviceOrientationData(const OrientationData& data) {
-  RendererBlinkPlatformImpl::SetMockDeviceOrientationDataForTesting(data);
-}
-
 void SetWorkerRewriteURLFunction(RewriteURLFunction rewrite_url_function) {
   WorkerFetchContextImpl::InstallRewriteURLFunction(rewrite_url_function);
 }

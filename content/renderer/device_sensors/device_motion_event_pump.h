@@ -26,7 +26,6 @@ class CONTENT_EXPORT DeviceMotionEventPump
   // PlatformEventObserver:
   void SendStartMessage() override;
   void SendStopMessage() override;
-  void SendFakeDataForTesting(void* fake_data) override;
 
  protected:
   // DeviceSensorEventPump:

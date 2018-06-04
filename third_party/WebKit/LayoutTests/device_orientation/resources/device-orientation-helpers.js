@@ -34,38 +34,6 @@ function generateOrientationData(alpha, beta, gamma, absolute) {
   return orientationData;
 }
 
-function setMockMotion(motionData) {
-  testRunner.setMockDeviceMotion(null != motionData.accelerationX,
-      null == motionData.accelerationX ? 0 : motionData.accelerationX,
-      null != motionData.accelerationY,
-      null == motionData.accelerationY ? 0 : motionData.accelerationY,
-      null != motionData.accelerationZ,
-      null == motionData.accelerationZ ? 0 : motionData.accelerationZ,
-      null != motionData.accelerationIncludingGravityX,
-      null == motionData.accelerationIncludingGravityX ? 0 : motionData.accelerationIncludingGravityX,
-      null != motionData.accelerationIncludingGravityY,
-      null == motionData.accelerationIncludingGravityY ? 0 : motionData.accelerationIncludingGravityY,
-      null != motionData.accelerationIncludingGravityZ,
-      null == motionData.accelerationIncludingGravityZ ? 0 : motionData.accelerationIncludingGravityZ,
-      null != motionData.rotationRateAlpha,
-      null == motionData.rotationRateAlpha ? 0 : motionData.rotationRateAlpha,
-      null != motionData.rotationRateBeta,
-      null == motionData.rotationRateBeta ? 0 : motionData.rotationRateBeta,
-      null != motionData.rotationRateGamma,
-      null == motionData.rotationRateGamma ? 0 : motionData.rotationRateGamma,
-      motionData.interval);
-}
-
-function setMockOrientation(orientationData) {
-  testRunner.setMockDeviceOrientation(null != orientationData.alpha,
-      null == orientationData.alpha ? 0 : orientationData.alpha,
-      null != orientationData.beta,
-      null == orientationData.beta ? 0 : orientationData.beta,
-      null != orientationData.gamma,
-      null == orientationData.gamma ? 0 : orientationData.gamma,
-      orientationData.absolute);
-}
-
 // Device[Orientation|Motion]EventPump treat NaN as a missing value.
 let nullToNan = x => (x === null ? NaN : x);
 
