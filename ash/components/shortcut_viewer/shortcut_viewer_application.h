@@ -22,6 +22,11 @@ class ShortcutViewerApplication : public service_manager::Service,
   ShortcutViewerApplication();
   ~ShortcutViewerApplication() override;
 
+  // Records a single trace event for shortcut viewer. chrome://tracing doesn't
+  // allow selecting a trace event category for recording until the tracing
+  // system has seen at least one event.
+  static void RegisterForTraceEvents();
+
  private:
   // service_manager::Service:
   void OnStart() override;
