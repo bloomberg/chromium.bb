@@ -40,7 +40,7 @@ blink::WebString ToWebString(media::VideoFacingMode facing_mode) {
     case media::MEDIA_VIDEO_FACING_ENVIRONMENT:
       return blink::WebString::FromASCII("environment");
     default:
-      return blink::WebString::FromASCII("");
+      return blink::WebString();
   }
 }
 
@@ -239,6 +239,25 @@ double StringConstraintSourceDistance(const blink::WebString& value,
   if (failed_constraint_name)
     *failed_constraint_name = constraint.GetName();
   return HUGE_VAL;
+}
+
+double FacingModeConstraintSourceDistance(
+    media::VideoFacingMode value,
+    const blink::StringConstraint& facing_mode_constraint,
+    const char** failed_constraint_name) {
+  blink::WebString string_value = ToWebString(value);
+  if (string_value.IsNull()) {
+    if (facing_mode_constraint.Exact().empty())
+      return 0.0;
+
+    if (failed_constraint_name)
+      *failed_constraint_name = facing_mode_constraint.GetName();
+    return HUGE_VAL;
+  }
+
+  double ret = StringConstraintSourceDistance(
+      string_value, facing_mode_constraint, failed_constraint_name);
+  return ret;
 }
 
 // Returns a custom distance between a source screen dimension and |constraint|.
@@ -446,9 +465,8 @@ double DeviceSourceDistance(
          StringConstraintSourceDistance(blink::WebString::FromASCII(group_id),
                                         constraint_set.group_id,
                                         failed_constraint_name) +
-         StringConstraintSourceDistance(ToWebString(facing_mode),
-                                        constraint_set.facing_mode,
-                                        failed_constraint_name);
+         FacingModeConstraintSourceDistance(
+             facing_mode, constraint_set.facing_mode, failed_constraint_name);
 }
 
 // Returns a custom distance between |constraint_set| and |format| given that
