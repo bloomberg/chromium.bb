@@ -34,8 +34,8 @@ class PLATFORM_EXPORT CompositorThreadScheduler
   ~CompositorThreadScheduler() override;
 
   // NonMainThreadSchedulerImpl:
-  scoped_refptr<WorkerTaskQueue> DefaultTaskQueue() override;
-  void OnTaskCompleted(WorkerTaskQueue* worker_task_queue,
+  scoped_refptr<NonMainThreadTaskQueue> DefaultTaskQueue() override;
+  void OnTaskCompleted(NonMainThreadTaskQueue* worker_task_queue,
                        const base::sequence_manager::TaskQueue::Task& task,
                        base::TimeTicks start,
                        base::TimeTicks end,

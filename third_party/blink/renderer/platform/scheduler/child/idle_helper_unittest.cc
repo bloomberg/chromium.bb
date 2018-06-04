@@ -212,7 +212,7 @@ class BaseIdleHelperTest : public testing::Test {
         scheduler_helper_.get(),
         required_quiescence_duration_before_long_idle_period,
         scheduler_helper_->NewTaskQueue(TaskQueue::Spec("idle_test")));
-    default_task_runner_ = scheduler_helper_->DefaultWorkerTaskQueue();
+    default_task_runner_ = scheduler_helper_->DefaultNonMainThreadTaskQueue();
     idle_task_runner_ = idle_helper_->IdleTaskRunner();
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
   }

@@ -39,7 +39,7 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
         nullptr, TaskType::kInternalTest));
 
     scheduler_helper_->AddTaskTimeObserver(&test_task_time_observer_);
-    task_queue_ = scheduler_helper_->DefaultWorkerTaskQueue();
+    task_queue_ = scheduler_helper_->DefaultNonMainThreadTaskQueue();
     initial_time_ = base::Time::FromJsTime(100000.0);
     initial_time_ticks_ = test_task_runner_->NowTicks();
     auto_advancing_time_domain_.reset(new AutoAdvancingVirtualTimeDomain(

@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/platform/scheduler/child/worker_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_task_queue.h"
 
 namespace blink {
 namespace scheduler {
@@ -23,11 +23,11 @@ class PLATFORM_EXPORT NonMainThreadSchedulerHelper : public SchedulerHelper {
       TaskType default_task_type);
   ~NonMainThreadSchedulerHelper() override;
 
-  scoped_refptr<WorkerTaskQueue> NewTaskQueue(
+  scoped_refptr<NonMainThreadTaskQueue> NewTaskQueue(
       const base::sequence_manager::TaskQueue::Spec& spec);
 
-  scoped_refptr<WorkerTaskQueue> DefaultWorkerTaskQueue();
-  scoped_refptr<WorkerTaskQueue> ControlWorkerTaskQueue();
+  scoped_refptr<NonMainThreadTaskQueue> DefaultNonMainThreadTaskQueue();
+  scoped_refptr<NonMainThreadTaskQueue> ControlNonMainThreadTaskQueue();
 
  protected:
   scoped_refptr<base::sequence_manager::TaskQueue> DefaultTaskQueue() override;
@@ -35,8 +35,8 @@ class PLATFORM_EXPORT NonMainThreadSchedulerHelper : public SchedulerHelper {
 
  private:
   NonMainThreadSchedulerImpl* non_main_thread_scheduler_;  // NOT OWNED
-  const scoped_refptr<WorkerTaskQueue> default_task_queue_;
-  const scoped_refptr<WorkerTaskQueue> control_task_queue_;
+  const scoped_refptr<NonMainThreadTaskQueue> default_task_queue_;
+  const scoped_refptr<NonMainThreadTaskQueue> control_task_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(NonMainThreadSchedulerHelper);
 };

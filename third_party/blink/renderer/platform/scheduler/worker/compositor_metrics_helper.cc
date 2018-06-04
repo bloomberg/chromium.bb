@@ -13,7 +13,7 @@ CompositorMetricsHelper::CompositorMetricsHelper()
 CompositorMetricsHelper::~CompositorMetricsHelper() {}
 
 void CompositorMetricsHelper::RecordTaskMetrics(
-    WorkerTaskQueue* queue,
+    NonMainThreadTaskQueue* queue,
     const base::sequence_manager::TaskQueue::Task& task,
     base::TimeTicks start_time,
     base::TimeTicks end_time,

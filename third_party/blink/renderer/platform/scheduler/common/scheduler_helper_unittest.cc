@@ -63,7 +63,7 @@ class SchedulerHelperTest : public testing::Test {
     task_queue_manager_ = task_queue_manager.get();
     scheduler_helper_ = std::make_unique<NonMainThreadSchedulerHelper>(
         std::move(task_queue_manager), nullptr, TaskType::kInternalTest);
-    default_task_runner_ = scheduler_helper_->DefaultWorkerTaskQueue();
+    default_task_runner_ = scheduler_helper_->DefaultNonMainThreadTaskQueue();
   }
 
   ~SchedulerHelperTest() override = default;
@@ -132,11 +132,11 @@ TEST_F(SchedulerHelperTest, IsShutdown) {
 
 TEST_F(SchedulerHelperTest, GetNumberOfPendingTasks) {
   std::vector<std::string> run_order;
-  scheduler_helper_->DefaultWorkerTaskQueue()->PostTask(
+  scheduler_helper_->DefaultNonMainThreadTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "D1"));
-  scheduler_helper_->DefaultWorkerTaskQueue()->PostTask(
+  scheduler_helper_->DefaultNonMainThreadTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "D2"));
-  scheduler_helper_->ControlWorkerTaskQueue()->PostTask(
+  scheduler_helper_->ControlNonMainThreadTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "C1"));
   EXPECT_EQ(3U, task_queue_manager_->PendingTasksCount());
   task_environment_.RunUntilIdle();
@@ -157,7 +157,7 @@ TEST_F(SchedulerHelperTest, ObserversNotifiedFor_DefaultTaskRunner) {
   MockTaskObserver observer;
   scheduler_helper_->AddTaskObserver(&observer);
 
-  scheduler_helper_->DefaultWorkerTaskQueue()->PostTask(
+  scheduler_helper_->DefaultNonMainThreadTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&NopTask));
 
   EXPECT_CALL(observer, WillProcessTask(_)).Times(1);
@@ -169,7 +169,7 @@ TEST_F(SchedulerHelperTest, ObserversNotNotifiedFor_ControlTaskQueue) {
   MockTaskObserver observer;
   scheduler_helper_->AddTaskObserver(&observer);
 
-  scheduler_helper_->ControlWorkerTaskQueue()->PostTask(
+  scheduler_helper_->ControlNonMainThreadTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&NopTask));
 
   EXPECT_CALL(observer, WillProcessTask(_)).Times(0);

@@ -124,7 +124,7 @@ WorkerThreadScheduler::WorkerThreadScheduler(
                               : FrameScheduler::ThrottlingState::kNotThrottled),
       worker_metrics_helper_(thread_type),
       default_task_runner_(TaskQueueWithTaskType::Create(
-          helper_->DefaultWorkerTaskQueue(),
+          helper_->DefaultNonMainThreadTaskQueue(),
           TaskType::kWorkerThreadTaskQueueDefault)) {
   thread_start_time_ = helper_->NowTicks();
   load_tracker_.Resume(thread_start_time_);
@@ -215,9 +215,10 @@ void WorkerThreadScheduler::Shutdown() {
   helper_->Shutdown();
 }
 
-scoped_refptr<WorkerTaskQueue> WorkerThreadScheduler::DefaultTaskQueue() {
+scoped_refptr<NonMainThreadTaskQueue>
+WorkerThreadScheduler::DefaultTaskQueue() {
   DCHECK(initialized_);
-  return helper_->DefaultWorkerTaskQueue();
+  return helper_->DefaultNonMainThreadTaskQueue();
 }
 
 void WorkerThreadScheduler::InitImpl() {
@@ -231,7 +232,7 @@ void WorkerThreadScheduler::InitImpl() {
 }
 
 void WorkerThreadScheduler::OnTaskCompleted(
-    WorkerTaskQueue* worker_task_queue,
+    NonMainThreadTaskQueue* worker_task_queue,
     const TaskQueue::Task& task,
     base::TimeTicks start,
     base::TimeTicks end,
@@ -284,8 +285,9 @@ void WorkerThreadScheduler::RegisterWorkerScheduler(
   worker_scheduler->OnThrottlingStateChanged(throttling_state_);
 }
 
-scoped_refptr<WorkerTaskQueue> WorkerThreadScheduler::ControlTaskQueue() {
-  return helper_->ControlWorkerTaskQueue();
+scoped_refptr<NonMainThreadTaskQueue>
+WorkerThreadScheduler::ControlTaskQueue() {
+  return helper_->ControlNonMainThreadTaskQueue();
 }
 
 void WorkerThreadScheduler::CreateTaskQueueThrottler() {

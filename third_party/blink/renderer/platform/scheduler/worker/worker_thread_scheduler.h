@@ -55,8 +55,8 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   void Shutdown() override;
 
   // NonMainThreadSchedulerImpl implementation:
-  scoped_refptr<WorkerTaskQueue> DefaultTaskQueue() override;
-  void OnTaskCompleted(WorkerTaskQueue* worker_task_queue,
+  scoped_refptr<NonMainThreadTaskQueue> DefaultTaskQueue() override;
+  void OnTaskCompleted(NonMainThreadTaskQueue* worker_task_queue,
                        const base::sequence_manager::TaskQueue::Task& task,
                        base::TimeTicks start,
                        base::TimeTicks end,
@@ -82,7 +82,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   // Returns the control task queue.  Tasks posted to this queue are executed
   // with the highest priority. Care must be taken to avoid starvation of other
   // task queues.
-  scoped_refptr<WorkerTaskQueue> ControlTaskQueue();
+  scoped_refptr<NonMainThreadTaskQueue> ControlTaskQueue();
 
  protected:
   // NonMainThreadScheduler implementation:
@@ -109,7 +109,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   ThreadLoadTracker load_tracker_;
   bool initialized_;
   base::TimeTicks thread_start_time_;
-  scoped_refptr<WorkerTaskQueue> control_task_queue_;
+  scoped_refptr<NonMainThreadTaskQueue> control_task_queue_;
   scoped_refptr<base::SingleThreadTaskRunner> v8_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   FrameScheduler::ThrottlingState throttling_state_;
