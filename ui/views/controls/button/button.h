@@ -247,6 +247,8 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     return hover_animation_;
   }
 
+  FocusRing* focus_ring() { return focus_ring_.get(); }
+
   // The button's listener. Notified when clicked.
   ButtonListener* listener_;
 

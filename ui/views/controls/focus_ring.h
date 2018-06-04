@@ -49,7 +49,9 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   static std::unique_ptr<FocusRing> Install(View* parent);
 
   // Returns whether this class can draw a focus ring from |path|. Not all paths
-  // are useable since not all paths can be easily outset.
+  // are useable since not all paths can be easily outset. If a FocusRing is
+  // configured to use an unuseable path, it will fall back to the default focus
+  // ring path.
   static bool IsPathUseable(const SkPath& path);
 
   // Sets the path to draw this FocusRing around. This path is in the parent
