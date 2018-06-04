@@ -12,6 +12,7 @@ import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.blink_public.web.WebInputEventType;
 import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
@@ -187,57 +188,67 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
     }
 
     @CalledByNative
-    private void onFlingStartEventConsumed() {
-        mPotentiallyActiveFlingCount++;
-        setTouchScrollInProgress(false);
-        for (mIterator.rewind(); mIterator.hasNext();) {
-            mIterator.next().onFlingStartGesture(verticalScrollOffset(), verticalScrollExtent());
+    private void onEventAck(int event, boolean consumed) {
+        switch (event) {
+            case WebInputEventType.GESTURE_FLING_START:
+                if (consumed) {
+                    // The view expects the fling velocity in pixels/s.
+                    mPotentiallyActiveFlingCount++;
+                    setTouchScrollInProgress(false);
+                    for (mIterator.rewind(); mIterator.hasNext();) {
+                        mIterator.next().onFlingStartGesture(
+                                verticalScrollOffset(), verticalScrollExtent());
+                    }
+                } else {
+                    // If a scroll ends with a fling, a SCROLL_END event is never sent.
+                    // However, if that fling went unconsumed, we still need to let the
+                    // listeners know that scrolling has ended.
+                    updateOnScrollEnd();
+                }
+                break;
+            case WebInputEventType.GESTURE_SCROLL_BEGIN:
+                setTouchScrollInProgress(true);
+                for (mIterator.rewind(); mIterator.hasNext();) {
+                    mIterator.next().onScrollStarted(
+                            verticalScrollOffset(), verticalScrollExtent());
+                }
+                break;
+            case WebInputEventType.GESTURE_SCROLL_UPDATE:
+                if (!consumed) break;
+                destroyPastePopup();
+                for (mIterator.rewind(); mIterator.hasNext();) {
+                    mIterator.next().onScrollUpdateGestureConsumed();
+                }
+                break;
+            case WebInputEventType.GESTURE_SCROLL_END:
+                updateOnScrollEnd();
+                break;
+            case WebInputEventType.GESTURE_PINCH_BEGIN:
+                for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onPinchStarted();
+                break;
+            case WebInputEventType.GESTURE_PINCH_END:
+                for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onPinchEnded();
+                break;
+            case WebInputEventType.GESTURE_TAP:
+                destroyPastePopup();
+                for (mIterator.rewind(); mIterator.hasNext();) {
+                    mIterator.next().onSingleTap(consumed);
+                }
+                break;
+            case WebInputEventType.GESTURE_LONG_PRESS:
+                if (!consumed) break;
+                mViewDelegate.getContainerView().performHapticFeedback(
+                        HapticFeedbackConstants.LONG_PRESS);
+                for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onLongPress();
+                break;
+            default:
+                break;
         }
     }
 
-    @CalledByNative
-    private void onScrollBeginEventAck() {
-        setTouchScrollInProgress(true);
-        for (mIterator.rewind(); mIterator.hasNext();) {
-            mIterator.next().onScrollStarted(verticalScrollOffset(), verticalScrollExtent());
-        }
-    }
-
-    @CalledByNative
-    private void onScrollEndEventAck() {
-        updateOnScrollEnd();
-    }
-
-    @CalledByNative
-    private void onScrollUpdateGestureConsumed() {
+    private void destroyPastePopup() {
         SelectionPopupControllerImpl controller = getSelectionPopupController();
         if (controller != null) controller.destroyPastePopup();
-        for (mIterator.rewind(); mIterator.hasNext();) {
-            mIterator.next().onScrollUpdateGestureConsumed();
-        }
-    }
-
-    @CalledByNative
-    private void onPinchBeginEventAck() {
-        for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onPinchStarted();
-    }
-
-    @CalledByNative
-    private void onPinchEndEventAck() {
-        for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onPinchEnded();
-    }
-
-    @CalledByNative
-    private void onSingleTapEventAck(boolean consumed) {
-        SelectionPopupControllerImpl controller = getSelectionPopupController();
-        if (controller != null) controller.destroyPastePopup();
-        for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onSingleTap(consumed);
-    }
-
-    @CalledByNative
-    private void onLongPressAck() {
-        mViewDelegate.getContainerView().performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-        for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onLongPress();
     }
 
     @CalledByNative
