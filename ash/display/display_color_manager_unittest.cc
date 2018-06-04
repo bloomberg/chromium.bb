@@ -245,8 +245,10 @@ TEST_F(DisplayColorManagerTest, SetDisplayColorMatrixNoCTMSupport) {
   WaitOnColorCalibration();
   // DisplayColorManager::ResetDisplayColorCalibration() will be called since
   // this display has no CTM support.
-  EXPECT_TRUE(
-      base::MatchPattern(log_->GetActionsAndClear(), kResetGammaAction));
+  const std::string& actions = log_->GetActionsAndClear();
+  EXPECT_TRUE(base::MatchPattern(actions, kResetGammaAction));
+  EXPECT_TRUE(base::MatchPattern(
+      actions, "*set_color_matrix(id=123,ctm[0]=1*ctm[4]=1*ctm[8]=1*)*"));
 
   // Attempt to set a color matrix.
   SkMatrix44 matrix(SkMatrix44::kIdentity_Constructor);

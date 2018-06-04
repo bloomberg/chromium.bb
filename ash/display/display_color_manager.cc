@@ -391,7 +391,8 @@ void DisplayColorManager::ResetDisplayColorCalibration(int64_t display_id) {
   ApplyDisplayColorCalibration(display_id, {} /* calibration_data */);
 }
 
-DisplayColorManager::ColorCalibrationData::ColorCalibrationData() = default;
+DisplayColorManager::ColorCalibrationData::ColorCalibrationData()
+    : correction_matrix{1, 0, 0, 0, 1, 0, 0, 0, 1} {};
 
 DisplayColorManager::ColorCalibrationData::~ColorCalibrationData() = default;
 
