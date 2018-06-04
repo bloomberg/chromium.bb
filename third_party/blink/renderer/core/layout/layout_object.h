@@ -233,10 +233,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
  private:
   LayoutRect VisualRect() const final;
 
- public:
-  void ClearPartialInvalidationRect() const final {
+  void ClearPartialInvalidationVisualRect() const final {
     DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
-    return GetMutableForPainting().SetPartialInvalidationRect(LayoutRect());
+    return GetMutableForPainting()
+        .FirstFragment()
+        .SetPartialInvalidationVisualRect(LayoutRect());
+  }
+
+ public:
+  LayoutRect PartialInvalidationVisualRect() const final {
+    return FirstFragment().PartialInvalidationVisualRect();
   }
 
   String DebugName() const final;
@@ -1432,8 +1438,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool IsPaintInvalidationContainer() const;
 
-  // Invalidate the paint of a specific subrectangle within a given object. The
-  // rect is in the object's coordinate space.
+  // Invalidate the raster of a specific sub-rectangle within the object. The
+  // rect is in the object's local coordinate space. This is useful e.g. when
+  // a small region of a canvas changes.
   void InvalidatePaintRectangle(const LayoutRect&);
 
   void SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
@@ -1841,8 +1848,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       layout_object_.SetSubtreeNeedsPaintPropertyUpdate();
     }
 
-    void SetPartialInvalidationRect(const LayoutRect& r) {
-      layout_object_.SetPartialInvalidationRect(r);
+    void SetPartialInvalidationVisualRect(const LayoutRect& r) {
+      DCHECK_EQ(layout_object_.GetDocument().Lifecycle().GetState(),
+                DocumentLifecycle::kInPrePaint);
+      FirstFragment().SetPartialInvalidationVisualRect(r);
     }
 
     void InvalidateClipPathCache() { layout_object_.InvalidateClipPathCache(); }
@@ -1963,8 +1972,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutRect SelectionVisualRect() const {
     return fragment_.SelectionVisualRect();
   }
-  LayoutRect PartialInvalidationRect() const override {
-    return fragment_.PartialInvalidationRect();
+  LayoutRect PartialInvalidationLocalRect() const {
+    return fragment_.PartialInvalidationLocalRect();
   }
 
   void InvalidateIfControlStateChanged(ControlState);
@@ -2122,17 +2131,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual void ComputeSelfHitTestRects(Vector<LayoutRect>&,
                                        const LayoutPoint& layer_offset) const {}
 
-  void SetPartialInvalidationRect(const LayoutRect& rect) {
-    fragment_.SetPartialInvalidationRect(rect);
-  }
-
 #if DCHECK_IS_ON()
   virtual bool PaintInvalidationStateIsDirty() const {
     return BackgroundChangedSinceLastPaintInvalidation() ||
            ShouldCheckForPaintInvalidation() || ShouldInvalidateSelection() ||
            NeedsPaintOffsetAndVisualRectUpdate() ||
-           (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-            !fragment_.PartialInvalidationRect().IsEmpty());
+           !fragment_.PartialInvalidationLocalRect().IsEmpty();
   }
 #endif
 

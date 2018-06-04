@@ -84,7 +84,7 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   // Union of children's ink overflows.
   LayoutRect ChildrenInkOverflow() const;
 
-  LayoutRect PartialInvalidationRect() const override;
+  LayoutRect PartialInvalidationVisualRect() const override;
 
   NGPhysicalOffsetRect ComputeLocalSelectionRect(
       const LayoutSelectionStatus&) const;

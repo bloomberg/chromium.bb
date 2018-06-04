@@ -276,28 +276,40 @@ TEST_F(ObjectPaintInvalidatorTest, InvalidatePaintRectangle) {
 
   auto* target = GetLayoutObjectByElementId("target");
   target->InvalidatePaintRectangle(LayoutRect(10, 10, 50, 50));
-  EXPECT_EQ(LayoutRect(10, 10, 50, 50), target->PartialInvalidationRect());
+  EXPECT_EQ(LayoutRect(10, 10, 50, 50), target->PartialInvalidationLocalRect());
   target->InvalidatePaintRectangle(LayoutRect(30, 30, 60, 60));
-  EXPECT_EQ(LayoutRect(10, 10, 80, 80), target->PartialInvalidationRect());
+  EXPECT_EQ(LayoutRect(10, 10, 80, 80), target->PartialInvalidationLocalRect());
   EXPECT_TRUE(target->MayNeedPaintInvalidation());
 
   GetDocument().View()->UpdateLifecycleToPrePaintClean();
-  if (!RuntimeEnabledFeatures::PartialRasterInvalidationEnabled())
-    EXPECT_EQ(LayoutRect(), target->PartialInvalidationRect());
+  EXPECT_EQ(LayoutRect(), target->PartialInvalidationLocalRect());
+  EXPECT_EQ(LayoutRect(18, 18, 80, 80),
+            target->PartialInvalidationVisualRect());
+
+  target->InvalidatePaintRectangle(LayoutRect(30, 30, 50, 80));
+  EXPECT_EQ(LayoutRect(30, 30, 50, 80), target->PartialInvalidationLocalRect());
+  GetDocument().View()->UpdateLifecycleToPrePaintClean();
+  // PartialInvalidationVisualRect should accumulate until painting.
+  EXPECT_EQ(LayoutRect(18, 18, 80, 100),
+            target->PartialInvalidationVisualRect());
+
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(LayoutRect(), target->PartialInvalidationRect());
+  EXPECT_EQ(LayoutRect(), target->PartialInvalidationLocalRect());
+  EXPECT_EQ(LayoutRect(), target->PartialInvalidationVisualRect());
 
   auto object_invalidations =
       GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
-  ASSERT_EQ(1u, object_invalidations->size());
-  String s;
-  const auto* entry = JSONObject::Cast(object_invalidations->at(0));
-  entry->Get("reason")->AsString(&s);
-  EXPECT_EQ(String(PaintInvalidationReasonToString(
-                PaintInvalidationReason::kRectangle)),
-            s);
-  entry->Get("object")->AsString(&s);
-  EXPECT_EQ(target->DebugName(), s);
+  ASSERT_EQ(2u, object_invalidations->size());
+  for (int i = 0; i < 2; i++) {
+    String s;
+    const auto* entry = JSONObject::Cast(object_invalidations->at(i));
+    entry->Get("reason")->AsString(&s);
+    EXPECT_EQ(String(PaintInvalidationReasonToString(
+                  PaintInvalidationReason::kRectangle)),
+              s);
+    entry->Get("object")->AsString(&s);
+    EXPECT_EQ(target->DebugName(), s);
+  }
 
   const auto& raster_invalidations = GetLayoutView()
                                          .Layer()
@@ -305,10 +317,7 @@ TEST_F(ObjectPaintInvalidatorTest, InvalidatePaintRectangle) {
                                          ->GetRasterInvalidationTracking()
                                          ->Invalidations();
   ASSERT_EQ(1u, raster_invalidations.size());
-  if (RuntimeEnabledFeatures::PartialRasterInvalidationEnabled())
-    EXPECT_EQ(IntRect(18, 18, 80, 80), raster_invalidations[0].rect);
-  else
-    EXPECT_EQ(IntRect(8, 8, 200, 200), raster_invalidations[0].rect);
+  EXPECT_EQ(IntRect(18, 18, 80, 100), raster_invalidations[0].rect);
   EXPECT_EQ(PaintInvalidationReason::kRectangle,
             raster_invalidations[0].reason);
 

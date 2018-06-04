@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'Second cell'",
-          "rect": [11, 35, 74, 19],
+          "rect": [11, 35, 73, 19],
           "reason": "selection"
         },
         {

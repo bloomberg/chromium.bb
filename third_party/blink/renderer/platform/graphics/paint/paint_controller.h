@@ -330,7 +330,8 @@ class PLATFORM_EXPORT PaintController {
       const DisplayItem& new_item);
   inline void GenerateFullRasterInvalidation(PaintChunk&,
                                              const DisplayItem& old_item,
-                                             const DisplayItem& new_item);
+                                             const DisplayItem& new_item,
+                                             PaintInvalidationReason);
   inline void AddRasterInvalidation(const DisplayItemClient&,
                                     PaintChunk&,
                                     const FloatRect&,

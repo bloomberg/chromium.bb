@@ -614,7 +614,7 @@ void PaintController::CommitNewDisplayItems() {
   for (const auto& item : new_display_item_list_) {
     const auto& client = item.Client();
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-      client.ClearPartialInvalidationRect();
+      client.ClearPartialInvalidationVisualRect();
 
     if (item.IsCacheable()) {
       client.SetDisplayItemsCached(current_cache_generation_);
@@ -809,14 +809,7 @@ void PaintController::TrackRasterInvalidation(const DisplayItemClient& client,
 
   RasterInvalidationInfo info;
   info.client = &client;
-  if (reason == PaintInvalidationReason::kNone) {
-    // The client was validated by another PaintController, but not valid in
-    // this PaintController.
-    DCHECK(!ClientCacheIsValid(client));
-    info.reason = PaintInvalidationReason::kFull;
-  } else {
-    info.reason = reason;
-  }
+  info.reason = reason;
 
   if (reason == PaintInvalidationReason::kDisappeared) {
     info.client_debug_name =
@@ -935,25 +928,23 @@ void PaintController::GenerateRasterInvalidation(
   }
 
   auto reason = client.GetPaintInvalidationReason();
-  bool partial_raster_invalidation =
-      RuntimeEnabledFeatures::PartialRasterInvalidationEnabled() &&
-      (reason == PaintInvalidationReason::kRectangle ||
-       reason == PaintInvalidationReason::kSelection);
-  if ((!partial_raster_invalidation &&
-       reason != PaintInvalidationReason::kIncremental) ||
-      // Need full invalidation when visual rect location changed.
-      old_item->VisualRect().Location() != new_item->VisualRect().Location()) {
-    GenerateFullRasterInvalidation(chunk, *old_item, *new_item);
+  if (reason == PaintInvalidationReason::kNone) {
+    // The client was validated by another PaintController, but not valid in
+    // this PaintController.
+    DCHECK(!ClientCacheIsValid(client));
+    reason = PaintInvalidationReason::kFull;
+  }
+
+  if (IsFullPaintInvalidationReason(reason)) {
+    GenerateFullRasterInvalidation(chunk, *old_item, *new_item, reason);
     return;
   }
 
   GenerateIncrementalRasterInvalidation(chunk, *old_item, *new_item);
 
-  if (RuntimeEnabledFeatures::PartialRasterInvalidationEnabled()) {
-    auto partial_rect = client.PartialInvalidationRect();
-    if (!partial_rect.IsEmpty())
-      AddRasterInvalidation(client, chunk, FloatRect(partial_rect), reason);
-  }
+  auto partial_rect = client.PartialInvalidationVisualRect();
+  if (!partial_rect.IsEmpty())
+    AddRasterInvalidation(client, chunk, FloatRect(partial_rect), reason);
 }
 
 static FloatRect ComputeRightDelta(const FloatPoint& location,
@@ -1015,20 +1006,19 @@ void PaintController::GenerateIncrementalRasterInvalidation(
 void PaintController::GenerateFullRasterInvalidation(
     PaintChunk& chunk,
     const DisplayItem& old_item,
-    const DisplayItem& new_item) {
+    const DisplayItem& new_item,
+    PaintInvalidationReason reason) {
   DCHECK(&old_item.Client() == &new_item.Client());
   FloatRect old_visual_rect(old_item.VisualRect());
   FloatRect new_visual_rect(new_item.VisualRect());
 
   if (!new_visual_rect.Contains(old_visual_rect)) {
-    AddRasterInvalidation(new_item.Client(), chunk, old_visual_rect,
-                          new_item.Client().GetPaintInvalidationReason());
+    AddRasterInvalidation(new_item.Client(), chunk, old_visual_rect, reason);
     if (old_visual_rect.Contains(new_visual_rect))
       return;
   }
 
-  AddRasterInvalidation(new_item.Client(), chunk, new_visual_rect,
-                        new_item.Client().GetPaintInvalidationReason());
+  AddRasterInvalidation(new_item.Client(), chunk, new_visual_rect, reason);
 }
 
 void PaintController::ShowUnderInvalidationError(

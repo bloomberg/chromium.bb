@@ -1482,10 +1482,13 @@ IntSize LayoutObject::ScrollAdjustmentForPaintInvalidation(
 }
 
 void LayoutObject::InvalidatePaintRectangle(const LayoutRect& dirty_rect) {
+  DCHECK_NE(GetDocument().Lifecycle().GetState(), DocumentLifecycle::kInPaint);
+
   if (dirty_rect.IsEmpty())
     return;
 
-  SetPartialInvalidationRect(UnionRect(dirty_rect, PartialInvalidationRect()));
+  fragment_.SetPartialInvalidationLocalRect(
+      UnionRect(dirty_rect, fragment_.PartialInvalidationLocalRect()));
 
   // Not using the WithoutGeometryChange version because we need to map the
   // partial invalidated rect to visual rect in backing or the containing
@@ -1528,9 +1531,12 @@ LayoutRect LayoutObject::VisualRectIncludingCompositedScrolling(
 }
 
 void LayoutObject::ClearPreviousVisualRects() {
-  fragment_.SetVisualRect(LayoutRect());
-  fragment_.SetLocationInBacking(LayoutPoint());
-  fragment_.SetSelectionVisualRect(LayoutRect());
+  for (auto* fragment = &fragment_; fragment;
+       fragment = fragment->NextFragment()) {
+    fragment->SetVisualRect(LayoutRect());
+    fragment->SetLocationInBacking(LayoutPoint());
+    fragment->SetSelectionVisualRect(LayoutRect());
+  }
 
   // Ensure check paint invalidation of subtree that would be triggered by
   // location change if we had valid previous location.
@@ -3811,10 +3817,7 @@ void LayoutObject::ClearPaintInvalidationFlags() {
 #if DCHECK_IS_ON()
   DCHECK(!ShouldCheckForPaintInvalidation() || PaintInvalidationStateIsDirty());
 #endif
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ||
-      !RuntimeEnabledFeatures::PartialRasterInvalidationEnabled())
-    fragment_.SetPartialInvalidationRect(LayoutRect());
-
+  fragment_.SetPartialInvalidationLocalRect(LayoutRect());
   ClearShouldDoFullPaintInvalidation();
   bitfields_.SetMayNeedPaintInvalidation(false);
   bitfields_.SetMayNeedPaintInvalidationSubtree(false);
