@@ -31,10 +31,19 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 
 namespace blink {
+
+ExceptionState::CreateDOMExceptionFunction
+    ExceptionState::s_create_dom_exception_func_ = nullptr;
+
+// static
+void ExceptionState::SetCreateDOMExceptionFunction(
+    CreateDOMExceptionFunction func) {
+  DCHECK(!s_create_dom_exception_func_);
+  s_create_dom_exception_func_ = func;
+  DCHECK(s_create_dom_exception_func_);
+}
 
 void ExceptionState::ThrowDOMException(ExceptionCode ec, const char* message) {
   ThrowDOMException(ec, String(message));
@@ -63,7 +72,7 @@ void ExceptionState::ThrowDOMException(ExceptionCode ec,
   const String& processed_message = AddExceptionContext(message);
   SetException(
       ec, processed_message,
-      V8ThrowDOMException::CreateDOMException(isolate_, ec, processed_message));
+      s_create_dom_exception_func_(isolate_, ec, processed_message, String()));
 }
 
 void ExceptionState::ThrowRangeError(const String& message) {
@@ -78,8 +87,8 @@ void ExceptionState::ThrowSecurityError(const String& sanitized_message,
   const String& final_unsanitized = AddExceptionContext(unsanitized_message);
   SetException(
       kSecurityError, final_sanitized,
-      V8ThrowDOMException::CreateDOMException(
-          isolate_, kSecurityError, final_sanitized, final_unsanitized));
+      s_create_dom_exception_func_(isolate_, kSecurityError, final_sanitized,
+                                   final_unsanitized));
 }
 
 void ExceptionState::ThrowTypeError(const String& message) {

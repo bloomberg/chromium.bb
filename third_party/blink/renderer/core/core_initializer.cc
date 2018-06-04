@@ -32,6 +32,7 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer_thread.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/core/css/media_feature_names.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
@@ -142,6 +143,8 @@ void CoreInitializer::Initialize() {
   RegisterEventFactory();
 
   StringImpl::FreezeStaticStrings();
+
+  V8ThrowDOMException::Init();
 
   ScriptStreamerThread::Init();
 }

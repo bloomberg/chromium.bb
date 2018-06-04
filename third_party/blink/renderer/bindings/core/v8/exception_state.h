@@ -67,6 +67,16 @@ class CORE_EXPORT ExceptionState {
                       // API.
   };
 
+  // A function pointer type that creates a DOMException.
+  using CreateDOMExceptionFunction =
+      v8::Local<v8::Value> (*)(v8::Isolate*,
+                               ExceptionCode,
+                               const String& sanitized_message,
+                               const String& unsanitized_message);
+
+  // Sets the function to create a DOMException. Must be called only once.
+  static void SetCreateDOMExceptionFunction(CreateDOMExceptionFunction);
+
   ExceptionState(v8::Isolate* isolate,
                  ContextType context_type,
                  const char* interface_name,
@@ -138,6 +148,10 @@ class CORE_EXPORT ExceptionState {
   void SetException(ExceptionCode, const String&, v8::Local<v8::Value>);
 
  private:
+  // Since DOMException is defined in core/, we need a dependency injection in
+  // order to create a DOMException in platform/.
+  static CreateDOMExceptionFunction s_create_dom_exception_func_;
+
   ExceptionCode code_;
   ContextType context_;
   String message_;
