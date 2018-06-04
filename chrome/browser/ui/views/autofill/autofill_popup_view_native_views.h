@@ -83,7 +83,6 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   // TODO(crbug.com/831603): Remove these overrides and the corresponding
   // methods in AutofillPopupBaseView once deprecation of
   // AutofillPopupViewViews is complete.
-  void OnMouseExited(const ui::MouseEvent& event) override {}
   void OnMouseMoved(const ui::MouseEvent& event) override {}
 
  private:

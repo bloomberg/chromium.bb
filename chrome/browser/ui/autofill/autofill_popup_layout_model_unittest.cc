@@ -39,6 +39,7 @@ class TestAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
   void SetSelectionAtPoint(const gfx::Point& point) override {}
   bool AcceptSelectedLine() override { return true; }
   void SelectionCleared() override {}
+  bool HasSelection() const override { return false; }
   gfx::Rect popup_bounds() const override { return gfx::Rect(0, 0, 100, 100); }
   gfx::NativeView container_view() override { return container_view_; }
   const gfx::RectF& element_bounds() const override { return element_bounds_; }

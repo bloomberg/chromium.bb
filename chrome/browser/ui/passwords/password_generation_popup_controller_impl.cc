@@ -252,6 +252,10 @@ void PasswordGenerationPopupControllerImpl::SelectionCleared() {
   PasswordSelected(false);
 }
 
+bool PasswordGenerationPopupControllerImpl::HasSelection() const {
+  return password_selected();
+}
+
 gfx::NativeView PasswordGenerationPopupControllerImpl::container_view() {
   return controller_common_.container_view;
 }

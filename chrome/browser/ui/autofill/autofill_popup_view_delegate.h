@@ -44,6 +44,9 @@ class AutofillPopupViewDelegate {
   // out of the popup bounds.
   virtual void SelectionCleared() = 0;
 
+  // Returns true if any of the suggestions is selected.
+  virtual bool HasSelection() const = 0;
+
   // The actual bounds of the popup.
   virtual gfx::Rect popup_bounds() const = 0;
 
