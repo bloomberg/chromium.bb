@@ -21,13 +21,8 @@
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_test_archiver.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/referrer.h"
 #include "content/public/test/navigation_simulator.h"
-#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -264,11 +259,10 @@ void RecentTabHelperTest::FastForwardSnapshotController() {
 }
 
 void RecentTabHelperTest::NavigateAndCommitTyped(const GURL& url) {
-  controller().LoadURL(url, content::Referrer(), ui::PAGE_TRANSITION_TYPED,
-                       std::string());
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  web_contents_tester->CommitPendingNavigation();
+  auto simulator =
+      content::NavigationSimulator::CreateBrowserInitiated(url, web_contents());
+  simulator->SetTransition(ui::PAGE_TRANSITION_TYPED);
+  simulator->Commit();
 }
 
 ClientId RecentTabHelperTest::NewDownloadClientId() {
@@ -903,10 +897,7 @@ TEST_F(RecentTabHelperTest, ReloadIsTrackedAsNavigationAndSavedOnlyUponLoad) {
 
   // Starts a reload and hides the tab before it minimally load. The previous
   // snapshot should be removed.
-  controller().Reload(content::ReloadType::NORMAL, false);
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  web_contents_tester->CommitPendingNavigation();
+  content::NavigationSimulator::Reload(web_contents());
   recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(1U, page_added_count());
