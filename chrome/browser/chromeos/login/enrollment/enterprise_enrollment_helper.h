@@ -48,6 +48,8 @@ class EnterpriseEnrollmentHelper {
 
   class EnrollmentStatusConsumer {
    public:
+    virtual ~EnrollmentStatusConsumer() = default;
+
     // Called when an error happens on attempt to receive authentication tokens.
     virtual void OnAuthError(const GoogleServiceAuthError& error) = 0;
 
