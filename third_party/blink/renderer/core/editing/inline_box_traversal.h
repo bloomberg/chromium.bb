@@ -23,7 +23,7 @@ class BidiAdjustment final {
  public:
   // Function to be called at the end of caret position resolution, adjusting
   // the result in bidi text runs.
-  // TODO(xiaochengh): Eliminate |unicode_bidi| from parameters.
+  // TODO(editing-dev): Eliminate |unicode_bidi| from parameters.
   static InlineBoxPosition AdjustForCaretPositionResolution(
       const InlineBoxPosition&,
       UnicodeBidi unicode_bidi);
