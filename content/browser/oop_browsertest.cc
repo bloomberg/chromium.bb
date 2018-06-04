@@ -8,11 +8,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -52,23 +53,20 @@ class OOPBrowserTest : public ContentBrowserTest {
 
 // This test calls into system GL which is not instrumented with MSAN.
 #if !defined(MEMORY_SANITIZER)
-// Flaky on Win/Linux (http://crbug.com/846621).
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_Basic DISABLED_Basic
-#else
-#define MAYBE_Basic Basic
-#endif
-IN_PROC_BROWSER_TEST_F(OOPBrowserTest, MAYBE_Basic) {
+IN_PROC_BROWSER_TEST_F(OOPBrowserTest, Basic) {
   // Create a div to ensure we don't use solid color quads.
   GURL url = GURL(
       "data:text/html,"
       "<style>div{background-color:blue; width:100; height:100;}</style>"
       "<body bgcolor=blue><div></div></body>");
   NavigateToURLBlockUntilNavigationsComplete(shell(), url, 1);
-  shell()->web_contents()->GetMainFrame()->InsertVisualStateCallback(base::Bind(
-      &OOPBrowserTest::VerifyVisualStateUpdated, base::Unretained(this),
-      base::RunLoop::QuitCurrentWhenIdleClosureDeprecated()));
-  content::RunMessageLoop();
+
+  // Wait for the renderer to submit a frame.
+  RenderFrameSubmissionObserver frame_observer(
+      RenderWidgetHostImpl::From(
+          shell()->web_contents()->GetRenderViewHost()->GetWidget())
+          ->render_frame_metadata_provider());
+  frame_observer.WaitForAnyFrameSubmission();
 
   auto* rwh = shell()->web_contents()->GetRenderViewHost()->GetWidget();
   ASSERT_TRUE(rwh->GetView()->IsSurfaceAvailableForCopy());
@@ -85,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(OOPBrowserTest, MAYBE_Basic) {
           &snapshot, run_loop.QuitWhenIdleClosure()));
   run_loop.Run();
 
-  EXPECT_FALSE(snapshot.drawsNothing());
+  ASSERT_FALSE(snapshot.drawsNothing());
   for (int i = 0; i < snapshot.width(); ++i) {
     for (int j = 0; j < snapshot.height(); ++j) {
       ASSERT_EQ(snapshot.getColor(i, j), SK_ColorBLUE);
