@@ -11,6 +11,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/memory_coordinator_delegate.h"
@@ -700,22 +701,10 @@ bool ContentBrowserClient::ShouldCreateTaskScheduler() {
   return true;
 }
 
-bool ContentBrowserClient::ShouldPermitIndividualAttestationForWebauthnRPID(
-    content::BrowserContext* browser_context,
-    const std::string& rp_id) {
-  return false;
-}
-
-void ContentBrowserClient::ShouldReturnAttestationForWebauthnRPID(
-    content::RenderFrameHost* rfh,
-    const std::string& rp_id,
-    const url::Origin& origin,
-    base::OnceCallback<void(bool)> callback) {
-  std::move(callback).Run(true);
-}
-
-bool ContentBrowserClient::IsFocused(content::WebContents* web_contents) {
-  return true;
+std::unique_ptr<AuthenticatorRequestClientDelegate>
+ContentBrowserClient::GetWebAuthenticationRequestDelegate(
+    RenderFrameHost* render_frame_host) {
+  return std::make_unique<AuthenticatorRequestClientDelegate>();
 }
 
 std::unique_ptr<net::ClientCertStore>
