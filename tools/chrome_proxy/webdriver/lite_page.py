@@ -206,6 +206,8 @@ class LitePage(IntegrationTest):
       self.skipTest('This test cannot be run with other experiments.')
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.AddChromeArg('--enable-features='
+                               'Previews,DataReductionProxyDecidesTransform')
       # Need to force 2G speed to get lite-page response.
       test_driver.AddChromeArg('--force-effective-connection-type=2G')
 
@@ -260,6 +262,8 @@ class LitePage(IntegrationTest):
       self.skipTest('This test cannot be run with other experiments.')
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.AddChromeArg('--enable-features='
+                               'Previews,DataReductionProxyDecidesTransform')
       # Need to force 2G speed to get lite-page response.
       test_driver.AddChromeArg('--force-effective-connection-type=2G')
       # Set exp=alt2 to force Nano response.
