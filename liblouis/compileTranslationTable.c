@@ -1153,12 +1153,12 @@ parseChars(FileInfo *nested, CharsString *result, CharsString *token) {
 			}
 			utf32 = (utf32 << 6) + (token->chars[in++] & 0x3f);
 		}
-		if (CHARSIZE == 2 && utf32 > 0xffff) utf32 = 0xffff;
-		result->chars[out++] = (widechar)utf32;
 		if (out >= MAXSTRING) {
 			result->length = lastOutSize;
 			return 1;
 		}
+		if (CHARSIZE == 2 && utf32 > 0xffff) utf32 = 0xffff;
+		result->chars[out++] = (widechar)utf32;
 	}
 	result->length = out;
 	return 1;
