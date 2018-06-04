@@ -37,20 +37,20 @@ function generateOrientationData(alpha, beta, gamma, absolute) {
 // Device[Orientation|Motion]EventPump treat NaN as a missing value.
 let nullToNan = x => (x === null ? NaN : x);
 
-function setMockMotionData(sensor, motionData) {
+function setMockMotionData(sensorProvider, motionData) {
   const degToRad = Math.PI / 180;
   return Promise.all([
-      setMockSensorDataForType(sensor, device.mojom.SensorType.ACCELEROMETER, [
+      setMockSensorDataForType(sensorProvider, device.mojom.SensorType.ACCELEROMETER, [
           nullToNan(motionData.accelerationIncludingGravityX),
           nullToNan(motionData.accelerationIncludingGravityY),
           nullToNan(motionData.accelerationIncludingGravityZ),
       ]),
-      setMockSensorDataForType(sensor, device.mojom.SensorType.LINEAR_ACCELERATION, [
+      setMockSensorDataForType(sensorProvider, device.mojom.SensorType.LINEAR_ACCELERATION, [
           nullToNan(motionData.accelerationX),
           nullToNan(motionData.accelerationY),
           nullToNan(motionData.accelerationZ),
       ]),
-      setMockSensorDataForType(sensor, device.mojom.SensorType.GYROSCOPE, [
+      setMockSensorDataForType(sensorProvider, device.mojom.SensorType.GYROSCOPE, [
           nullToNan(motionData.rotationRateAlpha) * degToRad,
           nullToNan(motionData.rotationRateBeta) * degToRad,
           nullToNan(motionData.rotationRateGamma) * degToRad,
@@ -58,11 +58,11 @@ function setMockMotionData(sensor, motionData) {
   ]);
 }
 
-function setMockOrientationData(sensor, orientationData) {
+function setMockOrientationData(sensorProvider, orientationData) {
   let sensorType = orientationData.absolute
       ? device.mojom.SensorType.ABSOLUTE_ORIENTATION_EULER_ANGLES
       : device.mojom.SensorType.RELATIVE_ORIENTATION_EULER_ANGLES;
-  return setMockSensorDataForType(sensor, sensorType, [
+  return setMockSensorDataForType(sensorProvider, sensorType, [
       nullToNan(orientationData.beta),
       nullToNan(orientationData.gamma),
       nullToNan(orientationData.alpha),

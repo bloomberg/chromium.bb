@@ -10,10 +10,10 @@
 <script>
 'use strict';
 
-sensor_test(async sensor => {
+sensor_test(async sensorProvider => {
   var orientationData = generateOrientationData(1.1, 2.2, 3.3, false);
 
-  let setMockDataPromise = setMockOrientationData(sensor, orientationData);
+  let setMockDataPromise = setMockOrientationData(sensorProvider, orientationData);
   // Add an empty listener to make sure the event pump is running and the mock
   // sensor is created and configured. If the pump and fake sensor weren't set
   // up ahead of time, then the fact that we get an asynchronous event could be

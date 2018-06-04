@@ -10,7 +10,7 @@
 <script>
 'use strict';
 
-sensor_test(async sensor => {
+sensor_test(async sensorProvider => {
   const motionData = generateMotionData(1.1, 2.1, 3.1,
                                         1.2, 2.2, 3.2,
                                         1.3, 2.3, 3.3);
@@ -39,7 +39,7 @@ sensor_test(async sensor => {
     };
   });
 
-  setMockMotionData(sensor, motionData);
+  setMockMotionData(sensorProvider, motionData);
   window.addEventListener('devicemotion', firstListener);
   await firstPromise;
   await secondPromise;

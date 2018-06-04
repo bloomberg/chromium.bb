@@ -10,7 +10,7 @@
 <script>
 'use strict';
 
-sensor_test(async sensor => {
+sensor_test(async sensorProvider => {
   const motionData1 = generateMotionData(1, 2, 3,
                                          4, 5, 6,
                                          7, 8, 9);
@@ -19,13 +19,13 @@ sensor_test(async sensor => {
                                          0, 0, 0);
 
   return new Promise((resolve, reject) => {
-    setMockMotionData(sensor, motionData1);
+    setMockMotionData(sensorProvider, motionData1);
     window.addEventListener('devicemotion', function mainFrameListener(event) {
       checkMotion(event, motionData1);
       var childFrame = document.createElement('iframe');
       document.body.appendChild(childFrame);
       window.removeEventListener('devicemotion', mainFrameListener);
-      setMockMotionData(sensor, motionData2);
+      setMockMotionData(sensorProvider, motionData2);
       waitForMotion(motionData1, childFrame.contentWindow).then(resolve, reject);
     });
   });

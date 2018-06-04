@@ -10,10 +10,10 @@
 <script>
 'use strict';
 
-sensor_test(async sensor => {
+sensor_test(async sensorProvider => {
   const orientationData = generateOrientationData(1.1, 2.2, 3.3, true);
 
-  setMockOrientationData(sensor, orientationData);
+  setMockOrientationData(sensorProvider, orientationData);
   return waitForAbsoluteOrientation(orientationData);
 }, 'Tests basic operation of deviceorientationabsolute event using mock data.');
 </script>

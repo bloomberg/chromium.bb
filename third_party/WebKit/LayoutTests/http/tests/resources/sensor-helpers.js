@@ -370,28 +370,27 @@ function sensorMocks() {
     }
   }
 
-  let mockSensorProvider = new MockSensorProvider;
-  return {mockSensorProvider: mockSensorProvider};
+  return new MockSensorProvider();
 }
 
 function sensor_test(func, name, properties) {
   promise_test(async () => {
-    let sensor = sensorMocks();
+    let sensorProvider = sensorMocks();
 
     // Clean up and reset mock sensor stubs asynchronously, so that the blink
     // side closes its proxies and notifies JS sensor objects before new test is
     // started.
     try {
-      await func(sensor);
+      await func(sensorProvider);
     } finally {
-      sensor.mockSensorProvider.reset();
+      sensorProvider.reset();
       await new Promise(resolve => { setTimeout(resolve, 0); });
     };
   }, name, properties);
 }
 
-async function setMockSensorDataForType(sensor, sensorType, mockDataArray) {
-  let createdSensor = await sensor.mockSensorProvider.getCreatedSensor(sensorType);
+async function setMockSensorDataForType(sensorProvider, sensorType, mockDataArray) {
+  let createdSensor = await sensorProvider.getCreatedSensor(sensorType);
   return createdSensor.setUpdateSensorReadingFunction(buffer => {
     buffer.set(mockDataArray, 2);
   });

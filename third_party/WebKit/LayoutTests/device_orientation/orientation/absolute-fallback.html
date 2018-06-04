@@ -10,13 +10,13 @@
 <script>
 'use strict';
 
-sensor_test(async sensor => {
+sensor_test(async sensorProvider => {
   const orientationData = generateOrientationData(1.1, 2.2, 3.3, true);
 
   // Make the relative orientation sensor unavailable and set mock data for
   // the absolute one.
-  sensor.mockSensorProvider.setGetSensorShouldFail(device.mojom.SensorType.RELATIVE_ORIENTATION_EULER_ANGLES, true);
-  setMockOrientationData(sensor, orientationData);
+  sensorProvider.setGetSensorShouldFail(device.mojom.SensorType.RELATIVE_ORIENTATION_EULER_ANGLES, true);
+  setMockOrientationData(sensorProvider, orientationData);
   return waitForOrientation(orientationData);
 }, 'Tests that deviceorientation falls back to using absolute orientation data if relative is unavailable.');
 </script>

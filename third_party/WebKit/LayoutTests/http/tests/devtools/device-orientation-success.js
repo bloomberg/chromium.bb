@@ -11,16 +11,16 @@
   await TestRunner.addScriptTag('/gen/services/device/public/mojom/sensor.mojom.js');
   await TestRunner.addScriptTag('/gen/services/device/public/mojom/sensor_provider.mojom.js');
   await TestRunner.evaluateInPagePromise(`
-      var sensor = null;
+      var sensorProvider = null;
       var mockAlpha = 1.1;
       var mockBeta = 2.2;
       var mockGamma = 3.3;
 
       function setUpDeviceOrientation()
       {
-          sensor = sensorMocks();
+          sensorProvider = sensorMocks();
           let mockDataPromise = setMockSensorDataForType(
-              sensor,
+              sensorProvider,
               device.mojom.SensorType.RELATIVE_ORIENTATION_EULER_ANGLES,
               [mockBeta, mockGamma, mockAlpha]);
           window.addEventListener("deviceorientation", handler);
@@ -47,7 +47,7 @@
       function cleanUpDeviceOrientation()
       {
           window.removeEventListener("deviceorientation", handler);
-          sensor.mockSensorProvider.reset();
+          sensorProvider.reset();
           return new Promise(done => setTimeout(done, 0));
       }
   `);

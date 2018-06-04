@@ -14,12 +14,12 @@ function sleep(time_ms) {
   return new Promise(resolve => window.setTimeout(resolve, time_ms));
 }
 
-sensor_test(async sensor => {
+sensor_test(async sensorProvider => {
   const motionData = generateMotionData(0, 0, 0,
                                         0, 0, 0,
                                         0, 0, 0);
 
-  setMockMotionData(sensor, motionData);
+  setMockMotionData(sensorProvider, motionData);
   await waitForMotion(motionData);
 
   testRunner.setPageVisibility('hidden');

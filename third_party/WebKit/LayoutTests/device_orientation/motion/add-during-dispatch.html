@@ -10,11 +10,11 @@
 <script>
 'use strict';
 
-sensor_test(async sensor => {
+sensor_test(async sensorProvider => {
   const motionData = generateMotionData(1, 2, 3,
                                         4, 5, 6,
                                         7, 8, 9);
-  setMockMotionData(sensor, motionData);
+  setMockMotionData(sensorProvider, motionData);
   waitForMotion(motionData);
 
   return new Promise((resolve, reject) => {
