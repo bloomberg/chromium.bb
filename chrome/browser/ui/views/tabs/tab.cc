@@ -139,10 +139,13 @@ const gfx::RectF ScaleAndAlignBounds(const gfx::Rect& bounds,
   gfx::RectF aligned_bounds(bounds);
   aligned_bounds.Inset(endcap_width / 2, 0);
   aligned_bounds.Scale(scale);
-  const float left = std::round(aligned_bounds.x());
+  const float x = std::round(aligned_bounds.x());
+  const float y = std::round(aligned_bounds.y());
   const float right = std::round(aligned_bounds.right());
-  aligned_bounds.set_x(left);
-  aligned_bounds.set_width(right - left);
+  // The bottom is ceiled rather than rounded to ensure it overlaps the toolbar
+  // rather than leaving a gap.
+  const float bottom = std::ceil(aligned_bounds.bottom());
+  aligned_bounds = gfx::RectF(x, y, right - x, bottom - y);
   aligned_bounds.Inset(-(endcap_width / 2) * scale, 0);
   return aligned_bounds;
 }
@@ -174,32 +177,29 @@ gfx::Path GetRefreshInteriorPath(float scale,
       ScaleAndAlignBounds(bounds, endcap_width, scale);
 
   const float left = layout_bounds.x();
-  const float top = layout_bounds.y();
+  const float top = layout_bounds.y() + stroke_thickness;
   const float right = layout_bounds.right();
-  const float bottom = std::ceil(layout_bounds.bottom());
+  const float bottom = layout_bounds.bottom();
 
   // Bottom right.
   right_path.moveTo(right, bottom);
-  right_path.rLineTo(0, stroke_thickness);
-
   right_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
                    SkPath::kCW_Direction, right - radius, bottom - radius);
 
   // Right vertical.
-  right_path.lineTo(right - radius, top + radius - stroke_thickness);
+  right_path.lineTo(right - radius, top + radius);
 
   // Top right.
   right_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
-                   SkPath::kCCW_Direction, right - radius * 2,
-                   top + stroke_thickness);
+                   SkPath::kCCW_Direction, right - radius * 2, top);
 
   // Top edge.
-  right_path.lineTo(left, stroke_thickness);
+  right_path.lineTo(left, top);
   right_path.lineTo(left, bottom);
   right_path.close();
 
   // Top left.
-  left_path.moveTo(left + radius * 2, top + stroke_thickness);
+  left_path.moveTo(left + radius * 2, top);
 
   left_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
                   SkPath::kCCW_Direction, left + radius, top + radius);
@@ -209,11 +209,11 @@ gfx::Path GetRefreshInteriorPath(float scale,
 
   // Bottom left.
   left_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
-                  SkPath::kCW_Direction, left, bottom + stroke_thickness);
+                  SkPath::kCW_Direction, left, bottom);
 
   // Bottom edge.
-  left_path.lineTo(right, bottom + stroke_thickness);
-  left_path.lineTo(right, top + stroke_thickness);
+  left_path.lineTo(right, bottom);
+  left_path.lineTo(right, top);
   left_path.close();
 
   // Convert paths to being relative to bounds origin.
@@ -293,14 +293,15 @@ gfx::Path GetRefreshBorderPath(const gfx::Rect& bounds,
   const float left = layout_bounds.x();
   const float top = layout_bounds.y();
   const float right = layout_bounds.right();
-  const float bottom = std::ceil(layout_bounds.bottom());
+  const float bottom = layout_bounds.bottom();
 
   path.moveTo(left, bottom);
   path.rLineTo(0, -stroke_thickness);
 
   // bottom left
   path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
-             SkPath::kCCW_Direction, left + bottom_radius, bottom - radius);
+             SkPath::kCCW_Direction, left + bottom_radius,
+             bottom - stroke_thickness - bottom_radius);
 
   if (extend_to_top) {
     // If |extend_to_top| is true, the top of the tab is simply squared off.
@@ -316,15 +317,15 @@ gfx::Path GetRefreshBorderPath(const gfx::Rect& bounds,
     path.lineTo(left + bottom_radius, top + top_radius);
     // top left
     path.arcTo(top_radius, top_radius, 0, SkPath::kSmall_ArcSize,
-               SkPath::kCW_Direction, left + radius * 2, top);
+               SkPath::kCW_Direction, left + bottom_radius + top_radius, top);
     // top line
-    path.lineTo(right - radius * 2, top);
+    path.lineTo(right - bottom_radius - top_radius, top);
     // top right
     path.arcTo(top_radius, top_radius, 0, SkPath::kSmall_ArcSize,
-               SkPath::kCW_Direction, right - bottom_radius, top + radius);
+               SkPath::kCW_Direction, right - bottom_radius, top + top_radius);
   }
   // right vertical
-  path.lineTo(right - bottom_radius, bottom - radius);
+  path.lineTo(right - bottom_radius, bottom - stroke_thickness - bottom_radius);
   // bottom right
   path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
              SkPath::kCCW_Direction, right, bottom - stroke_thickness);
@@ -372,7 +373,7 @@ gfx::Path GetBorderPath(float scale,
     if (extend_to_top) {
       // Create the vertical extension by extending the side diagonals until
       // they reach the top of the bounds.
-      const float dy = 2.5 * scale - 1;
+      const float dy = 2.5 * scale - stroke_thickness;
       const float dx = Tab::GetInverseDiagonalSlope() * dy;
       path.rLineTo(dx, -dy);
       path.lineTo(right - (endcap_width - 2) * scale - dx, 0);
@@ -384,7 +385,7 @@ gfx::Path GetBorderPath(float scale,
       path.rCubicTo(0.75 * scale, 0, 1.625 * scale, 0.5 * scale, 2 * scale,
                     1.5 * scale);
     }
-    path.lineTo(right - 2 * scale, bottom - 1 - 1.5 * scale);
+    path.lineTo(right - 2 * scale, bottom - stroke_thickness - 1.5 * scale);
     path.rCubicTo(0.375 * scale, scale, 1.25 * scale, 1.5 * scale, 2 * scale,
                   1.5 * scale);
     path.rLineTo(0, stroke_thickness);
