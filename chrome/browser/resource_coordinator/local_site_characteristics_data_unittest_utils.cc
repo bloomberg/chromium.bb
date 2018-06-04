@@ -18,17 +18,17 @@ NoopLocalSiteCharacteristicsDatabase::~NoopLocalSiteCharacteristicsDatabase() =
     default;
 
 void NoopLocalSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDB(
-    const std::string& site_origin,
+    const url::Origin& origin,
     ReadSiteCharacteristicsFromDBCallback callback) {
   std::move(callback).Run(base::nullopt);
 }
 
 void NoopLocalSiteCharacteristicsDatabase::WriteSiteCharacteristicsIntoDB(
-    const std::string& site_origin,
+    const url::Origin& origin,
     const SiteCharacteristicsProto& site_characteristic_proto) {}
 
 void NoopLocalSiteCharacteristicsDatabase::RemoveSiteCharacteristicsFromDB(
-    const std::vector<std::string>& site_origins) {}
+    const std::vector<url::Origin>& site_origins) {}
 
 void NoopLocalSiteCharacteristicsDatabase::ClearDatabase() {}
 

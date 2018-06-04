@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_LOCAL_SITE_CHARACTERISTICS_DATA_IMPL_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_LOCAL_SITE_CHARACTERISTICS_DATA_IMPL_H_
 
-#include <string>
-
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -18,11 +16,13 @@
 #include "chrome/browser/resource_coordinator/site_characteristics.pb.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_tab_visibility.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
+#include "url/origin.h"
 
 namespace resource_coordinator {
 
 class LocalSiteCharacteristicsDatabase;
 class LocalSiteCharacteristicsDataStore;
+class LocalSiteCharacteristicsDataStoreTest;
 class LocalSiteCharacteristicsDataReaderTest;
 class LocalSiteCharacteristicsDataWriterTest;
 
@@ -109,14 +109,17 @@ class LocalSiteCharacteristicsDataImpl
     return background_session_begin_;
   }
 
+  const url::Origin& origin() const { return origin_; }
+
  protected:
   friend class base::RefCounted<LocalSiteCharacteristicsDataImpl>;
   friend class LocalSiteCharacteristicsDataImplTest;
   friend class resource_coordinator::LocalSiteCharacteristicsDataReaderTest;
   friend class resource_coordinator::LocalSiteCharacteristicsDataStore;
+  friend class resource_coordinator::LocalSiteCharacteristicsDataStoreTest;
   friend class resource_coordinator::LocalSiteCharacteristicsDataWriterTest;
 
-  LocalSiteCharacteristicsDataImpl(const std::string& origin_str,
+  LocalSiteCharacteristicsDataImpl(const url::Origin& origin,
                                    OnDestroyDelegate* delegate,
                                    LocalSiteCharacteristicsDatabase* database);
 
@@ -178,8 +181,6 @@ class LocalSiteCharacteristicsDataImpl
   // feature gets used.
   void NotifyFeatureUsage(SiteCharacteristicsFeatureProto* feature_proto);
 
-  const std::string& origin_str() const { return origin_str_; }
-
   bool IsLoaded() const { return loaded_tabs_count_ > 0U; }
 
   // Callback that needs to be called by the database once it has finished
@@ -196,7 +197,7 @@ class LocalSiteCharacteristicsDataImpl
   SiteCharacteristicsProto site_characteristics_;
 
   // This site's origin.
-  const std::string origin_str_;
+  const url::Origin origin_;
 
   // The number of loaded tabs for this origin. Several tabs with the
   // same origin might share the same instance of this object, this counter

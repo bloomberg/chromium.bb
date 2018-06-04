@@ -11,6 +11,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace resource_coordinator {
 
@@ -22,7 +23,8 @@ TEST_F(LocalSiteCharacteristicsNonRecordingDataStoreTest, EndToEnd) {
       features::kSiteCharacteristicsDatabase);
   content::TestBrowserThreadBundle test_browser_thread_bundle;
   TestingProfile profile;
-  const char kTestOrigin[] = "http://www.foo.com";
+  const url::Origin kTestOrigin =
+      url::Origin::Create(GURL("http://www.foo.com"));
   std::unique_ptr<LocalSiteCharacteristicsDataStore> recording_data_store =
       std::make_unique<LocalSiteCharacteristicsDataStore>(&profile);
   LocalSiteCharacteristicsNonRecordingDataStore non_recording_data_store(

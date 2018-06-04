@@ -4,6 +4,8 @@
 
 #include "chrome/browser/resource_coordinator/leveldb_site_characteristics_database.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_runner_util.h"
@@ -37,15 +39,19 @@ class LevelDBSiteCharacteristicsDatabase::AsyncHelper {
   // Implementations of the DB manipulation functions of
   // LevelDBSiteCharacteristicsDatabase that run on a blocking sequence.
   base::Optional<SiteCharacteristicsProto> ReadSiteCharacteristicsFromDB(
-      const std::string& site_origin);
+      const url::Origin& origin);
   void WriteSiteCharacteristicsIntoDB(
-      const std::string& site_origin,
+      const url::Origin& origin,
       const SiteCharacteristicsProto& site_characteristic_proto);
   void RemoveSiteCharacteristicsFromDB(
-      const std::vector<std::string>& site_origin);
+      const std::vector<url::Origin>& site_origin);
   void ClearDatabase();
 
  private:
+  static const std::string& SerializeOrigin(const url::Origin& origin) {
+    return origin.host();
+  }
+
   // The on disk location of the database.
   const base::FilePath db_path_;
   // The connection to the LevelDB database.
@@ -78,12 +84,13 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::OpenOrCreateDatabase() {
 
 base::Optional<SiteCharacteristicsProto>
 LevelDBSiteCharacteristicsDatabase::AsyncHelper::ReadSiteCharacteristicsFromDB(
-    const std::string& site_origin) {
+    const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AssertBlockingAllowed();
 
   std::string protobuf_value;
-  leveldb::Status s = db_->Get(read_options_, site_origin, &protobuf_value);
+  leveldb::Status s =
+      db_->Get(read_options_, SerializeOrigin(origin), &protobuf_value);
   base::Optional<SiteCharacteristicsProto> site_characteristic_proto;
   if (s.ok()) {
     site_characteristic_proto = SiteCharacteristicsProto();
@@ -98,11 +105,11 @@ LevelDBSiteCharacteristicsDatabase::AsyncHelper::ReadSiteCharacteristicsFromDB(
 
 void LevelDBSiteCharacteristicsDatabase::AsyncHelper::
     WriteSiteCharacteristicsIntoDB(
-        const std::string& site_origin,
+        const url::Origin& origin,
         const SiteCharacteristicsProto& site_characteristic_proto) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AssertBlockingAllowed();
-  leveldb::Status s = db_->Put(write_options_, site_origin,
+  leveldb::Status s = db_->Put(write_options_, SerializeOrigin(origin),
                                site_characteristic_proto.SerializeAsString());
   if (!s.ok()) {
     LOG(ERROR) << "Error while inserting an element in the site characteristic "
@@ -112,12 +119,12 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::
 
 void LevelDBSiteCharacteristicsDatabase::AsyncHelper::
     RemoveSiteCharacteristicsFromDB(
-        const std::vector<std::string>& site_origins) {
+        const std::vector<url::Origin>& site_origins) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AssertBlockingAllowed();
   leveldb::WriteBatch batch;
-  for (const auto iter : site_origins)
-    batch.Delete(iter);
+  for (const auto& iter : site_origins)
+    batch.Delete(SerializeOrigin(iter));
   leveldb::Status status = db_->Write(write_options_, &batch);
   if (!status.ok()) {
     LOG(WARNING) << "Failed to remove some entries from the site "
@@ -159,7 +166,7 @@ LevelDBSiteCharacteristicsDatabase::~LevelDBSiteCharacteristicsDatabase() =
     default;
 
 void LevelDBSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDB(
-    const std::string& site_origin,
+    const url::Origin& origin,
     LocalSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDBCallback
         callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -170,24 +177,23 @@ void LevelDBSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDB(
       blocking_task_runner_.get(), FROM_HERE,
       base::BindOnce(&LevelDBSiteCharacteristicsDatabase::AsyncHelper::
                          ReadSiteCharacteristicsFromDB,
-                     base::Unretained(async_helper_.get()), site_origin),
+                     base::Unretained(async_helper_.get()), origin),
       base::BindOnce(std::move(callback)));
 }
 
 void LevelDBSiteCharacteristicsDatabase::WriteSiteCharacteristicsIntoDB(
-    const std::string& site_origin,
+    const url::Origin& origin,
     const SiteCharacteristicsProto& site_characteristic_proto) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&LevelDBSiteCharacteristicsDatabase::AsyncHelper::
-                         WriteSiteCharacteristicsIntoDB,
-                     base::Unretained(async_helper_.get()), site_origin,
-                     std::move(site_characteristic_proto)));
+      FROM_HERE, base::BindOnce(&LevelDBSiteCharacteristicsDatabase::
+                                    AsyncHelper::WriteSiteCharacteristicsIntoDB,
+                                base::Unretained(async_helper_.get()), origin,
+                                std::move(site_characteristic_proto)));
 }
 
 void LevelDBSiteCharacteristicsDatabase::RemoveSiteCharacteristicsFromDB(
-    const std::vector<std::string>& site_origins) {
+    const std::vector<url::Origin>& site_origins) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   blocking_task_runner_->PostTask(
       FROM_HERE,
