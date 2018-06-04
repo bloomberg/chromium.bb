@@ -14,6 +14,9 @@ class UnifiedSystemTrayController;
 // Circular image view with user's icon of |user_index|.
 views::View* CreateUserAvatarView(int user_index);
 
+// Get accessibility string for |user_index|.
+base::string16 GetUserItemAccessibleString(int user_index);
+
 // A detailed view of user chooser.
 class UserChooserView : public views::View {
  public:

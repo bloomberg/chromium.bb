@@ -7,6 +7,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -83,6 +84,16 @@ std::unique_ptr<views::InkDropMask> FeaturePodIconButton::CreateInkDropMask()
                                                     rect.width() / 2);
 }
 
+void FeaturePodIconButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  ImageButton::GetAccessibleNodeData(node_data);
+  base::string16 name;
+  GetTooltipText(gfx::Point(), &name);
+  node_data->SetName(name);
+  node_data->role = ax::mojom::Role::kToggleButton;
+  node_data->SetCheckedState(toggled_ ? ax::mojom::CheckedState::kTrue
+                                      : ax::mojom::CheckedState::kFalse);
+}
+
 FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
     : Button(listener), label_(new views::Label), sub_label_(new views::Label) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -127,6 +138,7 @@ std::unique_ptr<views::InkDropMask> FeaturePodLabelButton::CreateInkDropMask()
 }
 
 void FeaturePodLabelButton::SetLabel(const base::string16& label) {
+  SetTooltipText(label);
   label_->SetText(label);
   Layout();
   SchedulePaint();
@@ -163,6 +175,7 @@ void FeaturePodButton::SetVectorIcon(const gfx::VectorIcon& icon) {
 }
 
 void FeaturePodButton::SetLabel(const base::string16& label) {
+  icon_button_->SetTooltipText(label);
   label_button_->SetLabel(label);
 }
 

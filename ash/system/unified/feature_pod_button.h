@@ -34,6 +34,7 @@ class FeaturePodIconButton : public views::ImageButton {
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   bool toggled() const { return toggled_; }
 

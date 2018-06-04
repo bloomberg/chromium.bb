@@ -6,8 +6,10 @@
 
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/top_shortcut_button.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -73,6 +75,13 @@ void UnifiedSliderButton::PaintButtonContents(gfx::Canvas* canvas) {
   views::ImageButton::PaintButtonContents(canvas);
 }
 
+void UnifiedSliderButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  TopShortcutButton::GetAccessibleNodeData(node_data);
+  node_data->role = ax::mojom::Role::kToggleButton;
+  node_data->SetCheckedState(toggled_ ? ax::mojom::CheckedState::kTrue
+                                      : ax::mojom::CheckedState::kFalse);
+}
+
 UnifiedSliderView::UnifiedSliderView(UnifiedSliderListener* listener,
                                      const gfx::VectorIcon& icon,
                                      int accessible_name_id,
@@ -86,6 +95,9 @@ UnifiedSliderView::UnifiedSliderView(UnifiedSliderListener* listener,
   AddChildView(button_);
   AddChildView(slider_);
 
+  slider_->set_enable_accessibility_events(false);
+  slider_->GetViewAccessibility().OverrideName(
+      l10n_util::GetStringUTF16(accessible_name_id));
   slider_->SetBorder(views::CreateEmptyBorder(kUnifiedSliderPadding));
   layout->SetFlexForView(slider_, 1);
 }

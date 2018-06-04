@@ -58,6 +58,7 @@ class UnifiedSliderButton : public TopShortcutButton {
 
   // TopShortcutButton:
   void PaintButtonContents(gfx::Canvas* canvas) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
   // Ture if the button is currently toggled.
