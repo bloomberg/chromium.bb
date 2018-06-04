@@ -253,7 +253,8 @@ __gCrWeb.form.getFormIdentifier = function(form) {
     return name;
   }
   name = form.getAttribute('id');
-  if (name) {
+  if (name && name.length != 0 &&
+      form.ownerDocument.getElementById(name) === form) {
     return name;
   }
   // A form name must be supplied, because the element will later need to be
