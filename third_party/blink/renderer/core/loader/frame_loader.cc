@@ -1790,6 +1790,11 @@ void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
     return;
   }
 
+  // We set the UpgradeIfInsecure flag even if the current request wasn't
+  // upgraded (due to already being HTTPS), since we still need to upgrade
+  // redirects if they are not to HTTPS URLs.
+  resource_request.SetUpgradeIfInsecure(true);
+
   KURL url = resource_request.Url();
   if (!url.ProtocolIs("http"))
     return;

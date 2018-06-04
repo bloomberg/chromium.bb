@@ -424,6 +424,14 @@ const WebContentSecurityPolicyList& WebURLRequest::GetNavigationCSP() const {
   return resource_request_->GetInitiatorCSP();
 }
 
+void WebURLRequest::SetUpgradeIfInsecure(bool upgrade_if_insecure) {
+  resource_request_->SetUpgradeIfInsecure(upgrade_if_insecure);
+}
+
+bool WebURLRequest::UpgradeIfInsecure() const {
+  return resource_request_->UpgradeIfInsecure();
+}
+
 const ResourceRequest& WebURLRequest::ToResourceRequest() const {
   DCHECK(resource_request_);
   return *resource_request_;

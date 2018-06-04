@@ -110,6 +110,7 @@
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "net/test/url_request/url_request_failed_job.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
@@ -12706,6 +12707,102 @@ TEST_F(URLRequestTest, HeadersCallbacksNonHTTP) {
   r->Start();
   base::RunLoop().Run();
   EXPECT_FALSE(r->is_pending());
+}
+
+TEST_F(URLRequestTest, UpgradeIfInsecureFlagSet) {
+  TestDelegate d;
+  BlockingNetworkDelegate network_delegate(
+      BlockingNetworkDelegate::SYNCHRONOUS);
+  const GURL kOriginalUrl("https://original.test");
+  const GURL kRedirectUrl("http://redirect.test");
+  network_delegate.set_redirect_url(kRedirectUrl);
+  TestURLRequestContext context(true /* delay_initialization */);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+
+  std::unique_ptr<URLRequest> r(context.CreateRequest(
+      kOriginalUrl, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  r->set_upgrade_if_insecure(true);
+  d.set_quit_on_redirect(true);
+  r->Start();
+  base::RunLoop().Run();
+  GURL::Replacements replacements;
+  // Check that the redirect URL was upgraded to HTTPS since upgrade_if_insecure
+  // was set.
+  replacements.SetSchemeStr("https");
+  EXPECT_EQ(kRedirectUrl.ReplaceComponents(replacements),
+            d.redirect_info().new_url);
+}
+
+TEST_F(URLRequestTest, UpgradeIfInsecureFlagSetExplicitPort80) {
+  TestDelegate d;
+  BlockingNetworkDelegate network_delegate(
+      BlockingNetworkDelegate::SYNCHRONOUS);
+  const GURL kOriginalUrl("https://original.test");
+  const GURL kRedirectUrl("http://redirect.test:80");
+  network_delegate.set_redirect_url(kRedirectUrl);
+  TestURLRequestContext context(true /* delay_initialization */);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+
+  std::unique_ptr<URLRequest> r(context.CreateRequest(
+      kOriginalUrl, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  r->set_upgrade_if_insecure(true);
+  d.set_quit_on_redirect(true);
+  r->Start();
+  base::RunLoop().Run();
+  GURL::Replacements replacements;
+  // The URL host should have not been changed.
+  EXPECT_EQ(d.redirect_info().new_url.host(), kRedirectUrl.host());
+  // The scheme should now be https, and the effective port should now be 443.
+  EXPECT_TRUE(d.redirect_info().new_url.SchemeIs("https"));
+  EXPECT_EQ(d.redirect_info().new_url.EffectiveIntPort(), 443);
+}
+
+TEST_F(URLRequestTest, UpgradeIfInsecureFlagSetNonStandardPort) {
+  TestDelegate d;
+  BlockingNetworkDelegate network_delegate(
+      BlockingNetworkDelegate::SYNCHRONOUS);
+  const GURL kOriginalUrl("https://original.test");
+  const GURL kRedirectUrl("http://redirect.test:1234");
+  network_delegate.set_redirect_url(kRedirectUrl);
+  TestURLRequestContext context(true /* delay_initialization */);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+
+  std::unique_ptr<URLRequest> r(context.CreateRequest(
+      kOriginalUrl, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  r->set_upgrade_if_insecure(true);
+  d.set_quit_on_redirect(true);
+  r->Start();
+  base::RunLoop().Run();
+  GURL::Replacements replacements;
+  // Check that the redirect URL was upgraded to HTTPS since upgrade_if_insecure
+  // was set, nonstandard port should not have been modified.
+  replacements.SetSchemeStr("https");
+  EXPECT_EQ(kRedirectUrl.ReplaceComponents(replacements),
+            d.redirect_info().new_url);
+}
+
+TEST_F(URLRequestTest, UpgradeIfInsecureFlagNotSet) {
+  TestDelegate d;
+  BlockingNetworkDelegate network_delegate(
+      BlockingNetworkDelegate::SYNCHRONOUS);
+  const GURL kOriginalUrl("https://original.test");
+  const GURL kRedirectUrl("http://redirect.test");
+  network_delegate.set_redirect_url(kRedirectUrl);
+  TestURLRequestContext context(true /* delay_initialization */);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+  std::unique_ptr<URLRequest> r(context.CreateRequest(
+      kOriginalUrl, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  r->set_upgrade_if_insecure(false);
+  d.set_quit_on_redirect(true);
+  r->Start();
+  base::RunLoop().Run();
+  // The redirect URL should not be changed if the upgrade_if_insecure flag is
+  // not set.
+  EXPECT_EQ(kRedirectUrl, d.redirect_info().new_url);
 }
 
 // Test that URLRequests get properly tagged.

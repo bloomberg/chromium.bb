@@ -353,6 +353,14 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT const WebContentSecurityPolicyList& GetNavigationCSP()
       const;
 
+  // Should be set to true if this request (including redirects) should be
+  // upgraded to HTTPS due to an Upgrade-Insecure-Requests requirement.
+  BLINK_PLATFORM_EXPORT void SetUpgradeIfInsecure(bool);
+
+  // Returns true if request (including redirects) should be upgraded to HTTPS
+  // due to an Upgrade-Insecure-Requests requirement.
+  BLINK_PLATFORM_EXPORT bool UpgradeIfInsecure() const;
+
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& ToMutableResourceRequest();
   BLINK_PLATFORM_EXPORT const ResourceRequest& ToResourceRequest() const;

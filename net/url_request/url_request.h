@@ -715,6 +715,14 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   void set_socket_tag(const SocketTag& socket_tag);
   const SocketTag& socket_tag() const { return socket_tag_; }
 
+  // |upgrade_if_insecure| should be set to true if this request (including
+  // redirects) should be upgraded to HTTPS due to an Upgrade-Insecure-Requests
+  // requirement.
+  void set_upgrade_if_insecure(bool upgrade_if_insecure) {
+    upgrade_if_insecure_ = upgrade_if_insecure;
+  }
+  bool upgrade_if_insecure() const { return upgrade_if_insecure_; }
+
  protected:
   // Allow the URLRequestJob class to control the is_pending() flag.
   void set_is_pending(bool value) { is_pending_ = value; }
@@ -936,6 +944,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // See Set{Request|Response}HeadersCallback() above for details.
   RequestHeadersCallback request_headers_callback_;
   ResponseHeadersCallback response_headers_callback_;
+
+  bool upgrade_if_insecure_;
 
   THREAD_CHECKER(thread_checker_);
 

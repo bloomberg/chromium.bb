@@ -221,6 +221,8 @@ void TestDelegate::OnReceivedRedirect(URLRequest* request,
                                       bool* defer_redirect) {
   EXPECT_TRUE(request->is_redirecting());
 
+  redirect_info_ = redirect_info;
+
   have_full_request_headers_ =
       request->GetFullRequestHeaders(&full_request_headers_);
 

@@ -126,6 +126,7 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
   suggested_filename_ = data->suggested_filename_;
   is_ad_resource_ = data->is_ad_resource_;
   SetInitiatorCSP(data->navigation_csp_);
+  upgrade_if_insecure_ = data->upgrade_if_insecure_;
 }
 
 ResourceRequest::ResourceRequest(const ResourceRequest&) = default;
@@ -170,6 +171,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   if (IsAdResource())
     request->SetIsAdResource();
   request->SetInitiatorCSP(GetInitiatorCSP());
+  request->SetUpgradeIfInsecure(UpgradeIfInsecure());
 
   return request;
 }
@@ -223,6 +225,7 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
   data->is_ad_resource_ = is_ad_resource_;
   data->navigation_csp_ = initiator_csp_;
 
+  data->upgrade_if_insecure_ = upgrade_if_insecure_;
   return data;
 }
 

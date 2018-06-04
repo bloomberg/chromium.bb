@@ -38,6 +38,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -176,6 +177,7 @@ class TestDelegate : public URLRequest::Delegate {
   bool received_data_before_response() const {
     return received_data_before_response_;
   }
+  RedirectInfo redirect_info() { return redirect_info_; }
   bool request_failed() const { return request_failed_; }
   bool have_certificate_errors() const { return have_certificate_errors_; }
   bool certificate_errors_are_fatal() const {
@@ -240,6 +242,8 @@ class TestDelegate : public URLRequest::Delegate {
 
   // our read buffer
   scoped_refptr<IOBuffer> buf_;
+
+  RedirectInfo redirect_info_;
 };
 
 //-----------------------------------------------------------------------------

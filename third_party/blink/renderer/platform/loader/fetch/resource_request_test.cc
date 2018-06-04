@@ -158,4 +158,19 @@ TEST(ResourceRequestTest, SetIsAdResource) {
   EXPECT_TRUE(redirect_request->IsAdResource());
 }
 
+TEST(ResourceRequestTest, UpgradeIfInsecureAcrossRedirects) {
+  ResourceRequest original;
+  EXPECT_FALSE(original.UpgradeIfInsecure());
+  original.SetUpgradeIfInsecure(true);
+  EXPECT_TRUE(original.UpgradeIfInsecure());
+
+  // Should persist across redirects.
+  std::unique_ptr<ResourceRequest> redirect_request =
+      original.CreateRedirectRequest(
+          KURL("https://example.test/redirect"), original.HttpMethod(),
+          original.SiteForCookies(), original.HttpReferrer(),
+          original.GetReferrerPolicy(), original.GetSkipServiceWorker());
+  EXPECT_TRUE(redirect_request->UpgradeIfInsecure());
+}
+
 }  // namespace blink
