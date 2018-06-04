@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/line/inline_box.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment_traversal.h"
@@ -128,16 +129,18 @@ class AbstractInlineBox {
     return result.IsNull() ? AbstractInlineBox() : AbstractInlineBox(result);
   }
 
-  // TODO(xiaochengh): Bidi adjustment should check base direction of containing
-  // line instead of containing block, to handle unicode-bidi correctly.
   TextDirection ParagraphDirection() const {
     DCHECK(IsNotNull());
-    if (IsOldLayout())
+    if (IsOldLayout()) {
+      // TODO(editing-dev): Bidi adjustment should check base direction of
+      // containing line instead of containing block, to handle unicode-bidi
+      // correctly.
       return GetInlineBox().Root().Block().Style()->Direction();
-    return NGPaintFragment::GetForInlineContainer(
-               GetNGPaintFragment().GetLayoutObject())
-        ->Style()
-        .Direction();
+    }
+    const NGPhysicalLineBoxFragment& line_box =
+        ToNGPhysicalLineBoxFragmentOrDie(
+            GetNGPaintFragment().ContainerLineBox()->PhysicalFragment());
+    return line_box.BaseDirection();
   }
 
  private:
@@ -482,13 +485,13 @@ class CaretPositionResolutionAdjuster {
       UnicodeBidi unicode_bidi) {
     DCHECK(box.IsNotNull());
 
-    // TODO(xiaochengh): We should check line direction instead, and get rid of
-    // ad hoc handling of 'unicode-bidi'.
     const TextDirection primary_direction = box.ParagraphDirection();
     if (box.Direction() == primary_direction)
       return AdjustForPrimaryDirectionAlgorithm(box);
 
-    if (unicode_bidi == UnicodeBidi::kPlaintext)
+    // TODO(editing-dev): Legacy adjustment should also check line direction
+    // only, and get rid of hacking with 'unicode-bidi'.
+    if (box.IsOldLayout() && unicode_bidi == UnicodeBidi::kPlaintext)
       return UnadjustedCaretPosition(box);
 
     const unsigned char level = box.BidiLevel();
@@ -854,14 +857,12 @@ InlineBoxPosition BidiAdjustment::AdjustForCaretPositionResolution(
 NGCaretPosition BidiAdjustment::AdjustForCaretPositionResolution(
     const NGCaretPosition& caret_position) {
   const AbstractInlineBoxAndSideAffinity unadjusted(caret_position);
-  const UnicodeBidi unicode_bidi =
-      caret_position.fragment->Style().GetUnicodeBidi();
   const AbstractInlineBoxAndSideAffinity adjusted =
       unadjusted.AtLeftSide()
           ? CaretPositionResolutionAdjuster<TraverseRight>::AdjustFor(
-                unadjusted.GetBox(), unicode_bidi)
+                unadjusted.GetBox(), UnicodeBidi())
           : CaretPositionResolutionAdjuster<TraverseLeft>::AdjustFor(
-                unadjusted.GetBox(), unicode_bidi);
+                unadjusted.GetBox(), UnicodeBidi());
   return adjusted.ToNGCaretPosition();
 }
 
