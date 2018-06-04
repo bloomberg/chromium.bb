@@ -5113,6 +5113,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="FileBrowser.ClickBreadcrumbs">
+  <owner>sashab@chromium.org</owner>
   <owner>joelhockey@chromium.org</owner>
   <description>
     User clicked the breadcrumbs in order to return to a parent directory.
@@ -5120,31 +5121,43 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="FileBrowser.CreateNewFolder">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>sashab@chromium.org</owner>
+  <owner>slangley@chromium.org</owner>
+  <description>User created a new folder in the file manager app.</description>
 </action>
 
 <action name="FileBrowser.PhotoEditor.Edit">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>sashab@chromium.org</owner>
+  <owner>slangley@chromium.org</owner>
+  <description>
+    User saved a photo over itself for the first time (i.e. edited the photo) in
+    the gallery app.
+  </description>
 </action>
 
 <action name="FileBrowser.PhotoEditor.View">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>sashab@chromium.org</owner>
+  <owner>slangley@chromium.org</owner>
+  <description>
+    User loaded an image into an editing session in the gallery app.
+  </description>
 </action>
 
 <action name="FileBrowser.SelectSearch">
   <owner>sashab@chromium.org</owner>
+  <owner>slangley@chromium.org</owner>
   <description>
-    Chrome OS Files App: When the user focused the search field at the top of
-    the file manager app.
+    User focused the search field at the top of the file manager app.
   </description>
 </action>
 
 <action name="FileBrowser.SuggestApps.ShowDialog">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>sashab@chromium.org</owner>
+  <owner>slangley@chromium.org</owner>
+  <description>
+    The embedded Chrome Web Store dialog was shown with suggested apps to open
+    the file in the file manager app.
+  </description>
 </action>
 
 <action name="FilterURLTermiate_About" not_user_triggered="true">
@@ -16909,8 +16922,11 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ShowFileBrowserFullTab">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>sashab@chromium.org</owner>
+  <owner>slangley@chromium.org</owner>
+  <description>
+    The user opened the file manager to a specific file or folder.
+  </description>
 </action>
 
 <action name="ShowHelpTab">
