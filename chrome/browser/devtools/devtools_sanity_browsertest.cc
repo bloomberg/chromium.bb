@@ -1656,8 +1656,16 @@ class AutofillDevToolsSanityTest : public DevToolsSanityTest,
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// Disabled. Failing on MacOS MSAN. See https://crbug.com/849129.
+#if defined(OS_MACOSX)
+#define MAYBE_TestDispatchKeyEventShowsAutoFill \
+  DISABLED_TestDispatchKeyEventShowsAutoFill
+#else
+#define MAYBE_TestDispatchKeyEventShowsAutoFill \
+  TestDispatchKeyEventShowsAutoFill
+#endif
 IN_PROC_BROWSER_TEST_P(AutofillDevToolsSanityTest,
-                       TestDispatchKeyEventShowsAutoFill) {
+                       MAYBE_TestDispatchKeyEventShowsAutoFill) {
   OpenDevToolsWindow(kDispatchKeyEventShowsAutoFill, false);
 
   autofill::ContentAutofillDriver* autofill_driver =
