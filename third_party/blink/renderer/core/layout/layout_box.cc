@@ -3387,7 +3387,8 @@ LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
   LayoutUnit root_margin_border_padding_height;
   while (!cb->IsLayoutView() &&
          SkipContainingBlockForPercentHeightCalculation(cb)) {
-    if (cb->IsBody() || cb->IsDocumentElement())
+    if ((cb->IsBody() || cb->IsDocumentElement()) &&
+        !HasOverrideContainingBlockContentLogicalHeight())
       root_margin_border_padding_height += cb->MarginBefore() +
                                            cb->MarginAfter() +
                                            cb->BorderAndPaddingLogicalHeight();
