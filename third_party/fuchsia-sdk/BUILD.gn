@@ -33,22 +33,6 @@ fuchsia_sdk_pkg("async_default") {
   libs = [ "async-default" ]
 }
 
-fuchsia_sdk_fidl_pkg("component") {
-  sources = [
-    "application_launcher.fidl",
-    "component_controller.fidl",
-    "environment.fidl",
-    "environment_controller.fidl",
-    "flat_namespace.fidl",
-    "loader.fidl",
-    "runner.fidl",
-    "service_provider.fidl",
-  ]
-  deps = [
-    ":mem",
-  ]
-}
-
 fuchsia_sdk_pkg("fdio") {
   sources = [
     "include/fdio/debug.h",
@@ -280,9 +264,9 @@ fuchsia_sdk_fidl_pkg("scenic") {
     "session.fidl",
   ]
   deps = [
-    ":component",
     ":gfx",
     ":input",
+    ":sys",
     ":views",
   ]
 }
@@ -293,6 +277,25 @@ fuchsia_sdk_pkg("svc") {
   ]
 
   libs = [ "svc" ]
+}
+
+fuchsia_sdk_fidl_pkg("sys") {
+  namespace = "fuchsia"
+  namespace_path = "fuchsia"
+
+  sources = [
+    "component_controller.fidl",
+    "environment.fidl",
+    "environment_controller.fidl",
+    "flat_namespace.fidl",
+    "launcher.fidl",
+    "loader.fidl",
+    "runner.fidl",
+    "service_provider.fidl",
+  ]
+  deps = [
+    ":mem",
+  ]
 }
 
 fuchsia_sdk_fidl_pkg("views") {
