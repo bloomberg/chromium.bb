@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.compositor.layouts.components;
 
-import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.AnimatableAnimation.createAnimation;
-
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -15,10 +13,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.animation.FloatProperty;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.toolbar.ToolbarPhone;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**
  * {@link LayoutTab} is used to keep track of a thumbnail's bitmap and position and to
@@ -46,7 +41,6 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
         DECORATION_ALPHA,
         TOOLBAR_Y_OFFSET,
         SIDE_BORDER_SCALE,
-        TOOLBAR_COLOR,
     }
 
     public static final float ALPHA_THRESHOLD = 1.0f / 255.0f;
@@ -226,30 +220,7 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
 
         boolean needsUpdate = false;
 
-        // If the toolbar color changed, animate between the old and new colors.
-        if (mToolbarBackgroundColor != toolbarBackgroundColor && isVisible()
-                && mInitFromHostCalled) {
-            ChromeAnimation.Animation<ChromeAnimation.Animatable<?>>  themeColorAnimation =
-                    createAnimation(this, Property.TOOLBAR_COLOR, 0.0f, 1.0f,
-                    ToolbarPhone.THEME_COLOR_TRANSITION_DURATION, 0, false,
-                    BakedBezierInterpolator.TRANSFORM_CURVE);
-
-            mInitialThemeColor = mToolbarBackgroundColor;
-            mFinalThemeColor = toolbarBackgroundColor;
-
-            if (mCurrentAnimations != null) {
-                mCurrentAnimations.updateAndFinish();
-            }
-
-            mCurrentAnimations = new ChromeAnimation<ChromeAnimation.Animatable<?>>();
-            mCurrentAnimations.add(themeColorAnimation);
-            mCurrentAnimations.start();
-            needsUpdate = true;
-        } else {
-            // If the layout tab isn't visible, just set the toolbar color without animating.
-            mToolbarBackgroundColor = toolbarBackgroundColor;
-        }
-
+        mToolbarBackgroundColor = toolbarBackgroundColor;
         mTextBoxBackgroundColor = textBoxBackgroundColor;
         mTextBoxAlpha = textBoxAlpha;
         mShouldStall = shouldStall;
@@ -1000,14 +971,6 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
                 break;
             case SIDE_BORDER_SCALE:
                 setSideBorderScale(val);
-                break;
-            case TOOLBAR_COLOR:
-                if (!isVisible()) {
-                    mCurrentAnimations.updateAndFinish();
-                } else {
-                    mToolbarBackgroundColor = ColorUtils.getColorWithOverlay(mInitialThemeColor,
-                            mFinalThemeColor, val);
-                }
                 break;
         }
     }

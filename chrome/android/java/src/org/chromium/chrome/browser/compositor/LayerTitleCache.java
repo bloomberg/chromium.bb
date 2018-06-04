@@ -19,8 +19,6 @@ import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.resources.dynamics.BitmapDynamicResource;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -124,10 +122,6 @@ public class LayerTitleCache implements TitleCache {
         Bitmap originalFavicon = tab.getFavicon();
 
         boolean isDarkTheme = tab.isIncognito();
-        // The theme might require lighter text.
-        if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext)) {
-            isDarkTheme |= ColorUtils.shouldUseLightForegroundOnBackground(tab.getThemeColor());
-        }
 
         boolean isRtl = tab.isTitleDirectionRtl();
         TitleBitmapFactory titleBitmapFactory =
