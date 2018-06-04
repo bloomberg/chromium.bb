@@ -145,7 +145,9 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 451
+#   For your editing convenience:
+#   The highest ID currently used is always set in the
+#   'highest_id_currently_used' value at the end of this file.
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #   A policy can be delete if and only if a policy is never launched but has
@@ -12286,5 +12288,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
   },
   'placeholders': [],
-  'deleted_policy_ids': [412]
+  'deleted_policy_ids': [412],
+  'highest_id_currently_used': 451
 }
