@@ -485,7 +485,8 @@ bool HarfBuzzShaper::CollectFallbackHintChars(
   if (!reshape_queue.size())
     return false;
 
-  hint.clear();
+  // Clear without releasing the capacity to avoid reallocations.
+  hint.resize(0);
 
   size_t num_chars_added = 0;
   for (auto it = reshape_queue.begin(); it != reshape_queue.end(); ++it) {
@@ -812,6 +813,11 @@ void HarfBuzzShaper::ShapeSegment(RangeData* range_data,
 
   bool font_cycle_queued = false;
   Vector<UChar32> fallback_chars_hint;
+  // Reserve enough capacity to avoid multiple reallocations.
+  // TODO(kojii): Should review if we really need to collect all characters.
+  // crbug.com/848295
+  fallback_chars_hint.ReserveInitialCapacity(range_data->end -
+                                             range_data->start);
   scoped_refptr<FontDataForRangeSet> current_font_data_for_range_set;
   while (range_data->reshape_queue.size()) {
     ReshapeQueueItem current_queue_item = range_data->reshape_queue.TakeFirst();
