@@ -76,7 +76,7 @@ int GetLayoutConstant(LayoutConstant constant) {
       return kTabHeight[mode];
     }
     case TAB_PRE_TITLE_PADDING:
-      return touch_optimized_material ? 8 : 6;
+      return newer_material ? 8 : 6;
     case TAB_STACK_DISTANCE:
       return touch_optimized_material ? 4 : 6;
     case TAB_STACK_TAB_WIDTH:
