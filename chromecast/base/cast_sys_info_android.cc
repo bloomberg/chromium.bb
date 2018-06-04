@@ -17,9 +17,6 @@
 #include "chromecast/base/version.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "jni/CastSysInfoAndroid_jni.h"
-#if BUILDFLAG(IS_ANDROID_THINGS_NON_PUBLIC)
-#include "jni/CastSysInfoAndroidThings_jni.h"
-#endif
 
 namespace chromecast {
 
@@ -37,13 +34,7 @@ std::string GetAndroidProperty(const std::string& key,
 
   return std::string(value);
 }
-
 }  // namespace
-
-// static
-std::unique_ptr<CastSysInfo> CreateSysInfo() {
-  return std::make_unique<CastSysInfoAndroid>();
-}
 
 CastSysInfoAndroid::CastSysInfoAndroid()
     : build_info_(base::android::BuildInfo::GetInstance()) {}
@@ -96,13 +87,7 @@ std::string CastSysInfoAndroid::GetSystemBuildNumber() {
 }
 
 std::string CastSysInfoAndroid::GetSystemReleaseChannel() {
-#if BUILDFLAG(IS_ANDROID_THINGS_NON_PUBLIC)
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return base::android::ConvertJavaStringToUTF8(
-      Java_CastSysInfoAndroidThings_getReleaseChannel(env));
-#else
   return "";
-#endif
 }
 
 std::string CastSysInfoAndroid::GetBoardName() {
