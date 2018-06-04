@@ -4,16 +4,19 @@
 
 #include "chromeos/services/assistant/service.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "build/buildflag.h"
 #include "chromeos/assistant/buildflags.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -42,6 +45,11 @@ constexpr char kScopeAuthGcm[] = "https://www.googleapis.com/auth/gcm";
 constexpr char kScopeAssistant[] =
     "https://www.googleapis.com/auth/assistant-sdk-prototype";
 
+constexpr base::TimeDelta kMinTokenRefreshDelay =
+    base::TimeDelta::FromMilliseconds(1000);
+constexpr base::TimeDelta kMaxTokenRefreshDelay =
+    base::TimeDelta::FromMilliseconds(60 * 1000);
+
 }  // namespace
 
 Service::Service()
@@ -49,9 +57,16 @@ Service::Service()
       session_observer_binding_(this),
       token_refresh_timer_(std::make_unique<base::OneShotTimer>()),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      power_manager_observer_(this),
       weak_ptr_factory_(this) {
   registry_.AddInterface<mojom::AssistantPlatform>(base::BindRepeating(
       &Service::BindAssistantPlatformConnection, base::Unretained(this)));
+
+  // TODO(xiaohuic): in MASH we will need to setup the dbus client if assistant
+  // service runs in its own process.
+  chromeos::PowerManagerClient* power_manager_client =
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  power_manager_observer_.Add(power_manager_client);
 }
 
 Service::~Service() = default;
@@ -93,6 +108,40 @@ void Service::BindAssistantPlatformConnection(
   platform_binding_.Bind(std::move(request));
 }
 
+void Service::SuspendDone(const base::TimeDelta& sleep_duration) {
+  // |token_refresh_timer_| may become stale during sleeping, so we immediately
+  // request a new token to make sure it is fresh.
+  if (token_refresh_timer_->IsRunning()) {
+    token_refresh_timer_->AbandonAndStop();
+    RequestAccessToken();
+  }
+}
+
+void Service::Init(mojom::ClientPtr client,
+                   mojom::ContextPtr assistant_context,
+                   mojom::AudioInputPtr audio_input) {
+  client_ = std::move(client);
+
+  // unit tests may set it early, so we don't need to create one.
+  if (!assistant_manager_service_) {
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+    device::mojom::BatteryMonitorPtr battery_monitor;
+    context()->connector()->BindInterface(device::mojom::kServiceName,
+                                          mojo::MakeRequest(&battery_monitor));
+
+    assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
+        std::move(audio_input), std::move(battery_monitor));
+#else
+    assistant_manager_service_ =
+        std::make_unique<FakeAssistantManagerServiceImpl>();
+#endif
+  }
+
+  // This will eventually trigger the actual start of assistant services because
+  // they all depend on it.
+  RequestAccessToken();
+}
+
 void Service::OnSessionActivated(bool activated) {
   DCHECK(client_);
   session_active_ = activated;
@@ -124,27 +173,6 @@ identity::mojom::IdentityManager* Service::GetIdentityManager() {
   return identity_manager_.get();
 }
 
-void Service::Init(mojom::ClientPtr client,
-                   mojom::ContextPtr assistant_context,
-                   mojom::AudioInputPtr audio_input) {
-  client_ = std::move(client);
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-  device::mojom::BatteryMonitorPtr battery_monitor;
-  context()->connector()->BindInterface(device::mojom::kServiceName,
-                                        mojo::MakeRequest(&battery_monitor));
-
-  assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
-      std::move(audio_input), std::move(battery_monitor));
-#else
-  assistant_manager_service_ =
-      std::make_unique<FakeAssistantManagerServiceImpl>();
-#endif
-
-  // This will eventually trigger the actual start of assistant services because
-  // they all depend on it.
-  RequestAccessToken();
-}
-
 void Service::GetPrimaryAccountInfoCallback(
     const base::Optional<AccountInfo>& account_info,
     const identity::AccountState& account_state) {
@@ -167,6 +195,17 @@ void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
                                      const GoogleServiceAuthError& error) {
   if (!token.has_value()) {
     LOG(ERROR) << "Failed to retrieve token, error: " << error.ToString();
+
+    base::TimeDelta backoff_delay =
+        std::min(kMinTokenRefreshDelay *
+                     (1 << (token_refresh_error_backoff_factor - 1)),
+                 kMaxTokenRefreshDelay) +
+        base::RandDouble() * kMinTokenRefreshDelay;
+    if (backoff_delay < kMaxTokenRefreshDelay)
+      ++token_refresh_error_backoff_factor;
+
+    token_refresh_timer_->Start(FROM_HERE, backoff_delay, this,
+                                &Service::RequestAccessToken);
     return;
   }
 
