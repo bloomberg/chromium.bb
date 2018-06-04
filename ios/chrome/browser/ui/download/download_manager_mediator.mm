@@ -61,14 +61,20 @@ void DownloadManagerMediator::StartDowloading() {
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&base::CreateDirectory, download_dir),
       base::BindOnce(&DownloadManagerMediator::DownloadWithDestinationDir,
-                     weak_ptr_factory_.GetWeakPtr(), download_dir));
+                     weak_ptr_factory_.GetWeakPtr(), download_dir, task_));
 }
 
 void DownloadManagerMediator::DownloadWithDestinationDir(
     const base::FilePath& destination_dir,
+    web::DownloadTask* task,
     bool directory_created) {
   if (!directory_created) {
     [consumer_ setState:kDownloadManagerStateFailed];
+    return;
+  }
+
+  if (task_ != task) {
+    // Download task has been replaced, so simply ignore the old download.
     return;
   }
 
@@ -79,12 +85,18 @@ void DownloadManagerMediator::DownloadWithDestinationDir(
   auto writer = std::make_unique<net::URLFetcherFileWriter>(task_runner, path);
   writer->Initialize(base::BindRepeating(
       &DownloadManagerMediator::DownloadWithWriter,
-      weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(writer))));
+      weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(writer)), task_));
 }
 
 void DownloadManagerMediator::DownloadWithWriter(
     std::unique_ptr<net::URLFetcherFileWriter> writer,
+    web::DownloadTask* task,
     int writer_initialization_status) {
+  if (task_ != task) {
+    // Download task has been replaced, so simply ignore the old download.
+    return;
+  }
+
   if (writer_initialization_status == net::OK) {
     task_->Start(std::move(writer));
   } else {

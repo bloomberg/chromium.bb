@@ -45,10 +45,12 @@ class DownloadManagerMediator : public web::DownloadTaskObserver {
  private:
   // Asynchronously starts download operation in the given directory.
   void DownloadWithDestinationDir(const base::FilePath& destination_dir,
+                                  web::DownloadTask* task,
                                   bool directory_created);
 
   // Asynchronously starts download operation with the given writer.
   void DownloadWithWriter(std::unique_ptr<net::URLFetcherFileWriter> writer,
+                          web::DownloadTask* task,
                           int writer_initialization_status);
 
   // Updates consumer from web::DownloadTask.
