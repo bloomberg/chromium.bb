@@ -61,6 +61,8 @@ void BackgroundFetchScheduler::ScheduleDownload() {
 void BackgroundFetchScheduler::DidPopNextRequest(
     BackgroundFetchScheduler::Controller* controller,
     scoped_refptr<BackgroundFetchRequestInfo> request_info) {
+  if (!request_info)
+    return;  // Storage error, fetch might have been aborted.
   download_controller_map_[request_info->download_guid()] = controller;
   controller->StartRequest(request_info);
 }

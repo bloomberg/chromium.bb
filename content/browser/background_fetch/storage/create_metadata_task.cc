@@ -65,10 +65,10 @@ void CreateMetadataTask::DidGetUniqueId(const std::vector<std::string>& data,
 void CreateMetadataTask::InitializeMetadataProto() {
   metadata_proto_ = std::make_unique<proto::BackgroundFetchMetadata>();
   // Set BackgroundFetchRegistration fields.
-  // Upload/Download stats default to correct initial values.
   auto* registration_proto = metadata_proto_->mutable_registration();
   registration_proto->set_unique_id(registration_id_.unique_id());
   registration_proto->set_developer_id(registration_id_.developer_id());
+  registration_proto->set_download_total(options_.download_total);
 
   // Set Options fields.
   auto* options_proto = metadata_proto_->mutable_options();
