@@ -821,16 +821,15 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, VerifyStandbyThread) {
   auto task_runner =
       worker_pool->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
 
-  WaitableEvent thread_running(WaitableEvent::ResetPolicy::AUTOMATIC,
-                               WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent thread_continue;
+  WaitableEvent thread_running(WaitableEvent::ResetPolicy::AUTOMATIC);
+  WaitableEvent threads_continue;
 
   RepeatingClosure closure = BindRepeating(
-      [](WaitableEvent* thread_running, WaitableEvent* thread_continue) {
+      [](WaitableEvent* thread_running, WaitableEvent* threads_continue) {
         thread_running->Signal();
-        WaitWithoutBlockingObserver(thread_continue);
+        WaitWithoutBlockingObserver(threads_continue);
       },
-      Unretained(&thread_running), Unretained(&thread_continue));
+      Unretained(&thread_running), Unretained(&threads_continue));
 
   // There should be one idle thread until we reach capacity
   for (size_t i = 0; i < kLocalMaxTasks; ++i) {
@@ -842,7 +841,7 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, VerifyStandbyThread) {
   // There should not be an extra idle thread if it means going above capacity
   EXPECT_EQ(kLocalMaxTasks, worker_pool->NumberOfWorkersForTesting());
 
-  thread_continue.Signal();
+  threads_continue.Signal();
   // Wait long enough for all but one worker to clean up.
   worker_pool->WaitForWorkersCleanedUpForTesting(kLocalMaxTasks - 1);
   EXPECT_EQ(1U, worker_pool->NumberOfWorkersForTesting());
@@ -928,26 +927,28 @@ class TaskSchedulerWorkerPoolBlockingTest
   // unblocked, then exits.
   void SaturateWithBlockingTasks(
       const NestedBlockingType& nested_blocking_type) {
-    RepeatingClosure blocking_thread_running_closure = BarrierClosure(
+    ASSERT_FALSE(blocking_threads_running_.IsSignaled());
+
+    RepeatingClosure blocking_threads_running_closure = BarrierClosure(
         kMaxTasks, BindOnce(&WaitableEvent::Signal,
-                            Unretained(&blocking_thread_running_)));
+                            Unretained(&blocking_threads_running_)));
 
     for (size_t i = 0; i < kMaxTasks; ++i) {
       task_runner_->PostTask(
           FROM_HERE,
           BindOnce(
-              [](Closure* blocking_thread_running_closure,
-                 WaitableEvent* blocking_thread_continue_,
+              [](Closure* blocking_threads_running_closure,
+                 WaitableEvent* blocking_threads_continue_,
                  const NestedBlockingType& nested_blocking_type) {
                 NestedScopedBlockingCall nested_scoped_blocking_call(
                     nested_blocking_type);
-                blocking_thread_running_closure->Run();
-                WaitWithoutBlockingObserver(blocking_thread_continue_);
+                blocking_threads_running_closure->Run();
+                WaitWithoutBlockingObserver(blocking_threads_continue_);
               },
-              Unretained(&blocking_thread_running_closure),
-              Unretained(&blocking_thread_continue_), nested_blocking_type));
+              Unretained(&blocking_threads_running_closure),
+              Unretained(&blocking_threads_continue_), nested_blocking_type));
     }
-    blocking_thread_running_.Wait();
+    blocking_threads_running_.Wait();
   }
 
   // Returns how long we can expect a change to |max_tasks_| to occur
@@ -971,15 +972,13 @@ class TaskSchedulerWorkerPoolBlockingTest
   }
 
   // Unblocks tasks posted by SaturateWithBlockingTasks().
-  void UnblockTasks() { blocking_thread_continue_.Signal(); }
+  void UnblockTasks() { blocking_threads_continue_.Signal(); }
 
   scoped_refptr<TaskRunner> task_runner_;
 
  private:
-  WaitableEvent blocking_thread_running_{
-      WaitableEvent::ResetPolicy::AUTOMATIC,
-      WaitableEvent::InitialState::NOT_SIGNALED};
-  WaitableEvent blocking_thread_continue_;
+  WaitableEvent blocking_threads_running_;
+  WaitableEvent blocking_threads_continue_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolBlockingTest);
 };
@@ -1007,10 +1006,9 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, ThreadBlockedUnblocked) {
 // Verify that tasks posted in a saturated pool before a ScopedBlockingCall will
 // execute after ScopedBlockingCall is instantiated.
 TEST_P(TaskSchedulerWorkerPoolBlockingTest, PostBeforeBlocking) {
-  WaitableEvent thread_running(WaitableEvent::ResetPolicy::AUTOMATIC,
-                               WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent thread_running(WaitableEvent::ResetPolicy::AUTOMATIC);
   WaitableEvent thread_can_block;
-  WaitableEvent thread_continue;
+  WaitableEvent threads_continue;
 
   for (size_t i = 0; i < kMaxTasks; ++i) {
     task_runner_->PostTask(
@@ -1018,16 +1016,16 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, PostBeforeBlocking) {
         BindOnce(
             [](const NestedBlockingType& nested_blocking_type,
                WaitableEvent* thread_running, WaitableEvent* thread_can_block,
-               WaitableEvent* thread_continue) {
+               WaitableEvent* threads_continue) {
               thread_running->Signal();
               WaitWithoutBlockingObserver(thread_can_block);
 
               NestedScopedBlockingCall nested_scoped_blocking_call(
                   nested_blocking_type);
-              WaitWithoutBlockingObserver(thread_continue);
+              WaitWithoutBlockingObserver(threads_continue);
             },
             GetParam(), Unretained(&thread_running),
-            Unretained(&thread_can_block), Unretained(&thread_continue)));
+            Unretained(&thread_can_block), Unretained(&threads_continue)));
     thread_running.Wait();
   }
 
@@ -1036,11 +1034,11 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, PostBeforeBlocking) {
   EXPECT_EQ(worker_pool_->NumberOfWorkersForTesting(), kMaxTasks);
   EXPECT_EQ(worker_pool_->GetMaxTasksForTesting(), kMaxTasks);
 
-  WaitableEvent extra_thread_running;
+  WaitableEvent extra_threads_running;
   WaitableEvent extra_threads_continue;
   RepeatingClosure extra_threads_running_barrier = BarrierClosure(
       kMaxTasks,
-      BindOnce(&WaitableEvent::Signal, Unretained(&extra_thread_running)));
+      BindOnce(&WaitableEvent::Signal, Unretained(&extra_threads_running)));
   for (size_t i = 0; i < kMaxTasks; ++i) {
     task_runner_->PostTask(FROM_HERE,
                            BindOnce(
@@ -1061,11 +1059,11 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, PostBeforeBlocking) {
     ExpectMaxTasksIncreasesTo(2 * kMaxTasks);
 
   // Should not block forever.
-  extra_thread_running.Wait();
+  extra_threads_running.Wait();
   EXPECT_EQ(worker_pool_->NumberOfWorkersForTesting(), 2 * kMaxTasks);
   extra_threads_continue.Signal();
 
-  thread_continue.Signal();
+  threads_continue.Signal();
   task_tracker_.FlushForTesting();
 }
 // Verify that workers become idle when the pool is over-capacity and that
@@ -1082,23 +1080,23 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, WorkersIdleWhenOverCapacity) {
   EXPECT_GE(worker_pool_->NumberOfWorkersForTesting(), kMaxTasks + 1);
   EXPECT_LE(worker_pool_->NumberOfWorkersForTesting(), 2 * kMaxTasks);
 
-  WaitableEvent thread_running(WaitableEvent::ResetPolicy::AUTOMATIC,
-                               WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent thread_continue;
+  WaitableEvent threads_running;
+  WaitableEvent threads_continue;
 
-  RepeatingClosure thread_running_barrier = BarrierClosure(
-      kMaxTasks, BindOnce(&WaitableEvent::Signal, Unretained(&thread_running)));
+  RepeatingClosure threads_running_barrier = BarrierClosure(
+      kMaxTasks,
+      BindOnce(&WaitableEvent::Signal, Unretained(&threads_running)));
   // Posting these tasks should cause new workers to be created.
   for (size_t i = 0; i < kMaxTasks; ++i) {
     auto callback = BindOnce(
-        [](Closure* thread_running_barrier, WaitableEvent* thread_continue) {
-          thread_running_barrier->Run();
-          WaitWithoutBlockingObserver(thread_continue);
+        [](Closure* threads_running_barrier, WaitableEvent* threads_continue) {
+          threads_running_barrier->Run();
+          WaitWithoutBlockingObserver(threads_continue);
         },
-        Unretained(&thread_running_barrier), Unretained(&thread_continue));
+        Unretained(&threads_running_barrier), Unretained(&threads_continue));
     task_runner_->PostTask(FROM_HERE, std::move(callback));
   }
-  thread_running.Wait();
+  threads_running.Wait();
 
   ASSERT_EQ(worker_pool_->NumberOfIdleWorkersForTesting(), 0U);
   EXPECT_EQ(worker_pool_->NumberOfWorkersForTesting(), 2 * kMaxTasks);
@@ -1137,7 +1135,7 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, WorkersIdleWhenOverCapacity) {
 
   is_exiting.Set();
   // Unblocks the new workers.
-  thread_continue.Signal();
+  threads_continue.Signal();
   task_tracker_.FlushForTesting();
 }
 
@@ -1252,8 +1250,7 @@ TEST(TaskSchedulerWorkerPoolOverCapacityTest, VerifyCleanup) {
   scoped_refptr<TaskRunner> task_runner =
       worker_pool.CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
 
-  WaitableEvent threads_running(WaitableEvent::ResetPolicy::AUTOMATIC,
-                                WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent threads_running;
   WaitableEvent threads_continue;
   RepeatingClosure threads_running_barrier = BarrierClosure(
       kLocalMaxTasks,
@@ -1327,50 +1324,50 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, MaximumWorkersTest) {
   constexpr size_t kMaxNumberOfWorkers = 256;
   constexpr size_t kNumExtraTasks = 10;
 
-  WaitableEvent early_blocking_thread_running;
+  WaitableEvent early_blocking_threads_running;
   RepeatingClosure early_threads_barrier_closure =
       BarrierClosure(kMaxNumberOfWorkers,
                      BindOnce(&WaitableEvent::Signal,
-                              Unretained(&early_blocking_thread_running)));
+                              Unretained(&early_blocking_threads_running)));
 
   WaitableEvent early_threads_finished;
   RepeatingClosure early_threads_finished_barrier = BarrierClosure(
       kMaxNumberOfWorkers,
       BindOnce(&WaitableEvent::Signal, Unretained(&early_threads_finished)));
 
-  WaitableEvent early_release_thread_continue;
+  WaitableEvent early_release_threads_continue;
 
   // Post ScopedBlockingCall tasks to hit the worker cap.
   for (size_t i = 0; i < kMaxNumberOfWorkers; ++i) {
     task_runner_->PostTask(FROM_HERE,
                            BindOnce(
                                [](Closure* early_threads_barrier_closure,
-                                  WaitableEvent* early_release_thread_continue,
+                                  WaitableEvent* early_release_threads_continue,
                                   Closure* early_threads_finished) {
                                  {
                                    ScopedBlockingCall scoped_blocking_call(
                                        BlockingType::WILL_BLOCK);
                                    early_threads_barrier_closure->Run();
                                    WaitWithoutBlockingObserver(
-                                       early_release_thread_continue);
+                                       early_release_threads_continue);
                                  }
                                  early_threads_finished->Run();
                                },
                                Unretained(&early_threads_barrier_closure),
-                               Unretained(&early_release_thread_continue),
+                               Unretained(&early_release_threads_continue),
                                Unretained(&early_threads_finished_barrier)));
   }
 
-  early_blocking_thread_running.Wait();
+  early_blocking_threads_running.Wait();
   EXPECT_EQ(worker_pool_->GetMaxTasksForTesting(),
             kMaxTasks + kMaxNumberOfWorkers);
 
   WaitableEvent late_release_thread_contine;
-  WaitableEvent late_blocking_thread_running;
+  WaitableEvent late_blocking_threads_running;
 
   RepeatingClosure late_threads_barrier_closure = BarrierClosure(
       kNumExtraTasks, BindOnce(&WaitableEvent::Signal,
-                               Unretained(&late_blocking_thread_running)));
+                               Unretained(&late_blocking_threads_running)));
 
   // Posts additional tasks. Note: we should already have |kMaxNumberOfWorkers|
   // tasks running. These tasks should not be able to get executed yet as
@@ -1393,9 +1390,9 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, MaximumWorkersTest) {
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   EXPECT_LE(worker_pool_->NumberOfWorkersForTesting(), kMaxNumberOfWorkers);
 
-  early_release_thread_continue.Signal();
+  early_release_threads_continue.Signal();
   early_threads_finished.Wait();
-  late_blocking_thread_running.Wait();
+  late_blocking_threads_running.Wait();
 
   WaitableEvent final_tasks_running;
   WaitableEvent final_tasks_continue;
@@ -1588,8 +1585,7 @@ TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, RacyCleanup) {
   scoped_refptr<TaskRunner> task_runner =
       worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
 
-  WaitableEvent threads_running(WaitableEvent::ResetPolicy::AUTOMATIC,
-                                WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent threads_running;
   WaitableEvent unblock_threads;
   RepeatingClosure threads_running_barrier = BarrierClosure(
       kLocalMaxTasks,
