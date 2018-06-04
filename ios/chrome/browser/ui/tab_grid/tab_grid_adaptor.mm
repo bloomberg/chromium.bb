@@ -47,9 +47,9 @@
   // The only action here is to signal to the tab grid which panel should be
   // active.
   if (activeModel == otrModel) {
-    self.tabGridPager.currentPage = TabGridPageIncognitoTabs;
+    self.tabGridPager.activePage = TabGridPageIncognitoTabs;
   } else {
-    self.tabGridPager.currentPage = TabGridPageRegularTabs;
+    self.tabGridPager.activePage = TabGridPageRegularTabs;
   }
 }
 
