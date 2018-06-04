@@ -1371,7 +1371,7 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
         syncer::user_selectable_type::PROXY_TABS,
       };
 
-  static_assert(41 == syncer::MODEL_TYPE_COUNT,
+  static_assert(42 == syncer::MODEL_TYPE_COUNT,
                 "If adding a user selectable type (that is exposed to the user "
                 "via the sync preferences UI), update "
                 "1) The user_selectable_types[] above;"

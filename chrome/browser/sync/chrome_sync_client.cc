@@ -499,6 +499,10 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->change_processor()
           ->GetControllerDelegateOnUIThread();
     }
+    case syncer::USER_CONSENTS:
+      // TODO(vitaliii): Return the real delegate once it is wired to the
+      // consent auditor.
+      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
     case syncer::USER_EVENTS:
       return browser_sync::UserEventServiceFactory::GetForProfile(profile_)
           ->GetSyncBridge()

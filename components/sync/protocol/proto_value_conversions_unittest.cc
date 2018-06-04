@@ -55,7 +55,7 @@ class ProtoValueConversionsTest : public testing::Test {
   }
 };
 
-static_assert(41 == syncer::MODEL_TYPE_COUNT,
+static_assert(42 == syncer::MODEL_TYPE_COUNT,
               "When adding a new type, add a unit test for "
               "{NewType}SpecificsToValue below.");
 
@@ -361,7 +361,7 @@ TEST_F(ProtoValueConversionsTest, WifiCredentialSpecificsToValue) {
 // TODO(akalin): Figure out how to better test EntitySpecificsToValue.
 
 TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
-  static_assert(41 == syncer::MODEL_TYPE_COUNT,
+  static_assert(42 == syncer::MODEL_TYPE_COUNT,
                 "When adding a new type, add its field below.");
 
   sync_pb::EntitySpecifics specifics;
@@ -404,6 +404,7 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
   SET_FIELD(synced_notification_app_info);
   SET_FIELD(theme);
   SET_FIELD(typed_url);
+  SET_FIELD(user_consent);
   SET_FIELD(user_event);
   SET_FIELD(wallet_metadata);
   SET_FIELD(wifi_credential);

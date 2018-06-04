@@ -345,6 +345,10 @@ IOSChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
                            ->GetControllerDelegateOnUIThread()
                      : base::WeakPtr<syncer::ModelTypeControllerDelegate>();
     }
+    case syncer::USER_CONSENTS:
+      // TODO(crbug.com/840357): Return the real delegate once it is wired to
+      // the consent auditor.
+      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
     case syncer::USER_EVENTS:
       return IOSUserEventServiceFactory::GetForBrowserState(browser_state_)
           ->GetSyncBridge()

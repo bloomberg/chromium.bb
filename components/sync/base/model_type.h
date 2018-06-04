@@ -133,6 +133,8 @@ enum ModelType {
   USER_EVENTS,
   // Shares in project Mountain.
   MOUNTAIN_SHARES,
+  // Commit only user consents.
+  USER_CONSENTS,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered
@@ -201,17 +203,18 @@ constexpr const char* kUserSelectableDataTypeNames[] = {
 // representations. This distinguishes them from Proxy types, which have no
 // protocol representation and are never sent to the server.
 constexpr ModelTypeSet ProtocolTypes() {
-  return ModelTypeSet(
-      BOOKMARKS, PREFERENCES, PASSWORDS, AUTOFILL_PROFILE, AUTOFILL,
-      AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_METADATA, THEMES, TYPED_URLS,
-      EXTENSIONS, SEARCH_ENGINES, SESSIONS, APPS, APP_SETTINGS,
-      EXTENSION_SETTINGS, APP_NOTIFICATIONS, HISTORY_DELETE_DIRECTIVES,
-      SYNCED_NOTIFICATIONS, SYNCED_NOTIFICATION_APP_INFO, DICTIONARY,
-      FAVICON_IMAGES, FAVICON_TRACKING, DEVICE_INFO, PRIORITY_PREFERENCES,
-      SUPERVISED_USER_SETTINGS, DEPRECATED_SUPERVISED_USERS,
-      DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS, ARTICLES, APP_LIST,
-      WIFI_CREDENTIALS, SUPERVISED_USER_WHITELISTS, ARC_PACKAGE, PRINTERS,
-      READING_LIST, USER_EVENTS, NIGORI, EXPERIMENTS, MOUNTAIN_SHARES);
+  return ModelTypeSet(BOOKMARKS, PREFERENCES, PASSWORDS, AUTOFILL_PROFILE,
+                      AUTOFILL, AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_METADATA,
+                      THEMES, TYPED_URLS, EXTENSIONS, SEARCH_ENGINES, SESSIONS,
+                      APPS, APP_SETTINGS, EXTENSION_SETTINGS, APP_NOTIFICATIONS,
+                      HISTORY_DELETE_DIRECTIVES, SYNCED_NOTIFICATIONS,
+                      SYNCED_NOTIFICATION_APP_INFO, DICTIONARY, FAVICON_IMAGES,
+                      FAVICON_TRACKING, DEVICE_INFO, PRIORITY_PREFERENCES,
+                      SUPERVISED_USER_SETTINGS, DEPRECATED_SUPERVISED_USERS,
+                      DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS, ARTICLES,
+                      APP_LIST, WIFI_CREDENTIALS, SUPERVISED_USER_WHITELISTS,
+                      ARC_PACKAGE, PRINTERS, READING_LIST, USER_EVENTS, NIGORI,
+                      EXPERIMENTS, MOUNTAIN_SHARES, USER_CONSENTS);
 }
 
 // These are the normal user-controlled types. This is to distinguish from
@@ -286,7 +289,7 @@ constexpr ModelTypeSet PriorityCoreTypes() {
 
 // Types that may commit data, but should never be included in a GetUpdates.
 constexpr ModelTypeSet CommitOnlyTypes() {
-  return ModelTypeSet(USER_EVENTS);
+  return ModelTypeSet(USER_EVENTS, USER_CONSENTS);
 }
 
 ModelTypeNameMap GetUserSelectableTypeNameMap();

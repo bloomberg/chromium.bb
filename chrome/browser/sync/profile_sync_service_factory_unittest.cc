@@ -43,7 +43,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
 
   // Returns the collection of default datatypes.
   std::vector<syncer::ModelType> DefaultDatatypes() {
-    static_assert(41 == syncer::MODEL_TYPE_COUNT,
+    static_assert(42 == syncer::MODEL_TYPE_COUNT,
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
@@ -90,6 +90,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::SUPERVISED_USER_WHITELISTS);
     datatypes.push_back(syncer::TYPED_URLS);
     datatypes.push_back(syncer::USER_EVENTS);
+    // TODO(vitaliii): Add USER_CONSENTS, when the type is enabled by default.
 
     return datatypes;
   }
