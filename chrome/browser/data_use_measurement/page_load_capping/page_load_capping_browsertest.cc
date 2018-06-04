@@ -34,7 +34,10 @@ class PageLoadCappingBrowserTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest, PageLoadCappingBlocksLoads) {
+// TODO(crbug.com/848675) Disabled to due flaky timeouts on pretty much all
+// platforms.
+IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
+                       DISABLED_PageLoadCappingBlocksLoads) {
   net::EmbeddedTestServer https_test_server(
       net::EmbeddedTestServer::TYPE_HTTPS);
   // The main resource and the favicon should be fetched. Additionally, images
