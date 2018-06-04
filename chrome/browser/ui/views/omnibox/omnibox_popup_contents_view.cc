@@ -29,7 +29,9 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/clip_recorder.h"
+#include "ui/compositor/closure_animation_observer.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
@@ -194,7 +196,65 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
       SetBounds(bounds);
   }
 
+  void ShowAnimated() {
+    if (!LocationBarView::IsRounded()) {
+      ShowInactive();
+      return;
+    }
+
+    // Set the initial opacity to 0 and ease into fully opaque.
+    GetLayer()->SetOpacity(0.0);
+    ShowInactive();
+
+    auto scoped_settings = GetScopedAnimationSettings();
+    GetLayer()->SetOpacity(1.0);
+  }
+
+  void CloseAnimated() {
+    if (!LocationBarView::IsRounded()) {
+      // NOTE: Do NOT use CloseNow() here, as we may be deep in a callstack
+      // triggered by the popup receiving a message (e.g. LBUTTONUP), and
+      // destroying the popup would cause us to read garbage when we unwind back
+      // to that level.
+      Close();
+      return;
+    }
+
+    // If the opening or shrinking animations still running, abort them, as the
+    // popup is closing. This is an edge case for superhumanly fast users.
+    GetLayer()->GetAnimator()->AbortAllAnimations();
+
+    auto scoped_settings = GetScopedAnimationSettings();
+    GetLayer()->SetOpacity(0.0);
+
+    // Destroy the popup when done. The observer deletes itself on completion.
+    scoped_settings->AddObserver(new ui::ClosureAnimationObserver(
+        base::BindOnce(&AutocompletePopupWidget::Close, AsWeakPtr())));
+  }
+
+  void OnNativeWidgetDestroying() override {
+    // End all our animations immediately, as our closing animation may trigger
+    // a Close call which will be invalid once the native widget is gone.
+    GetLayer()->GetAnimator()->AbortAllAnimations();
+
+    ThemeCopyingWidget::OnNativeWidgetDestroying();
+  }
+
  private:
+  std::unique_ptr<ui::ScopedLayerAnimationSettings>
+  GetScopedAnimationSettings() {
+    auto settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
+        GetLayer()->GetAnimator());
+
+    settings->SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
+
+    constexpr base::TimeDelta kPopupOpacityAnimationDuration =
+        base::TimeDelta::FromMilliseconds(82);
+    settings->SetTransitionDuration(kPopupOpacityAnimationDuration);
+
+    return settings;
+  }
+
   std::unique_ptr<WidgetShrinkAnimation> animator_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWidget);
@@ -318,11 +378,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     // the omnibox popup window.  Close any existing popup.
     if (popup_) {
       NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
-      // NOTE: Do NOT use CloseNow() here, as we may be deep in a callstack
-      // triggered by the popup receiving a message (e.g. LBUTTONUP), and
-      // destroying the popup would cause us to read garbage when we unwind back
-      // to that level.
-      popup_->Close();  // This will eventually delete the popup.
+      popup_->CloseAnimated();  // This will eventually delete the popup.
       popup_.reset();
     }
     return;
@@ -378,7 +434,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
   if (!popup_)
     return;
 
-  popup_->ShowInactive();
+  popup_->ShowAnimated();
 
   // Popup is now expanded and first item will be selected.
   NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
