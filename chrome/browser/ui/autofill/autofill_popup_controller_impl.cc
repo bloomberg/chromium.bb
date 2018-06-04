@@ -281,6 +281,10 @@ void AutofillPopupControllerImpl::SelectionCleared() {
   SetSelectedLine(base::nullopt);
 }
 
+bool AutofillPopupControllerImpl::HasSelection() const {
+  return selected_line_.has_value();
+}
+
 void AutofillPopupControllerImpl::AcceptSuggestion(int index) {
   const autofill::Suggestion& suggestion = suggestions_[index];
   delegate_->DidAcceptSuggestion(suggestion.value, suggestion.frontend_id,

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
 
+#include "base/macros.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 #include "chrome/browser/ui/browser.h"
@@ -32,6 +34,8 @@ class MockAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
   MOCK_METHOD1(SetSelectionAtPoint, void(const gfx::Point&));
   MOCK_METHOD0(AcceptSelectedLine, bool());
   MOCK_METHOD0(SelectionCleared, void());
+  MOCK_CONST_METHOD0(HasSelection, bool());
+
   // TODO(jdduke): Mock this method upon resolution of crbug.com/352463.
   MOCK_CONST_METHOD0(popup_bounds, gfx::Rect());
   MOCK_METHOD0(container_view, gfx::NativeView());
@@ -84,6 +88,8 @@ class AutofillPopupBaseViewTest : public InProcessBrowserTest {
   test::ScopedMacViewsBrowserMode views_mode_{true};
   testing::NiceMock<MockAutofillPopupViewDelegate> mock_delegate_;
   AutofillPopupBaseView* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillPopupBaseViewTest);
 };
 
 // Flaky on Win and Linux.  http://crbug.com/376299
@@ -152,6 +158,22 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, CorrectBoundsTest) {
                                  .origin();
   gfx::Point expected_point = bounds.origin();
   EXPECT_EQ(expected_point, display_point);
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, MouseExitedTest) {
+  for (bool has_selection : {true, false}) {
+    EXPECT_CALL(mock_delegate_, HasSelection()).WillOnce(Return(has_selection));
+    EXPECT_CALL(mock_delegate_, SelectionCleared())
+        .Times(has_selection ? 1 : 0);
+
+    ShowView();
+
+    ui::MouseEvent exit_event(ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(),
+                              ui::EventTimeForNow(), 0, 0);
+    static_cast<views::View*>(view_)->OnMouseExited(exit_event);
+
+    base::RunLoop().RunUntilIdle();
+  }
 }
 
 }  // namespace autofill

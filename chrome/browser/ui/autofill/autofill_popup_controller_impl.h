@@ -82,6 +82,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   void SetSelectionAtPoint(const gfx::Point& point) override;
   bool AcceptSelectedLine() override;
   void SelectionCleared() override;
+  bool HasSelection() const override;
   gfx::Rect popup_bounds() const override;
   gfx::NativeView container_view() override;
   const gfx::RectF& element_bounds() const override;
