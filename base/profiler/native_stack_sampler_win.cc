@@ -64,10 +64,9 @@ const TEB* GetThreadEnvironmentBlock(HANDLE thread_handle) {
       NTSTATUS (WINAPI*)(HANDLE, THREAD_INFORMATION_CLASS, PVOID, ULONG,
                          PULONG);
 
-  const NtQueryInformationThreadFunction nt_query_information_thread =
-      reinterpret_cast<NtQueryInformationThreadFunction>(
-          ::GetProcAddress(::GetModuleHandle(L"ntdll.dll"),
-                           "NtQueryInformationThread"));
+  const auto nt_query_information_thread =
+      reinterpret_cast<NtQueryInformationThreadFunction>(::GetProcAddress(
+          ::GetModuleHandle(L"ntdll.dll"), "NtQueryInformationThread"));
   if (!nt_query_information_thread)
     return nullptr;
 
