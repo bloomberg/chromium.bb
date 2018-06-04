@@ -13,7 +13,7 @@ class FrameScheduler;
 namespace scheduler {
 
 // This enum is used for histogram and should not be renumbered.
-// This enum should be kept in sync with FrameThrottlingState and
+// This enum should be kept in sync with FrameSchedulingLifecycleState and
 // FrameOriginState.
 //
 // There are three main states:

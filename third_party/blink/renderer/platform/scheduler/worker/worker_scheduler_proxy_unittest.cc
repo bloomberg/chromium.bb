@@ -33,14 +33,14 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
                               proxy),
         throtting_state_changed_(throtting_state_changed) {}
 
-  void OnThrottlingStateChanged(
-      FrameScheduler::ThrottlingState throttling_state) override {
-    WorkerThreadScheduler::OnThrottlingStateChanged(throttling_state);
+  void OnLifecycleStateChanged(
+      SchedulingLifecycleState lifecycle_state) override {
+    WorkerThreadScheduler::OnLifecycleStateChanged(lifecycle_state);
 
     throtting_state_changed_->Signal();
   }
 
-  using WorkerThreadScheduler::throttling_state;
+  using WorkerThreadScheduler::lifecycle_state;
 
  private:
   WaitableEvent* throtting_state_changed_;
@@ -149,24 +149,24 @@ TEST_F(WorkerSchedulerProxyTest, VisibilitySignalReceived) {
   auto worker_thread =
       CreateWorkerThread(frame_scheduler_.get(), &throtting_state_changed);
 
-  DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
-         FrameScheduler::ThrottlingState::kNotThrottled);
+  DCHECK(worker_thread->GetWorkerScheduler()->lifecycle_state() ==
+         SchedulingLifecycleState::kNotThrottled);
 
   page_scheduler_->SetPageVisible(false);
   throtting_state_changed.Wait();
-  DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
-         FrameScheduler::ThrottlingState::kHidden);
+  DCHECK(worker_thread->GetWorkerScheduler()->lifecycle_state() ==
+         SchedulingLifecycleState::kHidden);
 
   // Trigger full throttling.
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(30));
   throtting_state_changed.Wait();
-  DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
-         FrameScheduler::ThrottlingState::kThrottled);
+  DCHECK(worker_thread->GetWorkerScheduler()->lifecycle_state() ==
+         SchedulingLifecycleState::kThrottled);
 
   page_scheduler_->SetPageVisible(true);
   throtting_state_changed.Wait();
-  DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
-         FrameScheduler::ThrottlingState::kNotThrottled);
+  DCHECK(worker_thread->GetWorkerScheduler()->lifecycle_state() ==
+         SchedulingLifecycleState::kNotThrottled);
 
   base::RunLoop().RunUntilIdle();
 }
@@ -179,13 +179,13 @@ TEST_F(WorkerSchedulerProxyTest, FrameSchedulerDestroyed) {
   auto worker_thread =
       CreateWorkerThread(frame_scheduler_.get(), &throtting_state_changed);
 
-  DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
-         FrameScheduler::ThrottlingState::kNotThrottled);
+  DCHECK(worker_thread->GetWorkerScheduler()->lifecycle_state() ==
+         SchedulingLifecycleState::kNotThrottled);
 
   page_scheduler_->SetPageVisible(false);
   throtting_state_changed.Wait();
-  DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
-         FrameScheduler::ThrottlingState::kHidden);
+  DCHECK(worker_thread->GetWorkerScheduler()->lifecycle_state() ==
+         SchedulingLifecycleState::kHidden);
 
   frame_scheduler_.reset();
   base::RunLoop().RunUntilIdle();
@@ -200,13 +200,13 @@ TEST_F(WorkerSchedulerProxyTest, ThreadDestroyed) {
   auto worker_thread =
       CreateWorkerThread(frame_scheduler_.get(), &throtting_state_changed);
 
-  DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
-         FrameScheduler::ThrottlingState::kNotThrottled);
+  DCHECK(worker_thread->GetWorkerScheduler()->lifecycle_state() ==
+         SchedulingLifecycleState::kNotThrottled);
 
   page_scheduler_->SetPageVisible(false);
   throtting_state_changed.Wait();
-  DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
-         FrameScheduler::ThrottlingState::kHidden);
+  DCHECK(worker_thread->GetWorkerScheduler()->lifecycle_state() ==
+         SchedulingLifecycleState::kHidden);
 
   worker_thread.reset();
   base::RunLoop().RunUntilIdle();
