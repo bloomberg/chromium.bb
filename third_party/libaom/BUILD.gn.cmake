@@ -190,58 +190,18 @@ if (enable_av1_decoder) {
     }
   }
 
-  if (cpu_arch_full == "arm-neon" || cpu_arch_full == "arm-neon-cpu-detect") {
-    static_library("libaom_intrinsics_neon") {
-      configs -= [ "//build/config/compiler:compiler_arm_fpu" ]
+  if (current_cpu == "arm64" || cpu_arch_full == "arm-neon" ||
+      cpu_arch_full == "arm-neon-cpu-detect") {
+    source_set("libaom_intrinsics_neon") {
+      configs -= [ "//build/config/compiler:chromium_code" ]
+      configs += [ "//build/config/compiler:no_chromium_code" ]
+      if (current_cpu == "arm") {
+        configs -= [ "//build/config/compiler:compiler_arm_fpu" ]
+        cflags = [ "-mfpu=neon" ]
+      }
       configs += [ ":libaom_config" ]
-      cflags = [ "-mfpu=neon" ]
       sources = aom_av1_common_intrin_neon
       sources += aom_dsp_common_intrin_neon
-    }
-
-    # Converts ARM assembly files to GAS style.
-    action_foreach("convert_arm_assembly") {
-      script = "//third_party/libvpx/run_perl.py"
-      sources = aom_dsp_common_asm_neon
-      gen_file =
-          get_label_info("//third_party/libaom/source/libaom", "root_gen_dir") +
-          "/{{source_root_relative_dir}}/{{source_file_part}}.S"
-      outputs = [
-        gen_file,
-      ]
-      if (is_ios) {
-        ads2gas_script =
-            "//third_party/libaom/source/libaom/build/make/ads2gas_apple.pl"
-      } else {
-        ads2gas_script =
-            "//third_party/libaom/source/libaom/build/make/ads2gas.pl"
-      }
-      args = [
-        "-s",
-        rebase_path(ads2gas_script, root_build_dir),
-        "-i",
-        "{{source}}",
-        "-o",
-        rebase_path(gen_file),
-      ]
-    }
-
-    static_library("libaom_assembly_arm") {
-      sources = get_target_outputs(":convert_arm_assembly")
-      configs -= [ "//build/config/compiler:compiler_arm_fpu" ]
-      configs += [ ":libaom_config" ]
-      if (cpu_arch_full == "arm-neon" ||
-          cpu_arch_full == "arm-neon-cpu-detect") {
-        asmflags = [ "-mfpu=neon" ]
-
-        # allow asm files to include generated sources which match the source
-        # tree layout, e.g., aom_dsp/arm/...
-        include_dirs = [ get_label_info("//third_party/libaom/source/libaom",
-                                        "target_gen_dir") ]
-      }
-      deps = [
-        ":convert_arm_assembly",
-      ]
     }
   }
 
@@ -262,10 +222,6 @@ if (enable_av1_decoder) {
     sources += aom_scale_sources
     sources += aom_sources
     sources += aom_util_sources
-    if (current_cpu == "arm64") {
-      sources += aom_av1_common_intrin_neon
-      sources += aom_dsp_common_intrin_neon
-    }
     deps = []
     if (current_cpu == "x86" || (current_cpu == "x64" && !is_msan)) {
       deps += [
@@ -278,11 +234,9 @@ if (enable_av1_decoder) {
         ":libaom_yasm",
       ]
     }
-    if (cpu_arch_full == "arm-neon" || cpu_arch_full == "arm-neon-cpu-detect") {
-      deps += [
-        ":libaom_assembly_arm",
-        ":libaom_intrinsics_neon",
-      ]
+    if (current_cpu == "arm64" || cpu_arch_full == "arm-neon" ||
+        cpu_arch_full == "arm-neon-cpu-detect") {
+      deps += [ ":libaom_intrinsics_neon" ]
     }
     if (is_android) {
       deps += [ "//third_party/android_tools:cpu_features" ]

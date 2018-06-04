@@ -116,25 +116,10 @@ function gen_config_files {
   cmake "${SRC}" ${2} &> /dev/null
 
   case "${1}" in
-    linux*)
-      local ASM_CONV=ads2gas.pl
-      ;;
-    *)
-      local ASM_CONV=ads2gas_apple.pl
-      ;;
-  esac
-
-  case "${1}" in
-    *mips*) ;;
-    nacl) ;;
     *x64*|*ia32*)
       egrep "#define [A-Z0-9_]+ [01]" config/aom_config.h | \
         awk '{print "%define " $2 " " $3}' > config/aom_config.asm
       ;;
-    *)
-      egrep "#define [A-Z0-9_]+ [01]" config/aom_config.h | \
-        awk '{print $2 " EQU " $3}' | \
-        perl "${SRC}/build/make/${ASM_CONV}" > config/aom_config.asm
   esac
 
   cp config/aom_config.{h,c,asm} "${CFG}/${1}/config/"
@@ -204,7 +189,7 @@ egrep "#define [A-Z0-9_]+ [01]" "${CFG}/win/x64/config/aom_config.h" \
 
 reset_dirs linux/arm
 gen_config_files linux/arm \
-  "${toolchain}/armv7-linux-gcc.cmake -DENABLE_NEON=0 -DENABLE_NEON_ASM=0 ${all_platforms}"
+  "${toolchain}/armv7-linux-gcc.cmake -DENABLE_NEON=0 ${all_platforms}"
 gen_rtcd_header linux/arm armv7 --disable-neon
 
 reset_dirs linux/arm-neon
