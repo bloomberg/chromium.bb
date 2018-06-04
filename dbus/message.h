@@ -312,6 +312,12 @@ class CHROME_DBUS_EXPORT MessageWriter {
   // function.
   void AppendArrayOfBytes(const uint8_t* values, size_t length);
 
+  // Appends array of int32_ts.
+  void AppendArrayOfInt32s(const int32_t* values, size_t length);
+
+  // Appends array of uint32_ts.
+  void AppendArrayOfUint32s(const uint32_t* values, size_t length);
+
   // Appends the array of doubles. Used for audio mixer matrix doubles.
   void AppendArrayOfDoubles(const double* values, size_t length);
 
@@ -417,6 +423,12 @@ class CHROME_DBUS_EXPORT MessageReader {
   // MessageReader; |bytes| must be copied if the contents will be referenced
   // after the MessageReader is destroyed.
   bool PopArrayOfBytes(const uint8_t** bytes, size_t* length);
+
+  // Gets the array of int32_ts at the current iterator position.
+  bool PopArrayOfInt32s(const int32_t** signed_ints, size_t* length);
+
+  // Gets the array of uint32_ts at the current iterator position.
+  bool PopArrayOfUint32s(const uint32_t** unsigned_ints, size_t* length);
 
   // Gets the array of doubles at the current iterator position.
   bool PopArrayOfDoubles(const double** doubles, size_t* length);

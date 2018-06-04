@@ -576,6 +576,29 @@ void MessageWriter::AppendArrayOfBytes(const uint8_t* values, size_t length) {
   CloseContainer(&array_writer);
 }
 
+void MessageWriter::AppendArrayOfInt32s(const int32_t* values, size_t length) {
+  DCHECK(!container_is_open_);
+  MessageWriter array_writer(message_);
+  OpenArray("i", &array_writer);
+  const bool success = dbus_message_iter_append_fixed_array(
+      &(array_writer.raw_message_iter_), DBUS_TYPE_INT32, &values,
+      static_cast<int>(length));
+  CHECK(success) << "Unable to allocate memory";
+  CloseContainer(&array_writer);
+}
+
+void MessageWriter::AppendArrayOfUint32s(const uint32_t* values,
+                                         size_t length) {
+  DCHECK(!container_is_open_);
+  MessageWriter array_writer(message_);
+  OpenArray("u", &array_writer);
+  const bool success = dbus_message_iter_append_fixed_array(
+      &(array_writer.raw_message_iter_), DBUS_TYPE_UINT32, &values,
+      static_cast<int>(length));
+  CHECK(success) << "Unable to allocate memory";
+  CloseContainer(&array_writer);
+}
+
 void MessageWriter::AppendArrayOfDoubles(const double* values, size_t length) {
   DCHECK(!container_is_open_);
   MessageWriter array_writer(message_);
@@ -800,6 +823,46 @@ bool MessageReader::PopArrayOfBytes(const uint8_t** bytes, size_t* length) {
   int int_length = 0;
   dbus_message_iter_get_fixed_array(&array_reader.raw_message_iter_, bytes,
                                     &int_length);
+  *length = static_cast<size_t>(int_length);
+  return true;
+}
+
+bool MessageReader::PopArrayOfInt32s(const int32_t** signed_ints,
+                                     size_t* length) {
+  MessageReader array_reader(message_);
+  if (!PopArray(&array_reader))
+    return false;
+  // An empty array is allowed.
+  if (!array_reader.HasMoreData()) {
+    *length = 0;
+    *signed_ints = nullptr;
+    return true;
+  }
+  if (!array_reader.CheckDataType(DBUS_TYPE_INT32))
+    return false;
+  int int_length = 0;
+  dbus_message_iter_get_fixed_array(&array_reader.raw_message_iter_,
+                                    signed_ints, &int_length);
+  *length = static_cast<size_t>(int_length);
+  return true;
+}
+
+bool MessageReader::PopArrayOfUint32s(const uint32_t** unsigned_ints,
+                                      size_t* length) {
+  MessageReader array_reader(message_);
+  if (!PopArray(&array_reader))
+    return false;
+  // An empty array is allowed.
+  if (!array_reader.HasMoreData()) {
+    *length = 0;
+    *unsigned_ints = nullptr;
+    return true;
+  }
+  if (!array_reader.CheckDataType(DBUS_TYPE_UINT32))
+    return false;
+  int int_length = 0;
+  dbus_message_iter_get_fixed_array(&array_reader.raw_message_iter_,
+                                    unsigned_ints, &int_length);
   *length = static_cast<size_t>(int_length);
   return true;
 }
