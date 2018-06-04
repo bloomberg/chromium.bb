@@ -207,6 +207,8 @@ enum AppLaunchBucket {
 };
 
 #if defined(OS_CHROMEOS)
+// The extension id of the Assessment Assistant extension.
+extern const char kAssessmentAssistantExtensionId[];
 // Path to preinstalled ChromeVox screen reader extension (relative to
 // |chrome::DIR_RESOURCES|).
 extern const char kChromeVoxExtensionPath[];
