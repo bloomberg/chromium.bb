@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
 #include "content/browser/background_fetch/background_fetch_event_dispatcher.h"
 #include "content/common/content_export.h"
@@ -27,11 +26,13 @@ class BlobDataHandle;
 namespace content {
 
 class BackgroundFetchJobController;
+class BackgroundFetchDataManager;
 struct BackgroundFetchOptions;
 class BackgroundFetchRegistrationId;
 class BackgroundFetchRegistrationNotifier;
 class BackgroundFetchScheduler;
 class BrowserContext;
+class CacheStorageContextImpl;
 class ServiceWorkerContextWrapper;
 struct ServiceWorkerFetchRequest;
 
@@ -103,6 +104,7 @@ class CONTENT_EXPORT BackgroundFetchContext
       blink::mojom::BackgroundFetchService::UpdateUICallback callback);
 
  private:
+  friend class BackgroundFetchServiceTest;
   friend class base::DeleteHelper<BackgroundFetchContext>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
   friend class base::RefCountedThreadSafe<BackgroundFetchContext,
@@ -188,10 +190,15 @@ class CONTENT_EXPORT BackgroundFetchContext
   void LastObserverGarbageCollected(
       const BackgroundFetchRegistrationId& registration_id);
 
+  // Switches out |data_manager_| with a DataManager configured for testing
+  // environments. Must be called directly after the constructor.
+  void SetDataManagerForTesting(
+      std::unique_ptr<BackgroundFetchDataManager> data_manager);
+
   // |this| is owned, indirectly, by the BrowserContext.
   BrowserContext* browser_context_;
 
-  BackgroundFetchDataManager data_manager_;
+  std::unique_ptr<BackgroundFetchDataManager> data_manager_;
   BackgroundFetchEventDispatcher event_dispatcher_;
   std::unique_ptr<BackgroundFetchRegistrationNotifier> registration_notifier_;
   BackgroundFetchDelegateProxy delegate_proxy_;

@@ -16,6 +16,7 @@
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/background_fetch/background_fetch_test_base.h"
+#include "content/browser/background_fetch/background_fetch_test_data_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -65,6 +66,8 @@ class BadMessageObserver {
 
   DISALLOW_COPY_AND_ASSIGN(BadMessageObserver);
 };
+
+}  // namespace
 
 class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
  public:
@@ -205,13 +208,14 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
   void SetUp() override {
     BackgroundFetchTestBase::SetUp();
 
-    StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-        BrowserContext::GetDefaultStoragePartition(browser_context()));
-
     context_ = new BackgroundFetchContext(
         browser_context(),
         base::WrapRefCounted(embedded_worker_test_helper()->context_wrapper()),
-        base::WrapRefCounted(partition->GetCacheStorageContext()));
+        nullptr /* cache_storage_context */);
+    context_->SetDataManagerForTesting(
+        std::make_unique<BackgroundFetchTestDataManager>(
+            browser_context(), storage_partition(),
+            embedded_worker_test_helper()->context_wrapper()));
 
     service_ = std::make_unique<BackgroundFetchServiceImpl>(context_, origin());
   }
@@ -971,5 +975,4 @@ TEST_F(BackgroundFetchServiceTest, GetDeveloperIds) {
   }
 }
 
-}  // namespace
 }  // namespace content

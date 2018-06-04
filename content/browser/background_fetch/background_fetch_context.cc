@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_metrics.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
@@ -26,14 +27,16 @@ BackgroundFetchContext::BackgroundFetchContext(
     const scoped_refptr<content::CacheStorageContextImpl>&
         cache_storage_context)
     : browser_context_(browser_context),
-      data_manager_(browser_context,
-                    service_worker_context,
-                    cache_storage_context),
+      data_manager_(
+          std::make_unique<BackgroundFetchDataManager>(browser_context,
+                                                       service_worker_context,
+                                                       cache_storage_context)),
       event_dispatcher_(service_worker_context),
       registration_notifier_(
           std::make_unique<BackgroundFetchRegistrationNotifier>()),
       delegate_proxy_(browser_context_->GetBackgroundFetchDelegate()),
-      scheduler_(std::make_unique<BackgroundFetchScheduler>(&data_manager_)),
+      scheduler_(
+          std::make_unique<BackgroundFetchScheduler>(data_manager_.get())),
       weak_factory_(this) {
   // Although this lives only on the IO thread, it is constructed on UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -50,7 +53,7 @@ void BackgroundFetchContext::GetRegistration(
     blink::mojom::BackgroundFetchService::GetRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  data_manager_.GetRegistration(
+  data_manager_->GetRegistration(
       service_worker_registration_id, origin, developer_id,
       base::BindOnce(&BackgroundFetchContext::DidGetRegistration,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -60,8 +63,8 @@ void BackgroundFetchContext::GetDeveloperIdsForServiceWorker(
     int64_t service_worker_registration_id,
     const url::Origin& origin,
     blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback) {
-  data_manager_.GetDeveloperIdsForServiceWorker(service_worker_registration_id,
-                                                origin, std::move(callback));
+  data_manager_->GetDeveloperIdsForServiceWorker(service_worker_registration_id,
+                                                 origin, std::move(callback));
 }
 
 void BackgroundFetchContext::DidGetRegistration(
@@ -92,7 +95,7 @@ void BackgroundFetchContext::StartFetch(
     blink::mojom::BackgroundFetchService::FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  data_manager_.CreateRegistration(
+  data_manager_->CreateRegistration(
       registration_id, requests, options, icon,
       base::BindOnce(&BackgroundFetchContext::DidCreateRegistration,
                      weak_factory_.GetWeakPtr(), registration_id, options, icon,
@@ -159,7 +162,7 @@ void BackgroundFetchContext::UpdateUI(
     return;
   }
 
-  data_manager_.UpdateRegistrationUI(
+  data_manager_->UpdateRegistrationUI(
       registration_id, title,
       base::BindOnce(&BackgroundFetchContext::DidUpdateStoredUI,
                      weak_factory_.GetWeakPtr(), registration_id.unique_id(),
@@ -203,7 +206,7 @@ void BackgroundFetchContext::CreateController(
           &BackgroundFetchContext::DidFinishJob, weak_factory_.GetWeakPtr(),
           base::Bind(&background_fetch::RecordSchedulerFinishedError)));
 
-  data_manager_.GetNumCompletedRequests(
+  data_manager_->GetNumCompletedRequests(
       registration_id,
       base::BindOnce(&BackgroundFetchContext::InitializeController,
                      weak_factory_.GetWeakPtr(), registration_id.unique_id(),
@@ -246,7 +249,7 @@ void BackgroundFetchContext::DidFinishJob(
 
   // If |aborted| is true, this will also propagate the event to any active
   // JobController for the registration, to terminate in-progress requests.
-  data_manager_.MarkRegistrationForDeletion(
+  data_manager_->MarkRegistrationForDeletion(
       registration_id,
       base::BindOnce(&BackgroundFetchContext::DidMarkForDeletion,
                      weak_factory_.GetWeakPtr(), registration_id,
@@ -283,7 +286,7 @@ void BackgroundFetchContext::DidMarkForDeletion(
     case BackgroundFetchReasonToAbort::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
     case BackgroundFetchReasonToAbort::NONE:
       // This will send a BackgroundFetchFetched or BackgroundFetchFail event.
-      data_manager_.GetSettledFetchesForRegistration(
+      data_manager_->GetSettledFetchesForRegistration(
           registration_id,
           base::BindOnce(&BackgroundFetchContext::DidGetSettledFetches,
                          weak_factory_.GetWeakPtr(), registration_id));
@@ -359,9 +362,16 @@ void BackgroundFetchContext::LastObserverGarbageCollected(
     const BackgroundFetchRegistrationId& registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  data_manager_.DeleteRegistration(
+  data_manager_->DeleteRegistration(
       registration_id,
       base::BindOnce(&background_fetch::RecordRegistrationDeletedError));
+}
+
+void BackgroundFetchContext::SetDataManagerForTesting(
+    std::unique_ptr<BackgroundFetchDataManager> data_manager) {
+  DCHECK(data_manager);
+  data_manager_ = std::move(data_manager);
+  scheduler_ = std::make_unique<BackgroundFetchScheduler>(data_manager_.get());
 }
 
 }  // namespace content
