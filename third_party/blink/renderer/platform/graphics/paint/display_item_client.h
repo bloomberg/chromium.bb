@@ -122,8 +122,11 @@ class PLATFORM_EXPORT DisplayItemClient {
 
     void Invalidate(
         PaintInvalidationReason reason = PaintInvalidationReason::kFull) {
-      if (value_ != kJustCreated)
-        value_ = static_cast<ValueType>(reason);
+      // If a full invalidation reason is already set, do not overwrite it with
+      // a new reason.
+      if (IsFullPaintInvalidationReason(GetPaintInvalidationReason()))
+        return;
+      value_ = static_cast<ValueType>(reason);
     }
 
     static CacheGenerationOrInvalidationReason Next() {
