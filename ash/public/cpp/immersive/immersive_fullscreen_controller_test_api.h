@@ -18,6 +18,17 @@ class ImmersiveFullscreenControllerTestApi {
       ImmersiveFullscreenController* controller);
   ~ImmersiveFullscreenControllerTestApi();
 
+  // Disables animations for any ImmersiveFullscreenControllers created while
+  // GlobalAnimationDisabler exists.
+  class GlobalAnimationDisabler {
+   public:
+    GlobalAnimationDisabler();
+    ~GlobalAnimationDisabler();
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(GlobalAnimationDisabler);
+  };
+
   // Disables animations and moves the mouse so that it is not over the
   // top-of-window views for the sake of testing.
   void SetupForTest();

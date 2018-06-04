@@ -267,6 +267,10 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
   std::unique_ptr<ImmersiveFocusWatcher> immersive_focus_watcher_;
   std::unique_ptr<ImmersiveGestureHandler> immersive_gesture_handler_;
 
+  // |animations_disabled_for_test_| is initialized to this. See
+  // ImmersiveFullscreenControllerTestApi::GlobalAnimationDisabler for details.
+  static bool value_for_animations_disabled_for_test_;
+
   base::WeakPtrFactory<ImmersiveFullscreenController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveFullscreenController);
