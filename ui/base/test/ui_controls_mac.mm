@@ -337,36 +337,41 @@ bool SendMouseMoveNotifyWhenDone(long x, long y, base::OnceClosure task) {
   return true;
 }
 
-bool SendMouseEvents(MouseButton type, int state) {
+bool SendMouseEvents(MouseButton type,
+                     int button_state,
+                     int accelerator_state) {
   CHECK(g_ui_controls_enabled);
-  return SendMouseEventsNotifyWhenDone(type, state, base::OnceClosure());
+  return SendMouseEventsNotifyWhenDone(type, button_state, base::OnceClosure(),
+                                       accelerator_state);
 }
 
 bool SendMouseEventsNotifyWhenDone(MouseButton type,
-                                   int state,
-                                   base::OnceClosure task) {
+                                   int button_state,
+                                   base::OnceClosure task,
+                                   int accelerator_state) {
   CHECK(g_ui_controls_enabled);
-  // On windows it appears state can be (UP|DOWN).  It is unclear if
-  // that'll happen here but prepare for it just in case.
-  if (state == (UP|DOWN)) {
-    return (SendMouseEventsNotifyWhenDone(type, DOWN, base::OnceClosure()) &&
-            SendMouseEventsNotifyWhenDone(type, UP, std::move(task)));
+  // Handle the special case of mouse clicking (UP | DOWN) case.
+  if (button_state == (UP | DOWN)) {
+    return (SendMouseEventsNotifyWhenDone(type, DOWN, base::OnceClosure(),
+                                          accelerator_state) &&
+            SendMouseEventsNotifyWhenDone(type, UP, std::move(task),
+                                          accelerator_state));
   }
   NSEventType event_type = NSLeftMouseDown;
   if (type == LEFT) {
-    if (state == UP) {
+    if (button_state == UP) {
       event_type = NSLeftMouseUp;
     } else {
       event_type = NSLeftMouseDown;
     }
   } else if (type == MIDDLE) {
-    if (state == UP) {
+    if (button_state == UP) {
       event_type = NSOtherMouseUp;
     } else {
       event_type = NSOtherMouseDown;
     }
   } else if (type == RIGHT) {
-    if (state == UP) {
+    if (button_state == UP) {
       event_type = NSRightMouseUp;
     } else {
       event_type = NSRightMouseDown;
@@ -375,23 +380,34 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type,
     NOTREACHED();
     return false;
   }
-  g_mouse_button_down[type] = state == DOWN;
+  g_mouse_button_down[type] = button_state == DOWN;
 
   NSWindow* window = WindowAtCurrentMouseLocation();
   NSPoint pointInWindow = g_mouse_location;
   if (window)
     pointInWindow = ui::ConvertPointFromScreenToWindow(window, pointInWindow);
 
+  // Process the accelerator key state.
+  NSEventModifierFlags modifier = 0;
+  if (accelerator_state & kShift)
+    modifier |= NSEventModifierFlagShift;
+  if (accelerator_state & kControl)
+    modifier |= NSEventModifierFlagControl;
+  if (accelerator_state & kAlt)
+    modifier |= NSEventModifierFlagOption;
+  if (accelerator_state & kCommand)
+    modifier |= NSEventModifierFlagCommand;
+
   NSEvent* event =
       [NSEvent mouseEventWithType:event_type
                          location:pointInWindow
-                    modifierFlags:0
+                    modifierFlags:modifier
                         timestamp:TimeIntervalSinceSystemStartup()
                      windowNumber:[window windowNumber]
                           context:nil
                       eventNumber:0
                        clickCount:1
-                         pressure:state == DOWN ? 1.0 : 0.0];
+                         pressure:button_state == DOWN ? 1.0 : 0.0];
   [[NSApplication sharedApplication] postEvent:event atStart:NO];
 
   if (!task.is_null()) {

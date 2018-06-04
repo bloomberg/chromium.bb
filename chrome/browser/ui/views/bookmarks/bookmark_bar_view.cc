@@ -78,6 +78,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -1486,9 +1487,10 @@ void BookmarkBarView::OnMenuButtonClicked(views::MenuButton* view,
     node = model_->bookmark_bar_node()->GetChild(button_index);
   }
 
-  // Clicking the middle mouse button opens all bookmarks in the folder in new
-  // tabs.
-  if (event && (event->flags() & ui::EF_MIDDLE_MOUSE_BUTTON) != 0) {
+  // Clicking the middle mouse button or clicking with Control/Command key down
+  // opens all bookmarks in the folder in new tabs.
+  if (event && ((event->flags() & ui::EF_MIDDLE_MOUSE_BUTTON) ||
+                (event->flags() & ui::EF_PLATFORM_ACCELERATOR))) {
     WindowOpenDisposition disposition_from_event_flags =
         ui::DispositionFromEventFlags(event->flags());
     chrome::OpenAll(GetWidget()->GetNativeWindow(), page_navigator_, node,

@@ -162,12 +162,16 @@ class UIControlsDesktopX11 : public UIControlsAura {
     RunClosureAfterAllPendingUIEvents(std::move(closure));
     return true;
   }
-  bool SendMouseEvents(MouseButton type, int state) override {
-    return SendMouseEventsNotifyWhenDone(type, state, base::OnceClosure());
+  bool SendMouseEvents(MouseButton type,
+                       int button_state,
+                       int accelerator_state) override {
+    return SendMouseEventsNotifyWhenDone(
+        type, button_state, base::OnceClosure(), accelerator_state);
   }
   bool SendMouseEventsNotifyWhenDone(MouseButton type,
-                                     int state,
-                                     base::OnceClosure closure) override {
+                                     int button_state,
+                                     base::OnceClosure closure,
+                                     int accelerator_state) override {
     XEvent xevent = {0};
     XButtonEvent* xbutton = &xevent.xbutton;
     gfx::Point mouse_loc = aura::Env::GetInstance()->last_mouse_location();
@@ -193,13 +197,23 @@ class UIControlsDesktopX11 : public UIControlsAura {
         xbutton->state = Button3Mask;
         break;
     }
+    // Process the accelerator key state.
+    if (accelerator_state & ui_controls::kShift)
+      xbutton->state |= ShiftMask;
+    if (accelerator_state & ui_controls::kControl)
+      xbutton->state |= ControlMask;
+    if (accelerator_state & ui_controls::kAlt)
+      xbutton->state |= Mod1Mask;
+    if (accelerator_state & ui_controls::kCommand)
+      xbutton->state |= Mod4Mask;
+
     // RootWindow will take care of other necessary fields.
-    if (state & DOWN) {
+    if (button_state & DOWN) {
       xevent.xbutton.type = ButtonPress;
       aura::test::PostEventToWindowTreeHost(xevent, root_window->GetHost());
       button_down_mask |= xbutton->state;
     }
-    if (state & UP) {
+    if (button_state & UP) {
       xevent.xbutton.type = ButtonRelease;
       aura::test::PostEventToWindowTreeHost(xevent, root_window->GetHost());
       button_down_mask = (button_down_mask | xbutton->state) ^ xbutton->state;
@@ -208,7 +222,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
     return true;
   }
   bool SendMouseClick(MouseButton type) override {
-    return SendMouseEvents(type, UP | DOWN);
+    return SendMouseEvents(type, UP | DOWN, ui_controls::kNoAccelerator);
   }
   void RunClosureAfterAllPendingUIEvents(base::OnceClosure closure) {
     if (closure.is_null())
