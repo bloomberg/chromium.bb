@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 
+#include "base/bind.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/optional.h"
@@ -334,15 +335,13 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
       }
 
       __weak ContentSuggestionsMediator* weakSelf = self;
-      ntp_snippets::FetchDoneCallback serviceCallback = base::Bind(
-          &BindWrapper,
-          base::BindBlockArc(^void(
-              ntp_snippets::Status status,
-              const std::vector<ntp_snippets::ContentSuggestion>& suggestions) {
+      ntp_snippets::FetchDoneCallback serviceCallback = base::BindOnce(
+          ^void(ntp_snippets::Status status,
+                std::vector<ntp_snippets::ContentSuggestion> suggestions) {
             [weakSelf didFetchMoreSuggestions:suggestions
                                withStatusCode:status
                                      callback:callback];
-          }));
+          });
 
       self.contentService->Fetch([wrapper category], known_suggestion_ids,
                                  std::move(serviceCallback));

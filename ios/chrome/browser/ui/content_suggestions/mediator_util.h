@@ -24,16 +24,6 @@ class Category;
 @class ContentSuggestionsMostVisitedActionItem;
 @class ContentSuggestionsMostVisitedItem;
 
-// TODO(crbug.com/701275): Once base::BindBlock supports the move semantics,
-// remove this wrapper.
-// Wraps a callback taking a const ref to a callback taking an object.
-void BindWrapper(
-    base::Callback<void(ntp_snippets::Status status_code,
-                        const std::vector<ntp_snippets::ContentSuggestion>&
-                            suggestions)> callback,
-    ntp_snippets::Status status_code,
-    std::vector<ntp_snippets::ContentSuggestion> suggestions);
-
 // Returns the section ID for this |category|.
 ContentSuggestionsSectionID SectionIDForCategory(
     ntp_snippets::Category category);

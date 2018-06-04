@@ -35,17 +35,6 @@ ContentSuggestionsSectionInformation* EmptySectionInfo(
 }
 }  // namespace
 
-void BindWrapper(
-    base::Callback<void(ntp_snippets::Status status_code,
-                        const std::vector<ntp_snippets::ContentSuggestion>&
-                            suggestions)> callback,
-    ntp_snippets::Status status_code,
-    std::vector<ntp_snippets::ContentSuggestion> suggestions) {
-  if (callback) {
-    callback.Run(status_code, suggestions);
-  }
-}
-
 ContentSuggestionsSectionID SectionIDForCategory(
     ntp_snippets::Category category) {
   if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES))
