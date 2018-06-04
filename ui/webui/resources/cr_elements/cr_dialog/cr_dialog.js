@@ -215,8 +215,11 @@ Polymer({
     if (e.key != 'Enter')
       return;
 
-    // Accept Enter keys from either the dialog, or a child paper-input element.
-    if (e.target != this && e.target.tagName != 'PAPER-INPUT')
+    // Accept Enter keys from either the dialog, or a child input element.
+    // TODO(scottchen): remove 'paper-input' from this white-list once it is
+    //                  removed from the codebase.
+    if (e.target != this &&
+        !['PAPER-INPUT', 'CR-INPUT'].includes(e.target.tagName))
       return;
 
     var actionButton =
