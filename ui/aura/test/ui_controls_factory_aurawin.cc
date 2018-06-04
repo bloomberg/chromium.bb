@@ -63,16 +63,21 @@ class UIControlsWin : public UIControlsAura {
                                    base::OnceClosure task) override {
     return SendMouseMoveImpl(screen_x, screen_y, std::move(task));
   }
-  bool SendMouseEvents(MouseButton type, int state) override {
-    return SendMouseEventsImpl(type, state, base::OnceClosure());
+  bool SendMouseEvents(MouseButton type,
+                       int button_state,
+                       int accelerator_state) override {
+    return SendMouseEventsImpl(type, button_state, base::OnceClosure(),
+                               accelerator_state);
   }
   bool SendMouseEventsNotifyWhenDone(MouseButton type,
-                                     int state,
-                                     base::OnceClosure task) override {
-    return SendMouseEventsImpl(type, state, std::move(task));
+                                     int button_state,
+                                     base::OnceClosure task,
+                                     int accelerator_state) override {
+    return SendMouseEventsImpl(type, button_state, std::move(task),
+                               accelerator_state);
   }
   bool SendMouseClick(MouseButton type) override {
-    return SendMouseEvents(type, UP | DOWN);
+    return SendMouseEvents(type, UP | DOWN, ui_controls::kNoAccelerator);
   }
   bool SendTouchEvents(int action, int num, int x, int y) override {
     return SendTouchEventsImpl(action, num, x, y);

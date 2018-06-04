@@ -145,12 +145,16 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
 
     return true;
   }
-  bool SendMouseEvents(ui_controls::MouseButton type, int state) override {
-    return SendMouseEventsNotifyWhenDone(type, state, base::OnceClosure());
+  bool SendMouseEvents(ui_controls::MouseButton type,
+                       int button_state,
+                       int accelerator_state) override {
+    return SendMouseEventsNotifyWhenDone(
+        type, button_state, base::OnceClosure(), accelerator_state);
   }
   bool SendMouseEventsNotifyWhenDone(ui_controls::MouseButton type,
-                                     int state,
-                                     base::OnceClosure closure) override {
+                                     int button_state,
+                                     base::OnceClosure closure,
+                                     int accelerator_state) override {
     gfx::Point root_location = aura::Env::GetInstance()->last_mouse_location();
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(host_->window());
@@ -162,40 +166,54 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     gfx::Point host_location = root_location;
     host_->ConvertDIPToPixels(&host_location);
 
-    int flag = 0;
+    int changed_button_flag = 0;
 
     switch (type) {
       case ui_controls::LEFT:
-        flag = ui::EF_LEFT_MOUSE_BUTTON;
+        changed_button_flag = ui::EF_LEFT_MOUSE_BUTTON;
         break;
       case ui_controls::MIDDLE:
-        flag = ui::EF_MIDDLE_MOUSE_BUTTON;
+        changed_button_flag = ui::EF_MIDDLE_MOUSE_BUTTON;
         break;
       case ui_controls::RIGHT:
-        flag = ui::EF_RIGHT_MOUSE_BUTTON;
+        changed_button_flag = ui::EF_RIGHT_MOUSE_BUTTON;
         break;
       default:
         NOTREACHED();
         break;
     }
 
-    if (state & ui_controls::DOWN) {
+    // Process the accelerator key state.
+    int flag = changed_button_flag;
+    if (accelerator_state & ui_controls::kShift)
+      flag |= ui::EF_SHIFT_DOWN;
+    if (accelerator_state & ui_controls::kControl)
+      flag |= ui::EF_CONTROL_DOWN;
+    if (accelerator_state & ui_controls::kAlt)
+      flag |= ui::EF_ALT_DOWN;
+    if (accelerator_state & ui_controls::kCommand)
+      flag |= ui::EF_COMMAND_DOWN;
+
+    if (button_state & ui_controls::DOWN) {
       button_down_mask_ |= flag;
       // Pass the real closure to the last generated MouseEvent.
-      PostMouseEvent(
-          ui::ET_MOUSE_PRESSED, host_location, button_down_mask_ | flag, flag,
-          (state & ui_controls::UP) ? base::OnceClosure() : std::move(closure));
+      PostMouseEvent(ui::ET_MOUSE_PRESSED, host_location,
+                     button_down_mask_ | flag, changed_button_flag,
+                     (button_state & ui_controls::UP) ? base::OnceClosure()
+                                                      : std::move(closure));
     }
-    if (state & ui_controls::UP) {
+    if (button_state & ui_controls::UP) {
       button_down_mask_ &= ~flag;
       PostMouseEvent(ui::ET_MOUSE_RELEASED, host_location,
-                     button_down_mask_ | flag, flag, std::move(closure));
+                     button_down_mask_ | flag, changed_button_flag,
+                     std::move(closure));
     }
 
     return true;
   }
   bool SendMouseClick(ui_controls::MouseButton type) override {
-    return SendMouseEvents(type, ui_controls::UP | ui_controls::DOWN);
+    return SendMouseEvents(type, ui_controls::UP | ui_controls::DOWN,
+                           ui_controls::kNoAccelerator);
   }
 
  private:

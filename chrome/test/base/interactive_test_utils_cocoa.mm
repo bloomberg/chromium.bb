@@ -25,11 +25,10 @@ namespace internal {
 
 namespace {
 
-void MoveMouseToNSViewCenterAndPress(
-    NSView* view,
-    ui_controls::MouseButton button,
-    int state,
-    const base::Closure& task) {
+void MoveMouseToNSViewCenterAndPress(NSView* view,
+                                     ui_controls::MouseButton button,
+                                     int button_state,
+                                     const base::RepeatingClosure& task) {
   NSWindow* window = [view window];
   NSScreen* screen = [window screen];
   DCHECK(screen);
@@ -44,7 +43,8 @@ void MoveMouseToNSViewCenterAndPress(
 
   ui_controls::SendMouseMoveNotifyWhenDone(
       center.x, center.y,
-      base::BindOnce(&internal::ClickTask, button, state, task));
+      base::BindOnce(&internal::ClickTask, button, button_state, task,
+                     ui_controls::kNoAccelerator));
 }
 
 }  // namespace

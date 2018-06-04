@@ -70,6 +70,8 @@ using content::WebContents;
 
 namespace {
 
+#if !defined(OS_MACOSX)
+
 // Waits for a views::Widget dialog to show up.
 class DialogWaiter : public aura::EnvObserver,
                      public views::WidgetObserver {
@@ -197,12 +199,14 @@ class TabKeyWaiter : public ui::EventHandler {
 
 void MoveMouseAndPress(const gfx::Point& screen_pos,
                        ui_controls::MouseButton button,
-                       int state,
+                       int button_state,
                        base::OnceClosure closure) {
   ASSERT_TRUE(ui_controls::SendMouseMove(screen_pos.x(), screen_pos.y()));
-  ASSERT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(button, state,
+  ASSERT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(button, button_state,
                                                          std::move(closure)));
 }
+
+#endif  // !defined(OS_MACOSX)
 
 // PageNavigator implementation that records the URL.
 class TestingPageNavigator : public PageNavigator {
@@ -409,6 +413,10 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   std::unique_ptr<Browser> browser_;
   std::unique_ptr<ScopedTestingLocalState> local_state_;
 };
+
+#if !defined(OS_MACOSX)
+// The following tests were not enabled on Mac before. Consider enabling those
+// that are able to run on Mac (https://crbug.com/845342).
 
 // Clicks on first menu, makes sure button is depressed. Moves mouse to first
 // child, clicks it and makes sure a navigation occurs.
@@ -2336,3 +2344,33 @@ class BookmarkBarViewTest27 : public BookmarkBarViewEventTestBase {
 };
 
 VIEW_TEST(BookmarkBarViewTest27, MiddleClickOnFolderOpensAllBookmarks);
+
+#endif  // defined(OS_MACOSX)
+
+class BookmarkBarViewTest28 : public BookmarkBarViewEventTestBase {
+ protected:
+#if defined(OS_MACOSX)
+  const ui_controls::AcceleratorState kAccelatorState = ui_controls::kCommand;
+#else
+  const ui_controls::AcceleratorState kAccelatorState = ui_controls::kControl;
+#endif  // defined(OS_MACOSX)
+
+  void DoTestOnMessageLoop() override {
+    views::LabelButton* button = GetBookmarkButton(0);
+    ui_test_utils::MoveMouseToCenterAndPress(
+        button, ui_controls::LEFT, ui_controls::UP | ui_controls::DOWN,
+        CreateEventTask(this, &BookmarkBarViewTest28::Step2), kAccelatorState);
+  }
+
+ private:
+  void Step2() {
+    ASSERT_EQ(2u, navigator_.urls().size());
+    EXPECT_EQ(navigator_.urls()[0],
+              model_->bookmark_bar_node()->GetChild(0)->GetChild(0)->url());
+    EXPECT_EQ(navigator_.urls()[1],
+              model_->bookmark_bar_node()->GetChild(0)->GetChild(2)->url());
+    Done();
+  }
+};
+
+VIEW_TEST(BookmarkBarViewTest28, ClickWithModifierOnFolderOpensAllBookmarks);

@@ -50,16 +50,21 @@ bool SendMouseMoveNotifyWhenDone(long x, long y, base::OnceClosure task) {
   return internal::SendMouseMoveImpl(x, y, std::move(task));
 }
 
-bool SendMouseEvents(MouseButton type, int state) {
+bool SendMouseEvents(MouseButton type,
+                     int button_state,
+                     int accelerator_state) {
   CHECK(g_ui_controls_enabled);
-  return internal::SendMouseEventsImpl(type, state, base::OnceClosure());
+  return internal::SendMouseEventsImpl(type, button_state, accelerator_state,
+                                       base::OnceClosure());
 }
 
 bool SendMouseEventsNotifyWhenDone(MouseButton type,
-                                   int state,
-                                   base::OnceClosure task) {
+                                   int button_state,
+                                   base::OnceClosure task,
+                                   int accelerator_state) {
   CHECK(g_ui_controls_enabled);
-  return internal::SendMouseEventsImpl(type, state, std::move(task));
+  return internal::SendMouseEventsImpl(type, button_state, std::move(task),
+                                       accelerator_state);
 }
 
 bool SendMouseClick(MouseButton type) {

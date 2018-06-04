@@ -94,19 +94,24 @@ class UIControlsAsh : public UIControlsAura {
                               p.x(), p.y(), std::move(closure));
   }
 
-  bool SendMouseEvents(MouseButton type, int state) override {
+  bool SendMouseEvents(MouseButton type,
+                       int button_state,
+                       int accelerator_state) override {
     gfx::Point p(display::Screen::GetScreen()->GetCursorScreenPoint());
     UIControlsAura* ui_controls = GetUIControlsAt(p);
-    return ui_controls && ui_controls->SendMouseEvents(type, state);
+    return ui_controls &&
+           ui_controls->SendMouseEvents(type, button_state, accelerator_state);
   }
 
   bool SendMouseEventsNotifyWhenDone(MouseButton type,
-                                     int state,
-                                     base::OnceClosure closure) override {
+                                     int button_state,
+                                     base::OnceClosure closure,
+                                     int accelerator_state) override {
     gfx::Point p(aura::Env::GetInstance()->last_mouse_location());
     UIControlsAura* ui_controls = GetUIControlsAt(p);
-    return ui_controls && ui_controls->SendMouseEventsNotifyWhenDone(
-                              type, state, std::move(closure));
+    return ui_controls &&
+           ui_controls->SendMouseEventsNotifyWhenDone(
+               type, button_state, std::move(closure), accelerator_state);
   }
 
   bool SendMouseClick(MouseButton type) override {

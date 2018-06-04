@@ -21,7 +21,10 @@ bool SendKeyPressImpl(HWND hwnd,
                       bool alt,
                       base::OnceClosure task);
 bool SendMouseMoveImpl(long screen_x, long screen_y, base::OnceClosure task);
-bool SendMouseEventsImpl(MouseButton type, int state, base::OnceClosure task);
+bool SendMouseEventsImpl(MouseButton type,
+                         int button_state,
+                         base::OnceClosure task,
+                         int accelerator_state);
 bool SendTouchEventsImpl(int action, int num, int x, int y);
 
 }  // namespace internal
