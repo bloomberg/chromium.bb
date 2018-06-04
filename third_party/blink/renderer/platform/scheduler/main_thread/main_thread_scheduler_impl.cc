@@ -2813,6 +2813,10 @@ bool MainThreadSchedulerImpl::ShouldUpdateTaskQueuePriorities(
              main_thread_only().current_policy.compositor_priority();
 }
 
+bool MainThreadSchedulerImpl::IsLoading() const {
+  return main_thread_only().current_use_case == UseCase::kLoading;
+}
+
 // static
 const char* MainThreadSchedulerImpl::UseCaseToString(UseCase use_case) {
   switch (use_case) {

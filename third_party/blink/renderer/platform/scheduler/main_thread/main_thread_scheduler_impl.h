@@ -323,6 +323,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
 
+  // Returns true if main thread is in loading use case.
+  bool IsLoading() const;
+
   base::WeakPtr<MainThreadSchedulerImpl> GetWeakPtr();
 
  protected:
