@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.home.list;
 import org.chromium.chrome.browser.download.home.OfflineItemSource;
 import org.chromium.chrome.browser.download.home.filter.DeleteUndoOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
+import org.chromium.chrome.browser.download.home.filter.OffTheRecordOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
 import org.chromium.chrome.browser.download.home.filter.SearchOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.TypeOfflineItemFilter;
@@ -25,6 +26,7 @@ class DateOrderedListMediator {
     private final OfflineItemSource mSource;
     private final DateOrderedListMutator mListMutator;
 
+    private final OffTheRecordOfflineItemFilter mOffTheRecordFilter;
     private final DeleteUndoOfflineItemFilter mDeleteUndoFilter;
     private final TypeOfflineItemFilter mTypeFilter;
     private final SearchOfflineItemFilter mSearchFilter;
@@ -32,24 +34,28 @@ class DateOrderedListMediator {
     /**
      * Creates an instance of a DateOrderedListMediator that will push {@code provider} into
      * {@code model}.
-     * @param provider The {@link OfflineContentProvider} to visually represent.
-     * @param model    The {@link ListItemModel} to push {@code provider} into.
+     * @param offTheRecord Whether or not to include off the record items.
+     * @param provider     The {@link OfflineContentProvider} to visually represent.
+     * @param model        The {@link ListItemModel} to push {@code provider} into.
      */
-    public DateOrderedListMediator(OfflineContentProvider provider, ListItemModel model) {
+    public DateOrderedListMediator(
+            boolean offTheRecord, OfflineContentProvider provider, ListItemModel model) {
         // Build a chain from the data source to the model.  The chain will look like:
         // [OfflineContentProvider] ->
         //     [OfflineItemSource] ->
-        //         [DeleteUndoOfflineItemFilter] ->
-        //             [TypeOfflineItemFilter] ->
-        //                 [SearchOfflineItemFitler] ->
-        //                     [DateOrderedListMutator] ->
-        //                         [ListItemModel]
+        //         [OffTheRecordOfflineItemFilter] ->
+        //             [DeleteUndoOfflineItemFilter] ->
+        //                 [TypeOfflineItemFilter] ->
+        //                     [SearchOfflineItemFitler] ->
+        //                         [DateOrderedListMutator] ->
+        //                             [ListItemModel]
 
         mProvider = provider;
         mModel = model;
 
         mSource = new OfflineItemSource(mProvider);
-        mDeleteUndoFilter = new DeleteUndoOfflineItemFilter(mSource);
+        mOffTheRecordFilter = new OffTheRecordOfflineItemFilter(offTheRecord, mSource);
+        mDeleteUndoFilter = new DeleteUndoOfflineItemFilter(mOffTheRecordFilter);
         mTypeFilter = new TypeOfflineItemFilter(mDeleteUndoFilter);
         mSearchFilter = new SearchOfflineItemFilter(mTypeFilter);
         mListMutator = new DateOrderedListMutator(mSearchFilter, mModel);

@@ -19,9 +19,9 @@ public class DownloadManagerCoordinatorImpl {
     private final DateOrderedListCoordinator mListCoordinator;
 
     /** Builds a {@link DownloadManagerCoordinatorImpl} instance. */
-    public DownloadManagerCoordinatorImpl(Profile profile, Context context) {
+    public DownloadManagerCoordinatorImpl(Profile profile, Context context, boolean offTheRecord) {
         mListCoordinator = new DateOrderedListCoordinator(
-                context, OfflineContentAggregatorFactory.forProfile(profile));
+                context, offTheRecord, OfflineContentAggregatorFactory.forProfile(profile));
     }
 
     /** Tears down this coordinator. */
