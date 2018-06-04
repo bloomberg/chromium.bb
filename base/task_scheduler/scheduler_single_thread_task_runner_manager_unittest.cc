@@ -11,6 +11,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/delayed_task_manager.h"
+#include "base/task_scheduler/environment_config.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/task_tracker.h"
@@ -286,12 +287,10 @@ TEST_P(TaskSchedulerSingleThreadTaskRunnerManagerCommonTest,
   waitable_event_background.Wait();
   waitable_event_normal.Wait();
 
-  if (Lock::HandlesMultipleThreadPriorities() &&
-      PlatformThread::CanIncreaseCurrentThreadPriority()) {
+  if (CanUseBackgroundPriorityForSchedulerWorker())
     EXPECT_EQ(ThreadPriority::BACKGROUND, thread_priority_background);
-  } else {
+  else
     EXPECT_EQ(ThreadPriority::NORMAL, thread_priority_background);
-  }
   EXPECT_EQ(ThreadPriority::NORMAL, thread_priority_normal);
 }
 

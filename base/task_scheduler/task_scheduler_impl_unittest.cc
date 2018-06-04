@@ -19,13 +19,14 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/environment_config.h"
 #include "base/task_scheduler/scheduler_worker_observer.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/task_scheduler/test_task_factory.h"
 #include "base/task_scheduler/test_utils.h"
+#include "base/test/gtest_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
@@ -76,11 +77,7 @@ bool GetIOAllowed() {
 // to run a Task with |traits|.
 // Note: ExecutionMode is verified inside TestTaskFactory.
 void VerifyTaskEnvironment(const TaskTraits& traits) {
-  const bool supports_background_priority =
-      Lock::HandlesMultipleThreadPriorities() &&
-      PlatformThread::CanIncreaseCurrentThreadPriority();
-
-  EXPECT_EQ(supports_background_priority &&
+  EXPECT_EQ(CanUseBackgroundPriorityForSchedulerWorker() &&
                     traits.priority() == TaskPriority::BACKGROUND
                 ? ThreadPriority::BACKGROUND
                 : ThreadPriority::NORMAL,
@@ -95,10 +92,24 @@ void VerifyTaskEnvironment(const TaskTraits& traits) {
   // Verify that the thread the task is running on is named as expected.
   const std::string current_thread_name(PlatformThread::GetName());
   EXPECT_NE(std::string::npos, current_thread_name.find("TaskScheduler"));
-  EXPECT_NE(std::string::npos,
-            current_thread_name.find(
-                traits.priority() == TaskPriority::BACKGROUND ? "Background"
-                                                              : "Foreground"));
+
+  if (current_thread_name.find("SingleThread") != std::string::npos) {
+    // For now, single-threaded background tasks run on their own threads.
+    // TODO(fdoray): Run single-threaded background tasks on foreground workers
+    // on platforms that don't support background thread priority.
+    EXPECT_NE(
+        std::string::npos,
+        current_thread_name.find(traits.priority() == TaskPriority::BACKGROUND
+                                     ? "Background"
+                                     : "Foreground"));
+  } else {
+    EXPECT_NE(std::string::npos,
+              current_thread_name.find(
+                  CanUseBackgroundPriorityForSchedulerWorker() &&
+                          traits.priority() == TaskPriority::BACKGROUND
+                      ? "Background"
+                      : "Foreground"));
+  }
   EXPECT_EQ(traits.may_block(),
             current_thread_name.find("Blocking") != std::string::npos);
 }
@@ -455,10 +466,18 @@ TEST_F(TaskSchedulerImplTest, MultipleTraitsExecutionModePairs) {
 TEST_F(TaskSchedulerImplTest,
        GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated) {
   StartTaskScheduler();
-  EXPECT_EQ(1, scheduler_.GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
-                   {TaskPriority::BACKGROUND}));
-  EXPECT_EQ(3, scheduler_.GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
-                   {MayBlock(), TaskPriority::BACKGROUND}));
+
+  // GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated() does not support
+  // TaskPriority::BACKGROUND.
+  EXPECT_DCHECK_DEATH({
+    scheduler_.GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
+        {TaskPriority::BACKGROUND});
+  });
+  EXPECT_DCHECK_DEATH({
+    scheduler_.GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
+        {MayBlock(), TaskPriority::BACKGROUND});
+  });
+
   EXPECT_EQ(4, scheduler_.GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                    {TaskPriority::USER_VISIBLE}));
   EXPECT_EQ(12, scheduler_.GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
@@ -740,13 +759,18 @@ TEST_F(TaskSchedulerImplTest, SchedulerWorkerObserver) {
   testing::StrictMock<test::MockSchedulerWorkerObserver> observer;
   set_scheduler_worker_observer(&observer);
 
-// 4 workers should be created for the 4 pools. After that, 8 threads should
-// be created for single-threaded work (16 on Windows).
+  // A worker should be created for each pool. After that, 8 threads should be
+  // created for single-threaded work (16 on Windows).
+  const int kExpectedNumPoolWorkers =
+      CanUseBackgroundPriorityForSchedulerWorker() ? 4 : 2;
 #if defined(OS_WIN)
-  constexpr int kExpectedNumWorkers = 20;
+  const int kExpectedNumSingleThreadedWorkers = 16;
 #else
-  constexpr int kExpectedNumWorkers = 12;
+  const int kExpectedNumSingleThreadedWorkers = 8;
 #endif
+  const int kExpectedNumWorkers =
+      kExpectedNumPoolWorkers + kExpectedNumSingleThreadedWorkers;
+
   EXPECT_CALL(observer, OnSchedulerWorkerMainEntry())
       .Times(kExpectedNumWorkers);
 

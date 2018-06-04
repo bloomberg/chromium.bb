@@ -17,6 +17,7 @@
 #include "base/strings/string_piece.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task_scheduler/delayed_task_manager.h"
+#include "base/task_scheduler/environment_config.h"
 #include "base/task_scheduler/scheduler_single_thread_task_runner_manager.h"
 #include "base/task_scheduler/scheduler_worker_pool_impl.h"
 #include "base/task_scheduler/single_thread_task_runner_thread_mode.h"
@@ -109,9 +110,12 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   // TODO(fdoray): Remove after experiment. https://crbug.com/757022
   AtomicFlag all_tasks_user_blocking_;
 
-  // There are 4 SchedulerWorkerPoolImpl in this array to match the 4
-  // SchedulerWorkerPoolParams in TaskScheduler::InitParams.
-  std::unique_ptr<SchedulerWorkerPoolImpl> worker_pools_[4];
+  // Owns all the pools managed by this TaskScheduler.
+  std::vector<std::unique_ptr<SchedulerWorkerPoolImpl>> worker_pools_;
+
+  // Maps an environment from EnvironmentType to a pool in |worker_pools_|.
+  SchedulerWorkerPoolImpl* environment_to_worker_pool_[static_cast<int>(
+      EnvironmentType::ENVIRONMENT_COUNT)];
 
 #if DCHECK_IS_ON()
   // Set once JoinForTesting() has returned.

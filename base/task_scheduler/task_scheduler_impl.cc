@@ -4,12 +4,14 @@
 
 #include "base/task_scheduler/task_scheduler_impl.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/delayed_task_manager.h"
 #include "base/task_scheduler/environment_config.h"
@@ -37,21 +39,42 @@ TaskSchedulerImpl::TaskSchedulerImpl(
                                          &delayed_task_manager_) {
   DCHECK(!histogram_label.empty());
 
-  static_assert(arraysize(worker_pools_) == ENVIRONMENT_COUNT,
-                "The size of |worker_pools_| must match ENVIRONMENT_COUNT.");
+  static_assert(arraysize(environment_to_worker_pool_) == ENVIRONMENT_COUNT,
+                "The size of |environment_to_worker_pool_| must match "
+                "ENVIRONMENT_COUNT.");
   static_assert(
-      arraysize(kEnvironmentParams) == ENVIRONMENT_COUNT,
+      size(kEnvironmentParams) == ENVIRONMENT_COUNT,
       "The size of |kEnvironmentParams| must match ENVIRONMENT_COUNT.");
 
-  for (int environment_type = 0; environment_type < ENVIRONMENT_COUNT;
+  int num_pools_to_create = CanUseBackgroundPriorityForSchedulerWorker()
+                                ? ENVIRONMENT_COUNT
+                                : ENVIRONMENT_COUNT_WITHOUT_BACKGROUND_PRIORITY;
+  for (int environment_type = 0; environment_type < num_pools_to_create;
        ++environment_type) {
-    worker_pools_[environment_type] = std::make_unique<SchedulerWorkerPoolImpl>(
+    worker_pools_.emplace_back(std::make_unique<SchedulerWorkerPoolImpl>(
         JoinString(
             {histogram_label, kEnvironmentParams[environment_type].name_suffix},
             "."),
         kEnvironmentParams[environment_type].name_suffix,
         kEnvironmentParams[environment_type].priority_hint,
-        task_tracker_->GetTrackedRef(), &delayed_task_manager_);
+        task_tracker_->GetTrackedRef(), &delayed_task_manager_));
+  }
+
+  // Map environment indexes to pools.
+  environment_to_worker_pool_[FOREGROUND] = worker_pools_[FOREGROUND].get();
+  environment_to_worker_pool_[FOREGROUND_BLOCKING] =
+      worker_pools_[FOREGROUND_BLOCKING].get();
+
+  if (CanUseBackgroundPriorityForSchedulerWorker()) {
+    environment_to_worker_pool_[BACKGROUND] = worker_pools_[BACKGROUND].get();
+    environment_to_worker_pool_[BACKGROUND_BLOCKING] =
+        worker_pools_[BACKGROUND_BLOCKING].get();
+  } else {
+    // On platforms without background thread priority, tasks posted to the
+    // background environment are run by foreground pools.
+    environment_to_worker_pool_[BACKGROUND] = worker_pools_[FOREGROUND].get();
+    environment_to_worker_pool_[BACKGROUND_BLOCKING] =
+        worker_pools_[FOREGROUND_BLOCKING].get();
   }
 }
 
@@ -112,26 +135,41 @@ void TaskSchedulerImpl::Start(
       SchedulerWorkerPoolImpl::WorkerEnvironment::NONE;
 #endif
 
-  worker_pools_[BACKGROUND]->Start(
-      init_params.background_worker_pool_params,
-      init_params.background_worker_pool_params.max_tasks(),
-      service_thread_task_runner, scheduler_worker_observer,
-      worker_environment);
-  worker_pools_[BACKGROUND_BLOCKING]->Start(
-      init_params.background_blocking_worker_pool_params,
-      init_params.background_blocking_worker_pool_params.max_tasks(),
+  // On platforms that can't use the background thread priority, background
+  // tasks run in foreground pools. A cap is set on the number of background
+  // tasks that can run in foreground pools to ensure that there is always room
+  // for incoming foreground tasks and to minimize the performance impact of
+  // background tasks.
+  const int max_background_tasks_in_foreground_pool = std::max(
+      1, std::min(init_params.background_worker_pool_params.max_tasks(),
+                  init_params.foreground_worker_pool_params.max_tasks() / 2));
+  worker_pools_[FOREGROUND]->Start(
+      init_params.foreground_worker_pool_params,
+      max_background_tasks_in_foreground_pool, service_thread_task_runner,
+      scheduler_worker_observer, worker_environment);
+  const int max_background_tasks_in_foreground_blocking_pool = std::max(
+      1,
+      std::min(
+          init_params.background_blocking_worker_pool_params.max_tasks(),
+          init_params.foreground_blocking_worker_pool_params.max_tasks() / 2));
+  worker_pools_[FOREGROUND_BLOCKING]->Start(
+      init_params.foreground_blocking_worker_pool_params,
+      max_background_tasks_in_foreground_blocking_pool,
       service_thread_task_runner, scheduler_worker_observer,
       worker_environment);
 
-  constexpr int kMaxBackgroundTaskInForegroundPools = 0;
-  worker_pools_[FOREGROUND]->Start(
-      init_params.foreground_worker_pool_params,
-      kMaxBackgroundTaskInForegroundPools, service_thread_task_runner,
-      scheduler_worker_observer, worker_environment);
-  worker_pools_[FOREGROUND_BLOCKING]->Start(
-      init_params.foreground_blocking_worker_pool_params,
-      kMaxBackgroundTaskInForegroundPools, service_thread_task_runner,
-      scheduler_worker_observer, worker_environment);
+  if (CanUseBackgroundPriorityForSchedulerWorker()) {
+    worker_pools_[BACKGROUND]->Start(
+        init_params.background_worker_pool_params,
+        init_params.background_worker_pool_params.max_tasks(),
+        service_thread_task_runner, scheduler_worker_observer,
+        worker_environment);
+    worker_pools_[BACKGROUND_BLOCKING]->Start(
+        init_params.background_blocking_worker_pool_params,
+        init_params.background_blocking_worker_pool_params.max_tasks(),
+        service_thread_task_runner, scheduler_worker_observer,
+        worker_environment);
+  }
 }
 
 void TaskSchedulerImpl::PostDelayedTaskWithTraits(const Location& from_here,
@@ -190,6 +228,9 @@ std::vector<const HistogramBase*> TaskSchedulerImpl::GetHistograms() const {
 
 int TaskSchedulerImpl::GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
     const TaskTraits& traits) const {
+  // This method does not support getting the maximum number of BACKGROUND tasks
+  // that can run concurrently in a pool.
+  DCHECK_NE(traits.priority(), TaskPriority::BACKGROUND);
   return GetWorkerPoolForTraits(traits)
       ->GetMaxConcurrentNonBlockedTasksDeprecated();
 }
@@ -226,7 +267,7 @@ void TaskSchedulerImpl::JoinForTesting() {
 
 SchedulerWorkerPoolImpl* TaskSchedulerImpl::GetWorkerPoolForTraits(
     const TaskTraits& traits) const {
-  return worker_pools_[GetEnvironmentIndexForTraits(traits)].get();
+  return environment_to_worker_pool_[GetEnvironmentIndexForTraits(traits)];
 }
 
 TaskTraits TaskSchedulerImpl::SetUserBlockingPriorityIfNeeded(
