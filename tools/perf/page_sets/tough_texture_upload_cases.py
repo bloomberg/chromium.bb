@@ -7,13 +7,13 @@ from telemetry import story
 
 class ToughTextureUploadCasesPage(page_module.Page):
 
-  def __init__(self, url, page_set):
+  def __init__(self, name, url, page_set):
     super(
       ToughTextureUploadCasesPage,
       self).__init__(
         url=url,
         page_set=page_set,
-        name=url.split('/')[-1])
+        name=name)
 
   def RunPageInteractions(self, action_runner):
     with action_runner.CreateInteraction('Animation'):
@@ -30,14 +30,21 @@ class ToughTextureUploadCasesPageSet(story.StorySet):
     super(ToughTextureUploadCasesPageSet, self).__init__()
 
     urls_list = [
-      'file://tough_texture_upload_cases/background_color_animation.html',
-      # pylint: disable=line-too-long
-      'file://tough_texture_upload_cases/background_color_animation_with_gradient.html',
-      'file://tough_texture_upload_cases/small_texture_uploads.html',
-      'file://tough_texture_upload_cases/medium_texture_uploads.html',
-      'file://tough_texture_upload_cases/large_texture_uploads.html',
-      'file://tough_texture_upload_cases/extra_large_texture_uploads.html',
+      ('background_color_animation',
+       'file://tough_texture_upload_cases/background_color_animation.html'),
+      ('background_color_animation_with_gradient',
+       # pylint: disable=line-too-long
+       'file://tough_texture_upload_cases/background_color_animation_with_gradient.html'),
+      ('small_texture_uploads',
+       'file://tough_texture_upload_cases/small_texture_uploads.html'),
+      ('medium_texture_uploads',
+       'file://tough_texture_upload_cases/medium_texture_uploads.html'),
+      ('large_texture_uploads',
+       'file://tough_texture_upload_cases/large_texture_uploads.html'),
+      ('extra_large_texture_uploads',
+       'file://tough_texture_upload_cases/extra_large_texture_uploads.html'),
     ]
-    for url in urls_list:
-      self.AddStory(ToughTextureUploadCasesPage(url, self))
-
+    for name, url in urls_list:
+      self.AddStory(ToughTextureUploadCasesPage(name=name,
+                                                url=url,
+                                                page_set=self))
