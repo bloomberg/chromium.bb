@@ -21,22 +21,22 @@ namespace {
 std::unique_ptr<SignedExchangeCertificateChain> ParseB1(
     base::span<const uint8_t> message,
     SignedExchangeDevToolsProxy* devtools_proxy) {
-  TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                     "SignedExchangeCertificateChain::ParseB1");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "SignedExchangeCertificateChain::ParseB1");
 
   cbor::CBORReader::DecoderError error;
   base::Optional<cbor::CBORValue> value =
       cbor::CBORReader::Read(message, &error);
   if (!value.has_value()) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeCertificateChain::ParseB1",
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy,
         base::StringPrintf("Failed to decode CBORValue. CBOR error: %s",
                            cbor::CBORReader::ErrorCodeToString(error)));
     return nullptr;
   }
   if (!value->is_array()) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeCertificateChain::ParseB1",
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy,
         base::StringPrintf(
             "Expected top-level CBORValue to be an array. Actual type: %d",
             static_cast<int>(value->type())));
@@ -46,8 +46,8 @@ std::unique_ptr<SignedExchangeCertificateChain> ParseB1(
   const cbor::CBORValue::ArrayValue& top_level_array = value->GetArray();
   // Expect at least 2 elements (magic string and main certificate).
   if (top_level_array.size() < 2) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeCertificateChain::ParseB1",
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy,
         base::StringPrintf(
             "Expected top-level array to have at least 2 elements."
             "Actual element count: %" PRIuS,
@@ -56,8 +56,8 @@ std::unique_ptr<SignedExchangeCertificateChain> ParseB1(
   }
   if (!top_level_array[0].is_string() ||
       top_level_array[0].GetString() != kCertChainCborMagic) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeCertificateChain::ParseB1",
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy,
         "First element of cert chain CBOR does not match the magic string.");
     return nullptr;
   }
@@ -69,8 +69,8 @@ std::unique_ptr<SignedExchangeCertificateChain> ParseB1(
 
   for (size_t i = 1; i < top_level_array.size(); i++) {
     if (!top_level_array[i].is_map()) {
-      signed_exchange_utils::ReportErrorAndEndTraceEvent(
-          devtools_proxy, "SignedExchangeCertificateChain::ParseB1",
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy,
           base::StringPrintf(
               "Expected certificate map, got non-map type at index %zu."
               " Actual type: %d",
@@ -84,8 +84,8 @@ std::unique_ptr<SignedExchangeCertificateChain> ParseB1(
     // properties of this certificate. [spec text]
     auto cert_iter = cert_map.find(cbor::CBORValue(kCertKey));
     if (cert_iter == cert_map.end() || !cert_iter->second.is_bytestring()) {
-      signed_exchange_utils::ReportErrorAndEndTraceEvent(
-          devtools_proxy, "SignedExchangeCertificateChain::ParseB1",
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy,
           base::StringPrintf(
               "cert is not found or not a bytestring, at index %zu.", i));
       return nullptr;
@@ -98,23 +98,22 @@ std::unique_ptr<SignedExchangeCertificateChain> ParseB1(
       // DER-encoded OCSP response for that certificate (using the ASN.1 type
       // OCSPResponse defined in [RFC2560]). ... [spec text]
       if (ocsp_iter == cert_map.end() || !ocsp_iter->second.is_bytestring()) {
-        signed_exchange_utils::ReportErrorAndEndTraceEvent(
-            devtools_proxy, "SignedExchangeCertificateChain::ParseB1",
+        signed_exchange_utils::ReportErrorAndTraceEvent(
+            devtools_proxy,
             "ocsp is not a bytestring, or not found in the first cert map.");
         return nullptr;
       }
       ocsp = ocsp_iter->second.GetBytestringAsString().as_string();
       if (ocsp.empty()) {
-        signed_exchange_utils::ReportErrorAndEndTraceEvent(
-            devtools_proxy, "SignedExchangeCertificateChain::ParseB1",
-            "ocsp must not be empty.");
+        signed_exchange_utils::ReportErrorAndTraceEvent(
+            devtools_proxy, "ocsp must not be empty.");
         return nullptr;
       }
     } else if (ocsp_iter != cert_map.end()) {
       // Step 2. ... Subsequent certificates MUST NOT have an ocsp value. [spec
       // text]
-      signed_exchange_utils::ReportErrorAndEndTraceEvent(
-          devtools_proxy, "SignedExchangeCertificateChain::ParseB1",
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy,
           base::StringPrintf(
               "ocsp value found in a subsequent cert map, at index %zu.", i));
       return nullptr;
@@ -131,16 +130,14 @@ std::unique_ptr<SignedExchangeCertificateChain> ParseB1(
       auto sct_iter = cert_map.find(cbor::CBORValue(kSctKey));
       if (sct_iter != cert_map.end()) {
         if (!sct_iter->second.is_bytestring()) {
-          signed_exchange_utils::ReportErrorAndEndTraceEvent(
-              devtools_proxy, "SignedExchangeCertificateChain::ParseB1",
-              "sct is not a bytestring.");
+          signed_exchange_utils::ReportErrorAndTraceEvent(
+              devtools_proxy, "sct is not a bytestring.");
           return nullptr;
         }
         sct = sct_iter->second.GetBytestringAsString().as_string();
         if (sct.empty()) {
-          signed_exchange_utils::ReportErrorAndEndTraceEvent(
-              devtools_proxy, "SignedExchangeCertificateChain::ParseB1",
-              "sct must not be empty.");
+          signed_exchange_utils::ReportErrorAndTraceEvent(
+              devtools_proxy, "sct must not be empty.");
           return nullptr;
         }
       }
@@ -149,14 +146,11 @@ std::unique_ptr<SignedExchangeCertificateChain> ParseB1(
   scoped_refptr<net::X509Certificate> cert =
       net::X509Certificate::CreateFromDERCertChain(der_certs);
   if (!cert) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeCertificateChain::ParseB1",
-        "X509Certificate::CreateFromDERCertChain failed.");
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy, "X509Certificate::CreateFromDERCertChain failed.");
     return nullptr;
   }
 
-  TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                   "SignedExchangeCertificateChain::ParseB1");
   return base::WrapUnique(new SignedExchangeCertificateChain(cert, ocsp, sct));
 }
 

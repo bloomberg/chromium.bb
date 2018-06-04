@@ -35,8 +35,8 @@ size_t SignedExchangePrologue::ParseEncodedLength(
 base::Optional<SignedExchangePrologue> SignedExchangePrologue::Parse(
     base::span<const uint8_t> input,
     SignedExchangeDevToolsProxy* devtools_proxy) {
-  TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                     "SignedExchangePrologue::Parse");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "SignedExchangePrologue::Parse");
 
   CHECK_EQ(input.size(), kEncodedPrologueInBytes);
 
@@ -49,8 +49,8 @@ base::Optional<SignedExchangePrologue> SignedExchangePrologue::Parse(
 
   if (memcmp(magic_string.data(), kSignedExchangeMagic,
              sizeof(kSignedExchangeMagic)) != 0) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangePrologue::Parse", "Wrong magic string");
+    signed_exchange_utils::ReportErrorAndTraceEvent(devtools_proxy,
+                                                    "Wrong magic string");
     return base::nullopt;
   }
 
@@ -59,15 +59,15 @@ base::Optional<SignedExchangePrologue> SignedExchangePrologue::Parse(
   size_t cbor_header_length = ParseEncodedLength(encoded_cbor_header_length);
 
   if (signature_header_field_length > kMaximumSignatureHeaderFieldLength) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangePrologue::Parse",
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy,
         base::StringPrintf("Signature header field too long: %zu",
                            signature_header_field_length));
     return base::nullopt;
   }
   if (cbor_header_length > kMaximumCBORHeaderLength) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangePrologue::Parse",
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy,
         base::StringPrintf("CBOR header too long: %zu", cbor_header_length));
     return base::nullopt;
   }

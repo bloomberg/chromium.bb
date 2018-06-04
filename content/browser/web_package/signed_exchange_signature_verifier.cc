@@ -146,13 +146,13 @@ bool VerifySignature(base::span<const uint8_t> sig,
                      base::span<const uint8_t> msg,
                      scoped_refptr<net::X509Certificate> cert,
                      SignedExchangeDevToolsProxy* devtools_proxy) {
-  TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature");
   base::StringPiece spki;
   if (!net::asn1::ExtractSPKIFromDERCert(
           net::x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()),
           &spki)) {
-    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature",
-                     "error", "Failed to extract SPKI.");
+    signed_exchange_utils::ReportErrorAndTraceEvent(devtools_proxy,
+                                                    "Failed to extract SPKI.");
     return false;
   }
 
@@ -161,8 +161,8 @@ bool VerifySignature(base::span<const uint8_t> sig,
   CBS_init(&cbs, reinterpret_cast<const uint8_t*>(spki.data()), spki.size());
   bssl::UniquePtr<EVP_PKEY> pkey(EVP_parse_public_key(&cbs));
   if (!pkey || CBS_len(&cbs) != 0) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "VerifySignature", "Failed to parse public key.");
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy, "Failed to parse public key.");
     return false;
   }
   switch (EVP_PKEY_id(pkey.get())) {
@@ -177,33 +177,31 @@ bool VerifySignature(base::span<const uint8_t> sig,
           algorithm = crypto::SignatureVerifier::ECDSA_SHA256;
           break;
         default:
-          signed_exchange_utils::ReportErrorAndEndTraceEvent(
-              devtools_proxy, "VerifySignature", "Unsupported EC group.");
+          signed_exchange_utils::ReportErrorAndTraceEvent(
+              devtools_proxy, "Unsupported EC group.");
           return false;
       }
       break;
     }
     default:
-      signed_exchange_utils::ReportErrorAndEndTraceEvent(
-          devtools_proxy, "VerifySignature", "Unsupported public key type.");
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy, "Unsupported public key type.");
       return false;
   }
 
   crypto::SignatureVerifier verifier;
   if (!net::x509_util::SignatureVerifierInitWithCertificate(
           &verifier, algorithm, sig, cert->cert_buffer())) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "VerifySignature",
-        "SignatureVerifierInitWithCertificate failed.");
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy, "SignatureVerifierInitWithCertificate failed.");
     return false;
   }
   verifier.VerifyUpdate(msg);
   if (!verifier.VerifyFinal()) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "VerifySignature", "VerifyFinal failed.");
+    signed_exchange_utils::ReportErrorAndTraceEvent(devtools_proxy,
+                                                    "VerifyFinal failed.");
     return false;
   }
-  TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature");
   return true;
 }
 
@@ -286,12 +284,12 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
     scoped_refptr<net::X509Certificate> certificate,
     const base::Time& verification_time,
     SignedExchangeDevToolsProxy* devtools_proxy) {
-  TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                     "SignedExchangeSignatureVerifier::Verify");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "SignedExchangeSignatureVerifier::Verify");
 
   if (!VerifyTimestamps(header, verification_time)) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeSignatureVerifier::Verify",
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy,
         base::StringPrintf(
             "Invalid timestamp. creation_time: %" PRIu64
             ", expires_time: %" PRIu64 ", verification_time: %" PRIu64,
@@ -301,16 +299,14 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
   }
 
   if (!certificate) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeSignatureVerifier::Verify",
-        "No certificate set.");
+    signed_exchange_utils::ReportErrorAndTraceEvent(devtools_proxy,
+                                                    "No certificate set.");
     return Result::kErrNoCertificate;
   }
 
   if (!header.signature().cert_sha256.has_value()) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeSignatureVerifier::Verify",
-        "No cert-sha256 set.");
+    signed_exchange_utils::ReportErrorAndTraceEvent(devtools_proxy,
+                                                    "No cert-sha256 set.");
     return Result::kErrNoCertificateSHA256;
   }
 
@@ -318,17 +314,15 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
   if (*header.signature().cert_sha256 !=
       net::X509Certificate::CalculateFingerprint256(
           certificate->cert_buffer())) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeSignatureVerifier::Verify",
-        "cert-sha256 mismatch.");
+    signed_exchange_utils::ReportErrorAndTraceEvent(devtools_proxy,
+                                                    "cert-sha256 mismatch.");
     return Result::kErrCertificateSHA256Mismatch;
   }
 
   auto message = GenerateSignedMessage(header);
   if (!message) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeSignatureVerifier::Verify",
-        "Failed to reconstruct signed message.");
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy, "Failed to reconstruct signed message.");
     return Result::kErrInvalidSignatureFormat;
   }
 
@@ -337,21 +331,17 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
           base::make_span(reinterpret_cast<const uint8_t*>(sig.data()),
                           sig.size()),
           *message, certificate, devtools_proxy)) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeSignatureVerifier::Verify",
-        "Failed to verify signature \"sig\".");
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy, "Failed to verify signature \"sig\".");
     return Result::kErrSignatureVerificationFailed;
   }
 
   if (!base::EqualsCaseInsensitiveASCII(header.signature().integrity, "mi")) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeSignatureVerifier::Verify",
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy,
         "The current implemention only supports \"mi\" integrity scheme.");
     return Result::kErrInvalidSignatureIntegrity;
   }
-
-  TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                   "SignedExchangeSignatureVerifier::Verify");
   return Result::kSuccess;
 }
 
