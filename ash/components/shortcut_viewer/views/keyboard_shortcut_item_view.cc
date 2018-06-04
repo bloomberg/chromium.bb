@@ -172,6 +172,7 @@ KeyboardShortcutItemView::GetKeycodeToString16Cache() {
 void KeyboardShortcutItemView::MaybeCalculateAndDoLayout(int width) const {
   if (width == calculated_size_.width())
     return;
+  TRACE_EVENT0("shortcut_viewer", "MaybeCalculateAndDoLayout");
 
   const gfx::Insets insets = GetInsets();
   width -= insets.width();

@@ -5,6 +5,7 @@
 #include "ash/components/shortcut_viewer/shortcut_viewer_application.h"
 
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_view.h"
+#include "base/trace_event/trace_event.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "ui/events/devices/input_device_manager.h"
@@ -14,6 +15,11 @@ namespace keyboard_shortcut_viewer {
 
 ShortcutViewerApplication::ShortcutViewerApplication() = default;
 ShortcutViewerApplication::~ShortcutViewerApplication() = default;
+
+// static
+void ShortcutViewerApplication::RegisterForTraceEvents() {
+  TRACE_EVENT0("shortcut_viewer", "ignored");
+}
 
 void ShortcutViewerApplication::OnStart() {
   aura_init_ = views::AuraInit::Create(

@@ -21,6 +21,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -102,6 +103,7 @@ views::Widget* KeyboardShortcutView::Toggle() {
     else
       g_ksv_view->GetWidget()->Activate();
   } else {
+    TRACE_EVENT0("shortcut_viewer", "CreateWidget");
     base::RecordAction(
         base::UserMetricsAction("KeyboardShortcutViewer.CreateWindow"));
 
@@ -236,6 +238,7 @@ KeyboardShortcutView::KeyboardShortcutView() {
 }
 
 void KeyboardShortcutView::InitViews() {
+  TRACE_EVENT0("shortcut_viewer", "InitViews");
   // Init search box view.
   search_box_view_ = std::make_unique<KSVSearchBoxView>(this);
   search_box_view_->Init();

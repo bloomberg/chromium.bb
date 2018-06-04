@@ -136,4 +136,6 @@ void MashServiceFactory::RegisterOutOfProcessServices(
                       &CreateTapVisualizerApp);
   RegisterMashService(services, font_service::mojom::kServiceName,
                       &CreateFontService);
+
+  keyboard_shortcut_viewer::ShortcutViewerApplication::RegisterForTraceEvents();
 }
