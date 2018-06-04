@@ -1373,22 +1373,36 @@ TEST(AXTreeTest, ReverseRelationsDoNotKeepGrowing) {
         ax::mojom::IntAttribute::kActivedescendantId, update.nodes[1].id);
     update.nodes[0].AddIntListAttribute(
         ax::mojom::IntListAttribute::kLabelledbyIds, {update.nodes[1].id});
+    update.nodes[1].AddIntAttribute(ax::mojom::IntAttribute::kMemberOfId, 1);
     update.nodes[0].child_ids.push_back(update.nodes[1].id);
     EXPECT_TRUE(tree.Unserialize(update));
   }
 
-  size_t int_size = 0;
-  for (auto& iter : tree.int_reverse_relations())
-    int_size += iter.second.size() + 1;
-  // Note: 10 is arbitary, the idea here is just that we mutated a note
-  // with a relationship 1000 times, so if we have fewer than 10 entries
-  // in the map then clearly the map isn't growing / leaking. Same below.
-  EXPECT_LT(int_size, 10U);
+  size_t map_key_count = 0;
+  size_t set_entry_count = 0;
+  for (auto& iter : tree.int_reverse_relations()) {
+    map_key_count += iter.second.size() + 1;
+    for (auto it2 = iter.second.begin(); it2 != iter.second.end(); ++it2) {
+      set_entry_count += it2->second.size();
+    }
+  }
 
-  size_t intlist_size = 0;
-  for (auto& iter : tree.intlist_reverse_relations())
-    intlist_size += iter.second.size() + 1;
-  EXPECT_LT(intlist_size, 10U);
+  // Note: 10 is arbitary, the idea here is just that we mutated the tree
+  // 1000 times, so if we have fewer than 10 entries in the maps / sets then
+  // the map isn't growing / leaking. Same below.
+  EXPECT_LT(map_key_count, 10U);
+  EXPECT_LT(set_entry_count, 10U);
+
+  map_key_count = 0;
+  set_entry_count = 0;
+  for (auto& iter : tree.intlist_reverse_relations()) {
+    map_key_count += iter.second.size() + 1;
+    for (auto it2 = iter.second.begin(); it2 != iter.second.end(); ++it2) {
+      set_entry_count += it2->second.size();
+    }
+  }
+  EXPECT_LT(map_key_count, 10U);
+  EXPECT_LT(set_entry_count, 10U);
 }
 
 TEST(AXTreeTest, SkipIgnoredNodes) {

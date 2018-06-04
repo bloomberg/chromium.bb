@@ -48,7 +48,9 @@ std::map<K, V> MapFromKeyValuePairs(std::vector<std::pair<K, V>> pairs) {
 
 // Given two vectors of <K, V> key, value pairs representing an "old" vs "new"
 // state, or "before" vs "after", calls a callback function for each key that
-// changed value.
+// changed value. Note that if an attribute is removed, that will result in
+// a call to the callback with the value changing from the previous value to
+// |empty_value|, and similarly when an attribute is added.
 template <typename K, typename V, typename F>
 void CallIfAttributeValuesChanged(const std::vector<std::pair<K, V>>& pairs1,
                                   const std::vector<std::pair<K, V>>& pairs2,
@@ -632,13 +634,19 @@ void AXTree::UpdateReverseRelations(AXNode* node, const AXNodeData& new_data) {
     if (!IsNodeIdIntAttribute(attr))
       return;
 
+    // Remove old_id -> id from the map, and clear map keys if their
+    // values are now empty.
     auto& map = int_reverse_relations_[attr];
     if (map.find(old_id) != map.end()) {
       map[old_id].erase(id);
       if (map[old_id].empty())
         map.erase(old_id);
     }
-    map[new_id].insert(id);
+
+    // Add new_id -> id to the map, unless new_id is zero indicating that
+    // we're only removing a relation.
+    if (new_id)
+      map[new_id].insert(id);
   };
   CallIfAttributeValuesChanged(old_data.int_attributes, new_data.int_attributes,
                                0, int_callback);
