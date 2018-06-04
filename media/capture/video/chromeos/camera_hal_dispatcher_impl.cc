@@ -18,6 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
@@ -290,7 +291,9 @@ void CameraHalDispatcherImpl::StartServiceLoop(base::ScopedFD socket_fd,
       mojo::PlatformChannel channel;
       mojo::OutgoingInvitation invitation;
 
-      std::string token = base::NumberToString(base::RandUint64());
+      // Generate an arbitrary 32-byte string, as we use this length as a
+      // protocol version identifier.
+      std::string token = mojo::edk::GenerateRandomToken();
       mojo::ScopedMessagePipeHandle pipe = invitation.AttachMessagePipe(token);
       mojo::OutgoingInvitation::Send(std::move(invitation),
                                      kUnusedChildProcessHandle,
