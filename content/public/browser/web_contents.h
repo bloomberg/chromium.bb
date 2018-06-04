@@ -870,6 +870,13 @@ class WebContents : public PageNavigator,
   virtual bool CompletedFirstVisuallyNonEmptyPaint() const = 0;
 #endif  // OS_ANDROID
 
+  // TODO(https://crbug.com/826293): This is a simple mitigation to validate
+  // that an action that requires a user gesture actually has one in the
+  // trustworthy browser process, rather than relying on the untrustworthy
+  // renderer. This should be eventually merged into and accounted for in the
+  // user activation work.
+  virtual bool HasRecentInteractiveInputEvent() const = 0;
+
  private:
   // This interface should only be implemented inside content.
   friend class WebContentsImpl;

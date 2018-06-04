@@ -24,6 +24,7 @@
 #include "extensions/browser/warning_set.h"
 
 class DownloadFileIconExtractor;
+class DownloadOpenPrompt;
 
 namespace extensions {
 class ExtensionRegistry;
@@ -243,10 +244,20 @@ class DownloadsOpenFunction : public UIThreadExtensionFunction {
   DownloadsOpenFunction();
   ResponseAction Run() override;
 
+  typedef base::OnceCallback<void(DownloadOpenPrompt*)> OnPromptCreatedCallback;
+  static void set_on_prompt_created_cb_for_testing(
+      OnPromptCreatedCallback* on_prompt_created_cb) {
+    on_prompt_created_cb_ = on_prompt_created_cb;
+  }
+
  protected:
   ~DownloadsOpenFunction() override;
 
  private:
+  void OpenPromptDone(int download_id, bool accept);
+
+  static OnPromptCreatedCallback* on_prompt_created_cb_;
+
   DISALLOW_COPY_AND_ASSIGN(DownloadsOpenFunction);
 };
 
