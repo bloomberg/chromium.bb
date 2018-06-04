@@ -575,7 +575,6 @@
 <translation id="184823282865851239">അനാവശ്യമായ പരസ്യങ്ങൾ സൈറ്റ് കാണിക്കുന്നുവെങ്കിൽ ബ്ലോക്കുചെയ്യുക</translation>
 <translation id="1849186935225320012">ഈ പേജിന് MIDI ഉപകരണങ്ങളുടെ പൂർണ്ണ നിയന്ത്രണമുണ്ട്.</translation>
 <translation id="1850508293116537636">&amp;ഘടികാരദിശയില്‍‌ തിരിക്കുക</translation>
-<translation id="1851361118452499663">എന്റെ ഫോട്ടോകൾ</translation>
 <translation id="1852799913675865625">ഫയല്‍ വായിക്കാന്‍ ശ്രമിക്കുന്നതിനിടയില്‍ ഒരു പിശക് സംഭവിച്ചു: <ph name="ERROR_TEXT" /> .</translation>
 <translation id="1853692000353488670">പുതിയ ആൾമാറാട്ട ടാബ്</translation>
 <translation id="1856715684130786728">ലൊക്കേഷൻ ചേർക്കുക...</translation>
@@ -2947,7 +2946,6 @@
 <translation id="5559719557406102971">Termina VM ആരംഭിക്കുന്നു.</translation>
 <translation id="55601339223879446">ഡിസ്‌പ്ലേയിൽ നിങ്ങളുടെ ഡെസ്‌ക്‌ടോപ്പിന്റെ ബൗണ്ടറികൾ ക്രമീകരിക്കുക</translation>
 <translation id="5562781907504170924">ഈ ടാബ് ഒരു Bluetooth ഉപകരണവുമായി കണക്‌റ്റുചെയ്‌തിരിക്കുന്നു.</translation>
-<translation id="5563234215388768762">Google-ൽ തിരയുക അല്ലെങ്കിൽ URL ടൈപ്പ് ചെയ്യുക</translation>
 <translation id="5565871407246142825">ക്രെഡിറ്റ് കാര്‍ഡുകള്‍</translation>
 <translation id="5567989639534621706">അപ്ലിക്കേഷന്‍‌ കാഷെകള്‍‌</translation>
 <translation id="5568069709869097550">പ്രവേശിക്കാന്‍ കഴിയില്ല</translation>
@@ -3494,6 +3492,7 @@
 <translation id="6410668567036790476">തിരയൽ എഞ്ചിൻ ചേർക്കുക</translation>
 <translation id="641081527798843608">പൊരുത്തപ്പെടുന്ന വിഷയം</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Google-ൽ തിരയുക അല്ലെങ്കിൽ വെബ് വിലാസം ടൈപ്പ് ചെയ്യുക</translation>
 <translation id="6412931879992742813">പുതിയ ആൾമാറാട്ട വിൻഡോ</translation>
 <translation id="6417265370957905582">Google അസിസ്‌റ്റന്റ്</translation>
 <translation id="6418160186546245112"><ph name="IDS_SHORT_PRODUCT_NAME" /> എന്നതിന്റെ മുമ്പ് ഇൻസ്റ്റാളുചെയ്‌ത പതിപ്പിലേക്ക് പഴയപടിയാക്കുന്നു</translation>

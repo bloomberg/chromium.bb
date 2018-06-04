@@ -577,7 +577,6 @@
 <translation id="184823282865851239">अगर साइट तंग करने वाले विज्ञापन दिखाने के लिए जानी जाती है, तो ब्लॉक करें</translation>
 <translation id="1849186935225320012">इस पेज के पास MIDI डिवाइस का पूर्ण नियंत्रण है.</translation>
 <translation id="1850508293116537636">&amp;घड़ी की दिशा में घुमाएं</translation>
-<translation id="1851361118452499663">मेरी फ़ोटो</translation>
 <translation id="1852799913675865625">फ़ाइल पढ़ने का प्रयास करते समय कोई गड़बड़ी आई: <ph name="ERROR_TEXT" /></translation>
 <translation id="1853692000353488670">नया गुप्त टैब</translation>
 <translation id="1856715684130786728">स्थान जोड़ें...</translation>
@@ -2949,7 +2948,6 @@
 <translation id="5559719557406102971">Termina VM शुरू हो रहा है.</translation>
 <translation id="55601339223879446">स्क्रीन के भीतर अपने डेस्कटॉप की सीमाएं एडजस्ट करें</translation>
 <translation id="5562781907504170924">यह टैब किसी ब्लूटूथ डिवाइस से कनेक्ट है.</translation>
-<translation id="5563234215388768762">Google पर खोज करें या कोई यूआरएल टाइप करें</translation>
 <translation id="5565871407246142825">क्रेडिट कार्ड</translation>
 <translation id="5567989639534621706">ऐप्स  संचय</translation>
 <translation id="5568069709869097550">प्रवेश नहीं कर सकता</translation>
@@ -3496,6 +3494,7 @@
 <translation id="6410668567036790476">खोज इंजन जोड़ें</translation>
 <translation id="641081527798843608">विषय मिलान</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Google खोज करें या कोई वेब पता लिखें</translation>
 <translation id="6412931879992742813">नई गुप्त विंडो</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6418160186546245112"><ph name="IDS_SHORT_PRODUCT_NAME" /> के पहले से इंस्‍टॉल किए गए संस्‍करण पर वापस लाना</translation>

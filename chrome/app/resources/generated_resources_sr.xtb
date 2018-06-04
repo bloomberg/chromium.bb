@@ -574,7 +574,6 @@
 <translation id="184823282865851239">Блокирај ако сајт приказује огласе који ометају</translation>
 <translation id="1849186935225320012">Ова страница у потпуности контролише MIDI уређаје.</translation>
 <translation id="1850508293116537636">Окрећи &amp;у смеру кретања казаљке на сату</translation>
-<translation id="1851361118452499663">Моје слике</translation>
 <translation id="1852799913675865625">Дошло је до грешке при покушају читања датотеке: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Нова картица без архивирања</translation>
 <translation id="1856715684130786728">Додај локацију...</translation>
@@ -2946,7 +2945,6 @@
 <translation id="5559719557406102971">Покреће се Termina VM.</translation>
 <translation id="55601339223879446">Прилагодите границе радне површине унутар приказа</translation>
 <translation id="5562781907504170924">Ова картица је повезана са Bluetooth уређајем.</translation>
-<translation id="5563234215388768762">Претражите Google или унесите URL</translation>
 <translation id="5565871407246142825">Кредитне картице</translation>
 <translation id="5567989639534621706">Кешеви апликација</translation>
 <translation id="5568069709869097550">Не могу да се пријавим</translation>
@@ -3495,6 +3493,7 @@
 <translation id="6410668567036790476">Додавање претраживача</translation>
 <translation id="641081527798843608">Подударање наслова</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Претражите Google или унесите веб-адресу</translation>
 <translation id="6412931879992742813">Нови прозор без архивирања</translation>
 <translation id="6417265370957905582">Google помоћник</translation>
 <translation id="6418160186546245112">Враћа се на претходну инсталирану верзију производа <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

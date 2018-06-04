@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
+<translation id="114721135501989771">Získajte inteligentné doplnky Googlu v Chrome</translation>
 <translation id="1326317727527857210">Ak chcete získať karty z ďalších svojich zariadení, prihláste sa do Chromu.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Upozornenie o ochrane súkromia v prehliadači Google Chrome</translation>
@@ -12,6 +13,7 @@
 <translation id="2441696206556358796">Ak chcete ukladať fotky, klepnite na Nastavenia a povoľte Chromu používať fotky</translation>
 <translation id="2576431527583832481">Prehliadač Chrome bol práve vylepšený. K dispozícii je nová verzia.</translation>
 <translation id="257708665678654955">Chcete, aby prehliadač Google Chrome nabudúce ponúkol možnosť prekladu stránok tohto webu v jazyku <ph name="LANGUAGE_NAME" />?</translation>
+<translation id="2943166482989655199">Zlepšite Chrome a jeho zabezpečenie odosielaním systémových dát a údajov o využívaní do Googlu</translation>
 <translation id="3148434565183091099">Ak chcete mať záložky na všetkých zariadeniach, prihláste sa do Chromu.</translation>
 <translation id="3148688391461398285">Získajte lepšie prostredie v prehliadači Chrome na základe svojej polohy.</translation>
 <translation id="3167189358072330585">Váš účet nefunguje v prehliadači Google Chrome. Kontaktujte správcu domény alebo sa prihláste pomocou bežného účtu Google.</translation>
@@ -29,6 +31,7 @@
 <translation id="4523886039239821078">Niektoré doplnky spôsobujú zlyhanie prehliadača Chrome. Odinštalujte ich.</translation>
 <translation id="4615174829807303908">Odhlasujete sa z účtu spravovaného doménou <ph name="SIGNOUT_MANAGED_DOMAIN" />. Týmto odstránite údaje prehliadača Chrome z príslušného zariadenia, avšak zostanú naďalej vo vašom účte Google.</translation>
 <translation id="5389212809648216794">Google Chrome nemôže použiť váš fotoaparát, pretože ho práve používa iná aplikácia</translation>
+<translation id="5489543008378040943"><ph name="BEGIN_LINK" />Nastavenia<ph name="END_LINK" /> si môžete kedykoľvek prispôsobiť. Google môže použiť obsah na weboch, ktoré navštívite, interakcie a aktivitu v prehliadači na prispôsobenie Chromu a služieb Googlu, ako sú Prekladač, Vyhľadávanie a reklamy.</translation>
 <translation id="5639704535586432836">Otvorte Nastavenia &gt; Súkromie &gt; Fotoaparát &gt; Google Chrome a zapnite fotoaparát.</translation>
 <translation id="5642200033778930880">Google Chrome nemôže použiť váš fotoaparát v režime Rozdelené zobrazenie</translation>
 <translation id="5703130498371792817">Páči sa vám Chrome? <ph name="BEGIN_LINK" />Ohodnoťte túto aplikáciu.<ph name="END_LINK" /></translation>

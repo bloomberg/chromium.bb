@@ -577,7 +577,6 @@
 <translation id="184823282865851239">I-block kung malamang na magpakita ang site ng mga nakakasagabal na ad</translation>
 <translation id="1849186935225320012">May buong kontrol sa mga MIDI device ang pahinang ito.</translation>
 <translation id="1850508293116537636">I-rotate &amp;pakanan</translation>
-<translation id="1851361118452499663">Aking Mga Larawan</translation>
 <translation id="1852799913675865625">Nagkaroon ng error habang sinusubukang basahin ang file: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Bagong tab na incognito</translation>
 <translation id="1856715684130786728">Magdagdag ng lokasyon...</translation>
@@ -2950,7 +2949,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="5559719557406102971">Sinisimulan ang Termina VM</translation>
 <translation id="55601339223879446">Isaayos ang mga hangganan ng iyong desktop sa display</translation>
 <translation id="5562781907504170924">Nakakonekta ang tab na ito sa isang Bluetooth Device.</translation>
-<translation id="5563234215388768762">Maghanap sa Google o mag-type ng URL</translation>
 <translation id="5565871407246142825">Mga credit card</translation>
 <translation id="5567989639534621706">Mga cache ng application</translation>
 <translation id="5568069709869097550">Hindi makapag-sign in</translation>
@@ -3497,6 +3495,7 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="6410668567036790476">Magdagdag ng search engine</translation>
 <translation id="641081527798843608">Pagtugma ng paksa</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Maghanap sa Google o mag-type ng address sa web</translation>
 <translation id="6412931879992742813">Bagong window ng incognito</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6418160186546245112">Nire-revert sa dating naka-install na bersyon ng <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

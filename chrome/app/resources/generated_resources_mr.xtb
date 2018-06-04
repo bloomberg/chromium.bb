@@ -573,7 +573,6 @@
 <translation id="184823282865851239">साइटने अनाहूत जाहिराती दाखवणे सुरू ठेवल्यास ब्लॉक करा</translation>
 <translation id="1849186935225320012">या पृष्ठास MIDI डिव्हाइसचे पूर्ण नियंत्रण आहे.</translation>
 <translation id="1850508293116537636">&amp;घड्याळाच्या दिशेने फिरवा</translation>
-<translation id="1851361118452499663">माझे फोटो</translation>
 <translation id="1852799913675865625">फाइल वाचण्याचा प्रयत्न करताना एक एरर आली: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">नवीन गुप्त टॅब</translation>
 <translation id="1856715684130786728">स्थान जोडा...</translation>
@@ -2939,7 +2938,6 @@
 <translation id="5559719557406102971">Termina VM सुरू करत आहे.</translation>
 <translation id="55601339223879446">प्रदर्शनामध्ये आपल्या डेस्कटॉपच्या सीमा समायोजित करा</translation>
 <translation id="5562781907504170924">हा टॅब Bluetooth डिव्हाइसशी कनेक्ट केला आहे.</translation>
-<translation id="5563234215388768762">Google वर शोधा किंवा URL टाइप करा</translation>
 <translation id="5565871407246142825">क्रेडिट कार्डे</translation>
 <translation id="5567989639534621706">अॅप्लिकेशन कॅश  </translation>
 <translation id="5568069709869097550">साइन इन करणे शक्य नाही</translation>
@@ -3482,6 +3480,7 @@
 <translation id="6410668567036790476">शोध इंजिन जोडा</translation>
 <translation id="641081527798843608">जुळणारा विषय</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Google वर शोधा किंवा वेब अॅड्रेस टाइप करा</translation>
 <translation id="6412931879992742813">नवीन गुप्त विंडो</translation>
 <translation id="6417265370957905582">Google साहाय्यक</translation>
 <translation id="6418160186546245112"><ph name="IDS_SHORT_PRODUCT_NAME" /> च्या पूर्वी स्‍थापित केलेल्या आवृत्तीवर परत करत आहे</translation>

@@ -577,7 +577,6 @@
 <translation id="184823282865851239">บล็อกหากไซต์มักแสดงโฆษณาที่แทรก</translation>
 <translation id="1849186935225320012">หน้านี้มีสิทธิ์ควบคุมอุปกรณ์ MIDI เต็มรูปแบบ</translation>
 <translation id="1850508293116537636">หมุน&amp;ตามเข็มนาฬิกา</translation>
-<translation id="1851361118452499663">รูปภาพของฉัน</translation>
 <translation id="1852799913675865625">เกิดข้อผิดพลาดขณะพยายามอ่านไฟล์: <ph name="ERROR_TEXT" /></translation>
 <translation id="1853692000353488670">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
 <translation id="1856715684130786728">เพิ่มตำแหน่ง...</translation>
@@ -2950,7 +2949,6 @@
 <translation id="5559719557406102971">กำลังเริ่ม Termina VM</translation>
 <translation id="55601339223879446">ปรับขอบของเดสก์ท็อปให้อยู่ในหน้าจอแสดงผล</translation>
 <translation id="5562781907504170924">แท็บนี้เชื่อมต่อกับอุปกรณ์บลูทูธอยู่</translation>
-<translation id="5563234215388768762">ค้นหาด้วย Google หรือพิมพ์ URL</translation>
 <translation id="5565871407246142825">บัตรเครดิต</translation>
 <translation id="5567989639534621706">แคชของแอปพลิเคชัน</translation>
 <translation id="5568069709869097550">ไม่สามารถลงชื่อเข้าใช้</translation>
@@ -3497,6 +3495,7 @@
 <translation id="6410668567036790476">เพิ่มเครื่องมือค้นหา</translation>
 <translation id="641081527798843608">หัวเรื่องที่ตรงกัน</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">ค้นหาใน Google หรือพิมพ์ที่อยู่เว็บ</translation>
 <translation id="6412931879992742813">หน้าต่างที่ไม่ระบุตัวตนใหม่</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6418160186546245112">กำลังเปลี่ยนกลับไปใช้เวอร์ชันที่ติดตั้งไว้ก่อนหน้านี้ของ <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

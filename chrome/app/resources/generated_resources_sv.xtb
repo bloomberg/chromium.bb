@@ -576,7 +576,6 @@
 <translation id="184823282865851239">Blockera om webbplatsen brukar visa påträngande annonser</translation>
 <translation id="1849186935225320012">Den här sidan har fullständig kontroll över MIDI-enheter.</translation>
 <translation id="1850508293116537636">Rotera &amp;medurs</translation>
-<translation id="1851361118452499663">Mina bilder</translation>
 <translation id="1852799913675865625">Ett fel uppstod när följande fil skulle läsas: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Ny inkognitoflik</translation>
 <translation id="1856715684130786728">Lägg till plats ...</translation>
@@ -2949,7 +2948,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="5559719557406102971">Termina VM startas.</translation>
 <translation id="55601339223879446">Justera skrivbordets avgränsning på skärmen</translation>
 <translation id="5562781907504170924">Den här fliken är ansluten till en Bluetooth-enhet.</translation>
-<translation id="5563234215388768762">Sök på Google eller skriv en webbadress</translation>
 <translation id="5565871407246142825">Kreditkort</translation>
 <translation id="5567989639534621706">Programmets cacheminnen</translation>
 <translation id="5568069709869097550">Kan inte logga in</translation>
@@ -3496,6 +3494,7 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="6410668567036790476">Lägg till sökmotor</translation>
 <translation id="641081527798843608">Ämnesmatchning</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Sök på Google eller ange en webbadress</translation>
 <translation id="6412931879992742813">Nytt inkognitofönster</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
 <translation id="6418160186546245112">Återgå till den tidigare installerade versionen av <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

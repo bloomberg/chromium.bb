@@ -574,7 +574,6 @@
 <translation id="184823282865851239">Блокиране, ако на сайта обикновено се показват натрапчиви реклами</translation>
 <translation id="1849186935225320012">Тази страница има пълен контрол над MIDI устройствата.</translation>
 <translation id="1850508293116537636">Завъртане &amp;по часовниковата стрелка</translation>
-<translation id="1851361118452499663">Моите снимки</translation>
 <translation id="1852799913675865625">Възникна грешка при опита за четене от файла: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Нов раздел „инкогнито“</translation>
 <translation id="1856715684130786728">Добавяне на местоположение...</translation>
@@ -2948,7 +2947,6 @@
 <translation id="5559719557406102971">Виртуалната машина Termina стартира.</translation>
 <translation id="55601339223879446">Коригиране на границите на работния плот в рамките на екрана</translation>
 <translation id="5562781907504170924">Този раздел е свързан с устройство с Bluetooth.</translation>
-<translation id="5563234215388768762">Търсете с Google или въведете URL адрес</translation>
 <translation id="5565871407246142825">Кредитни карти</translation>
 <translation id="5567989639534621706">Кешове на приложения</translation>
 <translation id="5568069709869097550">Не може да се влезе</translation>
@@ -3496,6 +3494,7 @@
 <translation id="6410668567036790476">Добавяне на търсеща машина</translation>
 <translation id="641081527798843608">Съвпадение на субекта</translation>
 <translation id="641105183165925463">$1 МБ</translation>
+<translation id="6411517327772365857">Търсете с Google или въведете уеб адрес</translation>
 <translation id="6412931879992742813">Нов прозорец в режим „инкогнито“</translation>
 <translation id="6417265370957905582">Google Асистент</translation>
 <translation id="6418160186546245112">Предишната инсталирана версия на <ph name="IDS_SHORT_PRODUCT_NAME" /> се възстановява</translation>

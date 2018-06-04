@@ -76,6 +76,7 @@
 <translation id="4730374152663651037">VEELGEBRUIKT</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Nog 1 maand}other{Nog # maanden}}</translation>
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="4841881773802181781">Invoeging</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 seconde}other{# seconden}}</translation>
 <translation id="4971687151119236543">Vorige track voor media</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
@@ -118,6 +119,7 @@
 <translation id="6612467943526193239">Druk op Esc om de kalibratie af te sluiten.</translation>
 <translation id="6620110761915583480">Bestand opslaan</translation>
 <translation id="6699343763173986273">Volgende track voor media</translation>
+<translation id="673773751041746814">Verwijdering</translation>
 <translation id="6786750046913594791">Map sluiten</translation>
 <translation id="6808150112686056157">Media stoppen</translation>
 <translation id="6845383723252244143">Map selecteren</translation>

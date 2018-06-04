@@ -577,7 +577,6 @@
 <translation id="184823282865851239">Blochează dacă site-ul tinde să afișeze anunțuri deranjante</translation>
 <translation id="1849186935225320012">Această pagină are control complet asupra dispozitivelor MIDI.</translation>
 <translation id="1850508293116537636">Rotiți în sensul acelor de &amp;ceasornic</translation>
-<translation id="1851361118452499663">Fotografiile mele</translation>
 <translation id="1852799913675865625">A apărut o eroare la citirea fișierului: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Filă incognito nouă</translation>
 <translation id="1856715684130786728">Adăugați o locație...</translation>
@@ -2950,7 +2949,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5559719557406102971">Se pornește Termina VM.</translation>
 <translation id="55601339223879446">Ajustează delimitările desktopului din afișare</translation>
 <translation id="5562781907504170924">Această filă este conectată la un dispozitiv Bluetooth.</translation>
-<translation id="5563234215388768762">Caută pe Google sau introdu o adresă URL</translation>
 <translation id="5565871407246142825">Carduri de credit</translation>
 <translation id="5567989639534621706">Memoriile cache ale aplicației</translation>
 <translation id="5568069709869097550">Nu se poate conecta</translation>
@@ -3497,6 +3495,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6410668567036790476">Adaugă motorul de căutare</translation>
 <translation id="641081527798843608">Potrivirea subiectului</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Caută pe Google sau introdu o adresă web</translation>
 <translation id="6412931879992742813">Fereastră incognito nouă</translation>
 <translation id="6417265370957905582">Asistent Google</translation>
 <translation id="6418160186546245112">Se revine la versiunea <ph name="IDS_SHORT_PRODUCT_NAME" /> instalată anterior</translation>

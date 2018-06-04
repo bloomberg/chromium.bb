@@ -574,7 +574,6 @@
 <translation id="184823282865851239">如果网站常常会展示侵扰性广告则阻止</translation>
 <translation id="1849186935225320012">此页面可以完全控制 MIDI 设备。</translation>
 <translation id="1850508293116537636">顺时针旋转(&amp;C)</translation>
-<translation id="1851361118452499663">我的照片</translation>
 <translation id="1852799913675865625">尝试读取文件时发生错误：<ph name="ERROR_TEXT" />。</translation>
 <translation id="1853692000353488670">打开新的无痕式标签页</translation>
 <translation id="1856715684130786728">添加位置…</translation>
@@ -2937,7 +2936,6 @@
 <translation id="5559719557406102971">正在启动“Termina VM”。</translation>
 <translation id="55601339223879446">调整您的桌面在显示屏内的边界</translation>
 <translation id="5562781907504170924">此标签页已连接到蓝牙设备。</translation>
-<translation id="5563234215388768762">在 Google 上搜索，或者输入一个网址</translation>
 <translation id="5565871407246142825">信用卡</translation>
 <translation id="5567989639534621706">应用缓存</translation>
 <translation id="5568069709869097550">无法登录</translation>
@@ -3484,6 +3482,7 @@
 <translation id="6410668567036790476">添加搜索引擎</translation>
 <translation id="641081527798843608">主题匹配</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">在 Google 上搜索，或者输入一个网址</translation>
 <translation id="6412931879992742813">打开新的无痕式窗口</translation>
 <translation id="6417265370957905582">Google 智能助理</translation>
 <translation id="6418160186546245112">正在还原到之前安装的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 版本</translation>

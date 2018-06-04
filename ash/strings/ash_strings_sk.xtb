@@ -118,6 +118,7 @@
 <translation id="3236488194889173876">Nie je k dispozícii žiadna mobilná sieť</translation>
 <translation id="3294437725009624529">Hosť</translation>
 <translation id="332587331255250389">Vymeňte batériu</translation>
+<translation id="3351879221545518001">Momentálne prenášate obrazovku.</translation>
 <translation id="3364721542077212959">Nástroje pre dotykové pero</translation>
 <translation id="3368922792935385530">Pripojené</translation>
 <translation id="3371140690572404006">zariadenia USB-C (port vpravo vpredu)</translation>
@@ -172,6 +173,7 @@
 <translation id="4527045527269911712">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> do úplného nabitia</translation>
 <translation id="4544944664594876241">Skratka uzamknutia obrazovky bola zmenená. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
+<translation id="4564869809620998694">Služba písiem</translation>
 <translation id="4570957409596482333">Tlačidlo počúvania vybraného textu</translation>
 <translation id="4659419629803378708">Funkcia ChromeVox je povolená</translation>
 <translation id="4776917500594043016">Heslo pre účet <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -208,11 +210,13 @@
 <translation id="5744083938413354016">Presunutie klepnutím</translation>
 <translation id="5777841717266010279">Chcete ukončiť zdieľanie obrazovky?</translation>
 <translation id="57838592816432529">Vypnúť zvuk</translation>
+<translation id="5805697420284793859">Správca okien</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">Pridať osobu</translation>
 <translation id="5860033963881614850">Vypnuté</translation>
 <translation id="5895138241574237353">Reštartovať</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5911533659001334206">Zobrazovač skratiek</translation>
 <translation id="5916664084637901428">Zapnuté</translation>
 <translation id="5927132638760172455">Prebieha prenášanie na neznámy prijímač</translation>
 <translation id="5947494881799873997">Vrátiť</translation>
@@ -251,6 +255,7 @@
 <translation id="6521655319214113338">Vstup ručného písania</translation>
 <translation id="6528179044667508675">Nerušiť</translation>
 <translation id="6537270692134705506">Nasnímať obrazovku</translation>
+<translation id="6542521951477560771">Prebieha prenášanie do zariadenia <ph name="RECEIVER_NAME" /></translation>
 <translation id="6585808820553845416">Relácia sa skončí o <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="6627638273713273709">Hľadať+Shift+K</translation>
 <translation id="6650933572246256093">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Zadajte na danom zariadení tento prístupový kľúč: <ph name="PASSKEY" /></translation>
@@ -262,6 +267,8 @@
 <translation id="6715542151869432661">Neboli nájdené žiadne mobilné zariadenia.</translation>
 <translation id="671928215901716392">Uzamknúť obrazovku</translation>
 <translation id="6723839937902243910">Napájanie</translation>
+<translation id="6725073593266469338">Služba používateľského rozhrania</translation>
+<translation id="6751826523481687655">Trasovanie výkonnosti je zapnuté</translation>
 <translation id="6785414152754474415">Batéria je nabitá na <ph name="PERCENTAGE" /> % a nabíja sa.</translation>
 <translation id="6803622936009808957">Obraz na monitoroch sa nedá zrkadliť, pretože sa nenašli podporované rozlíšenia. Namiesto toho sa spustil režim rozšírenej pracovnej plochy.</translation>
 <translation id="6820676911989879663">Urobte si prestávku.</translation>
@@ -326,6 +333,7 @@
 <translation id="8351131234907093545">Vytvoriť poznámku</translation>
 <translation id="8392451568018454956">Ponuka možností pre používateľa <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Nastavenia</translation>
+<translation id="8431190899827883166">Zobrazovanie klepnutí</translation>
 <translation id="8433186206711564395">Nastavenia siete</translation>
 <translation id="8433977262951327081">Klávesová skratka na zobrazenie bubliny s možnosťami vstupu na poličke sa zmenila. Namiesto skratky <ph name="OLD_SHORTCUT" /> použite skratku <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="8452135315243592079">Chýba SIM karta</translation>
@@ -339,6 +347,7 @@
 <translation id="8652175077544655965">Zatvoriť nastavenia</translation>
 <translation id="8673028979667498656">270 °</translation>
 <translation id="8676770494376880701">Pripojila sa nabíjačka s nízkym výkonom</translation>
+<translation id="8683506306463609433">Trasovanie výkonnosti je aktívne</translation>
 <translation id="8734991477317290293">Je možné, že sa pokúša ukradnúť vaše stlačenia klávesov</translation>
 <translation id="8809737090443522491">Zadajte názov aplikácie alebo dokumentu</translation>
 <translation id="8814190375133053267">Wi‑Fi</translation>
@@ -351,7 +360,9 @@
 <translation id="8921624153894383499">Asistent Google nehovorí týmto jazykom.</translation>
 <translation id="8938800817013097409">Zariadenie USB-C (pravý port vzadu)</translation>
 <translation id="8940956008527784070">Kapacita batérie je nízka (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8984179138335769204">Rýchle spustenie</translation>
 <translation id="8995603266996330174">Spravované doménou <ph name="DOMAIN" /></translation>
+<translation id="9033907480196064950">Momentálne prenášate kartu <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi‑Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofón sa používa.</translation>
@@ -367,4 +378,5 @@
 <translation id="923686485342484400">Ak sa chcete odhlásiť, stlačte dvakrát kombináciu klávesov Ctrl, Shift a Q.</translation>
 <translation id="945522503751344254">Poslať spätnú väzbu</translation>
 <translation id="98515147261107953">Na šírku</translation>
+<translation id="995927048686010764">Automatické klikanie</translation>
 </translationbundle>

@@ -578,7 +578,6 @@
 <translation id="184823282865851239">Αποκλεισμός εάν ο ιστότοπος τείνει να εμφανίζει παρεμβατικές διαφημίσεις</translation>
 <translation id="1849186935225320012">Αυτή η σελίδα έχει τον πλήρη έλεγχο των συσκευών MIDI.</translation>
 <translation id="1850508293116537636">Περιστροφή &amp;προς τα δεξιά</translation>
-<translation id="1851361118452499663">Οι φωτογραφίες μου</translation>
 <translation id="1852799913675865625">Παρουσιάστηκε σφάλμα κατά την απόπειρα ανάγνωσης του αρχείου: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Νέα καρτέλα ανώνυμης περιήγησης</translation>
 <translation id="1856715684130786728">Προσθήκη τοποθεσίας…</translation>
@@ -2951,7 +2950,6 @@
 <translation id="5559719557406102971">Έναρξη Termina VM.</translation>
 <translation id="55601339223879446">Προσαρμογή των ορίων της επιφάνειας εργασίας εντός της οθόνης</translation>
 <translation id="5562781907504170924">Αυτή η καρτέλα είναι συνδεδεμένη σε μια συσκευή Bluetooth.</translation>
-<translation id="5563234215388768762">Κάντε αναζήτηση στο Google ή πληκτρολογήστε κάποιο URL</translation>
 <translation id="5565871407246142825">Πιστωτικές κάρτες</translation>
 <translation id="5567989639534621706">Προσωρινές μνήμες εφαρμογών</translation>
 <translation id="5568069709869097550">Δεν είναι δυνατή η σύνδεση</translation>
@@ -3499,6 +3497,7 @@
 <translation id="6410668567036790476">Προσθήκη μηχανής αναζήτησης</translation>
 <translation id="641081527798843608">Αντιστοιχία θέματος</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Κάντε αναζήτηση στο Google ή πληκτρολογήστε μια διεύθυνση ιστού</translation>
 <translation id="6412931879992742813">Νέο παράθυρο ανώνυμης περιήγησης</translation>
 <translation id="6417265370957905582">Βοηθός Google</translation>
 <translation id="6418160186546245112">Γίνεται επαναφορά στην προηγούμενη εγκατεστημένη έκδοση του <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

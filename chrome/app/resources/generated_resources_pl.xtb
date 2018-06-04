@@ -577,7 +577,6 @@
 <translation id="184823282865851239">Blokuj, jeśli na stronie wyświetlają się uciążliwe reklamy</translation>
 <translation id="1849186935225320012">Ta strona ma pełny dostęp do sterowania urządzeniami MIDI.</translation>
 <translation id="1850508293116537636">Obróć w &amp;prawo</translation>
-<translation id="1851361118452499663">Moje zdjęcia</translation>
 <translation id="1852799913675865625">Wystąpił błąd podczas próby odczytu pliku: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Nowa karta incognito</translation>
 <translation id="1856715684130786728">Dodaj lokalizację...</translation>
@@ -2950,7 +2949,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="5559719557406102971">Uruchamiam maszynę wirtualną Termina.</translation>
 <translation id="55601339223879446">Przesuń krawędzie pulpitu na ekranie</translation>
 <translation id="5562781907504170924">Ta karta jest połączona z urządzeniem Bluetooth.</translation>
-<translation id="5563234215388768762">Wyszukaj w Google lub wpisz URL</translation>
 <translation id="5565871407246142825">Karty kredytowe</translation>
 <translation id="5567989639534621706">Pamięci podręczne aplikacji</translation>
 <translation id="5568069709869097550">Nie można się zalogować</translation>
@@ -3497,6 +3495,7 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="6410668567036790476">Dodaj wyszukiwarkę</translation>
 <translation id="641081527798843608">Dopasowanie do tematu</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Wyszukaj w Google lub wpisz adres internetowy</translation>
 <translation id="6412931879992742813">Nowe okno incognito</translation>
 <translation id="6417265370957905582">Asystent Google</translation>
 <translation id="6418160186546245112">Przywracam poprzednio zainstalowaną wersję <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

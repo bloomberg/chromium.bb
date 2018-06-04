@@ -577,7 +577,6 @@
 <translation id="184823282865851239">Bloquear se o site costuma mostrar anúncios invasivos</translation>
 <translation id="1849186935225320012">Esta página tem controle total de dispositivos MIDI.</translation>
 <translation id="1850508293116537636">Girar no &amp;sentido horário</translation>
-<translation id="1851361118452499663">Minhas fotos</translation>
 <translation id="1852799913675865625">Ocorreu um erro ao tentar ler o arquivo: <ph name="ERROR_TEXT" /></translation>
 <translation id="1853692000353488670">Nova guia anônima</translation>
 <translation id="1856715684130786728">Adicionar local...</translation>
@@ -2950,7 +2949,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="5559719557406102971">Iniciando a VM Termina.</translation>
 <translation id="55601339223879446">Ajustar as fronteiras da sua área de trabalho dentro da tela</translation>
 <translation id="5562781907504170924">Esta guia está conectada a um dispositivo Bluetooth.</translation>
-<translation id="5563234215388768762">Pesquise no Google ou digite um URL</translation>
 <translation id="5565871407246142825">Cartões de crédito</translation>
 <translation id="5567989639534621706">Caches de aplicativos</translation>
 <translation id="5568069709869097550">Não consigo acessar</translation>
@@ -3499,6 +3497,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6410668567036790476">Adicionar mecanismo de pesquisa</translation>
 <translation id="641081527798843608">Correspondência de assunto</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Pesquise no Google ou digite um endereço da Web</translation>
 <translation id="6412931879992742813">Nova janela anônima</translation>
 <translation id="6417265370957905582">Google Assistente</translation>
 <translation id="6418160186546245112">Revertendo para a versão anteriormente instalada de <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

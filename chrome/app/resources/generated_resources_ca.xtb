@@ -577,7 +577,6 @@
 <translation id="184823282865851239">Bloqueja si el lloc web acostuma a mostrar anuncis intrusius</translation>
 <translation id="1849186935225320012">Aquesta pàgina té un control total dels dispositius MIDI.</translation>
 <translation id="1850508293116537636">Gira en el sentit de les &amp;agulles del rellotge</translation>
-<translation id="1851361118452499663">Les meves fotos</translation>
 <translation id="1852799913675865625">S'ha produït un error en intentar llegir el fitxer: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Pestanya d'incògnit nova</translation>
 <translation id="1856715684130786728">Afegeix una ubicació...</translation>
@@ -2949,7 +2948,6 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="5559719557406102971">S'està iniciant la màquina virtual de Termina.</translation>
 <translation id="55601339223879446">Ajusta els límits de l'escriptori dins de la pantalla</translation>
 <translation id="5562781907504170924">Aquesta pestanya està connectada a un dispositiu Bluetooth</translation>
-<translation id="5563234215388768762">Fes una cerca a Google o escriu un URL</translation>
 <translation id="5565871407246142825">Targetes de crèdit</translation>
 <translation id="5567989639534621706">Memòries cau de l'aplicació</translation>
 <translation id="5568069709869097550">No puc accedir</translation>
@@ -3497,6 +3495,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6410668567036790476">Afegeix un motor de cerca</translation>
 <translation id="641081527798843608">Coincidència d'assumpte</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Fes una cerca a Google o escriu una adreça web</translation>
 <translation id="6412931879992742813">Finestra d'incògnit nova</translation>
 <translation id="6417265370957905582">Assistent de Google</translation>
 <translation id="6418160186546245112">S'està tornant a la versió de <ph name="IDS_SHORT_PRODUCT_NAME" /> instal·lada anteriorment.</translation>

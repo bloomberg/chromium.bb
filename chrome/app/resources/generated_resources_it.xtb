@@ -577,7 +577,6 @@
 <translation id="184823282865851239">Blocca se il sito tende a mostrare annunci invasivi</translation>
 <translation id="1849186935225320012">Questa pagina ha il controllo totale dei dispositivi MIDI.</translation>
 <translation id="1850508293116537636">Ruota in senso o&amp;rario</translation>
-<translation id="1851361118452499663">Le mie foto</translation>
 <translation id="1852799913675865625">Si è verificato un errore durante la lettura del file: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Nuova scheda in incognito</translation>
 <translation id="1856715684130786728">Aggiungi posizione...</translation>
@@ -2946,7 +2945,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5559719557406102971">Avvio della VM Termina.</translation>
 <translation id="55601339223879446">Regola i bordi del desktop all'interno del display</translation>
 <translation id="5562781907504170924">Questa scheda è connessa a un dispositivo Bluetooth.</translation>
-<translation id="5563234215388768762">Cerca con Google o digita un URL</translation>
 <translation id="5565871407246142825">Carte di credito</translation>
 <translation id="5567989639534621706">Cache applicazione</translation>
 <translation id="5568069709869097550">Non riesco a effettuare l'accesso</translation>
@@ -3493,6 +3491,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6410668567036790476">Aggiungi motore di ricerca</translation>
 <translation id="641081527798843608">Corrispondenza oggetto</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Cerca su Google o digita un indirizzo web</translation>
 <translation id="6412931879992742813">Nuova finestra di navigazione in incognito</translation>
 <translation id="6417265370957905582">Assistente Google</translation>
 <translation id="6418160186546245112">Ripristino della versione precedente installata di <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

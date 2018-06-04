@@ -577,7 +577,6 @@
 <translation id="184823282865851239">Blokeeri, kui sait näitab sekkuvaid reklaame</translation>
 <translation id="1849186935225320012">See leht saab MIDI-seadmeid täielikult juhtida.</translation>
 <translation id="1850508293116537636">Pööra &amp;päripäeva</translation>
-<translation id="1851361118452499663">Minu fotod</translation>
 <translation id="1852799913675865625">Ilmnes viga, kui proovisite lugeda faili: <ph name="ERROR_TEXT" /></translation>
 <translation id="1853692000353488670">Uus inkognito vaheleht</translation>
 <translation id="1856715684130786728">Lisa asukoht ...</translation>
@@ -2950,7 +2949,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5559719557406102971">Teenuse Termina VM käivitamine.</translation>
 <translation id="55601339223879446">Töölaua piiride reguleerimine ekraani ulatuses</translation>
 <translation id="5562781907504170924">See vaheleht on ühendatud Bluetoothi seadmega.</translation>
-<translation id="5563234215388768762">Otsige Google'ist või sisestage URL</translation>
 <translation id="5565871407246142825">Krediitkaardid</translation>
 <translation id="5567989639534621706">Rakenduste vahemälud</translation>
 <translation id="5568069709869097550">Ei saa sisse logida</translation>
@@ -3497,6 +3495,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6410668567036790476">Otsingumootori lisamine</translation>
 <translation id="641081527798843608">Teema vaste</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Otsige Google'ist või sisestage veebiaadress</translation>
 <translation id="6412931879992742813">Uus inkognitoaken</translation>
 <translation id="6417265370957905582">Google'i assistent</translation>
 <translation id="6418160186546245112">Toote <ph name="IDS_SHORT_PRODUCT_NAME" /> varem installitud versiooni ennistamine</translation>

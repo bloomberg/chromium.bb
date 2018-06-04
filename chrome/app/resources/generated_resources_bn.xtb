@@ -572,7 +572,6 @@
 <translation id="184823282865851239">সাইটে বিরক্তিকরভাবে বিজ্ঞাপন দেখানো হলে ব্লক করুন</translation>
 <translation id="1849186935225320012">এই পৃষ্ঠাটির MIDI ডিভাইসগুলির উপর সম্পূর্ণ নিয়ন্ত্রণ আছে৷</translation>
 <translation id="1850508293116537636">&amp;ঘড়ির কাঁটার দিকে ঘোরান</translation>
-<translation id="1851361118452499663">আমার ফটোগুলি</translation>
 <translation id="1852799913675865625"><ph name="ERROR_TEXT" /> ফাইলটি পড়ার চেষ্টা করার সময় একটি ত্রুটি ঘটেছিল৷</translation>
 <translation id="1853692000353488670">নতুন ছদ্মবেশী ট্যাব</translation>
 <translation id="1856715684130786728">লোকেশন যোগ করুন...</translation>
@@ -2921,7 +2920,6 @@
 <translation id="5559719557406102971">Termina VM চালু করা হচ্ছে।</translation>
 <translation id="55601339223879446">প্রদর্শনের মধ্যে আপনার ডেস্কটপ সীমানার সামঞ্জস্যবিধান করুন</translation>
 <translation id="5562781907504170924">এই ট্যাবটি একটি ব্লুটুথ ডিভাইসে সংযুক্ত হয়ে আছে।</translation>
-<translation id="5563234215388768762">Google-এ সার্চ করুন অথবা URL টাইপ করুন</translation>
 <translation id="5565871407246142825">ক্রেডিট কার্ডসমূহ</translation>
 <translation id="5567989639534621706">অ্যাপ্লিকেশন ক্যাশে</translation>
 <translation id="5568069709869097550">প্রবেশ করতে পারছেন না</translation>
@@ -3463,6 +3461,7 @@
 <translation id="6410668567036790476">সার্চ ইঞ্জিন যোগ করুন</translation>
 <translation id="641081527798843608">বিষয়ের মিল</translation>
 <translation id="641105183165925463">$১ MB</translation>
+<translation id="6411517327772365857">Google-এ সার্চ করুন বা একটি ওয়েব ঠিকানা টাইপ করুন</translation>
 <translation id="6412931879992742813">নতুন ছদ্মবেশ উইন্ডো</translation>
 <translation id="6417265370957905582">Google সহায়ক</translation>
 <translation id="6418160186546245112"><ph name="IDS_SHORT_PRODUCT_NAME" /> এর পূর্বে ইনস্টল করা সংস্করণে ফিরিয়ে নিয়ে যাওয়া হচ্ছে</translation>

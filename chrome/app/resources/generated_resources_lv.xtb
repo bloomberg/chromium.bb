@@ -577,7 +577,6 @@
 <translation id="184823282865851239">Bloķēt, ja vietnē tiek rādītas traucējošas reklāmas</translation>
 <translation id="1849186935225320012">Šai lapai ir pieejama MIDI ierīču pilnīga pārvaldība.</translation>
 <translation id="1850508293116537636">Pagriezt &amp;pulksteņrādītāju kustības virzienā</translation>
-<translation id="1851361118452499663">Mani fotoattēli</translation>
 <translation id="1852799913675865625">Faila lasīšanas laikā radās kļūda: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Jauna inkognito cilne</translation>
 <translation id="1856715684130786728">Pievienot atrašanās vietu...</translation>
@@ -2950,7 +2949,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5559719557406102971">Notiek Termina VM palaišana.</translation>
 <translation id="55601339223879446">Pielāgojiet darbvirsmas robežas displejā.</translation>
 <translation id="5562781907504170924">Šī cilne ir piesaistīta Bluetooth ierīcei.</translation>
-<translation id="5563234215388768762">Meklēt Google tīklā vai ievadīt URL</translation>
 <translation id="5565871407246142825">Kredītkartes</translation>
 <translation id="5567989639534621706">Lietojumprogrammu kešatmiņas</translation>
 <translation id="5568069709869097550">Nevarat pieteikties</translation>
@@ -3497,6 +3495,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6410668567036790476">Meklētājprogrammas pievienošana</translation>
 <translation id="641081527798843608">Temata atbilstība</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Meklējiet Google tīklā vai ievadiet tīmekļa adresi</translation>
 <translation id="6412931879992742813">Jauns inkognito logs</translation>
 <translation id="6417265370957905582">Google asistents</translation>
 <translation id="6418160186546245112">Notiek iepriekš instalētās <ph name="IDS_SHORT_PRODUCT_NAME" /> versijas atjaunošana</translation>

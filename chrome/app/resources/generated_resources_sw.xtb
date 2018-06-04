@@ -575,7 +575,6 @@
 <translation id="184823282865851239">Zuia ikiwa tovuti inaonyesha matangazo yanayokatiza matumizi</translation>
 <translation id="1849186935225320012">Ukurasa huu una udhibiti kamili wa vifaa vya MIDI.</translation>
 <translation id="1850508293116537636">Zungusha kisaa</translation>
-<translation id="1851361118452499663">Picha Zangu</translation>
 <translation id="1852799913675865625">Kulikuwa na hitilafu wakati wa kujaribu kusoma faili: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Kichupo fiche kipya</translation>
 <translation id="1856715684130786728">Ongeza eneo...</translation>
@@ -2942,7 +2941,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5559719557406102971">Inaanzisha Termina VM.</translation>
 <translation id="55601339223879446">Rekebisha mipaka ya eneo-kazi lako ndani ya onyesho</translation>
 <translation id="5562781907504170924">Kompyuta kibao hii imeunganishwa kwenye Kifaa cha Bluetooth.</translation>
-<translation id="5563234215388768762">Tafuta kwenye Google au uandike URL</translation>
 <translation id="5565871407246142825">Kadi za malipo</translation>
 <translation id="5567989639534621706">Akiba za programu</translation>
 <translation id="5568069709869097550">Siwezi kuingia</translation>
@@ -3489,6 +3487,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6410668567036790476">Ongeza mtambo wa kutafuta</translation>
 <translation id="641081527798843608">Mada inalingana</translation>
 <translation id="641105183165925463">$1 MB</translation>
+<translation id="6411517327772365857">Tafuta kwenye Google au andika anwani ya wavuti</translation>
 <translation id="6412931879992742813">Dirisha fiche jipya</translation>
 <translation id="6417265370957905582">Google Mratibu</translation>
 <translation id="6418160186546245112">Kurejesha toleo lililosakinishwa la <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

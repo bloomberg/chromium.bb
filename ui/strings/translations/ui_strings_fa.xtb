@@ -76,6 +76,7 @@
 <translation id="4730374152663651037">مکرراً استفاده‌شده</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{۱ ماه باقی مانده است}one{# ماه باقی مانده است}other{# ماه باقی مانده است}}</translation>
 <translation id="4820616160060340806">فرمان+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="4841881773802181781">درج</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{۱ ثانیه}one{# ثانیه}other{# ثانیه}}</translation>
 <translation id="4971687151119236543">آهنگ قبلی رسانه</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
@@ -118,6 +119,7 @@
 <translation id="6612467943526193239">‏برای خروج از کالیبراسیون، کلید Esc را فشار دهید.</translation>
 <translation id="6620110761915583480">ذخیره کردن فایل</translation>
 <translation id="6699343763173986273">آهنگ بعدی رسانه</translation>
+<translation id="673773751041746814">حذف</translation>
 <translation id="6786750046913594791">بستن پوشه</translation>
 <translation id="6808150112686056157">توقف رسانه</translation>
 <translation id="6845383723252244143">انتخاب پوشه</translation>
