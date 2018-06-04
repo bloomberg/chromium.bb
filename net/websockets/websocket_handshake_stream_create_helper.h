@@ -16,7 +16,7 @@
 
 namespace net {
 
-class WebSocketStreamRequest;
+class WebSocketStreamRequestAPI;
 class SpdySession;
 class WebSocketBasicHandshakeStream;
 class WebSocketEndpointLockManager;
@@ -54,21 +54,16 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeStreamCreateHelper
   // This method must be called before calling CreateBasicStream()
   // or CreateHttp2Stream().
   // The |request| pointer must remain valid as long as this object exists.
-  void set_stream_request(WebSocketStreamRequest* request) {
+  void set_stream_request(WebSocketStreamRequestAPI* request) {
     request_ = request;
   }
-
- protected:
-  // This is used by TestWebSocketHandshakeStreamCreateHelper.
-  // The default implementation does nothing.
-  virtual void OnBasicStreamCreated(WebSocketBasicHandshakeStream* stream);
 
  private:
   const std::vector<std::string> requested_subprotocols_;
 
   WebSocketStream::ConnectDelegate* connect_delegate_;
 
-  WebSocketStreamRequest* request_;
+  WebSocketStreamRequestAPI* request_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketHandshakeStreamCreateHelper);
 };

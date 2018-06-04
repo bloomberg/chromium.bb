@@ -58,7 +58,7 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
       WebSocketStream::ConnectDelegate* connect_delegate,
       std::vector<std::string> requested_sub_protocols,
       std::vector<std::string> requested_extensions,
-      WebSocketStreamRequest* request);
+      WebSocketStreamRequestAPI* request);
 
   ~WebSocketHttp2HandshakeStream() override;
 
@@ -144,7 +144,7 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
   // The extensions we requested.
   std::vector<std::string> requested_extensions_;
 
-  WebSocketStreamRequest* const stream_request_;
+  WebSocketStreamRequestAPI* const stream_request_;
 
   const HttpRequestInfo* request_info_;
 
