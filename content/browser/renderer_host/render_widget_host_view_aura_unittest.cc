@@ -2496,6 +2496,62 @@ TEST_F(RenderWidgetHostViewAuraAsyncWheelEventsEnabledTest,
   TouchpadFlingStartResetsWheelPhaseState();
 }
 
+// Tests that the touchpad scroll state in mouse wheel phase handler gets reset
+// when a mouse wheel event from an external mouse arrives.
+TEST_F(RenderWidgetHostViewAuraAsyncWheelEventsEnabledTest,
+       MouseWheelScrollingAfterGFCWithoutGFS) {
+  // Set the mouse_wheel_phase_handler_ timer timeout to a large value to make
+  // sure that the timer is still running when we are checking for the pending
+  // wheel end event after sending ui::MouseWheelEvent.
+  view_->event_handler()->set_mouse_wheel_wheel_phase_handler_timeout(
+      TestTimeouts::action_max_timeout());
+
+  view_->InitAsChild(nullptr);
+  view_->Show();
+  sink_->ClearMessages();
+
+  // When the user puts their fingers down a GFC is received. This will change
+  // the touchpad scroll state in mouse wheel phase handler to may_begin.
+  EXPECT_EQ(
+      content::TOUCHPAD_SCROLL_STATE_UNKNOWN,
+      GetMouseWheelPhaseHandler()->touchpad_scroll_phase_state_for_test());
+  ui::ScrollEvent fling_cancel(ui::ET_SCROLL_FLING_CANCEL, gfx::Point(2, 2),
+                               ui::EventTimeForNow(), 0, 0, 0, 0, 0, 2);
+  view_->OnScrollEvent(&fling_cancel);
+  GetAndResetDispatchedMessages();
+  EXPECT_EQ(
+      content::TOUCHPAD_SCROLL_MAY_BEGIN,
+      GetMouseWheelPhaseHandler()->touchpad_scroll_phase_state_for_test());
+  EXPECT_FALSE(GetMouseWheelPhaseHandler()->HasPendingWheelEndEvent());
+
+  // The user lifts their fingers without doing any touchpad scroll
+  // (ui::ScrollEevent), the touchpad scroll state must still be may_begin since
+  // without touchpad scrolling no GFS is recieved to reset the state.
+  EXPECT_EQ(
+      content::TOUCHPAD_SCROLL_MAY_BEGIN,
+      GetMouseWheelPhaseHandler()->touchpad_scroll_phase_state_for_test());
+
+  // The user starts scrolling by external mouse device.
+  ui::MouseWheelEvent wheel(gfx::Vector2d(0, 5), gfx::Point(2, 2),
+                            gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0);
+  view_->OnMouseEvent(&wheel);
+  base::RunLoop().RunUntilIdle();
+  MockWidgetInputHandler::MessageVector events =
+      GetAndResetDispatchedMessages();
+  const WebMouseWheelEvent* wheel_event =
+      static_cast<const WebMouseWheelEvent*>(
+          events[0]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ("MouseWheel", GetMessageNames(events));
+  EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
+
+  // After arrival of the mouse wheel event, the touchpad scroll state must get
+  // reset and the timer based wheel scroll latching must be active.
+  EXPECT_EQ(
+      content::TOUCHPAD_SCROLL_STATE_UNKNOWN,
+      GetMouseWheelPhaseHandler()->touchpad_scroll_phase_state_for_test());
+  EXPECT_TRUE(GetMouseWheelPhaseHandler()->HasPendingWheelEndEvent());
+}
+
 TEST_F(RenderWidgetHostViewAuraAsyncWheelEventsEnabledTest,
        ScrollingWithExternalMouseBreaksTouchpadScrollLatching) {
   // The test is valid only when wheel scroll latching is enabled.
