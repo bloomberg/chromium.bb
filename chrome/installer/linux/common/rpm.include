@@ -204,7 +204,7 @@ determine_rpm_package_manager() {
     "MandrivaLinux")
       PACKAGEMANAGERS=(urpmi)
       ;;
-    "SUSE LINUX")
+    "SUSE LINUX"|"openSUSE")
       PACKAGEMANAGERS=(yast)
       ;;
     esac
