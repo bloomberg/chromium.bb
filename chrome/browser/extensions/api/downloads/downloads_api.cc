@@ -41,6 +41,7 @@
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/download/download_file_icon_extractor.h"
+#include "chrome/browser/download/download_open_prompt.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_query.h"
 #include "chrome/browser/download/download_shelf.h"
@@ -1427,6 +1428,9 @@ ExtensionFunction::ResponseAction DownloadsShowDefaultFolderFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+DownloadsOpenFunction::OnPromptCreatedCallback*
+    DownloadsOpenFunction::on_prompt_created_cb_ = nullptr;
+
 DownloadsOpenFunction::DownloadsOpenFunction() {}
 
 DownloadsOpenFunction::~DownloadsOpenFunction() {}
@@ -1447,9 +1451,48 @@ ExtensionFunction::ResponseAction DownloadsOpenFunction::Run() {
             errors::kOpenPermission, &error)) {
     return RespondNow(Error(error));
   }
-  download_item->OpenDownload();
+  Browser* browser = ChromeExtensionFunctionDetails(this).GetCurrentBrowser();
+  if (Fault(!browser, errors::kInvisibleContext, &error))
+    return RespondNow(Error(error));
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (Fault(!web_contents, errors::kInvisibleContext, &error))
+    return RespondNow(Error(error));
+  if (GetSenderWebContents() &&
+      GetSenderWebContents()->HasRecentInteractiveInputEvent()) {
+    download_item->OpenDownload();
+    return RespondNow(NoArguments());
+  }
+  // Prompt user for ack to open the download.
+  // TODO(qinmin): check if user prefers to open all download using the same
+  // extension, or check the recent user gesture on the originating webcontents
+  // to avoid showing the prompt.
+  DownloadOpenPrompt* download_open_prompt =
+      DownloadOpenPrompt::CreateDownloadOpenConfirmationDialog(
+          web_contents, extension()->name(), download_item->GetFullPath(),
+          base::BindOnce(&DownloadsOpenFunction::OpenPromptDone, this,
+                         params->download_id));
+  if (on_prompt_created_cb_)
+    std::move(*on_prompt_created_cb_).Run(download_open_prompt);
   RecordApiFunctions(DOWNLOADS_FUNCTION_OPEN);
-  return RespondNow(NoArguments());
+  return RespondLater();
+}
+
+void DownloadsOpenFunction::OpenPromptDone(int download_id, bool accept) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  std::string error;
+  if (Fault(!accept, errors::kOpenPermission, &error)) {
+    Respond(Error(error));
+    return;
+  }
+  DownloadItem* download_item =
+      GetDownload(browser_context(), include_incognito(), download_id);
+  if (Fault(!download_item, errors::kFileAlreadyDeleted, &error)) {
+    Respond(Error(error));
+    return;
+  }
+  download_item->OpenDownload();
+  Respond(NoArguments());
 }
 
 DownloadsDragFunction::DownloadsDragFunction() {}

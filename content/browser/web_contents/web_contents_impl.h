@@ -288,13 +288,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
     return manifest_manager_host_.get();
   }
 
-  // TODO(https://crbug.com/826293): This is a simple mitigation to validate
-  // that an action that requires a user gesture actually has one in the
-  // trustworthy browser process, rather than relying on the untrustworthy
-  // renderer. This should be eventually merged into and accounted for in the
-  // user activation work.
-  bool HasRecentInteractiveInputEvent() const;
-
 #if defined(OS_ANDROID)
   void SetMainFrameImportance(ChildProcessImportance importance);
 #endif
@@ -481,6 +474,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool GetAllowOtherViews() override;
   bool CompletedFirstVisuallyNonEmptyPaint() const override;
 #endif
+
+  bool HasRecentInteractiveInputEvent() const override;
 
   // Implementation of PageNavigator.
   WebContents* OpenURL(const OpenURLParams& params) override;

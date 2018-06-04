@@ -23,6 +23,7 @@
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_file_icon_extractor.h"
+#include "chrome/browser/download/download_open_prompt.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_test_file_activity_observer.h"
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
@@ -51,6 +52,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_download_http_response.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/notification_types.h"
@@ -97,6 +99,16 @@ struct DownloadIdComparator {
 
 bool IsDownloadExternallyRemoved(download::DownloadItem* item) {
   return item->GetFileExternallyRemoved();
+}
+
+void OnOpenPromptCreated(download::DownloadItem* item,
+                         DownloadOpenPrompt* prompt) {
+  EXPECT_FALSE(item->GetOpened());
+  // Posts a task to accept the DownloadOpenPrompt.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&DownloadOpenPrompt::AcceptConfirmationDialogForTesting,
+                     base::Unretained(prompt)));
 }
 
 class DownloadsEventsListener : public content::NotificationObserver {
@@ -257,6 +269,44 @@ class DownloadsEventsListener : public content::NotificationObserver {
   base::circular_deque<std::unique_ptr<Event>> events_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsEventsListener);
+};
+
+// Object waiting for a download open event.
+class DownloadOpenObserver : public download::DownloadItem::Observer {
+ public:
+  explicit DownloadOpenObserver(download::DownloadItem* item)
+      : open_observer_(this), item_(item) {
+    open_observer_.Add(item);
+  }
+
+  ~DownloadOpenObserver() override = default;
+
+  void WaitForEvent() {
+    if (item_ && !item_->GetOpened()) {
+      base::RunLoop run_loop;
+      completion_closure_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
+  }
+
+ private:
+  // download::DownloadItem::Observer
+  void OnDownloadOpened(download::DownloadItem* item) override {
+    if (!completion_closure_.is_null())
+      std::move(completion_closure_).Run();
+  }
+
+  void OnDownloadDestroyed(download::DownloadItem* item) override {
+    open_observer_.Remove(item);
+    item_ = nullptr;
+  }
+
+  ScopedObserver<download::DownloadItem, download::DownloadItem::Observer>
+      open_observer_;
+  download::DownloadItem* item_;
+  base::OnceClosure completion_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadOpenObserver);
 };
 
 class DownloadExtensionTest : public ExtensionApiTest {
@@ -604,6 +654,8 @@ class DownloadExtensionTest : public ExtensionApiTest {
 
   DownloadsEventsListener* events_listener() { return events_listener_.get(); }
 
+  const Extension* extension() { return extension_; }
+
  private:
   void SetUpExtensionFunction(UIThreadExtensionFunction* function) {
     if (extension_) {
@@ -864,12 +916,34 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                RunFunctionAndReturnError(
                   open_function,
                   DownloadItemIdAsArgList(download_item)).c_str());
+  // RunFunctionAndReturnError() will trigger a navigation. Wait for it to
+  // finish before showing the prompt dialog. Otherwise the dialog will get
+  // automatically closed.
+  content::TestNavigationObserver navigation_observer(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  navigation_observer.WaitForNavigationFinished();
   EXPECT_FALSE(download_item->GetOpened());
 
-  open_function = new DownloadsOpenFunction();
-  open_function->set_user_gesture(true);
-  EXPECT_TRUE(RunFunction(open_function,
-                          DownloadItemIdAsArgList(download_item)));
+  scoped_refptr<DownloadsOpenFunction> scoped_open(new DownloadsOpenFunction());
+  scoped_open->set_user_gesture(true);
+  base::ListValue list_value;
+  list_value.GetList().emplace_back(static_cast<int>(download_item->GetId()));
+  scoped_open->SetArgs(&list_value);
+  scoped_open->set_browser_context(browser()->profile());
+  scoped_open->set_extension(extension());
+  DownloadsOpenFunction::OnPromptCreatedCallback callback =
+      base::BindOnce(&OnOpenPromptCreated, base::Unretained(download_item));
+  DownloadsOpenFunction::set_on_prompt_created_cb_for_testing(&callback);
+  api_test_utils::SendResponseHelper response_helper(scoped_open.get());
+  std::unique_ptr<ExtensionFunctionDispatcher> dispatcher(
+      new ExtensionFunctionDispatcher(browser()->profile()));
+  scoped_open->set_dispatcher(dispatcher->AsWeakPtr());
+  scoped_open->RunWithValidation()->Execute();
+  response_helper.WaitForResponse();
+  EXPECT_TRUE(response_helper.has_response());
+  EXPECT_TRUE(response_helper.GetResponse());
+  DownloadOpenObserver observer(download_item);
+  observer.WaitForEvent();
   EXPECT_TRUE(download_item->GetOpened());
 }
 
