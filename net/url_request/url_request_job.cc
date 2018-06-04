@@ -192,8 +192,16 @@ bool URLRequestJob::IsRedirectResponse(GURL* location,
   std::string value;
   if (!headers->IsRedirect(&value))
     return false;
-
   *location = request_->url().Resolve(value);
+  // If this a redirect to HTTP of a request that had the
+  // 'upgrade-insecure-requests' policy set, upgrade it to HTTPS.
+  if (request_->upgrade_if_insecure()) {
+    if (location->SchemeIs("http")) {
+      GURL::Replacements replacements;
+      replacements.SetSchemeStr("https");
+      *location = location->ReplaceComponents(replacements);
+    }
+  }
   *http_status_code = headers->response_code();
   return true;
 }

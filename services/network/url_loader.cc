@@ -333,6 +333,7 @@ URLLoader::URLLoader(
   url_request_->SetReferrer(ComputeReferrer(request.referrer));
   url_request_->set_referrer_policy(request.referrer_policy);
   url_request_->SetExtraRequestHeaders(request.headers);
+  url_request_->set_upgrade_if_insecure(request.upgrade_if_insecure);
 
   // Resolve elements from request_body and prepare upload data.
   if (request.request_body.get()) {

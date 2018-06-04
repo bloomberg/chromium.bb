@@ -203,8 +203,12 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // about this.
   int previews_state = 0;
 
-  // Wether or not the initiator of this request is a secure context.
+  // Whether or not the initiator of this request is a secure context.
   bool initiated_in_secure_context = false;
+
+  // Whether or not this request (including redirects) should be upgraded to
+  // HTTPS due to an Upgrade-Insecure-Requests requirement.
+  bool upgrade_if_insecure = false;
 };
 
 }  // namespace network

@@ -376,6 +376,11 @@ class PLATFORM_EXPORT ResourceRequest final {
     return initiator_csp_;
   }
 
+  void SetUpgradeIfInsecure(bool upgrade_if_insecure) {
+    upgrade_if_insecure_ = upgrade_if_insecure;
+  }
+  bool UpgradeIfInsecure() const { return upgrade_if_insecure_; }
+
  private:
   using SharableExtraData =
       base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
@@ -443,6 +448,8 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   bool is_ad_resource_ = false;
   WebContentSecurityPolicyList initiator_csp_;
+
+  bool upgrade_if_insecure_ = false;
 };
 
 // This class is needed to copy a ResourceRequest across threads, because it
@@ -502,6 +509,7 @@ struct CrossThreadResourceRequestData {
   base::Optional<String> suggested_filename_;
   bool is_ad_resource_;
   WebContentSecurityPolicyList navigation_csp_;
+  bool upgrade_if_insecure_;
 };
 
 }  // namespace blink
