@@ -12,6 +12,8 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/task_scheduler/post_task.h"
+#include "content/browser/file_url_loader_factory.h"
 #include "content/browser/shared_worker/shared_worker_host.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_script_loader_factory.h"
@@ -41,7 +43,9 @@ bool IsShuttingDown(RenderProcessHost* host) {
 }
 
 std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
-    int process_id) {
+    int process_id,
+    StoragePartitionImpl* storage_partition,
+    bool file_support) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ContentBrowserClient::NonNetworkURLLoaderFactoryMap factories;
@@ -49,9 +53,6 @@ std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
       ->browser()
       ->RegisterNonNetworkSubresourceURLLoaderFactories(
           process_id, MSG_ROUTING_NONE, &factories);
-
-  // TODO(falken): Add FileURLLoaderFactory if the requesting frame is a file
-  // resource.
 
   auto factory_bundle = std::make_unique<URLLoaderFactoryBundleInfo>();
   for (auto& pair : factories) {
@@ -66,6 +67,18 @@ std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
                                              factory_ptr.PassInterface());
   }
 
+  if (file_support) {
+    auto file_factory = std::make_unique<FileURLLoaderFactory>(
+        storage_partition->browser_context()->GetPath(),
+        base::CreateSequencedTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+    network::mojom::URLLoaderFactoryPtr file_factory_ptr;
+    mojo::MakeStrongBinding(std::move(file_factory),
+                            mojo::MakeRequest(&file_factory_ptr));
+    factory_bundle->factories_info().emplace(url::kFileScheme,
+                                             file_factory_ptr.PassInterface());
+  }
   return factory_bundle;
 }
 
@@ -244,6 +257,9 @@ void SharedWorkerServiceImpl::CreateWorker(
     const blink::MessagePortChannel& message_port) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  bool constructor_uses_file_url =
+      instance->constructor_origin().scheme() == url::kFileScheme;
+
   // Create the host. We need to do this even before starting the worker,
   // because we are about to bounce to the IO thread. If another ConnectToWorker
   // request arrives in the meantime, it finds and reuses the host instead of
@@ -253,10 +269,12 @@ void SharedWorkerServiceImpl::CreateWorker(
   auto weak_host = host->AsWeakPtr();
   worker_hosts_.insert(std::move(host));
 
+  StoragePartitionImpl* storage_partition =
+      service_worker_context_->storage_partition();
   // Bounce to the IO thread to setup service worker support in case the request
   // for the worker script will need to be intercepted by service workers.
   if (ServiceWorkerUtils::IsServicificationEnabled()) {
-    if (!service_worker_context_->storage_partition()) {
+    if (!storage_partition) {
       // The context is shutting down. Just drop the request.
       return;
     }
@@ -265,9 +283,11 @@ void SharedWorkerServiceImpl::CreateWorker(
     // chrome-extension:// URLs. One factory bundle is consumed by the browser
     // for SharedWorkerScriptLoaderFactory, and one is sent to the renderer.
     std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_for_browser =
-        CreateFactoryBundle(process_id);
+        CreateFactoryBundle(process_id, storage_partition,
+                            constructor_uses_file_url);
     std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_for_renderer =
-        CreateFactoryBundle(process_id);
+        CreateFactoryBundle(process_id, storage_partition,
+                            constructor_uses_file_url);
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
