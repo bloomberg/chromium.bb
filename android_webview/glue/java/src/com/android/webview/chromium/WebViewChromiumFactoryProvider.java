@@ -161,7 +161,10 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     // Protected to allow downstream to override.
     protected WebViewChromiumAwInit createAwInit() {
-        return new WebViewChromiumAwInit(this);
+        try (ScopedSysTraceEvent e2 =
+                        ScopedSysTraceEvent.scoped("WebViewChromiumFactoryProvider.createAwInit")) {
+            return new WebViewChromiumAwInit(this);
+        }
     }
 
     private void deleteContentsOnPackageDowngrade(PackageInfo packageInfo) {
@@ -197,10 +200,14 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         long startTime = SystemClock.elapsedRealtime();
         try (ScopedSysTraceEvent e1 =
                         ScopedSysTraceEvent.scoped("WebViewChromiumFactoryProvider.initialize")) {
-            // The package is used to locate the services for copying crash minidumps and requesting
-            // variations seeds. So it must be set before initializing variations and before a
-            // renderer has a chance to crash.
-            PackageInfo packageInfo = WebViewFactory.getLoadedPackageInfo();
+            PackageInfo packageInfo;
+            try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
+                         "WebViewChromiumFactoryProvider.getLoadedPackageInfo")) {
+                // The package is used to locate the services for copying crash minidumps and
+                // requesting variations seeds. So it must be set before initializing variations and
+                // before a renderer has a chance to crash.
+                packageInfo = WebViewFactory.getLoadedPackageInfo();
+            }
             AwBrowserProcess.setWebViewPackageName(packageInfo.packageName);
 
             mAwInit = createAwInit();

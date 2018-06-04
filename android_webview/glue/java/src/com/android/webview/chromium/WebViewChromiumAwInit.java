@@ -190,17 +190,20 @@ public class WebViewChromiumAwInit {
      * @param context The context.
      */
     public void setUpResourcesOnBackgroundThread(PackageInfo webViewPackageInfo, Context context) {
-        assert mSetUpResourcesThread == null : "This method shouldn't be called twice.";
+        try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
+                     "WebViewChromiumAwInit.setUpResourcesOnBackgroundThread")) {
+            assert mSetUpResourcesThread == null : "This method shouldn't be called twice.";
 
-        // Make sure that ResourceProvider is initialized before starting the browser process.
-        mSetUpResourcesThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // Run this in parallel as it takes some time.
-                setUpResources(webViewPackageInfo, context);
-            }
-        });
-        mSetUpResourcesThread.start();
+            // Make sure that ResourceProvider is initialized before starting the browser process.
+            mSetUpResourcesThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    // Run this in parallel as it takes some time.
+                    setUpResources(webViewPackageInfo, context);
+                }
+            });
+            mSetUpResourcesThread.start();
+        }
     }
 
     private void waitUntilSetUpResources() {
