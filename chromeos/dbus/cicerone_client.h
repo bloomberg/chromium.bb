@@ -26,6 +26,10 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
     virtual void OnContainerStarted(
         const vm_tools::cicerone::ContainerStartedSignal& signal) = 0;
 
+    // OnContainerShutdown is signaled by Cicerone when a container is shutdown.
+    virtual void OnContainerShutdown(
+        const vm_tools::cicerone::ContainerShutdownSignal& signal) = 0;
+
    protected:
     virtual ~Observer() = default;
   };
@@ -41,6 +45,10 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
   // IsContainerStartedSignalConnected must return true before StartContainer
   // is called.
   virtual bool IsContainerStartedSignalConnected() = 0;
+
+  // IsContainerShutdownSignalConnected must return true before StartContainer
+  // is called.
+  virtual bool IsContainerShutdownSignalConnected() = 0;
 
   // Launches an application inside a running Container.
   // |callback| is called after the method call finishes.

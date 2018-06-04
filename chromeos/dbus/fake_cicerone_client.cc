@@ -23,6 +23,10 @@ bool FakeCiceroneClient::IsContainerStartedSignalConnected() {
   return is_container_started_signal_connected_;
 }
 
+bool FakeCiceroneClient::IsContainerShutdownSignalConnected() {
+  return is_container_shutdown_signal_connected_;
+}
+
 void FakeCiceroneClient::LaunchContainerApplication(
     const vm_tools::cicerone::LaunchContainerApplicationRequest& request,
     DBusMethodCallback<vm_tools::cicerone::LaunchContainerApplicationResponse>

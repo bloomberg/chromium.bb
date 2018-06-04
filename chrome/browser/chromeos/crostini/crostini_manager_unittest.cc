@@ -329,6 +329,15 @@ TEST_F(CrostiniManagerTest, StartContainerSignalCiceroneNotConnectedError) {
   run_loop()->Run();
 }
 
+TEST_F(CrostiniManagerTest, ShutdownContainerSignalCiceroneNotConnectedError) {
+  fake_cicerone_client_->set_container_shutdown_signal_connected(false);
+  CrostiniManager::GetInstance()->StartContainer(
+      kVmName, kContainerName, kContainerUserName, kCryptohomeId,
+      base::BindOnce(&CrostiniManagerTest::StartContainerClientErrorCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()));
+  run_loop()->Run();
+}
+
 TEST_F(CrostiniManagerTest, StartContainerSuccess) {
   CrostiniManager::GetInstance()->StartContainer(
       kVmName, kContainerName, kContainerUserName, kCryptohomeId,

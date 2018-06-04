@@ -75,6 +75,8 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   using StopVmCallback = ConciergeClientCallback;
   // The type of the callback for CrostiniManager::StartContainer.
   using StartContainerCallback = ConciergeClientCallback;
+  // The type of the callback for CrostiniManager::ShutdownContainer.
+  using ShutdownContainerCallback = base::OnceClosure;
   // The type of the callback for CrostiniManager::LaunchContainerApplication.
   using LaunchContainerApplicationCallback = ConciergeClientCallback;
   // The type of the callback for CrostiniManager::GetContainerAppIcons.
@@ -211,8 +213,15 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   void AbortRestartCrostini(Profile* profile, RestartId id);
 
   // Can be called for testing to skip restart.
-  void set_skip_restart_for_testing() { skip_restart_for_testing_ = true; };
+  void set_skip_restart_for_testing() { skip_restart_for_testing_ = true; }
   bool skip_restart_for_testing() { return skip_restart_for_testing_; }
+
+  // Adds a callback to receive notification of container shutdown.
+  void AddShutdownContainerCallback(
+      Profile* profile,
+      std::string vm_name,
+      std::string container_name,
+      ShutdownContainerCallback shutdown_callback);
 
   // ConciergeClient::Observer:
   void OnContainerStarted(
@@ -223,6 +232,8 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // CiceroneClient::Observer:
   void OnContainerStarted(
       const vm_tools::cicerone::ContainerStartedSignal& signal) override;
+  void OnContainerShutdown(
+      const vm_tools::cicerone::ContainerShutdownSignal& signal) override;
 
   void RemoveCrostini(Profile* profile,
                       std::string vm_name,
@@ -310,6 +321,12 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
       start_container_callbacks_;
 
   bool skip_restart_for_testing_ = false;
+
+  // Pending ShutdownContainer callbacks are keyed by <owner_id, vm_name,
+  // container_name> string tuples.
+  std::multimap<std::tuple<std::string, std::string, std::string>,
+                ShutdownContainerCallback>
+      shutdown_container_callbacks_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

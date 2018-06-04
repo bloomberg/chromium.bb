@@ -25,6 +25,10 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
   // is called.
   bool IsContainerStartedSignalConnected() override;
 
+  // IsContainerShutdownSignalConnected must return true before StartContainer
+  // is called.
+  bool IsContainerShutdownSignalConnected() override;
+
   // Fake version of the method that launches an application inside a running
   // Container. |callback| is called after the method call finishes.
   void LaunchContainerApplication(
@@ -49,11 +53,17 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
     is_container_started_signal_connected_ = connected;
   }
 
+  // Set ContainerShutdownSignalConnected state
+  void set_container_shutdown_signal_connected(bool connected) {
+    is_container_shutdown_signal_connected_ = connected;
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {}
 
  private:
   bool is_container_started_signal_connected_ = true;
+  bool is_container_shutdown_signal_connected_ = true;
   base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCiceroneClient);
