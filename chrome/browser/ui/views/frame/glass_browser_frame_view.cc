@@ -39,6 +39,8 @@
 #include "ui/views/win/hwnd_util.h"
 #include "ui/views/window/client_view.h"
 
+using MD = ui::MaterialDesignController;
+
 HICON GlassBrowserFrameView::throbber_icons_[
     GlassBrowserFrameView::kThrobberIconCount];
 
@@ -251,17 +253,19 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   }
 
   int frame_component = frame()->client_view()->NonClientHitTest(point);
+  const int client_border_thickness = ClientBorderThickness(false);
 
   // See if we're in the sysmenu region.  We still have to check the tabstrip
   // first so that clicks in a tab don't get treated as sysmenu clicks.
-  int client_border_thickness = ClientBorderThickness(false);
-  gfx::Rect sys_menu_region(
-      client_border_thickness,
-      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYSIZEFRAME),
-      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXSMICON),
-      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYSMICON));
-  if (sys_menu_region.Contains(point))
-    return (frame_component == HTCLIENT) ? HTCLIENT : HTSYSMENU;
+  if (!MD::IsRefreshUi() && frame_component != HTCLIENT) {
+    gfx::Rect sys_menu_region(
+        client_border_thickness,
+        display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYSIZEFRAME),
+        display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXSMICON),
+        display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYSMICON));
+    if (sys_menu_region.Contains(point))
+      return HTSYSMENU;
+  }
 
   if (frame_component != HTNOWHERE)
     return frame_component;
@@ -548,7 +552,6 @@ int GlassBrowserFrameView::TabStripCaptionSpacing() const {
   // For Material Refresh, the end of the tabstrip contains empty space to
   // ensure the window remains draggable, which is sufficient padding to the
   // other tabstrip contents.
-  using MD = ui::MaterialDesignController;
   if (MD::IsRefreshUi())
     return 0;
 
