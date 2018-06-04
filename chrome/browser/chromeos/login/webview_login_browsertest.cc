@@ -1000,7 +1000,8 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
 };
 
 // Disabled fails on msan: https://crbug.com/849128.
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(MEMORY_SANITIZER)
 #define MAYBE_ProxyAuthTransfer DISABLED_ProxyAuthTransfer
 #else
 #define MAYBE_ProxyAuthTransfer ProxyAuthTransfer
