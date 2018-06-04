@@ -880,9 +880,10 @@ bool operator==(const StackSamplingProfiler::Frame &a,
 
 bool operator<(const StackSamplingProfiler::Frame &a,
                const StackSamplingProfiler::Frame &b) {
-  return (a.module_index < b.module_index) ||
-      (a.module_index == b.module_index &&
-       a.instruction_pointer < b.instruction_pointer);
+  if (a.module_index != b.module_index)
+    return a.module_index < b.module_index;
+
+  return a.instruction_pointer < b.instruction_pointer;
 }
 
 }  // namespace base
