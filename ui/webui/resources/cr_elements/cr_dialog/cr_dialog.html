@@ -149,7 +149,8 @@
         @apply --cr-dialog-close-ripple;
       }
     </style>
-    <dialog id="dialog">
+    <dialog id="dialog" on-close="onNativeDialogClose_"
+        on-cancel="onNativeDialogCancel_">
       <!-- This wrapper is necessary, such that the "pulse" animation is not
         erroneously played when the user clicks on the outer-most scrollbar. -->
       <div id="content-wrapper">

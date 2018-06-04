@@ -88,9 +88,6 @@ Polymer({
 
     if (!this.ignoreEnterKey)
       this.addEventListener('keypress', this.onKeypress_.bind(this));
-
-    if (this.noCancel)
-      this.addEventListener('cancel', this.onCancel_.bind(this));
   },
 
   /** @override */
@@ -193,6 +190,35 @@ Polymer({
   },
 
   /**
+   * @param {!Event} e
+   * @private
+   */
+  onNativeDialogClose_: function(e) {
+    // TODO(dpapad): This is necessary to make the code work both for Polymer 1
+    // and Polymer 2. Remove once migration to Polymer 2 is completed.
+    e.stopPropagation();
+
+    // Catch and re-fire the 'close' event such that it bubbles across Shadow
+    // DOM v1.
+    this.fire('close');
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onNativeDialogCancel_: function(e) {
+    if (this.noCancel) {
+      e.preventDefault();
+      return;
+    }
+
+    // Catch and re-fire the native 'cancel' event such that it bubbles across
+    // Shadow DOM v1.
+    this.fire('cancel');
+  },
+
+  /**
    * Expose the inner native <dialog> for some rare cases where it needs to be
    * directly accessed (for example to programmatically setheight/width, which
    * would not work on the wrapper).
@@ -228,15 +254,6 @@ Polymer({
       actionButton.click();
       e.preventDefault();
     }
-  },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onCancel_: function(e) {
-    if (this.noCancel)
-      e.preventDefault();
   },
 
   /** @param {!PointerEvent} e */
