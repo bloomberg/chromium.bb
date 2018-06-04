@@ -28,6 +28,30 @@ const base::Feature kBestEffortPriorityForBackgroundPages{
     "BlinkSchedulerBestEffortPriorityForBackgroundPages",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables setting the priority of sub-frame task queues to low
+// priority during the loading use case.
+const base::Feature kLowPriorityForSubFrameDuringLoading{
+    "BlinkSchedulerLowPriorityForSubFrameDuringLoading",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables setting the priority of throttleable task queues to
+// low priority during the loading use case.
+const base::Feature kLowPriorityForThrottleableTaskDuringLoading{
+    "BlinkSchedulerLowPriorityForThrottleableTaskDuringLoading",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables setting the priority of sub-frame throttleable
+// task queues to low priority during the loading use case.
+const base::Feature kLowPriorityForSubFrameThrottleableTaskDuringLoading{
+    "BlinkSchedulerLowPriorityForSubFrameThrottleableTaskDuringLoading",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables setting the priority of hidden frame task queues to
+// low priority during the loading use case.
+const base::Feature kLowPriorityForHiddenFrameDuringLoading{
+    "BlinkSchedulerLowPriorityForHiddenFrameDuringLoading",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace scheduler
 }  // namespace blink
 

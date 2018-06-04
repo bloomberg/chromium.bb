@@ -238,6 +238,7 @@ void FrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
   UMA_HISTOGRAM_BOOLEAN("RendererScheduler.IPC.FrameVisibility", frame_visible);
   frame_visible_ = frame_visible;
   UpdatePolicy();
+  UpdateQueuePriorities();
 }
 
 bool FrameSchedulerImpl::IsFrameVisible() const {
@@ -709,8 +710,40 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
       return TaskQueue::QueuePriority::kBestEffortPriority;
   }
 
-  // TODO(farahcharab) Add further logic depending on frame origin/type,
-  // |use_case|, and which finch experiment is enabled.
+  if (main_thread_scheduler_->IsLoading()) {
+    // Low priority feature enabled for hidden frame during the loading use
+    // case.
+    if (base::FeatureList::IsEnabled(kLowPriorityForHiddenFrameDuringLoading) &&
+        !IsFrameVisible())
+      return TaskQueue::QueuePriority::kLowPriority;
+
+    bool is_subframe = GetFrameType() == FrameScheduler::FrameType::kSubframe;
+    bool is_throttleable_task_queue =
+        task_queue->queue_type() ==
+        MainThreadTaskQueue::QueueType::kFrameThrottleable;
+
+    // Low priority feature enabled for sub-frame during the loading use case.
+    if (base::FeatureList::IsEnabled(kLowPriorityForSubFrameDuringLoading) &&
+        is_subframe)
+      return TaskQueue::QueuePriority::kLowPriority;
+
+    // Low priority feature enabled for sub-frame throttleable task queues
+    // during the loading use case.
+    if (base::FeatureList::IsEnabled(
+            kLowPriorityForSubFrameThrottleableTaskDuringLoading) &&
+        is_throttleable_task_queue)
+      return TaskQueue::QueuePriority::kLowPriority;
+
+    // Low priority feature enabled for throttleable task queues
+    // during the loading use case.
+    if (base::FeatureList::IsEnabled(
+            kLowPriorityForThrottleableTaskDuringLoading) &&
+        is_throttleable_task_queue)
+      return TaskQueue::QueuePriority::kLowPriority;
+  }
+
+  // TODO(farahcharab) Change highest priority to high priority for frame
+  // loading control.
   return task_queue->queue_type() ==
                  MainThreadTaskQueue::QueueType::kFrameLoadingControl
              ? TaskQueue::QueuePriority::kHighestPriority
