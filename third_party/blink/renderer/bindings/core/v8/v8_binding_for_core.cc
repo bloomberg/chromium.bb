@@ -412,13 +412,7 @@ int64_t ToInt64Slow(v8::Isolate* isolate,
                         "long long", exception_state);
   }
 
-  if (std::isnan(number_value) || std::isinf(number_value))
-    return 0;
-
-  // NaNs and +/-Infinity should be 0, otherwise modulo 2^64.
-  unsigned long long integer;
-  doubleToInteger(number_value, integer);
-  return integer;
+  return DoubleToInteger(number_value);
 }
 
 uint64_t ToUInt64Slow(v8::Isolate* isolate,
@@ -462,13 +456,7 @@ uint64_t ToUInt64Slow(v8::Isolate* isolate,
   if (configuration == kClamp)
     return clampTo<uint64_t>(number_value);
 
-  if (std::isinf(number_value))
-    return 0;
-
-  // NaNs and +/-Infinity should be 0, otherwise modulo 2^64.
-  unsigned long long integer;
-  doubleToInteger(number_value, integer);
-  return integer;
+  return DoubleToInteger(number_value);
 }
 
 float ToRestrictedFloat(v8::Isolate* isolate,

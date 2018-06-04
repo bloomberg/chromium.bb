@@ -174,7 +174,7 @@ bool DictionaryHelper::Get(const Dictionary& dictionary,
   double double_value;
   if (!v8_value->NumberValue(dictionary.V8Context()).To(&double_value))
     return false;
-  doubleToInteger(double_value, value);
+  value = DoubleToInteger(double_value);
   return true;
 }
 
