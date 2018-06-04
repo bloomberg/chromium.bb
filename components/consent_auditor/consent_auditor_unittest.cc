@@ -73,25 +73,28 @@ class ConsentAuditorTest : public testing::Test {
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     user_event_service_ = std::make_unique<syncer::FakeUserEventService>();
     ConsentAuditor::RegisterProfilePrefs(pref_service_->registry());
-    consent_auditor_ = std::make_unique<ConsentAuditor>(
-        pref_service_.get(), user_event_service_.get(), kCurrentAppVersion,
-        kCurrentAppLocale);
+    app_version_ = kCurrentAppVersion;
+    app_locale_ = kCurrentAppLocale;
+    BuildConsentAuditor();
   }
 
-  void UpdateAppVersionAndLocale(const std::string& new_product_version,
-                                 const std::string& new_app_locale) {
-    // We'll have to recreate |consent_auditor| in order to update the version
-    // and locale. This is not a problem, as in reality we'd have to restart
-    // Chrome to update both, let alone just recreate this class.
+  void BuildConsentAuditor() {
     consent_auditor_ = std::make_unique<ConsentAuditor>(
-        pref_service_.get(), user_event_service_.get(), new_product_version,
-        new_app_locale);
+        pref_service_.get(), user_event_service_.get(), app_version_,
+        app_locale_);
+  }
+
+  // These have no effect before |BuildConsentAuditor|.
+  void SetAppVersion(const std::string& new_app_version) {
+    app_version_ = new_app_version;
+  }
+
+  void SetAppLocale(const std::string& new_app_locale) {
+    app_locale_ = new_app_locale;
   }
 
   ConsentAuditor* consent_auditor() { return consent_auditor_.get(); }
-
   PrefService* pref_service() const { return pref_service_.get(); }
-
   syncer::FakeUserEventService* user_event_service() {
     return user_event_service_.get();
   }
@@ -100,9 +103,15 @@ class ConsentAuditorTest : public testing::Test {
   std::unique_ptr<ConsentAuditor> consent_auditor_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<syncer::FakeUserEventService> user_event_service_;
+  std::string app_version_;
+  std::string app_locale_;
 };
 
 TEST_F(ConsentAuditorTest, LocalConsentPrefRepresentation) {
+  SetAppVersion(kCurrentAppVersion);
+  SetAppLocale(kCurrentAppLocale);
+  BuildConsentAuditor();
+
   // No consents are written at first.
   EXPECT_FALSE(pref_service()->HasPrefPath(prefs::kLocalConsentsDictionary));
 
@@ -149,7 +158,12 @@ TEST_F(ConsentAuditorTest, LocalConsentPrefRepresentation) {
   const std::string kFeature2NewConfirmation = "Yes again.";
   const std::string kFeature2NewAppVersion = "5.6.7.8";
   const std::string kFeature2NewAppLocale = "de";
-  UpdateAppVersionAndLocale(kFeature2NewAppVersion, kFeature2NewAppLocale);
+  SetAppVersion(kFeature2NewAppVersion);
+  SetAppLocale(kFeature2NewAppLocale);
+  // We rebuild consent auditor to emulate restarting Chrome. This is the only
+  // way to change app version or app locale.
+  BuildConsentAuditor();
+
   consent_auditor()->RecordLocalConsent("feature2", kFeature2NewDescription,
                                         kFeature2NewConfirmation);
   LoadEntriesFromLocalConsentRecord(consents, "feature2", &description,
@@ -180,6 +194,10 @@ TEST_F(ConsentAuditorTest, RecordingDisabled) {
 }
 
 TEST_F(ConsentAuditorTest, RecordGaiaConsent) {
+  SetAppVersion(kCurrentAppVersion);
+  SetAppLocale(kCurrentAppLocale);
+  BuildConsentAuditor();
+
   std::vector<int> kDescriptionMessageIds = {12, 37, 42};
   int kConfirmationMessageId = 47;
   base::Time t1 = base::Time::Now();
