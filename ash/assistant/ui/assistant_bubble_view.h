@@ -5,6 +5,9 @@
 #ifndef ASH_ASSISTANT_UI_ASSISTANT_BUBBLE_VIEW_H_
 #define ASH_ASSISTANT_UI_ASSISTANT_BUBBLE_VIEW_H_
 
+#include <memory>
+
+#include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "base/macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
@@ -12,26 +15,33 @@ namespace ash {
 
 class AssistantController;
 class AssistantMainView;
+class AssistantMiniView;
 
-class AssistantBubbleView : public views::BubbleDialogDelegateView {
+class AssistantBubbleView : public views::BubbleDialogDelegateView,
+                            public AssistantInteractionModelObserver {
  public:
   explicit AssistantBubbleView(AssistantController* assistant_controller);
   ~AssistantBubbleView() override;
 
   // views::BubbleDialogDelegateView:
-  void ChildPreferredSizeChanged(views::View* child) override;
   int GetDialogButtons() const override;
+  void ChildPreferredSizeChanged(views::View* child) override;
+  void PreferredSizeChanged() override;
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override;
   void Init() override;
   void RequestFocus() override;
+
+  // AssistantInteractionModelObserver:
+  void OnInputModalityChanged(InputModality input_modality) override;
 
  private:
   void SetAnchor();
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
-  AssistantMainView* assistant_main_view_;  // Owned by view hierarchy.
+  std::unique_ptr<AssistantMainView> assistant_main_view_;
+  std::unique_ptr<AssistantMiniView> assistant_mini_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantBubbleView);
 };

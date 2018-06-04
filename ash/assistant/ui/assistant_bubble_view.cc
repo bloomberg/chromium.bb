@@ -4,10 +4,9 @@
 
 #include "ash/assistant/ui/assistant_bubble_view.h"
 
-#include <memory>
-
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/ui/assistant_main_view.h"
+#include "ash/assistant/ui/assistant_mini_view.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -46,12 +45,25 @@ AssistantBubbleView::AssistantBubbleView(
   GetBubbleFrameView()->bubble_border()->SetCornerRadius(kCornerRadiusDip);
   SetAlignment(views::BubbleBorder::BubbleAlignment::ALIGN_EDGE_TO_ANCHOR_EDGE);
   SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
+
+  // The Assistant controller indirectly owns the view hierarchy to which
+  // AssistantBubbleView belongs so is guaranteed to outlive it.
+  assistant_controller_->AddInteractionModelObserver(this);
 }
 
-AssistantBubbleView::~AssistantBubbleView() = default;
+AssistantBubbleView::~AssistantBubbleView() {
+  assistant_controller_->RemoveInteractionModelObserver(this);
+}
 
 void AssistantBubbleView::ChildPreferredSizeChanged(views::View* child) {
-  SizeToContents();
+  PreferredSizeChanged();
+}
+
+void AssistantBubbleView::PreferredSizeChanged() {
+  views::View::PreferredSizeChanged();
+
+  if (GetWidget())
+    SizeToContents();
 }
 
 int AssistantBubbleView::GetDialogButtons() const {
@@ -70,8 +82,20 @@ void AssistantBubbleView::OnBeforeBubbleWidgetInit(
 void AssistantBubbleView::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  assistant_main_view_ = new AssistantMainView(assistant_controller_);
-  AddChildView(assistant_main_view_);
+  // Main view.
+  assistant_main_view_ =
+      std::make_unique<AssistantMainView>(assistant_controller_);
+  assistant_main_view_->set_owned_by_client();
+
+  // Mini view.
+  assistant_mini_view_ = std::make_unique<AssistantMiniView>();
+  assistant_mini_view_->set_owned_by_client();
+
+  // Update the view state based on the current input modality.
+  OnInputModalityChanged(
+      assistant_controller_->interaction_model()->input_modality());
+
+  // TODO(dmblack): Add support for AssistantSettingsView.
 }
 
 void AssistantBubbleView::RequestFocus() {
@@ -91,6 +115,24 @@ void AssistantBubbleView::SetAnchor() {
                                work_area.width(), 0);
 
   SetAnchorRect(anchor);
+}
+
+void AssistantBubbleView::OnInputModalityChanged(InputModality input_modality) {
+  if (input_modality == InputModality::kStylus) {
+    // When switching to stylus input modality, only the AssistantMiniView
+    // should be visible.
+    RemoveAllChildViews(/*delete_children=*/false);
+    AddChildView(assistant_mini_view_.get());
+    PreferredSizeChanged();
+  } else if (!assistant_main_view_->parent()) {
+    // When switching to a non-stylus input modality, only the AssistantMainView
+    // should be visible. Note that because there are multiple non-stylus input
+    // modalities, this is only necessary if we are not already showing the
+    // AssistantMainView.
+    RemoveAllChildViews(/*delete_children=*/false);
+    AddChildView(assistant_main_view_.get());
+    PreferredSizeChanged();
+  }
 }
 
 }  // namespace ash
