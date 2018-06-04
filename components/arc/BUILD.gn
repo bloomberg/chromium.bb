@@ -14,6 +14,8 @@ static_library("arc") {
     "clipboard/arc_clipboard_bridge.h",
     "crash_collector/arc_crash_collector_bridge.cc",
     "crash_collector/arc_crash_collector_bridge.h",
+    "disk_quota/arc_disk_quota_bridge.cc",
+    "disk_quota/arc_disk_quota_bridge.h",
     "ime/arc_ime_bridge.h",
     "ime/arc_ime_bridge_impl.cc",
     "ime/arc_ime_bridge_impl.h",

@@ -94,6 +94,11 @@ void ArcBridgeHostImpl::OnCrashCollectorInstanceReady(
                   std::move(crash_collector_ptr));
 }
 
+void ArcBridgeHostImpl::OnDiskQuotaInstanceReady(
+    mojom::DiskQuotaInstancePtr disk_quota_ptr) {
+  OnInstanceReady(arc_bridge_service_->disk_quota(), std::move(disk_quota_ptr));
+}
+
 void ArcBridgeHostImpl::OnEnterpriseReportingInstanceReady(
     mojom::EnterpriseReportingInstancePtr enterprise_reporting_ptr) {
   OnInstanceReady(arc_bridge_service_->enterprise_reporting(),
