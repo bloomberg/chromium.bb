@@ -64,15 +64,15 @@ print_widechars(widechar *buffer, int length) {
  * print diagnostics in case where the translation is not as
  * expected */
 
- int
+int
 reduced_backtrans_check(const char *tableList, const char *input, const char *expected,
 		optional_test_params in) {
-/*
-Performs a reduced check using back-translation with no additional params.
-called from check_base() if direction == 2 (both forwards and backwards).
-*/
+	/*
+	Performs a reduced check using back-translation with no additional params.
+	called from check_base() if direction == 2 (both forwards and backwards).
+	*/
 
-		widechar *inbuf, *outbuf, *expectedbuf;
+	widechar *inbuf, *outbuf, *expectedbuf;
 	int inlen = strlen(input);
 	int outlen = inlen * 10;
 	int expectedlen = strlen(expected);
@@ -87,7 +87,8 @@ called from check_base() if direction == 2 (both forwards and backwards).
 		retval = 1;
 		goto fail;
 	}
-	if (!lou_backTranslateString(tableList, inbuf, &inlen, outbuf, &outlen, NULL, NULL, in.mode)) {
+	if (!lou_backTranslateString(
+				tableList, inbuf, &inlen, outbuf, &outlen, NULL, NULL, in.mode)) {
 		fprintf(stderr, "Translation failed.\n");
 		retval = 1;
 		goto fail;
@@ -143,9 +144,8 @@ fail:
 	free(expectedbuf);
 
 	return retval;
-
-		}
- int
+}
+int
 check_base(const char *tableList, const char *input, const char *expected,
 		optional_test_params in) {
 	widechar *inbuf, *outbuf, *expectedbuf;
@@ -186,11 +186,11 @@ check_base(const char *tableList, const char *input, const char *expected,
 	if (in.expected_outputPos) {
 		outputPos = malloc(sizeof(int) * inlen);
 	}
-	if (in.direction == 0 || in.direction == 2) { // perform full forward test
+	if (in.direction == 0 || in.direction == 2) {  // perform full forward test
 		funcStatus = lou_translate(tableList, inbuf, &inlen, outbuf, &outlen, typeformbuf,
 				NULL, outputPos, inputPos, &cursorPos, in.mode);
 	}
-	if (in.direction == 1) { //perform full backward test
+	if (in.direction == 1) {  // perform full backward test
 		funcStatus = lou_backTranslate(tableList, inbuf, &inlen, outbuf, &outlen,
 				typeformbuf, NULL, outputPos, inputPos, &cursorPos, in.mode);
 	}
@@ -286,8 +286,8 @@ check_base(const char *tableList, const char *input, const char *expected,
 		retval = 1;
 	}
 
-	if (in.direction == 2) // Additional reduced backward test
-			retval |= reduced_backtrans_check(tableList, expected, input, in);
+	if (in.direction == 2)  // Additional reduced backward test
+		retval |= reduced_backtrans_check(tableList, expected, input, in);
 
 fail:
 	free(inbuf);

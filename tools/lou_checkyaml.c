@@ -798,7 +798,7 @@ main(int argc, char *argv[]) {
 
 		if (event.type != YAML_SCALAR_EVENT) yaml_error(YAML_SCALAR_EVENT, &event);
 
-		int haveRunTests=0;
+		int haveRunTests = 0;
 		while (1) {
 			int direction = DIRECTION_DEFAULT;
 			int hyphenation = HYPHENATION_DEFAULT;
@@ -821,9 +821,8 @@ main(int argc, char *argv[]) {
 				haveRunTests = 1;
 			} else {
 				if (haveRunTests) {
-
 					break;
-				} else{
+				} else {
 					simple_error("flags or tests expected", &parser, &event);
 				}
 			}
@@ -831,12 +830,11 @@ main(int argc, char *argv[]) {
 				error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 						"Expected table or %s (actual %s)",
 						event_names[YAML_MAPPING_END_EVENT], event_names[event.type]);
-		if (event.type != YAML_SCALAR_EVENT) break;
+			if (event.type != YAML_SCALAR_EVENT) break;
 		}
 
 		char **p = tables;
 		while (*p) free(*(p++));
-
 	}
 	if (event.type != YAML_MAPPING_END_EVENT) yaml_error(YAML_MAPPING_END_EVENT, &event);
 	yaml_event_delete(&event);
