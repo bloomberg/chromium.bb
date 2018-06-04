@@ -41,9 +41,11 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_main_thread_factory.h"
 #include "content/browser/gpu/shader_cache_factory.h"
+#include "content/browser/memory/memory_coordinator_impl.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/in_process_child_thread_params.h"
+#include "content/common/memory_coordinator.mojom.h"
 #include "content/common/service_manager/child_connection.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -472,11 +474,18 @@ FontRenderParamsOnIO& GetFontRenderParamsOnIO() {
   return *instance;
 }
 
+void CreateMemoryCoordinatorHandle(
+    int gpu_process_id,
+    mojom::MemoryCoordinatorHandleRequest request) {
+  MemoryCoordinatorImpl::GetInstance()->CreateHandle(gpu_process_id,
+                                                     std::move(request));
+}
+
 }  // anonymous namespace
 
 class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
  public:
-  ConnectionFilterImpl() {
+  explicit ConnectionFilterImpl(int gpu_process_id) {
     auto task_runner = BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
     registry_.AddInterface(base::Bind(&FieldTrialRecorder::Create),
                            task_runner);
@@ -485,6 +494,10 @@ class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
         base::Bind(&BindJavaInterface<media::mojom::AndroidOverlayProvider>),
         task_runner);
 #endif
+
+    registry_.AddInterface(
+        base::BindRepeating(&CreateMemoryCoordinatorHandle, gpu_process_id),
+        task_runner);
   }
 
  private:
@@ -833,7 +846,7 @@ bool GpuProcessHost::Init() {
   // May be null during test execution.
   if (ServiceManagerConnection::GetForProcess()) {
     ServiceManagerConnection::GetForProcess()->AddConnectionFilter(
-        std::make_unique<ConnectionFilterImpl>());
+        std::make_unique<ConnectionFilterImpl>(process_->GetData().id));
   }
 
   process_->GetHost()->CreateChannelMojo();
@@ -1564,6 +1577,10 @@ void GpuProcessHost::CreateChannelCache(int32_t client_id) {
                                                weak_ptr_factory_.GetWeakPtr()));
 
   client_id_to_shader_cache_[client_id] = cache;
+}
+
+int GpuProcessHost::GetIDForTesting() const {
+  return process_->GetData().id;
 }
 
 }  // namespace content
