@@ -6,8 +6,8 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
