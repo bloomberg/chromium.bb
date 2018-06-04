@@ -43,11 +43,18 @@ UserAvatarButton::UserAvatarButton(views::ButtonListener* listener)
   SetFocusForPlatform();
 }
 
-}  // namespace
+class TopShortcutButtonContainer : public views::View {
+ public:
+  TopShortcutButtonContainer();
+  ~TopShortcutButtonContainer() override;
 
-TopShortcutButtonContainer::TopShortcutButtonContainer() = default;
+  // views::View:
+  void Layout() override;
+  gfx::Size CalculatePreferredSize() const override;
 
-TopShortcutButtonContainer::~TopShortcutButtonContainer() = default;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TopShortcutButtonContainer);
+};
 
 // Buttons are equally spaced by the default value, but the gap will be
 // narrowed evenly when the parent view is not large enough.
@@ -71,17 +78,6 @@ void TopShortcutButtonContainer::Layout() {
                                   (child_area.width() - total_horizontal_size) /
                                       (num_visible - 1)));
 
-  int sign_out_button_width = 0;
-  if (sign_out_button_ && sign_out_button_->visible()) {
-    // resize the sign-out button
-    int remainder = child_area.width() -
-                    (num_visible - 1) * kUnifiedTopShortcutButtonMinSpacing -
-                    total_horizontal_size +
-                    sign_out_button_->GetPreferredSize().width();
-    sign_out_button_width = std::max(
-        0, std::min(sign_out_button_->GetPreferredSize().width(), remainder));
-  }
-
   int horizontal_position = child_area.x();
   for (int i = 0; i < child_count(); i++) {
     views::View* child = child_at(i);
@@ -89,11 +85,9 @@ void TopShortcutButtonContainer::Layout() {
       continue;
     gfx::Rect bounds(child_area);
     bounds.set_x(horizontal_position);
-    int width = (child == sign_out_button_) ? sign_out_button_width
-                                            : child->GetPreferredSize().width();
-    bounds.set_width(width);
+    bounds.set_width(child->GetPreferredSize().width());
     child->SetBoundsRect(bounds);
-    horizontal_position += width + spacing;
+    horizontal_position += child->GetPreferredSize().width() + spacing;
   }
 }
 
@@ -120,11 +114,11 @@ gfx::Size TopShortcutButtonContainer::CalculatePreferredSize() const {
   return gfx::Size(width, max_height);
 }
 
-void TopShortcutButtonContainer::AddSignOutButton(
-    views::View* sign_out_button) {
-  AddChildView(sign_out_button);
-  sign_out_button_ = sign_out_button;
-}
+TopShortcutButtonContainer::~TopShortcutButtonContainer() = default;
+
+TopShortcutButtonContainer::TopShortcutButtonContainer() = default;
+
+}  // namespace
 
 TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
     : controller_(controller), container_(new TopShortcutButtonContainer()) {
@@ -134,7 +128,6 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
       views::BoxLayout::kHorizontal, kUnifiedTopShortcutPadding,
       kUnifiedTopShortcutSpacing));
   layout->set_cross_axis_alignment(views::BoxLayout::CROSS_AXIS_ALIGNMENT_END);
-  container_ = new TopShortcutButtonContainer();
   AddChildView(container_);
 
   if (Shell::Get()->session_controller()->login_status() !=
@@ -149,7 +142,7 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
   const bool can_show_web_ui = TrayPopupUtils::CanOpenWebUISettings();
 
   sign_out_button_ = new SignOutButton(this);
-  container_->AddSignOutButton(sign_out_button_);
+  container_->AddChildView(sign_out_button_);
 
   lock_button_ = new TopShortcutButton(this, kSystemMenuLockIcon,
                                        IDS_ASH_STATUS_TRAY_LOCK);
