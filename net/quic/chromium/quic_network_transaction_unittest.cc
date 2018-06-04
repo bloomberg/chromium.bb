@@ -2107,8 +2107,10 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -2116,7 +2118,7 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -2207,8 +2209,10 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
@@ -2222,7 +2226,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -2321,8 +2325,10 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
@@ -2336,7 +2342,7 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -2440,8 +2446,10 @@ TEST_P(QuicNetworkTransactionTest,
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
@@ -2456,7 +2464,7 @@ TEST_P(QuicNetworkTransactionTest,
   auto trans = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
                                                         session_.get());
   TestCompletionCallback callback;
-  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans->Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -2515,8 +2523,10 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
 
@@ -2524,7 +2534,7 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -2636,8 +2646,10 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
@@ -2651,7 +2663,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -2768,8 +2780,10 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
@@ -2783,7 +2797,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -2902,8 +2916,10 @@ TEST_P(QuicNetworkTransactionTest,
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
@@ -2917,7 +2933,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3043,8 +3059,10 @@ TEST_P(QuicNetworkTransactionTest,
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
@@ -3058,7 +3076,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3173,8 +3191,10 @@ TEST_P(QuicNetworkTransactionTest,
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
@@ -3189,7 +3209,7 @@ TEST_P(QuicNetworkTransactionTest,
   auto trans = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
                                                         session_.get());
   TestCompletionCallback callback;
-  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans->Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3265,8 +3285,10 @@ TEST_P(QuicNetworkTransactionTest,
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
 
@@ -3274,7 +3296,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -3361,8 +3383,10 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
 
@@ -3370,7 +3394,7 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Pump the message loop to get the request started.
@@ -4326,8 +4350,10 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
@@ -4362,8 +4388,10 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   request_.url = GURL("http://mail.example.org/");
   CreateSession();
@@ -4406,8 +4434,10 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -4415,7 +4445,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -4458,8 +4488,10 @@ TEST_P(QuicNetworkTransactionTest,
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -4467,7 +4499,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -4522,8 +4554,10 @@ TEST_P(QuicNetworkTransactionTest,
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -4531,7 +4565,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -4580,8 +4614,10 @@ TEST_P(QuicNetworkTransactionTest, RstSteamErrorHandling) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -4589,7 +4625,7 @@ TEST_P(QuicNetworkTransactionTest, RstSteamErrorHandling) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -4642,8 +4678,10 @@ TEST_P(QuicNetworkTransactionTest, RstSteamBeforeHeaders) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -4651,7 +4689,7 @@ TEST_P(QuicNetworkTransactionTest, RstSteamBeforeHeaders) {
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -5012,8 +5050,10 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
@@ -5088,8 +5128,10 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnectProxy) {
   HostResolver::RequestInfo info(HostPortPair("myproxy.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
-                         &request, net_log_.bound());
+  int rv =
+      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                             CompletionCallback(), &request, net_log_.bound());
+  EXPECT_THAT(rv, IsOk());
 
   CreateSession();
   SendRequestAndExpectHttpResponseFromProxy("hello world", true, 443);

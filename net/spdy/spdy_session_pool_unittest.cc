@@ -355,7 +355,6 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   };
 
   session_deps_.host_resolver->set_synchronous_mode(true);
-  std::unique_ptr<HostResolver::Request> request[arraysize(test_hosts)];
   for (size_t i = 0; i < arraysize(test_hosts); i++) {
     session_deps_.host_resolver->rules()->AddIPLiteralRule(
         test_hosts[i].name, test_hosts[i].iplist, std::string());
@@ -363,9 +362,11 @@ void SpdySessionPoolTest::RunIPPoolingTest(
     // This test requires that the HostResolver cache be populated.  Normal
     // code would have done this already, but we do it manually.
     HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
-    session_deps_.host_resolver->Resolve(
+    std::unique_ptr<HostResolver::Request> request;
+    int rv = session_deps_.host_resolver->Resolve(
         info, DEFAULT_PRIORITY, &test_hosts[i].addresses, CompletionCallback(),
-        &request[i], NetLogWithSource());
+        &request, NetLogWithSource());
+    EXPECT_THAT(rv, IsOk());
 
     // Setup a SpdySessionKey.
     test_hosts[i].key = SpdySessionKey(
@@ -538,7 +539,6 @@ TEST_F(SpdySessionPoolTest, IPPoolingNetLog) {
     std::string iplist;
     SpdySessionKey key;
     AddressList addresses;
-    std::unique_ptr<HostResolver::Request> request;
   } test_hosts[] = {
       {"www.example.org", "192.168.0.1"}, {"mail.example.org", "192.168.0.1"},
   };
@@ -550,9 +550,11 @@ TEST_F(SpdySessionPoolTest, IPPoolingNetLog) {
         test_hosts[i].name, test_hosts[i].iplist, std::string());
 
     HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
-    session_deps_.host_resolver->Resolve(
+    std::unique_ptr<HostResolver::Request> request;
+    int rv = session_deps_.host_resolver->Resolve(
         info, DEFAULT_PRIORITY, &test_hosts[i].addresses, CompletionCallback(),
-        &test_hosts[i].request, NetLogWithSource());
+        &request, NetLogWithSource());
+    EXPECT_THAT(rv, IsOk());
 
     test_hosts[i].key = SpdySessionKey(
         HostPortPair(test_hosts[i].name, kTestPort), ProxyServer::Direct(),
@@ -618,7 +620,6 @@ TEST_F(SpdySessionPoolTest, IPPoolingDisabled) {
     std::string iplist;
     SpdySessionKey key;
     AddressList addresses;
-    std::unique_ptr<HostResolver::Request> request;
   } test_hosts[] = {
       {"www.example.org", "192.168.0.1"}, {"mail.example.org", "192.168.0.1"},
   };
@@ -630,9 +631,11 @@ TEST_F(SpdySessionPoolTest, IPPoolingDisabled) {
         test_hosts[i].name, test_hosts[i].iplist, std::string());
 
     HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
-    session_deps_.host_resolver->Resolve(
+    std::unique_ptr<HostResolver::Request> request;
+    int rv = session_deps_.host_resolver->Resolve(
         info, DEFAULT_PRIORITY, &test_hosts[i].addresses, CompletionCallback(),
-        &test_hosts[i].request, NetLogWithSource());
+        &request, NetLogWithSource());
+    EXPECT_THAT(rv, IsOk());
 
     test_hosts[i].key = SpdySessionKey(
         HostPortPair(test_hosts[i].name, kTestPort), ProxyServer::Direct(),
@@ -979,7 +982,6 @@ TEST_F(SpdySessionPoolTest, FindAvailableSessionForWebSocket) {
     std::string iplist;
     SpdySessionKey key;
     AddressList addresses;
-    std::unique_ptr<HostResolver::Request> request;
   } test_hosts[] = {
       {"www.example.org", "192.168.0.1"}, {"mail.example.org", "192.168.0.1"},
   };
@@ -991,9 +993,11 @@ TEST_F(SpdySessionPoolTest, FindAvailableSessionForWebSocket) {
         test_hosts[i].name, test_hosts[i].iplist, std::string());
 
     HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
-    session_deps_.host_resolver->Resolve(
+    std::unique_ptr<HostResolver::Request> request;
+    int rv = session_deps_.host_resolver->Resolve(
         info, DEFAULT_PRIORITY, &test_hosts[i].addresses, CompletionCallback(),
-        &test_hosts[i].request, NetLogWithSource());
+        &request, NetLogWithSource());
+    EXPECT_THAT(rv, IsOk());
 
     test_hosts[i].key = SpdySessionKey(
         HostPortPair(test_hosts[i].name, kTestPort), ProxyServer::Direct(),
