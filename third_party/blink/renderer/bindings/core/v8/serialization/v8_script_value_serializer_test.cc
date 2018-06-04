@@ -107,7 +107,7 @@ v8::Local<v8::Value> Eval(const String& source, V8TestingScope& scope) {
 }
 
 String ToJSON(v8::Local<v8::Object> object, const V8TestingScope& scope) {
-  return V8StringToWebCoreString<String>(
+  return ToBlinkString<String>(
       v8::JSON::Stringify(scope.GetContext(), object).ToLocalChecked(),
       kDoNotExternalize);
 }

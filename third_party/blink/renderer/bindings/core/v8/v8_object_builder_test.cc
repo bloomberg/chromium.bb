@@ -20,7 +20,7 @@ TEST(V8ObjectBuilderTest, addNull) {
   ScriptValue json_object = builder.GetScriptValue();
   EXPECT_TRUE(json_object.IsObject());
 
-  String json_string = V8StringToWebCoreString<String>(
+  String json_string = ToBlinkString<String>(
       v8::JSON::Stringify(scope.GetContext(),
                           json_object.V8Value().As<v8::Object>())
           .ToLocalChecked(),
@@ -39,7 +39,7 @@ TEST(V8ObjectBuilderTest, addBoolean) {
   ScriptValue json_object = builder.GetScriptValue();
   EXPECT_TRUE(json_object.IsObject());
 
-  String json_string = V8StringToWebCoreString<String>(
+  String json_string = ToBlinkString<String>(
       v8::JSON::Stringify(scope.GetContext(),
                           json_object.V8Value().As<v8::Object>())
           .ToLocalChecked(),
@@ -58,7 +58,7 @@ TEST(V8ObjectBuilderTest, addNumber) {
   ScriptValue json_object = builder.GetScriptValue();
   EXPECT_TRUE(json_object.IsObject());
 
-  String json_string = V8StringToWebCoreString<String>(
+  String json_string = ToBlinkString<String>(
       v8::JSON::Stringify(scope.GetContext(),
                           json_object.V8Value().As<v8::Object>())
           .ToLocalChecked(),
@@ -85,7 +85,7 @@ TEST(V8ObjectBuilderTest, addString) {
   ScriptValue json_object = builder.GetScriptValue();
   EXPECT_TRUE(json_object.IsObject());
 
-  String json_string = V8StringToWebCoreString<String>(
+  String json_string = ToBlinkString<String>(
       v8::JSON::Stringify(scope.GetContext(),
                           json_object.V8Value().As<v8::Object>())
           .ToLocalChecked(),
@@ -110,7 +110,7 @@ TEST(V8ObjectBuilderTest, add) {
   EXPECT_TRUE(builder_json_object.IsObject());
   EXPECT_TRUE(result_json_object.IsObject());
 
-  String json_string = V8StringToWebCoreString<String>(
+  String json_string = ToBlinkString<String>(
       v8::JSON::Stringify(scope.GetContext(),
                           result_json_object.V8Value().As<v8::Object>())
           .ToLocalChecked(),
