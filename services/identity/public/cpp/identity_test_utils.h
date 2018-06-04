@@ -32,15 +32,34 @@ namespace identity {
 
 class IdentityManager;
 
+// Sets the primary account for the given email address, generating a GAIA ID
+// that corresponds uniquely to that email address. On non-ChromeOS, results in
+// the firing of the IdentityManager and SigninManager callbacks for signin
+// success. Blocks until the primary account is set. Returns the account ID
+// of the newly-set account.
+// NOTE: See disclaimer at top of file re: direct usage.
+std::string SetPrimaryAccount(SigninManagerBase* signin_manager,
+                              IdentityManager* identity_manager,
+                              const std::string& email);
+
+// Sets a refresh token that corresponds uniquely to |account_id|. Blocks until
+// the refresh token is set.
+// NOTE: See disclaimer at top of file re: direct usage.
+void SetRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
+                               IdentityManager* identity_manager,
+                               const std::string& account_id);
+
 // Makes the primary account available for the given email address, generating a
 // GAIA ID and refresh token that correspond uniquely to that email address. On
 // non-ChromeOS, results in the firing of the IdentityManager and SigninManager
 // callbacks for signin success. Blocks until the primary account is available.
+// Returns the account ID of the newly-available account.
 // NOTE: See disclaimer at top of file re: direct usage.
-void MakePrimaryAccountAvailable(SigninManagerBase* signin_manager,
-                                 ProfileOAuth2TokenService* token_service,
-                                 IdentityManager* identity_manager,
-                                 const std::string& email);
+std::string MakePrimaryAccountAvailable(
+    SigninManagerBase* signin_manager,
+    ProfileOAuth2TokenService* token_service,
+    IdentityManager* identity_manager,
+    const std::string& email);
 
 // Clears the primary account. On non-ChromeOS, results in the firing of the
 // IdentityManager and SigninManager callbacks for signout. Blocks until the

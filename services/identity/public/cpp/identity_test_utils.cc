@@ -59,20 +59,19 @@ void OneShotIdentityManagerObserver::OnPrimaryAccountCleared(
 
 }  // namespace
 
-void MakePrimaryAccountAvailable(SigninManagerBase* signin_manager,
-                                 ProfileOAuth2TokenService* token_service,
-                                 IdentityManager* identity_manager,
-                                 const std::string& email) {
+std::string SetPrimaryAccount(SigninManagerBase* signin_manager,
+                              IdentityManager* identity_manager,
+                              const std::string& email) {
   DCHECK(!signin_manager->IsAuthenticated());
   DCHECK(!identity_manager->HasPrimaryAccount());
   std::string gaia_id = "gaia_id_for_" + email;
-  std::string refresh_token = "refresh_token_for_" + email;
 
 #if defined(OS_CHROMEOS)
   // ChromeOS has no real notion of signin, so just plumb the information
-  // through.
-  identity_manager->SetPrimaryAccountSynchronouslyForTests(gaia_id, email,
-                                                           refresh_token);
+  // through (note: supply an empty string as the refresh token so that no
+  // refresh token is set).
+  identity_manager->SetPrimaryAccountSynchronously(gaia_id, email,
+                                                   /*refresh_token=*/"");
 #else
 
   base::RunLoop run_loop;
@@ -85,15 +84,37 @@ void MakePrimaryAccountAvailable(SigninManagerBase* signin_manager,
   // callback) to make this work with both SigninManager and FakeSigninManager.
   // If we would pass a null callback, then SigninManager would call
   // CompletePendingSignin directly, but FakeSigninManager never does that.
+  // Note: pass an empty string as the refresh token so that no refresh token is
+  // set.
   real_signin_manager->StartSignInWithRefreshToken(
-      refresh_token, gaia_id, email, /*password=*/"",
+      /*refresh_token=*/"", gaia_id, email, /*password=*/"",
       /*oauth_fetched_callback=*/base::DoNothing());
   real_signin_manager->CompletePendingSignin();
-  token_service->UpdateCredentials(
-      real_signin_manager->GetAuthenticatedAccountId(), refresh_token);
 
   run_loop.Run();
 #endif
+
+  DCHECK(signin_manager->IsAuthenticated());
+  DCHECK(identity_manager->HasPrimaryAccount());
+  return identity_manager->GetPrimaryAccountInfo().account_id;
+}
+
+void SetRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
+                               IdentityManager* identity_manager,
+                               const std::string& account_id) {
+  std::string refresh_token = "refresh_token_for_" + account_id;
+  token_service->UpdateCredentials(account_id, refresh_token);
+}
+
+std::string MakePrimaryAccountAvailable(
+    SigninManagerBase* signin_manager,
+    ProfileOAuth2TokenService* token_service,
+    IdentityManager* identity_manager,
+    const std::string& email) {
+  std::string account_id =
+      SetPrimaryAccount(signin_manager, identity_manager, email);
+  SetRefreshTokenForAccount(token_service, identity_manager, account_id);
+  return account_id;
 }
 
 void ClearPrimaryAccount(SigninManagerForTest* signin_manager,
