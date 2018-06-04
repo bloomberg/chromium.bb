@@ -37,7 +37,8 @@ class RenderingStory(page.Page):
                page_set,
                shared_page_state_class,
                name_suffix='',
-               extra_browser_args=None):
+               extra_browser_args=None,
+               make_javascript_deterministic=True):
     tags = []
     if self.TAGS:
       for t in self.TAGS:
@@ -50,4 +51,5 @@ class RenderingStory(page.Page):
         tags=tags,
         platform_specific=self.PLATFORM_SPECIFIC,
         shared_page_state_class=shared_page_state_class,
-        extra_browser_args=extra_browser_args)
+        extra_browser_args=extra_browser_args,
+        make_javascript_deterministic=make_javascript_deterministic)
