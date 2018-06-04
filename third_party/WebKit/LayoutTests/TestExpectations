@@ -1889,7 +1889,7 @@ crbug.com/771118 virtual/service-worker-servicification/external/wpt/service-wor
 
 crbug.com/846237 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/import-scripts-updated-flag.https.html [ Crash ]
 
-crbug.com/847565 [ Mac ] virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event.https.html [ Pass Timeout ]
+crbug.com/847565 [ Mac Linux ] virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event.https.html [ Pass Timeout ]
 
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
@@ -4725,14 +4725,14 @@ crbug.com/840659 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/protocol/vi
 
 # Sheriff 2018-04-11
 crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
-crbug.com/831686 [ Linux ] fast/webgl/texImage-imageBitmap-from-offscreen-canvas-resize.html [ Pass Timeout ]
+crbug.com/831686 [ Linux Mac ] fast/webgl/texImage-imageBitmap-from-offscreen-canvas-resize.html [ Pass Timeout ]
 crbug.com/831685 [ Linux ] external/wpt/2dcontext/compositing/2d.composite.canvas.lighter.html [ Pass Timeout ]
 crbug.com/831673 http/tests/devtools/reveal-objects.js [ Pass Timeout ]
 crbug.com/831496 [ Linux ] virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Timeout ]
 crbug.com/831482 [ Linux ] virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Timeout ]
 crbug.com/831249 [ Linux ] virtual/gpu/fast/canvas/canvas-filter-svg-inline.html [ Pass Timeout ]
 crbug.com/831230 [ Linux ] virtual/threaded/compositing/webgl/webgl-reflection.html [ Pass Timeout ]
-crbug.com/829952 [ Linux Mac ] fast/webgl/texImage-imageBitmap-from-image-resize.html [ Pass Timeout ]
+crbug.com/829952 fast/webgl/texImage-imageBitmap-from-image-resize.html [ Pass Timeout ]
 crbug.com/829938 [ Linux ] css3/filters/blur-filter-page-scroll.html [ Pass Timeout ]
 crbug.com/818426 [ Linux ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 crbug.com/818324 [ Linux ] external/wpt/content-security-policy/embedded-enforcement/required_csp-header.html [ Pass Timeout ]
@@ -4824,3 +4824,8 @@ crbug.com/828962 [ Mac ] fast/webgl/webgl-composite-modes-tabswitching.html [ Pa
 crbug.com/848006 [ Mac ] virtual/threaded/animations/responsive/zoom-responsive-translate-animation.html [ Crash Failure Pass ]
 crbug.com/849040 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/paint-profiler-update.js [ Crash Timeout Pass ]
 crbug.com/841567 fast/scrolling/scrollbar-tickmarks-hittest.html [ Failure Pass ]
+
+# Flakes 2018-06-04
+crbug.com/847870 fast/webgl/texImage-imageBitmap-from-canvas-resize.html [ Timeout Pass ]
+crbug.com/847787 external/wpt/service-workers/service-worker/fetch-event.https.html [ Timeout Pass ]
+crbug.com/847697 virtual/video-surface-layer/media/controls/overflow-menu-always-visible.html [ Pass Failure ]
