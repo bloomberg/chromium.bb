@@ -98,12 +98,6 @@ void UpdatePolicyForEvent(const WebInputEvent* input_event,
   NavigationPolicyFromMouseEvent(button_number, ctrl, shift, alt, meta,
                                  &user_policy);
 
-  // When the input event suggests a download, but the navigation was initiated
-  // by script, we should not override it.
-  if (user_policy == kNavigationPolicyDownload &&
-      *policy != kNavigationPolicyIgnore)
-    return;
-
   // User and app agree that we want a new window; let the app override the
   // decorations.
   if (user_policy == kNavigationPolicyNewWindow &&
@@ -112,33 +106,48 @@ void UpdatePolicyForEvent(const WebInputEvent* input_event,
   *policy = user_policy;
 }
 
-NavigationPolicy GetNavigationPolicy(const WebInputEvent* current_event,
-                                     const WebWindowFeatures& features) {
+}  // anonymous namespace
+
+// Check that the desired NavigationPolicy |policy| is compatible with the
+// observed input event |current_event|.
+NavigationPolicy EffectiveNavigationPolicy(NavigationPolicy policy,
+                                           const WebInputEvent* current_event,
+                                           const WebWindowFeatures& features) {
   // If our default configuration was modified by a script or wasn't
   // created by a user gesture, then show as a popup. Else, let this
   // new window be opened as a toplevel window.
   bool as_popup = !features.tool_bar_visible || !features.status_bar_visible ||
                   !features.scrollbars_visible || !features.menu_bar_visible ||
                   !features.resizable;
-  NavigationPolicy policy =
+  NavigationPolicy user_policy =
       as_popup ? kNavigationPolicyNewPopup : kNavigationPolicyNewForegroundTab;
-  UpdatePolicyForEvent(current_event, &policy);
-  return policy;
-}
+  UpdatePolicyForEvent(current_event, &user_policy);
 
-}  // anonymous namespace
+  if (policy == kNavigationPolicyIgnore) {
+    // When the input event suggests a download, but the navigation was
+    // initiated by script, we should not override it.
+    if (user_policy == kNavigationPolicyDownload) {
+      return as_popup ? kNavigationPolicyNewPopup
+                      : kNavigationPolicyNewForegroundTab;
+    }
+    return user_policy;
+  }
 
-NavigationPolicy EffectiveNavigationPolicy(NavigationPolicy policy,
-                                           const WebInputEvent* current_event,
-                                           const WebWindowFeatures& features) {
-  if (policy == kNavigationPolicyIgnore)
-    return GetNavigationPolicy(current_event, features);
   if (policy == kNavigationPolicyNewBackgroundTab &&
-      GetNavigationPolicy(current_event, features) !=
-          kNavigationPolicyNewBackgroundTab &&
+      user_policy != kNavigationPolicyNewBackgroundTab &&
       !UIEventWithKeyState::NewTabModifierSetFromIsolatedWorld()) {
+    // Don't allow background tabs to be opened via script setting the
+    // event modifiers.
     return kNavigationPolicyNewForegroundTab;
   }
+
+  if (policy == kNavigationPolicyDownload &&
+      user_policy != kNavigationPolicyDownload) {
+    // Don't allow downloads to be triggered via script setting the event
+    // modifiers.
+    return kNavigationPolicyNewForegroundTab;
+  }
+
   return policy;
 }
 
