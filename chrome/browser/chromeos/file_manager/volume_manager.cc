@@ -22,6 +22,8 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_media_view_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -546,6 +548,19 @@ void VolumeManager::AddSshfsCrostiniVolume(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DoMountEvent(chromeos::MOUNT_ERROR_NONE,
                Volume::CreateForSshfsCrostini(sshfs_mount_path));
+
+  // Listen for crostini container shutdown and remove volume.
+  crostini::CrostiniManager::GetInstance()->AddShutdownContainerCallback(
+      profile_, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      base::BindOnce(&VolumeManager::RemoveSshfsCrostiniVolume,
+                     weak_ptr_factory_.GetWeakPtr(), sshfs_mount_path));
+}
+
+void VolumeManager::RemoveSshfsCrostiniVolume(
+    const base::FilePath& sshfs_mount_path) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+                 *Volume::CreateForSshfsCrostini(sshfs_mount_path));
 }
 
 bool VolumeManager::RegisterDownloadsDirectoryForTesting(

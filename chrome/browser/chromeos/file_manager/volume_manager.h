@@ -361,6 +361,7 @@ class VolumeManager : public KeyedService,
   void DoUnmountEvent(chromeos::MountError error_code, const Volume& volume);
   void OnExternalStorageDisabledChangedUnmountCallback(
       chromeos::MountError error_code);
+  void RemoveSshfsCrostiniVolume(const base::FilePath& sshfs_mount_path);
 
   // Returns the path of the mount point for drive.
   base::FilePath GetDriveMountPointPath() const;
