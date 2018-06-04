@@ -99,9 +99,9 @@ class ClientWindowTargeter : public aura::WindowTargeter {
       return event_target->CanAcceptEvent(*event) ? window : nullptr;
     }
 
-    // Ensure presses in the non-client area target the top-level window.
+    // Ensure events in the non-client area target the top-level window.
     // TopLevelEventHandler will ensure these are routed correctly.
-    if (IsPointerPressedEvent(*event) &&
+    if (event->IsLocatedEvent() &&
         IsLocationInNonClientArea(window,
                                   event->AsLocatedEvent()->location())) {
       return window;

@@ -416,12 +416,18 @@ TEST(WindowServiceClientTest, MouseDownInNonClientWithChildWindow) {
 
   window_delegate.ClearEvents();
 
-  // Move the mouse over the non-client area.
+  // Move the mouse over the non-client area. Both the client and the delegate
+  // should get the event.
   test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(15, 16);
   EXPECT_EQ("POINTER_MOVED 5,6",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
+  EXPECT_TRUE(window_tree_client->input_events().empty());
+  EXPECT_EQ("MOUSE_ENTERED",
+            EventToEventType(window_delegate.PopEvent().get()));
+  EXPECT_EQ("MOUSE_MOVED", EventToEventType(window_delegate.PopEvent().get()));
+  EXPECT_TRUE(window_delegate.events().empty());
 
   // Press over the non-client. The client should not be notified as the event
   // should be handled locally.
@@ -429,6 +435,40 @@ TEST(WindowServiceClientTest, MouseDownInNonClientWithChildWindow) {
   ASSERT_FALSE(window_tree_client->PopInputEvent().event.get());
   EXPECT_EQ("MOUSE_PRESSED 5,6", LocatedEventToEventTypeAndLocation(
                                      window_delegate.PopEvent().get()));
+}
+
+TEST(WindowServiceClientTest, MouseDownInNonClientDragToClientWithChildWindow) {
+  EventRecordingWindowDelegate window_delegate;
+  WindowServiceTestSetup setup;
+  setup.delegate()->set_delegate_for_next_top_level(&window_delegate);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
+  setup.client_test_helper()->SetClientArea(top_level,
+                                            gfx::Insets(10, 0, 0, 0));
+
+  // Add a child Window that is sized to fill the top-level.
+  aura::Window* window = setup.client_test_helper()->NewWindow();
+  ASSERT_TRUE(window);
+  window->Show();
+  window->SetBounds(gfx::Rect(top_level->bounds().size()));
+  top_level->AddChild(window);
+
+  // Press in non-client area.
+  test::EventGenerator event_generator(setup.root());
+  event_generator.MoveMouseTo(15, 16);
+  event_generator.PressLeftButton();
+
+  TestWindowTreeClient* window_tree_client = setup.window_tree_client();
+  window_tree_client->ClearInputEvents();
+  window_delegate.ClearEvents();
+  // Drag over client area, only the delegate should get it (because the press
+  // was in the non-client area).
+  event_generator.MoveMouseTo(15, 26);
+  EXPECT_EQ("MOUSE_DRAGGED",
+            EventToEventType(window_delegate.PopEvent().get()));
+  EXPECT_TRUE(window_tree_client->input_events().empty());
 }
 
 TEST(WindowServiceClientTest, PointerWatcher) {
