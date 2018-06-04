@@ -3,12 +3,13 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/default-theme.html">
 
 <!-- Common css variables for Material Design settings. -->
+<custom-style>
 <style is="custom-style">
   /* We keep our vars in sort order, though some vars must be defined prior to
    * others. The --settings-* vars are defined explicitly prior to the --paper-*
    * and --iron-* vars.
    */
-  :root {
+  html {
     /* Some colors use non-MD colors.  These custom colors are specified by
      * UX design (bettes@). */
 
@@ -58,3 +59,4 @@
     --paper-radio-group-item-padding: 0;
   }
 </style>
+</custom-style>
