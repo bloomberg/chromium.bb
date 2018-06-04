@@ -20,6 +20,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadItem;
+import org.chromium.chrome.browser.download.DownloadManagerService.DownloadObserver;
 import org.chromium.chrome.browser.download.DownloadSharedPreferenceHelper;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
@@ -48,7 +49,7 @@ import java.util.Set;
 /** Bridges the user's download history and the UI used to display it. */
 public class DownloadHistoryAdapter extends DateDividedAdapter
         implements DownloadUiObserver, DownloadSharedPreferenceHelper.Observer,
-                   OfflineContentProvider.Observer {
+                   OfflineContentProvider.Observer, DownloadObserver {
     private static final String TAG = "DownloadAdapter";
 
     /** Alerted about changes to internal state. */
@@ -244,7 +245,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
 
         // Get all regular and (if necessary) off the record downloads.
         DownloadDelegate downloadManager = getDownloadDelegate();
-        downloadManager.addDownloadHistoryAdapter(this);
+        downloadManager.addDownloadObserver(this);
         downloadManager.getAllDownloads(false);
         if (mShowOffTheRecord) downloadManager.getAllDownloads(true);
 
@@ -264,7 +265,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         return mBackendProvider.getOfflineContentProvider();
     }
 
-    /** Called when the user's regular or incognito download history has been loaded. */
+    @Override
     public void onAllDownloadsRetrieved(List<DownloadItem> result, boolean isOffTheRecord) {
         if (isOffTheRecord && !mShowOffTheRecord) return;
 
@@ -415,6 +416,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     }
 
     /** Called when a new DownloadItem has been created by the native DownloadManager. */
+    @Override
     public void onDownloadItemCreated(DownloadItem item) {
         boolean isOffTheRecord = item.getDownloadInfo().isOffTheRecord();
         if (isOffTheRecord && !mShowOffTheRecord) return;
@@ -430,6 +432,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     }
 
     /** Updates the list when new information about a download comes in. */
+    @Override
     public void onDownloadItemUpdated(DownloadItem item) {
         DownloadItemWrapper newWrapper = createDownloadItemWrapper(item);
         if (newWrapper.isOffTheRecord() && !mShowOffTheRecord) return;
@@ -493,6 +496,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
      * @param guid           ID of the DownloadItem that has been removed.
      * @param isOffTheRecord True if off the record, false otherwise.
      */
+    @Override
     public void onDownloadItemRemoved(String guid, boolean isOffTheRecord) {
         if (isOffTheRecord && !mShowOffTheRecord) return;
         if (getDownloadItemList(isOffTheRecord).removeItem(guid) != null) {
@@ -512,7 +516,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
 
     @Override
     public void onManagerDestroyed() {
-        getDownloadDelegate().removeDownloadHistoryAdapter(this);
+        getDownloadDelegate().removeDownloadObserver(this);
         getOfflineContentProvider().removeObserver(this);
         sDeletedFileTracker.decrementInstanceCount();
         if (mSpaceDisplay != null) unregisterAdapterDataObserver(mSpaceDisplay);

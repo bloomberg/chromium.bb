@@ -10,8 +10,7 @@ namespace offline_items_collection {
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offline_items_collection
 enum OfflineItemFilter {
-  FILTER_ALL = 0,
-  FILTER_PAGE,
+  FILTER_PAGE = 0,
   FILTER_VIDEO,
   FILTER_AUDIO,
   FILTER_IMAGE,

@@ -52,7 +52,6 @@ class ListUtils {
                         return ListUtils.VIDEO;
                     case OfflineItemFilter.FILTER_IMAGE:
                         return ListUtils.IMAGE;
-                    case OfflineItemFilter.FILTER_ALL:
                     case OfflineItemFilter.FILTER_PAGE:
                     case OfflineItemFilter.FILTER_AUDIO:
                     case OfflineItemFilter.FILTER_OTHER:

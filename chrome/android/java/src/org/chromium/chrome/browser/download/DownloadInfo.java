@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download;
 import android.graphics.Bitmap;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
@@ -282,7 +283,6 @@ public final class DownloadInfo {
         offlineItem.filePath = downloadInfo.getFilePath();
         offlineItem.title = downloadInfo.getFileName();
         offlineItem.description = downloadInfo.getDescription();
-        offlineItem.filter = OfflineItemFilter.FILTER_ALL;
         offlineItem.isTransient = downloadInfo.getIsTransient();
         offlineItem.isAccelerated = downloadInfo.getIsParallelDownload();
         offlineItem.isSuggested = false;
@@ -315,6 +315,29 @@ public final class DownloadInfo {
             default:
                 assert false;
         }
+
+        switch (DownloadFilter.fromMimeType(downloadInfo.getMimeType())) {
+            case DownloadFilter.FILTER_PAGE:
+                offlineItem.filter = OfflineItemFilter.FILTER_PAGE;
+                break;
+            case DownloadFilter.FILTER_VIDEO:
+                offlineItem.filter = OfflineItemFilter.FILTER_VIDEO;
+                break;
+            case DownloadFilter.FILTER_AUDIO:
+                offlineItem.filter = OfflineItemFilter.FILTER_AUDIO;
+                break;
+            case DownloadFilter.FILTER_IMAGE:
+                offlineItem.filter = OfflineItemFilter.FILTER_IMAGE;
+                break;
+            case DownloadFilter.FILTER_DOCUMENT:
+                offlineItem.filter = OfflineItemFilter.FILTER_DOCUMENT;
+                break;
+            case DownloadFilter.FILTER_OTHER:
+            default:
+                offlineItem.filter = OfflineItemFilter.FILTER_OTHER;
+                break;
+        }
+
         return offlineItem;
     }
 
