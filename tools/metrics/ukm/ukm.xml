@@ -3639,6 +3639,13 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="TrustedWebActivity.Open" singular="True">
+  <owner>peconn@chromium.org</owner>
+  <summary>
+    Collected when a page is opened in a Trusted Web Activity.
+  </summary>
+</event>
+
 <event name="UserActivity">
   <owner>jiameng@chromium.org</owner>
   <summary>

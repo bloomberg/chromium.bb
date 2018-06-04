@@ -161,6 +161,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/browserservices/BrowserSessionContentUtils.java",
   "java/src/org/chromium/chrome/browser/browserservices/BrowserSessionDataProvider.java",
   "java/src/org/chromium/chrome/browser/browserservices/OriginVerifier.java",
+  "java/src/org/chromium/chrome/browser/browserservices/UkmRecorder.java",
   "java/src/org/chromium/chrome/browser/browserservices/Origin.java",
   "java/src/org/chromium/chrome/browser/browserservices/PostMessageHandler.java",
   "java/src/org/chromium/chrome/browser/browserservices/TrustedWebActivityClient.java",
