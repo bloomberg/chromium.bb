@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 
+using autofill::FieldPropertiesFlags;
 using autofill::FormFieldData;
 using autofill::PasswordForm;
 
@@ -224,6 +225,16 @@ std::vector<const FormFieldData*> GetRelevantPasswords(
       continue;
     if (consider_only_non_empty && field->value.empty())
       continue;
+    // Readonly fields can be an indication that filling is useless (e.g., the
+    // page might use a virtual keyboard). However, if the field was readonly
+    // only temporarily, that makes it still interesting for saving. The fact
+    // that a user typed or Chrome filled into that field in tha past is an
+    // indicator that the radonly was only temporary.
+    if (field->is_readonly &&
+        !(field->properties_mask & (FieldPropertiesFlags::USER_TYPED |
+                                    FieldPropertiesFlags::AUTOFILLED))) {
+      continue;
+    }
     result.push_back(field);
     found_focusable |= field->is_focusable;
   }
