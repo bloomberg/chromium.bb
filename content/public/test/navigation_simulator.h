@@ -36,8 +36,8 @@ namespace mojom {
 class NavigationClient;
 }
 
-// An interface for simulating a navigation in unit tests. Currently this only
-// supports renderer-initiated navigations.
+// An interface for simulating a navigation in unit tests. Supports both
+// renderer and browser-initiated navigations.
 // Note: this should not be used in browser tests.
 class NavigationSimulator : public WebContentsObserver {
  public:
