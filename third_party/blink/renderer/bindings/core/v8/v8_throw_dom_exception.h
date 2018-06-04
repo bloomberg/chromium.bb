@@ -18,6 +18,9 @@ class CORE_EXPORT V8ThrowDOMException {
   STATIC_ONLY(V8ThrowDOMException);
 
  public:
+  // Per-process initializer. Must be called in CoreInitializer.
+  static void Init();
+
   // Creates and returns an exception object, or returns an empty handle if
   // failed. |unsanitizedMessage| should not be specified unless it's
   // SecurityError.
