@@ -157,6 +157,17 @@ class PolicyTemplateChecker(object):
       if (i + 1) not in policy_ids and (i + 1) not in deleted_policy_ids:
         self._Error('No policy with id: %s' % (i + 1))
 
+  def _CheckHighestId(self, policy_ids, highest_id):
+    '''
+    Checks that the 'highest_id_currently_used' value is actually set to the
+    highest id in use by any policy.
+    '''
+    highest_id_in_policies = max(policy_ids)
+    if highest_id != highest_id_in_policies:
+      self._Error(("\'highest_id_currently_used\' must be set to the highest"
+                   "policy id in use, which is currently %s (vs %s).") %
+                  (highest_id_in_policies, highest_id))
+
   def _CheckPolicySchema(self, policy, policy_type):
     '''Checks that the 'schema' field matches the 'type' field.'''
     self._CheckContains(policy, 'schema', dict)
@@ -540,11 +551,17 @@ class PolicyTemplateChecker(object):
                                            parent_element=None,
                                            container_name='The root element',
                                            offending=None)
+    highest_id = self._CheckContains(data, 'highest_id_currently_used', int,
+                                     parent_element=None,
+                                     container_name='The root element',
+                                     offending=None)
     if policy_definitions is not None:
       policy_ids = set()
       for policy in policy_definitions:
         self._CheckPolicy(policy, False, policy_ids, deleted_policy_ids)
       self._CheckPolicyIDs(policy_ids, deleted_policy_ids)
+      if highest_id is not None:
+        self._CheckHighestId(policy_ids, highest_id)
 
 
     # Made it as a dict (policy_name -> True) to reuse _CheckContains.
