@@ -354,8 +354,17 @@ std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
   tab_object->highlighted = tab_strip && tab_strip->IsTabSelected(tab_index);
   tab_object->pinned = tab_strip && tab_strip->IsTabPinned(tab_index);
   auto* audible_helper = RecentlyAudibleHelper::FromWebContents(contents);
-  tab_object->audible =
-      std::make_unique<bool>(audible_helper->WasRecentlyAudible());
+  bool audible = false;
+  if (audible_helper) {
+    // WebContents in a tab strip have RecentlyAudible helpers. They endow the
+    // tab with a notion of audibility that has a timeout for quiet periods. Use
+    // that if available.
+    audible = audible_helper->WasRecentlyAudible();
+  } else {
+    // Otherwise use the instantaneous notion of audibility.
+    audible = contents->IsCurrentlyAudible();
+  }
+  tab_object->audible = std::make_unique<bool>(audible);
   auto* tab_lifeycle_unit_external =
       resource_coordinator::TabLifecycleUnitExternal::FromWebContents(contents);
   tab_object->discarded =
