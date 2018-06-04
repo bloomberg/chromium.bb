@@ -37,6 +37,10 @@ UserAvatarButton::UserAvatarButton(views::ButtonListener* listener)
     : Button(listener) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(CreateUserAvatarView(0 /* user_index */));
+
+  SetTooltipText(GetUserItemAccessibleString(0 /* user_index */));
+  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
+  SetFocusForPlatform();
 }
 
 class TopShortcutButtonContainer : public views::View {

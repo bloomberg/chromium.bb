@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/top_shortcuts_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/user/rounded_image_view.h"
@@ -38,6 +39,18 @@ views::View* CreateUserAvatarView(int user_index) {
                          gfx::Size(kTrayItemSize, kTrayItemSize));
   }
   return image_view;
+}
+
+base::string16 GetUserItemAccessibleString(int user_index) {
+  DCHECK(Shell::Get());
+  const mojom::UserSession* const user_session =
+      Shell::Get()->session_controller()->GetUserSession(user_index);
+  DCHECK(user_session);
+
+  return l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_USER_INFO_ACCESSIBILITY,
+      base::UTF8ToUTF16(user_session->user_info->display_name),
+      base::UTF8ToUTF16(user_session->user_info->display_email));
 }
 
 namespace {
@@ -90,6 +103,10 @@ UserItemButton::UserItemButton(int user_index,
   vertical_labels->AddChildView(email);
 
   AddChildView(vertical_labels);
+
+  SetTooltipText(GetUserItemAccessibleString(user_index));
+  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
+  SetFocusForPlatform();
 }
 
 void UserItemButton::ButtonPressed(views::Button* sender,
@@ -129,6 +146,11 @@ AddUserButton::AddUserButton(UnifiedSystemTrayController* controller)
   label->SetAutoColorReadabilityEnabled(false);
   label->SetSubpixelRenderingEnabled(false);
   AddChildView(label);
+
+  SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
+  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
+  SetFocusForPlatform();
 }
 
 void AddUserButton::ButtonPressed(views::Button* sender,
