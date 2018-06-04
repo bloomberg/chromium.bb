@@ -153,9 +153,23 @@ public class NonOverlappingStack extends Stack {
         updateScrollSnap();
     }
 
+    /**
+     * @return The index of the currently centered tab. If we're not currently snapped to a tab
+     *         (e.g. we're in the process of animating a scroll or the user is currently dragging),
+     *         returns the index of the tab closest to the center.
+     */
+    private int getCenteredTabIndex() {
+        return Math.round(-mScrollOffset / mSpacing);
+    }
+
     @Override
     public void notifySizeChanged(float width, float height, int orientation) {
         super.notifySizeChanged(width, height, orientation);
+
+        int centeredTab = getCenteredTabIndex();
+        mSpacing = computeSpacing(0);
+        updateScrollOffsets(centeredTab);
+
         updateScrollSnap();
     }
 
@@ -226,6 +240,26 @@ public class NonOverlappingStack extends Stack {
                 getScrollDimensionSize() * getScaleAmount() + EXTRA_SPACE_BETWEEN_TABS_DP);
     }
 
+    /**
+     * Updates the overall scroll offset and the scroll offsets for each tab based on the current
+     * value of mSpacing so that the tabs are in the proper locations and the specified tab is
+     * centered.
+     *
+     * @param centeredTab The index of the tab that should be centered.
+     */
+    private void updateScrollOffsets(int centeredTab) {
+        // Reset the tabs' scroll offsets.
+        if (mStackTabs != null) {
+            for (int i = 0; i < mStackTabs.length; i++) {
+                mStackTabs[i].setScrollOffset(i * mSpacing);
+            }
+        }
+
+        // Reset the overall scroll offset.
+        mScrollOffset = -centeredTab * mSpacing;
+        setScrollTarget(mScrollOffset, false);
+    }
+
     @Override
     protected void resetAllScrollOffset() {
         if (mTabList == null) return;
@@ -235,16 +269,7 @@ public class NonOverlappingStack extends Stack {
         int index = mTabList.index();
         if (index != 0) index -= 1;
 
-        // Reset the tabs' scroll offsets.
-        if (mStackTabs != null) {
-            for (int i = 0; i < mStackTabs.length; i++) {
-                mStackTabs[i].setScrollOffset(screenToScroll(i * mSpacing));
-            }
-        }
-
-        // Reset the overall scroll offset.
-        mScrollOffset = -index * mSpacing;
-        setScrollTarget(mScrollOffset, false);
+        updateScrollOffsets(index);
     }
 
     // NonOverlappingStack uses linear scrolling, so screenToScroll() and scrollToScreen() are both
@@ -285,7 +310,7 @@ public class NonOverlappingStack extends Stack {
         CompositorAnimationHandler handler = mLayout.getAnimationHandler();
         Collection<Animator> animationList = new ArrayList<>();
 
-        int centeredTab = Math.round(-mScrollOffset / mSpacing);
+        int centeredTab = getCenteredTabIndex();
         for (int i = centeredTab - 1; i <= centeredTab + 1; i++) {
             if (i < 0 || i >= mStackTabs.length) continue;
             StackTab tab = mStackTabs[i];
@@ -346,7 +371,7 @@ public class NonOverlappingStack extends Stack {
         CompositorAnimationHandler handler = mLayout.getAnimationHandler();
         Collection<Animator> animationList = new ArrayList<>();
 
-        int centeredTab = Math.round(-mScrollOffset / mSpacing);
+        int centeredTab = getCenteredTabIndex();
         for (int i = centeredTab - 1; i <= centeredTab + 1; i++) {
             if (i < 0 || i >= mStackTabs.length) continue;
             StackTab tab = mStackTabs[i];
