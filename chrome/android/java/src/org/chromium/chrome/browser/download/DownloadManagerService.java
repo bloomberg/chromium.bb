@@ -34,7 +34,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadMetrics.DownloadOpenSource;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
-import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
@@ -141,10 +140,25 @@ public class DownloadManagerService
     private final Handler mHandler;
     private final Context mContext;
 
+    /** Generic interface for notifying external UI components about downloads and their states. */
+    public interface DownloadObserver extends DownloadSharedPreferenceHelper.Observer {
+        /** Called in response to {@link DownloadManagerService#getAllDownloads(boolean)}. */
+        void onAllDownloadsRetrieved(final List<DownloadItem> list, boolean isOffTheRecord);
+
+        /** Called when a download is created. */
+        void onDownloadItemCreated(DownloadItem item);
+
+        /** Called when a download is updated. */
+        void onDownloadItemUpdated(DownloadItem item);
+
+        /** Called when a download has been removed. */
+        void onDownloadItemRemoved(String guid, boolean isOffTheRecord);
+    }
+
     @VisibleForTesting protected final List<String> mAutoResumableDownloadIds =
             new ArrayList<String>();
     private final List<DownloadUmaStatsEntry> mUmaEntries = new ArrayList<DownloadUmaStatsEntry>();
-    private final ObserverList<DownloadHistoryAdapter> mHistoryAdapters = new ObserverList<>();
+    private final ObserverList<DownloadObserver> mDownloadObservers = new ObserverList<>();
 
     private OMADownloadHandler mOMADownloadHandler;
     private DownloadSnackbarController mDownloadSnackbarController;
@@ -1413,18 +1427,18 @@ public class DownloadManagerService
         }
     }
 
-    /** Adds a new DownloadHistoryAdapter to the list. */
+    /** Adds a new DownloadObserver to the list. */
     @Override
-    public void addDownloadHistoryAdapter(DownloadHistoryAdapter adapter) {
-        mHistoryAdapters.addObserver(adapter);
-        DownloadSharedPreferenceHelper.getInstance().addObserver(adapter);
+    public void addDownloadObserver(DownloadObserver observer) {
+        mDownloadObservers.addObserver(observer);
+        DownloadSharedPreferenceHelper.getInstance().addObserver(observer);
     }
 
-    /** Removes a DownloadHistoryAdapter from the list. */
+    /** Removes a DownloadObserver from the list. */
     @Override
-    public void removeDownloadHistoryAdapter(DownloadHistoryAdapter adapter) {
-        mHistoryAdapters.removeObserver(adapter);
-        DownloadSharedPreferenceHelper.getInstance().removeObserver(adapter);
+    public void removeDownloadObserver(DownloadObserver observer) {
+        mDownloadObservers.removeObserver(observer);
+        DownloadSharedPreferenceHelper.getInstance().removeObserver(observer);
     }
 
     /**
@@ -1508,7 +1522,7 @@ public class DownloadManagerService
 
     @CalledByNative
     private void onAllDownloadsRetrieved(final List<DownloadItem> list, boolean isOffTheRecord) {
-        for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
+        for (DownloadObserver adapter : mDownloadObservers) {
             adapter.onAllDownloadsRetrieved(list, isOffTheRecord);
         }
         maybeShowMissingSdCardError(list);
@@ -1572,7 +1586,7 @@ public class DownloadManagerService
 
     @CalledByNative
     private void onDownloadItemCreated(DownloadItem item) {
-        for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
+        for (DownloadObserver adapter : mDownloadObservers) {
             adapter.onDownloadItemCreated(item);
         }
 
@@ -1581,7 +1595,7 @@ public class DownloadManagerService
 
     @CalledByNative
     private void onDownloadItemUpdated(DownloadItem item) {
-        for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
+        for (DownloadObserver adapter : mDownloadObservers) {
             adapter.onDownloadItemUpdated(item);
         }
 
@@ -1593,7 +1607,7 @@ public class DownloadManagerService
         getInfoBarController(isOffTheRecord)
                 .onDownloadItemRemoved(LegacyHelpers.buildLegacyContentId(false, guid));
 
-        for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
+        for (DownloadObserver adapter : mDownloadObservers) {
             adapter.onDownloadItemRemoved(guid, isOffTheRecord);
         }
     }

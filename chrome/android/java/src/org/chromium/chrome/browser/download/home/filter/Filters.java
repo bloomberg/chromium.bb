@@ -45,9 +45,8 @@ public class Filters {
                 return IMAGES;
             case OfflineItemFilter.FILTER_OTHER:
             case OfflineItemFilter.FILTER_DOCUMENT:
-                return OTHER;
             default:
-                return NONE;
+                return OTHER;
         }
     }
 

@@ -27,6 +27,5 @@ public class FiltersTest {
         Assert.assertEquals(Filters.OTHER, Filters.fromOfflineItem(OfflineItemFilter.FILTER_OTHER));
         Assert.assertEquals(
                 Filters.OTHER, Filters.fromOfflineItem(OfflineItemFilter.FILTER_DOCUMENT));
-        Assert.assertEquals(Filters.NONE, Filters.fromOfflineItem(OfflineItemFilter.FILTER_ALL));
     }
 }

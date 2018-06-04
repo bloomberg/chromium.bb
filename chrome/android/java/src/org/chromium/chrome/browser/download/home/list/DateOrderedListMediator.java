@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.download.home.filter.OffTheRecordOfflineItemF
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
 import org.chromium.chrome.browser.download.home.filter.SearchOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.TypeOfflineItemFilter;
+import org.chromium.chrome.browser.download.home.glue.OfflineContentProviderGlue;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 
 import java.io.Closeable;
@@ -20,7 +21,7 @@ import java.io.Closeable;
  * home.  This includes support for filtering, deleting, etc..
  */
 class DateOrderedListMediator {
-    private final OfflineContentProvider mProvider;
+    private final OfflineContentProviderGlue mProvider;
     private final ListItemModel mModel;
 
     private final OfflineItemSource mSource;
@@ -50,7 +51,7 @@ class DateOrderedListMediator {
         //                         [DateOrderedListMutator] ->
         //                             [ListItemModel]
 
-        mProvider = provider;
+        mProvider = new OfflineContentProviderGlue(provider, offTheRecord);
         mModel = model;
 
         mSource = new OfflineItemSource(mProvider);
@@ -60,18 +61,19 @@ class DateOrderedListMediator {
         mSearchFilter = new SearchOfflineItemFilter(mTypeFilter);
         mListMutator = new DateOrderedListMutator(mSearchFilter, mModel);
 
-        mModel.getProperties().setOpenCallback(id -> mProvider.openItem(id));
-        mModel.getProperties().setPauseCallback(id -> mProvider.pauseDownload(id));
-        mModel.getProperties().setResumeCallback(id -> mProvider.resumeDownload(id, true));
-        mModel.getProperties().setCancelCallback(id -> mProvider.cancelDownload(id));
-        mModel.getProperties().setShareCallback(id -> {});
+        mModel.getProperties().setOpenCallback(item -> mProvider.openItem(item));
+        mModel.getProperties().setPauseCallback(item -> mProvider.pauseDownload(item));
+        mModel.getProperties().setResumeCallback(item -> mProvider.resumeDownload(item, true));
+        mModel.getProperties().setCancelCallback(item -> mProvider.cancelDownload(item));
+        mModel.getProperties().setShareCallback(item -> {});
         // TODO(dtrainor): Pipe into the undo snackbar and the DeleteUndoOfflineItemFilter.
-        mModel.getProperties().setRemoveCallback(id -> mProvider.removeItem(id));
+        mModel.getProperties().setRemoveCallback(item -> mProvider.removeItem(item));
     }
 
     /** Tears down this mediator. */
     public void destroy() {
         mSource.destroy();
+        mProvider.destroy();
     }
 
     /**

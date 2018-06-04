@@ -8,6 +8,7 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterObserver;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
+import org.chromium.chrome.browser.download.home.glue.OfflineContentProviderGlue;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -25,7 +26,8 @@ import java.util.Set;
  * list for the rest of the UI to filter and act on.
  */
 public class OfflineItemSource implements OfflineItemFilterSource, OfflineContentProvider.Observer {
-    private final OfflineContentProvider mProvider;
+    // TODO(dtrainor): Move this to OfflineContentProvider once downloads are ported.
+    private final OfflineContentProviderGlue mProvider;
 
     private final Map<ContentId, OfflineItem> mItems = new HashMap<>();
     private final ObserverList<OfflineItemFilterObserver> mObservers = new ObserverList<>();
@@ -39,9 +41,9 @@ public class OfflineItemSource implements OfflineItemFilterSource, OfflineConten
     /**
      * Creates an instance of {@link OfflineItemSource} and hooks up to {@code provider}.  This will
      * automatically try to pull all existing items from {@code provider}.
-     * @param provider The {@link OfflineContentProvider} to reflect in this source.
+     * @param provider The {@link OfflineContentProviderGlue} to reflect in this source.
      */
-    public OfflineItemSource(OfflineContentProvider provider) {
+    public OfflineItemSource(OfflineContentProviderGlue provider) {
         mProvider = provider;
         mProvider.addObserver(this);
 
