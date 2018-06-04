@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
-    Local_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff) {
+    MAYBE_Local_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff) {
   // Disable the SecondaryUiMd experiment.
   scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
 
@@ -182,10 +182,17 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
 }
 
+#if defined(OS_MACOSX)
+#define MAYBE_Local_ClickingLearnMoreClosesBubble \
+  DISABLED_Local_ClickingLearnMoreClosesBubble
+#else
+#define MAYBE_Local_ClickingLearnMoreClosesBubble \
+  Local_ClickingLearnMoreClosesBubble
+#endif
 // Tests the local save bubble. Ensures that clicking the [Learn more] link
 // causes the bubble to go away and opens the relevant help page.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Local_ClickingLearnMoreClosesBubble) {
+                       MAYBE_Local_ClickingLearnMoreClosesBubble) {
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
 
@@ -310,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
-    Upload_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff) {
+    MAYBE_Upload_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff) {
   // Disable the SecondaryUiMd experiment.
   scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
 
@@ -377,8 +384,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 #endif
 // Tests the upload save bubble. Ensures that clicking the top-right [X] close
 // button successfully causes the bubble to go away.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn) {
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    MAYBE_Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn) {
   // Enable the SecondaryUiMd experiment.
   scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
 
