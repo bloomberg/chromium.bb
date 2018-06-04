@@ -9,7 +9,9 @@
   await TestRunner.showPanel('console');
   var consoleView = Console.ConsoleView.instance();
 
-  var maxLength = Console.ConsoleViewMessage._MaxTokenizableStringLength = 40;
+  var maxLength = 40;
+  Console.ConsoleViewMessage._MaxTokenizableStringLength = maxLength;
+  ObjectUI.ObjectPropertiesSection._maxRenderableStringLength = maxLength;
   var visibleLength = Console.ConsoleViewMessage._LongStringVisibleLength = 20;
   var overMaxLength = maxLength * 2;
   TestRunner.addResult(`Setting max length to: ${maxLength}`);
@@ -27,12 +29,14 @@
   await TestRunner.evaluateInPagePromise(`console.log("https://chromium.org", "a".repeat(${overMaxLength}))`);
   await TestRunner.evaluateInPagePromise(`console.log(RegExp("a".repeat(${overMaxLength})))`);
   await TestRunner.evaluateInPagePromise(`console.log(Symbol("a".repeat(${overMaxLength})))`);
+  await TestRunner.evaluateInPagePromise(`console.log(["a".repeat(${overMaxLength})])`);
 
+  await ConsoleTestRunner.expandConsoleMessagesPromise();
   dumpMessageLengths();
 
   TestRunner.addResult('\nExpanding hidden texts');
   consoleView._visibleViewMessages.forEach(message => {
-    message.element().querySelectorAll('.console-inline-button').forEach(button => button.click());
+    message.element().querySelectorAll('.expandable-inline-button').forEach(button => button.click());
   });
 
   dumpMessageLengths();
