@@ -1368,9 +1368,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (void)userEnteredTabSwitcher {
-  if ([self.bubblePresenter.tabTipBubblePresenter isUserEngaged]) {
-    base::RecordAction(UserMetricsAction("NewTabTipTargetSelected"));
-  }
+  [self.bubblePresenter userEnteredTabSwitcher];
 }
 
 - (void)presentBubblesIfEligible {
@@ -4879,16 +4877,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Dismiss Find in Page focus.
   [self updateFindBar:NO shouldFocus:NO];
 
-  switch (type) {
-    case PopupMenuCommandTypeToolsMenu:
-      if (self.bubblePresenter.incognitoTabTipBubblePresenter.isUserEngaged) {
-        base::RecordAction(
-            UserMetricsAction("NewIncognitoTabTipTargetSelected"));
-      }
-      break;
-    case PopupMenuCommandTypeDefault:
-      // Do nothing.
-      break;
+  if (type == PopupMenuCommandTypeToolsMenu) {
+    [self.bubblePresenter toolsMenuDisplayed];
   }
 }
 

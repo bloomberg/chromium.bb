@@ -28,11 +28,6 @@ class ChromeBrowserState;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Used to display the new tab tip in-product help promotion bubble. |nil| if
-// the new tab tip bubble has not yet been presented. Once the bubble is
-// dismissed, it remains allocated so that |userEngaged| remains accessible.
-@property(nonatomic, strong, readonly)
-    BubbleViewControllerPresenter* tabTipBubblePresenter;
 // Used to display the new incognito tab tip in-product help promotion bubble.
 @property(nonatomic, strong, readonly)
     BubbleViewControllerPresenter* incognitoTabTipBubblePresenter;
@@ -47,6 +42,12 @@ class ChromeBrowserState;
 
 // Dismisses all bubbles.
 - (void)dismissBubbles;
+
+// Notifies the presenter that the user entered the tab switcher.
+- (void)userEnteredTabSwitcher;
+
+// Notifies the presenter that the tools menu has been displayed.
+- (void)toolsMenuDisplayed;
 
 @end
 
