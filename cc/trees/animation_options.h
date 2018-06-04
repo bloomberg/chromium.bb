@@ -5,6 +5,8 @@
 #ifndef CC_TREES_ANIMATION_OPTIONS_H_
 #define CC_TREES_ANIMATION_OPTIONS_H_
 
+#include <memory>
+
 #include "cc/cc_export.h"
 
 namespace cc {
