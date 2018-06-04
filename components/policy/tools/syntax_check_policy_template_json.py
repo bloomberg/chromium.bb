@@ -153,7 +153,8 @@ class PolicyTemplateChecker(object):
     Holes would not be a technical problem, but we want to ensure that nobody
     accidentally omits IDs.
     '''
-    for i in range(len(policy_ids)):
+    policy_count = len(policy_ids) + len(deleted_policy_ids)
+    for i in range(policy_count):
       if (i + 1) not in policy_ids and (i + 1) not in deleted_policy_ids:
         self._Error('No policy with id: %s' % (i + 1))
 
