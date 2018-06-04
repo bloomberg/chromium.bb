@@ -134,11 +134,8 @@ void ArcImeBridgeImpl::SendOnKeyboardAppearanceChanging(
   ime_instance->OnKeyboardAppearanceChanging(new_bounds, is_available);
 }
 
-void ArcImeBridgeImpl::OnTextInputTypeChanged(
-    mojom::TextInputType type,
-    bool is_personalized_learning_allowed) {
-  delegate_->OnTextInputTypeChanged(ConvertTextInputType(type),
-                                    is_personalized_learning_allowed);
+void ArcImeBridgeImpl::OnTextInputTypeChanged(mojom::TextInputType type) {
+  delegate_->OnTextInputTypeChanged(ConvertTextInputType(type));
 }
 
 void ArcImeBridgeImpl::OnCursorRectChanged(const gfx::Rect& rect,

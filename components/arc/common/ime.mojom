@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 11
+// Next MinVersion: 10
 
 module arc.mojom;
 
@@ -37,9 +37,7 @@ struct CompositionSegment {
 // Next method ID: 6
 interface ImeHost {
   // Notifies Chrome that the text input focus is changed.
-  OnTextInputTypeChanged@0(
-      TextInputType type,
-      [MinVersion=10] bool is_personalized_learning_allowed);
+  OnTextInputTypeChanged@0(TextInputType type);
 
   // Notifies Chrome that the cursor poisition has changed.
   //
