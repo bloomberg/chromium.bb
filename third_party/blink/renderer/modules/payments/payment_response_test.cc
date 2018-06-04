@@ -151,7 +151,7 @@ TEST(PaymentResponseTest, JSONSerializerTest) {
   ScriptValue json_object = output->toJSONForBinding(scope.GetScriptState());
   EXPECT_TRUE(json_object.IsObject());
 
-  String json_string = V8StringToWebCoreString<String>(
+  String json_string = ToBlinkString<String>(
       v8::JSON::Stringify(scope.GetContext(),
                           json_object.V8Value().As<v8::Object>())
           .ToLocalChecked(),

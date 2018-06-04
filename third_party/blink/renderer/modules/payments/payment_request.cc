@@ -433,8 +433,7 @@ void StringifyAndParseMethodSpecificData(
     return;
   }
 
-  output->stringified_data =
-      V8StringToWebCoreString<String>(value, kDoNotExternalize);
+  output->stringified_data = ToBlinkString<String>(value, kDoNotExternalize);
 
   if (output->stringified_data.length() >
       PaymentRequest::kMaxJSONStringLength) {

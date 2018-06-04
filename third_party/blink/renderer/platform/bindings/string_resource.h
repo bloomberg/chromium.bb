@@ -51,7 +51,7 @@ class StringResourceBase {
         -reduced_external_memory);
   }
 
-  const String& WebcoreString() { return plain_string_; }
+  const String& GetWTFString() { return plain_string_; }
 
   const AtomicString& GetAtomicString() {
 #if DCHECK_IS_ON()
@@ -131,9 +131,8 @@ class StringResource8 final : public StringResourceBase,
 enum ExternalMode { kExternalize, kDoNotExternalize };
 
 template <typename StringType>
-PLATFORM_EXPORT StringType V8StringToWebCoreString(v8::Local<v8::String>,
-                                                   ExternalMode);
-PLATFORM_EXPORT String Int32ToWebCoreString(int value);
+PLATFORM_EXPORT StringType ToBlinkString(v8::Local<v8::String>, ExternalMode);
+PLATFORM_EXPORT String ToBlinkString(int value);
 
 }  // namespace blink
 

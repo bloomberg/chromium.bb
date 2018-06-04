@@ -475,7 +475,7 @@ void V8ScriptValueSerializer::ThrowDataCloneError(
     v8::Local<v8::String> v8_message) {
   DCHECK(exception_state_);
   String message = exception_state_->AddExceptionContext(
-      V8StringToWebCoreString<String>(v8_message, kDoNotExternalize));
+      ToBlinkString<String>(v8_message, kDoNotExternalize));
   V8ThrowDOMException::ThrowDOMException(script_state_->GetIsolate(),
                                          kDataCloneError, message);
 }

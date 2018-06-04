@@ -22,8 +22,7 @@ String TraceWrapperV8String::Flatten(v8::Isolate* isolate) const {
     return String();
   DCHECK(isolate);
   v8::HandleScope handle_scope(isolate);
-  return V8StringToWebCoreString<String>(string_.NewLocal(isolate),
-                                         kExternalize);
+  return ToBlinkString<String>(string_.NewLocal(isolate), kExternalize);
 }
 
 }  // namespace blink

@@ -205,8 +205,8 @@ struct TypeConverter<base::Optional<Vector<uint8_t>>, blink::ScriptValue> {
         return base::nullopt;
       }
 
-      String string = blink::V8StringToWebCoreString<String>(
-          jsonString, blink::kDoNotExternalize);
+      String string =
+          blink::ToBlinkString<String>(jsonString, blink::kDoNotExternalize);
       return mojo::ConvertTo<Vector<uint8_t>>(string);
     }
 

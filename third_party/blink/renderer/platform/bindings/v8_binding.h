@@ -217,7 +217,7 @@ inline void V8SetReturnValueFast(const CallbackInfo& callback_info,
 // an external string then it is transformed into an external string at this
 // point to avoid repeated conversions.
 inline String ToCoreString(v8::Local<v8::String> value) {
-  return V8StringToWebCoreString<String>(value, kExternalize);
+  return ToBlinkString<String>(value, kExternalize);
 }
 
 inline String ToCoreStringWithNullCheck(v8::Local<v8::String> value) {
@@ -234,7 +234,7 @@ inline String ToCoreStringWithUndefinedOrNullCheck(
 }
 
 inline AtomicString ToCoreAtomicString(v8::Local<v8::String> value) {
-  return V8StringToWebCoreString<AtomicString>(value, kExternalize);
+  return ToBlinkString<AtomicString>(value, kExternalize);
 }
 
 // This method will return a null String if the v8::Value does not contain a

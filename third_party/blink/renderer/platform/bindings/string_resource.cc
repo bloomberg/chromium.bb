@@ -18,7 +18,7 @@ struct StringTraits {
 template <>
 struct StringTraits<String> {
   static const String& FromStringResource(StringResourceBase* resource) {
-    return resource->WebcoreString();
+    return resource->GetWTFString();
   }
   template <typename V8StringTrait>
   static String FromV8String(v8::Local<v8::String>, int);
@@ -80,8 +80,8 @@ AtomicString StringTraits<AtomicString>::FromV8String(
 }
 
 template <typename StringType>
-StringType V8StringToWebCoreString(v8::Local<v8::String> v8_string,
-                                   ExternalMode external) {
+StringType ToBlinkString(v8::Local<v8::String> v8_string,
+                         ExternalMode external) {
   {
     // This portion of this function is very hot in certain Dromeao benchmarks.
     v8::String::Encoding encoding;
@@ -125,14 +125,12 @@ StringType V8StringToWebCoreString(v8::Local<v8::String> v8_string,
 // Explicitly instantiate the above template with the expected
 // parameterizations, to ensure the compiler generates the code; otherwise link
 // errors can result in GCC 4.4.
-template String V8StringToWebCoreString<String>(v8::Local<v8::String>,
-                                                ExternalMode);
-template AtomicString V8StringToWebCoreString<AtomicString>(
-    v8::Local<v8::String>,
-    ExternalMode);
+template String ToBlinkString<String>(v8::Local<v8::String>, ExternalMode);
+template AtomicString ToBlinkString<AtomicString>(v8::Local<v8::String>,
+                                                  ExternalMode);
 
 // Fast but non thread-safe version.
-String Int32ToWebCoreStringFast(int value) {
+static String ToBlinkStringFast(int value) {
   // Caching of small strings below is not thread safe: newly constructed
   // AtomicString are not safely published.
   DCHECK(IsMainThread());
@@ -155,11 +153,11 @@ String Int32ToWebCoreStringFast(int value) {
   return web_core_string;
 }
 
-String Int32ToWebCoreString(int value) {
+String ToBlinkString(int value) {
   // If we are on the main thread (this should always true for non-workers),
   // call the faster one.
   if (IsMainThread())
-    return Int32ToWebCoreStringFast(value);
+    return ToBlinkStringFast(value);
   return String::Number(value);
 }
 
