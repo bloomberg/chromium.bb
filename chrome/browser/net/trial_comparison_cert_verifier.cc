@@ -269,22 +269,19 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
   }
 
   void FinishWithError() {
-    bool errors_equal = trial_error_ == primary_error_;
-    bool details_equal = CertVerifyResultEqual(trial_result_, primary_result_);
-
-    DCHECK(!errors_equal || !details_equal);
+    DCHECK(trial_error_ != primary_error_ ||
+           !CertVerifyResultEqual(trial_result_, primary_result_));
 
     TrialComparisonResult result_code = kInvalid;
 
-    if (errors_equal) {
-      if (primary_error_ == net::OK)
-        result_code = kBothValidDifferentDetails;
-      else
-        result_code = kBothErrorDifferentDetails;
+    if (primary_error_ == net::OK && trial_error_ == net::OK) {
+      result_code = kBothValidDifferentDetails;
     } else if (primary_error_ == net::OK) {
       result_code = kPrimaryValidSecondaryError;
     } else if (trial_error_ == net::OK) {
       result_code = kPrimaryErrorSecondaryValid;
+    } else {
+      result_code = kBothErrorDifferentDetails;
     }
     Finish(false /* is_success */, result_code);
   }

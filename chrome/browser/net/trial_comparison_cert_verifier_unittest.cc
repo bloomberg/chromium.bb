@@ -622,6 +622,80 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierOkSecondaryError) {
       TrialComparisonCertVerifier::kPrimaryValidSecondaryError, 1);
 }
 
+TEST_F(TrialComparisonCertVerifierTest, BothVerifiersDifferentErrors) {
+  // Primary verifier returns an error status.
+  net::CertVerifyResult primary_result;
+  primary_result.cert_status = net::CERT_STATUS_VALIDITY_TOO_LONG;
+  primary_result.verified_cert = cert_chain_1_;
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::ERR_CERT_VALIDITY_TOO_LONG,
+                                               primary_result);
+
+  // Trial verifier returns a different error status.
+  net::CertVerifyResult secondary_result;
+  secondary_result.cert_status = net::CERT_STATUS_DATE_INVALID;
+  secondary_result.verified_cert = cert_chain_1_;
+  scoped_refptr<FakeCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
+                                               secondary_result);
+
+  TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
+
+  net::CertVerifier::RequestParams params(
+      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
+      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifyResult result;
+  net::TestCompletionCallback callback;
+  std::unique_ptr<net::CertVerifier::Request> request;
+  int error =
+      verifier.Verify(params, nullptr /* crl_set */, &result,
+                      callback.callback(), &request, net::NetLogWithSource());
+  ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
+  EXPECT_TRUE(request);
+
+  error = callback.WaitForResult();
+  EXPECT_THAT(error, IsError(net::ERR_CERT_VALIDITY_TOO_LONG));
+
+  verify_proc2->WaitForVerifyCall();
+
+  // Expect a report.
+  std::vector<std::string> full_reports;
+  reporting_service_test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Successful({{"127.0.0.1", RetryStatus::NOT_RETRIED}}),
+      &full_reports);
+
+  ASSERT_EQ(1U, full_reports.size());
+
+  chrome_browser_ssl::CertLoggerRequest report;
+  ASSERT_TRUE(report.ParseFromString(full_reports[0]));
+
+  ASSERT_EQ(1, report.cert_error_size());
+  EXPECT_EQ(chrome_browser_ssl::CertLoggerRequest::ERR_CERT_VALIDITY_TOO_LONG,
+            report.cert_error()[0]);
+  EXPECT_EQ(0, report.cert_status_size());
+
+  ASSERT_TRUE(report.has_features_info());
+  ASSERT_TRUE(report.features_info().has_trial_verification_info());
+  const chrome_browser_ssl::TrialVerificationInfo& trial_info =
+      report.features_info().trial_verification_info();
+  ASSERT_EQ(1, trial_info.cert_error_size());
+  EXPECT_EQ(chrome_browser_ssl::CertLoggerRequest::ERR_CERT_DATE_INVALID,
+            trial_info.cert_error()[0]);
+  EXPECT_EQ(0, trial_info.cert_status_size());
+
+  EXPECT_THAT(report.unverified_cert_chain(), CertChainMatches(leaf_cert_1_));
+  EXPECT_THAT(report.cert_chain(), CertChainMatches(cert_chain_1_));
+  EXPECT_THAT(trial_info.cert_chain(), CertChainMatches(cert_chain_1_));
+
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
+                               1);
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kBothErrorDifferentDetails, 1);
+}
+
 TEST_F(TrialComparisonCertVerifierTest,
        BothVerifiersOk_DifferentVerifiedChains) {
   net::CertVerifyResult primary_result;
