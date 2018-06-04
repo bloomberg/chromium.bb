@@ -868,6 +868,10 @@
           'shards': 2,
         },
       },
+      # chromium.win
+      'Win10 Tests x64 (dbg)': {
+        'experiment_percentage': 100,
+      },
     },
   },
   'content_browsertests --mus': {
@@ -2162,6 +2166,7 @@
         'args': [
           '--browser=debug_x64',
         ],
+        'experiment_percentage': 100,
       },
       'Win7 Tests (dbg)(1)': {
         'args': [

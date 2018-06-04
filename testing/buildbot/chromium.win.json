@@ -1306,6 +1306,7 @@
         "test": "compositor_unittests"
       },
       {
+        "experiment_percentage": 100,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1714,6 +1715,7 @@
           "--test-shard-map-filename=smoke_test_benchmark_shard_map.json",
           "--browser=debug_x64"
         ],
+        "experiment_percentage": 100,
         "isolate_name": "performance_test_suite",
         "merge": {
           "args": [
