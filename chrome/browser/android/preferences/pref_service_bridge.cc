@@ -258,6 +258,12 @@ static jboolean JNI_PrefServiceBridge_GetAutoplayEnabled(
   return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_AUTOPLAY);
 }
 
+static jboolean JNI_PrefServiceBridge_GetSensorsEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_SENSORS);
+}
+
 static jboolean JNI_PrefServiceBridge_GetSoundEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -674,6 +680,17 @@ static void JNI_PrefServiceBridge_SetClipboardEnabled(
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_CLIPBOARD_READ,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
+}
+
+static void JNI_PrefServiceBridge_SetSensorsEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_SENSORS,
+      allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
 
 static void JNI_PrefServiceBridge_SetSoundEnabled(

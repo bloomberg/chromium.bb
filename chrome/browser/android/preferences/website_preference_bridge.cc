@@ -903,6 +903,37 @@ static jboolean JNI_WebsitePreferenceBridge_GetAdBlockingActivated(
       url, GURL(), CONTENT_SETTINGS_TYPE_ADS_DATA, std::string(), nullptr);
 }
 
+static void JNI_WebsitePreferenceBridge_GetSensorsOrigins(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& list) {
+  JNI_WebsitePreferenceBridge_GetOrigins(
+      env, CONTENT_SETTINGS_TYPE_SENSORS,
+      &Java_WebsitePreferenceBridge_insertSensorsInfoIntoList, list, false);
+}
+
+static jint JNI_WebsitePreferenceBridge_GetSensorsSettingForOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& origin,
+    const JavaParamRef<jstring>& embedder,
+    jboolean is_incognito) {
+  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
+      env, CONTENT_SETTINGS_TYPE_SENSORS, origin, embedder, is_incognito);
+}
+
+static void JNI_WebsitePreferenceBridge_SetSensorsSettingForOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& origin,
+    const JavaParamRef<jstring>& embedder,
+    jint value,
+    jboolean is_incognito) {
+  JNI_WebsitePreferenceBridge_SetSettingForOrigin(
+      env, CONTENT_SETTINGS_TYPE_SENSORS, origin, embedder,
+      static_cast<ContentSetting>(value), is_incognito);
+}
+
 // On Android O+ notification channels are not stored in the Chrome profile and
 // so are persisted across tests. This function resets them.
 static void JNI_WebsitePreferenceBridge_ResetNotificationsSettingsForTest(

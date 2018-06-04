@@ -202,6 +202,7 @@ public abstract class ChromeFeatureList {
     // When enabled, fullscreen WebContents will be moved to a new Activity. Coming soon...
     public static final String FULLSCREEN_ACTIVITY = "FullscreenActivity";
     public static final String GRANT_NOTIFICATIONS_TO_DSE = "GrantNotificationsToDSE";
+    public static final String GENERIC_SENSOR_EXTRA_CLASSES = "GenericSensorExtraClasses";
     public static final String HOME_PAGE_BUTTON_FORCE_ENABLED = "HomePageButtonForceEnabled";
     public static final String HORIZONTAL_TAB_SWITCHER_ANDROID = "HorizontalTabSwitcherAndroid";
     // Whether we show an important sites dialog in the "Clear Browsing Data" flow.

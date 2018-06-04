@@ -80,11 +80,13 @@ public class SingleWebsitePreferences extends PreferenceFragment
     public static final String PREF_POPUP_PERMISSION = "popup_permission_list";
     public static final String PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION =
             "protected_media_identifier_permission_list";
+    public static final String PREF_SENSORS_PERMISSION = "sensors_permission_list";
     public static final String PREF_SOUND_PERMISSION = "sound_permission_list";
 
     // All permissions from the permissions preference category must be listed here.
     // TODO(mvanouwerkerk): Use this array in more places to reduce verbosity.
     private static final String[] PERMISSION_PREFERENCE_KEYS = {
+            PREF_ADS_PERMISSION,
             PREF_AUTOPLAY_PERMISSION,
             PREF_BACKGROUND_SYNC_PERMISSION,
             PREF_CAMERA_CAPTURE_PERMISSION,
@@ -97,7 +99,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
             PREF_NOTIFICATIONS_PERMISSION,
             PREF_POPUP_PERMISSION,
             PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION,
-            PREF_ADS_PERMISSION,
+            PREF_SENSORS_PERMISSION,
             PREF_SOUND_PERMISSION,
     };
 
@@ -232,6 +234,10 @@ public class SingleWebsitePreferences extends PreferenceFragment
                     && origin.equals(other.getLocalStorageInfo().getOrigin())) {
                 merged.setLocalStorageInfo(other.getLocalStorageInfo());
             }
+            if (merged.getSensorsInfo() == null && other.getSensorsInfo() != null
+                    && permissionInfoIsForTopLevelOrigin(other.getSensorsInfo(), origin)) {
+                merged.setSensorsInfo(other.getSensorsInfo());
+            }
             for (StorageInfo storageInfo : other.getStorageInfo()) {
                 if (host.equals(storageInfo.getHost())) {
                     merged.addStorageInfo(storageInfo);
@@ -349,6 +355,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
             setUpListPreference(preference, mSite.getPopupPermission());
         } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(key)) {
             setUpListPreference(preference, mSite.getProtectedMediaIdentifierPermission());
+        } else if (PREF_SENSORS_PERMISSION.equals(key)) {
+            setUpListPreference(preference, mSite.getSensorsPermission());
         } else if (PREF_SOUND_PERMISSION.equals(key)) {
             setUpSoundPreference(preference);
         }
@@ -749,6 +757,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS;
             case PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
+            case PREF_SENSORS_PERMISSION:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS;
             case PREF_SOUND_PERMISSION:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND;
             default:
@@ -810,6 +820,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
             mSite.setPopupPermission(permission);
         } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(preference.getKey())) {
             mSite.setProtectedMediaIdentifierPermission(permission);
+        } else if (PREF_SENSORS_PERMISSION.equals(preference.getKey())) {
+            mSite.setSensorsPermission(permission);
         } else if (PREF_SOUND_PERMISSION.equals(preference.getKey())) {
             mSite.setSoundPermission(permission);
         }
@@ -886,6 +898,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         mSite.setNotificationPermission(ContentSetting.DEFAULT);
         mSite.setPopupPermission(ContentSetting.DEFAULT);
         mSite.setProtectedMediaIdentifierPermission(ContentSetting.DEFAULT);
+        mSite.setSensorsPermission(ContentSetting.DEFAULT);
         mSite.setSoundPermission(ContentSetting.DEFAULT);
 
         for (ChosenObjectInfo info : mSite.getChosenObjectInfo()) info.revoke();

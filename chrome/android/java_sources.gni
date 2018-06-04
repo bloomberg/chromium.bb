@@ -1125,6 +1125,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/website/NotificationInfo.java",
   "java/src/org/chromium/chrome/browser/preferences/website/PermissionInfo.java",
   "java/src/org/chromium/chrome/browser/preferences/website/ProtectedMediaIdentifierInfo.java",
+  "java/src/org/chromium/chrome/browser/preferences/website/SensorsInfo.java",
   "java/src/org/chromium/chrome/browser/preferences/website/SingleCategoryPreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/website/SingleWebsitePreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/website/SiteSettingsCategory.java",

@@ -43,6 +43,7 @@ public class Website implements Serializable {
     private NotificationInfo mNotificationInfo;
     private ContentSettingException mPopupException;
     private ProtectedMediaIdentifierInfo mProtectedMediaIdentifierInfo;
+    private SensorsInfo mSensorsInfo;
     private ContentSettingException mSoundException;
     private final List<StorageInfo> mStorageInfo = new ArrayList<StorageInfo>();
     private int mStorageInfoCallbacksLeft;
@@ -327,6 +328,36 @@ public class Website implements Serializable {
      */
     public ContentSettingException getJavaScriptException() {
         return mJavaScriptException;
+    }
+
+    /**
+     * Sets the SensorsInfo object for this Website.
+     */
+    public void setSensorsInfo(SensorsInfo info) {
+        mSensorsInfo = info;
+    }
+
+    /**
+     * Returns the SensorsInfo object for this Website.
+     */
+    public SensorsInfo getSensorsInfo() {
+        return mSensorsInfo;
+    }
+
+    /**
+     * Returns what permission governs sensors access.
+     */
+    public ContentSetting getSensorsPermission() {
+        return mSensorsInfo != null ? mSensorsInfo.getContentSetting() : null;
+    }
+
+    /**
+     * Set sensors permission access setting for this site.
+     */
+    public void setSensorsPermission(ContentSetting value) {
+        if (mSensorsInfo != null) {
+            mSensorsInfo.setContentSetting(value);
+        }
     }
 
     /**

@@ -236,6 +236,21 @@ public abstract class WebsitePreferenceBridge {
     }
 
     /**
+     * @return the list of origins that have permission to access device's sensors.
+     */
+    public static List<SensorsInfo> getSensorsInfo() {
+        ArrayList<SensorsInfo> list = new ArrayList<SensorsInfo>();
+        nativeGetSensorsOrigins(list);
+        return list;
+    }
+
+    @CalledByNative
+    private static void insertSensorsInfoIntoList(
+            ArrayList<SensorsInfo> list, String origin, String embedder) {
+        list.add(new SensorsInfo(origin, embedder, false));
+    }
+
+    /**
      * Returns whether the DSE (Default Search Engine) controls the given permission the given
      * origin.
      */
@@ -302,5 +317,10 @@ public abstract class WebsitePreferenceBridge {
     private static native boolean nativeIsPermissionControlledByDSE(
             @ContentSettingsType int contentSettingsType, String origin, boolean isIncognito);
     private static native boolean nativeGetAdBlockingActivated(String origin);
+    static native int nativeGetSensorsSettingForOrigin(
+            String origin, String embedder, boolean isIncognito);
+    static native void nativeSetSensorsSettingForOrigin(
+            String origin, String embedder, int value, boolean isIncognito);
+    static native void nativeGetSensorsOrigins(Object list);
     static native void nativeResetNotificationsSettingsForTest();
 }
