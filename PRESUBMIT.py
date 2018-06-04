@@ -3041,15 +3041,22 @@ def _CheckForIncludeGuards(input_api, output_api):
   If a file should not have such guards (and it probably should) then it
   should include the string "no-include-guard-because-multiply-included".
   """
-  def is_header_file(f):
-    return f.LocalPath().endswith('.h')
+  def is_chromium_header_file(f):
+    # We only check header files under the control of the Chromium
+    # project. That is, those outside third_party apart from
+    # third_party/blink.
+    file_with_path = input_api.os_path.normpath(f.LocalPath())
+    return (file_with_path.endswith('.h') and
+            (not file_with_path.startswith('third_party') or
+             file_with_path.startswith(
+               input_api.os_path.join('third_party', 'blink'))))
 
   def replace_special_with_underscore(string):
     return input_api.re.sub(r'[\\/.-]', '_', string)
 
   errors = []
 
-  for f in input_api.AffectedSourceFiles(is_header_file):
+  for f in input_api.AffectedSourceFiles(is_chromium_header_file):
     guard_name = None
     guard_line_number = None
     seen_guard_end = False
@@ -3098,16 +3105,9 @@ def _CheckForIncludeGuards(input_api, output_api):
           guard_line_number = line_number
 
           # We allow existing files to use include guards whose names
-          # don't match the chromium style guide, but new files
-          # (outside third_party) should get it right. The only part
-          # of third_party we check is blink.
-          should_check_strict_guard_name = (
-            not f.OldContents() and
-            (not file_with_path.startswith('third_party') or
-                file_with_path.startswith(
-                  input_api.os_path.join('third_party', 'blink'))))
-
-          if should_check_strict_guard_name:
+          # don't match the chromium style guide, but new files should
+          # get it right.
+          if not f.OldContents():
             if guard_name != expected_guard:
               errors.append(output_api.PresubmitPromptWarning(
                 'Header using the wrong include guard name %s' % guard_name,
