@@ -54,15 +54,15 @@ public class ToolbarButtonInProductHelpController {
         int iphText = 0;
         int iphTextForAccessibility = 0;
         switch (variation) {
-            case "home":
+            case ToolbarLayout.NTP_BUTTON_HOME_VARIATION:
                 iphText = R.string.iph_ntp_button_text_home_text;
                 iphTextForAccessibility = R.string.iph_ntp_button_text_home_accessibility_text;
                 break;
-            case "news_feed":
+            case ToolbarLayout.NTP_BUTTON_NEWS_FEED_VARIATION:
                 iphText = R.string.iph_ntp_button_text_news_feed_text;
                 iphTextForAccessibility = R.string.iph_ntp_button_text_news_feed_accessibility_text;
                 break;
-            case "chrome":
+            case ToolbarLayout.NTP_BUTTON_CHROME_VARIATION:
                 iphText = R.string.iph_ntp_button_text_chrome_text;
                 iphTextForAccessibility = R.string.iph_ntp_button_text_chrome_accessibility_text;
                 break;

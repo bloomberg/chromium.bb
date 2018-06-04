@@ -75,4 +75,6 @@ public class UrlConstants {
 
     public static final String CHROME_MEMEX_URL = "https://chrome-memex.appspot.com/";
     public static final String CHROME_MEMEX_DEV_URL = "https://chrome-memex-dev.appspot.com/";
+
+    public static final String CONTENT_SUGGESTIONS_SUFFIX = "#suggestions";
 }

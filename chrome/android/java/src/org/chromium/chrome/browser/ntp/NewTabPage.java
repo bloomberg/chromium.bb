@@ -219,6 +219,9 @@ public class NewTabPage
             NewTabPageUma.recordNTPImpression(NewTabPageUma.NTP_IMPRESSION_REGULAR);
             // If not visible when loading completes, wait until onShown is received.
             if (!mTab.isHidden()) recordNTPShown();
+            if (mTab.getUrl().contains(UrlConstants.CONTENT_SUGGESTIONS_SUFFIX)) {
+                mNewTabPageView.scrollToSuggestions();
+            }
         }
     }
 
