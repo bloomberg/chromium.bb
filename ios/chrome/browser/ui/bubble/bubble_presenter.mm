@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 
 #include "base/mac/bind_objc_block.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -35,7 +37,10 @@
 // dismissed, it remains allocated so that |userEngaged| remains accessible.
 @property(nonatomic, strong)
     BubbleViewControllerPresenter* bottomToolbarTipBubblePresenter;
-@property(nonatomic, strong, readwrite)
+// Used to display the new tab tip in-product help promotion bubble. |nil| if
+// the new tab tip bubble has not yet been presented. Once the bubble is
+// dismissed, it remains allocated so that |userEngaged| remains accessible.
+@property(nonatomic, strong)
     BubbleViewControllerPresenter* tabTipBubblePresenter;
 @property(nonatomic, strong, readwrite)
     BubbleViewControllerPresenter* incognitoTabTipBubblePresenter;
@@ -94,6 +99,19 @@
   [self.tabTipBubblePresenter dismissAnimated:NO];
   [self.incognitoTabTipBubblePresenter dismissAnimated:NO];
   [self.bottomToolbarTipBubblePresenter dismissAnimated:NO];
+}
+
+- (void)userEnteredTabSwitcher {
+  if ([self.tabTipBubblePresenter isUserEngaged]) {
+    base::RecordAction(base::UserMetricsAction("NewTabTipTargetSelected"));
+  }
+}
+
+- (void)toolsMenuDisplayed {
+  if (self.incognitoTabTipBubblePresenter.isUserEngaged) {
+    base::RecordAction(
+        base::UserMetricsAction("NewIncognitoTabTipTargetSelected"));
+  }
 }
 
 #pragma mark - Private
