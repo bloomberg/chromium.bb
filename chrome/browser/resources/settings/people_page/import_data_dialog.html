@@ -34,6 +34,13 @@
         margin: auto;
         width: 100%;
       }
+
+      /* Prevent focus-outline to be chopped by the bottom of dialog body.
+         TODO(scottchen): find a more general way to solve this. */
+      .md-select {
+        margin-top: 2px;
+      }
+
     </style>
     <cr-dialog id="dialog" close-text="$i18n{close}"
         ignore-popstate>
