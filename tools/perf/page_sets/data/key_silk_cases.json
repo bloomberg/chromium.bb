@@ -1,70 +1,70 @@
 {
     "archives": {
-        "http://groupcloned.com/test/plain/list-recycle-transform.html": {
+	"list_recycle_transform": {
             "DEFAULT": "key_silk_cases_001.wprgo"
         },
-        "http://groupcloned.com/test/plain/sticky-using-webkit-backface-visibility.html": {
+        "sticky_using_webkit": {
             "DEFAULT": "key_silk_cases_001.wprgo"
         },
-        "http://jsbin.com/UVIgUTa/38/quiet": {
+	"card_expansion": {
             "DEFAULT": "key_silk_cases_014.wprgo"
         },
-        "http://jsfiddle.net/3yDKh/15/show/": {
+        "card_expansion_animated": {
             "DEFAULT": "key_silk_cases_014.wprgo"
         },
-        "http://jsfiddle.net/3yDKh/16/show/": {
+        "card_flying": {
             "DEFAULT": "key_silk_cases_014.wprgo"
         },
-        "http://jsfiddle.net/R8DX9/4/show/": {
+        "zoom_in_animation": {
             "DEFAULT": "key_silk_cases_014.wprgo"
         },
-        "http://jsfiddle.net/TLXLu/3/show/": {
+        "swipe_to_dismiss": {
             "DEFAULT": "key_silk_cases_014.wprgo"
         },
-        "http://jsfiddle.net/bNp2h/3/show/": {
+        "horizontal_vertical_expansion": {
+            "DEFAULT": "key_silk_cases_014.wprgo"
+        },
+        "vertical_expansion": {
+            "DEFAULT": "key_silk_cases_014.wprgo"
+        },
+        "parallax_effect": {
+            "DEFAULT": "key_silk_cases_014.wprgo"
+        },
+        "coordinated_animation": {
+            "DEFAULT": "key_silk_cases_014.wprgo"
+        },
+        "mask_transition_animation": {
+            "DEFAULT": "key_silk_cases_014.wprgo"
+        },
+        "card_expansion_images_text": {
             "DEFAULT": "key_silk_cases_015.wprgo"
         },
-        "http://jsfiddle.net/cKB9D/7/show/": {
+        "physical_simulation": {
             "DEFAULT": "key_silk_cases_014.wprgo"
         },
-        "http://jsfiddle.net/jx5De/14/show/": {
-            "DEFAULT": "key_silk_cases_014.wprgo"
-        },
-        "http://jsfiddle.net/rF9Gh/7/show/": {
-            "DEFAULT": "key_silk_cases_014.wprgo"
-        },
-        "http://jsfiddle.net/ugkd4/10/show/": {
-            "DEFAULT": "key_silk_cases_014.wprgo"
-        },
-        "http://jsfiddle.net/vBQHH/11/show/": {
-            "DEFAULT": "key_silk_cases_014.wprgo"
-        },
-        "http://jsfiddle.net/xLuvC/1/show/": {
-            "DEFAULT": "key_silk_cases_014.wprgo"
-        },
-        "http://mobile-news.sandbox.google.com/news/pt0?scroll": {
+        "basic_stream": {
             "DEFAULT": "key_silk_cases_002.wprgo"
         },
-        "http://mobile-news.sandbox.google.com/news/pt0?swipe": {
+        "google_news_ios": {
             "DEFAULT": "key_silk_cases_002.wprgo"
         },
-        "http://plus.google.com/app/basic/stream": {
+        "mobile_news_sandbox": {
             "DEFAULT": "key_silk_cases_002.wprgo"
         },
-        "http://s.codepen.io/befamous/fullpage/pFsqb?scroll": {
+        "famo_us_twitter_demo": {
             "DEFAULT": "key_silk_cases_002.wprgo"
         },
-        "http://wiltzius.github.io/shape-shifter/": {
+        "svg_icon_raster": {
             "DEFAULT": "key_silk_cases_016.wprgo"
         },
-        "http://www.google.com/#q=google": {
+        "gws_google_expansion": {
             "DEFAULT": "key_silk_cases_002.wprgo"
         },
-        "https://polymer-topeka.appspot.com/": {
-            "DEFAULT": "key_silk_cases_018.wprgo"
-        },
-        "https://www.google.com/search?hl=en&q=define%3Aboogie": {
+        "gws_boogie_expansion": {
             "DEFAULT": "key_silk_cases_017.wprgo"
+        },
+        "polymer_topeka": {
+            "DEFAULT": "key_silk_cases_018.wprgo"
         }
     },
     "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.",
