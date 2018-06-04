@@ -943,7 +943,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
             '--run-ref-build',
             '--test-shard-map-filename=desktop_5_shard_map.json',
           ],
-          'num_shards': 26
+          'num_shards': 5
         },
         {
           'isolate': 'net_perftests',
