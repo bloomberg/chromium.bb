@@ -222,7 +222,14 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, OpenDialogFromContextMenu) {
   TestOpenDialogFromContextMenu();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, OpenDialogFromAppMenu) {
+// Disabled on macOS due to many timeouts. Seems fine on all other platforms.
+// crbug.com/849146
+#if defined(OS_MACOSX)
+#define MAYBE_OpenDialogFromAppMenu DISABLED_OpenDialogFromAppMenu
+#else
+#define MAYBE_OpenDialogFromAppMenu OpenDialogFromAppMenu
+#endif
+IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, MAYBE_OpenDialogFromAppMenu) {
   TestOpenDialogFromAppMenu();
 }
 
