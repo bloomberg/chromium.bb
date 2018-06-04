@@ -49,8 +49,6 @@ class TtsControllerImpl : public TtsController {
   void AddVoicesChangedDelegate(VoicesChangedDelegate* delegate) override;
   void RemoveVoicesChangedDelegate(VoicesChangedDelegate* delegate) override;
   void RemoveUtteranceEventDelegate(UtteranceEventDelegate* delegate) override;
-  void SetTtsEngineDelegate(TtsEngineDelegate* delegate) override;
-  TtsEngineDelegate* GetTtsEngineDelegate() override;
   void SetPlatformImpl(TtsPlatformImpl* platform_impl) override;
   int QueueSize() override;
 
@@ -109,9 +107,6 @@ class TtsControllerImpl : public TtsController {
   // A pointer to the platform implementation of text-to-speech, for
   // dependency injection.
   TtsPlatformImpl* platform_impl_;
-
-  // The delegate that processes TTS requests with user-installed extensions.
-  TtsEngineDelegate* tts_engine_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsControllerImpl);
 };

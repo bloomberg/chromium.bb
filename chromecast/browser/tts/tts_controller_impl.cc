@@ -146,10 +146,7 @@ TtsControllerImpl* TtsControllerImpl::GetInstance() {
 }
 
 TtsControllerImpl::TtsControllerImpl()
-    : current_utterance_(nullptr),
-      paused_(false),
-      platform_impl_(nullptr),
-      tts_engine_delegate_(nullptr) {}
+    : current_utterance_(nullptr), paused_(false), platform_impl_(nullptr) {}
 
 TtsControllerImpl::~TtsControllerImpl() {
   if (current_utterance_) {
@@ -226,8 +223,6 @@ void TtsControllerImpl::SpeakNow(Utterance* utterance) {
     DCHECK(!voice.extension_id.empty());
     current_utterance_ = utterance;
     utterance->set_extension_id(voice.extension_id);
-    if (tts_engine_delegate_)
-      tts_engine_delegate_->Speak(utterance, voice);
     bool sends_end_event =
         voice.events.find(TTS_EVENT_END) != voice.events.end();
     if (!sends_end_event) {
@@ -268,13 +263,8 @@ void TtsControllerImpl::Stop() {
   base::RecordAction(base::UserMetricsAction("TextToSpeech.Stop"));
 
   paused_ = false;
-  if (current_utterance_ && !current_utterance_->extension_id().empty()) {
-    if (tts_engine_delegate_)
-      tts_engine_delegate_->Stop(current_utterance_);
-  } else {
-    GetPlatformImpl()->clear_error();
-    GetPlatformImpl()->StopSpeaking();
-  }
+  GetPlatformImpl()->clear_error();
+  GetPlatformImpl()->StopSpeaking();
 
   if (current_utterance_)
     current_utterance_->OnTtsEvent(TTS_EVENT_INTERRUPTED, kInvalidCharIndex,
@@ -287,10 +277,7 @@ void TtsControllerImpl::Pause() {
   base::RecordAction(base::UserMetricsAction("TextToSpeech.Pause"));
 
   paused_ = true;
-  if (current_utterance_ && !current_utterance_->extension_id().empty()) {
-    if (tts_engine_delegate_)
-      tts_engine_delegate_->Pause(current_utterance_);
-  } else if (current_utterance_) {
+  if (current_utterance_) {
     GetPlatformImpl()->clear_error();
     GetPlatformImpl()->Pause();
   }
@@ -300,10 +287,7 @@ void TtsControllerImpl::Resume() {
   base::RecordAction(base::UserMetricsAction("TextToSpeech.Resume"));
 
   paused_ = false;
-  if (current_utterance_ && !current_utterance_->extension_id().empty()) {
-    if (tts_engine_delegate_)
-      tts_engine_delegate_->Resume(current_utterance_);
-  } else if (current_utterance_) {
+  if (current_utterance_) {
     GetPlatformImpl()->clear_error();
     GetPlatformImpl()->Resume();
   } else {
@@ -379,9 +363,6 @@ void TtsControllerImpl::GetVoices(content::BrowserContext* browser_context,
     if (platform_impl->PlatformImplAvailable())
       platform_impl->GetVoices(out_voices);
   }
-
-  if (browser_context && tts_engine_delegate_)
-    tts_engine_delegate_->GetVoices(browser_context, out_voices);
 }
 
 bool TtsControllerImpl::IsSpeaking() {
@@ -591,24 +572,11 @@ void TtsControllerImpl::RemoveUtteranceEventDelegate(
 
   if (current_utterance_ && current_utterance_->event_delegate() == delegate) {
     current_utterance_->set_event_delegate(nullptr);
-    if (!current_utterance_->extension_id().empty()) {
-      if (tts_engine_delegate_)
-        tts_engine_delegate_->Stop(current_utterance_);
-    } else {
-      GetPlatformImpl()->clear_error();
-      GetPlatformImpl()->StopSpeaking();
-    }
+    GetPlatformImpl()->clear_error();
+    GetPlatformImpl()->StopSpeaking();
 
     FinishCurrentUtterance();
     if (!paused_)
       SpeakNextUtterance();
   }
-}
-
-void TtsControllerImpl::SetTtsEngineDelegate(TtsEngineDelegate* delegate) {
-  tts_engine_delegate_ = delegate;
-}
-
-TtsEngineDelegate* TtsControllerImpl::GetTtsEngineDelegate() {
-  return tts_engine_delegate_;
 }

@@ -81,33 +81,6 @@ struct VoiceData {
   std::string native_voice_identifier;
 };
 
-// Interface that delegates TTS requests to user-installed extensions.
-class TtsEngineDelegate {
- public:
-  virtual ~TtsEngineDelegate() {}
-
-  // Return a list of all available voices registered.
-  virtual void GetVoices(content::BrowserContext* browser_context,
-                         std::vector<VoiceData>* out_voices) = 0;
-
-  // Speak the given utterance by sending an event to the given TTS engine.
-  virtual void Speak(Utterance* utterance, const VoiceData& voice) = 0;
-
-  // Stop speaking the given utterance by sending an event to the target
-  // associated with this utterance.
-  virtual void Stop(Utterance* utterance) = 0;
-
-  // Pause in the middle of speaking this utterance.
-  virtual void Pause(Utterance* utterance) = 0;
-
-  // Resume speaking this utterance.
-  virtual void Resume(Utterance* utterance) = 0;
-
-  // Load the built-in component extension for ChromeOS.
-  virtual bool LoadBuiltInTtsExtension(
-      content::BrowserContext* browser_context) = 0;
-};
-
 // Class that wants to receive events on utterances.
 class UtteranceEventDelegate {
  public:
@@ -318,14 +291,6 @@ class TtsController {
   // removes any utterances with this delegate from the queue.
   virtual void RemoveUtteranceEventDelegate(
       UtteranceEventDelegate* delegate) = 0;
-
-  // Set the delegate that processes TTS requests with user-installed
-  // extensions.
-  virtual void SetTtsEngineDelegate(TtsEngineDelegate* delegate) = 0;
-
-  // Get the delegate that processes TTS requests with user-installed
-  // extensions.
-  virtual TtsEngineDelegate* GetTtsEngineDelegate() = 0;
 
   // For unit testing.
   virtual void SetPlatformImpl(TtsPlatformImpl* platform_impl) = 0;
