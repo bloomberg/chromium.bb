@@ -34,12 +34,12 @@ std::unique_ptr<FocusRing> FocusRing::Install(View* parent) {
 
 // static
 bool FocusRing::IsPathUseable(const SkPath& path) {
-  return path.isRect(nullptr) || path.isOval(nullptr) || path.isRRect(nullptr);
+  return !path.isEmpty() && (path.isRect(nullptr) || path.isOval(nullptr) ||
+                             path.isRRect(nullptr));
 }
 
 void FocusRing::SetPath(const SkPath& path) {
-  DCHECK(IsPathUseable(path));
-  path_ = path;
+  path_ = IsPathUseable(path) ? path : SkPath();
   SchedulePaint();
 }
 

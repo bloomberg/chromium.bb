@@ -69,6 +69,14 @@ bool ToolbarButton::IsMenuShowing() const {
   return menu_showing_;
 }
 
+void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (focus_ring()) {
+    SkPath path;
+    path.addOval(gfx::RectToSkRect(GetLocalBounds()));
+    focus_ring()->SetPath(path);
+  }
+}
+
 bool ToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
   if (IsTriggerableEvent(event) && enabled() && ShouldShowMenu() &&
       HitTestPoint(event.location())) {

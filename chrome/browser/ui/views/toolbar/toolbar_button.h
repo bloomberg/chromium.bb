@@ -55,6 +55,7 @@ class ToolbarButton : public views::ImageButton,
   bool IsMenuShowing() const;
 
   // views::ImageButton:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
