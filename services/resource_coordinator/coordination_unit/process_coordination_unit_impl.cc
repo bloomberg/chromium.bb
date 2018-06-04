@@ -10,19 +10,6 @@
 
 namespace resource_coordinator {
 
-// static
-std::vector<ProcessCoordinationUnitImpl*>
-ProcessCoordinationUnitImpl::GetAllProcessCoordinationUnits() {
-  auto cus = CoordinationUnitBase::GetCoordinationUnitsOfType(
-      CoordinationUnitType::kProcess);
-  std::vector<ProcessCoordinationUnitImpl*> process_cus;
-  for (auto* process_cu : cus) {
-    process_cus.push_back(
-        ProcessCoordinationUnitImpl::FromCoordinationUnitBase(process_cu));
-  }
-  return process_cus;
-}
-
 ProcessCoordinationUnitImpl::ProcessCoordinationUnitImpl(
     const CoordinationUnitID& id,
     CoordinationUnitGraph* graph,
@@ -36,7 +23,8 @@ ProcessCoordinationUnitImpl::~ProcessCoordinationUnitImpl() {
 
 void ProcessCoordinationUnitImpl::AddFrame(const CoordinationUnitID& cu_id) {
   DCHECK(cu_id.type == CoordinationUnitType::kFrame);
-  auto* frame_cu = FrameCoordinationUnitImpl::GetCoordinationUnitByID(cu_id);
+  auto* frame_cu =
+      FrameCoordinationUnitImpl::GetCoordinationUnitByID(graph_, cu_id);
   if (!frame_cu)
     return;
   if (AddFrame(frame_cu)) {
@@ -47,7 +35,7 @@ void ProcessCoordinationUnitImpl::AddFrame(const CoordinationUnitID& cu_id) {
 void ProcessCoordinationUnitImpl::RemoveFrame(const CoordinationUnitID& cu_id) {
   DCHECK(cu_id != id());
   FrameCoordinationUnitImpl* frame_cu =
-      FrameCoordinationUnitImpl::GetCoordinationUnitByID(cu_id);
+      FrameCoordinationUnitImpl::GetCoordinationUnitByID(graph_, cu_id);
   if (!frame_cu)
     return;
   if (RemoveFrame(frame_cu)) {

@@ -24,7 +24,7 @@ std::unique_ptr<service_manager::Service> ResourceCoordinatorService::Create() {
 }
 
 ResourceCoordinatorService::ResourceCoordinatorService()
-    : weak_factory_(this) {}
+    : introspector_(&coordination_unit_graph_), weak_factory_(this) {}
 
 ResourceCoordinatorService::~ResourceCoordinatorService() = default;
 
