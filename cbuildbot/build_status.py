@@ -284,6 +284,11 @@ class SlaveStatus(object):
                      build, build_result)
         continue
 
+      # TODO (xixuan): Remove this after Skylab testing stage is finished.
+      if build in ['nyan_blaze-paladin']:
+        builds_to_retry.add(build)
+        continue
+
       build_retry = self.new_buildbucket_info_dict[build].retry
       if build_retry >= constants.BUILDBUCKET_BUILD_RETRY_LIMIT:
         logging.info('Not retriable build %s reached the build retry limit %d.',
