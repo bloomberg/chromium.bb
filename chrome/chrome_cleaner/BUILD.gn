@@ -11,6 +11,7 @@ test("chrome_cleaner_unittests") {
 
   deps = [
     # Tests from sub-directories.
+    "//chrome/chrome_cleaner/http:unittest_sources",
     "//chrome/chrome_cleaner/strings:unittest_sources",
 
     # Dependencies of the test harness.
