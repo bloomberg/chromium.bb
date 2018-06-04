@@ -587,15 +587,15 @@ public abstract class Stack {
                 break;
         }
 
-        if (mOverviewAnimationType != OverviewAnimationType.NONE) {
-            // sync the scrollTarget and scrollOffset. For ENTER_STACK animation, don't sync to
-            // ensure the tab can tilt back.
-            if (mOverviewAnimationType != OverviewAnimationType.ENTER_STACK) {
-                setScrollTarget(mScrollOffset, true);
-            }
-
-            mOverviewAnimationType = OverviewAnimationType.NONE;
+        // sync the scrollTarget and scrollOffset. For ENTER_STACK animation, don't sync to ensure
+        // the tab can tilt back.
+        if (mOverviewAnimationType != OverviewAnimationType.NONE
+                && mOverviewAnimationType != OverviewAnimationType.ENTER_STACK
+                && mScroller.isFinished()) {
+            setScrollTarget(mScrollOffset, true);
         }
+        mOverviewAnimationType = OverviewAnimationType.NONE;
+
         mTabAnimations = null;
         mViewAnimations = null;
     }
