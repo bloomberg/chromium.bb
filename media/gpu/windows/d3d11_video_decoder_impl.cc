@@ -169,9 +169,10 @@ void D3D11VideoDecoderImpl::Initialize(
     return;
   }
 
-  accelerated_video_decoder_ =
-      std::make_unique<H264Decoder>(std::make_unique<D3D11H264Accelerator>(
-          this, video_decoder, video_device_, video_context_));
+  accelerated_video_decoder_ = std::make_unique<H264Decoder>(
+      std::make_unique<D3D11H264Accelerator>(this, video_decoder, video_device_,
+                                             video_context_),
+      config.color_space_info());
 
   // |cdm_context| could be null for clear playback.
   if (cdm_context) {
@@ -357,7 +358,9 @@ D3D11PictureBuffer* D3D11VideoDecoderImpl::GetPicture() {
   return nullptr;
 }
 
-void D3D11VideoDecoderImpl::OutputResult(D3D11PictureBuffer* buffer) {
+void D3D11VideoDecoderImpl::OutputResult(
+    D3D11PictureBuffer* buffer,
+    const VideoColorSpace& buffer_colorspace) {
   buffer->set_in_client_use(true);
 
   // Note: The pixel format doesn't matter.
@@ -367,7 +370,7 @@ void D3D11VideoDecoderImpl::OutputResult(D3D11PictureBuffer* buffer) {
   // https://crbug.com/837337
   double pixel_aspect_ratio = 1.0;
   base::TimeDelta timestamp = buffer->timestamp_;
-  auto frame = VideoFrame::WrapNativeTextures(
+  scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
       PIXEL_FORMAT_NV12, buffer->mailbox_holders(),
       VideoFrame::ReleaseMailboxCB(), visible_rect.size(), visible_rect,
       GetNaturalSize(visible_rect, pixel_aspect_ratio), timestamp);
@@ -383,6 +386,8 @@ void D3D11VideoDecoderImpl::OutputResult(D3D11PictureBuffer* buffer) {
 
   if (is_encrypted_)
     frame->metadata()->SetBoolean(VideoFrameMetadata::PROTECTED_VIDEO, true);
+
+  frame->set_color_space(buffer_colorspace.ToGfxColorSpace());
   output_cb_.Run(frame);
 }
 

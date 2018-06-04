@@ -101,7 +101,8 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
     DISALLOW_COPY_AND_ASSIGN(H264Accelerator);
   };
 
-  explicit H264Decoder(std::unique_ptr<H264Accelerator> accelerator);
+  H264Decoder(std::unique_ptr<H264Accelerator> accelerator,
+              const VideoColorSpace& container_color_space = VideoColorSpace());
   ~H264Decoder() override;
 
   // AcceleratedVideoDecoder implementation.
@@ -236,6 +237,9 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
 
   // Decoder state.
   State state_;
+
+  // The colorspace for the h264 container.
+  const VideoColorSpace container_color_space_;
 
   // Parser in use.
   H264Parser parser_;

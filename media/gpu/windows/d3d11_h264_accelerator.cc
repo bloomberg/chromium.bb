@@ -452,7 +452,8 @@ bool D3D11H264Accelerator::OutputPicture(
     const scoped_refptr<H264Picture>& pic) {
   scoped_refptr<D3D11H264Picture> our_pic(
       static_cast<D3D11H264Picture*>(pic.get()));
-  client_->OutputResult(our_pic->picture);
+
+  client_->OutputResult(our_pic->picture, pic->get_colorspace());
   return true;
 }
 
