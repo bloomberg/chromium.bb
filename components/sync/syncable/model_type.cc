@@ -141,6 +141,8 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
      sync_pb::EntitySpecifics::kUserEventFieldNumber, 39},
     {MOUNTAIN_SHARES, "MOUNTAIN_SHARE", "mountain_shares", "Mountain Shares",
      sync_pb::EntitySpecifics::kMountainShareFieldNumber, 40},
+    {USER_CONSENTS, "USER_CONSENT", "user_consent", "User Consents",
+     sync_pb::EntitySpecifics::kUserConsentFieldNumber, 41},
     // ---- Proxy types ----
     {PROXY_TABS, "", "", "Tabs", -1, 25},
     // ---- Control Types ----
@@ -153,11 +155,11 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
 static_assert(arraysize(kModelTypeInfoMap) == MODEL_TYPE_COUNT,
               "kModelTypeInfoMap should have MODEL_TYPE_COUNT elements");
 
-static_assert(41 == syncer::MODEL_TYPE_COUNT,
+static_assert(42 == syncer::MODEL_TYPE_COUNT,
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
-static_assert(41 == syncer::MODEL_TYPE_COUNT,
+static_assert(42 == syncer::MODEL_TYPE_COUNT,
               "When adding a new type, update kAllocatorDumpNameWhitelist in "
               "base/trace_event/memory_infra_background_whitelist.cc.");
 
@@ -275,6 +277,9 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case MOUNTAIN_SHARES:
       specifics->mutable_mountain_share();
       break;
+    case USER_CONSENTS:
+      specifics->mutable_user_consent();
+      break;
     case PROXY_TABS:
       NOTREACHED() << "No default field value for " << ModelTypeToString(type);
       break;
@@ -344,7 +349,7 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(41 == MODEL_TYPE_COUNT,
+  static_assert(42 == MODEL_TYPE_COUNT,
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -419,6 +424,8 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return USER_EVENTS;
   if (specifics.has_mountain_share())
     return MOUNTAIN_SHARES;
+  if (specifics.has_user_consent())
+    return USER_CONSENTS;
   if (specifics.has_nigori())
     return NIGORI;
   if (specifics.has_experiments())
@@ -440,7 +447,7 @@ ModelTypeNameMap GetUserSelectableTypeNameMap() {
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(41 == MODEL_TYPE_COUNT,
+  static_assert(42 == MODEL_TYPE_COUNT,
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();
@@ -469,8 +476,10 @@ ModelTypeSet EncryptableUserTypes() {
   // Supervised user whitelists are not encrypted since they are managed
   // server-side.
   encryptable_user_types.Remove(SUPERVISED_USER_WHITELISTS);
-  // User events are not encrypted since they are consumed server-side.
+  // User events and consents are not encrypted since they are consumed
+  // server-side.
   encryptable_user_types.Remove(USER_EVENTS);
+  encryptable_user_types.Remove(USER_CONSENTS);
   // Proxy types have no sync representation and are therefore not encrypted.
   // Note however that proxy types map to one or more protocol types, which
   // may or may not be encrypted themselves.

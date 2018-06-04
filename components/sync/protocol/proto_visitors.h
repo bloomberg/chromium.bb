@@ -365,7 +365,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(41 == MODEL_TYPE_COUNT,
+  static_assert(42 == MODEL_TYPE_COUNT,
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
@@ -885,6 +885,8 @@ VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::Translation& proto) {
   VISIT_ENUM(interaction);
 }
 
+// TODO(vitaliii): Delete once UserEventSpecifics::UserConsent is completely
+// deprecated.
 VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::UserConsent& proto) {
   VISIT_ENUM(feature);
   VISIT_REP(description_grd_ids);

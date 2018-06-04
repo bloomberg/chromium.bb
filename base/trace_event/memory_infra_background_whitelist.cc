@@ -304,6 +304,7 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "sync/0x?/model_type/SYNCED_NOTIFICATION_APP_INFO",
     "sync/0x?/model_type/THEME",
     "sync/0x?/model_type/TYPED_URL",
+    "sync/0x?/model_type/USER_CONSENT",
     "sync/0x?/model_type/USER_EVENT",
     "sync/0x?/model_type/WALLET_METADATA",
     "sync/0x?/model_type/WIFI_CREDENTIAL",
