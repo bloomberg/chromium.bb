@@ -732,6 +732,8 @@ void ThreadState::ScheduleIncrementalMarkingFinalize() {
 }
 
 void ThreadState::ScheduleIdleGC() {
+  if (GCState() != kNoGCScheduled)
+    return;
   SetGCState(kIdleGCScheduled);
   if (IsSweepingInProgress())
     return;
@@ -815,13 +817,20 @@ void ThreadState::SetGCState(GCState gc_state) {
       // These GCs should not be scheduled while sweeping is in progress.
       DCHECK(!IsSweepingInProgress());
       FALLTHROUGH;
-    case kIdleGCScheduled:
     case kPreciseGCScheduled:
       DCHECK(CheckThread());
       VERIFY_STATE_TRANSITION(
           gc_state_ == kNoGCScheduled || gc_state_ == kIdleGCScheduled ||
           gc_state_ == kIncrementalMarkingStepScheduled ||
           gc_state_ == kIncrementalMarkingFinalizeScheduled ||
+          gc_state_ == kPreciseGCScheduled || gc_state_ == kFullGCScheduled ||
+          gc_state_ == kPageNavigationGCScheduled);
+      CompleteSweep();
+      break;
+    case kIdleGCScheduled:
+      DCHECK(CheckThread());
+      VERIFY_STATE_TRANSITION(
+          gc_state_ == kNoGCScheduled || gc_state_ == kIdleGCScheduled ||
           gc_state_ == kPreciseGCScheduled || gc_state_ == kFullGCScheduled ||
           gc_state_ == kPageNavigationGCScheduled);
       CompleteSweep();
@@ -1341,6 +1350,7 @@ void ThreadState::RunIncrementalMarkingFinalizeTask() {
 void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
   VLOG(2) << "[state:" << this << "] "
           << "IncrementalMarking: Start";
+  DCHECK(!IsMarkingInProgress());
   CompleteSweep();
   Heap().stats_collector()->Start(reason);
   {
