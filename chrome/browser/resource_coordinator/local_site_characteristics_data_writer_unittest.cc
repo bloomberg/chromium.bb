@@ -10,6 +10,7 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_feature_usage.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace resource_coordinator {
 
@@ -20,10 +21,11 @@ class LocalSiteCharacteristicsDataWriterTest : public ::testing::Test {
   // LocalSiteCharacteristicsDataImpl is protected and not visible to
   // base::MakeRefCounted.
   LocalSiteCharacteristicsDataWriterTest()
-      : test_impl_(base::WrapRefCounted(
-            new internal::LocalSiteCharacteristicsDataImpl("foo.com",
-                                                           &delegate_,
-                                                           &database_))) {
+      : test_impl_(
+            base::WrapRefCounted(new internal::LocalSiteCharacteristicsDataImpl(
+                url::Origin::Create(GURL("foo.com")),
+                &delegate_,
+                &database_))) {
     LocalSiteCharacteristicsDataWriter* writer =
         new LocalSiteCharacteristicsDataWriter(test_impl_.get(),
                                                TabVisibility::kBackground);

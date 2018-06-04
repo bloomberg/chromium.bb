@@ -131,10 +131,10 @@ void LocalSiteCharacteristicsDataImpl::NotifyUsesNotificationsInBackground() {
 }
 
 LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
-    const std::string& origin_str,
+    const url::Origin& origin,
     OnDestroyDelegate* delegate,
     LocalSiteCharacteristicsDatabase* database)
-    : origin_str_(origin_str),
+    : origin_(origin),
       loaded_tabs_count_(0U),
       loaded_tabs_in_background_count_(0U),
       database_(database),
@@ -147,9 +147,8 @@ LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
   DCHECK(!site_characteristics_.IsInitialized());
 
   database_->ReadSiteCharacteristicsFromDB(
-      origin_str_,
-      base::BindOnce(&LocalSiteCharacteristicsDataImpl::OnInitCallback,
-                     weak_factory_.GetWeakPtr()));
+      origin_, base::BindOnce(&LocalSiteCharacteristicsDataImpl::OnInitCallback,
+                              weak_factory_.GetWeakPtr()));
 }
 
 LocalSiteCharacteristicsDataImpl::~LocalSiteCharacteristicsDataImpl() {
@@ -167,8 +166,7 @@ LocalSiteCharacteristicsDataImpl::~LocalSiteCharacteristicsDataImpl() {
   // not completed, add some metrics to measure if this is really an issue.
   if (is_dirty_ && safe_to_write_to_db_) {
     DCHECK(site_characteristics_.IsInitialized());
-    database_->WriteSiteCharacteristicsIntoDB(origin_str_,
-                                              site_characteristics_);
+    database_->WriteSiteCharacteristicsIntoDB(origin_, site_characteristics_);
   }
 }
 

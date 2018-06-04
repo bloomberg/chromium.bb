@@ -11,12 +11,11 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/resource_coordinator/site_characteristics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace resource_coordinator {
 
 namespace {
-
-const char kOrigin1[] = "foo.com";
 
 // Initialize a SiteCharacteristicsProto object with a test value (the same
 // value is used to initialize all fields).
@@ -58,7 +57,7 @@ class LevelDBSiteCharacteristicsDatabaseTest : public ::testing::Test {
   // Try to read an entry from the database, returns true if the entry is
   // present and false otherwise. |receiving_proto| will receive the protobuf
   // corresponding to this entry on success.
-  bool ReadFromDB(const std::string& origin,
+  bool ReadFromDB(const url::Origin& origin,
                   SiteCharacteristicsProto* receiving_proto) {
     EXPECT_TRUE(receiving_proto);
     bool success = false;
@@ -77,6 +76,8 @@ class LevelDBSiteCharacteristicsDatabaseTest : public ::testing::Test {
 
   void WaitForAsyncOperationsToComplete() { task_env_.RunUntilIdle(); }
 
+  const url::Origin kDummyOrigin = url::Origin::Create(GURL("http://foo.com"));
+
   base::test::ScopedTaskEnvironment task_env_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<LevelDBSiteCharacteristicsDatabase> db_;
@@ -85,15 +86,15 @@ class LevelDBSiteCharacteristicsDatabaseTest : public ::testing::Test {
 TEST_F(LevelDBSiteCharacteristicsDatabaseTest, InitAndStoreSiteCharacteristic) {
   // Initializing an entry that doesn't exist in the database should fail.
   SiteCharacteristicsProto early_read_proto;
-  EXPECT_FALSE(ReadFromDB(kOrigin1, &early_read_proto));
+  EXPECT_FALSE(ReadFromDB(kDummyOrigin, &early_read_proto));
 
   // Add an entry to the database and make sure that we can read it back.
   ::google::protobuf::int64 test_value = 42;
   SiteCharacteristicsProto stored_proto;
   InitSiteCharacteristicProto(&stored_proto, test_value);
-  db_->WriteSiteCharacteristicsIntoDB(kOrigin1, stored_proto);
+  db_->WriteSiteCharacteristicsIntoDB(kDummyOrigin, stored_proto);
   SiteCharacteristicsProto read_proto;
-  EXPECT_TRUE(ReadFromDB(kOrigin1, &read_proto));
+  EXPECT_TRUE(ReadFromDB(kDummyOrigin, &read_proto));
   EXPECT_TRUE(read_proto.IsInitialized());
   EXPECT_EQ(stored_proto.SerializeAsString(), read_proto.SerializeAsString());
 }
@@ -101,21 +102,22 @@ TEST_F(LevelDBSiteCharacteristicsDatabaseTest, InitAndStoreSiteCharacteristic) {
 TEST_F(LevelDBSiteCharacteristicsDatabaseTest, RemoveEntries) {
   // Add multiple origins to the database.
   const size_t kEntryCount = 10;
-  std::vector<std::string> site_origins;
+  std::vector<url::Origin> site_origins;
   for (size_t i = 0; i < kEntryCount; ++i) {
     SiteCharacteristicsProto proto_temp;
-    std::string site_origin = base::StringPrintf("%zu.com", i);
+    std::string origin_str = base::StringPrintf("http://%zu.com", i);
     InitSiteCharacteristicProto(&proto_temp,
                                 static_cast<::google::protobuf::int64>(i));
     EXPECT_TRUE(proto_temp.IsInitialized());
-    db_->WriteSiteCharacteristicsIntoDB(site_origin, proto_temp);
-    site_origins.emplace_back(site_origin);
+    url::Origin origin = url::Origin::Create(GURL(origin_str));
+    db_->WriteSiteCharacteristicsIntoDB(origin, proto_temp);
+    site_origins.emplace_back(origin);
   }
 
   WaitForAsyncOperationsToComplete();
 
   // Remove half the origins from the database.
-  std::vector<std::string> site_origins_to_remove(
+  std::vector<url::Origin> site_origins_to_remove(
       site_origins.begin(), site_origins.begin() + kEntryCount / 2);
   db_->RemoveSiteCharacteristicsFromDB(site_origins_to_remove);
 

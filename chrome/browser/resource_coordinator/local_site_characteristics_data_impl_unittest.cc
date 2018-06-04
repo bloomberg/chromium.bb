@@ -11,13 +11,13 @@
 #include "chrome/browser/resource_coordinator/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace resource_coordinator {
 namespace internal {
 
 namespace {
 
-constexpr char kDummyOrigin[] = "foo.com";
 constexpr base::TimeDelta kInitialTimeSinceEpoch =
     base::TimeDelta::FromSeconds(1);
 
@@ -30,10 +30,10 @@ class TestLocalSiteCharacteristicsDataImpl
   using LocalSiteCharacteristicsDataImpl::TimeDeltaToInternalRepresentation;
 
   explicit TestLocalSiteCharacteristicsDataImpl(
-      const std::string& origin_str,
+      const url::Origin& origin,
       LocalSiteCharacteristicsDataImpl::OnDestroyDelegate* delegate,
       LocalSiteCharacteristicsDatabase* database)
-      : LocalSiteCharacteristicsDataImpl(origin_str, delegate, database) {}
+      : LocalSiteCharacteristicsDataImpl(origin, delegate, database) {}
 
   base::TimeDelta FeatureObservationTimestamp(
       const SiteCharacteristicsFeatureProto& feature_proto) {
@@ -53,19 +53,18 @@ class MockLocalSiteCharacteristicsDatabase
   // Note: As move-only parameters (e.g. OnceCallback) aren't supported by mock
   // methods, add On... methods to pass a non-const reference to OnceCallback.
   void ReadSiteCharacteristicsFromDB(
-      const std::string& origin_str,
+      const url::Origin& origin,
       LocalSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDBCallback
           callback) override {
-    OnReadSiteCharacteristicsFromDB(origin_str, callback);
+    OnReadSiteCharacteristicsFromDB(origin, callback);
   }
   MOCK_METHOD2(OnReadSiteCharacteristicsFromDB,
-               void(const std::string&,
+               void(const url::Origin&,
                     LocalSiteCharacteristicsDatabase::
                         ReadSiteCharacteristicsFromDBCallback&));
 
   MOCK_METHOD2(WriteSiteCharacteristicsIntoDB,
-               void(const std::string& site_origin,
-                    const SiteCharacteristicsProto& site_characteristic_proto));
+               void(const url::Origin&, const SiteCharacteristicsProto&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLocalSiteCharacteristicsDatabase);
@@ -105,7 +104,7 @@ class LocalSiteCharacteristicsDataImplTest : public ::testing::Test {
 
  protected:
   scoped_refptr<TestLocalSiteCharacteristicsDataImpl> GetDataImpl(
-      const char* origin,
+      const url::Origin& origin,
       LocalSiteCharacteristicsDataImpl::OnDestroyDelegate* destroy_delegate,
       LocalSiteCharacteristicsDatabase* database) {
     return base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
@@ -116,13 +115,13 @@ class LocalSiteCharacteristicsDataImplTest : public ::testing::Test {
   // locally so it can be run later.
   scoped_refptr<TestLocalSiteCharacteristicsDataImpl>
   GetDataImplAndInterceptReadCallback(
-      const char* origin,
+      const url::Origin& origin,
       LocalSiteCharacteristicsDataImpl::OnDestroyDelegate* destroy_delegate,
       MockLocalSiteCharacteristicsDatabase* mock_db,
       LocalSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDBCallback*
           read_cb) {
     auto read_from_db_mock_impl =
-        [&](const std::string& site_origin,
+        [&](const url::Origin& origin,
             LocalSiteCharacteristicsDatabase::
                 ReadSiteCharacteristicsFromDBCallback& callback) {
           *read_cb = std::move(callback);
@@ -131,11 +130,12 @@ class LocalSiteCharacteristicsDataImplTest : public ::testing::Test {
     EXPECT_CALL(*mock_db,
                 OnReadSiteCharacteristicsFromDB(::testing::_, ::testing::_))
         .WillOnce(::testing::Invoke(read_from_db_mock_impl));
-    auto local_site_data =
-        GetDataImpl(kDummyOrigin, &destroy_delegate_, mock_db);
+    auto local_site_data = GetDataImpl(origin, &destroy_delegate_, mock_db);
     ::testing::Mock::VerifyAndClear(mock_db);
     return local_site_data;
   }
+
+  const url::Origin kDummyOrigin = url::Origin::Create(GURL("foo.com"));
 
   base::SimpleTestTickClock test_clock_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;

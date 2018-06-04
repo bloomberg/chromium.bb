@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_LOCAL_SITE_CHARACTERISTICS_DATA_STORE_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_LOCAL_SITE_CHARACTERISTICS_DATA_STORE_H_
 
-#include <string>
-
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -34,16 +32,16 @@ class LocalSiteCharacteristicsDataStore
       public history::HistoryServiceObserver {
  public:
   using LocalSiteCharacteristicsMap =
-      base::flat_map<std::string, internal::LocalSiteCharacteristicsDataImpl*>;
+      base::flat_map<url::Origin, internal::LocalSiteCharacteristicsDataImpl*>;
 
   explicit LocalSiteCharacteristicsDataStore(Profile* profile);
   ~LocalSiteCharacteristicsDataStore() override;
 
   // SiteCharacteristicDataStore:
   std::unique_ptr<SiteCharacteristicsDataReader> GetReaderForOrigin(
-      const std::string& origin_str) override;
+      const url::Origin& origin) override;
   std::unique_ptr<SiteCharacteristicsDataWriter> GetWriterForOrigin(
-      const std::string& origin_str,
+      const url::Origin& origin,
       TabVisibility tab_visibility) override;
   bool IsRecordingForTesting() override;
 
@@ -68,7 +66,7 @@ class LocalSiteCharacteristicsDataStore
   // associated with |origin|, create one and add it to |origin_data_map_|
   // if it doesn't exist.
   internal::LocalSiteCharacteristicsDataImpl* GetOrCreateFeatureImpl(
-      const std::string& origin_str);
+      const url::Origin& origin);
 
   // internal::LocalSiteCharacteristicsDataImpl::OnDestroyDelegate:
   void OnLocalSiteCharacteristicsDataImplDestroyed(

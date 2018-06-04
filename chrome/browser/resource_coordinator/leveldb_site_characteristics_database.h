@@ -33,14 +33,14 @@ class LevelDBSiteCharacteristicsDatabase
 
   // LocalSiteCharacteristicDatabase:
   void ReadSiteCharacteristicsFromDB(
-      const std::string& site_origin,
+      const url::Origin& origin,
       LocalSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDBCallback
           callback) override;
   void WriteSiteCharacteristicsIntoDB(
-      const std::string& site_origin,
+      const url::Origin& origin,
       const SiteCharacteristicsProto& site_characteristic_proto) override;
   void RemoveSiteCharacteristicsFromDB(
-      const std::vector<std::string>& site_origins) override;
+      const std::vector<url::Origin>& site_origins) override;
   void ClearDatabase() override;
 
  private:

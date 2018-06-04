@@ -17,13 +17,15 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace resource_coordinator {
 
 namespace {
 
-const char kTestOrigin[] = "http://www.foo.com";
-const char kTestOrigin2[] = "http://www.bar.com";
+const url::Origin kTestOrigin = url::Origin::Create(GURL("http://www.foo.com"));
+const url::Origin kTestOrigin2 =
+    url::Origin::Create(GURL("http://www.bar.com"));
 
 class MockLocalSiteCharacteristicsDatabase
     : public testing::NoopLocalSiteCharacteristicsDatabase {
@@ -32,7 +34,7 @@ class MockLocalSiteCharacteristicsDatabase
   ~MockLocalSiteCharacteristicsDatabase() = default;
 
   MOCK_METHOD1(RemoveSiteCharacteristicsFromDB,
-               void(const std::vector<std::string>& site_origin));
+               void(const std::vector<url::Origin>&));
   MOCK_METHOD0(ClearDatabase, void());
 
  private:
@@ -113,16 +115,15 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
 
   // Load a first origin, and then make use of a feature on it.
 
-  const std::string kOrigin1Url = GURL(kTestOrigin).GetOrigin().GetContent();
-  auto reader = data_store_->GetReaderForOrigin(kOrigin1Url);
+  auto reader = data_store_->GetReaderForOrigin(kTestOrigin);
   EXPECT_TRUE(reader);
 
   auto writer =
-      data_store_->GetWriterForOrigin(kOrigin1Url, TabVisibility::kBackground);
+      data_store_->GetWriterForOrigin(kTestOrigin, TabVisibility::kBackground);
   EXPECT_TRUE(writer);
 
   internal::LocalSiteCharacteristicsDataImpl* data =
-      data_store_->origin_data_map_for_testing().find(kOrigin1Url)->second;
+      data_store_->origin_data_map_for_testing().find(kTestOrigin)->second;
   EXPECT_TRUE(data);
 
   constexpr base::TimeDelta kDelay = base::TimeDelta::FromHours(1);
@@ -137,11 +138,10 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
   test_clock_.Advance(kDelay);
 
   // Load a second origin, make use of a feature on it too.
-  const std::string kOrigin2Url = GURL(kTestOrigin2).GetOrigin().GetContent();
-  auto reader2 = data_store_->GetReaderForOrigin(kOrigin2Url);
+  auto reader2 = data_store_->GetReaderForOrigin(kTestOrigin2);
   EXPECT_TRUE(reader2);
   auto writer2 =
-      data_store_->GetWriterForOrigin(kOrigin2Url, TabVisibility::kBackground);
+      data_store_->GetWriterForOrigin(kTestOrigin2, TabVisibility::kBackground);
   EXPECT_TRUE(writer2);
   writer2->NotifySiteLoaded();
   writer2->NotifyUpdatesFaviconInBackground();
@@ -152,15 +152,13 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
 
   // Make sure that all data passed to |OnURLsDeleted| get passed to the
   // database, even if they're not in the internal map used by the data store.
-  const char* kOriginNotInMap = "http://www.url-not-in-map.com";
-  const std::string kOriginNotInMapURL =
-      GURL(kOriginNotInMap).GetOrigin().GetContent();
-  history::URLRows urls_to_delete = {history::URLRow(GURL(kTestOrigin)),
-                                     history::URLRow(GURL(kOriginNotInMap))};
-  EXPECT_CALL(
-      *mock_db,
-      RemoveSiteCharacteristicsFromDB(::testing::ContainerEq(
-          std::vector<std::string>({kOrigin1Url, kOriginNotInMapURL}))));
+  const url::Origin kOriginNotInMap =
+      url::Origin::Create(GURL("http://www.url-not-in-map.com"));
+  history::URLRows urls_to_delete = {history::URLRow(kTestOrigin.GetURL()),
+                                     history::URLRow(kOriginNotInMap.GetURL())};
+  EXPECT_CALL(*mock_db,
+              RemoveSiteCharacteristicsFromDB(::testing::ContainerEq(
+                  std::vector<url::Origin>({kTestOrigin, kOriginNotInMap}))));
   data_store_->OnURLsDeleted(nullptr, history::DeletionInfo::ForUrls(
                                           urls_to_delete, std::set<GURL>()));
   ::testing::Mock::VerifyAndClear(mock_db);
@@ -190,7 +188,7 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
             test_clock_.NowTicks() - base::TimeTicks::UnixEpoch());
 
   internal::LocalSiteCharacteristicsDataImpl* data2 =
-      data_store_->origin_data_map_for_testing().find(kOrigin2Url)->second;
+      data_store_->origin_data_map_for_testing().find(kTestOrigin2)->second;
   EXPECT_TRUE(data2);
   EXPECT_EQ(data2->last_loaded_time_for_testing(),
             test_clock_.NowTicks() - base::TimeTicks::UnixEpoch());

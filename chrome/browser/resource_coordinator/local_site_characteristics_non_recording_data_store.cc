@@ -22,13 +22,13 @@ LocalSiteCharacteristicsNonRecordingDataStore::
 
 std::unique_ptr<SiteCharacteristicsDataReader>
 LocalSiteCharacteristicsNonRecordingDataStore::GetReaderForOrigin(
-    const std::string& origin_str) {
-  return data_store_for_readers_->GetReaderForOrigin(origin_str);
+    const url::Origin& origin) {
+  return data_store_for_readers_->GetReaderForOrigin(origin);
 }
 
 std::unique_ptr<SiteCharacteristicsDataWriter>
 LocalSiteCharacteristicsNonRecordingDataStore::GetWriterForOrigin(
-    const std::string& origin_str,
+    const url::Origin& origin,
     TabVisibility tab_visibility) {
   // Return a fake data writer.
   SiteCharacteristicsDataWriter* writer =

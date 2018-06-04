@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_SITE_CHARACTERISTICS_DATA_STORE_H_
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_reader.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_writer.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_tab_visibility.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "url/origin.h"
 
 namespace resource_coordinator {
 
@@ -24,7 +24,7 @@ class SiteCharacteristicsDataStore : public KeyedService {
 
   // Returns a SiteCharacteristicsDataReader for the given origin.
   virtual std::unique_ptr<SiteCharacteristicsDataReader> GetReaderForOrigin(
-      const std::string& origin) = 0;
+      const url::Origin& origin) = 0;
 
   // Returns a SiteCharacteristicsDataWriter for the given origin.
   //
@@ -32,7 +32,7 @@ class SiteCharacteristicsDataStore : public KeyedService {
   // starts in an unloaded state, NotifyTabLoaded() must be called explicitly
   // afterwards if the site is loaded.
   virtual std::unique_ptr<SiteCharacteristicsDataWriter> GetWriterForOrigin(
-      const std::string& origin_str,
+      const url::Origin& origin,
       TabVisibility tab_visibility) = 0;
 
   // Indicate if the SiteCharacteristicsDataWriter served by this data store

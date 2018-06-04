@@ -11,6 +11,7 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace resource_coordinator {
 
@@ -25,19 +26,18 @@ class MockLocalSiteCharacteristicsDatabase
   // Note: As move-only parameters (e.g. OnceCallback) aren't supported by mock
   // methods, add On... methods to pass a non-const reference to OnceCallback.
   void ReadSiteCharacteristicsFromDB(
-      const std::string& origin_str,
+      const url::Origin& origin,
       LocalSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDBCallback
           callback) override {
-    OnReadSiteCharacteristicsFromDB(origin_str, callback);
+    OnReadSiteCharacteristicsFromDB(std::move(origin), callback);
   }
   MOCK_METHOD2(OnReadSiteCharacteristicsFromDB,
-               void(const std::string&,
+               void(const url::Origin&,
                     LocalSiteCharacteristicsDatabase::
                         ReadSiteCharacteristicsFromDBCallback&));
 
   MOCK_METHOD2(WriteSiteCharacteristicsIntoDB,
-               void(const std::string& site_origin,
-                    const SiteCharacteristicsProto& site_characteristic_proto));
+               void(const url::Origin&, const SiteCharacteristicsProto&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLocalSiteCharacteristicsDatabase);
@@ -77,7 +77,7 @@ class LocalSiteCharacteristicsDataReaderTest : public ::testing::Test {
     test_clock_.Advance(base::TimeDelta::FromSeconds(1));
     test_impl_ =
         base::WrapRefCounted(new internal::LocalSiteCharacteristicsDataImpl(
-            "foo.com", &delegate_, &database_));
+            url::Origin::Create(GURL("foo.com")), &delegate_, &database_));
     test_impl_->NotifySiteLoaded();
     test_impl_->NotifyLoadedSiteBackgrounded();
     LocalSiteCharacteristicsDataReader* reader =
@@ -144,7 +144,7 @@ TEST_F(LocalSiteCharacteristicsDataReaderTest, TestAccessors) {
 
 TEST_F(LocalSiteCharacteristicsDataReaderTest,
        FreeingReaderDoesntCauseWriteOperation) {
-  const char* kOrigin = "foo.com";
+  const url::Origin kOrigin = url::Origin::Create(GURL("foo.com"));
   ::testing::StrictMock<MockLocalSiteCharacteristicsDatabase> database;
 
   // Override the read callback to simulate a successful read from the
@@ -152,14 +152,17 @@ TEST_F(LocalSiteCharacteristicsDataReaderTest,
   SiteCharacteristicsProto proto = {};
   InitializeSiteCharacteristicsProto(&proto);
   auto read_from_db_mock_impl =
-      [&](const std::string& site_origin,
+      [&](const url::Origin& origin,
           LocalSiteCharacteristicsDatabase::
               ReadSiteCharacteristicsFromDBCallback& callback) {
         std::move(callback).Run(
             base::Optional<SiteCharacteristicsProto>(proto));
       };
 
-  EXPECT_CALL(database, OnReadSiteCharacteristicsFromDB(kOrigin, ::testing::_))
+  EXPECT_CALL(database, OnReadSiteCharacteristicsFromDB(
+                            ::testing::Property(&url::Origin::Serialize,
+                                                kOrigin.Serialize()),
+                            ::testing::_))
       .WillOnce(::testing::Invoke(read_from_db_mock_impl));
 
   std::unique_ptr<LocalSiteCharacteristicsDataReader> reader =

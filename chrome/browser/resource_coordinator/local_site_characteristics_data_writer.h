@@ -14,6 +14,9 @@ namespace resource_coordinator {
 
 // Specialization of a SiteCharacteristicsDataWriter that delegates to a
 // LocalSiteCharacteristicsDataImpl.
+//
+// This writer is initially in an unloaded state, a |NotifySiteLoaded| event
+// should be sent if/when the tab using it gets loaded.
 class LocalSiteCharacteristicsDataWriter
     : public SiteCharacteristicsDataWriter {
  public:
