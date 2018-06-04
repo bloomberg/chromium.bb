@@ -64,9 +64,9 @@ WorkerScheduler::OnActiveConnectionCreated() {
   return nullptr;
 }
 
-FrameOrWorkerScheduler::ThrottlingState
-WorkerScheduler::CalculateThrottlingState(ObserverType) const {
-  return thread_scheduler_->throttling_state();
+SchedulingLifecycleState WorkerScheduler::CalculateLifecycleState(
+    ObserverType) const {
+  return thread_scheduler_->lifecycle_state();
 }
 
 void WorkerScheduler::Dispose() {
@@ -149,22 +149,22 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
   return nullptr;
 }
 
-void WorkerScheduler::OnThrottlingStateChanged(
-    ThrottlingState throttling_state) {
-  if (throttling_state_ == throttling_state)
+void WorkerScheduler::OnLifecycleStateChanged(
+    SchedulingLifecycleState lifecycle_state) {
+  if (lifecycle_state_ == lifecycle_state)
     return;
-  throttling_state_ = throttling_state;
-  thread_scheduler_->OnThrottlingStateChanged(throttling_state);
+  lifecycle_state_ = lifecycle_state;
+  thread_scheduler_->OnLifecycleStateChanged(lifecycle_state);
 
   if (TaskQueueThrottler* throttler =
           thread_scheduler_->task_queue_throttler()) {
-    if (throttling_state_ == FrameScheduler::ThrottlingState::kThrottled) {
+    if (lifecycle_state_ == SchedulingLifecycleState::kThrottled) {
       throttler->IncreaseThrottleRefCount(throttleable_task_queue_.get());
     } else {
       throttler->DecreaseThrottleRefCount(throttleable_task_queue_.get());
     }
   }
-  NotifyThrottlingObservers();
+  NotifyLifecycleObservers();
 }
 
 scoped_refptr<base::sequence_manager::TaskQueue>

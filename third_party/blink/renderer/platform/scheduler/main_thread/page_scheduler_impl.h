@@ -129,12 +129,13 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
   // Depending on page visibility, either turns throttling off, or schedules a
   // call to enable it after a grace period.
-  void UpdateBackgroundThrottlingState(NotificationPolicy notification_policy);
+  void UpdateBackgroundSchedulingLifecycleState(
+      NotificationPolicy notification_policy);
 
-  // As a part of UpdateBackgroundThrottlingState set correct
+  // As a part of UpdateBackgroundSchedulingLifecycleState set correct
   // background_time_budget_pool_ state depending on page visibility and
   // number of active connections.
-  void UpdateBackgroundBudgetPoolThrottlingState();
+  void UpdateBackgroundBudgetPoolSchedulingLifecycleState();
 
   // Callback for marking page is silent after a delay since last audible
   // signal.

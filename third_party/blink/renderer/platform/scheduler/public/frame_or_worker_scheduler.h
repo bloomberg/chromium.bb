@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/public/scheduling_lifecycle_state.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -22,23 +23,6 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
   // Observer type that regulates conditions to invoke callbacks.
   enum class ObserverType { kLoader, kWorkerScheduler };
 
-  // Represents throttling state.
-  // TODO(altimin): Move it into standalone LifecycleState.
-  enum class ThrottlingState {
-    // Frame is active and should not be throttled.
-    kNotThrottled,
-    // Frame has just been backgrounded and can be throttled non-aggressively.
-    kHidden,
-    // Frame spent some time in background and can be fully throttled.
-    kThrottled,
-    // Frame is stopped, no tasks associated with it can run.
-    // In the case of resource scheduling, main frame resources and synchronous
-    // requests are allowed to load.
-    kStopped,
-  };
-
-  static const char* ThrottlingStateToString(ThrottlingState state);
-
   // Observer interface to receive scheduling policy change events.
   class Observer {
    public:
@@ -46,20 +30,21 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
 
     // Notified when throttling state is changed. May be called consecutively
     // with the same value.
-    virtual void OnThrottlingStateChanged(ThrottlingState) = 0;
+    virtual void OnLifecycleStateChanged(
+        scheduler::SchedulingLifecycleState) = 0;
   };
 
-  class PLATFORM_EXPORT ThrottlingObserverHandle {
+  class PLATFORM_EXPORT LifecycleObserverHandle {
    public:
-    ThrottlingObserverHandle(FrameOrWorkerScheduler* scheduler,
-                             Observer* observer);
-    ~ThrottlingObserverHandle();
+    LifecycleObserverHandle(FrameOrWorkerScheduler* scheduler,
+                            Observer* observer);
+    ~LifecycleObserverHandle();
 
    private:
     base::WeakPtr<FrameOrWorkerScheduler> scheduler_;
     Observer* observer_;
 
-    DISALLOW_COPY_AND_ASSIGN(ThrottlingObserverHandle);
+    DISALLOW_COPY_AND_ASSIGN(LifecycleObserverHandle);
   };
 
   virtual ~FrameOrWorkerScheduler();
@@ -84,27 +69,28 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
   // through the Observer interface.
   // A RAII handle is returned and observer is unregistered when the handle is
   // destroyed.
-  std::unique_ptr<ThrottlingObserverHandle> AddThrottlingObserver(ObserverType,
-                                                                  Observer*);
+  std::unique_ptr<LifecycleObserverHandle> AddLifecycleObserver(ObserverType,
+                                                                Observer*);
 
   virtual FrameScheduler* ToFrameScheduler() { return nullptr; }
 
  protected:
   FrameOrWorkerScheduler();
 
-  void NotifyThrottlingObservers();
+  void NotifyLifecycleObservers();
 
-  virtual ThrottlingState CalculateThrottlingState(ObserverType) const {
-    return ThrottlingState::kNotThrottled;
+  virtual scheduler::SchedulingLifecycleState CalculateLifecycleState(
+      ObserverType) const {
+    return scheduler::SchedulingLifecycleState::kNotThrottled;
   }
 
   base::WeakPtr<FrameOrWorkerScheduler> GetWeakPtr();
 
  private:
-  void RemoveThrottlingObserver(Observer* observer);
+  void RemoveLifecycleObserver(Observer* observer);
 
   // Observers are not owned by the scheduler.
-  std::unordered_map<Observer*, ObserverType> throttling_observers_;
+  std::unordered_map<Observer*, ObserverType> lifecycle_observers_;
   base::WeakPtrFactory<FrameOrWorkerScheduler> weak_factory_;
 };
 

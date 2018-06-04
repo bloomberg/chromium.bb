@@ -120,8 +120,8 @@ WorkerThreadScheduler::WorkerThreadScheduler(
       load_tracker_(helper_->NowTicks(),
                     base::BindRepeating(&ReportWorkerTaskLoad),
                     kUnspecifiedWorkerThreadLoadTrackerReportingInterval),
-      throttling_state_(proxy ? proxy->throttling_state()
-                              : FrameScheduler::ThrottlingState::kNotThrottled),
+      lifecycle_state_(proxy ? proxy->lifecycle_state()
+                             : SchedulingLifecycleState::kNotThrottled),
       worker_metrics_helper_(thread_type),
       default_task_runner_(TaskQueueWithTaskType::Create(
           helper_->DefaultNonMainThreadTaskQueue(),
@@ -269,20 +269,20 @@ void WorkerThreadScheduler::DidProcessTask(double start_time, double end_time) {
   load_tracker_.RecordTaskTime(start_time_ticks, end_time_ticks);
 }
 
-void WorkerThreadScheduler::OnThrottlingStateChanged(
-    FrameScheduler::ThrottlingState throttling_state) {
-  if (throttling_state_ == throttling_state)
+void WorkerThreadScheduler::OnLifecycleStateChanged(
+    SchedulingLifecycleState lifecycle_state) {
+  if (lifecycle_state_ == lifecycle_state)
     return;
-  throttling_state_ = throttling_state;
+  lifecycle_state_ = lifecycle_state;
 
   for (WorkerScheduler* worker_scheduler : worker_schedulers_)
-    worker_scheduler->OnThrottlingStateChanged(throttling_state);
+    worker_scheduler->OnLifecycleStateChanged(lifecycle_state);
 }
 
 void WorkerThreadScheduler::RegisterWorkerScheduler(
     WorkerScheduler* worker_scheduler) {
   NonMainThreadSchedulerImpl::RegisterWorkerScheduler(worker_scheduler);
-  worker_scheduler->OnThrottlingStateChanged(throttling_state_);
+  worker_scheduler->OnLifecycleStateChanged(lifecycle_state_);
 }
 
 scoped_refptr<NonMainThreadTaskQueue>

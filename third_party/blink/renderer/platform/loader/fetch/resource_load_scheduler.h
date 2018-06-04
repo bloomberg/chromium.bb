@@ -195,7 +195,7 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   bool IsThrottablePriority(ResourceLoadPriority) const;
 
   // FrameScheduler::Observer overrides:
-  void OnThrottlingStateChanged(FrameScheduler::ThrottlingState) override;
+  void OnLifecycleStateChanged(scheduler::SchedulingLifecycleState) override;
 
  private:
   class TrafficMonitor;
@@ -293,8 +293,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
     kStopped,
   };
   ThrottlingHistory throttling_history_ = ThrottlingHistory::kInitial;
-  FrameScheduler::ThrottlingState frame_scheduler_throttling_state_ =
-      FrameScheduler::ThrottlingState::kNotThrottled;
+  scheduler::SchedulingLifecycleState frame_scheduler_lifecycle_state_ =
+      scheduler::SchedulingLifecycleState::kNotThrottled;
 
   // Holds clients that haven't been granted, and are waiting for a grant.
   HeapHashMap<ClientId, Member<ClientWithPriority>> pending_request_map_;
@@ -309,7 +309,7 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   Member<FetchContext> context_;
 
   // Handle to throttling observer.
-  std::unique_ptr<FrameScheduler::ThrottlingObserverHandle>
+  std::unique_ptr<FrameScheduler::LifecycleObserverHandle>
       scheduler_observer_handle_;
 };
 

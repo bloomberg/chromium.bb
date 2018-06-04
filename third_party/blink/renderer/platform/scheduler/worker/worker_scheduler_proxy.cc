@@ -13,7 +13,7 @@ namespace scheduler {
 
 WorkerSchedulerProxy::WorkerSchedulerProxy(FrameOrWorkerScheduler* scheduler) {
   DCHECK(scheduler);
-  throttling_observer_handle_ = scheduler->AddThrottlingObserver(
+  throttling_observer_handle_ = scheduler->AddLifecycleObserver(
       FrameOrWorkerScheduler::ObserverType::kWorkerScheduler, this);
   if (FrameScheduler* frame_scheduler = scheduler->ToFrameScheduler()) {
     parent_frame_type_ = GetFrameOriginType(frame_scheduler);
@@ -36,19 +36,19 @@ void WorkerSchedulerProxy::OnWorkerSchedulerCreated(
   initialized_ = true;
 }
 
-void WorkerSchedulerProxy::OnThrottlingStateChanged(
-    FrameScheduler::ThrottlingState throttling_state) {
+void WorkerSchedulerProxy::OnLifecycleStateChanged(
+    SchedulingLifecycleState lifecycle_state) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
-  if (throttling_state_ == throttling_state)
+  if (lifecycle_state_ == lifecycle_state)
     return;
-  throttling_state_ = throttling_state;
+  lifecycle_state_ = lifecycle_state;
 
   if (!initialized_)
     return;
 
   worker_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&WorkerScheduler::OnThrottlingStateChanged,
-                                worker_scheduler_, throttling_state));
+      FROM_HERE, base::BindOnce(&WorkerScheduler::OnLifecycleStateChanged,
+                                worker_scheduler_, lifecycle_state));
 }
 
 }  // namespace scheduler
