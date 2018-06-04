@@ -999,7 +999,13 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
   DISALLOW_COPY_AND_ASSIGN(WebviewProxyAuthLoginTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, ProxyAuthTransfer) {
+// Disabled fails on msan: https://crbug.com/849128.
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_ProxyAuthTransfer DISABLED_ProxyAuthTransfer
+#else
+#define MAYBE_ProxyAuthTransfer ProxyAuthTransfer
+#endif
+IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, MAYBE_ProxyAuthTransfer) {
   WaitForSigninScreen();
 
   LoginHandler* login_handler = WaitForAuthRequested();
