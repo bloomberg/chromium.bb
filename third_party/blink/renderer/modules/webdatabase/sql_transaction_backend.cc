@@ -398,7 +398,6 @@ SQLTransactionBackend::~SQLTransactionBackend() {
 }
 
 void SQLTransactionBackend::Trace(blink::Visitor* visitor) {
-  visitor->Trace(database_);
   visitor->Trace(wrapper_);
 }
 

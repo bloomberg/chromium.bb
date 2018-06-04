@@ -121,7 +121,7 @@ class SQLTransactionBackend final
   CrossThreadPersistent<SQLTransaction> frontend_;
   CrossThreadPersistent<SQLStatementBackend> current_statement_backend_;
 
-  Member<Database> database_;
+  CrossThreadPersistent<Database> database_;
   Member<SQLTransactionWrapper> wrapper_;
   std::unique_ptr<SQLErrorData> transaction_error_;
 
