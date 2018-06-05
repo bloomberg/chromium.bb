@@ -175,6 +175,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     current_.scope_data[id] += time;
   }
 
+  void UpdateReason(BlinkGC::GCReason);
   void IncreaseMarkedObjectSize(size_t);
   void IncreaseCompactionFreedSize(size_t);
   void IncreaseCompactionFreedPages(size_t);

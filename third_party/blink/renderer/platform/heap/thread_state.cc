@@ -1536,6 +1536,7 @@ void ThreadState::AtomicPausePrologue(BlinkGC::StackState stack_state,
     // that is necessary to update.
     current_gc_data_.reason = reason;
     current_gc_data_.stack_state = stack_state;
+    Heap().stats_collector()->UpdateReason(reason);
   } else {
     MarkPhasePrologue(stack_state, marking_type, reason);
   }

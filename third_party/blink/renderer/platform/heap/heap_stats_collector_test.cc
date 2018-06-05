@@ -68,6 +68,14 @@ TEST(ThreadHeapStatsCollectorTest, ScopeToString) {
                    ThreadHeapStatsCollector::kIncrementalMarkingStartMarking));
 }
 
+TEST(ThreadHeapStatsCollectorTest, UpdateReason) {
+  ThreadHeapStatsCollector stats_collector;
+  stats_collector.Start(BlinkGC::kTesting);
+  stats_collector.UpdateReason(BlinkGC::kForcedGC);
+  stats_collector.Stop();
+  EXPECT_EQ(BlinkGC::kForcedGC, stats_collector.previous().reason);
+}
+
 // =============================================================================
 // ThreadHeapStatsCollector::Event. ============================================
 // =============================================================================
