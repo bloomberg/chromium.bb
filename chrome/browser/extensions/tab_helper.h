@@ -137,7 +137,6 @@ class TabHelper : public content::WebContentsObserver,
   void DidCloneToNewWebContents(
       content::WebContents* old_web_contents,
       content::WebContents* new_web_contents) override;
-  void WebContentsDestroyed() override;
 
   // ExtensionFunctionDispatcher::Delegate overrides.
   WindowController* GetExtensionWindowController() const override;
