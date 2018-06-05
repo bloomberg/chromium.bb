@@ -609,14 +609,11 @@ void ProfileSyncService::AccessTokenFetched(
     const GoogleServiceAuthError& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // We only ever have pending access token requests while the engine exists.
+  DCHECK(engine_);
+
   if (error.state() == GoogleServiceAuthError::NONE) {
-    if (HasSyncingEngine()) {
-      engine_->UpdateCredentials(auth_manager_->GetCredentials());
-    } else {
-      // TODO(treib): Can this happen? We only ever request an access token
-      // after the engine already exists.
-      startup_controller_->TryStart();
-    }
+    engine_->UpdateCredentials(auth_manager_->GetCredentials());
   }
   // Else: Some error happened. SyncAuthManager takes care of that (retry if
   // appropriate etc), so there's nothing for us to do here.
