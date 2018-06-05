@@ -1,9 +1,9 @@
 {
     "archives": {
-        "http://localhost:9000/cats-unscaled.html": {
+        "cats_unscaled": {
             "DEFAULT": "tough_image_decode_cases_000.wprgo"
         },
-        "http://localhost:9000/cats-viewport-width.html": {
+        "cats_viewport_width": {
             "DEFAULT": "tough_image_decode_cases_000.wprgo"
         }
     },
