@@ -202,7 +202,12 @@ bool ExecutionContext::IsSecureContext() const {
   return IsSecureContext(unused_error_message);
 }
 
+// https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
 String ExecutionContext::OutgoingReferrer() const {
+  // Step 3.1: "If environment's global object is a Window object, then"
+  // This case is implemented in Document::OutgoingReferrer().
+
+  // Step 3.2: "Otherwise, let referrerSource be environment's creation URL."
   return Url().StrippedForUseAsReferrer();
 }
 
