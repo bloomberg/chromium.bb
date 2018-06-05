@@ -5,7 +5,7 @@
 #include "cc/scheduler/compositor_timing_history.h"
 
 #include "base/macros.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
