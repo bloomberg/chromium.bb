@@ -71,13 +71,15 @@ TEST_F(ResourceCoordinatorTest, ResourceCoordinatorInstantiate) {
   connector()->BindInterface(mojom::kServiceName, mojo::MakeRequest(&provider));
 
   // Create and test a dummy FrameCU.
-  CoordinationUnitID frame_id(CoordinationUnitType::kFrame, "");
+  CoordinationUnitID frame_id(CoordinationUnitType::kFrame,
+                              CoordinationUnitID::RANDOM_ID);
   mojom::FrameCoordinationUnitPtr frame_cu;
   provider->CreateFrameCoordinationUnit(mojo::MakeRequest(&frame_cu), frame_id);
   TestCU(frame_cu);
 
   // Create and test a dummy PageCU.
-  CoordinationUnitID page_id(CoordinationUnitType::kPage, "");
+  CoordinationUnitID page_id(CoordinationUnitType::kPage,
+                             CoordinationUnitID::RANDOM_ID);
   mojom::PageCoordinationUnitPtr page_cu;
   provider->CreatePageCoordinationUnit(mojo::MakeRequest(&page_cu), page_id);
   TestCU(page_cu);
@@ -88,7 +90,8 @@ TEST_F(ResourceCoordinatorTest, ResourceCoordinatorInstantiate) {
   TestCU(system_cu);
 
   // Create and test a dummy ProcessCU.
-  CoordinationUnitID process_id(CoordinationUnitType::kProcess, "");
+  CoordinationUnitID process_id(CoordinationUnitType::kProcess,
+                                CoordinationUnitID::RANDOM_ID);
   mojom::ProcessCoordinationUnitPtr process_cu;
   provider->CreateProcessCoordinationUnit(mojo::MakeRequest(&process_cu),
                                           process_id);

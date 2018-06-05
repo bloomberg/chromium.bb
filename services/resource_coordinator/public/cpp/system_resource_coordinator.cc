@@ -9,7 +9,8 @@ namespace resource_coordinator {
 SystemResourceCoordinator::SystemResourceCoordinator(
     service_manager::Connector* connector)
     : ResourceCoordinatorInterface() {
-  CoordinationUnitID new_cu_id(CoordinationUnitType::kSystem, std::string());
+  CoordinationUnitID new_cu_id(CoordinationUnitType::kSystem,
+                               CoordinationUnitID::RANDOM_ID);
   ResourceCoordinatorInterface::ConnectToService(connector, new_cu_id);
 }
 
