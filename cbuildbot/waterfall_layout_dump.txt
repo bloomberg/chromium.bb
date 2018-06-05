@@ -286,6 +286,7 @@ wooten-paladin (gce_beefy)
 wooten-release (gce_beefy)
 zako-release (gce_beefy)
 zoombini-paladin (gce_beefy)
+zoombini-release (gce_beefy)
 
 == chromeos_release ==
 reef-android-nyc-pre-flight-branch (gce_beefy)
@@ -3617,7 +3618,6 @@ zoombini-no-vmtest-pre-cq (gce_beefy)
 zoombini-paladin-tryjob (gce_beefy)
 zoombini-payloads (gce_beefy)
 zoombini-pre-cq (gce_beefy)
-zoombini-release (gce_beefy)
 zoombini-release-afdo-generate-tryjob (gce_beefy)
 [zoombini-release-afdo-tryjob] (gce_beefy)
   zoombini-release-afdo-generate

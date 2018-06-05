@@ -3920,9 +3920,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'betty-release':
           site_config.templates.tast_vm_canary_tests,
 
-      'zoombini-release': {
-          'active_waterfall': waterfall.WATERFALL_SWARMING,
-      },
   }
 
   for config_name, overrides  in overwritten_configs.iteritems():
