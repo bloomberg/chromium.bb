@@ -22,10 +22,6 @@ Polymer({
     },
   },
 
-  listeners: {
-    'transitionend': 'onDialogTransitionEnd_',
-  },
-
   /** Toggles the drawer open and close. */
   toggle: function() {
     if (this.$.dialog.open)
@@ -77,6 +73,20 @@ Polymer({
   onDialogCancel_: function(event) {
     event.preventDefault();
     this.closeDrawer();
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onDialogClose_: function(event) {
+    // TODO(dpapad): This is necessary to make the code work both for Polymer 1
+    // and Polymer 2. Remove once migration to Polymer 2 is completed.
+    event.stopPropagation();
+
+    // Catch and re-fire the 'close' event such that it bubbles across Shadow
+    // DOM v1.
+    this.fire('close');
   },
 
   /**
