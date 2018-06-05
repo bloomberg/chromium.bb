@@ -32,6 +32,7 @@ class CastContentWindowAura : public CastContentWindow,
       CastWindowManager::WindowId z_order,
       VisibilityPriority visibility_priority) override;
   void RequestVisibility(VisibilityPriority visibility_priority) override;
+  void NotifyVisibilityChange(VisibilityType visibility_type) override;
   void RequestMoveOut() override;
   void EnableTouchInput(bool enabled) override;
 
@@ -47,6 +48,8 @@ class CastContentWindowAura : public CastContentWindow,
 
   // This class should only be instantiated by CastContentWindow::Create.
   CastContentWindowAura(Delegate* delegate, bool is_touch_enabled);
+
+  CastContentWindow::Delegate* const delegate_;
 
   // Utility class for detecting and dispatching back gestures to delegates.
   std::unique_ptr<CastBackGestureDispatcher> back_gesture_dispatcher_;

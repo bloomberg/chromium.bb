@@ -17,13 +17,29 @@
 namespace chromecast {
 namespace shell {
 
+// Describes visual context of the window within the UI.
 enum class VisibilityType {
+  // Unknown visibility state.
   UNKNOWN = 0,
+
+  // Window is occupying the entire screen and can be interacted with.
   FULL_SCREEN = 1,
+
+  // Window occupies a portion of the screen, supporting user interaction.
   PARTIAL_OUT = 2,
-  HIDDEN = 3
+
+  // Window is hidden, and cannot be interacted with via touch.
+  HIDDEN = 3,
+
+  // Window is being displayed as a small visible tile.
+  TILE = 4
 };
 
+// Represents requested activity windowing behavior. Behavior includes:
+// 1. How long the activity should show
+// 2. Whether the window should become immediately visible
+// 3. How much screen space the window should occupy
+// 4. What state to return to when the activity is completed
 enum class VisibilityPriority {
   // Default priority. It is up to system to decide how to show the activity.
   DEFAULT = 0,
@@ -109,6 +125,11 @@ class CastContentWindow {
   // Cast activity or application calls it to request for a visibility priority
   // change.
   virtual void RequestVisibility(VisibilityPriority visibility_priority) = 0;
+
+  // Notify the window that its visibility type has changed. This should only
+  // ever be called by the window manager.
+  // TODO(seantopping): Make this private to the window manager.
+  virtual void NotifyVisibilityChange(VisibilityType visibility_type) = 0;
 
   // Cast activity or application calls it to request for moving out of the
   // screen.

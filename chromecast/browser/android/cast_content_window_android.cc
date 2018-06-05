@@ -103,6 +103,11 @@ void CastContentWindowAndroid::RequestVisibility(
       env, java_window_, static_cast<int>(visibility_priority));
 }
 
+void CastContentWindowAndroid::NotifyVisibilityChange(
+    VisibilityType visibility_type) {
+  delegate_->OnVisibilityChange(visibility_type);
+}
+
 void CastContentWindowAndroid::RequestMoveOut() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_CastContentWindowAndroid_requestMoveOut(env, java_window_);
@@ -119,7 +124,7 @@ void CastContentWindowAndroid::OnVisibilityChange(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     int visibility_type) {
-  delegate_->OnVisibilityChange(static_cast<VisibilityType>(visibility_type));
+  NotifyVisibilityChange(static_cast<VisibilityType>(visibility_type));
 }
 
 base::android::ScopedJavaLocalRef<jstring> CastContentWindowAndroid::GetId(
