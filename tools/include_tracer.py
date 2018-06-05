@@ -13,6 +13,7 @@ Usage:
 """
 
 import os
+import re
 import sys
 
 # Created by copying the command line for prerender_browsertest.cc, replacing
@@ -178,13 +179,12 @@ def Walk(seen, filename, parent, indent):
     lines = []
   for line in lines:
     line = line.strip()
-    if line.startswith('#include "'):
-      total_bytes += Walk(
-          seen, line.split('"')[1], resolved_filename, indent + 2)
-    elif line.startswith('#include '):
-      include = '<' + line.split('<')[1].split('>')[0] + '>'
-      total_bytes += Walk(
-          seen, include, resolved_filename, indent + 2)
+    match = re.match(r'#include\s+(\S+).*', line)
+    if match:
+      include = match.group(1)
+      if include.startswith('"'):
+        include = include[1:-1]
+      total_bytes += Walk(seen, include, resolved_filename, indent + 2)
     elif line.startswith('import '):
       total_bytes += Walk(
           seen, line.split('"')[1], resolved_filename, indent + 2)
