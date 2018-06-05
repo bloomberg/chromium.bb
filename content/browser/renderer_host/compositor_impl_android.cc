@@ -825,6 +825,10 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   }
   if (display_)
     display_->Resize(size);
+
+  if (CompositorDependencies::Get().display_private)
+    CompositorDependencies::Get().display_private->Resize(size);
+
   root_window_->GetLayer()->SetBounds(size);
 }
 
@@ -1252,6 +1256,7 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
           std::move(context_provider), nullptr, &params);
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
   CompositorDependencies::Get().display_private->SetDisplayVisible(true);
+  CompositorDependencies::Get().display_private->Resize(size_);
 }
 
 viz::LocalSurfaceId CompositorImpl::GenerateLocalSurfaceId() const {

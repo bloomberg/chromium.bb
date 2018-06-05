@@ -67,12 +67,15 @@ void FrameGenerator::OnWindowSizeChanged(const gfx::Size& pixel_size) {
 
   pixel_size_ = pixel_size;
   SetNeedsBeginFrame(true);
+  display_private_->Resize(pixel_size);
 }
 
 void FrameGenerator::Bind(
-    std::unique_ptr<viz::mojom::CompositorFrameSink> compositor_frame_sink) {
+    std::unique_ptr<viz::mojom::CompositorFrameSink> compositor_frame_sink,
+    viz::mojom::DisplayPrivateAssociatedPtr display_private) {
   DCHECK(!compositor_frame_sink_);
   compositor_frame_sink_ = std::move(compositor_frame_sink);
+  display_private_ = std::move(display_private);
 }
 
 void FrameGenerator::ReclaimResources(

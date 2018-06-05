@@ -351,7 +351,8 @@ void Compositor::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
 
 void Compositor::DisableSwapUntilResize() {
   DCHECK(context_factory_private_);
-  context_factory_private_->ResizeDisplay(this, gfx::Size());
+  context_factory_private_->DisableSwapUntilResize(this);
+  disabled_swap_until_resize_ = true;
 }
 
 void Compositor::ReenableSwap() {
@@ -378,12 +379,16 @@ void Compositor::SetScaleAndSize(float scale,
   }
 
   if (!size_in_pixel.IsEmpty()) {
+    bool size_changed = size_ != size_in_pixel;
     size_ = size_in_pixel;
     host_->SetViewportSizeAndScale(size_in_pixel, scale, local_surface_id);
     root_web_layer_->SetBounds(size_in_pixel);
     // TODO(fsamuel): Get rid of ContextFactoryPrivate.
-    if (context_factory_private_)
+    if (context_factory_private_ &&
+        (size_changed || disabled_swap_until_resize_)) {
       context_factory_private_->ResizeDisplay(this, size_in_pixel);
+      disabled_swap_until_resize_ = false;
+    }
   }
   if (device_scale_factor_changed) {
     if (is_pixel_canvas())
