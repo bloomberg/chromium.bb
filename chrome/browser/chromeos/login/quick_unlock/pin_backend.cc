@@ -12,7 +12,10 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/account_id/account_id.h"
+#include "components/keep_alive_registry/keep_alive_types.h"
+#include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "crypto/random.h"
 
 namespace chromeos {
@@ -98,6 +101,40 @@ void PinBackend::HasLoginSupport(BoolCallback result) {
   PostResponse(std::move(result), !!cryptohome_backend_);
 }
 
+void PinBackend::MigrateToCryptohome(Profile* profile, const Key& key) {
+  if (resolving_backend_) {
+    on_cryptohome_support_received_.push_back(
+        base::BindOnce(&PinBackend::MigrateToCryptohome, base::Unretained(this),
+                       profile, key));
+    return;
+  }
+
+  // No cryptohome support - nothing to migrate.
+  if (!cryptohome_backend_)
+    return;
+
+  // No pin in prefs - nothing to migrate.
+  QuickUnlockStorage* storage = QuickUnlockFactory::GetForProfile(profile);
+  if (!storage->pin_storage_prefs()->IsPinSet())
+    return;
+
+  // Make sure chrome does not restart while the migration is in progress (ie,
+  // to apply new flags).
+  scoped_keep_alive_ = std::make_unique<ScopedKeepAlive>(
+      KeepAliveOrigin::PIN_MIGRATION, KeepAliveRestartOption::DISABLED);
+
+  UserContext user_context;
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  DCHECK(user);
+  user_context.SetAccountId(user->GetAccountId());
+  user_context.SetKey(key);
+  cryptohome_backend_->SetPin(
+      user_context, storage->pin_storage_prefs()->PinSecret(),
+      storage->pin_storage_prefs()->PinSalt(),
+      base::BindOnce(&PinBackend::OnPinMigrationAttemptComplete,
+                     base::Unretained(this), profile));
+}
+
 void PinBackend::IsSet(const AccountId& account_id, BoolCallback result) {
   if (resolving_backend_) {
     on_cryptohome_support_received_.push_back(
@@ -139,7 +176,8 @@ void PinBackend::Set(const AccountId& account_id,
     // There may be a pref value if resetting PIN and the device now supports
     // cryptohome-based PIN.
     storage->pin_storage_prefs()->RemovePin();
-    cryptohome_backend_->SetPin(*user_context, pin, std::move(did_set));
+    cryptohome_backend_->SetPin(*user_context, pin, base::nullopt,
+                                std::move(did_set));
   } else {
     storage->pin_storage_prefs()->SetPin(pin);
     storage->MarkStrongAuth();
@@ -227,6 +265,15 @@ void PinBackend::OnIsCryptohomeBackendSupported(bool is_supported) {
   for (auto& callback : on_cryptohome_support_received_)
     std::move(callback).Run();
   on_cryptohome_support_received_.clear();
+}
+
+void PinBackend::OnPinMigrationAttemptComplete(Profile* profile, bool success) {
+  if (success) {
+    QuickUnlockStorage* storage = QuickUnlockFactory::GetForProfile(profile);
+    storage->pin_storage_prefs()->RemovePin();
+  }
+
+  scoped_keep_alive_.reset();
 }
 
 bool PinBackend::ShouldUseCryptohome(const AccountId& account_id) {

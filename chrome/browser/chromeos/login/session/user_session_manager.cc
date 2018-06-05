@@ -51,6 +51,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/profile_auth_data.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
@@ -1403,6 +1404,8 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   }
 
   UpdateEasyUnlockKeys(user_context_);
+  quick_unlock::PinBackend::GetInstance()->MigrateToCryptohome(
+      profile, *user_context_.GetKey());
 
   // Save sync password hash and salt to profile prefs if they are available.
   // These will be used to detect Gaia password reuses.

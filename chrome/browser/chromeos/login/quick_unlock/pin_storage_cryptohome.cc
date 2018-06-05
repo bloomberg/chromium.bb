@@ -173,23 +173,36 @@ void PinStorageCryptohome::IsPinSetInCryptohome(const AccountId& account_id,
 
 void PinStorageCryptohome::SetPin(const UserContext& user_context,
                                   const std::string& pin,
+                                  const base::Optional<std::string>& pin_salt,
                                   BoolCallback did_set) {
   // Rerun this method only after we have system salt.
   if (!salt_obtained_) {
     system_salt_callbacks_.push_back(base::BindOnce(
         &PinStorageCryptohome::SetPin, weak_factory_.GetWeakPtr(), user_context,
-        pin, std::move(did_set)));
+        pin, pin_salt, std::move(did_set)));
     return;
   }
 
   DCHECK(!user_context.GetAccountId().empty());
 
-  // We continue to store the salt in prefs so that existing prefs-based PINs
-  // can be automatically migrated.
-  const std::string salt = PinBackend::ComputeSalt();
+  // Passwords are hashed with SHA256.
+  Key key = *user_context.GetKey();
+  if (key.GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN)
+    key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt_);
+
+  // If the caller provided a salt then this is a migration from prefs-based
+  // PIN, in which case |pin| is already hashed.
+  std::string secret;
+  std::string salt;
+  if (pin_salt) {
+    salt = *pin_salt;
+    secret = pin;
+  } else {
+    salt = PinBackend::ComputeSalt();
+    secret = PinBackend::ComputeSecret(pin, salt, Key::KEY_TYPE_PASSWORD_PLAIN);
+  }
+
   WriteSalt(user_context.GetAccountId(), salt);
-  const std::string secret =
-      PinBackend::ComputeSecret(pin, salt, Key::KEY_TYPE_PASSWORD_PLAIN);
 
   cryptohome::AddKeyRequest request;
   const cryptohome::KeyDefinition key_def =
@@ -204,9 +217,7 @@ void PinStorageCryptohome::SetPin(const UserContext& user_context,
   request.set_clobber_if_exists(true);
   cryptohome::HomedirMethods::GetInstance()->AddKeyEx(
       cryptohome::Identification(user_context.GetAccountId()),
-      cryptohome::CreateAuthorizationRequest(
-          user_context.GetKey()->GetLabel(),
-          user_context.GetKey()->GetSecret()),
+      cryptohome::CreateAuthorizationRequest(key.GetLabel(), key.GetSecret()),
       request,
       base::AdaptCallbackForRepeating(
           base::BindOnce(&OnCryptohomeCallComplete, std::move(did_set))));

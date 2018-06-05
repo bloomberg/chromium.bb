@@ -11,6 +11,8 @@
 #include "chromeos/login/auth/key.h"
 
 class AccountId;
+class Profile;
+class ScopedKeepAlive;
 
 namespace chromeos {
 
@@ -43,6 +45,9 @@ class PinBackend {
   // cryptohome backend is available.
   void HasLoginSupport(BoolCallback result);
 
+  // Try to migrate a prefs-based PIN to cryptohome.
+  void MigrateToCryptohome(Profile* profile, const Key& key);
+
   // Check if the given account_id has a PIN registered.
   void IsSet(const AccountId& account_id, BoolCallback result);
 
@@ -74,6 +79,10 @@ class PinBackend {
   // Called when we know if the cryptohome supports PIN.
   void OnIsCryptohomeBackendSupported(bool is_supported);
 
+  // Called when a migration attempt has completed. If |success| is true the PIN
+  // should be cleared from prefs.
+  void OnPinMigrationAttemptComplete(Profile* profile, bool success);
+
   // Returns true if the cryptohome backend should be used. Sometimes the prefs
   // backend should be used even when cryptohome is available, ie, when there is
   // an non-migrated PIN key.
@@ -90,6 +99,9 @@ class PinBackend {
   // Non-null if we should use the cryptohome backend. If null, the prefs
   // backend should be used.
   std::unique_ptr<PinStorageCryptohome> cryptohome_backend_;
+
+  // Blocks chrome from restarting while migrating from prefs to cryptohome PIN.
+  std::unique_ptr<ScopedKeepAlive> scoped_keep_alive_;
 
   DISALLOW_COPY_AND_ASSIGN(PinBackend);
 };

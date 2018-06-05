@@ -1606,6 +1606,7 @@ test("browser_tests") {
         "../browser/chromeos/login/mixin_based_browser_test.h",
         "../browser/chromeos/login/oobe_localization_browsertest.cc",
         "../browser/chromeos/login/proxy_auth_dialog_browsertest.cc",
+        "../browser/chromeos/login/quick_unlock/pin_migration_browsertest.cc",
         "../browser/chromeos/login/reset_browsertest.cc",
         "../browser/chromeos/login/resource_loader_browsertest.cc",
         "../browser/chromeos/login/saml/saml_browsertest.cc",
