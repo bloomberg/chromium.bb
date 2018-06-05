@@ -4617,6 +4617,16 @@
   <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_DISABLED" desc="Message in the opt-in dialog for Android apps in case metrics are disabled on the device. User has an option to active them using opt-in dialog">
     Send system data. Automatically send diagnostic and device and app usage data to Google. You can change this at any time in your device <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>settings<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. If you turned on additional Web &#38; App Activity, this information will be stored with your account so you can manage it in My Activity. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
+  <message name="IDS_ARC_NOTIFICATION_METRICS_ENABLED_MANAGED_TITLE" desc="Title of notification shown to managed users who don't see the opt-in dialog as all settings are managed.">
+  Send system data
+  </message>
+  <message name="IDS_ARC_NOTIFICATION_METRICS_ENABLED_MANAGED_MESSAGE" desc="Message of notification shown to managed users who don't see the opt-in dialog as all settings are managed.">
+    This device currently automatically sends diagnostic and device and app usage data to Google. This setting is enforced by the owner. If you turned on additional Web &#38; App Activity, this information will be stored with your account so you can manage it in My Activity.
+
+    This is general information about your device and how you use it (such as battery level, app usage, and network connectivity). The data will be used to improve Google's products and services for everyone. Some aggregated information will help partners, such as Android developers, make their apps and products better, too.
+    Turning off this feature doesn't affect your device's ability to send the information needed for essential services such as system updates and security.
+    You can control this feature from Settings &gt; Google. Select Usage &#38; diagnostics from the menu.
+  </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE" desc="Message in the opt-in dialog for users to enable Backup and Restore for Android apps.">
     Back up to Google Drive. Easily restore your data or switch device at any time. Your backup includes app data. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-backup-restore"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>

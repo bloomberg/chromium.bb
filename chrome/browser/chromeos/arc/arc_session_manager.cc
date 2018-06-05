@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
@@ -31,6 +32,8 @@
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/simple_message_box.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -44,6 +47,7 @@
 #include "components/arc/metrics/arc_metrics_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/types/display_constants.h"
 
 namespace arc {
@@ -82,6 +86,15 @@ chromeos::SessionManagerClient* GetSessionManagerClient() {
       !chromeos::DBusThreadManager::Get()->GetSessionManagerClient())
     return nullptr;
   return chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
+}
+
+void ShowUMAConsentMessageBox() {
+  chrome::ShowWarningMessageBox(
+      nullptr,
+      l10n_util::GetStringUTF16(
+          IDS_ARC_NOTIFICATION_METRICS_ENABLED_MANAGED_TITLE),
+      l10n_util::GetStringUTF16(
+          IDS_ARC_NOTIFICATION_METRICS_ENABLED_MANAGED_MESSAGE));
 }
 
 }  // namespace
@@ -728,6 +741,15 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
   }
 
   if (!IsArcTermsOfServiceNegotiationNeeded(profile_)) {
+    // Show a notification about stats reporting if enabled in the case where
+    // it isn't shown during ToS negotiation.
+    if (IsArcStatsReportingEnabled() &&
+        !profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
+      VLOG(1) << "Showing stats reporting notification";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&ShowUMAConsentMessageBox));
+    }
+
     // Moves to next state, Android management check, immediately, as if
     // Terms of Service negotiation is done successfully.
     StartAndroidManagementCheck();

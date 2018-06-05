@@ -808,6 +808,24 @@ TEST_F(ChromeArcUtilTest, TermsOfServiceOobeNegotiationNeededAdUser) {
   EXPECT_FALSE(IsArcTermsOfServiceOobeNegotiationNeeded());
 }
 
+TEST_F(ChromeArcUtilTest, IsArcStatsReportingEnabled) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported"});
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  EXPECT_FALSE(IsArcStatsReportingEnabled());
+}
+
+TEST_F(ChromeArcUtilTest, IsArcStatsReportingEnabled_PublicAccount) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported"});
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmail("public_user@gmail.com"),
+                    user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  EXPECT_FALSE(IsArcStatsReportingEnabled());
+}
+
 using ArcMigrationTest = ChromeArcUtilTest;
 
 TEST_F(ArcMigrationTest, IsMigrationAllowedUnmanagedUser) {
