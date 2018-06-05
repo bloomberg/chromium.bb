@@ -166,6 +166,8 @@ CharacterKey.prototype.createDom = function() {
       this.addChild(character, true);
     }
   }
+
+  goog.a11y.aria.setRole(this.getElement(), goog.a11y.aria.Role.BUTTON);
 };
 
 
