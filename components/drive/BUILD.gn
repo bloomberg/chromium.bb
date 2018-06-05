@@ -166,10 +166,13 @@ if (is_chromeos) {
       "chromeos/sync/remove_performer.h",
       "chromeos/sync_client.cc",
       "chromeos/sync_client.h",
+      "chromeos/team_drive.cc",
+      "chromeos/team_drive.h",
       "chromeos/team_drive_change_list_loader.cc",
       "chromeos/team_drive_change_list_loader.h",
       "chromeos/team_drive_list_loader.cc",
       "chromeos/team_drive_list_loader.h",
+      "chromeos/team_drive_list_observer.h",
     ]
     deps = [
       ":drive",

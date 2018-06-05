@@ -26,6 +26,37 @@ namespace {
 
 constexpr char kTestStartPageToken[] = "123456";
 
+class TestTeamDriveListObserver : public TeamDriveListObserver {
+ public:
+  ~TestTeamDriveListObserver() override = default;
+
+  void OnTeamDriveListLoaded(
+      const std::vector<TeamDrive>& team_drives_list,
+      const std::vector<TeamDrive>& added_team_drives,
+      const std::vector<TeamDrive>& removed_team_drives) override {
+    team_drives_list_ = team_drives_list;
+    added_team_drives_ = added_team_drives;
+    removed_team_drives_ = removed_team_drives;
+  }
+
+  const std::vector<TeamDrive>& team_drives_list() const {
+    return team_drives_list_;
+  }
+
+  const std::vector<TeamDrive>& added_team_drives() const {
+    return added_team_drives_;
+  }
+
+  const std::vector<TeamDrive>& removed_team_drives() const {
+    return removed_team_drives_;
+  }
+
+ private:
+  std::vector<TeamDrive> team_drives_list_;
+  std::vector<TeamDrive> added_team_drives_;
+  std::vector<TeamDrive> removed_team_drives_;
+};
+
 }  // namespace
 
 class TeamDriveListLoaderTest : public testing::Test {
@@ -65,6 +96,9 @@ class TeamDriveListLoaderTest : public testing::Test {
     team_drive_list_loader_.reset(new TeamDriveListLoader(
         logger_.get(), base::ThreadTaskRunnerHandle::Get().get(),
         metadata_.get(), scheduler_.get(), loader_controller_.get()));
+
+    team_drive_list_observer_ = std::make_unique<TestTeamDriveListObserver>();
+    team_drive_list_loader_->AddObserver(team_drive_list_observer_.get());
   }
 
   // Creates a ResourceEntry for a directory with explicitly set resource_id.
@@ -94,6 +128,7 @@ class TeamDriveListLoaderTest : public testing::Test {
   std::unique_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
   std::unique_ptr<LoaderController> loader_controller_;
   std::unique_ptr<TeamDriveListLoader> team_drive_list_loader_;
+  std::unique_ptr<TestTeamDriveListObserver> team_drive_list_observer_;
 };
 
 // Tests that if there are no team drives on the server, we will not add
@@ -106,6 +141,10 @@ TEST_F(TeamDriveListLoaderTest, NoTeamDrives) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(1, drive_service_->team_drive_list_load_count());
+
+  EXPECT_TRUE(team_drive_list_observer_->team_drives_list().empty());
+  EXPECT_TRUE(team_drive_list_observer_->added_team_drives().empty());
+  EXPECT_TRUE(team_drive_list_observer_->removed_team_drives().empty());
 
   ResourceEntryVector entries;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->ReadDirectoryByPath(
@@ -127,6 +166,10 @@ TEST_F(TeamDriveListLoaderTest, OneTeamDrive) {
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(1, drive_service_->team_drive_list_load_count());
 
+  EXPECT_EQ(1UL, team_drive_list_observer_->team_drives_list().size());
+  EXPECT_EQ(1UL, team_drive_list_observer_->added_team_drives().size());
+  EXPECT_TRUE(team_drive_list_observer_->removed_team_drives().empty());
+
   ResourceEntryVector entries;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->ReadDirectoryByPath(
                                util::GetDriveTeamDrivesRootPath(), &entries));
@@ -137,6 +180,11 @@ TEST_F(TeamDriveListLoaderTest, OneTeamDrive) {
             metadata_->GetResourceEntryByPath(
                 util::GetDriveTeamDrivesRootPath().AppendASCII(kTeamDriveName1),
                 &entry));
+
+  const base::FilePath& team_drive_path =
+      team_drive_list_observer_->team_drives_list().front().team_drive_path();
+  EXPECT_EQ(team_drive_path,
+            util::GetDriveTeamDrivesRootPath().AppendASCII(kTeamDriveName1));
 }
 
 // Tests if there are multiple team drives on the server, we will add them all
@@ -159,6 +207,12 @@ TEST_F(TeamDriveListLoaderTest, MultipleTeamDrive) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(1, drive_service_->team_drive_list_load_count());
+
+  EXPECT_EQ(team_drives.size(),
+            team_drive_list_observer_->team_drives_list().size());
+  EXPECT_EQ(team_drives.size(),
+            team_drive_list_observer_->added_team_drives().size());
+  EXPECT_TRUE(team_drive_list_observer_->removed_team_drives().empty());
 
   ResourceEntryVector entries;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->ReadDirectoryByPath(
@@ -221,6 +275,12 @@ TEST_F(TeamDriveListLoaderTest, RetainExistingMetadata) {
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(1, drive_service_->team_drive_list_load_count());
 
+  EXPECT_EQ(old_team_drives.size() + new_team_drives.size(),
+            team_drive_list_observer_->team_drives_list().size());
+  EXPECT_EQ(new_team_drives.size(),
+            team_drive_list_observer_->added_team_drives().size());
+  EXPECT_TRUE(team_drive_list_observer_->removed_team_drives().empty());
+
   ResourceEntryVector entries;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->ReadDirectoryByPath(
                                util::GetDriveTeamDrivesRootPath(), &entries));
@@ -278,6 +338,11 @@ TEST_F(TeamDriveListLoaderTest, RemoveMissingTeamDriveFromMetadata) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(1, drive_service_->team_drive_list_load_count());
+
+  EXPECT_TRUE(team_drive_list_observer_->team_drives_list().empty());
+  EXPECT_TRUE(team_drive_list_observer_->added_team_drives().empty());
+  EXPECT_EQ(old_team_drives.size(),
+            team_drive_list_observer_->removed_team_drives().size());
 
   ResourceEntry entry;
   for (const auto& drive : old_team_drives) {
