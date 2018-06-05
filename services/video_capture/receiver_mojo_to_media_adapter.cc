@@ -9,74 +9,16 @@
 
 namespace video_capture {
 
-ReceiverOnTaskRunner::ReceiverOnTaskRunner(
-    std::unique_ptr<media::VideoFrameReceiver> receiver,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : receiver_(std::move(receiver)), task_runner_(std::move(task_runner)) {}
-
-ReceiverOnTaskRunner::~ReceiverOnTaskRunner() {
-  task_runner_->DeleteSoon(FROM_HERE, receiver_.release());
-}
-
-void ReceiverOnTaskRunner::OnNewBuffer(
-    int buffer_id,
-    media::mojom::VideoBufferHandlePtr buffer_handle) {
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&media::VideoFrameReceiver::OnNewBuffer,
-                                base::Unretained(receiver_.get()), buffer_id,
-                                base::Passed(&buffer_handle)));
-}
-
-void ReceiverOnTaskRunner::OnFrameReadyInBuffer(
-    int buffer_id,
-    int frame_feedback_id,
-    std::unique_ptr<
-        media::VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>
-        buffer_read_permission,
-    media::mojom::VideoFrameInfoPtr frame_info) {
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&media::VideoFrameReceiver::OnFrameReadyInBuffer,
-                 base::Unretained(receiver_.get()), buffer_id,
-                 frame_feedback_id, base::Passed(&buffer_read_permission),
-                 base::Passed(&frame_info)));
-}
-
-void ReceiverOnTaskRunner::OnBufferRetired(int buffer_id) {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&media::VideoFrameReceiver::OnBufferRetired,
-                            base::Unretained(receiver_.get()), buffer_id));
-}
-
-void ReceiverOnTaskRunner::OnError() {
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&media::VideoFrameReceiver::OnError,
-                                    base::Unretained(receiver_.get())));
-}
-
-void ReceiverOnTaskRunner::OnLog(const std::string& message) {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&media::VideoFrameReceiver::OnLog,
-                            base::Unretained(receiver_.get()), message));
-}
-
-void ReceiverOnTaskRunner::OnStarted() {
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&media::VideoFrameReceiver::OnStarted,
-                                    base::Unretained(receiver_.get())));
-}
-
-void ReceiverOnTaskRunner::OnStartedUsingGpuDecode() {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&media::VideoFrameReceiver::OnStartedUsingGpuDecode,
-                            base::Unretained(receiver_.get())));
-}
-
 ReceiverMojoToMediaAdapter::ReceiverMojoToMediaAdapter(
     mojom::ReceiverPtr receiver)
-    : receiver_(std::move(receiver)) {}
+    : receiver_(std::move(receiver)), weak_factory_(this) {}
 
 ReceiverMojoToMediaAdapter::~ReceiverMojoToMediaAdapter() = default;
+
+base::WeakPtr<media::VideoFrameReceiver>
+ReceiverMojoToMediaAdapter::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
 
 void ReceiverMojoToMediaAdapter::OnNewBuffer(
     int buffer_id,
