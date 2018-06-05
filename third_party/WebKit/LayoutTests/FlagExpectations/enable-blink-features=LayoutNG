@@ -33,9 +33,6 @@ crbug.com/591099 fast/block/child-not-removed-from-parent-lineboxes-crash.html [
 # https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/layout_block.cc?l=1372&rcl=0e081149ecd6a83f6289e3aee5797936008a1e10
 crbug.com/591099 fast/block/marquee-width-shrinks-to-fit-in-fixed-size-container.html [ Failure ]
 
-# For unknown reasons we render the reference incorrectly
-crbug.com/591099 fast/multicol/vertical-rl/column-rules.html [ Failure ]
-
 # New passes
 crbug.com/774229 editing/pasteboard/copy-paste-white-space.html [ Pass ]
 crbug.com/591099 external/wpt/css/CSS2/floats-clear/no-clearance-adjoining-opposite-float.html [ Pass ]
@@ -348,7 +345,6 @@ crbug.com/591099 external/wpt/css/css-writing-modes/text-combine-upright-decorat
 crbug.com/591099 external/wpt/css/css-writing-modes/text-combine-upright-layout-rules-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/vertical-alignment-003.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/vertical-alignment-009.xht [ Pass ]
-crbug.com/591099 external/wpt/css/css-writing-modes/wm-propagation-body-006.xht [ Failure ]
 crbug.com/591099 external/wpt/css/geometry/interfaces.worker.html [ Pass ]
 crbug.com/591099 external/wpt/css/selectors/focus-within-004.html [ Pass ]
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Pass ]
