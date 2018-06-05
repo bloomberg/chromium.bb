@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_TETHER_BLE_ADVERTISEMENT_SYNCHRONIZER_H_
-#define CHROMEOS_COMPONENTS_TETHER_BLE_ADVERTISEMENT_SYNCHRONIZER_H_
+#ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_BLE_SYNCHRONIZER_H_
+#define CHROMEOS_SERVICES_SECURE_CHANNEL_BLE_SYNCHRONIZER_H_
 
 #include <deque>
 
@@ -14,7 +14,7 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/components/tether/ble_synchronizer_base.h"
+#include "chromeos/services/secure_channel/ble_synchronizer_base.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -25,19 +25,31 @@ class TaskRunner;
 
 namespace chromeos {
 
-namespace tether {
+namespace secure_channel {
 
 // Concrete BleSynchronizerBase implementation.
 class BleSynchronizer : public BleSynchronizerBase {
  public:
-  BleSynchronizer(scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
+  class Factory {
+   public:
+    static Factory* Get();
+    static void SetFactoryForTesting(Factory* test_factory);
+    virtual ~Factory();
+    virtual std::unique_ptr<BleSynchronizerBase> BuildInstance(
+        scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
+
+   private:
+    static Factory* test_factory_;
+  };
+
   ~BleSynchronizer() override;
 
  protected:
+  BleSynchronizer(scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
   void ProcessQueue() override;
 
  private:
-  friend class BleSynchronizerTest;
+  friend class SecureChannelBleSynchronizerTest;
 
   // BLUETOOTH_ADVERTISEMENT_RESULT_UNKNOWN indicates that the Bluetooth
   // platform returned a code that is not recognized.
@@ -95,8 +107,8 @@ class BleSynchronizer : public BleSynchronizerBase {
   DISALLOW_COPY_AND_ASSIGN(BleSynchronizer);
 };
 
-}  // namespace tether
+}  // namespace secure_channel
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_COMPONENTS_TETHER_BLE_ADVERTISEMENT_SYNCHRONIZER_H_
+#endif  // CHROMEOS_SERVICES_SECURE_CHANNEL_BLE_SYNCHRONIZER_H_

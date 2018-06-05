@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/error_tolerant_ble_advertisement_impl.h"
+#include "chromeos/services/secure_channel/error_tolerant_ble_advertisement_impl.h"
 
 #include <memory>
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/tether/ble_constants.h"
-#include "chromeos/components/tether/fake_ble_synchronizer.h"
+#include "chromeos/services/secure_channel/ble_constants.h"
+#include "chromeos/services/secure_channel/fake_ble_synchronizer.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/test/mock_bluetooth_advertisement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
-namespace tether {
+namespace secure_channel {
 
 namespace {
 
@@ -31,9 +31,10 @@ std::unique_ptr<cryptauth::DataWithTimestamp> GenerateAdvertisementData() {
 
 }  // namespace
 
-class ErrorTolerantBleAdvertisementImplTest : public testing::Test {
+class SecureChannelErrorTolerantBleAdvertisementImplTest
+    : public testing::Test {
  protected:
-  ErrorTolerantBleAdvertisementImplTest()
+  SecureChannelErrorTolerantBleAdvertisementImplTest()
       : fake_advertisement_data_(GenerateAdvertisementData()) {}
 
   void SetUp() override {
@@ -92,9 +93,9 @@ class ErrorTolerantBleAdvertisementImplTest : public testing::Test {
   }
 
   void CallStop() {
-    advertisement_->Stop(
-        base::Bind(&ErrorTolerantBleAdvertisementImplTest::OnStopped,
-                   base::Unretained(this)));
+    advertisement_->Stop(base::Bind(
+        &SecureChannelErrorTolerantBleAdvertisementImplTest::OnStopped,
+        base::Unretained(this)));
   }
 
   void OnStopped() { stopped_callback_called_ = true; }
@@ -121,10 +122,11 @@ class ErrorTolerantBleAdvertisementImplTest : public testing::Test {
   std::unique_ptr<ErrorTolerantBleAdvertisementImpl> advertisement_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ErrorTolerantBleAdvertisementImplTest);
+  DISALLOW_COPY_AND_ASSIGN(SecureChannelErrorTolerantBleAdvertisementImplTest);
 };
 
-TEST_F(ErrorTolerantBleAdvertisementImplTest, TestRegisterAndStop_Success) {
+TEST_F(SecureChannelErrorTolerantBleAdvertisementImplTest,
+       TestRegisterAndStop_Success) {
   InvokeRegisterCallback(true /* success */, 0u /* command_index */);
   EXPECT_FALSE(advertisement_->HasBeenStopped());
   EXPECT_FALSE(stopped_callback_called_);
@@ -138,7 +140,8 @@ TEST_F(ErrorTolerantBleAdvertisementImplTest, TestRegisterAndStop_Success) {
   EXPECT_TRUE(stopped_callback_called_);
 }
 
-TEST_F(ErrorTolerantBleAdvertisementImplTest, TestStoppedBeforeStarted) {
+TEST_F(SecureChannelErrorTolerantBleAdvertisementImplTest,
+       TestStoppedBeforeStarted) {
   // Before the advertisement has been started successfully.
   CallStop();
   EXPECT_TRUE(advertisement_->HasBeenStopped());
@@ -155,7 +158,8 @@ TEST_F(ErrorTolerantBleAdvertisementImplTest, TestStoppedBeforeStarted) {
   EXPECT_TRUE(stopped_callback_called_);
 }
 
-TEST_F(ErrorTolerantBleAdvertisementImplTest, TestRegisterAndStop_Released) {
+TEST_F(SecureChannelErrorTolerantBleAdvertisementImplTest,
+       TestRegisterAndStop_Released) {
   InvokeRegisterCallback(true /* success */, 0u /* command_index */);
   EXPECT_FALSE(advertisement_->HasBeenStopped());
   EXPECT_FALSE(stopped_callback_called_);
@@ -177,7 +181,8 @@ TEST_F(ErrorTolerantBleAdvertisementImplTest, TestRegisterAndStop_Released) {
   EXPECT_TRUE(stopped_callback_called_);
 }
 
-TEST_F(ErrorTolerantBleAdvertisementImplTest, TestRegisterAndStop_Errors) {
+TEST_F(SecureChannelErrorTolerantBleAdvertisementImplTest,
+       TestRegisterAndStop_Errors) {
   // Fail to register.
   InvokeRegisterCallback(false /* success */, 0u /* command_index */);
   EXPECT_FALSE(advertisement_->HasBeenStopped());
@@ -210,6 +215,6 @@ TEST_F(ErrorTolerantBleAdvertisementImplTest, TestRegisterAndStop_Errors) {
   EXPECT_TRUE(stopped_callback_called_);
 }
 
-}  // namespace tether
+}  // namespace secure_channel
 
 }  // namespace chromeos

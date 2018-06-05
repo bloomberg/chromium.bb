@@ -7,11 +7,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/timer/mock_timer.h"
 #include "base/unguessable_token.h"
-#include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/fake_ble_advertiser.h"
 #include "chromeos/components/tether/fake_ble_scanner.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "chromeos/components/tether/timer_factory.h"
+#include "chromeos/services/secure_channel/ble_constants.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/fake_connection.h"
@@ -339,7 +339,7 @@ class BleConnectionManagerTest : public testing::Test {
   BleConnectionManagerTest() : test_devices_(CreateTestDevices(4)) {
     // These tests assume a maximum of two concurrent advertisers. Some of the
     // multi-device tests would need to be re-written if this constant changes.
-    EXPECT_EQ(2u, kMaxConcurrentAdvertisements);
+    EXPECT_EQ(2u, secure_channel::kMaxConcurrentAdvertisements);
   }
 
   void SetUp() override {
@@ -358,7 +358,7 @@ class BleConnectionManagerTest : public testing::Test {
         true /* automatically_update_discovery_session */);
 
     fake_connection_factory_ = base::WrapUnique(new FakeConnectionFactory(
-        mock_adapter_, device::BluetoothUUID(kGattServerUuid)));
+        mock_adapter_, device::BluetoothUUID(secure_channel::kGattServerUuid)));
     cryptauth::weave::BluetoothLowEnergyWeaveClientConnection::Factory::
         SetInstanceForTesting(fake_connection_factory_.get());
 

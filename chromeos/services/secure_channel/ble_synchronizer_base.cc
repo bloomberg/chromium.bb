@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/ble_synchronizer_base.h"
+#include "chromeos/services/secure_channel/ble_synchronizer_base.h"
 
 #include <memory>
 
 namespace chromeos {
 
-namespace tether {
+namespace secure_channel {
 
 BleSynchronizerBase::RegisterArgs::RegisterArgs(
     std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
@@ -112,6 +112,6 @@ void BleSynchronizerBase::StopDiscoverySession(
   ProcessQueue();
 }
 
-}  // namespace tether
+}  // namespace secure_channel
 
 }  // namespace chromeos

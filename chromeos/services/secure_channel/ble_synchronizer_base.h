@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_TETHER_BLE_ADVERTISEMENT_SYNCHRONIZER_BASE_H_
-#define CHROMEOS_COMPONENTS_TETHER_BLE_ADVERTISEMENT_SYNCHRONIZER_BASE_H_
+#ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_BLE_SYNCHRONIZER_BASE_H_
+#define CHROMEOS_SERVICES_SECURE_CHANNEL_BLE_SYNCHRONIZER_BASE_H_
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -15,7 +15,7 @@
 
 namespace chromeos {
 
-namespace tether {
+namespace secure_channel {
 
 // Ensures that BLE advertisement registration/unregistration commands and
 // discovery start/stop are not sent too close to each other. Because Bluetooth
@@ -130,8 +130,8 @@ class BleSynchronizerBase {
   DISALLOW_COPY_AND_ASSIGN(BleSynchronizerBase);
 };
 
-}  // namespace tether
+}  // namespace secure_channel
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_COMPONENTS_TETHER_BLE_ADVERTISEMENT_SYNCHRONIZER_BASE_H_
+#endif  // CHROMEOS_SERVICES_SECURE_CHANNEL_BLE_SYNCHRONIZER_BASE_H_

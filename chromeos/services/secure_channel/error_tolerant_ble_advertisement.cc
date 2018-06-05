@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/error_tolerant_ble_advertisement.h"
+#include "chromeos/services/secure_channel/error_tolerant_ble_advertisement.h"
 
 namespace chromeos {
 
-namespace tether {
+namespace secure_channel {
 
 ErrorTolerantBleAdvertisement::ErrorTolerantBleAdvertisement(
     const std::string& device_id)
@@ -14,6 +14,6 @@ ErrorTolerantBleAdvertisement::ErrorTolerantBleAdvertisement(
 
 ErrorTolerantBleAdvertisement::~ErrorTolerantBleAdvertisement() = default;
 
-}  // namespace tether
+}  // namespace secure_channel
 
 }  // namespace chromeos

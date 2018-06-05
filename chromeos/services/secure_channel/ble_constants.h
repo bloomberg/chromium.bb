@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_TETHER_BLE_CONSTANTS_H_
-#define CHROMEOS_COMPONENTS_TETHER_BLE_CONSTANTS_H_
+#ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_BLE_CONSTANTS_H_
+#define CHROMEOS_SERVICES_SECURE_CHANNEL_BLE_CONSTANTS_H_
 
 #include <string>
 
 namespace chromeos {
 
-namespace tether {
+namespace secure_channel {
 
 // The maximum number of devices to which to advertise concurrently. If more
 // than this number of devices are registered, other advertisements must be
@@ -27,8 +27,8 @@ constexpr const char kAdvertisingServiceUuid[] =
 // The GATT server UUID used for uWeave.
 constexpr const char kGattServerUuid[] = "b3b7e28e-a000-3e17-bd86-6e97b9e28c11";
 
-}  // namespace tether
+}  // namespace secure_channel
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_COMPONENTS_TETHER_BLE_CONSTANTS_H_
+#endif  // CHROMEOS_SERVICES_SECURE_CHANNEL_BLE_CONSTANTS_H_

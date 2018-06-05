@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "chromeos/components/tether/ble_constants.h"
+#include "chromeos/services/secure_channel/ble_constants.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -106,7 +106,7 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestTwoDevices_MoveToEnd) {
 TEST_F(BleAdvertisementDeviceQueueTest, TestThreeDevices) {
   // Note: These tests need to be rewritten if |kMaxConcurrentAdvertisements| is
   // ever changed.
-  ASSERT_GT(3u, kMaxConcurrentAdvertisements);
+  ASSERT_GT(3u, secure_channel::kMaxConcurrentAdvertisements);
 
   EXPECT_TRUE(device_queue_->SetPrioritizedDeviceIds(
       {PrioritizedDeviceId(test_devices_[0].GetDeviceId(),
@@ -140,7 +140,7 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestThreeDevices) {
 TEST_F(BleAdvertisementDeviceQueueTest, TestAddingDevices) {
   // Note: These tests need to be rewritten if |kMaxConcurrentAdvertisements| is
   // ever changed.
-  ASSERT_GT(3u, kMaxConcurrentAdvertisements);
+  ASSERT_GT(3u, secure_channel::kMaxConcurrentAdvertisements);
 
   EXPECT_TRUE(device_queue_->SetPrioritizedDeviceIds(
       {PrioritizedDeviceId(test_devices_[0].GetDeviceId(),
@@ -186,7 +186,7 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestAddingDevices) {
 TEST_F(BleAdvertisementDeviceQueueTest, TestMultiplePriorityLevels) {
   // Note: These tests need to be rewritten if |kMaxConcurrentAdvertisements| is
   // ever changed.
-  ASSERT_GT(3u, kMaxConcurrentAdvertisements);
+  ASSERT_GT(3u, secure_channel::kMaxConcurrentAdvertisements);
 
   EXPECT_TRUE(device_queue_->SetPrioritizedDeviceIds(
       {PrioritizedDeviceId(test_devices_[0].GetDeviceId(),

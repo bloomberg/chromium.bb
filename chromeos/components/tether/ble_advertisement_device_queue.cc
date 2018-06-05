@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "chromeos/components/tether/ble_constants.h"
+#include "chromeos/services/secure_channel/ble_constants.h"
 
 namespace chromeos {
 
@@ -115,7 +115,7 @@ BleAdvertisementDeviceQueue::GetDeviceIdsToWhichToAdvertise() const {
                                 &device_ids);
   AddDevicesToVectorForPriority(secure_channel::ConnectionPriority::kLow,
                                 &device_ids);
-  DCHECK(device_ids.size() <= kMaxConcurrentAdvertisements);
+  DCHECK(device_ids.size() <= secure_channel::kMaxConcurrentAdvertisements);
   return device_ids;
 }
 
@@ -139,7 +139,8 @@ void BleAdvertisementDeviceQueue::AddDevicesToVectorForPriority(
       priority_to_device_ids_map_.at(connection_priority);
   size_t i = 0;
   while (i < device_ids_for_priority.size() &&
-         device_ids_out->size() < kMaxConcurrentAdvertisements) {
+         device_ids_out->size() <
+             secure_channel::kMaxConcurrentAdvertisements) {
     device_ids_out->push_back(device_ids_for_priority[i]);
     ++i;
   }

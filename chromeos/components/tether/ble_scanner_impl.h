@@ -33,9 +33,12 @@ class BluetoothDiscoverySession;
 
 namespace chromeos {
 
+namespace secure_channel {
+class BleSynchronizerBase;
+}  // namespace secure_channel
+
 namespace tether {
 
-class BleSynchronizerBase;
 class TetherHostFetcher;
 
 // Concrete BleScanner implementation.
@@ -48,7 +51,7 @@ class BleScannerImpl : public BleScanner,
         scoped_refptr<device::BluetoothAdapter> adapter,
         cryptauth::LocalDeviceDataProvider* local_device_data_provider,
         cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
-        BleSynchronizerBase* ble_synchronizer,
+        secure_channel::BleSynchronizerBase* ble_synchronizer,
         TetherHostFetcher* tether_host_fetcher);
 
     static void SetInstanceForTesting(Factory* factory);
@@ -58,7 +61,7 @@ class BleScannerImpl : public BleScanner,
         scoped_refptr<device::BluetoothAdapter> adapter,
         cryptauth::LocalDeviceDataProvider* local_device_data_provider,
         cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
-        BleSynchronizerBase* ble_synchronizer,
+        secure_channel::BleSynchronizerBase* ble_synchronizer,
         TetherHostFetcher* tether_host_fetcher);
 
    private:
@@ -76,7 +79,7 @@ class BleScannerImpl : public BleScanner,
   BleScannerImpl(scoped_refptr<device::BluetoothAdapter> adapter,
                  cryptauth::LocalDeviceDataProvider* local_device_data_provider,
                  cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
-                 BleSynchronizerBase* ble_synchronizer,
+                 secure_channel::BleSynchronizerBase* ble_synchronizer,
                  TetherHostFetcher* tether_host_fetcher);
 
   // device::BluetoothAdapter::Observer:
@@ -144,7 +147,7 @@ class BleScannerImpl : public BleScanner,
   scoped_refptr<device::BluetoothAdapter> adapter_;
   cryptauth::LocalDeviceDataProvider* local_device_data_provider_;
   cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher_;
-  BleSynchronizerBase* ble_synchronizer_;
+  secure_channel::BleSynchronizerBase* ble_synchronizer_;
   TetherHostFetcher* tether_host_fetcher_;
 
   std::unique_ptr<ServiceDataProvider> service_data_provider_;

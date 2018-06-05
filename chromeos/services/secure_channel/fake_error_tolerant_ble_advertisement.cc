@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/fake_error_tolerant_ble_advertisement.h"
+#include "chromeos/services/secure_channel/fake_error_tolerant_ble_advertisement.h"
 
 #include "base/bind.h"
 
 namespace chromeos {
 
-namespace tether {
+namespace secure_channel {
 
 FakeErrorTolerantBleAdvertisement::FakeErrorTolerantBleAdvertisement(
     const std::string& device_id)
@@ -40,6 +40,6 @@ void FakeErrorTolerantBleAdvertisement::Stop(const base::Closure& callback) {
   stop_callback_ = callback;
 }
 
-}  // namespace tether
+}  // namespace secure_channel
 
 }  // namespace chromeos

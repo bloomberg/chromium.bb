@@ -10,10 +10,10 @@
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
-#include "chromeos/components/tether/ble_constants.h"
-#include "chromeos/components/tether/error_tolerant_ble_advertisement_impl.h"
-#include "chromeos/components/tether/fake_ble_synchronizer.h"
-#include "chromeos/components/tether/fake_error_tolerant_ble_advertisement.h"
+#include "chromeos/services/secure_channel/ble_constants.h"
+#include "chromeos/services/secure_channel/error_tolerant_ble_advertisement_impl.h"
+#include "chromeos/services/secure_channel/fake_ble_synchronizer.h"
+#include "chromeos/services/secure_channel/fake_error_tolerant_ble_advertisement.h"
 #include "components/cryptauth/ble/ble_advertisement_generator.h"
 #include "components/cryptauth/ble/fake_ble_advertisement_generator.h"
 #include "components/cryptauth/mock_foreground_eid_generator.h"
@@ -40,25 +40,25 @@ std::vector<cryptauth::DataWithTimestamp> GenerateFakeAdvertisements() {
 }
 
 class FakeErrorTolerantBleAdvertisementFactory
-    : public ErrorTolerantBleAdvertisementImpl::Factory {
+    : public secure_channel::ErrorTolerantBleAdvertisementImpl::Factory {
  public:
   FakeErrorTolerantBleAdvertisementFactory() = default;
   ~FakeErrorTolerantBleAdvertisementFactory() override = default;
 
-  const std::vector<FakeErrorTolerantBleAdvertisement*>&
+  const std::vector<secure_channel::FakeErrorTolerantBleAdvertisement*>&
   active_advertisements() {
     return active_advertisements_;
   }
 
   size_t num_created() { return num_created_; }
 
-  // ErrorTolerantBleAdvertisementImpl::Factory:
-  std::unique_ptr<ErrorTolerantBleAdvertisement> BuildInstance(
+  // secure_channel::ErrorTolerantBleAdvertisementImpl::Factory:
+  std::unique_ptr<secure_channel::ErrorTolerantBleAdvertisement> BuildInstance(
       const std::string& device_id,
       std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
-      BleSynchronizerBase* ble_synchronizer) override {
-    FakeErrorTolerantBleAdvertisement* fake_advertisement =
-        new FakeErrorTolerantBleAdvertisement(
+      secure_channel::BleSynchronizerBase* ble_synchronizer) override {
+    secure_channel::FakeErrorTolerantBleAdvertisement* fake_advertisement =
+        new secure_channel::FakeErrorTolerantBleAdvertisement(
             device_id, base::Bind(&FakeErrorTolerantBleAdvertisementFactory::
                                       OnFakeAdvertisementDeleted,
                                   base::Unretained(this)));
@@ -69,7 +69,7 @@ class FakeErrorTolerantBleAdvertisementFactory
 
  protected:
   void OnFakeAdvertisementDeleted(
-      FakeErrorTolerantBleAdvertisement* fake_advertisement) {
+      secure_channel::FakeErrorTolerantBleAdvertisement* fake_advertisement) {
     EXPECT_TRUE(std::find(active_advertisements_.begin(),
                           active_advertisements_.end(),
                           fake_advertisement) != active_advertisements_.end());
@@ -77,7 +77,8 @@ class FakeErrorTolerantBleAdvertisementFactory
   }
 
  private:
-  std::vector<FakeErrorTolerantBleAdvertisement*> active_advertisements_;
+  std::vector<secure_channel::FakeErrorTolerantBleAdvertisement*>
+      active_advertisements_;
   size_t num_created_ = 0;
 };
 
@@ -137,12 +138,13 @@ class BleAdvertiserImplTest : public testing::Test {
         std::make_unique<cryptauth::MockRemoteBeaconSeedFetcher>();
     mock_local_data_provider_ =
         std::make_unique<cryptauth::MockLocalDeviceDataProvider>();
-    fake_ble_synchronizer_ = std::make_unique<FakeBleSynchronizer>();
+    fake_ble_synchronizer_ =
+        std::make_unique<secure_channel::FakeBleSynchronizer>();
 
     fake_advertisement_factory_ =
         base::WrapUnique(new FakeErrorTolerantBleAdvertisementFactory());
-    ErrorTolerantBleAdvertisementImpl::Factory::SetInstanceForTesting(
-        fake_advertisement_factory_.get());
+    secure_channel::ErrorTolerantBleAdvertisementImpl::Factory::
+        SetFactoryForTesting(fake_advertisement_factory_.get());
 
     ble_advertiser_ = base::WrapUnique(new BleAdvertiserImpl(
         mock_local_data_provider_.get(), mock_seed_fetcher_.get(),
@@ -156,14 +158,15 @@ class BleAdvertiserImplTest : public testing::Test {
   }
 
   void TearDown() override {
-    ErrorTolerantBleAdvertisementImpl::Factory::SetInstanceForTesting(nullptr);
+    secure_channel::ErrorTolerantBleAdvertisementImpl::Factory::
+        SetFactoryForTesting(nullptr);
     cryptauth::BleAdvertisementGenerator::SetInstanceForTesting(nullptr);
   }
 
   void VerifyAdvertisementHasBeenStopped(
       size_t index,
       const std::string& expected_device_id) {
-    FakeErrorTolerantBleAdvertisement* advertisement =
+    secure_channel::FakeErrorTolerantBleAdvertisement* advertisement =
         fake_advertisement_factory_->active_advertisements()[index];
     EXPECT_EQ(expected_device_id, advertisement->device_id());
     EXPECT_TRUE(advertisement->HasBeenStopped());
@@ -172,7 +175,7 @@ class BleAdvertiserImplTest : public testing::Test {
   void InvokeAdvertisementStoppedCallback(
       size_t index,
       const std::string& expected_device_id) {
-    FakeErrorTolerantBleAdvertisement* advertisement =
+    secure_channel::FakeErrorTolerantBleAdvertisement* advertisement =
         fake_advertisement_factory_->active_advertisements()[index];
     EXPECT_EQ(expected_device_id, advertisement->device_id());
     advertisement->InvokeStopCallback();
@@ -185,7 +188,7 @@ class BleAdvertiserImplTest : public testing::Test {
   std::unique_ptr<cryptauth::MockRemoteBeaconSeedFetcher> mock_seed_fetcher_;
   std::unique_ptr<cryptauth::MockLocalDeviceDataProvider>
       mock_local_data_provider_;
-  std::unique_ptr<FakeBleSynchronizer> fake_ble_synchronizer_;
+  std::unique_ptr<secure_channel::FakeBleSynchronizer> fake_ble_synchronizer_;
 
   std::unique_ptr<cryptauth::FakeBleAdvertisementGenerator> fake_generator_;
 
@@ -285,7 +288,7 @@ TEST_F(BleAdvertiserImplTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
 }
 
 TEST_F(BleAdvertiserImplTest, TooManyDevicesRegistered) {
-  ASSERT_EQ(2u, kMaxConcurrentAdvertisements);
+  ASSERT_EQ(2u, secure_channel::kMaxConcurrentAdvertisements);
 
   // Register device 0.
   fake_generator_->set_advertisement(

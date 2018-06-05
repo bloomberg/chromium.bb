@@ -7,8 +7,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
-#include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/timer_factory.h"
+#include "chromeos/services/secure_channel/ble_constants.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
 #include "components/cryptauth/remote_device_ref.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -392,7 +392,8 @@ void BleConnectionManager::OnReceivedAdvertisementFromDevice(
   // Create a connection to that device.
   std::unique_ptr<cryptauth::Connection> connection = cryptauth::weave::
       BluetoothLowEnergyWeaveClientConnection::Factory::NewInstance(
-          remote_device, adapter_, device::BluetoothUUID(kGattServerUuid),
+          remote_device, adapter_,
+          device::BluetoothUUID(secure_channel::kGattServerUuid),
           bluetooth_device, false /* should_set_low_connection_latency */);
   std::unique_ptr<cryptauth::SecureChannel> secure_channel =
       cryptauth::SecureChannel::Factory::NewInstance(std::move(connection));
@@ -436,7 +437,8 @@ void BleConnectionManager::UpdateConnectionAttempts() {
 
   std::vector<std::string> should_advertise_to =
       ble_advertisement_device_queue_->GetDeviceIdsToWhichToAdvertise();
-  DCHECK(should_advertise_to.size() <= kMaxConcurrentAdvertisements);
+  DCHECK(should_advertise_to.size() <=
+         secure_channel::kMaxConcurrentAdvertisements);
 
   // Generate a list of devices which are advertising but are not present in
   // |should_advertise_to|.

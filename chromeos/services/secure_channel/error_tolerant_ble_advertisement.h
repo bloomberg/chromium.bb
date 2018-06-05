@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_ERROR_TOLERANT_BLE_ADVERTISEMENT_H_
-#define CHROMEOS_COMPONENTS_ERROR_TOLERANT_BLE_ADVERTISEMENT_H_
+#ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_ERROR_TOLERANT_BLE_ADVERTISEMENT_H_
+#define CHROMEOS_SERVICES_SECURE_CHANNEL_ERROR_TOLERANT_BLE_ADVERTISEMENT_H_
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -11,7 +11,7 @@
 
 namespace chromeos {
 
-namespace tether {
+namespace secure_channel {
 
 // Advertises to the device with the given ID. Due to issues in the Bluetooth
 // stack, it is possible that registering or unregistering an advertisement can
@@ -41,8 +41,8 @@ class ErrorTolerantBleAdvertisement {
   DISALLOW_COPY_AND_ASSIGN(ErrorTolerantBleAdvertisement);
 };
 
-}  // namespace tether
+}  // namespace secure_channel
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_COMPONENTS_ERROR_TOLERANT_BLE_ADVERTISEMENT_H_
+#endif  // CHROMEOS_SERVICES_SECURE_CHANNEL_ERROR_TOLERANT_BLE_ADVERTISEMENT_H_

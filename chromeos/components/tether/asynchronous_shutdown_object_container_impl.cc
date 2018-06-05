@@ -10,11 +10,11 @@
 #include "chromeos/components/tether/ble_connection_manager.h"
 #include "chromeos/components/tether/ble_connection_metrics_logger.h"
 #include "chromeos/components/tether/ble_scanner_impl.h"
-#include "chromeos/components/tether/ble_synchronizer.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender_impl.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/wifi_hotspot_disconnector_impl.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
+#include "chromeos/services/secure_channel/ble_synchronizer.h"
 #include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/local_device_data_provider.h"
 #include "components/cryptauth/remote_beacon_seed_fetcher.h"
@@ -93,7 +93,9 @@ AsynchronousShutdownObjectContainerImpl::
               cryptauth_service->GetCryptAuthDeviceManager())),
       ble_advertisement_device_queue_(
           std::make_unique<BleAdvertisementDeviceQueue>()),
-      ble_synchronizer_(std::make_unique<BleSynchronizer>(adapter)),
+      ble_synchronizer_(
+          secure_channel::BleSynchronizer::Factory::Get()->BuildInstance(
+              adapter)),
       ble_advertiser_(BleAdvertiserImpl::Factory::NewInstance(
           local_device_data_provider_.get(),
           remote_beacon_seed_fetcher_.get(),

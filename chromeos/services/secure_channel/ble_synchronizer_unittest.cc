@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/ble_synchronizer.h"
+#include "chromeos/services/secure_channel/ble_synchronizer.h"
 
 #include <memory>
 
@@ -16,7 +16,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/components/tether/ble_constants.h"
+#include "chromeos/services/secure_channel/ble_constants.h"
 #include "components/cryptauth/data_with_timestamp.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -30,7 +30,7 @@ using testing::_;
 
 namespace chromeos {
 
-namespace tether {
+namespace secure_channel {
 
 namespace {
 
@@ -192,14 +192,14 @@ std::unique_ptr<device::BluetoothAdvertisement::Data> GenerateAdvertisementData(
 
 }  // namespace
 
-class BleSynchronizerTest : public testing::Test {
+class SecureChannelBleSynchronizerTest : public testing::Test {
  protected:
-  BleSynchronizerTest()
+  SecureChannelBleSynchronizerTest()
       : fake_advertisement_(base::MakeRefCounted<FakeBluetoothAdvertisement>(
-            base::Bind(&BleSynchronizerTest::OnUnregisterCalled,
+            base::Bind(&SecureChannelBleSynchronizerTest::OnUnregisterCalled,
                        base::Unretained(this)))),
         fake_discovery_session_(base::WrapUnique(new FakeDiscoverySession(
-            base::Bind(&BleSynchronizerTest::OnStopCalled,
+            base::Bind(&SecureChannelBleSynchronizerTest::OnStopCalled,
                        base::Unretained(this))))),
         fake_discovery_session_weak_ptr_factory_(
             fake_discovery_session_.get()) {}
@@ -218,11 +218,13 @@ class BleSynchronizerTest : public testing::Test {
     mock_adapter_ = base::MakeRefCounted<
         NiceMock<MockBluetoothAdapterWithAdvertisements>>();
     ON_CALL(*mock_adapter_, RegisterAdvertisementWithArgsStruct(_))
-        .WillByDefault(
-            Invoke(this, &BleSynchronizerTest::OnAdapterRegisterAdvertisement));
+        .WillByDefault(Invoke(
+            this,
+            &SecureChannelBleSynchronizerTest::OnAdapterRegisterAdvertisement));
     ON_CALL(*mock_adapter_, StartDiscoverySessionWithFilterRaw(_, _, _))
-        .WillByDefault(
-            Invoke(this, &BleSynchronizerTest::OnAdapterStartDiscoverySession));
+        .WillByDefault(Invoke(
+            this,
+            &SecureChannelBleSynchronizerTest::OnAdapterStartDiscoverySession));
 
     mock_timer_ = new base::MockTimer(true /* retain_user_task */,
                                       false /* is_repeating */);
@@ -230,9 +232,13 @@ class BleSynchronizerTest : public testing::Test {
     test_clock_.Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
     test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
 
-    synchronizer_ = std::make_unique<BleSynchronizer>(mock_adapter_);
-    synchronizer_->SetTestDoubles(base::WrapUnique(mock_timer_), &test_clock_,
-                                  test_task_runner_);
+    synchronizer_ =
+        BleSynchronizer::Factory::Get()->BuildInstance(mock_adapter_);
+
+    BleSynchronizer* derived_type =
+        static_cast<BleSynchronizer*>(synchronizer_.get());
+    derived_type->SetTestDoubles(base::WrapUnique(mock_timer_), &test_clock_,
+                                 test_task_runner_);
   }
 
   base::TimeDelta TimeDeltaMillis(int64_t num_millis) {
@@ -256,10 +262,11 @@ class BleSynchronizerTest : public testing::Test {
   void RegisterAdvertisement(const std::string& id) {
     synchronizer_->RegisterAdvertisement(
         GenerateAdvertisementData(id),
-        base::Bind(&BleSynchronizerTest::OnAdvertisementRegistered,
+        base::Bind(&SecureChannelBleSynchronizerTest::OnAdvertisementRegistered,
                    base::Unretained(this)),
-        base::Bind(&BleSynchronizerTest::OnErrorRegisteringAdvertisement,
-                   base::Unretained(this)));
+        base::Bind(
+            &SecureChannelBleSynchronizerTest::OnErrorRegisteringAdvertisement,
+            base::Unretained(this)));
   }
 
   void InvokeRegisterCallback(bool success,
@@ -305,9 +312,11 @@ class BleSynchronizerTest : public testing::Test {
   void UnregisterAdvertisement() {
     synchronizer_->UnregisterAdvertisement(
         fake_advertisement_,
-        base::Bind(&BleSynchronizerTest::OnAdvertisementUnregistered,
-                   base::Unretained(this)),
-        base::Bind(&BleSynchronizerTest::OnErrorUnregisteringAdvertisement,
+        base::Bind(
+            &SecureChannelBleSynchronizerTest::OnAdvertisementUnregistered,
+            base::Unretained(this)),
+        base::Bind(&SecureChannelBleSynchronizerTest::
+                       OnErrorUnregisteringAdvertisement,
                    base::Unretained(this)));
   }
 
@@ -328,8 +337,10 @@ class BleSynchronizerTest : public testing::Test {
       expected_result = BleSynchronizer::BluetoothAdvertisementResult::SUCCESS;
     } else {
       unregister_args_list_[unreg_arg_index]->error_callback.Run(error_code);
+      BleSynchronizer* derived_type =
+          static_cast<BleSynchronizer*>(synchronizer_.get());
       expected_result =
-          synchronizer_->BluetoothAdvertisementErrorCodeToResult(error_code);
+          derived_type->BluetoothAdvertisementErrorCodeToResult(error_code);
     }
 
     histogram_tester_.ExpectBucketCount(
@@ -350,10 +361,11 @@ class BleSynchronizerTest : public testing::Test {
 
   void StartDiscoverySession() {
     synchronizer_->StartDiscoverySession(
-        base::Bind(&BleSynchronizerTest::OnDiscoverySessionStarted,
+        base::Bind(&SecureChannelBleSynchronizerTest::OnDiscoverySessionStarted,
                    base::Unretained(this)),
-        base::Bind(&BleSynchronizerTest::OnErrorStartingDiscoverySession,
-                   base::Unretained(this)));
+        base::Bind(
+            &SecureChannelBleSynchronizerTest::OnErrorStartingDiscoverySession,
+            base::Unretained(this)));
   }
 
   void InvokeStartDiscoveryCallback(
@@ -389,10 +401,11 @@ class BleSynchronizerTest : public testing::Test {
       base::WeakPtr<device::BluetoothDiscoverySession> discovery_session) {
     synchronizer_->StopDiscoverySession(
         discovery_session,
-        base::Bind(&BleSynchronizerTest::OnDiscoverySessionStopped,
+        base::Bind(&SecureChannelBleSynchronizerTest::OnDiscoverySessionStopped,
                    base::Unretained(this)),
-        base::Bind(&BleSynchronizerTest::OnErrorStoppingDiscoverySession,
-                   base::Unretained(this)));
+        base::Bind(
+            &SecureChannelBleSynchronizerTest::OnErrorStoppingDiscoverySession,
+            base::Unretained(this)));
   }
 
   void InvokeStopDiscoveryCallback(
@@ -470,43 +483,44 @@ class BleSynchronizerTest : public testing::Test {
 
   bool stopped_callback_called_;
 
-  std::unique_ptr<BleSynchronizer> synchronizer_;
+  std::unique_ptr<BleSynchronizerBase> synchronizer_;
 
   base::HistogramTester histogram_tester_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BleSynchronizerTest);
+  DISALLOW_COPY_AND_ASSIGN(SecureChannelBleSynchronizerTest);
 };
 
-TEST_F(BleSynchronizerTest, TestRegisterSuccess) {
+TEST_F(SecureChannelBleSynchronizerTest, TestRegisterSuccess) {
   RegisterAdvertisement(kId1);
   InvokeRegisterCallback(true /* success */, kId1, 0u /* reg_arg_index */,
                          1u /* expected_registration_result_count */);
   EXPECT_EQ(1, num_register_success_);
 }
 
-TEST_F(BleSynchronizerTest, TestRegisterError) {
+TEST_F(SecureChannelBleSynchronizerTest, TestRegisterError) {
   RegisterAdvertisement(kId1);
   InvokeRegisterCallback(false /* success */, kId1, 0u /* reg_arg_index */,
                          1u /* expected_registration_result_count */);
   EXPECT_EQ(1, num_register_error_);
 }
 
-TEST_F(BleSynchronizerTest, TestUnregisterSuccess) {
+TEST_F(SecureChannelBleSynchronizerTest, TestUnregisterSuccess) {
   UnregisterAdvertisement();
   InvokeUnregisterCallback(true /* success */, 0u /* reg_arg_index */,
                            1 /* expected_unregistration_result_count */);
   EXPECT_EQ(1, num_unregister_success_);
 }
 
-TEST_F(BleSynchronizerTest, TestUnregisterError) {
+TEST_F(SecureChannelBleSynchronizerTest, TestUnregisterError) {
   UnregisterAdvertisement();
   InvokeUnregisterCallback(false /* success */, 0u /* reg_arg_index */,
                            1 /* expected_unregistration_result_count */);
   EXPECT_EQ(1, num_unregister_error_);
 }
 
-TEST_F(BleSynchronizerTest, TestUnregisterError_AdvertisementDoesNotExist) {
+TEST_F(SecureChannelBleSynchronizerTest,
+       TestUnregisterError_AdvertisementDoesNotExist) {
   UnregisterAdvertisement();
   InvokeUnregisterCallback(false /* success */, 0u /* reg_arg_index */,
                            1 /* expected_unregistration_result_count */,
@@ -516,35 +530,35 @@ TEST_F(BleSynchronizerTest, TestUnregisterError_AdvertisementDoesNotExist) {
   EXPECT_EQ(0, num_unregister_error_);
 }
 
-TEST_F(BleSynchronizerTest, TestStartSuccess) {
+TEST_F(SecureChannelBleSynchronizerTest, TestStartSuccess) {
   StartDiscoverySession();
   InvokeStartDiscoveryCallback(true /* success */, 0u /* reg_arg_index */,
                                1 /* expected_start_discovery_result_count */);
   EXPECT_EQ(1, num_start_success_);
 }
 
-TEST_F(BleSynchronizerTest, TestStartError) {
+TEST_F(SecureChannelBleSynchronizerTest, TestStartError) {
   StartDiscoverySession();
   InvokeStartDiscoveryCallback(false /* success */, 0u /* reg_arg_index */,
                                1 /* expected_start_discovery_result_count */);
   EXPECT_EQ(1, num_start_error_);
 }
 
-TEST_F(BleSynchronizerTest, TestStopSuccess) {
+TEST_F(SecureChannelBleSynchronizerTest, TestStopSuccess) {
   StopDiscoverySession(fake_discovery_session_weak_ptr_factory_.GetWeakPtr());
   InvokeStopDiscoveryCallback(true /* success */, 0u /* unreg_arg_index */,
                               1 /* expected_stop_discovery_result_count */);
   EXPECT_EQ(1, num_stop_success_);
 }
 
-TEST_F(BleSynchronizerTest, TestStopError) {
+TEST_F(SecureChannelBleSynchronizerTest, TestStopError) {
   StopDiscoverySession(fake_discovery_session_weak_ptr_factory_.GetWeakPtr());
   InvokeStopDiscoveryCallback(false /* success */, 0u /* unreg_arg_index */,
                               1 /* expected_stop_discovery_result_count */);
   EXPECT_EQ(1, num_stop_error_);
 }
 
-TEST_F(BleSynchronizerTest, TestStop_DeletedDiscoverySession) {
+TEST_F(SecureChannelBleSynchronizerTest, TestStop_DeletedDiscoverySession) {
   // Simulate an invalidated WeakPtr being processed.
   StopDiscoverySession(base::WeakPtr<device::MockBluetoothDiscoverySession>());
   RegisterAdvertisement(kId1);
@@ -559,7 +573,7 @@ TEST_F(BleSynchronizerTest, TestStop_DeletedDiscoverySession) {
   EXPECT_EQ(1, num_register_success_);
 }
 
-TEST_F(BleSynchronizerTest, TestThrottling) {
+TEST_F(SecureChannelBleSynchronizerTest, TestThrottling) {
   RegisterAdvertisement(kId1);
   InvokeRegisterCallback(true /* success */, kId1, 0u /* reg_arg_index */,
                          1u /* expected_registration_result_count */);
@@ -621,6 +635,6 @@ TEST_F(BleSynchronizerTest, TestThrottling) {
   EXPECT_EQ(1, num_unregister_error_);
 }
 
-}  // namespace tether
+}  // namespace secure_channel
 
 }  // namespace chromeos

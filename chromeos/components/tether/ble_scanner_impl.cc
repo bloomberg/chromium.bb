@@ -12,9 +12,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
-#include "chromeos/components/tether/ble_constants.h"
-#include "chromeos/components/tether/ble_synchronizer.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
+#include "chromeos/services/secure_channel/ble_constants.h"
+#include "chromeos/services/secure_channel/ble_synchronizer.h"
 #include "components/cryptauth/local_device_data_provider.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/remote_beacon_seed_fetcher.h"
@@ -49,7 +49,7 @@ std::unique_ptr<BleScanner> BleScannerImpl::Factory::NewInstance(
     scoped_refptr<device::BluetoothAdapter> adapter,
     cryptauth::LocalDeviceDataProvider* local_device_data_provider,
     cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
-    BleSynchronizerBase* ble_synchronizer,
+    secure_channel::BleSynchronizerBase* ble_synchronizer,
     TetherHostFetcher* tether_host_fetcher) {
   if (!factory_instance_)
     factory_instance_ = new Factory();
@@ -68,7 +68,7 @@ std::unique_ptr<BleScanner> BleScannerImpl::Factory::BuildInstance(
     scoped_refptr<device::BluetoothAdapter> adapter,
     cryptauth::LocalDeviceDataProvider* local_device_data_provider,
     cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
-    BleSynchronizerBase* ble_synchronizer,
+    secure_channel::BleSynchronizerBase* ble_synchronizer,
     TetherHostFetcher* tether_host_fetcher) {
   return base::WrapUnique(new BleScannerImpl(
       adapter, local_device_data_provider, remote_beacon_seed_fetcher,
@@ -83,14 +83,14 @@ const std::vector<uint8_t>*
 BleScannerImpl::ServiceDataProviderImpl::GetServiceDataForUUID(
     device::BluetoothDevice* bluetooth_device) {
   return bluetooth_device->GetServiceDataForUUID(
-      device::BluetoothUUID(kAdvertisingServiceUuid));
+      device::BluetoothUUID(secure_channel::kAdvertisingServiceUuid));
 }
 
 BleScannerImpl::BleScannerImpl(
     scoped_refptr<device::BluetoothAdapter> adapter,
     cryptauth::LocalDeviceDataProvider* local_device_data_provider,
     cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
-    BleSynchronizerBase* ble_synchronizer,
+    secure_channel::BleSynchronizerBase* ble_synchronizer,
     TetherHostFetcher* tether_host_fetcher)
     : adapter_(adapter),
       local_device_data_provider_(local_device_data_provider),
@@ -112,7 +112,8 @@ BleScannerImpl::~BleScannerImpl() {
 }
 
 bool BleScannerImpl::RegisterScanFilterForDevice(const std::string& device_id) {
-  if (registered_remote_device_ids_.size() >= kMaxConcurrentAdvertisements) {
+  if (registered_remote_device_ids_.size() >=
+      secure_channel::kMaxConcurrentAdvertisements) {
     // Each scan filter corresponds to an advertisement. Thus, the number of
     // concurrent advertisements cannot exceed the maximum number of concurrent
     // advertisements.
