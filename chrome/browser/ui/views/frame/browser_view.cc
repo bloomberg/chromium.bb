@@ -939,7 +939,14 @@ bool BrowserView::ShouldHideUIForFullscreen() const {
   if (immersive_mode_controller_->IsEnabled())
     return false;
 
+#if defined(OS_MACOSX)
+  // On Mac, fullscreen mode still has top chrome UI such as Toolbar and
+  // Tabstrip unless the user explicitly turned that off.
+  return IsFullscreen() && !browser_->profile()->GetPrefs()->GetBoolean(
+                               prefs::kShowFullscreenToolbar);
+#else
   return IsFullscreen();
+#endif
 }
 
 bool BrowserView::IsFullscreen() const {
