@@ -515,11 +515,10 @@ struct StandardType {
   const char* const leading_mime_type;
   base::span<const char* const> standard_types;
 };
-static const StandardType kStandardTypes[] = {
-    {"image/", base::span<const char* const>{kStandardImageTypes}},
-    {"audio/", base::span<const char* const>{kStandardAudioTypes}},
-    {"video/", base::span<const char* const>{kStandardVideoTypes}},
-    {nullptr,  base::span<const char* const>{}}};
+static const StandardType kStandardTypes[] = {{"image/", kStandardImageTypes},
+                                              {"audio/", kStandardAudioTypes},
+                                              {"video/", kStandardVideoTypes},
+                                              {nullptr, {}}};
 
 // GetExtensionsFromHardCodedMappings() adds file extensions (without a leading
 // dot) to the set |extensions|, for all MIME types matching |mime_type|.
