@@ -22,12 +22,9 @@ TestOpenURLRequest::~TestOpenURLRequest() = default;
 
 TestOpenURLRequest::TestOpenURLRequest(const TestOpenURLRequest&) = default;
 
-TestRepostFormRequest::TestRepostFormRequest() {}
+TestRepostFormRequest::TestRepostFormRequest() = default;
 
 TestRepostFormRequest::~TestRepostFormRequest() = default;
-
-TestRepostFormRequest::TestRepostFormRequest(const TestRepostFormRequest&) =
-    default;
 
 TestAuthenticationRequest::TestAuthenticationRequest() {}
 
@@ -101,10 +98,10 @@ void TestWebStateDelegate::HandleContextMenu(WebState*,
 
 void TestWebStateDelegate::ShowRepostFormWarningDialog(
     WebState* source,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   last_repost_form_request_ = std::make_unique<TestRepostFormRequest>();
   last_repost_form_request_->web_state = source;
-  last_repost_form_request_->callback = callback;
+  last_repost_form_request_->callback = std::move(callback);
 }
 
 TestJavaScriptDialogPresenter*

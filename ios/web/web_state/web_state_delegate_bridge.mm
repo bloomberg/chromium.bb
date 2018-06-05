@@ -57,16 +57,16 @@ void WebStateDelegateBridge::HandleContextMenu(
 
 void WebStateDelegateBridge::ShowRepostFormWarningDialog(
     WebState* source,
-    const base::Callback<void(bool)>& callback) {
-  base::Callback<void(bool)> local_callback(callback);
+    base::OnceCallback<void(bool)> callback) {
   SEL selector = @selector(webState:runRepostFormDialogWithCompletionHandler:);
   if ([delegate_ respondsToSelector:selector]) {
+    __block base::OnceCallback<void(bool)> block_callback = std::move(callback);
     [delegate_ webState:source
         runRepostFormDialogWithCompletionHandler:^(BOOL should_continue) {
-          local_callback.Run(should_continue);
+          std::move(block_callback).Run(should_continue);
         }];
   } else {
-    local_callback.Run(true);
+    std::move(callback).Run(true);
   }
 }
 

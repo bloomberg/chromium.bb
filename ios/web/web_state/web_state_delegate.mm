@@ -41,8 +41,8 @@ void WebStateDelegate::HandleContextMenu(WebState*, const ContextMenuParams&) {}
 
 void WebStateDelegate::ShowRepostFormWarningDialog(
     WebState*,
-    const base::Callback<void(bool)>& callback) {
-  callback.Run(true);
+    base::OnceCallback<void(bool)> callback) {
+  std::move(callback).Run(true);
 }
 
 JavaScriptDialogPresenter* WebStateDelegate::GetJavaScriptDialogPresenter(

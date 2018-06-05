@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/mru_cache.h"
 #include "base/feature_list.h"
@@ -4239,7 +4240,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
         (action.navigationType == WKNavigationTypeFormResubmitted ||
          action.navigationType == WKNavigationTypeBackForward)) {
       _webStateImpl->ShowRepostFormWarningDialog(
-          base::BindBlockArc(^(bool shouldContinue) {
+          base::BindOnce(^(bool shouldContinue) {
             if (shouldContinue) {
               decisionHandler(WKNavigationActionPolicyAllow);
             } else {
@@ -5512,7 +5513,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   DCHECK(repostedForm);
   DCHECK(!web::GetWebClient()->IsSlimNavigationManagerEnabled());
   _webStateImpl->ShowRepostFormWarningDialog(
-      base::BindBlockArc(^(bool shouldContinue) {
+      base::BindOnce(^(bool shouldContinue) {
         if (_isBeingDestroyed)
           return;
 

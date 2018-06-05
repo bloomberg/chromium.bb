@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #import "ios/web/public/test/crw_mock_web_state_delegate.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -144,7 +144,7 @@ TEST_F(WebStateDelegateBridgeTest, ShowRepostFormWarningDialog) {
 TEST_F(WebStateDelegateBridgeTest, ShowRepostFormWarningWithNoDelegateMethod) {
   __block bool callback_called = false;
   empty_delegate_bridge_->ShowRepostFormWarningDialog(
-      nullptr, base::BindBlockArc(^(bool should_repost) {
+      nullptr, base::BindOnce(^(bool should_repost) {
         EXPECT_TRUE(should_repost);
         callback_called = true;
       }));
