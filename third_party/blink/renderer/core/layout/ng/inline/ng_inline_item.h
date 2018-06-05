@@ -132,7 +132,7 @@ class CORE_EXPORT NGInlineItem {
 
   // Get RunSegmenter properties.
   UScriptCode Script() const;
-  FontFallbackPriority FontFallbackPriority() const;
+  FontFallbackPriority GetFontFallbackPriority() const;
   OrientationIterator::RenderOrientation RenderOrientation() const;
   RunSegmenter::RunSegmenterRange CreateRunSegmenterRange() const;
   // Whether the other item has the same RunSegmenter properties or not.
