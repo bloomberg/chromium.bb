@@ -175,7 +175,8 @@ RecentTabsSubMenuModel::RecentTabsSubMenuModel(
     Browser* browser)
     : ui::SimpleMenuModel(this),
       browser_(browser),
-      open_tabs_delegate_(nullptr),
+      sync_service_(ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+          browser->profile())),
       last_local_model_index_(kHistorySeparatorIndex),
       default_favicon_(
           ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
@@ -201,11 +202,8 @@ RecentTabsSubMenuModel::RecentTabsSubMenuModel(
 
 // Mac doesn't support the dynamic menu.
 #if !defined(OS_MACOSX)
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          browser_->profile());
-  if (sync_service)
-    sync_observer_.Add(sync_service);
+  if (sync_service_)
+    sync_observer_.Add(sync_service_);
 #endif  // !defined(OS_MACOSX)
 
   Build();
@@ -704,15 +702,10 @@ void RecentTabsSubMenuModel::ClearTabsFromOtherDevices() {
 
 sync_sessions::OpenTabsUIDelegate*
 RecentTabsSubMenuModel::GetOpenTabsUIDelegate() {
-  if (!open_tabs_delegate_) {
-    browser_sync::ProfileSyncService* service =
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-            browser_->profile());
-    // Only return the delegate if it exists and it is done syncing sessions.
-    if (service && service->IsSyncActive())
-      open_tabs_delegate_ = service->GetOpenTabsUIDelegate();
-  }
-  return open_tabs_delegate_;
+  // Only return the delegate if it exists and it is done syncing sessions.
+  return sync_service_ && sync_service_->IsSyncActive()
+             ? sync_service_->GetOpenTabsUIDelegate()
+             : nullptr;
 }
 
 void RecentTabsSubMenuModel::TabRestoreServiceChanged(
