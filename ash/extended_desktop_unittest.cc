@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget.h"
+#include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/window_properties.h"
@@ -154,6 +158,13 @@ class ExtendedDesktopTest : public AshTestBase {
     widget->Init(params);
     widget->Show();
     return widget;
+  }
+
+ protected:
+  bool IsBubbleShown() {
+    return features::IsSystemTrayUnifiedEnabled()
+               ? GetPrimaryUnifiedSystemTray()->IsBubbleShown()
+               : GetPrimarySystemTray()->HasSystemBubble();
   }
 
  private:
@@ -719,33 +730,33 @@ TEST_F(ExtendedDesktopTest, ConvertPoint) {
 
 TEST_F(ExtendedDesktopTest, OpenSystemTray) {
   UpdateDisplay("500x600,600x400");
-  SystemTray* tray = ash::Shell::Get()->GetPrimarySystemTray();
-  ASSERT_FALSE(tray->HasSystemBubble());
+  ASSERT_FALSE(IsBubbleShown());
 
   ui::test::EventGenerator& event_generator(GetEventGenerator());
 
   // Opens the tray by a dummy click event and makes sure that adding/removing
   // displays doesn't break anything.
-  event_generator.MoveMouseToCenterOf(tray->GetWidget()->GetNativeWindow());
+  event_generator.MoveMouseToCenterOf(
+      StatusAreaWidgetTestHelper::GetStatusAreaWidget()->GetNativeWindow());
   event_generator.ClickLeftButton();
-  EXPECT_TRUE(tray->HasSystemBubble());
+  EXPECT_TRUE(IsBubbleShown());
 
   UpdateDisplay("500x600");
-  EXPECT_TRUE(tray->HasSystemBubble());
+  EXPECT_TRUE(IsBubbleShown());
   UpdateDisplay("500x600,600x400");
-  EXPECT_TRUE(tray->HasSystemBubble());
+  EXPECT_TRUE(IsBubbleShown());
 
   // Closes the tray and again makes sure that adding/removing displays doesn't
   // break anything.
   event_generator.ClickLeftButton();
   RunAllPendingInMessageLoop();
 
-  EXPECT_FALSE(tray->HasSystemBubble());
+  EXPECT_FALSE(IsBubbleShown());
 
   UpdateDisplay("500x600");
-  EXPECT_FALSE(tray->HasSystemBubble());
+  EXPECT_FALSE(IsBubbleShown());
   UpdateDisplay("500x600,600x400");
-  EXPECT_FALSE(tray->HasSystemBubble());
+  EXPECT_FALSE(IsBubbleShown());
 }
 
 TEST_F(ExtendedDesktopTest, StayInSameRootWindow) {
