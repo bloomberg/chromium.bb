@@ -120,6 +120,7 @@ struct POLICY_EXPORT SchemaData {
 
   const int* int_enums;
   const char* const* string_enums;
+  int validation_schema_root_index;
 };
 
 }  // namespace internal
