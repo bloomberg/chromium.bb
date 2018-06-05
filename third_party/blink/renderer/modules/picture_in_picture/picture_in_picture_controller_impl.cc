@@ -163,8 +163,7 @@ Element* PictureInPictureControllerImpl::PictureInPictureElement(
 
 bool PictureInPictureControllerImpl::IsPictureInPictureElement(
     const Element* element) const {
-  if (!element)
-    return false;
+  DCHECK(element);
   return element == picture_in_picture_element_;
 }
 
