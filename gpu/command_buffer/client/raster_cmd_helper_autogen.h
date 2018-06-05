@@ -270,13 +270,10 @@ void ReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) {
   }
 }
 
-void TexStorage2D(GLuint texture_id,
-                  GLsizei levels,
-                  GLsizei width,
-                  GLsizei height) {
+void TexStorage2D(GLuint texture_id, GLsizei width, GLsizei height) {
   raster::cmds::TexStorage2D* c = GetCmdSpace<raster::cmds::TexStorage2D>();
   if (c) {
-    c->Init(texture_id, levels, width, height);
+    c->Init(texture_id, width, height);
   }
 }
 

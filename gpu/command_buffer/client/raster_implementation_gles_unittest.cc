@@ -556,7 +556,7 @@ TEST_F(RasterImplementationGLESTest, TexStorage2D) {
                                  kWidth, kHeight, 0, viz::GLDataFormat(format),
                                  viz::GLDataType(format), nullptr))
         .Times(1);
-    ri_->TexStorage2D(kTextureId, 1, kWidth, kHeight);
+    ri_->TexStorage2D(kTextureId, kWidth, kHeight);
   }
 }
 
@@ -584,7 +584,7 @@ TEST_F(RasterImplementationGLESTest, TexStorage2DTexStorage2DEXT) {
                                       viz::TextureStorageFormat(format), kWidth,
                                       kHeight))
         .Times(1);
-    ri_->TexStorage2D(kTextureId, 1, kWidth, kHeight);
+    ri_->TexStorage2D(kTextureId, kWidth, kHeight);
   }
 }
 
@@ -610,7 +610,7 @@ TEST_F(RasterImplementationGLESTest, TexStorage2DOverlay) {
                           kTarget, viz::TextureStorageFormat(format),
                           GL_SCANOUT_CHROMIUM, kWidth, kHeight))
         .Times(1);
-    ri_->TexStorage2D(kTextureId, 1, kWidth, kHeight);
+    ri_->TexStorage2D(kTextureId, kWidth, kHeight);
   }
 }
 
@@ -640,7 +640,7 @@ TEST_F(RasterImplementationGLESTest, TexStorage2DOverlayNative) {
                           target, viz::TextureStorageFormat(format),
                           GL_SCANOUT_CHROMIUM, kWidth, kHeight))
         .Times(1);
-    ri_->TexStorage2D(kTextureId, 1, kWidth, kHeight);
+    ri_->TexStorage2D(kTextureId, kWidth, kHeight);
   }
 }
 

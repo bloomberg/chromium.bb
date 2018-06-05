@@ -1281,44 +1281,33 @@ struct TexStorage2D {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLuint _texture_id,
-            GLsizei _levels,
-            GLsizei _width,
-            GLsizei _height) {
+  void Init(GLuint _texture_id, GLsizei _width, GLsizei _height) {
     SetHeader();
     texture_id = _texture_id;
-    levels = _levels;
     width = _width;
     height = _height;
   }
 
-  void* Set(void* cmd,
-            GLuint _texture_id,
-            GLsizei _levels,
-            GLsizei _width,
-            GLsizei _height) {
-    static_cast<ValueType*>(cmd)->Init(_texture_id, _levels, _width, _height);
+  void* Set(void* cmd, GLuint _texture_id, GLsizei _width, GLsizei _height) {
+    static_cast<ValueType*>(cmd)->Init(_texture_id, _width, _height);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   uint32_t texture_id;
-  int32_t levels;
   int32_t width;
   int32_t height;
 };
 
-static_assert(sizeof(TexStorage2D) == 20, "size of TexStorage2D should be 20");
+static_assert(sizeof(TexStorage2D) == 16, "size of TexStorage2D should be 16");
 static_assert(offsetof(TexStorage2D, header) == 0,
               "offset of TexStorage2D header should be 0");
 static_assert(offsetof(TexStorage2D, texture_id) == 4,
               "offset of TexStorage2D texture_id should be 4");
-static_assert(offsetof(TexStorage2D, levels) == 8,
-              "offset of TexStorage2D levels should be 8");
-static_assert(offsetof(TexStorage2D, width) == 12,
-              "offset of TexStorage2D width should be 12");
-static_assert(offsetof(TexStorage2D, height) == 16,
-              "offset of TexStorage2D height should be 16");
+static_assert(offsetof(TexStorage2D, width) == 8,
+              "offset of TexStorage2D width should be 8");
+static_assert(offsetof(TexStorage2D, height) == 12,
+              "offset of TexStorage2D height should be 12");
 
 struct CopySubTexture {
   typedef CopySubTexture ValueType;

@@ -417,22 +417,19 @@ void RasterDecoderTestBase::SetScopedTextureBinderExpectations(GLenum target) {
 }
 
 void RasterDecoderTestBase::DoTexStorage2D(GLuint client_id,
-                                           GLint levels,
                                            GLsizei width,
                                            GLsizei height) {
   cmds::TexStorage2D tex_storage_cmd;
-  tex_storage_cmd.Init(client_id, levels, width, height);
+  tex_storage_cmd.Init(client_id, width, height);
 
   SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
 
   if (decoder_->GetCapabilities().texture_storage) {
-    EXPECT_CALL(*gl_, TexStorage2DEXT(GL_TEXTURE_2D, levels, _, width, height))
+    EXPECT_CALL(*gl_,
+                TexStorage2DEXT(GL_TEXTURE_2D, /*levels=*/1, _, width, height))
         .Times(1)
         .RetiresOnSaturation();
   } else {
-    // Currently only supports levels == 1
-    DCHECK_EQ(levels, 1);
-
     EXPECT_CALL(*gl_, GetError())
         .WillOnce(Return(GL_NO_ERROR))
         .WillOnce(Return(GL_NO_ERROR))

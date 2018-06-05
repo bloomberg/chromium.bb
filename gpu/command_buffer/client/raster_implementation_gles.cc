@@ -245,24 +245,20 @@ void RasterImplementationGLES::DestroyImageCHROMIUM(GLuint image_id) {
 }
 
 void RasterImplementationGLES::TexStorage2D(GLuint texture_id,
-                                            GLsizei levels,
                                             GLsizei width,
                                             GLsizei height) {
   Texture* texture = EnsureTextureBound(GetTexture(texture_id));
 
   if (texture->use_buffer) {
     DCHECK(use_texture_storage_image_);
-    DCHECK_EQ(levels, 1);
     gl_->TexStorage2DImageCHROMIUM(texture->target,
                                    viz::TextureStorageFormat(texture->format),
                                    GL_SCANOUT_CHROMIUM, width, height);
   } else if (use_texture_storage_) {
-    gl_->TexStorage2DEXT(texture->target, levels,
+    gl_->TexStorage2DEXT(texture->target, /*levels=*/1,
                          viz::TextureStorageFormat(texture->format), width,
                          height);
   } else {
-    DCHECK_EQ(levels, 1);
-    // TODO(vmiura): Support more than one texture level.
     gl_->TexImage2D(texture->target, 0, viz::GLInternalFormat(texture->format),
                     width, height, 0, viz::GLDataFormat(texture->format),
                     viz::GLDataType(texture->format), nullptr);

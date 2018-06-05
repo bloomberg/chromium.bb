@@ -149,9 +149,9 @@ TEST_F(RasterImplementationTest, TexStorage2D) {
     cmds::TexStorage2D cmd;
   };
   Cmds expected;
-  expected.cmd.Init(1, 2, 3, 4);
+  expected.cmd.Init(1, 2, 3);
 
-  gl_->TexStorage2D(1, 2, 3, 4);
+  gl_->TexStorage2D(1, 2, 3);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

@@ -195,7 +195,6 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   void DoDeleteTexture(GLuint client_id, GLuint service_id);
   void SetScopedTextureBinderExpectations(GLenum target);
   void DoTexStorage2D(GLuint client_id,
-                      GLint levels,
                       GLsizei width,
                       GLsizei height);
 

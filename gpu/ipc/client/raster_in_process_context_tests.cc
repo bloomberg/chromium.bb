@@ -149,7 +149,7 @@ TEST_F(RasterInProcessCommandBufferTest, TexStorage2DImage) {
   // Create a buffer backed texture and allocate storage.
   GLuint texture_id = ri_->CreateTexture(
       /*use_buffer=*/true, supported_format.usage, resource_format);
-  ri_->TexStorage2D(texture_id, 1, kBufferSize.width(), kBufferSize.height());
+  ri_->TexStorage2D(texture_id, kBufferSize.width(), kBufferSize.height());
 
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
 }
@@ -164,7 +164,7 @@ TEST_F(RasterInProcessCommandBufferTest,
   // Create texture and allocate storage.
   GLuint texture_id =
       ri_->CreateTexture(/*use_buffer=*/false, kBufferUsage, kResourceFormat);
-  ri_->TexStorage2D(texture_id, 1, kBufferSize.width(), kBufferSize.height());
+  ri_->TexStorage2D(texture_id, kBufferSize.width(), kBufferSize.height());
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
 
   // Call BeginRasterCHROMIUM.
