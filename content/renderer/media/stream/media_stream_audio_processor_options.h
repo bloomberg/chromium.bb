@@ -46,7 +46,7 @@ struct CONTENT_EXPORT AudioProcessingProperties {
   void DisableDefaultProperties();
 
   bool enable_sw_echo_cancellation = true;
-  bool disable_hw_echo_cancellation = false;
+  bool disable_hw_echo_cancellation = true;
   bool enable_experimental_hw_echo_cancellation = false;
   bool disable_hw_noise_suppression = false;
   bool goog_audio_mirroring = false;
