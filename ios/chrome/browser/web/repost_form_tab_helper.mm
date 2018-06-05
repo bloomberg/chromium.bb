@@ -43,16 +43,16 @@ void RepostFormTabHelper::DismissReportFormDialog() {
 
 void RepostFormTabHelper::PresentDialog(
     CGPoint location,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   DCHECK(!is_presenting_dialog_);
   is_presenting_dialog_ = true;
-  base::Callback<void(bool)> local_callback(callback);
+  __block base::OnceCallback<void(bool)> block_callback = std::move(callback);
   [delegate_ repostFormTabHelper:this
       presentRepostFormDialogForWebState:web_state_
                            dialogAtPoint:location
                        completionHandler:^(BOOL should_continue) {
                          is_presenting_dialog_ = false;
-                         local_callback.Run(should_continue);
+                         std::move(block_callback).Run(should_continue);
                        }];
 }
 
