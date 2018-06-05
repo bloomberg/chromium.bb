@@ -4,7 +4,7 @@
 
 #import "ios/web/web_state/session_certificate_policy_cache_impl.h"
 
-#import "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "ios/web/public/certificate_policy_cache.h"
 #import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
 #include "ios/web/public/web_thread.h"
@@ -72,7 +72,7 @@ void SessionCertificatePolicyCacheImpl::UpdateCertificatePolicyCache(
   NSSet* allowed_certs = [NSSet setWithSet:allowed_certs_];
   const scoped_refptr<web::CertificatePolicyCache> cache_copy = cache;
   web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
+      web::WebThread::IO, FROM_HERE, base::BindOnce(^{
         for (CRWSessionCertificateStorage* cert in allowed_certs) {
           cache_copy->AllowCertForHost(cert.certificate, cert.host,
                                        cert.status);

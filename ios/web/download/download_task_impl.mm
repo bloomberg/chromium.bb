@@ -7,7 +7,7 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
-#import "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/net/cookies/wk_cookie_util.h"
 #include "ios/web/public/browser_state.h"
@@ -107,7 +107,7 @@ int GetTaskPercentComplete(NSURLSessionTask* task) {
                     task:(NSURLSessionTask*)task
     didCompleteWithError:(nullable NSError*)error {
   __weak CRWURLSessionDelegate* weakSelf = self;
-  WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindBlockArc(^{
+  WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindOnce(^{
                         CRWURLSessionDelegate* strongSelf = weakSelf;
                         if (strongSelf.propertiesBlock)
                           strongSelf.propertiesBlock(task, error);
@@ -123,7 +123,7 @@ int GetTaskPercentComplete(NSURLSessionTask* task) {
   using Bytes = const void* _Nonnull;
   [data enumerateByteRangesUsingBlock:^(Bytes bytes, NSRange range, BOOL*) {
     auto buffer = GetBuffer(bytes, range.length);
-    WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindBlockArc(^{
+    WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindOnce(^{
                           CRWURLSessionDelegate* strongSelf = weakSelf;
                           if (!strongSelf.dataBlock) {
                             dispatch_semaphore_signal(semaphore);
@@ -137,7 +137,7 @@ int GetTaskPercentComplete(NSURLSessionTask* task) {
                         }));
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
   }];
-  WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindBlockArc(^{
+  WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindOnce(^{
                         CRWURLSessionDelegate* strongSelf = weakSelf;
                         if (strongSelf.propertiesBlock)
                           weakSelf.propertiesBlock(task, nil);
@@ -362,7 +362,7 @@ NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier) {
       dataBlock:^(scoped_refptr<net::IOBufferWithSize> buffer,
                   void (^completion_handler)()) {
         if (weak_this.get()) {
-          net::CompletionCallback callback = base::BindBlockArc(^(int) {
+          net::CompletionCallback callback = base::BindRepeating(^(int) {
             completion_handler();
           });
           if (writer_->Write(buffer.get(), buffer->size(), callback) ==
@@ -381,7 +381,7 @@ void DownloadTaskImpl::GetCookies(
   if (@available(iOS 11, *)) {
     GetWKCookies(callback);
   } else {
-    WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindBlockArc(^{
+    WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindOnce(^{
                           callback.Run([NSArray array]);
                         }));
   }

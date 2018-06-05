@@ -8,8 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -490,8 +490,7 @@ void RequestTrackerImplTraits::Destruct(const RequestTrackerImpl* t) {
     // method is the mechanism by which all RequestTrackerImpl instances are
     // destroyed, the object inconstant_t points to won't be deleted while
     // the block is executing (and Destruct() itself will do the deleting).
-    web::WebThread::PostTask(web::WebThread::IO, FROM_HERE,
-                             base::BindBlockArc(^{
+    web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindOnce(^{
                                inconstant_t->Destruct();
                              }));
   }
@@ -508,7 +507,7 @@ void RequestTrackerImpl::Destruct() {
   }
   InvalidateWeakPtrs();
   // Delete on the UI thread.
-  web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
+  web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindOnce(^{
                              delete this;
                            }));
 }

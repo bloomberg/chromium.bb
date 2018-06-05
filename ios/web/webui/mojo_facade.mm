@@ -11,10 +11,10 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/bind.h"
 #import "base/ios/block_types.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
@@ -230,7 +230,7 @@ std::unique_ptr<base::Value> MojoFacade::HandleMojoHandleWatch(
   CHECK(args->GetInteger("callbackId", &callback_id));
 
   mojo::SimpleWatcher::ReadyCallback callback =
-      base::BindBlockArc(^(MojoResult result) {
+      base::BindRepeating(^(MojoResult result) {
         NSString* script = [NSString
             stringWithFormat:
                 @"Mojo.internal.watchCallbacksHolder.callCallback(%d, %d)",

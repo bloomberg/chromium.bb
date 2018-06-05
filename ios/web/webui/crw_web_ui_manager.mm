@@ -7,8 +7,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/json/string_escape.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
@@ -75,7 +75,7 @@ const char kScriptCommandPrefix[] = "webui";
 
     __weak CRWWebUIManager* weakSelf = self;
     _webState->AddScriptCommandCallback(
-        base::BindBlockArc(
+        base::BindRepeating(
             ^bool(const base::DictionaryValue& message, const GURL&, bool) {
               return [weakSelf handleWebUIJSMessage:message];
             }),
