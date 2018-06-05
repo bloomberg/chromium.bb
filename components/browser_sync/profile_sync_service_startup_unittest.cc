@@ -252,37 +252,27 @@ TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
   // attempted, so no error.
 }
 
-// TODO(pavely): Reenable test once android is switched to oauth2.
-TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
-  CreateSyncService(ProfileSyncService::MANUAL_START);
+TEST_F(ProfileSyncServiceStartupTest, StartInvalidCredentials) {
   SimulateTestUserSignin();
-  FakeSyncEngine* fake_engine = SetUpFakeSyncEngine();
 
-  // Tell the backend to stall while downloading control types (simulating an
+  CreateSyncService(ProfileSyncService::MANUAL_START);
+
+  sync_service()->SetFirstSetupComplete();
+
+  // Tell the engine to stall while downloading control types (simulating an
   // auth error).
+  FakeSyncEngine* fake_engine = SetUpFakeSyncEngine();
   fake_engine->set_fail_initial_download(true);
-
-  DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
-  EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(0);
+  // Note: Since engine initialization will fail, the DataTypeManager should not
+  // get created at all here.
 
   sync_service()->Initialize();
+
   EXPECT_FALSE(sync_service()->IsSyncActive());
-  Mock::VerifyAndClearExpectations(data_type_manager);
-
-  // Update the credentials, unstalling the backend.
-  EXPECT_CALL(*data_type_manager, Configure(_, _));
-  EXPECT_CALL(*data_type_manager, state())
-      .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*data_type_manager, Stop());
-  auto sync_blocker = sync_service()->GetSetupInProgressHandle();
-
-  // Simulate successful signin.
-  SimulateTestUserSignin();
-
-  sync_blocker.reset();
-
-  // Verify we successfully finish startup and configuration.
-  EXPECT_TRUE(sync_service()->IsSyncActive());
+  // Engine initialization failures puts the service into an unrecoverable error
+  // state. It'll take either a browser restart or a full sign-out+sign-in to
+  // get out of this.
+  EXPECT_TRUE(sync_service()->HasUnrecoverableError());
 }
 
 TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
