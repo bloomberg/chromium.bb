@@ -64,8 +64,7 @@ void SoftwareOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
     latency.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, swap_time, 1);
     latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, swap_time,
-        1);
+        ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, 0, swap_time, 1);
   }
 
   DCHECK(stored_latency_info_.empty())

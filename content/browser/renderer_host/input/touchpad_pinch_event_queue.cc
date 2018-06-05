@@ -85,8 +85,7 @@ void TouchpadPinchEventQueue::QueueEvent(
     QueuedTouchpadPinchEvent* last_event = pinch_queue_.back().get();
     if (last_event->CanCoalesceWith(event)) {
       // Terminate the LatencyInfo of the event before it gets coalesced away.
-      event.latency.AddLatencyNumber(
-          ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0);
+      event.latency.Terminate();
 
       last_event->CoalesceWith(event);
       DCHECK_EQ(blink::WebInputEvent::kGesturePinchUpdate,

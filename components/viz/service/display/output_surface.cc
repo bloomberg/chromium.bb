@@ -49,8 +49,7 @@ void OutputSurface::UpdateLatencyInfoOnSwap(
     latency.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, response.swap_start, 1);
     latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0,
-        response.swap_end, 1);
+        ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, 0, response.swap_end, 1);
   }
 }
 

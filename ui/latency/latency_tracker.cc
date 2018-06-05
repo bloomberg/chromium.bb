@@ -69,9 +69,8 @@ void LatencyTracker::OnGpuSwapBuffersCompleted(
 
 void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {
   LatencyInfo::LatencyComponent gpu_swap_end_component;
-  if (!latency.FindLatency(
-          ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0,
-          &gpu_swap_end_component)) {
+  if (!latency.FindLatency(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, 0,
+                           &gpu_swap_end_component)) {
     return;
   }
 

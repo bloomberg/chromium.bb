@@ -9,23 +9,6 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 
-namespace {
-ui::LatencyComponentType DidNotSwapReasonToLatencyComponentType(
-    cc::SwapPromise::DidNotSwapReason reason) {
-  switch (reason) {
-    case cc::SwapPromise::ACTIVATION_FAILS:
-    case cc::SwapPromise::SWAP_FAILS:
-      return ui::INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT;
-    case cc::SwapPromise::COMMIT_FAILS:
-      return ui::INPUT_EVENT_LATENCY_TERMINATED_COMMIT_FAILED_COMPONENT;
-    case cc::SwapPromise::COMMIT_NO_UPDATE:
-      return ui::INPUT_EVENT_LATENCY_TERMINATED_COMMIT_NO_UPDATE_COMPONENT;
-  }
-  NOTREACHED() << "Unhandled DidNotSwapReason.";
-  return ui::INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT;
-}
-}  // namespace
-
 namespace cc {
 
 LatencyInfoSwapPromise::LatencyInfoSwapPromise(const ui::LatencyInfo& latency)
@@ -42,7 +25,7 @@ void LatencyInfoSwapPromise::DidSwap() {}
 
 SwapPromise::DidNotSwapAction LatencyInfoSwapPromise::DidNotSwap(
     DidNotSwapReason reason) {
-  latency_.AddLatencyNumber(DidNotSwapReasonToLatencyComponentType(reason), 0);
+  latency_.Terminate();
   // TODO(miletus): Turn this back on once per-event LatencyInfo tracking
   // is enabled in GPU side.
   // DCHECK(latency_.terminated);

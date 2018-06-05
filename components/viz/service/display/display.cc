@@ -406,14 +406,12 @@ bool Display::DrawAndSwap() {
     } else {
       // There was no damage, so tracking latency info at this point isn't
       // useful unless there's a snapshot request.
-      base::TimeTicks now = base::TimeTicks::Now();
       while (!frame.metadata.latency_info.empty()) {
         auto& latency = frame.metadata.latency_info.back();
         if (latency.Snapshots().size()) {
           stored_latency_info_.push_back(std::move(latency));
         } else {
-          latency.AddLatencyNumberWithTimestamp(
-              ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, now, 1);
+          latency.Terminate();
         }
         frame.metadata.latency_info.pop_back();
       }
