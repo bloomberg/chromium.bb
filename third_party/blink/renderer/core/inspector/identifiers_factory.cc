@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 
+#include "base/atomic_sequence_num.h"
 #include "base/process/process_handle.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -36,16 +37,10 @@
 
 namespace blink {
 
-namespace {
-
-volatile int g_last_used_identifier = 0;
-
-}  // namespace
-
 // static
 String IdentifiersFactory::CreateIdentifier() {
-  int identifier = AtomicIncrement(&g_last_used_identifier);
-  return AddProcessIdPrefixTo(identifier);
+  static base::AtomicSequenceNumber last_used_identifier;
+  return AddProcessIdPrefixTo(last_used_identifier.GetNext());
 }
 
 // static

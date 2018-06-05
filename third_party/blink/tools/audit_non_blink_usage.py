@@ -80,6 +80,9 @@ _CONFIG = [
             # Debugging helpers from //base/debug are allowed everywhere.
             'base::debug::.+',
 
+            # Base atomic utilities
+            'base::AtomicSequenceNumber',
+
             # (Cryptographic) random number generation
             'base::RandUint64',
             'base::RandInt',

@@ -1,4 +1,5 @@
 include_rules = [
+    "+base/atomic_sequence_num.h",
     "+base/memory/scoped_refptr.h",
     "+services/network/public/cpp/shared_url_loader_factory.h",
     "+services/service_manager/public/mojom/interface_provider.mojom-blink.h",
