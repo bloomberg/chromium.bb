@@ -9,7 +9,7 @@ TODO: Move away from tables.
 
 | **Distro** | **Contact** | **URL for packages** | **URL for distro-specific patches** |
 |:-----------|:------------|:---------------------|:------------------------------------|
-| Ubuntu     | Chad Miller `chad.miller@canonical.com` | https://launchpad.net/ubuntu/+source/chromium-browser | https://code.launchpad.net/ubuntu/+source/chromium-browser |
+| Ubuntu     | Olivier Tilloy `olivier.tilloy@canonical.com` | https://launchpad.net/ubuntu/+source/chromium-browser | https://code.launchpad.net/~chromium-team |
 | Debian     | [see package page](http://packages.debian.org/sid/chromium) | in standard repo     | [debian patch tracker](http://patch-tracker.debian.org/package/chromium-browser/) |
 | openSUSE   | Raymond Wooninck  `tittiatcoke@gmail.com` | http://software.opensuse.org/search?baseproject=ALL&p=1&q=chromium | ??                                  |
 | Arch       | Evangelos Foutras `evangelos@foutrelis.com` | http://www.archlinux.org/packages/extra/x86_64/chromium/ | [link](http://projects.archlinux.org/svntogit/packages.git/tree/trunk?h=packages/chromium) |
