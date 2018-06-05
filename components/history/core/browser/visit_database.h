@@ -188,6 +188,13 @@ class VisitDatabase {
   void GetVisitsSource(const VisitVector& visits,
                        VisitSourceMap* sources);
 
+  // Returns the list of Google domain visits of the user based on the Google
+  // searches issued in the specified time interval.
+  // begin_time is inclusive, end_time is exclusive.
+  std::vector<DomainVisit> GetGoogleDomainVisitsFromSearchesInRange(
+      base::Time begin_time,
+      base::Time end_time);
+
  protected:
   // Returns the database for the functions in this interface.
   virtual sql::Connection& GetDB() = 0;

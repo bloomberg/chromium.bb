@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "components/google/core/browser/google_util.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/url_database.h"
 #include "sql/statement.h"
@@ -617,6 +618,46 @@ void VisitDatabase::GetVisitsSource(const VisitVector& visits,
       sources->insert(source_entry);
     }
   }
+}
+
+std::vector<DomainVisit>
+VisitDatabase::GetGoogleDomainVisitsFromSearchesInRange(base::Time begin_time,
+                                                        base::Time end_time) {
+  sql::Statement statement(GetDB().GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT "
+      "  visit_time, "
+      "  u.url "
+      "FROM  "
+      "  urls u JOIN visits v ON u.id = v.url "
+      "WHERE "
+      // Pre-filtering to limit the number of entries to process in
+      // C++. The url column is indexed so this makes the query more
+      // efficient. We then confirm in C++ that the domain of an entry
+      // is a valid Google domain before counting the visit.
+      "  (u.url LIKE \"https://www.google.__/search%\" OR "
+      "   u.url LIKE \"https://www.google.___/search%\" OR "
+      "   u.url LIKE \"https://www.google.__.__/search%\" OR "
+      "   u.url LIKE \"https://www.google.___.__/search%\") AND "
+      // Restrict to visits that are more recent than the specified start
+      // time.
+      "  visit_time >= ? AND "
+      // Restrict to visits that are older than the specified end time.
+      "  visit_time < ? "));
+  statement.BindInt64(0,
+                      begin_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  statement.BindInt64(1, end_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  std::vector<DomainVisit> domain_visits;
+  while (statement.Step()) {
+    const GURL url(statement.ColumnString(1));
+    if (google_util::IsGoogleSearchUrl(url)) {
+      domain_visits.emplace_back(
+          url.host(),
+          base::Time::FromDeltaSinceWindowsEpoch(
+              base::TimeDelta::FromMicroseconds(statement.ColumnInt64(0))));
+    }
+  }
+  return domain_visits;
 }
 
 bool VisitDatabase::MigrateVisitsWithoutDuration() {
