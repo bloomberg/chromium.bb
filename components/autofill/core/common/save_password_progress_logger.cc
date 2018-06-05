@@ -410,8 +410,10 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Generation: eligible form found";
     case STRING_GENERATION_RENDERER_NO_FIELD_FOUND:
       return "Generation: fields for generation are not found";
-    case STRING_GENERATION_RENDERER_SHOW_GENERATION_POPUP:
-      return "Show generation popup";
+    case STRING_GENERATION_RENDERER_AUTOMATIC_GENERATION_AVAILABLE:
+      return "Generation: automatic generation is available";
+    case STRING_GENERATION_RENDERER_SHOW_MANUAL_GENERATION_POPUP:
+      return "Show generation popup triggered manually";
     case STRING_GENERATION_RENDERER_GENERATED_PASSWORD_ACCEPTED:
       return "Generated password accepted";
     case STRING_SUCCESSFUL_SUBMISSION_INDICATOR_EVENT:

@@ -5,7 +5,11 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_COMMON_PASSWORD_GENERATION_UTIL_H_
 #define COMPONENTS_AUTOFILL_CORE_COMMON_PASSWORD_GENERATION_UTIL_H_
 
+#include "components/autofill/core/common/password_form.h"
+#include "ui/gfx/geometry/rect_f.h"
+
 namespace autofill {
+
 namespace password_generation {
 
 // Enumerates various events related to the password generation process.
@@ -88,6 +92,29 @@ struct PasswordGenerationActions {
 
   PasswordGenerationActions();
   ~PasswordGenerationActions();
+};
+
+struct PasswordGenerationUIData {
+  PasswordGenerationUIData(const gfx::RectF& bounds,
+                           int max_length,
+                           const base::string16& generation_element,
+                           const autofill::PasswordForm& password_form);
+  PasswordGenerationUIData();
+  ~PasswordGenerationUIData();
+
+  // Location at which to display a popup if needed. This location is specified
+  // in the renderer's coordinate system. The popup will be anchored at
+  // |bounds|.
+  gfx::RectF bounds;
+
+  // Maximum length of the generated password.
+  int max_length;
+
+  // Name of the password field to which the generation popup is attached.
+  base::string16 generation_element;
+
+  // The form associated with the password field.
+  autofill::PasswordForm password_form;
 };
 
 void LogUserActions(PasswordGenerationActions actions);

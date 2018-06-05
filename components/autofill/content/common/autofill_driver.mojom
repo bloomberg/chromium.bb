@@ -154,18 +154,18 @@ interface PasswordManagerClient {
   // form. This is used for UMA stats.
   GenerationAvailableForForm(PasswordForm password_form);
 
-  // Instructs the browser to show the password generation popup at the
-  // specified location. This location should be specified in the renderers
-  // coordinate system. Form is the form associated with the password field.
-  // The popup will be anchored at |bounds|. The generated password
-  // will be no longer than |max_length|. |generation_element| should contain a
-  // name of a password field at which generation popup is attached.
-  // |is_manually_triggered| informs whether it is automatically or manually
-  // triggered generation.
-  ShowPasswordGenerationPopup(
-      gfx.mojom.RectF bounds, int32 max_length,
-      mojo_base.mojom.String16 generation_element, bool is_manually_triggered,
-      PasswordForm password_form);
+  // Notifies the browser when automatic generation becomes available or
+  // unavailable and provides data needed by the UI.
+  AutomaticGenerationStatusChanged(
+      bool available, PasswordGenerationUIData? password_generation_ui_data);
+
+  // Instructs the browser to show the password generation popup for manual
+  // generation and provides the data necessary to display it.
+  // TODO(crbug.com/845458): Replace this with a method called from the browser
+  // when user triggers generation manually which returns a boolean signaling
+  // whether the state for generation could be saved or not.
+  ShowManualPasswordGenerationPopup(
+      PasswordGenerationUIData password_generation_ui_data);
 
   // Instructs the browser to show the popup for editing a generated password.
   // The location should be specified in the renderers coordinate system. Form

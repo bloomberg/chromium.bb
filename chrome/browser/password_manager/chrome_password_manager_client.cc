@@ -32,6 +32,7 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/form_submission_tracker_util.h"
@@ -652,27 +653,23 @@ gfx::RectF ChromePasswordManagerClient::GetBoundsInScreenSpace(
   return bounds + client_area.OffsetFromOrigin();
 }
 
-void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
-    const gfx::RectF& bounds,
-    int max_length,
-    const base::string16& generation_element,
-    bool is_manually_triggered,
-    const autofill::PasswordForm& form) {
-  // TODO(gcasto): Validate data in PasswordForm.
+void ChromePasswordManagerClient::AutomaticGenerationStatusChanged(
+    bool available,
+    const base::Optional<
+        autofill::password_generation::PasswordGenerationUIData>&
+        password_generation_ui_data) {
+  // TODO(crbug.com/835234): Use the case when available is false to
+  // remove the option from the keyboard accessory on Android and maybe
+  // to hide the popup on desktop.
+  if (available) {
+    ShowPasswordGenerationPopup(password_generation_ui_data.value(),
+                                false /* is_manually_triggered */);
+  }
+}
 
-  auto* driver = driver_factory_->GetDriverForFrame(
-      password_manager_client_bindings_.GetCurrentTargetFrame());
-  DCHECK(driver);
-  password_manager_.SetGenerationElementAndReasonForForm(
-      driver, form, generation_element, is_manually_triggered);
-  gfx::RectF element_bounds_in_screen_space = GetBoundsInScreenSpace(bounds);
-
-  popup_controller_ =
-      autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
-          popup_controller_, element_bounds_in_screen_space, form, max_length,
-          &password_manager_, driver->AsWeakPtr(), observer_, web_contents(),
-          web_contents()->GetNativeView());
-  popup_controller_->Show(true /* display_password */);
+void ChromePasswordManagerClient::ShowManualPasswordGenerationPopup(
+    const autofill::password_generation::PasswordGenerationUIData& ui_data) {
+  ShowPasswordGenerationPopup(ui_data, true /* is_manually_triggered */);
 }
 
 void ChromePasswordManagerClient::ShowPasswordEditingPopup(
@@ -815,6 +812,27 @@ void ChromePasswordManagerClient::PromptUserToEnableAutosignin() {
   PasswordsClientUIDelegateFromWebContents(web_contents())
       ->OnPromptEnableAutoSignin();
 #endif
+}
+
+void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
+    const autofill::password_generation::PasswordGenerationUIData& ui_data,
+    bool is_manually_triggered) {
+  auto* driver = driver_factory_->GetDriverForFrame(
+      password_manager_client_bindings_.GetCurrentTargetFrame());
+  DCHECK(driver);
+  password_manager_.SetGenerationElementAndReasonForForm(
+      driver, ui_data.password_form, ui_data.generation_element,
+      is_manually_triggered);
+  gfx::RectF element_bounds_in_screen_space =
+      GetBoundsInScreenSpace(ui_data.bounds);
+
+  popup_controller_ =
+      autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
+          popup_controller_, element_bounds_in_screen_space,
+          ui_data.password_form, ui_data.max_length, &password_manager_,
+          driver->AsWeakPtr(), observer_, web_contents(),
+          web_contents()->GetNativeView());
+  popup_controller_->Show(true /* display_password */);
 }
 
 password_manager::PasswordManager*

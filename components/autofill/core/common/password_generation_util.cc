@@ -22,6 +22,20 @@ PasswordGenerationActions::PasswordGenerationActions()
 PasswordGenerationActions::~PasswordGenerationActions() {
 }
 
+PasswordGenerationUIData::PasswordGenerationUIData(
+    const gfx::RectF& bounds,
+    int max_length,
+    const base::string16& generation_element,
+    const autofill::PasswordForm& password_form)
+    : bounds(bounds),
+      max_length(max_length),
+      generation_element(generation_element),
+      password_form(password_form) {}
+
+PasswordGenerationUIData::PasswordGenerationUIData() = default;
+
+PasswordGenerationUIData::~PasswordGenerationUIData() = default;
+
 void LogUserActions(PasswordGenerationActions actions) {
   UserAction action = IGNORE_FEATURE;
   if (actions.password_accepted) {

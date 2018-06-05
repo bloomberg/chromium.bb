@@ -19,13 +19,18 @@ void FakePasswordManagerClient::Flush() {
 }
 
 // autofill::mojom::PasswordManagerClient:
-void FakePasswordManagerClient::ShowPasswordGenerationPopup(
-    const gfx::RectF& bounds,
-    int max_length,
-    const base::string16& generation_element,
-    bool is_manually_triggered,
-    const autofill::PasswordForm& form) {
-  called_show_pw_generation_popup_ = true;
+void FakePasswordManagerClient::AutomaticGenerationStatusChanged(
+    bool available,
+    const base::Optional<
+        autofill::password_generation::PasswordGenerationUIData>& ui_data) {
+  if (available) {
+    called_automatic_generation_status_changed_true_ = true;
+  }
+}
+
+void FakePasswordManagerClient::ShowManualPasswordGenerationPopup(
+    const autofill::password_generation::PasswordGenerationUIData& ui_data) {
+  called_show_manual_pw_generation_popup_ = true;
 }
 
 void FakePasswordManagerClient::ShowPasswordEditingPopup(

@@ -118,8 +118,14 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // all required information is collected.
   bool SetUpUserTriggeredGeneration();
 
-  // Show password generation UI anchored at |generation_element_|.
-  void ShowGenerationPopup();
+  // Signals the browser that it should offer or rescind automatic password
+  // generation depending whether the user has just focused a form field
+  // suitable for generation or has changed focus from such a field.
+  void AutomaticGenerationStatusChanged(bool available);
+
+  // Show password generation UI anchored at |generation_element_|. This is
+  // only called for manual password generation.
+  void ShowManualGenerationPopup();
 
   // Show UI for editing a generated password at |generation_element_|.
   void ShowEditingPopup();
@@ -176,9 +182,6 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // password.
   bool password_is_generated_;
 
-  // True if password generation was manually triggered.
-  bool is_manually_triggered_;
-
   // True if a password was generated and the user edited it. Used for UMA
   // stats.
   bool password_edited_;
@@ -186,6 +189,10 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // True if the generation popup was shown during this navigation. Used to
   // track UMA stats per page visit rather than per display, since the former
   // is more interesting.
+  // TODO(crbug.com/845458): Remove this or change the description of the
+  // logged event as calling AutomaticgenerationStatusChanged will no longer
+  // imply that a popup is shown. This could instead be logged with the
+  // metrics collected on the browser process.
   bool generation_popup_shown_;
 
   // True if the editing popup was shown during this navigation. Used to track

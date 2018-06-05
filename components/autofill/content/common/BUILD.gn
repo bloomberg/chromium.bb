@@ -25,6 +25,7 @@ mojom("mojo_types") {
 
   public_deps = [
     "//mojo/public/mojom/base",
+    "//ui/gfx/geometry/mojo",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]

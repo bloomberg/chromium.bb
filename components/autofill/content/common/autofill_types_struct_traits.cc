@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "mojo/public/cpp/base/text_direction_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
+#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "url/mojom/origin_mojom_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
@@ -701,6 +702,23 @@ bool StructTraits<autofill::mojom::PasswordFormGenerationDataDataView,
   } else {
     DCHECK(!out->confirmation_field_signature);
   }
+  return true;
+}
+
+// static
+bool StructTraits<autofill::mojom::PasswordGenerationUIDataDataView,
+                  autofill::password_generation::PasswordGenerationUIData>::
+    Read(autofill::mojom::PasswordGenerationUIDataDataView data,
+         autofill::password_generation::PasswordGenerationUIData* out) {
+  if (!data.ReadBounds(&out->bounds))
+    return false;
+
+  out->max_length = data.max_length();
+
+  if (!data.ReadGenerationElement(&out->generation_element) ||
+      !data.ReadPasswordForm(&out->password_form))
+    return false;
+
   return true;
 }
 

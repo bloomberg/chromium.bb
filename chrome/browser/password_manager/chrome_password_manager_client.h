@@ -33,6 +33,10 @@ class Profile;
 namespace autofill {
 class PasswordGenerationPopupObserver;
 class PasswordGenerationPopupControllerImpl;
+
+namespace password_generation {
+struct PasswordGenerationUIData;
+}
 }
 
 namespace content {
@@ -105,11 +109,14 @@ class ChromePasswordManagerClient
   const password_manager::LogManager* GetLogManager() const override;
 
   // autofill::mojom::PasswordManagerClient overrides.
-  void ShowPasswordGenerationPopup(const gfx::RectF& bounds,
-                                   int max_length,
-                                   const base::string16& generation_element,
-                                   bool is_manually_triggered,
-                                   const autofill::PasswordForm& form) override;
+  void AutomaticGenerationStatusChanged(
+      bool available,
+      const base::Optional<
+          autofill::password_generation::PasswordGenerationUIData>& ui_data)
+      override;
+  void ShowManualPasswordGenerationPopup(
+      const autofill::password_generation::PasswordGenerationUIData& ui_data)
+      override;
   void ShowPasswordEditingPopup(const gfx::RectF& bounds,
                                 const autofill::PasswordForm& form) override;
   void GenerationAvailableForForm(const autofill::PasswordForm& form) override;
@@ -191,6 +198,10 @@ class ChromePasswordManagerClient
   // password_manager::PasswordManagerClientHelperDelegate implementation.
   void PromptUserToEnableAutosignin() override;
   password_manager::PasswordManager* GetPasswordManager() override;
+
+  void ShowPasswordGenerationPopup(
+      const autofill::password_generation::PasswordGenerationUIData& ui_data,
+      bool is_manually_triggered);
 
   Profile* const profile_;
 

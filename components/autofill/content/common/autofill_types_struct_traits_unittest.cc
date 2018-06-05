@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -228,6 +229,12 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
   void PassPasswordFormGenerationData(
       const PasswordFormGenerationData& s,
       PassPasswordFormGenerationDataCallback callback) override {
+    std::move(callback).Run(s);
+  }
+
+  void PassPasswordGenerationUIData(
+      const password_generation::PasswordGenerationUIData& s,
+      PassPasswordGenerationUIDataCallback callback) override {
     std::move(callback).Run(s);
   }
 
