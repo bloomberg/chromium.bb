@@ -7,7 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "components/ui_metrics/canonical_url_share_metrics_types.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"

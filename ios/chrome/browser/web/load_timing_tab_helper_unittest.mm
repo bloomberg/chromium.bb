@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
