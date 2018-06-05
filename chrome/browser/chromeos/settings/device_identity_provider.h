@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_IDENTITY_PROVIDER_H_
 
 #include "base/macros.h"
-#include "google_apis/gaia/identity_provider.h"
+#include "components/invalidation/public/identity_provider.h"
 
 namespace chromeos {
 
 class DeviceOAuth2TokenService;
 
 // Identity provider implementation backed by DeviceOAuth2TokenService.
-class DeviceIdentityProvider : public IdentityProvider {
+class DeviceIdentityProvider : public invalidation::IdentityProvider {
  public:
   explicit DeviceIdentityProvider(
       chromeos::DeviceOAuth2TokenService* token_service);

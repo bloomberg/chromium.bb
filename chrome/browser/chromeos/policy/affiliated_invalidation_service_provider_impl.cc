@@ -25,6 +25,7 @@
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/impl/ticl_invalidation_service.h"
 #include "components/invalidation/impl/ticl_settings_provider.h"
+#include "components/invalidation/public/identity_provider.h"
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/invalidator_state.h"
@@ -32,7 +33,6 @@
 #include "components/user_manager/user.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
-#include "google_apis/gaia/identity_provider.h"
 
 namespace policy {
 
@@ -305,9 +305,8 @@ AffiliatedInvalidationServiceProviderImpl::FindConnectedInvalidationService() {
     device_invalidation_service_.reset(
         new invalidation::TiclInvalidationService(
             GetUserAgent(),
-            std::unique_ptr<IdentityProvider>(
-                new chromeos::DeviceIdentityProvider(
-                    chromeos::DeviceOAuth2TokenServiceFactory::Get())),
+            std::make_unique<chromeos::DeviceIdentityProvider>(
+                chromeos::DeviceOAuth2TokenServiceFactory::Get()),
             std::unique_ptr<invalidation::TiclSettingsProvider>(
                 new TiclDeviceSettingsProvider),
             g_browser_process->gcm_driver(),

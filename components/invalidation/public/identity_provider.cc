@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "google_apis/gaia/identity_provider.h"
+#include "components/invalidation/public/identity_provider.h"
+
+namespace invalidation {
 
 IdentityProvider::Observer::~Observer() {}
 
@@ -68,3 +70,5 @@ void IdentityProvider::FireOnActiveAccountLogout() {
   for (auto& observer : observers_)
     observer.OnActiveAccountLogout();
 }
+
+}  // namespace invalidation

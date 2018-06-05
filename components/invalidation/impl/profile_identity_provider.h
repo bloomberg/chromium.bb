@@ -6,8 +6,8 @@
 #define COMPONENTS_INVALIDATION_IMPL_PROFILE_IDENTITY_PROVIDER_H_
 
 #include "base/macros.h"
+#include "components/invalidation/public/identity_provider.h"
 #include "components/signin/core/browser/signin_manager_base.h"
-#include "google_apis/gaia/identity_provider.h"
 
 class ProfileOAuth2TokenService;
 
