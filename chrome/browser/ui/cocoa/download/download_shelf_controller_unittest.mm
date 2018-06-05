@@ -168,9 +168,10 @@ id DownloadShelfControllerTest::CreateItemController() {
 
 TEST_VIEW(DownloadShelfControllerTest, [shelf_ view]);
 
+// TODO(crbug.com/849477) Disabled for flakiness.
 // Removing the last download from the shelf should cause it to close
 // immediately.
-TEST_F(DownloadShelfControllerTest, AddAndRemoveDownload) {
+TEST_F(DownloadShelfControllerTest, DISABLED_AddAndRemoveDownload) {
   base::scoped_nsobject<DownloadItemController> item(CreateItemController());
   [shelf_ showDownloadShelf:YES isUserAction:NO animate:YES];
   EXPECT_TRUE([shelf_ isVisible]);
@@ -231,9 +232,11 @@ TEST_F(DownloadShelfControllerTest, HideAutocloseUnhide) {
   EXPECT_FALSE([shelf_ isVisible]);
 }
 
+// TODO(crbug.com/849477) Disabled for flakiness.
 // Test of autoclosing behavior after opening a download item. The mouse is on
 // the download shelf at the time the autoclose is scheduled.
-TEST_F(DownloadShelfControllerTest, AutoCloseAfterOpenWithMouseInShelf) {
+TEST_F(DownloadShelfControllerTest,
+       DISABLED_AutoCloseAfterOpenWithMouseInShelf) {
   base::scoped_nsobject<DownloadItemController> item(CreateItemController());
   [shelf_ showDownloadShelf:YES isUserAction:NO animate:YES];
   EXPECT_TRUE([shelf_ isVisible]);
@@ -285,9 +288,10 @@ TEST_F(DownloadShelfControllerTest, AutoCloseAfterOpenWithMouseOffShelf) {
   EXPECT_FALSE([shelf_ isVisible]);
 }
 
+// TODO(crbug.com/849477) Disabled for flakiness.
 // Test that if the shelf is closed while an autoClose is pending, the pending
 // autoClose is cancelled.
-TEST_F(DownloadShelfControllerTest, CloseWithPendingAutoClose) {
+TEST_F(DownloadShelfControllerTest, DISABLED_CloseWithPendingAutoClose) {
   base::scoped_nsobject<DownloadItemController> item(CreateItemController());
   [shelf_ showDownloadShelf:YES isUserAction:NO animate:YES];
   EXPECT_TRUE([shelf_ isVisible]);
