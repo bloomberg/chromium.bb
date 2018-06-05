@@ -6,8 +6,10 @@
 
 #include "base/logging.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
+#include "components/autofill/core/browser/proto/password_requirements_shard.pb.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,21 +18,36 @@ namespace autofill {
 namespace {
 
 // URL prefix for spec requests.
-#define SERVER_URL "https://www.gstatic.com/chrome/password_requirements/"
+#define SERVER_URL \
+  "https://www.gstatic.com/chrome/autofill/password_generation_specs/"
 
 TEST(PasswordRequirementsSpecFetcherTest, FetchData) {
+  using ResultCode = PasswordRequirementsSpecFetcher::ResultCode;
+
   // An empty spec is returned for all error cases (time outs, server responding
   // with anything but HTTP_OK).
   PasswordRequirementsSpec empty_spec;
 
-  // TODO(crbug.com/846694): As there is currently no wire-format for files
-  // that contain multiple specs, the HTTP response from the server is ignored
-  // and any HTTP_OK response generates a PasswordRequirementsSpec with a magic
-  // value of "min_length = 17". Once the wire-format is defined, this should
-  // be updated.
-  constexpr char kSuccessfulResponseContent[] = "Foobar";
-  PasswordRequirementsSpec success_spec;
-  success_spec.set_min_length(17);
+  PasswordRequirementsSpec success_spec_for_example_com;
+  success_spec_for_example_com.set_min_length(17);
+  PasswordRequirementsSpec success_spec_for_m_example_com;
+  success_spec_for_m_example_com.set_min_length(18);
+  PasswordRequirementsSpec spec_for_ip;
+  success_spec_for_m_example_com.set_min_length(19);
+  PasswordRequirementsSpec success_spec_for_uber_example_com;
+  success_spec_for_uber_example_com.set_min_length(20);
+
+  std::string serialized_shard;
+  PasswordRequirementsShard shard;
+  (*shard.mutable_specs())["example.com"] = success_spec_for_example_com;
+  (*shard.mutable_specs())["m.example.com"] = success_spec_for_m_example_com;
+  // This spec is stored in the buffer but is not expected to be processed.
+  // Only real hostnames are supposed to be parsed.
+  (*shard.mutable_specs())["192.168.1.1"] = spec_for_ip;
+  // Punycoded entry.
+  (*shard.mutable_specs())["xn--ber-example-shb.com"] =
+      success_spec_for_uber_example_com;
+  shard.SerializeToString(&serialized_shard);
 
   // If this magic timeout value is set, simulate a timeout.
   const int kMagicTimeout = 10;
@@ -49,19 +66,21 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchData) {
 
     // Handler for the spec requests.
     const char* requested_url;
-    const char* response_content;
+    std::string response_content;
     net::HttpStatusCode response_status = net::HTTP_OK;
 
     // Expected spec.
     PasswordRequirementsSpec* expected_spec;
+    ResultCode expected_result;
   } tests[] = {
       {
           .test_name = "Business as usual",
           .origin = "https://www.example.com",
           // See echo -n example.com | md5sum | cut -b 1-4
           .requested_url = SERVER_URL "1/5aba",
-          .response_content = kSuccessfulResponseContent,
-          .expected_spec = &success_spec,
+          .response_content = serialized_shard,
+          .expected_spec = &success_spec_for_example_com,
+          .expected_result = ResultCode::kFoundSpec,
       },
       {
           .test_name = "Parts before the eTLD+1 don't matter",
@@ -69,8 +88,11 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchData) {
           // prefix.
           .origin = "https://m.example.com",
           .requested_url = SERVER_URL "1/5aba",
-          .response_content = kSuccessfulResponseContent,
-          .expected_spec = &success_spec,
+          .response_content = serialized_shard,
+          // But shard contains a special entry for m.example.com, so verify
+          // that the more specific element is returned.
+          .expected_spec = &success_spec_for_m_example_com,
+          .expected_result = ResultCode::kFoundSpec,
       },
       {
           .test_name = "The generation is encoded in the url",
@@ -78,8 +100,9 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchData) {
           // Here the test differs from the default:
           .generation = 2,
           .requested_url = SERVER_URL "2/5aba",
-          .response_content = kSuccessfulResponseContent,
-          .expected_spec = &success_spec,
+          .response_content = serialized_shard,
+          .expected_spec = &success_spec_for_example_com,
+          .expected_result = ResultCode::kFoundSpec,
       },
       {
           .test_name = "Shorter prefixes are reflected in the URL",
@@ -89,8 +112,9 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchData) {
           // out.
           .prefix_length = 3,
           .requested_url = SERVER_URL "1/4000",
-          .response_content = kSuccessfulResponseContent,
-          .expected_spec = &success_spec,
+          .response_content = serialized_shard,
+          .expected_spec = &success_spec_for_m_example_com,
+          .expected_result = ResultCode::kFoundSpec,
       },
       {
           .test_name = "Simulate a 404 response",
@@ -100,6 +124,7 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchData) {
           // If a file is not found on the server, the spec should be empty.
           .response_status = net::HTTP_NOT_FOUND,
           .expected_spec = &empty_spec,
+          .expected_result = ResultCode::kErrorFailedToFetch,
       },
       {
           .test_name = "Simulate a timeout",
@@ -110,8 +135,9 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchData) {
           // TestURLLoaderFactory reacts as if a response has been added to
           // a URL.
           .requested_url = SERVER_URL "dont_respond",
-          .response_content = kSuccessfulResponseContent,
+          .response_content = serialized_shard,
           .expected_spec = &empty_spec,
+          .expected_result = ResultCode::kErrorTimeout,
       },
       {
           .test_name = "Zero prefix",
@@ -119,13 +145,66 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchData) {
           // A zero prefix will be the hard-coded Finch default and should work.
           .prefix_length = 0,
           .requested_url = SERVER_URL "1/0000",
-          .response_content = kSuccessfulResponseContent,
-          .expected_spec = &success_spec,
+          .response_content = serialized_shard,
+          .expected_spec = &success_spec_for_example_com,
+          .expected_result = ResultCode::kFoundSpec,
+      },
+      {
+          .test_name = "IP addresses give the empty spec",
+          .origin = "http://192.168.1.1/",
+          // By setting the prefix to 0, the URL of the shard is predefined,
+          // but actually, not network request should be sent as password
+          // requirements are not supported for IP addresses.
+          .prefix_length = 0,
+          .requested_url = SERVER_URL "0/0000",
+          .response_content = serialized_shard,
+          .expected_spec = &empty_spec,
+          .expected_result = ResultCode::kErrorInvalidOrigin,
+      },
+      {
+          .test_name = "IP addresses give the empty spec",
+          .origin = "chrome://settings",
+          // By setting the prefix to 0, the URL of the shard is predefined,
+          // but actually, not network request should be sent as password
+          // requirements are not supported the chrome:// scheme.
+          .prefix_length = 0,
+          .requested_url = SERVER_URL "0/0000",
+          .response_content = serialized_shard,
+          .expected_spec = &empty_spec,
+          .expected_result = ResultCode::kErrorInvalidOrigin,
+      },
+      {
+          .test_name = "Trailing period is normalized",
+          // Despite the trailing '.', everything is like for example.com
+          .origin = "https://www.example.com.",
+          .requested_url = SERVER_URL "1/5aba",
+          .response_content = serialized_shard,
+          .expected_spec = &success_spec_for_example_com,
+          .expected_result = ResultCode::kFoundSpec,
+      },
+      {
+          .test_name = "Test punycoding",
+          .origin = "https://www.über-example.com",
+          // See echo -n xn--ber-example-shb.com | md5sum | cut -b 1-4
+          .requested_url = SERVER_URL "1/e5db",
+          .response_content = serialized_shard,
+          .expected_spec = &success_spec_for_uber_example_com,
+          .expected_result = ResultCode::kFoundSpec,
+      },
+      {
+          .test_name = "Test no entry",
+          .origin = "https://www.no-entry.com",
+          // See echo -n no-entry.com | md5sum | cut -b 1-4
+          .requested_url = SERVER_URL "1/7579",
+          .response_content = serialized_shard,
+          .expected_spec = &empty_spec,
+          .expected_result = ResultCode::kFoundNoSpec,
       },
   };
 
   for (const auto& test : tests) {
     SCOPED_TRACE(test.test_name);
+    base::HistogramTester histogram_tester;
 
     base::test::ScopedTaskEnvironment environment(
         base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
@@ -160,6 +239,9 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchData) {
     ASSERT_TRUE(callback_called);
     EXPECT_EQ(test.expected_spec->SerializeAsString(),
               returned_spec.SerializeAsString());
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.RequirementsSpecFetcher.Result", test.expected_result,
+        1u);
   }
 }
 

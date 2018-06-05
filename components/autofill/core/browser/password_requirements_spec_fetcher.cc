@@ -6,14 +6,17 @@
 
 #include "base/logging.h"
 #include "base/md5.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
+#include "components/autofill/core/browser/proto/password_requirements_shard.pb.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "url/url_canon.h"
 
 namespace autofill {
 
@@ -72,8 +75,8 @@ GURL GetUrlForRequirementsSpec(const GURL& origin,
                                size_t prefix_length) {
   std::string hash_prefix = GetHashPrefix(origin, prefix_length);
   return GURL(base::StringPrintf(
-      "https://www.gstatic.com/chrome/password_requirements/%d/%s", version,
-      hash_prefix.c_str()));
+      "https://www.gstatic.com/chrome/autofill/password_generation_specs/%d/%s",
+      version, hash_prefix.c_str()));
 }
 
 }  // namespace
@@ -87,6 +90,22 @@ void PasswordRequirementsSpecFetcher::Fetch(
   DCHECK(callback_.is_null());
   origin_ = origin;
   callback_ = std::move(callback);
+
+  if (!origin.is_valid() || origin.HostIsIPAddress() ||
+      !origin.SchemeIsHTTPOrHTTPS()) {
+    TriggerCallback(ResultCode::kErrorInvalidOrigin,
+                    PasswordRequirementsSpec());
+    return;
+  }
+  // Canonicalize away trailing periods in hostname.
+  while (!origin_.host().empty() && origin_.host().back() == '.') {
+    std::string new_host =
+        origin_.host().substr(0, origin_.host().length() - 1);
+    url::Replacements<char> replacements;
+    replacements.SetHost(new_host.c_str(),
+                         url::Component(0, new_host.length()));
+    origin_ = origin_.ReplaceComponents(replacements);
+  }
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("password_requirements_spec_fetch",
@@ -112,7 +131,7 @@ void PasswordRequirementsSpecFetcher::Fetch(
       })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url =
-      GetUrlForRequirementsSpec(origin, version_, prefix_length_);
+      GetUrlForRequirementsSpec(origin_, version_, prefix_length_);
   resource_request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES |
                                  net::LOAD_DO_NOT_SEND_COOKIES |
                                  net::LOAD_DO_NOT_SEND_AUTH_DATA;
@@ -135,22 +154,64 @@ void PasswordRequirementsSpecFetcher::OnFetchComplete(
   std::unique_ptr<network::SimpleURLLoader> loader(std::move(url_loader_));
 
   if (!response_body || loader->NetError() != net::Error::OK) {
-    // TODO(crbug.com/846694): log error in UKM / UMA.
-    std::move(callback_).Run(PasswordRequirementsSpec());
+    TriggerCallback(ResultCode::kErrorFailedToFetch,
+                    PasswordRequirementsSpec());
     return;
   }
 
-  // TODO(crbug.com/846694): log statistics, process data.
-  // For now this is just some dummy data for testing.
-  PasswordRequirementsSpec spec;
-  spec.set_min_length(17);
-  std::move(callback_).Run(spec);
+  PasswordRequirementsShard shard;
+  if (!shard.ParseFromString(*response_body)) {
+    TriggerCallback(ResultCode::kErrorFailedToParse,
+                    PasswordRequirementsSpec());
+    return;
+  }
+
+  // Search shard for matches for origin_ by looking up the (canonicalized)
+  // host name and then stripping domain prefixes until the eTLD+1 is reached.
+  DCHECK(!origin_.HostIsIPAddress());
+  // |host| is a std::string instead of StringPiece as the protbuf::Map
+  // implementation does not support StringPieces as parameters for find.
+  std::string host = origin_.host();
+  auto it = shard.specs().find(host);
+  if (it != shard.specs().end()) {
+    TriggerCallback(ResultCode::kFoundSpec, it->second);
+    return;
+  }
+
+  const std::string domain_and_registry =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          origin_,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  while (host.length() > 0 && host != domain_and_registry) {
+    size_t pos = host.find('.');
+    if (pos != std::string::npos) {  // strip prefix
+      host = host.substr(pos + 1);
+    } else {
+      break;
+    }
+    // If an entry has ben found exit with that.
+    auto it = shard.specs().find(host);
+    if (it != shard.specs().end()) {
+      TriggerCallback(ResultCode::kFoundSpec, it->second);
+      return;
+    }
+  }
+
+  TriggerCallback(ResultCode::kFoundNoSpec, PasswordRequirementsSpec());
 }
 
 void PasswordRequirementsSpecFetcher::OnFetchTimeout() {
   url_loader_.reset();
-  // TODO(crbug.com/846694): log error (abort)
-  std::move(callback_).Run(PasswordRequirementsSpec());
+  TriggerCallback(ResultCode::kErrorTimeout, PasswordRequirementsSpec());
+}
+
+void PasswordRequirementsSpecFetcher::TriggerCallback(
+    ResultCode result,
+    const PasswordRequirementsSpec& spec) {
+  // TODO(crbug.com/846694) Return latencies.
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.RequirementsSpecFetcher.Result",
+                            result);
+  std::move(callback_).Run(spec);
 }
 
 }  // namespace autofill

@@ -30,6 +30,23 @@ class PasswordRequirementsSpecFetcher {
   using FetchCallback =
       base::OnceCallback<void(const PasswordRequirementsSpec&)>;
 
+  // This enum is used in histograms. Do not change or reuse values.
+  enum class ResultCode {
+    // Fetched spec file, parsed it, but found no entry for the origin.
+    kFoundNoSpec = 0,
+    // Fetched spec file, parsed it and found an entry.
+    kFoundSpec = 1,
+    // The origin is an IP address, not HTTP/HTTPS, or not a valid URL.
+    kErrorInvalidOrigin = 2,
+    // Server responded with an empty document or an error code.
+    kErrorFailedToFetch = 3,
+    // Server timed out.
+    kErrorTimeout = 4,
+    // Server responded with a document but it could not be parsed.
+    kErrorFailedToParse = 5,
+    kMaxValue = kErrorFailedToParse,
+  };
+
   // See the member variables for explanations of these parameters.
   PasswordRequirementsSpecFetcher(int version,
                                   size_t prefix_length,
@@ -55,6 +72,7 @@ class PasswordRequirementsSpecFetcher {
  private:
   void OnFetchComplete(std::unique_ptr<std::string> response_body);
   void OnFetchTimeout();
+  void TriggerCallback(ResultCode result, const PasswordRequirementsSpec& spec);
 
   // A version counter for requirements specs. If data changes on the server,
   // a new version number is pushed out to prevent that clients continue

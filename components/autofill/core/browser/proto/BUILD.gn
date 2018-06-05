@@ -8,6 +8,7 @@ proto_library("proto") {
   sources = [
     "autofill_sync.proto",
     "password_requirements.proto",
+    "password_requirements_shard.proto",
     "server.proto",
   ]
 }
