@@ -146,6 +146,7 @@ class GPU_GLES2_EXPORT TraceOutputter : public Outputter {
 
  private:
   base::Thread named_thread_;
+  base::PlatformThreadId named_thread_id_ = base::kInvalidThreadId;
   uint64_t local_trace_device_id_ = 0;
   uint64_t local_trace_service_id_ = 0;
 
