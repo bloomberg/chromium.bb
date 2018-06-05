@@ -22,7 +22,7 @@ import java.util.Set;
 /**
  * An inner node in the tree: the root of a subtree, with a list of child nodes.
  */
-public class InnerNode extends ChildNode implements ListObserver {
+public class InnerNode extends ChildNode implements ListObserver<PartialBindCallback> {
     private final List<ChildNode> mChildren = new ArrayList<>();
 
     private int getChildIndexForPosition(int position) {
@@ -103,9 +103,8 @@ public class InnerNode extends ChildNode implements ListObserver {
 
     @Override
     public void onItemRangeChanged(
-            ListObservable source, int index, int count, @Nullable Object payload) {
-        notifyItemRangeChanged(
-                getStartingOffsetForChild(source) + index, count, (PartialBindCallback) payload);
+            ListObservable source, int index, int count, @Nullable PartialBindCallback payload) {
+        notifyItemRangeChanged(getStartingOffsetForChild(source) + index, count, payload);
     }
 
     @Override

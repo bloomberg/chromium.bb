@@ -21,7 +21,7 @@ import org.chromium.ui.base.WindowAndroid;
  * callback to trigger when selecting them.
  */
 class KeyboardAccessoryMediator
-        implements WindowAndroid.KeyboardVisibilityListener, ListObservable.ListObserver,
+        implements WindowAndroid.KeyboardVisibilityListener, ListObservable.ListObserver<Void>,
                    PropertyObservable.PropertyObserver<KeyboardAccessoryModel.PropertyKey>,
                    KeyboardAccessoryData.Observer<KeyboardAccessoryData.Action> {
     private final KeyboardAccessoryModel mModel;
@@ -95,8 +95,9 @@ class KeyboardAccessoryMediator
 
     @Override
     public void onItemRangeChanged(
-            ListObservable source, int index, int count, @Nullable Object payload) {
+            ListObservable source, int index, int count, @Nullable Void payload) {
         assert source == mModel.getActionList() || source == mModel.getTabList();
+        assert payload == null;
         updateVisibility();
     }
 

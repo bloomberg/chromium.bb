@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download.home.list;
 
+import android.support.annotation.Nullable;
 import android.support.v7.util.BatchingListUpdateCallback;
 import android.support.v7.util.ListUpdateCallback;
 
@@ -13,7 +14,7 @@ import org.chromium.chrome.browser.modelutil.ListObservable;
  * Helper class to batch updates to ListObservable before notifying observers.
  * @see BatchingListUpdateCallback
  */
-public abstract class BatchListObservable extends ListObservable {
+public abstract class BatchListObservable extends ListObservable<Void> {
     final BatchingListUpdateCallback mBatchingCallback;
 
     /** Creates a new BatchListObservable instance. */
@@ -35,8 +36,9 @@ public abstract class BatchListObservable extends ListObservable {
             }
 
             @Override
-            public void onChanged(int position, int count, Object payload) {
-                super_notifyItemRangeChanged(position, count, payload);
+            public void onChanged(int position, int count, @Nullable Object payload) {
+                assert payload == null;
+                super_notifyItemRangeChanged(position, count);
             }
         });
     }
@@ -60,8 +62,9 @@ public abstract class BatchListObservable extends ListObservable {
     }
 
     @Override
-    protected void notifyItemRangeChanged(int index, int count, Object payload) {
-        mBatchingCallback.onChanged(index, count, payload);
+    protected void notifyItemRangeChanged(int index, int count, @Nullable Void payload) {
+        assert payload == null;
+        mBatchingCallback.onChanged(index, count, null);
     }
 
     private void super_notifyItemRangeInserted(int index, int count) {
@@ -72,7 +75,7 @@ public abstract class BatchListObservable extends ListObservable {
         super.notifyItemRangeRemoved(index, count);
     }
 
-    private void super_notifyItemRangeChanged(int index, int count, Object payload) {
-        super.notifyItemRangeChanged(index, count, payload);
+    private void super_notifyItemRangeChanged(int index, int count) {
+        super.notifyItemRangeChanged(index, count, null);
     }
 }

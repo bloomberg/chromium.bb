@@ -36,7 +36,7 @@ public class AccessorySheetControllerTest {
     @Mock
     private PropertyObservable.PropertyObserver<PropertyKey> mMockPropertyObserver;
     @Mock
-    private ListObservable.ListObserver mTabListObserver;
+    private ListObservable.ListObserver<Void> mTabListObserver;
     @Mock
     private ViewStub mMockViewStub;
     @Mock

@@ -36,7 +36,7 @@ public class PasswordAccessorySheetControllerTest {
     @Mock
     private RecyclerView mMockView;
     @Mock
-    private ListObservable.ListObserver mMockItemListObserver;
+    private ListObservable.ListObserver<Void> mMockItemListObserver;
 
     private PasswordAccessorySheetCoordinator mCoordinator;
     private SimpleListObservable<KeyboardAccessoryData.Item> mModel;

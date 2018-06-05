@@ -11,12 +11,16 @@ import org.chromium.base.ObserverList;
 /**
  * A base class for models maintaining a list of items. Note that ListObservable models do not need
  * to be implemented as a list. Internally they may use any structure to organize their items.
+ * @param <P> The parameter type for the payload for partial updates. Use {@link Void} for
+ *         implementations that don't support partial updates.
  */
-public abstract class ListObservable {
+public abstract class ListObservable<P> {
     /**
      * An observer to be notified of changes to a {@link ListObservable}.
+     * @param <P> The parameter type for the payload for partial updates. Use {@link Void} for
+     *         implementations that don't support partial updates.
      */
-    public interface ListObserver {
+    public interface ListObserver<P> {
         /**
          * Notifies that {@code count} items starting at position {@code index} under the
          * {@code source} have been added.
@@ -50,10 +54,10 @@ public abstract class ListObservable {
          */
         default void
             onItemRangeChanged(
-                    ListObservable source, int index, int count, @Nullable Object payload) {}
+                    ListObservable<P> source, int index, int count, @Nullable P payload) {}
     }
 
-    private final ObserverList<ListObserver> mObservers = new ObserverList<>();
+    private final ObserverList<ListObserver<P>> mObservers = new ObserverList<>();
 
     /** @return The total number of items held by the model. */
     public abstract int getItemCount();
@@ -61,13 +65,13 @@ public abstract class ListObservable {
     /**
      * @param observer An observer to be notified of changes to the model.
      */
-    public void addObserver(ListObserver observer) {
+    public void addObserver(ListObserver<P> observer) {
         boolean success = mObservers.addObserver(observer);
         assert success;
     }
 
     /** @param observer The observer to remove. */
-    public void removeObserver(ListObserver observer) {
+    public void removeObserver(ListObserver<P> observer) {
         boolean success = mObservers.removeObserver(observer);
         assert success;
     }
@@ -106,8 +110,8 @@ public abstract class ListObservable {
      * @param count The number of changed items.
      * @param payload Optional parameter, use {@code null} to identify a "full" update.
      */
-    protected void notifyItemRangeChanged(int index, int count, @Nullable Object payload) {
-        for (ListObserver observer : mObservers) {
+    protected void notifyItemRangeChanged(int index, int count, @Nullable P payload) {
+        for (ListObserver<P> observer : mObservers) {
             observer.onItemRangeChanged(this, index, count, payload);
         }
     }

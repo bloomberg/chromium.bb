@@ -4,12 +4,14 @@
 
 package org.chromium.chrome.browser.download.home.list;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
 
 /** A wrapper class that adds decoration {@link ListItem}s to a {@link ListItemModel}. */
-class DecoratedListItemModel extends ListObservable implements ListObserver {
+class DecoratedListItemModel extends ListObservable<Void> implements ListObserver<Void> {
     private final ListItemModel mModel;
 
     private ViewListItem mHeaderItem;
@@ -59,7 +61,9 @@ class DecoratedListItemModel extends ListObservable implements ListObserver {
     }
 
     @Override
-    public void onItemRangeChanged(ListObservable source, int index, int count, Object payload) {
+    public void onItemRangeChanged(
+            ListObservable source, int index, int count, @Nullable Void payload) {
+        assert payload == null;
         notifyItemRangeChanged(convertIndexFromSource(index), count, payload);
     }
 

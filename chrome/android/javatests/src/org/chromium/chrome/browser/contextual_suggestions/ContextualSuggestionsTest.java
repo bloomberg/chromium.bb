@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
 import org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -475,7 +476,7 @@ public class ContextualSuggestionsTest {
             mModel2 = mCoordinator2.getModelForTesting();
             mBottomSheet2 = activity2.getBottomSheet();
 
-            mModel2.getClusterList().addObserver(new ListObserver() {
+            mModel2.getClusterList().addObserver(new ListObserver<PartialBindCallback>() {
                 @Override
                 public void onItemRangeInserted(ListObservable source, int index, int count) {
                     // There will be two calls to this method, one for each cluster that is added

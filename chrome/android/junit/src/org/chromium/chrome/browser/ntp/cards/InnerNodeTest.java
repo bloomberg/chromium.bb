@@ -9,7 +9,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -22,12 +21,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +42,7 @@ public class InnerNodeTest {
     private static final int[] ITEM_COUNTS = {1, 2, 3, 0, 3, 2, 1};
     private final List<ChildNode> mChildren = new ArrayList<>();
     @Mock
-    private ListObserver mObserver;
+    private ListObserver<PartialBindCallback> mObserver;
     private InnerNode mInnerNode;
 
     @Before
@@ -119,7 +120,8 @@ public class InnerNodeTest {
         verify(mObserver).onItemRangeRemoved(mInnerNode, 6, 3);
         verify(child).removeObserver(eq(mInnerNode));
 
-        reset(mObserver); // Prepare for the #verifyNoMoreInteractions() call below.
+        Mockito.<ListObserver>reset(
+                mObserver); // Prepare for the #verifyNoMoreInteractions() call below.
         ChildNode child2 = mChildren.get(3);
         mInnerNode.removeChild(child2);
         verify(child2).removeObserver(eq(mInnerNode));
@@ -193,7 +195,7 @@ public class InnerNodeTest {
      * Implementation of {@link ListObserver} that checks the item count from the node that
      * sends notifications against defined expectations. Fails on unexpected calls.
      */
-    private static class MockListObserver implements ListObserver {
+    private static class MockListObserver implements ListObserver<PartialBindCallback> {
         @Nullable
         private Integer mNextExpectedItemCount;
 
@@ -202,7 +204,8 @@ public class InnerNodeTest {
         }
 
         @Override
-        public void onItemRangeChanged(ListObservable child, int index, int count, Object payload) {
+        public void onItemRangeChanged(
+                ListObservable child, int index, int count, PartialBindCallback payload) {
             checkCount(child);
         }
 

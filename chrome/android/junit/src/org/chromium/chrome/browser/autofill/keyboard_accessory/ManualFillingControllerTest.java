@@ -37,7 +37,7 @@ public class ManualFillingControllerTest {
     @Mock
     private KeyboardAccessoryView mMockView;
     @Mock
-    private ListObservable.ListObserver mMockTabListObserver;
+    private ListObservable.ListObserver<Void> mMockTabListObserver;
     @Mock
     private KeyboardAccessoryData.Tab mMockTab;
 
