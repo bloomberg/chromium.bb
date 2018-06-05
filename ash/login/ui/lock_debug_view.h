@@ -80,8 +80,6 @@ class LockDebugView : public views::View, public views::ButtonListener {
   views::MdTextButton* add_user_ = nullptr;
   views::MdTextButton* remove_user_ = nullptr;
   views::MdTextButton* toggle_auth_ = nullptr;
-  views::MdTextButton* add_kiosk_app_ = nullptr;
-  views::MdTextButton* remove_kiosk_app_ = nullptr;
 
   // Cloumn that contains buttons for debuggon detachable base state.
   views::View* detachable_base_column_ = nullptr;

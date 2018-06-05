@@ -18,9 +18,6 @@
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/login_detachable_base_model.h"
 #include "ash/login/ui/non_accessible_view.h"
-#include "ash/public/interfaces/kiosk_app_info.mojom.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
@@ -43,9 +40,6 @@ constexpr const char kDebugOsVersion[] =
     "Chromium 64.0.3279.0 (Platform 10146.0.0 dev-channel peppy test)";
 constexpr const char kDebugEnterpriseInfo[] = "Asset ID: 1111";
 constexpr const char kDebugBluetoothName[] = "Bluetooth adapter";
-
-constexpr const char kDebugKioskAppId[] = "asdf1234";
-constexpr const char kDebugKioskAppName[] = "Test App Name";
 
 // Additional state for a user that the debug UI needs to reference.
 struct UserMetadata {
@@ -234,21 +228,6 @@ class LockDebugView::DebugDataDispatcherTransformer
     debug_dispatcher_.SetLockScreenNoteState(lock_screen_note_state_);
   }
 
-  void AddKioskApp(ShelfWidget* shelf_widget) {
-    mojom::KioskAppInfoPtr app_info = mojom::KioskAppInfo::New();
-    app_info->app_id = kDebugKioskAppId;
-    app_info->name = base::UTF8ToUTF16(kDebugKioskAppName);
-    kiosk_apps_.push_back(std::move(app_info));
-    shelf_widget->SetLoginKioskApps(mojo::Clone(kiosk_apps_));
-  }
-
-  void RemoveKioskApp(ShelfWidget* shelf_widget) {
-    if (kiosk_apps_.empty())
-      return;
-    kiosk_apps_.pop_back();
-    shelf_widget->SetLoginKioskApps(mojo::Clone(kiosk_apps_));
-  }
-
   void AddLockScreenDevChannelInfo(const std::string& os_version,
                                    const std::string& enterprise_info,
                                    const std::string& bluetooth_name) {
@@ -326,9 +305,6 @@ class LockDebugView::DebugDataDispatcherTransformer
 
   // The current lock screen note action state.
   mojom::TrayActionState lock_screen_note_state_;
-
-  // List of kiosk apps loaded.
-  std::vector<mojom::KioskAppInfoPtr> kiosk_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugDataDispatcherTransformer);
 };
@@ -494,8 +470,6 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
   add_user_ = AddButton("Add user");
   remove_user_ = AddButton("Remove user");
   toggle_auth_ = AddButton("Auth (allowed)");
-  add_kiosk_app_ = AddButton("Add kiosk app");
-  remove_kiosk_app_ = AddButton("Remove kiosk app");
 
   RebuildDebugUserColumn();
   BuildDetachableBaseColumn();
@@ -602,16 +576,6 @@ void LockDebugView::ButtonPressed(views::Button* sender,
         ->login_screen_controller()
         ->set_force_fail_auth_for_debug_overlay(force_fail_auth_);
     return;
-  }
-
-  if (sender == add_kiosk_app_) {
-    debug_data_dispatcher_->AddKioskApp(
-        Shelf::ForWindow(GetWidget()->GetNativeWindow())->shelf_widget());
-  }
-
-  if (sender == remove_kiosk_app_) {
-    debug_data_dispatcher_->RemoveKioskApp(
-        Shelf::ForWindow(GetWidget()->GetNativeWindow())->shelf_widget());
   }
 
   if (sender == toggle_debug_detachable_base_) {
