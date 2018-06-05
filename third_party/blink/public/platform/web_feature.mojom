@@ -1932,6 +1932,8 @@ enum WebFeature {
   kCSSContainLayoutPositionedDescendants = 2463,
   kHTMLFrameSetElementAnonymousNamedGetter = 2464,
   kCanvasConvertToBlob = 2465,
+  kPolymerV1Detected = 2466,
+  kPolymerV2Detected = 2467,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

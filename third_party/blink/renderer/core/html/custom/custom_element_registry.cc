@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
@@ -155,6 +156,12 @@ CustomElementDefinition* CustomElementRegistry::define(
   if (!builder.CheckConstructorNotRegistered())
     return nullptr;
 
+  // Polymer V2/V3 uses Custom Elements V1. <dom-module> is defined in its base
+  // library and is a strong signal that this is a Polymer V2+.
+  if (name == "dom-module") {
+    if (Document* document = owner_->document())
+      UseCounter::Count(*document, WebFeature::kPolymerV2Detected);
+  }
   AtomicString local_name = name;
 
   // Step 7. customized built-in elements definition
