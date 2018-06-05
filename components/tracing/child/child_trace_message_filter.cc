@@ -75,6 +75,7 @@ void ChildTraceMessageFilter::OnHistogramChanged(
               &ChildTraceMessageFilter::SendAbortBackgroundTracingMessage,
               this));
     }
+    return;
   }
 
   ipc_task_runner_->PostTask(
