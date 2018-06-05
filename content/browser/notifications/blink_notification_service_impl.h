@@ -60,6 +60,8 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
   // Called when an error is detected on binding_.
   void OnConnectionError();
 
+  void GetPermissionStatusOnUIThread(GetPermissionStatusCallback callback);
+
   void DisplayNonPersistentNotificationOnUIThread(
       const std::string& notification_id,
       const GURL& origin,
