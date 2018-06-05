@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/sync/engine/model_type_processor.h"
+#include "components/sync/model/model_type_controller_delegate.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
 
 namespace syncer {
@@ -24,7 +25,8 @@ class BookmarkModel;
 
 namespace sync_bookmarks {
 
-class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor {
+class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
+                                   public syncer::ModelTypeControllerDelegate {
  public:
   // |sync_client| must not be nullptr and must outlive this object.
   explicit BookmarkModelTypeProcessor(syncer::SyncClient* sync_client);
@@ -41,13 +43,21 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor {
   void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
                         const syncer::UpdateResponseDataList& updates) override;
 
+  // ModelTypeControllerDelegate implementation.
+  void OnSyncStarting(const syncer::ModelErrorHandler& error_handler,
+                      StartCallback start_callback) override;
+  void DisableSync() override;
+  void GetAllNodesForDebugging(AllNodesCallback callback) override;
+  void GetStatusCountersForDebugging(StatusCountersCallback callback) override;
+  void RecordMemoryUsageHistogram() override;
+
   // Public for testing.
   static std::vector<const syncer::UpdateResponseData*> ReorderUpdatesForTest(
       const syncer::UpdateResponseDataList& updates);
 
   const SyncedBookmarkTracker* GetTrackerForTest() const;
 
-  base::WeakPtr<syncer::ModelTypeProcessor> GetWeakPtr();
+  base::WeakPtr<syncer::ModelTypeControllerDelegate> GetWeakPtr();
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);
@@ -103,6 +113,11 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor {
   // remote changes to.
   bookmarks::BookmarkModel* const bookmark_model_;
 
+  // Reference to the CommitQueue.
+  //
+  // The interface hides the posting of tasks across threads as well as the
+  // CommitQueue's implementation.  Both of these features are
+  // useful in tests.
   std::unique_ptr<syncer::CommitQueue> worker_;
 
   // Keeps the mapping between server ids and bookmarks nodes. It also caches

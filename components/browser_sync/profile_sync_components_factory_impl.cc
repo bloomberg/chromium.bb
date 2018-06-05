@@ -37,7 +37,6 @@
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
-#include "components/sync_bookmarks/bookmark_model_type_controller.h"
 #include "components/sync_sessions/session_data_type_controller.h"
 
 using base::FeatureList;
@@ -148,9 +147,8 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   // disabled.
   if (!disabled_types.Has(syncer::BOOKMARKS)) {
     if (FeatureList::IsEnabled(switches::kSyncUSSBookmarks)) {
-      controllers.push_back(
-          std::make_unique<sync_bookmarks::BookmarkModelTypeController>(
-              sync_client_));
+      controllers.push_back(std::make_unique<ModelTypeController>(
+          syncer::BOOKMARKS, sync_client_, ui_thread_));
     } else {
       controllers.push_back(std::make_unique<BookmarkDataTypeController>(
           error_callback, sync_client_));
