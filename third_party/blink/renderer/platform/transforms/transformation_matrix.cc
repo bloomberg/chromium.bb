@@ -78,8 +78,6 @@ namespace blink {
 typedef double Vector4[4];
 typedef double Vector3[3];
 
-const double kSmallNumber = 1.e-8;
-
 // inverse(original_matrix, inverse_matrix)
 //
 // calculate the inverse of a 4x4 matrix
@@ -225,7 +223,7 @@ static bool Inverse(const TransformationMatrix::Matrix4& matrix,
   // then the inverse matrix is not unique.
   double det = Determinant4x4(matrix);
 
-  if (fabs(det) < kSmallNumber)
+  if (det == 0)
     return false;
 
 #if defined(ARCH_CPU_ARM64)
@@ -1651,15 +1649,7 @@ void TransformationMatrix::MultVecMatrix(double x,
 }
 
 bool TransformationMatrix::IsInvertible() const {
-  if (IsIdentityOrTranslation())
-    return true;
-
-  double det = blink::Determinant4x4(matrix_);
-
-  if (fabs(det) < kSmallNumber)
-    return false;
-
-  return true;
+  return IsIdentityOrTranslation() || blink::Determinant4x4(matrix_) != 0;
 }
 
 TransformationMatrix TransformationMatrix::Inverse() const {

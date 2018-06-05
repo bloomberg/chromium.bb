@@ -285,4 +285,15 @@ TEST(TransformationMatrixTest, ToString) {
             column_major_constructor.ToString(true));
 }
 
+TEST(TransformationMatrix, IsInvertible) {
+  EXPECT_FALSE(
+      TransformationMatrix(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+          .IsInvertible());
+  EXPECT_TRUE(TransformationMatrix().IsInvertible());
+  EXPECT_TRUE(TransformationMatrix().Translate3d(10, 20, 30).IsInvertible());
+  EXPECT_TRUE(TransformationMatrix().Scale(1e-8).IsInvertible());
+  EXPECT_TRUE(TransformationMatrix().Scale3d(1e-8, -1e-8, 1).IsInvertible());
+  EXPECT_FALSE(TransformationMatrix().Scale(0).IsInvertible());
+}
+
 }  // namespace blink
