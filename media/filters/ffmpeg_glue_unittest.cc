@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "media/base/container_names.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_data_util.h"
