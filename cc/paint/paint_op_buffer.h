@@ -593,7 +593,10 @@ class CC_PAINT_EXPORT DrawOvalOp final : public PaintOpWithFlags {
                               const PaintFlags* flags,
                               SkCanvas* canvas,
                               const PlaybackParams& params);
-  bool IsValid() const { return flags.IsValid() && oval.isFinite(); }
+  bool IsValid() const {
+    // Reproduce SkRRect::isValid without converting.
+    return flags.IsValid() && oval.isFinite() && oval.isSorted();
+  }
   static bool AreEqual(const PaintOp* left, const PaintOp* right);
   HAS_SERIALIZATION_FUNCTIONS();
 
