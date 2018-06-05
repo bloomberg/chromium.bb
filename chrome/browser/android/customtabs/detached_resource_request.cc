@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/location.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -127,7 +128,8 @@ void DetachedResourceRequest::OnRedirectCallback(
 void DetachedResourceRequest::OnResponseCallback(
     std::unique_ptr<std::string> response_body) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  bool success = url_loader_->NetError() == net::OK;
+  int net_error = url_loader_->NetError();
+  bool success = net_error == net::OK;
   auto duration = base::TimeTicks::Now() - start_time_;
   if (success) {
     // Max 20 redirects, 21 would be a bug.
@@ -144,6 +146,8 @@ void DetachedResourceRequest::OnResponseCallback(
         "CustomTabs.DetachedResourceRequest.Duration.Failure", duration);
   }
 
+  base::UmaHistogramSparse("CustomTabs.DetachedResourceRequest.FinalStatus",
+                           net_error);
   std::move(cb_).Run(success);
 }
 
