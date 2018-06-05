@@ -4116,15 +4116,20 @@ void Document::UpdateViewportDescription() {
   }
 }
 
+// https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
 String Document::OutgoingReferrer() const {
-  if (GetSecurityOrigin()->IsOpaque()) {
-    // Return |no-referrer|.
-    return String();
-  }
+  // Step 3.1: "If environment's global object is a Window object, then"
 
-  // See http://www.whatwg.org/specs/web-apps/current-work/#fetching-resources
-  // for why we walk the parent chain for srcdoc documents.
+  // Step 3.1.1: "Let document be the associated Document of environment's
+  // global object."
   const Document* referrer_document = this;
+
+  // Step 3.1.2: "If document's origin is an opaque origin, return no referrer."
+  if (GetSecurityOrigin()->IsOpaque())
+    return String();
+
+  // Step 3.1.3: "While document is an iframe srcdoc document, let document be
+  // document's browsing context's browsing context container's node document."
   if (LocalFrame* frame = frame_) {
     while (frame->GetDocument()->IsSrcdocDocument()) {
       // Srcdoc documents must be local within the containing frame.
@@ -4135,6 +4140,8 @@ String Document::OutgoingReferrer() const {
     }
     referrer_document = frame->GetDocument();
   }
+
+  // Step: 3.1.4: "Let referrerSource be document's URL."
   return referrer_document->url_.StrippedForUseAsReferrer();
 }
 

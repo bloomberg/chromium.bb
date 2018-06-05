@@ -208,7 +208,11 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
                              : SecureContextMode::kInsecureContext;
   }
 
+  // Returns a referrer to be used in the "Determine request's Referrer"
+  // algorithm defined in the Referrer Policy spec.
+  // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
   virtual String OutgoingReferrer() const;
+
   // Parses a comma-separated list of referrer policy tokens, and sets
   // the context's referrer policy to the last one that is a valid
   // policy. Logs a message to the console if none of the policy
