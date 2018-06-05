@@ -110,7 +110,8 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
   // If there is enough information to populate the copy output request fields,
   // then process it now. Otherwise, wait until the information becomes
   // available.
-  if (CanCopyFromCompositingSurface())
+  if (CanCopyFromCompositingSurface() &&
+      active_local_surface_id_ == pending_local_surface_id_)
     ProcessCopyOutputRequest(std::move(request));
   else
     pending_first_frame_requests_.push_back(std::move(request));
@@ -121,8 +122,6 @@ void DelegatedFrameHost::ProcessCopyOutputRequest(
   if (!request->has_area())
     request->set_area(gfx::Rect(pending_surface_dip_size_));
 
-  // TODO(vmpstr): Should use pending device scale factor. We need to plumb
-  // it here.
   request->set_area(
       gfx::ScaleToRoundedRect(request->area(), active_device_scale_factor_));
 
