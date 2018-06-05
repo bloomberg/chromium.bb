@@ -198,6 +198,39 @@ good reason (and consider whether [sparse histograms](#When-To-Use-Sparse-
 Histograms) might work better for you in that case--they do not pre- allocate
 their buckets).
 
+### Percentage or Ratio Histograms
+
+You can easily emit a percentage histogram using the
+UMA_HISTOGRAM_PERCENTAGE macro provided in
+[histogram_macros.h](https://cs.chromium.org/chromium/src/base/metrics/histogram_macros.h).
+You can also easily emit any ratio as a linear histogram (for equally
+sized buckets).
+
+For such histograms, you should think carefully about _when_ the values are
+emitted.  Normally, you should emit values periodically at a set time interval,
+such as every 5 minutes.  Conversely, we strongly discourage emitting values
+based on event triggers.  For example, we do not recommend recording a ratio
+at the end of a video playback.
+
+Why?  You typically cannot make decisions based on histograms whose values are
+recorded in response to an event, because such metrics can conflate heavy usage
+with light usage.  It's easier to reason about metrics that route around this
+source of bias.
+
+Many developers have been bitten by this.  For example, it was previously common
+to emit an actions-per-minute ratio whenever Chrome was backgrounded.
+Precisely, these metrics computed the number of uses of a particular action
+during a Chrome session, divided by length of time Chrome had been open.
+Sometimes, the recorded rate was based on a short interaction with Chrome – a
+few seconds or a minute.  Other times, the recorded rate was based on a long
+interaction, tens of minutes or hours.  These two situations are
+indistinguishable in the UMA logs – the recorded values can be identical.
+
+This inability to distinguish these two qualitatively different settings make
+such histograms effectively uninterpretable and not actionable.  Emitting at a
+regular interval avoids the issue.  Each value will represent the same amount of
+time (e.g., one minute of video playback).
+
 ### Local Histograms
 
 Histograms can be added via [Local macros](https://codesearch.chromium.org/chromium/src/base/metrics/histogram_macros_local.h).
