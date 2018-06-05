@@ -18,6 +18,14 @@ std::string DeviceIdentityProvider::GetActiveAccountId() {
   return token_service_->GetRobotAccountId();
 }
 
+bool DeviceIdentityProvider::IsActiveAccountAvailable() {
+  if (GetActiveAccountId().empty() || !token_service_ ||
+      !token_service_->RefreshTokenIsAvailable(GetActiveAccountId()))
+    return false;
+
+  return true;
+}
+
 OAuth2TokenService* DeviceIdentityProvider::GetTokenService() {
   return token_service_;
 }
