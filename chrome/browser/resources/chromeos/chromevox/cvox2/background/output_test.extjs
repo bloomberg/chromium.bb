@@ -122,7 +122,7 @@ TEST_F('OutputE2ETest', 'Links', function() {
         {value: 'role', start: 11, end: 15}
       ]}, o.speechOutputForTest);
       checkBrailleOutput(
-          'Click here lnk Press Search+Space to activate.',
+          'Click here lnk',
           [{value: new Output.NodeSpan(el), start: 0, end: 14}],
           o);
   });
@@ -141,7 +141,7 @@ TEST_F('OutputE2ETest', 'Checkbox', function() {
           ],
           o);
       checkBrailleOutput(
-          'chk ( ) Press Search+Space to toggle.',
+          'chk ( )',
           [{value: new Output.NodeSpan(el), start: 0, end: 7}],
           o);
   });

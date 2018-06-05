@@ -1858,6 +1858,10 @@ Output.prototype = {
     if (!this.enableHints_ || localStorage['useVerboseMode'] != 'true')
       return;
 
+    // Hints are not yet specialized for braille.
+    if (this.formatOptions_.braille)
+      return;
+
     var node = range.start.node;
     if (!node) {
       this.append_(buff, Msgs.getMsg('warning_no_current_range'));
