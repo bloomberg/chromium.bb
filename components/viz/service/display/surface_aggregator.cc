@@ -851,9 +851,11 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
     return gfx::Rect();
 
   contained_surfaces_[surface->surface_id()] = surface->GetActiveFrameIndex();
-  contained_frame_sinks_[surface->surface_id().frame_sink_id()] =
-      std::max(surface->surface_id().local_surface_id(),
-               contained_frame_sinks_[surface->surface_id().frame_sink_id()]);
+  LocalSurfaceId& local_surface_id =
+      contained_frame_sinks_[surface->surface_id().frame_sink_id()];
+  local_surface_id =
+      std::max(surface->surface_id().local_surface_id(), local_surface_id);
+
   if (!surface->HasActiveFrame())
     return gfx::Rect();
 
@@ -1156,9 +1158,11 @@ CompositorFrame SurfaceAggregator::Aggregate(
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   DCHECK(surface);
   contained_surfaces_[surface_id] = surface->GetActiveFrameIndex();
-  contained_frame_sinks_[surface_id.frame_sink_id()] =
-      std::max(surface_id.local_surface_id(),
-               contained_frame_sinks_[surface_id.frame_sink_id()]);
+
+  LocalSurfaceId& local_surface_id =
+      contained_frame_sinks_[surface_id.frame_sink_id()];
+  local_surface_id =
+      std::max(surface->surface_id().local_surface_id(), local_surface_id);
 
   if (!surface->HasActiveFrame())
     return {};
