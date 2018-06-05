@@ -9,6 +9,8 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
+#include <string>
 
 #include "base/containers/id_map.h"
 #include "base/process/kill.h"
@@ -218,8 +220,14 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // This will never return ChildProcessHost::kInvalidUniqueID.
   virtual int GetID() const = 0;
 
-  // Returns true iff channel_ has been set to non-nullptr. Use this for
-  // checking if there is connection or not. Virtual for mocking out for tests.
+  // Returns true iff the Init() was called and the process hasn't died yet.
+  //
+  // Note that even if HasConnection() returns true, then (for a short duration
+  // after calling Init()) the process might not be fully spawned *yet* - e.g.
+  // IsReady() might return false and GetProcess() might still return an invalid
+  // process with a null handle.
+  //
+  // TODO(lukasza): Rename to IsInitializedAndNotDead().
   virtual bool HasConnection() const = 0;
 
   // Returns the renderer channel.

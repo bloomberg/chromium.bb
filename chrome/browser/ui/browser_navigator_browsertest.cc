@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/browser_navigator_browsertest.h"
 
+#include <memory>
+
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -151,9 +153,12 @@ Browser* BrowserNavigatorTest::CreateEmptyBrowserForApp(Profile* profile) {
 
 std::unique_ptr<WebContents> BrowserNavigatorTest::CreateWebContents(
     bool initialize_renderer) {
-  content::WebContents::CreateParams create_params(browser()->profile());
-  create_params.initialize_renderer = initialize_renderer;
-  content::WebContents* base_web_contents =
+  WebContents::CreateParams create_params(browser()->profile());
+  create_params.desired_renderer_state =
+      initialize_renderer
+          ? WebContents::CreateParams::kInitializeAndWarmupRendererProcess
+          : WebContents::CreateParams::kOkayToHaveRendererProcess;
+  WebContents* base_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   if (base_web_contents) {
     create_params.initial_size =
@@ -1795,7 +1800,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, ReuseRVHWithWebUI) {
   content::NavigationController* controller =
       content::Source<content::NavigationController>(windowed_observer.source())
           .ptr();
-  content::WebContents* popup = controller->GetWebContents();
+  WebContents* popup = controller->GetWebContents();
   ASSERT_TRUE(popup);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   content::RenderViewHost* webui_rvh = popup->GetRenderViewHost();
@@ -1858,8 +1863,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MainFrameNavigationUIData) {
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SubFrameNavigationUIData) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   // Load page with iframe.
   const GURL url1 = embedded_test_server()->GetURL("/iframe.html");

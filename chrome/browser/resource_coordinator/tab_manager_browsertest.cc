@@ -882,6 +882,49 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerWasDiscarded) {
   EXPECT_TRUE(discarded_result);
 }
 
+IN_PROC_BROWSER_TEST_F(TabManagerTest, DiscardedTabHasNoProcess) {
+  GURL test_page(ui_test_utils::GetTestUrl(
+      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("simple.html"))));
+  ui_test_utils::NavigateToURL(browser(), test_page);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // The renderer process should be alive at this point.
+  content::RenderProcessHost* process =
+      web_contents->GetMainFrame()->GetProcess();
+  ASSERT_TRUE(process);
+  EXPECT_TRUE(process->HasConnection());
+  EXPECT_NE(base::kNullProcessHandle, process->GetProcess().Handle());
+  int renderer_id = process->GetID();
+
+  // Discard the tab. This simulates a tab discard.
+  TabLifecycleUnitExternal::FromWebContents(web_contents)->DiscardTab();
+  content::WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(new_web_contents, web_contents);
+  web_contents = new_web_contents;
+  content::RenderProcessHost* new_process =
+      web_contents->GetMainFrame()->GetProcess();
+  EXPECT_NE(new_process, process);
+  EXPECT_NE(new_process->GetID(), renderer_id);
+  process = new_process;
+  SimulateFreezeSignal(web_contents);
+
+  // The renderer process should be dead after a discard.
+  EXPECT_EQ(process, web_contents->GetMainFrame()->GetProcess());
+  EXPECT_FALSE(process->HasConnection());
+  EXPECT_EQ(base::kNullProcessHandle, process->GetProcess().Handle());
+
+  // Here we simulate re-focussing the tab causing reload with navigation,
+  // the navigation will reload the tab.
+  ui_test_utils::NavigateToURL(browser(), test_page);
+
+  // Reload should mean that the renderer process is alive now.
+  EXPECT_EQ(process, web_contents->GetMainFrame()->GetProcess());
+  EXPECT_TRUE(process->HasConnection());
+  EXPECT_NE(base::kNullProcessHandle, process->GetProcess().Handle());
+}
+
 IN_PROC_BROWSER_TEST_F(TabManagerTest,
                        TabManagerWasDiscardedCrossSiteSubFrame) {
   const char kDiscardedStateJS[] =

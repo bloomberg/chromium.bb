@@ -169,13 +169,50 @@ class WebContents : public PageNavigator,
     // WebContents construction should take this into account.
     bool renderer_initiated_creation;
 
-    // True if the WebContents should create its renderer process and main
-    // RenderFrame before the first navigation. This is useful to reduce
-    // the latency of the first navigation in cases where it might
-    // not happen right away.
+    // Used to specify how far WebContents::Create can initialize a renderer
+    // process.
+    //
+    // This is useful in two scenarios:
+    // - Conserving resources - e.g. tab discarding and session restore do not
+    //   want to use an actual renderer process before the WebContents are
+    //   loaded or reloaded.  This can be accomplished via kNoRendererProcess.
+    // - Avoiding the latency of the first navigation
+    //   - kInitializeAndWarmupRendererProcess is most aggressive in avoiding
+    //     the latency, but may be incompatible with scenarios that require
+    //     manipulating the freshly created WebContents prior to initializing
+    //     renderer-side objects (e.g. in scenarios like
+    //     WebContentsImpl::CreateNewWindow which needs to copy the
+    //     SessionStorageNamespace)
+    //   - kOkayToHaveRendererProcess is the default latency-conserving mode.
+    //     In this mode a spare, pre-spawned RenderProcessHost may be claimed
+    //     by the newly created WebContents, but no renderer-side objects will
+    //     be initialized from within WebContents::Create method.
+    //
     // Note that the pre-created renderer process may not be used if the first
     // navigation requires a dedicated or privileged process, such as a WebUI.
-    bool initialize_renderer;
+    // This can be avoided by ensuring that |site_instance| matches the first
+    // navigation's destination.
+    enum RendererInitializationState {
+      // Creation of WebContents should not spawn a new OS process and should
+      // not reuse a RenderProcessHost that might be associated with an existing
+      // OS process (as in the case of SpareRenderProcessHostManager).
+      kNoRendererProcess,
+
+      // Created WebContents may or may not be associated with an actual OS
+      // process.
+      kOkayToHaveRendererProcess,
+
+      // Ensures that the created WebContents are backed by an OS process which
+      // has an initialized RenderView.
+      //
+      // TODO(lukasza): https://crbug.com/848366: Remove
+      // kInitializeAndWarmupRendererProcess value - warming up the renderer by
+      // initializing the RenderView is redundant with the warm-up that can be
+      // achieved by either 1) warming up the spare renderer before creating
+      // WebContents and/or 2) speculative RenderFrameHost used internally
+      // during a navigation.
+      kInitializeAndWarmupRendererProcess,
+    } desired_renderer_state;
 
     // Sandboxing flags set on the new WebContents.
     blink::WebSandboxFlags starting_sandbox_flags;

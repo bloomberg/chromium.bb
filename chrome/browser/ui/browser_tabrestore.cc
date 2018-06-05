@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/browser_tabrestore.h"
 
+#include <memory>
+#include <utility>
+
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -60,6 +63,8 @@ std::unique_ptr<WebContents> CreateRestoredTab(
       browser->profile(),
       tab_util::GetSiteInstanceForNewTab(browser->profile(), restore_url));
   create_params.initially_hidden = initially_hidden;
+  create_params.desired_renderer_state =
+      WebContents::CreateParams::kNoRendererProcess;
   WebContents* base_web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   if (base_web_contents) {
@@ -67,8 +72,8 @@ std::unique_ptr<WebContents> CreateRestoredTab(
         base_web_contents->GetContainerBounds().size();
   }
   std::unique_ptr<WebContents> web_contents =
-      content::WebContents::CreateWithSessionStorage(
-          create_params, session_storage_namespace_map);
+      WebContents::CreateWithSessionStorage(create_params,
+                                            session_storage_namespace_map);
   if (from_session_restore)
     SessionRestore::OnWillRestoreTab(web_contents.get());
   extensions::TabHelper::CreateForWebContents(web_contents.get());
@@ -88,7 +93,7 @@ std::unique_ptr<WebContents> CreateRestoredTab(
 
 }  // namespace
 
-content::WebContents* AddRestoredTab(
+WebContents* AddRestoredTab(
     Browser* browser,
     const std::vector<SerializedNavigationEntry>& navigations,
     int tab_index,
@@ -139,7 +144,7 @@ content::WebContents* AddRestoredTab(
   return raw_web_contents;
 }
 
-content::WebContents* ReplaceRestoredTab(
+WebContents* ReplaceRestoredTab(
     Browser* browser,
     const std::vector<SerializedNavigationEntry>& navigations,
     int selected_navigation,

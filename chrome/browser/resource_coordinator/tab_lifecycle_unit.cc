@@ -4,6 +4,9 @@
 
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -415,6 +418,8 @@ void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
   // becomes VISIBLE.
   create_params.initially_hidden =
       old_contents->GetVisibility() == content::Visibility::HIDDEN;
+  create_params.desired_renderer_state =
+      content::WebContents::CreateParams::kNoRendererProcess;
   std::unique_ptr<content::WebContents> null_contents =
       content::WebContents::Create(create_params);
   content::WebContents* raw_null_contents = null_contents.get();

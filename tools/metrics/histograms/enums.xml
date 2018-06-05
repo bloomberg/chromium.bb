@@ -42591,8 +42591,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="NoSparePresent"/>
   <int value="1" label="MismatchedBrowserContext"/>
   <int value="2" label="MismatchedStoragePartition"/>
-  <int value="3" label="RefusedByEmbedder"/>
+  <int value="3" label="RefusedByEmbedder">
+    Refused via BrowserContentClient::ShouldUseSpareRenderProcessHost (typically
+    because of incompatible renderer flavour like NTP or extension - see
+    https://crbug.com/834324).
+  </int>
   <int value="4" label="SpareTaken"/>
+  <int value="5" label="RefusedBySiteInstance">
+    Refused via SiteInstanceImpl::CanAssociateWithAlreadyInitializedProcessHost
+    (typically because of tab discarding or session restore which may desire to
+    have WebContents without an associated renderer process - see
+    https://crbug.com/840409).
+  </int>
 </enum>
 
 <enum name="SpareWebContentsStatus">
