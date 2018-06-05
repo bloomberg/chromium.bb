@@ -30,8 +30,16 @@
     enterPictureInPictureInternal();
   }
 
+  function exitPictureInPicture() {
+    document.exitPictureInPicture();
+  }
+
   function isInPictureInPicture() {
     window.domAutomationController.send(document.pictureInPictureElement == video);
+  }
+
+  function isPaused() {
+    window.domAutomationController.send(video.paused);
   }
 
   function enterPictureInPictureInternal() {

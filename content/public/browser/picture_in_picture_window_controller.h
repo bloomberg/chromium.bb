@@ -37,7 +37,7 @@ class PictureInPictureWindowController {
   // Returns the size of the window in pixels.
   virtual gfx::Size Show() = 0;
 
-  virtual void Close() = 0;
+  virtual void Close(bool should_pause_video) = 0;
   virtual void EmbedSurface(const viz::SurfaceId& surface_id,
                             const gfx::Size& natural_size) = 0;
   virtual OverlayWindow* GetWindowForTesting() = 0;

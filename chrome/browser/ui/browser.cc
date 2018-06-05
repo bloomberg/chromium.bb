@@ -1420,7 +1420,7 @@ gfx::Size Browser::EnterPictureInPicture(const viz::SurfaceId& surface_id,
   // If there was already a controller, close the existing window before
   // creating the next one.
   if (pip_window_controller_)
-    pip_window_controller_->Close();
+    pip_window_controller_->Close(false /* should_pause_video */);
 
   // Create or update |pip_window_controller_| for the current WebContents.
   if (!pip_window_controller_ ||
@@ -1437,7 +1437,7 @@ gfx::Size Browser::EnterPictureInPicture(const viz::SurfaceId& surface_id,
 
 void Browser::ExitPictureInPicture() {
   if (pip_window_controller_)
-    pip_window_controller_->Close();
+    pip_window_controller_->Close(false /* should_pause_video */);
 }
 
 bool Browser::IsMouseLocked() const {
