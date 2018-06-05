@@ -294,9 +294,15 @@ TEST(TimeTicks, FromQPCValue) {
     double epsilon = nextafter(expected_microseconds_since_origin, INFINITY) -
                      expected_microseconds_since_origin;
     // Epsilon must be at least 1.0 because converted_microseconds_since_origin
-    // comes from an integral value and the rounding is not perfect.
-    if (epsilon < 1.0)
-      epsilon = 1.0;
+    // comes from an integral value, and expected_microseconds_since_origin is
+    // a double that is expected to be up to 0.999 larger. In addition, due to
+    // multiple roundings in the double calculation the actual error can be
+    // slightly larger than 1.0, even when the converted value is perfect. This
+    // epsilon value was chosen because it is slightly larger than the error
+    // seen in a test failure caused by the double rounding.
+    const double min_epsilon = 1.002;
+    if (epsilon < min_epsilon)
+      epsilon = min_epsilon;
     EXPECT_NEAR(expected_microseconds_since_origin,
                 converted_microseconds_since_origin, epsilon)
         << "ticks=" << ticks << ", to be converted via logic path: "
