@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
@@ -164,7 +163,7 @@ void IOSSSLErrorHandler::RecordCaptivePortalState(web::WebState* web_state) {
   }
   tab_helper->detector()->DetectCaptivePortal(
       GURL(CaptivePortalDetector::kDefaultURL),
-      base::BindBlockArc(^(const CaptivePortalDetector::Results& results) {
+      base::BindRepeating(^(const CaptivePortalDetector::Results& results) {
         IOSSSLErrorHandler::LogCaptivePortalResult(results.result);
       }),
       NO_TRAFFIC_ANNOTATION_YET);

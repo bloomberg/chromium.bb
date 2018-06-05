@@ -12,9 +12,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
@@ -362,9 +362,9 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     }
 
     __weak PasswordController* weakSelf = self;
-    auto callback = base::BindBlockArc(^bool(const base::DictionaryValue& JSON,
-                                             const GURL& originURL,
-                                             bool userIsInteracting) {
+    auto callback = base::BindRepeating(^bool(const base::DictionaryValue& JSON,
+                                              const GURL& originURL,
+                                              bool userIsInteracting) {
       // |originURL| and |isInteracting| aren't used.
       return [weakSelf handleScriptCommand:JSON];
     });
@@ -798,7 +798,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   __weak PasswordController* weakSelf = self;
   notifyAutoSigninTimer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kNotifyAutoSigninDuration),
-      base::BindBlockArc(^{
+      base::BindRepeating(^{
         [weakSelf hideAutosigninNotification];
       }));
 }

@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/memory/memory_debugger_manager.h"
 
-#import "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -28,7 +28,7 @@
 
     // Set up the callback for when the pref to show/hide the debugger changes.
     __weak MemoryDebuggerManager* weakSelf = self;
-    base::Closure callback = base::BindBlockArc(^{
+    base::RepeatingClosure callback = base::BindRepeating(^{
       MemoryDebuggerManager* strongSelf = weakSelf;
       if (strongSelf) {
         [self onShowMemoryDebuggingToolsChange];

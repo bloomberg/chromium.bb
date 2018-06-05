@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/stl_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/net_log/chrome_net_log.h"
@@ -60,7 +59,7 @@ void OffTheRecordChromeBrowserStateIOData::Handle::DoomIncognitoCache() {
   scoped_refptr<net::URLRequestContextGetter> getter =
       main_request_context_getter_;
   web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
+      web::WebThread::IO, FROM_HERE, base::BindOnce(^{
         DCHECK_CURRENTLY_ON(web::WebThread::IO);
         net::HttpCache* cache = getter->GetURLRequestContext()
                                     ->http_transaction_factory()

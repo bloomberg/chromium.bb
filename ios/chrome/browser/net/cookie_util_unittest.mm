@@ -6,7 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -106,7 +106,7 @@ TEST_F(CookieUtilTest, CreateCookieStoreInIOS11) {
   __block NSArray<NSHTTPCookie*>* result_cookies = nil;
   __block bool callback_called = false;
   ns_cookie_store->GetCookiesForURLAsync(
-      test_url, base::BindBlockArc(^(NSArray<NSHTTPCookie*>* cookies) {
+      test_url, base::BindOnce(^(NSArray<NSHTTPCookie*>* cookies) {
         callback_called = true;
         result_cookies = [cookies copy];
       }));
@@ -129,7 +129,7 @@ TEST_F(CookieUtilTest, CreateCookieStoreInIOS11) {
 
   // Clear cookies that was set in the test.
   __block bool cookies_cleared = false;
-  cookie_store->DeleteAllAsync(base::BindBlockArc(^(unsigned int) {
+  cookie_store->DeleteAllAsync(base::BindOnce(^(unsigned int) {
     cookies_cleared = true;
   }));
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForCookiesTimeout, ^bool {

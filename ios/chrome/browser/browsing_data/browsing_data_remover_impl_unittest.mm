@@ -6,9 +6,9 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
@@ -126,11 +126,11 @@ TEST_F(BrowsingDataRemoverImplTest, InvokesObservers) {
 TEST_F(BrowsingDataRemoverImplTest, SerializeRemovals) {
   __block int remaining_calls = 2;
   browsing_data_remover_.Remove(browsing_data::TimePeriod::ALL_TIME,
-                                kRemoveMask, base::BindBlockArc(^{
+                                kRemoveMask, base::BindOnce(^{
                                   --remaining_calls;
                                 }));
   browsing_data_remover_.Remove(browsing_data::TimePeriod::ALL_TIME,
-                                kRemoveMask, base::BindBlockArc(^{
+                                kRemoveMask, base::BindOnce(^{
                                   --remaining_calls;
                                 }));
 
@@ -147,7 +147,7 @@ TEST_F(BrowsingDataRemoverImplTest, SerializeRemovals) {
 TEST_F(BrowsingDataRemoverImplTest, PerformAfterBrowserStateDestruction) {
   __block int remaining_calls = 1;
   browsing_data_remover_.Remove(browsing_data::TimePeriod::ALL_TIME,
-                                kRemoveMask, base::BindBlockArc(^{
+                                kRemoveMask, base::BindOnce(^{
                                   --remaining_calls;
                                 }));
 
