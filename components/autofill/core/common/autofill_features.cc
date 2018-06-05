@@ -71,6 +71,12 @@ const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs{
     "AutofillSendExperimentIdsInPaymentsRPCs",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether we show warnings in the Dev console for misused autocomplete
+// types.
+const base::Feature kAutofillShowAutocompleteConsoleWarnings{
+    "AutofillShowAutocompleteConsoleWarnings",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls attaching the autofill type predictions to their respective
 // element in the DOM.
 const base::Feature kAutofillShowTypePredictions{

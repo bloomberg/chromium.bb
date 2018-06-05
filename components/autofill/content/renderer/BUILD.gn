@@ -88,12 +88,15 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "form_cache_unittest.cc",
     "renderer_save_password_progress_logger_unittest.cc",
   ]
 
   deps = [
     ":test_support",
+    "//base/test:test_support",
     "//components/autofill/content/common:mojo_interfaces",
+    "//components/autofill/core/common",
     "//testing/gtest",
   ]
 }
