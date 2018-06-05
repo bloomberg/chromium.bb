@@ -369,7 +369,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   bool CanNavigateWithoutFramebusting(const Frame&, String& error_reason);
 
-  bool ComputeIsAdSubFrame() const;
+  void SetIsAdSubframeIfNecessary();
 
   void PropagateInertToChildFrames();
 

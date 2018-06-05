@@ -921,8 +921,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
   idleness_detector_ = new IdlenessDetector(this);
   inspector_task_runner_->InitIsolate(V8PerIsolateData::MainThreadIsolate());
 
-  if (ComputeIsAdSubFrame())
-    SetIsAdSubframe();
+  SetIsAdSubframeIfNecessary();
 }
 
 FrameScheduler* LocalFrame::GetFrameScheduler() {
@@ -1180,18 +1179,20 @@ bool LocalFrame::CanNavigateWithoutFramebusting(const Frame& target_frame,
   return false;
 }
 
-bool LocalFrame::ComputeIsAdSubFrame() const {
+void LocalFrame::SetIsAdSubframeIfNecessary() {
   DCHECK(ad_tracker_);
   Frame* parent = Tree().Parent();
   if (!parent)
-    return false;
+    return;
 
   // If the parent frame is local, directly determine if it's an ad. If it's
   // remote, then it is up to the embedder that moved this frame out-of-
   // process to set this frame as an ad via SetIsAdSubframe before commit.
   bool parent_is_ad =
       parent->IsLocalFrame() && ToLocalFrame(parent)->IsAdSubframe();
-  return parent_is_ad || ad_tracker_->IsAdScriptInStack();
+
+  if (parent_is_ad || ad_tracker_->IsAdScriptInStack())
+    SetIsAdSubframe();
 }
 
 service_manager::InterfaceProvider& LocalFrame::GetInterfaceProvider() {
