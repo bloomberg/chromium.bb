@@ -42,6 +42,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -1350,7 +1351,10 @@ public class LocationBarLayout
                         return getRootView().findViewById(R.id.toolbar);
                     }
                 };
-        mSuggestionList = new OmniboxSuggestionsList(getContext(), embedder);
+        // TODO(tedchoc): Investigate lazily building the suggestion list off of the UI thread.
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            mSuggestionList = new OmniboxSuggestionsList(getContext(), embedder);
+        }
 
         // Ensure the results container is initialized and add the suggestion list to it.
         initOmniboxResultsContainer();
