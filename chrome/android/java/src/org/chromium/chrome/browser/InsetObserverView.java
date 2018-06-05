@@ -11,13 +11,30 @@ import android.os.Build;
 import android.view.View;
 import android.view.WindowInsets;
 
+import org.chromium.base.ObserverList;
+
 /**
  * The purpose of this view is to store the system window insets (OSK, status bar) for
  * later use.
  */
 public class InsetObserverView extends View {
+    private final Rect mWindowInsets;
+    private final ObserverList<WindowInsetObserver> mObservers;
 
-    protected final Rect mWindowInsets;
+    /**
+     * Allows observing changes to the window insets from Android system UI.
+     */
+    public interface WindowInsetObserver {
+        /**
+         * Triggered when the window insets have changed.
+         *
+         * @param left The left inset.
+         * @param top The top inset.
+         * @param right The right inset (but it feels so wrong).
+         * @param bottom The bottom inset.
+         */
+        void onInsetChanged(int left, int top, int right, int bottom);
+    }
 
     /**
      * Constructs a new {@link InsetObserverView} for the appropriate Android version.
@@ -40,6 +57,7 @@ public class InsetObserverView extends View {
         super(context);
         setVisibility(INVISIBLE);
         mWindowInsets = new Rect();
+        mObservers = new ObserverList<>();
     }
 
     /**
@@ -70,14 +88,49 @@ public class InsetObserverView extends View {
         return mWindowInsets.bottom;
     }
 
+    /**
+     * Add an observer to be notified when the window insets have changed.
+     */
+    public void addObserver(WindowInsetObserver observer) {
+        mObservers.addObserver(observer);
+    }
+
+    /**
+     * Remove an observer of window inset changes.
+     */
+    public void removeObserver(WindowInsetObserver observer) {
+        mObservers.removeObserver(observer);
+    }
+
     @SuppressWarnings("deprecation")
     @Override
     protected boolean fitSystemWindows(Rect insets) {
         // For Lollipop and above, onApplyWindowInsets will set the insets.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            mWindowInsets.set(insets.left, insets.top, insets.right, insets.bottom);
+            onInsetChanged(insets.left, insets.top, insets.right, insets.bottom);
         }
         return false;
+    }
+
+    /**
+     * Updates the window insets and notifies all observers if the values did indeed change.
+     *
+     * @param left The updated left inset.
+     * @param top The updated right inset.
+     * @param right The updated right inset.
+     * @param bottom The updated bottom inset.
+     */
+    protected void onInsetChanged(int left, int top, int right, int bottom) {
+        if (mWindowInsets.left == left && mWindowInsets.top == top && mWindowInsets.right == right
+                && mWindowInsets.bottom == bottom) {
+            return;
+        }
+
+        mWindowInsets.set(left, top, right, bottom);
+
+        for (WindowInsetObserver observer : mObservers) {
+            observer.onInsetChanged(left, top, right, bottom);
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -92,11 +145,8 @@ public class InsetObserverView extends View {
 
         @Override
         public WindowInsets onApplyWindowInsets(WindowInsets insets) {
-            mWindowInsets.set(
-                    insets.getSystemWindowInsetLeft(),
-                    insets.getSystemWindowInsetTop(),
-                    insets.getSystemWindowInsetRight(),
-                    insets.getSystemWindowInsetBottom());
+            onInsetChanged(insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(),
+                    insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
             return insets;
         }
     }
