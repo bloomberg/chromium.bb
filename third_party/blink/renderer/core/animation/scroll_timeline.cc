@@ -69,7 +69,7 @@ ScrollTimeline::ScrollTimeline(Element* scroll_source,
 double ScrollTimeline::currentTime(bool& is_null) {
   // 1. If scrollSource does not currently have a CSS layout box, or if its
   // layout box is not a scroll container, return an unresolved time value.
-  LayoutBox* layout_box = scroll_source_->GetLayoutBox();
+  LayoutBox* layout_box = ResolvedScrollSource()->GetLayoutBox();
   if (!layout_box || !layout_box->HasOverflowClip()) {
     is_null = false;
     return std::numeric_limits<double>::quiet_NaN();
@@ -147,8 +147,16 @@ void ScrollTimeline::timeRange(DoubleOrScrollTimelineAutoKeyword& result) {
   result.SetDouble(time_range_);
 }
 
+Node* ScrollTimeline::ResolvedScrollSource() const {
+  // When in quirks mode we need the style to be clean, so we don't use
+  // |ScrollingElementNoLayout|.
+  if (scroll_source_ == scroll_source_->GetDocument().scrollingElement())
+    return &scroll_source_->GetDocument();
+  return scroll_source_;
+}
+
 void ScrollTimeline::AttachAnimation() {
-  GetActiveScrollTimelineSet().insert(scroll_source_);
+  GetActiveScrollTimelineSet().insert(ResolvedScrollSource());
   scroll_source_->GetDocument()
       .GetLayoutView()
       ->Compositor()
@@ -156,7 +164,7 @@ void ScrollTimeline::AttachAnimation() {
 }
 
 void ScrollTimeline::DetachAnimation() {
-  GetActiveScrollTimelineSet().erase(scroll_source_);
+  GetActiveScrollTimelineSet().erase(ResolvedScrollSource());
   auto* layout_view = scroll_source_->GetDocument().GetLayoutView();
   if (layout_view && layout_view->Compositor()) {
     layout_view->Compositor()->SetNeedsCompositingUpdate(

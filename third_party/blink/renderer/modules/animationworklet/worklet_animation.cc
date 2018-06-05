@@ -102,17 +102,17 @@ AnimationTimeline* ConvertAnimationTimeline(
   return &document.Timeline();
 }
 
-bool CheckElementComposited(const Element& target) {
+bool CheckElementComposited(const Node& target) {
   return target.GetLayoutObject() &&
          target.GetLayoutObject()->GetCompositingState() ==
              kPaintsIntoOwnBacking;
 }
 
-CompositorElementId GetCompositorScrollElementId(const Element& element) {
-  DCHECK(element.GetLayoutObject());
-  DCHECK(element.GetLayoutObject()->HasLayer());
+CompositorElementId GetCompositorScrollElementId(const Node& node) {
+  DCHECK(node.GetLayoutObject());
+  DCHECK(node.GetLayoutObject()->HasLayer());
   return CompositorElementIdFromUniqueObjectId(
-      element.GetLayoutObject()->UniqueId(),
+      node.GetLayoutObject()->UniqueId(),
       CompositorElementIdNamespace::kScroll);
 }
 
@@ -149,7 +149,7 @@ std::unique_ptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
     return nullptr;
 
   ScrollTimeline* scroll_timeline = ToScrollTimeline(timeline);
-  Element* scroll_source = scroll_timeline->scrollSource();
+  Node* scroll_source = scroll_timeline->ResolvedScrollSource();
   CompositorElementId element_id = GetCompositorScrollElementId(*scroll_source);
 
   DoubleOrScrollTimelineAutoKeyword time_range;
@@ -380,7 +380,8 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
   }
 
   if (timeline_->IsScrollTimeline() &&
-      !CheckElementComposited(*ToScrollTimeline(timeline_)->scrollSource())) {
+      !CheckElementComposited(
+          *ToScrollTimeline(timeline_)->ResolvedScrollSource())) {
     if (failure_message)
       *failure_message = "The ScrollTimeline scrollSource is not composited.";
     return false;
