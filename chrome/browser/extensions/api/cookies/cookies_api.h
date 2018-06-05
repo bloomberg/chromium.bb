@@ -60,7 +60,7 @@ class CookiesEventRouter : public content::NotificationObserver {
 };
 
 // Implements the cookies.get() extension function.
-class CookiesGetFunction : public ChromeAsyncExtensionFunction {
+class CookiesGetFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("cookies.get", COOKIES_GET)
 
@@ -70,7 +70,7 @@ class CookiesGetFunction : public ChromeAsyncExtensionFunction {
   ~CookiesGetFunction() override;
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   void GetCookieCallback(const net::CookieList& cookie_list);
@@ -81,7 +81,7 @@ class CookiesGetFunction : public ChromeAsyncExtensionFunction {
 };
 
 // Implements the cookies.getAll() extension function.
-class CookiesGetAllFunction : public ChromeAsyncExtensionFunction {
+class CookiesGetAllFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("cookies.getAll", COOKIES_GETALL)
 
@@ -91,7 +91,7 @@ class CookiesGetAllFunction : public ChromeAsyncExtensionFunction {
   ~CookiesGetAllFunction() override;
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   void GetAllCookiesCallback(const net::CookieList& cookie_list);
@@ -102,7 +102,7 @@ class CookiesGetAllFunction : public ChromeAsyncExtensionFunction {
 };
 
 // Implements the cookies.set() extension function.
-class CookiesSetFunction : public ChromeAsyncExtensionFunction {
+class CookiesSetFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("cookies.set", COOKIES_SET)
 
@@ -110,7 +110,7 @@ class CookiesSetFunction : public ChromeAsyncExtensionFunction {
 
  protected:
   ~CookiesSetFunction() override;
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   void SetCanonicalCookieCallback(bool set_cookie_);
@@ -124,7 +124,7 @@ class CookiesSetFunction : public ChromeAsyncExtensionFunction {
 };
 
 // Implements the cookies.remove() extension function.
-class CookiesRemoveFunction : public ChromeAsyncExtensionFunction {
+class CookiesRemoveFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("cookies.remove", COOKIES_REMOVE)
 
@@ -134,7 +134,7 @@ class CookiesRemoveFunction : public ChromeAsyncExtensionFunction {
   ~CookiesRemoveFunction() override;
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   void RemoveCookieCallback(uint32_t /* num_deleted */);
