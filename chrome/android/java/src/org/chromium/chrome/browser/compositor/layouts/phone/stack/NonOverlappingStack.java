@@ -262,13 +262,7 @@ public class NonOverlappingStack extends Stack {
     @Override
     protected void resetAllScrollOffset() {
         if (mTabList == null) return;
-
-        // We want to focus on the tab before the currently-selected one, since we assume that's
-        // the one the user is most likely to switch to.
-        int index = mTabList.index();
-        if (index != 0) index -= 1;
-
-        updateScrollOffsets(index);
+        updateScrollOffsets(mTabList.index());
     }
 
     // NonOverlappingStack uses linear scrolling, so screenToScroll() and scrollToScreen() are both
