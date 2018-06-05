@@ -81,7 +81,7 @@ namespace autofill {
 namespace {
 
 static const char kDataURIPrefix[] = "data:text/html;charset=utf-8,";
-static const char kTestFormString[] =
+static const char kTestShippingFormString[] =
     "<form action=\"http://www.example.com/\" method=\"POST\">"
     "<label for=\"firstname\">First name:</label>"
     " <input type=\"text\" id=\"firstname\"><br>"
@@ -109,6 +109,36 @@ static const char kTestFormString[] =
     " </select><br>"
     "<label for=\"phone\">Phone number:</label>"
     " <input type=\"text\" id=\"phone\"><br>"
+    "</form>";
+
+static const char kTestBillingFormString[] =
+    "<form action=\"http://www.example.com/\" method=\"POST\">"
+    "<label for=\"firstname_2\">First name:</label>"
+    " <input type=\"text\" id=\"firstname_2\"><br>"
+    "<label for=\"lastname_2\">Last name:</label>"
+    " <input type=\"text\" id=\"lastname_2\"><br>"
+    "<label for=\"address1_2\">Address line 1:</label>"
+    " <input type=\"text\" id=\"address1_2\"><br>"
+    "<label for=\"address2_2\">Address line 2:</label>"
+    " <input type=\"text\" id=\"address2_2\"><br>"
+    "<label for=\"city_2\">City:</label>"
+    " <input type=\"text\" id=\"city_2\"><br>"
+    "<label for=\"state_2\">State:</label>"
+    " <select id=\"state_2\">"
+    " <option value=\"\" selected=\"yes\">--</option>"
+    " <option value=\"CA\">California</option>"
+    " <option value=\"TX\">Texas</option>"
+    " </select><br>"
+    "<label for=\"zip_2\">ZIP code:</label>"
+    " <input type=\"text\" id=\"zip_2\"><br>"
+    "<label for=\"country_2\">Country:</label>"
+    " <select id=\"country_2\">"
+    " <option value=\"\" selected=\"yes\">--</option>"
+    " <option value=\"CA\">Canada</option>"
+    " <option value=\"US\">United States</option>"
+    " </select><br>"
+    "<label for=\"phone_2\">Phone number:</label>"
+    " <input type=\"text\" id=\"phone_2\"><br>"
     "</form>";
 
 // TODO(crbug.com/609861): Remove the autocomplete attribute from the textarea
@@ -308,7 +338,16 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
                          "red.swingline@initech.com", "Initech",
                          "4120 Freidrich Lane", "Basement", "Austin", "Texas",
                          "78744", "US", "15125551234");
+    profile.set_use_count(9999999);  // We want this to be the first profile.
+    AddTestProfile(browser(), profile);
+  }
 
+  void CreateSecondTestProfile() {
+    AutofillProfile profile;
+    test::SetProfileInfo(&profile, "Alice", "M.", "Wonderland",
+                         "alice@wonderland.com", "Magic", "333 Cat Queen St.",
+                         "Rooftop", "Liliput", "CA", "10003", "US",
+                         "15166900292");
     AddTestProfile(browser(), profile);
   }
 
@@ -335,6 +374,18 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
     EXPECT_EQ(expected_value, value) << "for field " << field_name;
   }
 
+  void AssertFieldValue(const std::string& field_name,
+                        const std::string& expected_value) {
+    std::string value;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        GetWebContents(),
+        "window.domAutomationController.send("
+        "    document.getElementById('" +
+            field_name + "').value);",
+        &value));
+    ASSERT_EQ(expected_value, value) << "for field " << field_name;
+  }
+
   void GetFieldBackgroundColor(const std::string& field_name,
                                std::string* color) {
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
@@ -350,7 +401,8 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
     ASSERT_TRUE(fetcher);
     net::Error error = success ? net::OK : net::ERR_FAILED;
 
-    std::string script = " var google = {};"
+    std::string script =
+        " var google = {};"
         "google.translate = (function() {"
         "  return {"
         "    TranslateService: function() {"
@@ -367,7 +419,7 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
         "        translatePage : function(originalLang, targetLang,"
         "                                 onTranslateProgress) {"
         "          document.getElementsByTagName(\"body\")[0].innerHTML = '" +
-        std::string(kTestFormString) +
+        std::string(kTestShippingFormString) +
         "              ';"
         "          onTranslateProgress(100, true, false);"
         "        }"
@@ -470,8 +522,6 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
 
   void FillElementWithValue(const std::string& element_name,
                             const std::string& value) {
-    FocusFieldByName(element_name);
-
     for (base::char16 character : value) {
       ui::DomKey dom_key = ui::DomKey::FromCharacter(character);
       const ui::PrintableCodeEntry* code_entry = std::find_if(
@@ -487,24 +537,14 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
                                 ui::DomCodeToUsLayoutKeyboardCode(dom_code),
                                 false, shift, false, false);
     }
+    AssertFieldValue(element_name, value);
   }
 
   void DeleteElementValue(const std::string& element_name) {
-    std::string value;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-        GetWebContents(),
-        "window.domAutomationController.send("
-        "    document.getElementById('" +
-            element_name + "').value);",
-        &value));
-    FocusFieldByName(element_name);
-    ui::DomKey key = ui::DomKey::BACKSPACE;
-    ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
-    ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
-    int value_size = value.size();
-    while (value_size--)
-      content::SimulateKeyPress(GetWebContents(), key, code, key_code, false,
-                                false, false, false);
+    ASSERT_TRUE(content::ExecuteScript(
+        GetRenderViewHost(),
+        "document.getElementById('" + element_name + "').value = '';"));
+    AssertFieldValue(element_name, "");
   }
 
   void SendKeyToPageAndWait(ui::DomKey key) {
@@ -612,6 +652,15 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
     ExpectFilledTestForm();
   }
 
+  void TryClearForm() {
+    SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+    SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+    SendKeyToDataListPopup(ui::DomKey::ARROW_DOWN);  // clear
+    SendKeyToDataListPopup(ui::DomKey::ENTER);
+
+    ExpectClearedForm();
+  }
+
   void TriggerFormFill(const std::string& field_name) {
     FocusFieldByName(field_name);
 
@@ -668,23 +717,73 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, BasicFormFill) {
   CreateTestProfile();
 
   // Load the test page.
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
-      GURL(std::string(kDataURIPrefix) + kTestFormString)));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString)));
 
   // Invoke Autofill.
   TryBasicFormFill();
 }
+
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, BasicClear) {
+  CreateTestProfile();
+
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString)));
+
+  TryBasicFormFill();
+
+  TryClearForm();
+}
+
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, ClearTwoSection) {
+  CreateTestProfile();
+
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString +
+                      kTestBillingFormString)));
+
+  // Fill first section.
+  TryBasicFormFill();
+
+  // Fill second section.
+  FocusFieldByName("firstname_2");
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+
+  // Clear second section.
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToDataListPopup(ui::DomKey::ARROW_DOWN);  // clear
+  SendKeyToDataListPopup(ui::DomKey::ENTER);
+
+  ExpectFieldValue("firstname_2", "");
+  ExpectFieldValue("lastname_2", "");
+  ExpectFieldValue("address1_2", "");
+  ExpectFieldValue("address2_2", "");
+  ExpectFieldValue("city_2", "");
+  ExpectFieldValue("state_2", "");
+  ExpectFieldValue("zip_2", "");
+  ExpectFieldValue("country_2", "");
+  ExpectFieldValue("phone_2", "");
+
+  // First section should still be filled.
+  ExpectFilledTestForm();
+}
+
 // Test that autofill doesn't refill a field initially modified by the user.
 IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, ModifyFieldAndFill) {
   CreateTestProfile();
 
   // Load the test page.
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
-      browser(), GURL(std::string(kDataURIPrefix) + kTestFormString)));
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString)));
 
   // Modify a field.
+  FocusFieldByName("city");
   FillElementWithValue("city", "Montreal");
-  ExpectFieldValue("city", "Montreal");
 
   // Fill
   FocusFirstNameField();
@@ -718,20 +817,18 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, PrefillFormAndFill) {
 
   // Load the test page and prefill it with the above script.
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
-      browser(),
-      GURL(std::string(kDataURIPrefix) + kTestFormString + kPrefillScript)));
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString +
+                      kPrefillScript)));
 
   CreateTestProfile();
 
   // We need to delete the prefilled value and then trigger the autofill.
+  FocusFirstNameField();
   DeleteElementValue("firstname");
-  ExpectFieldValue("firstname", "");
 
-  // Fill
   SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
   SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
   SendKeyToPopupAndWait(ui::DomKey::ENTER);
-
   ExpectFilledTestForm();
 }
 
@@ -742,14 +839,9 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
 
   // Load the test page.
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
-      browser(), GURL(std::string(kDataURIPrefix) + kTestFormString)));
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString)));
 
-  // Basic Fill
-  FocusFirstNameField();
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
-  ExpectFilledTestForm();
+  TryBasicFormFill();
 
   // Change the last name.
   FocusFieldByName("lastname");
@@ -808,15 +900,9 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
 
   // Load the test page.
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
-      browser(), GURL(std::string(kDataURIPrefix) + kTestFormString)));
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString)));
 
-  // Basic fill.
-  FocusFirstNameField();
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
-
-  ExpectFilledTestForm();
+  TryBasicFormFill();
 
   // Change the last name.
   FocusFieldByName("lastname");
@@ -840,13 +926,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
 
   ExpectFilledTestForm();
 
-  // Clear everything by selecting 'clear' on the second field.
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToDataListPopup(ui::DomKey::ARROW_DOWN);  // clear
-  SendKeyToDataListPopup(ui::DomKey::ENTER);
-
-  ExpectClearedForm();
+  TryClearForm();
 }
 
 // Test that multiple autofillings work.
@@ -856,14 +936,9 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
 
   // Load the test page.
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
-      browser(), GURL(std::string(kDataURIPrefix) + kTestFormString)));
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString)));
 
-  // Basic fill.
-  FocusFirstNameField();
-  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToPopupAndWait(ui::DomKey::ENTER);
-  ExpectFilledTestForm();
+  TryBasicFormFill();
 
   // Change the last name.
   FocusFieldByName("lastname");
@@ -872,6 +947,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
 
   ExpectFieldValue("firstname", "Milton");
   ExpectFieldValue("lastname", "Wadda");  // Modified by the user.
+  ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("address2", "Basement");
   ExpectFieldValue("city", "Austin");
   ExpectFieldValue("state", "TX");
@@ -888,12 +964,45 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
 
   // Clear everything by selecting 'clear' on the first field.
   FocusFirstNameField();
+  TryClearForm();
+}
+
+// Test that multiple autofillings work.
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
+                       FillThenFillSomeWithAnotherProfileThenClear) {
+  CreateTestProfile();
+  CreateSecondTestProfile();
+
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString)));
+
+  TryBasicFormFill();
+
+  // Delete some fields.
+  FocusFieldByName("city");
+  DeleteElementValue("city");
+  FocusFieldByName("address1");
+  DeleteElementValue("address1");
+
   SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
   SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
-  SendKeyToDataListPopup(ui::DomKey::ARROW_DOWN);  // clear
-  SendKeyToDataListPopup(ui::DomKey::ENTER);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);  // second profile
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
 
-  ExpectClearedForm();
+  ExpectFieldValue("firstname", "Milton");
+  ExpectFieldValue("lastname", "Waddams");
+  ExpectFieldValue("address1", "333 Cat Queen St.");  // second profile
+  ExpectFieldValue("address2", "Basement");
+  ExpectFieldValue("city", "Liliput");  // second profile
+  ExpectFieldValue("state", "TX");
+  ExpectFieldValue("zip", "78744");
+  ExpectFieldValue("country", "US");
+  ExpectFieldValue("phone", "15125551234");
+
+  // Clear everything by selecting 'clear' on the first field.
+  FocusFirstNameField();
+  TryClearForm();
 }
 
 // Test that form filling can be initiated by pressing the down arrow.
@@ -901,8 +1010,8 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, AutofillViaDownArrow) {
   CreateTestProfile();
 
   // Load the test page.
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
-      GURL(std::string(kDataURIPrefix) + kTestFormString)));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString)));
 
   // Focus a fillable field.
   FocusFirstNameField();
@@ -926,8 +1035,8 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, AutofillSelectViaTab) {
   CreateTestProfile();
 
   // Load the test page.
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
-      GURL(std::string(kDataURIPrefix) + kTestFormString)));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString)));
 
   // Focus a fillable field.
   FocusFirstNameField();
@@ -952,7 +1061,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, AutofillViaClick) {
 
   // Load the test page.
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
-      browser(), GURL(std::string(kDataURIPrefix) + kTestFormString)));
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString)));
   // Focus a fillable field.
   ASSERT_NO_FATAL_FAILURE(FocusFirstNameField());
 
@@ -1005,7 +1114,7 @@ IN_PROC_BROWSER_TEST_P(AutofillSingleClickTest, Click) {
 
   // Load the test page.
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
-      browser(), GURL(std::string(kDataURIPrefix) + kTestFormString)));
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString)));
 
   // If AutofillSingleClick is NOT enabled, then the first time we click on the
   // first name field, nothing should happen.
@@ -1041,7 +1150,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, DontAutofillForOutsideClick) {
   // Load the test page.
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browser(),
-      GURL(std::string(kDataURIPrefix) + kTestFormString +
+      GURL(std::string(kDataURIPrefix) + kTestShippingFormString +
            "<button disabled id='disabled-button'>Cant click this</button>")));
 
   ASSERT_NO_FATAL_FAILURE(FocusFirstNameField());
@@ -1063,8 +1172,8 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, OnDeleteValueAfterAutofill) {
   CreateTestProfile();
 
   // Load the test page.
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
-      GURL(std::string(kDataURIPrefix) + kTestFormString)));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString)));
 
   // Invoke and accept the Autofill popup and verify the form was filled.
   FocusFirstNameField();
@@ -1153,8 +1262,9 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, OnInputAfterAutofill) {
       "</script>";
 
   // Load the test page.
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
-      GURL(std::string(kDataURIPrefix) + kTestFormString + kOnInputScript)));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString +
+                      kOnInputScript)));
 
   // Invoke Autofill.
   FocusFirstNameField();
@@ -1226,8 +1336,9 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, OnChangeAfterAutofill) {
       "</script>";
 
   // Load the test page.
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
-      GURL(std::string(kDataURIPrefix) + kTestFormString + kOnChangeScript)));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString +
+                      kOnChangeScript)));
 
   // Invoke Autofill.
   FocusFirstNameField();
@@ -1295,9 +1406,9 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, InputFiresBeforeChange) {
       "</script>";
 
   // Load the test page.
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
-      GURL(std::string(kDataURIPrefix) + kTestFormString +
-           kInputFiresBeforeChangeScript)));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString +
+                      kInputFiresBeforeChangeScript)));
 
   // Invoke and accept the Autofill popup and verify the form was filled.
   FocusFirstNameField();
@@ -1359,7 +1470,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
 
   // Load the test page.
   const std::string kURL =
-      std::string(kDataURIPrefix) + kTestFormString +
+      std::string(kDataURIPrefix) + kTestShippingFormString +
       "<script>"
       "var mainForm = document.forms[0];"
       "mainForm.id = 'mainForm';"
@@ -1560,8 +1671,8 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, AutofillAfterReload) {
   CreateTestProfile();
 
   // Load the test page.
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
-      GURL(std::string(kDataURIPrefix) + kTestFormString)));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString)));
 
   // Reload the page.
   content::WebContents* web_contents = GetWebContents();
@@ -1962,8 +2073,8 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
   CreateTestProfile();
 
   // Load the test page.
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
-      GURL(std::string(kDataURIPrefix) + kTestFormString)));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestShippingFormString)));
 
   // Invoke Autofill: Start filling the first name field with "M" and wait for
   // the popup to be shown.
