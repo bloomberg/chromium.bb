@@ -26,6 +26,7 @@ enum class KeepAliveOrigin {
 
   // c/b/chromeos
   LOGIN_DISPLAY_HOST_WEBUI,
+  PIN_MIGRATION,
 
   // c/b/notifications
   NOTIFICATION,

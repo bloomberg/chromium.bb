@@ -37,8 +37,11 @@ class PinStorageCryptohome {
 
   void IsPinSetInCryptohome(const AccountId& account_id,
                             BoolCallback result) const;
+  // Sets a new PIN. If |pin_salt| is empty, |pin| will be hashed and should be
+  // plain-text. If |pin_salt| contains a value, |pin| will not be hashed.
   void SetPin(const UserContext& user_context,
               const std::string& pin,
+              const base::Optional<std::string>& pin_salt,
               BoolCallback did_set);
   void RemovePin(const UserContext& user_context, BoolCallback did_remove);
   void CanAuthenticate(const AccountId& account_id, BoolCallback result) const;

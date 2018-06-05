@@ -16,12 +16,7 @@ class PrefRegistrySimple;
 class PrefService;
 
 namespace chromeos {
-
-class PinStoragePrefsTestApi;
-
 namespace quick_unlock {
-
-class QuickUnlockStorage;
 
 class PinStoragePrefs {
  public:
@@ -56,14 +51,11 @@ class PinStoragePrefs {
   // This always returns false if IsPinAuthenticationAvailable returns false.
   bool TryAuthenticatePin(const Key& key);
 
- private:
-  friend class chromeos::PinStoragePrefsTestApi;
-  friend class QuickUnlockStorage;
-
   // Return the stored salt/secret. This is fetched directly from pref_service_.
   std::string PinSalt() const;
   std::string PinSecret() const;
 
+ private:
   PrefService* pref_service_;
   int unlock_attempt_count_ = 0;
 

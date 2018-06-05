@@ -73,6 +73,8 @@ void StubAuthenticator::LoginAsPublicSession(const UserContext& user_context) {
   logged_in_user_context.SetIsUsingOAuth(false);
   logged_in_user_context.SetUserIDHash(
       logged_in_user_context.GetAccountId().GetUserEmail() + kUserIdHashSuffix);
+  logged_in_user_context.GetKey()->Transform(
+      Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, "some-salt");
   consumer_->OnAuthSuccess(logged_in_user_context);
 }
 
@@ -84,6 +86,8 @@ void StubAuthenticator::LoginAsKioskAccount(
   user_context.SetIsUsingOAuth(false);
   user_context.SetUserIDHash(
       expected_user_context_.GetAccountId().GetUserEmail() + kUserIdHashSuffix);
+  user_context.GetKey()->Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
+                                   "some-salt");
   consumer_->OnAuthSuccess(user_context);
 }
 
@@ -94,6 +98,8 @@ void StubAuthenticator::LoginAsArcKioskAccount(
   user_context.SetIsUsingOAuth(false);
   user_context.SetUserIDHash(
       expected_user_context_.GetAccountId().GetUserEmail() + kUserIdHashSuffix);
+  user_context.GetKey()->Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
+                                   "some-salt");
   consumer_->OnAuthSuccess(user_context);
 }
 
@@ -103,6 +109,8 @@ void StubAuthenticator::OnAuthSuccess() {
   UserContext user_context(expected_user_context_);
   user_context.SetUserIDHash(
       expected_user_context_.GetAccountId().GetUserEmail() + kUserIdHashSuffix);
+  user_context.GetKey()->Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
+                                   "some-salt");
   consumer_->OnAuthSuccess(user_context);
 }
 
