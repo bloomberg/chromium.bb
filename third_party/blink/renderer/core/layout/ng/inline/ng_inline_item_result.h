@@ -55,8 +55,8 @@ struct CORE_EXPORT NGInlineItemResult {
   NGBoxStrut padding;
 
   // Borders/padding for open tags.
-  LayoutUnit borders_paddings_block_start;
-  LayoutUnit borders_paddings_block_end;
+  LayoutUnit borders_paddings_line_over;
+  LayoutUnit borders_paddings_line_under;
 
   // Has start/end edge for open/close tags.
   bool has_edge = false;

@@ -284,9 +284,6 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
 
   NGBfcOffset line_bfc_offset(line_info->LineBfcOffset());
 
-  // TODO(kojii): Implement flipped line (vertical-lr). In this case, line_top
-  // and block_start do not match.
-
   // Up until this point, children are placed so that the dominant baseline is
   // at 0. Move them to the final baseline position, and set the logical top of
   // the line box to the line top.

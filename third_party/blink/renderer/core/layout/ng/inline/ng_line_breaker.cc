@@ -654,9 +654,14 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item,
   }
 
   DCHECK(item.Style());
+  const ComputedStyle& style = *item.Style();
   item_result->margins =
-      ComputeMarginsForVisualContainer(constraint_space_, *item.Style());
-  item_result->padding = ComputePadding(constraint_space_, *item.Style());
+      ComputeMarginsForVisualContainer(constraint_space_, style);
+  item_result->padding = ComputePadding(constraint_space_, style);
+  if (UNLIKELY(style.IsFlippedLinesWritingMode())) {
+    item_result->margins = item_result->margins.ToFlippedBlock();
+    item_result->padding = item_result->padding.ToFlippedBlock();
+  }
   item_result->inline_size += item_result->margins.InlineSum();
 
   line_.position += item_result->inline_size;
@@ -781,16 +786,22 @@ bool NGLineBreaker::ComputeOpenTagResult(
       (style.HasBorder() || style.HasPadding() ||
        (style.HasMargin() && item_result->has_edge))) {
     NGBoxStrut borders = ComputeBorders(constraint_space, style);
-    NGBoxStrut paddings = ComputePadding(constraint_space, style);
-    item_result->padding = paddings;
-    item_result->borders_paddings_block_start =
-        borders.block_start + paddings.block_start;
-    item_result->borders_paddings_block_end =
-        borders.block_end + paddings.block_end;
+    item_result->padding = ComputePadding(constraint_space, style);
+    if (UNLIKELY(style.IsFlippedLinesWritingMode())) {
+      borders = borders.ToFlippedBlock();
+      item_result->padding = item_result->padding.ToFlippedBlock();
+    }
+    item_result->borders_paddings_line_over =
+        borders.block_start + item_result->padding.block_start;
+    item_result->borders_paddings_line_under =
+        borders.block_end + item_result->padding.block_end;
     if (item_result->has_edge) {
       item_result->margins = ComputeMarginsForSelf(constraint_space, style);
+      if (UNLIKELY(style.IsFlippedLinesWritingMode()))
+        item_result->margins = item_result->margins.ToFlippedBlock();
       item_result->inline_size = item_result->margins.inline_start +
-                                 borders.inline_start + paddings.inline_start;
+                                 borders.inline_start +
+                                 item_result->padding.inline_start;
       return true;
     }
   }

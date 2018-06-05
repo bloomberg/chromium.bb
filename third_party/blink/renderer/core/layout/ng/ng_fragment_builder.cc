@@ -253,6 +253,19 @@ EBreakBetween NGFragmentBuilder::JoinedBreakBetweenValue(
 }
 
 scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
+  DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
+  return ToBoxFragment(GetWritingMode());
+}
+
+scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToInlineBoxFragment() {
+  // The logical coordinate for inline box uses line-relative writing-mode, not
+  // flow-relative.
+  DCHECK_EQ(BoxType(), NGPhysicalFragment::kInlineBox);
+  return ToBoxFragment(ToLineWritingMode(GetWritingMode()));
+}
+
+scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment(
+    WritingMode block_or_line_writing_mode) {
   DCHECK_EQ(offsets_.size(), children_.size());
 
   NGPhysicalSize physical_size = Size().ConvertToPhysical(GetWritingMode());
@@ -261,7 +274,7 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   for (size_t i = 0; i < children_.size(); ++i) {
     NGPhysicalFragment* child = children_[i].get();
     child->SetOffset(offsets_[i].ConvertToPhysical(
-        GetWritingMode(), Direction(), physical_size, child->Size()));
+        block_or_line_writing_mode, Direction(), physical_size, child->Size()));
     child->PropagateContentsInkOverflow(&contents_ink_overflow);
   }
 

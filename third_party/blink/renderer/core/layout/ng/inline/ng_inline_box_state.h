@@ -63,8 +63,8 @@ struct NGInlineBoxState {
   LayoutUnit margin_inline_end;
   LayoutUnit margin_border_padding_inline_start;
   LayoutUnit margin_border_padding_inline_end;
-  LayoutUnit border_padding_block_start;
-  LayoutUnit border_padding_block_end;
+  LayoutUnit border_padding_line_over;
+  LayoutUnit border_padding_line_under;
 
   Vector<NGPendingPositions> pending_descendants;
   bool include_used_fonts = false;
