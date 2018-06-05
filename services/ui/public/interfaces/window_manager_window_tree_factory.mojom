@@ -4,7 +4,6 @@
 
 module ui.mojom;
 
-import "services/ui/public/interfaces/window_manager_constants.mojom";
 import "services/ui/public/interfaces/window_tree.mojom";
 
 // Interface used by the WindowManager to obtain a WindowTree. Server may be

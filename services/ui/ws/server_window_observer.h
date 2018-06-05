@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
-#include "services/ui/public/interfaces/mus_constants.mojom.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/base/ui_base_types.h"
 
 namespace gfx {

@@ -8,7 +8,7 @@
 #include "ash/wm/top_level_window_factory.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
-#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/mus/property_utils.h"
 #include "ui/aura/window.h"
 

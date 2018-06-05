@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_MUS_WINDOW_MANAGER_CONSTANTS_CONVERTERS_H_
 #define UI_VIEWS_MUS_WINDOW_MANAGER_CONSTANTS_CONVERTERS_H_
 
-#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/widget/widget.h"
 

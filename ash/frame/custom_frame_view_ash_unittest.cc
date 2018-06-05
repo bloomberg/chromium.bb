@@ -26,7 +26,7 @@
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/wm_event.h"
 #include "base/containers/flat_set.h"
-#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"

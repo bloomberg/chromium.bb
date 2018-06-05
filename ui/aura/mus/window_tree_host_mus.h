@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window_tree_host_platform.h"
 

@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "services/ui/public/interfaces/mus_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 
 namespace viz {

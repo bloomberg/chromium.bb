@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 
 namespace ui {
 namespace ws {
