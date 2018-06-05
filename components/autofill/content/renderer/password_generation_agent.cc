@@ -181,7 +181,6 @@ PasswordGenerationAgent::PasswordGenerationAgent(
     service_manager::BinderRegistry* registry)
     : content::RenderFrameObserver(render_frame),
       password_is_generated_(false),
-      is_manually_triggered_(false),
       password_edited_(false),
       generation_popup_shown_(false),
       editing_popup_shown_(false),
@@ -540,7 +539,6 @@ bool PasswordGenerationAgent::SetUpUserTriggeredGeneration() {
                   .Utf8())));
   generation_form_data_.reset(new AccountCreationFormData(
       make_linked_ptr(password_form.release()), password_elements));
-  is_manually_triggered_ = true;
   return true;
 }
 
@@ -577,7 +575,7 @@ bool PasswordGenerationAgent::FocusedNodeHasChanged(
   // the password suggestion.
   if (!element->IsReadOnly() && element->IsEnabled() &&
       element->Value().length() <= kMaximumOfferSize) {
-    ShowGenerationPopup();
+    AutomaticGenerationStatusChanged(true);
     return true;
   }
 
@@ -596,7 +594,7 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
     }
 
     // Offer generation again.
-    ShowGenerationPopup();
+    AutomaticGenerationStatusChanged(true);
   } else if (password_is_generated_) {
     password_edited_ = true;
     // Mirror edits to any confirmation password fields.
@@ -613,22 +611,47 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
     // Password isn't generated and there are fewer than kMaximumOfferSize
     // characters typed, so keep offering the password. Note this function
     // will just keep the previous popup if one is already showing.
-    ShowGenerationPopup();
+    AutomaticGenerationStatusChanged(true);
   }
 
   return true;
 }
 
-void PasswordGenerationAgent::ShowGenerationPopup() {
+void PasswordGenerationAgent::AutomaticGenerationStatusChanged(bool available) {
+  if (available) {
+    if (!render_frame() || generation_element_.IsNull())
+      return;
+    LogMessage(
+        Logger::STRING_GENERATION_RENDERER_AUTOMATIC_GENERATION_AVAILABLE);
+    autofill::password_generation::PasswordGenerationUIData
+        password_generation_ui_data(
+            render_frame()->GetRenderView()->ElementBoundsInWindow(
+                generation_element_),
+            generation_element_.MaxLength(),
+            generation_element_.NameForAutofill().Utf16(),
+            *generation_form_data_->form);
+    GetPasswordManagerClient()->AutomaticGenerationStatusChanged(
+        true, password_generation_ui_data);
+    generation_popup_shown_ = true;
+  } else {
+    GetPasswordManagerClient()->AutomaticGenerationStatusChanged(false,
+                                                                 base::nullopt);
+  }
+}
+
+void PasswordGenerationAgent::ShowManualGenerationPopup() {
   if (!render_frame() || generation_element_.IsNull())
     return;
-  LogMessage(Logger::STRING_GENERATION_RENDERER_SHOW_GENERATION_POPUP);
-  GetPasswordManagerClient()->ShowPasswordGenerationPopup(
-      render_frame()->GetRenderView()->ElementBoundsInWindow(
-          generation_element_),
-      generation_element_.MaxLength(),
-      generation_element_.NameForAutofill().Utf16(), is_manually_triggered_,
-      *generation_form_data_->form);
+  LogMessage(Logger::STRING_GENERATION_RENDERER_SHOW_MANUAL_GENERATION_POPUP);
+  autofill::password_generation::PasswordGenerationUIData
+      password_generation_ui_data(
+          render_frame()->GetRenderView()->ElementBoundsInWindow(
+              generation_element_),
+          generation_element_.MaxLength(),
+          generation_element_.NameForAutofill().Utf16(),
+          *generation_form_data_->form);
+  GetPasswordManagerClient()->ShowManualPasswordGenerationPopup(
+      password_generation_ui_data);
   generation_popup_shown_ = true;
 }
 
@@ -666,7 +689,7 @@ void PasswordGenerationAgent::PasswordNoLongerGenerated() {
 
 void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
   if (SetUpUserTriggeredGeneration())
-    ShowGenerationPopup();
+    ShowManualGenerationPopup();
 }
 
 void PasswordGenerationAgent::UserSelectedManualGenerationOption() {
@@ -674,7 +697,7 @@ void PasswordGenerationAgent::UserSelectedManualGenerationOption() {
     last_focused_password_element_.SetAutofillValue(blink::WebString());
     last_focused_password_element_.SetAutofillState(
         WebAutofillState::kNotFilled);
-    ShowGenerationPopup();
+    ShowManualGenerationPopup();
   }
 }
 

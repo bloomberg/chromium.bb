@@ -639,9 +639,9 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     }
   }
 
-  bool GetCalledShowPasswordGenerationPopup() {
+  bool GetCalledAutomaticGenerationStatusChangedTrue() {
     fake_pw_client_.Flush();
-    return fake_pw_client_.called_show_pw_generation_popup();
+    return fake_pw_client_.called_automatic_generation_status_changed_true();
   }
 
   void BindPasswordManagerDriver(mojo::ScopedMessagePipeHandle handle) {
@@ -2413,7 +2413,7 @@ TEST_F(PasswordAutofillAgentTest, PasswordGenerationSupersedesAutofill) {
   SimulateElementClick("new_password");
   EXPECT_FALSE(GetCalledShowPasswordSuggestions());
   EXPECT_FALSE(GetCalledShowManualFallbackSuggestion());
-  EXPECT_TRUE(GetCalledShowPasswordGenerationPopup());
+  EXPECT_TRUE(GetCalledAutomaticGenerationStatusChangedTrue());
 }
 
 // Tests that a password change form is properly filled with the username and

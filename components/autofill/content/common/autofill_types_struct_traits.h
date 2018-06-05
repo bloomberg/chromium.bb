@@ -21,8 +21,10 @@
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/submission_source.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "url/origin.h"
 
 namespace mojo {
@@ -418,6 +420,34 @@ struct StructTraits<autofill::mojom::PasswordFormGenerationDataDataView,
 
   static bool Read(autofill::mojom::PasswordFormGenerationDataDataView data,
                    autofill::PasswordFormGenerationData* out);
+};
+
+template <>
+struct StructTraits<autofill::mojom::PasswordGenerationUIDataDataView,
+                    autofill::password_generation::PasswordGenerationUIData> {
+  static const gfx::RectF& bounds(
+      const autofill::password_generation::PasswordGenerationUIData& r) {
+    return r.bounds;
+  }
+
+  static int max_length(
+      const autofill::password_generation::PasswordGenerationUIData& r) {
+    return r.max_length;
+  }
+
+  static const base::string16& generation_element(
+      const autofill::password_generation::PasswordGenerationUIData& r) {
+    return r.generation_element;
+  }
+
+  static const autofill::PasswordForm& password_form(
+      const autofill::password_generation::PasswordGenerationUIData& r) {
+    return r.password_form;
+  }
+
+  static bool Read(
+      autofill::mojom::PasswordGenerationUIDataDataView data,
+      autofill::password_generation::PasswordGenerationUIData* out);
 };
 
 template <>

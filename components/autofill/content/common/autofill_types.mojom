@@ -7,6 +7,7 @@ module autofill.mojom;
 import "mojo/public/mojom/base/text_direction.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
@@ -187,6 +188,14 @@ struct PasswordFormGenerationData {
   uint32 field_signature;
   bool has_confirmation_field;
   uint32 confirmation_field_signature;
+};
+
+// autofill::password_generation::PasswordGenerationUIData
+struct PasswordGenerationUIData {
+  gfx.mojom.RectF bounds;
+  int32 max_length;
+  mojo_base.mojom.String16 generation_element;
+  PasswordForm password_form;
 };
 
 // autofill::ValueElementPair

@@ -15,4 +15,5 @@ interface TypeTraitsTest {
   PassPasswordFormFillData(PasswordFormFillData s) => (PasswordFormFillData passed);
   PassFormsPredictionsMap(FormsPredictionsMap s) => (FormsPredictionsMap passed);
   PassPasswordFormGenerationData(PasswordFormGenerationData s) => (PasswordFormGenerationData passed);
+  PassPasswordGenerationUIData(PasswordGenerationUIData s) => (PasswordGenerationUIData passed);
 };
