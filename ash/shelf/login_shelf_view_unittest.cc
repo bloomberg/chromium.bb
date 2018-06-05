@@ -12,6 +12,7 @@
 #include "ash/lock_screen_action/test_lock_screen_action_background_controller.h"
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/login_test_base.h"
+#include "ash/public/interfaces/kiosk_app_info.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
@@ -254,6 +255,20 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterLockScreenNoteState) {
   NotifyLockScreenNoteStateChanged(mojom::TrayActionState::kNotAvailable);
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
+}
+
+TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterKioskAppsLoaded) {
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
+
+  std::vector<mojom::KioskAppInfoPtr> kiosk_apps;
+  kiosk_apps.push_back(mojom::KioskAppInfo::New());
+  kiosk_apps.push_back(mojom::KioskAppInfo::New());
+  login_shelf_view_->SetKioskApps(std::move(kiosk_apps));
+  EXPECT_TRUE(
+      ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kApps}));
+
+  login_shelf_view_->SetKioskApps(std::vector<mojom::KioskAppInfoPtr>());
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 }
 
 TEST_F(LoginShelfViewTest, ClickShutdownButton) {

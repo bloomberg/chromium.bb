@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/interfaces/kiosk_app_info.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shelf/shelf_background_animator.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
@@ -97,6 +98,9 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // Returns the ApplicationDragAndDropHost for this shelf.
   app_list::ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
+
+  // Updates the list of kiosk apps for the login shelf view.
+  void SetLoginKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps);
 
   void set_default_last_focusable_child(bool default_last_focusable_child);
 
