@@ -11,9 +11,11 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter.ViewBinder;
+import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 
 /** Responsible for binding the {@link ChipsModel} to {@link ViewHolder}s in the RecyclerView. */
-class ChipsViewBinder implements ViewBinder<ChipsModel, ChipsViewBinder.ChipsViewHolder> {
+class ChipsViewBinder
+        implements ViewBinder<SimpleListObservable<Chip>, ChipsViewBinder.ChipsViewHolder> {
     /** The {@link ViewHolder} responsible for reflecting a {@link Chip} to a {@link ChipView}. */
     public static class ChipsViewHolder extends ViewHolder {
         /**
@@ -51,7 +53,8 @@ class ChipsViewBinder implements ViewBinder<ChipsModel, ChipsViewBinder.ChipsVie
     }
 
     @Override
-    public void onBindViewHolder(ChipsModel model, ChipsViewHolder holder, int position) {
-        holder.bind(model.getItemAt(position));
+    public void onBindViewHolder(
+            SimpleListObservable<Chip> model, ChipsViewHolder holder, int position) {
+        holder.bind(model.get(position));
     }
 }
