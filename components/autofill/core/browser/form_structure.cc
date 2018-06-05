@@ -306,6 +306,28 @@ bool AllTypesCaptured(const FormStructure& form,
   return true;
 }
 
+// Encode password attributes |vote| into |upload|.
+void EncodePasswordAttributesVote(
+    const std::pair<PasswordAttribute, bool>& vote,
+    AutofillUploadContents* upload) {
+  switch (vote.first) {
+    case PasswordAttribute::kHasLowercaseLetter:
+      upload->set_password_has_lowercase_letter(vote.second);
+      break;
+    case PasswordAttribute::kHasUppercaseLetter:
+      upload->set_password_has_uppercase_letter(vote.second);
+      break;
+    case PasswordAttribute::kHasNumeric:
+      upload->set_password_has_numeric(vote.second);
+      break;
+    case PasswordAttribute::kHasSpecialSymbol:
+      upload->set_password_has_special_symbol(vote.second);
+      break;
+    case PasswordAttribute::kPasswordAttributesCount:
+      NOTREACHED();
+  }
+}
+
 }  // namespace
 
 FormStructure::FormStructure(const FormData& form)
@@ -423,6 +445,8 @@ bool FormStructure::EncodeUploadRequest(
   upload->set_autofill_used(form_was_autofilled);
   upload->set_data_present(EncodeFieldTypes(available_field_types));
   upload->set_passwords_revealed(passwords_were_revealed_);
+  if (password_attributes_vote_)
+    EncodePasswordAttributesVote(*password_attributes_vote_, upload);
 
   if (IsAutofillFieldMetadataEnabled()) {
     upload->set_action_signature(StrToHash64Bit(target_url_.host()));

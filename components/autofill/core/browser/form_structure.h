@@ -15,6 +15,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -37,6 +38,15 @@ class UkmRecorder;
 }
 
 namespace autofill {
+
+// Password attributes (whether a password has special symbols, numeric, etc.)
+enum class PasswordAttribute {
+  kHasLowercaseLetter,
+  kHasUppercaseLetter,
+  kHasNumeric,
+  kHasSpecialSymbol,
+  kPasswordAttributesCount
+};
 
 struct FormData;
 struct FormDataPredictions;
@@ -249,6 +259,17 @@ class FormStructure {
     passwords_were_revealed_ = passwords_were_revealed;
   }
 
+  void set_password_attributes_vote(
+      const std::pair<PasswordAttribute, bool>& vote) {
+    password_attributes_vote_ = vote;
+  }
+#if defined(UNIT_TEST)
+  base::Optional<std::pair<PasswordAttribute, bool>>
+  get_password_attributes_vote_for_testing() const {
+    return password_attributes_vote_;
+  }
+#endif
+
   bool operator==(const FormData& form) const;
   bool operator!=(const FormData& form) const;
 
@@ -382,6 +403,10 @@ class FormStructure {
   // True iff the form is a password form and the user has seen the password
   // value before accepting the prompt to save. Used for crowdsourcing.
   bool passwords_were_revealed_;
+
+  // The vote about password attributes (e.g. whether the password has a numeric
+  // character).
+  base::Optional<std::pair<PasswordAttribute, bool>> password_attributes_vote_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };
