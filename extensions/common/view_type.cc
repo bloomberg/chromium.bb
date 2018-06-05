@@ -18,12 +18,11 @@ bool GetViewTypeFromString(const std::string& view_type,
   static const struct {
     ViewType type;
     base::StringPiece name;
-  } kTypeMap[] = {
+  } constexpr kTypeMap[] = {
       {VIEW_TYPE_APP_WINDOW, "APP_WINDOW"},
       {VIEW_TYPE_EXTENSION_BACKGROUND_PAGE, "BACKGROUND"},
       {VIEW_TYPE_EXTENSION_DIALOG, "EXTENSION_DIALOG"},
       {VIEW_TYPE_EXTENSION_POPUP, "POPUP"},
-      {VIEW_TYPE_PANEL, "PANEL"},
       {VIEW_TYPE_TAB_CONTENTS, "TAB"},
   };
 

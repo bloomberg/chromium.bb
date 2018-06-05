@@ -424,7 +424,6 @@ void ChromeExtensionsBrowserClient::AttachExtensionTaskManagerTag(
 
     case VIEW_TYPE_BACKGROUND_CONTENTS:
     case VIEW_TYPE_EXTENSION_GUEST:
-    case VIEW_TYPE_PANEL:
     case VIEW_TYPE_TAB_CONTENTS:
       // Those types are tracked by other tags:
       // BACKGROUND_CONTENTS --> task_manager::BackgroundContentsTag.
