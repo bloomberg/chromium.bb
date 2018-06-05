@@ -2713,22 +2713,74 @@ static const float two_pass_split_partition_weights_8[FEATURE_SIZE + 1] = {
   0.000000f,  0.121622f,  2.017455f,  2.058228f,  -0.15475988f,
 };
 
-// out_score indicates confidence of picking split partition.
-// Returns if the score is valid.
+static const float two_pass_none_partition_weights_128[FEATURE_SIZE + 1] = {
+  -1.006689f, 0.777908f,  4.461072f,  -0.395782f, -0.014610f,
+  -0.853863f, 0.729997f,  -0.420477f, 0.282429f,  -1.194595f,
+  3.181220f,  -0.511416f, 0.117084f,  -1.149348f, 1.507990f,
+  -0.477212f, 0.202963f,  -1.469581f, 0.624461f,  -0.89081228f,
+};
+
+static const float two_pass_none_partition_weights_64[FEATURE_SIZE + 1] = {
+  -1.241117f, 0.844878f,  5.638803f,  -0.489780f, -0.108796f,
+  -4.576821f, 1.540624f,  -0.477519f, 0.227791f,  -1.443968f,
+  1.586911f,  -0.505125f, 0.140764f,  -0.464194f, 1.466658f,
+  -0.641166f, 0.195412f,  1.427905f,  2.080007f,  -1.98272777f,
+};
+
+static const float two_pass_none_partition_weights_32[FEATURE_SIZE + 1] = {
+  -2.130825f, 0.476023f,  5.907343f,  -0.516002f, -0.097471f,
+  -2.662754f, 0.614858f,  -0.576728f, 0.085261f,  -0.031901f,
+  0.727842f,  -0.600034f, 0.079326f,  0.324328f,  0.504502f,
+  -0.547105f, -0.037670f, 0.304995f,  0.369018f,  -2.66299987f,
+};
+
+static const float two_pass_none_partition_weights_16[FEATURE_SIZE + 1] = {
+  -1.626410f, 0.872047f,  5.414965f,  -0.554781f, -0.084514f,
+  -3.020550f, 0.467632f,  -0.382280f, 0.199568f,  0.426220f,
+  0.829426f,  -0.467100f, 0.153098f,  0.662994f,  0.327545f,
+  -0.560106f, -0.141610f, 0.403372f,  0.523991f,  -3.02891231f,
+};
+
+static const float two_pass_none_partition_weights_8[FEATURE_SIZE + 1] = {
+  -1.463349f, 0.375376f,  4.751430f, 0.000000f, -0.184451f,
+  -1.655447f, 0.443214f,  0.000000f, 0.127961f, 0.152435f,
+  0.083288f,  0.000000f,  0.143105f, 0.438012f, 0.073238f,
+  0.000000f,  -0.278137f, 0.186134f, 0.073737f, -1.6494962f,
+};
+
+// split_score indicates confidence of picking split partition;
+// none_score indicates confidence of picking none partition;
 static int ml_prune_2pass_split_partition(const PC_TREE_STATS *pc_tree_stats,
-                                          BLOCK_SIZE bsize, int *out_score) {
+                                          BLOCK_SIZE bsize, int *split_score,
+                                          int *none_score) {
   if (!pc_tree_stats->valid) return 0;
-  const float *weights = NULL;
+  const float *split_weights = NULL;
+  const float *none_weights = NULL;
   switch (bsize) {
     case BLOCK_4X4: break;
-    case BLOCK_8X8: weights = two_pass_split_partition_weights_8; break;
-    case BLOCK_16X16: weights = two_pass_split_partition_weights_16; break;
-    case BLOCK_32X32: weights = two_pass_split_partition_weights_32; break;
-    case BLOCK_64X64: weights = two_pass_split_partition_weights_64; break;
-    case BLOCK_128X128: weights = two_pass_split_partition_weights_128; break;
+    case BLOCK_8X8:
+      split_weights = two_pass_split_partition_weights_8;
+      none_weights = two_pass_none_partition_weights_8;
+      break;
+    case BLOCK_16X16:
+      split_weights = two_pass_split_partition_weights_16;
+      none_weights = two_pass_none_partition_weights_16;
+      break;
+    case BLOCK_32X32:
+      split_weights = two_pass_split_partition_weights_32;
+      none_weights = two_pass_none_partition_weights_32;
+      break;
+    case BLOCK_64X64:
+      split_weights = two_pass_split_partition_weights_64;
+      none_weights = two_pass_none_partition_weights_64;
+      break;
+    case BLOCK_128X128:
+      split_weights = two_pass_split_partition_weights_128;
+      none_weights = two_pass_none_partition_weights_128;
+      break;
     default: assert(0 && "Unexpected bsize.");
   }
-  if (!weights) return 0;
+  if (!split_weights || !none_weights) return 0;
 
   float features[FEATURE_SIZE];
   int feature_index = 0;
@@ -2751,9 +2803,15 @@ static int ml_prune_2pass_split_partition(const PC_TREE_STATS *pc_tree_stats,
     features[feature_index++] = rd_ratio;
   }
   assert(feature_index == FEATURE_SIZE);
-  float score = weights[FEATURE_SIZE];
-  for (int i = 0; i < FEATURE_SIZE; ++i) score += features[i] * weights[i];
-  *out_score = (int)(score * 100);
+
+  float score_1 = split_weights[FEATURE_SIZE];
+  float score_2 = none_weights[FEATURE_SIZE];
+  for (int i = 0; i < FEATURE_SIZE; ++i) {
+    score_1 += features[i] * split_weights[i];
+    score_2 += features[i] * none_weights[i];
+  }
+  *split_score = (int)(score_1 * 100);
+  *none_score = (int)(score_2 * 100);
   return 1;
 }
 #undef FEATURE_SIZE
@@ -2893,20 +2951,30 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   if (bsize > BLOCK_4X4 && x->use_cb_search_range &&
       cpi->sf.auto_min_max_partition_size == 0) {
     int split_score = 0;
-    const int split_score_valid = ml_prune_2pass_split_partition(
-        &pc_tree->pc_tree_stats, bsize, &split_score);
-    if (split_score_valid) {
-      const int only_split_thresh = 300;
-      const int no_none_thresh = 250;
-      const int no_split_thresh = 0;
-      if (split_score > only_split_thresh) {
-        partition_none_allowed = 0;
-        partition_horz_allowed = 0;
-        partition_vert_allowed = 0;
-      } else if (split_score > no_none_thresh) {
-        partition_none_allowed = 0;
+    int none_score = 0;
+    const int score_valid = ml_prune_2pass_split_partition(
+        &pc_tree->pc_tree_stats, bsize, &split_score, &none_score);
+    if (score_valid) {
+      {
+        const int only_split_thresh = 300;
+        const int no_none_thresh = 250;
+        const int no_split_thresh = 0;
+        if (split_score > only_split_thresh) {
+          partition_none_allowed = 0;
+          partition_horz_allowed = 0;
+          partition_vert_allowed = 0;
+        } else if (split_score > no_none_thresh) {
+          partition_none_allowed = 0;
+        }
+        if (split_score < no_split_thresh) do_square_split = 0;
       }
-      if (split_score < no_split_thresh) do_square_split = 0;
+      {
+        const int no_split_thresh = 120;
+        const int no_none_thresh = -120;
+        if (none_score > no_split_thresh && partition_none_allowed)
+          do_square_split = 0;
+        if (none_score < no_none_thresh) partition_none_allowed = 0;
+      }
     } else {
       if (pc_tree->cb_search_range == SPLIT_PLANE) {
         partition_none_allowed = 0;
@@ -2914,11 +2982,20 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         partition_vert_allowed = 0;
       }
       if (pc_tree->cb_search_range == SEARCH_SAME_PLANE) do_square_split = 0;
+      if (pc_tree->cb_search_range == NONE_PARTITION_PLANE) {
+        do_square_split = 0;
+        partition_horz_allowed = 0;
+        partition_vert_allowed = 0;
+      }
     }
-    if (pc_tree->cb_search_range == NONE_PARTITION_PLANE) {
-      do_square_split = 0;
-      partition_horz_allowed = 0;
-      partition_vert_allowed = 0;
+
+    // Fall back to default values in case all partition modes are rejected.
+    if (partition_none_allowed == 0 && do_square_split == 0 &&
+        partition_horz_allowed == 0 && partition_vert_allowed == 0) {
+      do_square_split = bsize_at_least_8x8;
+      partition_none_allowed = has_rows && has_cols;
+      partition_horz_allowed = has_cols && yss <= xss && bsize_at_least_8x8;
+      partition_vert_allowed = has_rows && xss <= yss && bsize_at_least_8x8;
     }
   }
 
