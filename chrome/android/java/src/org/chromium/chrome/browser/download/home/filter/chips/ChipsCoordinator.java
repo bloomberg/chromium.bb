@@ -14,8 +14,8 @@ import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
-import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter.ViewBinder;
 import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
+import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 
 /**
  * The coordinator responsible for managing a list of chips.  To get the {@link View} that
@@ -23,9 +23,7 @@ import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
  */
 public class ChipsCoordinator implements ChipsProvider.Observer {
     private final ChipsProvider mProvider;
-    private final ChipsModel mModel;
-    private final RecyclerViewModelChangeProcessor<ChipsModel, ChipsViewBinder.ChipsViewHolder>
-            mModelChangeProcessor;
+    private final SimpleListObservable<Chip> mModel;
     private final RecyclerView mView;
 
     /**
@@ -40,21 +38,16 @@ public class ChipsCoordinator implements ChipsProvider.Observer {
         mProvider = provider;
 
         // Build the underlying components.
-        mModel = new ChipsModel();
+        mModel = new SimpleListObservable<>();
         mView = createView(context);
-        ViewBinder<ChipsModel, ChipsViewBinder.ChipsViewHolder> viewBinder = new ChipsViewBinder();
-        RecyclerViewAdapter<ChipsModel, ChipsViewBinder.ChipsViewHolder> adapter =
-                new RecyclerViewAdapter<>(mModel, viewBinder);
-        mModelChangeProcessor =
-                new RecyclerViewModelChangeProcessor<ChipsModel, ChipsViewBinder.ChipsViewHolder>(
-                        adapter);
+        RecyclerViewAdapter<SimpleListObservable<Chip>, ChipsViewBinder.ChipsViewHolder> adapter =
+                new RecyclerViewAdapter<>(mModel, new ChipsViewBinder());
 
         mView.setAdapter(adapter);
-        adapter.setViewBinder(viewBinder);
-        mModel.addObserver(mModelChangeProcessor);
+        mModel.addObserver(new RecyclerViewModelChangeProcessor<>(adapter));
 
         mProvider.addObserver(this);
-        mModel.setChips(mProvider.getChips());
+        mModel.set(mProvider.getChips());
     }
 
     /**
@@ -73,8 +66,8 @@ public class ChipsCoordinator implements ChipsProvider.Observer {
     // ChipsProvider.Observer implementation.
     @Override
     public void onChipChanged(int position, Chip chip) {
-        mModel.updateChip(position, chip);
-        mModel.setChips(mProvider.getChips());
+        mModel.update(position, chip);
+        mModel.set(mProvider.getChips());
     }
 
     private static RecyclerView createView(Context context) {

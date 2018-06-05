@@ -80,4 +80,14 @@ public class SimpleListObservable<T> extends ListObservable {
             notifyItemRangeRemoved(min, oldSize - newSize);
         }
     }
+
+    /**
+     * Replaces a single {@code item} at the given {@code index}.
+     * @param index The index of the item to be replaced.
+     * @param item The item to be replaced.
+     */
+    public void update(int index, T item) {
+        mItems.set(index, item);
+        notifyItemRangeChanged(index, 1, null);
+    }
 }
