@@ -468,16 +468,11 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
                                       SkShader::kClamp_TileMode, &content_mat);
   }
 
-  std::unique_ptr<DisplayResourceProvider::ScopedReadLockSoftware> mask_lock;
   if (quad->mask_resource_id()) {
-    mask_lock =
-        std::make_unique<DisplayResourceProvider::ScopedReadLockSoftware>(
-            resource_provider_, quad->mask_resource_id());
-
-    if (!mask_lock->valid())
+    DisplayResourceProvider::ScopedReadLockSkImage mask_lock(
+        resource_provider_, quad->mask_resource_id());
+    if (!mask_lock.valid())
       return;
-
-    const SkBitmap* mask = mask_lock->sk_bitmap();
 
     // Scale normalized uv rect into absolute texel coordinates.
     SkRect mask_rect = gfx::RectFToSkRect(
@@ -487,9 +482,9 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
     SkMatrix mask_mat;
     mask_mat.setRectToRect(mask_rect, dest_rect, SkMatrix::kFill_ScaleToFit);
 
-    current_paint_.setMaskFilter(SkShaderMaskFilter::Make(
-        SkShader::MakeBitmapShader(*mask, SkShader::kClamp_TileMode,
-                                   SkShader::kClamp_TileMode, &mask_mat)));
+    current_paint_.setMaskFilter(
+        SkShaderMaskFilter::Make(mask_lock.sk_image()->makeShader(
+            SkShader::kClamp_TileMode, SkShader::kClamp_TileMode, &mask_mat)));
   }
 
   // If we have a background filter shader, render its results first.
