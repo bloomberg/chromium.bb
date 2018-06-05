@@ -41,9 +41,13 @@ void LifecycleUnitBase::SetState(LifecycleUnitState state) {
     return;
   LifecycleUnitState last_state = state_;
   state_ = state;
+  OnLifecycleUnitStateChanged(last_state);
   for (auto& observer : observers_)
     observer.OnLifecycleUnitStateChanged(this, last_state);
 }
+
+void LifecycleUnitBase::OnLifecycleUnitStateChanged(
+    LifecycleUnitState last_state) {}
 
 void LifecycleUnitBase::OnLifecycleUnitVisibilityChanged(
     content::Visibility visibility) {

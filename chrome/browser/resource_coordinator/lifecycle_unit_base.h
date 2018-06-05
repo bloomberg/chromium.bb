@@ -31,6 +31,11 @@ class LifecycleUnitBase : public LifecycleUnit {
   // Sets the state of this LifecycleUnit to |state| and notifies observers.
   void SetState(LifecycleUnitState state);
 
+  // Invoked when the state of the LifecycleUnit changes, before external
+  // observers are notified. Derived classes can override to add their own
+  // logic. The default implementation is empty.
+  virtual void OnLifecycleUnitStateChanged(LifecycleUnitState last_state);
+
   // Notifies observers that the visibility of the LifecycleUnit has changed.
   void OnLifecycleUnitVisibilityChanged(content::Visibility visibility);
 

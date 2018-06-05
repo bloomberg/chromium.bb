@@ -32,6 +32,15 @@
 
 namespace resource_coordinator {
 
+namespace {
+
+bool IsDiscardedOrPendingDiscard(LifecycleUnitState state) {
+  return state == LifecycleUnitState::DISCARDED ||
+         state == LifecycleUnitState::PENDING_DISCARD;
+}
+
+}  // namespace
+
 TabLifecycleUnitSource::TabLifecycleUnit::TabLifecycleUnit(
     base::ObserverList<TabLifecycleObserver>* observers,
     content::WebContents* web_contents,
@@ -66,8 +75,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetFocused(bool focused) {
     return;
   last_focused_time_ = focused ? base::TimeTicks::Max() : NowTicks();
 
-  if (focused && (GetState() == LifecycleUnitState::DISCARDED ||
-                  GetState() == LifecycleUnitState::PENDING_DISCARD)) {
+  if (focused && IsDiscardedOrPendingDiscard(GetState())) {
     bool was_discarded = GetState() == LifecycleUnitState::DISCARDED;
     SetState(LifecycleUnitState::ACTIVE);
 
@@ -85,8 +93,6 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetFocused(bool focused) {
     // was focused.
     if (freeze_timeout_timer_)
       freeze_timeout_timer_->Stop();
-
-    OnDiscardedStateChange();
   }
 }
 
@@ -134,13 +140,6 @@ void TabLifecycleUnitSource::TabLifecycleUnit::RequestFreezeForDiscard(
   DCHECK_NE(GetState(), LifecycleUnitState::PENDING_DISCARD);
 
   SetState(LifecycleUnitState::PENDING_DISCARD);
-
-  // External observers should now view this tab as discarded, hiding the
-  // pending discard implementation detail.
-  // TODO(fdoray) This should be done as part of SetState() instead of manually
-  // after each SetState() that might change IsDiscarded(). We would have less
-  // chances of breaking things in a future change.
-  OnDiscardedStateChange();
 
   if (!freeze_timeout_timer_) {
     freeze_timeout_timer_ =
@@ -476,10 +475,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
   // RenderFrameProxyHosts.
   old_contents_deleter.reset();
 
-  LifecycleUnitState previous_state = GetState();
   SetState(LifecycleUnitState::DISCARDED);
-  if (previous_state != LifecycleUnitState::PENDING_DISCARD)
-    OnDiscardedStateChange();
   ++discard_count_;
 }
 
@@ -517,18 +513,15 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::IsDiscarded() const {
   // External code does not need to know about the intermediary PENDING_DISCARD
   // state. To external callers, the tab is discarded while in the
   // PENDING_DISCARD state.
-  LifecycleUnitState current_state = GetState();
-  return current_state == LifecycleUnitState::PENDING_DISCARD ||
-         current_state == LifecycleUnitState::DISCARDED;
+  return IsDiscardedOrPendingDiscard(GetState());
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::IsFrozen() const {
   // External code does not need to know about the intermediary PENDING_FREEZE
   // state. To external callers, the tab is frozen while in the PENDING_FREEZE
   // state.
-  LifecycleUnitState current_state = GetState();
-  return current_state == LifecycleUnitState::PENDING_FREEZE ||
-         current_state == LifecycleUnitState::FROZEN;
+  return GetState() == LifecycleUnitState::FROZEN ||
+         GetState() == LifecycleUnitState::PENDING_FREEZE;
 }
 
 int TabLifecycleUnitSource::TabLifecycleUnit::GetDiscardCount() const {
@@ -573,21 +566,25 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::IsMediaTabImpl(
   return is_media_tab;
 }
 
-void TabLifecycleUnitSource::TabLifecycleUnit::OnDiscardedStateChange() {
-  for (auto& observer : *observers_)
-    observer.OnDiscardedStateChange(GetWebContents(), IsDiscarded());
-}
-
 content::RenderProcessHost*
 TabLifecycleUnitSource::TabLifecycleUnit::GetRenderProcessHost() const {
   return GetWebContents()->GetMainFrame()->GetProcess();
 }
 
-void TabLifecycleUnitSource::TabLifecycleUnit::DidStartLoading() {
-  if (IsDiscarded()) {
-    SetState(LifecycleUnitState::ACTIVE);
-    OnDiscardedStateChange();
+void TabLifecycleUnitSource::TabLifecycleUnit::OnLifecycleUnitStateChanged(
+    LifecycleUnitState last_state) {
+  // Invoke OnDiscardedStateChange() if necessary.
+  const bool was_discarded = IsDiscardedOrPendingDiscard(last_state);
+  const bool is_discarded = IsDiscardedOrPendingDiscard(GetState());
+  if (was_discarded != is_discarded) {
+    for (auto& observer : *observers_)
+      observer.OnDiscardedStateChange(GetWebContents(), is_discarded);
   }
+}
+
+void TabLifecycleUnitSource::TabLifecycleUnit::DidStartLoading() {
+  if (IsDiscardedOrPendingDiscard(GetState()))
+    SetState(LifecycleUnitState::ACTIVE);
 }
 
 void TabLifecycleUnitSource::TabLifecycleUnit::OnVisibilityChanged(
