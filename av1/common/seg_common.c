@@ -32,6 +32,19 @@ void av1_clearall_segfeatures(struct segmentation *seg) {
   av1_zero(seg->feature_mask);
 }
 
+void calculate_segdata(struct segmentation *seg) {
+  seg->preskip_segid = 0;
+  seg->last_active_segid = 0;
+  for (int i = 0; i < MAX_SEGMENTS; i++) {
+    for (int j = 0; j < SEG_LVL_MAX; j++) {
+      if (seg->feature_mask[i] & (1 << j)) {
+        seg->preskip_segid |= (j >= SEG_LVL_REF_FRAME);
+        seg->last_active_segid = i;
+      }
+    }
+  }
+}
+
 void av1_enable_segfeature(struct segmentation *seg, int segment_id,
                            SEG_LVL_FEATURES feature_id) {
   seg->feature_mask[segment_id] |= 1 << feature_id;

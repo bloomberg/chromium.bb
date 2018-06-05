@@ -1327,6 +1327,7 @@ static void setup_segmentation(AV1_COMMON *const cm,
         av1_set_segdata(seg, i, j, data);
       }
     }
+    calculate_segdata(seg);
   } else if (cm->prev_frame) {
     segfeatures_copy(seg, &cm->prev_frame->seg);
   }

@@ -4173,6 +4173,8 @@ static int encode_without_recode_loop(AV1_COMP *cpi) {
   if (cm->seg.enabled) {
     if (!cm->seg.update_data && cm->prev_frame) {
       segfeatures_copy(&cm->seg, &cm->prev_frame->seg);
+    } else {
+      calculate_segdata(&cm->seg);
     }
   } else {
     memset(&cm->seg, 0, sizeof(cm->seg));
@@ -4280,6 +4282,8 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     if (cm->seg.enabled) {
       if (!cm->seg.update_data && cm->prev_frame) {
         segfeatures_copy(&cm->seg, &cm->prev_frame->seg);
+      } else {
+        calculate_segdata(&cm->seg);
       }
     } else {
       memset(&cm->seg, 0, sizeof(cm->seg));
