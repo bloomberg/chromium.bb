@@ -282,7 +282,7 @@ public class OverlappingStack extends Stack {
         mLastPinch0Offset = pinch0Offset;
         mLastPinch1Offset = pinch1Offset;
         mEvenOutProgress = 0.0f;
-        requestUpdate();
+        mLayout.requestUpdate();
     }
 
     @Override
@@ -290,7 +290,7 @@ public class OverlappingStack extends Stack {
         // Make sure the bottom tab always goes back to the top of the screen.
         if (mPinch0TabIndex >= 0) {
             startAnimation(time, OverviewAnimationType.REACH_TOP);
-            requestUpdate();
+            mLayout.requestUpdate();
         }
 
         super.onUpOrCancel(time);
@@ -304,7 +304,7 @@ public class OverlappingStack extends Stack {
             if (mScrollTarget < minScroll || mScrollTarget > maxScroll) {
                 mScroller.springBack(0, (int) mScrollTarget, 0, 0, minScroll, maxScroll, time);
                 setScrollTarget(MathUtils.clamp(mScrollTarget, minScroll, maxScroll), false);
-                requestUpdate();
+                mLayout.requestUpdate();
             }
         }
     }

@@ -12,7 +12,6 @@ import android.support.annotation.IntDef;
 
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
-import org.chromium.chrome.browser.compositor.animation.CompositorAnimator.AnimatorUpdateListener;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayoutBase;
 
 import java.lang.annotation.Retention;
@@ -184,7 +183,7 @@ public class NonOverlappingStack extends Stack {
             int newTarget = Math.round(mScrollTarget / mSpacing) * mSpacing;
             mScroller.springBack(0, (int) mScrollTarget, 0, 0, newTarget, newTarget, time);
             setScrollTarget(newTarget, false);
-            requestUpdate();
+            mLayout.requestUpdate();
         }
     }
 
@@ -325,14 +324,6 @@ public class NonOverlappingStack extends Stack {
             CompositorAnimator animation =
                     CompositorAnimator.ofFloatProperty(handler, tab, StackTab.SCROLL_OFFSET,
                             tab.getScrollOffset(), endOffset, SWITCH_AWAY_ANIMATION_DURATION);
-            // TODO(https://crbug.com/848475) Fix StackLayoutBase and Stack so the animation works
-            // properly without this listener.
-            animation.addUpdateListener(new AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(CompositorAnimator animation) {
-                    requestUpdate();
-                }
-            });
             animationList.add(animation);
         }
 
@@ -386,12 +377,6 @@ public class NonOverlappingStack extends Stack {
             CompositorAnimator animation =
                     CompositorAnimator.ofFloatProperty(handler, tab, StackTab.SCROLL_OFFSET,
                             startOffset, i * mSpacing, SWITCH_TO_ANIMATION_DURATION);
-            animation.addUpdateListener(new AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(CompositorAnimator animation) {
-                    requestUpdate();
-                }
-            });
             animationList.add(animation);
         }
 
