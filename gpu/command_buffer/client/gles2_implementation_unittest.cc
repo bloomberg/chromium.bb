@@ -573,6 +573,30 @@ class GLES2ImplementationStrictSharedTest : public GLES2ImplementationTest {
     ResApi::Gen(gl2, 1, &id3);
     EXPECT_EQ(id1, id3);
   }
+
+  // Require that deleting definitely-invalid IDs produces an error.
+  template <class ResApi>
+  void DeletingInvalidIdGeneratesError() {
+    GLES2Implementation* gl1 = test_contexts_[0].gl_.get();
+    GLuint id1;
+    ResApi::Gen(gl1, 1, &id1);
+    const GLuint kDefinitelyInvalidId = 0xBEEF;
+    EXPECT_EQ(GL_NO_ERROR, CheckError());
+    ResApi::Delete(gl1, 1, &kDefinitelyInvalidId);
+    EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+  }
+
+  // Require that double-deleting IDs produces an error.
+  template <class ResApi>
+  void DoubleDeletingIdGeneratesError() {
+    GLES2Implementation* gl1 = test_contexts_[0].gl_.get();
+    GLuint id1;
+    ResApi::Gen(gl1, 1, &id1);
+    ResApi::Delete(gl1, 1, &id1);
+    EXPECT_EQ(GL_NO_ERROR, CheckError());
+    ResApi::Delete(gl1, 1, &id1);
+    EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+  }
 };
 
 void GLES2ImplementationStrictSharedTest::SetUp() {
@@ -2945,6 +2969,34 @@ TEST_F(GLES2ImplementationStrictSharedTest,
 TEST_F(GLES2ImplementationStrictSharedTest,
        CrossContextGenerationAutoFlushTestTextures) {
   CrossContextGenerationAutoFlushTest<GenTexturesAPI>();
+}
+
+// Test deleting an invalid ID.
+TEST_F(GLES2ImplementationStrictSharedTest,
+       DeletingInvalidIdGeneratesErrorBuffers) {
+  DeletingInvalidIdGeneratesError<GenBuffersAPI>();
+}
+TEST_F(GLES2ImplementationStrictSharedTest,
+       DeletingInvalidIdGeneratesErrorRenderbuffers) {
+  DeletingInvalidIdGeneratesError<GenRenderbuffersAPI>();
+}
+TEST_F(GLES2ImplementationStrictSharedTest,
+       DeletingInvalidIdGeneratesErrorTextures) {
+  DeletingInvalidIdGeneratesError<GenTexturesAPI>();
+}
+
+// Test double-deleting the same ID.
+TEST_F(GLES2ImplementationStrictSharedTest,
+       DoubleDeletingIdGeneratesErrorBuffers) {
+  DoubleDeletingIdGeneratesError<GenBuffersAPI>();
+}
+TEST_F(GLES2ImplementationStrictSharedTest,
+       DoubleDeletingIdGeneratesErrorRenderbuffers) {
+  DoubleDeletingIdGeneratesError<GenRenderbuffersAPI>();
+}
+TEST_F(GLES2ImplementationStrictSharedTest,
+       DoubleDeletingIdGeneratesErrorTextures) {
+  DoubleDeletingIdGeneratesError<GenTexturesAPI>();
 }
 
 TEST_F(GLES2ImplementationTest, GetString) {
