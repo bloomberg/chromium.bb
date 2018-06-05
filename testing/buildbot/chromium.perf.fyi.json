@@ -56,7 +56,7 @@
           "experimental.startup.android.coldish",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--browser=android-chromium"
         ],
         "isolate_name": "telemetry_perf_tests",
@@ -83,7 +83,7 @@
           "heap_profiling.mobile.disabled",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--browser=android-chromium"
         ],
         "isolate_name": "telemetry_perf_tests",
@@ -107,7 +107,7 @@
           "heap_profiling.mobile.native",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--browser=android-chromium"
         ],
         "isolate_name": "telemetry_perf_tests",
@@ -131,7 +131,7 @@
           "heap_profiling.mobile.pseudo",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--browser=android-chromium"
         ],
         "isolate_name": "telemetry_perf_tests",
@@ -155,7 +155,7 @@
           "smoothness.oop_rasterization.top_25_smooth",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--browser=android-chromium"
         ],
         "isolate_name": "telemetry_perf_tests",
@@ -182,7 +182,7 @@
           "thread_times.oop_rasterization.key_mobile",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--browser=android-chromium"
         ],
         "isolate_name": "telemetry_perf_tests",
@@ -457,7 +457,7 @@
           "loading.desktop.network_service",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--browser=release"
         ],
         "isolate_name": "telemetry_perf_tests",
