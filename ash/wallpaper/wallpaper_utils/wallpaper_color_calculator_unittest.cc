@@ -11,7 +11,7 @@
 #include "ash/wallpaper/wallpaper_utils/wallpaper_color_extraction_result.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/null_task_runner.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"

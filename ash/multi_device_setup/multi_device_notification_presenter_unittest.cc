@@ -14,7 +14,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
