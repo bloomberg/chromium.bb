@@ -117,24 +117,17 @@ void ExtensionsGuestViewMessageFilter::OnCreateMimeHandlerViewGuest(
   if (!embedder_web_contents)
     return;
 
-  GuestViewManager::WebContentsCreatedCallback callback =
-      base::Bind(
-          &ExtensionsGuestViewMessageFilter::
-              MimeHandlerViewGuestCreatedCallback,
-          this,
-          element_instance_id,
-          render_process_id_,
-          render_frame_id,
-          element_size);
+  GuestViewManager::WebContentsCreatedCallback callback = base::BindOnce(
+      &ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback,
+      this, element_instance_id, render_process_id_, render_frame_id,
+      element_size);
 
   base::DictionaryValue create_params;
   create_params.SetString(mime_handler_view::kViewId, view_id);
   create_params.SetInteger(guest_view::kElementWidth, element_size.width());
   create_params.SetInteger(guest_view::kElementHeight, element_size.height());
-  manager->CreateGuest(MimeHandlerViewGuest::Type,
-                       embedder_web_contents,
-                       create_params,
-                       callback);
+  manager->CreateGuest(MimeHandlerViewGuest::Type, embedder_web_contents,
+                       create_params, std::move(callback));
 }
 
 void ExtensionsGuestViewMessageFilter::OnResizeGuest(

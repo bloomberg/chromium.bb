@@ -60,13 +60,13 @@ GuestViewBase* ExtensionOptionsGuest::Create(WebContents* owner_web_contents) {
 
 void ExtensionOptionsGuest::CreateWebContents(
     const base::DictionaryValue& create_params,
-    const WebContentsCreatedCallback& callback) {
+    WebContentsCreatedCallback callback) {
   // Get the extension's base URL.
   std::string extension_id;
   create_params.GetString(extensionoptions::kExtensionId, &extension_id);
 
   if (!crx_file::id_util::IdIsValid(extension_id)) {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -74,14 +74,14 @@ void ExtensionOptionsGuest::CreateWebContents(
   if (crx_file::id_util::IdIsValid(embedder_extension_id) &&
       extension_id != embedder_extension_id) {
     // Extensions cannot embed other extensions' options pages.
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
   GURL extension_url =
       extensions::Extension::GetBaseURLFromExtensionId(extension_id);
   if (!extension_url.is_valid()) {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -93,13 +93,13 @@ void ExtensionOptionsGuest::CreateWebContents(
   if (!extension) {
     // The ID was valid but the extension didn't exist. Typically this will
     // happen when an extension is disabled.
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
   options_page_ = extensions::OptionsPageInfo::GetOptionsPage(extension);
   if (!options_page_.is_valid()) {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -112,7 +112,7 @@ void ExtensionOptionsGuest::CreateWebContents(
   params.guest_delegate = this;
   // TODO(erikchen): Fix ownership semantics for guest views.
   // https://crbug.com/832879.
-  callback.Run(WebContents::Create(params).release());
+  std::move(callback).Run(WebContents::Create(params).release());
 }
 
 void ExtensionOptionsGuest::DidInitialize(

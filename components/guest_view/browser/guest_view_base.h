@@ -120,9 +120,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // This creates a WebContents and initializes |this| GuestViewBase to use the
   // newly created WebContents.
   using WebContentsCreatedCallback =
-      base::Callback<void(content::WebContents*)>;
+      base::OnceCallback<void(content::WebContents*)>;
   void Init(const base::DictionaryValue& create_params,
-            const WebContentsCreatedCallback& callback);
+            WebContentsCreatedCallback callback);
 
   void InitWithWebContents(const base::DictionaryValue& create_params,
                            content::WebContents* guest_web_contents);
@@ -233,9 +233,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // Given a set of initialization parameters, a concrete subclass of
   // GuestViewBase can create a specialized WebContents that it returns back to
   // GuestViewBase.
-  virtual void CreateWebContents(
-      const base::DictionaryValue& create_params,
-      const WebContentsCreatedCallback& callback) = 0;
+  virtual void CreateWebContents(const base::DictionaryValue& create_params,
+                                 WebContentsCreatedCallback callback) = 0;
 
   // This method is called after the guest has been attached to an embedder and
   // suspended resource loads have been resumed.
@@ -386,7 +385,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void SendQueuedEvents();
 
   void CompleteInit(std::unique_ptr<base::DictionaryValue> create_params,
-                    const WebContentsCreatedCallback& callback,
+                    WebContentsCreatedCallback callback,
                     content::WebContents* guest_web_contents);
 
   // Dispatches the onResize event to the embedder.

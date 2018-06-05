@@ -45,22 +45,19 @@ ExtensionFunction::ResponseAction GuestViewInternalCreateGuestFunction::Run() {
         ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate(context_));
   }
 
-  GuestViewManager::WebContentsCreatedCallback callback =
-      base::Bind(&GuestViewInternalCreateGuestFunction::CreateGuestCallback,
-                 this);
-
   content::WebContents* sender_web_contents = GetSenderWebContents();
   if (!sender_web_contents)
     return RespondNow(Error("Guest views can only be embedded in web content"));
+
+  GuestViewManager::WebContentsCreatedCallback callback = base::BindOnce(
+      &GuestViewInternalCreateGuestFunction::CreateGuestCallback, this);
 
   // Add flag to |create_params| to indicate that the element size is specified
   // in logical units.
   create_params->SetBoolean(guest_view::kElementSizeIsLogical, true);
 
-  guest_view_manager->CreateGuest(view_type,
-                                  sender_web_contents,
-                                  *create_params,
-                                  callback);
+  guest_view_manager->CreateGuest(view_type, sender_web_contents,
+                                  *create_params, std::move(callback));
   return did_respond() ? AlreadyResponded() : RespondLater();
 }
 

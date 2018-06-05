@@ -101,7 +101,7 @@ class MimeHandlerViewGuest :
   const char* GetAPINamespace() const final;
   int GetTaskPrefix() const final;
   void CreateWebContents(const base::DictionaryValue& create_params,
-                         const WebContentsCreatedCallback& callback) override;
+                         WebContentsCreatedCallback callback) override;
   void DidAttachToEmbedder() override;
   void DidInitialize(const base::DictionaryValue& create_params) final;
   void EmbedderFullscreenToggled(bool entered_fullscreen) final;

@@ -329,9 +329,8 @@ int WebViewGuest::GetOrGenerateRulesRegistryID(
   return rules_registry_id;
 }
 
-void WebViewGuest::CreateWebContents(
-    const base::DictionaryValue& create_params,
-    const WebContentsCreatedCallback& callback) {
+void WebViewGuest::CreateWebContents(const base::DictionaryValue& create_params,
+                                     WebContentsCreatedCallback callback) {
   RenderProcessHost* owner_render_process_host =
       owner_web_contents()->GetMainFrame()->GetProcess();
   std::string storage_partition_id;
@@ -344,7 +343,7 @@ void WebViewGuest::CreateWebContents(
   if (!base::IsStringUTF8(storage_partition_id)) {
     bad_message::ReceivedBadMessage(owner_render_process_host,
                                     bad_message::WVG_PARTITION_ID_NOT_UTF8);
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
   std::string partition_domain = GetOwnerSiteURL().host();
@@ -382,7 +381,7 @@ void WebViewGuest::CreateWebContents(
       new_contents->GetMainFrame()->GetProcess()->GetID(),
       url::Origin::Create(GetOwnerSiteURL()));
 
-  callback.Run(new_contents);
+  std::move(callback).Run(new_contents);
 }
 
 void WebViewGuest::DidAttachToEmbedder() {

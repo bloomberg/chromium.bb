@@ -174,13 +174,13 @@ int GuestViewManager::GetNextInstanceID() {
 void GuestViewManager::CreateGuest(const std::string& view_type,
                                    content::WebContents* owner_web_contents,
                                    const base::DictionaryValue& create_params,
-                                   const WebContentsCreatedCallback& callback) {
+                                   WebContentsCreatedCallback callback) {
   GuestViewBase* guest = CreateGuestInternal(owner_web_contents, view_type);
   if (!guest) {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
-  guest->Init(create_params, callback);
+  guest->Init(create_params, std::move(callback));
 }
 
 content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
