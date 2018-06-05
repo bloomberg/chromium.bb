@@ -63,6 +63,7 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/loader/prefetch_url_loader_service.mojom.h"
 #include "third_party/blink/public/platform/dedicated_worker_factory.mojom.h"
@@ -881,7 +882,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                           const gfx::Range& range);
   void OnFocusedNodeChanged(bool is_editable_element,
                             const gfx::Rect& bounds_in_frame_widget);
-  void OnSetHasReceivedUserGesture();
+  void OnUpdateUserActivationState(blink::UserActivationUpdateType update_type);
   void OnSetHasReceivedUserGestureBeforeNavigation(bool value);
   void OnScrollRectToVisibleInParentFrame(
       const gfx::Rect& rect_to_scroll,

@@ -154,8 +154,6 @@ blink_core_sources("frame") {
     "smart_clip.h",
     "use_counter.cc",
     "use_counter.h",
-    "user_activation_state.cc",
-    "user_activation_state.h",
     "visual_viewport.cc",
     "visual_viewport.h",
     "web_feature.h",

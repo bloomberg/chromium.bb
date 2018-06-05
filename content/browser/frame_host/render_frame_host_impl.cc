@@ -1020,8 +1020,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnSerializeAsMHTMLResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_SetHasReceivedUserGesture,
-                        OnSetHasReceivedUserGesture)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateUserActivationState,
+                        OnUpdateUserActivationState)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SetHasReceivedUserGestureBeforeNavigation,
                         OnSetHasReceivedUserGestureBeforeNavigation)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ScrollRectToVisibleInParentFrame,
@@ -2841,8 +2841,9 @@ void RenderFrameHostImpl::NotifyUserActivation() {
   Send(new FrameMsg_NotifyUserActivation(routing_id_));
 }
 
-void RenderFrameHostImpl::OnSetHasReceivedUserGesture() {
-  frame_tree_node_->OnSetHasReceivedUserGesture();
+void RenderFrameHostImpl::OnUpdateUserActivationState(
+    blink::UserActivationUpdateType update_type) {
+  frame_tree_node_->UpdateUserActivationState(update_type);
 }
 
 void RenderFrameHostImpl::OnSetHasReceivedUserGestureBeforeNavigation(
@@ -2946,6 +2947,11 @@ void RenderFrameHostImpl::CreateNewWindow(
     params->target_url = GURL(url::kAboutBlankURL);
   }
 
+  bool effective_transient_activation_state =
+      params->mimic_user_gesture ||
+      (base::FeatureList::IsEnabled(features::kUserActivationV2) &&
+       frame_tree_node_->HasTransientUserActivation());
+
   // Ignore window creation when sent from a frame that's not current or
   // created.
   bool can_create_window =
@@ -2955,8 +2961,16 @@ void RenderFrameHostImpl::CreateNewWindow(
           frame_tree_node_->frame_tree()->GetMainFrame()->GetLastCommittedURL(),
           last_committed_origin_.GetURL(), params->window_container_type,
           params->target_url, params->referrer, params->frame_name,
-          params->disposition, *params->features, params->user_gesture,
-          params->opener_suppressed, &no_javascript_access);
+          params->disposition, *params->features,
+          effective_transient_activation_state, params->opener_suppressed,
+          &no_javascript_access);
+
+  if (can_create_window) {
+    // Consume activation even w/o User Activation v2, to sync other renderers
+    // with calling renderer.
+    frame_tree_node_->UpdateUserActivationState(
+        blink::UserActivationUpdateType::kConsumeTransientActivation);
+  }
 
   if (!can_create_window) {
     std::move(callback).Run(mojom::CreateNewWindowStatus::kIgnore, nullptr);

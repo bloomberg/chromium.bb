@@ -82,7 +82,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void DidStopLoading() override;
   bool IsIgnoredForHitTest() const override;
   void WillEnterFullscreen() override;
-  void SetHasReceivedUserGesture() override;
+  void UpdateUserActivationState(UserActivationUpdateType) override;
   void ScrollRectToVisible(const WebRect&,
                            const WebScrollIntoViewParams&) override;
   void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) override;

@@ -34,6 +34,7 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider_client.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -1025,11 +1026,18 @@ KURL LocalFrameClientImpl::OverrideFlashEmbedWithHTML(const KURL& url) {
   return web_frame_->Client()->OverrideFlashEmbedWithHTML(WebURL(url));
 }
 
-void LocalFrameClientImpl::SetHasReceivedUserGesture() {
+void LocalFrameClientImpl::NotifyUserActivation() {
   DCHECK(web_frame_->Client());
-  web_frame_->Client()->SetHasReceivedUserGesture();
+  web_frame_->Client()->UpdateUserActivationState(
+      UserActivationUpdateType::kNotifyActivation);
   if (WebAutofillClient* autofill_client = web_frame_->AutofillClient())
     autofill_client->UserGestureObserved();
+}
+
+void LocalFrameClientImpl::ConsumeUserActivation() {
+  DCHECK(web_frame_->Client());
+  web_frame_->Client()->UpdateUserActivationState(
+      UserActivationUpdateType::kConsumeTransientActivation);
 }
 
 void LocalFrameClientImpl::SetHasReceivedUserGestureBeforeNavigation(

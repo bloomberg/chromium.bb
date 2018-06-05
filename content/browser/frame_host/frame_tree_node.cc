@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/common/frame/user_activation_update_type.h"
 
 namespace content {
 
@@ -598,9 +599,31 @@ void FrameTreeNode::BeforeUnloadCanceled() {
     ResetNavigationRequest(false, true);
 }
 
-void FrameTreeNode::OnSetHasReceivedUserGesture() {
-  render_manager_.OnSetHasReceivedUserGesture();
+bool FrameTreeNode::NotifyUserActivation() {
+  for (FrameTreeNode* node = this; node; node = node->parent())
+    node->user_activation_state_.Activate();
   replication_state_.has_received_user_gesture = true;
+  return true;
+}
+
+bool FrameTreeNode::ConsumeTransientUserActivation() {
+  bool was_active = user_activation_state_.IsActive();
+  for (FrameTreeNode* node : frame_tree()->Nodes())
+    node->user_activation_state_.ConsumeIfActive();
+  return was_active;
+}
+
+bool FrameTreeNode::UpdateUserActivationState(
+    blink::UserActivationUpdateType update_type) {
+  render_manager_.UpdateUserActivationState(update_type);
+  switch (update_type) {
+    case blink::UserActivationUpdateType::kConsumeTransientActivation:
+      return ConsumeTransientUserActivation();
+
+    case blink::UserActivationUpdateType::kNotifyActivation:
+      return NotifyUserActivation();
+  }
+  NOTREACHED() << "Invalid update_type.";
 }
 
 void FrameTreeNode::OnSetHasReceivedUserGestureBeforeNavigation(bool value) {

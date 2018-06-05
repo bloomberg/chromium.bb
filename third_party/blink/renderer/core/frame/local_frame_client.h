@@ -365,7 +365,14 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
     return nullptr;
   }
 
-  virtual void SetHasReceivedUserGesture() {}
+  // Notify the embedder that the associated frame has user activation so that
+  // the replicated states in the browser and other renderers can be updated.
+  virtual void NotifyUserActivation() {}
+
+  // Tell the embedder that the associated frame has consumed user activation so
+  // that the replicated states in the browser and other renderers can be
+  // updated.
+  virtual void ConsumeUserActivation() {}
 
   virtual void SetHasReceivedUserGestureBeforeNavigation(bool value) {}
 
