@@ -1117,25 +1117,15 @@ void RendererBlinkPlatformImpl::RecordRapporURL(const char* metric,
 std::unique_ptr<PlatformEventObserverBase>
 RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
     blink::WebPlatformEventType type) {
-  RenderThread* thread = RenderThreadImpl::current();
-
-  // When running layout tests, those observers should not listen to the actual
-  // hardware changes. In order to make that happen, they will receive a null
-  // thread.
-  if (thread && RenderThreadImpl::current()->layout_test_mode())
-    thread = nullptr;
-
   switch (type) {
     case blink::kWebPlatformEventTypeDeviceMotion:
-      return std::make_unique<DeviceMotionEventPump>(thread);
+      return std::make_unique<DeviceMotionEventPump>();
     case blink::kWebPlatformEventTypeDeviceOrientation:
-      return std::make_unique<DeviceOrientationEventPump>(thread,
-                                                          false /* absolute */);
+      return std::make_unique<DeviceOrientationEventPump>(false /* absolute */);
     case blink::kWebPlatformEventTypeDeviceOrientationAbsolute:
-      return std::make_unique<DeviceOrientationEventPump>(thread,
-                                                          true /* absolute */);
+      return std::make_unique<DeviceOrientationEventPump>(true /* absolute */);
     case blink::kWebPlatformEventTypeGamepad:
-      return std::make_unique<GamepadSharedMemoryReader>(thread);
+      return std::make_unique<GamepadSharedMemoryReader>();
     default:
       // A default statement is required to prevent compilation errors when
       // Blink adds a new type.

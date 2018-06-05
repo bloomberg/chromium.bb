@@ -18,9 +18,8 @@ namespace content {
 
 template class DeviceSensorEventPump<blink::WebDeviceMotionListener>;
 
-DeviceMotionEventPump::DeviceMotionEventPump(RenderThread* thread)
-    : DeviceSensorEventPump<blink::WebDeviceMotionListener>(thread),
-      accelerometer_(this, device::mojom::SensorType::ACCELEROMETER),
+DeviceMotionEventPump::DeviceMotionEventPump()
+    : accelerometer_(this, device::mojom::SensorType::ACCELEROMETER),
       linear_acceleration_sensor_(
           this,
           device::mojom::SensorType::LINEAR_ACCELERATION),

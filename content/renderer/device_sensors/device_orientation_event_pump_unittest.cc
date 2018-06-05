@@ -62,8 +62,8 @@ class MockDeviceOrientationListener
 
 class DeviceOrientationEventPumpForTesting : public DeviceOrientationEventPump {
  public:
-  DeviceOrientationEventPumpForTesting(bool absolute)
-      : DeviceOrientationEventPump(nullptr, absolute) {}
+  explicit DeviceOrientationEventPumpForTesting(bool absolute)
+      : DeviceOrientationEventPump(absolute) {}
   ~DeviceOrientationEventPumpForTesting() override {}
 
  private:

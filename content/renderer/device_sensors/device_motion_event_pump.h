@@ -15,12 +15,10 @@ class MotionData;
 
 namespace content {
 
-class RenderThread;
-
 class CONTENT_EXPORT DeviceMotionEventPump
     : public DeviceSensorEventPump<blink::WebDeviceMotionListener> {
  public:
-  explicit DeviceMotionEventPump(RenderThread* thread);
+  DeviceMotionEventPump();
   ~DeviceMotionEventPump() override;
 
   // PlatformEventObserver:

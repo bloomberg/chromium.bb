@@ -131,7 +131,7 @@ class UseSynchronousResizeModeVisitor : public RenderViewVisitor {
 class MockGamepadProvider : public RendererGamepadProvider {
  public:
   explicit MockGamepadProvider(test_runner::GamepadController* controller)
-      : RendererGamepadProvider(nullptr), controller_(controller) {}
+      : controller_(controller) {}
   ~MockGamepadProvider() override {
     StopIfObserving();
   }

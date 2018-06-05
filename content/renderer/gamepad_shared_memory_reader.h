@@ -23,7 +23,7 @@ typedef device::SharedMemorySeqLockBuffer<device::Gamepads>
 class GamepadSharedMemoryReader : public RendererGamepadProvider,
                                   public device::mojom::GamepadObserver {
  public:
-  explicit GamepadSharedMemoryReader(RenderThread* thread);
+  GamepadSharedMemoryReader();
   ~GamepadSharedMemoryReader() override;
 
   // RendererGamepadProvider implementation.

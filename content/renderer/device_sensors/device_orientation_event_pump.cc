@@ -44,10 +44,8 @@ template class DeviceSensorEventPump<blink::WebDeviceOrientationListener>;
 
 const double DeviceOrientationEventPump::kOrientationThreshold = 0.1;
 
-DeviceOrientationEventPump::DeviceOrientationEventPump(RenderThread* thread,
-                                                       bool absolute)
-    : DeviceSensorEventPump<blink::WebDeviceOrientationListener>(thread),
-      relative_orientation_sensor_(
+DeviceOrientationEventPump::DeviceOrientationEventPump(bool absolute)
+    : relative_orientation_sensor_(
           this,
           device::mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES),
       absolute_orientation_sensor_(

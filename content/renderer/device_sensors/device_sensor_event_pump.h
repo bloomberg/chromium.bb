@@ -105,9 +105,7 @@ class CONTENT_EXPORT DeviceSensorEventPump
   PumpState GetPumpStateForTesting() { return state_; }
 
  protected:
-  explicit DeviceSensorEventPump(RenderThread* thread)
-      : PlatformEventObserver<ListenerType>(thread),
-        state_(PumpState::STOPPED) {}
+  DeviceSensorEventPump() : state_(PumpState::STOPPED) {}
 
   ~DeviceSensorEventPump() override {
     PlatformEventObserver<ListenerType>::StopIfObserving();
