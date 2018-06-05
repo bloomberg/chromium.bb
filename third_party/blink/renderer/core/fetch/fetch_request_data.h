@@ -75,6 +75,10 @@ class FetchRequestData final
     redirect_ = redirect;
   }
   network::mojom::FetchRedirectMode Redirect() const { return redirect_; }
+  void SetImportance(mojom::FetchImportanceMode importance) {
+    importance_ = importance;
+  }
+  mojom::FetchImportanceMode Importance() const { return importance_; }
   void SetResponseTainting(Tainting tainting) { response_tainting_ = tainting; }
   Tainting ResponseTainting() const { return response_tainting_; }
   FetchHeaderList* HeaderList() const { return header_list_.Get(); }
@@ -132,6 +136,7 @@ class FetchRequestData final
   // worker.
   mojom::FetchCacheMode cache_mode_;
   network::mojom::FetchRedirectMode redirect_;
+  mojom::FetchImportanceMode importance_;
   // FIXME: Support m_useURLCredentialsFlag;
   // FIXME: Support m_redirectCount;
   Tainting response_tainting_;

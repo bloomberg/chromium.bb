@@ -786,6 +786,7 @@ void FetchManager::Loader::PerformHTTPFetch() {
   }
   request.SetCacheMode(fetch_request_data_->CacheMode());
   request.SetFetchRedirectMode(fetch_request_data_->Redirect());
+  request.SetFetchImportanceMode(fetch_request_data_->Importance());
   request.SetUseStreamOnResponse(true);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context_->GetSecurityContext().AddressSpace());
@@ -870,6 +871,7 @@ void FetchManager::Loader::PerformDataFetch() {
   request.SetHTTPMethod(fetch_request_data_->Method());
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
   request.SetFetchRedirectMode(FetchRedirectMode::kError);
+  request.SetFetchImportanceMode(fetch_request_data_->Importance());
   // We intentionally skip 'setExternalRequestStateFromRequestorAddressSpace',
   // as 'data:' can never be external.
 

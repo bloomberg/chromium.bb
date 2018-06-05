@@ -103,6 +103,12 @@ RequestInit::RequestInit(ExecutionContext* context,
   if (exception_state.HadException())
     return;
 
+  if (RuntimeEnabledFeatures::PriorityHintsEnabled()) {
+    importance_ = h.Get<IDLString>("importance").value_or(String());
+    if (exception_state.HadException())
+      return;
+  }
+
   keepalive_ = h.Get<IDLBoolean>("keepalive");
   if (exception_state.HadException())
     return;
@@ -195,6 +201,13 @@ void RequestInit::CheckEnumValues(
   if (!redirect_.IsNull() && redirect_ != "follow" && redirect_ != "error" &&
       redirect_ != "manual") {
     exception_state.ThrowTypeError("Invalid redirect mode");
+    return;
+  }
+
+  // Validate importance_
+  if (!importance_.IsNull() && importance_ != "low" && importance_ != "auto" &&
+      importance_ != "high") {
+    exception_state.ThrowTypeError("Invalid importance mode");
     return;
   }
 

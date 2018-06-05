@@ -50,6 +50,7 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   request->SetCacheMode(original->CacheMode());
   request->SetRedirect(original->Redirect());
   request->SetIntegrity(original->Integrity());
+  request->SetImportance(original->Importance());
   request->SetKeepalive(original->Keepalive());
   if (original->URLLoaderFactory()) {
     network::mojom::blink::URLLoaderFactoryPtr factory_clone;
@@ -259,6 +260,18 @@ Request* Request::CreateRequestWithRequestOrString(
     // checking |fallbackMode| as specified in the spec.
     if (!input_request)
       request->SetMode(network::mojom::FetchRequestMode::kCORS);
+  }
+
+  if (RuntimeEnabledFeatures::PriorityHintsEnabled()) {
+    // This is not yet standardized, but we can assume the following:
+    // "If |init|'s importance member is present, set |request|'s importance
+    // mode to it." For more information see Priority Hints at
+    // https://crbug.com/821464
+    if (init.Importance() == "low") {
+      request->SetImportance(mojom::FetchImportanceMode::kImportanceLow);
+    } else if (init.Importance() == "high") {
+      request->SetImportance(mojom::FetchImportanceMode::kImportanceHigh);
+    }
   }
 
   // "Let |credentials| be |init|'s credentials member if it is present, and
