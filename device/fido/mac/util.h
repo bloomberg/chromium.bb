@@ -19,6 +19,12 @@ namespace device {
 namespace fido {
 namespace mac {
 
+// KeychainItemIdentifier returns the unique identifier for a key pair, derived
+// from an RP ID and user handle. It is stored in the keychain items
+// kSecAttrApplicationLabel attribute and can be used for lookup.
+std::vector<uint8_t> KeychainItemIdentifier(std::string rp_id,
+                                            std::vector<uint8_t> user_id);
+
 // MakeAuthenticatorData returns an AuthenticatorData instance for the Touch ID
 // authenticator with the given Relying Party ID, credential ID and public key.
 // It returns |base::nullopt| on failure.

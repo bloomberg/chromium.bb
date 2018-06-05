@@ -39,12 +39,6 @@ const std::string& GetAssertionOperation::RpId() const {
 }
 
 void GetAssertionOperation::Run() {
-  if (!Init()) {
-    std::move(callback())
-        .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
-    return;
-  }
-
   // Prompt the user for consent.
   // TODO(martinkr): Localize reason strings.
   PromptTouchId("sign in to " + RpId());

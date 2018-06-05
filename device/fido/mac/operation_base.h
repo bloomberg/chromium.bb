@@ -13,7 +13,6 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
-#include "device/fido/mac/credential_metadata.h"
 #include "device/fido/mac/operation.h"
 #include "device/fido/mac/touch_id_context.h"
 
@@ -38,21 +37,9 @@ class API_AVAILABLE(macosx(10.12.2)) OperationBase : public Operation {
         keychain_access_group_(std::move(keychain_access_group)),
         callback_(std::move(callback)),
         touch_id_context_(std::make_unique<TouchIdContext>()) {}
-
   ~OperationBase() override = default;
 
  protected:
-  // Subclasses must call Init() at the beginning of Run().
-  bool Init() {
-    base::Optional<std::string> rp_id =
-        CredentialMetadata::EncodeRpId(profile_id(), RpId());
-    if (!rp_id)
-      return false;
-
-    encoded_rp_id_ = std::move(*rp_id);
-    return true;
-  }
-
   // PromptTouchId triggers a Touch ID consent dialog with the given reason
   // string. Subclasses implement the PromptTouchIdDone callback to receive the
   // result.
@@ -89,13 +76,11 @@ class API_AVAILABLE(macosx(10.12.2)) OperationBase : public Operation {
     CFDictionarySetValue(query, kSecClass, kSecClassKey);
     CFDictionarySetValue(query, kSecAttrAccessGroup,
                          base::SysUTF8ToNSString(keychain_access_group_));
-    DCHECK(!encoded_rp_id_.empty());
-    CFDictionarySetValue(query, kSecAttrLabel,
-                         base::SysUTF8ToNSString(encoded_rp_id_));
+    CFDictionarySetValue(query, kSecAttrLabel, base::SysUTF8ToNSString(RpId()));
+    CFDictionarySetValue(query, kSecAttrApplicationTag,
+                         base::SysUTF8ToNSString(profile_id_));
     return query;
   }
-
-  const std::string& profile_id() const { return profile_id_; }
 
   const Request& request() const { return request_; }
   Callback& callback() { return callback_; }
@@ -104,7 +89,6 @@ class API_AVAILABLE(macosx(10.12.2)) OperationBase : public Operation {
   Request request_;
   std::string profile_id_;
   std::string keychain_access_group_;
-  std::string encoded_rp_id_ = "";
   Callback callback_;
 
   std::unique_ptr<TouchIdContext> touch_id_context_;
