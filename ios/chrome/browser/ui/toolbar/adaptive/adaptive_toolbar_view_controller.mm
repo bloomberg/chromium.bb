@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -84,6 +85,11 @@
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   [self updateAllButtonsVisibility];
+  if (IsRegularXRegularSizeClass(self)) {
+    [self.view.progressBar setHidden:YES animated:NO completion:nil];
+  } else if (self.loading) {
+    [self.view.progressBar setHidden:NO animated:NO completion:nil];
+  }
 }
 
 #pragma mark - Public
@@ -113,7 +119,8 @@
 
   if (!loading) {
     [self stopProgressBar];
-  } else if (self.view.progressBar.hidden) {
+  } else if (self.view.progressBar.hidden &&
+             !IsRegularXRegularSizeClass(self)) {
     [self.view.progressBar setProgress:0];
     [self.view.progressBar setHidden:NO animated:YES completion:nil];
     // Layout if needed the progress bar to avoid having the progress bar going
