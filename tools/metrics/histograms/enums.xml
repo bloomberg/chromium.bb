@@ -10951,6 +10951,7 @@ Called by update_net_error_codes.py.-->
   <int value="306" label="shtml"/>
   <int value="307" label="shtm"/>
   <int value="308" label="sht"/>
+  <int value="309" label="slk"/>
 </enum>
 
 <enum name="DownloadItem.DangerType">
@@ -40728,6 +40729,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="306" label="SHTML"/>
   <int value="307" label="SHTM"/>
   <int value="308" label="SHT"/>
+  <int value="309" label="SLK"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">
