@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
+#include "chrome/browser/sessions/tab_loader_tester.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -96,6 +98,13 @@ class TabRestoreTest : public InProcessBrowserTest {
         base::FilePath().AppendASCII("session_history"),
         base::FilePath().AppendASCII("bot2.html"));
   }
+
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+  void SetMaxSimultaneousLoadsForTesting(TabLoader* tab_loader) {
+    TabLoaderTester tester(tab_loader);
+    tester.SetMaxSimultaneousLoadsForTesting(1);
+  }
+#endif
 
  protected:
   void SetUpOnMainThread() override {
@@ -845,7 +854,14 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
   CloseBrowserSynchronously(browser2);
 
   // Limit the number of restored tabs that are loaded.
-  TabLoader::SetMaxLoadedTabCountForTest(2);
+  TabLoaderTester::SetMaxLoadedTabCountForTesting(2);
+
+  // When the tab loader is created configure it for this test. This ensures
+  // that no more than 1 loading slot is used for the test.
+  base::RepeatingCallback<void(TabLoader*)> callback =
+      base::BindRepeating(&TabRestoreTest::SetMaxSimultaneousLoadsForTesting,
+                          base::Unretained(this));
+  TabLoaderTester::SetConstructionCallbackForTesting(&callback);
 
   // Restore recently closed window.
   content::WindowedNotificationObserver open_window_observer(
@@ -872,5 +888,8 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
     EXPECT_FALSE(contents->IsLoading());
     EXPECT_TRUE(contents->GetController().NeedsReload());
   }
+
+  // Clean up the callback.
+  TabLoaderTester::SetConstructionCallbackForTesting(nullptr);
 }
 #endif  // BUILDFLAG(ENABLE_SESSION_SERVICE)
