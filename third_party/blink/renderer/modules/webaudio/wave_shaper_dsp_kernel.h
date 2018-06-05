@@ -49,21 +49,13 @@ class WaveShaperDSPKernel final : public AudioDSPKernel {
                float* dest,
                size_t frames_to_process) override;
   void Reset() override;
-  double TailTime() const override;
+  double TailTime() const override { return 0; }
   double LatencyTime() const override;
   bool RequiresTailProcessing() const final;
 
   // Oversampling requires more resources, so let's only allocate them if
   // needed.
   void LazyInitializeOversampling();
-
-  // Computes value of the WaveShaper
-  double WaveShaperCurveValue(float input,
-                              const float* curve_data,
-                              int curve_length) const;
-
-  // Set the tail time
-  void SetTailTime(double time) { tail_time_ = time; }
 
  protected:
   // Apply the shaping curve.
@@ -88,14 +80,6 @@ class WaveShaperDSPKernel final : public AudioDSPKernel {
   std::unique_ptr<DownSampler> down_sampler_;
   std::unique_ptr<UpSampler> up_sampler2_;
   std::unique_ptr<DownSampler> down_sampler2_;
-
- private:
-  // Tail time for the WaveShaper.  This basically can have two values: 0 and
-  // infinity.  It only takes the value of infinity if the wave shaper curve is
-  // such that a zero input produces a non-zero output.  In this case, the node
-  // has an infinite tail so that silent input continues to produce non-silent
-  // output.
-  double tail_time_;
 };
 
 }  // namespace blink
