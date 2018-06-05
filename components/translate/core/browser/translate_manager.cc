@@ -60,11 +60,13 @@ const char kSourceLanguageQueryName[] = "sl";
 const char kUrlQueryName[] = "u";
 
 std::set<std::string> GetSkippedLanguagesForExperiments(
-    std::string source_lang) {
+    std::string source_lang,
+    translate::TranslatePrefs* translate_prefs) {
   // Under this experiment, skip english as the target language if possible so
   // that Translate triggers on English pages.
   std::set<std::string> skipped_languages;
-  if (language::ShouldForceTriggerTranslateOnEnglishPages() &&
+  if (language::ShouldForceTriggerTranslateOnEnglishPages(
+          translate_prefs->GetForceTriggerOnEnglishPagesCount()) &&
       source_lang == "en") {
     skipped_languages.insert("en");
   }
@@ -177,7 +179,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   std::string language_code =
       TranslateDownloadManager::GetLanguageCode(page_lang);
   const std::set<std::string>& skipped_languages =
-      GetSkippedLanguagesForExperiments(language_code);
+      GetSkippedLanguagesForExperiments(language_code, translate_prefs.get());
   std::string target_lang = GetTargetLanguage(
       translate_prefs.get(), language_model_, skipped_languages);
 
@@ -195,7 +197,8 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   // Ignore Ranker's decision under triggering experiments since it wasn't
   // trained appropriately under those scenarios.
   bool should_offer_translation =
-      language::ShouldPreventRankerEnforcementInIndia() ||
+      language::ShouldPreventRankerEnforcementInIndia(
+          translate_prefs->GetForceTriggerOnEnglishPagesCount()) ||
       translate_ranker_->ShouldOfferTranslation(translate_event_.get());
 
   // Nothing to do if either the language Chrome is in or the language of
@@ -270,6 +273,15 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   TranslateBrowserMetrics::ReportInitiationStatus(
       TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR);
 
+  // If the source language matches the UI language, it means the translation
+  // prompt is being forced by an experiment. Report this so the count of how
+  // often it happens can be tracked to suppress the experiment as necessary.
+  if (language_code ==
+      TranslateDownloadManager::GetLanguageCode(
+          TranslateDownloadManager::GetInstance()->application_locale())) {
+    translate_prefs->ReportForceTriggerOnEnglishPages();
+  }
+
   // Prompts the user if they want the page translated.
   translate_client_->ShowTranslateUI(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
                                      language_code, target_lang,
@@ -287,6 +299,17 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
   // Log the source and target languages of the translate request.
   TranslateBrowserMetrics::ReportTranslateSourceLanguage(original_source_lang);
   TranslateBrowserMetrics::ReportTranslateTargetLanguage(target_lang);
+
+  // If the source language matches the UI language, it means the translation
+  // prompt is being forced by an experiment. Report this so the count of how
+  // often it happens can be decremented (meaning the user didn't decline or
+  // ignore the prompt).
+  if (original_source_lang ==
+      TranslateDownloadManager::GetLanguageCode(
+          TranslateDownloadManager::GetInstance()->application_locale())) {
+    translate_client_->GetTranslatePrefs()
+        ->ReportAcceptedAfterForceTriggerOnEnglishPages();
+  }
 
   // Translation can be kicked by context menu against unsupported languages.
   // Unsupported language strings should be replaced with

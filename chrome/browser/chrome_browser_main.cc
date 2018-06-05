@@ -134,6 +134,7 @@
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/language/content/browser/geo_language_provider.h"
+#include "components/language/core/common/language_experiments.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/call_stack_profile_params.h"
@@ -1860,7 +1861,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Post-profile init ---------------------------------------------------------
 
   TranslateService::Initialize();
-  if (base::FeatureList::IsEnabled(features::kGeoLanguage)) {
+  if (base::FeatureList::IsEnabled(features::kGeoLanguage) ||
+      language::GetOverrideLanguageModel() ==
+          language::OverrideLanguageModel::GEO) {
     language::GeoLanguageProvider::GetInstance()->StartUp(
         content::ServiceManagerConnection::GetForProcess()
             ->GetConnector()

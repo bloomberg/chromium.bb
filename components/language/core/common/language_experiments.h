@@ -37,12 +37,17 @@ OverrideLanguageModel GetOverrideLanguageModel();
 // Returns true if kOverrideTranslateTriggerInIndia is enabled, false otherwise.
 // It should be interpreted as a signal to trigger translate UI on English
 // pages, even when the UI language is English.
-bool ShouldForceTriggerTranslateOnEnglishPages();
+bool ShouldForceTriggerTranslateOnEnglishPages(int force_trigger_count);
 
 // Returns true if kOverrideTranslateTriggerInIndia is enabled and the current
 // experiment group specifies the param to enforce Ranker decisions, false
 // otherwise.
-bool ShouldPreventRankerEnforcementInIndia();
+bool ShouldPreventRankerEnforcementInIndia(int force_trigger_count);
+
+// Returns true if the user ignored or dismissed a prompt that was displayed
+// because of kOverrideTranslateTriggerInIndia often enough that the experiment
+// should stop being taken into account.
+bool IsForceTriggerBackoffThresholdReached(int force_trigger_count);
 
 }  // namespace language
 

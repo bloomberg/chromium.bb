@@ -8,14 +8,17 @@
 #include <string>
 
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/string_number_conversions.h"
 
 namespace language {
-
+// Features:
 const base::Feature kUseHeuristicLanguageModel{
     "UseHeuristicLanguageModel", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kOverrideTranslateTriggerInIndia{
     "OverrideTranslateTriggerInIndia", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Params:
+const char kBackoffThresholdKey[] = "backoff_threshold";
 const char kOverrideModelKey[] = "override_model";
 const char kEnforceRankerKey[] = "enforce_ranker";
 const char kOverrideModelHeuristicValue[] = "heuristic";
@@ -40,15 +43,29 @@ OverrideLanguageModel GetOverrideLanguageModel() {
   return OverrideLanguageModel::DEFAULT;
 }
 
-bool ShouldForceTriggerTranslateOnEnglishPages() {
-  return base::FeatureList::IsEnabled(kOverrideTranslateTriggerInIndia);
+bool ShouldForceTriggerTranslateOnEnglishPages(int force_trigger_count) {
+  return base::FeatureList::IsEnabled(kOverrideTranslateTriggerInIndia) &&
+         !IsForceTriggerBackoffThresholdReached(force_trigger_count);
 }
 
-bool ShouldPreventRankerEnforcementInIndia() {
+bool ShouldPreventRankerEnforcementInIndia(int force_trigger_count) {
   std::map<std::string, std::string> params;
-  return base::GetFieldTrialParamsByFeature(kOverrideTranslateTriggerInIndia,
+  return ShouldForceTriggerTranslateOnEnglishPages(force_trigger_count) &&
+         base::GetFieldTrialParamsByFeature(kOverrideTranslateTriggerInIndia,
                                             &params) &&
          params[kEnforceRankerKey] == "false";
+}
+
+bool IsForceTriggerBackoffThresholdReached(int force_trigger_count) {
+  int threshold;
+  std::map<std::string, std::string> params;
+  if (!base::GetFieldTrialParamsByFeature(kOverrideTranslateTriggerInIndia,
+                                          &params) ||
+      !base::StringToInt(params[kBackoffThresholdKey], &threshold)) {
+    return false;
+  }
+
+  return force_trigger_count >= threshold;
 }
 
 }  // namespace language
