@@ -31,7 +31,7 @@ class UnifiedSystemTrayModel;
 // During the transition, we hide UnifiedSystemTray button and forward
 // PerformAction() from SystemTray button, as we still don't have implementation
 // of status icons on the UnifiedSystemTray button.
-class UnifiedSystemTray : public TrayBackgroundView {
+class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
  public:
   explicit UnifiedSystemTray(Shelf* shelf);
   ~UnifiedSystemTray() override;

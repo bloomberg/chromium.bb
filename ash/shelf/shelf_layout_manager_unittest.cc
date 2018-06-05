@@ -12,6 +12,7 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -25,9 +26,11 @@
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/test_system_tray_item.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -812,11 +815,13 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   EXPECT_EQ(display_bottom, display.work_area().bottom());
 
   // Tap the system tray when shelf is shown should open the system tray menu.
-  generator.GestureTapAt(GetPrimarySystemTray()
-                             ->GetWidget()
+  generator.GestureTapAt(StatusAreaWidgetTestHelper::GetStatusAreaWidget()
                              ->GetWindowBoundsInScreen()
                              .CenterPoint());
-  EXPECT_TRUE(GetPrimarySystemTray()->HasSystemBubble());
+  if (features::IsSystemTrayUnifiedEnabled())
+    EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
+  else
+    EXPECT_TRUE(GetPrimarySystemTray()->HasSystemBubble());
 
   // Move mouse back up and click to dismiss the opened system tray menu.
   generator.MoveMouseTo(0, 0);
@@ -1334,7 +1339,7 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
             display.GetWorkAreaInsets().left());
   EXPECT_GE(shelf_bounds.width(),
             GetShelfWidget()->GetContentsView()->GetPreferredSize().width());
-  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, GetPrimarySystemTray()->shelf()->alignment());
+  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, GetPrimaryShelf()->alignment());
   StatusAreaWidget* status_area_widget = GetShelfWidget()->status_area_widget();
   gfx::Rect status_bounds(status_area_widget->GetWindowBoundsInScreen());
   // TODO(estade): Re-enable this check. See crbug.com/660928.
@@ -1363,8 +1368,7 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
             display.GetWorkAreaInsets().right());
   EXPECT_GE(shelf_bounds.width(),
             GetShelfWidget()->GetContentsView()->GetPreferredSize().width());
-  EXPECT_EQ(SHELF_ALIGNMENT_RIGHT,
-            GetPrimarySystemTray()->shelf()->alignment());
+  EXPECT_EQ(SHELF_ALIGNMENT_RIGHT, GetPrimaryShelf()->alignment());
   status_bounds = gfx::Rect(status_area_widget->GetWindowBoundsInScreen());
   // TODO(estade): Re-enable this check. See crbug.com/660928.
   //  EXPECT_GE(
@@ -1885,7 +1889,10 @@ TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
       TOGGLE_SYSTEM_TRAY_BUBBLE);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
-  EXPECT_TRUE(GetPrimarySystemTray()->HasSystemBubble());
+  if (features::IsSystemTrayUnifiedEnabled())
+    EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
+  else
+    EXPECT_TRUE(GetPrimarySystemTray()->HasSystemBubble());
 }
 
 TEST_F(ShelfLayoutManagerTest, WorkAreaChangeWorkspace) {

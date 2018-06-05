@@ -20,8 +20,10 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_environment.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_screenshot_delegate.h"
@@ -210,6 +212,11 @@ Shelf* AshTestBase::GetPrimaryShelf() {
 // static
 SystemTray* AshTestBase::GetPrimarySystemTray() {
   return Shell::Get()->GetPrimarySystemTray();
+}
+
+// static
+UnifiedSystemTray* AshTestBase::GetPrimaryUnifiedSystemTray() {
+  return GetPrimaryShelf()->GetStatusAreaWidget()->unified_system_tray();
 }
 
 ui::test::EventGenerator& AshTestBase::GetEventGenerator() {

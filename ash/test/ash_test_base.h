@@ -67,6 +67,7 @@ class Shelf;
 class SystemTray;
 class TestScreenshotDelegate;
 class TestSessionControllerClient;
+class UnifiedSystemTray;
 
 class AshTestBase : public testing::Test,
                     public aura::EnvObserver,
@@ -84,6 +85,9 @@ class AshTestBase : public testing::Test,
 
   // Returns the system tray on the primary display.
   static SystemTray* GetPrimarySystemTray();
+
+  // Returns the unified system tray on the primary display.
+  static UnifiedSystemTray* GetPrimaryUnifiedSystemTray();
 
   // Update the display configuration as given in |display_specs|.
   // See ash::DisplayManagerTestApi::UpdateDisplay for more details.
