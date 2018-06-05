@@ -435,6 +435,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            (!IsTablePart() || IsLayoutBlockFlow());
   }
 
+  inline bool ShouldApplyLayoutContainment() const {
+    return StyleRef().ContainsLayout() &&
+           (!IsInline() || IsAtomicInlineLevel()) && !IsRubyText() &&
+           (!IsTablePart() || IsLayoutBlockFlow());
+  }
+
   inline bool ShouldApplySizeContainment() const {
     return StyleRef().ContainsSize() &&
            (!IsInline() || IsAtomicInlineLevel()) && !IsRubyText() &&

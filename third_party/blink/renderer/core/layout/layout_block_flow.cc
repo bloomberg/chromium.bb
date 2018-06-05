@@ -4378,7 +4378,7 @@ bool LayoutBlockFlow::CreatesNewFormattingContext() const {
       IsFlexItemIncludingDeprecated() || IsTableCell() || IsTableCaption() ||
       IsFieldset() || IsCustomItem() || IsDocumentElement() || IsGridItem() ||
       IsWritingModeRoot() || Style()->Display() == EDisplay::kFlowRoot ||
-      ShouldApplyPaintContainment() || Style()->ContainsLayout() ||
+      ShouldApplyPaintContainment() || ShouldApplyLayoutContainment() ||
       Style()->SpecifiesColumns() ||
       Style()->GetColumnSpan() == EColumnSpan::kAll) {
     // The specs require this object to establish a new formatting context.
