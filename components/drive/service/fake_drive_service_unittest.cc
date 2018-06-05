@@ -142,6 +142,23 @@ TEST_F(FakeDriveServiceTest, GetAllFileList) {
   EXPECT_EQ(1, fake_service_.file_list_load_count());
 }
 
+TEST_F(FakeDriveServiceTest, GetAllFileList_TeamDrives) {
+  ASSERT_TRUE(test_util::SetUpTeamDriveTestEntries(
+      &fake_service_, TEAM_DRIVE_ID_1, TEAM_DRIVE_NAME_1));
+
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
+  std::unique_ptr<FileList> file_list;
+  fake_service_.GetAllFileList(
+      TEAM_DRIVE_ID_1, test_util::CreateCopyResultCallback(&error, &file_list));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(file_list);
+  // Do some sanity check.
+  EXPECT_EQ(13U, file_list->items().size());
+  EXPECT_EQ(1, fake_service_.file_list_load_count());
+}
+
 TEST_F(FakeDriveServiceTest, GetAllFileList_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
@@ -427,6 +444,34 @@ TEST_F(FakeDriveServiceTest, GetChangeList_WithNewEntry) {
   ASSERT_EQ(1U, change_list->items().size());
   ASSERT_TRUE(change_list->items()[0]->file());
   EXPECT_EQ("new directory", change_list->items()[0]->file()->title());
+  EXPECT_EQ(1, fake_service_.change_list_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, GetChangeList_WithNewTeamDrive) {
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
+  const int64_t old_largest_change_id =
+      fake_service_.about_resource().largest_change_id();
+
+  // Add a new team drive.
+  fake_service_.AddTeamDrive(TEAM_DRIVE_ID_1, TEAM_DRIVE_NAME_1, "");
+
+  // Get the resource list newer than old_largest_change_id.
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
+  std::unique_ptr<ChangeList> change_list;
+  fake_service_.GetChangeList(
+      old_largest_change_id + 1,
+      test_util::CreateCopyResultCallback(&error, &change_list));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(change_list);
+  EXPECT_EQ(fake_service_.about_resource().largest_change_id(),
+            change_list->largest_change_id());
+  // The result should only contain the newly created tam drive.
+  ASSERT_EQ(1U, change_list->items().size());
+  ASSERT_TRUE(change_list->items()[0]->team_drive());
+  EXPECT_EQ(TEAM_DRIVE_ID_1, change_list->items()[0]->team_drive()->id());
+  EXPECT_EQ(TEAM_DRIVE_NAME_1, change_list->items()[0]->team_drive()->name());
   EXPECT_EQ(1, fake_service_.change_list_load_count());
 }
 
@@ -786,6 +831,25 @@ TEST_F(FakeDriveServiceTest, GetStartPageToken) {
   EXPECT_EQ(drive::util::ConvertChangestampToStartPageToken(
                 GetLargestChangeByAboutResource()),
             start_page_token->start_page_token());
+  EXPECT_EQ(1, fake_service_.start_page_token_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, GetStartPageToken_TeamDrive) {
+  ASSERT_TRUE(test_util::SetUpTeamDriveTestEntries(
+      &fake_service_, TEAM_DRIVE_ID_1, TEAM_DRIVE_NAME_1));
+
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
+  std::unique_ptr<StartPageToken> start_page_token;
+  fake_service_.GetStartPageToken(
+      TEAM_DRIVE_ID_1,
+      test_util::CreateCopyResultCallback(&error, &start_page_token));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+
+  ASSERT_TRUE(start_page_token);
+  // Do some sanity check.
+  EXPECT_NE("", start_page_token->start_page_token());
   EXPECT_EQ(1, fake_service_.start_page_token_load_count());
 }
 

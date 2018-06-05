@@ -188,6 +188,22 @@ struct CallResumeUpload {
   ProgressCallback progress_callback;
 };
 
+std::string GetTeamDriveId(const google_apis::ChangeResource& change_resource) {
+  std::string team_drive_id;
+  switch (change_resource.type()) {
+    case ChangeResource::FILE:
+      team_drive_id = change_resource.file()->team_drive_id();
+      break;
+    case ChangeResource::TEAM_DRIVE:
+      team_drive_id = change_resource.team_drive_id();
+      break;
+    case ChangeResource::UNKNOWN:
+      NOTREACHED();
+      break;
+  }
+  return team_drive_id;
+}
+
 }  // namespace
 
 struct FakeDriveService::EntryInfo {
@@ -240,6 +256,7 @@ FakeDriveService::FakeDriveService()
       start_page_token_(new StartPageToken),
       date_seq_(0),
       next_upload_sequence_number_(0),
+      largest_changestamp_(654321),
       default_max_results_(0),
       resource_id_count_(0),
       team_drive_list_load_count_(0),
@@ -254,7 +271,7 @@ FakeDriveService::FakeDriveService()
       never_return_all_file_list_(false),
       share_url_base_("https://share_url/"),
       weak_ptr_factory_(this) {
-  UpdateLatestChangelistId(654321);
+  UpdateLatestChangelistId(largest_changestamp_, std::string());
   about_resource_->set_quota_bytes_total(9876543210);
   about_resource_->set_quota_bytes_used_aggregate(6789012345);
   about_resource_->set_root_folder_id(GetRootResourceId());
@@ -313,6 +330,7 @@ void FakeDriveService::AddTeamDrive(const std::string& id,
 void FakeDriveService::AddTeamDrive(const std::string& id,
                                     const std::string& name,
                                     const std::string& start_page_token) {
+  DCHECK(entries_.find(id) == entries_.end());
   std::unique_ptr<TeamDriveResource> team_drive;
   team_drive.reset(new TeamDriveResource);
   team_drive->set_id(id);
@@ -321,6 +339,9 @@ void FakeDriveService::AddTeamDrive(const std::string& id,
 
   team_drive_start_page_tokens_[id] = std::make_unique<StartPageToken>();
   team_drive_start_page_tokens_[id]->set_start_page_token(start_page_token);
+
+  const EntryInfo* new_entry = AddNewTeamDriveEntry(id, name);
+  DCHECK(new_entry);
 }
 
 void FakeDriveService::RemoveAppByProductId(const std::string& product_id) {
@@ -463,12 +484,12 @@ CancelCallback FakeDriveService::GetAllFileList(
     return CancelCallback();
   }
 
-  GetChangeListInternal(0,  // start changestamp
+  GetChangeListInternal(0,              // start changestamp
                         std::string(),  // empty search query
                         std::string(),  // no directory resource id,
+                        team_drive_id,
                         0,  // start offset
-                        default_max_results_,
-                        &file_list_load_count_,
+                        default_max_results_, &file_list_load_count_,
                         base::Bind(&FileListCallbackAdapter, callback));
   return CancelCallback();
 }
@@ -480,12 +501,12 @@ CancelCallback FakeDriveService::GetFileListInDirectory(
   DCHECK(!directory_resource_id.empty());
   DCHECK(!callback.is_null());
 
-  GetChangeListInternal(0,  // start changestamp
+  GetChangeListInternal(0,              // start changestamp
                         std::string(),  // empty search query
                         directory_resource_id,
-                        0,  // start offset
-                        default_max_results_,
-                        &directory_load_count_,
+                        std::string(),  // empty team drive id.
+                        0,              // start offset
+                        default_max_results_, &directory_load_count_,
                         base::Bind(&FileListCallbackAdapter, callback));
   return CancelCallback();
 }
@@ -500,6 +521,7 @@ CancelCallback FakeDriveService::Search(
   GetChangeListInternal(0,  // start changestamp
                         search_query,
                         std::string(),  // no directory resource id,
+                        std::string(),  // empty team drive id.
                         0,              // start offset
                         default_max_results_, nullptr,
                         base::Bind(&FileListCallbackAdapter, callback));
@@ -519,7 +541,8 @@ CancelCallback FakeDriveService::SearchByTitle(
   GetChangeListInternal(0,  // start changestamp
                         base::StringPrintf("title:'%s'", title.c_str()),
                         directory_resource_id,
-                        0,  // start offset
+                        std::string(),  // empty team drive id.
+                        0,              // start offset
                         default_max_results_, nullptr,
                         base::Bind(&FileListCallbackAdapter, callback));
   return CancelCallback();
@@ -534,9 +557,9 @@ CancelCallback FakeDriveService::GetChangeList(
   GetChangeListInternal(start_changestamp,
                         std::string(),  // empty search query
                         std::string(),  // no directory resource id,
-                        0,  // start offset
-                        default_max_results_,
-                        &change_list_load_count_,
+                        std::string(),  // empty team drive id.
+                        0,              // start offset
+                        default_max_results_, &change_list_load_count_,
                         callback);
   return CancelCallback();
 }
@@ -551,11 +574,11 @@ CancelCallback FakeDriveService::GetChangeListByToken(
   int64_t changestamp = 0;
   CHECK(base::StringToInt64(start_page_token, &changestamp));
 
-  // TODO(slangley): Support team drive id.
   GetChangeListInternal(changestamp,
                         std::string(),  // empty search query
                         std::string(),  // no directory resource id,
-                        0,              // start offset
+                        team_drive_id,
+                        0,  // start offset
                         default_max_results_, &change_list_load_count_,
                         callback);
 
@@ -580,6 +603,7 @@ CancelCallback FakeDriveService::GetRemainingChangeList(
   int64_t start_changestamp = 0;
   std::string search_query;
   std::string directory_resource_id;
+  std::string team_drive_id;
   int start_offset = 0;
   int max_results = default_max_results_;
   base::StringPairs parameters;
@@ -598,6 +622,11 @@ CancelCallback FakeDriveService::GetRemainingChangeList(
             parameters[i].second,
             net::UnescapeRule::PATH_SEPARATORS |
                 net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+      } else if (parameters[i].first == "team-drive-id") {
+        team_drive_id = net::UnescapeURLComponent(
+            parameters[i].second,
+            net::UnescapeRule::PATH_SEPARATORS |
+                net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
       } else if (parameters[i].first == "start-offset") {
         base::StringToInt(parameters[i].second, &start_offset);
       } else if (parameters[i].first == "max-results") {
@@ -607,7 +636,8 @@ CancelCallback FakeDriveService::GetRemainingChangeList(
   }
 
   GetChangeListInternal(start_changestamp, search_query, directory_resource_id,
-                        start_offset, max_results, nullptr, callback);
+                        team_drive_id, start_offset, max_results, nullptr,
+                        callback);
   return CancelCallback();
 }
 
@@ -788,13 +818,13 @@ CancelCallback FakeDriveService::DeleteResource(
   }
 
   ChangeResource* change = &entry->change_resource;
-  const FileResource* file = change->file();
   if (change->is_deleted()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
     return CancelCallback();
   }
 
+  const FileResource* file = change->file();
   if (!etag.empty() && etag != file->etag()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, HTTP_PRECONDITION));
@@ -808,7 +838,7 @@ CancelCallback FakeDriveService::DeleteResource(
   }
 
   change->set_deleted(true);
-  AddNewChangestamp(change);
+  AddNewChangestamp(change, file->team_drive_id());
   change->set_file(std::unique_ptr<FileResource>());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, HTTP_NO_CONTENT));
@@ -853,7 +883,7 @@ CancelCallback FakeDriveService::TrashResource(
   }
 
   file->mutable_labels()->set_trashed(true);
-  AddNewChangestamp(change);
+  AddNewChangestamp(change, file->team_drive_id());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -983,12 +1013,19 @@ CancelCallback FakeDriveService::CopyResource(
   parents.push_back(parent);
   *new_file->mutable_parents() = parents;
 
+  // Set the team drive for the new entry to the parent.
+  if (entries_.count(parent_resource_id) > 0) {
+    const ChangeResource& change =
+        entries_[parent_resource_id]->change_resource;
+    new_file->set_team_drive_id(GetTeamDriveId(change));
+  }
+
   if (!last_modified.is_null()) {
     new_file->set_modified_date(last_modified);
     new_file->set_modified_by_me_date(last_modified);
   }
 
-  AddNewChangestamp(new_change);
+  AddNewChangestamp(new_change, new_file->team_drive_id());
   UpdateETag(new_file);
 
   // Add the new entry to the map.
@@ -1061,7 +1098,7 @@ CancelCallback FakeDriveService::UpdateResource(
   if (!last_viewed_by_me.is_null())
     file->set_last_viewed_by_me_date(last_viewed_by_me);
 
-  AddNewChangestamp(change);
+  AddNewChangestamp(change, file->team_drive_id());
   UpdateETag(file);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1103,7 +1140,7 @@ CancelCallback FakeDriveService::AddResourceToDirectory(
   parent.set_file_id(parent_resource_id);
   change->mutable_file()->mutable_parents()->push_back(parent);
 
-  AddNewChangestamp(change);
+  AddNewChangestamp(change, change->file()->team_drive_id());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1139,7 +1176,7 @@ CancelCallback FakeDriveService::RemoveResourceFromDirectory(
   for (size_t i = 0; i < parents->size(); ++i) {
     if ((*parents)[i].file_id() == parent_resource_id) {
       parents->erase(parents->begin() + i);
-      AddNewChangestamp(change);
+      AddNewChangestamp(change, file->team_drive_id());
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(callback, HTTP_NO_CONTENT));
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1377,7 +1414,7 @@ CancelCallback FakeDriveService::ResumeUpload(
   file->set_md5_checksum(base::MD5String(content_data));
   entry->content_data = content_data;
   file->set_file_size(end_position);
-  AddNewChangestamp(change);
+  AddNewChangestamp(change, file->team_drive_id());
   UpdateETag(file);
 
   completion_callback.Run(HTTP_SUCCESS, std::make_unique<FileResource>(*file));
@@ -1696,9 +1733,11 @@ void FakeDriveService::UpdateETag(google_apis::FileResource* file) {
   file->set_etag("etag_" + start_page_token_->start_page_token());
 }
 
-void FakeDriveService::AddNewChangestamp(google_apis::ChangeResource* change) {
-  UpdateLatestChangelistId(about_resource_->largest_change_id() + 1);
-  change->set_change_id(about_resource_->largest_change_id());
+void FakeDriveService::AddNewChangestamp(google_apis::ChangeResource* change,
+                                         const std::string& team_drive_id) {
+  ++largest_changestamp_;
+  UpdateLatestChangelistId(largest_changestamp_, team_drive_id);
+  change->set_change_id(largest_changestamp_);
 }
 
 const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
@@ -1716,16 +1755,27 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
     return nullptr;
   }
 
+  // Extract the team drive id from the parent, if there is one.
+  std::string team_drive_id;
+  if (!parent_resource_id.empty() && entries_.count(parent_resource_id) > 0) {
+    const ChangeResource& resource =
+        entries_[parent_resource_id]->change_resource;
+    team_drive_id = GetTeamDriveId(resource);
+  }
+
   const std::string resource_id =
       given_resource_id.empty() ? GetNewResourceId() : given_resource_id;
   if (entries_.count(resource_id))
     return nullptr;
   GURL upload_url = GURL("https://xxx/upload/" + resource_id);
 
-  std::unique_ptr<EntryInfo> new_entry(new EntryInfo);
+  std::unique_ptr<EntryInfo> new_entry = std::make_unique<EntryInfo>();
+
   ChangeResource* new_change = &new_entry->change_resource;
-  FileResource* new_file = new FileResource;
   new_change->set_type(ChangeResource::FILE);
+  new_change->set_team_drive_id(team_drive_id);
+
+  FileResource* new_file = new FileResource;
   new_change->set_file(base::WrapUnique(new_file));
 
   // Set the resource ID and the title
@@ -1750,6 +1800,9 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
   // Set mime type.
   new_file->set_mime_type(content_type);
 
+  // Set the team drive id.
+  new_file->set_team_drive_id(team_drive_id);
+
   // Set alternate link.
   if (content_type == util::kGoogleDocumentMimeType) {
     new_file->set_alternate_link(
@@ -1773,7 +1826,7 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
   new_entry->share_url = net::AppendOrReplaceQueryParameter(
       share_url_base_, "name", title);
 
-  AddNewChangestamp(new_change);
+  AddNewChangestamp(new_change, team_drive_id);
   UpdateETag(new_file);
 
   new_file->set_created_date(base::Time() +
@@ -1788,10 +1841,46 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
   return raw_new_entry;
 }
 
+const FakeDriveService::EntryInfo* FakeDriveService::AddNewTeamDriveEntry(
+    const std::string& team_drive_id,
+    const std::string& team_drive_name) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // Check we do not already have this entry.
+  if (entries_.count(team_drive_id) > 0) {
+    return nullptr;
+  }
+
+  std::unique_ptr<EntryInfo> new_entry = std::make_unique<EntryInfo>();
+
+  ChangeResource& change = new_entry->change_resource;
+  change.set_type(ChangeResource::TEAM_DRIVE);
+  change.set_team_drive_id(team_drive_id);
+
+  std::unique_ptr<TeamDriveResource> team_drive =
+      std::make_unique<TeamDriveResource>();
+  team_drive->set_id(team_drive_id);
+  team_drive->set_name(team_drive_name);
+  change.set_team_drive(std::move(team_drive));
+
+  new_entry->share_url = net::AppendOrReplaceQueryParameter(
+      share_url_base_, "name", team_drive_name);
+
+  AddNewChangestamp(&change, team_drive_id);
+
+  change.set_modification_date(base::Time() +
+                               base::TimeDelta::FromMilliseconds(++date_seq_));
+
+  EntryInfo* raw_new_entry = new_entry.get();
+  entries_[team_drive_id] = std::move(new_entry);
+  return raw_new_entry;
+}
+
 void FakeDriveService::GetChangeListInternal(
     int64_t start_changestamp,
     const std::string& search_query,
     const std::string& directory_resource_id,
+    const std::string& team_drive_id,
     int start_offset,
     int max_results,
     int* load_counter,
@@ -1816,7 +1905,8 @@ void FakeDriveService::GetChangeListInternal(
     if (!directory_resource_id.empty()) {
       // Get the parent resource ID of the entry.
       std::string parent_resource_id;
-      if (entry.file() && !entry.file()->parents().empty())
+      if (entry.type() == ChangeResource::FILE && entry.file() &&
+          !entry.file()->parents().empty())
         parent_resource_id = entry.file()->parents()[0].file_id();
 
       if (directory_resource_id != parent_resource_id)
@@ -1830,6 +1920,24 @@ void FakeDriveService::GetChangeListInternal(
       should_exclude = true;
     }
 
+    // If the team drive does not match, then exclude the entry.
+    switch (entry.type()) {
+      case ChangeResource::FILE:
+        if (entry.file() && entry.file()->team_drive_id() != team_drive_id) {
+          should_exclude = true;
+        }
+        break;
+      case ChangeResource::TEAM_DRIVE:
+        // Only include TeamDrive change resources in the default change list.
+        if (!team_drive_id.empty()) {
+          should_exclude = true;
+        }
+        break;
+      case ChangeResource::UNKNOWN:
+        NOTREACHED();
+        break;
+    }
+
     // If |start_changestamp| is set, exclude the entry if the
     // changestamp is older than |largest_changestamp|.
     // See https://developers.google.com/google-apps/documents-list/
@@ -1840,7 +1948,8 @@ void FakeDriveService::GetChangeListInternal(
     // If the caller requests other list than change list by specifying
     // zero-|start_changestamp|, exclude deleted entry from the result.
     const bool deleted = entry.is_deleted() ||
-        (entry.file() && entry.file()->labels().is_trashed());
+                         (entry.type() == ChangeResource::FILE &&
+                          entry.file() && entry.file()->labels().is_trashed());
     if (!start_changestamp && deleted)
       should_exclude = true;
 
@@ -1858,10 +1967,12 @@ void FakeDriveService::GetChangeListInternal(
       std::unique_ptr<ChangeResource> entry_copied(new ChangeResource);
       entry_copied->set_type(entry.type());
       entry_copied->set_change_id(entry.change_id());
-      entry_copied->set_file_id(entry.file_id());
       entry_copied->set_deleted(entry.is_deleted());
-      if (entry.type() == ChangeResource::FILE && entry.file()) {
-        entry_copied->set_file(std::make_unique<FileResource>(*entry.file()));
+      if (entry.type() == ChangeResource::FILE) {
+        entry_copied->set_file_id(entry.file_id());
+        if (entry.file()) {
+          entry_copied->set_file(std::make_unique<FileResource>(*entry.file()));
+        }
       }
       if (entry.type() == ChangeResource::TEAM_DRIVE && entry.team_drive()) {
         entry_copied->set_team_drive(
@@ -1903,6 +2014,10 @@ void FakeDriveService::GetChangeListInternal(
     if (!directory_resource_id.empty()) {
       next_url = net::AppendOrReplaceQueryParameter(
           next_url, "parent", directory_resource_id);
+    }
+    if (!team_drive_id.empty()) {
+      next_url = net::AppendOrReplaceQueryParameter(next_url, "team-drive-id",
+                                                    team_drive_id);
     }
 
     change_list->set_next_link(next_url);
@@ -1946,9 +2061,18 @@ void FakeDriveService::NotifyObservers() {
     observer.OnNewChangeAvailable();
 }
 
-void FakeDriveService::UpdateLatestChangelistId(int64_t change_list_id) {
-  about_resource_->set_largest_change_id(change_list_id);
-  start_page_token_->set_start_page_token(
-      drive::util::ConvertChangestampToStartPageToken(change_list_id));
+void FakeDriveService::UpdateLatestChangelistId(
+    int64_t change_list_id,
+    const std::string& team_drive_id) {
+  if (team_drive_id.empty()) {
+    about_resource_->set_largest_change_id(change_list_id);
+    start_page_token_->set_start_page_token(
+        drive::util::ConvertChangestampToStartPageToken(change_list_id));
+  } else {
+    DCHECK_GT(team_drive_start_page_tokens_.count(team_drive_id), 0UL);
+    team_drive_start_page_tokens_[team_drive_id]->set_start_page_token(
+        drive::util::ConvertChangestampToStartPageToken(change_list_id));
+  }
 }
+
 }  // namespace drive
