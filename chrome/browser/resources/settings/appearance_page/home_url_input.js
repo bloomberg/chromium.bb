@@ -84,7 +84,7 @@ Polymer({
   },
 
   /**
-   * Change event handler for paper-input. Updates the pref value.
+   * Change event handler for cr-input. Updates the pref value.
    * settings-input uses the change event because it is fired by the Enter key.
    * @private
    */

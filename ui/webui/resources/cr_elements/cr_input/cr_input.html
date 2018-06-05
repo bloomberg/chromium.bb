@@ -1,33 +1,48 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="../hidden_style_css.html">
 <link rel="import" href="../shared_vars_css.html">
 
 <dom-module id="cr-input">
   <template>
-    <style>
+    <style include="cr-hidden-style">
+      /* Regarding cr-input's width:
+         When there's no element in the 'suffix' slot, setting the width of
+         cr-input as follows will work as expected:
+
+           cr-input {
+             width: 200px;
+           }
+
+         However, when there's an element in the 'suffix' slot, setting the
+         'width' will dictate the total with of the input field *plus* the
+         'suffix' element. To set the width of the input field itself when
+         a 'suffix' is present, use --cr-input-width.
+
+           cr-input {
+             --cr-input-width: 200px;
+           }
+      */
+
       :host {
         --cr-input-error-color: var(--google-red-600);
         --cr-input-focus-color: var(--google-blue-600);
-        --cr-input-label-font-size: 0.625rem;
         display: block;
       }
 
-      :host([disabled]) {
+      /* Disabled status should not impact suffix slot. */
+      :host([disabled]) :-webkit-any(#label, #error, #input-container) {
         opacity: var(--cr-disabled-opacity);
         pointer-events: none;
       }
 
       /* Label styling below. */
       #label {
-        color: var(--google-grey-700);
-        font-size: var(--cr-input-label-font-size);
-        letter-spacing: 0.4px;
-        line-height: var(--cr-input-label-font-size);
-        margin-top: 8px;
+        @apply --cr-form-field-label;
       }
 
-      :host(:focus-within:not([readonly]):not([invalid])) #label {
+      :host([focused_]:not([readonly]):not([invalid])) #label {
         color: var(--cr-input-focus-color);
       }
 
@@ -38,9 +53,9 @@
       /* Input styling below. */
       #input-container {
         border-radius: 4px;
-        margin: var(--cr-input-field-margin, 8px 0);
         overflow: hidden;
         position: relative;
+        width: var(--cr-input-width, 100%);
       }
 
       input {
@@ -88,7 +103,7 @@
       }
 
       :host([invalid]) #underline,
-      :host(:focus-within:not([readonly])) #underline {
+      :host([focused_]:not([readonly])) #underline {
         opacity: 1;
         transition: width 180ms ease-out, opacity 120ms ease-in;
         width: 100%;
@@ -105,27 +120,38 @@
            If spacing is not needed, apply "--cr-input-error-display: none". */
         color: var(--cr-input-error-color);
         display: var(--cr-input-error-display, block);
-        font-size: var(--cr-input-label-font-size);
-        height: var(--cr-input-label-font-size);
-        line-height: var(--cr-input-label-font-size);
-        margin-bottom: 8px;
+        font-size: var(--cr-form-field-label-font-size);
+        height: var(--cr-form-field-label-font-size);
+        line-height: var(--cr-form-field-label-font-size);
+        margin: 8px 0;
         visibility: hidden;
       }
 
       :host([invalid]) #error {
         visibility: visible;
       }
+
+      #row-container {
+        align-items: center;
+        display: flex;
+        /* This will spread the input field and the suffix apart only if the
+           host element width is intentionally set to something large. */
+        justify-content: space-between;
+      }
     </style>
     <div id="label" hidden="[[!label]]">[[label]]</div>
-    <div id="input-container">
-      <!-- Only attributes that are named inconsistently between html and js
-           need to use attr$="", such as |tabindex| vs .tabIndex and |readonly|
-           vs .readOnly. -->
-      <input id="input" disabled="[[disabled]]" autofocus="[[autofocus]]"
-          value="{{value::input}}" tabindex$="[[tabIndex]]" type="[[type]]"
-          readonly$="[[readonly]]" maxlength$="[[maxlength]]"
-          pattern="[[pattern]]" required="[[required]]">
-      <div id="underline"></div>
+    <div id="row-container">
+      <div id="input-container">
+        <!-- Only attributes that are named inconsistently between html and js
+             need to use attr$="", such as |tabindex| vs .tabIndex and
+             |readonly| vs .readOnly. -->
+        <input id="input" disabled="[[disabled]]" autofocus="[[autofocus]]"
+            value="{{value::input}}" tabindex$="[[tabIndex]]" type="[[type]]"
+            readonly$="[[readonly]]" maxlength$="[[maxlength]]"
+            pattern="[[pattern]]" required="[[required]]">
+        <div id="underline"></div>
+      </div>
+      <slot name="suffix"></slot>
     </div>
     <div id="error">[[errorMessage]]</div>
   </template>

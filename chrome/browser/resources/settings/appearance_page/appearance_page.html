@@ -26,9 +26,12 @@
         -webkit-margin-start: 12px;
       }
 
+      /* Lines up with cr-input. */
       #custom-input {
         --cr-radio-button-disc: {
-          margin-top: 16px;  /* Lines up with cr-input. */
+          /* (cr-input line-height + cr-input top/bottom padding) / 2 -
+             cr-radio disc-wrapper height / 2 */
+          margin-top: calc((1.54em + 12px) / 2 - 8px);
         }
         align-items: start;
       }
