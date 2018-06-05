@@ -87,6 +87,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "palette_tray_icon_metalayer.icon",
     "send.icon",
     "shelf_add_person_button.icon",
+    "shelf_apps_button.icon",
     "shelf_back.icon",
     "shelf_browse_as_guest_button.icon",
     "shelf_cancel_button.icon",

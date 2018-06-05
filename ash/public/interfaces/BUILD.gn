@@ -31,6 +31,7 @@ mojom("interfaces_internal") {
     "highlighter_controller.mojom",
     "ime_controller.mojom",
     "ime_info.mojom",
+    "kiosk_app_info.mojom",
     "locale.mojom",
     "login_screen.mojom",
     "login_user_info.mojom",
