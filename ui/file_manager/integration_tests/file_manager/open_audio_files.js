@@ -61,18 +61,6 @@ function audioTimeLeapForward(audioAppId) {
 }
 
 /**
- * Converts a file name to a file system scheme URL for a given volume path.
- * TODO(noel): remove all uses of this routine.
- *
- * @param {string} path Directory path: Downloads or Drive.
- * @param {string} fileName The file name.
- */
-function audioFileSystemURL(path, fileName) {
-  return 'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/external'
-      + path + '/' + self.encodeURIComponent(fileName);
-}
-
-/**
  * Tests opening then closing the Audio Player from Files app.
  *
  * @param {string} path Directory path to be tested: Downloads or Drive.
