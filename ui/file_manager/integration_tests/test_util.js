@@ -237,11 +237,13 @@ function TestEntryInfoOptions() {}
 TestEntryInfoOptions.prototype.type;
 
 /**
- * @type {string|undefined} Source file name that provides file contents.
+ * @type {string|undefined} Source file name that provides file contents
+ *     (file location relative to /chrome/test/data/chromeos/file_manager/).
  */
 TestEntryInfoOptions.prototype.sourceFileName;
 /**
- * @type {string} Name of entry on the test file system.
+ * @type {string} Name of entry on the test file system. Used to determine the
+ *     actual name of the file.
  */
 TestEntryInfoOptions.prototype.targetPath;
 /**
@@ -249,7 +251,7 @@ TestEntryInfoOptions.prototype.targetPath;
  */
 TestEntryInfoOptions.prototype.mimeType;
 /**
- * @type {SharedOption} Shared option.
+ * @type {SharedOption|undefined} Shared option. Defaults to NONE (not shared).
  */
 TestEntryInfoOptions.prototype.sharedOption;
 /**
@@ -281,7 +283,7 @@ function TestEntryInfo(options) {
   this.sourceFileName = options.sourceFileName || '';
   this.targetPath = options.targetPath;
   this.mimeType = options.mimeType || '';
-  this.sharedOption = options.sharedOption;
+  this.sharedOption = options.sharedOption || SharedOption.NONE;
   this.lastModifiedTime = options.lastModifiedTime;
   this.nameText = options.nameText;
   this.sizeText = options.sizeText;
@@ -311,7 +313,6 @@ var ENTRIES = {
     sourceFileName: 'text.txt',
     targetPath: 'hello.txt',
     mimeType: 'text/plain',
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
     nameText: 'hello.txt',
     sizeText: '51 bytes',
@@ -323,7 +324,6 @@ var ENTRIES = {
     sourceFileName: 'video.ogv',
     targetPath: 'world.ogv',
     mimeType: 'video/ogg',
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Jul 4, 2012, 10:35 AM',
     nameText: 'world.ogv',
     sizeText: '59 KB',
@@ -335,7 +335,6 @@ var ENTRIES = {
     sourceFileName: 'random.bin',
     targetPath: 'unsupported.foo',
     mimeType: 'application/x-foo',
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Jul 4, 2012, 10:36 AM',
     nameText: 'unsupported.foo',
     sizeText: '8 KB',
@@ -347,7 +346,6 @@ var ENTRIES = {
     sourceFileName: 'image.png',
     targetPath: 'My Desktop Background.png',
     mimeType: 'image/png',
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
     nameText: 'My Desktop Background.png',
     sizeText: '272 bytes',
@@ -361,7 +359,6 @@ var ENTRIES = {
     sourceFileName: 'image2.png',
     targetPath: 'image2',
     mimeType: 'image/png',
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
     nameText: 'image2',
     sizeText: '4 KB',
@@ -373,7 +370,6 @@ var ENTRIES = {
     sourceFileName: 'image3.jpg',
     targetPath: 'image3.jpg',
     mimeType: 'image/jpeg',
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
     nameText: 'image3.jpg',
     sizeText: '3 KB',
@@ -386,8 +382,6 @@ var ENTRIES = {
     type: EntryType.FILE,
     sourceFileName: 'music.ogg',
     targetPath: 'Beautiful Song.ogg',
-    mimeType: null,
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Nov 12, 2086, 12:00 PM',
     nameText: 'Beautiful Song.ogg',
     sizeText: '14 KB',
@@ -396,10 +390,7 @@ var ENTRIES = {
 
   photos: new TestEntryInfo({
     type: EntryType.DIRECTORY,
-    sourceFileName: null,
     targetPath: 'photos',
-    mimeType: null,
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
     nameText: 'photos',
     sizeText: '--',
@@ -408,10 +399,8 @@ var ENTRIES = {
 
   testDocument: new TestEntryInfo({
     type: EntryType.FILE,
-    sourceFileName: null,
     targetPath: 'Test Document',
     mimeType: 'application/vnd.google-apps.document',
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Apr 10, 2013, 4:20 PM',
     nameText: 'Test Document.gdoc',
     sizeText: '--',
@@ -420,7 +409,6 @@ var ENTRIES = {
 
   testSharedDocument: new TestEntryInfo({
     type: EntryType.FILE,
-    sourceFileName: null,
     targetPath: 'Test Shared Document',
     mimeType: 'application/vnd.google-apps.document',
     sharedOption: SharedOption.SHARED,
@@ -435,7 +423,6 @@ var ENTRIES = {
     sourceFileName: 'music.ogg',
     targetPath: 'newly added file.ogg',
     mimeType: 'audio/ogg',
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Sep 4, 1998, 12:00 AM',
     nameText: 'newly added file.ogg',
     sizeText: '14 KB',
@@ -444,10 +431,7 @@ var ENTRIES = {
 
   directoryA: new TestEntryInfo({
     type: EntryType.DIRECTORY,
-    sourceFileName: null,
     targetPath: 'A',
-    mimeType: null,
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
     nameText: 'A',
     sizeText: '--',
@@ -456,10 +440,7 @@ var ENTRIES = {
 
   directoryB: new TestEntryInfo({
     type: EntryType.DIRECTORY,
-    sourceFileName: null,
     targetPath: 'A/B',
-    mimeType: null,
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
     nameText: 'B',
     sizeText: '--',
@@ -468,10 +449,7 @@ var ENTRIES = {
 
   directoryC: new TestEntryInfo({
     type: EntryType.DIRECTORY,
-    sourceFileName: null,
     targetPath: 'A/B/C',
-    mimeType: null,
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
     nameText: 'C',
     sizeText: '--',
@@ -480,10 +458,7 @@ var ENTRIES = {
 
   directoryD: new TestEntryInfo({
     type: EntryType.DIRECTORY,
-    sourceFileName: null,
     targetPath: 'D',
-    mimeType: null,
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
     nameText: 'D',
     sizeText: '--',
@@ -492,10 +467,7 @@ var ENTRIES = {
 
   directoryE: new TestEntryInfo({
     type: EntryType.DIRECTORY,
-    sourceFileName: null,
     targetPath: 'D/E',
-    mimeType: null,
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
     nameText: 'E',
     sizeText: '--',
@@ -504,10 +476,7 @@ var ENTRIES = {
 
   directoryF: new TestEntryInfo({
     type: EntryType.DIRECTORY,
-    sourceFileName: null,
     targetPath: 'D/E/F',
-    mimeType: null,
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
     nameText: 'F',
     sizeText: '--',
@@ -519,7 +488,6 @@ var ENTRIES = {
     sourceFileName: 'archive.zip',
     targetPath: 'archive.zip',
     mimeType: 'application/x-zip',
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Jan 1, 2014, 1:00 AM',
     nameText: 'archive.zip',
     sizeText: '533 bytes',
@@ -531,7 +499,6 @@ var ENTRIES = {
     sourceFileName: 'text.txt',
     targetPath: '.hiddenfile.txt',
     mimeType: 'text/plain',
-    sharedOption: SharedOption.NONE,
     lastModifiedTime: 'Sep 30, 2014, 3:30 PM',
     nameText: '.hiddenfile.txt',
     sizeText: '51 bytes',

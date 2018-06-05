@@ -10,7 +10,6 @@ ENTRIES.image4 = new TestEntryInfo({
   sourceFileName: 'image3.jpg',
   targetPath: 'image4.jpg',
   mimeType: 'image/jpeg',
-  sharedOption: SharedOption.NONE,
   lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
   nameText: 'image3.jpg',
   sizeText: '3 KB',
