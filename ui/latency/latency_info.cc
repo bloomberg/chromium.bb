@@ -44,11 +44,7 @@ const char* GetComponentName(ui::LatencyComponentType type) {
     CASE_TYPE(INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT);
     CASE_TYPE(DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT);
     CASE_TYPE(INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT);
-    CASE_TYPE(INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT);
-    CASE_TYPE(INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT);
-    CASE_TYPE(INPUT_EVENT_LATENCY_TERMINATED_COMMIT_FAILED_COMPONENT);
-    CASE_TYPE(INPUT_EVENT_LATENCY_TERMINATED_COMMIT_NO_UPDATE_COMPONENT);
-    CASE_TYPE(INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT);
+    CASE_TYPE(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT);
     default:
       DLOG(WARNING) << "Unhandled LatencyComponentType.\n";
       break;
@@ -64,19 +60,6 @@ bool IsInputLatencyBeginComponent(ui::LatencyComponentType type) {
 bool IsTraceBeginComponent(ui::LatencyComponentType type) {
   return (IsInputLatencyBeginComponent(type) ||
           type == ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT);
-}
-
-bool IsTraceEndComponent(ui::LatencyComponentType type) {
-  switch (type) {
-    case ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT:
-    case ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT:
-    case ui::INPUT_EVENT_LATENCY_TERMINATED_COMMIT_FAILED_COMPONENT:
-    case ui::INPUT_EVENT_LATENCY_TERMINATED_COMMIT_NO_UPDATE_COMPONENT:
-    case ui::INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT:
-      return true;
-    default:
-      return false;
-  }
 }
 
 // This class is for converting latency info to trace buffer friendly format.
@@ -332,22 +315,27 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
     }
   }
 
-  if (IsTraceEndComponent(component) && began_) {
-    // Should only ever add terminal component once.
-    CHECK(!terminated_);
-    terminated_ = true;
+  if (component == INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT)
+    Terminate();
+}
 
-    if (*latency_info_enabled) {
-      TRACE_EVENT_COPY_ASYNC_END1(
-          kTraceCategoriesForAsyncEvents, trace_name_.c_str(),
-          TRACE_ID_DONT_MANGLE(trace_id_), "data", AsTraceableData());
-    }
+void LatencyInfo::Terminate() {
+  if (!began_)
+    return;
 
-    TRACE_EVENT_WITH_FLOW0("input,benchmark",
-                           "LatencyInfo.Flow",
-                           TRACE_ID_DONT_MANGLE(trace_id_),
-                           TRACE_EVENT_FLAG_FLOW_IN);
+  // Should only ever be terminated once.
+  CHECK(!terminated_);
+  terminated_ = true;
+
+  if (*g_latency_info_enabled.Get().latency_info_enabled) {
+    TRACE_EVENT_COPY_ASYNC_END1(
+        kTraceCategoriesForAsyncEvents, trace_name_.c_str(),
+        TRACE_ID_DONT_MANGLE(trace_id_), "data", AsTraceableData());
   }
+
+  TRACE_EVENT_WITH_FLOW0("input,benchmark", "LatencyInfo.Flow",
+                         TRACE_ID_DONT_MANGLE(trace_id_),
+                         TRACE_EVENT_FLAG_FLOW_IN);
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>

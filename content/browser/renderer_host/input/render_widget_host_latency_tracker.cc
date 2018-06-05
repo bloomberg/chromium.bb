@@ -228,8 +228,7 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
   // rendering, we're done processing it. If the event got coalesced then
   // terminate it as well.
   if (!rendering_scheduled || latency->coalesced()) {
-    latency->AddLatencyNumber(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0);
+    latency->Terminate();
   }
 
   ComputeInputLatencyHistograms(event.GetType(), latency_component_id_,

@@ -86,26 +86,13 @@ enum LatencyComponentType {
   // Display compositor can be either in the browser process or in Mus.
   DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT,
   // Timestamp of when the gpu service began swap buffers, unlike
-  // INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT which measures after.
+  // INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT which measures after.
   INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT,
-  // ---------------------------TERMINAL COMPONENT-----------------------------
-  // Timestamp when the event is acked from renderer when it does not
-  // cause any rendering to be scheduled.
-  INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT,
   // Timestamp when the frame is swapped (i.e. when the rendering caused by
   // input event actually takes effect).
-  INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT,
-  // This component indicates that the input causes a commit to be scheduled
-  // but the commit failed.
-  INPUT_EVENT_LATENCY_TERMINATED_COMMIT_FAILED_COMPONENT,
-  // This component indicates that the input causes a commit to be scheduled
-  // but the commit was aborted since it carried no new information.
-  INPUT_EVENT_LATENCY_TERMINATED_COMMIT_NO_UPDATE_COMPONENT,
-  // This component indicates that the input causes a swap to be scheduled
-  // but the swap failed.
-  INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT,
-  LATENCY_COMPONENT_TYPE_LAST =
-      INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT,
+  INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT,
+
+  LATENCY_COMPONENT_TYPE_LAST = INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT,
 };
 
 enum SourceEventType {
@@ -204,6 +191,8 @@ class LatencyInfo {
   bool FindLatency(LatencyComponentType type, LatencyComponent* output) const;
 
   void RemoveLatency(LatencyComponentType type);
+
+  void Terminate();
 
   const LatencyMap& latency_components() const { return latency_components_; }
 

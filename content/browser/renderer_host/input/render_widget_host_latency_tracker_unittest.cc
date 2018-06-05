@@ -37,8 +37,7 @@ void AddFakeComponentsWithTimeStamp(
   latency->AddLatencyNumberWithTimestamp(ui::INPUT_EVENT_LATENCY_UI_COMPONENT,
                                          0, time_stamp, 1);
   latency->AddLatencyNumberWithTimestamp(
-      ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, time_stamp,
-      1);
+      ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, 0, time_stamp, 1);
   latency->AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, time_stamp, 1);
   latency->AddLatencyNumberWithTimestamp(
@@ -190,7 +189,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestValidEventTiming) {
       now + base::TimeDelta::FromMilliseconds(10), 1);
 
   latency_info.AddLatencyNumberWithTimestamp(
-      ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, now, 1);
+      ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, 0, now, 1);
 
   viz_tracker()->OnGpuSwapBuffersCompleted(latency_info);
 
@@ -709,8 +708,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     tracker()->OnInputEvent(scroll, &scroll_latency);
     tracker()->OnInputEventAck(scroll, &scroll_latency,
                                INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-    EXPECT_TRUE(scroll_latency.FindLatency(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, nullptr));
     EXPECT_TRUE(scroll_latency.terminated());
   }
 
@@ -723,8 +720,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     tracker()->OnInputEvent(wheel, &wheel_latency);
     tracker()->OnInputEventAck(wheel, &wheel_latency,
                                INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-    EXPECT_TRUE(wheel_latency.FindLatency(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, nullptr));
     EXPECT_TRUE(wheel_latency.terminated());
   }
 
@@ -737,8 +732,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     tracker()->OnInputEvent(touch, &touch_latency);
     tracker()->OnInputEventAck(touch, &touch_latency,
                                INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-    EXPECT_TRUE(touch_latency.FindLatency(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, nullptr));
     EXPECT_TRUE(touch_latency.terminated());
   }
 
@@ -750,8 +743,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     tracker()->OnInputEvent(mouse_move, &mouse_latency);
     tracker()->OnInputEventAck(mouse_move, &mouse_latency,
                                INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-    EXPECT_TRUE(mouse_latency.FindLatency(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, nullptr));
     EXPECT_TRUE(mouse_latency.terminated());
   }
 
@@ -764,8 +755,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     tracker()->OnInputEvent(key_event, &key_latency);
     tracker()->OnInputEventAck(key_event, &key_latency,
                                INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-    EXPECT_TRUE(key_latency.FindLatency(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, nullptr));
     EXPECT_TRUE(key_latency.terminated());
   }
 
@@ -1123,7 +1112,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyEndToEndLatency) {
       1);
 
   latency_info.AddLatencyNumberWithTimestamp(
-      ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0,
+      ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, 0,
       base::TimeTicks() +
           base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[1]),
       1);

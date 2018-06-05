@@ -82,8 +82,7 @@ TEST_F(StructTraitsTest, LatencyInfo) {
   ASSERT_FALSE(latency.terminated());
   latency.AddLatencyNumber(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 1234);
   latency.AddLatencyNumber(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1234);
-  latency.AddLatencyNumber(INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT,
-                           1234);
+  latency.AddLatencyNumber(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, 1234);
 
   EXPECT_EQ(5, latency.trace_id());
   EXPECT_EQ(10, latency.ukm_source_id());
@@ -108,8 +107,8 @@ TEST_F(StructTraitsTest, LatencyInfo) {
                                  &rwh_comp));
   EXPECT_EQ(1u, rwh_comp.event_count);
 
-  EXPECT_TRUE(output.FindLatency(
-      INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 1234, nullptr));
+  EXPECT_TRUE(output.FindLatency(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, 1234,
+                                 nullptr));
 }
 
 }  // namespace ui
