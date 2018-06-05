@@ -20,7 +20,6 @@ class SingleThreadTaskRunner;
 namespace gin {
 
 class PerIsolateData;
-class RunMicrotasksObserver;
 class V8IsolateMemoryDumpProvider;
 
 // To embed Gin, first initialize gin using IsolateHolder::Initialize and then
@@ -88,18 +87,6 @@ class GIN_EXPORT IsolateHolder {
 
   v8::Isolate* isolate() { return isolate_; }
 
-  // The implementations of Object.observe() and Promise enqueue v8 Microtasks
-  // that should be executed just before control is returned to the message
-  // loop. This method adds a MessageLoop TaskObserver which runs any pending
-  // Microtasks each time a Task is completed. This method should be called
-  // once, when a MessageLoop is created and it should be called on the
-  // MessageLoop's thread.
-  void AddRunMicrotasksObserver();
-
-  // This method should also only be called once, and on the MessageLoop's
-  // thread.
-  void RemoveRunMicrotasksObserver();
-
   // This method returns if v8::Locker is needed to access isolate.
   AccessMode access_mode() const { return access_mode_; }
 
@@ -122,7 +109,6 @@ class GIN_EXPORT IsolateHolder {
   std::unique_ptr<v8::SnapshotCreator> snapshot_creator_;
   v8::Isolate* isolate_;
   std::unique_ptr<PerIsolateData> isolate_data_;
-  std::unique_ptr<RunMicrotasksObserver> task_observer_;
   std::unique_ptr<V8IsolateMemoryDumpProvider> isolate_memory_dump_provider_;
   AccessMode access_mode_;
 
