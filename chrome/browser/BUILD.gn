@@ -1247,8 +1247,6 @@ jumbo_split_static_library("browser") {
     "push_messaging/push_messaging_service_impl.h",
     "renderer_context_menu/context_menu_content_type_factory.cc",
     "renderer_context_menu/context_menu_content_type_factory.h",
-    "renderer_context_menu/context_menu_content_type_panel.cc",
-    "renderer_context_menu/context_menu_content_type_panel.h",
     "renderer_host/chrome_navigation_ui_data.cc",
     "renderer_host/chrome_navigation_ui_data.h",
     "renderer_host/chrome_render_message_filter.cc",

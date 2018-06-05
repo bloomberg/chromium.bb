@@ -16,7 +16,6 @@
 #include "chrome/browser/guest_view/web_view/context_menu_content_type_web_view.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_app_mode.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_extension_popup.h"
-#include "chrome/browser/renderer_context_menu/context_menu_content_type_panel.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_platform_app.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/view_type_utils.h"
@@ -104,8 +103,6 @@ ContextMenuContentType* ContextMenuContentTypeFactory::CreateInternal(
   if (view_type == extensions::VIEW_TYPE_EXTENSION_POPUP)
     return new ContextMenuContentTypeExtensionPopup(web_contents, params);
 
-  if (view_type == extensions::VIEW_TYPE_PANEL)
-    return new ContextMenuContentTypePanel(web_contents, params);
 #endif
 
   return new ContextMenuContentType(web_contents, params, true);
