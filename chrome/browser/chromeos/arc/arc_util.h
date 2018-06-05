@@ -138,6 +138,9 @@ bool IsArcTermsOfServiceNegotiationNeeded(const Profile* profile);
 // also checks set of preconditions and uses active user profile.
 bool IsArcTermsOfServiceOobeNegotiationNeeded();
 
+// Returns true if stats reporting is enabled. Otherwise false.
+bool IsArcStatsReportingEnabled();
+
 // Checks and updates the preference value whether the underlying filesystem
 // for the profile is compatible with ARC, when necessary. After it's done (or
 // skipped), |callback| is run either synchronously or asynchronously.

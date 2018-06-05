@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
@@ -528,6 +529,19 @@ bool IsArcTermsOfServiceOobeNegotiationNeeded() {
   }
 
   return true;
+}
+
+bool IsArcStatsReportingEnabled() {
+  // Public session users never saw the consent for stats reporting even if the
+  // admin forced the pref by a policy.
+  if (profiles::IsPublicSession()) {
+    return false;
+  }
+
+  bool pref = false;
+  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                            &pref);
+  return pref;
 }
 
 void UpdateArcFileSystemCompatibilityPrefIfNeeded(

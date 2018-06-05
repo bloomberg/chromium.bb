@@ -522,11 +522,7 @@ void ArcSettingsServiceImpl::SyncProxySettings() const {
 }
 
 void ArcSettingsServiceImpl::SyncReportingConsent(bool initial_sync) const {
-  bool consent = false;
-  // Public session user never saw the consent even if the admin forced
-  // the pref by a policy.
-  if (!profiles::IsPublicSession())
-    CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref, &consent);
+  bool consent = IsArcStatsReportingEnabled();
   if (consent && !initial_sync && policy_util::IsAccountManaged(profile_)) {
     // Don't enable reporting for managed users who might not have seen the
     // reporting notice during ARC setup.
