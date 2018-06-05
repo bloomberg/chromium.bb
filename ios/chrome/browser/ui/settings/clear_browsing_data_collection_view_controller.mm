@@ -52,6 +52,7 @@
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
+#import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_item.h"
 #import "ios/chrome/browser/ui/settings/time_range_selector_collection_view_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -131,63 +132,6 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
 }
 
 }  // namespace
-
-// Collection view item identifying a clear browsing data content view.
-@interface ClearDataItem : CollectionViewTextItem
-
-// Designated initializer.
-- (instancetype)initWithType:(NSInteger)type
-                     counter:
-                         (std::unique_ptr<BrowsingDataCounterWrapper>)counter
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;
-
-// Restarts the counter (if defined).
-- (void)restartCounter;
-
-// Mask of the data to be cleared.
-@property(nonatomic, assign) BrowsingDataRemoveMask dataTypeMask;
-
-// Pref name associated with the item.
-@property(nonatomic, assign) const char* prefName;
-
-// Whether this item has a data volume counter associated.
-@property(nonatomic, readonly) BOOL hasCounter;
-
-@end
-
-@implementation ClearDataItem {
-  // Wrapper around the data volume counter associated with the item. May be
-  // null if there is no counter or if the feature kNewClearBrowsingDataUI
-  // is disabled.
-  std::unique_ptr<BrowsingDataCounterWrapper> _counter;
-}
-
-@synthesize dataTypeMask = _dataTypeMask;
-@synthesize prefName = _prefName;
-
-- (instancetype)initWithType:(NSInteger)type
-                     counter:
-                         (std::unique_ptr<BrowsingDataCounterWrapper>)counter {
-  if ((self = [super initWithType:type])) {
-    _counter = std::move(counter);
-  }
-  return self;
-}
-
-- (void)restartCounter {
-  if (_counter)
-    _counter->RestartCounter();
-}
-
-#pragma mark - Properties
-
-- (BOOL)hasCounter {
-  return _counter != nullptr;
-}
-
-@end
 
 @interface ClearBrowsingDataCollectionViewController ()<
     TimeRangeSelectorCollectionViewControllerDelegate> {
@@ -338,7 +282,7 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
 
   // This data type doesn't currently have an associated counter, but displays
   // an explanatory text instead, when the new UI is enabled.
-  ClearDataItem* cookiesSiteDataItem =
+  ClearBrowsingDataItem* cookiesSiteDataItem =
       [self clearDataItemWithType:ItemTypeDataTypeCookiesSiteData
                           titleID:IDS_IOS_CLEAR_COOKIES
                              mask:BrowsingDataRemoveMask::REMOVE_SITE_DATA
@@ -346,14 +290,14 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
   [model addItem:cookiesSiteDataItem
       toSectionWithIdentifier:SectionIdentifierDataTypes];
 
-  ClearDataItem* cacheItem =
+  ClearBrowsingDataItem* cacheItem =
       [self clearDataItemWithType:ItemTypeDataTypeCache
                           titleID:IDS_IOS_CLEAR_CACHE
                              mask:BrowsingDataRemoveMask::REMOVE_CACHE
                          prefName:browsing_data::prefs::kDeleteCache];
   [model addItem:cacheItem toSectionWithIdentifier:SectionIdentifierDataTypes];
 
-  ClearDataItem* savedPasswordsItem =
+  ClearBrowsingDataItem* savedPasswordsItem =
       [self clearDataItemWithType:ItemTypeDataTypeSavedPasswords
                           titleID:IDS_IOS_CLEAR_SAVED_PASSWORDS
                              mask:BrowsingDataRemoveMask::REMOVE_PASSWORDS
@@ -361,7 +305,7 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
   [model addItem:savedPasswordsItem
       toSectionWithIdentifier:SectionIdentifierDataTypes];
 
-  ClearDataItem* autofillItem =
+  ClearBrowsingDataItem* autofillItem =
       [self clearDataItemWithType:ItemTypeDataTypeAutofill
                           titleID:IDS_IOS_CLEAR_AUTOFILL
                              mask:BrowsingDataRemoveMask::REMOVE_FORM_DATA
@@ -409,10 +353,10 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
 
 #pragma mark Items
 
-- (ClearDataItem*)clearDataItemWithType:(ItemType)itemType
-                                titleID:(int)titleMessageID
-                                   mask:(BrowsingDataRemoveMask)mask
-                               prefName:(const char*)prefName {
+- (ClearBrowsingDataItem*)clearDataItemWithType:(ItemType)itemType
+                                        titleID:(int)titleMessageID
+                                           mask:(BrowsingDataRemoveMask)mask
+                                       prefName:(const char*)prefName {
   PrefService* prefs = _browserState->GetPrefs();
   std::unique_ptr<BrowsingDataCounterWrapper> counter;
   if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
@@ -426,8 +370,9 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
         }));
   }
 
-  ClearDataItem* clearDataItem =
-      [[ClearDataItem alloc] initWithType:itemType counter:std::move(counter)];
+  ClearBrowsingDataItem* clearDataItem =
+      [[ClearBrowsingDataItem alloc] initWithType:itemType
+                                          counter:std::move(counter)];
   clearDataItem.text = l10n_util::GetNSString(titleMessageID);
   if (prefs->GetBoolean(prefName)) {
     clearDataItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
@@ -456,8 +401,9 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
       [model indexPathForItemType:itemType
                 sectionIdentifier:SectionIdentifierDataTypes];
 
-  ClearDataItem* clearDataItem = base::mac::ObjCCastStrict<ClearDataItem>(
-      [model itemAtIndexPath:indexPath]);
+  ClearBrowsingDataItem* clearDataItem =
+      base::mac::ObjCCastStrict<ClearBrowsingDataItem>(
+          [model itemAtIndexPath:indexPath]);
 
   // Do nothing if the text has not changed.
   if ([detailText isEqualToString:clearDataItem.detailText])
@@ -572,8 +518,9 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
     case ItemTypeDataTypeAutofill: {
       // Toggle the checkmark.
       // TODO(crbug.com/631486): Custom checkmark animation to be implemented.
-      ClearDataItem* clearDataItem = base::mac::ObjCCastStrict<ClearDataItem>(
-          [self.collectionViewModel itemAtIndexPath:indexPath]);
+      ClearBrowsingDataItem* clearDataItem =
+          base::mac::ObjCCastStrict<ClearBrowsingDataItem>(
+              [self.collectionViewModel itemAtIndexPath:indexPath]);
       if (clearDataItem.accessoryType == MDCCollectionViewCellAccessoryNone) {
         clearDataItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
         _browserState->GetPrefs()->SetBoolean(clearDataItem.prefName, true);
@@ -649,8 +596,8 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
       BrowsingDataRemoveMask::REMOVE_NOTHING;
   NSArray* dataTypeItems = [self.collectionViewModel
       itemsInSectionWithIdentifier:SectionIdentifierDataTypes];
-  for (ClearDataItem* dataTypeItem in dataTypeItems) {
-    DCHECK([dataTypeItem isKindOfClass:[ClearDataItem class]]);
+  for (ClearBrowsingDataItem* dataTypeItem in dataTypeItems) {
+    DCHECK([dataTypeItem isKindOfClass:[ClearBrowsingDataItem class]]);
     if (dataTypeItem.accessoryType == MDCCollectionViewCellAccessoryCheckmark) {
       dataTypeMaskToRemove = dataTypeMaskToRemove | dataTypeItem.dataTypeMask;
     }
@@ -789,8 +736,9 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
     NSIndexPath* indexPath = [self.collectionViewModel
         indexPathForItemType:ItemTypeDataTypeBrowsingHistory
            sectionIdentifier:SectionIdentifierDataTypes];
-    ClearDataItem* historyItem = base::mac::ObjCCastStrict<ClearDataItem>(
-        [model itemAtIndexPath:indexPath]);
+    ClearBrowsingDataItem* historyItem =
+        base::mac::ObjCCastStrict<ClearBrowsingDataItem>(
+            [model itemAtIndexPath:indexPath]);
     [historyItem restartCounter];
   }
 
@@ -798,8 +746,9 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
     NSIndexPath* indexPath = [self.collectionViewModel
         indexPathForItemType:ItemTypeDataTypeSavedPasswords
            sectionIdentifier:SectionIdentifierDataTypes];
-    ClearDataItem* passwordsItem = base::mac::ObjCCastStrict<ClearDataItem>(
-        [model itemAtIndexPath:indexPath]);
+    ClearBrowsingDataItem* passwordsItem =
+        base::mac::ObjCCastStrict<ClearBrowsingDataItem>(
+            [model itemAtIndexPath:indexPath]);
     [passwordsItem restartCounter];
   }
 
@@ -807,8 +756,9 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
     NSIndexPath* indexPath = [self.collectionViewModel
         indexPathForItemType:ItemTypeDataTypeAutofill
            sectionIdentifier:SectionIdentifierDataTypes];
-    ClearDataItem* autofillItem = base::mac::ObjCCastStrict<ClearDataItem>(
-        [model itemAtIndexPath:indexPath]);
+    ClearBrowsingDataItem* autofillItem =
+        base::mac::ObjCCastStrict<ClearBrowsingDataItem>(
+            [model itemAtIndexPath:indexPath]);
     [autofillItem restartCounter];
   }
 }
@@ -916,8 +866,9 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
                              forItem:item];
     }
     case SectionIdentifierDataTypes: {
-      ClearDataItem* clearDataItem = base::mac::ObjCCastStrict<ClearDataItem>(
-          [self.collectionViewModel itemAtIndexPath:indexPath]);
+      ClearBrowsingDataItem* clearDataItem =
+          base::mac::ObjCCastStrict<ClearBrowsingDataItem>(
+              [self.collectionViewModel itemAtIndexPath:indexPath]);
       return (clearDataItem.detailText.length > 0)
                  ? MDCCellDefaultTwoLineHeight
                  : MDCCellDefaultOneLineHeight;
