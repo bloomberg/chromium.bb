@@ -371,11 +371,11 @@ video::-webkit-media-controls-overlay-play-button.hidden {
 }
 
 input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
-  width: 56px;
-  height: 56px;
-  border-radius: 28px;
+  width: var(--overlay-play-button-width, 48px);
+  height: var(--overlay-play-button-width, 48px);
+  border-radius: 50%;
 
-  background-size: 30px;
+  background-size: 50%;
   background-repeat: no-repeat;
   background-position: center center;
   background-image: -webkit-image-set(url(ic_play_arrow.svg) 1x);
@@ -504,6 +504,27 @@ video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls
 video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
 video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i]::-internal-media-controls-segmented-track {
   border-radius: 6px;
+}
+
+video::-webkit-media-controls.sizing-small div[pseudo="-internal-media-controls-loading-panel" i]::-internal-media-controls-loading-panel-spinner-frame {
+  margin-top: calc(
+      (var(--overlay-play-button-width, 48px)
+          + 12px /* timeline height + margin-bottom */)
+      / -2);
+}
+
+video::-webkit-media-controls.sizing-medium div[pseudo="-internal-media-controls-loading-panel" i]::-internal-media-controls-loading-panel-spinner-frame {
+  margin-top: calc(
+      (var(--overlay-play-button-width, 48px)
+          + 40px /* timeline height + margin-bottom */)
+      / -2);
+}
+
+video::-webkit-media-controls.sizing-large div[pseudo="-internal-media-controls-loading-panel" i]::-internal-media-controls-loading-panel-spinner-frame {
+  margin-top: calc(
+      (var(--overlay-play-button-width, 48px)
+          + 76px /* timeline height + margin-bottom */)
+      / -2);
 }
 
 input[pseudo="-webkit-media-controls-timeline" i]::-internal-media-controls-segmented-track {

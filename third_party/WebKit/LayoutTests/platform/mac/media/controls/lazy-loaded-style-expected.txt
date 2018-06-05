@@ -14,8 +14,8 @@ layer at (8,8) size 400x300
   LayoutFlexibleBox {DIV} at (0,0) size 400x300
 layer at (8,8) size 400x288 clip at (9,9) size 398x286
   LayoutButton (relative positioned) {INPUT} at (0,0) size 400x288 [border: (1px solid #D8D8D8) (1px solid #D1D1D1) (1px solid #BABABA) (1px solid #D1D1D1)]
-    LayoutFlexibleBox (anonymous) at (8,115.50) size 384x56
-      LayoutBlockFlow {DIV} at (164,0) size 56x56 [bgcolor=#FFFFFFE6]
+    LayoutFlexibleBox (anonymous) at (8,98.50) size 384x90
+      LayoutBlockFlow {DIV} at (147,0) size 90x90 [bgcolor=#FFFFFFE6]
 layer at (8,248) size 400x48
   LayoutFlexibleBox (relative positioned) {DIV} at (0,240) size 400x48
     LayoutBlockFlow {DIV} at (16,0) size 31.14x48 [color=#FFFFFF]

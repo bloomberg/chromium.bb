@@ -268,6 +268,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void UpdateOverflowMenuWanted() const;
   void UpdateScrubbingMessageFits() const;
   void UpdateSizingCSSClass();
+  void UpdateOverlayPlayButtonWidthCSSVar();
   void MaybeRecordElementsDisplayed() const;
 
   // Takes a popup menu (caption, overflow) and position on the screen. This is
@@ -379,6 +380,10 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // certain pointer events. In particular, when the user is interacting via
   // touch events, we want to ignore pointerover/pointerout/pointermove events.
   bool is_touch_interaction_ = false;
+
+  // Holds the currently set --overlay-play-button-width value. Used to check if
+  // we need to update.
+  base::Optional<double> overlay_play_button_width_;
 
   bool is_test_mode_ = false;
 };

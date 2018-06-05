@@ -63,6 +63,8 @@ void MediaControlLoadingPanelElement::PopulateShadowDOM() {
   // elements.
   HTMLDivElement* spinner_frame =
       MediaControlElementsHelper::CreateDivWithId("spinner-frame", shadow_root);
+  spinner_frame->SetShadowPseudoId(
+      "-internal-media-controls-loading-panel-spinner-frame");
 
   // The spinner is responsible for rotating the elements below. The square
   // edges will be cut off by the frame above.

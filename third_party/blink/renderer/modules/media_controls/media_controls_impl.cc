@@ -30,6 +30,7 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
+#include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_init.h"
 #include "third_party/blink/renderer/core/dom/mutation_record.h"
@@ -135,6 +136,10 @@ const char kSizingLargeCSSClass[] = "sizing-large";
 // The minimum width in pixels to reach a given size.
 constexpr int kSizingMediumThreshold = 641;
 constexpr int kSizingLargeThreshold = 1441;
+
+// Used for setting overlay play button width CSS variable.
+constexpr double kMinOverlayPlayButtonWidth = 48;
+const char kOverlayPlayButtonWidthCSSVar[] = "--overlay-play-button-width";
 
 bool ShouldShowFullscreenButton(const HTMLMediaElement& media_element) {
   // Unconditionally allow the user to exit fullscreen if we are in it
@@ -1314,6 +1319,31 @@ void MediaControlsImpl::UpdateSizingCSSClass() {
                                       width < kSizingLargeThreshold);
   SetClass(kSizingLargeCSSClass,
            ShouldShowVideoControls() && width >= kSizingLargeThreshold);
+
+  UpdateOverlayPlayButtonWidthCSSVar();
+}
+
+void MediaControlsImpl::UpdateOverlayPlayButtonWidthCSSVar() {
+  // The logic for sizing the overlay play button and its use inside the
+  // controls is a bit too complex for CSS alone (the sizing is a min of two
+  // values maxed with another, and then that needs to be used in calculations
+  // for the spinner as well). To work around this, we're using a CSS variable
+  // set here and used inside the controls CSS.
+  int width = size_.Width();
+  int height = size_.Height();
+
+  double play_button_width =
+      std::max(kMinOverlayPlayButtonWidth, std::min(width * 0.3, height * 0.3));
+
+  WTF::String play_button_css_value = WTF::String::Number(play_button_width);
+  play_button_css_value.append("px");
+
+  if (!overlay_play_button_width_.has_value() ||
+      overlay_play_button_width_.value() != play_button_width) {
+    overlay_play_button_width_ = play_button_width;
+    style()->setProperty(&GetDocument(), kOverlayPlayButtonWidthCSSVar,
+                         play_button_css_value, "", ASSERT_NO_EXCEPTION);
+  }
 }
 
 void MediaControlsImpl::MaybeToggleControlsFromTap() {
