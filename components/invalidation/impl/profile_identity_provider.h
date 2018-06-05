@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_IDENTITY_PROVIDER_H_
-#define COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_IDENTITY_PROVIDER_H_
+#ifndef COMPONENTS_INVALIDATION_IMPL_PROFILE_IDENTITY_PROVIDER_H_
+#define COMPONENTS_INVALIDATION_IMPL_PROFILE_IDENTITY_PROVIDER_H_
 
 #include "base/macros.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/identity_provider.h"
 
 class ProfileOAuth2TokenService;
+
+namespace invalidation {
 
 // An identity provider implementation that's backed by
 // ProfileOAuth2TokenService and SigninManager.
@@ -38,4 +40,6 @@ class ProfileIdentityProvider : public IdentityProvider,
   DISALLOW_COPY_AND_ASSIGN(ProfileIdentityProvider);
 };
 
-#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_IDENTITY_PROVIDER_H_
+}  // namespace invalidation
+
+#endif  // COMPONENTS_INVALIDATION_IMPL_PROFILE_IDENTITY_PROVIDER_H_
