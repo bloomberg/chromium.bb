@@ -103,6 +103,7 @@ target(link_target_type, "gles2_sources") {
   visibility = [ "//gpu/*" ]
 
   sources = [
+    "abstract_texture.h",
     "buffer_manager.cc",
     "buffer_manager.h",
     "client_service_map.h",
@@ -212,6 +213,8 @@ target(link_target_type, "gles2_sources") {
     "texture_manager.h",
     "transform_feedback_manager.cc",
     "transform_feedback_manager.h",
+    "validating_abstract_texture_impl.cc",
+    "validating_abstract_texture_impl.h",
     "vertex_array_manager.cc",
     "vertex_array_manager.h",
     "vertex_attrib_manager.cc",

@@ -142,6 +142,16 @@ class MockGLES2Decoder : public GLES2Decoder {
                     int height,
                     int depth));
   MOCK_METHOD0(GetErrorState, ErrorState *());
+  MOCK_METHOD8(CreateAbstractTexture,
+               std::unique_ptr<gpu::gles2::AbstractTexture>(
+                   unsigned /* GLenum */ target,
+                   unsigned /* GLenum */ internal_format,
+                   int /* GLsizei */ width,
+                   int /* GLsizei */ height,
+                   int /* GLsizei */ depth,
+                   int /* GLint */ border,
+                   unsigned /* GLenum */ format,
+                   unsigned /* GLenum */ type));
 
   MOCK_METHOD0(GetLogger, Logger*());
 

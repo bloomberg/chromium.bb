@@ -166,8 +166,9 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // Gets the GLES2 Util which holds info.
   GLES2Util* GetGLES2Util() override;
 
-  // Gets the associated GLContext.
+  // Gets the associated GLContext and GLSurface.
   gl::GLContext* GetGLContext() override;
+  gl::GLSurface* GetGLSurface() override;
 
   // Gets the associated ContextGroup
   ContextGroup* GetContextGroup() override;
@@ -283,6 +284,16 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
                     int depth) override;
 
   ErrorState* GetErrorState() override;
+
+  std::unique_ptr<AbstractTexture> CreateAbstractTexture(
+      unsigned target,
+      unsigned internal_format,
+      int width,
+      int height,
+      int depth,
+      int border,
+      unsigned format,
+      unsigned type) override;
 
   void WaitForReadPixels(base::OnceClosure callback) override;
 
