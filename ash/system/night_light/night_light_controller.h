@@ -93,10 +93,24 @@ class ASH_EXPORT NightLightController
   // Convenience functions for converting between the color temperature value,
   // and the blue and green color scales. Note that the red color scale remains
   // unaffected (i.e. its scale remains 1.0f);
+  // When these color scales are to be applied in the linear color space (i.e.
+  // after gamma decoding), |temperature| should be the non-linear temperature
+  // (see GetNonLinearTemperature() below), the blue scale uses the same
+  // attenuation, while the green scale is attenuated a bit more than it
+  // normally is when the scales are meant for the compressed gamma space.
   static float BlueColorScaleFromTemperature(float temperature);
-  static float GreenColorScaleFromTemperature(float temperature);
-  static float TemperatureFromBlueColorScale(float blue_scale);
-  static float TemperatureFromGreenColorScale(float green_scale);
+  static float GreenColorScaleFromTemperature(float temperature,
+                                              bool in_linear_space);
+
+  // When using the CRTC color correction, the matrix is applied in the linear
+  // color space (i.e. after gamma decoding). Our standard temperature we use
+  // here, which the user changes, follow a linear slope from 0.0f to 1.0f. This
+  // won't give the same linear rate of change in colors as the temperature
+  // changes in the linear color space. To account for this, we want the
+  // temperature to follow the same slope as that of the gamma factor.
+  // This function returns the non-linear temperature that corresponds to the
+  // linear |temperature| value.
+  static float GetNonLinearTemperature(float temperature);
 
   AnimationDuration animation_duration() const { return animation_duration_; }
   AnimationDuration last_animation_duration() const {

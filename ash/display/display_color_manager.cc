@@ -175,6 +175,40 @@ SkMatrix44 SkMatrix44FromColorMatrixVector(
   return matrix;
 }
 
+constexpr int kGammaMaxValue = (1 << 16) - 1;
+constexpr size_t kDefaultTableSize = 512;
+
+// The below functions are generating default Lookup Tables (LUTs) that use
+// the BT.709 transfer function for gamma/degamma.
+std::vector<display::GammaRampRGBEntry> GetDefaultGammaLut() {
+  std::vector<display::GammaRampRGBEntry> table;
+  table.reserve(kDefaultTableSize);
+
+  constexpr float kGammaValue = 1.0f / 2.2f;
+  for (size_t i = 0; i < kDefaultTableSize; ++i) {
+    const uint16_t v = static_cast<uint16_t>(
+        kGammaMaxValue *
+        std::pow(static_cast<float>(i) / kDefaultTableSize, kGammaValue));
+    table.emplace_back(display::GammaRampRGBEntry{v, v, v});
+  }
+
+  return table;
+}
+
+std::vector<display::GammaRampRGBEntry> GetDefaultDeGammaLut() {
+  std::vector<display::GammaRampRGBEntry> table;
+  table.reserve(kDefaultTableSize);
+
+  for (size_t i = 0; i < kDefaultTableSize; ++i) {
+    const uint16_t v = static_cast<uint16_t>(
+        kGammaMaxValue *
+        std::pow(static_cast<float>(i) / kDefaultTableSize, 2.2f));
+    table.emplace_back(display::GammaRampRGBEntry{v, v, v});
+  }
+
+  return table;
+}
+
 }  // namespace
 
 DisplayColorManager::DisplayColorManager(
@@ -182,6 +216,8 @@ DisplayColorManager::DisplayColorManager(
     display::Screen* screen_to_observe)
     : configurator_(configurator),
       matrix_buffer_(9, 0.0f),  // 3x3 matrix.
+      default_gamma_lut_(GetDefaultGammaLut()),
+      default_degamma_lut_(GetDefaultDeGammaLut()),
       sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
@@ -281,9 +317,22 @@ void DisplayColorManager::ApplyDisplayColorCalibration(
   if (!configurator_->SetColorMatrix(display_id, *final_matrix))
     LOG(WARNING) << "Error applying the color matrix.";
 
-  if (!configurator_->SetGammaCorrection(display_id,
-                                         calibration_data.degamma_lut,
-                                         calibration_data.gamma_lut)) {
+  // When applying gamma correction, we either use the gamma/degamma tables from
+  // the calibration data if available, or we apply default ones. This makes
+  // sure that color transform matrices are always applied in the RGB linear
+  // space, which gives us consistent colors on all platforms.
+  // The associated gamma/degamma tables should be applied together; i.e. either
+  // both the default gamma/degamma tables, or both the tables from the ICC
+  // profile should be applied together.
+  const bool should_apply_default_tables =
+      calibration_data.degamma_lut.empty() &&
+      calibration_data.gamma_lut.empty();
+  if (!configurator_->SetGammaCorrection(
+          display_id,
+          should_apply_default_tables ? default_degamma_lut_
+                                      : calibration_data.degamma_lut,
+          should_apply_default_tables ? default_gamma_lut_
+                                      : calibration_data.gamma_lut)) {
     LOG(WARNING) << "Error applying gamma correction data.";
   }
 }
