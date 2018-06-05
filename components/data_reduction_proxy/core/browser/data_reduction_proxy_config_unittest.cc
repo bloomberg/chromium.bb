@@ -962,14 +962,6 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
             GetConfiguredProxiesForHttp());
 
-  // Report failed warmup for a non-DataSaver proxy, and verify that it does not
-  // change the list of data saver proxies.
-  test_config()->HandleWarmupFetcherResponse(
-      net::ProxyServer(),
-      WarmupURLFetcher::FetchResult::kFailed /* success_response */);
-  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
-            GetConfiguredProxiesForHttp());
-
   // Set the details of the proxy to which the warmup URL probe is in-flight to
   // avoid triggering the DCHECKs in HandleWarmupFetcherResponse method.
   test_config()->SetInFlightWarmupProxyDetails(
@@ -1096,6 +1088,62 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {
   test_config()->HandleWarmupFetcherResponse(
       kNonDataSaverProxy, WarmupURLFetcher::FetchResult::kFailed);
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
+            GetConfiguredProxiesForHttp());
+}
+
+// Tests that the proxy server last used for fetching the warmup URL is marked
+// as failed when the warmup fetched callback returns an invalid proxy.
+TEST_F(DataReductionProxyConfigTest,
+       HandleWarmupFetcherResponse_InvalidProxyServer) {
+  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
+  const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
+      "https://origin.net:443", net::ProxyServer::SCHEME_HTTP);
+  const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
+      "fallback.net:80", net::ProxyServer::SCHEME_HTTP);
+
+  SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
+  ResetSettings();
+
+  // The proxy is enabled.
+  test_config()->UpdateConfigForTesting(true, true, true);
+  test_config()->OnNewClientConfigFetched();
+  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
+            GetConfiguredProxiesForHttp());
+
+  // Report failed warmup for a non-DataSaver proxy, and verify that it
+  // changes the list of data saver proxies.
+  test_config()->HandleWarmupFetcherResponse(
+      net::ProxyServer(),
+      WarmupURLFetcher::FetchResult::kFailed /* success_response */);
+  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpProxy}),
+            GetConfiguredProxiesForHttp());
+}
+
+// Tests that the proxy server last used for fetching the warmup URL is marked
+// as failed when the warmup fetched callback returns a direct proxy.
+TEST_F(DataReductionProxyConfigTest,
+       HandleWarmupFetcherResponse_DirectProxyServer) {
+  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
+  const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
+      "https://origin.net:443", net::ProxyServer::SCHEME_HTTP);
+  const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
+      "fallback.net:80", net::ProxyServer::SCHEME_HTTP);
+
+  SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
+  ResetSettings();
+
+  // The proxy is enabled.
+  test_config()->UpdateConfigForTesting(true, true, true);
+  test_config()->OnNewClientConfigFetched();
+  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
+            GetConfiguredProxiesForHttp());
+
+  // Report failed warmup for a non-DataSaver proxy, and verify that it
+  // changes the list of data saver proxies.
+  test_config()->HandleWarmupFetcherResponse(
+      net::ProxyServer::Direct(),
+      WarmupURLFetcher::FetchResult::kFailed /* success_response */);
+  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpProxy}),
             GetConfiguredProxiesForHttp());
 }
 
