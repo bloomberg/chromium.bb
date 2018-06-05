@@ -83,8 +83,6 @@ cr.define('cr.ui.Oobe', function() {
           .addEventListener('click', Oobe.handleAccessibilityLinkClick);
       $('eula-accessibility-link')
           .addEventListener('click', Oobe.handleAccessibilityLinkClick);
-      $('update-accessibility-link')
-          .addEventListener('click', Oobe.handleAccessibilityLinkClick);
       // Same behaviour on hitting spacebar. See crbug.com/342991.
       function reactOnSpace(event) {
         if (event.keyCode == 32)
@@ -92,7 +90,6 @@ cr.define('cr.ui.Oobe', function() {
       }
       $('connect-accessibility-link').addEventListener('keyup', reactOnSpace);
       $('eula-accessibility-link').addEventListener('keyup', reactOnSpace);
-      $('update-accessibility-link').addEventListener('keyup', reactOnSpace);
 
       $('high-contrast')
           .addEventListener('click', Oobe.handleHighContrastClick);
