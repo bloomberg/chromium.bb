@@ -447,16 +447,14 @@ TEST_F(RasterFormatTest, ReleaseTexImage2DCHROMIUM) {
 
 TEST_F(RasterFormatTest, TexStorage2D) {
   cmds::TexStorage2D& cmd = *GetBufferAs<cmds::TexStorage2D>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLsizei>(12),
-              static_cast<GLsizei>(13), static_cast<GLsizei>(14));
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),
+                           static_cast<GLsizei>(12), static_cast<GLsizei>(13));
   EXPECT_EQ(static_cast<uint32_t>(cmds::TexStorage2D::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint>(11), cmd.texture_id);
-  EXPECT_EQ(static_cast<GLsizei>(12), cmd.levels);
-  EXPECT_EQ(static_cast<GLsizei>(13), cmd.width);
-  EXPECT_EQ(static_cast<GLsizei>(14), cmd.height);
+  EXPECT_EQ(static_cast<GLsizei>(12), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(13), cmd.height);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

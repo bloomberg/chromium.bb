@@ -97,7 +97,7 @@ void TextureAllocation::AllocateStorage(gpu::raster::RasterInterface* ri,
   // ETC1 resources cannot be preallocated.
   if (format == ETC1)
     return;
-  ri->TexStorage2D(alloc.texture_id, 1, size.width(), size.height());
+  ri->TexStorage2D(alloc.texture_id, size.width(), size.height());
   if (alloc.overlay_candidate && color_space.IsValid()) {
     ri->SetColorSpaceMetadata(alloc.texture_id,
                               reinterpret_cast<GLColorSpace>(

@@ -45,7 +45,7 @@ class RasterDecoderOOMTest : public RasterDecoderManualInitTest {
 
     // Trigger OOM with simulate_out_of_memory_on_large_textures
     cmds::TexStorage2D cmd;
-    cmd.Init(client_texture_id_, /*levels=*/1, /*width=*/50000,
+    cmd.Init(client_texture_id_, /*width=*/50000,
              /*height=*/50000);
     EXPECT_EQ(error::kLostContext, ExecuteCmd(cmd));
   }
@@ -174,7 +174,7 @@ TEST_P(RasterDecoderLostContextTest, TextureDestroyAfterLostFromMakeCurrent) {
   Init(/*has_robustness=*/true);
 
   // Create the texture.
-  DoTexStorage2D(client_texture_id_, /*levels=*/1, /*width=*/10, /*height=*/10);
+  DoTexStorage2D(client_texture_id_, /*width=*/10, /*height=*/10);
 
   // The texture should never be deleted at the GL level.
   EXPECT_CALL(*gl_, DeleteTextures(1, Pointee(kServiceTextureId)))

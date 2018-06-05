@@ -225,7 +225,7 @@ TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
 }
 
 TEST_P(RasterDecoderTest, TexStorage2D) {
-  DoTexStorage2D(client_texture_id_, 1 /* levels */, kWidth, kHeight);
+  DoTexStorage2D(client_texture_id_, kWidth, kHeight);
 
   gles2::TextureRef* texture_ref =
       group().texture_manager()->GetTexture(client_texture_id_);
@@ -242,20 +242,12 @@ TEST_P(RasterDecoderTest, TexStorage2D) {
   EXPECT_EQ(height, kHeight);
 }
 
-TEST_P(RasterDecoderTest, TexStorage2DTooManyLevels) {
-  cmds::TexStorage2D tex_storage_cmd;
-  tex_storage_cmd.Init(client_texture_id_, /*levels=*/2, kWidth, kHeight);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(tex_storage_cmd));
-
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
-
 TEST_P(RasterDecoderManualInitTest, TexStorage2DWithEXTTextureStorage) {
   InitState init;
   init.extensions.push_back("GL_EXT_texture_storage");
   InitDecoder(init);
 
-  DoTexStorage2D(client_texture_id_, 1 /* levels */, kWidth, kHeight);
+  DoTexStorage2D(client_texture_id_, kWidth, kHeight);
 
   gles2::TextureRef* texture_ref =
       group().texture_manager()->GetTexture(client_texture_id_);
@@ -289,7 +281,7 @@ TEST_P(RasterDecoderManualInitTest, TexStorage2DWithEXTNoCompressed) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   cmds::TexStorage2D tex_storage_cmd;
-  tex_storage_cmd.Init(kNewClientId, /*levels=*/1, kWidth, kHeight);
+  tex_storage_cmd.Init(kNewClientId, kWidth, kHeight);
   EXPECT_EQ(error::kNoError, ExecuteCmd(tex_storage_cmd));
 
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
@@ -306,7 +298,7 @@ TEST_P(RasterDecoderManualInitTest, TexStorage2DOutOfMemory) {
       .RetiresOnSaturation();
 
   cmds::TexStorage2D cmd;
-  cmd.Init(client_texture_id_, 1 /* levels */, kWidth, kHeight);
+  cmd.Init(client_texture_id_, kWidth, kHeight);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
 }
@@ -314,22 +306,17 @@ TEST_P(RasterDecoderManualInitTest, TexStorage2DOutOfMemory) {
 TEST_P(RasterDecoderTest, TexStorage2DInvalid) {
   // Bad client id
   cmds::TexStorage2D cmd;
-  cmd.Init(kInvalidClientId, 1 /* levels */, kWidth, kHeight);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-
-  // Bad levels
-  cmd.Init(client_texture_id_, 0 /* levels */, kWidth, kHeight);
+  cmd.Init(kInvalidClientId, kWidth, kHeight);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 
   // Bad width
-  cmd.Init(client_texture_id_, 1 /* levels */, 0, kHeight);
+  cmd.Init(client_texture_id_, 0, kHeight);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 
   // Bad height
-  cmd.Init(client_texture_id_, 1 /* levels */, kWidth, 0);
+  cmd.Init(client_texture_id_, kWidth, 0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
@@ -338,7 +325,7 @@ TEST_P(RasterDecoderTest, ProduceAndConsumeTexture) {
   Mailbox mailbox = Mailbox::Generate();
   GLuint new_texture_id = kNewClientId;
 
-  DoTexStorage2D(client_texture_id_, 1 /* levels */, kWidth, kHeight);
+  DoTexStorage2D(client_texture_id_, kWidth, kHeight);
 
   ProduceTextureDirectImmediate& produce_cmd =
       *GetImmediateAs<ProduceTextureDirectImmediate>();
@@ -435,8 +422,8 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 
   // Set dimensions on source and dest textures.
-  DoTexStorage2D(source_texture_id, 1 /* levels */, 2, 2);
-  DoTexStorage2D(client_texture_id_, 1 /* levels */, 2, 2);
+  DoTexStorage2D(source_texture_id, 2, 2);
+  DoTexStorage2D(client_texture_id_, 2, 2);
 
   // This will initialize the top half of destination.
   {

@@ -433,13 +433,8 @@ error::Error RasterDecoderImpl::HandleTexStorage2D(
   const volatile raster::cmds::TexStorage2D& c =
       *static_cast<const volatile raster::cmds::TexStorage2D*>(cmd_data);
   GLuint texture_id = static_cast<GLuint>(c.texture_id);
-  GLsizei levels = static_cast<GLsizei>(c.levels);
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
-  if (levels < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2D", "levels < 0");
-    return error::kNoError;
-  }
   if (width < 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2D", "width < 0");
     return error::kNoError;
@@ -448,7 +443,7 @@ error::Error RasterDecoderImpl::HandleTexStorage2D(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2D", "height < 0");
     return error::kNoError;
   }
-  DoTexStorage2D(texture_id, levels, width, height);
+  DoTexStorage2D(texture_id, width, height);
   return error::kNoError;
 }
 

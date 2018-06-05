@@ -129,7 +129,7 @@ class OopPixelTest : public testing::Test {
     auto* raster_implementation = raster_context_provider_->RasterInterface();
     raster_texture_id = raster_implementation->CreateTexture(
         false, gfx::BufferUsage::GPU_READ, viz::ResourceFormat::RGBA_8888);
-    raster_implementation->TexStorage2D(raster_texture_id, 1, width, height);
+    raster_implementation->TexStorage2D(raster_texture_id, width, height);
     raster_implementation->TexParameteri(raster_texture_id,
                                          GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 

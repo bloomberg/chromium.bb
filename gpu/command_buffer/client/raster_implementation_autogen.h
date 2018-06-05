@@ -89,10 +89,7 @@ void BindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) override;
 
 void ReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) override;
 
-void TexStorage2D(GLuint texture_id,
-                  GLsizei levels,
-                  GLsizei width,
-                  GLsizei height) override;
+void TexStorage2D(GLuint texture_id, GLsizei width, GLsizei height) override;
 
 void CopySubTexture(GLuint source_id,
                     GLuint dest_id,

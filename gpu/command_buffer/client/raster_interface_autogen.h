@@ -59,10 +59,7 @@ virtual GLuint CreateAndConsumeTexture(bool use_buffer,
 virtual void TexParameteri(GLuint texture_id, GLenum pname, GLint param) = 0;
 virtual void BindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) = 0;
 virtual void ReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) = 0;
-virtual void TexStorage2D(GLuint texture_id,
-                          GLsizei levels,
-                          GLsizei width,
-                          GLsizei height) = 0;
+virtual void TexStorage2D(GLuint texture_id, GLsizei width, GLsizei height) = 0;
 virtual void CopySubTexture(GLuint source_id,
                             GLuint dest_id,
                             GLint xoffset,
