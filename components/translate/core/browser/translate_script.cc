@@ -71,6 +71,17 @@ void TranslateScript::Request(const RequestCallback& callback) {
     return;
   }
 
+  GURL translate_script_url = GetTranslateScriptURL();
+
+  fetcher_.reset(new TranslateURLFetcher(kFetcherId));
+  fetcher_->set_extra_request_header(kRequestHeader);
+  fetcher_->Request(translate_script_url,
+                    base::BindOnce(&TranslateScript::OnScriptFetchComplete,
+                                   base::Unretained(this)));
+}
+
+// static
+GURL TranslateScript::GetTranslateScriptURL() {
   GURL translate_script_url;
   // Check if command-line contains an alternative URL for translate service.
   const base::CommandLine& command_line =
@@ -115,13 +126,8 @@ void TranslateScript::Request(const RequestCallback& callback) {
   translate_script_url = AddHostLocaleToUrl(translate_script_url);
   translate_script_url = AddApiKeyToUrl(translate_script_url);
 
-  fetcher_.reset(new TranslateURLFetcher(kFetcherId));
-  fetcher_->set_extra_request_header(kRequestHeader);
-  fetcher_->Request(translate_script_url,
-                    base::BindOnce(&TranslateScript::OnScriptFetchComplete,
-                                   base::Unretained(this)));
+  return translate_script_url;
 }
-
 
 void TranslateScript::OnScriptFetchComplete(
     int id, bool success, const std::string& data) {
