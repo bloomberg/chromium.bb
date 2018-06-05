@@ -74,8 +74,9 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformChannel {
   // passed on the new process's command line.
   //
   // **NOTE**: If this method is called it is important to also call
-  // |RemoteProcessLaunched()| on this PlatformChanenl *after* the process has
-  // launched. Failing to do so can result in leaked handles.
+  // |RemoteProcessLaunchAttempted()| on this PlatformChannel *after* attempting
+  // to launch the new process, regardless of whether the attempt succeeded.
+  // Failing to do so can result in leaked handles.
   void PrepareToPassRemoteEndpoint(HandlePassingInfo* info, std::string* value);
 
   // Like above but modifies |*command_line| to include the endpoint string
@@ -83,11 +84,11 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformChannel {
   void PrepareToPassRemoteEndpoint(HandlePassingInfo* info,
                                    base::CommandLine* command_line);
 
-  // Must be called after the corresponding process launch if
+  // Must be called after the corresponding process launch attempt if
   // |PrepareToPassRemoteEndpoint()| was used.
-  void RemoteProcessLaunched();
+  void RemoteProcessLaunchAttempted();
 
-  // Recovers and endpoint handle which was passed to the calling process by
+  // Recovers an endpoint handle which was passed to the calling process by
   // its creator. |value| is a string returned by
   // |PrepareToPassRemoteEndpoint()| in the creator's process.
   static PlatformChannelEndpoint RecoverPassedEndpointFromString(

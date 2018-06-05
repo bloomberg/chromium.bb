@@ -167,9 +167,9 @@ ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread() {
           ? g_test_delegate->LaunchTestProcess(cleaner_command_line_,
                                                launch_options)
           : base::LaunchProcess(cleaner_command_line_, launch_options);
+  channel.RemoteProcessLaunchAttempted();
   if (!cleaner_process.IsValid())
     return ProcessStatus(LaunchStatus::kLaunchFailed);
-  channel.RemoteProcessLaunched();
 
   // ChromePromptImpl tasks will need to run on the IO thread. There is no
   // need to synchronize its creation, since the client end will wait for this

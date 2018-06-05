@@ -93,7 +93,7 @@ mojom::ConnectResult LaunchAndConnectToProcess(
 #endif
   *process = base::LaunchProcess(child_command_line, options);
   DCHECK(process->IsValid());
-  channel.RemoteProcessLaunched();
+  channel.RemoteProcessLaunchAttempted();
   receiver->SetPID(process->Pid());
   mojo::OutgoingInvitation::Send(std::move(invitation), process->Handle(),
                                  channel.TakeLocalEndpoint());

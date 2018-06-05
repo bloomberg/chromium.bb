@@ -303,7 +303,7 @@ base::Process InvitationTest::LaunchChildTestClient(
   base::Process child_process = base::SpawnMultiProcessTestChild(
       test_client_name, command_line, launch_options);
   if (channel)
-    channel->RemoteProcessLaunched();
+    channel->RemoteProcessLaunchAttempted();
 
   MojoPlatformProcessHandle process_handle;
   process_handle.struct_size = sizeof(process_handle);
