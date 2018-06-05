@@ -15,6 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 
+class GURL;
+
 namespace translate {
 
 class TranslateScriptTest;
@@ -45,6 +47,8 @@ class TranslateScript {
   // Fetches the JS translate script (the script that is injected in the page
   // to translate it).
   void Request(const RequestCallback& callback);
+
+  static GURL GetTranslateScriptURL();
 
  private:
   friend class TranslateScriptTest;
