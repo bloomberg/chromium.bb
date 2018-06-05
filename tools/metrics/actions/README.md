@@ -13,6 +13,9 @@ enable different analyses.  They're complementary.
 
 ## Coding (Emitting to User Actions)
 
+Generally you'll want to call `base::RecordAction()`, which is defined in
+[https://cs.chromium.org/chromium/src/base/metrics/user_metrics.h](user_metrics.h).
+
 ### Emit at a High-Level, not Deep in the Implementation
 
 Prefer to emit at the highest level reasonable, closest to the code that handles
@@ -115,6 +118,12 @@ a new user action with a new name.  Otherwise the dashboard will be mixing two
 different interpretations of the data and make no sense.
 
 ## Documenting User Actions
+
+Document user actions in [actions.xml](./actions.xml).  There is also a
+[google-internal version of the file](http://go/chrome-user-actions-internal)
+for the rare case when the user action is confidential (added only to Chrome
+code, not Chromium code; or, an accurate description about how to interpret the
+user action would reveal information about Google's plans).
 
 ### Add User Actions and Documentation in the Same Changelist
 
