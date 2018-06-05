@@ -414,7 +414,7 @@ void NGInlineLayoutAlgorithm::PlaceLayoutResult(NGInlineItemResult* item_result,
   if (box)
     box->metrics.Unite(metrics);
 
-  LayoutUnit line_top = item_result->margins.block_start - metrics.ascent;
+  LayoutUnit line_top = item_result->margins.line_over - metrics.ascent;
   line_box_.AddChild(std::move(item_result->layout_result),
                      NGLogicalOffset{inline_offset, line_top},
                      item_result->inline_size, item.BidiLevel());

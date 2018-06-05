@@ -80,6 +80,28 @@ std::ostream& operator<<(std::ostream& stream, const NGBoxStrut& value) {
   return stream << value.ToString();
 }
 
+NGBoxStrut::NGBoxStrut(const NGLineBoxStrut& line_relative,
+                       bool is_flipped_lines) {
+  if (!is_flipped_lines) {
+    *this = {line_relative.inline_start, line_relative.inline_end,
+             line_relative.line_over, line_relative.line_under};
+  } else {
+    *this = {line_relative.inline_start, line_relative.inline_end,
+             line_relative.line_under, line_relative.line_over};
+  }
+}
+
+NGLineBoxStrut::NGLineBoxStrut(const NGBoxStrut& flow_relative,
+                               bool is_flipped_lines) {
+  if (!is_flipped_lines) {
+    *this = {flow_relative.inline_start, flow_relative.inline_end,
+             flow_relative.block_start, flow_relative.block_end};
+  } else {
+    *this = {flow_relative.inline_start, flow_relative.inline_end,
+             flow_relative.block_end, flow_relative.block_start};
+  }
+}
+
 NGPixelSnappedPhysicalBoxStrut NGPhysicalBoxStrut::SnapToDevicePixels() const {
   return NGPixelSnappedPhysicalBoxStrut(top.Round(), right.Round(),
                                         bottom.Round(), left.Round());
