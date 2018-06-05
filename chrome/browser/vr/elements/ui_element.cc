@@ -1033,9 +1033,10 @@ bool UiElement::UpdateWorldSpaceTransform(bool parent_changed) {
     }
 
     transform.ConcatTransform(inheritable);
+    changed = !transform.ApproximatelyEqual(world_space_transform_) ||
+              !inheritable.ApproximatelyEqual(inheritable_transform_);
     set_world_space_transform(transform);
     set_inheritable_transform(inheritable);
-    changed = true;
   }
 
   bool child_changed = false;

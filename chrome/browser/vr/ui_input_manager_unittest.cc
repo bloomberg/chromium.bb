@@ -483,7 +483,7 @@ TEST_F(UiInputManagerTest, HitTestStrategy) {
 }
 
 TEST_F(UiInputManagerContentTest, NoMouseMovesDuringClick) {
-  EXPECT_TRUE(RunForMs(500));
+  EXPECT_FALSE(RunForMs(500));
   // It would be nice if the controller weren't platform specific and we could
   // mock out the underlying sensor data. For now, we will hallucinate
   // parameters to HandleInput.
