@@ -5,8 +5,11 @@
 #ifndef ASH_SHELF_LOGIN_SHELF_VIEW_H_
 #define ASH_SHELF_LOGIN_SHELF_VIEW_H_
 
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "ash/lock_screen_action/lock_screen_action_background_observer.h"
+#include "ash/public/interfaces/kiosk_app_info.mojom.h"
 #include "ash/shutdown_controller.h"
 #include "ash/tray_action/tray_action_observer.h"
 #include "base/scoped_observer.h"
@@ -27,6 +30,8 @@ class LockScreenActionBackgroundController;
 enum class LockScreenActionBackgroundState;
 class TrayAction;
 
+class KioskAppsButton;
+
 // LoginShelfView contains the shelf buttons visible outside of an active user
 // session. ShelfView and LoginShelfView should never be shown together.
 class ASH_EXPORT LoginShelfView : public views::View,
@@ -36,14 +41,15 @@ class ASH_EXPORT LoginShelfView : public views::View,
                                   public ShutdownController::Observer {
  public:
   enum ButtonId {
-    kShutdown = 1,   // Shut down the device.
-    kRestart,        // Restart the device.
-    kSignOut,        // Sign out the active user session.
-    kCloseNote,      // Close the lock screen note.
-    kCancel,         // Cancel multiple user sign-in.
-    kBrowseAsGuest,  // Use in guest mode.
-    kAddUser,        // Add a new user.
-    kShowWebUiLogin  // Show webui login.
+    kShutdown = 1,    // Shut down the device.
+    kRestart,         // Restart the device.
+    kSignOut,         // Sign out the active user session.
+    kCloseNote,       // Close the lock screen note.
+    kCancel,          // Cancel multiple user sign-in.
+    kBrowseAsGuest,   // Use in guest mode.
+    kAddUser,         // Add a new user.
+    kShowWebUiLogin,  // Show webui login.
+    kApps,            // Show list of available kiosk apps.
   };
 
   explicit LoginShelfView(
@@ -53,6 +59,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // ShelfWidget observes SessionController for higher-level UI changes and
   // then notifies LoginShelfView to update its own UI.
   void UpdateAfterSessionStateChange(session_manager::SessionState state);
+
+  // Sets the list of kiosk apps that can be launched from the login shelf.
+  void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps);
 
   // views::View:
   const char* GetClassName() const override;
@@ -91,6 +100,8 @@ class ASH_EXPORT LoginShelfView : public views::View,
 
   ScopedObserver<ShutdownController, ShutdownController::Observer>
       shutdown_controller_observer_;
+
+  KioskAppsButton* kiosk_apps_button_ = nullptr;  // Owned by view hierarchy
 
   DISALLOW_COPY_AND_ASSIGN(LoginShelfView);
 };
