@@ -179,8 +179,7 @@ void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   if (!source->GetStatus().is_success() &&
       source->GetStatus().error() == net::ERR_INTERNET_DISCONNECTED) {
     // Fetching failed due to Internet unavailability, and not due to some
-    // error. Set the proxy server to unknown.
-    callback_.Run(net::ProxyServer(), FetchResult::kSuccessful);
+    // error. No need to run the callback.
     CleanupAfterFetch();
     return;
   }

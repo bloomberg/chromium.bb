@@ -488,29 +488,24 @@ void DataReductionProxyConfig::HandleWarmupFetcherResponse(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsFetchInFlight());
 
-  // If the probe times out, then proxy server information may not have been
-  // set by the URL fetcher.
-  bool timed_out_with_no_proxy_data =
-      (success_response == WarmupURLFetcher::FetchResult::kTimedOut &&
-       !proxy_server.is_valid());
-
   base::Optional<DataReductionProxyTypeInfo> proxy_type_info =
       FindConfiguredDataReductionProxy(proxy_server);
 
   // Check the proxy server used.
-  if (!timed_out_with_no_proxy_data && !proxy_type_info) {
-    // No need to do anything here since the warmup fetch did not go through
-    // the data saver proxy.
+  if (!proxy_type_info && proxy_server.is_valid() &&
+      !proxy_server.is_direct()) {
+    // No need to do anything here since the warmup fetch went through
+    // a non-datasaver proxy.
     return;
   }
 
   bool is_secure_proxy = false;
   bool is_core_proxy = false;
 
-  if (!timed_out_with_no_proxy_data) {
+  if (proxy_type_info) {
+    DCHECK(proxy_server.is_valid());
+    DCHECK(!proxy_server.is_direct());
     is_secure_proxy = proxy_server.is_https() || proxy_server.is_quic();
-
-    DCHECK(proxy_type_info);
     is_core_proxy = proxy_type_info->proxy_servers[proxy_type_info->proxy_index]
                         .IsCoreProxy();
 
@@ -520,8 +515,10 @@ void DataReductionProxyConfig::HandleWarmupFetcherResponse(
     DCHECK_EQ(is_secure_proxy, GetInFlightWarmupProxyDetails()->first);
     DCHECK_EQ(is_core_proxy, GetInFlightWarmupProxyDetails()->second);
   } else {
-    // When the probe times out, the proxy information may not be set. Fill-in
-    // the missing data using the proxy that was being probed.
+    DCHECK(!proxy_server.is_valid() || proxy_server.is_direct());
+    // When the probe times out or if the warmup URL was fetched via DIRECT
+    // proxy, the data reduction proxy information may not be set. Fill-in the
+    // missing data using the proxy that was being probed.
     is_secure_proxy = warmup_url_fetch_in_flight_secure_proxy_;
     is_core_proxy = warmup_url_fetch_in_flight_core_proxy_;
   }
