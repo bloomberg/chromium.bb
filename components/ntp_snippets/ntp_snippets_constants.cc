@@ -13,7 +13,8 @@ const char kContentSuggestionsApiScope[] =
     "https://www.googleapis.com/auth/chrome-content-suggestions";
 
 const char kContentSuggestionsServer[] =
-    "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/fetch";
+    "https://chromefeedcontentsuggestions-pa.googleapis.com/v2/suggestions/"
+    "fetch";
 const char kContentSuggestionsStagingServer[] =
     "https://staging-chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
     "fetch";
