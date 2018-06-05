@@ -220,41 +220,6 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
   // contents is now deleted, along with instance and browsing_instance
 }
 
-// Test that NavigationEntries with SiteInstances can be cloned, but that their
-// SiteInstances can be changed afterwards.  Also tests that the ref counts are
-// updated properly after the change.
-TEST_F(SiteInstanceTest, CloneNavigationEntry) {
-  const GURL url("test:foo");
-
-  std::unique_ptr<NavigationEntryImpl> e1 =
-      base::WrapUnique(new NavigationEntryImpl(
-          SiteInstanceImpl::Create(nullptr), url, Referrer(), base::string16(),
-          ui::PAGE_TRANSITION_LINK, false,
-          nullptr /* blob_url_loader_factory */));
-
-  // Clone the entry.
-  std::unique_ptr<NavigationEntryImpl> e2 = e1->Clone();
-
-  // Should be able to change the SiteInstance of the cloned entry.
-  e2->set_site_instance(SiteInstanceImpl::Create(nullptr));
-
-  EXPECT_EQ(0, browser_client()->GetAndClearSiteInstanceDeleteCount());
-  EXPECT_EQ(0, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
-
-  // The first SiteInstance and BrowsingInstance should go away after resetting
-  // e1, since e2 should no longer be referencing it.
-  e1.reset();
-  EXPECT_EQ(1, browser_client()->GetAndClearSiteInstanceDeleteCount());
-  EXPECT_EQ(1, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
-
-  // The second SiteInstance should go away after resetting e2.
-  e2.reset();
-  EXPECT_EQ(1, browser_client()->GetAndClearSiteInstanceDeleteCount());
-  EXPECT_EQ(1, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
-
-  DrainMessageLoop();
-}
-
 // Test to ensure GetProcess returns and creates processes correctly.
 TEST_F(SiteInstanceTest, GetProcess) {
   // Ensure that GetProcess returns a process.
