@@ -2491,14 +2491,6 @@ void RasterDecoderImpl::DoTexStorage2D(GLuint client_id,
     return;
   }
 
-  // For testing only. Allows us to stress the ability to respond to OOM errors.
-  if (workarounds().simulate_out_of_memory_on_large_textures &&
-      (width * height >= 4096 * 4096)) {
-    LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glTexStorage2D",
-                       "synthetic out of memory");
-    return;
-  }
-
   // Check if we have enough memory.
   unsigned int internal_format =
       viz::GLInternalFormat(texture_metadata->format());
@@ -2516,6 +2508,15 @@ void RasterDecoderImpl::DoTexStorage2D(GLuint client_id,
                        "dimensions too large");
     return;
   }
+
+  // For testing only. Allows us to stress the ability to respond to OOM errors.
+  if (workarounds().simulate_out_of_memory_on_large_textures &&
+      (width * height >= 4096 * 4096)) {
+    LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glTexStorage2D",
+                       "synthetic out of memory");
+    return;
+  }
+
   if (!EnsureGPUMemoryAvailable(size)) {
     LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glTexStorage2D", "out of memory");
     return;
