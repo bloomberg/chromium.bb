@@ -166,12 +166,15 @@ void WebMediaStreamSource::SetExtraData(ExtraData* extra_data) {
       base::WrapUnique(extra_data)));
 }
 
-void WebMediaStreamSource::SetAudioProcessingProperties(bool echo_cancellation,
-                                                        bool auto_gain_control,
-                                                        bool noise_supression) {
+void WebMediaStreamSource::SetAudioProcessingProperties(
+    EchoCancellationMode echo_cancellation_mode,
+    bool auto_gain_control,
+    bool noise_supression) {
   DCHECK(!private_.IsNull());
-  private_->SetAudioProcessingProperties(echo_cancellation, auto_gain_control,
-                                         noise_supression);
+  private_->SetAudioProcessingProperties(
+      static_cast<MediaStreamSource::EchoCancellationMode>(
+          echo_cancellation_mode),
+      auto_gain_control, noise_supression);
 }
 
 WebMediaConstraints WebMediaStreamSource::Constraints() {

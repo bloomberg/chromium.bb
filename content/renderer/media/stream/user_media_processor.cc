@@ -101,13 +101,8 @@ bool IsValidVideoContentSource(const std::string& source) {
 void SurfaceAudioProcessingSettings(blink::WebMediaStreamSource* source) {
   MediaStreamAudioSource* source_impl =
       static_cast<MediaStreamAudioSource*>(source->GetExtraData());
-  media::AudioParameters params = source_impl->GetAudioParameters();
-  bool hw_echo_cancellation =
-      params.IsValid() &&
-      (params.effects() & media::AudioParameters::ECHO_CANCELLER);
-
   bool sw_echo_cancellation = false, auto_gain_control = false,
-       noise_supression = false;
+       noise_supression = false, hw_echo_cancellation = false;
   if (ProcessedLocalAudioSource* processed_source =
           ProcessedLocalAudioSource::From(source_impl)) {
     AudioProcessingProperties properties =
@@ -115,10 +110,28 @@ void SurfaceAudioProcessingSettings(blink::WebMediaStreamSource* source) {
     sw_echo_cancellation = properties.enable_sw_echo_cancellation;
     auto_gain_control = properties.goog_auto_gain_control;
     noise_supression = properties.goog_noise_suppression;
+    // The ECHO_CANCELLER flag will be set if either:
+    // - The device advertises the ECHO_CANCELLER flag and
+    //   disable_hw_echo_cancellation is false; or if
+    // - The device advertises the EXPERIMENTAL_ECHO_CANCELLER flag and
+    //   enable_experimental_hw_echo_cancellation is true.
+    // See: ProcessedLocalAudioSource::EnsureSourceIsStarted().
+    const media::AudioParameters& params = processed_source->device().input;
+    hw_echo_cancellation =
+        params.IsValid() &&
+        (params.effects() & media::AudioParameters::ECHO_CANCELLER);
   }
-  source->SetAudioProcessingProperties(
-      hw_echo_cancellation || sw_echo_cancellation, auto_gain_control,
-      noise_supression);
+
+  using blink::WebMediaStreamSource;
+  const WebMediaStreamSource::EchoCancellationMode echo_cancellation_mode =
+      hw_echo_cancellation
+          ? WebMediaStreamSource::EchoCancellationMode::kHardware
+          : sw_echo_cancellation
+                ? WebMediaStreamSource::EchoCancellationMode::kSoftware
+                : WebMediaStreamSource::EchoCancellationMode::kDisabled;
+
+  source->SetAudioProcessingProperties(echo_cancellation_mode,
+                                       auto_gain_control, noise_supression);
 }
 
 }  // namespace

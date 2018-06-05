@@ -74,6 +74,8 @@ class WebMediaStreamSource {
     kReadyStateEnded = 2
   };
 
+  enum class EchoCancellationMode { kDisabled, kSoftware, kHardware };
+
   struct Capabilities {
     // WebVector is used to store an optional range for the below numeric
     // fields. All of them should have 0 or 2 values representing min/max.
@@ -132,7 +134,7 @@ class WebMediaStreamSource {
   BLINK_PLATFORM_EXPORT void SetExtraData(ExtraData*);
 
   BLINK_PLATFORM_EXPORT void SetAudioProcessingProperties(
-      bool echo_cancellation,
+      EchoCancellationMode echo_cancellation_mode,
       bool auto_gain_control,
       bool noise_supression);
 

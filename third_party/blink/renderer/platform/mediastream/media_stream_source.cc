@@ -94,10 +94,11 @@ void MediaStreamSource::AddObserver(MediaStreamSource::Observer* observer) {
   observers_.insert(observer);
 }
 
-void MediaStreamSource::SetAudioProcessingProperties(bool echo_cancellation,
-                                                     bool auto_gain_control,
-                                                     bool noise_supression) {
-  echo_cancellation_ = echo_cancellation;
+void MediaStreamSource::SetAudioProcessingProperties(
+    EchoCancellationMode echo_cancellation_mode,
+    bool auto_gain_control,
+    bool noise_supression) {
+  echo_cancellation_mode_ = echo_cancellation_mode;
   auto_gain_control_ = auto_gain_control;
   noise_supression_ = noise_supression;
 }
@@ -123,8 +124,24 @@ void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
   settings.device_id = Id();
   settings.group_id = GroupId();
 
-  if (echo_cancellation_)
-    settings.echo_cancellation = *echo_cancellation_;
+  if (echo_cancellation_mode_) {
+    switch (*echo_cancellation_mode_) {
+      case EchoCancellationMode::kDisabled:
+        settings.echo_cancellation = false;
+        settings.echo_cancellation_type.Reset();
+        break;
+      case EchoCancellationMode::kSoftware:
+        settings.echo_cancellation = true;
+        settings.echo_cancellation_type =
+            WebString::FromASCII(blink::kEchoCancellationTypeBrowser);
+        break;
+      case EchoCancellationMode::kHardware:
+        settings.echo_cancellation = true;
+        settings.echo_cancellation_type =
+            WebString::FromASCII(blink::kEchoCancellationTypeSystem);
+        break;
+    }
+  }
   if (auto_gain_control_)
     settings.auto_gain_control = *auto_gain_control_;
   if (noise_supression_)
@@ -160,5 +177,11 @@ STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateMuted,
                    MediaStreamSource::kReadyStateMuted);
 STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateEnded,
                    MediaStreamSource::kReadyStateEnded);
+STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kDisabled,
+                   MediaStreamSource::EchoCancellationMode::kDisabled);
+STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kSoftware,
+                   MediaStreamSource::EchoCancellationMode::kSoftware);
+STATIC_ASSERT_ENUM(WebMediaStreamSource::EchoCancellationMode::kHardware,
+                   MediaStreamSource::EchoCancellationMode::kHardware);
 
 }  // namespace blink
