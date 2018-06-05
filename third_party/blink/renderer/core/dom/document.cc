@@ -973,6 +973,10 @@ Element* Document::CreateElementForBinding(
     const AtomicString& local_name,
     const StringOrDictionary& string_or_options,
     ExceptionState& exception_state) {
+  if (string_or_options.IsNull()) {
+    return CreateElementForBinding(local_name, exception_state);
+  }
+
   // 1. If localName does not match Name production, throw InvalidCharacterError
   if (!IsValidElementName(this, local_name)) {
     exception_state.ThrowDOMException(
