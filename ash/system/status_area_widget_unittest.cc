@@ -20,6 +20,7 @@
 #include "ash/system/system_tray_focus_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
@@ -50,8 +51,12 @@ TEST_F(StatusAreaWidgetTest, Basics) {
 
   // Default trays are constructed.
   EXPECT_TRUE(status->overview_button_tray());
-  EXPECT_TRUE(status->system_tray());
-  EXPECT_TRUE(status->notification_tray());
+  if (features::IsSystemTrayUnifiedEnabled()) {
+    EXPECT_TRUE(status->unified_system_tray());
+  } else {
+    EXPECT_TRUE(status->system_tray());
+    EXPECT_TRUE(status->notification_tray());
+  }
   EXPECT_TRUE(status->logout_button_tray_for_testing());
   EXPECT_TRUE(status->ime_menu_tray());
   EXPECT_TRUE(status->virtual_keyboard_tray_for_testing());
@@ -63,8 +68,12 @@ TEST_F(StatusAreaWidgetTest, Basics) {
 
   // Default trays are visible.
   EXPECT_FALSE(status->overview_button_tray()->visible());
-  EXPECT_TRUE(status->system_tray()->visible());
-  EXPECT_TRUE(status->notification_tray()->visible());
+  if (features::IsSystemTrayUnifiedEnabled()) {
+    EXPECT_TRUE(status->unified_system_tray()->visible());
+  } else {
+    EXPECT_TRUE(status->system_tray()->visible());
+    EXPECT_TRUE(status->notification_tray()->visible());
+  }
   EXPECT_FALSE(status->logout_button_tray_for_testing()->visible());
   EXPECT_FALSE(status->ime_menu_tray()->visible());
   EXPECT_FALSE(status->virtual_keyboard_tray_for_testing()->visible());
