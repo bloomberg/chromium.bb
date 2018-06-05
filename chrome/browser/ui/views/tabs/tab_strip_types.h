@@ -4,7 +4,6 @@
 
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_TYPES_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_TYPES_H_
-
 // Enum passed to EndDrag().
 enum EndDragReason {
   // Complete the drag.
@@ -21,6 +20,13 @@ enum EndDragReason {
 enum CloseTabSource {
   CLOSE_TAB_FROM_MOUSE,
   CLOSE_TAB_FROM_TOUCH,
+};
+
+// Returned from GetNewTabButtonPosition().
+enum NewTabButtonPosition {
+  LEADING,     // Pinned to the leading edge of the tabstrip region.
+  AFTER_TABS,  // After the last tab.
+  TRAILING,    // Pinned to the trailing edge of the tabstrip region.
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_TYPES_H_

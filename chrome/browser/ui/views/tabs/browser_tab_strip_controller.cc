@@ -307,6 +307,13 @@ bool BrowserTabStripController::IsCompatibleWith(TabStrip* other) const {
   return other_profile == GetProfile();
 }
 
+NewTabButtonPosition BrowserTabStripController::GetNewTabButtonPosition()
+    const {
+  if (!ui::MaterialDesignController::IsRefreshUi())
+    return AFTER_TABS;
+  return GetFrameView()->CaptionButtonsOnLeadingEdge() ? TRAILING : LEADING;
+}
+
 void BrowserTabStripController::CreateNewTab() {
   model_->delegate()->AddTabAt(GURL(), -1, true);
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
@@ -347,7 +354,7 @@ void BrowserTabStripController::StackedLayoutMaybeChanged() {
 }
 
 bool BrowserTabStripController::IsSingleTabModeAvailable() {
-  return browser_view_->frame()->GetFrameView()->IsSingleTabModeAvailable();
+  return GetFrameView()->IsSingleTabModeAvailable();
 }
 
 void BrowserTabStripController::OnStartedDraggingTabs() {
@@ -367,7 +374,7 @@ void BrowserTabStripController::OnStoppedDraggingTabs() {
 }
 
 SkColor BrowserTabStripController::GetToolbarTopSeparatorColor() const {
-  return browser_view_->frame()->GetFrameView()->GetToolbarTopSeparatorColor();
+  return GetFrameView()->GetToolbarTopSeparatorColor();
 }
 
 base::string16 BrowserTabStripController::GetAccessibleTabName(
@@ -461,6 +468,11 @@ void BrowserTabStripController::TabBlockedStateChanged(WebContents* contents,
 void BrowserTabStripController::SetTabNeedsAttentionAt(int index,
                                                        bool attention) {
   tabstrip_->SetTabNeedsAttention(index, attention);
+}
+
+const BrowserNonClientFrameView* BrowserTabStripController::GetFrameView()
+    const {
+  return browser_view_->frame()->GetFrameView();
 }
 
 TabRendererData BrowserTabStripController::TabRendererDataFromModel(
