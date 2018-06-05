@@ -123,7 +123,7 @@ String DeclaredStylePropertyMap::SerializationForShorthand(
   DCHECK(property.IsShorthand());
   if (StyleRule* style_rule = GetStyleRule()) {
     return StylePropertySerializer(style_rule->Properties())
-        .GetPropertyValue(property.PropertyID());
+        .SerializeShorthand(property.PropertyID());
   }
 
   return "";

@@ -274,8 +274,7 @@ String StylePropertySerializer::AsText() const {
       if (serialized_other_longhand)
         continue;
 
-      String shorthand_result =
-          StylePropertySerializer::GetPropertyValue(shorthand_property);
+      String shorthand_result = SerializeShorthand(shorthand_property);
       if (shorthand_result.IsEmpty())
         continue;
 
@@ -402,13 +401,10 @@ String StylePropertySerializer::CommonShorthandChecks(
   return String();
 }
 
-String StylePropertySerializer::GetPropertyValue(
+String StylePropertySerializer::SerializeShorthand(
     CSSPropertyID property_id) const {
   const StylePropertyShorthand& shorthand = shorthandForProperty(property_id);
-  // TODO(timloh): This is weird, why do we call this with non-shorthands at
-  // all?
-  if (!shorthand.length())
-    return String();
+  DCHECK(shorthand.length());
 
   String result = CommonShorthandChecks(shorthand);
   if (!result.IsNull())

@@ -40,7 +40,7 @@ class StylePropertySerializer {
   explicit StylePropertySerializer(const CSSPropertyValueSet&);
 
   String AsText() const;
-  String GetPropertyValue(CSSPropertyID) const;
+  String SerializeShorthand(CSSPropertyID) const;
 
  private:
   String GetCommonValue(const StylePropertyShorthand&) const;
