@@ -229,6 +229,12 @@ const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";
 
+const char kWebPageTextAccessibilityName[] =
+    "Enable text accessibility in web pages";
+const char kWebPageTextAccessibilityDescription[] =
+    "When enabled, text in web pages will respect the user's Dynamic Type "
+    "setting.";
+
 const char kWebPaymentsName[] = "Web Payments";
 const char kWebPaymentsDescription[] =
     "Enable Payment Request API integration, a JavaScript API for merchants.";

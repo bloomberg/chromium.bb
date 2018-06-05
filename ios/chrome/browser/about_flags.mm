@@ -53,6 +53,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/user_feedback_features.h"
+#include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/features.h"
@@ -332,6 +333,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"autofill-manual-fallback", flag_descriptions::kAutofillManualFallbackName,
      flag_descriptions::kAutofillManualFallbackDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillManualFallback)},
+    {"webpage-text-accessibility",
+     flag_descriptions::kWebPageTextAccessibilityName,
+     flag_descriptions::kWebPageTextAccessibilityDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::kWebPageTextAccessibility)},
 };
 
 // Add all switches from experimental flags to |command_line|.
