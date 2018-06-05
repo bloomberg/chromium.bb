@@ -330,6 +330,8 @@
       <include name="IDR_LOCAL_NTP_JS" file="resources\local_ntp\local_ntp.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_VOICE_CSS" file="resources\local_ntp\voice.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_VOICE_JS" file="resources\local_ntp\voice.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_CSS" file="resources\local_ntp\custom_backgrounds.css" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_JS" file="resources\local_ntp\custom_backgrounds.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_STATE_HTML" file="resources\local_state\local_state.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_LOCAL_STATE_JS" file="resources\local_state\local_state.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_MOST_VISITED_IFRAME_CSS" file="resources\local_ntp\most_visited_iframe.css" type="BINDATA" />
