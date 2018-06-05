@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#import "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "ios/web/public/web_thread.h"
@@ -103,8 +103,7 @@ class WebViewPersonalDataManagerObserverBridge
   // |personalDataDidChange| to be invoked.
   if (_personalDataManager->IsDataLoaded()) {
     NSArray<CWVAutofillProfile*>* profiles = [self profiles];
-    web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
-                             base::BindBlockArc(^{
+    web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindOnce(^{
                                completionHandler(profiles);
                              }));
   } else {
@@ -127,8 +126,7 @@ class WebViewPersonalDataManagerObserverBridge
   // |personalDataDidChange| to be invoked.
   if (_personalDataManager->IsDataLoaded()) {
     NSArray<CWVCreditCard*>* creditCards = [self creditCards];
-    web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
-                             base::BindBlockArc(^{
+    web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindOnce(^{
                                completionHandler(creditCards);
                              }));
   } else {

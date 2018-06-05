@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
@@ -420,7 +420,7 @@ static NSString* gUserAgentProduct = nil;
 - (void)addScriptCommandHandler:(id<CWVScriptCommandHandler>)handler
                   commandPrefix:(NSString*)commandPrefix {
   CWVWebView* __weak weakSelf = self;
-  const web::WebState::ScriptCommandCallback callback = base::BindBlockArc(
+  const web::WebState::ScriptCommandCallback callback = base::BindRepeating(
       ^bool(const base::DictionaryValue& content, const GURL& mainDocumentURL,
             bool userInteracting) {
         NSDictionary* nsContent = NSDictionaryFromDictionaryValue(content);
