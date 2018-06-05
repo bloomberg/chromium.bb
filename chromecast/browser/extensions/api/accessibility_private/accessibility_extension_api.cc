@@ -4,9 +4,9 @@
 
 #include "chromecast/browser/extensions/api/accessibility_private/accessibility_extension_api.h"
 
+#include "chromecast/browser/accessibility/accessibility_manager.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/common/extensions_api/accessibility_private.h"
-#include "chromecast/graphics/accessibility/accessibility_manager.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/service_manager_connection.h"
