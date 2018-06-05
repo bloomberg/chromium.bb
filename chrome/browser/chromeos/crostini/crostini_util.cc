@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_app_launch_observer.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
@@ -80,7 +81,15 @@ void LaunchTerminal(Profile* profile) {
 void LaunchContainerApplication(
     Profile* profile,
     const std::string& app_id,
-    crostini::CrostiniRegistryService::Registration registration) {
+    crostini::CrostiniRegistryService::Registration registration,
+    int64_t display_id) {
+  ChromeLauncherController* chrome_launcher_controller =
+      ChromeLauncherController::instance();
+  DCHECK_NE(chrome_launcher_controller, nullptr);
+  CrostiniAppLaunchObserver* observer =
+      chrome_launcher_controller->crostini_app_window_shelf_controller();
+  DCHECK_NE(observer, nullptr);
+  observer->OnAppLaunchRequested(registration.DesktopFileId(), display_id);
   crostini::CrostiniManager::GetInstance()->LaunchContainerApplication(
       profile, registration.VmName(), registration.ContainerName(),
       registration.DesktopFileId(),
@@ -108,7 +117,9 @@ bool IsCrostiniEnabled(Profile* profile) {
   return profile->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled);
 }
 
-void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
+void LaunchCrostiniApp(Profile* profile,
+                       const std::string& app_id,
+                       int64_t display_id) {
   auto* crostini_manager = crostini::CrostiniManager::GetInstance();
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
@@ -137,8 +148,9 @@ void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
     launch_closure = base::BindOnce(&LaunchTerminal, profile);
   } else {
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
-    launch_closure = base::BindOnce(&LaunchContainerApplication, profile,
-                                    app_id, std::move(*registration));
+    launch_closure =
+        base::BindOnce(&LaunchContainerApplication, profile, app_id,
+                       std::move(*registration), display_id);
   }
 
   // Update the last launched time.

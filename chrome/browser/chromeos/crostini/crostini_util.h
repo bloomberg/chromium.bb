@@ -23,8 +23,11 @@ bool IsCrostiniUIAllowedForProfile(Profile* profile);
 // at least once and not deleted it.
 bool IsCrostiniEnabled(Profile* profile);
 
-// |app_id| should be a valid Crostini app list id.
-void LaunchCrostiniApp(Profile* profile, const std::string& app_id);
+// Launches the Crostini app with ID of |app_id| on the display with ID of
+// |display_id|. |app_id| should be a valid Crostini app list id.
+void LaunchCrostiniApp(Profile* profile,
+                       const std::string& app_id,
+                       int64_t display_id);
 
 // Retrieves cryptohome_id from profile.
 std::string CryptohomeIdForProfile(Profile* profile);

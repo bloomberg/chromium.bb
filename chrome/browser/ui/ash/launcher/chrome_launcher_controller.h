@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_sync_ui_state_observer.h"
+#include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -82,6 +83,10 @@ class ChromeLauncherController
 
   Profile* profile() const { return profile_; }
   ash::ShelfModel* shelf_model() const { return model_; }
+  CrostiniAppWindowShelfController* crostini_app_window_shelf_controller()
+      const {
+    return crostini_app_window_shelf_controller_;
+  }
 
   // Initializes this ChromeLauncherController.
   void Init();
@@ -381,6 +386,10 @@ class ChromeLauncherController
   // In the mash config, this is a separate ShelfModel instance, owned by
   // ChromeBrowserMainExtraPartsAsh, and synchronized with Ash's ShelfModel.
   ash::ShelfModel* model_;
+
+  // The shelf controller for Crostini apps.
+  CrostiniAppWindowShelfController* crostini_app_window_shelf_controller_ =
+      nullptr;
 
   // Ash's mojom::ShelfController used to change shelf state.
   ash::mojom::ShelfControllerPtr shelf_controller_;
