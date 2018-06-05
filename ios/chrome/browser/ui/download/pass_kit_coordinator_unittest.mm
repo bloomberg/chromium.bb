@@ -6,7 +6,7 @@
 
 #import <PassKit/PassKit.h>
 
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"

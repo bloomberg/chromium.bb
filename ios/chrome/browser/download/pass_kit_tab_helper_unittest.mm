@@ -9,7 +9,7 @@
 #import <PassKit/PassKit.h>
 
 #include "base/bind_helpers.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "ios/chrome/browser/download/pass_kit_mime_type.h"
 #include "ios/chrome/browser/download/pass_kit_test_util.h"
 #import "ios/chrome/test/fakes/fake_pass_kit_tab_helper_delegate.h"
