@@ -26,7 +26,6 @@ import org.chromium.base.Log;
 import org.chromium.base.test.BaseTestResult.PreTestHook;
 import org.chromium.base.test.params.MethodParamAnnotationRule;
 import org.chromium.base.test.util.DisableIfSkipCheck;
-import org.chromium.base.test.util.ManualSkipCheck;
 import org.chromium.base.test.util.MinAndroidSdkLevelSkipCheck;
 import org.chromium.base.test.util.RestrictionSkipCheck;
 import org.chromium.base.test.util.SkipCheck;
@@ -139,7 +138,7 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
     @CallSuper
     protected List<SkipCheck> getSkipChecks() {
         return Arrays.asList(new RestrictionSkipCheck(InstrumentationRegistry.getTargetContext()),
-                new MinAndroidSdkLevelSkipCheck(), new DisableIfSkipCheck(), new ManualSkipCheck());
+                new MinAndroidSdkLevelSkipCheck(), new DisableIfSkipCheck());
     }
 
     /**
