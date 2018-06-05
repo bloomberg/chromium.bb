@@ -150,7 +150,7 @@ UScriptCode NGInlineItem::Script() const {
                                            : USCRIPT_INVALID_CODE;
 }
 
-FontFallbackPriority NGInlineItem::FontFallbackPriority() const {
+FontFallbackPriority NGInlineItem::GetFontFallbackPriority() const {
   return static_cast<enum FontFallbackPriority>(font_fallback_priority_);
 }
 
@@ -161,7 +161,7 @@ OrientationIterator::RenderOrientation NGInlineItem::RenderOrientation() const {
 
 RunSegmenter::RunSegmenterRange NGInlineItem::CreateRunSegmenterRange() const {
   return {start_offset_, end_offset_, Script(), RenderOrientation(),
-          FontFallbackPriority()};
+          GetFontFallbackPriority()};
 }
 
 bool NGInlineItem::EqualsRunSegment(const NGInlineItem& other) const {
