@@ -16,9 +16,10 @@
 #include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/test_session_controller_client.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray.h"
+#include "ash/system/status_area_widget.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
@@ -244,8 +245,7 @@ TEST_F(LockScreenSanityTest, ShiftTabGoesFromLockToStatusAreaAndBackToLock) {
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(lock);
   views::View* status_area =
       RootWindowController::ForWindow(lock->GetWidget()->GetNativeWindow())
-          ->GetSystemTray()
-          ->GetWidget()
+          ->GetStatusAreaWidget()
           ->GetContentsView();
 
   // Lock screen has focus.
@@ -280,8 +280,7 @@ TEST_F(LockScreenSanityTest, TabWithLockScreenAppActive) {
 
   views::View* status_area =
       RootWindowController::ForWindow(lock->GetWidget()->GetNativeWindow())
-          ->GetSystemTray()
-          ->GetWidget()
+          ->GetStatusAreaWidget()
           ->GetContentsView();
 
   LoginScreenController* controller = Shell::Get()->login_screen_controller();
