@@ -295,8 +295,7 @@ WebUIController* NewWebUI<WelcomeWin10UI>(WebUI* web_ui, const GURL& url) {
 
 bool IsAboutUI(const GURL& url) {
   return (url.host_piece() == chrome::kChromeUIChromeURLsHost ||
-          url.host_piece() == chrome::kChromeUICreditsHost ||
-          url.host_piece() == chrome::kChromeUIDNSHost
+          url.host_piece() == chrome::kChromeUICreditsHost
 #if !defined(OS_ANDROID)
           || url.host_piece() == chrome::kChromeUITermsHost
 #endif

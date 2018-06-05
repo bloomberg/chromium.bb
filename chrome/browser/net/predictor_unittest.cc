@@ -188,36 +188,8 @@ TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
   predictor.Shutdown();
 }
 
-// Test that the referrers are sorted in MRU order in the HTML UI.
-TEST_F(PredictorTest, GetHtmlReferrerLists) {
-  SimplePredictor predictor(true);
-
-  predictor.LearnFromNavigation(GURL("http://www.source_b.test"),
-                                GURL("http://www.target_b.test"));
-  predictor.LearnFromNavigation(GURL("http://www.source_a.test"),
-                                GURL("http://www.target_a.test"));
-  predictor.LearnFromNavigation(GURL("http://www.source_c.test"),
-                                GURL("http://www.target_c.test"));
-
-  std::string html;
-  predictor.GetHtmlReferrerLists(&html);
-
-  size_t pos[] = {
-      html.find("<td rowspan=1>http://www.source_c.test"),
-      html.find("<td rowspan=1>http://www.source_a.test"),
-      html.find("<td rowspan=1>http://www.source_b.test"),
-  };
-
-  // Make sure things appeared in the expected order.
-  for (size_t i = 1; i < arraysize(pos); ++i) {
-    EXPECT_LT(pos[i - 1], pos[i]) << "Mismatch for pos[" << i << "]";
-  }
-
-  predictor.Shutdown();
-}
-
-// Expect the exact same HTML when the predictor's referrers are serialized and
-// deserialized (implies ordering remains the same).
+// Expect the exact same referral list when the predictor's referrers are
+// serialized and deserialized (implies ordering remains the same).
 TEST_F(PredictorTest, SerializeAndDeserialize) {
   SimplePredictor predictor(true);
 
@@ -226,17 +198,15 @@ TEST_F(PredictorTest, SerializeAndDeserialize) {
         GURL(base::StringPrintf("http://www.source_%d.test", i)),
         GURL(base::StringPrintf("http://www.target_%d.test", i)));
   }
-  std::string html;
-  predictor.GetHtmlReferrerLists(&html);
 
   base::ListValue referral_list;
   predictor.SerializeReferrers(&referral_list);
   predictor.DeserializeReferrers(referral_list);
 
-  std::string html2;
-  predictor.GetHtmlReferrerLists(&html2);
+  base::ListValue referral_list2;
+  predictor.SerializeReferrers(&referral_list2);
 
-  EXPECT_EQ(html, html2);
+  EXPECT_EQ(referral_list, referral_list2);
 
   predictor.Shutdown();
 }
@@ -251,17 +221,22 @@ TEST_F(PredictorTest, FillMRUCache) {
         GURL(base::StringPrintf("http://www.target_%d.test", i)));
   }
 
-  std::string html;
-  predictor.GetHtmlReferrerLists(&html);
+  base::ListValue referral_list;
+  predictor.SerializeReferrers(&referral_list);
 
   for (int i = 0; i < Predictor::kMaxReferrers; ++i) {
-    EXPECT_EQ(html.find(base::StringPrintf("http://www.source_%d.test", i)),
-              std::string::npos);
+    EXPECT_EQ(FindSerializationMotivation(
+                  GURL(base::StringPrintf("http://www.source_%d.test", i)),
+                  &referral_list),
+              nullptr);
   }
+
   for (int i = Predictor::kMaxReferrers; i < Predictor::kMaxReferrers * 2;
        ++i) {
-    EXPECT_NE(html.find(base::StringPrintf("http://www.source_%d.test", i)),
-              std::string::npos);
+    EXPECT_NE(FindSerializationMotivation(
+                  GURL(base::StringPrintf("http://www.source_%d.test", i)),
+                  &referral_list),
+              nullptr);
   }
 
   predictor.Shutdown();
