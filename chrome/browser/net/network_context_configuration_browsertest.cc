@@ -450,6 +450,11 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DataURL) {
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, FileURL) {
+  // File URLs require a FileURLFactory that is not present in the default
+  // URLLoaderFactories.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir_;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

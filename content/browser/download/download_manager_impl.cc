@@ -44,6 +44,7 @@
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_url_loader_factory_getter_impl.h"
 #include "content/browser/download/download_utils.h"
+#include "content/browser/download/file_download_url_loader_factory_getter.h"
 #include "content/browser/download/network_download_url_loader_factory_getter.h"
 #include "content/browser/download/url_downloader.h"
 #include "content/browser/download/url_downloader_factory.h"
@@ -1062,6 +1063,10 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
     url_loader_factory_getter =
         base::MakeRefCounted<BlobDownloadURLLoaderFactoryGetter>(
             params->url(), std::move(blob_data_handle));
+  } else if (params->url().SchemeIsFile()) {
+    url_loader_factory_getter =
+        base::MakeRefCounted<FileDownloadURLLoaderFactoryGetter>(
+            params->url(), browser_context_->GetPath());
   } else {
     StoragePartitionImpl* storage_partition =
         static_cast<StoragePartitionImpl*>(

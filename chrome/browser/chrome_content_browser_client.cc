@@ -95,6 +95,7 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_message_filter.h"
@@ -210,6 +211,7 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/overlay_window.h"
@@ -243,6 +245,7 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
@@ -399,6 +402,7 @@
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
+#include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_navigation_throttle.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_registry.h"
@@ -407,6 +411,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -4048,6 +4053,45 @@ void ChromeContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
 #endif
 }
 
+namespace {
+
+// The FileURLLoaderFactory provided to the extension background pages.
+// Checks with the ChildProcessSecurityPolicy to validate the file access.
+class FileURLLoaderFactory : public network::mojom::URLLoaderFactory {
+ public:
+  explicit FileURLLoaderFactory(int child_id) : child_id_(child_id) {}
+
+ private:
+  // network::mojom::URLLoaderFactory:
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    if (!content::ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
+            child_id_, request.url)) {
+      client->OnComplete(
+          network::URLLoaderCompletionStatus(net::ERR_ACCESS_DENIED));
+      return;
+    }
+    content::CreateFileURLLoader(request, std::move(loader), std::move(client),
+                                 /*observer=*/nullptr);
+  }
+
+  void Clone(network::mojom::URLLoaderFactoryRequest loader) override {
+    bindings_.AddBinding(this, std::move(loader));
+  }
+
+  int child_id_;
+  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  DISALLOW_COPY_AND_ASSIGN(FileURLLoaderFactory);
+};
+
+}  // namespace
+
 void ChromeContentBrowserClient::
     RegisterNonNetworkSubresourceURLLoaderFactories(
         int render_process_id,
@@ -4120,6 +4164,16 @@ void ChromeContentBrowserClient::
         content::kChromeUIScheme,
         content::CreateWebUIURLLoader(frame_host, content::kChromeUIScheme,
                                       std::move(allowed_webui_hosts)));
+  }
+
+  // Extension with a background page get file access that gets approval from
+  // ChildProcessSecurityPolicy.
+  extensions::ExtensionHost* host =
+      extensions::ProcessManager::Get(web_contents->GetBrowserContext())
+          ->GetBackgroundHostForExtension(extension->id());
+  if (host) {
+    factories->emplace(url::kFileScheme, std::make_unique<FileURLLoaderFactory>(
+                                             render_process_id));
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }
