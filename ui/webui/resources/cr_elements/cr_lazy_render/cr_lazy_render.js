@@ -24,8 +24,11 @@ Polymer({
 
   behaviors: [Polymer.Templatizer],
 
-  /** @private {TemplatizerNode} */
+  /** @private {?Element} */
   child_: null,
+
+  /** @private {?Element} */
+  instance_: null,
 
   /**
    * Stamp the template into the DOM tree synchronously
@@ -52,13 +55,14 @@ Polymer({
       this.templatize(template);
     var parentNode = this.parentNode;
     if (parentNode && !this.child_) {
-      var instance = this.stamp({});
-      this.child_ = instance.root.firstElementChild;
-      parentNode.insertBefore(instance.root, this);
+      this.instance_ = this.stamp({});
+      this.child_ = this.instance_.root.firstElementChild;
+      parentNode.insertBefore(this.instance_.root, this);
     }
   },
 
   /**
+   * TODO(dpapad): Delete this method once migration to Polymer 2 has finished.
    * @param {string} prop
    * @param {Object} value
    */
@@ -68,11 +72,21 @@ Polymer({
   },
 
   /**
+   * TODO(dpapad): Delete this method once migration to Polymer 2 has finished.
    * @param {string} path
    * @param {Object} value
    */
   _forwardParentPath: function(path, value) {
     if (this.child_)
       this.child_._templateInstance.notifyPath(path, value, true);
-  }
+  },
+
+  /**
+   * @param {string} prop
+   * @param {Object} value
+   */
+  _forwardHostPropV2: function(prop, value) {
+    if (this.instance_)
+      this.instance_.forwardHostProp(prop, value);
+  },
 });
