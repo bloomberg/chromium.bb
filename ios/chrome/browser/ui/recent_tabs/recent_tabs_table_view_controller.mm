@@ -354,25 +354,25 @@ const int kRelativeTimeMaxHours = 4;
 // called inside a [UITableView beginUpdates] block on iOS10, or
 // performBatchUpdates on iOS11+.
 - (void)updateOtherDevicesSectionForState:(SessionsSyncUserState)newState {
-  DCHECK(newState !=
-         SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS);
+  DCHECK_NE(newState,
+            SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS);
   TableViewModel* model = self.tableViewModel;
   SessionsSyncUserState previousState = self.sessionState;
-  switch (previousState) {
-    case SessionsSyncUserState::USER_SIGNED_IN_SYNC_OFF:
-    case SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_NO_SESSIONS:
-    case SessionsSyncUserState::USER_SIGNED_OUT:
-    case SessionsSyncUserState::USER_SIGNED_IN_SYNC_IN_PROGRESS:
-      // The OtherDevices section will be updated, remove it in order to clean
-      // it up.
-      [model removeSectionWithIdentifier:SectionIdentifierOtherDevices];
-      break;
-    case SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS:
-      // The Sessions Section exists, remove it.
-      [self removeSessionSections];
-      break;
+  if (previousState ==
+      SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) {
+    // There were previously one or more session sections, but now they will be
+    // removed and replaced with a single OtherDevices section.
+    [self removeSessionSections];
+    [self addOtherDevicesSectionForState:newState];
+    // This is a special situation where the tableview operation is an insert
+    // rather than reload because the section was deleted.
+    [self.tableView insertSections:[self otherDevicesSectionIndexSet]
+                  withRowAnimation:UITableViewRowAnimationNone];
+    return;
   }
-  // Add an updated OtherDevices Section and then reload the TableView section.
+  // For all other previous states, the tableview operation is a reload since
+  // there is already an OtherDevices section that can be updated.
+  [model removeSectionWithIdentifier:SectionIdentifierOtherDevices];
   [self addOtherDevicesSectionForState:newState];
   [self.tableView reloadSections:[self otherDevicesSectionIndexSet]
                 withRowAnimation:UITableViewRowAnimationNone];
