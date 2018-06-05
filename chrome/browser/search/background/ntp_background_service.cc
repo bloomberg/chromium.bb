@@ -42,6 +42,12 @@ NtpBackgroundService::NtpBackgroundService(
 
 NtpBackgroundService::~NtpBackgroundService() = default;
 
+void NtpBackgroundService::Shutdown() {
+  for (auto& observer : observers_) {
+    observer.OnNtpBackgroundServiceShuttingDown();
+  }
+}
+
 void NtpBackgroundService::FetchCollectionInfo() {
   if (collections_loader_ != nullptr)
     return;

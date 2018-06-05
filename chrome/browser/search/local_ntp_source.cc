@@ -792,6 +792,13 @@ void LocalNtpSource::OnCollectionImagesAvailable() {
   ntp_background_image_info_requests_.clear();
 }
 
+void LocalNtpSource::OnNtpBackgroundServiceShuttingDown() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  ntp_background_service_observer_.RemoveAll();
+  ntp_background_service_ = nullptr;
+}
+
 void LocalNtpSource::OnOneGoogleBarDataUpdated() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

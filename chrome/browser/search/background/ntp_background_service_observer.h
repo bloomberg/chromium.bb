@@ -21,6 +21,11 @@ class NtpBackgroundServiceObserver {
   // if it didn't result in an actual change to the cached data. You can get the
   // new data via NtpBackgroundService::collection_images().
   virtual void OnCollectionImagesAvailable() = 0;
+
+  // Called when the OnNtpBackgroundService is shutting down. Observers that
+  // might outlive the service should use this to unregister themselves, and
+  // clear out any pointers to the service they might hold.
+  virtual void OnNtpBackgroundServiceShuttingDown() {}
 };
 
 #endif  // CHROME_BROWSER_SEARCH_BACKGROUND_NTP_BACKGROUND_SERVICE_OBSERVER_H_
