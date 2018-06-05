@@ -81,7 +81,9 @@ void CoordinationUnitProviderImpl::CreateProcessCoordinationUnit(
 void CoordinationUnitProviderImpl::GetSystemCoordinationUnit(
     resource_coordinator::mojom::SystemCoordinationUnitRequest request) {
   // Simply fetch the existing SystemCU and add an additional binding to it.
-  coordination_unit_graph_->system_cu()->AddBinding(std::move(request));
+  coordination_unit_graph_
+      ->FindOrCreateSystemCoordinationUnit(service_ref_factory_->CreateRef())
+      ->AddBinding(std::move(request));
 }
 
 void CoordinationUnitProviderImpl::Bind(

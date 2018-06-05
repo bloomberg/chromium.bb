@@ -26,7 +26,10 @@ class UkmEntryBuilder;
 
 namespace resource_coordinator {
 
-CoordinationUnitGraph::CoordinationUnitGraph() = default;
+CoordinationUnitGraph::CoordinationUnitGraph()
+    : system_coordination_unit_id_(CoordinationUnitType::kSystem,
+                                   std::string()) {}
+
 CoordinationUnitGraph::~CoordinationUnitGraph() = default;
 
 void CoordinationUnitGraph::OnStart(
@@ -38,13 +41,6 @@ void CoordinationUnitGraph::OnStart(
       std::make_unique<CoordinationUnitProviderImpl>(service_ref_factory, this);
   registry->AddInterface(base::BindRepeating(
       &CoordinationUnitProviderImpl::Bind, base::Unretained(provider_.get())));
-
-  // Create a singleton SystemCU instance. Ownership is taken by
-  // CoordinationUnitBase. This interface is not directly registered to the
-  // service, but rather clients can access it via CoordinationUnitProvider.
-  CoordinationUnitID system_cu_id(CoordinationUnitType::kSystem, std::string());
-  system_cu_ = SystemCoordinationUnitImpl::Create(
-      system_cu_id, this, service_ref_factory->CreateRef());
 }
 
 void CoordinationUnitGraph::RegisterObserver(
@@ -85,6 +81,19 @@ CoordinationUnitGraph::CreateProcessCoordinationUnit(
     const CoordinationUnitID& id,
     std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
   return ProcessCoordinationUnitImpl::Create(id, this, std::move(service_ref));
+}
+
+SystemCoordinationUnitImpl*
+CoordinationUnitGraph::FindOrCreateSystemCoordinationUnit(
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
+  CoordinationUnitBase* system_cu =
+      GetCoordinationUnitByID(system_coordination_unit_id_);
+  if (system_cu)
+    return SystemCoordinationUnitImpl::FromCoordinationUnitBase(system_cu);
+
+  // Create the singleton SystemCU instance. Ownership is taken by the graph.
+  return SystemCoordinationUnitImpl::Create(system_coordination_unit_id_, this,
+                                            std::move(service_ref));
 }
 
 CoordinationUnitBase* CoordinationUnitGraph::GetCoordinationUnitByID(
