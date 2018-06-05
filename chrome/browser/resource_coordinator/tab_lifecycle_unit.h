@@ -118,10 +118,6 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // discarding the tab.
   void RequestFreezeForDiscard(DiscardReason reason);
 
-  // Invoked when the state goes from DISCARDED or PENDING_DISCARD to any
-  // non-DISCARDED state and vice-versa.
-  void OnDiscardedStateChange();
-
   // Finishes a tab discard. For an urgent discard, this is invoked by
   // Discard(). For a proactive or external discard, where the tab is frozen
   // prior to being discarded, this is called by UpdateLifecycleState() once the
@@ -132,6 +128,9 @@ class TabLifecycleUnitSource::TabLifecycleUnit
 
   // Returns the RenderProcessHost associated with this tab.
   content::RenderProcessHost* GetRenderProcessHost() const;
+
+  // LifecycleUnitBase:
+  void OnLifecycleUnitStateChanged(LifecycleUnitState last_state) override;
 
   // content::WebContentsObserver:
   void DidStartLoading() override;
