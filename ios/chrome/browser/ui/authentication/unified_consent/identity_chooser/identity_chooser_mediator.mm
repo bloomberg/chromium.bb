@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_mediator.h"
 
-#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/chrome_browser_provider_observer_bridge.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
@@ -87,6 +86,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
       reconfigureCellsForItems:@[ selectedItem ]];
 }
 
+- (void)selectIdentityWithGaiaID:(NSString*)gaiaID {
+  ChromeIdentity* identity = self.chromeIdentityService->GetIdentityWithGaiaID(
+      base::SysNSStringToUTF8(gaiaID));
+  DCHECK(identity);
+  self.selectedIdentity = identity;
+}
+
 #pragma mark - Private
 
 // Returns an IdentityChooserItem based on a gaia ID.
@@ -149,24 +155,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Getter for the Chrome identity service.
 - (ios::ChromeIdentityService*)chromeIdentityService {
   return ios::GetChromeBrowserProvider()->GetChromeIdentityService();
-}
-
-#pragma mark - IdentityChooserViewControllerSelectionDelegate
-
-- (void)identityChooserViewController:
-            (IdentityChooserViewController*)viewController
-         didSelectIdentityAtIndexPath:(NSIndexPath*)indexPath {
-  DCHECK_EQ(viewController, self.identityChooserViewController);
-  DCHECK_EQ(0, indexPath.section);
-  ListItem* item = [self.identityChooserViewController.tableViewModel
-      itemAtIndexPath:indexPath];
-  IdentityChooserItem* identityChooserItem =
-      base::mac::ObjCCastStrict<IdentityChooserItem>(item);
-  DCHECK(identityChooserItem);
-  ChromeIdentity* identity = self.chromeIdentityService->GetIdentityWithGaiaID(
-      base::SysNSStringToUTF8(identityChooserItem.gaiaID));
-  DCHECK(identity);
-  self.selectedIdentity = identity;
 }
 
 #pragma mark - ChromeIdentityServiceObserver

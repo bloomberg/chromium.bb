@@ -5,8 +5,9 @@
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_view_controller.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_item.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_view_controller_presentation_delegate.h"
-#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_view_controller_selection_delegate.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -34,7 +35,6 @@ const CGFloat kFooterHeight = 17.;
 @implementation IdentityChooserViewController
 
 @synthesize presentationDelegate = _presentationDelegate;
-@synthesize selectionDelegate = _selectionDelegate;
 @synthesize transitionController = _transitionController;
 
 - (instancetype)init {
@@ -74,10 +74,16 @@ const CGFloat kFooterHeight = 17.;
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
   switch (indexPath.section) {
-    case 0:
-      [self.selectionDelegate identityChooserViewController:self
-                               didSelectIdentityAtIndexPath:indexPath];
+    case 0: {
+      ListItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+      IdentityChooserItem* identityChooserItem =
+          base::mac::ObjCCastStrict<IdentityChooserItem>(item);
+      DCHECK(identityChooserItem);
+      [self.presentationDelegate
+          identityChooserViewController:self
+            didSelectIdentityWithGaiaID:identityChooserItem.gaiaID];
       break;
+    }
     case 1:
       DCHECK_EQ(0, indexPath.row);
       [self.presentationDelegate

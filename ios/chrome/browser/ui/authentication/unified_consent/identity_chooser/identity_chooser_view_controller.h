@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 @protocol IdentityChooserViewControllerPresentationDelegate;
-@protocol IdentityChooserViewControllerSelectionDelegate;
 
 // View controller to display the list of identities, to let the user choose an
 // identity. IdentityChooserViewController also displays "Add Account…" cell
@@ -20,9 +19,6 @@
 // Presentation delegate.
 @property(nonatomic, weak) id<IdentityChooserViewControllerPresentationDelegate>
     presentationDelegate;
-// Selection delegate.
-@property(nonatomic, weak) id<IdentityChooserViewControllerSelectionDelegate>
-    selectionDelegate;
 
 // Initialises IdentityChooserViewController.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;

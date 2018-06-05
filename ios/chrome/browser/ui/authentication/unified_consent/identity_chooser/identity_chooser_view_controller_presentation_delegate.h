@@ -20,6 +20,11 @@
 - (void)identityChooserViewControllerDidTapOnAddAccount:
     (IdentityChooserViewController*)viewController;
 
+// Called when the user taps on an identity.
+- (void)identityChooserViewController:
+            (IdentityChooserViewController*)viewController
+          didSelectIdentityWithGaiaID:(NSString*)gaiaID;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_UNIFIED_CONSENT_IDENTITY_CHOOSER_IDENTITY_CHOOSER_VIEW_CONTROLLER_COORDINATOR_DELEGATE_H_

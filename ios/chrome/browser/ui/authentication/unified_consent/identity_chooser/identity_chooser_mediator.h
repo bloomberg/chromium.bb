@@ -7,14 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_view_controller_selection_delegate.h"
-
 @class ChromeIdentity;
+@class IdentityChooserViewController;
 
 // A mediator object that monitors updates of chrome identities, and updates the
 // IdentityChooserViewController.
-@interface IdentityChooserMediator
-    : NSObject<IdentityChooserViewControllerSelectionDelegate>
+@interface IdentityChooserMediator : NSObject
 
 // Selected Chrome identity.
 @property(nonatomic, strong) ChromeIdentity* selectedIdentity;
@@ -24,6 +22,9 @@
 
 // Starts this mediator.
 - (void)start;
+
+// Selects an identity with a Gaia ID.
+- (void)selectIdentityWithGaiaID:(NSString*)gaiaID;
 
 @end
 
