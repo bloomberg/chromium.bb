@@ -29,25 +29,25 @@ class WebViewJavaScriptDialogPresenter final
                            web::JavaScriptDialogType dialog_type,
                            NSString* message_text,
                            NSString* default_prompt_text,
-                           const web::DialogClosedCallback& callback) override;
+                           web::DialogClosedCallback callback) override;
   void CancelDialogs(web::WebState* web_state) override;
 
  private:
   // Displays JavaScript alert.
   void HandleJavaScriptAlert(const GURL& origin_url,
                              NSString* message_text,
-                             const web::DialogClosedCallback& callback);
+                             web::DialogClosedCallback callback);
 
   // Displays JavaScript confirm dialog.
   void HandleJavaScriptConfirmDialog(const GURL& origin_url,
                                      NSString* message_text,
-                                     const web::DialogClosedCallback& callback);
+                                     web::DialogClosedCallback callback);
 
   // Displays JavaScript text prompt.
   void HandleJavaScriptTextPrompt(const GURL& origin_url,
                                   NSString* message_text,
                                   NSString* default_prompt_text,
-                                  const web::DialogClosedCallback& callback);
+                                  web::DialogClosedCallback callback);
 
   // The underlying delegate handling the dialog UI.
   __weak id<CWVUIDelegate> ui_delegate_ = nil;
