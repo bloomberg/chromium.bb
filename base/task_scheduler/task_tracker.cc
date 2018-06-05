@@ -452,11 +452,10 @@ void TaskTracker::RecordLatencyHistogram(
 
   DCHECK(latency_histogram_type == LatencyHistogramType::TASK_LATENCY ||
          latency_histogram_type == LatencyHistogramType::HEARTBEAT_LATENCY);
-  // Below dereference is workaround for MSVC compiler in VS15.7.
-  auto& histograms =
-      *(latency_histogram_type == LatencyHistogramType::TASK_LATENCY
-            ? &task_latency_histograms_
-            : &heartbeat_latency_histograms_);
+  const auto& histograms =
+      latency_histogram_type == LatencyHistogramType::TASK_LATENCY
+          ? task_latency_histograms_
+          : heartbeat_latency_histograms_;
   histograms[static_cast<int>(task_traits.priority())]
             [task_traits.may_block() || task_traits.with_base_sync_primitives()
                  ? 1
