@@ -266,6 +266,9 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   void AutosizingMultiplerChanged() {
     known_to_have_no_overflow_and_no_fallback_fonts_ = false;
+
+    // The font size is changing, so we need to make sure to rebuild everything.
+    valid_ng_items_ = false;
   }
 
   OnlyWhitespaceOrNbsp ContainsOnlyWhitespaceOrNbsp() const;
