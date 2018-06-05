@@ -2336,10 +2336,10 @@ void ResourceDispatcherHostImpl::RecordFetchRequestMode(
     return;
 
   std::string lower_method = base::ToLowerASCII(method);
-  if (method == "get") {
+  if (lower_method == "get") {
     UMA_HISTOGRAM_ENUMERATION("Net.ResourceDispatcherHost.RequestMode.Get",
                               mode);
-  } else if (method == "post") {
+  } else if (lower_method == "post") {
     UMA_HISTOGRAM_ENUMERATION("Net.ResourceDispatcherHost.RequestMode.Post",
                               mode);
     if (url.has_port()) {
