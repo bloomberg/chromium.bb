@@ -236,7 +236,7 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   // Finishes a collection and reports collected data via callback. The
   // collection's |finished| waitable event will be signalled. The |collection|
   // should already have been removed from |active_collections_| by the caller,
-  // as this is needed to avoid flakyness in unit tests.
+  // as this is needed to avoid flakiness in unit tests.
   void FinishCollection(CollectionContext* collection);
 
   // Records a single sample of a collection.
@@ -283,7 +283,7 @@ class StackSamplingProfiler::SamplingThread : public Thread {
 
   // A counter that notes adds of new collection requests. It is incremented
   // when changes occur so that delayed shutdown tasks are able to detect if
-  // samething new has happened while it was waiting. Like all "execution_state"
+  // something new has happened while it was waiting. Like all "execution_state"
   // vars, this must be accessed while holding |thread_execution_state_lock_|.
   int thread_execution_state_add_events_ = 0;
 
