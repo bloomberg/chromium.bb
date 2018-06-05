@@ -15,9 +15,9 @@
  *     object containing {title:string, artist:string}.
  */
 function getTrackText(audioAppId, track) {
-  var titleElement = audioPlayerApp.callRemoteTestUtil(
+  const titleElement = audioPlayerApp.callRemoteTestUtil(
       'queryAllElements', audioAppId, [track + ' > .data > .data-title']);
-  var artistElement = audioPlayerApp.callRemoteTestUtil(
+  const artistElement = audioPlayerApp.callRemoteTestUtil(
       'queryAllElements', audioAppId, [track + ' > .data > .data-artist']);
   return Promise.all([titleElement, artistElement]).then((data) => {
     return {
@@ -66,8 +66,8 @@ function audioTimeLeapForward(audioAppId) {
  * @param {string} path Directory path to be tested: Downloads or Drive.
  */
 function audioOpenClose(path) {
-  let audioAppId;
   let appId;
+  let audioAppId;
 
   StepsRunner.run([
     // Open Files.App on the given (volume) path.
@@ -113,8 +113,8 @@ function audioOpenClose(path) {
  * @param {string} path Directory path to be tested.
  */
 function audioOpen(path) {
-  var appId;
-  var audioAppId;
+  let appId;
+  let audioAppId;
 
   var expectedFilesBefore =
       TestEntryInfo.getExpectedRows(path == RootPath.DRIVE ?
@@ -208,8 +208,8 @@ function audioOpen(path) {
  * @param {string} path Directory path to be tested.
  */
 function audioAutoAdvance(path) {
-  var appId;
-  var audioAppId;
+  let appId;
+  let audioAppId;
 
   var expectedFilesBefore =
       TestEntryInfo.getExpectedRows(path == RootPath.DRIVE ?
@@ -271,8 +271,8 @@ function audioAutoAdvance(path) {
  * @param {string} path Directory path to be tested.
  */
 function audioRepeatAllModeSingleFile(path) {
-  var appId;
-  var audioAppId;
+  let appId;
+  let audioAppId;
 
   StepsRunner.run([
     // Open Files.App on the given (volume) path.
@@ -332,8 +332,8 @@ function audioRepeatAllModeSingleFile(path) {
  * @param {string} path Directory path to be tested.
  */
 function audioNoRepeatModeSingleFile(path) {
-  var appId;
-  var audioAppId;
+  let appId;
+  let audioAppId;
 
   StepsRunner.run([
     // Open Files.App on the given (volume) path.
@@ -385,8 +385,8 @@ function audioNoRepeatModeSingleFile(path) {
  * @param {string} path Directory path to be tested.
  */
 function audioRepeatOneModeSingleFile(path) {
-  var appId;
-  var audioAppId;
+  let appId;
+  let audioAppId;
 
   StepsRunner.run([
     // Open Files.App on the given (volume) path.
@@ -453,8 +453,8 @@ function audioRepeatOneModeSingleFile(path) {
  * @param {string} path Directory path to be tested.
  */
 function audioRepeatAllModeMultipleFile(path) {
-  var appId;
-  var audioAppId;
+  let appId;
+  let audioAppId;
 
   var expectedFilesBefore =
       TestEntryInfo.getExpectedRows(path == RootPath.DRIVE ?
@@ -538,8 +538,8 @@ function audioRepeatAllModeMultipleFile(path) {
  * @param {string} path Directory path to be tested.
  */
 function audioNoRepeatModeMultipleFile(path) {
-  var appId;
-  var audioAppId;
+  let appId;
+  let audioAppId;
 
   var expectedFilesBefore =
       TestEntryInfo.getExpectedRows(path == RootPath.DRIVE ?
@@ -606,8 +606,8 @@ function audioNoRepeatModeMultipleFile(path) {
  * @param {string} path Directory path to be tested.
  */
 function audioRepeatOneModeMultipleFile(path) {
-  var appId;
-  var audioAppId;
+  let appId;
+  let audioAppId;
 
   var expectedFilesBefore =
       TestEntryInfo.getExpectedRows(path == RootPath.DRIVE ?
