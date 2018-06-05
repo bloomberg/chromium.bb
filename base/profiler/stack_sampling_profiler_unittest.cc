@@ -867,7 +867,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopSafely) {
     params[1].sampling_interval = TimeDelta::FromMilliseconds(1);
     params[1].samples_per_burst = 100000;
 
-    SampleRecordedCounter samples_recorded[base::size(params)];
+    SampleRecordedCounter samples_recorded[size(params)];
 
     TestProfilerInfo profiler_info0(target_thread_id, params[0],
                                     &samples_recorded[0]);
@@ -1080,7 +1080,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, SamplerIdleShutdown) {
   // happens asynchronously. Watch until the thread actually exits. This test
   // will time-out in the case of failure.
   while (StackSamplingProfiler::TestAPI::IsSamplingThreadRunning())
-    PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
+    PlatformThread::Sleep(TimeDelta::FromMilliseconds(1));
 }
 
 // Checks that additional requests will restart a stopped profiler.
@@ -1189,7 +1189,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, IdleShutdownAbort) {
     // except to wait a reasonable amount of time and then check. Since the
     // thread was just running ("perform" blocked until it was), it should
     // finish almost immediately and without any waiting for tasks or events.
-    PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
+    PlatformThread::Sleep(TimeDelta::FromMilliseconds(200));
     EXPECT_TRUE(StackSamplingProfiler::TestAPI::IsSamplingThreadRunning());
 
     // Ensure that it's still possible to run another sampler.
@@ -1485,7 +1485,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MultipleProfilerThreads) {
     ProfilerThread profiler_thread2("profiler2", target_thread_id, params2);
     profiler_thread1.Start();
     profiler_thread2.Start();
-    PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
+    PlatformThread::Sleep(TimeDelta::FromMilliseconds(10));
 
     // This will (approximately) synchronize the two threads.
     profiler_thread1.Go();

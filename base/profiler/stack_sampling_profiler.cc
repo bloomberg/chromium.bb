@@ -756,7 +756,7 @@ StackSamplingProfiler::StackSamplingProfiler(
     const SamplingParams& params,
     const CompletedCallback& callback,
     NativeStackSamplerTestDelegate* test_delegate)
-    : StackSamplingProfiler(base::PlatformThread::CurrentId(),
+    : StackSamplingProfiler(PlatformThread::CurrentId(),
                             params,
                             callback,
                             test_delegate) {}
