@@ -51,6 +51,10 @@ class WindowServiceTestSetup {
     return window_tree_client_.tracker()->changes();
   }
 
+  WindowServiceClient* window_service_client() {
+    return window_service_client_.get();
+  }
+
  private:
   base::test::ScopedTaskEnvironment task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::UI};

@@ -4,6 +4,8 @@
 
 #include "ash/ws/window_service_delegate_impl.h"
 
+#include "ash/accelerators/accelerator_controller.h"
+#include "ash/shell.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/top_level_window_factory.h"
 #include "mojo/public/cpp/bindings/map.h"
@@ -11,6 +13,7 @@
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/mus/property_utils.h"
 #include "ui/aura/window.h"
+#include "ui/base/accelerators/accelerator.h"
 
 namespace ash {
 
@@ -30,6 +33,11 @@ std::unique_ptr<aura::Window> WindowServiceDelegateImpl::NewTopLevel(
       CreateAndParentTopLevelWindow(nullptr /* window_manager */, window_type,
                                     property_converter, &property_map);
   return base::WrapUnique<aura::Window>(window);
+}
+
+void WindowServiceDelegateImpl::OnUnhandledKeyEvent(
+    const ui::KeyEvent& key_event) {
+  Shell::Get()->accelerator_controller()->Process(ui::Accelerator(key_event));
 }
 
 }  // namespace ash

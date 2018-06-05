@@ -124,6 +124,12 @@ void WindowServiceClientTestHelper::SetEventTargetingPolicy(
                                                   policy);
 }
 
+void WindowServiceClientTestHelper::OnWindowInputEventAck(
+    uint32_t event_id,
+    mojom::EventResult result) {
+  window_service_client_->OnWindowInputEventAck(event_id, result);
+}
+
 bool WindowServiceClientTestHelper::StackAtTop(aura::Window* window) {
   return window_service_client_->StackAtTopImpl(
       window_service_client_->MakeClientWindowId(TransportIdForWindow(window)));

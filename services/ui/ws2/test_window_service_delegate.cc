@@ -32,5 +32,9 @@ std::unique_ptr<aura::Window> TestWindowServiceDelegate::NewTopLevel(
   return window;
 }
 
+void TestWindowServiceDelegate::OnUnhandledKeyEvent(const KeyEvent& key_event) {
+  unhandled_key_events_.push_back(key_event);
+}
+
 }  // namespace ws2
 }  // namespace ui

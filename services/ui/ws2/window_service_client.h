@@ -6,6 +6,7 @@
 #define SERVICES_UI_WS2_WINDOW_SERVICE_CLIENT_H_
 
 #include <memory>
+#include <queue>
 #include <unordered_map>
 #include <vector>
 
@@ -91,6 +92,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   // necessary to friend this.
   friend class FocusHandler;
   friend class WindowServiceClientTestHelper;
+
+  struct InFlightKeyEvent;
 
   using ClientRoots = std::vector<std::unique_ptr<ClientRoot>>;
 
@@ -395,6 +398,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   std::unique_ptr<PointerWatcher> pointer_watcher_;
 
   FocusHandler focus_handler_{this};
+
+  // Events that an ack is expected from the client are added here.
+  std::queue<std::unique_ptr<InFlightKeyEvent>> in_flight_key_events_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServiceClient);
 };
