@@ -59,6 +59,7 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -266,32 +267,20 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public int countSpecializedHandlers(List<ResolveInfo> infos) {
-        return getSpecializedHandlersWithFilter(infos, null).size();
+    public int countSpecializedHandlers(List<ResolveInfo> infos, Intent intent) {
+        return getSpecializedHandlersWithFilter(infos, null, intent).size();
     }
 
     @VisibleForTesting
     public static ArrayList<String> getSpecializedHandlersWithFilter(
-            List<ResolveInfo> infos, String filterPackageName) {
+            List<ResolveInfo> infos, String filterPackageName, Intent intent) {
         ArrayList<String> result = new ArrayList<>();
         if (infos == null) {
             return result;
         }
 
         for (ResolveInfo info : infos) {
-            IntentFilter filter = info.filter;
-            if (filter == null) {
-                // Error on the side of classifying ResolveInfo as generic.
-                continue;
-            }
-            if (filter.countDataAuthorities() == 0 && filter.countDataPaths() == 0) {
-                // Don't count generic handlers.
-                continue;
-            }
-
-            if (!TextUtils.isEmpty(filterPackageName)
-                    && (info.activityInfo == null
-                               || !info.activityInfo.packageName.equals(filterPackageName))) {
+            if (!matchResolveInfoExceptWildCardHost(info, filterPackageName, intent)) {
                 continue;
             }
 
@@ -309,6 +298,39 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         return result;
     }
 
+    private static boolean matchResolveInfoExceptWildCardHost(
+            ResolveInfo info, String filterPackageName, Intent intent) {
+        IntentFilter intentFilter = info.filter;
+        if (intentFilter == null) {
+            // Error on the side of classifying ResolveInfo as generic.
+            return false;
+        }
+        if (intentFilter.countDataAuthorities() == 0 && intentFilter.countDataPaths() == 0) {
+            // Don't count generic handlers.
+            return false;
+        }
+        if (intent != null && UrlUtilities.isAcceptedScheme(intent.toUri(0))) {
+            boolean isWildCardHost = false;
+            Iterator<IntentFilter.AuthorityEntry> it = intentFilter.authoritiesIterator();
+            while (it != null && it.hasNext()) {
+                IntentFilter.AuthorityEntry entry = it.next();
+                if ("*".equals(entry.getHost())) {
+                    isWildCardHost = true;
+                    break;
+                }
+            }
+            if (isWildCardHost) {
+                return false;
+            }
+        }
+        if (!TextUtils.isEmpty(filterPackageName)
+                && (info.activityInfo == null
+                           || !info.activityInfo.packageName.equals(filterPackageName))) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Check whether the given package is a specialized handler for the given intent
      *
@@ -322,7 +344,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         try {
             List<ResolveInfo> handlers = context.getPackageManager().queryIntentActivities(
                     intent, PackageManager.GET_RESOLVED_FILTER);
-            return getSpecializedHandlersWithFilter(handlers, packageName).size() > 0;
+            return getSpecializedHandlersWithFilter(handlers, packageName, intent).size() > 0;
         } catch (RuntimeException e) {
             IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
         }
@@ -596,7 +618,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public void maybeRecordAppHandlersInIntent(Intent intent, List<ResolveInfo> infos) {
         intent.putExtra(IntentHandler.EXTRA_EXTERNAL_NAV_PACKAGES,
-                getSpecializedHandlersWithFilter(infos, null));
+                getSpecializedHandlersWithFilter(infos, null, intent));
     }
 
     @Override
