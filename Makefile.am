@@ -1,3 +1,5 @@
+ACLOCAL_AMFLAGS = -I m4
+
 unstable_protocols =								\
 	unstable/pointer-gestures/pointer-gestures-unstable-v1.xml		\
 	unstable/fullscreen-shell/fullscreen-shell-unstable-v1.xml		\
