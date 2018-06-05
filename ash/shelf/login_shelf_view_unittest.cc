@@ -19,7 +19,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shutdown_controller.h"
-#include "ash/system/tray/system_tray.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/tray_action/test_tray_action_client.h"
@@ -318,8 +318,7 @@ TEST_F(LoginShelfViewTest, TabGoesFromShelfToStatusAreaAndBackToShelf) {
   views::View* shelf =
       Shelf::ForWindow(window)->shelf_widget()->GetContentsView();
   views::View* status_area = RootWindowController::ForWindow(window)
-                                 ->GetSystemTray()
-                                 ->GetWidget()
+                                 ->GetStatusAreaWidget()
                                  ->GetContentsView();
 
   // Give focus to the shelf. The tabbing between lock screen and shelf is
