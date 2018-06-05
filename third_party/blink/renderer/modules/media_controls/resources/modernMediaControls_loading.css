@@ -4,12 +4,11 @@
 
 #spinner-frame {
   position: absolute;
-  height: 56px;
-  width: 56px;
+  height: var(--overlay-play-button-width, 48px);
+  width: var(--overlay-play-button-width, 48px);
   top: 50%;
   left: 50%;
-  margin-top: -37px;
-  margin-left: -28px;
+  margin-left: calc(var(--overlay-play-button-width) / -2);
   overflow: hidden;
 }
 
