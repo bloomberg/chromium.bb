@@ -24,7 +24,11 @@
 
     /* Note: .in-dev-mode is applied by i18n{loadTimeClasses}. */
     .loading.in-dev-mode {
-      border-top-width: 96px;
+      /* --google-blue-700: rgb(51, 103, 214); */
+      /* --google-grey-300: #e0e0e0; */
+      border-image: linear-gradient(to bottom, rgb(51, 103, 214) 56px,
+          #fff 56px, #fff 107px, #e0e0e0 107px) 108;
+      border-top: 108px solid;
     }
 
     html,
