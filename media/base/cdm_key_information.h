@@ -50,7 +50,11 @@ struct MEDIA_EXPORT CdmKeyInformation {
   uint32_t system_code;
 };
 
-// For logging use only.
+// The following are for logging use only.
+
+MEDIA_EXPORT std::ostream& operator<<(std::ostream& os,
+                                      CdmKeyInformation::KeyStatus status);
+
 MEDIA_EXPORT std::ostream& operator<<(std::ostream& os,
                                       const CdmKeyInformation& info);
 

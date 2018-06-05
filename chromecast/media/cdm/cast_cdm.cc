@@ -23,8 +23,11 @@
 namespace chromecast {
 namespace media {
 namespace {
+
+using KeyStatus = ::media::CdmKeyInformation::KeyStatus;
+
 constexpr size_t kKeyStatusCount =
-    static_cast<size_t>(::media::CdmKeyInformation::KEY_STATUS_MAX) + 1;
+    static_cast<size_t>(KeyStatus::KEY_STATUS_MAX) + 1;
 
 class CastCdmContextImpl : public CastCdmContext {
  public:
@@ -35,7 +38,7 @@ class CastCdmContextImpl : public CastCdmContext {
 
   // CastCdmContext implementation:
   int RegisterPlayer(const base::Closure& new_key_cb,
-                     const base::Closure& cdm_unset_cb) override  {
+                     const base::Closure& cdm_unset_cb) override {
     return cast_cdm_->RegisterPlayer(new_key_cb, cdm_unset_cb);
   }
 
@@ -148,10 +151,8 @@ void CastCdm::GetStatusForPolicy(
     std::unique_ptr<::media::KeyStatusCdmPromise> promise) {
   int min_hdcp_x10 = HdcpVersionX10(min_hdcp_version);
   int cur_hdcp_x10 = MediaCapabilities::GetHdcpVersion();
-  promise->resolve(
-      cur_hdcp_x10 >= min_hdcp_x10
-          ? ::media::CdmKeyInformation::KeyStatus::USABLE
-          : ::media::CdmKeyInformation::KeyStatus::OUTPUT_RESTRICTED);
+  promise->resolve(cur_hdcp_x10 >= min_hdcp_x10 ? KeyStatus::USABLE
+                                                : KeyStatus::OUTPUT_RESTRICTED);
 }
 
 void CastCdm::OnSessionMessage(const std::string& session_id,
@@ -176,11 +177,8 @@ void CastCdm::OnSessionKeysChange(const std::string& session_id,
   for (int i = 0; i != ::media::CdmKeyInformation::KEY_STATUS_MAX; ++i) {
     if (status_count[i] == 0)
       continue;
-    log_message.stream()
-        << status_count[i] << " "
-        << ::media::CdmKeyInformation::KeyStatusToString(
-               static_cast<::media::CdmKeyInformation::KeyStatus>(i))
-        << " ";
+    log_message.stream() << status_count[i] << " " << static_cast<KeyStatus>(i)
+                         << " ";
   }
 
   session_keys_change_cb_.Run(session_id, newly_usable_keys,
