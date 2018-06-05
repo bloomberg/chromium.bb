@@ -34,7 +34,7 @@
 namespace blink {
 
 WaveShaperDSPKernel::WaveShaperDSPKernel(WaveShaperProcessor* processor)
-    : AudioDSPKernel(processor) {
+    : AudioDSPKernel(processor), tail_time_(0) {
   if (processor->Oversample() != WaveShaperProcessor::kOverSampleNone)
     LazyInitializeOversampling();
 }
@@ -75,6 +75,39 @@ void WaveShaperDSPKernel::Process(const float* source,
   }
 }
 
+double WaveShaperDSPKernel::WaveShaperCurveValue(float input,
+                                                 const float* curve_data,
+                                                 int curve_length) const {
+  // Calculate a virtual index based on input -1 -> +1 with -1 being curve[0],
+  // +1 being curve[curveLength - 1], and 0 being at the center of the curve
+  // data. Then linearly interpolate between the two points in the curve.
+  double virtual_index = 0.5 * (input + 1) * (curve_length - 1);
+  double output;
+
+  if (virtual_index < 0) {
+    // input < -1, so use curve[0]
+    output = curve_data[0];
+  } else if (virtual_index >= curve_length - 1) {
+    // input >= 1, so use last curve value
+    output = curve_data[curve_length - 1];
+  } else {
+    // The general case where -1 <= input < 1, where 0 <= virtualIndex <
+    // curveLength - 1, so interpolate between the nearest samples on the
+    // curve.
+    unsigned index1 = static_cast<unsigned>(virtual_index);
+    unsigned index2 = index1 + 1;
+    double interpolation_factor = virtual_index - index1;
+
+    double value1 = curve_data[index1];
+    double value2 = curve_data[index2];
+
+    output =
+        (1.0 - interpolation_factor) * value1 + interpolation_factor * value2;
+  }
+
+  return output;
+}
+
 void WaveShaperDSPKernel::ProcessCurve(const float* source,
                                        float* destination,
                                        size_t frames_to_process) {
@@ -103,33 +136,7 @@ void WaveShaperDSPKernel::ProcessCurve(const float* source,
   for (unsigned i = 0; i < frames_to_process; ++i) {
     const float input = source[i];
 
-    // Calculate a virtual index based on input -1 -> +1 with -1 being curve[0],
-    // +1 being curve[curveLength - 1], and 0 being at the center of the curve
-    // data. Then linearly interpolate between the two points in the curve.
-    double virtual_index = 0.5 * (input + 1) * (curve_length - 1);
-    double output;
-
-    if (virtual_index < 0) {
-      // input < -1, so use curve[0]
-      output = curve_data[0];
-    } else if (virtual_index >= curve_length - 1) {
-      // input >= 1, so use last curve value
-      output = curve_data[curve_length - 1];
-    } else {
-      // The general case where -1 <= input < 1, where 0 <= virtualIndex <
-      // curveLength - 1, so interpolate between the nearest samples on the
-      // curve.
-      unsigned index1 = static_cast<unsigned>(virtual_index);
-      unsigned index2 = index1 + 1;
-      double interpolation_factor = virtual_index - index1;
-
-      double value1 = curve_data[index1];
-      double value2 = curve_data[index2];
-
-      output =
-          (1.0 - interpolation_factor) * value1 + interpolation_factor * value2;
-    }
-    destination[i] = output;
+    destination[i] = WaveShaperCurveValue(input, curve_data, curve_length);
   }
 }
 
@@ -184,6 +191,10 @@ void WaveShaperDSPKernel::Reset() {
 bool WaveShaperDSPKernel::RequiresTailProcessing() const {
   // Always return true even if the tail time and latency might both be zero.
   return true;
+}
+
+double WaveShaperDSPKernel::TailTime() const {
+  return tail_time_;
 }
 
 double WaveShaperDSPKernel::LatencyTime() const {
