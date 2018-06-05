@@ -25,6 +25,7 @@
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
@@ -1738,8 +1739,13 @@ TEST_F(WindowSelectorTest, ShowTextFilterMenu) {
   EXPECT_TRUE(showing_filter_widget());
 
   // Open system bubble shifting focus from the text filter.
-  SystemTray* tray = GetPrimarySystemTray();
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
+  if (features::IsSystemTrayUnifiedEnabled()) {
+    GetPrimaryUnifiedSystemTray()->ShowBubble(false /* show_by_click */);
+  } else {
+    SystemTray* tray = GetPrimarySystemTray();
+    tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
+  }
+
   RunAllPendingInMessageLoop();
 
   // This should not cancel overview mode.
