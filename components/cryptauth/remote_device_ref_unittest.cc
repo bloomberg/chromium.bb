@@ -27,12 +27,14 @@ class RemoteDeviceRefTest : public testing::Test {
         [cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
             cryptauth::SoftwareFeatureState::kEnabled;
 
+    std::vector<BeaconSeed> beacon_seeds({BeaconSeed(), BeaconSeed()});
+
     remote_device_ = std::make_shared<RemoteDevice>(
         "user_id", "name", "public_key", "persistent_symmetric_key",
         true /* unlock_key */, true /* supports_mobile_hotspot */,
         42000 /* last_update_time_millis */,
-        software_feature_to_state_map /* software_features */);
-    remote_device_->LoadBeaconSeeds({BeaconSeed(), BeaconSeed()});
+        software_feature_to_state_map /* software_features */,
+        beacon_seeds /* beacon_seeds */);
   }
 
   std::shared_ptr<RemoteDevice> remote_device_;

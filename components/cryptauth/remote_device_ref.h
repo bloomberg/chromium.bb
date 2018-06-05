@@ -69,9 +69,6 @@ class RemoteDeviceRef {
   const std::vector<BeaconSeed>& beacon_seeds() const {
     return remote_device_->beacon_seeds;
   }
-  bool are_beacon_seeds_loaded() const {
-    return remote_device_->are_beacon_seeds_loaded;
-  }
 
   std::string GetDeviceId() const;
   SoftwareFeatureState GetSoftwareFeatureState(

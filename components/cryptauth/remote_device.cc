@@ -52,7 +52,8 @@ RemoteDevice::RemoteDevice(
     bool unlock_key,
     bool supports_mobile_hotspot,
     int64_t last_update_time_millis,
-    const std::map<SoftwareFeature, SoftwareFeatureState>& software_features)
+    const std::map<SoftwareFeature, SoftwareFeatureState>& software_features,
+    const std::vector<BeaconSeed>& beacon_seeds)
     : user_id(user_id),
       name(name),
       public_key(public_key),
@@ -60,40 +61,26 @@ RemoteDevice::RemoteDevice(
       unlock_key(unlock_key),
       supports_mobile_hotspot(supports_mobile_hotspot),
       last_update_time_millis(last_update_time_millis),
-      software_features(software_features) {}
+      software_features(software_features),
+      beacon_seeds(beacon_seeds) {}
 
 RemoteDevice::RemoteDevice(const RemoteDevice& other) = default;
 
 RemoteDevice::~RemoteDevice() {}
-
-void RemoteDevice::LoadBeaconSeeds(
-    const std::vector<BeaconSeed>& beacon_seeds) {
-  this->are_beacon_seeds_loaded = true;
-  this->beacon_seeds = beacon_seeds;
-}
 
 std::string RemoteDevice::GetDeviceId() const {
   return RemoteDevice::GenerateDeviceId(public_key);
 }
 
 bool RemoteDevice::operator==(const RemoteDevice& other) const {
-  // Only compare |beacon_seeds| if they are loaded.
-  bool are_beacon_seeds_equal = false;
-  if (are_beacon_seeds_loaded) {
-    are_beacon_seeds_equal =
-        other.are_beacon_seeds_loaded &&
-        AreBeaconSeedsEqual(beacon_seeds, other.beacon_seeds);
-  } else {
-    are_beacon_seeds_equal = !other.are_beacon_seeds_loaded;
-  }
-
   return user_id == other.user_id && name == other.name &&
          public_key == other.public_key &&
          persistent_symmetric_key == other.persistent_symmetric_key &&
          unlock_key == other.unlock_key &&
          supports_mobile_hotspot == other.supports_mobile_hotspot &&
          last_update_time_millis == other.last_update_time_millis &&
-         software_features == other.software_features && are_beacon_seeds_equal;
+         software_features == other.software_features &&
+         AreBeaconSeedsEqual(beacon_seeds, other.beacon_seeds);
 }
 
 bool RemoteDevice::operator<(const RemoteDevice& other) const {

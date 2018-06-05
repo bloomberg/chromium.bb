@@ -513,21 +513,21 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
     // last_update_time_millis) as part of EasyUnlockDeviceKeyData instead of
     // making that assumption here.
 
-    cryptauth::RemoteDevice remote_device(
-        account_id.GetUserEmail(), std::string(), decoded_public_key,
-        decoded_psk, true /* unlock_key */, false /* supports_mobile_hotspot */,
-        0L /* last_update_time_millis */,
-        std::map<cryptauth::SoftwareFeature,
-                 cryptauth::SoftwareFeatureState>() /* software_features */);
-
+    std::vector<cryptauth::BeaconSeed> beacon_seeds;
     if (!device.serialized_beacon_seeds.empty()) {
       PA_LOG(INFO) << "Deserializing BeaconSeeds: "
                    << device.serialized_beacon_seeds;
-      remote_device.LoadBeaconSeeds(
-          DeserializeBeaconSeeds(device.serialized_beacon_seeds));
+      beacon_seeds = DeserializeBeaconSeeds(device.serialized_beacon_seeds);
     } else {
       PA_LOG(WARNING) << "No BeaconSeeds were loaded.";
     }
+
+    cryptauth::RemoteDevice remote_device(
+        account_id.GetUserEmail(), std::string() /* name */, decoded_public_key,
+        decoded_psk /* persistent_symmetric_key */, true /* unlock_key */,
+        false /* supports_mobile_hotspot */, 0L /* last_update_time_millis */,
+        std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>(),
+        beacon_seeds);
 
     remote_devices.push_back(remote_device);
     PA_LOG(INFO) << "Loaded Remote Device:\n"

@@ -143,8 +143,7 @@ class FakeDeviceLoader final : public cryptauth::RemoteDeviceLoader {
 
   TestRemoteDeviceLoaderFactory* remote_device_loader_factory_;
 
-  void Load(bool should_load_beacon_seeds,
-            const RemoteDeviceCallback& callback) override {
+  void Load(const RemoteDeviceCallback& callback) override {
     remote_device_loader_factory_->QueueCallback(callback);
   }
 };

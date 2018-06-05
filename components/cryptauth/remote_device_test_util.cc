@@ -68,14 +68,12 @@ RemoteDeviceRef RemoteDeviceRefBuilder::Build() {
 }
 
 RemoteDevice CreateRemoteDeviceForTest() {
-  RemoteDevice device(kTestRemoteDeviceUserId, kTestRemoteDeviceName,
-                      kTestRemoteDevicePublicKey, kTestRemoteDevicePSK,
-                      kTestRemoteDeviceUnlockKey,
-                      kTestRemoteDeviceSupportsMobileHotspot,
-                      kTestRemoteDeviceLastUpdateTimeMillis,
-                      std::map<SoftwareFeature, SoftwareFeatureState>());
-  device.LoadBeaconSeeds({});
-  return device;
+  return RemoteDevice(
+      kTestRemoteDeviceUserId, kTestRemoteDeviceName,
+      kTestRemoteDevicePublicKey, kTestRemoteDevicePSK,
+      kTestRemoteDeviceUnlockKey, kTestRemoteDeviceSupportsMobileHotspot,
+      kTestRemoteDeviceLastUpdateTimeMillis,
+      std::map<SoftwareFeature, SoftwareFeatureState>(), {} /* beacon_seeds */);
 }
 
 RemoteDeviceRef CreateRemoteDeviceRefForTest() {
