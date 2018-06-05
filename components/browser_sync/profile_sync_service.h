@@ -480,10 +480,9 @@ class ProfileSyncService : public syncer::SyncService,
   // been cleared yet. Virtual for testing purposes.
   virtual bool waiting_for_auth() const;
 
-  // Called by the SyncAuthManager when the refresh token state changes.
-  // TODO(crbug.com/842697): Make these private and pass a callback to the
+  // Called by the SyncAuthManager when the refresh token gets revoked.
+  // TODO(crbug.com/842697): Make this private and pass a callback to the
   // SyncAuthManager.
-  void OnRefreshTokenAvailable();
   void OnRefreshTokenRevoked();
 
   // Called by SyncAuthManager when an access token fetch attempt finishes
