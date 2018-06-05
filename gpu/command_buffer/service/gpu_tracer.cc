@@ -47,8 +47,6 @@ TraceMarker::~TraceMarker() = default;
 TraceOutputter::TraceOutputter() : named_thread_("Dummy Trace") {}
 
 TraceOutputter::TraceOutputter(const std::string& name) : named_thread_(name) {
-  named_thread_.Start();
-  named_thread_.Stop();
 }
 
 TraceOutputter::~TraceOutputter() = default;
@@ -60,31 +58,28 @@ void TraceOutputter::TraceDevice(GpuTracerSource source,
                                  int64_t end_time) {
   DCHECK(source >= 0 && source < NUM_TRACER_SOURCES);
   DCHECK(end_time >= start_time) << end_time << " >= " << start_time;
+
+  if (named_thread_id_ == base::kInvalidThreadId) {
+    named_thread_.Start();
+    named_thread_id_ = named_thread_.GetThreadId();
+    named_thread_.Stop();
+  }
+
   TRACE_EVENT_COPY_BEGIN_WITH_ID_TID_AND_TIMESTAMP2(
-      TRACE_DISABLED_BY_DEFAULT("gpu.device"),
-      name.c_str(),
-      local_trace_device_id_,
-      named_thread_.GetThreadId(),
-      base::TimeTicks::FromInternalValue(start_time),
-      "gl_category",
-      category.c_str(),
-      "channel",
-      kGpuTraceSourceNames[source]);
+      TRACE_DISABLED_BY_DEFAULT("gpu.device"), name.c_str(),
+      local_trace_device_id_, named_thread_id_,
+      base::TimeTicks::FromInternalValue(start_time), "gl_category",
+      category.c_str(), "channel", kGpuTraceSourceNames[source]);
 
   // Time stamps are inclusive, since the traces are durations we subtract
   // 1 microsecond from the end time to make the trace markers show up cleaner.
   if (end_time > start_time)
     end_time -= 1;
   TRACE_EVENT_COPY_END_WITH_ID_TID_AND_TIMESTAMP2(
-      TRACE_DISABLED_BY_DEFAULT("gpu.device"),
-      name.c_str(),
-      local_trace_device_id_,
-      named_thread_.GetThreadId(),
-      base::TimeTicks::FromInternalValue(end_time),
-      "gl_category",
-      category.c_str(),
-      "channel",
-      kGpuTraceSourceNames[source]);
+      TRACE_DISABLED_BY_DEFAULT("gpu.device"), name.c_str(),
+      local_trace_device_id_, named_thread_id_,
+      base::TimeTicks::FromInternalValue(end_time), "gl_category",
+      category.c_str(), "channel", kGpuTraceSourceNames[source]);
   ++local_trace_device_id_;
 }
 
