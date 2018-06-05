@@ -4,7 +4,10 @@
 
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 
+#include <memory>
+
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/CoreProbeSink.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -35,9 +38,18 @@ String AdTracker::ScriptAtTopOfStack(ExecutionContext* execution_context) {
   return current_stack_trace ? current_stack_trace->Url() : "";
 }
 
-void AdTracker::WillExecuteScript(const String& script_url) {
-  bool is_ad =
-      script_url.IsEmpty() ? false : known_ad_scripts_.Contains(script_url);
+ExecutionContext* AdTracker::GetCurrentExecutionContext() {
+  // Determine the current ExecutionContext.
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  return context.IsEmpty() ? nullptr : ToExecutionContext(context);
+}
+
+void AdTracker::WillExecuteScript(ExecutionContext* execution_context,
+                                  const String& script_url) {
+  bool is_ad = script_url.IsEmpty()
+                   ? false
+                   : IsKnownAdScript(execution_context, script_url);
   ExecutingScript script(script_url, is_ad);
   executing_scripts_.push_back(script);
 }
@@ -47,7 +59,7 @@ void AdTracker::DidExecuteScript() {
 }
 
 void AdTracker::Will(const probe::ExecuteScript& probe) {
-  WillExecuteScript(probe.script_url);
+  WillExecuteScript(probe.context, probe.script_url);
 }
 
 void AdTracker::Did(const probe::ExecuteScript& probe) {
@@ -65,7 +77,7 @@ void AdTracker::Will(const probe::CallFunction& probe) {
   String script_url;
   if (!resource_name.IsEmpty())
     script_url = ToCoreString(resource_name->ToString());
-  WillExecuteScript(script_url);
+  WillExecuteScript(probe.context, script_url);
 }
 
 void AdTracker::Did(const probe::CallFunction& probe) {
@@ -84,20 +96,26 @@ void AdTracker::WillSendRequest(ExecutionContext* execution_context,
                                 Resource::Type resource_type) {
   // If the resource is not already marked as an ad, check if any executing
   // script is an ad. If yes, mark this as an ad.
-  if (!request.IsAdResource() && IsAdScriptInStack(execution_context))
+  if (!request.IsAdResource() && IsAdScriptInStack())
     request.SetIsAdResource();
 
   // If it is a script marked as an ad, append it to the known ad scripts set.
-  if (resource_type == Resource::kScript && request.IsAdResource())
-    AppendToKnownAdScripts(request.Url());
+  if (resource_type == Resource::kScript && request.IsAdResource()) {
+    AppendToKnownAdScripts(*execution_context, request.Url().GetString());
+  }
 }
 
-bool AdTracker::IsAdScriptInStack(ExecutionContext* execution_context) {
+bool AdTracker::IsAdScriptInStack() {
+  ExecutionContext* execution_context = GetCurrentExecutionContext();
+  if (!execution_context)
+    return false;
+
   // The pseudo-stack contains entry points into the stack (e.g., when v8 is
   // executed) but not the entire stack. It's cheap to retrieve the top of the
   // stack so scan that as well.
   String top_script = ScriptAtTopOfStack(execution_context);
-  if (!top_script.IsEmpty() && known_ad_scripts_.Contains(top_script))
+
+  if (!top_script.IsEmpty() && IsKnownAdScript(execution_context, top_script))
     return true;
 
   // Scan the pseudo-stack for ad scripts.
@@ -108,13 +126,28 @@ bool AdTracker::IsAdScriptInStack(ExecutionContext* execution_context) {
   return false;
 }
 
+bool AdTracker::IsKnownAdScript(ExecutionContext* execution_context,
+                                const String& url) {
+  if (!execution_context)
+    return false;
+
+  auto it = known_ad_scripts_.find(execution_context);
+  if (it == known_ad_scripts_.end())
+    return false;
+  return it->value.find(url) != it->value.end();
+}
+
 // This is a separate function for testing purposes.
-void AdTracker::AppendToKnownAdScripts(const KURL& url) {
-  known_ad_scripts_.insert(url.GetString());
+void AdTracker::AppendToKnownAdScripts(ExecutionContext& execution_context,
+                                       const String& url) {
+  auto add_result =
+      known_ad_scripts_.insert(&execution_context, HashSet<String>());
+  add_result.stored_value->value.insert(url);
 }
 
 void AdTracker::Trace(blink::Visitor* visitor) {
   visitor->Trace(local_root_);
+  visitor->Trace(known_ad_scripts_);
 }
 
 }  // namespace blink

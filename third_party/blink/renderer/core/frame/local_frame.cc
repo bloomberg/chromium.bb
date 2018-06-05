@@ -1186,11 +1186,12 @@ bool LocalFrame::ComputeIsAdSubFrame() const {
   if (!parent)
     return false;
 
-  // If the parent frame is local, directly determine if it's an ad. If
-  // it's remote, then blink relies on the embedder to call SetIsAdFrame.
+  // If the parent frame is local, directly determine if it's an ad. If it's
+  // remote, then it is up to the embedder that moved this frame out-of-
+  // process to set this frame as an ad via SetIsAdSubframe before commit.
   bool parent_is_ad =
       parent->IsLocalFrame() && ToLocalFrame(parent)->IsAdSubframe();
-  return parent_is_ad || ad_tracker_->IsAdScriptInStack(GetDocument());
+  return parent_is_ad || ad_tracker_->IsAdScriptInStack();
 }
 
 service_manager::InterfaceProvider& LocalFrame::GetInterfaceProvider() {
@@ -1230,6 +1231,11 @@ PluginData* LocalFrame::GetPluginData() const {
     return nullptr;
   return GetPage()->GetPluginData(
       Tree().Top().GetSecurityContext()->GetSecurityOrigin());
+}
+
+void LocalFrame::SetAdTrackerForTesting(AdTracker* ad_tracker) {
+  ad_tracker_->Shutdown();
+  ad_tracker_ = ad_tracker;
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(LocalFrame);

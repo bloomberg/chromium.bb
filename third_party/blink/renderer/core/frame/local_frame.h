@@ -278,6 +278,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   PerformanceMonitor* GetPerformanceMonitor() { return performance_monitor_; }
   IdlenessDetector* GetIdlenessDetector() { return idleness_detector_; }
   AdTracker* GetAdTracker() { return ad_tracker_; }
+  void SetAdTrackerForTesting(AdTracker* ad_tracker);
 
   // Convenience function to allow loading image placeholders for the request if
   // either the flag in Settings() for using image placeholders is set, or if
@@ -331,6 +332,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
                                                             WebComputedAXTree*);
 
   // True if AdTracker heuristics have determined that this frame is an ad.
+  // Calculated in the constructor but LocalFrames created on behalf of OOPIF
+  // aren't set until just before commit (ReadyToCommitNavigation time) by the
+  // embedder.
   bool IsAdSubframe() const { return is_ad_subframe_; }
   void SetIsAdSubframe() {
     DCHECK(!IsMainFrame());
