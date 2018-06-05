@@ -733,10 +733,6 @@ bool TaskQueueImpl::CouldTaskRun(EnqueueOrder enqueue_order) const {
   return enqueue_order < main_thread_only().current_fence;
 }
 
-EnqueueOrder TaskQueueImpl::GetFenceForTest() const {
-  return main_thread_only().current_fence;
-}
-
 // static
 void TaskQueueImpl::QueueAsValueInto(const TaskDeque& queue,
                                      TimeTicks now,
