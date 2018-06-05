@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/extensions/file_manager/device_event_router.h"
+#include "chrome/browser/chromeos/extensions/file_manager/drivefs_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/job_event_router.h"
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
@@ -221,6 +222,7 @@ class EventRouter : public KeyedService,
 
   std::unique_ptr<DeviceEventRouter> device_event_router_;
   std::unique_ptr<JobEventRouter> job_event_router_;
+  std::unique_ptr<DriveFsEventRouter> drivefs_event_router_;
 
   DispatchDirectoryChangeEventImplCallback
       dispatch_directory_change_event_impl_;

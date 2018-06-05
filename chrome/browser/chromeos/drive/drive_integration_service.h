@@ -29,6 +29,8 @@ class SequencedTaskRunner;
 }
 
 namespace drivefs {
+class DriveFsHost;
+
 namespace mojom {
 class DriveFs;
 }  // namespace mojom
@@ -131,6 +133,9 @@ class DriveIntegrationService : public KeyedService,
   // |callback| is called with false. |callback| must not be null.
   void ClearCacheAndRemountFileSystem(
       const base::Callback<void(bool)>& callback);
+
+  // Returns the DriveFsHost if it is enabled.
+  drivefs::DriveFsHost* GetDriveFsHost() const;
 
   // Returns the mojo interface to the DriveFs daemon if it is enabled and
   // connected.
