@@ -12,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -381,7 +380,7 @@ void CookieStoreIOS::DeleteCookieAsync(const GURL& url,
   base::WeakPtr<SystemCookieStore> weak_system_store =
       system_store_->GetWeakPtr();
   system_store_->GetCookiesForURLAsync(
-      url, base::BindBlockArc(^(NSArray<NSHTTPCookie*>* cookies) {
+      url, base::BindOnce(^(NSArray<NSHTTPCookie*>* cookies) {
         for (NSHTTPCookie* cookie in cookies) {
           if ([cookie.name
                   isEqualToString:base::SysUTF8ToNSString(cookie_name)] &&
@@ -555,7 +554,7 @@ void CookieStoreIOS::DeleteCookiesMatchingInfoAsync(
   base::WeakPtr<SystemCookieStore> weak_system_store =
       system_store_->GetWeakPtr();
   system_store_->GetAllCookiesAsync(
-      base::BindBlockArc(^(NSArray<NSHTTPCookie*>* cookies) {
+      base::BindOnce(^(NSArray<NSHTTPCookie*>* cookies) {
         if (!weak_system_store) {
           if (!shared_callback.is_null())
             std::move(shared_callback).Run(0);

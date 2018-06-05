@@ -8,8 +8,8 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -172,7 +172,7 @@ class CookieStoreIOSTest : public PlatformTest {
     base::WeakPtr<SystemCookieStore> weak_system_store =
         system_store_->GetWeakPtr();
     system_store_->GetCookiesForURLAsync(
-        gurl, base::BindBlockArc(^(NSArray<NSHTTPCookie*>* cookies) {
+        gurl, base::BindOnce(^(NSArray<NSHTTPCookie*>* cookies) {
           for (NSHTTPCookie* cookie in cookies) {
             if ([[cookie name] isEqualToString:base::SysUTF8ToNSString(name)] &&
                 weak_system_store) {
