@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.components.embedder_support.view;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -24,7 +24,7 @@ import org.chromium.ui.base.WindowAndroid;
  * managing the content.
  * Note that only one WebContents can be shown at a time.
  */
-@JNINamespace("content")
+@JNINamespace("embedder_support")
 public class ContentViewRenderView extends FrameLayout {
     // The native side of this object.
     private long mNativeContentViewRenderView;
@@ -54,8 +54,7 @@ public class ContentViewRenderView extends FrameLayout {
 
         setSurfaceViewBackgroundColor(Color.WHITE);
         addView(mSurfaceView,
-                new FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.MATCH_PARENT,
+                new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
         mSurfaceView.setVisibility(GONE);
     }
@@ -66,8 +65,8 @@ public class ContentViewRenderView extends FrameLayout {
      * @param rootWindow The {@link WindowAndroid} this render view should be linked to.
      */
     public void onNativeLibraryLoaded(WindowAndroid rootWindow) {
-        assert !mSurfaceView.getHolder().getSurface().isValid() :
-                "Surface created before native library loaded.";
+        assert !mSurfaceView.getHolder().getSurface().isValid()
+            : "Surface created before native library loaded.";
         assert rootWindow != null;
         mNativeContentViewRenderView = nativeInit(rootWindow);
         assert mNativeContentViewRenderView != 0;
@@ -180,8 +179,7 @@ public class ContentViewRenderView extends FrameLayout {
      * This method should be subclassed to provide actions to be performed once the view is ready to
      * render.
      */
-    protected void onReadyToRender() {
-    }
+    protected void onReadyToRender() {}
 
     /**
      * This method could be subclassed optionally to provide a custom SurfaceView object to
@@ -244,8 +242,8 @@ public class ContentViewRenderView extends FrameLayout {
     private native void nativeSetNeedsComposite(long nativeContentViewRenderView);
     private native void nativeSurfaceCreated(long nativeContentViewRenderView);
     private native void nativeSurfaceDestroyed(long nativeContentViewRenderView);
-    private native void nativeSurfaceChanged(long nativeContentViewRenderView,
-            int format, int width, int height, Surface surface);
-    private native void nativeSetOverlayVideoMode(long nativeContentViewRenderView,
-            boolean enabled);
+    private native void nativeSurfaceChanged(
+            long nativeContentViewRenderView, int format, int width, int height, Surface surface);
+    private native void nativeSetOverlayVideoMode(
+            long nativeContentViewRenderView, boolean enabled);
 }
