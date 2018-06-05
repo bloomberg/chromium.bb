@@ -97,9 +97,8 @@ interface PolicyInstance {
   OnPolicyUpdated@1();
 
   // Forwards a command received from the management server. The payload is
-  // opaque to Chrome OS (it contains JSON from the RemoteCommand.payload field
-  // for the USER_ARC_COMMAND RemoteCommand - cf.
-  // device_management_backend.proto).
+  // opaque to Chrome (it contains JSON from the RemoteCommand.payload field for
+  // the USER_ARC_COMMAND RemoteCommand - cf. device_management_backend.proto).
   [MinVersion=4] OnCommandReceived@3(string command)
       => (CommandResultType result);
 };
