@@ -22,6 +22,7 @@
 #include "services/tracing/public/mojom/constants.mojom.h"
 
 #if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_MACOSX)
+#define PERFETTO_AVAILABLE
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #endif
 
@@ -33,7 +34,7 @@ const char kTraceEventLabel[] = "traceEvents";
 
 namespace tracing {
 
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(PERFETTO_AVAILABLE)
 class PerfettoTraceEventAgent : public TraceEventAgent {
  public:
   explicit PerfettoTraceEventAgent(service_manager::Connector* connector) {
@@ -65,7 +66,7 @@ std::unique_ptr<TraceEventAgent> TraceEventAgent::Create(
     service_manager::Connector* connector,
     bool request_clock_sync_marker_on_android) {
   if (TracingUsesPerfettoBackend()) {
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(PERFETTO_AVAILABLE)
     return std::make_unique<PerfettoTraceEventAgent>(connector);
 #else
     LOG(FATAL) << "Perfetto is not yet available for this platform.";
