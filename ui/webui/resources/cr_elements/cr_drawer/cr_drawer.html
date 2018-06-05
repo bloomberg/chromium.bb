@@ -71,7 +71,8 @@
         overflow: auto;
       }
     </style>
-    <dialog id="dialog" on-cancel="onDialogCancel_" on-tap="onDialogTap_">
+    <dialog id="dialog" on-cancel="onDialogCancel_" on-tap="onDialogTap_"
+        on-transitionend="onDialogTransitionEnd_" on-close="onDialogClose_">
       <div id="container" on-tap="onContainerTap_">
         <div class="drawer-header" tabindex="-1">[[heading]]</div>
         <slot></slot>

@@ -22,7 +22,7 @@ suite('cr-drawer', function() {
     const drawer = createDrawer('ltr');
     drawer.openDrawer();
 
-    return test_util.eventToPromise('transitionend', drawer)
+    return test_util.eventToPromise('cr-drawer-opened', drawer)
         .then(() => {
           assertTrue(drawer.open);
 
@@ -45,16 +45,9 @@ suite('cr-drawer', function() {
         });
   });
 
-  test('opened event', function() {
-    const drawer = createDrawer('ltr');
-    const whenOpen = test_util.eventToPromise('cr-drawer-opened', drawer);
-    drawer.openDrawer();
-    return whenOpen;
-  });
-
   test('align=ltr', function() {
     createDrawer('ltr').openDrawer();
-    return test_util.eventToPromise('transitionend', drawer).then(() => {
+    return test_util.eventToPromise('cr-drawer-opened', drawer).then(() => {
       const rect = drawer.$.dialog.getBoundingClientRect();
       assertEquals(0, rect.left);
       assertNotEquals(0, rect.right);
@@ -63,7 +56,7 @@ suite('cr-drawer', function() {
 
   test('align=rtl', function() {
     createDrawer('rtl').openDrawer();
-    return test_util.eventToPromise('transitionend', drawer).then(() => {
+    return test_util.eventToPromise('cr-drawer-opened', drawer).then(() => {
       const rect = drawer.$.dialog.getBoundingClientRect();
       assertNotEquals(0, rect.left);
       assertEquals(window.innerWidth, rect.right);
