@@ -2546,13 +2546,13 @@ output_repaint_timer_handler(void *data)
 	}
 
 	if (ret == 0) {
-	    if (compositor->backend->repaint_flush)
-		    compositor->backend->repaint_flush(compositor,
-						       repaint_data);
+		if (compositor->backend->repaint_flush)
+			compositor->backend->repaint_flush(compositor,
+							   repaint_data);
 	} else {
-	    if (compositor->backend->repaint_cancel)
-		    compositor->backend->repaint_cancel(compositor,
-						        repaint_data);
+		if (compositor->backend->repaint_cancel)
+			compositor->backend->repaint_cancel(compositor,
+							    repaint_data);
 	}
 
 	output_repaint_timer_arm(compositor);
