@@ -34,6 +34,7 @@
 struct ivi_shell
 {
 	struct wl_listener destroy_listener;
+	struct wl_listener wake_listener;
 
 	struct weston_compositor *compositor;
 
