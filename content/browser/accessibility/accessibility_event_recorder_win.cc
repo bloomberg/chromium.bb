@@ -307,6 +307,18 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
   log += " ";
   log += base::UTF16ToUTF8(IAccessible2StateToString(ia2_state));
 
+  // Group position, e.g. L3, 5 of 7
+  LONG group_level, similar_items_in_group, position_in_group;
+  if (iaccessible2->get_groupPosition(&group_level, &similar_items_in_group,
+                                      &position_in_group) == S_OK) {
+    if (group_level)
+      log += base::StringPrintf(" level=%ld", group_level);
+    if (similar_items_in_group) {
+      log += base::StringPrintf(" %ld of %ld", position_in_group,
+                                similar_items_in_group);
+    }
+  }
+
   // For TEXT_REMOVED and TEXT_INSERTED events, query the text that was
   // inserted or removed and include that in the log.
   Microsoft::WRL::ComPtr<IAccessibleText> accessible_text;
