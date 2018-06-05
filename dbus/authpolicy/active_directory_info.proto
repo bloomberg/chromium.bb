@@ -158,8 +158,7 @@ message ActiveDirectoryUserStatus {
   optional TgtStatus tgt_status = 2;
   // Status of the user's password.
   optional PasswordStatus password_status = 3;
-  // Last error returned from AuthenticateUser D-Bus call.
-  optional ErrorType last_auth_error = 4;
+  reserved 4;
   // Next ID to use: 5
 }
 
