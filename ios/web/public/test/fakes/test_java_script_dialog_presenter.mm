@@ -27,7 +27,7 @@ void TestJavaScriptDialogPresenter::RunJavaScriptDialog(
     JavaScriptDialogType java_script_dialog_type,
     NSString* message_text,
     NSString* default_prompt_text,
-    const DialogClosedCallback& callback) {
+    DialogClosedCallback callback) {
   TestJavaScriptDialog dialog;
   dialog.web_state = web_state;
   dialog.origin_url = origin_url;
@@ -37,7 +37,8 @@ void TestJavaScriptDialogPresenter::RunJavaScriptDialog(
 
   requested_dialogs_.push_back(dialog);
 
-  callback.Run(callback_success_argument_, callback_user_input_argument_);
+  std::move(callback).Run(callback_success_argument_,
+                          callback_user_input_argument_);
 }
 
 void TestJavaScriptDialogPresenter::CancelDialogs(WebState* web_state) {

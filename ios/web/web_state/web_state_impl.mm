@@ -426,15 +426,16 @@ void WebStateImpl::RunJavaScriptDialog(
     JavaScriptDialogType javascript_dialog_type,
     NSString* message_text,
     NSString* default_prompt_text,
-    const DialogClosedCallback& callback) {
+    DialogClosedCallback callback) {
   JavaScriptDialogPresenter* presenter =
       delegate_ ? delegate_->GetJavaScriptDialogPresenter(this) : nullptr;
   if (!presenter) {
-    callback.Run(false, nil);
+    std::move(callback).Run(false, nil);
     return;
   }
   presenter->RunJavaScriptDialog(this, origin_url, javascript_dialog_type,
-                                 message_text, default_prompt_text, callback);
+                                 message_text, default_prompt_text,
+                                 std::move(callback));
 }
 
 WebState* WebStateImpl::CreateNewWebState(const GURL& url,

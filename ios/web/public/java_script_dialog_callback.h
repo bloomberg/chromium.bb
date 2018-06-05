@@ -14,7 +14,7 @@ namespace web {
 // Callback for |RunJavaScriptDialog|. The |success| value is true if the user
 // responded with OK, |false| if the dialog was cancelled. The |user_input|
 // value will exist for prompt alerts only.
-typedef base::Callback<void(bool success, NSString* user_input)>
+typedef base::OnceCallback<void(bool success, NSString* user_input)>
     DialogClosedCallback;
 
 }  // namespace web

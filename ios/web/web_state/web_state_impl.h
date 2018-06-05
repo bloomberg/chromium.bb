@@ -256,7 +256,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
                            JavaScriptDialogType java_script_dialog_type,
                            NSString* message_text,
                            NSString* default_prompt_text,
-                           const DialogClosedCallback& callback);
+                           DialogClosedCallback callback);
 
   // Instructs the delegate to create a new web state. Called when this WebState
   // wants to open a new window. |url| is the URL of the new window;

@@ -36,7 +36,7 @@ class TestJavaScriptDialogPresenter : public JavaScriptDialogPresenter {
                            JavaScriptDialogType java_script_dialog_type,
                            NSString* message_text,
                            NSString* default_prompt_text,
-                           const DialogClosedCallback& callback) override;
+                           DialogClosedCallback callback) override;
   void CancelDialogs(WebState* web_state) override;
 
   // True if the JavaScriptDialogPresenter CancelDialogs method has been called.

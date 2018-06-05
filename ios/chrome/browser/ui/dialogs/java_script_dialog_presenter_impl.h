@@ -24,7 +24,7 @@ class JavaScriptDialogPresenterImpl final
                            web::JavaScriptDialogType dialog_type,
                            NSString* message_text,
                            NSString* default_prompt_text,
-                           const web::DialogClosedCallback& callback) override;
+                           web::DialogClosedCallback callback) override;
 
   void CancelDialogs(web::WebState* web_state) override;
 
