@@ -174,8 +174,10 @@ presentBubbleForFeature:(const base::Feature&)feature
                     alignment:BubbleAlignmentCenter
                          text:text
                   anchorPoint:searchButtonAnchor];
-  if (presenter)
-    self.bottomToolbarTipBubblePresenter = presenter;
+  if (!presenter)
+    return;
+
+  self.bottomToolbarTipBubblePresenter = presenter;
 }
 
 // Optionally presents a bubble associated with the new tab tip in-product help
@@ -218,8 +220,10 @@ presentBubbleForFeature:(const base::Feature&)feature
                           alignment:BubbleAlignmentTrailing
                                text:text
                         anchorPoint:tabSwitcherAnchor];
-  if (presenter)
-    self.tabTipBubblePresenter = presenter;
+  if (!presenter)
+    return;
+
+  self.tabTipBubblePresenter = presenter;
 }
 
 // Presents a bubble associated with the new incognito tab tip in-product help
@@ -247,8 +251,10 @@ presentBubbleForFeature:(const base::Feature&)feature
                     alignment:BubbleAlignmentTrailing
                          text:text
                   anchorPoint:toolsButtonAnchor];
-  if (presenter)
-    self.incognitoTabTipBubblePresenter = presenter;
+  if (!presenter)
+    return;
+
+  self.incognitoTabTipBubblePresenter = presenter;
 
   [self.dispatcher triggerToolsMenuButtonAnimation];
 }
