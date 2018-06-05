@@ -49,8 +49,13 @@ bool IsWebauthnRPIDListedInEnterprisePolicy(
 
 ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
     content::RenderFrameHost* render_frame_host)
-    : render_frame_host_(render_frame_host) {}
+    : render_frame_host_(render_frame_host), weak_ptr_factory_(this) {}
 ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate() {}
+
+base::WeakPtr<ChromeAuthenticatorRequestDelegate>
+ChromeAuthenticatorRequestDelegate::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
 
 bool ChromeAuthenticatorRequestDelegate::ShouldPermitIndividualAttestation(
     const std::string& relying_party_id) {

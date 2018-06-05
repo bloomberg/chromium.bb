@@ -126,6 +126,7 @@
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
+#include "chrome/browser/webauthn/authenticator_request_scheduler.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -4292,7 +4293,7 @@ void ChromeContentBrowserClient::CreateUsbChooserService(
 std::unique_ptr<content::AuthenticatorRequestClientDelegate>
 ChromeContentBrowserClient::GetWebAuthenticationRequestDelegate(
     content::RenderFrameHost* render_frame_host) {
-  return std::make_unique<ChromeAuthenticatorRequestDelegate>(
+  return AuthenticatorRequestScheduler::CreateRequestDelegate(
       render_frame_host);
 }
 

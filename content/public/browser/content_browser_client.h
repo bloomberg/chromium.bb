@@ -1149,7 +1149,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns an AuthenticatorRequestClientDelegate subclass instance to provide
   // embedder-specific configuration for a single Web Authentication API request
   // being serviced in a given RenderFrame. The instance is guaranteed to be
-  // destroyed before the RenderFrame goes out of scope.
+  // destroyed before the RenderFrame goes out of scope. The embedder may choose
+  // to return nullptr to indicate that the request cannot be serviced right
+  // now.
   virtual std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(RenderFrameHost* render_frame_host);
 
