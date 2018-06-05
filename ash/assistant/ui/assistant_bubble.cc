@@ -21,6 +21,15 @@ AssistantBubble::~AssistantBubble() {
     bubble_view_->GetWidget()->RemoveObserver(this);
 }
 
+void AssistantBubble::AddModelObserver(AssistantBubbleModelObserver* observer) {
+  assistant_bubble_model_.AddObserver(observer);
+}
+
+void AssistantBubble::RemoveModelObserver(
+    AssistantBubbleModelObserver* observer) {
+  assistant_bubble_model_.RemoveObserver(observer);
+}
+
 void AssistantBubble::OnWidgetActivationChanged(views::Widget* widget,
                                                 bool active) {
   if (active)
@@ -36,6 +45,13 @@ void AssistantBubble::OnWidgetDestroying(views::Widget* widget) {
 
   bubble_view_->GetWidget()->RemoveObserver(this);
   bubble_view_ = nullptr;
+}
+
+void AssistantBubble::OnInputModalityChanged(InputModality input_modality) {
+  // TODO(dmblack): Handle Settings.
+  assistant_bubble_model_.SetUiMode(input_modality == InputModality::kStylus
+                                        ? AssistantUiMode::kMiniUi
+                                        : AssistantUiMode::kMainUi);
 }
 
 void AssistantBubble::OnInteractionStateChanged(
@@ -56,7 +72,7 @@ bool AssistantBubble::IsVisible() const {
 
 void AssistantBubble::Show() {
   if (!bubble_view_) {
-    bubble_view_ = new AssistantBubbleView(assistant_controller_);
+    bubble_view_ = new AssistantBubbleView(assistant_controller_, this);
     bubble_view_->GetWidget()->AddObserver(this);
   }
   bubble_view_->GetWidget()->Show();

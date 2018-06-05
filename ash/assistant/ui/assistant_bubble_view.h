@@ -7,20 +7,22 @@
 
 #include <memory>
 
-#include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_bubble_model_observer.h"
 #include "base/macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
 namespace ash {
 
+class AssistantBubble;
 class AssistantController;
 class AssistantMainView;
 class AssistantMiniView;
 
 class AssistantBubbleView : public views::BubbleDialogDelegateView,
-                            public AssistantInteractionModelObserver {
+                            public AssistantBubbleModelObserver {
  public:
-  explicit AssistantBubbleView(AssistantController* assistant_controller);
+  AssistantBubbleView(AssistantController* assistant_controller,
+                      AssistantBubble* assistant_bubble);
   ~AssistantBubbleView() override;
 
   // views::BubbleDialogDelegateView:
@@ -32,13 +34,14 @@ class AssistantBubbleView : public views::BubbleDialogDelegateView,
   void Init() override;
   void RequestFocus() override;
 
-  // AssistantInteractionModelObserver:
-  void OnInputModalityChanged(InputModality input_modality) override;
+  // AssistantBubbleModelObserver:
+  void OnUiModeChanged(AssistantUiMode ui_mode) override;
 
  private:
   void SetAnchor();
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantBubble* const assistant_bubble_;  // Owned by AssistantController.
 
   std::unique_ptr<AssistantMainView> assistant_main_view_;
   std::unique_ptr<AssistantMiniView> assistant_mini_view_;
