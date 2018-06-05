@@ -213,7 +213,6 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
   sk_sp<SkSurface> surface_;
   GLuint image_id_ = 0;
   GLuint texture_id_ = 0;
-  CanvasColorParams color_params_;
   MailboxSyncMode mailbox_sync_mode_ = kVerifiedSyncToken;
   bool is_accelerated_;
 };

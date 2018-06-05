@@ -284,7 +284,6 @@ CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
     bool is_accelerated)
     : CanvasResource(provider, filter_quality, color_params),
       context_provider_wrapper_(std::move(context_provider_wrapper)),
-      color_params_(color_params),
       is_accelerated_(is_accelerated) {
   if (!context_provider_wrapper_)
     return;
@@ -305,8 +304,7 @@ CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
   if (!gpu_memory_buffer_manager)
     return;
   gpu_memory_buffer_ = gpu_memory_buffer_manager->CreateGpuMemoryBuffer(
-      gfx::Size(size.Width(), size.Height()),
-      color_params_.GetBufferFormat(),  // Use format
+      gfx::Size(size.Width(), size.Height()), ColorParams().GetBufferFormat(),
       buffer_usage, gpu::kNullSurfaceHandle);
   if (!gpu_memory_buffer_) {
     return;
@@ -315,7 +313,7 @@ CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
 
   image_id_ = gl->CreateImageCHROMIUM(gpu_memory_buffer_->AsClientBuffer(),
                                       size.Width(), size.Height(),
-                                      color_params_.GLInternalFormat());
+                                      ColorParams().GLInternalFormat());
   if (!image_id_) {
     gpu_memory_buffer_ = nullptr;
     return;
@@ -451,14 +449,14 @@ void CanvasResourceGpuMemoryBuffer::WillPaint() {
       texture_info.fTarget = TextureTarget();
       texture_info.fID = texture_id_;
       texture_info.fFormat =
-          color_params_.GLInternalFormat();  // unsized format
+          ColorParams().GLInternalFormat();  // unsized format
       GrBackendTexture backend_texture(Size().Width(), Size().Height(),
                                        GrMipMapped::kNo, texture_info);
       constexpr int sample_count = 0;
       surface_ = SkSurface::MakeFromBackendTexture(
           GetGrContext(), backend_texture, kTopLeft_GrSurfaceOrigin,
-          sample_count, color_params_.GetSkColorType(),
-          color_params_.GetSkColorSpace(), nullptr /*surface props*/);
+          sample_count, ColorParams().GetSkColorType(),
+          ColorParams().GetSkColorSpace(), nullptr /*surface props*/);
     }
   } else {
     gpu_memory_buffer_->Map();
@@ -466,8 +464,8 @@ void CanvasResourceGpuMemoryBuffer::WillPaint() {
     if (!surface_ || buffer_base_address != buffer_base_address_) {
       buffer_base_address_ = buffer_base_address;
       SkImageInfo image_info = SkImageInfo::Make(
-          Size().Width(), Size().Height(), color_params_.GetSkColorType(),
-          color_params_.GetSkAlphaType(), color_params_.GetSkColorSpace());
+          Size().Width(), Size().Height(), ColorParams().GetSkColorType(),
+          ColorParams().GetSkAlphaType(), ColorParams().GetSkColorSpace());
       surface_ = SkSurface::MakeRasterDirect(image_info, buffer_base_address_,
                                              gpu_memory_buffer_->stride(0));
     }
