@@ -262,13 +262,12 @@ class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
 
   bool PostTaskWithMetadata(PostedTask task);
 
-  // TODO(kraynov): Make protected.
-  internal::TaskQueueImpl* GetTaskQueueImpl() const { return impl_.get(); }
-
  protected:
   TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
             const TaskQueue::Spec& spec);
   ~TaskQueue() override;
+
+  internal::TaskQueueImpl* GetTaskQueueImpl() const { return impl_.get(); }
 
  private:
   friend class internal::TaskQueueImpl;

@@ -266,7 +266,6 @@ class PLATFORM_EXPORT TaskQueueImpl {
   void RequeueDeferredNonNestableTask(DeferredNonNestableTask task);
 
   void PushImmediateIncomingTaskForTest(TaskQueueImpl::Task&& task);
-  EnqueueOrder GetFenceForTest() const;
 
   class QueueEnabledVoterImpl : public TaskQueue::QueueEnabledVoter {
    public:

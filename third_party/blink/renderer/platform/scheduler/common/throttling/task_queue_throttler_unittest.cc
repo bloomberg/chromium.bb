@@ -132,14 +132,9 @@ class TaskQueueThrottlerTest : public testing::Test {
   }
 
   bool IsQueueBlocked(TaskQueue* task_queue) {
-    base::sequence_manager::internal::TaskQueueImpl* task_queue_impl =
-        task_queue->GetTaskQueueImpl();
-    if (!task_queue_impl->IsQueueEnabled())
+    if (!task_queue->IsQueueEnabled())
       return true;
-    return task_queue_impl->GetFenceForTest() ==
-           static_cast<base::sequence_manager::internal::EnqueueOrder>(
-               base::sequence_manager::internal::EnqueueOrderValues::
-                   kBlockingFence);
+    return task_queue->BlockedByFence();
   }
 
  protected:
@@ -552,8 +547,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest, TaskQueueDisabledTillPump) {
   EXPECT_TRUE(IsQueueBlocked(timer_queue_.get()));
 
   mock_task_runner_->RunUntilIdle();  // Wait until the pump.
-  EXPECT_EQ(1u, count);               // The task got run
-  EXPECT_FALSE(IsQueueBlocked(timer_queue_.get()));
+  EXPECT_EQ(1u, count);               // The task got run.
 }
 
 TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
