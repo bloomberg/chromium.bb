@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/bind.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/ios/wait_util.h"
@@ -154,7 +155,7 @@ TEST_F(WebStateTest, Snapshot) {
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
   CGSize target_size = CGSizeMake(100.0f, 100.0f);
   web_state()->TakeSnapshot(
-      base::BindBlockArc(^(const gfx::Image& snapshot) {
+      base::BindOnce(^(gfx::Image snapshot) {
         ASSERT_FALSE(snapshot.IsEmpty());
         EXPECT_EQ(snapshot.Width(), target_size.width);
         EXPECT_EQ(snapshot.Height(), target_size.height);

@@ -360,9 +360,9 @@ void TestWebState::SetHasOpener(bool has_opener) {
   has_opener_ = has_opener;
 }
 
-void TestWebState::TakeSnapshot(const SnapshotCallback& callback,
+void TestWebState::TakeSnapshot(SnapshotCallback callback,
                                 CGSize target_size) const {
-  callback.Run(gfx::Image([[UIImage alloc] init]));
+  std::move(callback).Run(gfx::Image([[UIImage alloc] init]));
 }
 
 }  // namespace web

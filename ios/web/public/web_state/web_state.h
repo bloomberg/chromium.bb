@@ -294,11 +294,11 @@ class WebState : public base::SupportsUserData {
   virtual void SetHasOpener(bool has_opener) = 0;
 
   // Callback used to handle snapshots. The parameter is the snapshot image.
-  typedef base::Callback<void(const gfx::Image&)> SnapshotCallback;
+  typedef base::OnceCallback<void(gfx::Image)> SnapshotCallback;
 
   // Takes a snapshot of this WebState with |target_size|. |callback| is
   // asynchronously invoked after performing the snapshot.
-  virtual void TakeSnapshot(const SnapshotCallback& callback,
+  virtual void TakeSnapshot(SnapshotCallback callback,
                             CGSize target_size) const = 0;
 
   // Adds and removes observers for page navigation notifications. The order in
