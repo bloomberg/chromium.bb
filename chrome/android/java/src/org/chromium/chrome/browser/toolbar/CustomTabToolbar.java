@@ -84,8 +84,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
         public InterceptTouchLayout(Context context, AttributeSet attrs) {
             super(context, attrs);
-            mGestureDetector = new GestureDetector(getContext(),
-                    new GestureDetector.SimpleOnGestureListener() {
+            mGestureDetector = new GestureDetector(
+                    getContext(), new GestureDetector.SimpleOnGestureListener() {
                         @Override
                         public boolean onSingleTapConfirmed(MotionEvent e) {
                             if (LibraryLoader.getInstance().isInitialized()) {
@@ -93,7 +93,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
                             }
                             return super.onSingleTapConfirmed(e);
                         }
-                    });
+                    }, ThreadUtils.getUiThreadHandler());
         }
 
         @Override

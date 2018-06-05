@@ -10,6 +10,7 @@ import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 
@@ -83,7 +84,7 @@ public class SwipeRecognizer extends SimpleOnGestureListener {
      */
     public SwipeRecognizer(Context context) {
         mPxToDp = 1.f / context.getResources().getDisplayMetrics().density;
-        mGestureDetector = new GestureDetector(context, this);
+        mGestureDetector = new GestureDetector(context, this, ThreadUtils.getUiThreadHandler());
     }
 
     /**

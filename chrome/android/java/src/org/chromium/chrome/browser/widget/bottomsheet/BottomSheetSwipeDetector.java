@@ -9,6 +9,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.util.MathUtils;
 
 /**
@@ -180,7 +181,8 @@ public class BottomSheetSwipeDetector extends GestureDetector.SimpleOnGestureLis
      * @param delegate A SwipeableBottomSheet that processes swipes.
      */
     public BottomSheetSwipeDetector(Context context, SwipeableBottomSheet delegate) {
-        mGestureDetector = new GestureDetector(context, new SwipeGestureListener());
+        mGestureDetector = new GestureDetector(
+                context, new SwipeGestureListener(), ThreadUtils.getUiThreadHandler());
         mGestureDetector.setIsLongpressEnabled(true);
 
         mSheetDelegate = delegate;
