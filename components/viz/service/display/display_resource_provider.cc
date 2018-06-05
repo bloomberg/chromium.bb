@@ -858,19 +858,6 @@ DisplayResourceProvider::ScopedReadLockSkImage::~ScopedReadLockSkImage() {
   resource_provider_->UnlockForRead(resource_id_);
 }
 
-DisplayResourceProvider::ScopedReadLockSoftware::ScopedReadLockSoftware(
-    DisplayResourceProvider* resource_provider,
-    ResourceId resource_id)
-    : resource_provider_(resource_provider), resource_id_(resource_id) {
-  const ChildResource* resource = resource_provider->LockForRead(resource_id);
-  DCHECK(resource);
-  resource_provider->PopulateSkBitmapWithResource(&sk_bitmap_, resource);
-}
-
-DisplayResourceProvider::ScopedReadLockSoftware::~ScopedReadLockSoftware() {
-  resource_provider_->UnlockForRead(resource_id_);
-}
-
 DisplayResourceProvider::LockSetForExternalUse::LockSetForExternalUse(
     DisplayResourceProvider* resource_provider)
     : resource_provider_(resource_provider) {}

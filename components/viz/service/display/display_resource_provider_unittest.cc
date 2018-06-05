@@ -925,12 +925,14 @@ TEST_P(DisplayResourceProviderTest, ReadSoftwareResources) {
   ResourceId mapped_resource_id = resource_map[resource_id];
 
   {
-    DisplayResourceProvider::ScopedReadLockSoftware lock(
+    DisplayResourceProvider::ScopedReadLockSkImage lock(
         resource_provider_.get(), mapped_resource_id);
-    const SkBitmap* sk_bitmap = lock.sk_bitmap();
-    EXPECT_EQ(sk_bitmap->width(), size.width());
-    EXPECT_EQ(sk_bitmap->height(), size.height());
-    EXPECT_EQ(*sk_bitmap->getAddr32(16, 16), kBadBeef);
+    const SkImage* sk_image = lock.sk_image();
+    SkBitmap sk_bitmap;
+    sk_image->asLegacyBitmap(&sk_bitmap);
+    EXPECT_EQ(sk_image->width(), size.width());
+    EXPECT_EQ(sk_image->height(), size.height());
+    EXPECT_EQ(*sk_bitmap.getAddr32(16, 16), kBadBeef);
   }
 
   EXPECT_EQ(0u, returned_to_child.size());

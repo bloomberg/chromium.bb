@@ -171,27 +171,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSkImage);
   };
 
-  class VIZ_SERVICE_EXPORT ScopedReadLockSoftware {
-   public:
-    ScopedReadLockSoftware(DisplayResourceProvider* resource_provider,
-                           ResourceId resource_id);
-    ~ScopedReadLockSoftware();
-
-    const SkBitmap* sk_bitmap() const {
-      DCHECK(valid());
-      return &sk_bitmap_;
-    }
-
-    bool valid() const { return !!sk_bitmap_.getPixels(); }
-
-   private:
-    DisplayResourceProvider* const resource_provider_;
-    const ResourceId resource_id_;
-    SkBitmap sk_bitmap_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSoftware);
-  };
-
   // Maintains set of lock for external use.
   class VIZ_SERVICE_EXPORT LockSetForExternalUse {
    public:
