@@ -1187,7 +1187,8 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   // Make shell surface a transient child if |parent_| has been set.
   params.parent =
       parent_ ? parent_
-              : WMHelper::GetInstance()->GetPrimaryDisplayContainer(container_);
+              : ash::Shell::GetContainer(
+                    ash::Shell::GetRootWindowForNewWindows(), container_);
   params.bounds = gfx::Rect(origin_, gfx::Size());
   bool activatable = activatable_;
   // ShellSurfaces in system modal container are only activatable if input

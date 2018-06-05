@@ -4,8 +4,10 @@
 #include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 
 #include <string>
+#include <utility>
 
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
@@ -26,6 +28,8 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/base/base_window.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 
@@ -40,8 +44,8 @@ CrostiniAppWindowShelfController::CrostiniAppWindowShelfController(
 
 CrostiniAppWindowShelfController::~CrostiniAppWindowShelfController() {
   BrowserList::RemoveObserver(this);
-  for (auto* window : observed_windows_)
-    window->RemoveObserver(this);
+  for (auto window : observed_window_to_startup_id_)
+    window.first->RemoveObserver(this);
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
     env->RemoveObserver(this);
@@ -114,9 +118,39 @@ void CrostiniAppWindowShelfController::OnWindowInitialized(
   if (!widget->CanActivate())
     return;
 
-  observed_windows_.push_back(window);
+  const std::string* startup_id = exo::ShellSurface::GetStartupId(window);
+  if (startup_id == nullptr) {
+    observed_window_to_startup_id_.emplace(window, std::string());
+  } else {
+    observed_window_to_startup_id_.emplace(window, *startup_id);
+  }
 
   window->AddObserver(this);
+}
+
+void CrostiniAppWindowShelfController::OnWindowPropertyChanged(
+    aura::Window* window,
+    const void* key,
+    intptr_t old) {
+  const std::string* startup_id = exo::ShellSurface::GetStartupId(window);
+  if (startup_id == nullptr || startup_id->empty())
+    return;
+  if (*startup_id == observed_window_to_startup_id_.at(window))
+    return;
+  observed_window_to_startup_id_[window] = *startup_id;
+  int64_t display_id =
+      crostini_app_display_.GetDisplayIdForStartupId(*startup_id);
+  if (display_id == display::kInvalidDisplayId)
+    return;
+  gfx::Rect bounds = window->bounds();
+  display::Display display;
+  if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id,
+                                                             &display))
+    return;
+  window->SetBoundsInScreen(window->GetBoundsInScreen(), display);
+  // The origin of the window is off after the above statement and needs to be
+  // reset. http://crbug.com/848970.
+  window->SetBounds(bounds);
 }
 
 void CrostiniAppWindowShelfController::OnWindowVisibilityChanged(
@@ -177,10 +211,9 @@ void CrostiniAppWindowShelfController::RegisterAppWindow(
 
 void CrostiniAppWindowShelfController::OnWindowDestroying(
     aura::Window* window) {
-  auto it =
-      std::find(observed_windows_.begin(), observed_windows_.end(), window);
-  DCHECK(it != observed_windows_.end());
-  observed_windows_.erase(it);
+  auto it = observed_window_to_startup_id_.find(window);
+  DCHECK(it != observed_window_to_startup_id_.end());
+  observed_window_to_startup_id_.erase(it);
   window->RemoveObserver(this);
 
   auto app_window_it = aura_window_to_app_window_.find(window);
@@ -232,4 +265,10 @@ void CrostiniAppWindowShelfController::OnItemDelegateDiscarded(
 
     UnregisterAppWindow(it.second.get());
   }
+}
+
+void CrostiniAppWindowShelfController::OnAppLaunchRequested(
+    const std::string& startup_id,
+    int64_t display_id) {
+  crostini_app_display_.Register(startup_id, display_id);
 }

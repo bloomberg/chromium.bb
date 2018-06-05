@@ -250,8 +250,10 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   app_window_controllers_.push_back(
       std::make_unique<ArcAppWindowLauncherController>(this));
   if (IsCrostiniUIAllowedForProfile(profile)) {
-    app_window_controllers_.push_back(
-        std::make_unique<CrostiniAppWindowShelfController>(this));
+    std::unique_ptr<CrostiniAppWindowShelfController> crostini_controller =
+        std::make_unique<CrostiniAppWindowShelfController>(this);
+    crostini_app_window_shelf_controller_ = crostini_controller.get();
+    app_window_controllers_.emplace_back(std::move(crostini_controller));
   }
   app_window_controllers_.push_back(
       std::make_unique<InternalAppWindowShelfController>(this));
