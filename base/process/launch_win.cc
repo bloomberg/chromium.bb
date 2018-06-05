@@ -274,6 +274,10 @@ Process LaunchProcess(const string16& cmdline,
                                   : options.current_directory.value().c_str();
 
   string16 writable_cmdline(cmdline);
+  DCHECK(!(flags & CREATE_SUSPENDED))
+      << "Creating a suspended process can lead to hung processes if the "
+      << "launching process is killed before it assigns the process to the"
+      << "job. https://crbug.com/820996";
   if (options.as_user) {
     flags |= CREATE_UNICODE_ENVIRONMENT;
     void* enviroment_block = nullptr;
