@@ -250,7 +250,7 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTCAPTION;
   }
   int window_component = GetHTComponentForFrame(
-      point, FrameBorderThickness(false), NonClientBorderThickness(),
+      point, FrameTopBorderThickness(false), NonClientBorderThickness(),
       kResizeAreaCornerSize, kResizeAreaCornerSize, delegate->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
@@ -532,6 +532,10 @@ views::ImageButton* OpaqueBrowserFrameView::InitWindowCaptionButton(
 
 int OpaqueBrowserFrameView::FrameBorderThickness(bool restored) const {
   return layout_->FrameBorderThickness(restored);
+}
+
+int OpaqueBrowserFrameView::FrameTopBorderThickness(bool restored) const {
+  return layout_->FrameTopBorderThickness(restored);
 }
 
 int OpaqueBrowserFrameView::NonClientBorderThickness() const {
