@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/accelerators/test_accelerator_target.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
@@ -170,44 +171,13 @@ TEST_F(FocusManagerTest, WidgetFocusChangeListener) {
   EXPECT_EQ(native_view2, widget_listener.focus_changes()[1]);
 }
 
-// Counts accelerator calls.
-class TestAcceleratorTarget : public ui::AcceleratorTarget {
- public:
-  explicit TestAcceleratorTarget(bool process_accelerator)
-      : accelerator_count_(0),
-        process_accelerator_(process_accelerator),
-        can_handle_accelerators_(true) {}
-
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
-    ++accelerator_count_;
-    return process_accelerator_;
-  }
-
-  bool CanHandleAccelerators() const override {
-    return can_handle_accelerators_;
-  }
-
-  int accelerator_count() const { return accelerator_count_; }
-
-  void set_can_handle_accelerators(bool can_handle_accelerators) {
-    can_handle_accelerators_ = can_handle_accelerators;
-  }
-
- private:
-  int accelerator_count_;  // number of times that the accelerator is activated
-  bool process_accelerator_;      // return value of AcceleratorPressed
-  bool can_handle_accelerators_;  // return value of CanHandleAccelerators
-
-  DISALLOW_COPY_AND_ASSIGN(TestAcceleratorTarget);
-};
-
 TEST_F(FocusManagerTest, CallsNormalAcceleratorTarget) {
   FocusManager* focus_manager = GetFocusManager();
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   ui::Accelerator escape_accelerator(ui::VKEY_ESCAPE, ui::EF_NONE);
 
-  TestAcceleratorTarget return_target(true);
-  TestAcceleratorTarget escape_target(true);
+  ui::TestAcceleratorTarget return_target(true);
+  ui::TestAcceleratorTarget escape_target(true);
   EXPECT_EQ(return_target.accelerator_count(), 0);
   EXPECT_EQ(escape_target.accelerator_count(), 0);
 
@@ -230,7 +200,7 @@ TEST_F(FocusManagerTest, CallsNormalAcceleratorTarget) {
   EXPECT_EQ(escape_target.accelerator_count(), 1);
 
   // Register another target for the return key.
-  TestAcceleratorTarget return_target2(true);
+  ui::TestAcceleratorTarget return_target2(true);
   EXPECT_EQ(return_target2.accelerator_count(), 0);
   focus_manager->RegisterAccelerator(return_accelerator,
                                      ui::AcceleratorManager::kNormalPriority,
@@ -242,7 +212,7 @@ TEST_F(FocusManagerTest, CallsNormalAcceleratorTarget) {
   EXPECT_EQ(return_target2.accelerator_count(), 1);
 
   // Register a target that does not process the accelerator event.
-  TestAcceleratorTarget return_target3(false);
+  ui::TestAcceleratorTarget return_target3(false);
   EXPECT_EQ(return_target3.accelerator_count(), 0);
   focus_manager->RegisterAccelerator(return_accelerator,
                                      ui::AcceleratorManager::kNormalPriority,
@@ -282,8 +252,8 @@ TEST_F(FocusManagerTest, HighPriorityHandlers) {
   FocusManager* focus_manager = GetFocusManager();
   ui::Accelerator escape_accelerator(ui::VKEY_ESCAPE, ui::EF_NONE);
 
-  TestAcceleratorTarget escape_target_high(true);
-  TestAcceleratorTarget escape_target_normal(true);
+  ui::TestAcceleratorTarget escape_target_high(true);
+  ui::TestAcceleratorTarget escape_target_normal(true);
   EXPECT_EQ(escape_target_high.accelerator_count(), 0);
   EXPECT_EQ(escape_target_normal.accelerator_count(), 0);
   EXPECT_FALSE(focus_manager->HasPriorityHandler(escape_accelerator));
@@ -357,8 +327,8 @@ TEST_F(FocusManagerTest, CallsEnabledAcceleratorTargetsOnly) {
   FocusManager* focus_manager = GetFocusManager();
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
 
-  TestAcceleratorTarget return_target1(true);
-  TestAcceleratorTarget return_target2(true);
+  ui::TestAcceleratorTarget return_target1(true);
+  ui::TestAcceleratorTarget return_target2(true);
 
   focus_manager->RegisterAccelerator(return_accelerator,
                                      ui::AcceleratorManager::kNormalPriority,
@@ -392,28 +362,21 @@ TEST_F(FocusManagerTest, CallsEnabledAcceleratorTargetsOnly) {
 }
 
 // Unregisters itself when its accelerator is invoked.
-class SelfUnregisteringAcceleratorTarget : public ui::AcceleratorTarget {
+class SelfUnregisteringAcceleratorTarget : public ui::TestAcceleratorTarget {
  public:
-  SelfUnregisteringAcceleratorTarget(ui::Accelerator accelerator,
+  SelfUnregisteringAcceleratorTarget(const ui::Accelerator& accelerator,
                                      FocusManager* focus_manager)
-      : accelerator_(accelerator),
-        focus_manager_(focus_manager),
-        accelerator_count_(0) {}
+      : accelerator_(accelerator), focus_manager_(focus_manager) {}
 
+  // ui::TestAcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
-    ++accelerator_count_;
     focus_manager_->UnregisterAccelerator(accelerator, this);
-    return true;
+    return ui::TestAcceleratorTarget::AcceleratorPressed(accelerator);
   }
-
-  bool CanHandleAccelerators() const override { return true; }
-
-  int accelerator_count() const { return accelerator_count_; }
 
  private:
   ui::Accelerator accelerator_;
   FocusManager* focus_manager_;
-  int accelerator_count_;
 
   DISALLOW_COPY_AND_ASSIGN(SelfUnregisteringAcceleratorTarget);
 };
@@ -440,7 +403,7 @@ TEST_F(FocusManagerTest, CallsSelfDeletingAcceleratorTarget) {
 TEST_F(FocusManagerTest, SuspendAccelerators) {
   const ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
   ui::Accelerator accelerator(event.key_code(), event.flags());
-  TestAcceleratorTarget target(true);
+  ui::TestAcceleratorTarget target(true);
   FocusManager* focus_manager = GetFocusManager();
   focus_manager->RegisterAccelerator(
       accelerator, ui::AcceleratorManager::kNormalPriority, &target);

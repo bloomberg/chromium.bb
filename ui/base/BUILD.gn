@@ -689,6 +689,8 @@ static_library("test_support") {
 
   if (!is_ios) {
     sources += [
+      "accelerators/test_accelerator_target.cc",
+      "accelerators/test_accelerator_target.h",
       "test/cocoa_helper.h",
       "test/cocoa_helper.mm",
       "test/menu_test_observer.h",
