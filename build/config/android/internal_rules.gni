@@ -355,6 +355,12 @@ template("write_build_config") {
     if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
       args += [ "--proguard-enabled" ]
     }
+    if (defined(invoker.proguard_output_jar_path)) {
+      _rebased_proguard_output_jar_path =
+          rebase_path(invoker.proguard_output_jar_path, root_build_dir)
+      args +=
+          [ "--proguard-output-jar-path=$_rebased_proguard_output_jar_path" ]
+    }
     if (defined(invoker.proguard_configs)) {
       _rebased_proguard_configs =
           rebase_path(invoker.proguard_configs, root_build_dir)
@@ -2737,6 +2743,7 @@ if (enable_java_templates) {
   #    output APK.
   #  incremental_install_json_path: If incremental_allowed, path to the output
   #    incremental install json configuration file.
+  #  proguard_output_jar_path: Path to .jar file produced from ProGuard step.
   #  non_native_packed_relocations: Optional. True if the target Android
   #    system does not support compressed relocations in native shared
   #    libraries.
@@ -2917,10 +2924,11 @@ if (enable_java_templates) {
                                "annotation_processor_deps",
                                "classpath_deps",
                                "gradle_treat_as_prebuilt",
-                               "proguard_enabled",
-                               "proguard_configs",
                                "input_jars_paths",
                                "main_class",
+                               "proguard_configs",
+                               "proguard_enabled",
+                               "proguard_output_jar_path",
                                "type",
                              ])
       if (type == "android_apk") {

@@ -1134,6 +1134,9 @@ chrome_public_apk_tmpl_shared("chrome_public_apk_for_test") {
     "//components/heap_profiling:heap_profiling_java_test_support",
     "//content/public/test/android:content_java_test_support",
   ]
+  if (!is_java_debug) {
+    proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
+  }
 }
 
 chrome_public_apk_tmpl_shared("chrome_modern_public_apk") {

@@ -429,6 +429,10 @@ and all its dependencies.
 The collection of all 'deps_info['extra_classpath_jars']` values from all
 dependencies.
 
+* `deps_info['proguard_under_test_mapping"]`:
+Applicable to apks with proguard enabled that have an apk_under_test. This is
+the path to the apk_under_test's output proguard .mapping file.
+
 ## <a name="target_dist_aar">Target type `dist_aar`</a>:
 
 This type corresponds to a target used to generate an `.aar` archive for
@@ -850,6 +854,8 @@ def main(argv):
       help='Whether proguard is enabled for this apk.')
   parser.add_option('--proguard-configs',
       help='GN-list of proguard flag files to use in final apk.')
+  parser.add_option('--proguard-output-jar-path',
+      help='Path to jar created by ProGuard step')
   parser.add_option('--fail',
       help='GN-list of error message lines to fail with.')
 
@@ -1183,6 +1189,8 @@ def main(argv):
     deps_info['proguard_all_configs'] = all_configs
     deps_info['proguard_all_extra_jars'] = extra_jars
     deps_info['proguard_enabled'] = options.proguard_enabled
+    if options.proguard_output_jar_path:
+      deps_info['proguard_output_jar_path'] = options.proguard_output_jar_path
 
   # The java code for an instrumentation test apk is assembled differently for
   # ProGuard vs. non-ProGuard.
@@ -1209,6 +1217,13 @@ def main(argv):
                          if p not in all_configs)
       extra_jars.extend(p for p in tested_apk_config['proguard_all_extra_jars']
                         if p not in extra_jars)
+      tested_apk_config = GetDepConfig(options.tested_apk_config)
+      deps_info['proguard_under_test_mapping'] = (
+          tested_apk_config['proguard_output_jar_path'] + '.mapping')
+    elif options.proguard_enabled:
+      # Not sure why you'd want to proguard the test apk when the under-test apk
+      # is not proguarded, but it's easy enough to support.
+      deps_info['proguard_under_test_mapping'] = ''
 
     expected_tested_package = tested_apk_config['package_name']
     AndroidManifest(options.android_manifest).CheckInstrumentationElements(

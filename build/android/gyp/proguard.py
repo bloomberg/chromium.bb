@@ -7,6 +7,7 @@
 import optparse
 import os
 import sys
+import tempfile
 
 from util import build_utils
 from util import proguard_util
@@ -23,6 +24,18 @@ _DANGEROUS_OPTIMIZATIONS = [
     "method/propagation/parameter",
     "method/propagation/returnvalue",
 ]
+
+
+# Example:
+# android.arch.core.internal.SafeIterableMap$Entry -> b:
+#     1:1:java.lang.Object getKey():353:353 -> getKey
+#     2:2:java.lang.Object getValue():359:359 -> getValue
+def _RemoveMethodMappings(orig_path, out_fd):
+  with open(orig_path) as in_fd:
+    for line in in_fd:
+      if line[:1] != ' ':
+        out_fd.write(line)
+
 
 def _ParseOptions(args):
   parser = optparse.OptionParser()
@@ -80,22 +93,35 @@ def main(args):
   proguard.config_exclusions(options.proguard_config_exclusions)
   proguard.outjar(options.output_path)
 
-  if options.mapping:
-    proguard.mapping(options.mapping)
-
   classpath = list(set(options.classpath))
   proguard.libraryjars(classpath)
   proguard.verbose(options.verbose)
   if not options.enable_dangerous_optimizations:
     proguard.disable_optimizations(_DANGEROUS_OPTIMIZATIONS)
 
-  build_utils.CallAndWriteDepfileIfStale(
-      proguard.CheckOutput,
-      options,
-      input_paths=proguard.GetInputs(),
-      input_strings=proguard.build(),
-      output_paths=proguard.GetOutputs(),
-      depfile_deps=proguard.GetDepfileDeps())
+  # Do not consider the temp file as an input since its name is random.
+  input_paths = proguard.GetInputs()
+
+  with tempfile.NamedTemporaryFile() as f:
+    if options.mapping:
+      input_paths.append(options.mapping)
+      # Maintain only class name mappings in the .mapping file in order to work
+      # around what appears to be a ProGuard bug in -applymapping:
+      #     method 'int closed()' is not being kept as 'a', but remapped to 'c'
+      _RemoveMethodMappings(options.mapping, f)
+      proguard.mapping(f.name)
+
+    input_strings = proguard.build()
+    if f.name in input_strings:
+      input_strings[input_strings.index(f.name)] = '$M'
+
+    build_utils.CallAndWriteDepfileIfStale(
+        proguard.CheckOutput,
+        options,
+        input_paths=input_paths,
+        input_strings=input_strings,
+        output_paths=proguard.GetOutputs(),
+        depfile_deps=proguard.GetDepfileDeps())
 
 
 if __name__ == '__main__':

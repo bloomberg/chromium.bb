@@ -2304,6 +2304,7 @@ if (enable_java_templates) {
         if (_enable_multidex) {
           proguard_configs += [ "//build/android/multidex.flags" ]
         }
+        proguard_output_jar_path = _proguard_output_jar_path
       }
       non_native_packed_relocations = _pack_relocations
 
@@ -2371,6 +2372,10 @@ if (enable_java_templates) {
           args += [
             "--proguard-config-exclusions=$_rebased_proguard_config_exclusions",
           ]
+        }
+        if (defined(invoker.apk_under_test)) {
+          args += [ "--mapping=@FileArg($_rebased_build_config:deps_info:proguard_under_test_mapping)" ]
+          deps += [ "${invoker.apk_under_test}__proguard" ]
         }
       }
       _dex_sources = [ _proguard_output_jar_path ]
