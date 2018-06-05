@@ -200,8 +200,8 @@ bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
   child_process_ = LaunchNSSDecrypterChildProcess(
       nss_path, channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD(),
       token);
+  channel.RemoteProcessLaunchAttempted();
   if (child_process_.IsValid()) {
-    channel.RemoteProcessLaunched();
     mojo::OutgoingInvitation::Send(std::move(invitation),
                                    child_process_.Handle(),
                                    channel.TakeLocalEndpoint());

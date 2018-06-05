@@ -218,7 +218,7 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
   test_child_ =
       base::SpawnMultiProcessTestChild(test_child_main, command_line, options);
   if (launch_type == LaunchType::CHILD || launch_type == LaunchType::PEER)
-    channel.RemoteProcessLaunched();
+    channel.RemoteProcessLaunchAttempted();
 
   if (launch_type == LaunchType::CHILD) {
     DCHECK(local_channel_endpoint.is_valid());

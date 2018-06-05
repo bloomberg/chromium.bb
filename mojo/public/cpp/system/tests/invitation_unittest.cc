@@ -97,7 +97,7 @@ class InvitationCppTest : public testing::Test,
     child_process_ = base::SpawnMultiProcessTestChild(
         test_client_name, command_line, launch_options);
     if (channel)
-      channel->RemoteProcessLaunched();
+      channel->RemoteProcessLaunchAttempted();
 
     OutgoingInvitation invitation;
     for (uint64_t name = 0; name < num_primordial_pipes; ++name)

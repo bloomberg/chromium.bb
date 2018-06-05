@@ -31,10 +31,11 @@ const base::FilePath::CharType kServiceExtension[] =
     FILE_PATH_LITERAL(".service");
 #endif
 
-void ProcessReadyCallbackAdapater(const base::Closure& callback,
-                                  base::ProcessId process_id) {
-  EXPECT_NE(process_id, base::kNullProcessId);
-  callback.Run();
+void ProcessReadyCallbackAdapter(bool expect_process_id_valid,
+                                 base::OnceClosure callback,
+                                 base::ProcessId process_id) {
+  EXPECT_EQ(expect_process_id_valid, process_id != base::kNullProcessId);
+  std::move(callback).Run();
 }
 
 class ServiceProcessLauncherDelegateImpl
@@ -87,7 +88,8 @@ TEST(ServiceProcessLauncherTest, MAYBE_StartJoin) {
   base::RunLoop run_loop;
   launcher.Start(
       Identity(), SANDBOX_TYPE_NO_SANDBOX,
-      base::Bind(&ProcessReadyCallbackAdapater, run_loop.QuitClosure()));
+      base::BindOnce(&ProcessReadyCallbackAdapter,
+                     true /*expect_process_id_valid*/, run_loop.QuitClosure()));
   run_loop.Run();
 
   launcher.Join();
@@ -95,6 +97,34 @@ TEST(ServiceProcessLauncherTest, MAYBE_StartJoin) {
 
   EXPECT_EQ(1u, service_process_launcher_delegate.get_and_clear_adjust_count());
 }
+
+#if !defined(OS_POSIX) || defined(OS_MACOSX)
+// Verify that if ServiceProcessLauncher cannot launch a process running the
+// service from the specified path, then we are able to clean up without e.g.
+// double-freeing the platform-channel handle reserved for the peer.
+// This test won't work as-is on POSIX platforms, where we use fork()+exec() to
+// launch child processes, since we won't fail until exec(), therefore the test
+// will see a valid child process-Id. We use posix_spawn() on Mac OS X.
+TEST(ServiceProcessLauncherTest, FailToLaunchProcess) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
+  // Pick a service path that could not possibly ever exist.
+  base::FilePath test_service_path(FILE_PATH_LITERAL("rockot@_rules.service"));
+
+  ServiceProcessLauncherDelegateImpl service_process_launcher_delegate;
+  ServiceProcessLauncher launcher(&service_process_launcher_delegate,
+                                  test_service_path);
+  base::RunLoop run_loop;
+  launcher.Start(Identity(), SANDBOX_TYPE_NO_SANDBOX,
+                 base::BindOnce(&ProcessReadyCallbackAdapter,
+                                false /*expect_process_id_valid*/,
+                                run_loop.QuitClosure()));
+  run_loop.Run();
+
+  launcher.Join();
+  scoped_task_environment.RunUntilIdle();
+}
+#endif  //  !defined(OS_POSIX) || defined(OS_MACOSX)
 
 }  // namespace
 }  // namespace service_manager

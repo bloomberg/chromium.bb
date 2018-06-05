@@ -126,7 +126,7 @@ void ChildProcessLauncherHelper::PostLaunchOnLauncherThread(
     ChildProcessLauncherHelper::Process process,
     int launch_result) {
   if (mojo_channel_)
-    mojo_channel_->RemoteProcessLaunched();
+    mojo_channel_->RemoteProcessLaunchAttempted();
 
   if (process.process.IsValid()) {
     RecordHistogramsOnLauncherThread(base::TimeTicks::Now() -

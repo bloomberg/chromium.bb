@@ -125,6 +125,8 @@ void ServiceProcessLauncher::DidStart(ProcessReadyCallback callback) {
 
 void ServiceProcessLauncher::DoLaunch(
     std::unique_ptr<base::CommandLine> child_command_line) {
+  DCHECK(channel_);
+
   if (delegate_) {
     delegate_->AdjustCommandLineArgumentsForTarget(target_,
                                                    child_command_line.get());
@@ -188,6 +190,8 @@ void ServiceProcessLauncher::DoLaunch(
 #endif
   }
 
+  channel_->RemoteProcessLaunchAttempted();
+
   if (child_process_.IsValid()) {
 #if defined(OS_CHROMEOS)
     // Always log instead of DVLOG because knowing which pid maps to which
@@ -201,12 +205,9 @@ void ServiceProcessLauncher::DoLaunch(
         << ", instance=" << target_.instance() << ", name=" << target_.name()
         << ", user_id=" << target_.user_id();
 
-    if (channel_) {
-      channel_->RemoteProcessLaunched();
-      mojo::OutgoingInvitation::Send(std::move(invitation_),
-                                     child_process_.Handle(),
-                                     channel_->TakeLocalEndpoint());
-    }
+    mojo::OutgoingInvitation::Send(std::move(invitation_),
+                                   child_process_.Handle(),
+                                   channel_->TakeLocalEndpoint());
   }
   start_child_process_event_.Signal();
 }

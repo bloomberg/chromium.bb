@@ -292,7 +292,7 @@ class ServiceManagerTest : public test::ServiceTest,
 
     target_ = base::LaunchProcess(child_command_line, options);
     DCHECK(target_.IsValid());
-    channel.RemoteProcessLaunched();
+    channel.RemoteProcessLaunchAttempted();
     receiver->SetPID(target_.Pid());
     mojo::OutgoingInvitation::Send(std::move(invitation), target_.Handle(),
                                    channel.TakeLocalEndpoint());

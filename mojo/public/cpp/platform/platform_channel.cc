@@ -207,10 +207,11 @@ void PlatformChannel::PrepareToPassRemoteEndpoint(
     command_line->AppendSwitchASCII(kHandleSwitch, value);
 }
 
-void PlatformChannel::RemoteProcessLaunched() {
+void PlatformChannel::RemoteProcessLaunchAttempted() {
 #if defined(OS_FUCHSIA)
-  // Unlike other platforms, Fuchsia just transfers handle ownership to the
-  // launcher process rather than duplicating it.
+  // Unlike other platforms, Fuchsia transfers handle ownership to the new
+  // process, rather than duplicating it. For consistency the process-launch
+  // call will have consumed the handle regardless of whether launch succeeded.
   DCHECK(remote_endpoint_.platform_handle().is_valid_handle());
   ignore_result(remote_endpoint_.TakePlatformHandle().ReleaseHandle());
 #else
