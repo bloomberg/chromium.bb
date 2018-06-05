@@ -774,7 +774,7 @@ bool DataReductionProxyConfig::ShouldAcceptServerPreview(
     const previews::PreviewsDecider& previews_decider) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
-  DCHECK(!request.url().SchemeIsCryptographic());
+  DCHECK(request.url().SchemeIsHTTPOrHTTPS());
 
   if (!previews::params::ArePreviewsAllowed() ||
       !base::FeatureList::IsEnabled(
