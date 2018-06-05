@@ -246,7 +246,7 @@ public abstract class StackLayoutBase
                 if (!mStacks.get(newStackIndex).isDisplayable()) return;
                 flingStacks(newStackIndex);
             }
-            requestStackUpdate();
+            requestUpdate();
         }
 
         @Override
@@ -272,7 +272,7 @@ public abstract class StackLayoutBase
                 final float delta = MathUtils.clamp(predicted, 0, max) - origin;
                 scrollStacks(delta);
             }
-            requestStackUpdate();
+            requestUpdate();
         }
 
         @Override
@@ -627,10 +627,7 @@ public abstract class StackLayoutBase
         if (animationsWasDone && finishedAllViews && finishedAllCompositors) {
             return true;
         } else {
-            if (!animationsWasDone || !finishedAllCompositors) {
-                requestStackUpdate();
-            }
-
+            if (!animationsWasDone || !finishedAllCompositors) requestUpdate();
             return false;
         }
     }
@@ -832,13 +829,6 @@ public abstract class StackLayoutBase
         mStacks.get(getTabStackIndex()).swipeFlingOccurred(time, x, y, tx, ty, vx, vy);
     }
 
-    private void requestStackUpdate() {
-        // TODO(jgreenwald): It isn't always necessary to invalidate all stacks.
-        for (int i = 0; i < mStacks.size(); i++) {
-            mStacks.get(i).requestUpdate();
-        }
-    }
-
     @Override
     public void notifySizeChanged(float width, float height, int orientation) {
         mWidth = width;
@@ -850,7 +840,7 @@ public abstract class StackLayoutBase
             stack.notifySizeChanged(width, height, orientation);
         }
         resetScrollData();
-        requestStackUpdate();
+        requestUpdate();
     }
 
     @Override
@@ -860,7 +850,7 @@ public abstract class StackLayoutBase
         for (Stack stack : mStacks) {
             stack.contextChanged(context);
         }
-        requestStackUpdate();
+        requestUpdate();
     }
 
     protected int getMinRenderedScrollOffset() {
@@ -1126,7 +1116,7 @@ public abstract class StackLayoutBase
                 !isUsingHorizontalLayout() && LocalizationUtils.isLayoutRtl());
         mRenderedScrollOffset =
                 MathUtils.clamp(mScrollIndexOffset, 0, getMinRenderedScrollOffset());
-        requestStackUpdate();
+        requestUpdate();
     }
 
     /**
@@ -1137,7 +1127,7 @@ public abstract class StackLayoutBase
     protected void flingStacks(int index) {
         setActiveStackState(index);
         finishScrollStacks();
-        requestStackUpdate();
+        requestUpdate();
     }
 
     /**
