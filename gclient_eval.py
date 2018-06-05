@@ -206,8 +206,7 @@ _GCLIENT_SCHEMA = schema.Schema(_NodeDictSchema({
 }))
 
 
-def _gclient_eval(node_or_string, vars_dict=None, expand_vars=False,
-                  filename='<unknown>'):
+def _gclient_eval(node_or_string, filename='<unknown>', vars_dict=None):
   """Safely evaluates a single expression. Returns the result."""
   _allowed_names = {'None': None, 'True': True, 'False': False}
   if isinstance(node_or_string, basestring):
@@ -216,12 +215,12 @@ def _gclient_eval(node_or_string, vars_dict=None, expand_vars=False,
     node_or_string = node_or_string.body
   def _convert(node):
     if isinstance(node, ast.Str):
-      if not expand_vars:
+      if vars_dict is None:
         return node.s
       try:
         return node.s.format(**vars_dict)
       except KeyError as e:
-        raise ValueError(
+        raise KeyError(
             '%s was used as a variable, but was not declared in the vars dict '
             '(file %r, line %s)' % (
                 e.message, filename, getattr(node, 'lineno', '<unknown>')))
@@ -254,14 +253,10 @@ def _gclient_eval(node_or_string, vars_dict=None, expand_vars=False,
         raise ValueError(
             'Var\'s argument must be a variable name (file %r, line %s)' % (
                 filename, getattr(node, 'lineno', '<unknown>')))
-      if not expand_vars:
-        return '{%s}' % arg
       if vars_dict is None:
-        raise ValueError(
-            'vars must be declared before Var can be used (file %r, line %s)'
-            % (filename, getattr(node, 'lineno', '<unknown>')))
+        return '{' + arg + '}'
       if arg not in vars_dict:
-        raise ValueError(
+        raise KeyError(
             '%s was used as a variable, but was not declared in the vars dict '
             '(file %r, line %s)' % (
                 arg, filename, getattr(node, 'lineno', '<unknown>')))
@@ -278,7 +273,7 @@ def _gclient_eval(node_or_string, vars_dict=None, expand_vars=False,
   return _convert(node_or_string)
 
 
-def Exec(content, expand_vars=True, filename='<unknown>', vars_override=None):
+def Exec(content, filename='<unknown>', vars_override=None):
   """Safely execs a set of assignments."""
   def _validate_statement(node, local_scope):
     if not isinstance(node, ast.Assign):
@@ -330,7 +325,7 @@ def Exec(content, expand_vars=True, filename='<unknown>', vars_override=None):
   vars_dict = {}
   if 'vars' in statements:
     vars_statement = statements['vars']
-    value = _gclient_eval(vars_statement, None, False, filename)
+    value = _gclient_eval(vars_statement, filename)
     local_scope.SetNode('vars', value, vars_statement)
     # Update the parsed vars with the overrides, but only if they are already
     # present (overrides do not introduce new variables).
@@ -342,14 +337,13 @@ def Exec(content, expand_vars=True, filename='<unknown>', vars_override=None):
         if k in vars_dict})
 
   for name, node in statements.iteritems():
-    value = _gclient_eval(node, vars_dict, expand_vars, filename)
+    value = _gclient_eval(node, filename, vars_dict)
     local_scope.SetNode(name, value, node)
 
   return _GCLIENT_SCHEMA.validate(local_scope)
 
 
-def ExecLegacy(content, expand_vars=True, filename='<unknown>',
-               vars_override=None):
+def ExecLegacy(content, filename='<unknown>', vars_override=None):
   """Executes a DEPS file |content| using exec."""
   local_scope = {}
   global_scope = {'Var': lambda var_name: '{%s}' % var_name}
@@ -360,7 +354,7 @@ def ExecLegacy(content, expand_vars=True, filename='<unknown>',
   # as "exec a in b, c" (See https://bugs.python.org/issue21591).
   eval(compile(content, filename, 'exec'), global_scope, local_scope)
 
-  if 'vars' not in local_scope or not expand_vars:
+  if 'vars' not in local_scope:
     return local_scope
 
   vars_dict = {}
@@ -455,7 +449,7 @@ def UpdateCondition(info_dict, op, new_condition):
     del info_dict['condition']
 
 
-def Parse(content, expand_vars, validate_syntax, filename, vars_override=None):
+def Parse(content, validate_syntax, filename, vars_override=None):
   """Parses DEPS strings.
 
   Executes the Python-like string stored in content, resulting in a Python
@@ -464,7 +458,6 @@ def Parse(content, expand_vars, validate_syntax, filename, vars_override=None):
 
   Args:
     content: str. DEPS file stored as a string.
-    expand_vars: bool. Whether variables should be expanded to their values.
     validate_syntax: bool. Whether syntax should be validated using the schema
       defined above.
     filename: str. The name of the DEPS file, or a string describing the source
@@ -477,9 +470,9 @@ def Parse(content, expand_vars, validate_syntax, filename, vars_override=None):
     schema above.
   """
   if validate_syntax:
-    result = Exec(content, expand_vars, filename, vars_override)
+    result = Exec(content, filename, vars_override)
   else:
-    result = ExecLegacy(content, expand_vars, filename, vars_override)
+    result = ExecLegacy(content, filename, vars_override)
 
   vars_dict = result.get('vars', {})
   if 'deps' in result:
