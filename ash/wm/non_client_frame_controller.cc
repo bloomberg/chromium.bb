@@ -24,6 +24,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "services/ui/ws2/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/property_converter.h"
@@ -386,6 +387,12 @@ bool NonClientFrameController::CanMaximize() const {
 bool NonClientFrameController::CanMinimize() const {
   return window_ && (window_->GetProperty(aura::client::kResizeBehaviorKey) &
                      ui::mojom::kResizeBehaviorCanMinimize) != 0;
+}
+
+bool NonClientFrameController::CanActivate() const {
+  // kCanFocus is used for both focus and activation.
+  return window_ && window_->GetProperty(ui::ws2::kCanFocus) &&
+         views::WidgetDelegate::CanActivate();
 }
 
 bool NonClientFrameController::ShouldShowWindowTitle() const {

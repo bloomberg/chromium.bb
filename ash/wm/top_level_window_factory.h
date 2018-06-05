@@ -29,7 +29,8 @@ namespace ash {
 class WindowManager;
 
 // Creates and parents a new top-level window and returns it. The returned
-// aura::Window is owned by its parent.
+// aura::Window is owned by its parent. A value of null is returned if invalid
+// poarameters are supplied.
 // TODO(ws): Refine this for the Window Service as-a-library (no WindowManager).
 ASH_EXPORT aura::Window* CreateAndParentTopLevelWindow(
     WindowManager* window_manager,

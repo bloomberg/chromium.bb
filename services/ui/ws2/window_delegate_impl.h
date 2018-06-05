@@ -5,6 +5,7 @@
 #ifndef SERVICES_UI_WS2_WINDOW_DELEGATE_IMPL_H_
 #define SERVICES_UI_WS2_WINDOW_DELEGATE_IMPL_H_
 
+#include "base/component_export.h"
 #include "ui/aura/window_delegate.h"
 
 namespace ui {
@@ -13,7 +14,8 @@ namespace ws2 {
 // The aura::WindowDelegate implementation used for non-top-level windows
 // created by the WindowService.
 // WindowDelegateImpl deletes itself when the associated window is deleted.
-class WindowDelegateImpl : public aura::WindowDelegate {
+class COMPONENT_EXPORT(WINDOW_SERVICE) WindowDelegateImpl
+    : public aura::WindowDelegate {
  public:
   WindowDelegateImpl();
 

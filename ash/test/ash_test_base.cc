@@ -298,23 +298,10 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(mus_window_type));
 
-  if (!window_tree_client_) {
-    // Lazily create a single client.
-    window_tree_client_ = std::make_unique<ui::ws2::TestWindowTreeClient>();
-    window_service_client_ =
-        Shell::Get()
-            ->window_service_owner()
-            ->window_service()
-            ->CreateWindowServiceClient(window_tree_client_.get());
-    window_service_client_->InitFromFactory();
-    client_test_helper_ =
-        std::make_unique<ui::ws2::WindowServiceClientTestHelper>(
-            window_service_client_.get());
-  }
   // WindowServiceClientTestHelper maps 0 to a unique id.
-  const ui::Id window_id = 0;
-  std::unique_ptr<aura::Window> window(client_test_helper_->NewTopLevelWindow(
-      window_id, mojo::MapToFlatMap(std::move(properties))));
+  std::unique_ptr<aura::Window> window(
+      GetWindowServiceClientTestHelper()->NewTopLevelWindow(
+          mojo::MapToFlatMap(std::move(properties))));
   window->set_id(shell_window_id);
   window->Show();
   return window;
@@ -554,6 +541,24 @@ display::Display AshTestBase::GetPrimaryDisplay() {
 
 display::Display AshTestBase::GetSecondaryDisplay() {
   return ash_test_helper_->GetSecondaryDisplay();
+}
+
+ui::ws2::WindowServiceClientTestHelper*
+AshTestBase::GetWindowServiceClientTestHelper() {
+  if (!window_tree_client_) {
+    // Lazily create a single client.
+    window_tree_client_ = std::make_unique<ui::ws2::TestWindowTreeClient>();
+    window_service_client_ =
+        Shell::Get()
+            ->window_service_owner()
+            ->window_service()
+            ->CreateWindowServiceClient(window_tree_client_.get());
+    window_service_client_->InitFromFactory();
+    client_test_helper_ =
+        std::make_unique<ui::ws2::WindowServiceClientTestHelper>(
+            window_service_client_.get());
+  }
+  return client_test_helper_.get();
 }
 
 std::unique_ptr<aura::Window> AshTestBase::CreateTestWindowMash(

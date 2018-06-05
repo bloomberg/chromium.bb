@@ -88,6 +88,7 @@ class ASH_EXPORT NonClientFrameController
   bool CanResize() const override;
   bool CanMaximize() const override;
   bool CanMinimize() const override;
+  bool CanActivate() const override;
   bool ShouldShowWindowTitle() const override;
   views::ClientView* CreateClientView(views::Widget* widget) override;
 

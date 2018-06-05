@@ -55,6 +55,8 @@ class WindowServiceClientTestHelper {
   aura::Window* NewTopLevelWindow(
       Id transport_window_id = 0,
       base::flat_map<std::string, std::vector<uint8_t>> properties = {});
+  aura::Window* NewTopLevelWindow(
+      const base::flat_map<std::string, std::vector<uint8_t>>& properties);
   bool SetCapture(aura::Window* window);
   bool ReleaseCapture(aura::Window* window);
   bool SetWindowBounds(

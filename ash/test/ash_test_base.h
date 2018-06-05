@@ -240,6 +240,9 @@ class AshTestBase : public testing::Test,
   display::Display GetPrimaryDisplay();
   display::Display GetSecondaryDisplay();
 
+  // Returns the WindowServiceClientTestHelper, creating if necessary.
+  ui::ws2::WindowServiceClientTestHelper* GetWindowServiceClientTestHelper();
+
  private:
   std::unique_ptr<aura::Window> CreateTestWindowMash(
       ui::mojom::WindowType window_type,
