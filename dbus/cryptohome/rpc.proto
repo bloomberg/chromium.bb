@@ -59,6 +59,7 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_FIRMWARE_MANAGEMENT_PARAMETERS_CANNOT_REMOVE = 28;
   CRYPTOHOME_ERROR_MOUNT_OLD_ENCRYPTION = 29;
   CRYPTOHOME_ERROR_MOUNT_PREVIOUS_MIGRATION_INCOMPLETE = 30;
+  CRYPTOHOME_ERROR_MIGRATE_KEY_FAILED = 31;
 }
 
 message AccountIdentifier {
@@ -442,4 +443,8 @@ message GetSupportedKeyPoliciesReply {
 
   // Does it support low entropy credentials.
   optional bool low_entropy_credentials = 1;
+}
+
+message MigrateKeyRequest {
+  optional bytes secret = 1;
 }

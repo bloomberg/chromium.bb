@@ -15,6 +15,7 @@ const char kCryptohomeServiceName[] = "org.chromium.Cryptohome";
 
 // Methods of the |kCryptohomeInterface| interface:
 const char kCryptohomeMigrateKey[] = "MigrateKey";
+const char kCryptohomeMigrateKeyEx[] = "MigrateKeyEx";
 const char kCryptohomeRemove[] = "Remove";
 const char kCryptohomeGetSystemSalt[] = "GetSystemSalt";
 const char kCryptohomeGetSanitizedUsername[] = "GetSanitizedUsername";
