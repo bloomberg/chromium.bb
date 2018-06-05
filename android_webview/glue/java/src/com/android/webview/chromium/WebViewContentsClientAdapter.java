@@ -33,7 +33,6 @@ import android.webkit.RenderProcessGoneDetail;
 import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
-import android.webkit.WebChromeClient.CustomViewCallback;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -623,8 +622,8 @@ class WebViewContentsClientAdapter extends AwContentsClient {
                 mSupportLibClient.onSafeBrowsingHit(
                         mWebView, new WebResourceRequestAdapter(request), threatType, callback);
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-                mWebViewClient.onSafeBrowsingHit(mWebView, new WebResourceRequestAdapter(request),
-                        threatType, new SafeBrowsingResponseAdapter(callback));
+                ApiHelperForOMR1.onSafeBrowsingHit(
+                        mWebViewClient, mWebView, request, threatType, callback);
             } else {
                 callback.onResult(new AwSafeBrowsingResponse(SafeBrowsingAction.SHOW_INTERSTITIAL,
                         /* reporting */ true));
