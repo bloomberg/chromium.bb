@@ -739,7 +739,7 @@ void WebStateImpl::SetHasOpener(bool has_opener) {
   created_with_opener_ = has_opener;
 }
 
-void WebStateImpl::TakeSnapshot(const SnapshotCallback& callback,
+void WebStateImpl::TakeSnapshot(SnapshotCallback callback,
                                 CGSize target_size) const {
   UIView* view = [web_controller_ view];
   UIImage* snapshot = nil;
@@ -753,7 +753,7 @@ void WebStateImpl::TakeSnapshot(const SnapshotCallback& callback,
     UIGraphicsEndImageContext();
   }
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, gfx::Image(snapshot)));
+      FROM_HERE, base::BindOnce(std::move(callback), gfx::Image(snapshot)));
 }
 
 void WebStateImpl::OnNavigationStarted(web::NavigationContext* context) {
