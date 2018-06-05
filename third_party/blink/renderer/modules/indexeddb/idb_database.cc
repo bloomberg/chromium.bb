@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
 
+#include "base/atomic_sequence_num.h"
 #include "base/optional.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
@@ -131,15 +132,17 @@ void IDBDatabase::Trace(blink::Visitor* visitor) {
 }
 
 int64_t IDBDatabase::NextTransactionId() {
+  // Starts at 1, unlike AtomicSequenceNumber.
   // Only keep a 32-bit counter to allow ports to use the other 32
   // bits of the id.
-  static int current_transaction_id = 0;
-  return AtomicIncrement(&current_transaction_id);
+  static base::AtomicSequenceNumber current_transaction_id;
+  return current_transaction_id.GetNext() + 1;
 }
 
 int32_t IDBDatabase::NextObserverId() {
-  static int current_observer_id = 0;
-  return AtomicIncrement(&current_observer_id);
+  // Starts at 1, unlike AtomicSequenceNumber.
+  static base::AtomicSequenceNumber current_observer_id;
+  return current_observer_id.GetNext() + 1;
 }
 
 void IDBDatabase::SetMetadata(const IDBDatabaseMetadata& metadata) {
