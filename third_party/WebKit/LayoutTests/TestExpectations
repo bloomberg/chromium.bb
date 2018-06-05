@@ -133,7 +133,7 @@ crbug.com/726075 [ Mac ] virtual/threaded/fast/animationworklet/worklet-animatio
 crbug.com/726075 [ Mac ] virtual/threaded/fast/animationworklet/worklet-animation-local-time-before-start.html [ Pass Failure Crash ]
 crbug.com/726075 [ Mac ] virtual/threaded/fast/animationworklet/worklet-animation-set-keyframes.html [ Pass Failure Crash ]
 crbug.com/726075 [ Mac ] virtual/threaded/fast/animationworklet/worklet-animation-set-timing.html [ Pass Failure Crash ]
-crbug.com/726075 [ Mac ] virtual/threaded/fast/scroll-behavior/snaps-after-scrollbar-dragging.html [ Pass Failure Crash ]
+crbug.com/726075 [ Mac ] virtual/threaded/fast/scroll-behavior/snaps-after-scrollbar-dragging.html [ Pass Failure Crash Timeout ]
 crbug.com/726075 [ Mac ] virtual/video-surface-layer/media/autoplay/document-user-activation.html [ Pass Timeout Crash ]
 crbug.com/726075 [ Mac ] vr/requestAnimationFrame_submitFrame_combinations.html [ Pass Failure Crash ]
 
