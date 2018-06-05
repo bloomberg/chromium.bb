@@ -320,8 +320,7 @@ bool DataReductionProxyIOData::ShouldAcceptServerPreview(
     previews::PreviewsDecider* previews_decider) {
   DCHECK(previews_decider);
   DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
-  if (!config_ || (config_->IsBypassedByDataReductionProxyLocalRules(
-                      request, configurator_->GetProxyConfig()))) {
+  if (!config_) {
     return false;
   }
   return config_->ShouldAcceptServerPreview(request, *previews_decider);
