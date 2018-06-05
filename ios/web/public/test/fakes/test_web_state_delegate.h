@@ -40,10 +40,9 @@ struct TestOpenURLRequest {
 // Encapsulates parameters passed to ShowRepostFormWarningDialog.
 struct TestRepostFormRequest {
   TestRepostFormRequest();
-  TestRepostFormRequest(const TestRepostFormRequest&);
   ~TestRepostFormRequest();
   WebState* web_state = nullptr;
-  base::Callback<void(bool)> callback;
+  base::OnceCallback<void(bool)> callback;
 };
 
 // Encapsulates parameters passed to OnAuthRequired.
@@ -84,7 +83,7 @@ class TestWebStateDelegate : public WebStateDelegate {
                          const ContextMenuParams& params) override;
   void ShowRepostFormWarningDialog(
       WebState* source,
-      const base::Callback<void(bool)>& callback) override;
+      base::OnceCallback<void(bool)> callback) override;
   TestJavaScriptDialogPresenter* GetTestJavaScriptDialogPresenter();
   void OnAuthRequired(WebState* source,
                       NSURLProtectionSpace* protection_space,

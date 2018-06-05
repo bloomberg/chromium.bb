@@ -100,7 +100,7 @@ class WebStateDelegateBridge : public web::WebStateDelegate {
                          const ContextMenuParams& params) override;
   void ShowRepostFormWarningDialog(
       WebState* source,
-      const base::Callback<void(bool)>& callback) override;
+      base::OnceCallback<void(bool)> callback) override;
   JavaScriptDialogPresenter* GetJavaScriptDialogPresenter(
       WebState* source) override;
   void OnAuthRequired(WebState* source,

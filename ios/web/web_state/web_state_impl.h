@@ -249,7 +249,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void HandleContextMenu(const ContextMenuParams& params);
 
   // Notifies the delegate that a Form Repost dialog needs to be presented.
-  void ShowRepostFormWarningDialog(const base::Callback<void(bool)>& callback);
+  void ShowRepostFormWarningDialog(base::OnceCallback<void(bool)> callback);
 
   // Notifies the delegate that a JavaScript dialog needs to be presented.
   void RunJavaScriptDialog(const GURL& origin_url,

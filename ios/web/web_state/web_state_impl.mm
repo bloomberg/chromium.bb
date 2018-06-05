@@ -413,11 +413,11 @@ void WebStateImpl::HandleContextMenu(const web::ContextMenuParams& params) {
 }
 
 void WebStateImpl::ShowRepostFormWarningDialog(
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   if (delegate_) {
-    delegate_->ShowRepostFormWarningDialog(this, callback);
+    delegate_->ShowRepostFormWarningDialog(this, std::move(callback));
   } else {
-    callback.Run(true);
+    std::move(callback).Run(true);
   }
 }
 
