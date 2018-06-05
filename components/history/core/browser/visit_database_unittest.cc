@@ -14,11 +14,16 @@
 #include "components/history/core/browser/url_database.h"
 #include "components/history/core/browser/visit_database.h"
 #include "sql/connection.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 using base::Time;
 using base::TimeDelta;
+using testing::AllOf;
+using testing::ElementsAre;
+using testing::IsEmpty;
+using testing::Property;
 
 namespace history {
 
@@ -602,6 +607,91 @@ TEST_F(VisitDatabaseTest, GetHistoryCount) {
                                 &result));
     EXPECT_EQ(2, result);
   }
+}
+
+TEST_F(VisitDatabaseTest, GetGoogleDomainVisitsFromSearchesInRange_NoVisits) {
+  const auto begin_time = base::Time::Now();
+  EXPECT_THAT(GetGoogleDomainVisitsFromSearchesInRange(
+                  begin_time, begin_time + base::TimeDelta::FromDays(1)),
+              IsEmpty());
+}
+
+TEST_F(VisitDatabaseTest,
+       GetGoogleDomainVisitsFromSearchesInRange_TwoVistsInRange) {
+  const auto begin_time = base::Time::Now();
+  // Out of range, one hour before begin time.
+  VisitRow row{AddURL(URLRow(GURL("https://www.google.fr/search?q=foo"))),
+               begin_time + base::TimeDelta::FromHours(-1),
+               0,
+               ui::PageTransitionFromInt(0),
+               0,
+               false};
+  AddVisit(&row, SOURCE_BROWSED);
+  // In range, exactly begin time.
+  row = {AddURL(URLRow(GURL("https://www.google.com/search?q=foo"))),
+         begin_time,
+         0,
+         ui::PageTransitionFromInt(0),
+         0,
+         false};
+  AddVisit(&row, SOURCE_BROWSED);
+  // In range, 23 hours after begin time.
+  row = {AddURL(URLRow(GURL("https://www.google.ch/search?q=foo"))),
+         begin_time + base::TimeDelta::FromHours(23),
+         0,
+         ui::PageTransitionFromInt(0),
+         0,
+         false};
+  AddVisit(&row, SOURCE_BROWSED);
+  // Out of range, exactly a day after begin time.
+  row = {AddURL(URLRow(GURL("https://www.google.de/search?q=foo"))),
+         begin_time + base::TimeDelta::FromHours(24),
+         0,
+         ui::PageTransitionFromInt(0),
+         0,
+         false};
+  AddVisit(&row, SOURCE_BROWSED);
+
+  EXPECT_THAT(
+      GetGoogleDomainVisitsFromSearchesInRange(
+          begin_time, begin_time + base::TimeDelta::FromDays(1)),
+      ElementsAre(
+          AllOf(Property(&DomainVisit::domain, "www.google.com"),
+                Property(&DomainVisit::visit_time, begin_time)),
+          AllOf(Property(&DomainVisit::domain, "www.google.ch"),
+                Property(&DomainVisit::visit_time,
+                         begin_time + base::TimeDelta::FromHours(23)))));
+}
+
+TEST_F(VisitDatabaseTest, GetGoogleDomainVisitsFromSearchesInRange_NotSearch) {
+  const auto begin_time = base::Time::Now();
+  VisitRow row{AddURL(URLRow(GURL("https://www.google.fr/searchin"))),
+               begin_time,
+               0,
+               ui::PageTransitionFromInt(0),
+               0,
+               false};
+  AddVisit(&row, SOURCE_BROWSED);
+
+  EXPECT_THAT(GetGoogleDomainVisitsFromSearchesInRange(
+                  begin_time, begin_time + base::TimeDelta::FromDays(1)),
+              IsEmpty());
+}
+
+TEST_F(VisitDatabaseTest,
+       GetGoogleDomainVisitsFromSearchesInRange_InvalidGoogleDomain) {
+  const auto begin_time = base::Time::Now();
+  VisitRow row{AddURL(URLRow(GURL("https://www.google.foo/search?q=foo"))),
+               begin_time,
+               0,
+               ui::PageTransitionFromInt(0),
+               0,
+               false};
+  AddVisit(&row, SOURCE_BROWSED);
+
+  EXPECT_THAT(GetGoogleDomainVisitsFromSearchesInRange(
+                  begin_time, begin_time + base::TimeDelta::FromDays(1)),
+              IsEmpty());
 }
 
 }  // namespace history
