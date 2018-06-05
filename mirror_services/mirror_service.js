@@ -296,7 +296,7 @@ mr.mirror.Service = class extends mr.Module {
       this.checkCaptureIssues_(
           mirrorSettings,
           /** @type {!mr.mirror.MirrorMediaStream} */
-          (this.currentMediaStream_));
+          (this.currentMediaStream_), route.sinkId);
       this.currentSession.onActivityUpdated();
       resolve();
     });
@@ -446,14 +446,18 @@ mr.mirror.Service = class extends mr.Module {
    *
    * @param {!mr.mirror.Settings} settings The requested settings.
    * @param {!mr.mirror.MirrorMediaStream} mediaStream The captured stream.
+   * @param {string} sinkId
    * @private
    */
-  checkCaptureIssues_(settings, mediaStream) {
+  checkCaptureIssues_(settings, mediaStream, sinkId) {
     if (settings.shouldCaptureAudio && mediaStream.getMediaStream() &&
         !mediaStream.getMediaStream().getAudioTracks().length) {
-      this.mirrorServiceCallbacks_.sendIssue(new mr.Issue(
-          mr.mirror.Messages.MSG_MR_MIRROR_NO_AUDIO_CAPTURED,
-          mr.IssueSeverity.NOTIFICATION));
+      this.mirrorServiceCallbacks_.sendIssue(
+          new mr
+              .Issue(
+                  mr.mirror.Messages.MSG_MR_MIRROR_NO_AUDIO_CAPTURED,
+                  mr.IssueSeverity.NOTIFICATION)
+              .setSinkId(sinkId));
     }
   }
 

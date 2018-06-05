@@ -48,6 +48,12 @@ mr.Issue = class {
     this.routeId = null;
 
     /**
+     * @type {?string}
+     * @export
+     */
+    this.sinkId = null;
+
+    /**
      * @type {mr.IssueSeverity}
      * @export
      */
@@ -145,6 +151,15 @@ mr.Issue = class {
    */
   setRouteId(routeId) {
     this.routeId = routeId;
+    return this;
+  }
+
+  /**
+   * @param {string} sinkId
+   * @return {!mr.Issue} This object.
+   */
+  setSinkId(sinkId) {
+    this.sinkId = sinkId;
     return this;
   }
 };
