@@ -81,7 +81,9 @@ class MemoryInfoTest : public testing::Test {
 
   void CheckValues(MemoryInfo* info, MemoryInfo::Precision precision) {
     // Check that used <= total <= limit.
-    EXPECT_LE(info->usedJSHeapSize(), info->totalJSHeapSize());
+
+    // TODO(npm): add a check usedJSHeapSize <= totalJSHeapSize once it always
+    // holds. See https://crbug.com/849322
     EXPECT_LE(info->totalJSHeapSize(), info->jsHeapSizeLimit());
     if (precision == MemoryInfo::Precision::Bucketized) {
       // Check that the bucketized values are heavily rounded.

@@ -50,7 +50,7 @@ static void GetHeapSize(HeapInfo& info) {
   v8::HeapStatistics heap_statistics;
   v8::Isolate::GetCurrent()->GetHeapStatistics(&heap_statistics);
   info.used_js_heap_size = heap_statistics.used_heap_size();
-  info.total_js_heap_size = heap_statistics.total_heap_size();
+  info.total_js_heap_size = heap_statistics.total_physical_size();
   info.js_heap_size_limit = heap_statistics.heap_size_limit();
 }
 
