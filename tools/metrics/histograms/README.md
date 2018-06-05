@@ -8,6 +8,11 @@ range and/or the range is not possible to specify a priori).
 
 [TOC]
 
+## Naming Your Histogram
+
+Histogram names should be in the form Group.Name or Group.Subgroup.Name,
+etc., where each group organizes related histograms.
+
 ## Coding (Emitting to Histograms)
 
 Generally you'll be best served by using one of the macros in
