@@ -92,17 +92,17 @@ const SyncedTabDelegate* ResolveConflictingSyncId(
       return synced_tab;
     }
   }
-  // In doubt, prefer non-placeholder tabs, because we cannot do anything about
-  // placeholder tabs that the tracker doesn't know about (because the delegate
-  // does not provide enough information to start tracking it).
+  // In doubt, prefer placeholder tabs, because changing the sync ID for a
+  // placeholder tab (to amend the conflict) won't get persisted by Android
+  // session restore code (only non-placeholder tabs are saved).
   for (const SyncedTabDelegate* synced_tab : synced_tabs) {
-    if (!synced_tab->IsPlaceholderTab()) {
-      // If multiple non-placeholder tabs have the same sync ID, choose among
-      // them arbitrarily.
+    if (synced_tab->IsPlaceholderTab()) {
+      // If multiple placeholder tabs have the same sync ID, choose among them
+      // arbitrarily.
       return synced_tab;
     }
   }
-  // We have multiple conflicting placeholder tabs, so choose arbitrarily.
+  // We have multiple conflicting non-placeholder tabs, so choose arbitrarily.
   return synced_tabs.front();
 }
 

@@ -575,5 +575,22 @@ TEST_F(LocalSessionEventHandlerImplTest,
   tab1->Navigate(kBaz1);
 }
 
+TEST_F(LocalSessionEventHandlerImplTest,
+       PreferPlaceholderTabsWhenResolvingSyncIdConflict) {
+  const int kConflictingSyncId = 7;
+  // Set up a window with two tabs: one regular and one placeholder.
+  TestSyncedWindowDelegate* window = AddWindow(kWindowId1);
+  TestSyncedTabDelegate* regular_tab = AddTab(kWindowId1, kFoo1, kTabId1);
+  regular_tab->SetSyncId(kConflictingSyncId);
+  PlaceholderTabDelegate placeholder_tab(
+      SessionID::FromSerializedValue(kTabId2), kConflictingSyncId);
+  window->OverrideTabAt(1, &placeholder_tab);
+
+  InitHandler();
+
+  EXPECT_EQ(kConflictingSyncId, placeholder_tab.GetSyncId());
+  EXPECT_NE(kConflictingSyncId, regular_tab->GetSyncId());
+}
+
 }  // namespace
 }  // namespace sync_sessions

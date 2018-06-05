@@ -550,9 +550,8 @@ TEST_F(SessionsSyncManagerTest, ConflictingSyncIdsWithPlaceholder) {
   manager()->StopSyncing(syncer::SESSIONS);
 
   // The main window's tab is now a placeholder, and we have a conflicting id
-  // for the custom tab. They should both have their tab ids reset, but the
-  // placeholder cannot be fixed, and will be dropped. Only the custom tab will
-  // show up now.
+  // for the custom tab. The placeholder cannot be fixed, so the custom tab will
+  // be assigned a new ID.
   PlaceholderTabDelegate tab2(SessionID::NewUnique(), conflicting_sync_id);
   window->OverrideTabAt(0, &tab2);
 
@@ -564,10 +563,17 @@ TEST_F(SessionsSyncManagerTest, ConflictingSyncIdsWithPlaceholder) {
 
   InitWithSyncDataTakeOutput(ConvertToRemote(in), &out);
 
-  ASSERT_TRUE(ChangeTypeMatches(
-      out, {SyncChange::ACTION_UPDATE, SyncChange::ACTION_UPDATE}));
-  VerifyLocalTabChange(out[0], 1, kBar1);
-  VerifyLocalHeaderChange(out[1], 1, 1);
+  ASSERT_TRUE(
+      ChangeTypeMatches(out, {SyncChange::ACTION_UPDATE, SyncChange::ACTION_ADD,
+                              SyncChange::ACTION_UPDATE}));
+  VerifyLocalTabChange(out[0], 1, kFoo1);
+  VerifyLocalTabChange(out[1], 1, kBar1);
+  VerifyLocalHeaderChange(out[2], 2, 2);
+
+  EXPECT_EQ(conflicting_sync_id,
+            out[0].sync_data().GetSpecifics().session().tab_node_id());
+  EXPECT_NE(conflicting_sync_id,
+            out[1].sync_data().GetSpecifics().session().tab_node_id());
 }
 
 // Create two tabs with the same sync id, which is an invalid state. The manager
@@ -2022,9 +2028,8 @@ TEST_F(SessionsSyncManagerTest, RestoredPlacholderTabNodeDeleted) {
 
 // Check the behavior for a placeholder tab in one window being mapped to the
 // same sync entity as a tab in another window. The order should not matter.
-// Instead, they both should have their sync data discarded, sync ids reset, and
-// then re-created where possible (not possible for the placeholder). Assuming a
-// well behaved client, this should never happen.
+// One of the two tabs should have its sync ids reset. Assuming a well behaved
+// client, this should never happen.
 TEST_F(SessionsSyncManagerTest, PlaceholderConflictAcrossWindows) {
   syncer::SyncDataList in;
   syncer::SyncChangeList out;
@@ -2049,17 +2054,25 @@ TEST_F(SessionsSyncManagerTest, PlaceholderConflictAcrossWindows) {
   out.clear();
   InitWithSyncDataTakeOutput(in, &out);
 
-  // The two tabs have the same sync id, which is not allowed. They will have
-  // their ids stripped and re-generated. But the placeholder cannot survive
-  // this and will not show up in results.
-  ASSERT_TRUE(ChangeTypeMatches(
-      out, {SyncChange::ACTION_UPDATE, SyncChange::ACTION_UPDATE}));
-  VerifyLocalHeaderChange(out[1], 1, 1);
+  // The two tabs have the same sync id, which is not allowed. One will have
+  // its ID stripped and re-generated, which manifests as a newly created sync
+  // entity.
+  ASSERT_TRUE(
+      ChangeTypeMatches(out, {SyncChange::ACTION_ADD, SyncChange::ACTION_UPDATE,
+                              SyncChange::ACTION_UPDATE}));
   VerifyLocalTabChange(out[0], 1, kFoo1);
+  VerifyLocalTabChange(out[1], 1, kFoo1);
+  VerifyLocalHeaderChange(out[2], 2, 2);
+
+  EXPECT_NE(tab1->GetSessionId(), tab2.GetSessionId());
   EXPECT_EQ(tab1->GetSessionId().id(),
             out[0].sync_data().GetSpecifics().session().tab().tab_id());
   EXPECT_EQ(tab1->GetSyncId(),
             out[0].sync_data().GetSpecifics().session().tab_node_id());
+  EXPECT_EQ(tab2.GetSessionId().id(),
+            out[1].sync_data().GetSpecifics().session().tab().tab_id());
+  EXPECT_EQ(tab2.GetSyncId(),
+            out[1].sync_data().GetSpecifics().session().tab_node_id());
 }
 
 // Tests that task ids are generated for navigations on local tabs.
