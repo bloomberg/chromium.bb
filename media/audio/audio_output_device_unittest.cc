@@ -350,17 +350,14 @@ struct TestEnvironment {
         /*log callback*/ base::DoNothing(), params,
         std::move(shared_memory_region), std::move(shared_memory_mapping),
         std::move(browser_socket));
-    reader->set_max_wait_timeout_for_test(
-        base::TimeDelta::FromMilliseconds(500));
     time_stamp = base::TimeTicks::Now();
 
 #if defined(OS_FUCHSIA)
-    // Raise the timeout limits to reduce bot flakiness.
-    // Fuchsia's task scheduler suffers from bad jitter on systems running many
-    // tests simultaneously on nested virtualized deployments (e.g. test bots),
-    // leading some read operations to randomly timeout.
+    // TODO(https://crbug.com/838367): Fuchsia bots use nested virtualization,
+    // which can result in unusually long scheduling delays, so allow a longer
+    // timeout.
     reader->set_max_wait_timeout_for_test(
-        base::TimeDelta::FromMilliseconds(50));
+        base::TimeDelta::FromMilliseconds(250));
 #endif
   }
 
