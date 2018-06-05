@@ -7193,7 +7193,7 @@ extern const NameToFunc g_gles2_function_table[] = {
             for value in named_type.GetDeprecatedValuesES3():
                 f.write("case %s:\n" % value)
             f.write("return !is_es3_;\n")
-          f.write("}\nreturn false;\n};\n")
+          f.write("}\nreturn false;\n}\n")
           f.write("\n")
         else:
           if named_type.GetValidValues():

@@ -264,29 +264,6 @@ TEST_P(RasterDecoderManualInitTest, TexStorage2DWithEXTTextureStorage) {
   EXPECT_EQ(height, kHeight);
 }
 
-TEST_P(RasterDecoderManualInitTest, TexStorage2DWithEXTNoCompressed) {
-  InitState init;
-  init.extensions.push_back("GL_EXT_texture_storage");
-  InitDecoder(init);
-
-  // Create uninitialized source texture.
-  GLuint source_texture_id = kNewClientId;
-  EXPECT_CALL(*gl_, GenTextures(1, _))
-      .WillOnce(SetArgPointee<1>(kNewServiceId))
-      .RetiresOnSaturation();
-  cmds::CreateTexture cmd;
-  cmd.Init(false /* use_buffer */, gfx::BufferUsage::GPU_READ,
-           viz::ResourceFormat::ETC1, source_texture_id);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-
-  cmds::TexStorage2D tex_storage_cmd;
-  tex_storage_cmd.Init(kNewClientId, kWidth, kHeight);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(tex_storage_cmd));
-
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-
 TEST_P(RasterDecoderManualInitTest, TexStorage2DOutOfMemory) {
   scoped_refptr<MockMemoryTracker> memory_tracker = new MockMemoryTracker();
   set_memory_tracker(memory_tracker.get());
@@ -408,6 +385,15 @@ TEST_P(RasterDecoderTest, ReleaseTexImage2DCHROMIUM) {
 
   // Image should no longer be set.
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == nullptr);
+}
+
+TEST_P(RasterDecoderTest, CreateTextureETC1Unsupported) {
+  GLuint source_texture_id = kNewClientId;
+  cmds::CreateTexture cmd;
+  cmd.Init(false /* use_buffer */, gfx::BufferUsage::GPU_READ,
+           viz::ResourceFormat::ETC1, source_texture_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {

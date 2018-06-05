@@ -2384,12 +2384,6 @@ bool RasterDecoderImpl::TexStorage2D(TextureRef* texture_ref,
     return false;
   }
 
-  if (viz::IsResourceFormatCompressed(texture_metadata.format())) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glTexStorage2D", texture_metadata.format(),
-                                    "resource_format");
-    return false;
-  }
-
   ScopedTextureBinder binder(&state_, texture_manager(), texture_ref,
                              texture_metadata.target(), gr_context_.get());
 
@@ -2508,39 +2502,21 @@ void RasterDecoderImpl::DoTexStorage2D(GLuint client_id,
   // Check if we have enough memory.
   unsigned int internal_format =
       viz::GLInternalFormat(texture_metadata->format());
-  bool is_compressed_format =
-      viz::IsResourceFormatCompressed(texture_metadata->format());
   GLenum format =
       TextureManager::ExtractFormatFromStorageFormat(internal_format);
   GLenum type = TextureManager::ExtractTypeFromStorageFormat(internal_format);
-  GLsizei level_width = width;
-  GLsizei level_height = height;
-  base::CheckedNumeric<uint32_t> estimated_size(0);
   PixelStoreParams params;
   params.alignment = 1;
 
-  if (is_compressed_format) {
-    GLsizei level_size;
-    if (!GetCompressedTexSizeInBytes("glTexStorage2D", width, height, 1,
-                                     internal_format, &level_size,
-                                     state_.GetErrorState())) {
-      return;
-    }
-    estimated_size = static_cast<uint32_t>(level_size);
-  } else {
-    uint32_t size;
-    if (!GLES2Util::ComputeImageDataSizesES3(
-            level_width, level_height, 1 /* level_depth */, format, type,
-            params, &size, nullptr, nullptr, nullptr, nullptr)) {
-      LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glTexStorage2D",
-                         "dimensions too large");
-      return;
-    }
-    estimated_size = size;
+  uint32_t size;
+  if (!GLES2Util::ComputeImageDataSizesES3(width, height, 1 /* level_depth */,
+                                           format, type, params, &size, nullptr,
+                                           nullptr, nullptr, nullptr)) {
+    LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glTexStorage2D",
+                       "dimensions too large");
+    return;
   }
-
-  if (!estimated_size.IsValid() ||
-      !EnsureGPUMemoryAvailable(estimated_size.ValueOrDefault(0))) {
+  if (!EnsureGPUMemoryAvailable(size)) {
     LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glTexStorage2D", "out of memory");
     return;
   }

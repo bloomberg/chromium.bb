@@ -23,7 +23,7 @@ bool Validators::QueryObjectParameterValidator::IsValid(
       return true;
   }
   return false;
-};
+}
 
 bool Validators::QueryTargetValidator::IsValid(const GLenum value) const {
   switch (value) {
@@ -32,7 +32,7 @@ bool Validators::QueryTargetValidator::IsValid(const GLenum value) const {
       return true;
   }
   return false;
-};
+}
 
 bool Validators::ResetStatusValidator::IsValid(const GLenum value) const {
   switch (value) {
@@ -42,7 +42,7 @@ bool Validators::ResetStatusValidator::IsValid(const GLenum value) const {
       return true;
   }
   return false;
-};
+}
 
 static const GLenum valid_texture_mag_filter_mode_table[] = {
     GL_NEAREST,
@@ -67,23 +67,12 @@ static const gfx::BufferUsage valid_gfx_buffer_usage_table[] = {
     gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT,
 };
 
-bool Validators::VizResourceFormatValidator::IsValid(
-    const viz::ResourceFormat value) const {
-  switch (value) {
-    case viz::ResourceFormat::RGBA_8888:
-    case viz::ResourceFormat::RGBA_4444:
-    case viz::ResourceFormat::BGRA_8888:
-    case viz::ResourceFormat::ALPHA_8:
-    case viz::ResourceFormat::LUMINANCE_8:
-    case viz::ResourceFormat::RGB_565:
-    case viz::ResourceFormat::ETC1:
-    case viz::ResourceFormat::RED_8:
-    case viz::ResourceFormat::LUMINANCE_F16:
-    case viz::ResourceFormat::RGBA_F16:
-    case viz::ResourceFormat::R16_EXT:
-      return true;
-  }
-  return false;
+static const viz::ResourceFormat valid_viz_resource_format_table[] = {
+    viz::ResourceFormat::RGBA_8888,   viz::ResourceFormat::RGBA_4444,
+    viz::ResourceFormat::BGRA_8888,   viz::ResourceFormat::ALPHA_8,
+    viz::ResourceFormat::LUMINANCE_8, viz::ResourceFormat::RGB_565,
+    viz::ResourceFormat::RED_8,       viz::ResourceFormat::LUMINANCE_F16,
+    viz::ResourceFormat::RGBA_F16,    viz::ResourceFormat::R16_EXT,
 };
 
 Validators::Validators()
@@ -97,6 +86,8 @@ Validators::Validators()
       texture_wrap_mode(valid_texture_wrap_mode_table,
                         arraysize(valid_texture_wrap_mode_table)),
       gfx_buffer_usage(valid_gfx_buffer_usage_table,
-                       arraysize(valid_gfx_buffer_usage_table)) {}
+                       arraysize(valid_gfx_buffer_usage_table)),
+      viz_resource_format(valid_viz_resource_format_table,
+                          arraysize(valid_viz_resource_format_table)) {}
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_RASTER_CMD_VALIDATION_IMPLEMENTATION_AUTOGEN_H_

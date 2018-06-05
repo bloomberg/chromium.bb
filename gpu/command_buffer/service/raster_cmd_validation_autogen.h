@@ -35,10 +35,6 @@ ValueValidator<GLenum> texture_min_filter_mode;
 ValueValidator<GLenum> texture_parameter;
 ValueValidator<GLenum> texture_wrap_mode;
 ValueValidator<gfx::BufferUsage> gfx_buffer_usage;
-class VizResourceFormatValidator {
- public:
-  bool IsValid(const viz::ResourceFormat value) const;
-};
-VizResourceFormatValidator viz_resource_format;
+ValueValidator<viz::ResourceFormat> viz_resource_format;
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_RASTER_CMD_VALIDATION_AUTOGEN_H_

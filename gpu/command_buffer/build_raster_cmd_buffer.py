@@ -114,7 +114,6 @@ _NAMED_TYPE_INFO = {
   },
   'viz::ResourceFormat': {
     'type': 'viz::ResourceFormat',
-    'is_complete': True,
     'valid': [
       'viz::ResourceFormat::RGBA_8888',
       'viz::ResourceFormat::RGBA_4444',
@@ -122,11 +121,13 @@ _NAMED_TYPE_INFO = {
       'viz::ResourceFormat::ALPHA_8',
       'viz::ResourceFormat::LUMINANCE_8',
       'viz::ResourceFormat::RGB_565',
-      'viz::ResourceFormat::ETC1',
       'viz::ResourceFormat::RED_8',
       'viz::ResourceFormat::LUMINANCE_F16',
       'viz::ResourceFormat::RGBA_F16',
       'viz::ResourceFormat::R16_EXT',
+    ],
+    'invalid': [
+      'viz::ResourceFormat::ETC1',
     ],
   },
 }

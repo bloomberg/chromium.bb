@@ -155,6 +155,7 @@ GLuint RasterImplementationGLES::CreateTexture(bool use_buffer,
   GLuint texture_id = 0;
   gl_->GenTextures(1, &texture_id);
   DCHECK(texture_id);
+  DCHECK(!viz::IsResourceFormatCompressed(format));
   GLenum target = use_buffer
                       ? GetImageTextureTarget(caps_, buffer_usage, format)
                       : GL_TEXTURE_2D;
@@ -210,6 +211,7 @@ GLuint RasterImplementationGLES::CreateAndConsumeTexture(
     const GLbyte* mailbox) {
   GLuint texture_id = gl_->CreateAndConsumeTextureCHROMIUM(mailbox);
   DCHECK(texture_id);
+  DCHECK(!viz::IsResourceFormatCompressed(format));
 
   GLenum target = use_buffer
                       ? GetImageTextureTarget(caps_, buffer_usage, format)
