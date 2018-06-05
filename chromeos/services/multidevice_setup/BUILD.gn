@@ -14,12 +14,19 @@ static_library("multidevice_setup") {
     "multidevice_setup_impl.h",
     "multidevice_setup_service.cc",
     "multidevice_setup_service.h",
+    "observer_notifier.cc",
+    "observer_notifier.h",
   ]
 
   deps = [
     "//base",
     "//chromeos/components/proximity_auth/logging",
+    "//chromeos/services/device_sync/public/cpp",
+    "//chromeos/services/device_sync/public/mojom",
     "//chromeos/services/multidevice_setup/public/mojom",
+    "//components/cryptauth",
+    "//components/pref_registry",
+    "//components/prefs:prefs",
     "//services/service_manager/public/cpp",
   ]
 }
@@ -55,13 +62,18 @@ source_set("unit_tests") {
 
   sources = [
     "multidevice_setup_service_unittest.cc",
+    "observer_notifier_unittest.cc",
   ]
 
   deps = [
     ":multidevice_setup",
     ":test_support",
+    "//base",
     "//base/test:test_support",
+    "//chromeos/services/device_sync/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/mojom",
+    "//components/cryptauth:test_support",
+    "//components/sync_preferences:test_support",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",

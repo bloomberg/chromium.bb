@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+#include <string>
+
 #include "components/cryptauth/remote_device_test_util.h"
 
 #include "base/base64.h"
@@ -44,6 +47,13 @@ RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetPublicKey(
 RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetSupportsMobileHotspot(
     bool supports_mobile_hotspot) {
   remote_device_->supports_mobile_hotspot = supports_mobile_hotspot;
+  return *this;
+}
+
+RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetSoftwareFeatureState(
+    const SoftwareFeature feature,
+    const SoftwareFeatureState new_state) {
+  remote_device_->software_features[feature] = new_state;
   return *this;
 }
 

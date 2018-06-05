@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_TEST_UTIL_H_
 #define COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_TEST_UTIL_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "components/cryptauth/remote_device_ref.h"
@@ -24,6 +26,9 @@ class RemoteDeviceRefBuilder {
   RemoteDeviceRefBuilder& SetPublicKey(const std::string& public_key);
   RemoteDeviceRefBuilder& SetSupportsMobileHotspot(
       bool supports_mobile_hotspot);
+  RemoteDeviceRefBuilder& SetSoftwareFeatureState(
+      const SoftwareFeature feature,
+      const SoftwareFeatureState new_state);
   RemoteDeviceRefBuilder& SetLastUpdateTimeMillis(
       int64_t last_update_time_millis);
   RemoteDeviceRef Build();
