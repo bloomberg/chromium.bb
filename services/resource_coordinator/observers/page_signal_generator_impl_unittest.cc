@@ -59,10 +59,19 @@ class MockPageSignalReceiver : public mojom::PageSignalReceiver {
 
 class PageSignalGeneratorImplTest : public CoordinationUnitTestHarness {
  protected:
+  void SetUp() override {
+    std::unique_ptr<MockPageSignalGeneratorImpl> psg(
+        std::make_unique<MockPageSignalGeneratorImpl>());
+
+    page_signal_generator_ = psg.get();
+
+    // The graph takes ownership of the psg.
+    coordination_unit_graph()->RegisterObserver(std::move(psg));
+  }
   void TearDown() override { ResourceCoordinatorClock::ResetClockForTesting(); }
 
   MockPageSignalGeneratorImpl* page_signal_generator() {
-    return &page_signal_generator_;
+    return page_signal_generator_;
   }
 
   void EnablePAI() {
@@ -74,7 +83,7 @@ class PageSignalGeneratorImplTest : public CoordinationUnitTestHarness {
   void TestPageAlmostIdleTransitions(bool timeout);
 
  private:
-  MockPageSignalGeneratorImpl page_signal_generator_;
+  MockPageSignalGeneratorImpl* page_signal_generator_ = nullptr;
   std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
 };
 
@@ -82,16 +91,15 @@ TEST_F(PageSignalGeneratorImplTest,
        CalculatePageEQTForSinglePageWithMultipleProcesses) {
   MockSinglePageWithMultipleProcessesCoordinationUnitGraph cu_graph(
       coordination_unit_graph());
-  cu_graph.process->AddObserver(page_signal_generator());
 
   cu_graph.process->SetExpectedTaskQueueingDuration(
       base::TimeDelta::FromMilliseconds(1));
   cu_graph.other_process->SetExpectedTaskQueueingDuration(
       base::TimeDelta::FromMilliseconds(10));
 
+  EXPECT_EQ(2u, page_signal_generator()->eqt_change_count());
   // The |other_process| is not for the main frame so its EQT values does not
   // propagate to the page.
-  EXPECT_EQ(1u, page_signal_generator()->eqt_change_count());
   int64_t eqt;
   EXPECT_TRUE(cu_graph.page->GetExpectedTaskQueueingDuration(&eqt));
   EXPECT_EQ(1, eqt);
@@ -156,18 +164,20 @@ TEST_F(PageSignalGeneratorImplTest, IsIdling) {
 
 TEST_F(PageSignalGeneratorImplTest, PageDataCorrectlyManaged) {
   EnablePAI();
-  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
-      coordination_unit_graph());
-  auto* page_cu = cu_graph.page.get();
   auto* psg = page_signal_generator();
-  // The observer relationship isn't required for testing GetPageData.
 
-  EXPECT_EQ(0u, psg->page_data_.count(page_cu));
-  psg->OnCoordinationUnitCreated(page_cu);
-  EXPECT_EQ(1u, psg->page_data_.count(page_cu));
-  EXPECT_TRUE(psg->GetPageData(page_cu));
-  psg->OnBeforeCoordinationUnitDestroyed(page_cu);
-  EXPECT_EQ(0u, psg->page_data_.count(page_cu));
+  // The observer relationship isn't required for testing GetPageData.
+  EXPECT_EQ(0u, psg->page_data_.size());
+
+  {
+    MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
+        coordination_unit_graph());
+
+    auto* page_cu = cu_graph.page.get();
+    EXPECT_EQ(1u, psg->page_data_.count(page_cu));
+    EXPECT_TRUE(psg->GetPageData(page_cu));
+  }
+  EXPECT_EQ(0u, psg->page_data_.size());
 }
 
 void PageSignalGeneratorImplTest::TestPageAlmostIdleTransitions(bool timeout) {
@@ -182,14 +192,8 @@ void PageSignalGeneratorImplTest::TestPageAlmostIdleTransitions(bool timeout) {
   auto* proc_cu = cu_graph.process.get();
   auto* psg = page_signal_generator();
 
-  // Set up observers, as the PAI logic depends on them.
-  frame_cu->AddObserver(psg);
-  page_cu->AddObserver(psg);
-  proc_cu->AddObserver(psg);
-
   // Ensure the page_cu creation is witnessed and get the associated
   // page data for testing, then bind the timer to the test task runner.
-  psg->OnCoordinationUnitCreated(page_cu);
   PageSignalGeneratorImpl::PageData* page_data = psg->GetPageData(page_cu);
   page_data->idling_timer.SetTaskRunner(task_env().GetMainThreadTaskRunner());
 

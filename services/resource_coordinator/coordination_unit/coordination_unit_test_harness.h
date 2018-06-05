@@ -12,12 +12,14 @@
 #include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_graph.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
+#include "services/resource_coordinator/coordination_unit/system_coordination_unit_impl.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
 
 struct CoordinationUnitID;
+class SystemCoordinationUnitImpl;
 
 template <class CoordinationUnitClass>
 class TestCoordinationUnitWrapper {
@@ -64,6 +66,13 @@ class CoordinationUnitTestHarness : public testing::Test {
   TestCoordinationUnitWrapper<CoordinationUnitClass> CreateCoordinationUnit() {
     CoordinationUnitID cu_id(CoordinationUnitClass::Type(), std::string());
     return CreateCoordinationUnit<CoordinationUnitClass>(cu_id);
+  }
+
+  TestCoordinationUnitWrapper<SystemCoordinationUnitImpl>
+  GetSystemCoordinationUnit() {
+    return TestCoordinationUnitWrapper<SystemCoordinationUnitImpl>(
+        coordination_unit_graph()->FindOrCreateSystemCoordinationUnit(
+            service_ref_factory_.CreateRef()));
   }
 
   // testing::Test:
