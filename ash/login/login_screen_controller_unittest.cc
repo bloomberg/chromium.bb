@@ -6,6 +6,7 @@
 
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/lock_screen.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -13,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
@@ -33,9 +35,13 @@ enum WindowType { kPrimary = 0, kSecondary = 1 };
 
 bool IsSystemTrayForWindowVisible(WindowType index) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  return RootWindowController::ForWindow(root_windows[index])
-      ->GetSystemTray()
-      ->visible();
+  RootWindowController* controller =
+      RootWindowController::ForWindow(root_windows[index]);
+  return features::IsSystemTrayUnifiedEnabled()
+             ? controller->GetStatusAreaWidget()
+                   ->unified_system_tray()
+                   ->visible()
+             : controller->GetSystemTray()->visible();
 }
 
 TEST_F(LoginScreenControllerTest, RequestAuthentication) {
