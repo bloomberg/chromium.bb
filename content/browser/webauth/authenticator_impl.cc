@@ -441,6 +441,13 @@ void AuthenticatorImpl::MakeCredential(
   request_delegate_ =
       GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
           render_frame_host_);
+  if (!request_delegate_) {
+    InvokeCallbackAndCleanup(
+        std::move(callback),
+        webauth::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr,
+        Focus::kDontCheck);
+    return;
+  }
 
   if (!request_delegate_->IsFocused()) {
     InvokeCallbackAndCleanup(std::move(callback),
@@ -570,6 +577,12 @@ void AuthenticatorImpl::GetAssertion(
   request_delegate_ =
       GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
           render_frame_host_);
+  if (!request_delegate_) {
+    InvokeCallbackAndCleanup(
+        std::move(callback),
+        webauth::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
+    return;
+  }
 
   url::Origin caller_origin = render_frame_host_->GetLastCommittedOrigin();
 
@@ -892,8 +905,8 @@ void AuthenticatorImpl::InvokeCallbackAndCleanup(
     webauth::mojom::AuthenticatorStatus status,
     webauth::mojom::MakeCredentialAuthenticatorResponsePtr response,
     Focus check_focus) {
-  DCHECK(request_delegate_);
-  if (check_focus != Focus::kDontCheck && !request_delegate_->IsFocused()) {
+  if (check_focus != Focus::kDontCheck &&
+      !(request_delegate_ && request_delegate_->IsFocused())) {
     std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
                             nullptr);
   } else {

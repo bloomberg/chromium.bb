@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEBAUTHN_CHROME_AUTHENTICATOR_REQUEST_DELEGATE_H_
 #define CHROME_BROWSER_WEBAUTHN_CHROME_AUTHENTICATOR_REQUEST_DELEGATE_H_
 
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 
 namespace content {
@@ -18,6 +19,8 @@ class ChromeAuthenticatorRequestDelegate
   explicit ChromeAuthenticatorRequestDelegate(
       content::RenderFrameHost* render_frame_host);
   ~ChromeAuthenticatorRequestDelegate() override;
+
+  base::WeakPtr<ChromeAuthenticatorRequestDelegate> AsWeakPtr();
 
  private:
   content::RenderFrameHost* render_frame_host() const {
@@ -33,6 +36,7 @@ class ChromeAuthenticatorRequestDelegate
   bool IsFocused() override;
 
   content::RenderFrameHost* const render_frame_host_;
+  base::WeakPtrFactory<ChromeAuthenticatorRequestDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAuthenticatorRequestDelegate);
 };

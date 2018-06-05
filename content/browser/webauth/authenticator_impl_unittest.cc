@@ -1046,6 +1046,8 @@ class TestAuthenticatorContentBrowserClient : public ContentBrowserClient {
   std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
       RenderFrameHost* render_frame_host) override {
+    if (return_null_delegate)
+      return nullptr;
     return std::make_unique<TestAuthenticatorRequestDelegate>(
         render_frame_host, individual_attestation, attestation_consent,
         is_focused);
@@ -1055,6 +1057,10 @@ class TestAuthenticatorContentBrowserClient : public ContentBrowserClient {
       IndividualAttestation::NOT_REQUESTED;
   AttestationConsent attestation_consent = AttestationConsent::DENIED;
   bool is_focused = true;
+
+  // This emulates scenarios where a nullptr RequestClientDelegate is returned
+  // because a request is already in progress.
+  bool return_null_delegate = false;
 };
 
 // A test class that installs and removes an
@@ -1335,6 +1341,34 @@ TEST_F(AuthenticatorContentBrowserClientTest, Unfocused) {
     cb.WaitForCallback();
 
     EXPECT_EQ(AuthenticatorStatus::SUCCESS, cb.status());
+  }
+}
+
+TEST_F(AuthenticatorContentBrowserClientTest,
+       NullDelegate_RejectsWithPendingRequest) {
+  test_client_.return_null_delegate = true;
+
+  NavigateAndCommit(GURL(kTestOrigin1));
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+  {
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+
+    TestMakeCredentialCallback cb;
+    authenticator->MakeCredential(std::move(options), cb.callback());
+    cb.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, cb.status());
+  }
+
+  {
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+
+    TestGetAssertionCallback cb;
+    authenticator->GetAssertion(std::move(options), cb.callback());
+    cb.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, cb.status());
   }
 }
 
