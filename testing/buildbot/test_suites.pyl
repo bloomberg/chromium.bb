@@ -928,11 +928,7 @@
         '--test-launcher-batch-limit=200',
       ],
     },
-    'service_manager_unittests': {
-      'args': [
-        '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.service_manager_unittests.filter',
-      ],
-    },
+    'service_manager_unittests': {},
     'skia_unittests': {},
     'sql_unittests': {},
     'ui_base_unittests': {

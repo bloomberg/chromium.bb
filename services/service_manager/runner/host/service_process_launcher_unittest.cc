@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {
@@ -32,6 +33,7 @@ const base::FilePath::CharType kServiceExtension[] =
 
 void ProcessReadyCallbackAdapater(const base::Closure& callback,
                                   base::ProcessId process_id) {
+  EXPECT_NE(process_id, base::kNullProcessId);
   callback.Run();
 }
 
@@ -67,12 +69,15 @@ class ServiceProcessLauncherDelegateImpl
 #define MAYBE_StartJoin StartJoin
 #endif  // defined(OS_ANDROID)
 TEST(ServiceProcessLauncherTest, MAYBE_StartJoin) {
-  base::FilePath service_manager_dir;
-  base::PathService::Get(base::DIR_MODULE, &service_manager_dir);
   base::test::ScopedTaskEnvironment scoped_task_environment;
 
   base::FilePath test_service_path;
+#if defined(OS_FUCHSIA)
+  // Service binaries are treated as "assets".
+  base::PathService::Get(base::DIR_ASSETS, &test_service_path);
+#else
   base::PathService::Get(base::DIR_EXE, &test_service_path);
+#endif
   test_service_path = test_service_path.AppendASCII(kTestServiceName)
       .AddExtension(kServiceExtension);
 
