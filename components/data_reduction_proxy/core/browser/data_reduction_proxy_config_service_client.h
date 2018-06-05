@@ -283,6 +283,15 @@ class DataReductionProxyConfigServiceClient
   // True if a client config fetch is in progress.
   bool fetch_in_progress_;
 
+  // If given on the command line with kDataReductionProxyServerClientConfig,
+  // this base64 binary-encoded ClientConfig will always be used instead of
+  // fetching one remotely, regardless of authentication error or expiration. If
+  // the value fails to parse as a valid ClientConfig, it will not be used.
+  std::string client_config_override_;
+
+  // True if |client_config_override_| has been applied to |this|.
+  bool client_config_override_used_;
+
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;
 

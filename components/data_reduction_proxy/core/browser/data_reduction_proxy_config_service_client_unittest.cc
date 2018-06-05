@@ -1245,6 +1245,33 @@ TEST_F(DataReductionProxyConfigServiceClientTest, HTTPRequests) {
   }
 }
 
+// Tests that the config is overriden by kDataReductionProxyServerClientConfig.
+TEST_F(DataReductionProxyConfigServiceClientTest, ApplyClientConfigOverride) {
+  const std::string override_key = "OverrideSecureSession";
+  std::string encoded_config;
+  ClientConfig config =
+      CreateConfig(override_key, kConfigRefreshDurationSeconds, 0,
+                   ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
+                   ProxyServer::CORE, ProxyServer_ProxyScheme_HTTP,
+                   "fallback.net", 80, ProxyServer::UNSPECIFIED_TYPE, 0.5f);
+  config.SerializeToString(&encoded_config);
+  base::Base64Encode(encoded_config, &encoded_config);
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      data_reduction_proxy::switches::kDataReductionProxyServerClientConfig,
+      encoded_config);
+  Init(true);
+
+  AddMockSuccess();
+  SetDataReductionProxyEnabled(true, true);
+  config_client()->RetrieveConfig();
+  RunUntilIdle();
+  // Make sure repeated fetches won't change the overridden config.
+  config_client()->RetrieveConfig();
+  RunUntilIdle();
+  EXPECT_EQ(request_options()->GetSecureSession(), override_key);
+}
+
 // Tests that remote config can be applied after the serialized config has
 // been applied.
 TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfig) {
