@@ -112,7 +112,7 @@ ExceptionCode WebCryptoErrorToExceptionCode(WebCryptoErrorType error_type) {
     case kWebCryptoErrorTypeOperation:
       return kOperationError;
     case kWebCryptoErrorTypeType:
-      return kV8TypeError;
+      return ESErrorType::kTypeError;
   }
 
   NOTREACHED();
@@ -153,7 +153,7 @@ void CryptoResultImpl::CompleteWithError(WebCryptoErrorType error_type,
 
   // Handle TypeError separately, as it cannot be created using
   // DOMException.
-  if (ec == kV8TypeError)
+  if (ec == ESErrorType::kTypeError)
     RejectWithTypeError(error_details, resolver_);
   else
     resolver_->Reject(DOMException::Create(ec, error_details));

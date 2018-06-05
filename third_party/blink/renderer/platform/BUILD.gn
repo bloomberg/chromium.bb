@@ -425,6 +425,7 @@ jumbo_component("platform") {
     "bindings/dom_wrapper_map.h",
     "bindings/dom_wrapper_world.cc",
     "bindings/dom_wrapper_world.h",
+    "bindings/exception_code.h",
     "bindings/microtask.cc",
     "bindings/microtask.h",
     "bindings/origin_trial_features.cc",

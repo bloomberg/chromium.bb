@@ -120,7 +120,6 @@ class EventFactoryBase;
 class EventListener;
 template <typename EventType>
 class EventWithHitTestResults;
-class ExceptionState;
 class FloatQuad;
 class FloatRect;
 class FormController;
@@ -191,7 +190,6 @@ struct FocusParams;
 struct IconURL;
 
 using MouseEventWithHitTestResults = EventWithHitTestResults<WebMouseEvent>;
-using ExceptionCode = int;
 
 enum NodeListInvalidationType : int {
   kDoNotInvalidateOnAttributeChanges = 0,

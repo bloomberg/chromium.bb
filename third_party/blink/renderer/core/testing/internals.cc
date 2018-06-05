@@ -2332,8 +2332,8 @@ int Internals::pageNumber(Element* element,
     return 0;
 
   if (page_width <= 0 || page_height <= 0) {
-    exception_state.ThrowDOMException(
-        kV8TypeError, "Page width and height must be larger than 0.");
+    exception_state.ThrowTypeError(
+        "Page width and height must be larger than 0.");
     return 0;
   }
 
@@ -2367,8 +2367,8 @@ int Internals::numberOfPages(float page_width,
     return -1;
 
   if (page_width <= 0 || page_height <= 0) {
-    exception_state.ThrowDOMException(
-        kV8TypeError, "Page width and height must be larger than 0.");
+    exception_state.ThrowTypeError(
+        "Page width and height must be larger than 0.");
     return -1;
   }
 

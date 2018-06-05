@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_math_negate.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 

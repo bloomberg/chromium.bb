@@ -54,15 +54,15 @@ v8::Local<v8::Value> V8ThrowDOMException::CreateDOMException(
     return v8::Local<v8::Value>();
 
   switch (exception_code) {
-    case kV8Error:
+    case ESErrorType::kError:
       return V8ThrowException::CreateError(isolate, sanitized_message);
-    case kV8TypeError:
+    case ESErrorType::kTypeError:
       return V8ThrowException::CreateTypeError(isolate, sanitized_message);
-    case kV8RangeError:
+    case ESErrorType::kRangeError:
       return V8ThrowException::CreateRangeError(isolate, sanitized_message);
-    case kV8SyntaxError:
+    case ESErrorType::kSyntaxError:
       return V8ThrowException::CreateSyntaxError(isolate, sanitized_message);
-    case kV8ReferenceError:
+    case ESErrorType::kReferenceError:
       return V8ThrowException::CreateReferenceError(isolate, sanitized_message);
   }
 

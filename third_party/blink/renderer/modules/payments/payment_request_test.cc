@@ -32,7 +32,7 @@ TEST(PaymentRequestTest, SupportedMethodListRequired) {
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(kV8TypeError, scope.GetExceptionState().Code());
+  EXPECT_EQ(ESErrorType::kTypeError, scope.GetExceptionState().Code());
 }
 
 TEST(PaymentRequestTest, NullShippingOptionWhenNoOptionsAvailable) {

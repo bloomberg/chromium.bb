@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 
@@ -43,23 +44,6 @@ void ExceptionState::SetCreateDOMExceptionFunction(
   DCHECK(!s_create_dom_exception_func_);
   s_create_dom_exception_func_ = func;
   DCHECK(s_create_dom_exception_func_);
-}
-
-void ExceptionState::ThrowDOMException(ExceptionCode ec, const char* message) {
-  ThrowDOMException(ec, String(message));
-}
-
-void ExceptionState::ThrowRangeError(const char* message) {
-  ThrowRangeError(String(message));
-}
-
-void ExceptionState::ThrowSecurityError(const char* sanitized_message,
-                                        const char* unsanitized_message) {
-  ThrowSecurityError(String(sanitized_message), String(unsanitized_message));
-}
-
-void ExceptionState::ThrowTypeError(const char* message) {
-  ThrowTypeError(String(message));
 }
 
 void ExceptionState::ThrowDOMException(ExceptionCode ec,
@@ -76,7 +60,7 @@ void ExceptionState::ThrowDOMException(ExceptionCode ec,
 }
 
 void ExceptionState::ThrowRangeError(const String& message) {
-  SetException(kV8RangeError, message,
+  SetException(ESErrorType::kRangeError, message,
                V8ThrowException::CreateRangeError(
                    isolate_, AddExceptionContext(message)));
 }
@@ -92,13 +76,13 @@ void ExceptionState::ThrowSecurityError(const String& sanitized_message,
 }
 
 void ExceptionState::ThrowTypeError(const String& message) {
-  SetException(kV8TypeError, message,
+  SetException(ESErrorType::kTypeError, message,
                V8ThrowException::CreateTypeError(isolate_,
                                                  AddExceptionContext(message)));
 }
 
 void ExceptionState::RethrowV8Exception(v8::Local<v8::Value> value) {
-  SetException(kRethrownException, String(), value);
+  SetException(InternalExceptionType::kRethrownException, String(), value);
 }
 
 void ExceptionState::ClearException() {
@@ -206,7 +190,7 @@ void DummyExceptionStateForTesting::ThrowDOMException(ExceptionCode ec,
 }
 
 void DummyExceptionStateForTesting::ThrowRangeError(const String& message) {
-  SetException(kV8RangeError, message, v8::Local<v8::Value>());
+  SetException(ESErrorType::kRangeError, message, v8::Local<v8::Value>());
 }
 
 void DummyExceptionStateForTesting::ThrowSecurityError(
@@ -216,11 +200,12 @@ void DummyExceptionStateForTesting::ThrowSecurityError(
 }
 
 void DummyExceptionStateForTesting::ThrowTypeError(const String& message) {
-  SetException(kV8TypeError, message, v8::Local<v8::Value>());
+  SetException(ESErrorType::kTypeError, message, v8::Local<v8::Value>());
 }
 
 void DummyExceptionStateForTesting::RethrowV8Exception(v8::Local<v8::Value>) {
-  SetException(kRethrownException, String(), v8::Local<v8::Value>());
+  SetException(InternalExceptionType::kRethrownException, String(),
+               v8::Local<v8::Value>());
 }
 
 }  // namespace blink
