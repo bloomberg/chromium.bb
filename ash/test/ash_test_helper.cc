@@ -302,7 +302,7 @@ void AshTestHelper::TearDown() {
 
   // Suspend the tear down until all resources are returned via
   // CompositorFrameSinkClient::ReclaimResources()
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   ash_test_environment_->TearDown();
 
   if (config_ == Config::CLASSIC) {
@@ -342,11 +342,6 @@ void AshTestHelper::TearDown() {
 
   // WindowManager owns the CaptureController for mus/mash.
   CHECK(config_ != Config::CLASSIC || !::wm::CaptureController::Get());
-}
-
-void AshTestHelper::RunAllPendingInMessageLoop() {
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
 }
 
 PrefService* AshTestHelper::GetLocalStatePrefService() {
