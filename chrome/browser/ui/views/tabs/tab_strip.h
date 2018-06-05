@@ -282,12 +282,6 @@ class TabStrip : public views::View,
   void HandleDragExited() override;
 
  private:
-  enum NewTabButtonPosition {
-    LEADING,     // Pinned to the leading edge of the tabstrip region.
-    AFTER_TABS,  // After the last tab.
-    TRAILING,    // Pinned to the trailing edge of the tabstrip region.
-  };
-
   using Tabs = std::vector<Tab*>;
   using TabsClosingMap = std::map<int, Tabs>;
   using FindClosingTabResult =
@@ -346,9 +340,6 @@ class TabStrip : public views::View,
 
   // Returns whether the close button should be highlighted after a remove.
   bool ShouldHighlightCloseButtonAfterRemove();
-
-  // Returns the position of the new tab button within the strip.
-  NewTabButtonPosition GetNewTabButtonPosition() const;
 
   // Returns the spacing between the new tab button and the adjacent tab.
   int GetNewTabButtonSpacing() const;

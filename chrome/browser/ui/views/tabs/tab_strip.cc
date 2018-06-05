@@ -118,12 +118,6 @@ const int kPinnedToNonPinnedOffset = 3;
 
 TabSizeInfo* g_tab_size_info = nullptr;
 
-enum NewTabButtonPosition {
-  LEADING,     // Pinned to the leading edge of the tabstrip region.
-  AFTER_TABS,  // After the last tab.
-  TRAILING,    // Pinned to the trailing edge of the tabstrip region.
-};
-
 // Animation delegate used for any automatic tab movement.  Hides the tab if it
 // is not fully visible within the tabstrip area, to prevent overflow clipping.
 class TabAnimationDelegate : public gfx::AnimationDelegate {
@@ -592,7 +586,7 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
   // TODO: Probably doesn't work for RTL
   int right_edge = tab->bounds().right();
   const bool trailing_new_tab_button =
-      (GetNewTabButtonPosition() == TRAILING) ||
+      (controller_->GetNewTabButtonPosition() == TRAILING) ||
       (MayHideNewTabButtonWhileDragging() && !tab->dragging());
   const int tabstrip_right =
       trailing_new_tab_button ? GetTabAreaWidth() : width();
@@ -1459,15 +1453,6 @@ bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
   return in_tab_close_;
 }
 
-TabStrip::NewTabButtonPosition TabStrip::GetNewTabButtonPosition() const {
-  if (!MD::IsRefreshUi())
-    return AFTER_TABS;
-
-  const auto* frame_view = static_cast<const BrowserNonClientFrameView*>(
-      GetWidget()->non_client_view()->frame_view());
-  return frame_view->CaptionButtonsOnLeadingEdge() ? TRAILING : LEADING;
-}
-
 int TabStrip::GetNewTabButtonSpacing() const {
   constexpr int kSpacing[] = {-5, -6, 6, 8, 8};
   const auto mode = MD::GetMode();
@@ -1477,7 +1462,8 @@ int TabStrip::GetNewTabButtonSpacing() const {
   // crashing in that case is easy.
   if (MD::IsRefreshUi() && tab_count()) {
     const int adjacent_tab_index =
-        (GetNewTabButtonPosition() == LEADING) ? 0 : tab_count() - 1;
+        (controller_->GetNewTabButtonPosition() == LEADING) ? 0
+                                                            : tab_count() - 1;
     spacing -= tab_at(adjacent_tab_index)->GetCornerRadius();
   }
 
@@ -1486,13 +1472,13 @@ int TabStrip::GetNewTabButtonSpacing() const {
 
 int TabStrip::GetNewTabButtonWidth(bool is_incognito) const {
   int width = GetLayoutSize(NEW_TAB_BUTTON, is_incognito).width();
-  if (GetNewTabButtonPosition() != TRAILING)
+  if (controller_->GetNewTabButtonPosition() != TRAILING)
     width += GetNewTabButtonSpacing();
   return width;
 }
 
 bool TabStrip::MayHideNewTabButtonWhileDragging() const {
-  return GetNewTabButtonPosition() == AFTER_TABS;
+  return controller_->GetNewTabButtonPosition() == AFTER_TABS;
 }
 
 int TabStrip::GetFrameGrabWidth() const {
@@ -1505,7 +1491,7 @@ int TabStrip::GetFrameGrabWidth() const {
   int width = kGrabWidth;
 
   // There might be no tabs yet during startup.
-  if ((GetNewTabButtonPosition() != AFTER_TABS) && tab_count()) {
+  if ((controller_->GetNewTabButtonPosition() != AFTER_TABS) && tab_count()) {
     // The grab area is adjacent to the last tab.  This tab has mostly empty
     // space where the outer (lower) corners are, which should be treated as
     // part of the grab area, so decrease the size of the remaining grab area by
@@ -1653,7 +1639,7 @@ void TabStrip::StackDraggedTabs(int delta) {
       new_bounds.set_x(std::min(min_x, new_bounds.x() + delta));
       tabs_.set_ideal_bounds(i, new_bounds);
     }
-    if ((GetNewTabButtonPosition() == AFTER_TABS) &&
+    if ((controller_->GetNewTabButtonPosition() == AFTER_TABS) &&
         (ideal_bounds(tab_count() - 1).right() >= new_tab_button_->x()))
       new_tab_button_->SetVisible(false);
   }
@@ -1717,13 +1703,13 @@ void TabStrip::CalculateBoundsForDraggedTabs(const Tabs& tabs,
 }
 
 int TabStrip::TabStartX() const {
-  return (GetNewTabButtonPosition() == LEADING)
+  return (controller_->GetNewTabButtonPosition() == LEADING)
              ? GetNewTabButtonWidth(IsIncognito())
              : 0;
 }
 
 int TabStrip::NewTabButtonX() const {
-  const auto position = GetNewTabButtonPosition();
+  const auto position = controller_->GetNewTabButtonPosition();
   if (position == LEADING)
     return 0;
 
