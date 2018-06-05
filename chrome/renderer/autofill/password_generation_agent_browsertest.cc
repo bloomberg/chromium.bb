@@ -538,13 +538,13 @@ TEST_F(PasswordGenerationAgentTest, MaximumOfferSize) {
   EXPECT_TRUE(GetCalledAutomaticGenerationStatusChangedTrue());
   fake_pw_client_.reset_called_automatic_generation_status_changed_true();
 
-  fake_pw_client_.reset_called_hide_pw_generation_popup();
+  fake_pw_client_.reset_called_password_generation_rejected_by_typing();
   // Simulate a user typing a password just over maximum offer size.
   SimulateUserTypingASCIICharacter('a', false);
   SimulateUserTypingASCIICharacter('a', true);
-  // There should now be a message to hide the UI.
+  // There should now be a message that generation was rejected.
   fake_pw_client_.Flush();
-  EXPECT_TRUE(fake_pw_client_.called_hide_pw_generation_popup());
+  EXPECT_TRUE(fake_pw_client_.called_password_generation_rejected_by_typing());
   fake_pw_client_.reset_called_show_manual_pw_generation_popup();
 
   // Simulate the user deleting characters. The generation popup should be shown

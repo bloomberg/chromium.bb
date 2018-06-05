@@ -130,8 +130,11 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // Show UI for editing a generated password at |generation_element_|.
   void ShowEditingPopup();
 
-  // Hides a password generation popup if one exists.
-  void HidePopup();
+  // Signals the browser that generation was rejected. This happens when the
+  // user types more characters than the maximum offer size into the password
+  // field. Upon receiving this message, the browser can choose to hide the
+  // generation UI or not, depending on the platform.
+  void GenerationRejectedByTyping();
 
   // Stops treating a password as generated.
   void PasswordNoLongerGenerated();
