@@ -6,9 +6,9 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/critical_closure.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/tracker.h"
@@ -214,19 +214,18 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
         [[_browserLauncher browserViewInformation] currentBVC]
             .browserState->GetRequestContext();
     _savingCookies = YES;
-    base::OnceClosure criticalClosure =
-        base::MakeCriticalClosure(base::BindBlockArc(^{
+    __block base::OnceClosure criticalClosure =
+        base::MakeCriticalClosure(base::BindOnce(^{
           DCHECK_CURRENTLY_ON(web::WebThread::UI);
           _savingCookies = NO;
         }));
-    base::Closure post_back_to_ui =
-        base::Bind(&PostTaskOnUIThread, base::Passed(&criticalClosure));
     web::WebThread::PostTask(
-        web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
+        web::WebThread::IO, FROM_HERE, base::BindOnce(^{
           net::CookieStoreIOS* store = static_cast<net::CookieStoreIOS*>(
               getter->GetURLRequestContext()->cookie_store());
           // FlushStore() runs its callback on any thread. Jump back to UI.
-          store->FlushStore(post_back_to_ui);
+          store->FlushStore(
+              base::BindOnce(&PostTaskOnUIThread, std::move(criticalClosure)));
         }));
   }
 
