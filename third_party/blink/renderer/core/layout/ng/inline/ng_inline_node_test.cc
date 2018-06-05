@@ -359,7 +359,7 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
   NGInlineNodeForTest node = CreateInlineNode();
   node = CreateBidiIsolateNode(node, style_.get(), layout_object_);
   Vector<NGInlineItem>& items = node.Items();
-  ASSERT_EQ(9u, items.size());
+  ASSERT_EQ(10u, items.size());
   TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, TextDirection::kLtr);
   TEST_ITEM_OFFSET_DIR(items[1], 6u, 7u, TextDirection::kLtr);
   TEST_ITEM_OFFSET_DIR(items[2], 7u, 13u, TextDirection::kRtl);
@@ -368,7 +368,8 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
   TEST_ITEM_OFFSET_DIR(items[5], 15u, 16u, TextDirection::kRtl);
   TEST_ITEM_OFFSET_DIR(items[6], 16u, 21u, TextDirection::kRtl);
   TEST_ITEM_OFFSET_DIR(items[7], 21u, 22u, TextDirection::kLtr);
-  TEST_ITEM_OFFSET_DIR(items[8], 22u, 28u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(items[8], 22u, 23u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(items[9], 23u, 28u, TextDirection::kLtr);
 }
 
 #define TEST_TEXT_FRAGMENT(fragment, start_offset, end_offset) \
@@ -385,12 +386,13 @@ TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   node.ShapeText();
   Vector<scoped_refptr<const NGPhysicalTextFragment>> fragments;
   CreateLine(node, &fragments);
-  ASSERT_EQ(5u, fragments.size());
+  ASSERT_EQ(6u, fragments.size());
   TEST_TEXT_FRAGMENT(fragments[0], 0u, 6u);
   TEST_TEXT_FRAGMENT(fragments[1], 16u, 21u);
   TEST_TEXT_FRAGMENT(fragments[2], 14u, 15u);
   TEST_TEXT_FRAGMENT(fragments[3], 7u, 13u);
-  TEST_TEXT_FRAGMENT(fragments[4], 22u, 28u);
+  TEST_TEXT_FRAGMENT(fragments[4], 22u, 23u);
+  TEST_TEXT_FRAGMENT(fragments[5], 23u, 28u);
 }
 
 TEST_F(NGInlineNodeTest, MinMaxSize) {

@@ -789,9 +789,10 @@ CapsFeatureSettingsScopedOverlay::~CapsFeatureSettingsScopedOverlay() {
 
 }  // namespace
 
-void HarfBuzzShaper::ShapeSegment(RangeData* range_data,
-                                  RunSegmenter::RunSegmenterRange segment,
-                                  ShapeResult* result) const {
+void HarfBuzzShaper::ShapeSegment(
+    RangeData* range_data,
+    const RunSegmenter::RunSegmenterRange& segment,
+    ShapeResult* result) const {
   DCHECK(result);
   DCHECK(range_data->buffer);
 
@@ -940,18 +941,20 @@ RunSegmenter* HarfBuzzShaper::CachedRunSegmenter(
   return &run_segmenter_.value();
 }
 
-scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
-                                          TextDirection direction,
-                                          unsigned start,
-                                          unsigned end) const {
-  DCHECK(end >= start);
-  DCHECK(end <= text_length_);
+scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
+    const Font* font,
+    TextDirection direction,
+    unsigned start,
+    unsigned end,
+    const RunSegmenter::RunSegmenterRange* pre_segmented) const {
+  DCHECK_GE(end, start);
+  DCHECK_LE(end, text_length_);
+  DCHECK(!pre_segmented ||
+         (start >= pre_segmented->start && end <= pre_segmented->end));
 
   unsigned length = end - start;
   scoped_refptr<ShapeResult> result = ShapeResult::Create(font, length, direction);
   HarfBuzzScopedPtr<hb_buffer_t> buffer(hb_buffer_create(), hb_buffer_destroy);
-  RunSegmenter* run_segmenter =
-      CachedRunSegmenter(start, end, font->GetFontDescription().Orientation());
 
   RangeData range_data;
   range_data.buffer = buffer.Get();
@@ -961,20 +964,28 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
   range_data.end = end;
   SetFontFeatures(font, &range_data.font_features);
 
-  RunSegmenter::RunSegmenterRange segment_range = RunSegmenter::NullRange();
-  for (unsigned run_segmenter_start = start;
-       run_segmenter->ConsumePast(run_segmenter_start, &segment_range);
-       run_segmenter_start = segment_range.end) {
-    // Only shape segments overlapping with the range indicated by start and
-    // end. Not only those strictly within.
-    if (start < segment_range.end && end > segment_range.start)
-      ShapeSegment(&range_data, segment_range, result.get());
+  if (pre_segmented) {
+    ShapeSegment(&range_data, *pre_segmented, result.get());
+  } else {
+    // TODO(kojii): With pre_segmented, CachedRunSegmenter is probably no longer
+    // needed. Confirm and cleanup.
+    RunSegmenter* run_segmenter = CachedRunSegmenter(
+        start, end, font->GetFontDescription().Orientation());
+    RunSegmenter::RunSegmenterRange segment_range = RunSegmenter::NullRange();
+    for (unsigned run_segmenter_start = start;
+         run_segmenter->ConsumePast(run_segmenter_start, &segment_range);
+         run_segmenter_start = segment_range.end) {
+      // Only shape segments overlapping with the range indicated by start and
+      // end. Not only those strictly within.
+      if (start < segment_range.end && end > segment_range.start)
+        ShapeSegment(&range_data, segment_range, result.get());
 
-    // Break if beyond the requested range. Because RunSegmenter is
-    // incremental, further ranges are not needed. This also allows reusing
-    // the segmenter state for next incremental calls.
-    if (segment_range.end >= end)
-      break;
+      // Break if beyond the requested range. Because RunSegmenter is
+      // incremental, further ranges are not needed. This also allows reusing
+      // the segmenter state for next incremental calls.
+      if (segment_range.end >= end)
+        break;
+    }
   }
 
   // Ensure we have at least one run for StartIndexForResult().

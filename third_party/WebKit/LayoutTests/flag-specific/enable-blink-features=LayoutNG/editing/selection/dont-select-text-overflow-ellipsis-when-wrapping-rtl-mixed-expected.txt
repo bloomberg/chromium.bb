@@ -13,7 +13,8 @@ layer at (0,0) size 800x104
 layer at (208,52) size 344x22
   LayoutNGBlockFlow {DD} at (0,0) size 344x22
     LayoutText {#text} at (29,0) size 334x21
-      text run at (29,0) width 264: " \x{5DC}\x{5D5}\x{5E8}\x{5DD} \x{5D0}\x{5D9}\x{5E4}\x{5E1}\x{5D5}\x{5DD} \x{5D4}\x{5D5}\x{5D0} \x{5DB}\x{5D9}\x{5E0}\x{5D5}\x{5D9} \x{5DC}\x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D7}\x{5E1}\x{5E8} "
+      text run at (29,0) width 259: "\x{5DC}\x{5D5}\x{5E8}\x{5DD} \x{5D0}\x{5D9}\x{5E4}\x{5E1}\x{5D5}\x{5DD} \x{5D4}\x{5D5}\x{5D0} \x{5DB}\x{5D9}\x{5E0}\x{5D5}\x{5D9} \x{5DC}\x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D7}\x{5E1}\x{5E8} "
+      text run at (288,0) width 5: " "
       text run at (293,0) width 51: "Lorem"
       text run at (10,0) width 19: "\x{2026}"
 selection start: position 0 of child 0 {#text} of child 1 {DD} of child 2 {DL} of body

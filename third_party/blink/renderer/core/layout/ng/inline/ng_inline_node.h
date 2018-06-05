@@ -80,6 +80,9 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void CollectInlines(NGInlineNodeData*,
                       NGInlineNodeData* previous_data = nullptr);
   void SegmentText(NGInlineNodeData*);
+  void SegmentScriptRuns(NGInlineNodeData*);
+  void SegmentFontOrientation(NGInlineNodeData*);
+  void SegmentBidiRuns(NGInlineNodeData*);
   void ShapeText(NGInlineItemsData*,
                  NGInlineItemsData* previous_data = nullptr);
   void ShapeText(const String& text,

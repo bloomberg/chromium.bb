@@ -385,9 +385,11 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   // expensive?
   DCHECK_EQ(item.TextShapeResult()->StartIndexForResult(), item.StartOffset());
   DCHECK_EQ(item.TextShapeResult()->EndIndexForResult(), item.EndOffset());
+  RunSegmenter::RunSegmenterRange segment_range =
+      item.CreateRunSegmenterRange();
   ShapingLineBreaker breaker(&shaper_, &item.Style()->GetFont(),
                              item.TextShapeResult(), &break_iterator_,
-                             &spacing_, hyphenation_);
+                             &segment_range, &spacing_, hyphenation_);
   if (!enable_soft_hyphen_)
     breaker.DisableSoftHyphen();
   available_width = std::max(LayoutUnit(0), available_width);

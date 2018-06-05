@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_shaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/run_segmenter.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
@@ -340,6 +341,62 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
 }
 
 void NGInlineNode::SegmentText(NGInlineNodeData* data) {
+  SegmentBidiRuns(data);
+  SegmentScriptRuns(data);
+}
+
+// Segment NGInlineItem by script, Emoji, and orientation using RunSegmenter.
+void NGInlineNode::SegmentScriptRuns(NGInlineNodeData* data) {
+  Vector<NGInlineItem>& items = data->items;
+  String& text_content = data->text_content;
+  text_content.Ensure16Bit();
+
+  // Segment by script and Emoji.
+  // Orientation is segmented separately, because it may vary by items.
+  RunSegmenter segmenter(text_content.Characters16(), text_content.length(),
+                         FontOrientation::kHorizontal);
+  RunSegmenter::RunSegmenterRange range = RunSegmenter::NullRange();
+  for (unsigned item_index = 0, segmenter_start = 0;
+       segmenter.ConsumePast(segmenter_start, &range);
+       segmenter_start = range.end) {
+    DCHECK_EQ(items[item_index].start_offset_, range.start);
+    item_index = NGInlineItem::PopulateItemsFromRun(items, item_index, range);
+  }
+
+  SegmentFontOrientation(data);
+}
+
+void NGInlineNode::SegmentFontOrientation(NGInlineNodeData* data) {
+  // Segment by orientation, only if vertical writing mode and items with
+  // 'text-orientation: mixed'.
+  if (GetLayoutBlockFlow()->IsHorizontalWritingMode())
+    return;
+  Vector<NGInlineItem>& items = data->items;
+  String& text_content = data->text_content;
+  for (unsigned item_index = 0; item_index < items.size();) {
+    NGInlineItem& item = items[item_index];
+    if (item.Type() != NGInlineItem::kText ||
+        item.Style()->GetFont().GetFontDescription().Orientation() !=
+            FontOrientation::kVerticalMixed) {
+      item_index++;
+      continue;
+    }
+    unsigned start_offset = item.StartOffset();
+    OrientationIterator iterator(text_content.Characters16() + start_offset,
+                                 item.Length(),
+                                 FontOrientation::kVerticalMixed);
+    unsigned end_offset;
+    OrientationIterator::RenderOrientation orientation;
+    while (iterator.Consume(&end_offset, &orientation)) {
+      item_index = NGInlineItem::PopulateItemsFromFontOrientation(
+          items, item_index, end_offset + start_offset, orientation);
+    }
+  }
+}
+
+// Segment bidi runs by resolving bidi embedding levels.
+// http://unicode.org/reports/tr9/#Resolving_Embedding_Levels
+void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) {
   if (!data->is_bidi_enabled_) {
     data->SetBaseDirection(TextDirection::kLtr);
     return;
@@ -419,9 +476,12 @@ void NGInlineNode::ShapeText(const String& text_content,
       if (item.Type() == NGInlineItem::kText) {
         // Shape adjacent items together if the font and direction matches to
         // allow ligatures and kerning to apply.
+        // Also run segment properties must match because NGInlineItem gives
+        // pre-segmented range to HarfBuzzShaper.
         // TODO(kojii): Figure out the exact conditions under which this
         // behavior is desirable.
-        if (font != item.Style()->GetFont() || direction != item.Direction())
+        if (font != item.Style()->GetFont() || direction != item.Direction() ||
+            !item.EqualsRunSegment(start_item))
           break;
         end_offset = item.EndOffset();
       } else if (item.Type() == NGInlineItem::kOpenTag ||
@@ -473,8 +533,11 @@ void NGInlineNode::ShapeText(const String& text_content,
     }
 
     // Shape each item with the full context of the entire node.
-    scoped_refptr<ShapeResult> shape_result =
-        shaper.Shape(&font, direction, start_item.StartOffset(), end_offset);
+    RunSegmenter::RunSegmenterRange range =
+        start_item.CreateRunSegmenterRange();
+    range.end = end_offset;
+    scoped_refptr<ShapeResult> shape_result = shaper.Shape(
+        &font, direction, start_item.StartOffset(), end_offset, &range);
     if (UNLIKELY(spacing.SetSpacing(font.GetFontDescription())))
       shape_result->ApplySpacing(spacing);
 
