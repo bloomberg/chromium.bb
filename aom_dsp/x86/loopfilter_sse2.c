@@ -238,47 +238,6 @@ static INLINE void transpose8x8_sse2(__m128i *x0, __m128i *x1, __m128i *x2,
       w6, w7);  // 06 16 26 36 46 56 66 76 07 17 27 37 47 57 67 77
 }
 
-// filter_mask and hev_mask
-static AOM_FORCE_INLINE void filter_hev_mask4(__m128i *p1p0, __m128i *q1q0,
-                                              __m128i *q1p1, __m128i *q0p0,
-                                              const uint8_t *_blimit,
-                                              const uint8_t *_limit,
-                                              const uint8_t *_thresh,
-                                              __m128i *hev, __m128i *mask) {
-  const __m128i zero = _mm_setzero_si128();
-  const __m128i limit =
-      _mm_unpacklo_epi64(_mm_loadl_epi64((const __m128i *)_blimit),
-                         _mm_loadl_epi64((const __m128i *)_limit));
-  __m128i thresh =
-      _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)_thresh), zero);
-
-  /* (abs(q1 - q0), abs(p1 - p0) */
-  __m128i flat = abs_diff(*q1p1, *q0p0);
-  /* abs(p1 - q1), abs(p0 - q0) */
-  const __m128i abs_p1q1p0q0 = abs_diff(*p1p0, *q1q0);
-  __m128i abs_p0q0, abs_p1q1;
-
-  /* const uint8_t hev = hev_mask(thresh, *op1, *op0, *oq0, *oq1); */
-  flat = _mm_max_epu8(flat, _mm_srli_si128(flat, 8));
-  *hev = _mm_unpacklo_epi8(flat, zero);
-
-  *hev = _mm_cmpgt_epi16(*hev, thresh);
-  *hev = _mm_packs_epi16(*hev, *hev);
-
-  /* const int8_t mask = filter_mask2(*limit, *blimit, */
-  /*                                  p1, p0, q0, q1); */
-  abs_p0q0 = _mm_adds_epu8(abs_p1q1p0q0, abs_p1q1p0q0); /* abs(p0 - q0) * 2 */
-  abs_p1q1 = _mm_unpackhi_epi8(abs_p1q1p0q0, abs_p1q1p0q0); /* abs(p1 - q1) */
-  abs_p1q1 = _mm_srli_epi16(abs_p1q1, 9);
-  abs_p1q1 = _mm_packs_epi16(abs_p1q1, abs_p1q1); /* abs(p1 - q1) / 2 */
-  /* abs(p0 - q0) * 2 + abs(p1 - q1) / 2 */
-  *mask = _mm_adds_epu8(abs_p0q0, abs_p1q1);
-  *mask = _mm_unpacklo_epi64(*mask, flat);
-  *mask = _mm_subs_epu8(*mask, limit);
-  *mask = _mm_cmpeq_epi8(*mask, zero);
-  *mask = _mm_and_si128(*mask, _mm_srli_si128(*mask, 8));
-}
-
 static AOM_FORCE_INLINE void filter4_sse2(__m128i *p1p0, __m128i *q1q0,
                                           __m128i *hev, __m128i *mask,
                                           __m128i *qs1qs0, __m128i *ps1ps0) {
