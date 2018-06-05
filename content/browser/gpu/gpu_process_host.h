@@ -296,12 +296,11 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Time Init started.  Used to log total GPU process startup time to UMA.
   base::TimeTicks init_start_time_;
 
+  // The total number of GPU process crashes.
   static base::subtle::Atomic32 gpu_crash_count_;
-  static int gpu_recent_crash_count_;
   static bool crashed_before_;
-  static int swiftshader_crash_count_;
+  static int hardware_accelerated_recent_crash_count_;
   static int swiftshader_recent_crash_count_;
-  static int display_compositor_crash_count_;
   static int display_compositor_recent_crash_count_;
 
   // Here the bottom-up destruction order matters:

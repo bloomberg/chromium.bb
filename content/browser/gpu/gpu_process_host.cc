@@ -112,12 +112,18 @@
 
 namespace content {
 
+// UMA histogram names.
+constexpr char kProcessLifetimeEventsHardwareAccelerated[] =
+    "GPU.ProcessLifetimeEvents.HardwareAccelerated";
+constexpr char kProcessLifetimeEventsSwiftShader[] =
+    "GPU.ProcessLifetimeEvents.SwiftShader";
+constexpr char kProcessLifetimeEventsDisplayCompositor[] =
+    "GPU.ProcessLifetimeEvents.DisplayCompositor";
+
 base::subtle::Atomic32 GpuProcessHost::gpu_crash_count_ = 0;
-int GpuProcessHost::gpu_recent_crash_count_ = 0;
 bool GpuProcessHost::crashed_before_ = false;
-int GpuProcessHost::swiftshader_crash_count_ = 0;
+int GpuProcessHost::hardware_accelerated_recent_crash_count_ = 0;
 int GpuProcessHost::swiftshader_recent_crash_count_ = 0;
-int GpuProcessHost::display_compositor_crash_count_ = 0;
 int GpuProcessHost::display_compositor_recent_crash_count_ = 0;
 
 namespace {
@@ -237,13 +243,15 @@ static const char* const kSwitchNames[] = {
 #endif
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum GPUProcessLifetimeEvent {
-  LAUNCHED,
-  DIED_FIRST_TIME,
-  DIED_SECOND_TIME,
-  DIED_THIRD_TIME,
-  DIED_FOURTH_TIME,
-  GPU_PROCESS_LIFETIME_EVENT_MAX = 100
+  LAUNCHED = 0,
+  // When the GPU process crashes the (DIED_FIRST_TIME + recent_crash_count - 1)
+  // bucket in the appropriate UMA histogram will be incremented. The first
+  // crash will be DIED_FIRST_TIME, the second DIED_FIRST_TIME+1, etc.
+  DIED_FIRST_TIME = 1,
+  GPU_PROCESS_LIFETIME_EVENT_MAX = 100,
 };
 
 // Indexed by GpuProcessKind. There is one of each kind maximum. This array may
@@ -1180,7 +1188,7 @@ void GpuProcessHost::DidCreateContextSuccessfully() {
   // Android may kill the GPU process to free memory, especially when the app
   // is the background, so Android cannot have a hard limit on GPU starts.
   // Reset crash count on Android when context creation succeeds.
-  gpu_recent_crash_count_ = 0;
+  hardware_accelerated_recent_crash_count_ = 0;
 #endif
 }
 
@@ -1404,8 +1412,18 @@ bool GpuProcessHost::LaunchGpuProcess() {
   process_->Launch(std::move(delegate), std::move(cmd_line), true);
   process_launched_ = true;
 
-  UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
-                            LAUNCHED, GPU_PROCESS_LIFETIME_EVENT_MAX);
+  auto* gpu_data_manager = GpuDataManagerImpl::GetInstance();
+  if (gpu_data_manager->HardwareAccelerationEnabled()) {
+    UMA_HISTOGRAM_ENUMERATION(kProcessLifetimeEventsHardwareAccelerated,
+                              LAUNCHED, GPU_PROCESS_LIFETIME_EVENT_MAX);
+  } else if (gpu_data_manager->SwiftShaderAllowed()) {
+    UMA_HISTOGRAM_ENUMERATION(kProcessLifetimeEventsSwiftShader, LAUNCHED,
+                              GPU_PROCESS_LIFETIME_EVENT_MAX);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kProcessLifetimeEventsDisplayCompositor, LAUNCHED,
+                              GPU_PROCESS_LIFETIME_EVENT_MAX);
+  }
+
   return true;
 }
 
@@ -1468,16 +1486,17 @@ void GpuProcessHost::RecordProcessCrash() {
   // was intended for actual rendering (and not just checking caps or other
   // options).
   if (process_launched_ && kind_ == GPU_PROCESS_KIND_SANDBOXED) {
+    // Keep track of the total number of GPU crashes.
+    base::subtle::NoBarrier_AtomicIncrement(&gpu_crash_count_, 1);
+
     if (GpuDataManagerImpl::GetInstance()->HardwareAccelerationEnabled()) {
-      int count = static_cast<int>(
-          base::subtle::NoBarrier_AtomicIncrement(&gpu_crash_count_, 1));
+      IncrementCrashCount(&hardware_accelerated_recent_crash_count_);
       UMA_HISTOGRAM_EXACT_LINEAR(
-          "GPU.GPUProcessLifetimeEvents",
-          std::min(DIED_FIRST_TIME + count, GPU_PROCESS_LIFETIME_EVENT_MAX - 1),
+          kProcessLifetimeEventsHardwareAccelerated,
+          DIED_FIRST_TIME + hardware_accelerated_recent_crash_count_ - 1,
           static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
 
-      IncrementCrashCount(&gpu_recent_crash_count_);
-      if ((gpu_recent_crash_count_ >= kGpuMaxCrashCount ||
+      if ((hardware_accelerated_recent_crash_count_ >= kGpuMaxCrashCount ||
            status_ == FAILURE) &&
           !disable_crash_limit) {
 #if defined(OS_ANDROID)
@@ -1496,26 +1515,24 @@ void GpuProcessHost::RecordProcessCrash() {
 #endif
       }
     } else if (GpuDataManagerImpl::GetInstance()->SwiftShaderAllowed()) {
-      UMA_HISTOGRAM_EXACT_LINEAR(
-          "GPU.SwiftShaderLifetimeEvents",
-          DIED_FIRST_TIME + swiftshader_crash_count_,
-          static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
-      ++swiftshader_crash_count_;
-
       IncrementCrashCount(&swiftshader_recent_crash_count_);
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          kProcessLifetimeEventsSwiftShader,
+          DIED_FIRST_TIME + swiftshader_recent_crash_count_ - 1,
+          static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
+
       if (swiftshader_recent_crash_count_ >= kGpuMaxCrashCount &&
           !disable_crash_limit) {
         // SwiftShader is too unstable to use. Disable it for current session.
         GpuDataManagerImpl::GetInstance()->BlockSwiftShader();
       }
     } else {
-      UMA_HISTOGRAM_EXACT_LINEAR(
-          "GPU.DisplayCompositorLifetimeEvents",
-          DIED_FIRST_TIME + display_compositor_crash_count_,
-          static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
-      ++display_compositor_crash_count_;
-
       IncrementCrashCount(&display_compositor_recent_crash_count_);
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          kProcessLifetimeEventsDisplayCompositor,
+          DIED_FIRST_TIME + display_compositor_recent_crash_count_ - 1,
+          static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
+
       if (display_compositor_recent_crash_count_ >= kGpuMaxCrashCount &&
           !disable_crash_limit) {
         // Viz display compositor is too unstable. Crash chrome to reset
