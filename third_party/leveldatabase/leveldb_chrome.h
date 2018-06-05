@@ -12,6 +12,7 @@
 #include "leveldb/cache.h"
 #include "leveldb/env.h"
 #include "leveldb/export.h"
+#include "leveldb/options.h"
 #include "third_party/leveldatabase/src/db/filename.h"
 
 namespace base {
@@ -60,6 +61,22 @@ LEVELDB_EXPORT void UpdateHistograms();
 // Returns true if the database was successfully corrupted, false if not.
 // Note: This function will fail if |db_path| does not exist.
 LEVELDB_EXPORT bool CorruptClosedDBForTesting(const base::FilePath& db_path);
+
+// Check that the database path in |db_path| "appears" to be a valid leveldb
+// database using the provided |env|. This function *does not* open or verify
+// that the database referred to by |db_path| is a valid database, only that it
+// appears to be one.
+LEVELDB_EXPORT bool PossiblyValidDB(const base::FilePath& db_path,
+                                    leveldb::Env* env);
+
+// Fully delete the leveldb database specified by |db_path|. leveldb::DestroyDB
+// will only delete files that it creates. Other files, if present, will be
+// ignored and left behind after leveldb::DestroyDB returns. This function will
+// delete the entire database directory.
+//
+// Note: Can be used with in-memory Env's.
+LEVELDB_EXPORT leveldb::Status DeleteDB(const base::FilePath& db_path,
+                                        const leveldb::Options& options);
 
 // Returns the memory-infra dump for |tracked_memenv|.
 // Do not call this function, instead call

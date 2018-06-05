@@ -521,6 +521,134 @@ TEST_F(ChromiumEnvDBTrackerTest, MemEnvMemoryDumpCreation) {
   EXPECT_EQ(mad->GetSizeInternal(), 0ul);
 }
 
+TEST(ChromiumLevelDB, PossiblyValidDB) {
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+
+  leveldb::Env* default_env = leveldb::Env::Default();
+  const base::FilePath& db_path = scoped_temp_dir.GetPath();
+  EXPECT_FALSE(leveldb_chrome::PossiblyValidDB(db_path, default_env));
+
+  {
+    base::File current(db_path.Append(FILE_PATH_LITERAL("CURRENT")),
+                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+    ASSERT_TRUE(current.IsValid());
+    const char kString[] = "ManifestFile";
+    EXPECT_EQ(static_cast<int>(sizeof(kString)),
+              current.Write(0, kString, sizeof(kString)));
+  }
+
+  EXPECT_TRUE(leveldb_chrome::PossiblyValidDB(db_path, default_env));
+
+  ASSERT_TRUE(scoped_temp_dir.Delete());
+  EXPECT_FALSE(leveldb_chrome::PossiblyValidDB(db_path, default_env));
+}
+
+TEST(ChromiumLevelDB, DeleteOnDiskDB) {
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+
+  const base::FilePath db_path = scoped_temp_dir.GetPath().AppendASCII("db");
+  leveldb_env::Options on_disk_options;
+  on_disk_options.create_if_missing = true;
+
+  // First with no db directory.
+  EXPECT_FALSE(base::PathExists(db_path));
+  Status s = leveldb_chrome::DeleteDB(db_path, on_disk_options);
+  EXPECT_TRUE(s.ok()) << s.ToString();
+
+  // Now an empty directory.
+  EXPECT_FALSE(base::PathExists(db_path));
+  EXPECT_TRUE(base::CreateDirectory(db_path));
+  s = leveldb_chrome::DeleteDB(db_path, on_disk_options);
+  EXPECT_TRUE(s.ok()) << s.ToString();
+  EXPECT_FALSE(base::PathExists(db_path));
+
+  // Now with a valid leveldb database and an extra file.
+  std::unique_ptr<leveldb::DB> db;
+  s = OpenDB(on_disk_options, db_path.AsUTF8Unsafe(), &db);
+  ASSERT_TRUE(s.ok()) << s.ToString();
+  s = db->Put(WriteOptions(), "TheKey", "TheValue");
+  EXPECT_TRUE(s.ok()) << s.ToString();
+  db.reset();
+
+  base::File test_file(db_path.Append(FILE_PATH_LITERAL("Test file.txt")),
+                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  ASSERT_TRUE(test_file.IsValid());
+  const char kString[] = "Just some text.";
+  const int data_len = static_cast<int>(sizeof(kString));
+  EXPECT_EQ(data_len, test_file.Write(0, kString, data_len));
+  test_file.Close();
+
+  EXPECT_TRUE(leveldb_chrome::PossiblyValidDB(db_path, on_disk_options.env));
+  s = leveldb_chrome::DeleteDB(db_path, on_disk_options);
+  EXPECT_TRUE(s.ok()) << s.ToString();
+
+  EXPECT_FALSE(base::PathExists(db_path));
+}
+
+TEST(ChromiumLevelDB, DeleteInMemoryDB) {
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+
+  // First create an on-disk db with an extra file.
+  const base::FilePath db_path = scoped_temp_dir.GetPath().AppendASCII("db");
+  base::FilePath temp_path = db_path.Append(FILE_PATH_LITERAL("Test file.txt"));
+  leveldb_env::Options on_disk_options;
+  on_disk_options.create_if_missing = true;
+
+  {
+    std::unique_ptr<leveldb::DB> db;
+    Status s = OpenDB(on_disk_options, db_path.AsUTF8Unsafe(), &db);
+    ASSERT_TRUE(s.ok()) << s.ToString();
+    s = db->Put(WriteOptions(), "TheKey", "TheValue");
+    EXPECT_TRUE(s.ok()) << s.ToString();
+    db.reset();
+
+    base::File test_file(
+        temp_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+    ASSERT_TRUE(test_file.IsValid());
+    const char kString[] = "Just some text.";
+    const int data_len = static_cast<int>(sizeof(kString));
+    EXPECT_EQ(data_len, test_file.Write(0, kString, data_len));
+    test_file.Close();
+  }
+
+  // Now create an in-memory db.
+  std::unique_ptr<leveldb::Env> mem_env = leveldb_chrome::NewMemEnv("testing");
+  leveldb_env::Options in_memory_options;
+  in_memory_options.create_if_missing = true;
+  in_memory_options.env = mem_env.get();
+
+  {
+    std::unique_ptr<leveldb::DB> db;
+    // The two DB's purposely use the same path even though the in-memory path
+    // refers to a temp directory on disk.
+    Status s = OpenDB(in_memory_options, db_path.AsUTF8Unsafe(), &db);
+    ASSERT_TRUE(s.ok()) << s.ToString();
+    s = db->Put(WriteOptions(), "TheKey", "TheValue");
+    EXPECT_TRUE(s.ok()) << s.ToString();
+    db.reset();
+
+    leveldb::WritableFile* temp_file;
+    s = mem_env->NewWritableFile(temp_path.AsUTF8Unsafe(), &temp_file);
+    ASSERT_TRUE(s.ok()) << s.ToString();
+    s = temp_file->Append("Just some text.");
+    EXPECT_TRUE(s.ok()) << s.ToString();
+    s = temp_file->Close();
+    EXPECT_TRUE(s.ok()) << s.ToString();
+    delete temp_file;
+  }
+
+  EXPECT_TRUE(leveldb_chrome::PossiblyValidDB(db_path, on_disk_options.env));
+  EXPECT_TRUE(mem_env->FileExists(temp_path.AsUTF8Unsafe()));
+  Status s = leveldb_chrome::DeleteDB(db_path, in_memory_options);
+  EXPECT_TRUE(s.ok()) << s.ToString();
+  EXPECT_FALSE(mem_env->FileExists(temp_path.AsUTF8Unsafe()));
+  // On disk should be untouched.
+  EXPECT_TRUE(leveldb_chrome::PossiblyValidDB(db_path, on_disk_options.env));
+}
+
 }  // namespace leveldb_env
 
 int main(int argc, char** argv) { return base::TestSuite(argc, argv).Run(); }
