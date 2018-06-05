@@ -925,13 +925,8 @@ void ImageBitmap::RasterizeImageOnBackgroundThread(
     bool origin_clean,
     std::unique_ptr<ParsedOptions> parsed_options) {
   DCHECK(!IsMainThread());
-  // TODO (zakerinasab): crbug.com/768844
-  // For now only SVG is decoded async so it is fine to assume the color space
-  // is SRGB. When other sources are decoded async (crbug.com/580202), make sure
-  // that proper color space is used in SkImageInfo to avoid clipping the gamut
-  // of the image bitmap source.
-  SkImageInfo info = SkImageInfo::MakeS32(dst_rect.Width(), dst_rect.Height(),
-                                          kPremul_SkAlphaType);
+  SkImageInfo info =
+      SkImageInfo::MakeN32Premul(dst_rect.Width(), dst_rect.Height());
   sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
   sk_sp<SkImage> skia_image;
   if (surface) {
