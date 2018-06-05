@@ -118,6 +118,7 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->enable_oop_rasterization = prefs.enable_oop_rasterization();
     out->use_gpu_fences_for_overlay_planes =
         prefs.use_gpu_fences_for_overlay_planes();
+    out->watchdog_starts_backgrounded = prefs.watchdog_starts_backgrounded();
     return true;
   }
 
@@ -248,6 +249,9 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static bool use_gpu_fences_for_overlay_planes(
       const gpu::GpuPreferences& prefs) {
     return prefs.use_gpu_fences_for_overlay_planes;
+  }
+  static bool watchdog_starts_backgrounded(const gpu::GpuPreferences& prefs) {
+    return prefs.watchdog_starts_backgrounded;
   }
 };
 

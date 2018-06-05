@@ -93,11 +93,14 @@ GpuWatchdogThread::GpuWatchdogThread()
 }
 
 // static
-std::unique_ptr<GpuWatchdogThread> GpuWatchdogThread::Create() {
+std::unique_ptr<GpuWatchdogThread> GpuWatchdogThread::Create(
+    bool start_backgrounded) {
   auto watchdog_thread = base::WrapUnique(new GpuWatchdogThread);
   base::Thread::Options options;
   options.timer_slack = base::TIMER_SLACK_MAXIMUM;
   watchdog_thread->StartWithOptions(options);
+  if (start_backgrounded)
+    watchdog_thread->OnBackgrounded();
   return watchdog_thread;
 }
 

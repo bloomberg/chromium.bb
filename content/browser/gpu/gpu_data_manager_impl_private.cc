@@ -559,6 +559,8 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
 
   gpu_preferences->texture_target_exception_list =
       gpu::CreateBufferUsageAndFormatExceptionList();
+
+  gpu_preferences->watchdog_starts_backgrounded = !application_is_visible_;
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {
@@ -753,6 +755,10 @@ bool GpuDataManagerImplPrivate::IsGpuProcessUsingHardwareGpu() const {
   if (gpu_info_.gl_renderer == "Disabled")
     return false;
   return true;
+}
+
+void GpuDataManagerImplPrivate::SetApplicationVisible(bool is_visible) {
+  application_is_visible_ = is_visible;
 }
 
 std::string GpuDataManagerImplPrivate::GetDomainFromURL(

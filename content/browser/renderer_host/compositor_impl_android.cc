@@ -62,6 +62,7 @@
 #include "content/browser/compositor/in_process_display_client.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu_stream_constants.h"
@@ -796,6 +797,7 @@ void CompositorImpl::SetVisible(bool visible) {
           root_window_->GetBeginFrameSource());
     }
     display_.reset();
+    GpuDataManagerImpl::GetInstance()->SetApplicationVisible(false);
     SendOnBackgroundedToGpuService();
     EnqueueLowEndBackgroundCleanup();
   } else {
@@ -803,6 +805,7 @@ void CompositorImpl::SetVisible(bool visible) {
     has_submitted_frame_since_became_visible_ = false;
     if (layer_tree_frame_sink_request_pending_)
       HandlePendingLayerTreeFrameSinkRequest();
+    GpuDataManagerImpl::GetInstance()->SetApplicationVisible(true);
     SendOnForegroundedToGpuService();
     low_end_background_cleanup_task_.Cancel();
   }
