@@ -74,10 +74,6 @@ class SyncAuthManager : public identity::IdentityManager::Observer,
   // server changed. Updates auth error state accordingly.
   void ConnectionStatusChanged(syncer::ConnectionStatus status);
 
-  // TODO(crbug.com/842697, crbug.com/825190): Make this private once
-  // ProfileSyncService doesn't care about the refresh token state anymore.
-  void RequestAccessToken();
-
   // Clears all auth-related state (error, cached access token etc). Called
   // when Sync is turned off.
   void Clear();
@@ -101,6 +97,8 @@ class SyncAuthManager : public identity::IdentityManager::Observer,
 
   void ClearAccessTokenAndRequest();
 
+  void RequestAccessToken();
+
   void AccessTokenFetched(const GoogleServiceAuthError& error,
                           const std::string& access_token);
 
@@ -119,6 +117,9 @@ class SyncAuthManager : public identity::IdentityManager::Observer,
   // engine to refresh its credentials.
   bool is_auth_in_progress_;
 
+  // The current access token. This is mutually exclusive with
+  // |ongoing_access_token_fetch_| and |request_access_token_retry_timer_|:
+  // We either have an access token OR a pending request OR a pending retry.
   std::string access_token_;
 
   // Pending request for an access token. Non-null iff there is a request

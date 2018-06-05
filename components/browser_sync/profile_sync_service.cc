@@ -626,14 +626,6 @@ void ProfileSyncService::AccessTokenFetched(
   NotifyObservers();
 }
 
-void ProfileSyncService::OnRefreshTokenAvailable() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (HasSyncingEngine()) {
-    auth_manager_->RequestAccessToken();
-  }
-}
-
 void ProfileSyncService::OnRefreshTokenRevoked() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

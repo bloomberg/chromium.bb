@@ -243,7 +243,18 @@ void SyncAuthManager::OnRefreshTokenAvailable(const std::string& account_id) {
     return;
   }
 
-  sync_service_->OnRefreshTokenAvailable();
+  // If we already have an access token or previously failed to retrieve one
+  // (and hence the retry timer is running), then request a fresh access token
+  // now. This will also drop the current access token.
+  if (!access_token_.empty() || request_access_token_retry_timer_.IsRunning()) {
+    DCHECK(!ongoing_access_token_fetch_);
+    RequestAccessToken();
+  } else if (last_auth_error_ != GoogleServiceAuthError::AuthErrorNone()) {
+    // If we were in an auth error state, then now's also a good time to try
+    // again. In this case it's possible that there is already a pending
+    // request, in which case RequestAccessToken will simply do nothing.
+    RequestAccessToken();
+  }
 }
 
 void SyncAuthManager::OnRefreshTokenRevoked(const std::string& account_id) {
