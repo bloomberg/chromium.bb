@@ -94,6 +94,8 @@ class GridTrackSizingAlgorithm final {
 
   // Required by LayoutGrid. Try to minimize the exposed surface.
   const Grid& GetGrid() const { return grid_; }
+  // TODO (jfernandez): We should declare this function as private and add
+  // CHECKS so that it's only run after setting up the algorithm.
   GridTrackSize GetGridTrackSize(GridTrackSizingDirection,
                                  size_t translated_index) const;
   LayoutUnit MinContentSize() const { return min_content_size_; };
