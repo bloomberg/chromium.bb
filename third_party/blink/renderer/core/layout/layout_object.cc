@@ -808,7 +808,8 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
     return false;
 
   const ComputedStyle* style = object->Style();
-  if (style->ContainsLayout() && object->ShouldApplySizeContainment())
+  if (object->ShouldApplyLayoutContainment() &&
+      object->ShouldApplySizeContainment())
     return true;
 
   if (!object->HasOverflowClip())
@@ -989,7 +990,7 @@ LayoutObject* LayoutObject::ContainerForAbsolutePosition(
     AncestorSkipInfo* skip_info) const {
   return FindAncestorByPredicate(this, skip_info, [](LayoutObject* candidate) {
     if (!candidate->CanContainAbsolutePositionObjects() &&
-        candidate->StyleRef().ContainsLayout()) {
+        candidate->ShouldApplyLayoutContainment()) {
       UseCounter::Count(candidate->GetDocument(),
                         WebFeature::kCSSContainLayoutPositionedDescendants);
     }
@@ -1002,7 +1003,7 @@ LayoutObject* LayoutObject::ContainerForFixedPosition(
   DCHECK(!IsText());
   return FindAncestorByPredicate(this, skip_info, [](LayoutObject* candidate) {
     if (!candidate->CanContainFixedPositionObjects() &&
-        candidate->StyleRef().ContainsLayout()) {
+        candidate->ShouldApplyLayoutContainment()) {
       UseCounter::Count(candidate->GetDocument(),
                         WebFeature::kCSSContainLayoutPositionedDescendants);
     }
