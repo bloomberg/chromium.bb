@@ -96,7 +96,9 @@ declare_args() {
 
   # Value for -fsanitize-coverage flag. Setting this causes
   # use_sanitizer_coverage to be enabled.
-  # Default value when unset and use_fuzzing_engine=true:
+  # This is not used for libFuzzer anymore (use_libfuzzer=true). Instead, we use:
+  #     -fsanitize=fuzzer-no-link
+  # Default value when unset and use_afl=true:
   #     trace-pc-guard
   # Default value when unset and use_sanitizer_coverage=true:
   #     trace-pc-guard,indirect-calls
@@ -137,16 +139,11 @@ if (current_toolchain != default_toolchain) {
   use_sanitizer_coverage = false
 }
 
-# Whether we are doing a fuzzer build. Normally this should be checked instead
-# of checking "use_libfuzzer || use_afl" because often developers forget to
-# check for "use_afl".
-use_fuzzing_engine = use_libfuzzer || use_afl
-
 # Args that are in turn dependent on other args must be in a separate
 # declare_args block. User overrides are only applied at the end of a
 # declare_args block.
 declare_args() {
-  use_sanitizer_coverage = use_fuzzing_engine || sanitizer_coverage_flags != ""
+  use_sanitizer_coverage = use_afl || sanitizer_coverage_flags != ""
 
   # Detect overflow/underflow for global objects.
   #
@@ -154,7 +151,18 @@ declare_args() {
   asan_globals = !is_mac
 }
 
-if (use_fuzzing_engine && sanitizer_coverage_flags == "") {
+# Whether we are doing a fuzzer build. Normally this should be checked instead
+# of checking "use_libfuzzer || use_afl" because often developers forget to
+# check for "use_afl".
+use_fuzzing_engine = use_libfuzzer || use_afl
+
+assert(
+    !(use_libfuzzer &&
+          (use_sanitizer_coverage || sanitizer_coverage_flags != "")),
+    "Sanitizer coverage (either use_sanitizer_coverage or " +
+        "sanitizer_coverage_flags) should not be used if use_libfuzzer is true.")
+
+if (use_afl && sanitizer_coverage_flags == "") {
   sanitizer_coverage_flags = "trace-pc-guard"
 } else if (use_sanitizer_coverage && sanitizer_coverage_flags == "") {
   sanitizer_coverage_flags = "trace-pc-guard,indirect-calls"
