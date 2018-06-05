@@ -408,8 +408,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
                                                   expected_result);
 }
 
+// Flaky. See https://crbug.com/843844.
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
-                       TwoGetUserMediaWithSecondVideoCropped) {
+                       DISABLED_TwoGetUserMediaWithSecondVideoCropped) {
   std::string constraints1 = "{video: true}";
   std::string constraints2 =
       "{video: {width: {exact: 640}, height: {exact: 360}}}";
