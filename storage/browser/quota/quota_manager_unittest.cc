@@ -21,7 +21,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/sys_info.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
