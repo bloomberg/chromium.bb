@@ -31,7 +31,6 @@ class FakeIdentityProvider : public IdentityProvider {
   void LogOut();
 
   // IdentityProvider:
-  std::string GetActiveUsername() override;
   std::string GetActiveAccountId() override;
   OAuth2TokenService* GetTokenService() override;
 

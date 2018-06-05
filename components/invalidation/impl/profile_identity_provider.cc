@@ -19,10 +19,6 @@ ProfileIdentityProvider::~ProfileIdentityProvider() {
   signin_manager_->RemoveObserver(this);
 }
 
-std::string ProfileIdentityProvider::GetActiveUsername() {
-  return signin_manager_->GetAuthenticatedAccountInfo().email;
-}
-
 std::string ProfileIdentityProvider::GetActiveAccountId() {
   return signin_manager_->GetAuthenticatedAccountId();
 }

@@ -20,7 +20,6 @@ class DeviceIdentityProvider : public invalidation::IdentityProvider {
   ~DeviceIdentityProvider() override;
 
   // IdentityProvider:
-  std::string GetActiveUsername() override;
   std::string GetActiveAccountId() override;
   OAuth2TokenService* GetTokenService() override;
 

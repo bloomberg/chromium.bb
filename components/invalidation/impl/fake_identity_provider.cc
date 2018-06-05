@@ -27,10 +27,6 @@ void FakeIdentityProvider::LogOut() {
   FireOnActiveAccountLogout();
 }
 
-std::string FakeIdentityProvider::GetActiveUsername() {
-  return account_id_;
-}
-
 std::string FakeIdentityProvider::GetActiveAccountId() {
   return account_id_;
 }
