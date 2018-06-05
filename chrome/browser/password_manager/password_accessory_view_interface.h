@@ -10,14 +10,13 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "url/gurl.h"
 
 class PasswordAccessoryController;
 
 // The interface for creating and controlling a view for the password accessory.
-// The view gets data from the owned |PasswordAccessoryController| and
-// forwards any request (like filling a suggestion) back to the controller.
+// The view gets data from a given |PasswordAccessoryController| and forwards
+// any request (like filling a suggestion) back to the controller.
 class PasswordAccessoryViewInterface {
  public:
   // Represents an item that will be shown in the bottom sheet below a keyboard
@@ -52,6 +51,12 @@ class PasswordAccessoryViewInterface {
                                 const std::vector<AccessoryItem>& items) = 0;
 
   virtual ~PasswordAccessoryViewInterface() = default;
+
+ private:
+  friend class PasswordAccessoryController;
+  // Factory function used to create a concrete instance of this view.
+  static std::unique_ptr<PasswordAccessoryViewInterface> Create(
+      PasswordAccessoryController* controller);
 };
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_ACCESSORY_VIEW_INTERFACE_H_

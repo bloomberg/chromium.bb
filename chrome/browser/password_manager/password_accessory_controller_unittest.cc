@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_accessory_view_interface.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -130,43 +131,38 @@ void PrintTo(const std::vector<AccessoryItem>& items, std::ostream* os) {
   }
 }
 
-class PasswordAccessoryControllerTest : public testing::Test {
+class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
  public:
-  PasswordAccessoryControllerTest() : password_accessory_controller_(nullptr) {
-    std::unique_ptr<StrictMock<MockPasswordAccessoryView>> view(
-        new StrictMock<MockPasswordAccessoryView>());
-    password_accessory_controller_ =
-        PasswordAccessoryController::CreateForTesting(std::move(view));
-  }
-
-  ~PasswordAccessoryControllerTest() override {
-    controller()->Destroy();  // There is no view that owns the controller!
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+    PasswordAccessoryController::CreateForWebContentsForTesting(
+        web_contents(),
+        std::make_unique<StrictMock<MockPasswordAccessoryView>>());
   }
 
   PasswordAccessoryController* controller() {
-    return password_accessory_controller_.get();
+    return PasswordAccessoryController::FromWebContents(web_contents());
   }
 
   MockPasswordAccessoryView* view() {
     return static_cast<MockPasswordAccessoryView*>(controller()->view());
   }
-
- private:
-  std::unique_ptr<PasswordAccessoryController> password_accessory_controller_;
 };
 
-TEST_F(PasswordAccessoryControllerTest, IsNotRecreatedForValidInstances) {
-  auto created_controller = PasswordAccessoryController::GetOrCreate(
-      controller()->GetWeakPtr(), controller()->container_view());
-  EXPECT_THAT(controller(), NotNull());
-  EXPECT_THAT(controller(), Eq(created_controller.get()));
+TEST_F(PasswordAccessoryControllerTest, IsNotRecreatedForSameWebContents) {
+  PasswordAccessoryController* initial_controller =
+      PasswordAccessoryController::FromWebContents(web_contents());
+  EXPECT_NE(nullptr, initial_controller);
+  PasswordAccessoryController::CreateForWebContents(web_contents());
+  EXPECT_EQ(PasswordAccessoryController::FromWebContents(web_contents()),
+            initial_controller);
 }
 
 TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
   EXPECT_CALL(
       *view(),
       OnItemsAvailable(
-          Eq(GURL("https://example.com")),
+          GURL("https://example.com"),
           ElementsAre(
               MatchesItem(ASCIIToUTF16("Passwords"), ASCIIToUTF16("Passwords"),
                           false, ItemType::LABEL),
@@ -182,7 +178,7 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
 TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
   EXPECT_CALL(
       *view(),
-      OnItemsAvailable(Eq(GURL("https://example.com")),
+      OnItemsAvailable(GURL("https://example.com"),
                        ElementsAre(MatchesItem(ASCIIToUTF16("Passwords"),
                                                ASCIIToUTF16("Passwords"), false,
                                                ItemType::LABEL),
@@ -200,7 +196,7 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
   EXPECT_CALL(
       *view(),
       OnItemsAvailable(
-          Eq(GURL("https://example.com")),
+          GURL("https://example.com"),
           ElementsAre(
               MatchesItem(passwords_title_str(), passwords_title_str(), false,
                           ItemType::LABEL),
@@ -233,7 +229,7 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
 
 TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
   EXPECT_CALL(*view(), OnItemsAvailable(
-                           Eq(GURL("https://example.com")),
+                           GURL("https://example.com"),
                            ElementsAre(MatchesItem(ASCIIToUTF16("Passwords"),
                                                    ASCIIToUTF16("Passwords"),
                                                    false, ItemType::LABEL),
