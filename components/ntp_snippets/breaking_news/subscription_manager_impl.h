@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "components/ntp_snippets/breaking_news/subscription_json_request.h"
 #include "components/ntp_snippets/breaking_news/subscription_manager.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 
@@ -20,6 +19,10 @@ class PrefService;
 
 namespace identity {
 class PrimaryAccountAccessTokenFetcher;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace variations {
@@ -37,7 +40,7 @@ class SubscriptionManagerImpl : public SubscriptionManager,
                                 public identity::IdentityManager::Observer {
  public:
   SubscriptionManagerImpl(
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       PrefService* pref_service,
       variations::VariationsService* variations_service,
       identity::IdentityManager* identity_manager,
@@ -89,7 +92,7 @@ class SubscriptionManagerImpl : public SubscriptionManager,
                                 const GoogleServiceAuthError& error,
                                 const std::string& access_token);
 
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   std::unique_ptr<internal::SubscriptionJsonRequest> request_;
   std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>

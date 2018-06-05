@@ -12,13 +12,11 @@
 #include "components/variations/net/variations_http_headers.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
-using net::URLFetcher;
-using net::URLRequestContextGetter;
 using net::HttpRequestHeaders;
-using net::URLRequestStatus;
 
 namespace ntp_snippets {
 
@@ -30,25 +28,32 @@ SubscriptionJsonRequest::~SubscriptionJsonRequest() = default;
 
 void SubscriptionJsonRequest::Start(CompletedCallback callback) {
   DCHECK(request_completed_callback_.is_null()) << "Request already running!";
+  DCHECK(url_loader_factory_);
   request_completed_callback_ = std::move(callback);
-  url_fetcher_->Start();
+  simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&SubscriptionJsonRequest::OnSimpleLoaderComplete,
+                     base::Unretained(this)));
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// URLFetcherDelegate overrides
-void SubscriptionJsonRequest::OnURLFetchComplete(const URLFetcher* source) {
-  DCHECK_EQ(url_fetcher_.get(), source);
-  const URLRequestStatus& status = url_fetcher_->GetStatus();
-  int response = url_fetcher_->GetResponseCode();
+void SubscriptionJsonRequest::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
+  int net_error = simple_url_loader_->NetError();
 
-  if (!status.is_success()) {
+  if (net_error != net::OK) {
     std::move(request_completed_callback_)
         .Run(Status(StatusCode::TEMPORARY_ERROR,
-                    base::StringPrintf("Network Error: %d", status.error())));
-  } else if (response != net::HTTP_OK) {
+                    base::StringPrintf("Network Error: %d", net_error)));
+  } else if (!response_body) {
+    int response_code = -1;
+    if (simple_url_loader_->ResponseInfo() &&
+        simple_url_loader_->ResponseInfo()->headers) {
+      response_code =
+          simple_url_loader_->ResponseInfo()->headers->response_code();
+    }
     std::move(request_completed_callback_)
         .Run(Status(StatusCode::PERMANENT_ERROR,
-                    base::StringPrintf("HTTP Error: %d", response)));
+                    base::StringPrintf("HTTP Error: %d", response_code)));
   } else {
     std::move(request_completed_callback_)
         .Run(Status(StatusCode::SUCCESS, std::string()));
@@ -63,17 +68,12 @@ SubscriptionJsonRequest::Builder::~Builder() = default;
 std::unique_ptr<SubscriptionJsonRequest>
 SubscriptionJsonRequest::Builder::Build() const {
   DCHECK(!url_.is_empty());
-  DCHECK(url_request_context_getter_);
+  DCHECK(url_loader_factory_);
   auto request = base::WrapUnique(new SubscriptionJsonRequest());
 
   std::string body = BuildBody();
-  std::string headers = BuildHeaders();
-  request->url_fetcher_ = BuildURLFetcher(request.get(), headers, body);
-
-  // Log the request for debugging network issues.
-  DVLOG(1) << "Building a subscription request to " << url_ << ":\n"
-           << headers << "\n"
-           << body;
+  request->simple_url_loader_ = BuildURLLoader(body);
+  request->url_loader_factory_ = std::move(url_loader_factory_);
 
   return request;
 }
@@ -91,9 +91,9 @@ SubscriptionJsonRequest::Builder& SubscriptionJsonRequest::Builder::SetUrl(
 }
 
 SubscriptionJsonRequest::Builder&
-SubscriptionJsonRequest::Builder::SetUrlRequestContextGetter(
-    const scoped_refptr<URLRequestContextGetter>& context_getter) {
-  url_request_context_getter_ = context_getter;
+SubscriptionJsonRequest::Builder::SetUrlLoaderFactory(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  url_loader_factory_ = std::move(url_loader_factory);
   return *this;
 }
 
@@ -117,21 +117,6 @@ SubscriptionJsonRequest::Builder::SetCountryCode(
   return *this;
 }
 
-std::string SubscriptionJsonRequest::Builder::BuildHeaders() const {
-  HttpRequestHeaders headers;
-  headers.SetHeader(HttpRequestHeaders::kContentType,
-                    "application/json; charset=UTF-8");
-  if (!auth_header_.empty()) {
-    headers.SetHeader(HttpRequestHeaders::kAuthorization, auth_header_);
-  }
-  // Add X-Client-Data header with experiment IDs from field trials.
-  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
-  // transmission of experiments coming from the variations server.
-  variations::AppendVariationHeaders(url_, variations::InIncognito::kNo,
-                                     variations::SignedIn::kNo, &headers);
-  return headers.ToString();
-}
-
 std::string SubscriptionJsonRequest::Builder::BuildBody() const {
   base::DictionaryValue request;
   request.SetString("token", token_);
@@ -145,9 +130,8 @@ std::string SubscriptionJsonRequest::Builder::BuildBody() const {
   return request_json;
 }
 
-std::unique_ptr<URLFetcher> SubscriptionJsonRequest::Builder::BuildURLFetcher(
-    URLFetcherDelegate* delegate,
-    const std::string& headers,
+std::unique_ptr<network::SimpleURLLoader>
+SubscriptionJsonRequest::Builder::BuildURLLoader(
     const std::string& body) const {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("gcm_subscription", R"(
@@ -173,21 +157,37 @@ std::unique_ptr<URLFetcher> SubscriptionJsonRequest::Builder::BuildURLFetcher(
             }
           }
         })");
-  std::unique_ptr<URLFetcher> url_fetcher =
-      URLFetcher::Create(url_, URLFetcher::POST, delegate, traffic_annotation);
-  url_fetcher->SetRequestContext(url_request_context_getter_.get());
-  url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                            net::LOAD_DO_NOT_SAVE_COOKIES);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      url_fetcher.get(),
-      data_use_measurement::DataUseUserData::NTP_SNIPPETS_SUGGESTIONS);
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url_;
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->method = "POST";
+  if (!auth_header_.empty()) {
+    resource_request->headers.SetHeader(HttpRequestHeaders::kAuthorization,
+                                        auth_header_);
+  }
+  // Add X-Client-Data header with experiment IDs from field trials.
+  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
+  // transmission of experiments coming from the variations server.
+  variations::AppendVariationHeaders(url_, variations::InIncognito::kNo,
+                                     variations::SignedIn::kNo,
+                                     &resource_request->headers);
 
-  url_fetcher->SetExtraRequestHeaders(headers);
-  url_fetcher->SetUploadData("application/json", body);
+  // Log the request for debugging network issues.
+  DVLOG(1) << "Building a subscription request to " << url_ << ":\n"
+           << resource_request->headers.ToString() << "\n"
+           << body;
 
-  // Fetchers are sometimes cancelled because a network change was detected.
-  url_fetcher->SetAutomaticallyRetryOnNetworkChanges(1);
-  return url_fetcher;
+  // TODO(https://crbug.com/808498): Re-add data use measurement once
+  // SimpleURLLoader supports it.
+  // ID=data_use_measurement::DataUseUserData::NTP_SNIPPETS_SUGGESTIONS
+  std::unique_ptr<network::SimpleURLLoader> loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       traffic_annotation);
+  loader->AttachStringForUpload(body, "application/json; charset=UTF-8");
+  loader->SetRetryOptions(1, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
+
+  return loader;
 }
 
 }  // namespace internal

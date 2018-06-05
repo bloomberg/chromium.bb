@@ -12,9 +12,10 @@
 #include "components/ntp_snippets/remote/test_utils.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,17 +41,17 @@ const char kUnsubscriptionUrlSignedOut[] =
 class SubscriptionManagerImplTest : public testing::Test {
  public:
   SubscriptionManagerImplTest()
-      : request_context_getter_(
-            new net::TestURLRequestContextGetter(message_loop_.task_runner())) {
-  }
+      : test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {}
 
   void SetUp() override {
     SubscriptionManagerImpl::RegisterProfilePrefs(
         utils_.pref_service()->registry());
   }
 
-  scoped_refptr<net::URLRequestContextGetter> GetRequestContext() {
-    return request_context_getter_.get();
+  scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory() {
+    return test_shared_loader_factory_;
   }
 
   PrefService* GetPrefService() { return utils_.pref_service(); }
@@ -61,62 +62,43 @@ class SubscriptionManagerImplTest : public testing::Test {
 
   std::unique_ptr<SubscriptionManagerImpl> BuildSubscriptionManager() {
     return std::make_unique<SubscriptionManagerImpl>(
-        GetRequestContext(), GetPrefService(),
+        GetSharedURLLoaderFactory(), GetPrefService(),
         /*variations_service=*/nullptr,
         GetIdentityTestEnv()->identity_manager(),
         /*locale=*/"", kAPIKey, GURL(kSubscriptionUrl),
         GURL(kUnsubscriptionUrl));
   }
 
-  net::TestURLFetcher* GetRunningFetcher() {
-    // All created TestURLFetchers have ID 0 by default.
-    net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(0);
-    DCHECK(url_fetcher);
-    return url_fetcher;
-  }
-
   void RespondToSubscriptionRequestSuccessfully(bool is_signed_in) {
-    net::TestURLFetcher* url_fetcher = GetRunningFetcher();
     if (is_signed_in) {
-      ASSERT_EQ(GURL(kSubscriptionUrlSignedIn), url_fetcher->GetOriginalURL());
+      RespondSuccessfully(GURL(kSubscriptionUrlSignedIn));
     } else {
-      ASSERT_EQ(GURL(kSubscriptionUrlSignedOut), url_fetcher->GetOriginalURL());
+      RespondSuccessfully(GURL(kSubscriptionUrlSignedOut));
     }
-    RespondSuccessfully();
   }
 
   void RespondToUnsubscriptionRequestSuccessfully(bool is_signed_in) {
-    net::TestURLFetcher* url_fetcher = GetRunningFetcher();
     if (is_signed_in) {
-      ASSERT_EQ(GURL(kUnsubscriptionUrlSignedIn),
-                url_fetcher->GetOriginalURL());
+      RespondSuccessfully(GURL(kUnsubscriptionUrlSignedIn));
     } else {
-      ASSERT_EQ(GURL(kUnsubscriptionUrlSignedOut),
-                url_fetcher->GetOriginalURL());
+      RespondSuccessfully(GURL(kUnsubscriptionUrlSignedOut));
     }
-    RespondSuccessfully();
   }
 
   void RespondToSubscriptionWithError(bool is_signed_in, int error_code) {
-    net::TestURLFetcher* url_fetcher = GetRunningFetcher();
     if (is_signed_in) {
-      ASSERT_EQ(GURL(kSubscriptionUrlSignedIn), url_fetcher->GetOriginalURL());
+      RespondWithError(GURL(kSubscriptionUrlSignedIn), error_code);
     } else {
-      ASSERT_EQ(GURL(kSubscriptionUrlSignedOut), url_fetcher->GetOriginalURL());
+      RespondWithError(GURL(kSubscriptionUrlSignedOut), error_code);
     }
-    RespondWithError(error_code);
   }
 
   void RespondToUnsubscriptionWithError(bool is_signed_in, int error_code) {
-    net::TestURLFetcher* url_fetcher = GetRunningFetcher();
     if (is_signed_in) {
-      ASSERT_EQ(GURL(kUnsubscriptionUrlSignedIn),
-                url_fetcher->GetOriginalURL());
+      RespondWithError(GURL(kUnsubscriptionUrlSignedIn), error_code);
     } else {
-      ASSERT_EQ(GURL(kUnsubscriptionUrlSignedOut),
-                url_fetcher->GetOriginalURL());
+      RespondWithError(GURL(kUnsubscriptionUrlSignedOut), error_code);
     }
-    RespondWithError(error_code);
   }
 
 #if !defined(OS_CHROMEOS)
@@ -128,28 +110,23 @@ class SubscriptionManagerImplTest : public testing::Test {
 #endif  // !defined(OS_CHROMEOS)
 
  private:
-  void RespondSuccessfully() {
-    net::TestURLFetcher* url_fetcher = GetRunningFetcher();
-    url_fetcher->set_status(net::URLRequestStatus());
-    url_fetcher->set_response_code(net::HTTP_OK);
-    url_fetcher->SetResponseString(std::string());
-    // Call the URLFetcher delegate to continue the test.
-    url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+  void RespondSuccessfully(const GURL& url) {
+    test_url_loader_factory_.AddResponse(url.spec(), "");
+    base::RunLoop().RunUntilIdle();
   }
 
-  void RespondWithError(int error_code) {
-    net::TestURLFetcher* url_fetcher = GetRunningFetcher();
-    url_fetcher->set_status(net::URLRequestStatus::FromError(error_code));
-    url_fetcher->SetResponseString(std::string());
-    // Call the URLFetcher delegate to continue the test.
-    url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+  void RespondWithError(const GURL& url, int error_code) {
+    network::URLLoaderCompletionStatus status(error_code);
+    test_url_loader_factory_.AddResponse(url, network::ResourceResponseHead(),
+                                         "", status);
+    base::RunLoop().RunUntilIdle();
   }
 
   base::MessageLoop message_loop_;
   test::RemoteSuggestionsTestUtils utils_;
   identity::IdentityTestEnvironment identity_test_env_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
-  net::TestURLFetcherFactory url_fetcher_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 };
 
 TEST_F(SubscriptionManagerImplTest, SubscribeSuccessfully) {
