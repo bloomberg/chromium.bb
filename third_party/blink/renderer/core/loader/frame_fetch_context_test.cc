@@ -248,12 +248,13 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
 
   void AppendExecutingScriptToAdTracker(const String& url) {
     AdTracker* ad_tracker = document->GetFrame()->GetAdTracker();
-    ad_tracker->WillExecuteScript(url);
+    ad_tracker->WillExecuteScript(document, url);
   }
 
   void AppendAdScriptToAdTracker(const KURL& ad_script_url) {
     AdTracker* ad_tracker = document->GetFrame()->GetAdTracker();
-    ad_tracker->AppendToKnownAdScripts(ad_script_url);
+    ad_tracker->AppendToKnownAdScripts(*(document.Get()),
+                                       ad_script_url.GetString());
   }
 
  private:
@@ -1351,26 +1352,6 @@ TEST_F(FrameFetchContextSubresourceFilterTest, AdTaggingBasedOnFrame) {
 
   EXPECT_EQ(base::nullopt, CanRequestAndVerifyIsAd(true));
   EXPECT_EQ(0, GetFilteredLoadCallCount());
-}
-
-// Tests that if a subresource is allowed as per subresource filter ruleset and
-// is not fetched from a frame that is tagged as an ad, then the subresource
-// should be tagged as ad if one of the executing scripts is tagged as an ad.
-TEST_F(FrameFetchContextSubresourceFilterTest,
-       AdTaggingBasedOnExecutingScript) {
-  SetFilterPolicy(WebDocumentSubresourceFilter::kAllow,
-                  false /* is_associated_with_ad_subframe */);
-
-  KURL ad_script_url("https://example.com/bar.js");
-  AppendAdScriptToAdTracker(ad_script_url);
-  AppendExecutingScriptToAdTracker(ad_script_url.GetString());
-
-  EXPECT_EQ(base::nullopt, CanRequestAndVerifyIsAd(false));
-  EXPECT_EQ(0, GetFilteredLoadCallCount());
-
-  // After WillSendRequest probe, it should be marked as an ad.
-  EXPECT_TRUE(DispatchWillSendRequestAndVerifyIsAd(
-      KURL("https://www.example.com/image.jpg")));
 }
 
 TEST_F(FrameFetchContextTest, AddAdditionalRequestHeadersWhenDetached) {

@@ -92,6 +92,8 @@ void SimRequest::Complete(const Vector<char>& data) {
 void SimRequest::Reset() {
   is_ready_ = false;
   client_ = nullptr;
+  Platform::Current()->GetURLLoaderMockFactory()->UnregisterURL(KURL(url_));
+
   SimNetwork::Current().RemoveRequest(*this);
 }
 
