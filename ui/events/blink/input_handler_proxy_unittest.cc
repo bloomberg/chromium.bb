@@ -10,7 +10,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/trace_event_analyzer.h"
