@@ -1005,15 +1005,19 @@ BlinkGCObserver::~BlinkGCObserver() {
 namespace {
 
 void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, gc_reason_histogram,
-      ("BlinkGC.GCReason", BlinkGC::kLastGCReason + 1));
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, gc_reason_histogram,
+                      ("BlinkGC.GCReason", BlinkGC::kLastGCReason + 1));
   gc_reason_histogram.Count(event.reason);
 
   // TODO(mlippautz): Update name of this histogram.
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, marking_time_histogram,
-                                  ("BlinkGC.CollectGarbage", 0, 10 * 1000, 50));
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, marking_time_histogram,
+                      ("BlinkGC.CollectGarbage", 0, 10 * 1000, 50));
   marking_time_histogram.Count(
+      event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]);
+
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, atomic_phase_marking_histogram,
+                      ("BlinkGC.AtomicPhaseMarking", 0, 10 * 1000, 50));
+  atomic_phase_marking_histogram.Count(
       event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]);
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, complete_sweep_histogram,
@@ -1041,11 +1045,35 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
       ("BlinkGC.ObjectSizeFreedByHeapCompaction", 1, 4 * 1024 * 1024, 50));
   object_size_freed_by_heap_compaction.Count(event.compaction_freed_bytes /
                                              1024);
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+  DEFINE_STATIC_LOCAL(
       CustomCountHistogram, weak_processing_time_histogram,
       ("BlinkGC.TimeForGlobalWeakProcessing", 1, 10 * 1000, 50));
   weak_processing_time_histogram.Count(
       event.scope_data[ThreadHeapStatsCollector::kMarkWeakProcessing]);
+
+// Per GCReason metrics.
+#define COUNT_BY_GC_REASON(GCReason)                                      \
+  case BlinkGC::k##GCReason: {                                            \
+    DEFINE_STATIC_LOCAL(                                                  \
+        CustomCountHistogram, histogram,                                  \
+        ("BlinkGC.AtomicPhaseMarking_" #GCReason, 0, 10000, 50));         \
+    histogram.Count(                                                      \
+        event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]); \
+    break;                                                                \
+  }
+
+  switch (event.reason) {
+    COUNT_BY_GC_REASON(IdleGC)
+    COUNT_BY_GC_REASON(PreciseGC)
+    COUNT_BY_GC_REASON(ConservativeGC)
+    COUNT_BY_GC_REASON(ForcedGC)
+    COUNT_BY_GC_REASON(MemoryPressureGC)
+    COUNT_BY_GC_REASON(PageNavigationGC)
+    COUNT_BY_GC_REASON(ThreadTerminationGC)
+    COUNT_BY_GC_REASON(Testing)
+    COUNT_BY_GC_REASON(IncrementalIdleGC)
+  }
+#undef COUNT_BY_GC_REASON
 }
 
 }  // namespace
@@ -1437,12 +1465,35 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
     RunAtomicPause(stack_state, marking_type, sweeping_type, reason);
   }
 
-  double total_collect_garbage_time =
+  const double total_collect_garbage_time =
       WTF::CurrentTimeTicksInMilliseconds() - start_total_collect_garbage_time;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, time_for_total_collect_garbage_histogram,
       ("BlinkGC.TimeForTotalCollectGarbage", 1, 10 * 1000, 50));
   time_for_total_collect_garbage_histogram.Count(total_collect_garbage_time);
+
+#define COUNT_BY_GC_REASON(GCReason)                                      \
+  case BlinkGC::k##GCReason: {                                            \
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(                                      \
+        CustomCountHistogram, histogram,                                  \
+        ("BlinkGC.TimeForTotalCollectGarbage_" #GCReason, 0, 10000, 50)); \
+    histogram.Count(total_collect_garbage_time);                          \
+    break;                                                                \
+  }
+
+  switch (reason) {
+    COUNT_BY_GC_REASON(IdleGC)
+    COUNT_BY_GC_REASON(PreciseGC)
+    COUNT_BY_GC_REASON(ConservativeGC)
+    COUNT_BY_GC_REASON(ForcedGC)
+    COUNT_BY_GC_REASON(MemoryPressureGC)
+    COUNT_BY_GC_REASON(PageNavigationGC)
+    COUNT_BY_GC_REASON(ThreadTerminationGC)
+    COUNT_BY_GC_REASON(Testing)
+    COUNT_BY_GC_REASON(IncrementalIdleGC)
+  }
+#undef COUNT_BY_GC_REASON
+
   VLOG(1) << "[state:" << this << "]"
           << " CollectGarbage: time: " << std::setprecision(2)
           << total_collect_garbage_time << "ms"
