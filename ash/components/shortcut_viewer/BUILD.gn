@@ -12,6 +12,8 @@ source_set("lib") {
     "keyboard_shortcut_viewer_metadata.cc",
     "keyboard_shortcut_viewer_metadata.h",
     "ksv_export.h",
+    "last_window_closed_observer.cc",
+    "last_window_closed_observer.h",
     "shortcut_viewer_application.cc",
     "shortcut_viewer_application.h",
     "views/bubble_view.cc",

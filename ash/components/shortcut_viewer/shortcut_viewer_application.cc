@@ -4,6 +4,7 @@
 
 #include "ash/components/shortcut_viewer/shortcut_viewer_application.h"
 
+#include "ash/components/shortcut_viewer/last_window_closed_observer.h"
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_view.h"
 #include "base/trace_event/trace_event.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -30,6 +31,10 @@ void ShortcutViewerApplication::OnStart() {
     context()->QuitNow();
     return;
   }
+
+  // Quit the application when the window is closed.
+  last_window_closed_observer_ = std::make_unique<LastWindowClosedObserver>(
+      context()->CreateQuitClosure());
 
   // This app needs InputDeviceManager information that loads asynchronously via
   // InputDeviceClient. If the device list is incomplete, wait for it to load.
