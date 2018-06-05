@@ -130,8 +130,10 @@ void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
                                         int reduced_tx_set);
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
+#define INTER_MODE_RD_TEST 0
 void av1_inter_mode_data_init();
 void av1_inter_mode_data_fit(int rdmult);
+void av1_inter_mode_data_show(const AV1_COMMON *cm);
 #endif
 
 #ifdef __cplusplus
