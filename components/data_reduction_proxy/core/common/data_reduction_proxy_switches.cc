@@ -78,5 +78,11 @@ const char kEnableDataReductionProxySavingsPromo[] =
 const char kDisableDataReductionProxyWarmupURLFetch[] =
     "disable-data-reduction-proxy-warmup-url-fetch";
 
+// Uses the encoded ClientConfig instead of fetching one from the config server.
+// This value is always used, regardless of error or expiration. The value
+// should be a base64 encoded binary protobuf.
+const char kDataReductionProxyServerClientConfig[] =
+    "data-reduction-proxy-client-config";
+
 }  // namespace switches
 }  // namespace data_reduction_proxy

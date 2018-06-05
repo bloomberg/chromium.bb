@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
@@ -30,6 +31,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -167,7 +169,8 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
 #endif
       previous_request_failed_authentication_(false),
       failed_attempts_before_success_(0),
-      fetch_in_progress_(false) {
+      fetch_in_progress_(false),
+      client_config_override_used_(false) {
   DCHECK(request_options);
   DCHECK(config_values);
   DCHECK(config);
@@ -175,6 +178,12 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
   DCHECK(io_data);
   DCHECK(net_log);
   DCHECK(config_service_url_.is_valid());
+
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  client_config_override_ = command_line.GetSwitchValueASCII(
+      switches::kDataReductionProxyServerClientConfig);
+
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
 }
@@ -235,6 +244,28 @@ void DataReductionProxyConfigServiceClient::RetrieveConfig() {
   if (!enabled_)
     return;
 
+  if (!client_config_override_.empty()) {
+    // Return fast if the override has already been attempted.
+    if (client_config_override_used_) {
+      return;
+    }
+    // Set this flag so that we only attempt to apply the given config once. If
+    // there are parse errors, the DCHECKs will catch them in a debug build.
+    client_config_override_used_ = true;
+
+    std::string override_config;
+    bool b64_decode_ok =
+        base::Base64Decode(client_config_override_, &override_config);
+    DCHECK(b64_decode_ok) << "The given ClientConfig is not valid base64";
+
+    ClientConfig config;
+    bool was_valid_config = config.ParseFromString(override_config);
+    DCHECK(was_valid_config) << "The given ClientConfig was invalid.";
+    if (was_valid_config)
+      ParseAndApplyProxyConfig(config);
+    return;
+  }
+
   net_log_with_source_ = net::NetLogWithSource::Make(
       net_log_, net::NetLogSourceType::DATA_REDUCTION_PROXY);
   // Strip off query string parameters
@@ -258,6 +289,9 @@ void DataReductionProxyConfigServiceClient::ApplySerializedConfig(
     const std::string& config_value) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (RemoteConfigApplied())
+    return;
+
+  if (!client_config_override_.empty())
     return;
 
   std::string decoded_config;

@@ -30,6 +30,7 @@ extern const char kDataReductionProxyServerAlternative7[];
 extern const char kDataReductionProxyServerAlternative8[];
 extern const char kDataReductionProxyServerAlternative9[];
 extern const char kDataReductionProxyServerAlternative10[];
+extern const char kDataReductionProxyServerClientConfig[];
 extern const char kEnableDataReductionProxy[];
 extern const char kEnableDataReductionProxyBypassWarning[];
 extern const char kEnableDataReductionProxyForcePingback[];
