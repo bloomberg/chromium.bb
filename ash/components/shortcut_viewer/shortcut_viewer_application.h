@@ -5,6 +5,8 @@
 #ifndef ASH_COMPONENTS_SHORTCUT_VIEWER_SHORTCUT_VIEWER_APPLICATION_H_
 #define ASH_COMPONENTS_SHORTCUT_VIEWER_SHORTCUT_VIEWER_APPLICATION_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "ui/events/devices/input_device_event_observer.h"
@@ -14,6 +16,8 @@ class AuraInit;
 }  // namespace views
 
 namespace keyboard_shortcut_viewer {
+
+class LastWindowClosedObserver;
 
 // A mojo application that shows the keyboard shortcut viewer window.
 class ShortcutViewerApplication : public service_manager::Service,
@@ -35,6 +39,7 @@ class ShortcutViewerApplication : public service_manager::Service,
   void OnDeviceListsComplete() override;
 
   std::unique_ptr<views::AuraInit> aura_init_;
+  std::unique_ptr<LastWindowClosedObserver> last_window_closed_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShortcutViewerApplication);
 };
