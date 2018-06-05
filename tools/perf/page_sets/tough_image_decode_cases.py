@@ -33,10 +33,10 @@ class ToughImageDecodeCasesPageSet(story.StorySet):
       cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     page_name_list = [
-      'http://localhost:9000/cats-unscaled.html',
-      'http://localhost:9000/cats-viewport-width.html'
+      ('cats_unscaled', 'http://localhost:9000/cats-unscaled.html'),
+      ('cats_viewport_width', 'http://localhost:9000/cats-viewport-width.html')
     ]
 
-    for name in page_name_list:
+    for name, url in page_name_list:
       self.AddStory(ToughImageDecodeCasesPage(
-        name, name, self))
+        url, name, self))
