@@ -62,6 +62,10 @@
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
 #include "linux-dmabuf-unstable-v1-client-protocol.h"
 
+#ifndef DRM_FORMAT_MOD_LINEAR
+#define DRM_FORMAT_MOD_LINEAR 0
+#endif
+
 struct buffer;
 
 /* Possible options that affect the displayed image */
