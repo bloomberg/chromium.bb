@@ -125,6 +125,11 @@ SpaceKey.prototype.createDom = function() {
     goog.dom.classlist.add(this.wrapper_, Css.SPACE_GREY_BG);
     goog.dom.setTextContent(this.wrapper_, this.title_);
   }
+
+  goog.a11y.aria.setState(
+      this.getElement(), goog.a11y.aria.State.LABEL,
+      this.getChromeVoxMessage());
+  goog.a11y.aria.setRole(this.getElement(), goog.a11y.aria.Role.BUTTON);
 };
 
 

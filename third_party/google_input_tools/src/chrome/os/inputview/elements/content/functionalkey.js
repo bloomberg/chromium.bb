@@ -200,6 +200,7 @@ FunctionalKey.prototype.setAriaLabel = function(label) {
   var elem = this.textElem || this.iconElem;
   if (elem) {
     goog.a11y.aria.setState(elem, goog.a11y.aria.State.LABEL, label);
+    goog.a11y.aria.setRole(elem, goog.a11y.aria.Role.BUTTON);
   }
 };
 
