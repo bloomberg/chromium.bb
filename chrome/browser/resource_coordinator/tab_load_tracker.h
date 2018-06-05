@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
@@ -111,6 +112,8 @@ class TabLoadTracker {
   friend class resource_coordinator::ResourceCoordinatorTabHelper;
   friend class ::resource_coordinator::
       TabManagerResourceCoordinatorSignalObserverHelper;
+
+  FRIEND_TEST_ALL_PREFIXES(TabLifecycleUnitTest, CannotFreezeAFrozenTab);
 
   // This class is a singleton so the constructor is protected.
   TabLoadTracker();

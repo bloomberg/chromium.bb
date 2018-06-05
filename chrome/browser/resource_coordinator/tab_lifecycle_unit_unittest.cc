@@ -14,6 +14,7 @@
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
+#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/test_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -280,6 +281,24 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardPDF) {
       ->SetMainFrameMimeType("application/pdf");
   ExpectCanDiscardFalseAllReasons(&tab_lifecycle_unit,
                                   DecisionFailureReason::LIVE_STATE_IS_PDF);
+}
+
+TEST_F(TabLifecycleUnitTest, CannotFreezeAFrozenTab) {
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
+  TabLoadTracker::Get()->StartTracking(web_contents_);
+  TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
+                                                   TabLoadTracker::LOADED);
+  {
+    DecisionDetails decision_details;
+    EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
+  }
+  tab_lifecycle_unit.Freeze();
+  {
+    DecisionDetails decision_details;
+    EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
+  }
+  TabLoadTracker::Get()->StopTracking(web_contents_);
 }
 
 TEST_F(TabLifecycleUnitTest, NotifiedOfWebContentsVisibilityChanges) {
