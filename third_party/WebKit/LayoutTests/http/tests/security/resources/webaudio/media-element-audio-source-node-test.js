@@ -41,6 +41,8 @@ function runTest (url, oncomplete, tester)
         context.resume().then(() => {
                               spn.onaudioprocess = function(e) {
                                 checkResult(e.inputBuffer);
+                                // Stop the context so we don't keep getting called anymore.
+                                context.close();
                                 finishJSTest();
                               }
           });
