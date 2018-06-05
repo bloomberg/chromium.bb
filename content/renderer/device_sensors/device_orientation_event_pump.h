@@ -12,8 +12,6 @@
 
 namespace content {
 
-class RenderThread;
-
 class CONTENT_EXPORT DeviceOrientationEventPump
     : public DeviceSensorEventPump<blink::WebDeviceOrientationListener> {
  public:
@@ -21,7 +19,7 @@ class CONTENT_EXPORT DeviceOrientationEventPump
   // sufficiently different.
   static const double kOrientationThreshold;
 
-  DeviceOrientationEventPump(RenderThread* thread, bool absolute);
+  explicit DeviceOrientationEventPump(bool absolute);
   ~DeviceOrientationEventPump() override;
 
   // PlatformEventObserver:

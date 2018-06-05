@@ -61,7 +61,7 @@ class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
 
 class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
  public:
-  DeviceMotionEventPumpForTesting() : DeviceMotionEventPump(nullptr) {}
+  DeviceMotionEventPumpForTesting() {}
   ~DeviceMotionEventPumpForTesting() override {}
 
   int pump_delay_microseconds() const { return kDefaultPumpDelayMicroseconds; }

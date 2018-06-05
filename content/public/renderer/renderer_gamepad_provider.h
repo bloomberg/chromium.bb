@@ -22,9 +22,7 @@ namespace content {
 class RendererGamepadProvider
     : public PlatformEventObserver<blink::WebGamepadListener> {
  public:
-  explicit RendererGamepadProvider(RenderThread* thread)
-      : PlatformEventObserver<blink::WebGamepadListener>(thread) { }
-
+  RendererGamepadProvider() {}
   ~RendererGamepadProvider() override {}
 
   // Provides latest snapshot of gamepads.
