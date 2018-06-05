@@ -523,8 +523,10 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
 
-        WindowAndroid windowAndroid = mWebContents.getTopLevelNativeWindow();
-        if (windowAndroid != null) windowAndroid.getDisplay().removeObserver(this);
+        if (mWebContents != null) {
+            WindowAndroid windowAndroid = mWebContents.getTopLevelNativeWindow();
+            if (windowAndroid != null) windowAndroid.getDisplay().removeObserver(this);
+        }
 
         mAttachedToWindow = false;
         onVisibilityInputChanged();
