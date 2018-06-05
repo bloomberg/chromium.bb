@@ -21,7 +21,6 @@ crbug.com/714962 external/wpt/css/css-transforms/transform-abspos-006.html [ Ski
 crbug.com/714962 external/wpt/css/css-transforms/transform-abspos-007.html [ Skip ]
 
 # TODO(skobes): rebaseline
-crbug.com/811429 fast/text/font-format-support-cbdt-sbix-cff2-vertical.html [ Failure ]
 
 # Caused by legacy fallback, <details> with position:absolute hits DCHECK in
 # IsEmptyBlock() in NGBlockLayoutAlgorithm::HandleInflow()
@@ -62,7 +61,6 @@ crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-004
 crbug.com/591099 fast/dom/inner-text-first-letter.html [ Pass ]
 
 # The position of writing-mode:vertical inline image is different from legacy.
-crbug.com/591099 fast/lists/008-vertical.html [ Failure ]
 
 # New failures are appended below by the script.
 crbug.com/714962 accessibility/adjacent-continuations-cause-assertion-failure.html [ Failure ]
@@ -142,7 +140,6 @@ crbug.com/591099 css3/flexbox/bug669714.html [ Failure ]
 crbug.com/591099 css3/flexbox/flex-align-vertical-writing-mode.html [ Failure ]
 crbug.com/591099 css3/flexbox/flex-flow-margins-auto-size.html [ Failure ]
 crbug.com/591099 css3/flexbox/flex-item-contains-strict.html [ Failure ]
-crbug.com/591099 css3/flexbox/flexbox-with-multi-column-property.html [ Failure ]
 crbug.com/591099 css3/flexbox/intrinsic-width-orthogonal-writing-mode.html [ Failure ]
 crbug.com/591099 css3/flexbox/line-wrapping.html [ Failure ]
 crbug.com/591099 css3/flexbox/scrollbars-auto.html [ Failure ]
@@ -485,7 +482,6 @@ crbug.com/591099 fast/css-generated-content/015.html [ Failure ]
 crbug.com/805301 fast/css-generated-content/crash-selection-editing-removes-pseudo.html [ Failure ]
 crbug.com/591099 fast/css-generated-content/first-letter-next-sibling-crash.html [ Crash ]
 crbug.com/591099 fast/css-generated-content/float-first-letter-siblings-convert-to-inline.html [ Crash ]
-crbug.com/591099 fast/css-grid-layout/column-property-should-not-apply-on-grid-container.html [ Failure ]
 crbug.com/591099 fast/css-grid-layout/flex-and-minmax-content-resolution-columns.html [ Failure ]
 crbug.com/591099 fast/css-grid-layout/grid-align-baseline-vertical.html [ Failure ]
 crbug.com/591099 fast/css-grid-layout/grid-self-baseline-01.html [ Failure ]
@@ -716,7 +712,6 @@ crbug.com/591099 fast/text/emphasis-complex.html [ Failure ]
 crbug.com/591099 fast/text/emphasis-ellipsis-complextext.html [ Failure ]
 crbug.com/591099 fast/text/emphasis-overlap.html [ Failure ]
 crbug.com/591099 fast/text/hide-atomic-inlines-after-ellipsis.html [ Failure ]
-crbug.com/714962 fast/text/international/hindi-whitespace.html [ Failure ]
 crbug.com/796943 fast/text/international/shape-across-elements-simple.html [ Pass ]
 crbug.com/591099 fast/text/international/text-combine-image-test.html [ Failure ]
 crbug.com/591099 fast/text/orientation-sideways.html [ Failure ]
@@ -753,8 +748,6 @@ crbug.com/591099 fast/writing-mode/table-percent-width-quirk.html [ Failure ]
 crbug.com/591099 fast/writing-mode/text-combine-justify.html [ Failure ]
 crbug.com/591099 fast/writing-mode/text-combine-line-break.html [ Failure ]
 crbug.com/591099 fast/writing-mode/text-combine-various-fonts.html [ Failure ]
-crbug.com/591099 fast/writing-mode/vertical-baseline-alignment.html [ Failure ]
-crbug.com/591099 fast/writing-mode/vertical-font-fallback.html [ Failure ]
 crbug.com/591099 fast/writing-mode/vertical-lr-replaced-selection.html [ Failure ]
 crbug.com/591099 fullscreen/full-screen-with-flex-item.html [ Failure ]
 crbug.com/591099 hittesting/border-hittest-inlineFlowBox.html [ Failure ]
