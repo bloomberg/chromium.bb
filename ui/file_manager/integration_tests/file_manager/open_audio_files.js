@@ -435,17 +435,23 @@ function audioRepeatOneModeSingleFile(path) {
       audioPlayerApp.callRemoteTestUtil(
           'fakeMouseClick', audioAppId, repeatButton, this.next);
     },
+    // Leap forward in time.
     function(result) {
       chrome.test.assertTrue(result, 'Failed to click the repeat button');
-
-      var selector = 'audio-player[playing][playcount="1"]';
-      audioPlayerApp.waitForElement(audioAppId, selector).then(this.next);
-    },
-    // Check: Beautiful Song.ogg should be playing.
-    function(element) {
-      chrome.test.assertEq(audioFileSystemURL(path, 'Beautiful Song.ogg'),
-          element.attributes.currenttrackurl);
+      audioTimeLeapForward(audioAppId);
       this.next();
+    },
+    // Check: the same file should still be playing (non-repeated).
+    function() {
+      const playFile = audioPlayingQuery('Beautiful Song.ogg');
+      const initial = playFile + '[playcount="0"]';
+      audioPlayerApp.waitForElement(audioAppId, initial).then(this.next);
+    },
+    // When it ends, Audio Player should replay it (repeat-once).
+    function() {
+      const playFile = audioPlayingQuery('Beautiful Song.ogg');
+      const repeats = playFile + '[playcount="1"]';
+      audioPlayerApp.waitForElement(audioAppId, repeats).then(this.next);
     },
     function() {
       checkIfNoErrorsOccured(this.next);
