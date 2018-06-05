@@ -29,7 +29,6 @@
 -NavigationHandleImplBrowserTest.RedirectToRendererDebugUrl
 
 -AsyncResourceHandlerBrowserTest/AsyncResourceHandlerBrowserTest.UploadProgress*
--WebContentsImplBrowserTest.DownloadImage_Deny_FileImage
 
 # services/network/url_loader.cc should handle failure in
 # URLLoaderImpl::OnResponseBodyStreamRead(). Note this is flaky, so it will pass
