@@ -132,7 +132,6 @@ crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-resources.js 
 crbug.com/451577 [ Win10 ] http/tests/devtools/extensions/extensions-sidebar.js [ Slow ]
 crbug.com/451577 [ Mac ] http/tests/devtools/layers/layer-canvas-log.js [ Slow ]
 crbug.com/451577 [ Mac ] http/tests/devtools/network/network-domain-filter.js [ Slow ]
-crbug.com/789111 virtual/pwa-full-code-cache/http/tests/devtools/service-workers/service-worker-v8-cache.js [ Slow ]
 
 # Random slow tests
 crbug.com/763197 [ Linux Mac ] virtual/gpu-rasterization/images/color-profile-border-radius.html [ Slow ]
@@ -218,9 +217,7 @@ crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.h
 crbug.com/402379 [ Debug ] storage/indexeddb/cursor-continue-validity.html [ Slow ]
 crbug.com/402379 [ Debug ] storage/indexeddb/mozilla/indexes.html [ Slow ]
 crbug.com/480769 http/tests/devtools/service-workers/service-workers-redundant.js [ Slow ]
-crbug.com/480769 virtual/pwa-full-code-cache/http/tests/devtools/service-workers/service-workers-redundant.js [ Slow ]
 crbug.com/480769 http/tests/devtools/service-workers/service-worker-agents.js [ Slow ]
-crbug.com/480769 virtual/pwa-full-code-cache/http/tests/devtools/service-workers/service-worker-agents.js [ Slow ]
 crbug.com/504703 inspector-protocol/debugger/debugger-step-into-dedicated-worker.js [ Slow ]
 crbug.com/535478 [ Win ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Slow ]
 crbug.com/548765 http/tests/devtools/console-fetch-logging.js [ Slow ]
