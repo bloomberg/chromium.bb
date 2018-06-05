@@ -369,8 +369,11 @@ config("compiler") {
       ldflags += [ "-fPIC" ]
     }
 
-    # Use pipes for communicating between sub-processes. Faster.
-    cflags += [ "-pipe" ]
+    if (!is_clang) {
+      # Use pipes for communicating between sub-processes. Faster.
+      # (This flag doesn't do anything with Clang.)
+      cflags += [ "-pipe" ]
+    }
 
     ldflags += [
       "-Wl,-z,noexecstack",
