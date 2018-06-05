@@ -177,8 +177,7 @@ TEST_F(MediaDrmStorageImplTest, OnProvisioned) {
   // Verify the origin dictionary is created.
   const base::DictionaryValue* storage_dict =
       pref_service_->GetDictionary(kMediaDrmStorage);
-  EXPECT_TRUE(
-      storage_dict->GetDictionaryWithoutPathExpansion(kTestOrigin, nullptr));
+  EXPECT_TRUE(storage_dict->FindKey(kTestOrigin));
 }
 
 TEST_F(MediaDrmStorageImplTest, OnProvisioned_Twice) {
