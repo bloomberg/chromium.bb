@@ -354,12 +354,6 @@ class ProfileSyncService : public syncer::SyncService,
   bool IsPassphraseRequired() const override;
   syncer::ModelTypeSet GetEncryptedDataTypes() const override;
 
-  // Called by the SyncAuthManager when the primary account changes.
-  // TODO(crbug.com/842697): Make these private and pass a callback to the
-  // SyncAuthManager.
-  void OnPrimaryAccountSet();
-  void OnPrimaryAccountCleared();
-
   // GaiaCookieManagerService::Observer implementation.
   void OnGaiaAccountsInCookieUpdated(
       const std::vector<gaia::ListedAccount>& accounts,
@@ -480,15 +474,6 @@ class ProfileSyncService : public syncer::SyncService,
   // been cleared yet. Virtual for testing purposes.
   virtual bool waiting_for_auth() const;
 
-  // Called by the SyncAuthManager when the refresh token gets revoked.
-  // TODO(crbug.com/842697): Make this private and pass a callback to the
-  // SyncAuthManager.
-  void OnRefreshTokenRevoked();
-
-  // Called by SyncAuthManager when an access token fetch attempt finishes
-  // (successfully or not).
-  void AccessTokenFetched(const GoogleServiceAuthError& error);
-
   // KeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
   void Shutdown() override;
@@ -541,6 +526,10 @@ class ProfileSyncService : public syncer::SyncService,
   MakeHttpPostProviderFactoryGetter();
   syncer::WeakHandle<syncer::UnrecoverableErrorHandler>
   GetUnrecoverableErrorHandler();
+
+  // Callbacks for SyncAuthManager.
+  void AccountStateChanged();
+  void CredentialsChanged();
 
   // Destroys the |crypto_| object and creates a new one with fresh state.
   void ResetCryptoState();

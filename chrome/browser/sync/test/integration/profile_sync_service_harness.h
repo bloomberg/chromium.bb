@@ -76,8 +76,11 @@ class ProfileSyncServiceHarness {
   // Starts the sync service after a previous stop.
   bool StartSyncService();
 
-  // Sign out of sync service.
+#if !defined(OS_CHROMEOS)
+  // Sign out of sync service. ChromeOS doesn't have the concept of sign-out,
+  // so this only exists on other platforms.
   void SignoutSyncService();
+#endif  // !OS_CHROMEOS
 
   // Returns whether this client has unsynced items. Avoid verifying false
   // return values, because tests typically shouldn't make assumptions about
