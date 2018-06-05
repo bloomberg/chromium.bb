@@ -45,6 +45,11 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   String orientation();
   void timeRange(DoubleOrScrollTimelineAutoKeyword&);
 
+  // Returns the Node that should actually have the ScrollableArea (if one
+  // exists). This can differ from |scrollSource| when |scroll_source_| is the
+  // Document's scrollingElement.
+  Node* ResolvedScrollSource() const;
+
   ScrollDirection GetOrientation() const { return orientation_; }
 
   // Must be called when this ScrollTimeline is attached/detached from an
