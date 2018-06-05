@@ -12,7 +12,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 

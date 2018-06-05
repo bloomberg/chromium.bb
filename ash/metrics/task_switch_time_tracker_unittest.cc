@@ -7,7 +7,7 @@
 #include <string>
 
 #include "ash/metrics/task_switch_time_tracker_test_api.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
