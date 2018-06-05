@@ -33,6 +33,7 @@ source_set("web") {
     "sad_tab_tab_helper.mm",
   ]
   deps = [
+    ":feature_flags",
     ":tab_helper_delegates",
     "//base",
     "//components/error_page/common",
@@ -337,4 +338,15 @@ source_set("perf_tests") {
     "//ios/web/public/test",
   ]
   libs = [ "WebKit.framework" ]
+}
+
+source_set("feature_flags") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "features.cc",
+    "features.h",
+  ]
+  deps = [
+    "//base",
+  ]
 }
