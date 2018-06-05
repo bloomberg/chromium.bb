@@ -79,8 +79,6 @@ class AshTestHelper {
   // primary root Window.
   aura::Window* CurrentContext();
 
-  void RunAllPendingInMessageLoop();
-
   PrefService* GetLocalStatePrefService();
 
   TestShellDelegate* test_shell_delegate() { return test_shell_delegate_; }

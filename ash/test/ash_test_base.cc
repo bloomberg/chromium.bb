@@ -413,7 +413,7 @@ void AshTestBase::ParentWindowInPrimaryRootWindow(aura::Window* window) {
 }
 
 void AshTestBase::RunAllPendingInMessageLoop() {
-  ash_test_helper_->RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 }
 
 TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {
