@@ -217,6 +217,11 @@ bool GpuDataManagerImpl::IsGpuProcessUsingHardwareGpu() const {
   return private_->IsGpuProcessUsingHardwareGpu();
 }
 
+void GpuDataManagerImpl::SetApplicationVisible(bool is_visible) {
+  base::AutoLock auto_lock(lock_);
+  private_->SetApplicationVisible(is_visible);
+}
+
 GpuDataManagerImpl::GpuDataManagerImpl()
     : private_(GpuDataManagerImplPrivate::Create(this)) {
 }

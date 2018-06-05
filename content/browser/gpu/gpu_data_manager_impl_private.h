@@ -106,6 +106,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   bool IsGpuProcessUsingHardwareGpu() const;
 
+  void SetApplicationVisible(bool is_visible);
+
   virtual ~GpuDataManagerImplPrivate();
 
  private:
@@ -199,6 +201,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   DomainBlockMap blocked_domains_;
   mutable std::list<base::Time> timestamps_of_gpu_resets_;
   bool domain_blocking_enabled_;
+
+  bool application_is_visible_ = true;
 
   GpuDataManagerImpl* owner_;
 

@@ -159,6 +159,10 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   // Disabled (in the viz case).
   bool IsGpuProcessUsingHardwareGpu() const;
 
+  // State tracking allows us to customize GPU process launch depending on
+  // whether we are in the foreground or background.
+  void SetApplicationVisible(bool is_visible);
+
  private:
   friend class GpuDataManagerImplPrivate;
   friend class GpuDataManagerImplPrivateTest;

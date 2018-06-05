@@ -157,7 +157,8 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // Start the GPU watchdog only after anything that is expected to be time
   // consuming has completed, otherwise the process is liable to be aborted.
   if (enable_watchdog && !delayed_watchdog_enable) {
-    watchdog_thread_ = gpu::GpuWatchdogThread::Create();
+    watchdog_thread_ = gpu::GpuWatchdogThread::Create(
+        gpu_preferences_.watchdog_starts_backgrounded);
 #if defined(OS_WIN)
     // This is a workaround for an occasional deadlock between watchdog and
     // current thread. Watchdog hangs at thread initialization in
@@ -287,7 +288,8 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       watchdog_thread_->Stop();
     watchdog_thread_ = nullptr;
   } else if (enable_watchdog && delayed_watchdog_enable) {
-    watchdog_thread_ = gpu::GpuWatchdogThread::Create();
+    watchdog_thread_ = gpu::GpuWatchdogThread::Create(
+        gpu_preferences_.watchdog_starts_backgrounded);
   }
 
   if (!gpu_info_.sandboxed && !attempted_startsandbox) {

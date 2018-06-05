@@ -35,7 +35,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
  public:
   ~GpuWatchdogThread() override;
 
-  static std::unique_ptr<GpuWatchdogThread> Create();
+  static std::unique_ptr<GpuWatchdogThread> Create(bool start_backgrounded);
 
   void CheckArmed();
 
