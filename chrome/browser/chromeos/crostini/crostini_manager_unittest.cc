@@ -41,6 +41,14 @@ class CrostiniManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
+  void ListVmDisksClientErrorCallback(base::OnceClosure closure,
+                                      ConciergeClientResult result,
+                                      int64_t total_size) {
+    EXPECT_FALSE(fake_concierge_client_->list_vm_disks_called());
+    EXPECT_EQ(result, ConciergeClientResult::CLIENT_ERROR);
+    std::move(closure).Run();
+  }
+
   void StartTerminaVmClientErrorCallback(base::OnceClosure closure,
                                          ConciergeClientResult result) {
     EXPECT_FALSE(fake_concierge_client_->start_termina_vm_called());
@@ -72,6 +80,13 @@ class CrostiniManagerTest : public testing::Test {
   void DestroyDiskImageSuccessCallback(base::OnceClosure closure,
                                        ConciergeClientResult result) {
     EXPECT_TRUE(fake_concierge_client_->destroy_disk_image_called());
+    std::move(closure).Run();
+  }
+
+  void ListVmDisksSuccessCallback(base::OnceClosure closure,
+                                  ConciergeClientResult result,
+                                  int64_t total_size) {
+    EXPECT_TRUE(fake_concierge_client_->list_vm_disks_called());
     std::move(closure).Run();
   }
 
@@ -141,7 +156,7 @@ TEST_F(CrostiniManagerTest, CreateDiskImageNameError) {
   const base::FilePath& disk_path = base::FilePath("");
 
   CrostiniManager::GetInstance()->CreateDiskImage(
-      "i_dont_know_what_cryptohome_id_is", disk_path,
+      "a_cryptohome_id", disk_path,
       vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT,
       base::BindOnce(&CrostiniManagerTest::CreateDiskImageClientErrorCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
@@ -162,7 +177,7 @@ TEST_F(CrostiniManagerTest, CreateDiskImageStorageLocationError) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
   CrostiniManager::GetInstance()->CreateDiskImage(
-      "i_dont_know_what_cryptohome_id_is", disk_path,
+      "a_cryptohome_id", disk_path,
       vm_tools::concierge::StorageLocation_INT_MIN_SENTINEL_DO_NOT_USE_,
       base::BindOnce(&CrostiniManagerTest::CreateDiskImageClientErrorCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
@@ -173,7 +188,7 @@ TEST_F(CrostiniManagerTest, CreateDiskImageSuccess) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
   CrostiniManager::GetInstance()->CreateDiskImage(
-      "i_dont_know_what_cryptohome_id_is", disk_path,
+      "a_cryptohome_id", disk_path,
       vm_tools::concierge::STORAGE_CRYPTOHOME_DOWNLOADS,
       base::BindOnce(&CrostiniManagerTest::CreateDiskImageSuccessCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
@@ -184,7 +199,7 @@ TEST_F(CrostiniManagerTest, DestroyDiskImageNameError) {
   const base::FilePath& disk_path = base::FilePath("");
 
   CrostiniManager::GetInstance()->DestroyDiskImage(
-      "i_dont_know_what_cryptohome_id_is", disk_path,
+      "a_cryptohome_id", disk_path,
       vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT,
       base::BindOnce(&CrostiniManagerTest::DestroyDiskImageClientErrorCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
@@ -205,7 +220,7 @@ TEST_F(CrostiniManagerTest, DestroyDiskImageStorageLocationError) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
   CrostiniManager::GetInstance()->DestroyDiskImage(
-      "i_dont_know_what_cryptohome_id_is", disk_path,
+      "a_cryptohome_id", disk_path,
       vm_tools::concierge::StorageLocation_INT_MIN_SENTINEL_DO_NOT_USE_,
       base::BindOnce(&CrostiniManagerTest::DestroyDiskImageClientErrorCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
@@ -216,9 +231,24 @@ TEST_F(CrostiniManagerTest, DestroyDiskImageSuccess) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
   CrostiniManager::GetInstance()->DestroyDiskImage(
-      "i_dont_know_what_cryptohome_id_is", disk_path,
+      "a_cryptohome_id", disk_path,
       vm_tools::concierge::STORAGE_CRYPTOHOME_DOWNLOADS,
       base::BindOnce(&CrostiniManagerTest::DestroyDiskImageSuccessCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, ListVmDisksCryptohomeError) {
+  CrostiniManager::GetInstance()->ListVmDisks(
+      "", base::BindOnce(&CrostiniManagerTest::ListVmDisksClientErrorCallback,
+                         base::Unretained(this), run_loop()->QuitClosure()));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, ListVmDisksSuccess) {
+  CrostiniManager::GetInstance()->ListVmDisks(
+      "a_cryptohome_id",
+      base::BindOnce(&CrostiniManagerTest::ListVmDisksSuccessCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
 }

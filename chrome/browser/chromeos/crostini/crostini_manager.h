@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_MANAGER_H_
 
 #include <map>
+#include <string>
+#include <tuple>
 #include <utility>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
@@ -30,6 +33,7 @@ enum class ConciergeClientResult {
   VM_START_FAILED,
   VM_STOP_FAILED,
   DESTROY_DISK_IMAGE_FAILED,
+  LIST_VM_DISKS_FAILED,
   CLIENT_ERROR,
   DISK_TYPE_ERROR,
   CONTAINER_START_FAILED,
@@ -71,6 +75,10 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
                               const base::FilePath& disk_path)>;
   // The type of the callback for CrostiniManager::DestroyDiskImage.
   using DestroyDiskImageCallback = ConciergeClientCallback;
+  // The type of the callback for CrostiniManager::ListVmDisks.
+  using ListVmDisksCallback =
+      base::OnceCallback<void(ConciergeClientResult result,
+                              int64_t total_size)>;
   // The type of the callback for CrostiniManager::StopVm.
   using StopVmCallback = ConciergeClientCallback;
   // The type of the callback for CrostiniManager::StartContainer.
@@ -142,6 +150,11 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
       // The storage location of the disk image
       vm_tools::concierge::StorageLocation storage_location,
       DestroyDiskImageCallback callback);
+
+  void ListVmDisks(
+      // The cryptohome id for the user's encrypted storage.
+      const std::string& cryptohome_id,
+      ListVmDisksCallback callback);
 
   // Checks the arguments for starting a Termina VM. Starts a Termina VM via
   // ConciergeClient::StartTerminaVm. |callback| is called if the arguments
@@ -253,24 +266,30 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // service method finishes.
   void OnCreateDiskImage(
       CreateDiskImageCallback callback,
-      base::Optional<vm_tools::concierge::CreateDiskImageResponse> response);
+      base::Optional<vm_tools::concierge::CreateDiskImageResponse> reply);
 
   // Callback for ConciergeClient::DestroyDiskImage. Called after the Concierge
   // service method finishes.
   void OnDestroyDiskImage(
       DestroyDiskImageCallback callback,
-      base::Optional<vm_tools::concierge::DestroyDiskImageResponse> response);
+      base::Optional<vm_tools::concierge::DestroyDiskImageResponse> reply);
+
+  // Callback for ConciergeClient::ListVmDisks. Called after the Concierge
+  // service method finishes.
+  void OnListVmDisks(
+      ListVmDisksCallback callback,
+      base::Optional<vm_tools::concierge::ListVmDisksResponse> reply);
 
   // Callback for ConciergeClient::StartTerminaVm. Called after the Concierge
   // service method finishes.
   void OnStartTerminaVm(
       StartTerminaVmCallback callback,
-      base::Optional<vm_tools::concierge::StartVmResponse> response);
+      base::Optional<vm_tools::concierge::StartVmResponse> reply);
 
   // Callback for ConciergeClient::StopVm. Called after the Concierge
   // service method finishes.
   void OnStopVm(StopVmCallback callback,
-                base::Optional<vm_tools::concierge::StopVmResponse> response);
+                base::Optional<vm_tools::concierge::StopVmResponse> reply);
 
   // Callback for CrostiniClient::StartConcierge. Called after the
   // DebugDaemon service method finishes.
@@ -287,25 +306,25 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
       std::string vm_name,
       std::string container_name,
       StartContainerCallback callback,
-      base::Optional<vm_tools::concierge::StartContainerResponse> response);
+      base::Optional<vm_tools::concierge::StartContainerResponse> reply);
 
   // Callback for CrostiniManager::LaunchContainerApplication.
   void OnLaunchContainerApplication(
       LaunchContainerApplicationCallback callback,
       base::Optional<vm_tools::concierge::LaunchContainerApplicationResponse>
-          response);
+          reply);
 
   // Callback for CrostiniManager::GetContainerAppIcons. Called after the
   // Concierge service finishes.
   void OnGetContainerAppIcons(
       GetContainerAppIconsCallback callback,
-      base::Optional<vm_tools::concierge::ContainerAppIconResponse> response);
+      base::Optional<vm_tools::concierge::ContainerAppIconResponse> reply);
 
   // Callback for CrostiniManager::GetContainerSshKeys. Called after the
   // Concierge service finishes.
   void OnGetContainerSshKeys(
       GetContainerSshKeysCallback callback,
-      base::Optional<vm_tools::concierge::ContainerSshKeysResponse> response);
+      base::Optional<vm_tools::concierge::ContainerSshKeysResponse> reply);
 
   // Helper for CrostiniManager::CreateDiskImage. Separated so it can be run
   // off the main thread.

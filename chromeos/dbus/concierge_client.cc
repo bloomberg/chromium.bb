@@ -4,6 +4,9 @@
 
 #include "chromeos/dbus/concierge_client.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -77,6 +80,26 @@ class ConciergeClientImpl : public ConciergeClient {
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
                            vm_tools::concierge::DestroyDiskImageResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void ListVmDisks(const vm_tools::concierge::ListVmDisksRequest& request,
+                   DBusMethodCallback<vm_tools::concierge::ListVmDisksResponse>
+                       callback) override {
+    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
+                                 vm_tools::concierge::kListVmDisksMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode ListVmDisksRequest protobuf";
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    concierge_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
+                           vm_tools::concierge::ListVmDisksResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 

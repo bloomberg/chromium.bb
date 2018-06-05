@@ -31,7 +31,7 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   bool IsContainerStartupFailedSignalConnected() override;
 
   // Fake version of the method that creates a disk image for the Termina VM.
-  // Sets create_disk_image_called. |callback| is called after the method
+  // Sets create_disk_image_called_. |callback| is called after the method
   // call finishes.
   void CreateDiskImage(
       const vm_tools::concierge::CreateDiskImageRequest& request,
@@ -39,29 +39,37 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
       override;
 
   // Fake version of the method that destroys a Termina VM and removes its disk
-  // image. Sets destroy_disk_image_called. |callback| is called after the
+  // image. Sets destroy_disk_image_called_. |callback| is called after the
   // method call finishes.
   void DestroyDiskImage(
       const vm_tools::concierge::DestroyDiskImageRequest& request,
       DBusMethodCallback<vm_tools::concierge::DestroyDiskImageResponse>
           callback) override;
 
+  // Fake version of the method that lists Termina VM disks. Sets
+  // list_vm_disks_called_. |callback| is called after the method call
+  // finishes.
+  void ListVmDisks(const vm_tools::concierge::ListVmDisksRequest& request,
+                   DBusMethodCallback<vm_tools::concierge::ListVmDisksResponse>
+                       callback) override;
+
   // Fake version of the method that starts a Termina VM. Sets
-  // start_termina_vm_called. |callback| is called after the method call
+  // start_termina_vm_called_. |callback| is called after the method call
   // finishes.
   void StartTerminaVm(const vm_tools::concierge::StartVmRequest& request,
                       DBusMethodCallback<vm_tools::concierge::StartVmResponse>
                           callback) override;
 
   // Fake version of the method that stops the named Termina VM if it is
-  // running. Sets stop_vm_called. |callback| is called after the method
+  // running. Sets stop_vm_called_. |callback| is called after the method
   // call finishes.
   void StopVm(const vm_tools::concierge::StopVmRequest& request,
               DBusMethodCallback<vm_tools::concierge::StopVmResponse> callback)
       override;
 
   // Fake version of the method that starts a Container inside an existing
-  // Termina VM. |callback| is called after the method call finishes.
+  // Termina VM. Sets start_container_called_. |callback| is called after the
+  // method call finishes.
   void StartContainer(
       const vm_tools::concierge::StartContainerRequest& request,
       DBusMethodCallback<vm_tools::concierge::StartContainerResponse> callback)
@@ -98,6 +106,8 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   bool create_disk_image_called() const { return create_disk_image_called_; }
   // Indicates whether DestroyDiskImage has been called
   bool destroy_disk_image_called() const { return destroy_disk_image_called_; }
+  // Indicates whether ListVmDisks has been called
+  bool list_vm_disks_called() const { return list_vm_disks_called_; }
   // Indicates whether StartTerminaVm has been called
   bool start_termina_vm_called() const { return start_termina_vm_called_; }
   // Indicates whether StopVm has been called
@@ -119,6 +129,7 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
  private:
   bool create_disk_image_called_ = false;
   bool destroy_disk_image_called_ = false;
+  bool list_vm_disks_called_ = false;
   bool start_termina_vm_called_ = false;
   bool stop_vm_called_ = false;
   bool start_container_called_ = false;

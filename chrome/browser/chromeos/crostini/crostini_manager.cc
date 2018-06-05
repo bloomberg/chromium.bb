@@ -570,6 +570,26 @@ void CrostiniManager::DestroyDiskImage(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void CrostiniManager::ListVmDisks(
+    // The cryptohome id for the user's encrypted storage.
+    const std::string& cryptohome_id,
+    ListVmDisksCallback callback) {
+  if (cryptohome_id.empty()) {
+    LOG(ERROR) << "Cryptohome id cannot be empty";
+    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR, 0);
+    return;
+  }
+
+  vm_tools::concierge::ListVmDisksRequest request;
+  request.set_cryptohome_id(std::move(cryptohome_id));
+  request.set_storage_location(vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT);
+
+  GetConciergeClient()->ListVmDisks(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnListVmDisks,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void CrostiniManager::StartTerminaVm(std::string owner_id,
                                      std::string name,
                                      const base::FilePath& disk_path,
@@ -845,6 +865,26 @@ void CrostiniManager::OnDestroyDiskImage(
   }
 
   std::move(callback).Run(ConciergeClientResult::SUCCESS);
+}
+
+void CrostiniManager::OnListVmDisks(
+    ListVmDisksCallback callback,
+    base::Optional<vm_tools::concierge::ListVmDisksResponse> reply) {
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Failed to get list of VM disks. Empty response.";
+    std::move(callback).Run(ConciergeClientResult::LIST_VM_DISKS_FAILED, 0);
+    return;
+  }
+  vm_tools::concierge::ListVmDisksResponse response = std::move(reply).value();
+
+  if (!response.success()) {
+    LOG(ERROR) << "Failed to list VM disks: " << response.failure_reason();
+    std::move(callback).Run(ConciergeClientResult::LIST_VM_DISKS_FAILED, 0);
+    return;
+  }
+
+  std::move(callback).Run(ConciergeClientResult::SUCCESS,
+                          response.total_size());
 }
 
 void CrostiniManager::OnStartTerminaVm(
