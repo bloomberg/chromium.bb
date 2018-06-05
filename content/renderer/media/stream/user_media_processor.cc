@@ -649,9 +649,6 @@ void UserMediaProcessor::OnStreamGenerated(
     return;
   }
 
-  media_stream_device_observer_->AddStream(label, audio_devices, video_devices,
-                                           weak_factory_.GetWeakPtr());
-
   current_request_info_->set_state(RequestInfo::State::GENERATED);
 
   for (const auto* devices : {&audio_devices, &video_devices}) {
@@ -932,6 +929,10 @@ MediaStreamVideoSource* UserMediaProcessor::CreateVideoSource(
 
 void UserMediaProcessor::StartTracks(const std::string& label) {
   DCHECK(!current_request_info_->web_request().IsNull());
+  media_stream_device_observer_->AddStream(
+      label, current_request_info_->audio_devices(),
+      current_request_info_->video_devices(), weak_factory_.GetWeakPtr());
+
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks(
       current_request_info_->audio_devices().size());
   CreateAudioTracks(current_request_info_->audio_devices(), &audio_tracks);
