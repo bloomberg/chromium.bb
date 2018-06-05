@@ -9,18 +9,20 @@ from telemetry.util import js_template
 
 class PolymerPage(page_module.Page):
 
-  def __init__(self, url, page_set, run_no_page_interactions):
+  def __init__(self, url, page_set, run_no_page_interactions, name=""):
     """ Base class for all polymer pages.
 
     Args:
       run_no_page_interactions: whether the page will run any interactions after
         navigate steps.
     """
+    if name == "":
+      name = url
     super(PolymerPage, self).__init__(
       url=url,
       shared_page_state_class=shared_page_state.SharedMobilePageState,
       page_set=page_set,
-      name=url)
+      name=name)
     self.script_to_evaluate_on_commit = '''
       document.addEventListener("polymer-ready", function() {
         window.__polymer_ready = true;
@@ -51,7 +53,8 @@ class PolymerCalculatorPage(PolymerPage):
     super(PolymerCalculatorPage, self).__init__(
       url=('http://www.polymer-project.org/components/paper-calculator/'
           'demo.html'),
-      page_set=page_set, run_no_page_interactions=run_no_page_interactions)
+      name='paper_calculator', page_set=page_set,
+      run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
     self.TapButton(action_runner)
@@ -99,7 +102,8 @@ class PolymerShadowPage(PolymerPage):
   def __init__(self, page_set, run_no_page_interactions):
     super(PolymerShadowPage, self).__init__(
       url='http://www.polymer-project.org/components/paper-shadow/demo.html',
-      page_set=page_set, run_no_page_interactions=run_no_page_interactions)
+      name='paper_shadow',page_set=page_set,
+      run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
     with action_runner.CreateInteraction('ScrollAndShadowAnimation'):
@@ -120,7 +124,7 @@ class PolymerShadowPage(PolymerPage):
 
 class PolymerSampler(PolymerPage):
 
-  def __init__(self, page_set, anchor, run_no_page_interactions,
+  def __init__(self, page_set, name, anchor, run_no_page_interactions,
                scrolling_page=False):
     """Page exercising interactions with a single Paper Sampler subpage.
 
@@ -133,7 +137,8 @@ class PolymerSampler(PolymerPage):
     """
     super(PolymerSampler, self).__init__(
       url=('http://www.polymer-project.org/components/%s/demo.html' % anchor),
-      page_set=page_set, run_no_page_interactions=run_no_page_interactions)
+      name=name, page_set=page_set,
+      run_no_page_interactions=run_no_page_interactions)
     self.scrolling_page = scrolling_page
     self.iframe_js = 'document'
 
@@ -231,29 +236,31 @@ class PolymerPageSet(story.StorySet):
 
     # Polymer Sampler subpages that are interesting to tap / swipe elements on
     TAPPABLE_PAGES = [
-        'paper-button',
-        'paper-checkbox',
-        'paper-fab',
-        'paper-icon-button',
-        # crbug.com/394756
-        # 'paper-radio-button',
-        #FIXME(wiltzius) Disabling x-shadow until this issue is fixed:
-        # https://github.com/Polymer/paper-shadow/issues/12
-        #'paper-shadow',
-        'paper-tabs',
-        'paper-toggle-button',
-        ]
-    for p in TAPPABLE_PAGES:
+      ('paper-button', 'paper_button'),
+      ('paper-checkbox', 'paper_checkbox'),
+      ('paper-fab', 'paper_fab'),
+      ('paper-icon-button', 'paper_icon_button'),
+      # crbug.com/394756
+      # ('paper-radio-button', 'paper_radio_buton'),
+      #FIXME(wiltzius) Disabling x-shadow until this issue is fixed:
+      # https://github.com/Polymer/paper-shadow/issues/12
+      # ('paper-shadow', 'paper_shadow'),
+      ('paper-tabs', 'paper_tabs'),
+      ('paper-toggle-button','paper_toggle_button')
+    ]
+    for anchor,name in TAPPABLE_PAGES:
       self.AddStory(PolymerSampler(
-          self, p, run_no_page_interactions=run_no_page_interactions))
+          self, anchor=anchor, name=name,
+          run_no_page_interactions=run_no_page_interactions))
 
     # Polymer Sampler subpages that are interesting to scroll
     SCROLLABLE_PAGES = [
-        'core-scroll-header-panel',
-        ]
-    for p in SCROLLABLE_PAGES:
+      ('core-scroll-header-panel','core_scroll_header_panel')
+    ]
+    for anchor,name in SCROLLABLE_PAGES:
       self.AddStory(PolymerSampler(
-          self, p, run_no_page_interactions=run_no_page_interactions,
+          self, anchor=anchor, name=name,
+          run_no_page_interactions=run_no_page_interactions,
           scrolling_page=True))
 
     for page in self:
