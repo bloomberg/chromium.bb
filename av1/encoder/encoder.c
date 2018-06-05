@@ -3757,7 +3757,7 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
     set_size_literal(cpi, width, height);
     set_mv_search_params(cpi);
     // Recalculate 'all_lossless' in case super-resolution was (un)selected.
-    cm->all_lossless = cm->coded_lossless && av1_superres_unscaled(cm);
+    cm->all_lossless = cm->coded_lossless && !av1_superres_scaled(cm);
   }
 
   if (cpi->oxcf.pass == 2) {
@@ -4012,7 +4012,7 @@ static void superres_post_encode(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
 
-  if (av1_superres_unscaled(cm)) return;
+  if (!av1_superres_scaled(cm)) return;
 
   assert(cpi->oxcf.enable_superres);
   assert(!is_lossless_requested(&cpi->oxcf));
@@ -4023,7 +4023,7 @@ static void superres_post_encode(AV1_COMP *cpi) {
   // If regular resizing is occurring the source will need to be downscaled to
   // match the upscaled superres resolution. Otherwise the original source is
   // used.
-  if (av1_resize_unscaled(cm)) {
+  if (!av1_resize_scaled(cm)) {
     cpi->source = cpi->unscaled_source;
     if (cpi->last_source != NULL) cpi->last_source = cpi->unscaled_last_source;
   } else {

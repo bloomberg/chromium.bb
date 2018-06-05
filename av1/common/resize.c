@@ -1231,7 +1231,7 @@ static void copy_buffer_config(const YV12_BUFFER_CONFIG *const src,
 // Upscale decoded image.
 void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
   const int num_planes = av1_num_planes(cm);
-  if (av1_superres_unscaled(cm)) return;
+  if (!av1_superres_scaled(cm)) return;
 
   YV12_BUFFER_CONFIG copy_buffer;
   memset(&copy_buffer, 0, sizeof(copy_buffer));

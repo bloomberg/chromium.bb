@@ -158,7 +158,7 @@ AV1PixelRect av1_get_tile_rect(const TileInfo *tile_info, const AV1_COMMON *cm,
   // If upscaling is enabled, the tile limits need scaling to match the
   // upscaled frame where the restoration units live. To do this, scale up the
   // top-left and bottom-right of the tile.
-  if (!av1_superres_unscaled(cm)) {
+  if (av1_superres_scaled(cm)) {
     av1_calculate_unscaled_superres_size(&r.left, &r.top,
                                          cm->superres_scale_denominator);
     av1_calculate_unscaled_superres_size(&r.right, &r.bottom,

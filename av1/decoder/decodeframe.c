@@ -3529,7 +3529,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   if (cm->frame_type == KEY_FRAME) {
     setup_frame_size(cm, frame_size_override_flag, rb);
 
-    if (cm->allow_screen_content_tools && av1_superres_unscaled(cm))
+    if (cm->allow_screen_content_tools && !av1_superres_scaled(cm))
       cm->allow_intrabc = aom_rb_read_bit(rb);
     cm->allow_ref_frame_mvs = 0;
     cm->prev_frame = NULL;
@@ -3539,7 +3539,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     if (cm->intra_only) {
       cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
       setup_frame_size(cm, frame_size_override_flag, rb);
-      if (cm->allow_screen_content_tools && av1_superres_unscaled(cm))
+      if (cm->allow_screen_content_tools && !av1_superres_scaled(cm))
         cm->allow_intrabc = aom_rb_read_bit(rb);
 
     } else if (pbi->need_resync != 1) { /* Skip if need resync */
@@ -3795,7 +3795,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     xd->qindex[i] = qindex;
   }
   cm->coded_lossless = is_coded_lossless(cm, xd);
-  cm->all_lossless = cm->coded_lossless && av1_superres_unscaled(cm);
+  cm->all_lossless = cm->coded_lossless && !av1_superres_scaled(cm);
   setup_segmentation_dequant(cm);
   if (cm->coded_lossless) {
     cm->lf.filter_level[0] = 0;
@@ -3874,7 +3874,7 @@ void superres_post_decode(AV1Decoder *pbi) {
   AV1_COMMON *const cm = &pbi->common;
   BufferPool *const pool = cm->buffer_pool;
 
-  if (av1_superres_unscaled(cm)) return;
+  if (!av1_superres_scaled(cm)) return;
   assert(!cm->all_lossless);
 
   lock_buffer_pool(pool);
@@ -4017,7 +4017,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
     const int do_cdef =
         !cm->skip_loop_filter && !cm->coded_lossless &&
         (cm->cdef_bits || cm->cdef_strengths[0] || cm->cdef_uv_strengths[0]);
-    const int do_superres = !av1_superres_unscaled(cm);
+    const int do_superres = av1_superres_scaled(cm);
     const int optimized_loop_restoration = !do_cdef && !do_superres;
 
     if (!optimized_loop_restoration) {

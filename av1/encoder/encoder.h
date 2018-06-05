@@ -856,14 +856,14 @@ static INLINE void uref_cnt_fb(EncRefCntBuffer *ubufs, int *uidx,
   ubufs[new_uidx].ref_count++;
 }
 
-// Returns 1 if a frame is unscaled and 0 otherwise.
-static INLINE int av1_resize_unscaled(const AV1_COMMON *cm) {
-  return cm->superres_upscaled_width == cm->render_width &&
-         cm->superres_upscaled_height == cm->render_height;
+// Returns 1 if a frame is scaled and 0 otherwise.
+static INLINE int av1_resize_scaled(const AV1_COMMON *cm) {
+  return !(cm->superres_upscaled_width == cm->render_width &&
+           cm->superres_upscaled_height == cm->render_height);
 }
 
-static INLINE int av1_frame_unscaled(const AV1_COMMON *cm) {
-  return av1_superres_unscaled(cm) && av1_resize_unscaled(cm);
+static INLINE int av1_frame_scaled(const AV1_COMMON *cm) {
+  return !av1_superres_scaled(cm) && av1_resize_scaled(cm);
 }
 
 #ifdef __cplusplus

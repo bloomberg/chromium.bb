@@ -1054,7 +1054,7 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
   }
 
   // Modify active_best_quality for downscaled normal frames.
-  if (!av1_frame_unscaled(cm) && !frame_is_kf_gf_arf(cpi)) {
+  if (av1_frame_scaled(cm) && !frame_is_kf_gf_arf(cpi)) {
     int qdelta = av1_compute_qdelta_by_rate(
         rc, cm->frame_type, active_best_quality, 2.0, cm->bit_depth);
     active_best_quality =
@@ -1141,7 +1141,7 @@ static void rc_set_frame_target(AV1_COMP *cpi, int target, int width,
   rc->this_frame_target = target;
 
   // Modify frame size target when down-scaled.
-  if (!av1_frame_unscaled(cm))
+  if (av1_frame_scaled(cm))
     rc->this_frame_target =
         (int)(rc->this_frame_target * resize_rate_factor(cpi, width, height));
 
@@ -1250,7 +1250,7 @@ void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
 
   // Rolling monitors of whether we are over or underspending used to help
   // regulate min and Max Q in two pass.
-  if (!av1_frame_unscaled(cm))
+  if (av1_frame_scaled(cm))
     rc->this_frame_target =
         (int)(rc->this_frame_target /
               resize_rate_factor(cpi, cm->width, cm->height));

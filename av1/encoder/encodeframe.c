@@ -4209,7 +4209,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   // Reset the flag.
   cpi->intrabc_used = 0;
   // Need to disable intrabc when superres is selected
-  if (!av1_superres_unscaled(cm)) {
+  if (av1_superres_scaled(cm)) {
     cm->allow_intrabc = 0;
   }
 
@@ -4305,7 +4305,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     }
   }
   cm->coded_lossless = is_coded_lossless(cm, xd);
-  cm->all_lossless = cm->coded_lossless && av1_superres_unscaled(cm);
+  cm->all_lossless = cm->coded_lossless && !av1_superres_scaled(cm);
 
   cm->tx_mode = select_tx_mode(cpi);
 

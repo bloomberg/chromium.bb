@@ -2361,7 +2361,7 @@ static INLINE int find_identical_tile(
 
 static void write_render_size(const AV1_COMMON *cm,
                               struct aom_write_bit_buffer *wb) {
-  const int scaling_active = !av1_resize_unscaled(cm);
+  const int scaling_active = av1_resize_scaled(cm);
   aom_wb_write_bit(wb, scaling_active);
   if (scaling_active) {
     aom_wb_write_literal(wb, cm->render_width - 1, 16);
@@ -3167,16 +3167,16 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
   if (cm->frame_type == KEY_FRAME) {
     write_frame_size(cm, frame_size_override_flag, wb);
-    assert(av1_superres_unscaled(cm) || !cm->allow_intrabc);
-    if (cm->allow_screen_content_tools && av1_superres_unscaled(cm))
+    assert(!av1_superres_scaled(cm) || !cm->allow_intrabc);
+    if (cm->allow_screen_content_tools && !av1_superres_scaled(cm))
       aom_wb_write_bit(wb, cm->allow_intrabc);
     // all eight fbs are refreshed, pick one that will live long enough
     cm->fb_of_context_type[REGULAR_FRAME] = 0;
   } else {
     if (cm->frame_type == INTRA_ONLY_FRAME) {
       write_frame_size(cm, frame_size_override_flag, wb);
-      assert(av1_superres_unscaled(cm) || !cm->allow_intrabc);
-      if (cm->allow_screen_content_tools && av1_superres_unscaled(cm))
+      assert(!av1_superres_scaled(cm) || !cm->allow_intrabc);
+      if (cm->allow_screen_content_tools && !av1_superres_scaled(cm))
         aom_wb_write_bit(wb, cm->allow_intrabc);
     } else if (cm->frame_type == INTER_FRAME || frame_is_sframe(cm)) {
       MV_REFERENCE_FRAME ref_frame;
@@ -3286,7 +3286,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   }
 
   if (cm->all_lossless) {
-    assert(av1_superres_unscaled(cm));
+    assert(!av1_superres_scaled(cm));
   } else {
     if (!cm->coded_lossless) {
       encode_loopfilter(cm, wb);
