@@ -1274,10 +1274,10 @@ camera.views.Camera.prototype.synchronizeBounds_ = function() {
 
   var scale;
   if (videoRatio > bodyRatio) {
-    scale = Math.min(1, document.body.offsetHeight / this.video_.videoHeight)
+    scale = Math.min(1, document.body.offsetWidth / this.video_.videoWidth);
     document.body.classList.add('letterbox');
   } else {
-    scale = Math.min(1, document.body.offsetWidth / this.video_.videoWidth);
+    scale = Math.min(1, document.body.offsetHeight / this.video_.videoHeight);
     document.body.classList.remove('letterbox');
   }
 
