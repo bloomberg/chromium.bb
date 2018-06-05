@@ -477,9 +477,11 @@ void StatisticsProviderImpl::StartLoadingMachineStatistics(
   VLOG(1) << "Started loading statistics. Load OEM Manifest: "
           << load_oem_manifest;
 
+  // TaskPriority::USER_BLOCKING because this is on the critical path of
+  // rendering the NTP on startup. https://crbug.com/831835
   base::PostTaskWithTraits(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&StatisticsProviderImpl::LoadMachineStatistics,
                      base::Unretained(this), load_oem_manifest));
