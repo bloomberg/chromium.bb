@@ -8508,7 +8508,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
             if (rd != INT64_MAX)
               best_rd_cur =
                   RDCOST(x->rdmult, rs2 + rate_mv + rate_sum, dist_sum);
-            best_rd_compound = best_rd_cur;
             break;
           case COMPOUND_WEDGE:
             if (x->source_variance > cpi->sf.disable_wedge_search_var_thresh &&
