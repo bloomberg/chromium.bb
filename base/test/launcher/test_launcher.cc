@@ -523,8 +523,11 @@ void DoLaunchChildTestProcess(
   if (redirect_stdio) {
     fflush(output_file.get());
     output_file.reset();
-    CHECK(ReadFileToString(output_filename, &output_file_contents))
-        << output_filename;
+    // Reading the file can sometimes fail when the process was killed midflight
+    // (e.g. on test suite timeout): https://crbug.com/826408. Attempt to read
+    // the output file anyways, but do not crash on failure in this case.
+    CHECK(ReadFileToString(output_filename, &output_file_contents) ||
+          exit_code != 0);
 
     if (!DeleteFile(output_filename, false)) {
       // This needs to be non-fatal at least for Windows.
