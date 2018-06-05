@@ -19,7 +19,7 @@ struct IcuEnvironment {
 IcuEnvironment* env = new IcuEnvironment();
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  if (size < SignedExchangePrologue::kEncodedLengthInBytes)
+  if (size < SignedExchangePrologue::kEncodedPrologueInBytes)
     return 0;
   auto prologue_bytes =
       base::make_span(data, SignedExchangePrologue::kEncodedPrologueInBytes);
