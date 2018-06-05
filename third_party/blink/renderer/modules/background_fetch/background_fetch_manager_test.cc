@@ -53,7 +53,7 @@ TEST_F(BackgroundFetchManagerTest, NullValue) {
   Vector<WebServiceWorkerRequest> web_requests =
       CreateWebRequestVector(scope, requests);
   ASSERT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(scope.GetExceptionState().Code(), kV8TypeError);
+  EXPECT_EQ(scope.GetExceptionState().Code(), ESErrorType::kTypeError);
 }
 
 TEST_F(BackgroundFetchManagerTest, SingleUSVString) {
@@ -157,7 +157,7 @@ TEST_F(BackgroundFetchManagerTest, SequenceEmpty) {
   Vector<WebServiceWorkerRequest> web_requests =
       CreateWebRequestVector(scope, requests);
   ASSERT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(scope.GetExceptionState().Code(), kV8TypeError);
+  EXPECT_EQ(scope.GetExceptionState().Code(), ESErrorType::kTypeError);
 }
 
 TEST_F(BackgroundFetchManagerTest, SequenceWithNullValue) {
@@ -180,7 +180,7 @@ TEST_F(BackgroundFetchManagerTest, SequenceWithNullValue) {
   Vector<WebServiceWorkerRequest> web_requests =
       CreateWebRequestVector(scope, requests);
   ASSERT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(scope.GetExceptionState().Code(), kV8TypeError);
+  EXPECT_EQ(scope.GetExceptionState().Code(), ESErrorType::kTypeError);
 }
 
 }  // namespace blink

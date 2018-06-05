@@ -19,7 +19,7 @@ ExceptionCode WebCdmExceptionToExceptionCode(
     WebContentDecryptionModuleException cdm_exception) {
   switch (cdm_exception) {
     case kWebContentDecryptionModuleExceptionTypeError:
-      return kV8TypeError;
+      return ESErrorType::kTypeError;
     case kWebContentDecryptionModuleExceptionNotSupportedError:
       return kNotSupportedError;
     case kWebContentDecryptionModuleExceptionInvalidStateError:

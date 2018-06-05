@@ -788,9 +788,9 @@ double PannerNode::refDistance() const {
 void PannerNode::setRefDistance(double distance,
                                 ExceptionState& exception_state) {
   if (distance < 0) {
-    exception_state.ThrowDOMException(
-        kV8RangeError, ExceptionMessages::IndexExceedsMinimumBound<double>(
-                           "refDistance", distance, 0));
+    exception_state.ThrowRangeError(
+        ExceptionMessages::IndexExceedsMinimumBound<double>("refDistance",
+                                                            distance, 0));
     return;
   }
 
@@ -804,9 +804,9 @@ double PannerNode::maxDistance() const {
 void PannerNode::setMaxDistance(double distance,
                                 ExceptionState& exception_state) {
   if (distance <= 0) {
-    exception_state.ThrowDOMException(
-        kV8RangeError, ExceptionMessages::IndexExceedsMinimumBound<double>(
-                           "maxDistance", distance, 0));
+    exception_state.ThrowRangeError(
+        ExceptionMessages::IndexExceedsMinimumBound<double>("maxDistance",
+                                                            distance, 0));
     return;
   }
 

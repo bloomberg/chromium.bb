@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_EXCEPTION_STATE_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -42,11 +42,8 @@
 
 namespace blink {
 
-typedef int ExceptionCode;
-
 // ExceptionState is a scope-like class and provides a way to throw an exception
 // with an option to cancel it.  An exception message may be auto-generated.
-// You can convert an exception to a reject promise.
 class CORE_EXPORT ExceptionState {
   STACK_ALLOCATED();
   WTF_MAKE_NONCOPYABLE(ExceptionState);
@@ -111,17 +108,25 @@ class CORE_EXPORT ExceptionState {
     }
   }
 
-  void ThrowDOMException(ExceptionCode, const char* message);
-  void ThrowRangeError(const char* message);
-  void ThrowSecurityError(const char* sanitized_message,
-                          const char* unsanitized_message = nullptr);
-  void ThrowTypeError(const char* message);
-
+  // Throws an appropriate exception due to the given exception code.
+  //
+  // Despite of its name, this function may and may not throw a DOMException.
+  // The thrown exception can be either of ECMAScript Error object or
+  // DOMException.
+  // TODO(yukishiino): Rename this function to "ThrowException" or something
+  // better. Exact distinction between ECMAScript Error and Web IDL DOMException
+  // might be a good option.
   virtual void ThrowDOMException(ExceptionCode, const String& message);
-  virtual void ThrowRangeError(const String& message);
+
+  // Throws a DOMException with SECURITY_ERR.
   virtual void ThrowSecurityError(const String& sanitized_message,
                                   const String& unsanitized_message = String());
+
+  // Throws an ECMAScript Error object.
+  virtual void ThrowRangeError(const String& message);
   virtual void ThrowTypeError(const String& message);
+
+  // Rethrows a v8::Value as an exception.
   virtual void RethrowV8Exception(v8::Local<v8::Value>);
 
   bool HadException() const { return code_; }
@@ -141,10 +146,6 @@ class CORE_EXPORT ExceptionState {
   String AddExceptionContext(const String&) const;
 
  protected:
-  // An ExceptionCode for the case that an exception is rethrown.  In that
-  // case, we cannot determine an exception code.
-  static const int kRethrownException = kUnknownError;
-
   void SetException(ExceptionCode, const String&, v8::Local<v8::Value>);
 
  private:

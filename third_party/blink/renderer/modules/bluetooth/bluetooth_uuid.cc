@@ -367,7 +367,7 @@ String GetUUIDForGATTAttribute(GATTAttribute attribute,
       break;
   }
   // Otherwise, throw a TypeError.
-  exception_state.ThrowDOMException(kV8TypeError, error_message.ToString());
+  exception_state.ThrowTypeError(error_message.ToString());
   return String();
 }
 

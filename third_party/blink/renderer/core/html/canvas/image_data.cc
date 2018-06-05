@@ -88,7 +88,7 @@ bool ImageData::ValidateConstructorArguments(
 
     if (data_size.ValueOrDie() > v8::TypedArray::kMaxLength) {
       return RaiseDOMExceptionAndReturnFalse(
-          exception_state, kV8RangeError,
+          exception_state, ESErrorType::kRangeError,
           "Out of memory at ImageData creation.");
     }
   }
@@ -173,8 +173,7 @@ DOMArrayBufferView* ImageData::AllocateAndValidateDataArray(
   if (!data_array ||
       length != data_array->byteLength() / data_array->TypeSize()) {
     if (exception_state)
-      exception_state->ThrowDOMException(kV8RangeError,
-                                         "Out of memory at ImageData creation");
+      exception_state->ThrowRangeError("Out of memory at ImageData creation");
     return nullptr;
   }
 

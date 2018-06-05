@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/svg/svg_animate_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"

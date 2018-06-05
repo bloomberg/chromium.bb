@@ -36,7 +36,8 @@ DOMException* CreateDOMExceptionFromRTCError(const webrtc::RTCError& error) {
       // TODO(https://crbug.com/821806): Implement the RTCError object.
       return DOMException::Create(kInvalidAccessError, error.message());
     case webrtc::RTCErrorType::INVALID_RANGE:
-      return DOMException::Create(kV8RangeError, error.message());
+      // TODO(https://crbug.com/849214): This crashes.
+      return DOMException::Create(ESErrorType::kRangeError, error.message());
     default:
       LOG(ERROR) << "Got unhandled RTC error "
                  << static_cast<int>(error.type());

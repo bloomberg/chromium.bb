@@ -20,13 +20,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EXCEPTION_CODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EXCEPTION_CODE_H_
 
-namespace blink {
+#include "third_party/blink/renderer/platform/bindings/exception_code.h"
 
-// The DOM standards use unsigned short for exception codes.
-// In our DOM implementation we use int instead, and use different
-// numerical ranges for different types of DOM exception, so that
-// an exception of any type can be expressed with a single integer.
-typedef int ExceptionCode;
+namespace blink {
 
 // This list must be in sync with |coreExceptions| in DOMExceptions.cpp.
 // Some of these are considered historical since they have been
@@ -65,7 +61,10 @@ enum {
   kDataCloneError,
 
   // The operation failed for an unknown transient reason (e.g. out of memory).
-  // Note: Rethrowed V8 exception will also have this code.
+  // Note: The error message is
+  // "An unknown error occurred within Indexed Database."
+  // (defined in third_party/blink/renderer/core/dom/dom_exception.cc)
+  // so, this code shouldn't be abused.
   kUnknownError,
 
   // These are IDB-specific.
@@ -93,14 +92,6 @@ enum {
 
   // Pointer Events
   kInvalidPointerId,
-};
-
-enum V8ErrorType {
-  kV8Error = 1000,
-  kV8TypeError,
-  kV8RangeError,
-  kV8SyntaxError,
-  kV8ReferenceError,
 };
 
 }  // namespace blink
