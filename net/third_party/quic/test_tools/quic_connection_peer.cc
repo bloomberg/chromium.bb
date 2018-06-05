@@ -268,6 +268,13 @@ void QuicConnectionPeer::SetAckMode(QuicConnection* connection,
 }
 
 // static
+void QuicConnectionPeer::SetFastAckAfterQuiescence(
+    QuicConnection* connection,
+    bool fast_ack_after_quiescence) {
+  connection->fast_ack_after_quiescence_ = fast_ack_after_quiescence;
+}
+
+// static
 void QuicConnectionPeer::SetAckDecimationDelay(QuicConnection* connection,
                                                float ack_decimation_delay) {
   connection->ack_decimation_delay_ = ack_decimation_delay;

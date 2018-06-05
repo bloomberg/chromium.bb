@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "net/third_party/quic/core/crypto/transport_parameters.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
@@ -100,13 +101,21 @@ class QUIC_EXPORT_PRIVATE QuicNegotiableUint32 : public QuicNegotiableValue {
   // |negotiated_value_| is serialised, otherwise |max_value_| is serialised.
   void ToHandshakeMessage(CryptoHandshakeMessage* out) const override;
 
-  // Sets |negotiated_value_| to the minimum of |max_value_| and the
-  // corresponding value from |peer_hello|. If the corresponding value is
-  // missing and PRESENCE_OPTIONAL then |negotiated_value_| is set to
-  // |default_value_|.
+  // Processes the corresponding value from |peer_hello| and if present calls
+  // ReceiveValue with it. If the corresponding value is missing and
+  // PRESENCE_OPTIONAL then |negotiated_value_| is set to |default_value_|.
   QuicErrorCode ProcessPeerHello(const CryptoHandshakeMessage& peer_hello,
                                  HelloType hello_type,
                                  QuicString* error_details) override;
+
+  // Takes a value |value| parsed from a handshake message (whether a TLS
+  // ClientHello/ServerHello or a CryptoHandshakeMessage) whose sender was
+  // |hello_type|, and sets |negotiated_value_| to the minimum of |value| and
+  // |max_value_|. On success this function returns QUIC_NO_ERROR; if there is
+  // an error, details are put in |*error_details|.
+  QuicErrorCode ReceiveValue(uint32_t value,
+                             HelloType hello_type,
+                             QuicString* error_details);
 
  private:
   uint32_t max_value_;
@@ -414,6 +423,19 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   QuicErrorCode ProcessPeerHello(const CryptoHandshakeMessage& peer_hello,
                                  HelloType hello_type,
                                  QuicString* error_details);
+
+  // FillTransportParameters writes the values to send for ICSL, MIDS, CFCW, and
+  // SFCW to |*params|, returning true if the values could be written and false
+  // if something prevents them from being written (e.g. a value is too large).
+  bool FillTransportParameters(TransportParameters* params) const;
+
+  // ProcessTransportParameters reads from |params| which was received from a
+  // peer operating as a |hello_type|. It processes values for ICSL, MIDS, CFCW,
+  // and SFCW and sets the corresponding members of this QuicConfig. On failure,
+  // it returns a QuicErrorCode and puts a detailed error in |*error_details|.
+  QuicErrorCode ProcessTransportParameters(const TransportParameters& params,
+                                           HelloType hello_type,
+                                           QuicString* error_details);
 
   bool do_not_use_mspc() { return do_not_use_mspc_; }
 

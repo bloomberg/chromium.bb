@@ -14,7 +14,7 @@ namespace quic {
 
 // TransportParameters contains parameters for QUIC's transport layer that are
 // indicated during the TLS handshake. This struct is a mirror of the struct in
-// section 7.4 of draft-ietf-quic-transport-08.
+// section 6.4 of draft-ietf-quic-transport-11.
 struct QUIC_EXPORT_PRIVATE TransportParameters {
   TransportParameters();
   TransportParameters(const TransportParameters& transport_params);
@@ -28,7 +28,7 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
   // When Perspective::IS_CLIENT, |version| is the initial version offered by
   // the client (before any version negotiation packets) for this connection.
   // When Perspective::IS_SERVER, |version| is the version that is in use.
-  QuicVersionLabel version;
+  QuicVersionLabel version = 0;
 
   // Server-only parameters:
 
@@ -37,10 +37,10 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
   // Perspective::IS_CLIENT|.
   QuicVersionLabelVector supported_versions;
 
-  // See section 7.4.1 of draft-ietf-quic-transport-08 for definition.
+  // See section 6.4.1 of draft-ietf-quic-transport-11 for definition.
   std::vector<uint8_t> stateless_reset_token;
 
-  // Required parameters. See section 7.4.1 of draft-ietf-quic-transport-08 for
+  // Required parameters. See section 6.4.1 of draft-ietf-quic-transport-11 for
   // definitions.
   uint32_t initial_max_stream_data = 0;
   uint32_t initial_max_data = 0;
@@ -52,13 +52,12 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
     T value;
   };
 
-  // Optional parameters. See section 7.4.1 of draft-ietf-quic-transport-08 for
+  // Optional parameters. See section 6.4.1 of draft-ietf-quic-transport-11 for
   // definitions.
-  OptionalParam<uint32_t> initial_max_stream_id_bidi;
-  OptionalParam<uint32_t> initial_max_stream_id_uni;
+  OptionalParam<uint16_t> initial_max_bidi_streams;
+  OptionalParam<uint16_t> initial_max_uni_streams;
   OptionalParam<uint16_t> max_packet_size;
   OptionalParam<uint8_t> ack_delay_exponent;
-  bool omit_connection_id = false;
 
   // Returns true if the contents of this struct are valid.
   bool is_valid() const;

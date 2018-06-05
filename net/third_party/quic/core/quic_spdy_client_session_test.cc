@@ -354,8 +354,9 @@ TEST_P(QuicSpdyClientSessionTest, InvalidPacketReceived) {
   // Verify that a non-decryptable packet doesn't close the connection.
   QuicConnectionId connection_id = session_->connection()->connection_id();
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
-      connection_id, false, false, 100, "data", PACKET_8BYTE_CONNECTION_ID,
-      PACKET_4BYTE_PACKET_NUMBER, nullptr, Perspective::IS_SERVER));
+      connection_id, 0, false, false, 100, "data", PACKET_8BYTE_CONNECTION_ID,
+      PACKET_0BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER, nullptr,
+      Perspective::IS_SERVER));
   std::unique_ptr<QuicReceivedPacket> received(
       ConstructReceivedPacket(*packet, QuicTime::Zero()));
   // Change the last byte of the encrypted data.
@@ -383,8 +384,9 @@ TEST_P(QuicSpdyClientSessionTest, InvalidFramedPacketReceived) {
   QuicConnectionId connection_id = session_->connection()->connection_id();
   ParsedQuicVersionVector versions = {GetParam()};
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructMisFramedEncryptedPacket(
-      connection_id, false, false, 100, "data", PACKET_8BYTE_CONNECTION_ID,
-      PACKET_4BYTE_PACKET_NUMBER, &versions, Perspective::IS_SERVER));
+      connection_id, 0, false, false, 100, "data", PACKET_8BYTE_CONNECTION_ID,
+      PACKET_0BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER, &versions,
+      Perspective::IS_SERVER));
   std::unique_ptr<QuicReceivedPacket> received(
       ConstructReceivedPacket(*packet, QuicTime::Zero()));
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(1);

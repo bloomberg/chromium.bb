@@ -173,7 +173,7 @@ enum QuicFrameType : int8_t {
 // the symbol will map to the correct stream type.
 // All types are defined here, even if we have not yet implmented the
 // quic/core/stream/.... stuff needed.
-enum QuicIetfFrameType : int8_t {
+enum QuicIetfFrameType : uint8_t {
   IETF_PADDING = 0x00,
   IETF_RST_STREAM = 0x01,
   IETF_CONNECTION_CLOSE = 0x02,
@@ -196,7 +196,13 @@ enum QuicIetfFrameType : int8_t {
   // along the lines of "if ((frame_type & 0xf8) == 0x10)" to determine
   // whether the frame is a stream frame or not, and then examine each
   // bit specifically when/as needed.
-  IETF_STREAM = 0x10
+  IETF_STREAM = 0x10,
+
+  // Temporary, for testing only. To be removed when Version 99 is finalized.
+  IETF_TEMP_GOAWAY_FRAME = 0xf0,
+  IETF_TEMP_WINDOW_UPDATE_FRAME = 0xf1,
+  IETF_TEMP_STOP_WAITING_FRAME = 0xf2,
+  IETF_TEMP_BLOCKED_FRAME = 0xf3
 };
 // Masks for the bits that indicate the frame is a Stream frame vs the
 // bits used as flags.

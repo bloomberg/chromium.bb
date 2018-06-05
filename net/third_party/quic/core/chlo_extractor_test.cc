@@ -48,8 +48,8 @@ class ChloExtractorTest : public QuicTest {
  public:
   ChloExtractorTest() {
     SetQuicReloadableFlag(quic_respect_ietf_header, true);
-    header_.connection_id = 42;
-    header_.connection_id_length = PACKET_8BYTE_CONNECTION_ID;
+    header_.destination_connection_id = 42;
+    header_.destination_connection_id_length = PACKET_8BYTE_CONNECTION_ID;
     header_.version_flag = true;
     header_.version = AllSupportedVersions().front();
     header_.reset_flag = false;
@@ -97,7 +97,7 @@ TEST_F(ChloExtractorTest, FindsValidChlo) {
     EXPECT_TRUE(ChloExtractor::Extract(*packet_, versions, {}, &delegate_))
         << ParsedQuicVersionToString(version);
     EXPECT_EQ(version.transport_version, delegate_.transport_version());
-    EXPECT_EQ(header_.connection_id, delegate_.connection_id());
+    EXPECT_EQ(header_.destination_connection_id, delegate_.connection_id());
     EXPECT_EQ(client_hello.DebugString(Perspective::IS_SERVER),
               delegate_.chlo())
         << ParsedQuicVersionToString(version);

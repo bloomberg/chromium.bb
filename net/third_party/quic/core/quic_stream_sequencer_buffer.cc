@@ -28,10 +28,6 @@ const size_t kMaxNumDataIntervalsAllowed = 2 * kMaxPacketGap;
 
 }  // namespace
 
-QuicStreamSequencerBuffer::Gap::Gap(QuicStreamOffset begin_offset,
-                                    QuicStreamOffset end_offset)
-    : begin_offset(begin_offset), end_offset(end_offset) {}
-
 QuicStreamSequencerBuffer::QuicStreamSequencerBuffer(size_t max_capacity_bytes)
     : max_buffer_capacity_bytes_(max_capacity_bytes),
       blocks_count_(CalculateBlockCount(max_capacity_bytes)),
@@ -92,13 +88,11 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
     RecordInternalErrorLocation(QUIC_STREAM_SEQUENCER_BUFFER);
     return QUIC_INTERNAL_ERROR;
   }
-  if (GetQuicReloadableFlag(quic_fast_path_on_stream_data) &&
-      (bytes_received_.Empty() ||
-       starting_offset >= bytes_received_.rbegin()->max() ||
-       bytes_received_.IsDisjoint(net::Interval<QuicStreamOffset>(
-           starting_offset, starting_offset + size)))) {
+  if (bytes_received_.Empty() ||
+      starting_offset >= bytes_received_.rbegin()->max() ||
+      bytes_received_.IsDisjoint(net::Interval<QuicStreamOffset>(
+          starting_offset, starting_offset + size))) {
     // Optimization for the typical case, when all data is newly received.
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fast_path_on_stream_data);
     if (!bytes_received_.Empty() &&
         starting_offset == bytes_received_.rbegin()->max()) {
       // Extend the right edge of last interval.

@@ -1247,6 +1247,11 @@ void QuicSentPacketManager::SetSessionNotifier(
   unacked_packets_.SetSessionNotifier(session_notifier);
 }
 
+QuicTime QuicSentPacketManager::GetNextReleaseTime() const {
+  return using_pacing_ ? pacing_sender_.ideal_next_packet_send_time()
+                       : QuicTime::Zero();
+}
+
 void QuicSentPacketManager::SetInitialRtt(QuicTime::Delta rtt) {
   const QuicTime::Delta min_rtt =
       QuicTime::Delta::FromMicroseconds(kMinInitialRoundTripTimeUs);
@@ -1262,6 +1267,11 @@ void QuicSentPacketManager::SetSessionDecideWhatToWrite(
 
 bool QuicSentPacketManager::session_decides_what_to_write() const {
   return unacked_packets_.session_decides_what_to_write();
+}
+
+void QuicSentPacketManager::SetPacingAlarmGranularity(
+    QuicTime::Delta alarm_granularity) {
+  pacing_sender_.set_alarm_granularity(alarm_granularity);
 }
 
 }  // namespace quic

@@ -313,6 +313,10 @@ QuicByteCount QuicEndpoint::Writer::GetMaxPacketSize(
   return kMaxPacketSize;
 }
 
+bool QuicEndpoint::Writer::SupportsReleaseTime() const {
+  return false;
+}
+
 bool QuicEndpoint::DataProducer::WriteStreamData(QuicStreamId id,
                                                  QuicStreamOffset offset,
                                                  QuicByteCount data_length,

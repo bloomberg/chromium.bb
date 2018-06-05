@@ -154,13 +154,9 @@ bool QuicStreamSendBuffer::OnStreamDataAcked(
   if (data_length == 0) {
     return true;
   }
-  bool is_disjoint = false;
-  if (GetQuicReloadableFlag(quic_fast_is_disjoint)) {
-    is_disjoint =
-        bytes_acked_.Empty() || offset >= bytes_acked_.rbegin()->max();
-  }
-  if (is_disjoint || bytes_acked_.IsDisjoint(net::Interval<QuicStreamOffset>(
-                         offset, offset + data_length))) {
+  if (bytes_acked_.Empty() || offset >= bytes_acked_.rbegin()->max() ||
+      bytes_acked_.IsDisjoint(
+          net::Interval<QuicStreamOffset>(offset, offset + data_length))) {
     // Optimization for the typical case, when all data is newly acked.
     if (stream_bytes_outstanding_ < data_length) {
       return false;

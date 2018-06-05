@@ -74,6 +74,7 @@ class ReadPipeCallback : public EpollCallbackInterface {
   void OnRegistration(EpollServer*, int, int) override {}
   void OnModification(int, int) override {}     // COV_NF_LINE
   void OnUnregistration(int, bool) override {}  // COV_NF_LINE
+  std::string Name() const override { return "ReadPipeCallback"; }
 };
 
 ////////////////////////////////////////////////////////////////////////////////

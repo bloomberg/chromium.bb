@@ -407,18 +407,14 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
   const QuicString serving_region = "not a real region";
   session_->set_serving_region(serving_region);
 
-  if (GetQuicReloadableFlag(quic_register_static_streams)) {
-    session_->UnregisterStreamPriority(kHeadersStreamId, /*is_static=*/true);
-  }
+  session_->UnregisterStreamPriority(kHeadersStreamId, /*is_static=*/true);
   QuicServerSessionBasePeer::SetCryptoStream(session_.get(), nullptr);
   MockQuicCryptoServerStream* crypto_stream =
       new MockQuicCryptoServerStream(&crypto_config_, &compressed_certs_cache_,
                                      session_.get(), &stream_helper_);
   QuicServerSessionBasePeer::SetCryptoStream(session_.get(), crypto_stream);
-  if (GetQuicReloadableFlag(quic_register_static_streams)) {
-    session_->RegisterStreamPriority(kHeadersStreamId, /*is_static=*/true,
-                                     QuicStream::kDefaultPriority);
-  }
+  session_->RegisterStreamPriority(kHeadersStreamId, /*is_static=*/true,
+                                   QuicStream::kDefaultPriority);
 
   // Set some initial bandwidth values.
   QuicSentPacketManager* sent_packet_manager =
@@ -614,12 +610,12 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
   chlo.SetVector(kCOPT, QuicTagVector{kSREJ});
   std::vector<ParsedQuicVersion> packet_version_list = {version};
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
-      1, true, false, 1,
+      1, 0, true, false, 1,
       QuicString(chlo.GetSerialized(Perspective::IS_CLIENT)
                      .AsStringPiece()
                      .as_string()),
-      PACKET_8BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER,
-      &packet_version_list));
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID,
+      PACKET_4BYTE_PACKET_NUMBER, &packet_version_list));
 
   EXPECT_CALL(stream_helper_, CanAcceptClientHello(_, _, _, _, _))
       .WillOnce(testing::Return(true));

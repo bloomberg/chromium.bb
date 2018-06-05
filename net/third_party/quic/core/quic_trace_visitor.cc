@@ -288,6 +288,13 @@ void QuicTraceVisitor::PopulateTransportState(
                                  .GetSendAlgorithm()
                                  ->PacingRate(in_flight)
                                  .ToBitsPerSecond());
+
+  if (connection_->sent_packet_manager()
+          .GetSendAlgorithm()
+          ->GetCongestionControlType() == kPCC) {
+    state->set_congestion_control_state(
+        connection_->sent_packet_manager().GetSendAlgorithm()->GetDebugState());
+  }
 }
 
 };  // namespace quic

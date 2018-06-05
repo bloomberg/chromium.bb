@@ -94,7 +94,7 @@ bool ChloFramerVisitor::OnProtocolVersionMismatch(ParsedQuicVersion version) {
 
 bool ChloFramerVisitor::OnUnauthenticatedPublicHeader(
     const QuicPacketHeader& header) {
-  connection_id_ = header.connection_id;
+  connection_id_ = header.destination_connection_id;
   return true;
 }
 bool ChloFramerVisitor::OnUnauthenticatedHeader(

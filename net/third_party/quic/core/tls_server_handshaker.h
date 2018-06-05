@@ -93,7 +93,10 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   // Called when the TLS handshake is complete.
   void FinishHandshake();
 
-  void CloseConnection();
+  void CloseConnection(const QuicString& reason_phrase);
+
+  bool SetTransportParameters();
+  bool ProcessTransportParameters(QuicString* error_details);
 
   // Calls the instance method PrivateKeySign after looking up the
   // TlsServerHandshaker from |ssl|.
@@ -137,7 +140,10 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   // Configures the certificate to use on |ssl_| based on the SNI sent by the
   // client. Returns an SSL_TLSEXT_ERR_* value (see
   // https://commondatastorage.googleapis.com/chromium-boringssl-docs/ssl.h.html#SSL_CTX_set_tlsext_servername_callback).
-  int SelectCertificate();
+  //
+  // If SelectCertificate returns SSL_TLSEXT_ERR_ALERT_FATAL, then it puts in
+  // |*out_alert| the TLS alert value that the server will send.
+  int SelectCertificate(int* out_alert);
 
   static TlsServerHandshaker* HandshakerFromSsl(SSL* ssl);
 

@@ -70,10 +70,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   void OnCanWrite();
 
   // The percent of time a packet is simulated as being lost.
-  void set_fake_packet_loss_percentage(int32_t fake_packet_loss_percentage) {
-    QuicWriterMutexLock lock(&config_mutex_);
-    fake_packet_loss_percentage_ = fake_packet_loss_percentage;
-  }
+  void set_fake_packet_loss_percentage(int32_t fake_packet_loss_percentage);
 
   // Simulate dropping the first n packets unconditionally.
   // Subsequent packets will be lost at fake_packet_loss_percentage_ if set.
@@ -171,6 +168,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   QuicTime::Delta fake_packet_delay_ GUARDED_BY(config_mutex_);
   QuicBandwidth fake_bandwidth_ GUARDED_BY(config_mutex_);
   QuicByteCount buffer_size_ GUARDED_BY(config_mutex_);
+  int32_t num_consecutive_packet_lost_ GUARDED_BY(config_mutex_);
 
   DISALLOW_COPY_AND_ASSIGN(PacketDroppingTestWriter);
 };

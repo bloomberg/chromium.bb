@@ -244,6 +244,8 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   void SetDebugDelegate(DebugDelegate* debug_delegate);
 
+  void SetPacingAlarmGranularity(QuicTime::Delta alarm_granularity);
+
   QuicPacketNumber GetLargestObserved() const;
 
   QuicPacketNumber GetLargestSentPacket() const;
@@ -261,6 +263,8 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   const SendAlgorithmInterface* GetSendAlgorithm() const;
 
   void SetSessionNotifier(SessionNotifierInterface* session_notifier);
+
+  QuicTime GetNextReleaseTime() const;
 
   QuicPacketCount initial_congestion_window() const {
     return initial_congestion_window_;

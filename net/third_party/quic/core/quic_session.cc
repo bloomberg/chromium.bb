@@ -37,8 +37,7 @@ QuicSession::QuicSession(QuicConnection* connection,
                          const QuicConfig& config)
     : connection_(connection),
       visitor_(owner),
-      write_blocked_streams_(
-          GetQuicReloadableFlag(quic_register_static_streams)),
+      write_blocked_streams_(),
       config_(config),
       max_open_outgoing_streams_(kDefaultMaxStreamsPerConnection),
       max_open_incoming_streams_(config_.GetMaxIncomingDynamicStreamsToSend()),
@@ -742,21 +741,10 @@ void QuicSession::OnCryptoHandshakeMessageReceived(
 void QuicSession::RegisterStreamPriority(QuicStreamId id,
                                          bool is_static,
                                          spdy::SpdyPriority priority) {
-  // Static streams do not need to be registered with the write blocked list,
-  // since it has special handling for them.
-  if (!write_blocked_streams()->register_static_streams() && is_static) {
-    return;
-  }
-
   write_blocked_streams()->RegisterStream(id, is_static, priority);
 }
 
 void QuicSession::UnregisterStreamPriority(QuicStreamId id, bool is_static) {
-  // Static streams do not need to be registered with the write blocked list,
-  // since it has special handling for them.
-  if (!write_blocked_streams()->register_static_streams() && is_static) {
-    return;
-  }
   write_blocked_streams()->UnregisterStream(id, is_static);
 }
 

@@ -33,6 +33,7 @@ class QUIC_EXPORT_PRIVATE QuicDefaultPacketWriter : public QuicPacketWriter {
   void SetWritable() override;
   QuicByteCount GetMaxPacketSize(
       const QuicSocketAddress& peer_address) const override;
+  bool SupportsReleaseTime() const override;
 
   void set_fd(int fd) { fd_ = fd; }
 

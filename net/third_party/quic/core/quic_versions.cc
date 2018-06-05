@@ -69,6 +69,8 @@ QuicVersionLabel CreateQuicVersionLabel(ParsedQuicVersion parsed_version) {
       return MakeVersionLabel(proto, '0', '4', '2');
     case QUIC_VERSION_43:
       return MakeVersionLabel(proto, '0', '4', '3');
+    case QUIC_VERSION_44:
+      return MakeVersionLabel(proto, '0', '4', '4');
     case QUIC_VERSION_99:
       return MakeVersionLabel(proto, '0', '9', '9');
     default:
@@ -78,6 +80,16 @@ QuicVersionLabel CreateQuicVersionLabel(ParsedQuicVersion parsed_version) {
                       << parsed_version.transport_version;
       return 0;
   }
+}
+
+QuicVersionLabelVector CreateQuicVersionLabelVector(
+    const ParsedQuicVersionVector& versions) {
+  QuicVersionLabelVector out;
+  out.reserve(versions.size());
+  for (const auto& version : versions) {
+    out.push_back(CreateQuicVersionLabel(version));
+  }
+  return out;
 }
 
 ParsedQuicVersion ParseQuicVersionLabel(QuicVersionLabel version_label) {
@@ -152,17 +164,17 @@ ParsedQuicVersionVector FilterSupportedVersions(
   for (ParsedQuicVersion version : versions) {
     if (version.transport_version == QUIC_VERSION_99) {
       if (GetQuicFlag(FLAGS_quic_enable_version_99) &&
-          GetQuicReloadableFlag(quic_enable_version_43) &&
-          GetQuicReloadableFlag(quic_enable_version_42_2)) {
+          GetQuicFlag(FLAGS_quic_enable_version_44) &&
+          GetQuicReloadableFlag(quic_enable_version_43)) {
+        filtered_versions.push_back(version);
+      }
+    } else if (version.transport_version == QUIC_VERSION_44) {
+      if (GetQuicFlag(FLAGS_quic_enable_version_44) &&
+          GetQuicReloadableFlag(quic_enable_version_43)) {
         filtered_versions.push_back(version);
       }
     } else if (version.transport_version == QUIC_VERSION_43) {
-      if (GetQuicReloadableFlag(quic_enable_version_43) &&
-          GetQuicReloadableFlag(quic_enable_version_42_2)) {
-        filtered_versions.push_back(version);
-      }
-    } else if (version.transport_version == QUIC_VERSION_42) {
-      if (GetQuicReloadableFlag(quic_enable_version_42_2)) {
+      if (GetQuicReloadableFlag(quic_enable_version_43)) {
         filtered_versions.push_back(version);
       }
     } else if (version.transport_version == QUIC_VERSION_41) {
@@ -273,6 +285,7 @@ QuicString QuicVersionToString(QuicTransportVersion transport_version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_41);
     RETURN_STRING_LITERAL(QUIC_VERSION_42);
     RETURN_STRING_LITERAL(QUIC_VERSION_43);
+    RETURN_STRING_LITERAL(QUIC_VERSION_44);
     RETURN_STRING_LITERAL(QUIC_VERSION_99);
     default:
       return "QUIC_VERSION_UNSUPPORTED";

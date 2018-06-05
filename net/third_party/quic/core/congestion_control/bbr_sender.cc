@@ -119,7 +119,7 @@ BbrSender::BbrSender(const RttStats* rtt_stats,
       probe_rtt_round_passed_(false),
       last_sample_is_app_limited_(false),
       has_non_app_limited_sample_(
-          !GetQuicReloadableFlag(quic_enable_version_42_2)),
+          !GetQuicReloadableFlag(quic_bbr_slower_startup2)),
       recovery_state_(NOT_IN_RECOVERY),
       end_recovery_at_(0),
       recovery_window_(max_congestion_window_),

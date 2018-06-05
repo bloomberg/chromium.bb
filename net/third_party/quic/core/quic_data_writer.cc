@@ -8,8 +8,10 @@
 #include <limits>
 
 #include "net/third_party/quic/core/quic_utils.h"
+#include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
+#include "net/third_party/quic/platform/api/quic_str_cat.h"
 
 namespace quic {
 
@@ -282,6 +284,8 @@ bool QuicDataWriter::WriteVarInt62(uint64_t value) {
 // static
 int QuicDataWriter::GetVarInt62Len(uint64_t value) {
   if ((value & kVarInt62ErrorMask) != 0) {
+    QUIC_BUG << "Attempted to encode a value, " << value
+             << ", that is too big for VarInt62";
     return 0;
   }
   if ((value & kVarInt62Mask8Bytes) != 0) {
@@ -307,6 +311,10 @@ bool QuicDataWriter::WriteStringPieceVarInt62(
     }
   }
   return true;
+}
+
+QuicString QuicDataWriter::DebugString() const {
+  return QuicStrCat(" { capacity: ", capacity_, ", length: ", length_, " }");
 }
 
 }  // namespace quic

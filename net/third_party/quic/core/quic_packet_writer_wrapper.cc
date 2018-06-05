@@ -41,6 +41,10 @@ QuicByteCount QuicPacketWriterWrapper::GetMaxPacketSize(
   return writer_->GetMaxPacketSize(peer_address);
 }
 
+bool QuicPacketWriterWrapper::SupportsReleaseTime() const {
+  return writer_->SupportsReleaseTime();
+}
+
 void QuicPacketWriterWrapper::set_writer(QuicPacketWriter* writer) {
   unset_writer();
   writer_ = writer;

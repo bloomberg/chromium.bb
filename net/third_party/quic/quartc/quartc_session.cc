@@ -278,6 +278,14 @@ void QuartcSession::OnConnectionClosed(QuicErrorCode error,
       error, source == ConnectionCloseSource::FROM_PEER);
 }
 
+void QuartcSession::SetPreSharedKey(QuicStringPiece key) {
+  if (perspective_ == Perspective::IS_CLIENT) {
+    quic_crypto_client_config_->set_pre_shared_key(key);
+  } else {
+    quic_crypto_server_config_->set_pre_shared_key(key);
+  }
+}
+
 void QuartcSession::StartCryptoHandshake() {
   if (perspective_ == Perspective::IS_CLIENT) {
     QuicServerId server_id(unique_remote_server_id_, kQuicServerPort);

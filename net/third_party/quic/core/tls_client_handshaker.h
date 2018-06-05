@@ -80,10 +80,12 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
     STATE_CONNECTION_CLOSED,
   } state_ = STATE_IDLE;
 
+  bool SetTransportParameters();
+  bool ProcessTransportParameters(QuicString* error_details);
   void AdvanceHandshake() override;
   void FinishHandshake();
 
-  void CloseConnection();
+  void CloseConnection(const QuicString& reason_phrase);
 
   // Certificate verification functions:
 

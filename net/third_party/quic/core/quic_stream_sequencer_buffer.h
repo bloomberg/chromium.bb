@@ -77,14 +77,6 @@ class QuicStreamSequencerBufferPeer;
 
 class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
  public:
-  // A Gap indicates a missing chunk of bytes between
-  // [begin_offset, end_offset) in the stream
-  struct QUIC_EXPORT_PRIVATE Gap {
-    Gap(QuicStreamOffset begin_offset, QuicStreamOffset end_offset);
-    QuicStreamOffset begin_offset;
-    QuicStreamOffset end_offset;
-  };
-
   // Size of blocks used by this buffer.
   // Choose 8K to make block large enough to hold multiple frames, each of
   // which could be up to 1.5 KB.

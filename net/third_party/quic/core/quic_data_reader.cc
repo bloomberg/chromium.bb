@@ -9,6 +9,7 @@
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
+#include "net/third_party/quic/platform/api/quic_str_cat.h"
 
 namespace quic {
 
@@ -279,4 +280,9 @@ bool QuicDataReader::ReadVarIntStreamId(QuicStreamId* result) {
   *result = static_cast<QuicStreamId>(temp_uint64);
   return true;
 }
+
+QuicString QuicDataReader::DebugString() const {
+  return QuicStrCat(" { length: ", len_, ", position: ", pos_, " }");
+}
+
 }  // namespace quic

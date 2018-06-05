@@ -5,6 +5,7 @@
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
+#include "net/third_party/quic/core/crypto/transport_parameters.h"
 #include "net/third_party/quic/core/quic_session.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
@@ -81,9 +82,62 @@ bool TlsClientHandshaker::CryptoConnect() {
     return false;
   }
 
+  // Set the Transport Parameters to send in the ClientHello
+  if (!SetTransportParameters()) {
+    CloseConnection("Failed to set Transport Parameters");
+    return false;
+  }
+
   // Start the handshake.
   AdvanceHandshake();
   return session()->connection()->connected();
+}
+
+bool TlsClientHandshaker::SetTransportParameters() {
+  TransportParameters params;
+  params.perspective = Perspective::IS_CLIENT;
+  params.version = CreateQuicVersionLabel(
+      session()->connection()->supported_versions().front());
+
+  if (!session()->config()->FillTransportParameters(&params)) {
+    return false;
+  }
+
+  std::vector<uint8_t> param_bytes;
+  return SerializeTransportParameters(params, &param_bytes) &&
+         SSL_set_quic_transport_params(ssl(), param_bytes.data(),
+                                       param_bytes.size()) == 1;
+}
+
+bool TlsClientHandshaker::ProcessTransportParameters(
+    QuicString* error_details) {
+  TransportParameters params;
+  const uint8_t* param_bytes;
+  size_t param_bytes_len;
+  SSL_get_peer_quic_transport_params(ssl(), &param_bytes, &param_bytes_len);
+  if (param_bytes_len == 0 ||
+      !ParseTransportParameters(param_bytes, param_bytes_len,
+                                Perspective::IS_SERVER, &params)) {
+    *error_details = "Unable to parse Transport Parameters";
+    return false;
+  }
+
+  if (params.version !=
+      CreateQuicVersionLabel(session()->connection()->version())) {
+    *error_details = "Version mismatch detected";
+    return false;
+  }
+  if (CryptoUtils::ValidateServerHelloVersions(
+          params.supported_versions,
+          session()->connection()->server_supported_versions(),
+          error_details) != QUIC_NO_ERROR ||
+      session()->config()->ProcessTransportParameters(
+          params, SERVER, error_details) != QUIC_NO_ERROR) {
+    return false;
+  }
+
+  session()->OnConfigNegotiated();
+  return true;
 }
 
 int TlsClientHandshaker::num_sent_client_hellos() const {
@@ -141,7 +195,7 @@ void TlsClientHandshaker::AdvanceHandshake() {
     return;
   }
   if (state_ == STATE_IDLE) {
-    CloseConnection();
+    CloseConnection("TLS handshake failed");
     return;
   }
   if (state_ == STATE_HANDSHAKE_COMPLETE) {
@@ -171,17 +225,16 @@ void TlsClientHandshaker::AdvanceHandshake() {
     // TODO(nharper): Surface error details from the error queue when ssl_error
     // is SSL_ERROR_SSL.
     QUIC_LOG(WARNING) << "SSL_do_handshake failed; closing connection";
-    CloseConnection();
+    CloseConnection("TLS handshake failed");
   }
 }
 
-void TlsClientHandshaker::CloseConnection() {
+void TlsClientHandshaker::CloseConnection(const QuicString& reason_phrase) {
   // TODO(nharper): Instead of QUIC_HANDSHAKE_FAILED, this should be
   // TLS_HANDSHAKE_FAILED (0xC000001C), but according to quic_error_codes.h,
   // we only send 1-byte error codes right now.
   state_ = STATE_CONNECTION_CLOSED;
-  stream()->CloseConnectionWithDetails(QUIC_HANDSHAKE_FAILED,
-                                       "TLS handshake failed");
+  stream()->CloseConnectionWithDetails(QUIC_HANDSHAKE_FAILED, reason_phrase);
 }
 
 void TlsClientHandshaker::FinishHandshake() {
@@ -189,7 +242,13 @@ void TlsClientHandshaker::FinishHandshake() {
   state_ = STATE_HANDSHAKE_COMPLETE;
   std::vector<uint8_t> client_secret, server_secret;
   if (!DeriveSecrets(&client_secret, &server_secret)) {
-    CloseConnection();
+    CloseConnection("Failed to derive handshake secrets");
+    return;
+  }
+
+  QuicString error_details;
+  if (!ProcessTransportParameters(&error_details)) {
+    CloseConnection(error_details);
     return;
   }
 

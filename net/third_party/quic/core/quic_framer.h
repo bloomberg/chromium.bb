@@ -225,7 +225,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   static size_t GetMinStreamFrameSize(QuicTransportVersion version,
                                       QuicStreamId stream_id,
                                       QuicStreamOffset offset,
-                                      bool last_frame_in_packet);
+                                      bool last_frame_in_packet,
+                                      QuicPacketLength data_length);
   // Size in bytes of all ack frame fields without the missing packets or ack
   // blocks.
   static size_t GetMinAckFrameSize(
@@ -272,7 +273,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   static QuicStringPiece GetAssociatedDataFromEncryptedPacket(
       QuicTransportVersion version,
       const QuicEncryptedPacket& encrypted,
-      QuicConnectionIdLength connection_id_length,
+      QuicConnectionIdLength destination_connection_id_length,
+      QuicConnectionIdLength source_connection_id_length,
       bool includes_version,
       bool includes_diversification_nonce,
       QuicPacketNumberLength packet_number_length);
@@ -321,6 +323,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool AppendTypeByte(const QuicFrame& frame,
                       bool last_frame_in_packet,
                       QuicDataWriter* writer);
+  bool AppendIetfTypeByte(const QuicFrame& frame,
+                          bool last_frame_in_packet,
+                          QuicDataWriter* writer);
   bool AppendStreamFrame(const QuicStreamFrame& frame,
                          bool last_frame_in_packet,
                          QuicDataWriter* writer);
@@ -429,6 +434,12 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
     size_t num_ack_blocks;
   };
 
+  // The same as BuildDataPacket, but it only builds IETF-format packets.
+  size_t BuildIetfDataPacket(const QuicPacketHeader& header,
+                             const QuicFrames& frames,
+                             char* buffer,
+                             size_t packet_length);
+
   bool ProcessDataPacket(QuicDataReader* reader,
                          QuicPacketHeader* header,
                          const QuicEncryptedPacket& packet,
@@ -468,6 +479,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       QuicPacketNumber base_packet_number,
       QuicPacketNumber* packet_number);
   bool ProcessFrameData(QuicDataReader* reader, const QuicPacketHeader& header);
+  bool ProcessIetfFrameData(QuicDataReader* reader,
+                            const QuicPacketHeader& header);
   bool ProcessStreamFrame(QuicDataReader* reader,
                           uint8_t frame_type,
                           QuicStreamFrame* frame);
@@ -477,6 +490,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessTimestampsInAckFrame(uint8_t num_received_packets,
                                    QuicDataReader* reader,
                                    QuicAckFrame* ack_frame);
+  bool ProcessIetfAckFrame(QuicDataReader* reader, QuicAckFrame* ack_frame);
   bool ProcessStopWaitingFrame(QuicDataReader* reader,
                                const QuicPacketHeader& header,
                                QuicStopWaitingFrame* stop_waiting);
@@ -513,6 +527,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Computes the wire size in bytes of the |ack| frame.
   size_t GetAckFrameSize(const QuicAckFrame& ack,
                          QuicPacketNumberLength packet_number_length);
+  // Computes the wire-size, in bytes, of the |frame| ack frame, for IETF Quic.
+  size_t GetIetfAckFrameSize(const QuicAckFrame& frame);
 
   // Computes the wire size in bytes of the |ack| frame.
   size_t GetAckFrameSize(const QuicAckFrame& ack);
@@ -552,6 +568,25 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool AppendTimestampsToAckFrame(const QuicAckFrame& frame,
                                   size_t num_timestamps_offset,
                                   QuicDataWriter* writer);
+
+  // Append IETF format ACK frame.
+  //
+  // AppendIetfAckFrameAndTypeByte adds the IETF type byte and the body
+  // of the frame (by calling AppendIetfAckFrame).
+  //
+  // AppendIetfAckFrameAndTypeByte adds just the frame - kept separate so
+  // that the Google QUIC  AppendAckFrameAndTypeByte method can insert
+  // the Google QUIC type-byte and the IETF format frame.
+  bool AppendIetfAckFrameAndTypeByte(const QuicAckFrame& frame,
+                                     QuicDataWriter* writer);
+  // Appends just the frame, not the type byte.
+  bool AppendIetfAckFrame(const QuicAckFrame& frame, QuicDataWriter* writer);
+
+  // Used by AppendIetfAckFrame to figure out how many ack
+  // blocks can be included.
+  int CalculateIetfAckBlockCount(const QuicAckFrame& frame,
+                                 QuicDataWriter* writer,
+                                 size_t available_space);
   bool AppendStopWaitingFrame(const QuicPacketHeader& header,
                               const QuicStopWaitingFrame& frame,
                               QuicDataWriter* builder);
@@ -576,9 +611,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessApplicationCloseFrame(QuicDataReader* reader,
                                     const uint8_t frame_type,
                                     QuicApplicationCloseFrame* frame);
-  bool ProcessIetfAckFrame(QuicDataReader* reader,
-                           uint8_t frame_type,
-                           QuicAckFrame* ack_frame);
   bool ProcessPathChallengeFrame(QuicDataReader* reader,
                                  QuicPathChallengeFrame* frame);
   bool ProcessPathResponseFrame(QuicDataReader* reader,
@@ -596,7 +628,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                       QuicDataWriter* writer);
   bool AppendApplicationCloseFrame(const QuicApplicationCloseFrame& frame,
                                    QuicDataWriter* writer);
-  bool AppendIetfAckFrame(const QuicAckFrame& frame, QuicDataWriter* writer);
   bool AppendPathChallengeFrame(const QuicPathChallengeFrame& frame,
                                 QuicDataWriter* writer);
   bool AppendPathResponseFrame(const QuicPathResponseFrame& frame,

@@ -261,6 +261,8 @@ class TlsHandshakerTest : public QuicTest {
     server_stream_ =
         new TestQuicCryptoServerStream(&server_session_, &proof_source_);
     server_session_.SetCryptoStream(server_stream_);
+    client_session_.Initialize();
+    server_session_.Initialize();
     EXPECT_FALSE(client_stream_->encryption_established());
     EXPECT_FALSE(client_stream_->handshake_confirmed());
     EXPECT_FALSE(server_stream_->encryption_established());

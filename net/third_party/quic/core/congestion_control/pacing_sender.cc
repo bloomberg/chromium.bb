@@ -10,10 +10,6 @@
 namespace quic {
 namespace {
 
-// The estimated system alarm granularity.
-static const QuicTime::Delta kAlarmGranularity =
-    QuicTime::Delta::FromMilliseconds(1);
-
 // Configured maximum size of the burst coming out of quiescence.  The burst
 // is never larger than the current CWND in packets.
 static const uint32_t kInitialUnpacedBurst = 10;
@@ -29,6 +25,7 @@ PacingSender::PacingSender()
       was_last_send_delayed_(false),
       initial_burst_size_(kInitialUnpacedBurst),
       lumpy_tokens_(0),
+      alarm_granularity_(QuicTime::Delta::FromMilliseconds(1)),
       pacing_limited_(false),
       is_simplified_pacing_(
           GetQuicReloadableFlag(quic_simplify_pacing_sender)) {}
@@ -160,7 +157,7 @@ QuicTime::Delta PacingSender::TimeUntilSend(QuicTime now,
   }
 
   // If the next send time is within the alarm granularity, send immediately.
-  if (ideal_next_packet_send_time_ > now + kAlarmGranularity) {
+  if (ideal_next_packet_send_time_ > now + alarm_granularity_) {
     QUIC_DVLOG(1) << "Delaying packet: "
                   << (ideal_next_packet_send_time_ - now).ToMicroseconds();
     if (!is_simplified_pacing_) {

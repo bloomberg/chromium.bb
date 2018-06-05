@@ -1492,7 +1492,8 @@ TEST_P(EndToEndTest, 0ByteConnectionId) {
 
   QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
       client_->client()->client_session()->connection());
-  EXPECT_EQ(PACKET_0BYTE_CONNECTION_ID, header->connection_id_length);
+  EXPECT_EQ(PACKET_0BYTE_CONNECTION_ID,
+            header->destination_connection_id_length);
 }
 
 TEST_P(EndToEndTestWithTls, 8ByteConnectionId) {
@@ -1503,7 +1504,8 @@ TEST_P(EndToEndTestWithTls, 8ByteConnectionId) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
   QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
       client_->client()->client_session()->connection());
-  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID, header->connection_id_length);
+  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
+            header->destination_connection_id_length);
 }
 
 TEST_P(EndToEndTestWithTls, 15ByteConnectionId) {
@@ -1515,7 +1517,8 @@ TEST_P(EndToEndTestWithTls, 15ByteConnectionId) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
   QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
       client_->client()->client_session()->connection());
-  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID, header->connection_id_length);
+  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
+            header->destination_connection_id_length);
 }
 
 TEST_P(EndToEndTestWithTls, ResetConnection) {
@@ -2007,6 +2010,7 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
 TEST_P(EndToEndTestWithTls, ServerSendPublicReset) {
   ASSERT_TRUE(Initialize());
 
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   // Send the public reset.
   QuicConnectionId connection_id =
       client_->client()->client_session()->connection()->connection_id();
@@ -2209,9 +2213,9 @@ TEST_P(EndToEndTestWithTls, BadEncryptedData) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
-      client_->client()->client_session()->connection()->connection_id(), false,
-      false, 1, "At least 20 characters.", PACKET_8BYTE_CONNECTION_ID,
-      PACKET_4BYTE_PACKET_NUMBER));
+      client_->client()->client_session()->connection()->connection_id(), 0,
+      false, false, 1, "At least 20 characters.", PACKET_8BYTE_CONNECTION_ID,
+      PACKET_0BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER));
   // Damage the encrypted data.
   QuicString damaged_packet(packet->data(), packet->length());
   damaged_packet[30] ^= 0x01;

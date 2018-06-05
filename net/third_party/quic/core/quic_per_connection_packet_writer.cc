@@ -39,4 +39,8 @@ QuicByteCount QuicPerConnectionPacketWriter::GetMaxPacketSize(
   return shared_writer_->GetMaxPacketSize(peer_address);
 }
 
+bool QuicPerConnectionPacketWriter::SupportsReleaseTime() const {
+  return shared_writer_->SupportsReleaseTime();
+}
+
 }  // namespace quic

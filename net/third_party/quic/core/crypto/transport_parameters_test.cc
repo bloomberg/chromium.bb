@@ -19,10 +19,10 @@ TEST_F(TransportParametersTest, RoundTripClient) {
   orig_params.initial_max_stream_data = 12;
   orig_params.initial_max_data = 34;
   orig_params.idle_timeout = 56;
-  orig_params.initial_max_stream_id_bidi.present = true;
-  orig_params.initial_max_stream_id_bidi.value = 2000;
-  orig_params.initial_max_stream_id_uni.present = true;
-  orig_params.initial_max_stream_id_uni.value = 3000;
+  orig_params.initial_max_bidi_streams.present = true;
+  orig_params.initial_max_bidi_streams.value = 2000;
+  orig_params.initial_max_uni_streams.present = true;
+  orig_params.initial_max_uni_streams.value = 3000;
   orig_params.max_packet_size.present = true;
   orig_params.max_packet_size.value = 9001;
   orig_params.ack_delay_exponent.present = true;
@@ -41,12 +41,12 @@ TEST_F(TransportParametersTest, RoundTripClient) {
   EXPECT_EQ(new_params.initial_max_data, orig_params.initial_max_data);
   EXPECT_EQ(new_params.idle_timeout, orig_params.idle_timeout);
   EXPECT_EQ(new_params.version, orig_params.version);
-  EXPECT_TRUE(new_params.initial_max_stream_id_bidi.present);
-  EXPECT_EQ(new_params.initial_max_stream_id_bidi.value,
-            orig_params.initial_max_stream_id_bidi.value);
-  EXPECT_TRUE(new_params.initial_max_stream_id_uni.present);
-  EXPECT_EQ(new_params.initial_max_stream_id_uni.value,
-            orig_params.initial_max_stream_id_uni.value);
+  EXPECT_TRUE(new_params.initial_max_bidi_streams.present);
+  EXPECT_EQ(new_params.initial_max_bidi_streams.value,
+            orig_params.initial_max_bidi_streams.value);
+  EXPECT_TRUE(new_params.initial_max_uni_streams.present);
+  EXPECT_EQ(new_params.initial_max_uni_streams.value,
+            orig_params.initial_max_uni_streams.value);
   EXPECT_TRUE(new_params.max_packet_size.present);
   EXPECT_EQ(new_params.max_packet_size.value,
             orig_params.max_packet_size.value);

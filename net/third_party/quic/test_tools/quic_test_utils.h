@@ -72,12 +72,14 @@ QuicTransportVersion QuicTransportVersionMin();
 // Note that the packet is encrypted with NullEncrypter, so to decrypt the
 // constructed packet, the framer must be set to use NullDecrypter.
 QuicEncryptedPacket* ConstructEncryptedPacket(
-    QuicConnectionId connection_id,
+    QuicConnectionId destination_connection_id,
+    QuicConnectionId source_connection_id,
     bool version_flag,
     bool reset_flag,
     QuicPacketNumber packet_number,
     const std::string& data,
-    QuicConnectionIdLength connection_id_length,
+    QuicConnectionIdLength destination_connection_id_length,
+    QuicConnectionIdLength source_connection_id_length,
     QuicPacketNumberLength packet_number_length,
     ParsedQuicVersionVector* versions,
     Perspective perspective);
@@ -87,33 +89,39 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
 // Note that the packet is encrypted with NullEncrypter, so to decrypt the
 // constructed packet, the framer must be set to use NullDecrypter.
 QuicEncryptedPacket* ConstructEncryptedPacket(
-    QuicConnectionId connection_id,
+    QuicConnectionId destination_connection_id,
+    QuicConnectionId source_connection_id,
     bool version_flag,
     bool reset_flag,
     QuicPacketNumber packet_number,
     const std::string& data,
-    QuicConnectionIdLength connection_id_length,
+    QuicConnectionIdLength destination_connection_id_length,
+    QuicConnectionIdLength source_connection_id_length,
     QuicPacketNumberLength packet_number_length,
     ParsedQuicVersionVector* versions);
 
 // This form assumes |versions| == nullptr.
 QuicEncryptedPacket* ConstructEncryptedPacket(
-    QuicConnectionId connection_id,
+    QuicConnectionId destination_connection_id,
+    QuicConnectionId source_connection_id,
     bool version_flag,
     bool reset_flag,
     QuicPacketNumber packet_number,
     const std::string& data,
-    QuicConnectionIdLength connection_id_length,
+    QuicConnectionIdLength destination_connection_id_length,
+    QuicConnectionIdLength source_connection_id_length,
     QuicPacketNumberLength packet_number_length);
 
 // This form assumes |connection_id_length| == PACKET_8BYTE_CONNECTION_ID,
 // |packet_number_length| == PACKET_4BYTE_PACKET_NUMBER and
 // |versions| == nullptr.
-QuicEncryptedPacket* ConstructEncryptedPacket(QuicConnectionId connection_id,
-                                              bool version_flag,
-                                              bool reset_flag,
-                                              QuicPacketNumber packet_number,
-                                              const std::string& data);
+QuicEncryptedPacket* ConstructEncryptedPacket(
+    QuicConnectionId destination_connection_id,
+    QuicConnectionId source_connection_id,
+    bool version_flag,
+    bool reset_flag,
+    QuicPacketNumber packet_number,
+    const std::string& data);
 
 // Constructs a received packet for testing. The caller must take ownership of
 // the returned pointer.
@@ -127,12 +135,14 @@ QuicReceivedPacket* ConstructReceivedPacket(
 // Note that the packet is encrypted with NullEncrypter, so to decrypt the
 // constructed packet, the framer must be set to use NullDecrypter.
 QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
-    QuicConnectionId connection_id,
+    QuicConnectionId destination_connection_id,
+    QuicConnectionId source_connection_id,
     bool version_flag,
     bool reset_flag,
     QuicPacketNumber packet_number,
     const std::string& data,
-    QuicConnectionIdLength connection_id_length,
+    QuicConnectionIdLength destination_connection_id_length,
+    QuicConnectionIdLength source_connection_id_length,
     QuicPacketNumberLength packet_number_length,
     ParsedQuicVersionVector* versions,
     Perspective perspective);
@@ -146,12 +156,14 @@ void CompareCharArraysWithHexError(const std::string& description,
 // Returns the length of a QuicPacket that is capable of holding either a
 // stream frame or a minimal ack frame.  Sets |*payload_length| to the number
 // of bytes of stream data that will fit in such a packet.
-size_t GetPacketLengthForOneStream(QuicTransportVersion version,
-                                   bool include_version,
-                                   bool include_diversification_nonce,
-                                   QuicConnectionIdLength connection_id_length,
-                                   QuicPacketNumberLength packet_number_length,
-                                   size_t* payload_length);
+size_t GetPacketLengthForOneStream(
+    QuicTransportVersion version,
+    bool include_version,
+    bool include_diversification_nonce,
+    QuicConnectionIdLength destination_connection_id_length,
+    QuicConnectionIdLength source_connection_id_length,
+    QuicPacketNumberLength packet_number_length,
+    size_t* payload_length);
 
 // Returns QuicConfig set to default values.
 QuicConfig DefaultQuicConfig();
@@ -774,6 +786,7 @@ class MockPacketWriter : public QuicPacketWriter {
   MOCK_METHOD0(SetWritable, void());
   MOCK_CONST_METHOD1(GetMaxPacketSize,
                      QuicByteCount(const QuicSocketAddress& peer_address));
+  MOCK_CONST_METHOD0(SupportsReleaseTime, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPacketWriter);

@@ -44,6 +44,8 @@ class QUIC_EXPORT_PRIVATE QuartcPacketWriter : public QuicPacketWriter {
   // Sets the packet writer to a writable (non-blocked) state.
   void SetWritable() override;
 
+  bool SupportsReleaseTime() const override;
+
   // Sets the connection which sends packets using this writer.  Connection must
   // be set in order to attach packet info (eg. packet numbers) to writes.
   void set_connection(QuicConnection* connection) { connection_ = connection; }

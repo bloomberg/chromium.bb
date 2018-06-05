@@ -171,8 +171,8 @@ TEST_F(QuicStreamTest, WriteAllData) {
   size_t length =
       1 + QuicPacketCreator::StreamFramePacketOverhead(
               connection_->transport_version(), PACKET_8BYTE_CONNECTION_ID,
-              !kIncludeVersion, !kIncludeDiversificationNonce,
-              PACKET_4BYTE_PACKET_NUMBER, 0u);
+              PACKET_0BYTE_CONNECTION_ID, !kIncludeVersion,
+              !kIncludeDiversificationNonce, PACKET_4BYTE_PACKET_NUMBER, 0u);
   connection_->SetMaxPacketLength(length);
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _))
@@ -252,8 +252,8 @@ TEST_F(QuicStreamTest, WriteOrBufferData) {
   size_t length =
       1 + QuicPacketCreator::StreamFramePacketOverhead(
               connection_->transport_version(), PACKET_8BYTE_CONNECTION_ID,
-              !kIncludeVersion, !kIncludeDiversificationNonce,
-              PACKET_4BYTE_PACKET_NUMBER, 0u);
+              PACKET_0BYTE_CONNECTION_ID, !kIncludeVersion,
+              !kIncludeDiversificationNonce, PACKET_4BYTE_PACKET_NUMBER, 0u);
   connection_->SetMaxPacketLength(length);
 
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))

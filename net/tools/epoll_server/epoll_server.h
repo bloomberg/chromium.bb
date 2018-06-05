@@ -110,6 +110,10 @@ class EpollCallbackInterface {
   //  fd - the file descriptor which was registered.
   virtual void OnShutdown(EpollServer* eps, int fd) = 0;
 
+  // Summary:
+  //   Returns a name describing the class for use in debug/error reporting.
+  virtual std::string Name() const = 0;
+
   virtual ~EpollCallbackInterface() {}
 
  protected:
