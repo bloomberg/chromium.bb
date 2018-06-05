@@ -73,7 +73,8 @@ TEST_F(CertVerifyProcIOSTest, StatusForNotEvaluatedTrust) {
 TEST_F(CertVerifyProcIOSTest, StatusForEvaluatedTrust) {
   base::ScopedCFTypeRef<SecTrustRef> trust(CreateSecTrust("expired_cert.pem"));
   ASSERT_TRUE(trust);
-  SecTrustEvaluate(trust, nullptr);
+  SecTrustResultType result = kSecTrustResultInvalid;
+  SecTrustEvaluate(trust, &result);
 
   CertStatus status = CertVerifyProcIOS::GetCertFailureStatusFromTrust(trust);
   EXPECT_TRUE(status & CERT_STATUS_COMMON_NAME_INVALID);

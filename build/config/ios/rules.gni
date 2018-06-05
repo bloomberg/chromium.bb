@@ -1805,10 +1805,15 @@ template("ios_xctest_test") {
     # Xcode needs those two framework installed in the application (and signed)
     # for the XCTest to run, so install them using extra_system_frameworks.
     _ios_platform_library = "$ios_sdk_platform_path/Developer/Library"
-    extra_system_frameworks = [
-      "$_ios_platform_library/Frameworks/XCTest.framework",
-      "$_ios_platform_library/PrivateFrameworks/IDEBundleInjection.framework",
-    ]
+    extra_system_frameworks =
+        [ "$_ios_platform_library/Frameworks/XCTest.framework" ]
+
+    # TODO: Remove this once support for Xcode 9.x is dropped.
+    if (xcode_version_int < 1000) {
+      extra_system_frameworks += [
+        "$_ios_platform_library/PrivateFrameworks/IDEBundleInjection.framework",
+      ]
+    }
 
     _xctest_bundle = _xctest_target + "_bundle"
     if (current_toolchain == default_toolchain) {
