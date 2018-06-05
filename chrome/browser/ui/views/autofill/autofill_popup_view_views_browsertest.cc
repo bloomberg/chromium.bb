@@ -45,6 +45,7 @@ class MockAutofillPopupController : public AutofillPopupController {
   MOCK_METHOD1(SetSelectionAtPoint, void(const gfx::Point& point));
   MOCK_METHOD0(AcceptSelectedLine, bool());
   MOCK_METHOD0(SelectionCleared, void());
+  MOCK_CONST_METHOD0(HasSelection, bool());
   MOCK_CONST_METHOD0(popup_bounds, gfx::Rect());
   MOCK_METHOD0(container_view, gfx::NativeView());
   MOCK_CONST_METHOD0(element_bounds, const gfx::RectF&());

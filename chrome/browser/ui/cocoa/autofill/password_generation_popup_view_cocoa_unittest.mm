@@ -57,6 +57,7 @@ class MockPasswordGenerationPopupController
   void SetSelectionAtPoint(const gfx::Point&) override {}
   bool AcceptSelectedLine() override { return true; }
   void SelectionCleared() override {}
+  bool HasSelection() const override { return password_selected(); }
   gfx::Rect popup_bounds() const override { return popup_bounds_; }
   MOCK_METHOD0(container_view, gfx::NativeView());
   MOCK_CONST_METHOD0(element_bounds, gfx::RectF&());

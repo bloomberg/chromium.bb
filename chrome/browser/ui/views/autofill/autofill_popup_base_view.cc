@@ -195,6 +195,10 @@ bool AutofillPopupBaseView::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void AutofillPopupBaseView::OnMouseExited(const ui::MouseEvent& event) {
+  // There is no need to post a ClearSelection task if no row is selected.
+  if (!delegate_ || !delegate_->HasSelection())
+    return;
+
   // Pressing return causes the cursor to hide, which will generate an
   // OnMouseExited event. Pressing return should activate the current selection
   // via AcceleratorPressed, so we need to let that run first.
