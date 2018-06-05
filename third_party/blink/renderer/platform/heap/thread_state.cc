@@ -1013,7 +1013,8 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   // TODO(mlippautz): Update name of this histogram.
   DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, marking_time_histogram,
                                   ("BlinkGC.CollectGarbage", 0, 10 * 1000, 50));
-  marking_time_histogram.Count(event.marking_time_in_ms());
+  marking_time_histogram.Count(
+      event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]);
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, complete_sweep_histogram,
                       ("BlinkGC.CompleteSweep", 1, 10 * 1000, 50));
