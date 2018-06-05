@@ -12,6 +12,13 @@
 #include "base/threading/thread_checker.h"
 #include "ios/chrome/browser/application_context.h"
 
+namespace network {
+namespace mojom {
+class URLLoaderFactory;
+}
+class WeakWrapperSharedURLLoaderFactory;
+}  // namespace network
+
 class TestingApplicationContext : public ApplicationContext {
  public:
   TestingApplicationContext();
@@ -56,12 +63,16 @@ class TestingApplicationContext : public ApplicationContext {
       override;
 
  private:
+  network::mojom::URLLoaderFactory* GetSystemURLLoaderFactory();
+
   base::ThreadChecker thread_checker_;
   std::string application_locale_;
   PrefService* local_state_;
   ios::ChromeBrowserStateManager* chrome_browser_state_manager_;
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
   bool was_last_shutdown_clean_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      system_shared_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingApplicationContext);
 };

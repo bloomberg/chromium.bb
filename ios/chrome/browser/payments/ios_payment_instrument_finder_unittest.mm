@@ -10,6 +10,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -23,8 +25,11 @@ namespace payments {
 class TestIOSPaymentInstrumentFinder final : public IOSPaymentInstrumentFinder {
  public:
   TestIOSPaymentInstrumentFinder(
-      net::TestURLRequestContextGetter* context_getter)
-      : IOSPaymentInstrumentFinder(context_getter, nil) {}
+      net::TestURLRequestContextGetter* context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> test_url_loader_factory)
+      : IOSPaymentInstrumentFinder(context_getter,
+                                   test_url_loader_factory,
+                                   nil) {}
 
   std::vector<GURL> FilterUnsupportedURLPaymentMethods(
       const std::vector<GURL>& queried_url_payment_method_identifiers)
@@ -40,11 +45,15 @@ class PaymentRequestIOSPaymentInstrumentFinderTest : public PlatformTest {
   PaymentRequestIOSPaymentInstrumentFinderTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        shared_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)),
         context_getter_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
         ios_payment_instrument_finder_(
             std::make_unique<TestIOSPaymentInstrumentFinder>(
-                context_getter_.get())) {}
+                context_getter_.get(),
+                shared_factory_)) {}
 
   ~PaymentRequestIOSPaymentInstrumentFinderTest() override {}
 
@@ -146,8 +155,14 @@ class PaymentRequestIOSPaymentInstrumentFinderTest : public PlatformTest {
     run_loop_->Run();
   }
 
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
+  }
+
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
 
   scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
   std::unique_ptr<TestIOSPaymentInstrumentFinder>
@@ -617,6 +632,9 @@ TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
 // to the caller.
 TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        OneValidMethodSuppliedOneInstrument) {
+  test_url_loader_factory()->AddResponse(
+      "https://bobpay.xyz/bob/images/homescreen32.png", /* content = */ "",
+      net::HTTP_NOT_FOUND);
   FindInstrumentsWithWebAppManifest(
       GURL("https://emerald-eon.appspot.com/bobpay"),
       "{"

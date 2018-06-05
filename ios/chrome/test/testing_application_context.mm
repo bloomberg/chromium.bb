@@ -12,6 +12,7 @@
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -22,11 +23,19 @@ TestingApplicationContext::TestingApplicationContext()
       local_state_(nullptr),
       chrome_browser_state_manager_(nullptr),
       was_last_shutdown_clean_(false) {
+  // This is lazily-constructed, so it will fail via the NOTREACHED in
+  // GetSystemURLLoaderFactory() if it's actually used rather than just
+  // injected.
+  system_shared_url_loader_factory_ =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          base::BindOnce(&TestingApplicationContext::GetSystemURLLoaderFactory,
+                         base::Unretained(this) /* safe due to Detach call */));
   DCHECK(!GetApplicationContext());
   SetApplicationContext(this);
 }
 
 TestingApplicationContext::~TestingApplicationContext() {
+  system_shared_url_loader_factory_->Detach();
   DCHECK_EQ(this, GetApplicationContext());
   DCHECK(!local_state_);
   SetApplicationContext(nullptr);
@@ -90,8 +99,7 @@ TestingApplicationContext::GetSystemURLRequestContext() {
 scoped_refptr<network::SharedURLLoaderFactory>
 TestingApplicationContext::GetSharedURLLoaderFactory() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  NOTREACHED();
-  return nullptr;
+  return system_shared_url_loader_factory_;
 }
 
 network::mojom::NetworkContext*
@@ -171,5 +179,12 @@ gcm::GCMDriver* TestingApplicationContext::GetGCMDriver() {
 component_updater::ComponentUpdateService*
 TestingApplicationContext::GetComponentUpdateService() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  return nullptr;
+}
+
+network::mojom::URLLoaderFactory*
+TestingApplicationContext::GetSystemURLLoaderFactory() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  NOTREACHED();
   return nullptr;
 }

@@ -15,6 +15,7 @@
 #include "components/signin/ios/browser/wait_for_network_callback_helper.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 @class CWVAuthenticationController;
 
@@ -25,6 +26,7 @@ class IOSWebViewSigninClient : public SigninClient,
   IOSWebViewSigninClient(
       PrefService* pref_service,
       net::URLRequestContextGetter* url_request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       SigninErrorController* signin_error_controller,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
       scoped_refptr<HostContentSettingsMap> host_content_settings_map,
@@ -41,6 +43,7 @@ class IOSWebViewSigninClient : public SigninClient,
   scoped_refptr<TokenWebData> GetDatabase() override;
   PrefService* GetPrefs() override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   void DoFinalInit() override;
   bool CanRevokeCredentials() override;
   std::string GetSigninScopedDeviceId() override;
@@ -79,6 +82,7 @@ class IOSWebViewSigninClient : public SigninClient,
   PrefService* pref_service_;
   // The URLRequestContext associated with this service.
   net::URLRequestContextGetter* url_request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   // Used to check for errors related to signing in.
   SigninErrorController* signin_error_controller_;
   // Used to check if sign in cookies are allowed.

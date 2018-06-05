@@ -14,6 +14,7 @@
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,9 +51,11 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
   }
 
   ImageFetcherImpl* CreateImageFetcher() {
-    ImageFetcherImpl* fetcher =
-        new ImageFetcherImpl(std::make_unique<suggestions::ImageDecoderImpl>(),
-                             browser()->profile()->GetRequestContext());
+    ImageFetcherImpl* fetcher = new ImageFetcherImpl(
+        std::make_unique<suggestions::ImageDecoderImpl>(),
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile())
+            ->GetURLLoaderFactoryForBrowserProcess());
     return fetcher;
   }
 

@@ -48,6 +48,7 @@ WebViewSigninClientFactory::BuildServiceInstanceFor(
       WebViewBrowserState::FromBrowserState(context);
   return std::make_unique<IOSWebViewSigninClient>(
       browser_state->GetPrefs(), browser_state->GetRequestContext(),
+      browser_state->GetSharedURLLoaderFactory(),
       WebViewSigninErrorControllerFactory::GetForBrowserState(browser_state),
       WebViewCookieSettingsFactory::GetForBrowserState(browser_state),
       WebViewHostContentSettingsMapFactory::GetForBrowserState(browser_state),
