@@ -64,6 +64,8 @@ void ContextualContentSuggestionsService::FetchContextualSuggestionClusters(
         url, std::move(callback), metrics_callback);
     contextual_suggestions_fetcher_->FetchContextualSuggestionsClusters(
         url, std::move(internal_callback), metrics_callback);
+  } else if (result.peek_conditions.confidence < kMinimumConfidence) {
+    BelowConfidenceThresholdFetchDone(std::move(callback), metrics_callback);
   } else {
     std::move(callback).Run(result);
   }
@@ -90,9 +92,7 @@ void ContextualContentSuggestionsService::FetchDone(
   }
 
   if (result.peek_conditions.confidence < kMinimumConfidence) {
-    metrics_callback.Run(contextual_suggestions::FETCH_BELOW_THRESHOLD);
-    std::move(callback).Run(
-        ContextualSuggestionsResult("", {}, PeekConditions()));
+    BelowConfidenceThresholdFetchDone(std::move(callback), metrics_callback);
     return;
   }
 
@@ -105,6 +105,14 @@ ContextualContentSuggestionsService::CreateProxy() {
   return std::make_unique<
       contextual_suggestions::ContextualContentSuggestionsServiceProxy>(
       this, reporter_provider_->CreateReporter());
+}
+
+void ContextualContentSuggestionsService::BelowConfidenceThresholdFetchDone(
+    FetchClustersCallback callback,
+    ReportFetchMetricsCallback metrics_callback) {
+  metrics_callback.Run(contextual_suggestions::FETCH_BELOW_THRESHOLD);
+  std::move(callback).Run(
+      ContextualSuggestionsResult("", {}, PeekConditions()));
 }
 
 }  // namespace contextual_suggestions

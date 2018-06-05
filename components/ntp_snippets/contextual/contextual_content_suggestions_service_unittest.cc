@@ -279,4 +279,37 @@ TEST_F(ContextualContentSuggestionsServiceTest, ShouldEvictOldCachedResults) {
   EXPECT_EQ(mock_callback.response_clusters.size(), 0u);
 }
 
+TEST_F(ContextualContentSuggestionsServiceTest,
+       ShouldNotReturnCachedLowConfidenceResults) {
+  MockClustersCallback mock_callback;
+  MockClustersCallback mock_callback2;
+  std::vector<Cluster> clusters;
+  GURL context_url("http://www.from.url");
+
+  clusters.emplace_back(ClusterBuilder("Title")
+                            .AddSuggestion(SuggestionBuilder(context_url)
+                                               .Title("Title1")
+                                               .PublisherName("from.url")
+                                               .Snippet("Summary")
+                                               .ImageId("abc")
+                                               .Build())
+                            .Build());
+  PeekConditions peek_conditions;
+  peek_conditions.confidence = 0;
+  fetcher()->SetFakeResponse(clusters, peek_conditions);
+  source()->FetchContextualSuggestionClusters(
+      context_url, mock_callback.ToOnceCallback(), base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(mock_callback.has_run);
+  ExpectResponsesMatch(mock_callback, ContextualSuggestionsResult());
+
+  // The cached result we get back should be empty, since its confidence is
+  // below the threshold.
+  source()->FetchContextualSuggestionClusters(
+      context_url, mock_callback2.ToOnceCallback(), base::DoNothing());
+  EXPECT_TRUE(mock_callback2.has_run);
+  ExpectResponsesMatch(mock_callback2, ContextualSuggestionsResult());
+}
+
 }  // namespace contextual_suggestions
