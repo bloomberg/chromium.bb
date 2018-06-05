@@ -24,6 +24,7 @@ class ProfileIdentityProvider : public IdentityProvider,
 
   // IdentityProvider:
   std::string GetActiveAccountId() override;
+  bool IsActiveAccountAvailable() override;
   OAuth2TokenService* GetTokenService() override;
 
   // SigninManagerBase::Observer:

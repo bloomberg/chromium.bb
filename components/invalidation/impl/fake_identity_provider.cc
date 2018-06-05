@@ -31,6 +31,14 @@ std::string FakeIdentityProvider::GetActiveAccountId() {
   return account_id_;
 }
 
+bool FakeIdentityProvider::IsActiveAccountAvailable() {
+  if (account_id_.empty() || !token_service_ ||
+      !token_service_->RefreshTokenIsAvailable(account_id_))
+    return false;
+
+  return true;
+}
+
 OAuth2TokenService* FakeIdentityProvider::GetTokenService() {
   return token_service_;
 }

@@ -50,6 +50,12 @@ class IdentityProvider : public OAuth2TokenService::Observer {
   // Gets the active account's account ID.
   virtual std::string GetActiveAccountId() = 0;
 
+  // Returns true iff (1) there is an active account and (2) that account has
+  // a refresh token.
+  virtual bool IsActiveAccountAvailable() = 0;
+
+  // DEPRECATED: Do not add further usage of this API, as it is in the process
+  // of being removed. See https://crbug.com/809452.
   // Gets the token service vending OAuth tokens for all logged-in accounts.
   virtual OAuth2TokenService* GetTokenService() = 0;
 

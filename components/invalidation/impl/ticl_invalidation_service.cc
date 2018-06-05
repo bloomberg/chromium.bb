@@ -319,23 +319,9 @@ void TiclInvalidationService::OnIncomingInvalidation(
 std::string TiclInvalidationService::GetOwnerName() const { return "TICL"; }
 
 bool TiclInvalidationService::IsReadyToStart() {
-  if (identity_provider_->GetActiveAccountId().empty()) {
-    DVLOG(2) << "Not starting TiclInvalidationService: User is not signed in.";
-    return false;
-  }
-
-  OAuth2TokenService* token_service = identity_provider_->GetTokenService();
-  if (!token_service) {
-    DVLOG(2)
-        << "Not starting TiclInvalidationService: "
-        << "OAuth2TokenService unavailable.";
-    return false;
-  }
-
-  if (!token_service->RefreshTokenIsAvailable(
-          identity_provider_->GetActiveAccountId())) {
-    DVLOG(2)
-        << "Not starting TiclInvalidationServce: Waiting for refresh token.";
+  if (!identity_provider_->IsActiveAccountAvailable()) {
+    DVLOG(2) << "Not starting TiclInvalidationService: "
+             << "active account is not available";
     return false;
   }
 

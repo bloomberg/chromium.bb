@@ -23,6 +23,14 @@ std::string ProfileIdentityProvider::GetActiveAccountId() {
   return signin_manager_->GetAuthenticatedAccountId();
 }
 
+bool ProfileIdentityProvider::IsActiveAccountAvailable() {
+  if (GetActiveAccountId().empty() || !token_service_ ||
+      !token_service_->RefreshTokenIsAvailable(GetActiveAccountId()))
+    return false;
+
+  return true;
+}
+
 OAuth2TokenService* ProfileIdentityProvider::GetTokenService() {
   return token_service_;
 }
