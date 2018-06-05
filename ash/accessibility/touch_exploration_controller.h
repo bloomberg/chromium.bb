@@ -440,11 +440,6 @@ class ASH_EXPORT TouchExplorationController
     BOTTOM_RIGHT_CORNER = RIGHT_EDGE | BOTTOM_EDGE,
   };
 
-  // Return the bounds of the root window in actual device pixels, not DIP,
-  // in order to match the coordinate system of touch events. Note that this
-  // is not the same as screen coordinates, which span multiple displays.
-  gfx::Rect GetRootWindowBoundsInScreenUnits();
-
   // Given a point, if it is within the given inset of an edge, returns the
   // edge. If it is within the given inset of two edges, returns an int with
   // both bits that represent the respective edges turned on. Otherwise returns
@@ -503,7 +498,7 @@ class ASH_EXPORT TouchExplorationController
   // set either via touch exploration, or by a call to
   // SetTouchAccessibilityAnchorPoint when focus moves due to something other
   // than touch exploration.
-  gfx::PointF anchor_point_;
+  gfx::PointF anchor_point_dip_;
 
   // The current state of the anchor point.
   AnchorPointState anchor_point_state_;
