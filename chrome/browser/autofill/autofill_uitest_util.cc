@@ -90,4 +90,13 @@ void AddTestCreditCard(Browser* browser, const CreditCard& card) {
   observer.Wait();
 }
 
+void AddTestAutofillData(Browser* browser,
+                         const AutofillProfile& profile,
+                         const CreditCard& card) {
+  AddTestProfile(browser, profile);
+  PdmChangeWaiter observer(browser);
+  GetPersonalDataManager(browser->profile())->AddCreditCard(card);
+  observer.Wait();
+}
+
 }  // namespace autofill
