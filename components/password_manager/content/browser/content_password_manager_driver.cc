@@ -40,7 +40,6 @@ ContentPasswordManagerDriver::ContentPasswordManagerDriver(
       client_(client),
       password_generation_manager_(client, this),
       password_autofill_manager_(this, autofill_client, client),
-      next_free_key_(0),
       is_main_frame_(render_frame_host->GetParent() == nullptr),
       password_manager_binding_(this),
       weak_factory_(this) {
@@ -78,7 +77,7 @@ void ContentPasswordManagerDriver::BindRequest(
 
 void ContentPasswordManagerDriver::FillPasswordForm(
     const autofill::PasswordFormFillData& form_data) {
-  const int key = next_free_key_++;
+  const int key = GetNextKey();
   password_autofill_manager_.OnAddPasswordFormMapping(key, form_data);
   GetPasswordAutofillAgent()->FillPasswordForm(
       key, autofill::ClearPasswordValues(form_data));
@@ -126,7 +125,7 @@ void ContentPasswordManagerDriver::PreviewSuggestion(
 
 void ContentPasswordManagerDriver::ShowInitialPasswordAccountSuggestions(
     const autofill::PasswordFormFillData& form_data) {
-  const int key = next_free_key_++;
+  const int key = GetNextKey();
   password_autofill_manager_.OnAddPasswordFormMapping(key, form_data);
   GetAutofillAgent()->ShowInitialPasswordAccountSuggestions(key, form_data);
 }
@@ -390,6 +389,14 @@ gfx::RectF ContentPasswordManagerDriver::TransformToRootCoordinates(
   return gfx::RectF(rwhv->TransformPointToRootCoordSpaceF(
                         bounds_in_frame_coordinates.origin()),
                     bounds_in_frame_coordinates.size());
+}
+
+int ContentPasswordManagerDriver::GetNextKey() {
+  // Limit the range of the key to avoid excessive allocations. See
+  // https://crbug.com/846404.
+  constexpr int kMaxKeyRange = 4 * 1024;
+  next_free_key_ = (next_free_key_ + 1) % kMaxKeyRange;
+  return next_free_key_;
 }
 
 }  // namespace password_manager
