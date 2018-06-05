@@ -11,6 +11,7 @@
 #include <set>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/form_data.h"
@@ -52,6 +53,11 @@ class FormCache {
                        bool attach_predictions_to_dom);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(FormCacheTest,
+                           ShouldShowAutocompleteConsoleWarnings_Enabled);
+  FRIEND_TEST_ALL_PREFIXES(FormCacheTest,
+                           ShouldShowAutocompleteConsoleWarnings_Disabled);
+
   // Scans |control_elements| and returns the number of editable elements.
   // Also remembers the initial <select> and <input> element states, and
   // logs warning messages for deprecated attribute if
@@ -63,6 +69,14 @@ class FormCache {
   // Saves initial state of checkbox and select elements.
   void SaveInitialValues(
       const std::vector<blink::WebFormControlElement>& control_elements);
+
+  // Returns whether we should show a console warning related to a wrong
+  // autocomplete attribute. We will show a warning if (1) there is no
+  // autocomplete attribute and we have a guess for one or (2) we recognize the
+  // autocomplete attribute but it appears to be the wrong one.
+  bool ShouldShowAutocompleteConsoleWarnings(
+      const std::string& predicted_autocomplete,
+      const std::string& actual_autocomplete);
 
   // The frame this FormCache is associated with. Weak reference.
   blink::WebLocalFrame* frame_;
