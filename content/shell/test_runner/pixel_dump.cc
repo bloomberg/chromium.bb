@@ -187,11 +187,11 @@ void CopyImageAtAndCapturePixels(
   blink::Platform::Current()->GetConnector()->BindInterface(
       blink::Platform::Current()->GetBrowserServiceName(), &clipboard);
 
-  uint64_t sequence_number_before;
+  uint64_t sequence_number_before = 0;
   clipboard->GetSequenceNumber(ui::CLIPBOARD_TYPE_COPY_PASTE,
                                &sequence_number_before);
   web_frame->CopyImageAt(blink::WebPoint(x, y));
-  uint64_t sequence_number_after;
+  uint64_t sequence_number_after = 0;
   clipboard->GetSequenceNumber(ui::CLIPBOARD_TYPE_COPY_PASTE,
                                &sequence_number_after);
   if (sequence_number_before == sequence_number_after) {
