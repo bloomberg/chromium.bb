@@ -35,8 +35,8 @@ _COMMAND_LINE_PARAMETER = 'cmdlinearg-parameter'
 _DEFAULT_ANNOTATIONS = [
     'SmallTest', 'MediumTest', 'LargeTest', 'EnormousTest', 'IntegrationTest']
 _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS = [
-    'DisabledTest', 'FlakyTest']
-_VALID_ANNOTATIONS = set(['Manual'] + _DEFAULT_ANNOTATIONS +
+    'DisabledTest', 'FlakyTest', 'Manual']
+_VALID_ANNOTATIONS = set(_DEFAULT_ANNOTATIONS +
                          _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS)
 
 # These test methods are inherited from android.test base test class and
