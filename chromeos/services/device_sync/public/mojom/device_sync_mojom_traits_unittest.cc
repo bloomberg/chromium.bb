@@ -60,7 +60,7 @@ TEST(DeviceSyncMojomStructTraitsTest, RemoteDevice) {
   input.supports_mobile_hotspot = true;
   input.last_update_time_millis = 3L;
   input.software_features = software_features;
-  input.LoadBeaconSeeds({CreateTestBeaconSeed()});
+  input.beacon_seeds = {CreateTestBeaconSeed()};
 
   cryptauth::RemoteDevice output;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<

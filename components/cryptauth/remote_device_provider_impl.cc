@@ -58,7 +58,6 @@ RemoteDeviceProviderImpl::RemoteDeviceProviderImpl(
       device_manager->GetSyncedDevices(), user_id, user_private_key,
       cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
   remote_device_loader_->Load(
-      false /* should_load_beacon_seeds */,
       base::Bind(&RemoteDeviceProviderImpl::OnRemoteDevicesLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -78,7 +77,6 @@ void RemoteDeviceProviderImpl::OnSyncFinished(
         cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
 
     remote_device_loader_->Load(
-        false /* should_load_beacon_seeds */,
         base::Bind(&RemoteDeviceProviderImpl::OnRemoteDevicesLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }

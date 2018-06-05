@@ -69,12 +69,6 @@ cryptauth::RemoteDeviceList GenerateTestRemoteDevices() {
   // accordingly.
   devices[0].public_key = kLocalDevicePublicKey;
 
-  // Load an empty set of BeaconSeeds for each device.
-  // TODO(khorimoto): Adjust device_sync_mojom_traits.h/cc to allow passing
-  // devices without BeaconSeeds to be sent across Mojo.
-  for (auto& device : devices)
-    device.LoadBeaconSeeds(std::vector<cryptauth::BeaconSeed>());
-
   return devices;
 }
 
@@ -109,7 +103,8 @@ std::vector<cryptauth::IneligibleDevice> GenerateTestIneligibleDevices(
 class FakeSoftwareFeatureManagerDelegate
     : public cryptauth::FakeSoftwareFeatureManager::Delegate {
  public:
-  FakeSoftwareFeatureManagerDelegate(base::Closure on_delegate_call_closure)
+  explicit FakeSoftwareFeatureManagerDelegate(
+      base::Closure on_delegate_call_closure)
       : on_delegate_call_closure_(on_delegate_call_closure) {}
 
   ~FakeSoftwareFeatureManagerDelegate() override = default;
