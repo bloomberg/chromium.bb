@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DRIVE_SERVICE_TEST_UTIL_H_
 #define COMPONENTS_DRIVE_SERVICE_TEST_UTIL_H_
 
+#include <string>
+
 namespace drive {
 
 class FakeDriveService;
@@ -12,6 +14,13 @@ class FakeDriveService;
 namespace test_util {
 
 bool SetUpTestEntries(FakeDriveService* drive_service);
+
+bool SetUpTeamDriveTestEntries(FakeDriveService* drive_service,
+                               const std::string& team_drive_id,
+                               const std::string& team_drive_name);
+
+bool SetUpTestEntries(FakeDriveService* drive_service,
+                      const std::string& root_id);
 
 }  // namespace test_util
 }  // namespace drive

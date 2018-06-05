@@ -384,13 +384,15 @@ class FakeDriveService : public DriveServiceInterface {
   std::string GetNewResourceId();
 
   // Increments |largest_changestamp_| and adds the new changestamp.
-  void AddNewChangestamp(google_apis::ChangeResource* change);
+  void AddNewChangestamp(google_apis::ChangeResource* change,
+                         const std::string& team_drive_id);
 
   // Update ETag of |file| based on |largest_changestamp_|.
   void UpdateETag(google_apis::FileResource* file);
 
   // Update the latest changelist id
-  void UpdateLatestChangelistId(int64_t change_list_id);
+  void UpdateLatestChangelistId(int64_t change_list_id,
+                                const std::string& team_drive_id);
 
   // Adds a new entry based on the given parameters.
   // |resource_id| can be empty, in the case, the id is automatically generated.
@@ -403,6 +405,11 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& title,
       bool shared_with_me);
 
+  // Adds a new entry for a team drive.
+  // Returns a pointer to the newly added entry, or NULL if failed.
+  const EntryInfo* AddNewTeamDriveEntry(const std::string& team_drive_id,
+                                        const std::string& team_drive_name);
+
   // Core implementation of GetChangeList.
   // This method returns the slice of the all matched entries, and its range
   // is between |start_offset| (inclusive) and |start_offset| + |max_results|
@@ -411,6 +418,7 @@ class FakeDriveService : public DriveServiceInterface {
   void GetChangeListInternal(int64_t start_changestamp,
                              const std::string& search_query,
                              const std::string& directory_resource_id,
+                             const std::string& team_drive_id,
                              int start_offset,
                              int max_results,
                              int* load_counter,
@@ -442,6 +450,7 @@ class FakeDriveService : public DriveServiceInterface {
   std::map<GURL, UploadSession> upload_sessions_;
   int64_t date_seq_;
   int64_t next_upload_sequence_number_;
+  int64_t largest_changestamp_;
   int default_max_results_;
   int resource_id_count_;
   int team_drive_list_load_count_;
