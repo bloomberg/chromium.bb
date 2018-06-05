@@ -258,7 +258,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
       EXPECT_EQ(maximized_top_border_height, tabstrip_bounds.y());
     } else {
       int tabstrip_nonexcluded_y = OBFVL::kFrameBorderThickness +
-          OBFVL::kNonClientRestoredExtraThickness;
+                                   OBFVL::GetNonClientRestoredExtraThickness();
       EXPECT_LE(tabstrip_bounds.y(), tabstrip_nonexcluded_y);
     }
     int caption_width = (caption_buttons_on_left || !show_caption_buttons) ?

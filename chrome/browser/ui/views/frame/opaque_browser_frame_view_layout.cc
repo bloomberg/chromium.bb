@@ -30,6 +30,8 @@ constexpr int kCaptionButtonSpacing = 0;
 
 }  // namespace
 
+using MD = ui::MaterialDesignController;
+
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameViewLayout, public:
 
@@ -37,10 +39,6 @@ constexpr int kCaptionButtonSpacing = 0;
 
 // The content edge images have a shadow built into them.
 const int OpaqueBrowserFrameViewLayout::kContentEdgeShadowThickness = 2;
-
-// Besides the frame border, there's empty space atop the window in restored
-// mode, to use to drag the window around.
-const int OpaqueBrowserFrameViewLayout::kNonClientRestoredExtraThickness = 11;
 
 // The frame border is only visible in restored mode and is hardcoded to 4 px on
 // each side regardless of the system window border size.
@@ -147,6 +145,15 @@ int OpaqueBrowserFrameViewLayout::FrameBorderThickness(bool restored) const {
       0 : kFrameBorderThickness;
 }
 
+int OpaqueBrowserFrameViewLayout::FrameTopBorderThickness(bool restored) const {
+  constexpr int kRefreshNonClientExtraTopThickness = 1;
+  int thickness = FrameBorderThickness(restored);
+  if (MD::IsRefreshUi() &&
+      (restored || (!IsTitleBarCondensed() && !delegate_->IsFullscreen())))
+    thickness += kRefreshNonClientExtraTopThickness;
+  return thickness;
+}
+
 int OpaqueBrowserFrameViewLayout::NonClientBorderThickness() const {
   const int frame = FrameBorderThickness(false);
   // When we fill the screen, we don't show a client edge.
@@ -166,7 +173,7 @@ int OpaqueBrowserFrameViewLayout::NonClientTopHeight(bool restored) const {
         kContentEdgeShadowThickness;
   }
 
-  int thickness = FrameBorderThickness(restored);
+  int thickness = FrameTopBorderThickness(restored);
   // The tab top inset is equal to the height of any shadow region above the
   // tabs, plus a 1 px top stroke.  In maximized mode, we want to push the
   // shadow region off the top of the screen but leave the top stroke.
@@ -179,7 +186,7 @@ int OpaqueBrowserFrameViewLayout::GetTabStripInsetsTop(bool restored) const {
   const int top = NonClientTopHeight(restored);
   return (!restored && (IsTitleBarCondensed() || delegate_->IsFullscreen()))
              ? top
-             : (top + kNonClientRestoredExtraThickness);
+             : (top + GetNonClientRestoredExtraThickness());
 }
 
 int OpaqueBrowserFrameViewLayout::TitlebarTopThickness(bool restored) const {
@@ -268,6 +275,16 @@ bool OpaqueBrowserFrameViewLayout::IsTitleBarCondensed() const {
   return !delegate_->ShouldShowCaptionButtons() || delegate_->IsMaximized();
 }
 
+// static
+int OpaqueBrowserFrameViewLayout::GetNonClientRestoredExtraThickness() {
+  // Besides the frame border, there's empty space atop the window in restored
+  // mode, to use to drag the window around.
+  constexpr int kNonClientRestoredExtraThickness = 11;
+  constexpr int kRefreshNonClientRestoredExtraThickness = 4;
+  return MD::IsRefreshUi() ? kRefreshNonClientRestoredExtraThickness
+                           : kNonClientRestoredExtraThickness;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameViewLayout, protected:
 
@@ -319,7 +336,6 @@ int OpaqueBrowserFrameViewLayout::TabStripCaptionSpacing() const {
   // For Material Refresh, the end of the tabstrip contains empty space to
   // ensure the window remains draggable, which is sufficient padding to the
   // other tabstrip contents.
-  using MD = ui::MaterialDesignController;
   if (MD::IsRefreshUi())
     return 0;
 

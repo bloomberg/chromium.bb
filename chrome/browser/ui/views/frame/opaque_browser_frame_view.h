@@ -140,6 +140,11 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // node_data.
   int FrameBorderThickness(bool restored) const;
 
+  // Returns the thickness of the border that makes up the window frame edge
+  // along the top of the frame. If |restored| is true, this acts as if the
+  // window is restored regardless of the actual mode.
+  int FrameTopBorderThickness(bool restored) const;
+
   // Returns true if the specified point is within the avatar menu buttons.
   bool IsWithinAvatarMenuButtons(const gfx::Point& point) const;
 

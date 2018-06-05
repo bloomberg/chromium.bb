@@ -28,7 +28,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   static const int kContentEdgeShadowThickness;
 
   // Constants public for testing only.
-  static const int kNonClientRestoredExtraThickness;
   static const int kFrameBorderThickness;
   static const int kTitlebarTopEdgeThickness;
   static const int kIconLeftSpacing;
@@ -67,6 +66,11 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // This does not include any client edge.  If |restored| is true, acts as if
   // the window is restored regardless of the real mode.
   int FrameBorderThickness(bool restored) const;
+
+  // Returns the thickness of the border that makes up the window frame edge
+  // along the top of the frame. If |restored| is true, this acts as if the
+  // window is restored regardless of the actual mode.
+  int FrameTopBorderThickness(bool restored) const;
 
   // Returns the thickness of the entire nonclient left, right, and bottom
   // borders, including both the window frame and any client edge.
@@ -134,6 +138,10 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // rather than having extra vertical space above the tabs. This also removes
   // the thick frame border and rounded corners.
   bool IsTitleBarCondensed() const;
+
+  // Returns the extra thickness of the area above the tabs. The value returned
+  // is dependent on whether in material refresh mode or not.
+  static int GetNonClientRestoredExtraThickness();
 
  protected:
   // Whether a specific button should be inserted on the leading or trailing

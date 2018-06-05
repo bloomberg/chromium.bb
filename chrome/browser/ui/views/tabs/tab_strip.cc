@@ -336,6 +336,33 @@ bool TabStrip::IsRectInWindowCaption(const gfx::Rect& rect) {
   if (v == this)
     return true;
 
+  constexpr int kInactiveTabHitTestOverlap = 7;
+  // If there is a tab at this location, this hit is not likely in the title
+  // bar, except under the conditions below.
+  const int tab_index = tabs_.GetIndexOfView(v);
+  if (IsValidModelIndex(tab_index)) {
+    Tab* tab = tab_at(tab_index);
+    // Under refresh, a 7 dip area at the top of an inactive tab should be
+    // considered part of the window caption. This makes the window drag region
+    // a little larger which makes it easier to target.
+    if (MD::IsRefreshUi() && !SizeTabButtonToTopOfTabStrip() &&
+        !tab->IsActive()) {
+      return gfx::Rect(tab->bounds().origin(),
+                       gfx::Size(tab->width(), kInactiveTabHitTestOverlap))
+          .Intersects(rect);
+    }
+    return false;
+  }
+
+  // Under refresh, check if the rect intersects a thin 7 dip strip along the
+  // top of the new tab button. This also makes the window drag region above the
+  // new tab button a little larger for ease of window dragging.
+  if (MD::IsRefreshUi() && !SizeTabButtonToTopOfTabStrip() &&
+      gfx::Rect(new_tab_button_->bounds().origin(),
+                gfx::Size(new_tab_button_->width(), kInactiveTabHitTestOverlap))
+          .Intersects(rect))
+    return true;
+
   // Check to see if the rect intersects the non-button parts of the new tab
   // button. The button has a non-rectangular shape, so if it's not in the
   // visual portions of the button we treat it as a click to the caption.

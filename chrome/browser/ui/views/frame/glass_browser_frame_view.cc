@@ -44,6 +44,8 @@ using MD = ui::MaterialDesignController;
 HICON GlassBrowserFrameView::throbber_icons_[
     GlassBrowserFrameView::kThrobberIconCount];
 
+using MD = ui::MaterialDesignController;
+
 namespace {
 
 // How far the profile switcher button is from the left of the minimize button.
@@ -475,6 +477,16 @@ int GlassBrowserFrameView::FrameBorderThickness() const {
 }
 
 int GlassBrowserFrameView::FrameTopBorderThickness(bool restored) const {
+  // Under material refresh, the area above the tabstrip is much narrower. This
+  // code only returns this narrower value if in refresh mode and the frame is
+  // not maximized or fullscreen. When maximized, the OS sizes the window such
+  // that the border extends beyond the screen edges. In that case, we must
+  // return the default value.
+  if (MD::IsRefreshUi() &&
+      ((!frame()->IsFullscreen() && !IsMaximized()) || restored)) {
+    constexpr int kTopResizeFrameArea = 5;
+    return kTopResizeFrameArea;
+  }
   // Mouse and touch locations are floored but GetSystemMetricsInDIP is rounded,
   // so we need to floor instead or else the difference will cause the hittest
   // to fail when it ought to succeed.
@@ -511,7 +523,9 @@ int GlassBrowserFrameView::TopAreaHeight(bool restored) const {
   // Besides the frame border, there's empty space atop the window in restored
   // mode, to use to drag the window around.
   constexpr int kNonClientRestoredExtraThickness = 11;
-  return top + kNonClientRestoredExtraThickness;
+  constexpr int kRefreshNonClientRestoredExtraThickness = 4;
+  return top + (MD::IsRefreshUi() ? kRefreshNonClientRestoredExtraThickness
+                                  : kNonClientRestoredExtraThickness);
 }
 
 int GlassBrowserFrameView::TitlebarMaximizedVisualHeight() const {
