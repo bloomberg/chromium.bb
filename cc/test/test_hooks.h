@@ -11,6 +11,10 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_impl.h"
 
+namespace gfx {
+struct PresentationFeedback;
+}
+
 namespace viz {
 class CompositorFrame;
 class OutputSurface;
@@ -59,6 +63,10 @@ class TestHooks : public AnimationDelegate {
       LayerTreeHostImpl* host_impl) {}
   virtual void DidReceiveCompositorFrameAckOnThread(
       LayerTreeHostImpl* host_impl) {}
+  virtual void DidReceivePresentationTimeOnThread(
+      LayerTreeHostImpl* host_impl,
+      uint32_t frame_token,
+      const gfx::PresentationFeedback& feedback) {}
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
                                        bool visible) {}
   virtual void AnimateLayers(LayerTreeHostImpl* host_impl,

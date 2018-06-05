@@ -381,6 +381,15 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->DidReceiveCompositorFrameAckOnThread(this);
   }
 
+  void DidPresentCompositorFrame(uint32_t presentation_token,
+                                 base::TimeTicks time,
+                                 base::TimeDelta refresh,
+                                 uint32_t flags) override {
+    LayerTreeHostImpl::DidPresentCompositorFrame(presentation_token, time,
+                                                 refresh, flags);
+    test_hooks_->DidReceivePresentationTimeOnThread(this, presentation_token,
+                                                    {time, refresh, flags});
+  }
   AnimationHost* animation_host() const {
     return static_cast<AnimationHost*>(mutator_host());
   }
@@ -462,6 +471,9 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     test_hooks_->BeginMainFrameNotExpectedSoon();
   }
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override {}
+  void DidPresentCompositorFrame(
+      uint32_t frame_token,
+      const gfx::PresentationFeedback& feedback) override {}
 
   bool IsForSubframe() override { return false; }
 

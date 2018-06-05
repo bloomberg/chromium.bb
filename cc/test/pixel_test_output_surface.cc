@@ -80,8 +80,10 @@ void PixelTestOutputSurface::SwapBuffers(viz::OutputSurfaceFrame frame) {
 void PixelTestOutputSurface::SwapBuffersCallback(
     bool need_presentation_feedback) {
   client_->DidReceiveSwapBuffersAck();
-  if (need_presentation_feedback)
-    client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
+  if (need_presentation_feedback) {
+    client_->DidReceivePresentationFeedback(gfx::PresentationFeedback(
+        base::TimeTicks::Now(), base::TimeDelta(), 0));
+  }
 }
 
 viz::OverlayCandidateValidator*

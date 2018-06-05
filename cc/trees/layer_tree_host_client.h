@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 
 namespace gfx {
+struct PresentationFeedback;
 class Vector2dF;
 }
 
@@ -89,6 +90,10 @@ class LayerTreeHostClient {
   virtual void DidCommitAndDrawFrame() = 0;
   virtual void DidReceiveCompositorFrameAck() = 0;
   virtual void DidCompletePageScaleAnimation() = 0;
+  virtual void DidPresentCompositorFrame(
+      uint32_t frame_token,
+      const gfx::PresentationFeedback& feedback) = 0;
+
   // The only time a subframe ever gets its own LayerTree is when the subframe
   // renders in a different process its ancestors; this returns true in
   // that case.
