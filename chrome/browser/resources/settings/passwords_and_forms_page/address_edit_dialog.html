@@ -1,10 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-textarea.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../settings_vars_css.html">
@@ -12,20 +13,12 @@
 <dom-module id="settings-address-edit-dialog">
   <template>
     <style include="settings-shared md-select">
-      :host {
-        --iron-autogrow-textarea: {
-          box-sizing: border-box;
-          padding: 0;
-        };
-      }
-
       .address-row {
         display: flex;
       }
 
       .address-column {
         -webkit-margin-end: 16px;
-        margin-bottom: 8px;
         width: calc((var(--settings-input-max-width) - 16px) / 2);
       }
 
@@ -40,12 +33,7 @@
       }
 
       #select-label {
-        /* Mimic other paper-input floating labels. */
-        color: var(--light-theme-secondary-color);
-        transform: scale(0.75);
-        transform-origin: left;
-        width: 133%;
-        @apply --paper-input-container-label-floating;
+        @apply --cr-form-field-label;
       }
 
       :host-context([dir=rtl]) #select-label {
@@ -54,6 +42,15 @@
 
       .long {
         width: var(--settings-input-max-width);
+      }
+
+      cr-input {
+        --cr-input-error-display: none;
+      }
+
+      cr-input:not(.last-row),
+      .md-select {
+        margin-bottom: var(--cr-form-field-bottom-spacing);
       }
 
       #saveButton {
@@ -75,6 +72,11 @@
       }
 
       paper-textarea {
+        --iron-autogrow-textarea: {
+          box-sizing: border-box;
+          padding: 0;
+        };
+
         /**
          * Workaround for iron-autogrow-textarea's display:inline-block creating
          * too much vertical space than intended.
@@ -100,11 +102,11 @@
                 </paper-textarea>
               </template>
               <template is="dom-if" if="[[!item.isTextArea]]">
-                <paper-input type="text" label="[[item.component.fieldName]]"
-                    always-float-label autofocus value="{{item.value}}"
+                <cr-input type="text" label="[[item.component.fieldName]]"
+                    autofocus value="{{item.value}}"
                     on-value-changed="updateCanSave_"
                     class$="address-column [[long_(item)]]">
-                </paper-input>
+                </cr-input>
               </template>
             </template>
           </div>
@@ -123,14 +125,14 @@
           </select>
         </div>
         <div class="address-row">
-          <paper-input id="phoneInput" type="text" label="$i18n{addressPhone}"
-              always-float-label class="address-column"
-              on-value-changed="updateCanSave_" value="{{phoneNumber_}}">
-          </paper-input>
-          <paper-input id="emailInput" type="text" label="$i18n{addressEmail}"
-              on-value-changed="updateCanSave_" always-float-label
-              class="address-column long" value="{{email_}}">
-          </paper-input>
+          <cr-input id="phoneInput" type="text" label="$i18n{addressPhone}"
+              class="address-column last-row" on-value-changed="updateCanSave_"
+              value="{{phoneNumber_}}">
+          </cr-input>
+          <cr-input id="emailInput" type="text" label="$i18n{addressEmail}"
+              on-value-changed="updateCanSave_" value="{{email_}}"
+              class="address-column long last-row">
+          </cr-input>
         </div>
       </div>
       <div slot="button-container">

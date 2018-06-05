@@ -54,7 +54,7 @@ Polymer({
     this.languageSettingsPrivate.onCustomDictionaryChanged.addListener(
         this.onCustomDictionaryChanged_.bind(this));
 
-    // Add a key handler for the paper-input.
+    // Add a key handler for the new-word input.
     this.$.keys.target = this.$.newWord;
   },
 
@@ -116,7 +116,7 @@ Polymer({
   },
 
   /**
-   * Handles Enter and Escape key presses for the paper-input.
+   * Handles Enter and Escape key presses for the new-word input.
    * @param {!{detail: !{key: string}}} e
    */
   onKeysPress_: function(e) {
@@ -145,7 +145,7 @@ Polymer({
   },
 
   /**
-   * Adds the word in the paper-input to the dictionary.
+   * Adds the word in the new-word input to the dictionary.
    */
   addWordFromInput_: function() {
     // Spaces are allowed, but removing leading and trailing whitespace.

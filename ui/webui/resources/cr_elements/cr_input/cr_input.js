@@ -23,6 +23,13 @@
  *                   whenever |value| changes.
  *   error-message - message displayed under the input when |invalid| is true.
  *   invalid
+ *
+ * You may pass an element into cr-input via [slot="suffix"] to be vertically
+ * center-aligned with the input field, regardless of position of the label and
+ * error-message. Example:
+ *   <cr-input>
+ *     <paper-button slot="suffix"></paper-button>
+ *   </cr-input>
  */
 Polymer({
   is: 'cr-input',
@@ -105,6 +112,8 @@ Polymer({
   },
 
   listeners: {
+    'input.focus': 'onInputFocusChange_',
+    'input.blur': 'onInputFocusChange_',
     'input.change': 'onInputChange_',
   },
 
@@ -117,7 +126,7 @@ Polymer({
   disabledChanged_: function() {
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
     // In case input was focused when disabled changes.
-    this.inputElement.blur();
+    this.removeAttribute('focused_');
   },
 
   /**
@@ -153,5 +162,14 @@ Polymer({
    */
   onInputChange_: function(e) {
     this.fire('change', {sourceEvent: e});
+  },
+
+  // focused_ is used instead of :focus-within, so focus on elements within the
+  // suffix slot does not trigger a change in input styles.
+  onInputFocusChange_: function() {
+    if (this.shadowRoot.activeElement == this.inputElement)
+      this.setAttribute('focused_', '');
+    else
+      this.removeAttribute('focused_');
   },
 });
