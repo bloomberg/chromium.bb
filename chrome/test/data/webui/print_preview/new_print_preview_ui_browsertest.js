@@ -633,6 +633,18 @@ TEST_F('PrintPreviewCustomMarginsTest', 'ControlsCheck', function() {
   this.runMochaTest(custom_margins_test.TestNames.ControlsCheck);
 });
 
+TEST_F('PrintPreviewCustomMarginsTest', 'SetFromStickySettings', function() {
+  this.runMochaTest(custom_margins_test.TestNames.SetFromStickySettings);
+});
+
+TEST_F('PrintPreviewCustomMarginsTest', 'DragControls', function() {
+  this.runMochaTest(custom_margins_test.TestNames.DragControls);
+});
+
+TEST_F('PrintPreviewCustomMarginsTest', 'SetControlsWithTextbox', function() {
+  this.runMochaTest(custom_margins_test.TestNames.SetControlsWithTextbox);
+});
+
 PrintPreviewNewDestinationSearchTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
