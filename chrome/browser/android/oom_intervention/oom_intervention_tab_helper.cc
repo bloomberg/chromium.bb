@@ -76,6 +76,7 @@ OomInterventionTabHelper::OomInterventionTabHelper(
   shared_metrics_buffer_ = base::UnsafeSharedMemoryRegion::Create(
       sizeof(blink::OomInterventionMetrics));
   metrics_mapping_ = shared_metrics_buffer_.Map();
+  memset(metrics_mapping_.memory(), 0, sizeof(blink::OomInterventionMetrics));
 }
 
 OomInterventionTabHelper::~OomInterventionTabHelper() = default;
