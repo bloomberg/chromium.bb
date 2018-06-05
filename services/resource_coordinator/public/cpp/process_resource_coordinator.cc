@@ -9,7 +9,8 @@ namespace resource_coordinator {
 ProcessResourceCoordinator::ProcessResourceCoordinator(
     service_manager::Connector* connector)
     : ResourceCoordinatorInterface(), weak_ptr_factory_(this) {
-  CoordinationUnitID new_cu_id(CoordinationUnitType::kProcess, std::string());
+  CoordinationUnitID new_cu_id(CoordinationUnitType::kProcess,
+                               CoordinationUnitID::RANDOM_ID);
   ResourceCoordinatorInterface::ConnectToService(connector, new_cu_id);
 }
 

@@ -9,7 +9,8 @@ namespace resource_coordinator {
 PageResourceCoordinator::PageResourceCoordinator(
     service_manager::Connector* connector)
     : ResourceCoordinatorInterface(), weak_ptr_factory_(this) {
-  CoordinationUnitID new_cu_id(CoordinationUnitType::kPage, std::string());
+  CoordinationUnitID new_cu_id(CoordinationUnitType::kPage,
+                               CoordinationUnitID::RANDOM_ID);
   ResourceCoordinatorInterface::ConnectToService(connector, new_cu_id);
 }
 

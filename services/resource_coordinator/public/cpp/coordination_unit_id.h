@@ -19,10 +19,12 @@ namespace resource_coordinator {
 // class from the internal id
 struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_BASE_EXPORT CoordinationUnitID {
   typedef uint64_t CoordinationUnitTypeId;
+  enum RandomID { RANDOM_ID };
 
   CoordinationUnitID();
-  CoordinationUnitID(const CoordinationUnitType& type,
-                     const std::string& new_id);
+  // Creates a new random ID.
+  CoordinationUnitID(const CoordinationUnitType& type, RandomID random_id);
+
   CoordinationUnitID(const CoordinationUnitType& type,
                      CoordinationUnitTypeId new_id);
 

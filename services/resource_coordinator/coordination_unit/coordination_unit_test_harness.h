@@ -26,7 +26,8 @@ class TestCoordinationUnitWrapper {
  public:
   static TestCoordinationUnitWrapper<CoordinationUnitClass> Create(
       CoordinationUnitGraph* graph) {
-    CoordinationUnitID cu_id(CoordinationUnitClass::Type(), std::string());
+    CoordinationUnitID cu_id(CoordinationUnitClass::Type(),
+                             CoordinationUnitID::RANDOM_ID);
     return TestCoordinationUnitWrapper<CoordinationUnitClass>(
         CoordinationUnitClass::Create(cu_id, graph, nullptr));
   }
@@ -64,7 +65,8 @@ class CoordinationUnitTestHarness : public testing::Test {
 
   template <class CoordinationUnitClass>
   TestCoordinationUnitWrapper<CoordinationUnitClass> CreateCoordinationUnit() {
-    CoordinationUnitID cu_id(CoordinationUnitClass::Type(), std::string());
+    CoordinationUnitID cu_id(CoordinationUnitClass::Type(),
+                             CoordinationUnitID::RANDOM_ID);
     return CreateCoordinationUnit<CoordinationUnitClass>(cu_id);
   }
 

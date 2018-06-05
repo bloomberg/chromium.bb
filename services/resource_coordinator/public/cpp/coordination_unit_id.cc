@@ -24,10 +24,9 @@ CoordinationUnitID::CoordinationUnitID()
     : id(0), type(CoordinationUnitType::kInvalidType) {}
 
 CoordinationUnitID::CoordinationUnitID(const CoordinationUnitType& type,
-                                       const std::string& new_id)
+                                       RandomID /* random_id */)
     : type(type) {
-  id = CreateCityHash64(
-      !new_id.empty() ? new_id : base::UnguessableToken().Create().ToString());
+  id = CreateCityHash64(base::UnguessableToken().Create().ToString());
 }
 
 CoordinationUnitID::CoordinationUnitID(const CoordinationUnitType& type,

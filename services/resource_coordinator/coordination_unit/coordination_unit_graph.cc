@@ -28,7 +28,7 @@ namespace resource_coordinator {
 
 CoordinationUnitGraph::CoordinationUnitGraph()
     : system_coordination_unit_id_(CoordinationUnitType::kSystem,
-                                   std::string()) {}
+                                   CoordinationUnitID::RANDOM_ID) {}
 
 CoordinationUnitGraph::~CoordinationUnitGraph() = default;
 
