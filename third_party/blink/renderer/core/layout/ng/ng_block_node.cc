@@ -627,6 +627,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
       box_->SetOverrideLogicalHeight(
           constraint_space.AvailableSize().block_size);
     }
+    box_->ComputeAndSetBlockDirectionMargins(box_->ContainingBlock());
 
     if (box_->IsLayoutNGMixin() && box_->NeedsLayout()) {
       ToLayoutBlockFlow(box_)->LayoutBlockFlow::UpdateBlockLayout(true);
