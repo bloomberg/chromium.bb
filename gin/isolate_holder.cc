@@ -20,7 +20,6 @@
 #include "gin/debug_impl.h"
 #include "gin/function_template.h"
 #include "gin/per_isolate_data.h"
-#include "gin/run_microtasks_observer.h"
 #include "gin/v8_initializer.h"
 #include "gin/v8_isolate_memory_dump_provider.h"
 
@@ -96,8 +95,6 @@ IsolateHolder::IsolateHolder(
 }
 
 IsolateHolder::~IsolateHolder() {
-  if (task_observer_.get())
-    base::MessageLoopCurrent::Get()->RemoveTaskObserver(task_observer_.get());
 #if defined(OS_WIN)
   {
     void* code_range;
@@ -124,18 +121,6 @@ void IsolateHolder::Initialize(ScriptMode mode,
   V8Initializer::Initialize(mode, v8_extras_mode);
   g_array_buffer_allocator = allocator;
   g_reference_table = reference_table;
-}
-
-void IsolateHolder::AddRunMicrotasksObserver() {
-  DCHECK(!task_observer_.get());
-  task_observer_.reset(new RunMicrotasksObserver(isolate_));
-  base::MessageLoopCurrent::Get()->AddTaskObserver(task_observer_.get());
-}
-
-void IsolateHolder::RemoveRunMicrotasksObserver() {
-  DCHECK(task_observer_.get());
-  base::MessageLoopCurrent::Get()->RemoveTaskObserver(task_observer_.get());
-  task_observer_.reset();
 }
 
 void IsolateHolder::EnableIdleTasks(

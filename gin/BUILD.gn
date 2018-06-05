@@ -46,8 +46,6 @@ component("gin") {
     "public/v8_idle_task_runner.h",
     "public/v8_platform.h",
     "public/wrapper_info.h",
-    "run_microtasks_observer.cc",
-    "run_microtasks_observer.h",
     "runner.cc",
     "runner.h",
     "shell_runner.cc",
