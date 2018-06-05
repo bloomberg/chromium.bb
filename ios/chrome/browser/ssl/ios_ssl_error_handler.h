@@ -37,7 +37,7 @@ class IOSSSLErrorHandler : public web::WebStateUserData<IOSSSLErrorHandler> {
                              const net::SSLInfo& info,
                              const GURL& request_url,
                              bool overridable,
-                             const base::Callback<void(bool)>& callback);
+                             base::OnceCallback<void(bool)> callback);
   ~IOSSSLErrorHandler() override;
 
  private:
@@ -52,7 +52,7 @@ class IOSSSLErrorHandler : public web::WebStateUserData<IOSSSLErrorHandler> {
                      const net::SSLInfo& info,
                      const GURL& request_url,
                      bool overridable,
-                     const base::Callback<void(bool)>& callback);
+                     base::OnceCallback<void(bool)> callback);
 
   // Begins captive portal detection to determine which interstitial should be
   // displayed.
@@ -88,7 +88,7 @@ class IOSSSLErrorHandler : public web::WebStateUserData<IOSSSLErrorHandler> {
   // The callback to run after the user is done interacting with this
   // interstitial. |proceed| will be true if the user wants to procced with the
   // page load of |request_url_|, false otherwise.
-  base::Callback<void(bool proceed)> callback_;
+  base::OnceCallback<void(bool proceed)> callback_;
   // A timer to display the SSL interstitial if the captive portal detection
   // takes too long.
   base::OneShotTimer timer_;

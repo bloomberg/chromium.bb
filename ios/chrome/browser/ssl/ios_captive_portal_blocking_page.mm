@@ -24,10 +24,10 @@ IOSCaptivePortalBlockingPage::IOSCaptivePortalBlockingPage(
     web::WebState* web_state,
     const GURL& request_url,
     const GURL& landing_url,
-    const base::Callback<void(bool)>& callback)
+    base::OnceCallback<void(bool)> callback)
     : IOSSecurityInterstitialPage(web_state, request_url),
       landing_url_(landing_url),
-      callback_(callback) {
+      callback_(std::move(callback)) {
   captive_portal::CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(
       captive_portal::CaptivePortalMetrics::SHOW_ALL);
 }
@@ -90,8 +90,7 @@ void IOSCaptivePortalBlockingPage::OnDontProceed() {
   if (callback_.is_null())
     return;
 
-  callback_.Run(false);
-  callback_.Reset();
+  std::move(callback_).Run(false);
 }
 
 void IOSCaptivePortalBlockingPage::CommandReceived(const std::string& command) {
