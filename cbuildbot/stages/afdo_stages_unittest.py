@@ -14,6 +14,64 @@ from chromite.lib import gs
 from chromite.lib import portage_util
 
 
+def _GenerateAFDOGenerateTest(chrome_version_str,
+                              expected_to_generate_profile,
+                              test_name):
+  class Test(generic_stages_unittest.AbstractStageTestCase):
+    """Test that we don't update non-r1 AFDO profiles"""
+
+    def setUp(self):
+      self.PatchObject(afdo, 'CanGenerateAFDOData', lambda _: True)
+      chrome_version = portage_util.SplitCPV(chrome_version_str)
+      self.PatchObject(portage_util, 'BestVisible',
+                       lambda *_, **_2: chrome_version)
+      self.wait_for_data = self.PatchObject(afdo, 'WaitForAFDOPerfData',
+                                            autospec=True,
+                                            wraps=lambda *_: True)
+
+      afdo_path = '/does/not/exist/afdo.prof'
+      self.generate_afdo_data = self.PatchObject(afdo, 'GenerateAFDOData',
+                                                 autospec=True,
+                                                 wraps=lambda *_: afdo_path)
+
+      self.PatchObject(afdo_stages.AFDODataGenerateStage, '_GetCurrentArch',
+                       lambda *_: 'some_arch')
+
+      self._Prepare()
+
+    def ConstructStage(self):
+      return afdo_stages.AFDODataGenerateStage(self._run, 'some_board')
+
+    def testAFDOUpdateChromeEbuildStage(self):
+      self.RunStage()
+      if expected_to_generate_profile:
+        self.assertTrue(self.wait_for_data.called)
+        self.assertTrue(self.generate_afdo_data.called)
+      else:
+        self.assertFalse(self.wait_for_data.called)
+        self.assertFalse(self.generate_afdo_data.called)
+
+  Test.__name__ = test_name
+  return Test
+
+
+def _MakeChromeVersionWithRev(rev):
+  return 'chromeos-chrome/chromeos-chrome-68.0.3436.0_rc-r%d' % rev
+
+
+R1Test = _GenerateAFDOGenerateTest(
+    chrome_version_str=_MakeChromeVersionWithRev(1),
+    expected_to_generate_profile=True,
+    test_name='AFDODataGenerateStageUpdatesR1ProfilesTest',
+)
+
+R2Test = _GenerateAFDOGenerateTest(
+    chrome_version_str=_MakeChromeVersionWithRev(2),
+    expected_to_generate_profile=False,
+    test_name='AFDODataGenerateStageDoesntUpdateNonR1ProfilesTest',
+)
+
+
 class UpdateChromeEbuildTest(generic_stages_unittest.AbstractStageTestCase):
   """Test updating Chrome ebuild files"""
 

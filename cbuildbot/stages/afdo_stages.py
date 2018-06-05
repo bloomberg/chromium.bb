@@ -41,6 +41,31 @@ class AFDODataGenerateStage(generic_stages.BoardSpecificBuilderStage,
                                    buildroot=buildroot)
     afdo_file = None
 
+    # We have a mismatch between how we version the perf.data we collect and
+    # how we version our AFDO profiles.
+    #
+    # This mismatch can cause us to generate garbage profiles, so we skip
+    # profile updates for non-r1 revisions of Chrome.
+    #
+    # Going into more detail, a perf.data file looks like:
+    # chromeos-chrome-amd64-68.0.3440.9.perf.data.bz2
+    #
+    # An AFDO profile looks like:
+    # chromeos-chrome-amd64-68.0.3440.9_rc-r1.afdo.bz2
+    #
+    # And an unstripped Chrome looks like:
+    # chromeos-chrome-amd64-68.0.3440.9_rc-r1.debug.bz2
+    #
+    # Notably, the perf.data is lacking the revision number of the Chrome it
+    # was gathered on. This is problematic, since if there's a rev bump, we'll
+    # end up using the perf.data collected on Chrome version $N-r1 with a
+    # Chrome binary built from Chrome version $N-r2, which may have an entirely
+    # different layout than Chrome version $N-r1.
+    if cpv.rev != 'r1':
+      logging.warning(
+          'Non-r1 version of Chrome detected; skipping AFDO generation')
+      return
+
     # Generation of AFDO could fail for different reasons.
     # We will ignore the failures and let the master PFQ builder try
     # to find an older AFDO profile.
