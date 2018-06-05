@@ -7,8 +7,8 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -297,7 +297,8 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
 
   __weak ClearBrowsingDataCollectionViewController* weakSelf = self;
   browsing_data::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
-      syncService, historyService, base::BindBlockArc(^(bool shouldShowNotice) {
+      syncService, historyService,
+      base::BindRepeating(^(bool shouldShowNotice) {
         ClearBrowsingDataCollectionViewController* strongSelf = weakSelf;
         [strongSelf setShouldShowNoticeAboutOtherFormsOfBrowsingHistory:
                         shouldShowNotice];
@@ -305,7 +306,7 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
 
   browsing_data::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
       syncService, historyService, GetChannel(),
-      base::BindBlockArc(^(bool shouldShowPopup) {
+      base::BindRepeating(^(bool shouldShowPopup) {
         ClearBrowsingDataCollectionViewController* strongSelf = weakSelf;
         [strongSelf setShouldPopupDialogAboutOtherFormsOfBrowsingHistory:
                         shouldShowPopup];
@@ -418,7 +419,7 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
     __weak ClearBrowsingDataCollectionViewController* weakSelf = self;
     counter = BrowsingDataCounterWrapper::CreateCounterWrapper(
         prefName, _browserState, prefs,
-        base::BindBlockArc(^(
+        base::BindRepeating(^(
             const browsing_data::BrowsingDataCounter::Result& result) {
           [weakSelf updateCounter:itemType
                        detailText:[weakSelf getCounterTextFromResult:result]];

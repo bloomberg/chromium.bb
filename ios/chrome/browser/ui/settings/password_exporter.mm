@@ -4,9 +4,9 @@
 
 #import "ios/chrome/browser/ui/settings/password_exporter.h"
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_runner_util.h"
@@ -47,8 +47,7 @@ enum class ReauthenticationStatus {
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&password_manager::PasswordCSVWriter::SerializePasswords,
                      std::move(passwords)),
-      base::OnceCallback<void(std::string)>(
-          base::BindBlockArc(serializedPasswordsHandler)));
+      base::BindOnce(serializedPasswordsHandler));
 }
 
 @end
@@ -91,7 +90,7 @@ enum class ReauthenticationStatus {
   };
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::BindBlockArc(writeToFile), base::BindBlockArc(handler));
+      base::BindOnce(writeToFile), base::BindOnce(handler));
 }
 
 @end
@@ -350,7 +349,7 @@ enum class ReauthenticationStatus {
       [passwordsTempFileURL URLByDeletingLastPathComponent];
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::BindBlockArc(^{
+      base::BindOnce(^{
         base::AssertBlockingAllowed();
         NSFileManager* fileManager = [NSFileManager defaultManager];
         [fileManager removeItemAtURL:uniqueDirectoryURL error:nil];

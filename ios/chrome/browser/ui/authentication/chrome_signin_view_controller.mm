@@ -11,9 +11,9 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <QuartzCore/QuartzCore.h>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #import "base/ios/block_types.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
@@ -745,7 +745,7 @@ enum AuthenticationState {
           std::make_unique<base::Timer>(retain_user_task, is_repeating);
     }
     _leavingPendingStateTimer->Start(FROM_HERE, remainingTime,
-                                     base::BindBlockArc(completionBlock));
+                                     base::BindRepeating(completionBlock));
   }
 }
 

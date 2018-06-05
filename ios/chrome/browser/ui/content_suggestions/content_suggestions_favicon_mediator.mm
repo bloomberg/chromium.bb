@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_mediator.h"
 
-#include "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
@@ -168,7 +168,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
           category, item.suggestionIdentifier.IDInSection);
   self.contentService->FetchSuggestionFavicon(
       identifier, /* minimum_size_in_pixel = */ 1, kSuggestionsFaviconSize,
-      base::BindBlockArc(imageCallback));
+      base::BindOnce(imageCallback));
 }
 
 // If it is the first time the favicon corresponding to |URL| has its favicon

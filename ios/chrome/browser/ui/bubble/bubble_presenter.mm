@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 
+#include "base/bind.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -92,7 +93,7 @@
   // bubble to appear properly, a callback is used to guarantee the event data
   // is loaded before the check to see if the promotion should be displayed.
   feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
-      ->AddOnInitializedCallback(base::BindBlockArc(onInitializedBlock));
+      ->AddOnInitializedCallback(base::BindRepeating(onInitializedBlock));
 }
 
 - (void)dismissBubbles {

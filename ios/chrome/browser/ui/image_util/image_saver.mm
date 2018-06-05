@@ -6,9 +6,9 @@
 
 #import <Photos/Photos.h>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
@@ -122,7 +122,7 @@
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindBlockArc(^{
+      base::BindOnce(^{
         base::AssertBlockingAllowed();
 
         NSString* fileName = [[[NSProcessInfo processInfo] globallyUniqueString]
@@ -147,7 +147,7 @@
                   FROM_HERE,
                   {base::MayBlock(), base::TaskPriority::BACKGROUND,
                    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-                  base::BindBlockArc(^{
+                  base::BindOnce(^{
                     base::AssertBlockingAllowed();
                     if (completion)
                       completion(success, error);

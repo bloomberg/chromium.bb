@@ -13,6 +13,7 @@
 #include <memory>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -20,7 +21,6 @@
 #include "base/ios/block_types.h"
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
@@ -3544,8 +3544,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       CGPointMake(CGRectGetMidX(view.frame),
                   CGRectGetMinY(view.frame) + [self headerHeightForTab:tab]);
   auto* helper = RepostFormTabHelper::FromWebState(webState);
-  helper->PresentDialog(dialogLocation,
-                        base::BindBlockArc(^(bool shouldContinue) {
+  helper->PresentDialog(dialogLocation, base::BindOnce(^(bool shouldContinue) {
                           handler(shouldContinue);
                         }));
 }

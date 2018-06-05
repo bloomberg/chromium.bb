@@ -5,7 +5,6 @@
 #include "ios/chrome/browser/ui/ntp/ntp_tile_saver.h"
 
 #include "base/bind.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/md5.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
@@ -132,12 +131,12 @@ void SaveMostVisitedToDisk(const ntp_tiles::NTPTilesVector& most_visited_data,
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindOnce(&ClearOutdatedIcons, most_visited_data,
                      favicons_directory),
-      base::Bind(base::BindBlockArc(
-                     ^(const ntp_tiles::NTPTilesVector& most_visited_data) {
-                       GetFaviconsAndSave(most_visited_data, favicon_provider,
-                                          favicons_directory);
-                     }),
-                 most_visited_data));
+      base::BindOnce(
+          ^(const ntp_tiles::NTPTilesVector& most_visited_data) {
+            GetFaviconsAndSave(most_visited_data, favicon_provider,
+                               favicons_directory);
+          },
+          most_visited_data));
 }
 
 void WriteSingleUpdatedTileToDisk(NTPTile* tile) {
@@ -184,7 +183,7 @@ void UpdateSingleFavicon(const GURL& site_url,
               [favicons_directory URLByAppendingPathComponent:faviconFileName];
           NSData* imageData = UIImagePNGRepresentation(attributes.faviconImage);
 
-          base::OnceCallback<void()> writeImage = base::BindBlockArc(^{
+          base::OnceCallback<void()> writeImage = base::BindOnce(^{
             base::AssertBlockingAllowed();
             [imageData writeToURL:fileURL atomically:YES];
           });
@@ -208,7 +207,7 @@ void UpdateSingleFavicon(const GURL& site_url,
               GetFaviconFileName(net::GURLWithNSURL(siteNSURL));
           NSURL* fileURL =
               [favicons_directory URLByAppendingPathComponent:faviconFileName];
-          base::OnceCallback<void()> removeImage = base::BindBlockArc(^{
+          base::OnceCallback<void()> removeImage = base::BindOnce(^{
             base::AssertBlockingAllowed();
             [[NSFileManager defaultManager] removeItemAtURL:fileURL error:nil];
           });

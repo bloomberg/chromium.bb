@@ -7,10 +7,10 @@
 #include <stdint.h>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -603,7 +603,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
     base::FilePath downloadPathCopy = _downloadFilePath;
     base::PostTaskWithTraits(FROM_HERE,
                              {base::MayBlock(), base::TaskPriority::BACKGROUND},
-                             base::BindBlockArc(^{
+                             base::BindOnce(^{
                                DeleteFile(downloadPathCopy, false);
                              }));
   }
@@ -1209,10 +1209,10 @@ class DownloadContentDelegate : public URLFetcherDelegate {
   __weak LegacyDownloadManagerController* weakSelf = self;
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::BindBlockArc(^{
+      base::BindOnce(^{
         return CreateDirectory(downloadsDirectoryPath);
       }),
-      base::BindBlockArc(^(bool directoryCreated) {
+      base::BindOnce(^(bool directoryCreated) {
         [weakSelf finishStartingContentDownload:directoryCreated];
       }));
 }

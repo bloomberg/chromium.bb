@@ -4,9 +4,9 @@
 
 #import "ios/chrome/browser/ui/external_file_remover_impl.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -117,7 +117,7 @@ void ExternalFileRemoverImpl::RemoveFiles(
 
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::BindBlockArc(^{
+      base::BindOnce(^{
         [ExternalFileController removeFilesExcluding:referenced_files
                                            olderThan:age_in_days];
       }),

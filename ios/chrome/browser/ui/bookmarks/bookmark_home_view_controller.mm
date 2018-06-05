@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
 
-#include "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
@@ -571,7 +571,7 @@ const CGFloat kShadowRadius = 12.0f;
                   node->url(), minFaviconSizeInPixel,
                   desiredFaviconSizeInPixel),
               /*may_page_url_be_private=*/true, kTrafficAnnotation,
-              base::BindBlockArc(faviconLoadedFromServerBlock));
+              base::BindRepeating(faviconLoadedFromServerBlock));
     }
     [strongSelf updateCellAtIndexPath:indexPath
                   withLargeIconResult:result
@@ -582,7 +582,7 @@ const CGFloat kShadowRadius = 12.0f;
       IOSChromeLargeIconServiceFactory::GetForBrowserState(self.browserState)
           ->GetLargeIconOrFallbackStyle(
               node->url(), minFaviconSizeInPixel, desiredFaviconSizeInPixel,
-              base::BindBlockArc(faviconLoadedFromCacheBlock),
+              base::BindRepeating(faviconLoadedFromCacheBlock),
               &_faviconTaskTracker);
   _faviconLoadTasks[IntegerPair(indexPath.section, indexPath.item)] = taskId;
 }
