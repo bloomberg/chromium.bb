@@ -16,7 +16,7 @@ import org.chromium.components.offline_items_collection.OfflineItem;
 class ListPropertyModel extends PropertyObservable<ListPropertyModel.PropertyKey> {
     static class PropertyKey {
         // RecyclerView general properties.
-        static final PropertyKey ITEM_ANIMATION_DURATION_MS = new PropertyKey();
+        static final PropertyKey ENABLE_ITEM_ANIMATIONS = new PropertyKey();
 
         // RecyclerView shared list item properties.
         static final PropertyKey CALLBACK_OPEN = new PropertyKey();
@@ -29,7 +29,7 @@ class ListPropertyModel extends PropertyObservable<ListPropertyModel.PropertyKey
         private PropertyKey() {}
     }
 
-    private long mItemAnimationDurationMs;
+    private boolean mEnableItemAnimations;
     private Callback<OfflineItem> mOpenCallback;
     private Callback<OfflineItem> mPauseCallback;
     private Callback<OfflineItem> mResumeCallback;
@@ -37,16 +37,16 @@ class ListPropertyModel extends PropertyObservable<ListPropertyModel.PropertyKey
     private Callback<OfflineItem> mShareCallback;
     private Callback<OfflineItem> mRemoveCallback;
 
-    /** Sets the duration for add and remove animations. */
-    public void setItemAnimationDurationMs(long durationMs) {
-        if (mItemAnimationDurationMs == durationMs) return;
-        mItemAnimationDurationMs = durationMs;
-        notifyPropertyChanged(PropertyKey.ITEM_ANIMATION_DURATION_MS);
+    /** Sets whether or not item animations should be enabled. */
+    public void setEnableItemAnimations(boolean enableItemAnimations) {
+        if (mEnableItemAnimations == enableItemAnimations) return;
+        mEnableItemAnimations = enableItemAnimations;
+        notifyPropertyChanged(PropertyKey.ENABLE_ITEM_ANIMATIONS);
     }
 
-    /** @return The duration in milliseconds for add and remove animations. */
-    public long getItemAnimationDurationMs() {
-        return mItemAnimationDurationMs;
+    /** @return Whether or not item animations should be enabled. */
+    public boolean getEnableItemAnimations() {
+        return mEnableItemAnimations;
     }
 
     /** Sets the callback for when a UI action should open a {@link OfflineItem}. */

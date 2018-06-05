@@ -33,8 +33,8 @@ public class DateOrderedListCoordinator {
             Context context, Boolean offTheRecord, OfflineContentProvider provider) {
         mModel = new ListItemModel();
         mDecoratedModel = new DecoratedListItemModel(mModel);
-        mMediator = new DateOrderedListMediator(offTheRecord, provider, mModel);
         mView = new DateOrderedListView(context, mDecoratedModel);
+        mMediator = new DateOrderedListMediator(offTheRecord, provider, mModel);
 
         // Hook up the FilterCoordinator with our mediator.
         mFilterCoordinator = new FilterCoordinator(context, mMediator.getFilterSource());
