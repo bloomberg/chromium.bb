@@ -10,6 +10,10 @@ range and/or the range is not possible to specify a priori).
 
 ## Coding (Emitting to Histograms)
 
+Generally you'll be best served by using one of the macros in
+[https://cs.chromium.org/chromium/src/base/metrics/histogram_macros.h](histogram_macros.h)
+if possible.
+
 ### Don't Use the Same Histogram Logging Call in Multiple Places
 
 These logging macros and functions have long names and sometimes include extra
@@ -295,6 +299,12 @@ Histograms take up memory.  Cleaning up histograms that you no longer care
 about is good!  But see the note below on [Deleting Histogram Entries](#Deleting-Histogram-Entries).
 
 ## Documenting Histograms
+
+Document histograms in [histograms.xml](./histograms.xml).  There is also a
+[google-internal version of the file](http://go/chrome-histograms-internal) for
+the rare case when the histogram is confidential (added only to Chrome code,
+not Chromium code; or, an accurate description about how to interpret the
+histogram would reveal information about Google's plans).
 
 ### Add Histogram and Documentation in the Same Changelist
 
