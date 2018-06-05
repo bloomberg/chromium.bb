@@ -569,6 +569,7 @@ void av1_inter_mode_data_show(const AV1_COMMON *cm) {
 
 static int64_t get_est_rd(BLOCK_SIZE bsize, int rdmult, int64_t sse,
                           int curr_cost) {
+  aom_clear_system_state();
   InterModeRdModel *md = &inter_mode_rd_models[bsize];
   if (md->ready) {
     const double est_ld = md->a * sse + md->b;
@@ -587,6 +588,7 @@ static const int data_num_threshold[DATA_BRACKETS] = {
 };
 
 void av1_inter_mode_data_fit(int rdmult) {
+  aom_clear_system_state();
   for (int bsize = 0; bsize < BLOCK_SIZES_ALL; ++bsize) {
     const int block_idx = inter_mode_data_block_idx(bsize);
     InterModeRdModel *md = &inter_mode_rd_models[bsize];
