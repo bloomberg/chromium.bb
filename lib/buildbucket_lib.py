@@ -48,7 +48,9 @@ WATERFALL_BUCKET_MAP = {
     waterfall.WATERFALL_EXTERNAL:
         constants.CHROMIUMOS_BUILDBUCKET_BUCKET,
     waterfall.WATERFALL_RELEASE:
-        constants.CHROMEOS_RELEASE_BUILDBUCKET_BUCKET
+        constants.CHROMEOS_RELEASE_BUILDBUCKET_BUCKET,
+    waterfall.WATERFALL_SWARMING:
+        constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET,
 }
 
 # A running build on a buildbot should determin the buildbucket
