@@ -74,9 +74,6 @@ ui::mojom::LatencyComponentType UILatencyComponentTypeToMojo(
     case ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT;
-    case ui::INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL:
-      return ui::mojom::LatencyComponentType::
-          INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL;
     case ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT;
@@ -158,9 +155,6 @@ ui::LatencyComponentType MojoLatencyComponentTypeToUI(
       return ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT;
     case ui::mojom::LatencyComponentType::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT:
       return ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL:
-      return ui::INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL;
     case ui::mojom::LatencyComponentType::
         INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT:
       return ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT;

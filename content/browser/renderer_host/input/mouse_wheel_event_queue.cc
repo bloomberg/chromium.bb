@@ -230,10 +230,8 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
         // no GSB is sent.
         if (!client_->IsWheelScrollInProgress())
           SendScrollBegin(scroll_update, synthetic);
-        ui::LatencyInfo latency = ui::LatencyInfo(ui::SourceEventType::WHEEL);
-        latency.AddLatencyNumber(
-            ui::INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL, 0);
-        client_->ForwardGestureEventWithLatencyInfo(scroll_update, latency);
+        client_->ForwardGestureEventWithLatencyInfo(
+            scroll_update, ui::LatencyInfo(ui::SourceEventType::WHEEL));
       }
 
       if (current_phase_ended && client_->IsWheelScrollInProgress()) {
@@ -264,11 +262,8 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
         }
 
         if (needs_update) {
-          ui::LatencyInfo latency = ui::LatencyInfo(ui::SourceEventType::WHEEL);
-          latency.AddLatencyNumber(
-              ui::INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL,
-              0);
-          client_->ForwardGestureEventWithLatencyInfo(scroll_update, latency);
+          client_->ForwardGestureEventWithLatencyInfo(
+              scroll_update, ui::LatencyInfo(ui::SourceEventType::WHEEL));
         }
 
         if (current_phase_ended) {
