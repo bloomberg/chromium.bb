@@ -121,21 +121,25 @@ def GetDeveloperDirMac():
   print 'WARNING: no value found for DEVELOPER_DIR. Some commands may fail.'
 
 
-def GetSharedLibraryDependenciesMac(binary, exe_path):
+def GetSharedLibraryDependenciesMac(binary, loader_path):
   """Return absolute paths to all shared library dependecies of the binary.
 
   This implementation assumes that we're running on a Mac system."""
-  loader_path = os.path.dirname(binary)
+  exe_path = os.path.dirname(binary)
   env = os.environ.copy()
   developer_dir = GetDeveloperDirMac()
   if developer_dir:
     env['DEVELOPER_DIR'] = developer_dir
   otool = GetCommandOutput(['otool', '-l', binary], env=env).splitlines()
   rpaths = []
+  dylib_id = None
   for idx, line in enumerate(otool):
     if line.find('cmd LC_RPATH') != -1:
       m = re.match(' *path (.*) \(offset .*\)$', otool[idx+2])
       rpaths.append(m.group(1))
+    elif line.find('cmd LC_ID_DYLIB') != -1:
+      m = re.match(' *name (.*) \(offset .*\)$', otool[idx+2])
+      dylib_id = m.group(1)
 
   otool = GetCommandOutput(['otool', '-L', binary], env=env).splitlines()
   lib_re = re.compile('\t(.*) \(compatibility .*\)$')
@@ -143,19 +147,28 @@ def GetSharedLibraryDependenciesMac(binary, exe_path):
   for line in otool:
     m = lib_re.match(line)
     if m:
+      # For frameworks and shared libraries, `otool -L` prints the LC_ID_DYLIB
+      # as the first line. Filter that out.
+      if m.group(1) == dylib_id:
+        continue
       dep = Resolve(m.group(1), exe_path, loader_path, rpaths)
       if dep:
         deps.append(os.path.normpath(dep))
+      else:
+        print >>sys.stderr, \
+            'ERROR: failed to resolve %s, exe_path %s, loader_path %s' % (
+            m.group(1), exe_path, loader_path)
+        sys.exit(1)
   return deps
 
 
-def GetSharedLibraryDependencies(options, binary, exe_path):
+def GetSharedLibraryDependencies(options, binary, loader_path):
   """Return absolute paths to all shared library dependecies of the binary."""
   deps = []
   if sys.platform.startswith('linux'):
     deps = GetSharedLibraryDependenciesLinux(binary)
   elif sys.platform == 'darwin':
-    deps = GetSharedLibraryDependenciesMac(binary, exe_path)
+    deps = GetSharedLibraryDependenciesMac(binary, loader_path)
   else:
     print "Platform not supported."
     sys.exit(1)
@@ -316,9 +329,9 @@ def main():
   # Build the transitive closure of all dependencies.
   binaries = set([options.binary])
   queue = [options.binary]
-  exe_path = os.path.dirname(options.binary)
+  loader_path = os.path.dirname(options.binary)
   while queue:
-    deps = GetSharedLibraryDependencies(options, queue.pop(0), exe_path)
+    deps = GetSharedLibraryDependencies(options, queue.pop(0), loader_path)
     new_deps = set(deps) - binaries
     binaries |= new_deps
     queue.extend(list(new_deps))
