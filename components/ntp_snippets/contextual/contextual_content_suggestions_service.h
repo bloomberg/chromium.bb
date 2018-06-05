@@ -68,6 +68,9 @@ class ContextualContentSuggestionsService : public KeyedService {
   std::unique_ptr<ContextualContentSuggestionsServiceProxy> CreateProxy();
 
  private:
+  void BelowConfidenceThresholdFetchDone(
+      FetchClustersCallback callback,
+      ReportFetchMetricsCallback metrics_callback);
   // Cache for images of contextual suggestions, needed by CachedImageFetcher.
   std::unique_ptr<ntp_snippets::RemoteSuggestionsDatabase>
       contextual_suggestions_database_;
