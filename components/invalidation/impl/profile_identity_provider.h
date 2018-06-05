@@ -23,7 +23,6 @@ class ProfileIdentityProvider : public IdentityProvider,
   ~ProfileIdentityProvider() override;
 
   // IdentityProvider:
-  std::string GetActiveUsername() override;
   std::string GetActiveAccountId() override;
   OAuth2TokenService* GetTokenService() override;
 

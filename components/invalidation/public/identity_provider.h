@@ -47,9 +47,6 @@ class IdentityProvider : public OAuth2TokenService::Observer {
   void RemoveActiveAccountRefreshTokenObserver(
       OAuth2TokenService::Observer* observer);
 
-  // Gets the active account's user name.
-  virtual std::string GetActiveUsername() = 0;
-
   // Gets the active account's account ID.
   virtual std::string GetActiveAccountId() = 0;
 

@@ -14,10 +14,6 @@ DeviceIdentityProvider::DeviceIdentityProvider(
 
 DeviceIdentityProvider::~DeviceIdentityProvider() {}
 
-std::string DeviceIdentityProvider::GetActiveUsername() {
-  return token_service_->GetRobotAccountId();
-}
-
 std::string DeviceIdentityProvider::GetActiveAccountId() {
   return token_service_->GetRobotAccountId();
 }
