@@ -92,7 +92,7 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
     bucket = self._GetBuildbucketBucket(build_name, build_config)
 
     luci_builder = None
-    if bucket != waterfall.WATERFALL_SWARMING:
+    if bucket != constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET:
       # If it's not a swarming build, we must explicitly set this to the
       # waterfall column name.
       current_buildername = os.environ.get('BUILDBOT_BUILDERNAME', None)
