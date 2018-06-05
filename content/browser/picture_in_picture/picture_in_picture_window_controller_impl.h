@@ -35,7 +35,7 @@ class PictureInPictureWindowControllerImpl
 
   // PictureInPictureWindowController:
   CONTENT_EXPORT gfx::Size Show() override;
-  CONTENT_EXPORT void Close() override;
+  CONTENT_EXPORT void Close(bool should_pause_video) override;
   CONTENT_EXPORT void EmbedSurface(const viz::SurfaceId& surface_id,
                                    const gfx::Size& natural_size) override;
   CONTENT_EXPORT OverlayWindow* GetWindowForTesting() override;
@@ -54,7 +54,7 @@ class PictureInPictureWindowControllerImpl
       WebContents* initiator);
 
   // Signal to the media player that |this| is leaving Picture-in-Picture mode.
-  void OnLeavingPictureInPicture();
+  void OnLeavingPictureInPicture(bool should_pause_video);
 
   std::unique_ptr<OverlayWindow> window_;
   std::unique_ptr<OverlaySurfaceEmbedder> embedder_;

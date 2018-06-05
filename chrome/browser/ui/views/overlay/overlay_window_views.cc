@@ -428,7 +428,7 @@ void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
     if (focused_control_button_ == CONTROL_PLAY_PAUSE) {
       TogglePlayPause();
     } else /* CONTROL_CLOSE */ {
-      controller_->Close();
+      controller_->Close(true /* should_pause_video */);
     }
 
     event->SetHandled();
@@ -453,7 +453,7 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
       // TODO(apacible): Clip the clickable areas to where the button icons are
       // drawn. http://crbug.com/836389
       if (GetCloseControlsBounds().Contains(event->location())) {
-        controller_->Close();
+        controller_->Close(true /* should_pause_video */);
         event->SetHandled();
       } else if (GetPlayPauseControlsBounds().Contains(event->location())) {
         TogglePlayPause();
@@ -471,7 +471,7 @@ void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
     return;
 
   if (GetCloseControlsBounds().Contains(event->location())) {
-    controller_->Close();
+    controller_->Close(true /* should_pause_video */);
     event->SetHandled();
   } else if (GetPlayPauseControlsBounds().Contains(event->location())) {
     TogglePlayPause();

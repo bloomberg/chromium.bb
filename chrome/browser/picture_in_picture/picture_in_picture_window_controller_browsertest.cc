@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(active_web_contents->HasPictureInPictureVideo());
 
   // Stop video being played Picture-in-Picture and check if that's tracked.
-  window_controller()->Close();
+  window_controller()->Close(true /* should_pause_video */);
   EXPECT_FALSE(active_web_contents->HasPictureInPictureVideo());
 }
 
@@ -170,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 #endif  // !defined(OS_ANDROID)
 
-// Tests that when closing a Picture-in-Picture window, the video elemnet is
+// Tests that when closing a Picture-in-Picture window, the video element is
 // reflected as no longer in Picture-in-Picture.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        CloseWindowWhilePlaying) {
@@ -201,12 +201,17 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
   EXPECT_TRUE(in_picture_in_picture);
 
-  window_controller()->Close();
+  window_controller()->Close(true /* should_pause_video */);
 
   expected_title = base::ASCIIToUTF16("left");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
+
+  bool is_paused = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(active_web_contents, "isPaused();",
+                                          &is_paused));
+  EXPECT_TRUE(is_paused);
 }
 
 // Ditto, when the video isn't playing.
@@ -238,12 +243,53 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
   EXPECT_TRUE(in_picture_in_picture);
 
-  window_controller()->Close();
+  window_controller()->Close(true /* should_pause_video */);
 
   expected_title = base::ASCIIToUTF16("left");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
+}
+
+// Tests that when closing a Picture-in-Picture window from the Web API, the
+// video element is not paused.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       CloseWindowFromWebAPIWhilePlaying) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents);
+
+  SetUpWindowController(active_web_contents);
+  ASSERT_TRUE(window_controller());
+
+  EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  EXPECT_TRUE(
+      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
+
+  base::string16 expected_title = base::ASCIIToUTF16("1");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  EXPECT_TRUE(
+      content::ExecuteScript(active_web_contents, "exitPictureInPicture();"));
+
+  // 'left' is sent when the first video leaves Picture-in-Picture.
+  expected_title = base::ASCIIToUTF16("left");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  bool is_paused = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(active_web_contents, "isPaused();",
+                                          &is_paused));
+  EXPECT_FALSE(is_paused);
 }
 
 // Tests that when starting a new Picture-in-Picture session from the same tab,
@@ -291,6 +337,11 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
   EXPECT_FALSE(in_picture_in_picture);
+
+  bool is_paused = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(active_web_contents, "isPaused();",
+                                          &is_paused));
+  EXPECT_FALSE(is_paused);
 }
 
 // Tests that we can enter Picture-in-Picture when a video is not preloaded,
@@ -345,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
 
-  window_controller()->Close();
+  window_controller()->Close(true /* should_pause_video */);
 
   // Wait for the window to close.
   expected_title = base::ASCIIToUTF16("left");
@@ -357,23 +408,20 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   // Video is paused after Picture-in-Picture window was closed.
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      active_web_contents, "window.domAutomationController.send(video.paused);",
-      &video_paused));
+      active_web_contents, "isPaused();", &video_paused));
   EXPECT_TRUE(video_paused);
 
   // Resume playback.
   ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      active_web_contents, "window.domAutomationController.send(video.paused);",
-      &video_paused));
+      active_web_contents, "isPaused();", &video_paused));
   EXPECT_FALSE(video_paused);
 
   // This should be a no-op because the window is not visible.
-  window_controller()->Close();
+  window_controller()->Close(true /* should_pause_video */);
 
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      active_web_contents, "window.domAutomationController.send(video.paused);",
-      &video_paused));
+      active_web_contents, "isPaused();", &video_paused));
   EXPECT_FALSE(video_paused);
 }
 

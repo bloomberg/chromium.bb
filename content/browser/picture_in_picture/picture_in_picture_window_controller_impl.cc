@@ -48,7 +48,7 @@ PictureInPictureWindowControllerImpl::~PictureInPictureWindowControllerImpl() {
     return;
 
   initiator_->SetHasPictureInPictureVideo(false);
-  OnLeavingPictureInPicture();
+  OnLeavingPictureInPicture(true /* should_pause_video */);
 }
 
 PictureInPictureWindowControllerImpl::PictureInPictureWindowControllerImpl(
@@ -73,7 +73,7 @@ gfx::Size PictureInPictureWindowControllerImpl::Show() {
   return window_->GetBounds().size();
 }
 
-void PictureInPictureWindowControllerImpl::Close() {
+void PictureInPictureWindowControllerImpl::Close(bool should_pause_video) {
   DCHECK(window_);
 
   if (!window_->IsVisible())
@@ -84,7 +84,7 @@ void PictureInPictureWindowControllerImpl::Close() {
 
   surface_id_ = viz::SurfaceId();
 
-  OnLeavingPictureInPicture();
+  OnLeavingPictureInPicture(should_pause_video);
 }
 
 void PictureInPictureWindowControllerImpl::EmbedSurface(
@@ -156,8 +156,9 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
   return true;
 }
 
-void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture() {
-  if (IsPlayerActive()) {
+void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
+    bool should_pause_video) {
+  if (IsPlayerActive() && should_pause_video) {
     // Pause the current video so there is only one video playing at a time.
     media_player_id_->first->Send(new MediaPlayerDelegateMsg_Pause(
         media_player_id_->first->GetRoutingID(), media_player_id_->second));
