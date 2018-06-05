@@ -36,6 +36,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -49,6 +50,7 @@ class LayoutObject;
 class LayoutTable;
 class LayoutText;
 class LocalFrame;
+class NGBlockNode;
 class Page;
 class SubtreeLayoutScope;
 
@@ -91,6 +93,18 @@ class CORE_EXPORT TextAutosizer final
 
    public:
     explicit TableLayoutScope(LayoutTable*);
+  };
+
+  class NGLayoutScope {
+    STACK_ALLOCATED();
+
+   public:
+    explicit NGLayoutScope(const NGBlockNode& node, LayoutUnit inline_size);
+    ~NGLayoutScope();
+
+   protected:
+    Member<TextAutosizer> text_autosizer_;
+    LayoutBlock* block_;
   };
 
   class CORE_EXPORT DeferUpdatePageInfo {

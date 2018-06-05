@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
@@ -1149,6 +1150,7 @@ void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,
       layout_object->SetNeedsLayoutAndFullPaintInvalidation(
           LayoutInvalidationReason::kTextAutosizing, kMarkContainerChain,
           layouter);
+      layout_object->MarkContainerNeedsCollectInlines();
       break;
 
     case kLayoutNeeded:
@@ -1332,6 +1334,29 @@ TextAutosizer::DeferUpdatePageInfo::DeferUpdatePageInfo(Page* page)
     DCHECK(!text_autosizer->update_page_info_deferred_);
     text_autosizer->update_page_info_deferred_ = true;
   }
+}
+
+TextAutosizer::NGLayoutScope::NGLayoutScope(const NGBlockNode& node,
+                                            LayoutUnit inline_size)
+    : text_autosizer_(node.GetLayoutObject()->GetDocument().GetTextAutosizer()),
+      block_(ToLayoutBlockFlow(node.GetLayoutObject())) {
+  if (!text_autosizer_ || !text_autosizer_->ShouldHandleLayout()) {
+    text_autosizer_ = nullptr;
+    return;
+  }
+
+  // In order for the text autosizer to do anything useful at all, it needs to
+  // know the inline size of the block. So set it. LayoutNG normally writes back
+  // to the legacy tree *after* layout, but this one must be set before, at
+  // least if the autosizer is enabled.
+  block_->SetLogicalWidth(inline_size);
+
+  text_autosizer_->BeginLayout(block_, nullptr);
+}
+
+TextAutosizer::NGLayoutScope::~NGLayoutScope() {
+  if (text_autosizer_)
+    text_autosizer_->EndLayout(block_);
 }
 
 TextAutosizer::DeferUpdatePageInfo::~DeferUpdatePageInfo() {
