@@ -17,27 +17,32 @@ namespace quic {
 
 size_t GetPacketHeaderSize(QuicTransportVersion version,
                            const QuicPacketHeader& header) {
-  return GetPacketHeaderSize(version, header.connection_id_length,
+  return GetPacketHeaderSize(version, header.destination_connection_id_length,
+                             header.source_connection_id_length,
                              header.version_flag, header.nonce != nullptr,
                              header.packet_number_length);
 }
 
-size_t GetPacketHeaderSize(QuicTransportVersion version,
-                           QuicConnectionIdLength connection_id_length,
-                           bool include_version,
-                           bool include_diversification_nonce,
-                           QuicPacketNumberLength packet_number_length) {
+size_t GetPacketHeaderSize(
+    QuicTransportVersion version,
+    QuicConnectionIdLength destination_connection_id_length,
+    QuicConnectionIdLength source_connection_id_length,
+    bool include_version,
+    bool include_diversification_nonce,
+    QuicPacketNumberLength packet_number_length) {
   if (version == QUIC_VERSION_99) {
     if (include_version) {
       // Long header.
-      return kPacketHeaderTypeSize + PACKET_8BYTE_CONNECTION_ID +
-             PACKET_4BYTE_PACKET_NUMBER + kQuicVersionSize +
+      return kPacketHeaderTypeSize + destination_connection_id_length +
+             source_connection_id_length + PACKET_4BYTE_PACKET_NUMBER +
+             kQuicVersionSize +
              (include_diversification_nonce ? kDiversificationNonceSize : 0);
     }
     // Short header.
-    return kPacketHeaderTypeSize + connection_id_length + packet_number_length;
+    return kPacketHeaderTypeSize + destination_connection_id_length +
+           packet_number_length;
   }
-  return kPublicFlagsSize + connection_id_length +
+  return kPublicFlagsSize + destination_connection_id_length +
          (include_version ? kQuicVersionSize : 0) + packet_number_length +
          (include_diversification_nonce ? kDiversificationNonceSize : 0);
 }
@@ -47,20 +52,24 @@ size_t GetStartOfEncryptedData(QuicTransportVersion version,
   return GetPacketHeaderSize(version, header);
 }
 
-size_t GetStartOfEncryptedData(QuicTransportVersion version,
-                               QuicConnectionIdLength connection_id_length,
-                               bool include_version,
-                               bool include_diversification_nonce,
-                               QuicPacketNumberLength packet_number_length) {
+size_t GetStartOfEncryptedData(
+    QuicTransportVersion version,
+    QuicConnectionIdLength destination_connection_id_length,
+    QuicConnectionIdLength source_connection_id_length,
+    bool include_version,
+    bool include_diversification_nonce,
+    QuicPacketNumberLength packet_number_length) {
   // Encryption starts before private flags.
-  return GetPacketHeaderSize(version, connection_id_length, include_version,
-                             include_diversification_nonce,
-                             packet_number_length);
+  return GetPacketHeaderSize(
+      version, destination_connection_id_length, source_connection_id_length,
+      include_version, include_diversification_nonce, packet_number_length);
 }
 
 QuicPacketHeader::QuicPacketHeader()
-    : connection_id(0),
-      connection_id_length(PACKET_8BYTE_CONNECTION_ID),
+    : destination_connection_id(0),
+      destination_connection_id_length(PACKET_8BYTE_CONNECTION_ID),
+      source_connection_id(0),
+      source_connection_id_length(PACKET_0BYTE_CONNECTION_ID),
       reset_flag(false),
       version_flag(false),
       packet_number_length(PACKET_4BYTE_PACKET_NUMBER),
@@ -108,8 +117,11 @@ QuicIetfStatelessResetPacket::QuicIetfStatelessResetPacket(
 QuicIetfStatelessResetPacket::~QuicIetfStatelessResetPacket() {}
 
 std::ostream& operator<<(std::ostream& os, const QuicPacketHeader& header) {
-  os << "{ connection_id: " << header.connection_id
-     << ", connection_id_length: " << header.connection_id_length
+  os << "{ destination_connection_id: " << header.destination_connection_id
+     << ", destination_connection_id_length: "
+     << header.destination_connection_id_length
+     << ", source_connection_id: " << header.source_connection_id
+     << ", source_connection_id_length: " << header.source_connection_id_length
      << ", packet_number_length: " << header.packet_number_length
      << ", reset_flag: " << header.reset_flag
      << ", version_flag: " << header.version_flag;
@@ -140,13 +152,15 @@ QuicData::~QuicData() {
 QuicPacket::QuicPacket(char* buffer,
                        size_t length,
                        bool owns_buffer,
-                       QuicConnectionIdLength connection_id_length,
+                       QuicConnectionIdLength destination_connection_id_length,
+                       QuicConnectionIdLength source_connection_id_length,
                        bool includes_version,
                        bool includes_diversification_nonce,
                        QuicPacketNumberLength packet_number_length)
     : QuicData(buffer, length, owns_buffer),
       buffer_(buffer),
-      connection_id_length_(connection_id_length),
+      destination_connection_id_length_(destination_connection_id_length),
+      source_connection_id_length_(source_connection_id_length),
       includes_version_(includes_version),
       includes_diversification_nonce_(includes_diversification_nonce),
       packet_number_length_(packet_number_length) {}
@@ -210,14 +224,16 @@ std::ostream& operator<<(std::ostream& os, const QuicReceivedPacket& s) {
 QuicStringPiece QuicPacket::AssociatedData(QuicTransportVersion version) const {
   return QuicStringPiece(
       data(), GetStartOfEncryptedData(
-                  version, connection_id_length_, includes_version_,
+                  version, destination_connection_id_length_,
+                  source_connection_id_length_, includes_version_,
                   includes_diversification_nonce_, packet_number_length_));
 }
 
 QuicStringPiece QuicPacket::Plaintext(QuicTransportVersion version) const {
   const size_t start_of_encrypted_data = GetStartOfEncryptedData(
-      version, connection_id_length_, includes_version_,
-      includes_diversification_nonce_, packet_number_length_);
+      version, destination_connection_id_length_, source_connection_id_length_,
+      includes_version_, includes_diversification_nonce_,
+      packet_number_length_);
   return QuicStringPiece(data() + start_of_encrypted_data,
                          length() - start_of_encrypted_data);
 }

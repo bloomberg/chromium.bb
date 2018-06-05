@@ -1152,6 +1152,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // When true, removes ack decimation's max number of packets(10) before
   // sending an ack.
   bool unlimited_ack_decimation_;
+  // When true, use a 1ms delayed ack timer if it's been an SRTT since a packet
+  // was received.
+  bool fast_ack_after_quiescence_;
 
   // Indicates the retransmit alarm is going to be set by the
   // ScopedRetransmitAlarmDelayer
@@ -1213,6 +1216,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // The time that we got a packet for this connection.
   // This is used for timeouts, and does not indicate the packet was processed.
   QuicTime time_of_last_received_packet_;
+
+  // The time the previous ack-instigating packet was received and processed.
+  QuicTime time_of_previous_received_packet_;
 
   // The the send time of the first retransmittable packet sent after
   // |time_of_last_received_packet_|.
@@ -1319,6 +1325,13 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // True if an ack frame is being processed.
   bool processing_ack_frame_;
+
+  // True if the writer supports release timestamp.
+  const bool supports_release_time_;
+
+  // Latched value of FLAGS_quic_pace_time_into_future_ms. Only used when
+  // supports_release_time_ is true.
+  const QuicTime::Delta pace_time_into_future_;
 
   // Latched valure of
   // quic_reloadable_flag_quic_handle_write_results_for_connectivity_probe.

@@ -36,6 +36,7 @@ enum QuicTransportVersion {
   QUIC_VERSION_42 = 42,  // Allows receiving overlapping stream data.
   QUIC_VERSION_43 = 43,  // PRIORITY frames are sent by client and accepted by
                          // server.
+  QUIC_VERSION_44 = 44,  // Use IETF header format.
   QUIC_VERSION_99 = 99,  // Dumping ground for IETF QUIC changes which are not
                          // yet ready for production.
 
@@ -100,8 +101,9 @@ using QuicVersionLabelVector = std::vector<QuicVersionLabel>;
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
 static const QuicTransportVersion kSupportedTransportVersions[] = {
-    QUIC_VERSION_99, QUIC_VERSION_43, QUIC_VERSION_42, QUIC_VERSION_41,
-    QUIC_VERSION_39, QUIC_VERSION_38, QUIC_VERSION_37, QUIC_VERSION_35};
+    QUIC_VERSION_99, QUIC_VERSION_44, QUIC_VERSION_43,
+    QUIC_VERSION_42, QUIC_VERSION_41, QUIC_VERSION_39,
+    QUIC_VERSION_38, QUIC_VERSION_37, QUIC_VERSION_35};
 
 // This vector contains all crypto handshake protocols that are supported.
 static const HandshakeProtocol kSupportedHandshakeProtocols[] = {
@@ -164,6 +166,11 @@ ParseQuicVersionLabel(QuicVersionLabel version_label);
 // Constructs a QuicVersionLabel from the provided ParsedQuicVersion.
 QUIC_EXPORT_PRIVATE QuicVersionLabel
 CreateQuicVersionLabel(ParsedQuicVersion parsed_version);
+
+// Constructs a QuicVersionLabelVector from the provided
+// ParsedQuicVersionVector.
+QUIC_EXPORT_PRIVATE QuicVersionLabelVector
+CreateQuicVersionLabelVector(const ParsedQuicVersionVector& versions);
 
 // QuicVersionLabel is written to and read from the wire, but we prefer to use
 // the more readable QuicTransportVersion at other levels.

@@ -63,11 +63,12 @@ class QuicFramerPeer {
                                            QuicApplicationCloseFrame* frame);
   static bool ProcessIetfAckFrame(QuicFramer* framer,
                                   QuicDataReader* reader,
-                                  uint8_t frame_type,
                                   QuicAckFrame* ack_frame);
-  static bool AppendIetfAckFrame(QuicFramer* framer,
-                                 const QuicAckFrame& frame,
-                                 QuicDataWriter* writer);
+  static bool AppendIetfAckFrameAndTypeByte(QuicFramer* framer,
+                                            const QuicAckFrame& frame,
+                                            QuicDataWriter* writer);
+  static size_t GetIetfAckFrameSize(QuicFramer* framer,
+                                    const QuicAckFrame& frame);
   static bool AppendIetfResetStreamFrame(QuicFramer* framer,
                                          const QuicRstStreamFrame& frame,
                                          QuicDataWriter* writer);

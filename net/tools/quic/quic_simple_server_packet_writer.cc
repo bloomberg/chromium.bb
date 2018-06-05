@@ -103,4 +103,8 @@ quic::QuicByteCount QuicSimpleServerPacketWriter::GetMaxPacketSize(
   return quic::kMaxPacketSize;
 }
 
+bool QuicSimpleServerPacketWriter::SupportsReleaseTime() const {
+  return false;
+}
+
 }  // namespace net

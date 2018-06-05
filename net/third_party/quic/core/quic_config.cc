@@ -104,6 +104,12 @@ QuicErrorCode QuicNegotiableUint32::ProcessPeerHello(
   if (error != QUIC_NO_ERROR) {
     return error;
   }
+  return ReceiveValue(value, hello_type, error_details);
+}
+
+QuicErrorCode QuicNegotiableUint32::ReceiveValue(uint32_t value,
+                                                 HelloType hello_type,
+                                                 QuicString* error_details) {
   if (hello_type == SERVER && value > max_value_) {
     *error_details = "Invalid value received for " + QuicTagToString(tag_);
     return QUIC_INVALID_NEGOTIATED_VALUE;
@@ -652,8 +658,7 @@ QuicUint128 QuicConfig::ReceivedStatelessResetToken() const {
 
 bool QuicConfig::negotiated() const {
   // TODO(ianswett): Add the negotiated parameters once and iterate over all
-  // of them in negotiated, ToHandshakeMessage, ProcessClientHello, and
-  // ProcessServerHello.
+  // of them in negotiated, ToHandshakeMessage, and ProcessPeerHello.
   return idle_network_timeout_seconds_.negotiated() &&
          max_streams_per_connection_.negotiated();
 }
@@ -762,6 +767,53 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
                                                     error_details);
   }
   return error;
+}
+
+bool QuicConfig::FillTransportParameters(TransportParameters* params) const {
+  params->initial_max_stream_data =
+      initial_stream_flow_control_window_bytes_.GetSendValue();
+  params->initial_max_data =
+      initial_session_flow_control_window_bytes_.GetSendValue();
+
+  uint32_t idle_timeout = idle_network_timeout_seconds_.GetUint32();
+  if (idle_timeout > std::numeric_limits<uint16_t>::max()) {
+    QUIC_BUG << "idle network timeout set too large";
+    return false;
+  }
+  params->idle_timeout = idle_timeout;
+
+  uint32_t initial_max_streams = max_incoming_dynamic_streams_.GetSendValue();
+  if (initial_max_streams > std::numeric_limits<uint16_t>::max()) {
+    QUIC_BUG << "max incoming streams set too large";
+    return false;
+  }
+  params->initial_max_bidi_streams.present = true;
+  params->initial_max_bidi_streams.value = initial_max_streams;
+  return true;
+}
+
+QuicErrorCode QuicConfig::ProcessTransportParameters(
+    const TransportParameters& params,
+    HelloType hello_type,
+    QuicString* error_details) {
+  QuicErrorCode error = idle_network_timeout_seconds_.ReceiveValue(
+      params.idle_timeout, hello_type, error_details);
+  if (error != QUIC_NO_ERROR) {
+    return error;
+  }
+  initial_stream_flow_control_window_bytes_.SetReceivedValue(
+      params.initial_max_stream_data);
+  initial_session_flow_control_window_bytes_.SetReceivedValue(
+      params.initial_max_data);
+  if (params.initial_max_bidi_streams.present) {
+    max_incoming_dynamic_streams_.SetReceivedValue(
+        params.initial_max_bidi_streams.value);
+  } else {
+    // An absent value for initial_max_bidi_streams is treated as a value of 0.
+    max_incoming_dynamic_streams_.SetReceivedValue(0);
+  }
+
+  return QUIC_NO_ERROR;
 }
 
 }  // namespace quic

@@ -10,7 +10,6 @@
 #include "net/third_party/quic/platform/api/quic_test.h"
 
 typedef quic::QuicStreamSequencerBuffer::BufferBlock BufferBlock;
-typedef quic::QuicStreamSequencerBuffer::Gap Gap;
 
 static const size_t kBlockSizeBytes =
     quic::QuicStreamSequencerBuffer::kBlockSizeBytes;

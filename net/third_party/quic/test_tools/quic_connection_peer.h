@@ -116,6 +116,8 @@ class QuicConnectionPeer {
                                 QuicPacketNumber number);
   static void SetAckMode(QuicConnection* connection,
                          QuicConnection::AckMode ack_mode);
+  static void SetFastAckAfterQuiescence(QuicConnection* connection,
+                                        bool fast_ack_after_quiescence);
   static void SetAckDecimationDelay(QuicConnection* connection,
                                     float ack_decimation_delay);
   static bool HasRetransmittableFrames(QuicConnection* connection,

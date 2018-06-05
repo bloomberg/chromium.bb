@@ -122,6 +122,8 @@ class DummyPacketWriter : public QuicPacketWriter {
       const QuicSocketAddress& peer_address) const override {
     return 0;
   }
+
+  bool SupportsReleaseTime() const override { return false; }
 };
 
 class MockQuartcStreamDelegate : public QuartcStreamInterface::Delegate {

@@ -104,9 +104,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_tlp, true)
 // If true, enable QUIC v99.
 QUIC_FLAG(bool, FLAGS_quic_enable_version_99, false)
 
-// If true, enable QUIC version 42.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_42_2, true)
-
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_37, true)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_38, true)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_41, false)
@@ -137,27 +134,12 @@ QUIC_FLAG(
 // OnPathDegrading() instead of using retransmission_alarm_.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_path_degrading_alarm2, true)
 
-// Remove special logic for headers stream from QuicWriteBlockedList and
-// replace it with a static streams map.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_register_static_streams, true)
-
 // If true, enable server proxy support in QUIC.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_server_proxy2, true)
-
-// If true, compare offset with last byte acked to determine whether it is
-// disjoint before calling IntervalSet::IsDisjoint.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fast_is_disjoint, true)
-
-// If true, enable fast path in QuicStreamSequencerBuffer::OnStreamData.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fast_path_on_stream_data, true)
 
 // When true, set the initial congestion control window from connection options
 // in QuicSentPacketManager rather than TcpCubicSenderBytes.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_unified_iw_options, false)
-
-// If true, check again that the writer isn\'t blocked before calling
-// QuicConnection::OnCanWrite from WriteAndBundleAcksIfNotBlocked
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_is_write_blocked, true)
 
 // If true, use the send alarm instead of the resume_writes alarm in
 // QuicConnection.
@@ -218,7 +200,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_no_irtt, false)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_fix_probe_bw, true)
 
 // If true, changes when the dispatcher changes internal state.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_l1_munge, false)
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_l1_munge, true)
 
 // Don't slow down the pacing rate in STARTUP upon loss if there hasn't been
 // at least one non app-limited sample.
@@ -232,3 +214,18 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_h2_deframer, true)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_deprecate_scoped_scheduler,
           false)
+
+// If it's been more than SRTT since receiving a packet, set the ack alarm for
+// 1ms instead of the standard delayed ack timer.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_fast_ack_after_quiescence,
+          false)
+
+// If true, QUIC offload pacing when using USPS as egress method.
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_offload_pacing_to_usps, false)
+
+// Time that QUIC can pace packets into the future in ms.
+QUIC_FLAG(int32_t, FLAGS_quic_pace_time_into_future_ms, 10)
+
+// If true, enable QUIC v44.
+QUIC_FLAG(bool, FLAGS_quic_enable_version_44, false)

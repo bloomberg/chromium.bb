@@ -50,7 +50,6 @@ const size_t kMaxNumGapsAllowed = 2 * kMaxPacketGap;
 static const size_t kBlockSizeBytes =
     QuicStreamSequencerBuffer::kBlockSizeBytes;
 typedef QuicStreamSequencerBuffer::BufferBlock BufferBlock;
-typedef QuicStreamSequencerBuffer::Gap Gap;
 
 namespace {
 

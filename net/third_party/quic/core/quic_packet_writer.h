@@ -23,6 +23,9 @@ class QUIC_EXPORT_PRIVATE PerPacketOptions {
   // Returns a heap-allocated copy of |this|.
   virtual PerPacketOptions* Clone() const = 0;
 
+  // Sets release time delay in ns for this packet.
+  virtual void SetReleaseTimeDelay(uint64_t release_time_delay_ns) = 0;
+
  private:
   PerPacketOptions(PerPacketOptions&& other) = delete;
   PerPacketOptions& operator=(PerPacketOptions&& other) = delete;
@@ -66,6 +69,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketWriter {
   // size of a valid QUIC packet.
   virtual QuicByteCount GetMaxPacketSize(
       const QuicSocketAddress& peer_address) const = 0;
+
+  // Returns true if the socket supports release timestamp.
+  virtual bool SupportsReleaseTime() const = 0;
 };
 
 }  // namespace quic

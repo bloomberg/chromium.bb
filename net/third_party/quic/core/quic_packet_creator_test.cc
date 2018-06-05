@@ -198,7 +198,8 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
   // the version.
   size_t GetPacketHeaderOverhead(QuicTransportVersion version) {
     return GetPacketHeaderSize(
-        version, creator_.GetConnectionIdLength(),
+        version, creator_.GetDestinationConnectionIdLength(),
+        creator_.GetSourceConnectionIdLength(),
         QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
         !kIncludeDiversificationNonce,
         QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
@@ -215,7 +216,8 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
   // frame, assuming it is the last frame in the packet
   size_t GetStreamFrameOverhead(QuicTransportVersion version) {
     return QuicFramer::GetMinStreamFrameSize(
-        version, kGetNthClientInitiatedStreamId1, kOffset, true);
+        version, kGetNthClientInitiatedStreamId1, kOffset, true,
+        /* data_length= */ 0);
   }
 
   QuicPendingRetransmission CreateRetransmission(
@@ -278,8 +280,21 @@ TEST_P(QuicPacketCreatorTest, SerializeFrames) {
       if (client_framer_.use_incremental_ack_processing()) {
         EXPECT_CALL(framer_visitor_, OnAckFrameStart(_, _))
             .WillOnce(Return(true));
-        EXPECT_CALL(framer_visitor_, OnAckRange(1, 1, true))
-            .WillOnce(Return(true));
+        // This test includes an ack frame with largest_acked == 0 and
+        // the size of the first ack-block == 1 (serialized as
+        // 0). This is an invalid format for pre-version99, valid
+        // for version 99.
+        if (client_framer_.transport_version() != QUIC_VERSION_99) {
+          // pre-version 99; ensure that the error is gracefully
+          // handled.
+          EXPECT_CALL(framer_visitor_, OnAckRange(1, 1, true))
+              .WillOnce(Return(true));
+        } else {
+          // version 99; ensure that the correct packet is signalled
+          // properly.
+          EXPECT_CALL(framer_visitor_, OnAckRange(0, 1, true))
+              .WillOnce(Return(true));
+        }
       } else {
         EXPECT_CALL(framer_visitor_, OnAckFrame(_));
       }
@@ -554,8 +569,9 @@ TEST_P(QuicPacketCreatorTest, CreateAllFreeBytesForStreamFrames) {
     const bool should_have_room =
         i >
         overhead + GetStreamFrameOverhead(client_framer_.transport_version());
-    ASSERT_EQ(should_have_room, creator_.HasRoomForStreamFrame(
-                                    kGetNthClientInitiatedStreamId1, kOffset));
+    ASSERT_EQ(should_have_room,
+              creator_.HasRoomForStreamFrame(kGetNthClientInitiatedStreamId1,
+                                             kOffset, /* data_size=*/0xffff));
     if (should_have_room) {
       QuicFrame frame;
       MakeIOVector("testdata", &iov_);
@@ -828,7 +844,9 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataLargerThanOneStreamFrame) {
   creator_.SetMaxPacketLength(GetPacketLengthForOneStream(
       client_framer_.transport_version(),
       QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
-      !kIncludeDiversificationNonce, creator_.GetConnectionIdLength(),
+      !kIncludeDiversificationNonce,
+      creator_.GetDestinationConnectionIdLength(),
+      creator_.GetSourceConnectionIdLength(),
       QuicPacketCreatorPeer::GetPacketNumberLength(&creator_),
       &payload_length));
   QuicFrame frame;
@@ -858,7 +876,8 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndFlush) {
   EXPECT_EQ(max_plaintext_size -
                 GetPacketHeaderSize(
                     client_framer_.transport_version(),
-                    creator_.GetConnectionIdLength(),
+                    creator_.GetDestinationConnectionIdLength(),
+                    creator_.GetSourceConnectionIdLength(),
                     QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
                     !kIncludeDiversificationNonce,
                     QuicPacketCreatorPeer::GetPacketNumberLength(&creator_)),
@@ -906,7 +925,8 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndFlush) {
   EXPECT_EQ(max_plaintext_size -
                 GetPacketHeaderSize(
                     client_framer_.transport_version(),
-                    creator_.GetConnectionIdLength(),
+                    creator_.GetDestinationConnectionIdLength(),
+                    creator_.GetSourceConnectionIdLength(),
                     QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
                     !kIncludeDiversificationNonce,
                     QuicPacketCreatorPeer::GetPacketNumberLength(&creator_)),
@@ -1095,12 +1115,13 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataAndRandomPadding) {
   const QuicByteCount kStreamFramePayloadSize = 100u;
   // Set the packet size be enough for one stream frame with 0 stream offset +
   // 1.
-  size_t length = GetPacketHeaderOverhead(client_framer_.transport_version()) +
-                  GetEncryptionOverhead() +
-                  QuicFramer::GetMinStreamFrameSize(
-                      client_framer_.transport_version(), kCryptoStreamId, 0,
-                      /*last_frame_in_packet=*/false) +
-                  kStreamFramePayloadSize + 1;
+  size_t length =
+      GetPacketHeaderOverhead(client_framer_.transport_version()) +
+      GetEncryptionOverhead() +
+      QuicFramer::GetMinStreamFrameSize(
+          client_framer_.transport_version(), kCryptoStreamId, 0,
+          /*last_frame_in_packet=*/false, kStreamFramePayloadSize + 1) +
+      kStreamFramePayloadSize + 1;
   creator_.SetMaxPacketLength(length);
   creator_.AddPendingPadding(kMaxNumRandomPaddingBytes);
   QuicByteCount pending_padding_bytes = creator_.pending_padding_bytes();

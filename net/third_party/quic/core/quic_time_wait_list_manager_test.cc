@@ -134,10 +134,12 @@ class QuicTimeWaitListManagerTest : public QuicTest {
   }
 
   QuicEncryptedPacket* ConstructEncryptedPacket(
-      QuicConnectionId connection_id,
+      QuicConnectionId destination_connection_id,
+      QuicConnectionId source_connection_id,
       QuicPacketNumber packet_number) {
-    return quic::test::ConstructEncryptedPacket(connection_id, false, false,
-                                                packet_number, "data");
+    return quic::test::ConstructEncryptedPacket(destination_connection_id,
+                                                source_connection_id, false,
+                                                false, packet_number, "data");
   }
 
   NiceMock<MockFakeTimeEpollServer> epoll_server_;
@@ -171,7 +173,8 @@ bool ValidPublicResetPacketPredicate(
   QuicIetfStatelessResetPacket stateless_reset =
       visitor.stateless_reset_packet();
   bool stateless_reset_is_valid =
-      expected_connection_id == stateless_reset.header.connection_id &&
+      expected_connection_id ==
+          stateless_reset.header.destination_connection_id &&
       stateless_reset.stateless_reset_token == kTestStatelessResetToken;
 
   return public_reset_is_valid || stateless_reset_is_valid;
@@ -348,7 +351,7 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
   AddConnectionId(connection_id);
   QuicPacketNumber packet_number = 234;
   std::unique_ptr<QuicEncryptedPacket> packet(
-      ConstructEncryptedPacket(connection_id, packet_number));
+      ConstructEncryptedPacket(connection_id, 0, packet_number));
   // Let first write through.
   EXPECT_CALL(writer_,
               WritePacket(_, _, server_address_.host(), client_address_, _))
@@ -374,7 +377,7 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
   AddConnectionId(other_connection_id);
   QuicPacketNumber other_packet_number = 23423;
   std::unique_ptr<QuicEncryptedPacket> other_packet(
-      ConstructEncryptedPacket(other_connection_id, other_packet_number));
+      ConstructEncryptedPacket(other_connection_id, 0, other_packet_number));
   EXPECT_CALL(writer_, WritePacket(_, _, _, _, _)).Times(0);
   EXPECT_CALL(visitor_, OnWriteBlocked(&time_wait_list_manager_));
   ProcessPacket(other_connection_id);

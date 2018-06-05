@@ -252,6 +252,7 @@ QuicConnection::QuicConnection(
                     : TCP_ACKING),
       ack_decimation_delay_(kAckDecimationDelay),
       unlimited_ack_decimation_(false),
+      fast_ack_after_quiescence_(false),
       delay_setting_retransmission_alarm_(false),
       pending_retransmission_alarm_(false),
       defer_send_in_response_to_packets_(false),
@@ -290,6 +291,7 @@ QuicConnection::QuicConnection(
       idle_network_timeout_(QuicTime::Delta::Infinite()),
       handshake_timeout_(QuicTime::Delta::Infinite()),
       time_of_last_received_packet_(clock_->ApproximateNow()),
+      time_of_previous_received_packet_(QuicTime::Zero()),
       last_send_for_timeout_(clock_->ApproximateNow()),
       sent_packet_manager_(
           perspective,
@@ -316,6 +318,9 @@ QuicConnection::QuicConnection(
       last_control_frame_id_(kInvalidControlFrameId),
       is_path_degrading_(false),
       processing_ack_frame_(false),
+      supports_release_time_(writer->SupportsReleaseTime()),
+      pace_time_into_future_(QuicTime::Delta::FromMilliseconds(
+          GetQuicFlag(FLAGS_quic_pace_time_into_future_ms))),
       handle_write_results_for_connectivity_probe_(GetQuicReloadableFlag(
           quic_handle_write_results_for_connectivity_probe)),
       use_path_degrading_alarm_(
@@ -338,6 +343,11 @@ QuicConnection::QuicConnection(
   // TODO(ianswett): Supply the NetworkChangeVisitor as a constructor argument
   // and make it required non-null, because it's always used.
   sent_packet_manager_.SetNetworkChangeVisitor(this);
+  if (supports_release_time_) {
+    // When offloading pacing, set alarm granularity to 0 to achieve more
+    // accurate pacing.
+    sent_packet_manager_.SetPacingAlarmGranularity(QuicTime::Delta::Zero());
+  }
   // Allow the packet writer to potentially reduce the packet size to a value
   // even smaller than kDefaultMaxPacketSize.
   SetMaxPacketLength(perspective_ == Perspective::IS_SERVER
@@ -418,6 +428,11 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   }
   if (config.HasClientSentConnectionOption(kAKDU, perspective_)) {
     unlimited_ack_decimation_ = true;
+  }
+  if (GetQuicReloadableFlag(quic_fast_ack_after_quiescence) &&
+      config.HasClientSentConnectionOption(kACKQ, perspective_)) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fast_ack_after_quiescence);
+    fast_ack_after_quiescence_ = true;
   }
   if (config.HasClientSentConnectionOption(k5RTO, perspective_)) {
     close_connection_after_five_rtos_ = true;
@@ -642,16 +657,17 @@ void QuicConnection::OnVersionNegotiationPacket(
 
 bool QuicConnection::OnUnauthenticatedPublicHeader(
     const QuicPacketHeader& header) {
-  if (header.connection_id == connection_id_) {
+  if (header.destination_connection_id == connection_id_) {
     return true;
   }
 
   ++stats_.packets_dropped;
   QUIC_DLOG(INFO) << ENDPOINT
                   << "Ignoring packet from unexpected ConnectionId: "
-                  << header.connection_id << " instead of " << connection_id_;
+                  << header.destination_connection_id << " instead of "
+                  << connection_id_;
   if (debug_visitor_ != nullptr) {
-    debug_visitor_->OnIncorrectConnectionId(header.connection_id);
+    debug_visitor_->OnIncorrectConnectionId(header.destination_connection_id);
   }
   // If this is a server, the dispatcher routes each packet to the
   // QuicConnection responsible for the packet's connection ID.  So if control
@@ -668,7 +684,7 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
   // Check that any public reset packet with a different connection ID that was
   // routed to this QuicConnection has been redirected before control reaches
   // here.
-  DCHECK_EQ(connection_id_, header.connection_id);
+  DCHECK_EQ(connection_id_, header.destination_connection_id);
 
   if (!packet_generator_.IsPendingPacketEmpty()) {
     // Incoming packets may change a queued ACK frame.
@@ -1232,7 +1248,7 @@ void QuicConnection::OnPacketComplete() {
   }
 
   QUIC_DVLOG(1) << ENDPOINT << "Got packet " << last_header_.packet_number
-                << " for " << last_header_.connection_id;
+                << " for " << last_header_.destination_connection_id;
 
   QUIC_DLOG_IF(INFO, current_packet_content_ == SECOND_FRAME_IS_PADDING)
       << ENDPOINT << "Received a padded PING packet. is_probing: "
@@ -1241,7 +1257,7 @@ void QuicConnection::OnPacketComplete() {
   if (perspective_ == Perspective::IS_CLIENT) {
     QUIC_DVLOG(1) << ENDPOINT
                   << "Received a speculative connectivity probing packet for "
-                  << last_header_.connection_id
+                  << last_header_.destination_connection_id
                   << " from ip:port: " << last_packet_source_address_.ToString()
                   << " to ip:port: "
                   << last_packet_destination_address_.ToString();
@@ -1250,7 +1266,7 @@ void QuicConnection::OnPacketComplete() {
                                           last_packet_source_address_);
   } else if (IsCurrentPacketConnectivityProbing()) {
     QUIC_DVLOG(1) << ENDPOINT << "Received a connectivity probing packet for "
-                  << last_header_.connection_id
+                  << last_header_.destination_connection_id
                   << " from ip:port: " << last_packet_source_address_.ToString()
                   << " to ip:port: "
                   << last_packet_destination_address_.ToString();
@@ -1341,7 +1357,16 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
             std::min(sent_packet_manager_.delayed_ack_time(),
                      sent_packet_manager_.GetRttStats()->min_rtt() *
                          ack_decimation_delay_);
-        ack_alarm_->Set(clock_->ApproximateNow() + ack_delay);
+        const QuicTime approximate_now = clock_->ApproximateNow();
+        if (fast_ack_after_quiescence_ &&
+            (approximate_now - time_of_previous_received_packet_) >
+                sent_packet_manager_.GetRttStats()->SmoothedOrInitialRtt()) {
+          // Ack the first packet out of queiscence faster, because QUIC does
+          // not pace the first few packets and commonly these may be handshake
+          // or TLP packets, which we'd like to acknowledge quickly.
+          ack_delay = QuicTime::Delta::FromMilliseconds(1);
+        }
+        ack_alarm_->Set(approximate_now + ack_delay);
       }
     } else {
       // Ack with a timer or every 2 packets by default.
@@ -1349,8 +1374,19 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
           kDefaultRetransmittablePacketsBeforeAck) {
         ack_queued_ = true;
       } else if (!ack_alarm_->IsSet()) {
-        ack_alarm_->Set(clock_->ApproximateNow() +
-                        sent_packet_manager_.delayed_ack_time());
+        const QuicTime approximate_now = clock_->ApproximateNow();
+        if (fast_ack_after_quiescence_ &&
+            (approximate_now - time_of_previous_received_packet_) >
+                sent_packet_manager_.GetRttStats()->SmoothedOrInitialRtt()) {
+          // Ack the first packet out of queiscence faster, because QUIC does
+          // not pace the first few packets and commonly these may be handshake
+          // or TLP packets, which we'd like to acknowledge quickly.
+          ack_alarm_->Set(approximate_now +
+                          QuicTime::Delta::FromMilliseconds(1));
+        } else {
+          ack_alarm_->Set(approximate_now +
+                          sent_packet_manager_.delayed_ack_time());
+        }
       }
     }
 
@@ -1368,6 +1404,10 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
       } else {
         ack_queued_ = true;
       }
+    }
+
+    if (fast_ack_after_quiescence_) {
+      time_of_previous_received_packet_ = time_of_last_received_packet_;
     }
   }
 
@@ -1719,14 +1759,7 @@ void QuicConnection::WriteIfNotBlocked() {
 void QuicConnection::WriteAndBundleAcksIfNotBlocked() {
   if (!writer_->IsWriteBlocked()) {
     ScopedPacketFlusher flusher(this, SEND_ACK_IF_QUEUED);
-    if (GetQuicReloadableFlag(quic_is_write_blocked)) {
-      // TODO(ianswett): Merge OnCanWrite and WriteIfNotBlocked when deprecating
-      // this flag.
-      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_is_write_blocked);
-      WriteIfNotBlocked();
-    } else {
-      OnCanWrite();
-    }
+    WriteIfNotBlocked();
   }
 }
 
@@ -1968,8 +2001,14 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
     return false;
   }
 
-  // If the scheduler requires a delay, then we can not send this packet now.
+  // Scheduler requires a delay.
   if (!delay.IsZero()) {
+    if (supports_release_time_ && delay <= pace_time_into_future_) {
+      // Offload pacing to the writer, send packet now.
+      return true;
+    }
+    // Cannot send packet now because either the pacing cannot be offloaded or
+    // the delay is too far in the future.
     send_alarm_->Update(now + delay, QuicTime::Delta::FromMilliseconds(1));
     QUIC_DVLOG(1) << ENDPOINT << "Delaying sending " << delay.ToMilliseconds()
                   << "ms";
@@ -2038,6 +2077,17 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   // min_rtt_, especially in cases where the thread blocks or gets swapped out
   // during the WritePacket below.
   QuicTime packet_send_time = clock_->Now();
+  if (supports_release_time_ && per_packet_options_ != nullptr) {
+    QuicTime next_release_time = sent_packet_manager_.GetNextReleaseTime();
+    uint64_t release_time_delay_ns = 0;
+    QuicTime now = packet_send_time;
+    if (next_release_time > now) {
+      release_time_delay_ns = (next_release_time - now).ToMicroseconds() * 1000;
+      // Set packet_send_time to the future to make the RTT estimation accurate.
+      packet_send_time = next_release_time;
+    }
+    per_packet_options_->SetReleaseTimeDelay(release_time_delay_ns);
+  }
   WriteResult result = writer_->WritePacket(
       packet->encrypted_buffer, encrypted_length, self_address().host(),
       peer_address(), per_packet_options_);
@@ -2294,7 +2344,7 @@ void QuicConnection::SendAck() {
   }
   consecutive_num_packets_with_no_retransmittable_frames_ = 0;
   if (packet_generator_.HasRetransmittableFrames()) {
-    // There is pending retransmittable frames.
+    // There are pending retransmittable frames.
     return;
   }
 

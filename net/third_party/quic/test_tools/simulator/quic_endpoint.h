@@ -133,6 +133,7 @@ class QuicEndpoint : public Endpoint,
     void SetWritable() override;
     QuicByteCount GetMaxPacketSize(
         const QuicSocketAddress& peer_address) const override;
+    bool SupportsReleaseTime() const override;
 
    private:
     QuicEndpoint* endpoint_;

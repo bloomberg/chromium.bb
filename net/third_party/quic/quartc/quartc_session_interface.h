@@ -44,6 +44,10 @@ class QUIC_EXPORT_PRIVATE QuartcSessionInterface {
  public:
   virtual ~QuartcSessionInterface() {}
 
+  // Sets a pre-shared key for use during the crypto handshake.  Must be set
+  // before StartCryptoHandshake() is called.
+  virtual void SetPreSharedKey(QuicStringPiece key) = 0;
+
   virtual void StartCryptoHandshake() = 0;
 
   // Only needed when using SRTP with QuicTransport

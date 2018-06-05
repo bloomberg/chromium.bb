@@ -59,6 +59,10 @@ QuicClientEpollNetworkHelper::~QuicClientEpollNetworkHelper() {
   CleanUpAllUDPSockets();
 }
 
+string QuicClientEpollNetworkHelper::Name() const {
+  return "QuicClientEpollNetworkHelper";
+}
+
 bool QuicClientEpollNetworkHelper::CreateUDPSocketAndBind(
     QuicSocketAddress server_address,
     QuicIpAddress bind_to_address,
@@ -136,17 +140,19 @@ void QuicClientEpollNetworkHelper::OnEvent(int fd, net::EpollEvent* event) {
     DVLOG(1) << "Read packets on EPOLLIN";
     int times_to_read = max_reads_per_epoll_loop_;
     bool more_to_read = true;
+    QuicPacketCount packets_dropped = 0;
     while (client_->connected() && more_to_read && times_to_read > 0) {
       more_to_read = packet_reader_->ReadAndDispatchPackets(
           GetLatestFD(), GetLatestClientAddress().port(),
           *client_->helper()->GetClock(), this,
-          overflow_supported_ ? &packets_dropped_ : nullptr);
+          overflow_supported_ ? &packets_dropped : nullptr);
       --times_to_read;
     }
-    if (packets_dropped_ > 100) {
-      QUIC_LOG_FIRST_N(ERROR, 50)
-          << packets_dropped_
-          << " packets droped in the socket receive buffer.";
+    if (packets_dropped_ < packets_dropped) {
+      QUIC_LOG(ERROR)
+          << packets_dropped - packets_dropped_
+          << " more packets are dropped in the socket receive buffer.";
+      packets_dropped_ = packets_dropped;
     }
     if (client_->connected() && more_to_read) {
       event->out_ready_mask |= EPOLLIN;

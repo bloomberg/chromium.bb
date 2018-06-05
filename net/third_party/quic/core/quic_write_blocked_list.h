@@ -24,7 +24,7 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
   typedef spdy::PriorityWriteScheduler<QuicStreamId> QuicPriorityWriteScheduler;
 
  public:
-  explicit QuicWriteBlockedList(bool register_static_streams);
+  explicit QuicWriteBlockedList();
   ~QuicWriteBlockedList();
 
   bool HasWriteBlockedDataStreams() const {
@@ -32,30 +32,18 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
   }
 
   bool HasWriteBlockedSpecialStream() const {
-    if (register_static_streams_) {
-      for (const auto& stream : static_streams_) {
-        if (stream.second) {
-          return true;
-        }
+    for (const auto& stream : static_streams_) {
+      if (stream.second) {
+        return true;
       }
-      return false;
     }
-    return crypto_stream_blocked_ || headers_stream_blocked_;
+    return false;
   }
 
   size_t NumBlockedSpecialStreams() const {
     size_t num_blocked = 0;
-    if (register_static_streams_) {
-      for (const auto& stream : static_streams_) {
-        if (stream.second) {
-          ++num_blocked;
-        }
-      }
-    } else {
-      if (crypto_stream_blocked_) {
-        ++num_blocked;
-      }
-      if (headers_stream_blocked_) {
+    for (const auto& stream : static_streams_) {
+      if (stream.second) {
         ++num_blocked;
       }
     }
@@ -68,31 +56,14 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
   }
 
   bool ShouldYield(QuicStreamId id) const {
-    if (register_static_streams_) {
-      for (const auto& stream : static_streams_) {
-        if (stream.first == id) {
-          // Static streams should never yield to data streams, or to lower
-          // priority static stream.
-          return false;
-        }
-        if (stream.second) {
-          return true;  // All data streams yield to static streams.
-        }
+    for (const auto& stream : static_streams_) {
+      if (stream.first == id) {
+        // Static streams should never yield to data streams, or to lower
+        // priority static stream.
+        return false;
       }
-    } else {
-      if (id == kCryptoStreamId) {
-        return false;  // The crypto stream yields to none.
-      }
-      if (crypto_stream_blocked_) {
-        return true;  // If the crypto stream is blocked, all other streams
-                      // yield.
-      }
-      if (id == kHeadersStreamId) {
-        return false;  // The crypto stream isn't blocked so headers won't
-                       // yield.
-      }
-      if (headers_stream_blocked_) {
-        return true;  // All data streams yield to the headers stream.
+      if (stream.second) {
+        return true;  // All data streams yield to static streams.
       }
     }
     return priority_write_scheduler_.ShouldYield(id);
@@ -101,22 +72,10 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
   // Pops the highest priorty stream, special casing crypto and headers streams.
   // Latches the most recently popped data stream for batch writing purposes.
   QuicStreamId PopFront() {
-    if (register_static_streams_) {
-      for (auto& stream : static_streams_) {
-        if (stream.second) {
-          stream.second = false;
-          return stream.first;
-        }
-      }
-    } else {
-      if (crypto_stream_blocked_) {
-        crypto_stream_blocked_ = false;
-        return kCryptoStreamId;
-      }
-
-      if (headers_stream_blocked_) {
-        headers_stream_blocked_ = false;
-        return kHeadersStreamId;
+    for (auto& stream : static_streams_) {
+      if (stream.second) {
+        stream.second = false;
+        return stream.first;
       }
     }
 
@@ -144,7 +103,7 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
   void RegisterStream(QuicStreamId stream_id,
                       bool is_static_stream,
                       spdy::SpdyPriority priority) {
-    if (register_static_streams_ && is_static_stream) {
+    if (is_static_stream) {
       DCHECK(!priority_write_scheduler_.StreamRegistered(stream_id));
       DCHECK(!QuicContainsKey(static_streams_, stream_id));
       DCHECK(static_streams_.empty() ||
@@ -160,7 +119,7 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
   }
 
   void UnregisterStream(QuicStreamId stream_id, bool is_static) {
-    if (register_static_streams_ && is_static) {
+    if (is_static) {
       static_streams_.erase(stream_id);
       return;
     }
@@ -188,24 +147,10 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
   // the list for its priority level.
   // Headers and crypto streams are special cased to always resume first.
   void AddStream(QuicStreamId stream_id) {
-    if (register_static_streams_) {
-      auto it = static_streams_.find(stream_id);
-      if (it != static_streams_.end()) {
-        it->second = true;
-        return;
-      }
-    } else {
-      if (stream_id == kCryptoStreamId) {
-        // TODO(avd) Add DCHECK(!crypto_stream_blocked_)
-        crypto_stream_blocked_ = true;
-        return;
-      }
-
-      if (stream_id == kHeadersStreamId) {
-        // TODO(avd) Add DCHECK(!headers_stream_blocked_);
-        headers_stream_blocked_ = true;
-        return;
-      }
+    auto it = static_streams_.find(stream_id);
+    if (it != static_streams_.end()) {
+      it->second = true;
+      return;
     }
     bool push_front =
         stream_id == batch_write_stream_id_[last_priority_popped_] &&
@@ -216,25 +161,13 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
   // This function is used for debugging and test only. Returns true if stream
   // with |stream_id| is write blocked.
   bool IsStreamBlocked(QuicStreamId stream_id) const {
-    if (register_static_streams_) {
-      auto it = static_streams_.find(stream_id);
-      if (it != static_streams_.end()) {
-        return it->second;
-      }
-    } else {
-      if (stream_id == kCryptoStreamId) {
-        return crypto_stream_blocked_;
-      }
-
-      if (stream_id == kHeadersStreamId) {
-        return headers_stream_blocked_;
-      }
+    auto it = static_streams_.find(stream_id);
+    if (it != static_streams_.end()) {
+      return it->second;
     }
 
     return priority_write_scheduler_.IsStreamReady(stream_id);
   }
-
-  bool register_static_streams() const { return register_static_streams_; }
 
  private:
   QuicPriorityWriteScheduler priority_write_scheduler_;
@@ -251,11 +184,6 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
   // Tracks the last priority popped for UpdateBytesForStream.
   spdy::SpdyPriority last_priority_popped_;
 
-  bool crypto_stream_blocked_;
-  bool headers_stream_blocked_;
-
-  // Latched value of quic_reloadable_flag_quic_register_static_streams.
-  const bool register_static_streams_;
   QuicLinkedHashMapImpl<QuicStreamId, bool> static_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicWriteBlockedList);

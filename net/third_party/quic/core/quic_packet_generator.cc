@@ -72,7 +72,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
   size_t total_bytes_consumed = 0;
   bool fin_consumed = false;
 
-  if (!packet_creator_.HasRoomForStreamFrame(id, offset)) {
+  if (!packet_creator_.HasRoomForStreamFrame(id, offset, write_length)) {
     packet_creator_.Flush();
   }
 

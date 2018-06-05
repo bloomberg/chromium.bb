@@ -14,6 +14,8 @@
 namespace quic {
 namespace test {
 
+const int32_t kMaxConsecutivePacketLoss = 3;
+
 // An alarm that is scheduled if a blocked socket is simulated to indicate
 // it's writable again.
 class WriteUnblockedAlarm : public QuicAlarm::Delegate {
@@ -58,7 +60,8 @@ PacketDroppingTestWriter::PacketDroppingTestWriter()
       fake_packet_reorder_percentage_(0),
       fake_packet_delay_(QuicTime::Delta::Zero()),
       fake_bandwidth_(QuicBandwidth::Zero()),
-      buffer_size_(0) {
+      buffer_size_(0),
+      num_consecutive_packet_lost_(0) {
   uint32_t seed = base::RandInt(0, std::numeric_limits<int32_t>::max());
   QUIC_LOG(INFO) << "Seeding packet loss with " << seed;
   simple_random_.set_seed(seed);
@@ -85,7 +88,7 @@ WriteResult PacketDroppingTestWriter::WritePacket(
   ++num_calls_to_write_;
   ReleaseOldPackets();
 
-  QuicReaderMutexLock lock(&config_mutex_);
+  QuicWriterMutexLock lock(&config_mutex_);
   if (fake_drop_first_n_packets_ > 0 &&
       num_calls_to_write_ <=
           static_cast<uint64_t>(fake_drop_first_n_packets_)) {
@@ -93,11 +96,22 @@ WriteResult PacketDroppingTestWriter::WritePacket(
                   << " packets (packet number " << num_calls_to_write_ << ")";
     return WriteResult(WRITE_STATUS_OK, buf_len);
   }
+  const int32_t kMaxPacketLossPercentage =
+      kMaxConsecutivePacketLoss * 100.0 / (kMaxConsecutivePacketLoss + 1);
   if (fake_packet_loss_percentage_ > 0 &&
-      simple_random_.RandUint64() % 100 <
-          static_cast<uint64_t>(fake_packet_loss_percentage_)) {
+      // Do not allow too many consecutive packet drops to avoid test flakiness.
+      (num_consecutive_packet_lost_ <= kMaxConsecutivePacketLoss ||
+       // Allow as many consecutive packet drops as possbile if
+       // |fake_packet_lost_percentage_| is large enough. Without this exception
+       // it is hard to simulate high loss rate, like 100%.
+       fake_packet_loss_percentage_ > kMaxPacketLossPercentage) &&
+      (simple_random_.RandUint64() % 100 <
+       static_cast<uint64_t>(fake_packet_loss_percentage_))) {
     QUIC_DVLOG(1) << "Dropping packet.";
+    ++num_consecutive_packet_lost_;
     return WriteResult(WRITE_STATUS_OK, buf_len);
+  } else {
+    num_consecutive_packet_lost_ = 0;
   }
   if (fake_blocked_socket_percentage_ > 0 &&
       simple_random_.RandUint64() % 100 <
@@ -213,6 +227,13 @@ void PacketDroppingTestWriter::SetDelayAlarm(QuicTime new_deadline) {
 
 void PacketDroppingTestWriter::OnCanWrite() {
   on_can_write_->OnCanWrite();
+}
+
+void PacketDroppingTestWriter::set_fake_packet_loss_percentage(
+    int32_t fake_packet_loss_percentage) {
+  QuicWriterMutexLock lock(&config_mutex_);
+  fake_packet_loss_percentage_ = fake_packet_loss_percentage;
+  num_consecutive_packet_lost_ = 0;
 }
 
 PacketDroppingTestWriter::DelayedWrite::DelayedWrite(

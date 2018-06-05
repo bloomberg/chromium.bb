@@ -48,4 +48,8 @@ void QuartcPacketWriter::SetWritable() {
   writable_ = true;
 }
 
+bool QuartcPacketWriter::SupportsReleaseTime() const {
+  return false;
+}
+
 }  // namespace quic

@@ -160,7 +160,8 @@ class StatelessConnectionTerminator {
       }
       offset += frame.stream_frame->data_length;
       if (offset < reject.length()) {
-        DCHECK(!creator_.HasRoomForStreamFrame(kCryptoStreamId, offset));
+        DCHECK(!creator_.HasRoomForStreamFrame(
+            kCryptoStreamId, offset, frame.stream_frame->data_length));
       }
       creator_.Flush();
     }
@@ -306,7 +307,7 @@ void QuicDispatcher::ProcessPacket(const QuicSocketAddress& self_address,
 
 bool QuicDispatcher::OnUnauthenticatedPublicHeader(
     const QuicPacketHeader& header) {
-  current_connection_id_ = header.connection_id;
+  current_connection_id_ = header.destination_connection_id;
 
   // Port zero is only allowed for unidirectional UDP, so is disallowed by QUIC.
   // Given that we can't even send a reply rejecting the packet, just drop the
@@ -319,13 +320,13 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
   // correctly from truncated connection ID fields.  Prevent this from causing
   // the connection ID lookup to error by dropping any packet with a short
   // connection ID.
-  if (header.connection_id_length != PACKET_8BYTE_CONNECTION_ID) {
+  if (header.destination_connection_id_length != PACKET_8BYTE_CONNECTION_ID) {
     return false;
   }
 
   // Packets with connection IDs for active connections are processed
   // immediately.
-  QuicConnectionId connection_id = header.connection_id;
+  QuicConnectionId connection_id = header.destination_connection_id;
   SessionMap::iterator it = session_map_.find(connection_id);
   if (it != session_map_.end()) {
     DCHECK(!buffered_packets_.HasBufferedPackets(connection_id));
@@ -394,12 +395,14 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
 }
 
 bool QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
-  QuicConnectionId connection_id = header.connection_id;
+  QuicConnectionId connection_id = header.destination_connection_id;
 
-  if (time_wait_list_manager_->IsConnectionIdInTimeWait(header.connection_id)) {
+  if (time_wait_list_manager_->IsConnectionIdInTimeWait(
+          header.destination_connection_id)) {
     // This connection ID is already in time-wait state.
-    time_wait_list_manager_->ProcessPacket(
-        current_self_address_, current_peer_address_, header.connection_id);
+    time_wait_list_manager_->ProcessPacket(current_self_address_,
+                                           current_peer_address_,
+                                           header.destination_connection_id);
     return false;
   }
 
@@ -480,7 +483,7 @@ QuicDispatcher::QuicPacketFate QuicDispatcher::ValidityChecks(
   if (!header.version_flag) {
     QUIC_DLOG(INFO)
         << "Packet without version arrived for unknown connection ID "
-        << header.connection_id;
+        << header.destination_connection_id;
     return kFateTimeWait;
   }
 
@@ -896,7 +899,7 @@ bool QuicDispatcher::HandlePacketForTimeWait(const QuicPacketHeader& header) {
   // Switch the framer to the correct version, so that the packet number can
   // be parsed correctly.
   framer_.set_version(time_wait_list_manager_->GetQuicVersionFromConnectionId(
-      header.connection_id));
+      header.destination_connection_id));
 
   // Continue parsing the packet to extract the packet number.  Then
   // send it to the time wait manager in OnUnathenticatedHeader.

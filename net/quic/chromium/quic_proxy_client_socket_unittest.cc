@@ -101,7 +101,8 @@ class QuicProxyClientSocketTest
         quic::NullEncrypter(quic::Perspective::IS_CLIENT)
             .GetCiphertextSize(min_data_length) +
         quic::QuicPacketCreator::StreamFramePacketOverhead(
-            version, quic::PACKET_8BYTE_CONNECTION_ID, include_version,
+            version, quic::PACKET_8BYTE_CONNECTION_ID,
+            quic::PACKET_0BYTE_CONNECTION_ID, include_version,
             include_diversification_nonce, packet_number_length, offset);
 
     DCHECK(packet_length >= min_packet_length);

@@ -73,7 +73,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // The overhead the framing will add for a packet with one frame.
   static size_t StreamFramePacketOverhead(
       QuicTransportVersion version,
-      QuicConnectionIdLength connection_id_length,
+      QuicConnectionIdLength destination_connection_id_length,
+      QuicConnectionIdLength source_connection_id_length,
       bool include_version,
       bool include_diversification_nonce,
       QuicPacketNumberLength packet_number_length,
@@ -92,8 +93,10 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
                    QuicFrame* frame);
 
   // Returns true if current open packet can accommodate more stream frames of
-  // stream |id| at |offset|, false otherwise.
-  bool HasRoomForStreamFrame(QuicStreamId id, QuicStreamOffset offset);
+  // stream |id| at |offset| and data length |data_size|, false otherwise.
+  bool HasRoomForStreamFrame(QuicStreamId id,
+                             QuicStreamOffset offset,
+                             size_t data_size);
 
   // Re-serializes frames with the original packet's packet number length.
   // Used for retransmitting packets to ensure they aren't too long.
@@ -162,8 +165,11 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Returns a dummy packet that is valid but contains no useful information.
   static SerializedPacket NoPacket();
 
-  // Returns length of connection ID to send over the wire.
-  QuicConnectionIdLength GetConnectionIdLength() const;
+  // Returns length of destination connection ID to send over the wire.
+  QuicConnectionIdLength GetDestinationConnectionIdLength() const;
+
+  // Returns length of source connection ID to send over the wire.
+  QuicConnectionIdLength GetSourceConnectionIdLength() const;
 
   // Sets the encryption level that will be applied to new packets.
   void set_encryption_level(EncryptionLevel level) {

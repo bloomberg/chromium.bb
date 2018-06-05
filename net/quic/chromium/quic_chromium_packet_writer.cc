@@ -240,4 +240,8 @@ quic::QuicByteCount QuicChromiumPacketWriter::GetMaxPacketSize(
   return quic::kMaxPacketSize;
 }
 
+bool QuicChromiumPacketWriter::SupportsReleaseTime() const {
+  return false;
+}
+
 }  // namespace net

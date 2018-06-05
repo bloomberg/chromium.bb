@@ -90,6 +90,7 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketWriter
   void SetWritable() override;
   quic::QuicByteCount GetMaxPacketSize(
       const quic::QuicSocketAddress& peer_address) const override;
+  bool SupportsReleaseTime() const override;
 
   void OnWriteComplete(int rv);
 

@@ -99,6 +99,8 @@ class QUIC_EXPORT_PRIVATE QuartcSession
                           ConnectionCloseSource source) override;
 
   // QuartcSessionInterface overrides
+  void SetPreSharedKey(QuicStringPiece key) override;
+
   void StartCryptoHandshake() override;
 
   bool ExportKeyingMaterial(const std::string& label,

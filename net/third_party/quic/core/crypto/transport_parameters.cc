@@ -16,13 +16,12 @@ namespace {
 enum TransportParameterId : uint16_t {
   kInitialMaxStreamData = 0,
   kInitialMaxData = 1,
-  kInitialMaxStreamIdBidi = 2,
+  kInitialMaxBidiStreams = 2,
   kIdleTimeout = 3,
-  kOmitConnectionId = 4,
   kMaxPacketSize = 5,
   kStatelessResetToken = 6,
   kAckDelayExponent = 7,
-  kInitialMaxStreamIdUni = 8,
+  kInitialMaxUniStreams = 8,
 
   kMaxKnownParameterId = 9,
 };
@@ -127,28 +126,22 @@ bool SerializeTransportParameters(const TransportParameters& in,
     }
   }
 
-  CBB initial_max_stream_id_bidi_param;
-  if (in.initial_max_stream_id_bidi.present) {
-    if (!CBB_add_u16(&params, kInitialMaxStreamIdBidi) ||
+  CBB initial_max_bidi_streams_param;
+  if (in.initial_max_bidi_streams.present) {
+    if (!CBB_add_u16(&params, kInitialMaxBidiStreams) ||
         !CBB_add_u16_length_prefixed(&params,
-                                     &initial_max_stream_id_bidi_param) ||
-        !CBB_add_u32(&initial_max_stream_id_bidi_param,
-                     in.initial_max_stream_id_bidi.value)) {
+                                     &initial_max_bidi_streams_param) ||
+        !CBB_add_u16(&initial_max_bidi_streams_param,
+                     in.initial_max_bidi_streams.value)) {
       return false;
     }
   }
-  CBB initial_max_stream_id_uni_param;
-  if (in.initial_max_stream_id_uni.present) {
-    if (!CBB_add_u16(&params, kInitialMaxStreamIdUni) ||
-        !CBB_add_u16_length_prefixed(&params,
-                                     &initial_max_stream_id_uni_param) ||
-        !CBB_add_u32(&initial_max_stream_id_uni_param,
-                     in.initial_max_stream_id_uni.value)) {
-      return false;
-    }
-  }
-  if (in.omit_connection_id) {
-    if (!CBB_add_u16(&params, kOmitConnectionId) || !CBB_add_u16(&params, 0)) {
+  CBB initial_max_uni_streams_param;
+  if (in.initial_max_uni_streams.present) {
+    if (!CBB_add_u16(&params, kInitialMaxUniStreams) ||
+        !CBB_add_u16_length_prefixed(&params, &initial_max_uni_streams_param) ||
+        !CBB_add_u16(&initial_max_uni_streams_param,
+                     in.initial_max_uni_streams.value)) {
       return false;
     }
   }
@@ -233,23 +226,17 @@ bool ParseTransportParameters(const uint8_t* in,
           return false;
         }
         break;
-      case kInitialMaxStreamIdBidi:
-        if (!CBS_get_u32(&value, &out->initial_max_stream_id_bidi.value) ||
+      case kInitialMaxBidiStreams:
+        if (!CBS_get_u16(&value, &out->initial_max_bidi_streams.value) ||
             CBS_len(&value) != 0) {
           return false;
         }
-        out->initial_max_stream_id_bidi.present = true;
+        out->initial_max_bidi_streams.present = true;
         break;
       case kIdleTimeout:
         if (!CBS_get_u16(&value, &out->idle_timeout) || CBS_len(&value) != 0) {
           return false;
         }
-        break;
-      case kOmitConnectionId:
-        if (CBS_len(&value) != 0) {
-          return false;
-        }
-        out->omit_connection_id = true;
         break;
       case kMaxPacketSize:
         if (!CBS_get_u16(&value, &out->max_packet_size.value) ||
@@ -272,12 +259,12 @@ bool ParseTransportParameters(const uint8_t* in,
         }
         out->ack_delay_exponent.present = true;
         break;
-      case kInitialMaxStreamIdUni:
-        if (!CBS_get_u32(&value, &out->initial_max_stream_id_uni.value) ||
+      case kInitialMaxUniStreams:
+        if (!CBS_get_u16(&value, &out->initial_max_uni_streams.value) ||
             CBS_len(&value) != 0) {
           return false;
         }
-        out->initial_max_stream_id_uni.present = true;
+        out->initial_max_uni_streams.present = true;
     }
   }
   if ((present_params & kRequiredParamsMask) != kRequiredParamsMask) {

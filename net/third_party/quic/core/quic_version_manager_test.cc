@@ -17,11 +17,11 @@ namespace {
 class QuicVersionManagerTest : public QuicTest {};
 
 TEST_F(QuicVersionManagerTest, QuicVersionManager) {
-  static_assert(QUIC_ARRAYSIZE(kSupportedTransportVersions) == 8u,
+  static_assert(QUIC_ARRAYSIZE(kSupportedTransportVersions) == 9u,
                 "Supported versions out of sync");
   SetQuicFlag(&FLAGS_quic_enable_version_99, false);
+  SetQuicFlag(&FLAGS_quic_enable_version_44, false);
   SetQuicReloadableFlag(quic_enable_version_43, false);
-  SetQuicReloadableFlag(quic_enable_version_42_2, false);
   SetQuicReloadableFlag(quic_disable_version_41, true);
   SetQuicReloadableFlag(quic_disable_version_38, true);
   SetQuicReloadableFlag(quic_disable_version_37, true);
@@ -30,26 +30,22 @@ TEST_F(QuicVersionManagerTest, QuicVersionManager) {
   EXPECT_EQ(FilterSupportedTransportVersions(AllSupportedTransportVersions()),
             manager.GetSupportedTransportVersions());
 
-  EXPECT_EQ(QuicTransportVersionVector({QUIC_VERSION_39, QUIC_VERSION_35}),
+  EXPECT_EQ(QuicTransportVersionVector(
+                {QUIC_VERSION_42, QUIC_VERSION_39, QUIC_VERSION_35}),
             manager.GetSupportedTransportVersions());
 
   SetQuicReloadableFlag(quic_disable_version_37, false);
-  EXPECT_EQ(QuicTransportVersionVector(
-                {QUIC_VERSION_39, QUIC_VERSION_37, QUIC_VERSION_35}),
-            manager.GetSupportedTransportVersions());
-
-  SetQuicReloadableFlag(quic_disable_version_38, false);
-  EXPECT_EQ(QuicTransportVersionVector({QUIC_VERSION_39, QUIC_VERSION_38,
+  EXPECT_EQ(QuicTransportVersionVector({QUIC_VERSION_42, QUIC_VERSION_39,
                                         QUIC_VERSION_37, QUIC_VERSION_35}),
             manager.GetSupportedTransportVersions());
 
-  SetQuicReloadableFlag(quic_disable_version_41, false);
-  EXPECT_EQ(QuicTransportVersionVector({QUIC_VERSION_41, QUIC_VERSION_39,
+  SetQuicReloadableFlag(quic_disable_version_38, false);
+  EXPECT_EQ(QuicTransportVersionVector({QUIC_VERSION_42, QUIC_VERSION_39,
                                         QUIC_VERSION_38, QUIC_VERSION_37,
                                         QUIC_VERSION_35}),
             manager.GetSupportedTransportVersions());
 
-  SetQuicReloadableFlag(quic_enable_version_42_2, true);
+  SetQuicReloadableFlag(quic_disable_version_41, false);
   EXPECT_EQ(QuicTransportVersionVector({QUIC_VERSION_42, QUIC_VERSION_41,
                                         QUIC_VERSION_39, QUIC_VERSION_38,
                                         QUIC_VERSION_37, QUIC_VERSION_35}),
@@ -62,12 +58,19 @@ TEST_F(QuicVersionManagerTest, QuicVersionManager) {
            QUIC_VERSION_38, QUIC_VERSION_37, QUIC_VERSION_35}),
       manager.GetSupportedTransportVersions());
 
-  SetQuicFlag(&FLAGS_quic_enable_version_99, true);
+  SetQuicFlag(&FLAGS_quic_enable_version_44, true);
   EXPECT_EQ(
       QuicTransportVersionVector(
-          {QUIC_VERSION_99, QUIC_VERSION_43, QUIC_VERSION_42, QUIC_VERSION_41,
+          {QUIC_VERSION_44, QUIC_VERSION_43, QUIC_VERSION_42, QUIC_VERSION_41,
            QUIC_VERSION_39, QUIC_VERSION_38, QUIC_VERSION_37, QUIC_VERSION_35}),
       manager.GetSupportedTransportVersions());
+
+  SetQuicFlag(&FLAGS_quic_enable_version_99, true);
+  EXPECT_EQ(QuicTransportVersionVector(
+                {QUIC_VERSION_99, QUIC_VERSION_44, QUIC_VERSION_43,
+                 QUIC_VERSION_42, QUIC_VERSION_41, QUIC_VERSION_39,
+                 QUIC_VERSION_38, QUIC_VERSION_37, QUIC_VERSION_35}),
+            manager.GetSupportedTransportVersions());
 
   // Ensure that all versions are now supported.
   EXPECT_EQ(FilterSupportedTransportVersions(AllSupportedTransportVersions()),

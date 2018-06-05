@@ -61,16 +61,20 @@ bool QuicFramerPeer::AppendIetfStreamFrame(QuicFramer* framer,
 // static
 bool QuicFramerPeer::ProcessIetfAckFrame(QuicFramer* framer,
                                          QuicDataReader* reader,
-                                         uint8_t frame_type,
                                          QuicAckFrame* ack_frame) {
-  return framer->ProcessIetfAckFrame(reader, frame_type, ack_frame);
+  return framer->ProcessIetfAckFrame(reader, ack_frame);
 }
 
 // static
-bool QuicFramerPeer::AppendIetfAckFrame(QuicFramer* framer,
-                                        const QuicAckFrame& frame,
-                                        QuicDataWriter* writer) {
-  return framer->AppendIetfAckFrame(frame, writer);
+bool QuicFramerPeer::AppendIetfAckFrameAndTypeByte(QuicFramer* framer,
+                                                   const QuicAckFrame& frame,
+                                                   QuicDataWriter* writer) {
+  return framer->AppendIetfAckFrameAndTypeByte(frame, writer);
+}
+// static
+size_t QuicFramerPeer::GetIetfAckFrameSize(QuicFramer* framer,
+                                           const QuicAckFrame& frame) {
+  return framer->GetIetfAckFrameSize(frame);
 }
 
 // static

@@ -80,6 +80,7 @@ class QUIC_EXPORT_PRIVATE QuartcFactoryInterface {
     // Zero entries are ignored and QUIC defaults are used in that case.
     uint32_t max_idle_time_before_crypto_handshake_secs = 0;
     uint32_t max_time_before_crypto_handshake_secs = 0;
+    QuicTime::Delta idle_network_timeout = QuicTime::Delta::Zero();
   };
 
   virtual std::unique_ptr<QuartcSessionInterface> CreateQuartcSession(

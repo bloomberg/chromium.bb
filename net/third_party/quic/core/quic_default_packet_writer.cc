@@ -47,6 +47,10 @@ QuicByteCount QuicDefaultPacketWriter::GetMaxPacketSize(
   return kMaxPacketSize;
 }
 
+bool QuicDefaultPacketWriter::SupportsReleaseTime() const {
+  return false;
+}
+
 void QuicDefaultPacketWriter::set_write_blocked(bool is_blocked) {
   write_blocked_ = is_blocked;
 }

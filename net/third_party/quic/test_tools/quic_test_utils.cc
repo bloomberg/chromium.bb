@@ -94,7 +94,8 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
   DCHECK_NE(0u, length);
   // Re-construct the data packet with data ownership.
   return new QuicPacket(buffer, length, /* owns_buffer */ true,
-                        header.connection_id_length, header.version_flag,
+                        header.destination_connection_id_length,
+                        header.source_connection_id_length, header.version_flag,
                         header.nonce != nullptr, header.packet_number_length);
 }
 
@@ -664,56 +665,69 @@ QuicTransportVersion QuicTransportVersionMin() {
   return AllSupportedTransportVersions().back();
 }
 
-QuicEncryptedPacket* ConstructEncryptedPacket(QuicConnectionId connection_id,
-                                              bool version_flag,
-                                              bool reset_flag,
-                                              QuicPacketNumber packet_number,
-                                              const string& data) {
+QuicEncryptedPacket* ConstructEncryptedPacket(
+    QuicConnectionId destination_connection_id,
+    QuicConnectionId source_connection_id,
+    bool version_flag,
+    bool reset_flag,
+    QuicPacketNumber packet_number,
+    const string& data) {
   return ConstructEncryptedPacket(
-      connection_id, version_flag, reset_flag, packet_number, data,
-      PACKET_8BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER);
+      destination_connection_id, source_connection_id, version_flag, reset_flag,
+      packet_number, data, PACKET_8BYTE_CONNECTION_ID,
+      PACKET_0BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER);
 }
 
 QuicEncryptedPacket* ConstructEncryptedPacket(
-    QuicConnectionId connection_id,
+    QuicConnectionId destination_connection_id,
+    QuicConnectionId source_connection_id,
     bool version_flag,
     bool reset_flag,
     QuicPacketNumber packet_number,
     const string& data,
-    QuicConnectionIdLength connection_id_length,
+    QuicConnectionIdLength destination_connection_id_length,
+    QuicConnectionIdLength source_connection_id_length,
     QuicPacketNumberLength packet_number_length) {
-  return ConstructEncryptedPacket(connection_id, version_flag, reset_flag,
-                                  packet_number, data, connection_id_length,
-                                  packet_number_length, nullptr);
+  return ConstructEncryptedPacket(
+      destination_connection_id, source_connection_id, version_flag, reset_flag,
+      packet_number, data, destination_connection_id_length,
+      source_connection_id_length, packet_number_length, nullptr);
 }
 
 QuicEncryptedPacket* ConstructEncryptedPacket(
-    QuicConnectionId connection_id,
+    QuicConnectionId destination_connection_id,
+    QuicConnectionId source_connection_id,
     bool version_flag,
     bool reset_flag,
     QuicPacketNumber packet_number,
     const string& data,
-    QuicConnectionIdLength connection_id_length,
+    QuicConnectionIdLength destination_connection_id_length,
+    QuicConnectionIdLength source_connection_id_length,
     QuicPacketNumberLength packet_number_length,
     ParsedQuicVersionVector* versions) {
-  return ConstructEncryptedPacket(connection_id, version_flag, reset_flag,
-                                  packet_number, data, connection_id_length,
-                                  packet_number_length, versions,
-                                  Perspective::IS_CLIENT);
+  return ConstructEncryptedPacket(
+      destination_connection_id, source_connection_id, version_flag, reset_flag,
+      packet_number, data, destination_connection_id_length,
+      source_connection_id_length, packet_number_length, versions,
+      Perspective::IS_CLIENT);
 }
 QuicEncryptedPacket* ConstructEncryptedPacket(
-    QuicConnectionId connection_id,
+    QuicConnectionId destination_connection_id,
+    QuicConnectionId source_connection_id,
     bool version_flag,
     bool reset_flag,
     QuicPacketNumber packet_number,
     const string& data,
-    QuicConnectionIdLength connection_id_length,
+    QuicConnectionIdLength destination_connection_id_length,
+    QuicConnectionIdLength source_connection_id_length,
     QuicPacketNumberLength packet_number_length,
     ParsedQuicVersionVector* versions,
     Perspective perspective) {
   QuicPacketHeader header;
-  header.connection_id = connection_id;
-  header.connection_id_length = connection_id_length;
+  header.destination_connection_id = destination_connection_id;
+  header.destination_connection_id_length = destination_connection_id_length;
+  header.source_connection_id = source_connection_id;
+  header.source_connection_id_length = source_connection_id_length;
   header.version_flag = version_flag;
   header.reset_flag = reset_flag;
   header.packet_number_length = packet_number_length;
@@ -746,18 +760,22 @@ QuicReceivedPacket* ConstructReceivedPacket(
 }
 
 QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
-    QuicConnectionId connection_id,
+    QuicConnectionId destination_connection_id,
+    QuicConnectionId source_connection_id,
     bool version_flag,
     bool reset_flag,
     QuicPacketNumber packet_number,
     const string& data,
-    QuicConnectionIdLength connection_id_length,
+    QuicConnectionIdLength destination_connection_id_length,
+    QuicConnectionIdLength source_connection_id_length,
     QuicPacketNumberLength packet_number_length,
     ParsedQuicVersionVector* versions,
     Perspective perspective) {
   QuicPacketHeader header;
-  header.connection_id = connection_id;
-  header.connection_id_length = connection_id_length;
+  header.destination_connection_id = destination_connection_id;
+  header.destination_connection_id_length = destination_connection_id_length;
+  header.source_connection_id = source_connection_id;
+  header.source_connection_id_length = source_connection_id_length;
   header.version_flag = version_flag;
   header.reset_flag = reset_flag;
   header.packet_number_length = packet_number_length;
@@ -776,7 +794,8 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   // Now set the frame type to 0x1F, which is an invalid frame type.
   reinterpret_cast<unsigned char*>(
       packet->mutable_data())[GetStartOfEncryptedData(
-      framer.transport_version(), connection_id_length, version_flag,
+      framer.transport_version(), destination_connection_id_length,
+      source_connection_id_length, version_flag,
       false /* no diversification nonce */, packet_number_length)] = 0x1F;
 
   char* buffer = new char[kMaxPacketSize];
@@ -817,23 +836,27 @@ void CompareCharArraysWithHexError(const string& description,
                 << HexDumpWithMarks(actual, actual_len, marks.get(), max_len);
 }
 
-size_t GetPacketLengthForOneStream(QuicTransportVersion version,
-                                   bool include_version,
-                                   bool include_diversification_nonce,
-                                   QuicConnectionIdLength connection_id_length,
-                                   QuicPacketNumberLength packet_number_length,
-                                   size_t* payload_length) {
+size_t GetPacketLengthForOneStream(
+    QuicTransportVersion version,
+    bool include_version,
+    bool include_diversification_nonce,
+    QuicConnectionIdLength destination_connection_id_length,
+    QuicConnectionIdLength source_connection_id_length,
+    QuicPacketNumberLength packet_number_length,
+    size_t* payload_length) {
   *payload_length = 1;
   const size_t stream_length =
       NullEncrypter(Perspective::IS_CLIENT).GetCiphertextSize(*payload_length) +
       QuicPacketCreator::StreamFramePacketOverhead(
-          version, PACKET_8BYTE_CONNECTION_ID, include_version,
+          version, destination_connection_id_length,
+          source_connection_id_length, include_version,
           include_diversification_nonce, packet_number_length, 0u);
   const size_t ack_length =
       NullEncrypter(Perspective::IS_CLIENT)
           .GetCiphertextSize(QuicFramer::GetMinAckFrameSize(
               version, PACKET_1BYTE_PACKET_NUMBER)) +
-      GetPacketHeaderSize(version, connection_id_length, include_version,
+      GetPacketHeaderSize(version, destination_connection_id_length,
+                          source_connection_id_length, include_version,
                           include_diversification_nonce, packet_number_length);
   if (stream_length < ack_length) {
     *payload_length = 1 + ack_length - stream_length;
@@ -842,7 +865,8 @@ size_t GetPacketLengthForOneStream(QuicTransportVersion version,
   return NullEncrypter(Perspective::IS_CLIENT)
              .GetCiphertextSize(*payload_length) +
          QuicPacketCreator::StreamFramePacketOverhead(
-             version, connection_id_length, include_version,
+             version, destination_connection_id_length,
+             source_connection_id_length, include_version,
              include_diversification_nonce, packet_number_length, 0u);
 }
 

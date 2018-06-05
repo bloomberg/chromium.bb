@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "net/third_party/quic/core/crypto/quic_crypto_server_config.h"
+#include "net/third_party/quic/core/crypto/transport_parameters.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
@@ -67,11 +68,13 @@ TlsServerHandshaker::TlsServerHandshaker(QuicCryptoStream* stream,
                                       std::move(crypters.encrypter));
   session->connection()->SetDecrypter(ENCRYPTION_NONE,
                                       std::move(crypters.decrypter));
-  // Set callback to provide SNI.
-  // SSL_CTX_set_tlsext_servername_callback(ssl_ctx, SelectCertificateCallback);
 
   // Configure the SSL to be a server.
   SSL_set_accept_state(ssl());
+
+  if (!SetTransportParameters()) {
+    CloseConnection("Failed to set Transport Parameters");
+  }
 }
 
 TlsServerHandshaker::~TlsServerHandshaker() {
@@ -185,17 +188,65 @@ void TlsServerHandshaker::AdvanceHandshake() {
     QUIC_LOG(WARNING) << "SSL_do_handshake failed; SSL_get_error returns "
                       << ssl_error << ", state_ = " << state_;
     ERR_print_errors_fp(stderr);
-    CloseConnection();
+    CloseConnection("TLS Handshake failed");
   }
 }
 
-void TlsServerHandshaker::CloseConnection() {
+void TlsServerHandshaker::CloseConnection(const QuicString& reason_phrase) {
   // TODO(nharper): Instead of QUIC_HANDSHAKE_FAILED, this should be
-  // TLS_HANDSHAKE_FAILED (0xC000001C), but according to quic_error_codes.h,
+  // TLS_HANDSHAKE_FAILED (0x0201), but according to quic_error_codes.h,
   // we only send 1-byte error codes right now.
   state_ = STATE_CONNECTION_CLOSED;
-  stream()->CloseConnectionWithDetails(QUIC_HANDSHAKE_FAILED,
-                                       "TLS handshake failed");
+  stream()->CloseConnectionWithDetails(QUIC_HANDSHAKE_FAILED, reason_phrase);
+}
+
+bool TlsServerHandshaker::ProcessTransportParameters(
+    QuicString* error_details) {
+  TransportParameters client_params;
+  const uint8_t* client_params_bytes;
+  size_t params_bytes_len;
+  SSL_get_peer_quic_transport_params(ssl(), &client_params_bytes,
+                                     &params_bytes_len);
+  if (params_bytes_len == 0 ||
+      !ParseTransportParameters(client_params_bytes, params_bytes_len,
+                                Perspective::IS_CLIENT, &client_params)) {
+    *error_details = "Unable to parse Transport Parameters";
+    return false;
+  }
+  if (CryptoUtils::ValidateClientHelloVersion(
+          client_params.version, session()->connection()->version(),
+          session()->connection()->supported_versions(),
+          error_details) != QUIC_NO_ERROR ||
+      session()->config()->ProcessTransportParameters(
+          client_params, CLIENT, error_details) != QUIC_NO_ERROR) {
+    return false;
+  }
+
+  session()->OnConfigNegotiated();
+  return true;
+}
+
+bool TlsServerHandshaker::SetTransportParameters() {
+  TransportParameters server_params;
+  server_params.perspective = Perspective::IS_SERVER;
+  server_params.supported_versions = CreateQuicVersionLabelVector(
+      session()->connection()->supported_versions());
+  server_params.version =
+      CreateQuicVersionLabel(session()->connection()->version());
+
+  if (!session()->config()->FillTransportParameters(&server_params)) {
+    return false;
+  }
+
+  // TODO(nharper): Provide an actual value for the stateless reset token.
+  server_params.stateless_reset_token.resize(16);
+  std::vector<uint8_t> server_params_bytes;
+  if (!SerializeTransportParameters(server_params, &server_params_bytes) ||
+      SSL_set_quic_transport_params(ssl(), server_params_bytes.data(),
+                                    server_params_bytes.size()) != 1) {
+    return false;
+  }
+  return true;
 }
 
 void TlsServerHandshaker::FinishHandshake() {
@@ -203,7 +254,7 @@ void TlsServerHandshaker::FinishHandshake() {
   state_ = STATE_HANDSHAKE_COMPLETE;
   std::vector<uint8_t> client_secret, server_secret;
   if (!DeriveSecrets(&client_secret, &server_secret)) {
-    CloseConnection();
+    CloseConnection("Failed to derive shared secrets");
     return;
   }
 
@@ -297,10 +348,10 @@ ssl_private_key_result_t TlsServerHandshaker::PrivateKeyComplete(
 int TlsServerHandshaker::SelectCertificateCallback(SSL* ssl,
                                                    int* out_alert,
                                                    void* arg) {
-  return HandshakerFromSsl(ssl)->SelectCertificate();
+  return HandshakerFromSsl(ssl)->SelectCertificate(out_alert);
 }
 
-int TlsServerHandshaker::SelectCertificate() {
+int TlsServerHandshaker::SelectCertificate(int* out_alert) {
   const char* hostname = SSL_get_servername(ssl(), TLSEXT_NAMETYPE_host_name);
   if (hostname) {
     hostname_ = hostname;
@@ -329,6 +380,13 @@ int TlsServerHandshaker::SelectCertificate() {
 
   for (size_t i = 0; i < certs.size(); i++) {
     CRYPTO_BUFFER_free(certs[i]);
+  }
+
+  QuicString error_details;
+  if (!ProcessTransportParameters(&error_details)) {
+    CloseConnection(error_details);
+    *out_alert = SSL_AD_INTERNAL_ERROR;
+    return SSL_TLSEXT_ERR_ALERT_FATAL;
   }
 
   QUIC_LOG(INFO) << "Set " << chain->certs.size() << " certs for server";

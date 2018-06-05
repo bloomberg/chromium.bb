@@ -107,7 +107,6 @@ QuartcFactory::~QuartcFactory() {}
 std::unique_ptr<QuartcSessionInterface> QuartcFactory::CreateQuartcSession(
     const QuartcSessionConfig& quartc_session_config) {
   DCHECK(quartc_session_config.packet_transport);
-  SetQuicReloadableFlag(quic_is_write_blocked, true);
 
   Perspective perspective = quartc_session_config.is_server
                                 ? Perspective::IS_SERVER
@@ -183,6 +182,11 @@ std::unique_ptr<QuartcSessionInterface> QuartcFactory::CreateQuartcSession(
     quic_config.set_max_idle_time_before_crypto_handshake(
         QuicTime::Delta::FromSeconds(
             quartc_session_config.max_idle_time_before_crypto_handshake_secs));
+  }
+  if (quartc_session_config.idle_network_timeout > QuicTime::Delta::Zero()) {
+    quic_config.SetIdleNetworkTimeout(
+        quartc_session_config.idle_network_timeout,
+        quartc_session_config.idle_network_timeout);
   }
   return QuicMakeUnique<QuartcSession>(
       std::move(quic_connection), quic_config,
