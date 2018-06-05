@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "services/ui/display/screen_manager_delegate.h"
-#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws/ids.h"
 #include "ui/display/display.h"
 

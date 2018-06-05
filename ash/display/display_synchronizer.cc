@@ -7,7 +7,7 @@
 #include "ash/display/mirror_window_controller.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/shell.h"
-#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/base/ui_base_features.h"

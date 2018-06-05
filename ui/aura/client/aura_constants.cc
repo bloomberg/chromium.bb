@@ -4,7 +4,7 @@
 
 #include "ui/aura/client/aura_constants.h"
 
-#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/base/class_property.h"
 #include "ui/gfx/geometry/rect.h"
 
