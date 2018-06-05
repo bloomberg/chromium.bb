@@ -53,8 +53,8 @@ class PictureInPictureWindowControllerBrowserTest
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureWindowControllerBrowserTest);
 };
 
-// TODO(845747): Linux and Windows are hitting this DCHECK.
-#if !defined(OS_LINUX) && !defined(OS_WIN)
+// TODO(845747): Linux is hitting this DCHECK.
+#if !defined(OS_LINUX)
 
 // Checks the creation of the window controller, as well as basic window
 // creation and visibility.
@@ -432,4 +432,4 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
-#endif  // !defined(OS_LINUX) && !defined(OS_WIN)
+#endif  // !defined(OS_LINUX)
