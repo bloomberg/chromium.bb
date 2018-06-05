@@ -2402,7 +2402,8 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_VideoOnly_MP4_HEVC2) {
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 TEST_F(PipelineIntegrationTest, SeekWhilePaused) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm"));
+  // This test is flaky without kNoClockless, see crbug.com/796250.
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kNoClockless));
 
   base::TimeDelta duration(pipeline_->GetMediaDuration());
   base::TimeDelta start_seek_time(duration / 4);
