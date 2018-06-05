@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GOOGLE_APIS_GAIA_FAKE_IDENTITY_PROVIDER_H_
-#define GOOGLE_APIS_GAIA_FAKE_IDENTITY_PROVIDER_H_
+#ifndef COMPONENTS_INVALIDATION_IMPL_FAKE_IDENTITY_PROVIDER_H_
+#define COMPONENTS_INVALIDATION_IMPL_FAKE_IDENTITY_PROVIDER_H_
 
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "google_apis/gaia/identity_provider.h"
+#include "components/invalidation/public/identity_provider.h"
 
 class OAuth2TokenService;
+
+namespace invalidation {
 
 // Fake identity provider implementation.
 class FakeIdentityProvider : public IdentityProvider {
@@ -40,4 +42,6 @@ class FakeIdentityProvider : public IdentityProvider {
   DISALLOW_COPY_AND_ASSIGN(FakeIdentityProvider);
 };
 
-#endif  // GOOGLE_APIS_GAIA_FAKE_IDENTITY_PROVIDER_H_
+}  // namespace invalidation
+
+#endif  // COMPONENTS_INVALIDATION_IMPL_FAKE_IDENTITY_PROVIDER_H_

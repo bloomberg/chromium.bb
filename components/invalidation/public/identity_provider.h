@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GOOGLE_APIS_GAIA_IDENTITY_PROVIDER_H_
-#define GOOGLE_APIS_GAIA_IDENTITY_PROVIDER_H_
+#ifndef COMPONENTS_INVALIDATION_PUBLIC_IDENTITY_PROVIDER_H_
+#define COMPONENTS_INVALIDATION_PUBLIC_IDENTITY_PROVIDER_H_
 
 #include <string>
 
@@ -12,16 +12,13 @@
 #include "base/observer_list.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
-// Helper class that provides access to information about logged-in GAIA
-// accounts. Each instance of this class references an entity who may be logged
-// in to zero, one or multiple GAIA accounts. The class provides access to the
-// OAuth tokens for all logged-in accounts and indicates which of these is
-// currently active.
-// The main purpose of this abstraction layer is to isolate consumers of GAIA
-// information from the different sources and various token service
-// implementations. Whenever possible, consumers of GAIA information should be
-// provided with an instance of this class instead of accessing other GAIA APIs
-// directly.
+namespace invalidation {
+
+// Helper class that provides access to information about the "active GAIA
+// account" with which invalidation should interact. The definition of the
+// "active Gaia account is context-dependent": the purpose of this abstraction
+// layer is to allow invalidation to interact with either device identity or
+// user identity via a uniform interface.
 class IdentityProvider : public OAuth2TokenService::Observer {
  public:
   class Observer {
@@ -85,4 +82,6 @@ class IdentityProvider : public OAuth2TokenService::Observer {
   DISALLOW_COPY_AND_ASSIGN(IdentityProvider);
 };
 
-#endif  // GOOGLE_APIS_GAIA_IDENTITY_PROVIDER_H_
+}  // namespace invalidation
+
+#endif  // COMPONENTS_INVALIDATION_PUBLIC_IDENTITY_PROVIDER_H_

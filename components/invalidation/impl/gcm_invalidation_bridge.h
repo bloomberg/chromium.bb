@@ -18,8 +18,6 @@
 #include "components/invalidation/impl/gcm_network_channel_delegate.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
-class IdentityProvider;
-
 namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
@@ -29,6 +27,8 @@ class GCMDriver;
 }  // namespace gcm
 
 namespace invalidation {
+
+class IdentityProvider;
 
 // GCMInvalidationBridge and GCMInvalidationBridge::Core implement functions
 // needed for GCMNetworkChannel. GCMInvalidationBridge lives on UI thread while

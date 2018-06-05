@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "google_apis/gaia/fake_identity_provider.h"
+#include "components/invalidation/impl/fake_identity_provider.h"
 
 #include "google_apis/gaia/oauth2_token_service.h"
 
-FakeIdentityProvider::FakeIdentityProvider(OAuth2TokenService* token_service)
-    : token_service_(token_service) {
-}
+namespace invalidation {
 
-FakeIdentityProvider::~FakeIdentityProvider() {
-}
+FakeIdentityProvider::FakeIdentityProvider(OAuth2TokenService* token_service)
+    : token_service_(token_service) {}
+
+FakeIdentityProvider::~FakeIdentityProvider() {}
 
 void FakeIdentityProvider::SetActiveUsername(const std::string& account_id) {
   account_id_ = account_id;
@@ -38,3 +38,5 @@ std::string FakeIdentityProvider::GetActiveAccountId() {
 OAuth2TokenService* FakeIdentityProvider::GetTokenService() {
   return token_service_;
 }
+
+}  // namespace invalidation

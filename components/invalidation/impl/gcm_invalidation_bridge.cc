@@ -12,8 +12,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/invalidation/impl/gcm_invalidation_bridge.h"
+#include "components/invalidation/public/identity_provider.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/identity_provider.h"
 
 namespace invalidation {
 namespace {

@@ -4,4 +4,5 @@ include_rules = [
   "-components/invalidation",
   "+components/prefs",
   "+google/cacheinvalidation",
+  "+google_apis/gaia",
 ]

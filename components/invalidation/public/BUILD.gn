@@ -8,6 +8,8 @@ static_library("public") {
     "ack_handle.h",
     "ack_handler.cc",
     "ack_handler.h",
+    "identity_provider.cc",
+    "identity_provider.h",
     "invalidation.cc",
     "invalidation.h",
     "invalidation_export.h",
@@ -24,6 +26,7 @@ static_library("public") {
     "single_object_invalidation_set.h",
   ]
   public_deps = [
+    "//google_apis",
     "//third_party/cacheinvalidation",
   ]
   deps = [
