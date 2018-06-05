@@ -22,8 +22,7 @@ std::string ComputeMethodForRedirect(const std::string& method,
   // the httpbis draft say to prompt the user to confirm the generation of new
   // requests, other than GET and HEAD requests, but IE omits these prompts and
   // so shall we.
-  // See:
-  // https://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-17#section-7.3
+  // See: https://tools.ietf.org/html/rfc7231#section-6.4
   if ((http_status_code == 303 && method != "HEAD") ||
       ((http_status_code == 301 || http_status_code == 302) &&
        method == "POST")) {
