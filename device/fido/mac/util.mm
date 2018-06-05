@@ -69,6 +69,19 @@ std::unique_ptr<ECPublicKey> MakeECPublicKey(SecKeyRef public_key_ref)
 
 }  // namespace
 
+// KeychainItemIdentifier returns the unique identifier for a given RP ID
+// and user handle. It is stored in the keychain items Application Label and
+// used for later lookup.
+std::vector<uint8_t> KeychainItemIdentifier(std::string rp_id,
+                                            std::vector<uint8_t> user_id) {
+  std::vector<CBORValue> array;
+  array.emplace_back(CBORValue(rp_id));
+  array.emplace_back(CBORValue(user_id));
+  auto value = CBORWriter::Write(CBORValue(std::move(array)));
+  CHECK(value);
+  return *value;
+}
+
 base::Optional<AuthenticatorData> MakeAuthenticatorData(
     const std::string& rp_id,
     std::vector<uint8_t> credential_id,
