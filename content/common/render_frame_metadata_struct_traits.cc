@@ -15,6 +15,7 @@ bool StructTraits<content::mojom::RenderFrameMetadataDataView,
                   cc::RenderFrameMetadata>::
     Read(content::mojom::RenderFrameMetadataDataView data,
          cc::RenderFrameMetadata* out) {
+  out->page_scale_factor = data.page_scale_factor();
   out->root_background_color = data.root_background_color();
   out->is_scroll_offset_at_top = data.is_scroll_offset_at_top();
   out->is_mobile_optimized = data.is_mobile_optimized();
@@ -25,6 +26,7 @@ bool StructTraits<content::mojom::RenderFrameMetadataDataView,
   out->bottom_controls_shown_ratio = data.bottom_controls_shown_ratio();
   return data.ReadRootScrollOffset(&out->root_scroll_offset) &&
          data.ReadSelection(&out->selection) &&
+         data.ReadScrollableViewportSize(&out->scrollable_viewport_size) &&
          data.ReadViewportSizeInPixels(&out->viewport_size_in_pixels) &&
          data.ReadLocalSurfaceId(&out->local_surface_id);
 }

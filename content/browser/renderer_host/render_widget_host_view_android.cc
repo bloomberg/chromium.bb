@@ -1208,21 +1208,11 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   if (overscroll_controller_)
     overscroll_controller_->OnFrameMetadataUpdated(frame_metadata);
 
-  if (touch_selection_controller_) {
-    DCHECK(touch_selection_controller_client_manager_);
-    touch_selection_controller_client_manager_->UpdateClientSelectionBounds(
-        frame_metadata.selection.start, frame_metadata.selection.end, this,
-        nullptr);
-    touch_selection_controller_client_manager_->SetPageScaleFactor(
-        frame_metadata.page_scale_factor);
-
-    // Set parameters for adaptive handle orientation.
-    gfx::SizeF viewport_size(scrollable_viewport_size_dip);
-    viewport_size.Scale(frame_metadata.page_scale_factor);
-    gfx::RectF viewport_rect(0.0f, frame_metadata.top_controls_height *
-                                       frame_metadata.top_controls_shown_ratio,
-                             viewport_size.width(), viewport_size.height());
-    touch_selection_controller_->OnViewportChanged(viewport_rect);
+  if (!features::IsSurfaceSynchronizationEnabled()) {
+    UpdateTouchSelectionController(
+        frame_metadata.selection, frame_metadata.page_scale_factor,
+        frame_metadata.top_controls_height,
+        frame_metadata.top_controls_shown_ratio, scrollable_viewport_size_dip);
   }
 
   SetContentBackgroundColor(is_transparent
@@ -1258,6 +1248,29 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
       controls_changed);
 
   EvictFrameIfNecessary();
+}
+
+void RenderWidgetHostViewAndroid::UpdateTouchSelectionController(
+    const viz::Selection<gfx::SelectionBound>& selection,
+    float page_scale_factor,
+    float top_controls_height,
+    float top_controls_shown_ratio,
+    const gfx::SizeF& scrollable_viewport_size_dip) {
+  if (!touch_selection_controller_)
+    return;
+
+  DCHECK(touch_selection_controller_client_manager_);
+  touch_selection_controller_client_manager_->UpdateClientSelectionBounds(
+      selection.start, selection.end, this, nullptr);
+  touch_selection_controller_client_manager_->SetPageScaleFactor(
+      page_scale_factor);
+
+  // Set parameters for adaptive handle orientation.
+  gfx::SizeF viewport_size(scrollable_viewport_size_dip);
+  viewport_size.Scale(page_scale_factor);
+  gfx::RectF viewport_rect(0.0f, top_controls_height * top_controls_shown_ratio,
+                           viewport_size.width(), viewport_size.height());
+  touch_selection_controller_->OnViewportChanged(viewport_rect);
 }
 
 bool RenderWidgetHostViewAndroid::UpdateControls(
@@ -1307,12 +1320,25 @@ void RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete(
     const cc::RenderFrameMetadata& metadata) {
   if (local_surface_id_allocator_.UpdateFromChild(
           metadata.local_surface_id.value_or(viz::LocalSurfaceId()))) {
-    // A synchronization event was initiated by the renderer so let's updated
-    // the top/bottom bar controls now.
-    UpdateControls(view_.GetDipScale(), metadata.top_controls_height,
-                   metadata.top_controls_shown_ratio,
-                   metadata.bottom_controls_height,
-                   metadata.bottom_controls_shown_ratio);
+    if (features::IsSurfaceSynchronizationEnabled()) {
+      // A synchronization event was initiated by the renderer so let's updated
+      // the top/bottom bar controls now.
+      UpdateControls(view_.GetDipScale(), metadata.top_controls_height,
+                     metadata.top_controls_shown_ratio,
+                     metadata.bottom_controls_height,
+                     metadata.bottom_controls_shown_ratio);
+      float dip_scale = view_.GetDipScale();
+      gfx::SizeF scrollable_viewport_size_dip =
+          metadata.scrollable_viewport_size;
+      if (IsUseZoomForDSFEnabled()) {
+        float pix_to_dip = 1.f / dip_scale;
+        scrollable_viewport_size_dip.Scale(pix_to_dip);
+      }
+      UpdateTouchSelectionController(
+          metadata.selection, metadata.page_scale_factor,
+          metadata.top_controls_height, metadata.top_controls_shown_ratio,
+          scrollable_viewport_size_dip);
+    }
     if (delegated_frame_host_) {
       delegated_frame_host_->EmbedSurface(
           local_surface_id_allocator_.GetCurrentLocalSurfaceId(),

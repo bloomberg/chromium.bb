@@ -27,6 +27,11 @@ struct RenderFrameMetadata {
   // empty or otherwise unused, the bound types will indicate such.
   viz.mojom.Selection selection;
 
+  // The page scale factor used on the content.
+  float page_scale_factor;
+
+  gfx.mojom.SizeF scrollable_viewport_size;
+
   // Determines whether the page is mobile optimized or not, which means at
   // least one of the following has to be true:
   // - page has a width=device-width or narrower viewport.

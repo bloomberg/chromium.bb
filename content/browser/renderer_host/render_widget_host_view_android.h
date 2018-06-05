@@ -357,6 +357,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const viz::CompositorFrameMetadata& frame_metadata,
       bool is_transparent);
 
+  void UpdateTouchSelectionController(
+      const viz::Selection<gfx::SelectionBound>& selection,
+      float page_scale_factor,
+      float top_controls_height,
+      float top_controls_shown_ratio,
+      const gfx::SizeF& scrollable_viewport_size_dip);
   bool UpdateControls(float dip_scale,
                       float top_controls_height,
                       float top_controls_shown_ratio,
