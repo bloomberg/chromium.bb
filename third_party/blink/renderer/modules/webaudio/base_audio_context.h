@@ -346,6 +346,13 @@ class MODULES_EXPORT BaseAudioContext
   // Does nothing when the worklet global scope does not exist.
   void UpdateWorkletGlobalScopeOnRenderingThread();
 
+  // Returns true if the URL would taint the origin so that we shouldn't be
+  // allowing media to played through webaudio.
+  // TODO(crbug.com/845913): This should really be on an AudioContext.  Move
+  // this when we move the media stuff from BaseAudioContext to AudioContext, as
+  // requried by the spec.
+  bool WouldTaintOrigin(const KURL& url) const;
+
  protected:
   enum ContextType { kRealtimeContext, kOfflineContext };
 
