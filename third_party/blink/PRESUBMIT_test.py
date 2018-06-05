@@ -124,6 +124,8 @@ class CxxDependencyTest(unittest.TestCase):
         'gfx::ColorSpace',
         'gfx::CubicBezier',
         'gfx::ICCProfile',
+        'gfx::Point',
+        'gfx::Rect',
         'gfx::ScrollOffset',
         'scoped_refptr<base::SingleThreadTaskRunner>',
     ]
@@ -131,8 +133,7 @@ class CxxDependencyTest(unittest.TestCase):
         'GURL',
         'base::Callback<void()>',
         'content::RenderFrame',
-        'gfx::Point',
-        'gfx::Rect',
+        'gfx::Canvas',
         'net::IPEndPoint',
         'ui::Clipboard',
     ]
