@@ -1234,26 +1234,13 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, SubframeErrorPages) {
 
 class IsolatedOriginTestWithMojoBlobURLs : public IsolatedOriginTest {
  public:
-  IsolatedOriginTestWithMojoBlobURLs() {
-    // Enabling NetworkService implies enabling MojoBlobURLs.
-    scoped_feature_list_.InitAndEnableFeature(
-        network::features::kNetworkService);
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolatedOriginTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII("enable-blink-features", "MojoBlobURLs");
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
-// Times out on android, and crashes on mac due to its dependency on network
-// service.
-#define MAYBE_NavigateToBlobURL DISABLED_NavigateToBlobURL
-#else
-#define MAYBE_NavigateToBlobURL NavigateToBlobURL
-#endif
-
-IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithMojoBlobURLs,
-                       MAYBE_NavigateToBlobURL) {
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithMojoBlobURLs, NavigateToBlobURL) {
   GURL top_url(
       embedded_test_server()->GetURL("www.foo.com", "/page_with_iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), top_url));

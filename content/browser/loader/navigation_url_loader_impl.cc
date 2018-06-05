@@ -464,6 +464,20 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         base::Unretained(service_worker_navigation_handle_core),
         base::Unretained(appcache_handle_core));
 
+    // Requests to Blob scheme won't get redirected to/from other schemes
+    // or be intercepted, so we just let it go here.
+    if (request_info_->common_params.url.SchemeIsBlob() &&
+        request_info_->blob_url_loader_factory) {
+      url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
+          network::SharedURLLoaderFactory::Create(
+              std::move(request_info_->blob_url_loader_factory)),
+          CreateURLLoaderThrottles(), -1 /* routing_id */, 0 /* request_id? */,
+          network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
+          kNavigationUrlLoaderTrafficAnnotation,
+          base::ThreadTaskRunnerHandle::Get());
+      return;
+    }
+
     // If S13nServiceWorker is disabled, just use
     // |default_request_handler_factory_| and return. The non network service
     // request handling goes through ResourceDispatcherHost which has legacy
