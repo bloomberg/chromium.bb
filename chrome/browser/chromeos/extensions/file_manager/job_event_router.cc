@@ -17,16 +17,6 @@ namespace file_manager_private = extensions::api::file_manager_private;
 
 namespace file_manager {
 
-namespace {
-
-// Utility function to check if |job_info| is a file uploading job.
-bool IsUploadJob(const drive::JobType& type) {
-  return (type == drive::TYPE_UPLOAD_NEW_FILE ||
-          type == drive::TYPE_UPLOAD_EXISTING_FILE);
-}
-
-}  // namespace
-
 JobEventRouter::JobEventRouter(const base::TimeDelta& event_delay)
     : event_delay_(event_delay),
       num_completed_bytes_(0),
@@ -140,15 +130,13 @@ void JobEventRouter::DispatchFileTransfersUpdateEventToExtension(
       ConvertDrivePathToFileSystemUrl(job_info.file_path, extension_id);
   status.file_url = url.spec();
   status.transfer_state = state;
-  status.transfer_type = IsUploadJob(job_info.job_type)
-                             ? file_manager_private::TRANSFER_TYPE_UPLOAD
-                             : file_manager_private::TRANSFER_TYPE_DOWNLOAD;
   // JavaScript does not have 64-bit integers. Instead we use double, which
   // is in IEEE 754 formant and accurate up to 52-bits in JS, and in practice
   // in C++. Larger values are rounded.
   status.num_total_jobs = num_total_jobs;
   status.processed = num_completed_bytes;
   status.total = num_total_bytes;
+  status.hide_when_zero_jobs = false;
 
   DispatchEventToExtension(
       extension_id,

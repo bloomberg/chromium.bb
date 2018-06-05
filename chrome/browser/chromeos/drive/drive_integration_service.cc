@@ -510,6 +510,12 @@ void DriveIntegrationService::ClearCacheAndRemountFileSystem(
       callback));
 }
 
+drivefs::DriveFsHost* DriveIntegrationService::GetDriveFsHost() const {
+  if (!drivefs_holder_)
+    return nullptr;
+  return drivefs_holder_->drivefs_host();
+}
+
 drivefs::mojom::DriveFs* DriveIntegrationService::GetDriveFsInterface() const {
   if (!drivefs_holder_)
     return nullptr;

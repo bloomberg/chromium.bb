@@ -51,9 +51,6 @@ enum MountCompletedStatus {
 // File transfer progress state.
 enum TransferState { in_progress, completed, failed };
 
-// Defines file transfer direction.
-enum TransferType { upload, download };
-
 // The type of the progress event.
 enum CopyProgressStatusType {
   // "begin_copy_entry" is fired for each entry (file or directory) before
@@ -435,9 +432,6 @@ dictionary FileTransferStatus {
   // File transfer progress state.
   TransferState transferState;
 
-  // Defines file transfer direction.
-  TransferType transferType;
-
   // Approximated completed portion of the transfer operation.
   double processed;
 
@@ -446,6 +440,10 @@ dictionary FileTransferStatus {
 
   // Total number of jobs.
   long num_total_jobs;
+
+  // If true, hide when a job is completed when there are zero jobs in
+  // progress. Otherwise, hide when one job is in progress.
+  boolean hideWhenZeroJobs;
 };
 
 // Error during the drive sync.

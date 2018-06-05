@@ -33,6 +33,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/components/drivefs/drivefs_host.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_handler.h"
@@ -383,13 +384,33 @@ class JobEventRouterImpl : public JobEventRouter {
   DISALLOW_COPY_AND_ASSIGN(JobEventRouterImpl);
 };
 
+class DriveFsEventRouterImpl : public DriveFsEventRouter {
+ public:
+  explicit DriveFsEventRouterImpl(Profile* profile) : profile_(profile) {}
+
+ private:
+  void DispatchOnFileTransfersUpdatedEvent(
+      const file_manager_private::FileTransferStatus& status) override {
+    extensions::EventRouter::Get(profile_)->BroadcastEvent(
+        std::make_unique<extensions::Event>(
+            extensions::events::FILE_MANAGER_PRIVATE_ON_FILE_TRANSFERS_UPDATED,
+            file_manager_private::OnFileTransfersUpdated::kEventName,
+            file_manager_private::OnFileTransfersUpdated::Create(status)));
+  }
+
+  Profile* const profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(DriveFsEventRouterImpl);
+};
+
 }  // namespace
 
 EventRouter::EventRouter(Profile* profile)
-    : pref_change_registrar_(new PrefChangeRegistrar),
+    : pref_change_registrar_(std::make_unique<PrefChangeRegistrar>()),
       profile_(profile),
-      device_event_router_(new DeviceEventRouterImpl(profile)),
-      job_event_router_(new JobEventRouterImpl(profile)),
+      device_event_router_(std::make_unique<DeviceEventRouterImpl>(profile)),
+      job_event_router_(std::make_unique<JobEventRouterImpl>(profile)),
+      drivefs_event_router_(std::make_unique<DriveFsEventRouterImpl>(profile)),
       dispatch_directory_change_event_impl_(
           base::Bind(&EventRouter::DispatchDirectoryChangeEventImpl,
                      base::Unretained(this))),
@@ -440,6 +461,10 @@ void EventRouter::Shutdown() {
     integration_service->file_system()->RemoveObserver(this);
     integration_service->drive_service()->RemoveObserver(this);
     integration_service->job_list()->RemoveObserver(job_event_router_.get());
+    if (integration_service->GetDriveFsHost()) {
+      integration_service->GetDriveFsHost()->RemoveObserver(
+          drivefs_event_router_.get());
+    }
   }
 
   VolumeManager* const volume_manager = VolumeManager::Get(profile_);
@@ -487,6 +512,10 @@ void EventRouter::ObserveEvents() {
     integration_service->drive_service()->AddObserver(this);
     integration_service->file_system()->AddObserver(this);
     integration_service->job_list()->AddObserver(job_event_router_.get());
+    if (integration_service->GetDriveFsHost()) {
+      integration_service->GetDriveFsHost()->AddObserver(
+          drivefs_event_router_.get());
+    }
   }
 
   if (NetworkHandler::IsInitialized()) {

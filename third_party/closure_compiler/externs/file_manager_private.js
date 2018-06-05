@@ -105,10 +105,10 @@ var MountCompletedEvent;
  * @typedef {{
  *   fileUrl: string,
  *   transferState: string,
- *   transferType: string,
  *   processed: number,
  *   total: number,
- *   num_total_jobs: number
+ *   num_total_jobs: number,
+ *   hideWhenZeroJobs: boolean
  * }}
  */
 var FileTransferStatus;
