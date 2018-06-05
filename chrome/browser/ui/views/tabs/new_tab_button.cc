@@ -247,7 +247,7 @@ void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
 
   // Fill.
   SkPath fill, stroke;
-  const bool is_touch_ui = MD::IsTouchOptimizedUiEnabled();
+  const bool is_touch_ui = MD::GetMode() == MD::MATERIAL_TOUCH_OPTIMIZED;
   if (!MD::IsRefreshUi()) {
     fill = is_touch_ui ? GetTouchOptimizedButtonPath(0, scale, false, true)
                        : GetNonTouchOptimizedButtonPath(0, visible_height,
@@ -372,7 +372,7 @@ void NewTabButton::OnWidgetDestroying(views::Widget* widget) {
 }
 
 bool NewTabButton::ShouldDrawIncognitoIcon() const {
-  return is_incognito_ && MD::IsTouchOptimizedUiEnabled();
+  return is_incognito_ && MD::GetMode() == MD::MATERIAL_TOUCH_OPTIMIZED;
 }
 
 gfx::Rect NewTabButton::GetVisibleBounds() const {
@@ -413,6 +413,7 @@ void NewTabButton::PaintFill(bool pressed,
                              float scale,
                              const SkPath& fill,
                              gfx::Canvas* canvas) const {
+  DCHECK(!MD::IsRefreshUi());
   gfx::ScopedCanvas scoped_canvas(canvas);
   canvas->UndoDeviceScaleFactor();
   cc::PaintFlags flags;
@@ -500,10 +501,9 @@ SkColor NewTabButton::GetButtonFillColor() const {
 
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
   DCHECK(theme_provider);
-  return theme_provider->GetColor(
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
-          ? ThemeProperties::COLOR_TOOLBAR
-          : ThemeProperties::COLOR_BACKGROUND_TAB);
+  return theme_provider->GetColor(MD::GetMode() == MD::MATERIAL_TOUCH_OPTIMIZED
+                                      ? ThemeProperties::COLOR_TOOLBAR
+                                      : ThemeProperties::COLOR_BACKGROUND_TAB);
 }
 
 void NewTabButton::InitButtonIcons() {
@@ -525,6 +525,7 @@ SkPath NewTabButton::GetTouchOptimizedButtonPath(float button_y,
                                                  bool extend_to_top,
                                                  bool for_fill) const {
   DCHECK(MD::IsTouchOptimizedUiEnabled());
+  DCHECK(!MD::IsRefreshUi());
 
   const float radius = GetCornerRadius() * scale;
   const float rect_width =
