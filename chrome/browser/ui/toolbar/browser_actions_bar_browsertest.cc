@@ -657,11 +657,11 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarIncognitoTest, IncognitoMode) {
   skia->GetRepresentation(2.0);
 }
 
-class BrowserActionsBarUiBrowserTest
-    : public SupportsTestUi<BrowserActionsBarBrowserTest, TestBrowserUi> {
+class BrowserActionsBarRuntimeHostPermissionsBrowserTest
+    : public BrowserActionsBarBrowserTest {
  public:
-  BrowserActionsBarUiBrowserTest() = default;
-  ~BrowserActionsBarUiBrowserTest() override = default;
+  BrowserActionsBarRuntimeHostPermissionsBrowserTest() = default;
+  ~BrowserActionsBarRuntimeHostPermissionsBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     BrowserActionsBarBrowserTest::SetUpCommandLine(command_line);
@@ -674,6 +674,85 @@ class BrowserActionsBarUiBrowserTest
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
   }
+
+  void LoadAllUrlsExtension() {
+    extension_dir_.WriteManifest(
+        R"({
+             "name": "All Urls Extension",
+             "description": "Runs a content script everywhere",
+             "manifest_version": 2,
+             "version": "0.1",
+             "content_scripts": [{
+               "matches": ["<all_urls>"],
+               "js": ["script.js"],
+               "run_at": "document_start"
+             }]
+           })");
+    extension_dir_.WriteFile(FILE_PATH_LITERAL("script.js"),
+                             "console.warn('Hello, world!')");
+    extension_ = LoadExtension(extension_dir_.UnpackedPath());
+    ASSERT_TRUE(extension_);
+    extensions::ScriptingPermissionsModifier(profile(), extension_)
+        .SetWithholdAllUrls(true);
+  }
+
+  const extensions::Extension* extension() const { return extension_.get(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  extensions::TestExtensionDir extension_dir_;
+  scoped_refptr<const extensions::Extension> extension_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserActionsBarRuntimeHostPermissionsBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarRuntimeHostPermissionsBrowserTest,
+                       RuntimeHostPermissionsDecoration) {
+  LoadAllUrlsExtension();
+
+  const GURL url =
+      embedded_test_server()->GetURL("example.com", "/title1.html");
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  {
+    content::TestNavigationObserver observer(web_contents);
+    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+  }
+
+  extensions::ExtensionActionRunner* action_runner =
+      extensions::ExtensionActionRunner::GetForWebContents(web_contents);
+  EXPECT_TRUE(action_runner->WantsToRun(extension()));
+
+  ToolbarActionsBar* actions_bar = browser()->window()->GetToolbarActionsBar();
+  std::vector<ToolbarActionViewController*> actions = actions_bar->GetActions();
+  ASSERT_EQ(1u, actions.size());
+
+  EXPECT_TRUE(browser_actions_bar()->ActionButtonWantsToRun(0));
+
+  {
+    // Simulate clicking on the extension icon to allow it to run via a page
+    // reload.
+    content::TestNavigationObserver observer(web_contents);
+    action_runner->set_default_bubble_close_action_for_testing(
+        std::make_unique<ToolbarActionsBarBubbleDelegate::CloseAction>(
+            ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE));
+    browser_actions_bar()->Press(0);
+    observer.WaitForNavigationFinished();
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+  }
+
+  // The extension should have already run on page reload, so the button
+  // shouldn't indicate the extension wants to run.
+  EXPECT_FALSE(browser_actions_bar()->ActionButtonWantsToRun(0));
+}
+
+class BrowserActionsBarUiBrowserTest
+    : public SupportsTestUi<BrowserActionsBarRuntimeHostPermissionsBrowserTest,
+                            TestBrowserUi> {
+ public:
+  BrowserActionsBarUiBrowserTest() = default;
+  ~BrowserActionsBarUiBrowserTest() override = default;
 
   void ShowUi(const std::string& name) override {
     ASSERT_EQ("blocked_actions", name);
@@ -693,7 +772,7 @@ class BrowserActionsBarUiBrowserTest
         browser()->tab_strip_model()->GetActiveWebContents();
     extensions::ExtensionActionRunner* action_runner =
         extensions::ExtensionActionRunner::GetForWebContents(web_contents);
-    if (!action_runner->WantsToRun(extension_.get())) {
+    if (!action_runner->WantsToRun(extension())) {
       ADD_FAILURE() << "Extension should want to run";
       return false;
     }
@@ -729,30 +808,6 @@ class BrowserActionsBarUiBrowserTest
   }
 
  private:
-  void LoadAllUrlsExtension() {
-    extension_dir_.WriteManifest(
-        R"({
-             "name": "All Urls Extension",
-             "description": "Runs a content script everywhere",
-             "manifest_version": 2,
-             "version": "0.1",
-             "content_scripts": [{
-               "matches": ["<all_urls>"],
-               "js": ["script.js"]
-             }]
-           })");
-    extension_dir_.WriteFile(FILE_PATH_LITERAL("script.js"),
-                             "console.warn('Hello, world!')");
-    extension_ = LoadExtension(extension_dir_.UnpackedPath());
-    ASSERT_TRUE(extension_);
-    extensions::ScriptingPermissionsModifier(profile(), extension_)
-        .SetWithholdAllUrls(true);
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-  extensions::TestExtensionDir extension_dir_;
-  scoped_refptr<const extensions::Extension> extension_;
-
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsBarUiBrowserTest);
 };
 

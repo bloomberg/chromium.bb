@@ -413,6 +413,17 @@ void ExtensionActionRunner::DidFinishNavigation(
   web_request_blocked_.clear();
   was_used_on_page_ = false;
   weak_factory_.InvalidateWeakPtrs();
+
+  // Note: This needs to be called *after* the maps have been updated, so that
+  // when the UI updates, this object returns the proper result for "wants to
+  // run".
+  ExtensionActionAPI::Get(browser_context_)
+      ->ClearAllValuesForTab(web_contents());
+}
+
+void ExtensionActionRunner::WebContentsDestroyed() {
+  ExtensionActionAPI::Get(browser_context_)
+      ->ClearAllValuesForTab(web_contents());
 }
 
 void ExtensionActionRunner::OnExtensionUnloaded(
