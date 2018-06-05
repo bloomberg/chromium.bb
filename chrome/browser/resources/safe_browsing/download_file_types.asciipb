@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 16
+version_id: 17
 sampled_ping_probability: 0.01
 max_archived_binaries_to_report: 10
 default_file_type {
@@ -2205,6 +2205,18 @@ file_types {
   extension: "sht"
   uma_value: 308
   ping_setting: FULL_PING
+}
+file_types {
+  # Symbolic link file. Can be used to pass a script to Excel, etc.
+  # Added in https://crbug.com/845618
+  extension: "slk"
+  uma_value: 309
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
 }
 file_types {
   # System executable. Windows tries hard to prevent you from opening these
