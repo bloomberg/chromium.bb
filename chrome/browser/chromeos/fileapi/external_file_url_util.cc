@@ -44,8 +44,8 @@ GURL FileSystemURLToExternalFileURL(
 base::FilePath ExternalFileURLToVirtualPath(const GURL& url) {
   if (!url.is_valid() || url.scheme() != content::kExternalFileScheme)
     return base::FilePath();
-  const std::string path_string =
-      net::UnescapeURLComponent(url.GetContent(), net::UnescapeRule::NORMAL);
+  const std::string path_string = net::UnescapeURLComponent(
+      url.GetContent(), net::UnescapeRule::NONASCII_SPACES);
   return base::FilePath::FromUTF8Unsafe(path_string);
 }
 
