@@ -7865,29 +7865,32 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
     }
     if (!skip_txfm_sb) {
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
-      InterModeRdModel *md = &inter_mode_rd_models[mbmi->sb_type];
       int64_t est_rd = 0;
       int est_skip = 0;
-      if (md->ready) {
-        const int64_t curr_sse = get_sse(cpi, x);
-        est_rd = get_est_rd(mbmi->sb_type, x->rdmult, curr_sse, rd_stats->rate);
-        est_skip = est_rd * 0.8 > *best_est_rd;
+      if (cpi->sf.inter_mode_rd_model_estimation) {
+        InterModeRdModel *md = &inter_mode_rd_models[mbmi->sb_type];
+        if (md->ready) {
+          const int64_t curr_sse = get_sse(cpi, x);
+          est_rd =
+              get_est_rd(mbmi->sb_type, x->rdmult, curr_sse, rd_stats->rate);
+          est_skip = est_rd * 0.8 > *best_est_rd;
 #if INTER_MODE_RD_TEST
-        if (est_rd < *best_est_rd) {
-          *best_est_rd = est_rd;
-        }
-#else   // INTER_MODE_RD_TEST
-        if (est_skip) {
-          ++md->skip_count;
-          mbmi->ref_frame[1] = ref_frame_1;
-          continue;
-        } else {
           if (est_rd < *best_est_rd) {
             *best_est_rd = est_rd;
           }
-          ++md->non_skip_count;
-        }
+#else   // INTER_MODE_RD_TEST
+          if (est_skip) {
+            ++md->skip_count;
+            mbmi->ref_frame[1] = ref_frame_1;
+            continue;
+          } else {
+            if (est_rd < *best_est_rd) {
+              *best_est_rd = est_rd;
+            }
+            ++md->non_skip_count;
+          }
 #endif  // INTER_MODE_RD_TEST
+        }
       }
 #endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
 
@@ -7976,28 +7979,30 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
       }
       *disable_skip = 0;
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
+      if (cpi->sf.inter_mode_rd_model_estimation) {
 #if INTER_MODE_RD_TEST
-      if (md->ready) {
-        int64_t real_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
-        if (est_skip) {
-          ++md->skip_count;
-          if (real_rd < ref_best_rd) {
-            ++md->fp_skip_count;
+        if (md->ready) {
+          int64_t real_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
+          if (est_skip) {
+            ++md->skip_count;
+            if (real_rd < ref_best_rd) {
+              ++md->fp_skip_count;
+            }
+            // int fp_skip = real_rd < ref_best_rd;
+            // printf("est_skip %d fp_skip %d est_rd %ld best_est_rd %ld real_rd
+            // %ld ref_best_rd %ld\n",
+            //        est_skip, fp_skip, est_rd, *best_est_rd, real_rd,
+            //        ref_best_rd);
+          } else {
+            ++md->non_skip_count;
           }
-          // int fp_skip = real_rd < ref_best_rd;
-          // printf("est_skip %d fp_skip %d est_rd %ld best_est_rd %ld real_rd
-          // %ld ref_best_rd %ld\n",
-          //        est_skip, fp_skip, est_rd, *best_est_rd, real_rd,
-          //        ref_best_rd);
-        } else {
-          ++md->non_skip_count;
         }
-      }
 #endif  // INTER_MODE_RD_TEST
-      inter_mode_data_push(mbmi->sb_type, rd_stats->sse, rd_stats->dist,
-                           rd_stats_y->rate + rd_stats_uv->rate +
-                               x->skip_cost[skip_ctx][mbmi->skip],
-                           rd_stats->rate, ref_best_rd);
+        inter_mode_data_push(mbmi->sb_type, rd_stats->sse, rd_stats->dist,
+                             rd_stats_y->rate + rd_stats_uv->rate +
+                                 x->skip_cost[skip_ctx][mbmi->skip],
+                             rd_stats->rate, ref_best_rd);
+      }
 #endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
       int64_t curr_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
       if (curr_rd < ref_best_rd) {

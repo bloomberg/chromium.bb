@@ -3751,7 +3751,9 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       }
     }
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
-    av1_inter_mode_data_fit(x->rdmult);
+    if (cpi->sf.inter_mode_rd_model_estimation) {
+      av1_inter_mode_data_fit(x->rdmult);
+    }
 #endif
   }
 }
@@ -4498,7 +4500,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
 #if INTER_MODE_RD_TEST
-    av1_inter_mode_data_show(cm);
+    if (cpi->sf.inter_mode_rd_model_estimation) {
+      av1_inter_mode_data_show(cm);
+    }
 #endif
 #endif
 

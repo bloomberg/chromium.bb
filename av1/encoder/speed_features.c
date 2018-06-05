@@ -152,6 +152,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->jnt_comp_skip_mv_search = 1;
   sf->model_based_prune_tx_search_level = 1;
   sf->model_based_post_interp_filter_breakout = 1;
+  sf->inter_mode_rd_model_estimation = 1;
 
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
@@ -170,6 +171,9 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->tx_type_search.ml_tx_split_thresh = 40;
     sf->model_based_prune_tx_search_level = 0;
     sf->model_based_post_interp_filter_breakout = 0;
+    // TODO(angiebird): Re-evaluate the impact of inter_mode_rd_model_estimation
+    // on speed 1
+    sf->inter_mode_rd_model_estimation = 0;
     sf->adaptive_txb_search_level = 2;
     sf->use_intra_txb_hash = 1;
     sf->optimize_b_precheck = 1;
@@ -496,6 +500,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
 
   // Set decoder side speed feature to use less dual sgr modes
   sf->dual_sgr_penalty_level = 0;
+
+  sf->inter_mode_rd_model_estimation = 0;
 
   set_dev_sf(cpi, sf, oxcf->dev_sf);
 

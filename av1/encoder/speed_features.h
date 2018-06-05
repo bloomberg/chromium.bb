@@ -606,6 +606,9 @@ typedef struct SPEED_FEATURES {
   // Takes values 0 - 10, 0 indicating no penalty and each additional level
   // adding a penalty of 1%
   int dual_sgr_penalty_level;
+
+  // Dynamically estimate final rd from prediction error and mode cost
+  int inter_mode_rd_model_estimation;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
