@@ -33,6 +33,13 @@ constexpr int kTextStyle = views::style::STYLE_PRIMARY;
 // code paths.
 constexpr int kInherit = INT_MIN;
 
+// The vertical padding to provide each RenderText in addition to the height
+// of the font. Where possible, RenderText uses this additional space to
+// vertically center the cap height of the font instead of centering the
+// entire font.
+static constexpr int kVerticalPadding = 4;
+static constexpr int kRefreshVerticalPadding = 3;
+
 struct TextStyle {
   OmniboxPart part;
 
@@ -157,7 +164,9 @@ int OmniboxTextView::GetHeightForWidth(int width) const {
   }
   render_text_->SetDisplayRect(gfx::Rect(width, 0));
   gfx::Size string_size = render_text_->GetStringSize();
-  return string_size.height();
+  return string_size.height() + (ui::MaterialDesignController::IsRefreshUi()
+                                     ? kRefreshVerticalPadding
+                                     : kVerticalPadding);
 }
 
 std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateRenderText(
@@ -347,4 +356,7 @@ void OmniboxTextView::UpdateLineHeight() {
                           render_text_->font_list()
                               .DeriveWithWeight(gfx::Font::Weight::BOLD)
                               .GetHeight());
+  font_height_ += ui::MaterialDesignController::IsRefreshUi()
+                      ? kRefreshVerticalPadding
+                      : kVerticalPadding;
 }

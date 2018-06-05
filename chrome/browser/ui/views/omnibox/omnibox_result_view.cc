@@ -52,28 +52,6 @@ std::unique_ptr<views::Background> CreateBackgroundWithColor(SkColor bg_color) {
              : std::make_unique<BackgroundWith1PxBorder>(bg_color, bg_color);
 }
 
-// Returns the horizontal offset that ensures icons align vertically with the
-// Omnibox icon.
-int GetIconAlignmentOffset() {
-  // The horizontal bounds of a result is the width of the selection highlight
-  // (i.e. the views::Background). The traditional popup is designed with its
-  // selection shape mimicking the internal shape of the omnibox border. Inset
-  // to be consistent with the border drawn in BackgroundWith1PxBorder.
-  int offset = LocationBarView::GetBorderThicknessDip();
-
-  // The touch-optimized popup selection always fills the results frame. So to
-  // align icons, inset additionally by the frame alignment inset on the left.
-  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
-    offset += RoundedOmniboxResultsFrame::kLocationBarAlignmentInsets.left();
-  return offset;
-}
-
-// Returns the padding width between elements.
-int HorizontalPadding() {
-  return GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
-         GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -232,9 +210,8 @@ void OmniboxResultView::Layout() {
   int suggestion_width = width();
   AutocompleteMatch* keyword_match = match_.associated_keyword.get();
   if (keyword_match) {
-    const int icon_width = keyword_view_->icon()->width() +
-                           GetIconAlignmentOffset() + (HorizontalPadding() * 2);
-    const int max_kw_x = width() - icon_width;
+    const int max_kw_x =
+        suggestion_width - keyword_view_->IconWidthAndPadding();
     suggestion_width = animation_->CurrentValueBetween(max_kw_x, 0);
   }
   if (suggestion_tab_switch_button_) {

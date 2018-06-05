@@ -26,6 +26,10 @@ class OmniboxMatchCellView : public views::View {
   OmniboxTextView* description() { return description_view_; }
   OmniboxTextView* separator() { return separator_view_; }
 
+  // Used to define the amount the keyword view overlaps with the suggestion
+  // view in non-keyword mode.
+  int IconWidthAndPadding() const;
+
   void OnMatchUpdate(const OmniboxResultView* result_view,
                      const AutocompleteMatch& match);
 
@@ -38,12 +42,9 @@ class OmniboxMatchCellView : public views::View {
   void Layout() override;
   const char* GetClassName() const override;
 
-  // Returns the height of the the description section of answer suggestions.
-  int GetDescriptionHeight() const;
-
   void LayoutOldStyleAnswer();
   void LayoutRichSuggestion();
-  void LayoutSplit();
+  void LayoutSplit(int text_indent);
 
   bool is_old_style_answer_;
   bool is_rich_suggestion_;
