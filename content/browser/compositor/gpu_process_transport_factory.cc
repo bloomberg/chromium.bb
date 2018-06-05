@@ -847,6 +847,17 @@ void GpuProcessTransportFactory::ResizeDisplay(ui::Compositor* compositor,
     data->display->Resize(size);
 }
 
+void GpuProcessTransportFactory::DisableSwapUntilResize(
+    ui::Compositor* compositor) {
+  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  if (it == per_compositor_data_.end())
+    return;
+  PerCompositorData* data = it->second.get();
+  DCHECK(data);
+  if (data->display)
+    data->display->Resize(gfx::Size());
+}
+
 void GpuProcessTransportFactory::SetDisplayColorMatrix(
     ui::Compositor* compositor,
     const SkMatrix44& matrix) {

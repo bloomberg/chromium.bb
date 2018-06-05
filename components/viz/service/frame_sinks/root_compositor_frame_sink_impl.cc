@@ -64,6 +64,16 @@ void RootCompositorFrameSinkImpl::SetDisplayVisible(bool visible) {
   display_->SetVisible(visible);
 }
 
+void RootCompositorFrameSinkImpl::DisableSwapUntilResize(
+    DisableSwapUntilResizeCallback callback) {
+  display_->Resize(gfx::Size());
+  std::move(callback).Run();
+}
+
+void RootCompositorFrameSinkImpl::Resize(const gfx::Size& size) {
+  display_->Resize(size);
+}
+
 void RootCompositorFrameSinkImpl::SetDisplayColorMatrix(
     const gfx::Transform& color_matrix) {
   display_->SetColorMatrix(color_matrix.matrix());
@@ -105,11 +115,8 @@ void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
     CompositorFrame frame,
     base::Optional<HitTestRegionList> hit_test_region_list,
     uint64_t submit_time) {
-  // Update display when size or local surface id changes.
-  if (support_->last_activated_local_surface_id() != local_surface_id) {
-    display_->Resize(frame.size_in_pixels());
+  if (support_->last_activated_local_surface_id() != local_surface_id)
     display_->SetLocalSurfaceId(local_surface_id, frame.device_scale_factor());
-  }
 
   const auto result = support_->MaybeSubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list),
