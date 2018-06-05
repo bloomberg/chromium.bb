@@ -11,6 +11,7 @@
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/selection_bound.h"
 
@@ -50,6 +51,11 @@ class CC_EXPORT RenderFrameMetadata {
   // Selection region relative to the current viewport. If the selection is
   // empty or otherwise unused, the bound types will indicate such.
   viz::Selection<gfx::SelectionBound> selection;
+
+  // The page scale factor used on the content.
+  float page_scale_factor = 1.f;
+
+  gfx::SizeF scrollable_viewport_size;
 
   // Determines whether the page is mobile optimized or not, which means at
   // least one of the following has to be true:

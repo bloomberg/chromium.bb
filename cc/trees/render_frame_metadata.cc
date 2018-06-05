@@ -4,6 +4,8 @@
 
 #include "cc/trees/render_frame_metadata.h"
 
+#include "build/build_config.h"
+
 namespace cc {
 
 RenderFrameMetadata::RenderFrameMetadata() = default;
@@ -22,6 +24,10 @@ bool RenderFrameMetadata::HasAlwaysUpdateMetadataChanged(
   return rfm1.root_background_color != rfm2.root_background_color ||
          rfm1.is_scroll_offset_at_top != rfm2.is_scroll_offset_at_top ||
          rfm1.selection != rfm2.selection ||
+#if defined(OS_ANDROID)
+         rfm1.page_scale_factor != rfm2.page_scale_factor ||
+         rfm1.scrollable_viewport_size != rfm2.scrollable_viewport_size ||
+#endif
          rfm1.is_mobile_optimized != rfm2.is_mobile_optimized ||
          rfm1.device_scale_factor != rfm2.device_scale_factor ||
          rfm1.viewport_size_in_pixels != rfm2.viewport_size_in_pixels ||
@@ -43,6 +49,8 @@ bool RenderFrameMetadata::operator==(const RenderFrameMetadata& other) const {
          root_background_color == other.root_background_color &&
          is_scroll_offset_at_top == other.is_scroll_offset_at_top &&
          selection == other.selection &&
+         page_scale_factor == other.page_scale_factor &&
+         scrollable_viewport_size == other.scrollable_viewport_size &&
          is_mobile_optimized == other.is_mobile_optimized &&
          device_scale_factor == other.device_scale_factor &&
          viewport_size_in_pixels == other.viewport_size_in_pixels &&

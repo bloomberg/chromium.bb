@@ -1902,6 +1902,7 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata() {
   RenderFrameMetadata metadata;
   metadata.root_scroll_offset =
       gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
+  metadata.page_scale_factor = active_tree_->current_page_scale_factor();
   metadata.root_background_color = active_tree_->background_color();
   metadata.is_scroll_offset_at_top = active_tree_->TotalScrollOffset().y() == 0;
   metadata.device_scale_factor = active_tree_->painted_device_scale_factor() *
@@ -1915,6 +1916,8 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata() {
       browser_controls_offset_manager_->BottomControlsHeight();
   metadata.bottom_controls_shown_ratio =
       browser_controls_offset_manager_->BottomControlsShownRatio();
+  metadata.scrollable_viewport_size = active_tree_->ScrollableViewportSize();
+  active_tree_->GetViewportSelection(&metadata.selection);
 
   bool allocate_new_local_surface_id =
       last_draw_render_frame_metadata_ &&
@@ -1925,7 +1928,8 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata() {
        last_draw_render_frame_metadata_->bottom_controls_height !=
            metadata.bottom_controls_height ||
        last_draw_render_frame_metadata_->bottom_controls_shown_ratio !=
-           metadata.bottom_controls_shown_ratio);
+           metadata.bottom_controls_shown_ratio ||
+       last_draw_render_frame_metadata_->selection != metadata.selection);
 
   viz::LocalSurfaceId local_surface_id =
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
@@ -1935,7 +1939,6 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata() {
     metadata.local_surface_id = local_surface_id;
   }
 
-  active_tree_->GetViewportSelection(&metadata.selection);
   metadata.is_mobile_optimized = IsMobileOptimized(active_tree_.get());
 
   return metadata;
