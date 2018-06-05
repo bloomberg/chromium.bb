@@ -14,6 +14,7 @@ import contextlib
 import glob
 import json
 import os
+import re
 
 from chromite.cbuildbot import archive_lib
 from chromite.cli import command
@@ -926,14 +927,14 @@ class ChromeSDKCommand(command.CliCommand):
       gn_args['is_cfi'] = False
     if 'use_cfi_cast' in gn_args:
       gn_args['use_cfi_cast'] = False
-    # We need to remove the flag below from cros_target_extra_ldflags.
+    # We need to remove the flag -Wl,-plugin-opt,-import-instr-limit=$num
+    # from cros_target_extra_ldflags.
     # The format of ld flags is something like
     # '-Wl,-O1 -Wl,-O2 -Wl,--as-needed -stdlib=libc++'
-    extra_thinlto_flag = '-Wl,-plugin-opt,-import-instr-limit=30'
     extra_ldflags = gn_args.get('cros_target_extra_ldflags', '')
-    if extra_thinlto_flag in extra_ldflags:
-      gn_args['cros_target_extra_ldflags'] = extra_ldflags.replace(
-          extra_thinlto_flag, '')
+    gn_args['cros_target_extra_ldflags'] = \
+        re.sub(r'-Wl,-plugin-opt,-import-instr-limit=\d+', '',
+               extra_ldflags)
 
     # We removed webcore debug symbols on release builds on arm.
     # See crbug.com/792999. However, we want to keep the symbols
@@ -1087,8 +1088,8 @@ class ChromeSDKCommand(command.CliCommand):
             if result.returncode:
               raise GomaError('Failed to extract Goma')
             result = cros_build_lib.DebugRunCommand(
-              [os.path.join(goma_dir, 'goma_ctl.py'), 'update'],
-              extra_env={'PLATFORM': 'goobuntu'})
+                [os.path.join(goma_dir, 'goma_ctl.py'), 'update'],
+                extra_env={'PLATFORM': 'goobuntu'})
             if result.returncode:
               raise GomaError('Failed to install Goma')
           ref.SetDefault(goma_dir)
