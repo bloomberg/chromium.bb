@@ -55,7 +55,7 @@ class CORE_EXPORT ModuleScriptLoader final
   ~ModuleScriptLoader();
 
   void Fetch(const ModuleScriptFetchRequest&,
-             SettingsObject* fetch_client_settings_object,
+             const SettingsObject& fetch_client_settings_object,
              ModuleGraphLevel);
 
   // Implements ModuleScriptFetcher::Client.

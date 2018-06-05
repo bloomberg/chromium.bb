@@ -44,11 +44,12 @@ ModulatorImplBase::~ModulatorImplBase() {}
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
 // [fetch-a-module-worker-script-tree]
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
-void ModulatorImplBase::FetchTree(const KURL& url,
-                                  SettingsObject* fetch_client_settings_object,
-                                  WebURLRequest::RequestContext destination,
-                                  const ScriptFetchOptions& options,
-                                  ModuleTreeClient* client) {
+void ModulatorImplBase::FetchTree(
+    const KURL& url,
+    const SettingsObject& fetch_client_settings_object,
+    WebURLRequest::RequestContext destination,
+    const ScriptFetchOptions& options,
+    ModuleTreeClient* client) {
   // <spec label="fetch-a-module-script-tree" step="2">Perform the internal
   // module script graph fetching procedure given url, settings object,
   // destination, options, settings object, visited set, "client", and with the
@@ -79,7 +80,7 @@ void ModulatorImplBase::FetchTree(const KURL& url,
 
 void ModulatorImplBase::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
-    SettingsObject* fetch_client_settings_object,
+    const SettingsObject& fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     ModuleTreeClient* client) {
   tree_linker_registry_->FetchDescendantsForInlineScript(
@@ -88,7 +89,7 @@ void ModulatorImplBase::FetchDescendantsForInlineScript(
 
 void ModulatorImplBase::FetchSingle(
     const ModuleScriptFetchRequest& request,
-    SettingsObject* fetch_client_settings_object,
+    const SettingsObject& fetch_client_settings_object,
     ModuleGraphLevel level,
     SingleModuleClient* client) {
   map_->FetchSingleModuleScript(request, fetch_client_settings_object, level,
@@ -97,7 +98,7 @@ void ModulatorImplBase::FetchSingle(
 
 void ModulatorImplBase::FetchNewSingleModule(
     const ModuleScriptFetchRequest& request,
-    SettingsObject* fetch_client_settings_object,
+    const SettingsObject& fetch_client_settings_object,
     ModuleGraphLevel level,
     ModuleScriptLoaderClient* client) {
   loader_registry_->Fetch(request, fetch_client_settings_object, level, this,

@@ -467,7 +467,7 @@ class ModulePreloadTestModulator final : public DummyModulator {
       : params_(params), fetched_(false) {}
 
   void FetchSingle(const ModuleScriptFetchRequest& request,
-                   SettingsObject* fetch_client_settings_object,
+                   const SettingsObject& fetch_client_settings_object,
                    ModuleGraphLevel,
                    SingleModuleClient*) override {
     fetched_ = true;

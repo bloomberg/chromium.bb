@@ -32,6 +32,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_REFERRER_POLICY_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_REFERRER_POLICY_H_
 
+#include <stdint.h>
+
 namespace blink {
 
 enum ReferrerPolicy : uint8_t {

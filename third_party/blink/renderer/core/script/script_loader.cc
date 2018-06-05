@@ -367,9 +367,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // object's environment settings object.</spec>
   //
   // Note: We use |element_document| as "settings object" in the steps below.
-  SettingsObject* settings_object =
-      SettingsObject::Create(element_document.GetSecurityOrigin(),
-                             element_document.GetReferrerPolicy());
+  SettingsObject settings_object(element_document);
 
   // <spec step="23">If the element has a src content attribute, then:</spec>
   if (element_->HasSourceAttribute()) {
@@ -700,7 +698,7 @@ void ScriptLoader::FetchClassicScript(const KURL& url,
 }
 
 void ScriptLoader::FetchModuleScriptTree(const KURL& url,
-                                         SettingsObject* settings_object,
+                                         const SettingsObject& settings_object,
                                          Modulator* modulator,
                                          const ScriptFetchOptions& options) {
   // <spec

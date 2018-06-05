@@ -37,10 +37,11 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
   const char* NameInHeapSnapshot() const override { return "ModuleMap"; }
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
-  void FetchSingleModuleScript(const ModuleScriptFetchRequest&,
-                               SettingsObject* fetch_client_settings_object,
-                               ModuleGraphLevel,
-                               SingleModuleClient*);
+  void FetchSingleModuleScript(
+      const ModuleScriptFetchRequest&,
+      const SettingsObject& fetch_client_settings_object,
+      ModuleGraphLevel,
+      SingleModuleClient*);
 
   // Synchronously get the ModuleScript for a given URL.
   // If the URL wasn't fetched, or is currently being fetched, this returns a

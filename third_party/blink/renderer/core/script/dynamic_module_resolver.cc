@@ -218,9 +218,7 @@ void DynamicModuleResolver::ResolveDynamically(
   // highly discouraged since it breaks layering. Rewrite this.
   auto* execution_context =
       ExecutionContext::From(modulator_->GetScriptState());
-  auto* settings_object =
-      SettingsObject::Create(execution_context->GetSecurityOrigin(),
-                             execution_context->GetReferrerPolicy());
+  SettingsObject settings_object(*execution_context);
   modulator_->FetchTree(url, settings_object,
                         WebURLRequest::kRequestContextScript, options,
                         tree_client);

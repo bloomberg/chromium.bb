@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
@@ -103,7 +104,7 @@ class ModuleMapTestModulator final : public DummyModulator {
   };
 
   void FetchNewSingleModule(const ModuleScriptFetchRequest&,
-                            SettingsObject*,
+                            const SettingsObject& fetch_client_settings_object,
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
 
@@ -134,7 +135,7 @@ void ModuleMapTestModulator::Trace(blink::Visitor* visitor) {
 
 void ModuleMapTestModulator::FetchNewSingleModule(
     const ModuleScriptFetchRequest& request,
-    SettingsObject*,
+    const SettingsObject& fetch_client_settings_object,
     ModuleGraphLevel,
     ModuleScriptLoaderClient* client) {
   TestRequest* test_request =
@@ -155,7 +156,7 @@ void ModuleMapTestModulator::ResolveFetches() {
   test_requests_.clear();
 }
 
-class ModuleMapTest : public testing::Test {
+class ModuleMapTest : public PageTestBase {
  public:
   void SetUp() override;
 
@@ -168,6 +169,9 @@ class ModuleMapTest : public testing::Test {
 };
 
 void ModuleMapTest::SetUp() {
+  PageTestBase::SetUp(IntSize(500, 500));
+  GetDocument().SetURL(KURL("https://example.com"));
+  GetDocument().SetSecurityOrigin(SecurityOrigin::Create(GetDocument().Url()));
   modulator_ = new ModuleMapTestModulator();
   map_ = ModuleMap::Create(modulator_.Get());
 }
@@ -178,9 +182,7 @@ TEST_F(ModuleMapTest, sequentialRequests) {
   platform->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 
   KURL url(NullURL(), "https://example.com/foo.js");
-  scoped_refptr<SecurityOrigin> security_origin = SecurityOrigin::Create(url);
-  auto* settings_object =
-      SettingsObject::Create(security_origin.get(), kReferrerPolicyDefault);
+  SettingsObject settings_object(GetDocument());
 
   // First request
   TestSingleModuleClient* client = new TestSingleModuleClient;
@@ -224,9 +226,7 @@ TEST_F(ModuleMapTest, concurrentRequestsShouldJoin) {
   platform->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 
   KURL url(NullURL(), "https://example.com/foo.js");
-  scoped_refptr<SecurityOrigin> security_origin = SecurityOrigin::Create(url);
-  auto* settings_object =
-      SettingsObject::Create(security_origin.get(), kReferrerPolicyDefault);
+  SettingsObject settings_object(GetDocument());
 
   // First request
   TestSingleModuleClient* client = new TestSingleModuleClient;

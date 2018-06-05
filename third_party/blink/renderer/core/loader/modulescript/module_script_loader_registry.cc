@@ -14,7 +14,7 @@ void ModuleScriptLoaderRegistry::Trace(blink::Visitor* visitor) {
 
 ModuleScriptLoader* ModuleScriptLoaderRegistry::Fetch(
     const ModuleScriptFetchRequest& request,
-    SettingsObject* fetch_client_settings_object,
+    const SettingsObject& fetch_client_settings_object,
     ModuleGraphLevel level,
     Modulator* modulator,
     ModuleScriptLoaderClient* client) {

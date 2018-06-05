@@ -97,7 +97,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   // Note that |this| is the "module map settings object" used in the "fetch a
   // module worker script graph" algorithm.
   virtual void FetchTree(const KURL&,
-                         SettingsObject* fetch_client_settings_object,
+                         const SettingsObject& fetch_client_settings_object,
                          WebURLRequest::RequestContext destination,
                          const ScriptFetchOptions&,
                          ModuleTreeClient*) = 0;
@@ -107,13 +107,13 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
   // Note that |this| is the "module map settings object".
   virtual void FetchSingle(const ModuleScriptFetchRequest&,
-                           SettingsObject* fetch_client_settings_object,
+                           const SettingsObject& fetch_client_settings_object,
                            ModuleGraphLevel,
                            SingleModuleClient*) = 0;
 
   virtual void FetchDescendantsForInlineScript(
       ModuleScript*,
-      SettingsObject* fetch_client_settings_object,
+      const SettingsObject& fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       ModuleTreeClient*) = 0;
 
@@ -183,7 +183,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   // The client can be notified either synchronously or asynchronously.
   virtual void FetchNewSingleModule(
       const ModuleScriptFetchRequest&,
-      SettingsObject* fetch_client_settings_object,
+      const SettingsObject& fetch_client_settings_object,
       ModuleGraphLevel,
       ModuleScriptLoaderClient*) = 0;
 };

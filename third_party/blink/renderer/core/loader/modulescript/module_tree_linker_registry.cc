@@ -17,7 +17,7 @@ void ModuleTreeLinkerRegistry::Trace(blink::Visitor* visitor) {
 
 ModuleTreeLinker* ModuleTreeLinkerRegistry::Fetch(
     const KURL& url,
-    SettingsObject* fetch_client_settings_object,
+    const SettingsObject& fetch_client_settings_object,
     const KURL& base_url,
     WebURLRequest::RequestContext destination,
     const ScriptFetchOptions& options,
@@ -33,7 +33,7 @@ ModuleTreeLinker* ModuleTreeLinkerRegistry::Fetch(
 
 ModuleTreeLinker* ModuleTreeLinkerRegistry::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
-    SettingsObject* fetch_client_settings_object,
+    const SettingsObject& fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     Modulator* modulator,
     ModuleTreeClient* client) {

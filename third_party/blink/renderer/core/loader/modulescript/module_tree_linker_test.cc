@@ -124,7 +124,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
   ScriptState* GetScriptState() override { return script_state_.get(); }
 
   void FetchSingle(const ModuleScriptFetchRequest& request,
-                   SettingsObject*,
+                   const SettingsObject& fetch_client_settings_object,
                    ModuleGraphLevel,
                    SingleModuleClient* client) override {
     EXPECT_FALSE(pending_clients_.Contains(request.Url()));
@@ -184,10 +184,6 @@ class ModuleTreeLinkerTest : public PageTestBase {
   void SetUp() override;
 
   ModuleTreeLinkerTestModulator* GetModulator() { return modulator_.Get(); }
-  SettingsObject* CreateFetchClientSettingsObject() {
-    return SettingsObject::Create(GetDocument().GetSecurityOrigin(),
-                                  GetDocument().GetReferrerPolicy());
-  }
 
  protected:
   Persistent<ModuleTreeLinkerTestModulator> modulator_;
@@ -205,7 +201,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeNoDeps) {
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(url, CreateFetchClientSettingsObject(), NullURL(),
+  registry->Fetch(url, SettingsObject(GetDocument()), NullURL(),
                   WebURLRequest::kRequestContextScript, ScriptFetchOptions(),
                   GetModulator(), client);
 
@@ -226,7 +222,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeInstantiationFailure) {
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(url, CreateFetchClientSettingsObject(), NullURL(),
+  registry->Fetch(url, SettingsObject(GetDocument()), NullURL(),
                   WebURLRequest::kRequestContextScript, ScriptFetchOptions(),
                   GetModulator(), client);
 
@@ -251,7 +247,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWithSingleDependency) {
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(url, CreateFetchClientSettingsObject(), NullURL(),
+  registry->Fetch(url, SettingsObject(GetDocument()), NullURL(),
                   WebURLRequest::kRequestContextScript, ScriptFetchOptions(),
                   GetModulator(), client);
 
@@ -277,7 +273,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps) {
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(url, CreateFetchClientSettingsObject(), NullURL(),
+  registry->Fetch(url, SettingsObject(GetDocument()), NullURL(),
                   WebURLRequest::kRequestContextScript, ScriptFetchOptions(),
                   GetModulator(), client);
 
@@ -316,7 +312,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps1Fail) {
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(url, CreateFetchClientSettingsObject(), NullURL(),
+  registry->Fetch(url, SettingsObject(GetDocument()), NullURL(),
                   WebURLRequest::kRequestContextScript, ScriptFetchOptions(),
                   GetModulator(), client);
 
@@ -374,7 +370,7 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyTree) {
 
   KURL url("http://example.com/depth1.js");
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(url, CreateFetchClientSettingsObject(), NullURL(),
+  registry->Fetch(url, SettingsObject(GetDocument()), NullURL(),
                   WebURLRequest::kRequestContextScript, ScriptFetchOptions(),
                   GetModulator(), client);
 
@@ -399,7 +395,7 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyOfCyclicGraph) {
 
   KURL url("http://example.com/a.js");
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(url, CreateFetchClientSettingsObject(), NullURL(),
+  registry->Fetch(url, SettingsObject(GetDocument()), NullURL(),
                   WebURLRequest::kRequestContextScript, ScriptFetchOptions(),
                   GetModulator(), client);
 

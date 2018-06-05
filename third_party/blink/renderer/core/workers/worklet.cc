@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/core/workers/worklet_pending_tasks.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
@@ -72,7 +73,7 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
   // parallel."
   // |kInternalLoading| is used here because this is a part of script module
   // loading.
-  ExecutionContext::From(script_state)
+  GetExecutionContext()
       ->GetTaskRunner(TaskType::kInternalLoading)
       ->PostTask(FROM_HERE, WTF::Bind(&Worklet::FetchAndInvokeScript,
                                       WrapPersistent(this), module_url_record,
@@ -119,10 +120,9 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
   DCHECK(result);
 
   // Step 7: "Let outsideSettings be the relevant settings object of this."
-  // In the specification, outsideSettings is used for posting a task to the
-  // document's responsible event loop. In our implementation, we use the
-  // document's UnspecedLoading task runner as that is what we commonly use for
-  // module loading.
+  SettingsObject outside_settings_object(*GetExecutionContext());
+  // Specify TaskType::kInternalLoading because it's commonly used for module
+  // loading.
   scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kInternalLoading);
 
@@ -157,6 +157,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
   // TODO(nhiroki): Queue a task instead of executing this here.
   for (const auto& proxy : proxies_) {
     proxy->FetchAndInvokeScript(module_url_record, credentials_mode,
+                                outside_settings_object,
                                 outside_settings_task_runner, pending_tasks);
   }
 }

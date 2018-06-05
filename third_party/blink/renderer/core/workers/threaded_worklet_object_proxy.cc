@@ -27,14 +27,15 @@ ThreadedWorkletObjectProxy::~ThreadedWorkletObjectProxy() = default;
 void ThreadedWorkletObjectProxy::FetchAndInvokeScript(
     const KURL& module_url_record,
     network::mojom::FetchCredentialsMode credentials_mode,
+    const SettingsObject& outside_settings_object,
     scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks,
     WorkerThread* worker_thread) {
   ThreadedWorkletGlobalScope* global_scope =
       ToThreadedWorkletGlobalScope(worker_thread->GlobalScope());
-  global_scope->FetchAndInvokeScript(module_url_record, credentials_mode,
-                                     std::move(outside_settings_task_runner),
-                                     pending_tasks);
+  global_scope->FetchAndInvokeScript(
+      module_url_record, credentials_mode, outside_settings_object,
+      std::move(outside_settings_task_runner), pending_tasks);
 }
 
 ThreadedWorkletObjectProxy::ThreadedWorkletObjectProxy(

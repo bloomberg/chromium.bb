@@ -76,8 +76,7 @@ void DedicatedWorkerGlobalScope::ImportModuleScript(
   // TODO(nhiroki): Currently we specify inside settings' referrer policy and
   // security origin here. These should be replaced with outside settings'
   // referrer policy and security origin (https://crbug.com/842553).
-  SettingsObject* outside_settings_object =
-      SettingsObject::Create(GetSecurityOrigin(), GetReferrerPolicy());
+  SettingsObject outside_settings_object(*this);
   FetchModuleScript(module_url_record, outside_settings_object, destination,
                     credentials_mode, new WorkerModuleTreeClient(modulator));
 }

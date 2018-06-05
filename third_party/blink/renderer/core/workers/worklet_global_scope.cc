@@ -81,12 +81,10 @@ bool WorkletGlobalScope::IsSecureContext(String& error_message) const {
 void WorkletGlobalScope::FetchAndInvokeScript(
     const KURL& module_url_record,
     network::mojom::FetchCredentialsMode credentials_mode,
+    const SettingsObject& outside_settings_object,
     scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsContextThread());
-
-  SettingsObject* outside_settings_object =
-      SettingsObject::Create(DocumentSecurityOrigin(), GetReferrerPolicy());
 
   // Step 1: "Let insideSettings be the workletGlobalScope's associated
   // environment settings object."
