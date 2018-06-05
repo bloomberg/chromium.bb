@@ -296,6 +296,11 @@ TEST_P(RasterDecoderTest, TexStorage2DInvalid) {
   cmd.Init(client_texture_id_, kWidth, 0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  // Too large: integer overflow on width * height.
+  cmd.Init(client_texture_id_, std::numeric_limits<GLsizei>::max(), 2);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
 }
 
 TEST_P(RasterDecoderTest, ProduceAndConsumeTexture) {
