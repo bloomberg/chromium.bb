@@ -39,6 +39,11 @@ bool IsDiscardedOrPendingDiscard(LifecycleUnitState state) {
          state == LifecycleUnitState::PENDING_DISCARD;
 }
 
+bool IsFrozenOrPendingFreeze(LifecycleUnitState state) {
+  return state == LifecycleUnitState::FROZEN ||
+         state == LifecycleUnitState::PENDING_FREEZE;
+}
+
 }  // namespace
 
 TabLifecycleUnitSource::TabLifecycleUnit::TabLifecycleUnit(
@@ -239,6 +244,10 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanFreeze(
   // Leave the |decision_details| empty and return immediately for "trivial"
   // rejection reasons. These aren't worth reporting about, as they have nothing
   // to do with the content itself.
+
+  // Can't freeze a tab that is already frozen.
+  if (IsFrozenOrPendingFreeze(GetState()))
+    return false;
 
   // Allow a page to load fully before freezing it.
   if (TabLoadTracker::Get()->GetLoadingState(GetWebContents()) !=
@@ -520,8 +529,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::IsFrozen() const {
   // External code does not need to know about the intermediary PENDING_FREEZE
   // state. To external callers, the tab is frozen while in the PENDING_FREEZE
   // state.
-  return GetState() == LifecycleUnitState::FROZEN ||
-         GetState() == LifecycleUnitState::PENDING_FREEZE;
+  return IsFrozenOrPendingFreeze(GetState());
 }
 
 int TabLifecycleUnitSource::TabLifecycleUnit::GetDiscardCount() const {
