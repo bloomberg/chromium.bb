@@ -11,10 +11,10 @@
 
 namespace media {
 namespace {
-// An IDR every 2048 frames, an I frame every 256 and no B frames.
+// An IDR every 2048 frames, no I frames and no B frames.
 // We choose IDR period to equal MaxFrameNum so it must be a power of 2.
 constexpr int kIDRPeriod = 2048;
-constexpr int kIPeriod = 256;
+constexpr int kIPeriod = 0;
 constexpr int kIPPeriod = 1;
 
 constexpr int kDefaultQP = 26;
@@ -142,11 +142,12 @@ bool H264Encoder::PrepareEncodeJob(EncodeJob* encode_job) {
     encode_job->ProduceKeyframe();
   }
 
-  if (pic->frame_num % curr_params_.i_period_frames == 0)
+  if (pic->idr || (curr_params_.i_period_frames != 0 &&
+                   pic->frame_num % curr_params_.i_period_frames == 0)) {
     pic->type = H264SliceHeader::kISlice;
-  else
+  } else {
     pic->type = H264SliceHeader::kPSlice;
-
+  }
   if (curr_params_.ip_period_frames != 1) {
     NOTIMPLEMENTED() << "B frames not implemented";
     return false;
