@@ -36,17 +36,19 @@ bool ReadFileContents(int fd, char contents[kMaxLineSize]) {
 bool CalculateProcessMemoryFootprint(int statm_fd,
                                      int status_fd,
                                      uint64_t* private_footprint,
-                                     uint64_t* swap_footprint) {
+                                     uint64_t* swap_footprint,
+                                     uint64_t* vm_size) {
   // Get total resident and shared sizes from statm file.
   static size_t page_size = getpagesize();
   uint64_t resident_pages;
   uint64_t shared_pages;
+  uint64_t vm_size_pages;
   char line[kMaxLineSize];
   if (!ReadFileContents(statm_fd, line))
     return false;
-  int num_scanned =
-      sscanf(line, "%*s %" SCNu64 " %" SCNu64, &resident_pages, &shared_pages);
-  if (num_scanned != 2)
+  int num_scanned = sscanf(line, "%" SCNu64 " %" SCNu64 " %" SCNu64,
+                           &vm_size_pages, &resident_pages, &shared_pages);
+  if (num_scanned != 3)
     return false;
 
   // Get swap size from status file. The format is: VmSwap :  10 kB.
@@ -62,6 +64,7 @@ bool CalculateProcessMemoryFootprint(int statm_fd,
   *swap_footprint *= 1024;
   *private_footprint =
       (resident_pages - shared_pages) * page_size + *swap_footprint;
+  *vm_size = vm_size_pages * page_size;
   return true;
 }
 
@@ -143,11 +146,12 @@ void OomInterventionImpl::StartDetection(
 OomInterventionMetrics OomInterventionImpl::GetCurrentMemoryMetrics() {
   OomInterventionMetrics metrics = {};
   metrics.current_blink_usage_kb = BlinkMemoryWorkloadCaculator();
-  uint64_t private_footprint, swap;
+  uint64_t private_footprint, swap, vm_size;
   if (CalculateProcessMemoryFootprint(statm_fd_.get(), status_fd_.get(),
-                                      &private_footprint, &swap)) {
+                                      &private_footprint, &swap, &vm_size)) {
     metrics.current_private_footprint_kb = private_footprint / 1024;
     metrics.current_swap_kb = swap / 1024;
+    metrics.current_vm_size_kb = vm_size / 1024;
   }
   return metrics;
 }
@@ -169,6 +173,9 @@ void OomInterventionImpl::Check(TimerBase*) {
   oom_detected |=
       detection_args_->swap_threshold > 0 &&
       current_memory.current_swap_kb * 1024 > detection_args_->swap_threshold;
+  oom_detected |= detection_args_->virtual_memory_thresold > 0 &&
+                  current_memory.current_vm_size_kb * 1024 >
+                      detection_args_->virtual_memory_thresold;
 
   if (oom_detected) {
     host_->OnHighMemoryUsage(trigger_intervention_);

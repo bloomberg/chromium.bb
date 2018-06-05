@@ -26,6 +26,7 @@ namespace {
 const uint64_t kTestBlinkThreshold = 80 * 1024;
 const uint64_t kTestPMFThreshold = 160 * 1024;
 const uint64_t kTestSwapThreshold = 500 * 1024;
+const uint64_t kTestVmSizeThreshold = 1024 * 1024;
 
 class MockOomInterventionHost : public mojom::blink::OomInterventionHost {
  public:
@@ -84,6 +85,7 @@ class OomInterventionImplTest : public testing::Test {
     args->blink_workload_threshold = kTestBlinkThreshold;
     args->private_footprint_threshold = kTestPMFThreshold;
     args->swap_threshold = kTestSwapThreshold;
+    args->virtual_memory_thresold = kTestVmSizeThreshold;
 
     intervention_->StartDetection(std::move(host_ptr), std::move(shm),
                                   std::move(args),
@@ -103,6 +105,7 @@ TEST_F(OomInterventionImplTest, NoDetectionOnBelowThreshold) {
   mock_metrics.current_blink_usage_kb = (kTestBlinkThreshold / 1024) - 1;
   mock_metrics.current_private_footprint_kb = (kTestPMFThreshold / 1024) - 1;
   mock_metrics.current_swap_kb = (kTestSwapThreshold / 1024) - 1;
+  mock_metrics.current_vm_size_kb = (kTestVmSizeThreshold / 1024) - 1;
   intervention_->SetMetrics(mock_metrics);
 
   Page* page = DetectOnceOnBlankPage();
@@ -116,6 +119,7 @@ TEST_F(OomInterventionImplTest, BlinkThresholdDetection) {
   mock_metrics.current_blink_usage_kb = (kTestBlinkThreshold / 1024) + 1;
   mock_metrics.current_private_footprint_kb = (kTestPMFThreshold / 1024) - 1;
   mock_metrics.current_swap_kb = (kTestSwapThreshold / 1024) - 1;
+  mock_metrics.current_vm_size_kb = (kTestVmSizeThreshold / 1024) - 1;
   intervention_->SetMetrics(mock_metrics);
 
   Page* page = DetectOnceOnBlankPage();
@@ -128,9 +132,10 @@ TEST_F(OomInterventionImplTest, BlinkThresholdDetection) {
 TEST_F(OomInterventionImplTest, PmfThresholdDetection) {
   OomInterventionMetrics mock_metrics = {};
   mock_metrics.current_blink_usage_kb = (kTestBlinkThreshold / 1024) - 1;
-  // Set value more than the threshold to not trigger intervention.
+  // Set value more than the threshold to trigger intervention.
   mock_metrics.current_private_footprint_kb = (kTestPMFThreshold / 1024) + 1;
   mock_metrics.current_swap_kb = (kTestSwapThreshold / 1024) - 1;
+  mock_metrics.current_vm_size_kb = (kTestVmSizeThreshold / 1024) - 1;
   intervention_->SetMetrics(mock_metrics);
 
   Page* page = DetectOnceOnBlankPage();
@@ -144,8 +149,9 @@ TEST_F(OomInterventionImplTest, SwapThresholdDetection) {
   OomInterventionMetrics mock_metrics = {};
   mock_metrics.current_blink_usage_kb = (kTestBlinkThreshold / 1024) - 1;
   mock_metrics.current_private_footprint_kb = (kTestPMFThreshold / 1024) - 1;
-  // Set value more than the threshold to not trigger intervention.
+  // Set value more than the threshold to trigger intervention.
   mock_metrics.current_swap_kb = (kTestSwapThreshold / 1024) + 1;
+  mock_metrics.current_vm_size_kb = (kTestVmSizeThreshold / 1024) - 1;
   intervention_->SetMetrics(mock_metrics);
 
   Page* page = DetectOnceOnBlankPage();
@@ -155,10 +161,31 @@ TEST_F(OomInterventionImplTest, SwapThresholdDetection) {
   EXPECT_FALSE(page->Paused());
 }
 
-TEST_F(OomInterventionImplTest, CalculatePMFAndSwap) {
-  const char kStatmFile[] = "100 40 25 0 0";
+TEST_F(OomInterventionImplTest, VmSizeThresholdDetection) {
+  OomInterventionMetrics mock_metrics = {};
+  mock_metrics.current_blink_usage_kb = (kTestBlinkThreshold / 1024) - 1;
+  mock_metrics.current_private_footprint_kb = (kTestPMFThreshold / 1024) - 1;
+  mock_metrics.current_swap_kb = (kTestSwapThreshold / 1024) - 1;
+  // Set value more than the threshold to trigger intervention.
+  mock_metrics.current_vm_size_kb = (kTestVmSizeThreshold / 1024) + 1;
+  intervention_->SetMetrics(mock_metrics);
+
+  Page* page = DetectOnceOnBlankPage();
+
+  EXPECT_TRUE(page->Paused());
+  intervention_.reset();
+  EXPECT_FALSE(page->Paused());
+}
+
+TEST_F(OomInterventionImplTest, CalculateProcessFootprint) {
   const char kStatusFile[] =
       "First:  1\n Second: 2 kB\nVmSwap: 10 kB \n Third: 10 kB\n Last: 8";
+  const char kStatmFile[] = "100 40 25 0 0";
+  uint64_t expected_swap_kb = 10;
+  uint64_t expected_private_footprint_kb =
+      (40 - 25) * getpagesize() / 1024 + expected_swap_kb;
+  uint64_t expected_vm_size_kb = 100 * getpagesize() / 1024;
+
   base::FilePath statm_path;
   EXPECT_TRUE(base::CreateTemporaryFile(&statm_path));
   EXPECT_EQ(static_cast<int>(sizeof(kStatmFile)),
@@ -187,10 +214,10 @@ TEST_F(OomInterventionImplTest, CalculatePMFAndSwap) {
   intervention_->Check(nullptr);
   OomInterventionMetrics* metrics = static_cast<OomInterventionMetrics*>(
       intervention_->shared_metrics_buffer_.memory());
-  uint64_t swap_kb = 10;
-  uint64_t private_footprint_kb = (40 - 25) * getpagesize() / 1024 + swap_kb;
-  EXPECT_EQ(private_footprint_kb, metrics->current_private_footprint_kb);
-  EXPECT_EQ(swap_kb, metrics->current_swap_kb);
+  EXPECT_EQ(expected_private_footprint_kb,
+            metrics->current_private_footprint_kb);
+  EXPECT_EQ(expected_swap_kb, metrics->current_swap_kb);
+  EXPECT_EQ(expected_vm_size_kb, metrics->current_vm_size_kb);
 }
 
 }  // namespace blink

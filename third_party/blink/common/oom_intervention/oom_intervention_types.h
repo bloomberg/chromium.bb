@@ -14,6 +14,7 @@ namespace blink {
 struct OomInterventionMetrics {
   uint64_t current_private_footprint_kb;
   uint64_t current_swap_kb;
+  uint64_t current_vm_size_kb;
 
   // Stores the total of V8, BlinkGC and PartitionAlloc memory usage.
   uint64_t current_blink_usage_kb;

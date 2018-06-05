@@ -238,6 +238,9 @@ void OomInterventionTabHelper::OnCrashDumpProcessed(
   UMA_HISTOGRAM_MEMORY_MB(
       "Memory.Experimental.OomIntervention.RendererBlinkUsageAtOOM",
       metrics->current_blink_usage_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_MB(
+      "Memory.Experimental.OomIntervention.RendererVmSizeAtOOM",
+      metrics->current_vm_size_kb / 1024);
 
   if (decider_) {
     DCHECK(!web_contents()->GetBrowserContext()->IsOffTheRecord());
