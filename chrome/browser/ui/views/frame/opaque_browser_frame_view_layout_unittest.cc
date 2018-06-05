@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/browser/profile_management_switches.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/text_constants.h"
@@ -261,24 +262,38 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
                                    OBFVL::GetNonClientRestoredExtraThickness();
       EXPECT_LE(tabstrip_bounds.y(), tabstrip_nonexcluded_y);
     }
-    int caption_width = (caption_buttons_on_left || !show_caption_buttons) ?
-        0 : caption_buttons_width;
-    int maximized_spacing = (show_caption_buttons && !caption_buttons_on_left) ?
-        (OBFVL::kNewTabCaptionCondensedSpacing + kMaximizedExtraCloseWidth) :
-        OBFVL::kCaptionSpacing;
-    int restored_spacing = OBFVL::kCaptionSpacing +
+    const bool showing_caption_buttons_on_right =
+        show_caption_buttons && !caption_buttons_on_left;
+    const int caption_width =
+        showing_caption_buttons_on_right ? caption_buttons_width : 0;
+    int maximized_spacing =
+        showing_caption_buttons_on_right ? kMaximizedExtraCloseWidth : 0;
+    int restored_spacing =
         (caption_buttons_on_left ? kNonClientBorderThickness
                                  : OBFVL::kFrameBorderThickness);
+    using MD = ui::MaterialDesignController;
+    if (!MD::IsRefreshUi()) {
+      maximized_spacing += showing_caption_buttons_on_right
+                               ? OBFVL::kNewTabCaptionCondensedSpacing
+                               : OBFVL::kCaptionSpacing;
+      restored_spacing += OBFVL::kCaptionSpacing;
+    }
     int spacing = maximized ? maximized_spacing : restored_spacing;
-    int tabstrip_width = kWindowWidth - tabstrip_x - caption_width - spacing;
+    const int tabstrip_width =
+        kWindowWidth - tabstrip_x - caption_width - spacing;
     EXPECT_EQ(tabstrip_width, tabstrip_bounds.width());
     EXPECT_EQ(tabstrip_min_size.height(), tabstrip_bounds.height());
-    maximized_spacing = (show_caption_buttons && !caption_buttons_on_left) ?
-        OBFVL::kNewTabCaptionCondensedSpacing : OBFVL::kCaptionSpacing;
-    restored_spacing = 2 * kNonClientBorderThickness + OBFVL::kCaptionSpacing;
+    maximized_spacing = 0;
+    restored_spacing = 2 * kNonClientBorderThickness;
+    if (!MD::IsRefreshUi()) {
+      maximized_spacing += showing_caption_buttons_on_right
+                               ? OBFVL::kNewTabCaptionCondensedSpacing
+                               : OBFVL::kCaptionSpacing;
+      restored_spacing += OBFVL::kCaptionSpacing;
+    }
     spacing = maximized ? maximized_spacing : restored_spacing;
     gfx::Size browser_view_min_size(delegate_->GetBrowserViewMinimumSize());
-    int min_width =
+    const int min_width =
         browser_view_min_size.width() + tabstrip_min_size.width() + spacing;
     gfx::Size min_size(layout_manager_->GetMinimumSize(kWindowWidth));
     EXPECT_EQ(min_width, min_size.width());
