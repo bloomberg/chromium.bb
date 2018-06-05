@@ -32,6 +32,9 @@ class NtpBackgroundService : public KeyedService {
       const base::Optional<GURL>& collection_images_api_url_override);
   ~NtpBackgroundService() override;
 
+  // KeyedService implementation.
+  void Shutdown() override;
+
   // Requests an asynchronous fetch from the network. After the update
   // completes, OnCollectionInfoAvailable will be called on the observers.
   void FetchCollectionInfo();
