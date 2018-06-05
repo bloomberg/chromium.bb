@@ -22641,15 +22641,15 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="GPUProcessLifetimeEvent">
   <summary>
     Lifetime events of the GPU Process, as defined in
-    chrome/browser/gpu_process_host.cc. DiedFourth should never happen as it is
-    beyond the threshold number of launches enforced in
-    chrome/browser/gpu_process_host.cc.
+    content/browser/gpu/gpu_process_host.cc.
   </summary>
   <int value="0" label="Launched"/>
-  <int value="1" label="DiedFirst"/>
-  <int value="2" label="DiedSecond"/>
-  <int value="3" label="DiedThird"/>
-  <int value="4" label="DiedFourth"/>
+  <int value="1" label="Died first time"/>
+  <int value="2" label="Died second time"/>
+  <int value="3" label="Died third time"/>
+  <int value="4" label="Died fourth time"/>
+  <int value="5" label="Died fifth time"/>
+  <int value="6" label="Died sixth time"/>
 </enum>
 
 <enum name="GPUProcessType">
