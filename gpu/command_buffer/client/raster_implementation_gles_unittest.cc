@@ -543,9 +543,9 @@ TEST_F(RasterImplementationGLESTest, TexStorage2D) {
   const GLsizei kHeight = 8;
   const int kNumTestFormats = 11;
   viz::ResourceFormat test_formats[kNumTestFormats] = {
-      viz::RGBA_8888,     viz::RGBA_4444, viz::BGRA_8888, viz::ALPHA_8,
-      viz::LUMINANCE_8,   viz::RGB_565,   viz::ETC1,      viz::RED_8,
-      viz::LUMINANCE_F16, viz::RGBA_F16,  viz::R16_EXT};
+      viz::RGBA_8888,   viz::RGBA_4444, viz::BGRA_8888, viz::ALPHA_8,
+      viz::LUMINANCE_8, viz::RGB_565,   viz::RED_8,     viz::LUMINANCE_F16,
+      viz::RGBA_F16,    viz::R16_EXT};
 
   for (int i = 0; i < kNumTestFormats; i++) {
     const GLuint kTextureId = 23 + i;
