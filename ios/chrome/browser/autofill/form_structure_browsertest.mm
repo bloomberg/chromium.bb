@@ -124,12 +124,19 @@ class FormStructureBrowserTest
 
 FormStructureBrowserTest::FormStructureBrowserTest()
     : ChromeWebTest(std::make_unique<ChromeWebClient>()),
-      DataDrivenTest(GetTestDataDir()) {}
+      DataDrivenTest(GetTestDataDir()) {
+  feature_list_.InitWithFeatures(
+      // Enabled
+      {},
+      // Disabled
+      {autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics,
+       autofill::features::kAutofillEnforceMinRequiredFieldsForQuery,
+       autofill::features::kAutofillEnforceMinRequiredFieldsForUpload,
+       autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
+}
 
 void FormStructureBrowserTest::SetUp() {
   ChromeWebTest::SetUp();
-  feature_list_.InitAndDisableFeature(
-      autofill::features::kAutofillEnforceMinRequiredFieldsForUpload);
 
   InfoBarManagerImpl::CreateForWebState(web_state());
   AutofillAgent* autofillAgent = [[AutofillAgent alloc]

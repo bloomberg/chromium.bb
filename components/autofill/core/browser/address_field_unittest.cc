@@ -333,23 +333,6 @@ TEST_F(AddressFieldTest, ParseSearchTermSecond) {
             field_candidates_map_[ASCIIToUTF16("search1")].BestHeuristicType());
 }
 
-// For fields that are identified and not detected, (practically expanded
-// version of UNKNOWN fields,) we would not detect them if they are isolated.
-TEST_F(AddressFieldTest, ParseSearchTermIsolated) {
-  FormFieldData search_field;
-  search_field.form_control_type = "text";
-
-  search_field.label = ASCIIToUTF16("Search");
-  search_field.name = ASCIIToUTF16("search");
-
-  list_.push_back(
-      std::make_unique<AutofillField>(search_field, ASCIIToUTF16("search1")));
-
-  AutofillScanner scanner(list_);
-  field_ = Parse(&scanner);
-  ASSERT_EQ(nullptr, field_.get());
-}
-
 // For a "search xx" phrase, xx has priority to search, if xx is a valid
 // fillable type.
 TEST_F(AddressFieldTest, ParseNonSearchTermWithSearch) {
