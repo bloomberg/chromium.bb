@@ -43,10 +43,6 @@ class OfflinePageRequestInfo : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(OfflinePageRequestInfo);
 };
 
-bool GetTabId(content::WebContents* web_contents, int* tab_id) {
-  return OfflinePageUtils::GetTabId(web_contents, tab_id);
-}
-
 }  // namespace
 
 // static
@@ -228,7 +224,7 @@ OfflinePageRequestHandler::Delegate::TabIdGetter
 OfflinePageRequestJob::GetTabIdGetter() const {
   if (!tab_id_getter_.is_null())
     return tab_id_getter_;
-  return base::Bind(&GetTabId);
+  return base::Bind(&OfflinePageUtils::GetTabId);
 }
 
 }  // namespace offline_pages
