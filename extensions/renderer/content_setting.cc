@@ -9,6 +9,7 @@
 #include "content/public/common/console_message_level.h"
 #include "extensions/renderer/bindings/api_binding_types.h"
 #include "extensions/renderer/bindings/api_binding_util.h"
+#include "extensions/renderer/bindings/api_invocation_errors.h"
 #include "extensions/renderer/bindings/api_request_handler.h"
 #include "extensions/renderer/bindings/api_signature.h"
 #include "extensions/renderer/bindings/api_type_reference_map.h"
@@ -147,10 +148,12 @@ void ContentSetting::HandleFunction(const std::string& method_name,
   std::unique_ptr<base::ListValue> converted_arguments;
   v8::Local<v8::Function> callback;
   std::string error;
-  if (!type_refs_->GetTypeMethodSignature(full_name)->ParseArgumentsToJSON(
-          context, argument_list, *type_refs_, &converted_arguments, &callback,
-          &error)) {
-    arguments->ThrowTypeError("Invalid invocation: " + error);
+  const APISignature* signature = type_refs_->GetTypeMethodSignature(full_name);
+  if (!signature->ParseArgumentsToJSON(context, argument_list, *type_refs_,
+                                       &converted_arguments, &callback,
+                                       &error)) {
+    arguments->ThrowTypeError(api_errors::InvocationError(
+        full_name, signature->GetExpectedSignature(), error));
     return;
   }
 
