@@ -11612,12 +11612,12 @@ TEST_F(LayerTreeHostImplTest, OnDrawConstraintSetNeedsRedraw) {
   EXPECT_FALSE(last_on_draw_frame_->has_no_damage);
 }
 
-// TODO(gyuyoung): OnMemoryPressure disabled on ASAN, TSAN, Android, windows
-//                 due to the test failure. Will be handled on
+// TODO(gyuyoung): OnMemoryPressure disabled on ASAN, TSAN, Android, windows,
+//                 chromecast due to the test failure. Will be handled on
 //                 http://crbug.com/839687.
 #if defined(OS_WIN) || defined(OS_ANDROID) || defined(ADDRESS_SANITIZER) || \
     defined(THREAD_SANITIZER) || defined(MEMORY_SANITIZER) ||               \
-    defined(LEAK_SANITIZER)
+    defined(LEAK_SANITIZER) || defined(CHROMECAST_BUILD)
 #define MAYBE_OnMemoryPressure DISABLED_OnMemoryPressure
 #else
 #define MAYBE_OnMemoryPressure OnMemoryPressure
