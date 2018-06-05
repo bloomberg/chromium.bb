@@ -6,10 +6,12 @@
 
 #include <algorithm>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
+#include "components/safe_browsing/features.h"
 
 namespace safe_browsing {
 namespace download_protection_util {
@@ -30,7 +32,8 @@ ClientDownloadRequest::DownloadType GetDownloadType(
     // placeholder. The correct DownloadType will be determined based on the
     // result of analyzing the ZIP file.
     return ClientDownloadRequest::ZIPPED_EXECUTABLE;
-  else if (file.MatchesExtension(FILE_PATH_LITERAL(".rar")))
+  else if (base::FeatureList::IsEnabled(kInspectDownloadedRarFiles) &&
+           file.MatchesExtension(FILE_PATH_LITERAL(".rar")))
     // See the comment for .zip files.
     return ClientDownloadRequest::RAR_COMPRESSED_EXECUTABLE;
   else if (file.MatchesExtension(FILE_PATH_LITERAL(".dmg")) ||

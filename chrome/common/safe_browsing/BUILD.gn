@@ -106,6 +106,7 @@ source_set("safe_browsing") {
     deps += [
       ":archive_analyzer_results",
       ":rar_analyzer",
+      "//components/safe_browsing:features",
     ]
 
     public_deps = [
