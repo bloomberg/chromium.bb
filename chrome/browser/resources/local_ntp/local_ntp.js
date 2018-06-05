@@ -75,9 +75,6 @@ var CLASSES = {
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
   FADE: 'fade',  // Enables opacity transition on logo and doodle.
   FAKEBOX_FOCUS: 'fakebox-focused',  // Applies focus styles to the fakebox
-  MATERIAL_DESIGN: 'md',  // Applies Material Design styles to the page
-  MATERIAL_DESIGN_ICONS:
-      'md-icons',  // Applies Material Design styles to Most Visited.
   // Applies float animations to the Most Visited notification
   FLOAT_UP: 'float-up',
   // Applies ripple animation to the element on click
@@ -90,6 +87,9 @@ var CLASSES = {
   HIDE_NOTIFICATION: 'mv-notice-hide',
   INITED: 'inited',  // Reveals the <body> once init() is done.
   LEFT_ALIGN_ATTRIBUTION: 'left-align-attribution',
+  MATERIAL_DESIGN: 'md',  // Applies Material Design styles to the page
+  MATERIAL_DESIGN_ICONS:
+      'md-icons',  // Applies Material Design styles to Most Visited.
   // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
   NON_WHITE_BG: 'non-white-bg',
@@ -126,7 +126,7 @@ var IDS = {
   RESTORE_ALL_LINK: 'mv-restore',
   TILES: 'mv-tiles',
   TILES_IFRAME: 'mv-single',
-  UNDO_LINK: 'mv-undo'
+  UNDO_LINK: 'mv-undo',
 };
 
 
@@ -302,9 +302,9 @@ function renderTheme() {
   setCustomThemeStyle(info);
 
   if (configData.isGooglePage) {
-    $('edit-background').hidden =
+    $('edit-bg').hidden =
         !configData.isCustomBackgroundsEnabled || !info.usingDefaultTheme;
-    $('edit-background').onclick = function(event) {
+    $('edit-bg').onclick = function(event) {
       var collElement = $('ntp-collection-loader');
       if (collElement) {
         collElement.parentNode.removeChild(collElement);
@@ -317,6 +317,8 @@ function renderTheme() {
           'chrome-search://local-ntp/ntp-background-collections.js';
       document.body.appendChild(collScript);
     };
+    if (configData.isCustomBackgroundsEnabled && info.usingDefaultTheme)
+      customBackgrounds.initBackgroundOptionDialog();
   }
 }
 
@@ -763,7 +765,6 @@ function addRippleAnimations() {
     rippleElements[i].addEventListener('mousedown', ripple);
   }
 }
-
 
 /**
  * Prepares the New Tab Page by adding listeners, the most visited pages

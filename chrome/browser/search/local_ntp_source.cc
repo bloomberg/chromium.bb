@@ -89,10 +89,14 @@ const struct Resource{
     {kMainHtmlFilename, kLocalResource, "text/html"},
     {"local-ntp.js", IDR_LOCAL_NTP_JS, "application/javascript"},
     {"voice.js", IDR_LOCAL_NTP_VOICE_JS, "application/javascript"},
+    {"custom-backgrounds.js", IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_JS,
+     "application/javascript"},
     {kConfigDataFilename, kLocalResource, "application/javascript"},
     {kThemeCSSFilename, kLocalResource, "text/css"},
     {"local-ntp.css", IDR_LOCAL_NTP_CSS, "text/css"},
     {"voice.css", IDR_LOCAL_NTP_VOICE_CSS, "text/css"},
+    {"custom-backgrounds.css", IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_CSS,
+     "text/css"},
     {"images/close_3_mask.png", IDR_CLOSE_3_MASK, "image/png"},
     {"images/ntp_default_favicon.png", IDR_NTP_DEFAULT_FAVICON, "image/png"},
     {kNtpBackgroundCollectionScriptFilename, kLocalResource, "text/javascript"},
@@ -136,6 +140,22 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
     AddString(translated_strings.get(), "searchboxPlaceholder",
               features::IsMDUIEnabled() ? IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD
                                         : IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT);
+    AddString(translated_strings.get(), "customizeBackground",
+              IDS_NTP_CUSTOM_BG_CUSTOMIZE_BACKGROUND);
+    AddString(translated_strings.get(), "connectGooglePhotos",
+              IDS_NTP_CUSTOM_BG_GOOGLE_PHOTOS);
+    AddString(translated_strings.get(), "defaultWallpapers",
+              IDS_NTP_CUSTOM_BG_CHROME_WALLPAPERS);
+    AddString(translated_strings.get(), "uploadImage",
+              IDS_NTP_CUSTOM_BG_UPLOAD_AN_IMAGE);
+    AddString(translated_strings.get(), "restoreDefaultBackground",
+              IDS_NTP_CUSTOM_BG_RESTORE_DEFAULT);
+    AddString(translated_strings.get(), "selectChromeWallpaper",
+              IDS_NTP_CUSTOM_BG_SELECT_A_COLLECTION);
+    AddString(translated_strings.get(), "dailyRefresh",
+              IDS_NTP_CUSTOM_BG_DAILY_REFRESH);
+    AddString(translated_strings.get(), "selectionDone",
+              IDS_NTP_CUSTOM_LINKS_DONE);
 
     // Voice Search
     AddString(translated_strings.get(), "audioError",
@@ -239,6 +259,7 @@ base::Value ConvertCollectionImageToDict(
   for (const CollectionImage& image : collection_image) {
     base::Value dict(base::Value::Type::DICTIONARY);
     dict.SetKey("imageUrl", base::Value(image.image_url.spec()));
+    dict.SetKey("collectionId", base::Value(image.collection_id));
     base::Value attributions(base::Value::Type::LIST);
     for (const auto& attribution : image.attribution) {
       attributions.GetList().push_back(base::Value(attribution));
@@ -356,8 +377,9 @@ std::string GetContentSecurityPolicyScriptSrcIOThread() {
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 
   return base::StringPrintf(
-      "script-src 'strict-dynamic' 'sha256-%s' 'sha256-%s';",
-      LOCAL_NTP_JS_INTEGRITY, VOICE_JS_INTEGRITY);
+      "script-src 'strict-dynamic' 'sha256-%s' 'sha256-%s' 'sha256-%s';",
+      LOCAL_NTP_JS_INTEGRITY, VOICE_JS_INTEGRITY,
+      CUSTOM_BACKGROUNDS_JS_INTEGRITY);
 }
 
 std::string GetContentSecurityPolicyChildSrcIOThread() {
@@ -665,6 +687,12 @@ void LocalNtpSource::StartDataRequest(
         base::StringPrintf(kIntegrityFormat, VOICE_JS_INTEGRITY);
     base::ReplaceFirstSubstringAfterOffset(
         &html, 0, "{{LOCAL_NTP_VOICE_INTEGRITY}}", local_ntp_voice_integrity);
+
+    std::string local_ntp_custom_bg_integrity =
+        base::StringPrintf(kIntegrityFormat, CUSTOM_BACKGROUNDS_JS_INTEGRITY);
+    base::ReplaceFirstSubstringAfterOffset(&html, 0,
+                                           "{{LOCAL_NTP_CUSTOM_BG_INTEGRITY}}",
+                                           local_ntp_custom_bg_integrity);
     callback.Run(base::RefCountedString::TakeString(&html));
     return;
   }
