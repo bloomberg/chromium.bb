@@ -20,6 +20,10 @@ class CommandLine;
 class SequencedTaskRunner;
 }
 
+namespace network {
+class WeakWrapperSharedURLLoaderFactory;
+}
+
 class ApplicationContextImpl : public ApplicationContext {
  public:
   ApplicationContextImpl(base::SequencedTaskRunner* local_state_task_runner,
@@ -92,7 +96,8 @@ class ApplicationContextImpl : public ApplicationContext {
 
   network::mojom::NetworkContextPtr network_context_;
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
-  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      shared_url_loader_factory_;
 
   // Created on the UI thread, destroyed on the IO thread.
   std::unique_ptr<web::NetworkContextOwner> network_context_owner_;

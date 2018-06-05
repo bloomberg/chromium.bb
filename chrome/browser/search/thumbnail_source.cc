@@ -11,8 +11,8 @@
 #include "chrome/browser/thumbnails/thumbnail_service.h"
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
 // The delimiter between the first url and the fallback url passed to
@@ -23,7 +23,9 @@ const char kUrlDelimiter[] = "?fb=";
 ThumbnailSource::ThumbnailSource(Profile* profile, bool capture_thumbnails)
     : thumbnail_service_(ThumbnailServiceFactory::GetForProfile(profile)),
       capture_thumbnails_(capture_thumbnails),
-      image_data_fetcher_(profile->GetRequestContext()),
+      image_data_fetcher_(
+          content::BrowserContext::GetDefaultStoragePartition(profile)
+              ->GetURLLoaderFactoryForBrowserProcess()),
       weak_ptr_factory_(this) {}
 
 ThumbnailSource::~ThumbnailSource() = default;

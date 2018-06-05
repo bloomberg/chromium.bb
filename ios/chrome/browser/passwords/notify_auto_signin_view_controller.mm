@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
@@ -79,13 +80,15 @@ const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 
 - (instancetype)initWithUsername:(NSString*)username
                          iconURL:(GURL)iconURL
-                   contextGetter:(net::URLRequestContextGetter*)contextGetter {
+                URLLoaderFactory:
+                    (scoped_refptr<network::SharedURLLoaderFactory>)
+                        URLLoaderFactory {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _username = username;
     _iconURL = iconURL;
     _imageFetcher = std::make_unique<image_fetcher::ImageFetcherImpl>(
-        image_fetcher::CreateIOSImageDecoder(), contextGetter);
+        image_fetcher::CreateIOSImageDecoder(), URLLoaderFactory);
   }
   return self;
 }

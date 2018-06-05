@@ -24,6 +24,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context_getter_observer.h"
 #include "services/network/network_context.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
@@ -131,12 +132,19 @@ BrowserState::BrowserState() : url_data_manager_ios_backend_(nullptr) {
   // an empty object to this via a private key.
   SetUserData(kBrowserStateIdentifierKey,
               std::make_unique<SupportsUserData::Data>());
+
+  // Set up shared_url_loader_factory_ for lazy creation.
+  shared_url_loader_factory_ =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          base::BindOnce(&BrowserState::GetURLLoaderFactory,
+                         base::Unretained(this) /* safe due to Detach call */));
 }
 
 BrowserState::~BrowserState() {
   CHECK(GetUserData(kMojoWasInitialized))
       << "Attempting to destroy a BrowserState that never called "
       << "Initialize()";
+  shared_url_loader_factory_->Detach();
 
   if (network_context_) {
     web::WebThread::DeleteSoon(web::WebThread::IO, FROM_HERE,
@@ -175,6 +183,11 @@ network::mojom::URLLoaderFactory* BrowserState::GetURLLoaderFactory() {
   }
 
   return url_loader_factory_.get();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+BrowserState::GetSharedURLLoaderFactory() {
+  return shared_url_loader_factory_;
 }
 
 URLDataManagerIOSBackend*

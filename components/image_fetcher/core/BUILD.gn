@@ -18,6 +18,7 @@ static_library("core") {
     "//base",
     "//components/data_use_measurement/core",
     "//net",
+    "//services/network/public/cpp",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",
@@ -35,6 +36,7 @@ static_library("test_support") {
 
   public_deps = [
     ":core",
+    "//services/network:test_support",
     "//testing/gmock",
   ]
 }

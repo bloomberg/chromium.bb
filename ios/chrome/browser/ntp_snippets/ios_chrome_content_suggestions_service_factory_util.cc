@@ -48,6 +48,7 @@
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/browser_state.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using history::HistoryService;
 using image_fetcher::CreateIOSImageDecoder;
@@ -188,8 +189,8 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       service, prefs, GetApplicationContext()->GetApplicationLocale(),
       service->category_ranker(), service->remote_suggestions_scheduler(),
       std::move(suggestions_fetcher),
-      std::make_unique<ImageFetcherImpl>(CreateIOSImageDecoder(),
-                                         request_context.get()),
+      std::make_unique<ImageFetcherImpl>(
+          CreateIOSImageDecoder(), browser_state->GetSharedURLLoaderFactory()),
       std::make_unique<RemoteSuggestionsDatabase>(database_dir),
       std::make_unique<RemoteSuggestionsStatusServiceImpl>(
           identity_manager->HasPrimaryAccount(), prefs, pref_name),

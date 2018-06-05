@@ -102,6 +102,7 @@ include_rules = [
   "+services/identity/public",
   "+services/metrics/public",
   "+services/network/public/mojom",
+  "+services/network/public/cpp",
   "+services/service_manager/public",
   "+third_party/breakpad/breakpad/src/client/ios",
   "+third_party/breakpad/breakpad/src/common",

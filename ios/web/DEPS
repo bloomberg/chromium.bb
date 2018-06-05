@@ -6,6 +6,7 @@ include_rules = [
   "+mojo/public",
   "+net",
   "+services/network/network_context.h",
+  "+services/network/public/cpp",
   "+services/network/public/mojom",
   "+ui",
 

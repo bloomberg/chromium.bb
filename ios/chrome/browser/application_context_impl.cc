@@ -54,7 +54,6 @@
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
 ApplicationContextImpl::ApplicationContextImpl(
@@ -110,6 +109,9 @@ void ApplicationContextImpl::StartTearDown() {
     local_state_->CommitPendingWrite();
     sessions::SessionIdGenerator::GetInstance()->Shutdown();
   }
+
+  if (shared_url_loader_factory_)
+    shared_url_loader_factory_->Detach();
 
   if (network_context_) {
     web::WebThread::DeleteSoon(web::WebThread::IO, FROM_HERE,
