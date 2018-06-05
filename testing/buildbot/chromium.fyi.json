@@ -359,6 +359,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "battor_agent_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "blink_common_unittests"
       },
       {
@@ -838,6 +844,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "battor_agent_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "blink_common_unittests"
       },
       {
@@ -1306,6 +1318,12 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "battor_agent_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "blink_common_unittests"
       },
       {
@@ -1760,6 +1778,12 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "battor_agent_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "blink_common_unittests"
       },
       {
@@ -2146,6 +2170,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "battor_agent_unittests"
       },
       {
         "swarming": {
@@ -4957,6 +4987,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "battor_agent_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "blink_common_unittests"
       },
       {
@@ -5373,6 +5409,12 @@
           "shards": 5
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "battor_agent_unittests"
       },
       {
         "swarming": {
@@ -5835,6 +5877,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "battor_agent_unittests"
       },
       {
         "swarming": {
@@ -6629,6 +6677,12 @@
           "can_use_on_swarming_builders": false
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "battor_agent_unittests"
       },
       {
         "swarming": {
@@ -8608,6 +8662,15 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
+      },
+      {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "battor_agent_unittests"
       },
       {
         "args": [
