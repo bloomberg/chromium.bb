@@ -172,6 +172,8 @@ crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/com
 # Sheriff 2018/05/25
 crbug.com/846749 [ Mac ] virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Failure ]
 
+crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
+
 # ====== Paint team owned tests to here ======
 
 # ====== Layout team owned tests from here ======
@@ -1107,6 +1109,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fragmentation/repeating-thead-mu
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/repeating-thead-multiple-tables.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/repeating-thead-no-room-for-content-row-on-first-page.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/repeating-thead-tfoot-different-fragment-height.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/single-cell-repeating-thead-break-inside-avoid-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/single-cell-repeating-thead-break-inside-content-first-line.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/single-cell-repeating-thead-break-inside-content.html [ Failure ]
@@ -1154,6 +1157,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fragmentation/table-overlapping-
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/table-row-dimensions-break-freely.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/table-row-dimensions-with-thead.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/table-row-dimensions.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fragmentation/thead-under-repeating-thead.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/unbreakable-tall-float-before-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/unbreakable-tall-float-before-line.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/absolute-position-headers-and-footers.html [ Failure ]

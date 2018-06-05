@@ -17,6 +17,7 @@ namespace blink {
 
 class FragmentData;
 class LayoutObject;
+class LayoutTableSection;
 class LocalFrameView;
 class PaintLayer;
 
@@ -140,7 +141,7 @@ struct PaintPropertyTreeBuilderContext {
   // In a fragmented context, repeating table headers and footers and their
   // descendants in paint order repeatedly paint in all fragments after the
   // fragment where the object first appears.
-  bool is_repeating_table_section = false;
+  const LayoutTableSection* repeating_table_section = nullptr;
 
   // When printing, fixed-position objects and their descendants need to repeat
   // in each page.
