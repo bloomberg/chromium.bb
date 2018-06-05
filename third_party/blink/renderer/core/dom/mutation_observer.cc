@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_mutation_callback.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_init.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
 #include "third_party/blink/renderer/core/dom/mutation_record.h"
@@ -285,8 +286,13 @@ HeapHashSet<Member<Node>> MutationObserver::GetObservedNodes() const {
 }
 
 bool MutationObserver::ShouldBeSuspended() const {
-  const ExecutionContext* execution_context = delegate_->GetExecutionContext();
-  return execution_context && execution_context->IsContextPaused();
+  ExecutionContext* execution_context = delegate_->GetExecutionContext();
+  if (!execution_context)
+    return false;
+  Document* document = ToDocument(execution_context);
+  DCHECK(document);
+  return !document->CanExecuteScripts(kAboutToExecuteScript) ||
+         execution_context->IsContextPaused();
 }
 
 void MutationObserver::CancelInspectorAsyncTasks() {
