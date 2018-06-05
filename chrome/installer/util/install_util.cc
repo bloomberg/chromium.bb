@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
@@ -44,6 +45,21 @@ using installer::ProductState;
 namespace {
 
 const wchar_t kRegDowngradeVersion[] = L"DowngradeVersion";
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class StartMenuShortStatus {
+  kSuccess = 0,
+  kGetShortcutPathFailed = 1,
+  kShortcutMissing = 2,
+  kToastActivatorClsidIncorrect = 3,
+  kMaxValue = kToastActivatorClsidIncorrect,
+};
+
+void LogStartMenuShortStatus(StartMenuShortStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Windows.StartMenuShortStatus",
+                            status);
+}
 
 // Creates a zero-sized non-decorated foreground window that doesn't appear
 // in the taskbar. This is used as a parent window for calls to ShellExecuteEx
@@ -289,13 +305,16 @@ bool InstallUtil::IsStartMenuShortcutWithActivatorGuidInstalled() {
           install_static::IsSystemInstall() ? ShellUtil::SYSTEM_LEVEL
                                             : ShellUtil::CURRENT_USER,
           &shortcut_path)) {
+    LogStartMenuShortStatus(StartMenuShortStatus::kGetShortcutPathFailed);
     return false;
   }
 
   shortcut_path =
       shortcut_path.Append(dist->GetShortcutName() + installer::kLnkExt);
-  if (!base::PathExists(shortcut_path))
+  if (!base::PathExists(shortcut_path)) {
+    LogStartMenuShortStatus(StartMenuShortStatus::kShortcutMissing);
     return false;
+  }
 
   base::win::ShortcutProperties properties;
   base::win::ResolveShortcutProperties(
@@ -303,8 +322,15 @@ bool InstallUtil::IsStartMenuShortcutWithActivatorGuidInstalled() {
       base::win::ShortcutProperties::PROPERTIES_TOAST_ACTIVATOR_CLSID,
       &properties);
 
-  return ::IsEqualCLSID(properties.toast_activator_clsid,
-                        install_static::GetToastActivatorClsid());
+  if (!::IsEqualCLSID(properties.toast_activator_clsid,
+                      install_static::GetToastActivatorClsid())) {
+    LogStartMenuShortStatus(
+        StartMenuShortStatus::kToastActivatorClsidIncorrect);
+    return false;
+  }
+
+  LogStartMenuShortStatus(StartMenuShortStatus::kSuccess);
+  return true;
 }
 
 // static
