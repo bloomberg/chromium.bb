@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/base_paths.h"
-#import "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -50,7 +50,7 @@ class FakeCardUnmaskDelegate : public autofill::CardUnmaskDelegate {
     unmask_response_ = unmask_response;
     // Fake the actual verification and just respond with success.
     web::WebThread::PostTask(
-        web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
+        web::WebThread::UI, FROM_HERE, base::BindOnce(^{
           autofill::AutofillClient::PaymentsRpcResult result =
               autofill::AutofillClient::SUCCESS;
           [credit_card_verifier_ didReceiveUnmaskVerificationResult:result];
