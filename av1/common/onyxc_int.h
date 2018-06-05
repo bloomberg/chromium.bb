@@ -732,7 +732,6 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
       }
     }
   }
-  xd->fc = cm->fc;
   xd->mi_stride = cm->mi_stride;
   xd->error_info = &cm->error;
   cfl_init(&xd->cfl, cm);

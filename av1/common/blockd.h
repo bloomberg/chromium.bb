@@ -491,8 +491,6 @@ typedef struct jnt_comp_params {
 
 typedef struct macroblockd {
   struct macroblockd_plane plane[MAX_MB_PLANE];
-  uint8_t bmode_blocks_wl;
-  uint8_t bmode_blocks_hl;
 
   TileInfo tile;
 
@@ -514,8 +512,6 @@ typedef struct macroblockd {
   int mb_to_right_edge;
   int mb_to_top_edge;
   int mb_to_bottom_edge;
-
-  FRAME_CONTEXT *fc;
 
   /* pointers to reference frames */
   const RefBuffer *block_refs[2];
