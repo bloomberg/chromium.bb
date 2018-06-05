@@ -37,22 +37,22 @@ class DummyModulator : public Modulator {
   ScriptState* GetScriptState() override;
 
   void FetchTree(const KURL&,
-                 SettingsObject* fetch_client_settings_object,
+                 const SettingsObject& fetch_client_settings_object,
                  WebURLRequest::RequestContext destination,
                  const ScriptFetchOptions&,
                  ModuleTreeClient*) override;
   void FetchSingle(const ModuleScriptFetchRequest&,
-                   SettingsObject* fetch_client_settings_object,
+                   const SettingsObject& fetch_client_settings_object,
                    ModuleGraphLevel,
                    SingleModuleClient*) override;
   void FetchDescendantsForInlineScript(
       ModuleScript*,
-      SettingsObject* fetch_client_settings_object,
+      const SettingsObject& fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       ModuleTreeClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
   void FetchNewSingleModule(const ModuleScriptFetchRequest&,
-                            SettingsObject* fetch_client_settings_object,
+                            const SettingsObject& fetch_client_settings_object,
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
   bool HasValidContext() override;

@@ -61,7 +61,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
   }
 
   void FetchTree(const KURL& url,
-                 SettingsObject*,
+                 const SettingsObject&,
                  WebURLRequest::RequestContext,
                  const ScriptFetchOptions&,
                  ModuleTreeClient* client) final {

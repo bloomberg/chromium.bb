@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
 #include "third_party/blink/renderer/core/script/layered_api.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
-#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -20,7 +19,7 @@ namespace blink {
 
 ModuleTreeLinker* ModuleTreeLinker::Fetch(
     const KURL& url,
-    SettingsObject* fetch_client_settings_object,
+    const SettingsObject& fetch_client_settings_object,
     const KURL& base_url,
     WebURLRequest::RequestContext destination,
     const ScriptFetchOptions& options,
@@ -35,7 +34,7 @@ ModuleTreeLinker* ModuleTreeLinker::Fetch(
 
 ModuleTreeLinker* ModuleTreeLinker::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
-    SettingsObject* fetch_client_settings_object,
+    const SettingsObject& fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     Modulator* modulator,
     ModuleTreeLinkerRegistry* registry,
@@ -47,11 +46,12 @@ ModuleTreeLinker* ModuleTreeLinker::FetchDescendantsForInlineScript(
   return fetcher;
 }
 
-ModuleTreeLinker::ModuleTreeLinker(SettingsObject* fetch_client_settings_object,
-                                   WebURLRequest::RequestContext destination,
-                                   Modulator* modulator,
-                                   ModuleTreeLinkerRegistry* registry,
-                                   ModuleTreeClient* client)
+ModuleTreeLinker::ModuleTreeLinker(
+    const SettingsObject& fetch_client_settings_object,
+    WebURLRequest::RequestContext destination,
+    Modulator* modulator,
+    ModuleTreeLinkerRegistry* registry,
+    ModuleTreeClient* client)
     : fetch_client_settings_object_(fetch_client_settings_object),
       destination_(destination),
       modulator_(modulator),
@@ -63,7 +63,6 @@ ModuleTreeLinker::ModuleTreeLinker(SettingsObject* fetch_client_settings_object,
 }
 
 void ModuleTreeLinker::Trace(blink::Visitor* visitor) {
-  visitor->Trace(fetch_client_settings_object_);
   visitor->Trace(modulator_);
   visitor->Trace(registry_);
   visitor->Trace(client_);
@@ -182,7 +181,7 @@ void ModuleTreeLinker::FetchRoot(const KURL& original_url,
   // ... with the top-level module fetch flag set. ...
   ModuleScriptFetchRequest request(
       url, destination_, options, Referrer::NoReferrer(),
-      fetch_client_settings_object_->GetReferrerPolicy(),
+      fetch_client_settings_object_.GetReferrerPolicy(),
       TextPosition::MinimumPosition());
 
   InitiateInternalModuleScriptGraphFetching(
@@ -221,8 +220,7 @@ void ModuleTreeLinker::InitiateInternalModuleScriptGraphFetching(
   ++num_incomplete_fetches_;
 
   // [IMSGF] Step 2. Fetch a single module script given ...
-  modulator_->FetchSingle(request, fetch_client_settings_object_.Get(), level,
-                          this);
+  modulator_->FetchSingle(request, fetch_client_settings_object_, level, this);
 
   // [IMSGF] Step 3-- are executed when NotifyModuleLoadFinished() is called.
 }
@@ -374,7 +372,7 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
     // procedure given ... with the top-level module fetch flag unset. ...
     ModuleScriptFetchRequest request(
         urls[i], destination_, options, module_script->BaseURL().GetString(),
-        fetch_client_settings_object_->GetReferrerPolicy(), positions[i]);
+        fetch_client_settings_object_.GetReferrerPolicy(), positions[i]);
     InitiateInternalModuleScriptGraphFetching(
         request, ModuleGraphLevel::kDependentModuleFetch);
   }

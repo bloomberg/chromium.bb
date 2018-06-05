@@ -35,6 +35,7 @@ class CORE_EXPORT LayoutWorkletGlobalScopeProxy
   void FetchAndInvokeScript(
       const KURL& module_url_record,
       network::mojom::FetchCredentialsMode,
+      const SettingsObject& outside_settings_object,
       scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*) override;
   void WorkletObjectDestroyed() override;

@@ -29,7 +29,7 @@ class CORE_EXPORT ModuleScriptLoaderRegistry final
   void Trace(blink::Visitor*);
 
   ModuleScriptLoader* Fetch(const ModuleScriptFetchRequest&,
-                            SettingsObject* fetch_client_settings_object,
+                            const SettingsObject& fetch_client_settings_object,
                             ModuleGraphLevel,
                             Modulator*,
                             ModuleScriptLoaderClient*);

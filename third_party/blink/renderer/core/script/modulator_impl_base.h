@@ -49,23 +49,23 @@ class ModulatorImplBase : public Modulator {
   }
 
   void FetchTree(const KURL&,
-                 SettingsObject* fetch_client_settings_object,
+                 const SettingsObject& fetch_client_settings_object,
                  WebURLRequest::RequestContext destination,
                  const ScriptFetchOptions&,
                  ModuleTreeClient*) override;
   void FetchDescendantsForInlineScript(
       ModuleScript*,
-      SettingsObject* fetch_client_settings_object,
+      const SettingsObject& fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       ModuleTreeClient*) override;
   void FetchSingle(const ModuleScriptFetchRequest&,
-                   SettingsObject* fetch_client_settings_object,
+                   const SettingsObject& fetch_client_settings_object,
                    ModuleGraphLevel,
                    SingleModuleClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
   bool HasValidContext() override;
   void FetchNewSingleModule(const ModuleScriptFetchRequest&,
-                            SettingsObject* fetch_client_settings_object,
+                            const SettingsObject& fetch_client_settings_object,
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
   void ResolveDynamically(const String& specifier,

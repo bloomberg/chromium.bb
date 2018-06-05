@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class SettingsObject;
 class WorkletPendingTasks;
 
 // Abstracts communication from (Main/Threaded)Worklet on the main thread to
@@ -27,6 +28,7 @@ class CORE_EXPORT WorkletGlobalScopeProxy : public GarbageCollectedMixin {
   virtual void FetchAndInvokeScript(
       const KURL& module_url_record,
       network::mojom::FetchCredentialsMode,
+      const SettingsObject& outside_settings_object,
       scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*) = 0;
 

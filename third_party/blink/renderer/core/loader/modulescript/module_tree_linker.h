@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -18,7 +19,6 @@ namespace blink {
 
 class ModuleScriptFetchRequest;
 class ModuleTreeLinkerRegistry;
-class SettingsObject;
 
 // A ModuleTreeLinker is responsible for running and keeping intermediate states
 // for a top-level [IMSGF] "internal module script graph fetching procedure" or
@@ -40,19 +40,20 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   //
   // TODO(hiroshige): |base_url| is used only for Layered APIs and will be
   // removed soon once an upcoming spec change lands.
-  static ModuleTreeLinker* Fetch(const KURL&,
-                                 SettingsObject* fetch_client_settings_object,
-                                 const KURL& base_url,
-                                 WebURLRequest::RequestContext destination,
-                                 const ScriptFetchOptions&,
-                                 Modulator*,
-                                 ModuleTreeLinkerRegistry*,
-                                 ModuleTreeClient*);
+  static ModuleTreeLinker* Fetch(
+      const KURL&,
+      const SettingsObject& fetch_client_settings_object,
+      const KURL& base_url,
+      WebURLRequest::RequestContext destination,
+      const ScriptFetchOptions&,
+      Modulator*,
+      ModuleTreeLinkerRegistry*,
+      ModuleTreeClient*);
 
   // [FDaI] for an inline script.
   static ModuleTreeLinker* FetchDescendantsForInlineScript(
       ModuleScript*,
-      SettingsObject* fetch_client_settings_object,
+      const SettingsObject& fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       Modulator*,
       ModuleTreeLinkerRegistry*,
@@ -67,7 +68,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   bool HasFinished() const { return state_ == State::kFinished; }
 
  private:
-  ModuleTreeLinker(SettingsObject* fetch_client_settings_object,
+  ModuleTreeLinker(const SettingsObject& fetch_client_settings_object,
                    WebURLRequest::RequestContext destination,
                    Modulator*,
                    ModuleTreeLinkerRegistry*,
@@ -111,7 +112,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   ScriptValue FindFirstParseError(ModuleScript*,
                                   HeapHashSet<Member<ModuleScript>>*) const;
 
-  const Member<SettingsObject> fetch_client_settings_object_;
+  const SettingsObject fetch_client_settings_object_;
   const WebURLRequest::RequestContext destination_;
   const Member<Modulator> modulator_;
   HashSet<KURL> visited_set_;

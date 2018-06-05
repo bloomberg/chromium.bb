@@ -20,6 +20,7 @@
 
 namespace blink {
 
+class SettingsObject;
 class WorkletPendingTasks;
 class WorkerReportingProxy;
 struct GlobalScopeCreationParams;
@@ -64,6 +65,7 @@ class CORE_EXPORT WorkletGlobalScope
   void FetchAndInvokeScript(
       const KURL& module_url_record,
       network::mojom::FetchCredentialsMode,
+      const SettingsObject& outside_settings_object,
       scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*);
 

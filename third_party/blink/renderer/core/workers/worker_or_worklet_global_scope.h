@@ -116,7 +116,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   // HTML spec:
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
   void FetchModuleScript(const KURL& module_url_record,
-                         SettingsObject* settings_object,
+                         const SettingsObject& fetch_client_settings_object,
                          WebURLRequest::RequestContext destination,
                          network::mojom::FetchCredentialsMode,
                          ModuleTreeClient*);

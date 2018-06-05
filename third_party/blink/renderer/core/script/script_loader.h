@@ -129,7 +129,7 @@ class CORE_EXPORT ScriptLoader final
                           const WTF::TextEncoding&);
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
   void FetchModuleScriptTree(const KURL&,
-                             SettingsObject*,
+                             const SettingsObject&,
                              Modulator*,
                              const ScriptFetchOptions&);
 
