@@ -8,7 +8,6 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/stop_source.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/engine/sync_credentials.h"
@@ -51,19 +50,21 @@ constexpr net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
 
 }  // namespace
 
-SyncAuthManager::SyncAuthManager(ProfileSyncService* sync_service,
-                                 syncer::SyncPrefs* sync_prefs,
-                                 identity::IdentityManager* identity_manager,
-                                 OAuth2TokenService* token_service)
-    : sync_service_(sync_service),
-      sync_prefs_(sync_prefs),
+SyncAuthManager::SyncAuthManager(
+    syncer::SyncPrefs* sync_prefs,
+    identity::IdentityManager* identity_manager,
+    OAuth2TokenService* token_service,
+    const AccountStateChangedCallback& account_state_changed,
+    const CredentialsChangedCallback& credentials_changed)
+    : sync_prefs_(sync_prefs),
       identity_manager_(identity_manager),
       token_service_(token_service),
+      account_state_changed_callback_(account_state_changed),
+      credentials_changed_callback_(credentials_changed),
       registered_for_auth_notifications_(false),
       is_auth_in_progress_(false),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       weak_ptr_factory_(this) {
-  DCHECK(sync_service_);
   DCHECK(sync_prefs_);
   // |identity_manager_| and |token_service_| can be null if local Sync is
   // enabled.
@@ -200,7 +201,7 @@ void SyncAuthManager::OnPrimaryAccountSet(
   DCHECK(!is_auth_in_progress_);
   is_auth_in_progress_ = true;
 
-  sync_service_->OnPrimaryAccountSet();
+  account_state_changed_callback_.Run();
 
   if (token_service_->RefreshTokenIsAvailable(
           primary_account_info.account_id)) {
@@ -213,7 +214,7 @@ void SyncAuthManager::OnPrimaryAccountCleared(
   UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", syncer::SIGN_OUT,
                             syncer::STOP_SOURCE_LIMIT);
   is_auth_in_progress_ = false;
-  sync_service_->OnPrimaryAccountCleared();
+  account_state_changed_callback_.Run();
 }
 
 void SyncAuthManager::OnRefreshTokenAvailable(const std::string& account_id) {
@@ -239,7 +240,7 @@ void SyncAuthManager::OnRefreshTokenAvailable(const std::string& account_id) {
     ClearAccessTokenAndRequest();
     UpdateAuthErrorState(token_error);
 
-    sync_service_->OnRefreshTokenRevoked();
+    credentials_changed_callback_.Run();
     return;
   }
 
@@ -267,7 +268,7 @@ void SyncAuthManager::OnRefreshTokenRevoked(const std::string& account_id) {
 
   ClearAccessTokenAndRequest();
 
-  sync_service_->OnRefreshTokenRevoked();
+  credentials_changed_callback_.Run();
 }
 
 bool SyncAuthManager::IsRetryingAccessTokenFetchForTest() const {
@@ -349,7 +350,7 @@ void SyncAuthManager::AccessTokenFetched(const GoogleServiceAuthError& error,
       UpdateAuthErrorState(error);
   }
 
-  sync_service_->AccessTokenFetched(error);
+  credentials_changed_callback_.Run();
 }
 
 }  // namespace browser_sync

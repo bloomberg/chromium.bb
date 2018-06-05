@@ -158,10 +158,13 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       sync_prefs_(sync_client_->GetPrefService()),
       signin_(std::move(init_params.signin_wrapper)),
       auth_manager_(std::make_unique<SyncAuthManager>(
-          this,
           &sync_prefs_,
           signin_ ? signin_->GetIdentityManager() : nullptr,
-          init_params.oauth2_token_service)),
+          init_params.oauth2_token_service,
+          base::BindRepeating(&ProfileSyncService::AccountStateChanged,
+                              base::Unretained(this)),
+          base::BindRepeating(&ProfileSyncService::CredentialsChanged,
+                              base::Unretained(this)))),
       channel_(init_params.channel),
       base_directory_(init_params.base_directory),
       debug_identifier_(init_params.debug_identifier),
@@ -440,6 +443,35 @@ ProfileSyncService::GetUnrecoverableErrorHandler() {
   return syncer::MakeWeakHandle(sync_enabled_weak_factory_.GetWeakPtr());
 }
 
+void ProfileSyncService::AccountStateChanged() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (auth_manager_->GetAuthenticatedAccountInfo().account_id.empty()) {
+    sync_disabled_by_admin_ = false;
+    RequestStop(CLEAR_DATA);
+    DCHECK(!engine_);
+  } else {
+    DCHECK(!engine_);
+    startup_controller_->TryStart();
+  }
+}
+
+void ProfileSyncService::CredentialsChanged() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  syncer::SyncCredentials credentials = auth_manager_->GetCredentials();
+
+  if (engine_) {
+    if (credentials.sync_token.empty()) {
+      engine_->InvalidateCredentials();
+    } else {
+      engine_->UpdateCredentials(credentials);
+    }
+  }
+
+  NotifyObservers();
+}
+
 void ProfileSyncService::ResetCryptoState() {
   crypto_ = std::make_unique<syncer::SyncServiceCrypto>(
       base::BindRepeating(&ProfileSyncService::NotifyObservers,
@@ -603,33 +635,6 @@ void ProfileSyncService::InitializeEngine() {
   }
 
   engine_->Initialize(std::move(params));
-}
-
-void ProfileSyncService::AccessTokenFetched(
-    const GoogleServiceAuthError& error) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // We only ever have pending access token requests while the engine exists.
-  DCHECK(engine_);
-
-  if (error.state() == GoogleServiceAuthError::NONE) {
-    engine_->UpdateCredentials(auth_manager_->GetCredentials());
-  }
-  // Else: Some error happened. SyncAuthManager takes care of that (retry if
-  // appropriate etc), so there's nothing for us to do here.
-
-  // Whether or not the fetch was successful, the visible auth error state might
-  // have changed, so let our observers know.
-  NotifyObservers();
-}
-
-void ProfileSyncService::OnRefreshTokenRevoked() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (HasSyncingEngine())
-    engine_->InvalidateCredentials();
-
-  NotifyObservers();
 }
 
 void ProfileSyncService::Shutdown() {
@@ -1741,20 +1746,6 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
     // Sync is no longer disabled by policy. Try starting it up if appropriate.
     startup_controller_->TryStart();
   }
-}
-
-void ProfileSyncService::OnPrimaryAccountSet() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!engine_);
-
-  startup_controller_->TryStart();
-}
-
-void ProfileSyncService::OnPrimaryAccountCleared() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_disabled_by_admin_ = false;
-  RequestStop(CLEAR_DATA);
-  DCHECK(!engine_);
 }
 
 void ProfileSyncService::OnGaiaAccountsInCookieUpdated(

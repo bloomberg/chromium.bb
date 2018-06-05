@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -29,22 +30,28 @@ class SyncPrefs;
 
 namespace browser_sync {
 
-class ProfileSyncService;
-
 // SyncAuthManager tracks the primary (i.e. blessed-for-sync) account and its
 // authentication state.
 class SyncAuthManager : public identity::IdentityManager::Observer,
                         public OAuth2TokenService::Observer {
  public:
-  // |sync_service| and |sync_prefs| must not be null and must outlive this.
+  // Called when the existence of an authenticated account changes. Call
+  // GetAuthenticatedAccountInfo to get the new state.
+  using AccountStateChangedCallback = base::RepeatingClosure;
+  // Called when the credential state changes, i.e. an access token was
+  // added/changed/removed. Call GetCredentials to get the new state.
+  using CredentialsChangedCallback = base::RepeatingClosure;
+
+  // |sync_prefs| must not be null and must outlive this.
   // |identity_manager| and |token_service| may be null (this is the case if
   // local Sync is enabled), but if non-null, must outlive this object.
   // TODO(crbug.com/842697): Don't pass the ProfileSyncService in here. Instead,
   // pass a callback ("AccountStateChanged(new_state)").
-  SyncAuthManager(ProfileSyncService* sync_service,
-                  syncer::SyncPrefs* sync_prefs,
+  SyncAuthManager(syncer::SyncPrefs* sync_prefs,
                   identity::IdentityManager* identity_manager,
-                  OAuth2TokenService* token_service);
+                  OAuth2TokenService* token_service,
+                  const AccountStateChangedCallback& account_state_changed,
+                  const CredentialsChangedCallback& credentials_changed);
   ~SyncAuthManager() override;
 
   // Tells the tracker to start listening for changes to the account/sign-in
@@ -102,10 +109,12 @@ class SyncAuthManager : public identity::IdentityManager::Observer,
   void AccessTokenFetched(const GoogleServiceAuthError& error,
                           const std::string& access_token);
 
-  ProfileSyncService* const sync_service_;
   syncer::SyncPrefs* const sync_prefs_;
   identity::IdentityManager* const identity_manager_;
   OAuth2TokenService* const token_service_;
+
+  const AccountStateChangedCallback account_state_changed_callback_;
+  const CredentialsChangedCallback credentials_changed_callback_;
 
   bool registered_for_auth_notifications_;
 

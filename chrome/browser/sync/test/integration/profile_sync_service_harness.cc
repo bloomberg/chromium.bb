@@ -16,6 +16,7 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/quiesce_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
@@ -27,6 +28,8 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/invalidation/impl/p2p_invalidation_service.h"
+#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/sync/base/progress_marker_map.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "components/sync/engine/sync_string_conversions.h"
@@ -279,10 +282,16 @@ bool ProfileSyncServiceHarness::StartSyncService() {
   return true;
 }
 
+#if !defined(OS_CHROMEOS)
 void ProfileSyncServiceHarness::SignoutSyncService() {
   DCHECK(!username_.empty());
-  service()->OnPrimaryAccountCleared();
+  // TODO(https://crbug.com/806781): This should go through IdentityManager once
+  // that supports sign-out.
+  SigninManagerFactory::GetForProfile(profile_)->SignOutAndRemoveAllAccounts(
+      signin_metrics::SIGNOUT_TEST,
+      signin_metrics::SignoutDelete::IGNORE_METRIC);
 }
+#endif  // !OS_CHROMEOS
 
 bool ProfileSyncServiceHarness::HasUnsyncedItems() {
   base::RunLoop loop;

@@ -660,6 +660,9 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SecondaryPassphraseCheck) {
   CloseBrowserSynchronously(sync_browser);
 }
 
+// ChromeOS doesn't have the concept of sign-out so this test doesn't make sense
+// there.
+#if !defined(OS_CHROMEOS)
 // Make sure that UKM is disabled when the profile signs out of Sync.
 // Keep in sync with UkmTest.singleSyncSignoutCheck in
 // chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
@@ -683,7 +686,11 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleSyncSignoutCheck) {
   harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
   CloseBrowserSynchronously(sync_browser);
 }
+#endif  // !OS_CHROMEOS
 
+// ChromeOS doesn't have the concept of sign-out so this test doesn't make sense
+// there.
+#if !defined(OS_CHROMEOS)
 // Make sure that UKM is disabled when any profile signs out of Sync.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiSyncSignoutCheck) {
   MetricsConsentOverride metrics_consent(true);
@@ -715,6 +722,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiSyncSignoutCheck) {
   CloseBrowserSynchronously(browser2);
   CloseBrowserSynchronously(browser1);
 }
+#endif  // !OS_CHROMEOS
 
 // Make sure that if history/sync services weren't available when we tried to
 // attach listeners, UKM is not enabled.
