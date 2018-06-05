@@ -15,7 +15,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/scheduling_priority.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
@@ -242,26 +241,16 @@ Gpu::Gpu(GpuPtrFactory factory,
          scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(std::move(task_runner)),
+      gpu_memory_buffer_manager_(
+          std::make_unique<ClientGpuMemoryBufferManager>(factory.Run())),
       gpu_(new GpuPtrIO(), base::OnTaskRunnerDeleter(io_task_runner_)) {
   DCHECK(main_task_runner_);
   DCHECK(io_task_runner_);
 
-  mojom::GpuMemoryBufferFactoryPtr gpu_memory_buffer_factory;
-  auto gpu_for_buffer_factory = factory.Run();
-  gpu_for_buffer_factory->CreateGpuMemoryBufferFactory(
-      mojo::MakeRequest(&gpu_memory_buffer_factory));
-  gpu_memory_buffer_manager_ = std::make_unique<ClientGpuMemoryBufferManager>(
-      std::move(gpu_memory_buffer_factory));
-  // Attach ownership of |gpu_for_buffer_factory| to
-  // |gpu_memory_buffer_manager_| to ensure |gpu_memory_buffer_factory| stays
-  // alive.
-  gpu_memory_buffer_manager_->SetOptionalDestructionCallback(
-      base::BindOnce([](mojom::GpuPtr) {}, std::move(gpu_for_buffer_factory)));
-
-  // Initialize mojom::GpuPtr on the IO thread. |gpu_| can only be used on
-  // the IO thread after this point. It is safe to use base::Unretained with
-  // |gpu_| for IO thread tasks as |gpu_| is destroyed by an IO thread task
-  // posted from the destructor.
+  // Initialize mojom::GpuPtr on the IO thread. |gpu_| can only be used on the
+  // IO thread after this point. It is safe to use base::Unretained with |gpu_|
+  // for IO thread tasks as |gpu_| is destroyed by an IO thread task posted from
+  // the destructor.
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&GpuPtrIO::Initialize, base::Unretained(gpu_.get()),

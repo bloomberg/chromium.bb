@@ -1,9 +1,9 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_JPEG_DECODER_IMPL_H_
-#define MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_JPEG_DECODER_IMPL_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_GPU_JPEG_DECODER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_GPU_JPEG_DECODER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -15,9 +15,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "content/common/content_export.h"
 #include "gpu/config/gpu_info.h"
-#include "media/capture/capture_export.h"
-#include "media/capture/video/video_capture_device_factory.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "media/mojo/clients/mojo_jpeg_decode_accelerator.h"
 
@@ -25,28 +24,26 @@ namespace base {
 class WaitableEvent;
 }
 
-namespace media {
+namespace content {
 
-// Implementation of media::VideoCaptureJpegDecoder that delegates to a
-// media::mojom::JpegDecodeAccelerator. When a frame is received in
-// DecodeCapturedData(), it is copied to |in_shared_memory| for IPC transport
-// to |decoder_|. When the decoder is finished with the frame, |decode_done_cb_|
-// is invoked. Until |decode_done_cb_| is invoked, subsequent calls to
-// DecodeCapturedData() are ignored.
-// The given |decoder_task_runner| must allow blocking on |lock_|.
-class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
+// Adapter to GpuJpegDecodeAccelerator for VideoCaptureDevice::Client. It takes
+// care of GpuJpegDecodeAccelerator creation, shared memory, and threading
+// issues.
+//
+// All public methods except JpegDecodeAccelerator::Client ones should be called
+// on the same thread. JpegDecodeAccelerator::Client methods should be called on
+// the IO thread.
+class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
     : public media::VideoCaptureJpegDecoder,
       public media::JpegDecodeAccelerator::Client {
  public:
   // |decode_done_cb| is called on the IO thread when decode succeeds. This can
   // be on any thread. |decode_done_cb| is never called after
   // VideoCaptureGpuJpegDecoder is destroyed.
-  VideoCaptureJpegDecoderImpl(
-      MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory,
-      scoped_refptr<base::SingleThreadTaskRunner> decoder_task_runner,
+  VideoCaptureGpuJpegDecoder(
       DecodeDoneCB decode_done_cb,
-      base::RepeatingCallback<void(const std::string&)> send_log_message_cb);
-  ~VideoCaptureJpegDecoderImpl() override;
+      base::Callback<void(const std::string&)> send_log_message_cb);
+  ~VideoCaptureGpuJpegDecoder() override;
 
   // Implementation of VideoCaptureJpegDecoder:
   void Initialize() override;
@@ -66,7 +63,17 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
                    media::JpegDecodeAccelerator::Error error) override;
 
  private:
-  void FinishInitialization();
+  static void RequestGPUInfoOnIOThread(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      base::WeakPtr<VideoCaptureGpuJpegDecoder> weak_this);
+
+  static void DidReceiveGPUInfoOnIOThread(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      base::WeakPtr<VideoCaptureGpuJpegDecoder> weak_this,
+      const gpu::GPUInfo& gpu_info);
+
+  void FinishInitialization(
+      media::mojom::JpegDecodeAcceleratorPtrInfo unbound_remote_decoder);
   void OnInitializationDone(bool success);
 
   // Returns true if the decoding of last frame is not finished yet.
@@ -77,23 +84,20 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
 
   void DestroyDecoderOnIOThread(base::WaitableEvent* event);
 
-  MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_;
-  scoped_refptr<base::SingleThreadTaskRunner> decoder_task_runner_;
-
   // The underlying JPEG decode accelerator.
   std::unique_ptr<media::JpegDecodeAccelerator> decoder_;
 
   // The callback to run when decode succeeds.
   const DecodeDoneCB decode_done_cb_;
 
-  const base::RepeatingCallback<void(const std::string&)> send_log_message_cb_;
+  const base::Callback<void(const std::string&)> send_log_message_cb_;
   bool has_received_decoded_frame_;
 
   // Guards |decode_done_closure_| and |decoder_status_|.
   mutable base::Lock lock_;
 
   // The closure of |decode_done_cb_| with bound parameters.
-  base::OnceClosure decode_done_closure_;
+  base::Closure decode_done_closure_;
 
   // Next id for input BitstreamBuffer.
   int32_t next_bitstream_buffer_id_;
@@ -109,11 +113,11 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<VideoCaptureJpegDecoderImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<VideoCaptureGpuJpegDecoder> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoCaptureJpegDecoderImpl);
+  DISALLOW_COPY_AND_ASSIGN(VideoCaptureGpuJpegDecoder);
 };
 
-}  // namespace media
+}  // namespace content
 
-#endif  // MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_JPEG_DECODER_IMPL_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_GPU_JPEG_DECODER_H_
