@@ -58,18 +58,6 @@ void WaveShaperProcessor::SetCurve(const float* curve_data,
   // Copy the curve data, if any, to our internal buffer.
   curve_ = std::make_unique<Vector<float>>(curve_length);
   memcpy(curve_->data(), curve_data, sizeof(float) * curve_length);
-
-  // Compute the curve output for a zero input, and set the tail time for all
-  // the kernels.
-  WaveShaperDSPKernel* kernel =
-      static_cast<WaveShaperDSPKernel*>(kernels_[0].get());
-  double output = kernel->WaveShaperCurveValue(0.0, curve_data, curve_length);
-  double tail_time = output == 0 ? 0 : std::numeric_limits<double>::infinity();
-
-  for (unsigned k = 0; k < kernels_.size(); ++k) {
-    kernel = static_cast<WaveShaperDSPKernel*>(kernels_[k].get());
-    kernel->SetTailTime(tail_time);
-  }
 }
 
 void WaveShaperProcessor::SetOversample(OverSampleType oversample) {
