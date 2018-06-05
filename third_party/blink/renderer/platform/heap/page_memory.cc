@@ -48,7 +48,7 @@ PageMemoryRegion::~PageMemoryRegion() {
 
 void PageMemoryRegion::PageDeleted(Address page) {
   MarkPageUnused(page);
-  if (!AtomicDecrement(&num_pages_))
+  if (!num_pages_.Decrement())
     delete this;
 }
 

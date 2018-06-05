@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_PAGE_MEMORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_PAGE_MEMORY_H_
 
+#include "base/atomic_ref_count.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_page.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -101,7 +102,7 @@ class PageMemoryRegion : public MemoryRegion {
   // A thread owns a page, but not a region. Represent the in-use
   // bitmap such that thread non-interference comes for free.
   bool in_use_[kBlinkPagesPerRegion];
-  int num_pages_;
+  base::AtomicRefCount num_pages_;
   RegionTree* region_tree_;
 };
 
