@@ -88,9 +88,6 @@ enum LatencyComponentType {
   // Timestamp of when the gpu service began swap buffers, unlike
   // INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT which measures after.
   INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT,
-  // Timestamp of when the gesture scroll update is generated from a mouse wheel
-  // event.
-  INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL,
   // ---------------------------TERMINAL COMPONENT-----------------------------
   // Timestamp when the event is acked from renderer when it does not
   // cause any rendering to be scheduled.
