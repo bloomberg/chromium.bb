@@ -36,8 +36,7 @@ void NotifyDestructionOnCorrectThread(
 
 }  // namespace
 
-ClientGpuMemoryBufferManager::ClientGpuMemoryBufferManager(
-    mojom::GpuMemoryBufferFactoryPtr gpu)
+ClientGpuMemoryBufferManager::ClientGpuMemoryBufferManager(mojom::GpuPtr gpu)
     : thread_("GpuMemoryThread"),
       gpu_memory_buffer_support_(
           std::make_unique<gpu::GpuMemoryBufferSupport>()),
@@ -56,18 +55,9 @@ ClientGpuMemoryBufferManager::~ClientGpuMemoryBufferManager() {
       FROM_HERE, base::Bind(&ClientGpuMemoryBufferManager::TearDownThread,
                             base::Unretained(this)));
   thread_.Stop();
-  if (optional_destruction_callback_)
-    std::move(optional_destruction_callback_).Run();
 }
 
-void ClientGpuMemoryBufferManager::SetOptionalDestructionCallback(
-    base::OnceClosure callback) {
-  DCHECK(!optional_destruction_callback_);
-  optional_destruction_callback_ = std::move(callback);
-}
-
-void ClientGpuMemoryBufferManager::InitThread(
-    mojom::GpuMemoryBufferFactoryPtrInfo gpu_info) {
+void ClientGpuMemoryBufferManager::InitThread(mojom::GpuPtrInfo gpu_info) {
   gpu_.Bind(std::move(gpu_info));
   gpu_.set_connection_error_handler(
       base::Bind(&ClientGpuMemoryBufferManager::DisconnectGpuOnThread,
