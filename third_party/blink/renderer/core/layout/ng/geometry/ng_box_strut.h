@@ -44,6 +44,11 @@ struct CORE_EXPORT NGBoxStrut {
 
   NGPhysicalBoxStrut ConvertToPhysical(WritingMode, TextDirection) const;
 
+  // Returns a new NGBoxStrut whose block-start and -end are flipped.
+  NGBoxStrut ToFlippedBlock() const {
+    return {inline_start, inline_end, block_end, block_start};
+  }
+
   // The following two operators exist primarily to have an easy way to access
   // the sum of border and padding.
   NGBoxStrut& operator+=(const NGBoxStrut& other) {

@@ -136,8 +136,8 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
     DCHECK_EQ(item_result.margins.inline_start, LayoutUnit());
     DCHECK_EQ(item_result.inline_size, LayoutUnit());
   }
-  box->border_padding_block_start = item_result.borders_paddings_block_start;
-  box->border_padding_block_end = item_result.borders_paddings_block_end;
+  box->border_padding_line_over = item_result.borders_paddings_line_over;
+  box->border_padding_line_under = item_result.borders_paddings_line_under;
   return box;
 }
 
@@ -228,10 +228,10 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
   // Extend the block direction of the box by borders and paddings. Inline
   // direction is already included into positions in NGLineBreaker.
   NGLogicalOffset offset(LayoutUnit(),
-                         -metrics.ascent - box->border_padding_block_start);
+                         -metrics.ascent - box->border_padding_line_over);
   NGLogicalSize size(LayoutUnit(), metrics.LineHeight() +
-                                       box->border_padding_block_start +
-                                       box->border_padding_block_end);
+                                       box->border_padding_line_over +
+                                       box->border_padding_line_under);
 
   unsigned fragment_end = line_box->size();
   DCHECK(box->item);
@@ -464,7 +464,7 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
     DCHECK(!child.HasInFlowFragment());
   }
 
-  return box.ToBoxFragment();
+  return box.ToInlineBoxFragment();
 }
 
 NGInlineLayoutStateStack::PositionPending

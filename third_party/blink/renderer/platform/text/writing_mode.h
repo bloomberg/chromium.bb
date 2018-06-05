@@ -56,6 +56,16 @@ inline bool IsFlippedLinesWritingMode(WritingMode writing_mode) {
   return writing_mode == WritingMode::kVerticalLr;
 }
 
+// In flipped-lines writing mode, 'line-over' and 'block-start' don't match.
+// When dealing with the logical coordinate system in the [line-relative
+// directions], 'vertical-lr' has 'line-over' on right, which is equivalent to
+// the 'vertical-rl' in the flow-relative directions.
+// https://drafts.csswg.org/css-writing-modes-3/#line-directions
+inline WritingMode ToLineWritingMode(WritingMode writing_mode) {
+  return !IsFlippedLinesWritingMode(writing_mode) ? writing_mode
+                                                  : WritingMode::kVerticalRl;
+}
+
 // Block progression increases in the opposite direction to normal; modes
 // vertical-rl.
 inline bool IsFlippedBlocksWritingMode(WritingMode writing_mode) {

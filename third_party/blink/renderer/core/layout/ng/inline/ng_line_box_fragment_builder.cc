@@ -129,15 +129,15 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
 scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   DCHECK_EQ(offsets_.size(), children_.size());
 
-  WritingMode writing_mode(node_.Style().GetWritingMode());
-  NGPhysicalSize physical_size = Size().ConvertToPhysical(writing_mode);
+  WritingMode line_writing_mode(ToLineWritingMode(GetWritingMode()));
+  NGPhysicalSize physical_size = Size().ConvertToPhysical(line_writing_mode);
 
   NGPhysicalOffsetRect contents_ink_overflow({}, physical_size);
   NGPhysicalOffsetRect scrollable_overflow({}, physical_size);
   for (size_t i = 0; i < children_.size(); ++i) {
     NGPhysicalFragment* child = children_[i].get();
     child->SetOffset(offsets_[i].ConvertToPhysical(
-        writing_mode, Direction(), physical_size, child->Size()));
+        line_writing_mode, Direction(), physical_size, child->Size()));
     child->PropagateContentsInkOverflow(&contents_ink_overflow);
     NGPhysicalOffsetRect child_scroll_overflow = child->ScrollableOverflow();
     child_scroll_overflow.offset += child->Offset();
