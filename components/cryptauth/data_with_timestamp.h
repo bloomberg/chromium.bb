@@ -29,13 +29,13 @@ struct DataWithTimestamp {
   bool operator==(const DataWithTimestamp& other) const;
 
   // The data valid for a given time period.
-  const std::string data;
+  std::string data;
 
   // The start time for which the data is valid, inclusive.
-  const int64_t start_timestamp_ms;
+  int64_t start_timestamp_ms;
 
   // The end time for which the data is valid, exclusive.
-  const int64_t end_timestamp_ms;
+  int64_t end_timestamp_ms;
 };
 
 }  // namespace

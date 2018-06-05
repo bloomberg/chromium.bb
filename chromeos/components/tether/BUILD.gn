@@ -28,6 +28,8 @@ static_library("tether") {
     "ble_scanner.h",
     "ble_scanner_impl.cc",
     "ble_scanner_impl.h",
+    "ble_service_data_helper_impl.cc",
+    "ble_service_data_helper_impl.h",
     "ble_synchronizer.cc",
     "ble_synchronizer.h",
     "ble_synchronizer_base.cc",
@@ -143,6 +145,10 @@ static_library("tether") {
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/components/tether/proto",
     "//chromeos/services/device_sync/public/cpp",
+
+    # TODO(hansberry): Remove //chromeos/services/secure_channel dependency when
+    # SecureChannelClient migration is complete.
+    "//chromeos/services/secure_channel",
     "//chromeos/services/secure_channel/public/cpp/shared:connection_priority",
     "//components/cryptauth",
     "//components/cryptauth/ble",
@@ -231,6 +237,10 @@ static_library("test_support") {
     "//chromeos",
     "//chromeos/components/tether/proto",
     "//chromeos/services/device_sync/public/cpp:test_support",
+
+    # TODO(hansberry): Remove //chromeos/services/secure_channel dependency when
+    # SecureChannelClient migration is complete.
+    "//chromeos/services/secure_channel",
     "//chromeos/services/secure_channel/public/cpp/shared:connection_priority",
     "//components/cryptauth",
     "//components/cryptauth:test_support",
@@ -254,6 +264,7 @@ source_set("unit_tests") {
     "ble_connection_manager_unittest.cc",
     "ble_connection_metrics_logger_unittest.cc",
     "ble_scanner_impl_unittest.cc",
+    "ble_service_data_helper_impl_unittest.cc",
     "ble_synchronizer_unittest.cc",
     "connect_tethering_operation_unittest.cc",
     "connection_preserver_impl_unittest.cc",
@@ -300,6 +311,10 @@ source_set("unit_tests") {
     "//chromeos:test_support",
     "//chromeos/components/tether/proto",
     "//chromeos/services/device_sync/public/cpp:test_support",
+
+    # TODO(hansberry): Remove //chromeos/services/secure_channel dependency when
+    # SecureChannelClient migration is complete.
+    "//chromeos/services/secure_channel",
     "//chromeos/services/secure_channel/public/cpp/shared:connection_priority",
     "//components/cryptauth",
     "//components/cryptauth:test_support",
