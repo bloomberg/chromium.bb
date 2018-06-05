@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/content_view_render_view.h"
-
+#include "components/embedder_support/android/view/content_view_render_view.h"
 #include <android/bitmap.h>
 #include <android/native_window_jni.h>
 
@@ -27,7 +26,7 @@
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
-namespace content {
+namespace embedder_support {
 
 ContentViewRenderView::ContentViewRenderView(JNIEnv* env,
                                              jobject obj,
@@ -36,8 +35,7 @@ ContentViewRenderView::ContentViewRenderView(JNIEnv* env,
   java_obj_.Reset(env, obj);
 }
 
-ContentViewRenderView::~ContentViewRenderView() {
-}
+ContentViewRenderView::~ContentViewRenderView() {}
 
 // static
 static jlong JNI_ContentViewRenderView_Init(
@@ -61,7 +59,8 @@ void ContentViewRenderView::SetCurrentWebContents(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jweb_contents) {
   InitCompositor();
-  WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
   compositor_->SetRootLayer(web_contents
                                 ? web_contents->GetNativeView()->GetLayer()
                                 : scoped_refptr<cc::Layer>());
@@ -73,7 +72,8 @@ void ContentViewRenderView::OnPhysicalBackingSizeChanged(
     const JavaParamRef<jobject>& jweb_contents,
     jint width,
     jint height) {
-  WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
   gfx::Size size(width, height);
   web_contents->GetNativeView()->OnPhysicalBackingSizeChanged(size);
 }
@@ -132,7 +132,7 @@ void ContentViewRenderView::DidSwapFrame(int pending_frames) {
 
 void ContentViewRenderView::InitCompositor() {
   if (!compositor_)
-    compositor_.reset(Compositor::Create(this, root_window_));
+    compositor_.reset(content::Compositor::Create(this, root_window_));
 }
 
-}  // namespace content
+}  // namespace embedder_support

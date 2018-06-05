@@ -365,6 +365,7 @@ static_library("content_shell_lib") {
     ]
     deps += [
       "//base/test:test_support",
+      "//components/embedder_support/android:view",
       "//content/shell/android:content_shell_jni_headers",
     ]
   }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_CONTENT_VIEW_RENDER_VIEW_H_
-#define CONTENT_BROWSER_ANDROID_CONTENT_VIEW_RENDER_VIEW_H_
+#ifndef COMPONENTS_EMBEDDER_SUPPORT_ANDROID_VIEW_CONTENT_VIEW_RENDER_VIEW_H_
+#define COMPONENTS_EMBEDDER_SUPPORT_ANDROID_VIEW_CONTENT_VIEW_RENDER_VIEW_H_
 
 #include <memory>
 
@@ -16,8 +16,11 @@
 
 namespace content {
 class Compositor;
+}  // namespace content
 
-class ContentViewRenderView : public CompositorClient {
+namespace embedder_support {
+
+class ContentViewRenderView : public content::CompositorClient {
  public:
   ContentViewRenderView(JNIEnv* env,
                         jobject obj,
@@ -70,8 +73,6 @@ class ContentViewRenderView : public CompositorClient {
   DISALLOW_COPY_AND_ASSIGN(ContentViewRenderView);
 };
 
+}  // namespace embedder_support
 
-
-}
-
-#endif  // CONTENT_BROWSER_ANDROID_CONTENT_VIEW_RENDER_VIEW_H_
+#endif  // COMPONENTS_EMBEDDER_SUPPORT_ANDROID_VIEW_CONTENT_VIEW_RENDER_VIEW_H_

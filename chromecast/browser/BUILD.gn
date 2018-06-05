@@ -172,6 +172,7 @@ cast_source_set("browser") {
     deps += [
       ":jni_headers",
       "//components/cdm/browser",
+      "//components/embedder_support/android:view",
     ]
   } else {
     sources += [

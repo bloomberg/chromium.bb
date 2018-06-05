@@ -135,6 +135,7 @@ android_library("cast_shell_java") {
     "//components/content_view:content_view_java",
     "//components/crash/android:java",
     "//components/embedder_support/android:media_java",
+    "//components/embedder_support/android:view_java",
     "//content/public/android:content_java",
     "//device/geolocation:geolocation_java",
     "//media/base/android:media_java",
