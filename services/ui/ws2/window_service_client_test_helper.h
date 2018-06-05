@@ -89,6 +89,7 @@ class WindowServiceClientTestHelper {
                                mojom::EventTargetingPolicy policy);
   bool SetFocus(aura::Window* window);
   void SetCanFocus(aura::Window* window, bool can_focus);
+  void OnWindowInputEventAck(uint32_t event_id, mojom::EventResult result);
   bool StackAtTop(aura::Window* window);
 
   Id TransportIdForWindow(aura::Window* window);

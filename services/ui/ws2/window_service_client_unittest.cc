@@ -988,6 +988,39 @@ TEST(WindowServiceClientTest, StackAtTop) {
   EXPECT_FALSE(setup.client_test_helper()->StackAtTop(non_top_level_window));
 }
 
+TEST(WindowServiceClientTest, OnUnhandledKeyEvent) {
+  // Create a top-level, show it and give it focus.
+  WindowServiceTestSetup setup;
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  top_level->Focus();
+  ASSERT_TRUE(top_level->HasFocus());
+  test::EventGenerator event_generator(setup.root());
+
+  // Generate a key-press. The client should get the event, but not the
+  // delegate.
+  event_generator.PressKey(VKEY_A, EF_CONTROL_DOWN);
+  EXPECT_TRUE(setup.delegate()->unhandled_key_events()->empty());
+
+  // Respond that the event was not handled. Should result in notifying the
+  // delegate.
+  EXPECT_TRUE(setup.window_tree_client()->AckFirstEvent(
+      setup.window_service_client(), mojom::EventResult::UNHANDLED));
+  ASSERT_EQ(1u, setup.delegate()->unhandled_key_events()->size());
+  EXPECT_EQ(VKEY_A, (*setup.delegate()->unhandled_key_events())[0].key_code());
+  EXPECT_EQ(EF_CONTROL_DOWN,
+            (*setup.delegate()->unhandled_key_events())[0].flags());
+  setup.delegate()->unhandled_key_events()->clear();
+
+  // Repeat, but respond with handled. This should not result in the delegate
+  // being notified.
+  event_generator.PressKey(VKEY_B, EF_SHIFT_DOWN);
+  EXPECT_TRUE(setup.window_tree_client()->AckFirstEvent(
+      setup.window_service_client(), mojom::EventResult::HANDLED));
+  EXPECT_TRUE(setup.delegate()->unhandled_key_events()->empty());
+}
+
 }  // namespace
 }  // namespace ws2
 }  // namespace ui

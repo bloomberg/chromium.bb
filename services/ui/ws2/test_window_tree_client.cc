@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "services/ui/ws2/window_service_client.h"
+#include "services/ui/ws2/window_service_client_test_helper.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -52,6 +54,16 @@ TestWindowTreeClient::PopObservedPointerEvent() {
   ObservedPointerEvent event = std::move(observed_pointer_events_.front());
   observed_pointer_events_.pop();
   return event;
+}
+
+bool TestWindowTreeClient::AckFirstEvent(WindowServiceClient* client,
+                                         mojom::EventResult result) {
+  if (input_events_.empty())
+    return false;
+  InputEvent input_event = PopInputEvent();
+  WindowServiceClientTestHelper(client).OnWindowInputEventAck(
+      input_event.event_id, result);
+  return true;
 }
 
 void TestWindowTreeClient::OnChangeAdded() {}

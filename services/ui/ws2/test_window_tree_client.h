@@ -17,6 +17,8 @@
 namespace ui {
 namespace ws2 {
 
+class WindowServiceClient;
+
 // WindowTreeClient implementation that logs all changes to a tracker.
 class TestWindowTreeClient : public mojom::WindowTreeClient,
                              public TestChangeTracker::Delegate {
@@ -78,6 +80,10 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void set_track_root_bounds_changes(bool value) {
     track_root_bounds_changes_ = value;
   }
+
+  // Acks the first InputEvent that was received, and removes it. Returns true
+  // if there was an event.
+  bool AckFirstEvent(WindowServiceClient* client, mojom::EventResult result);
 
   // TestChangeTracker::Delegate:
   void OnChangeAdded() override;

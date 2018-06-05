@@ -242,12 +242,16 @@ class AshTestBase : public testing::Test,
 
   // Returns the WindowServiceClientTestHelper, creating if necessary.
   ui::ws2::WindowServiceClientTestHelper* GetWindowServiceClientTestHelper();
+  ui::ws2::TestWindowTreeClient* GetTestWindowTreeClient();
+  ui::ws2::WindowServiceClient* GetWindowServiceClient();
 
  private:
   std::unique_ptr<aura::Window> CreateTestWindowMash(
       ui::mojom::WindowType window_type,
       int shell_window_id,
       std::map<std::string, std::vector<uint8_t>>* properties);
+
+  void CreateWindowServiceClientIfNecessary();
 
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* window) override;

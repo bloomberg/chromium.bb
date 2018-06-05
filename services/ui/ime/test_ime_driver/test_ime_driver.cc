@@ -40,7 +40,12 @@ class TestInputMethod : public mojom::InputMethod {
   void PostProcssKeyEvent(std::unique_ptr<Event> key_event,
                           ProcessKeyEventCallback callback,
                           bool stopped_propagation) {
+    // Ignore any events with modifiers set. This is useful for running things
+    // like ash_shell_with_content and having accelerators (such as control-n)
+    // work.
     if (!stopped_propagation && key_event->type() == ET_KEY_PRESSED &&
+        (key_event->flags() &
+         (EF_CONTROL_DOWN | EF_ALT_DOWN | EF_COMMAND_DOWN)) == 0 &&
         (key_event->AsKeyEvent()->is_char() ||
          key_event->AsKeyEvent()->GetDomKey().IsCharacter())) {
       client_->InsertChar(std::move(key_event));

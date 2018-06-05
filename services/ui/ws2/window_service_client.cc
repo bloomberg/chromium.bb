@@ -33,6 +33,31 @@
 
 namespace ui {
 namespace ws2 {
+namespace {
+
+// Max number of KeyEvents we let a client queue before pruning. In general only
+// bad (or buggy) clients would hit this cap.
+constexpr size_t kMaxQueuedEvents = 20;
+
+// Event id used for events that a response from a client is not required.
+constexpr uint32_t kDefaultEventId = 1;
+
+uint32_t GenerateEventAckId() {
+  // We do not want to create a sequential id for each event, because that can
+  // leak some information to the client. So instead, manufacture the id
+  // randomly.
+  uint32_t id = 0x1000000 | (rand() & 0xffffff);
+  return id == kDefaultEventId ? kDefaultEventId + 1 : id;
+}
+
+}  // namespace
+
+// This is used to track KeyEvents sent to the client. If a KeyEvent is not
+// handled by the client, it's processed locally for accelerators.
+struct WindowServiceClient::InFlightKeyEvent {
+  uint32_t id;
+  std::unique_ptr<Event> event;
+};
 
 WindowServiceClient::WindowServiceClient(WindowService* window_service,
                                          ClientSpecificId client_id,
@@ -81,8 +106,17 @@ WindowServiceClient::~WindowServiceClient() {
 
 void WindowServiceClient::SendEventToClient(aura::Window* window,
                                             const Event& event) {
-  // TODO(sky): remove event_id.
-  const uint32_t event_id = 1;
+  uint32_t event_id = kDefaultEventId;
+  if (event.type() == ui::ET_KEY_PRESSED ||
+      event.type() == ui::ET_KEY_RELEASED) {
+    std::unique_ptr<InFlightKeyEvent> in_flight_key_event =
+        std::make_unique<InFlightKeyEvent>();
+    event_id = in_flight_key_event->id = GenerateEventAckId();
+    in_flight_key_event->event = Event::Clone(event);
+    in_flight_key_events_.push(std::move(in_flight_key_event));
+    if (in_flight_key_events_.size() == kMaxQueuedEvents)
+      in_flight_key_events_.pop();
+  }
   // Events should only come to windows connected to displays.
   DCHECK(window->GetHost());
   const int64_t display_id = window->GetHost()->GetDisplayId();
@@ -1177,7 +1211,16 @@ void WindowServiceClient::SetEventTargetingPolicy(
 
 void WindowServiceClient::OnWindowInputEventAck(uint32_t event_id,
                                                 mojom::EventResult result) {
-  // TODO(sky): this is no longer needed, remove.
+  if (!in_flight_key_events_.empty() &&
+      in_flight_key_events_.front()->id == event_id) {
+    std::unique_ptr<InFlightKeyEvent> in_flight_event =
+        std::move(in_flight_key_events_.front());
+    in_flight_key_events_.pop();
+    if (result == mojom::EventResult::UNHANDLED) {
+      window_service_->delegate()->OnUnhandledKeyEvent(
+          *(in_flight_event->event->AsKeyEvent()));
+    }
+  }
 }
 
 void WindowServiceClient::DeactivateWindow(Id window_id) {

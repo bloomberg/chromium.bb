@@ -20,6 +20,9 @@ class Window;
 }
 
 namespace ui {
+
+class KeyEvent;
+
 namespace ws2 {
 
 // A delegate used by the WindowService for context-specific operations.
@@ -35,6 +38,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
   virtual std::unique_ptr<aura::Window> NewTopLevel(
       aura::PropertyConverter* property_converter,
       const base::flat_map<std::string, std::vector<uint8_t>>& properties) = 0;
+
+  // Called for KeyEvents the client does not handle.
+  virtual void OnUnhandledKeyEvent(const KeyEvent& key_event) {}
 
  protected:
   virtual ~WindowServiceDelegate() = default;

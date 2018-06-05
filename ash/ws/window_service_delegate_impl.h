@@ -21,6 +21,7 @@ class WindowServiceDelegateImpl : public ui::ws2::WindowServiceDelegate {
       aura::PropertyConverter* property_converter,
       const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override;
+  void OnUnhandledKeyEvent(const ui::KeyEvent& key_event) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowServiceDelegateImpl);

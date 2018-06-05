@@ -545,20 +545,18 @@ display::Display AshTestBase::GetSecondaryDisplay() {
 
 ui::ws2::WindowServiceClientTestHelper*
 AshTestBase::GetWindowServiceClientTestHelper() {
-  if (!window_tree_client_) {
-    // Lazily create a single client.
-    window_tree_client_ = std::make_unique<ui::ws2::TestWindowTreeClient>();
-    window_service_client_ =
-        Shell::Get()
-            ->window_service_owner()
-            ->window_service()
-            ->CreateWindowServiceClient(window_tree_client_.get());
-    window_service_client_->InitFromFactory();
-    client_test_helper_ =
-        std::make_unique<ui::ws2::WindowServiceClientTestHelper>(
-            window_service_client_.get());
-  }
+  CreateWindowServiceClientIfNecessary();
   return client_test_helper_.get();
+}
+
+ui::ws2::TestWindowTreeClient* AshTestBase::GetTestWindowTreeClient() {
+  CreateWindowServiceClientIfNecessary();
+  return window_tree_client_.get();
+}
+
+ui::ws2::WindowServiceClient* AshTestBase::GetWindowServiceClient() {
+  CreateWindowServiceClientIfNecessary();
+  return window_service_client_.get();
 }
 
 std::unique_ptr<aura::Window> AshTestBase::CreateTestWindowMash(
@@ -573,6 +571,23 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindowMash(
   window->set_id(shell_window_id);
   window->Show();
   return base::WrapUnique<aura::Window>(window);
+}
+
+void AshTestBase::CreateWindowServiceClientIfNecessary() {
+  if (window_tree_client_)
+    return;
+
+  // Lazily create a single client.
+  window_tree_client_ = std::make_unique<ui::ws2::TestWindowTreeClient>();
+  window_service_client_ =
+      Shell::Get()
+          ->window_service_owner()
+          ->window_service()
+          ->CreateWindowServiceClient(window_tree_client_.get());
+  window_service_client_->InitFromFactory();
+  client_test_helper_ =
+      std::make_unique<ui::ws2::WindowServiceClientTestHelper>(
+          window_service_client_.get());
 }
 
 void AshTestBase::OnWindowInitialized(aura::Window* window) {}
