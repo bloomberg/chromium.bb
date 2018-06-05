@@ -441,7 +441,7 @@ public class ExternalNavigationHandler {
         // handlers. If webkit can't handle it internally, we need to call
         // startActivityIfNeeded or startActivity.
         if (!isExternalProtocol) {
-            if (mDelegate.countSpecializedHandlers(resolvingInfos) == 0) {
+            if (mDelegate.countSpecializedHandlers(resolvingInfos, intent) == 0) {
                 if (incomingIntentRedirect
                         && mDelegate.maybeLaunchInstantApp(
                                    params.getUrl(), params.getReferrerUrl(), true)) {
@@ -566,7 +566,7 @@ public class ExternalNavigationHandler {
             }
 
             if (targetWebApkPackageName != null
-                    && mDelegate.countSpecializedHandlers(resolvingInfos) == 1) {
+                    && mDelegate.countSpecializedHandlers(resolvingInfos, null) == 1) {
                 intent.setPackage(targetWebApkPackageName);
             }
 
@@ -746,7 +746,8 @@ public class ExternalNavigationHandler {
         } catch (URISyntaxException ex) {
             return false;
         }
-        return ExternalNavigationDelegateImpl.getSpecializedHandlersWithFilter(handlers, appId)
+        return ExternalNavigationDelegateImpl
+                       .getSpecializedHandlersWithFilter(handlers, appId, null)
                        .size()
                 > 0;
     }
