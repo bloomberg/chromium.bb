@@ -861,7 +861,8 @@ TEST_F(NativeWidgetMacTest, NonWidgetParentLastReference) {
 }
 
 // Tests visibility for child of native NSWindow, reshowing after -[NSApp hide].
-TEST_F(NativeWidgetMacTest, VisibleAfterNativeParentShow) {
+// Occasionally flaky (maybe due to [NSApp hide]). See https://crbug.com/777247.
+TEST_F(NativeWidgetMacTest, DISABLED_VisibleAfterNativeParentShow) {
   NSWindow* native_parent = MakeNativeParent();
   Widget* child = AttachPopupToNativeParent(native_parent);
   child->Show();
