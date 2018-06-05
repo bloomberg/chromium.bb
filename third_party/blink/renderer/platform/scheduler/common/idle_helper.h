@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_IDLE_HELPER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_IDLE_HELPER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_IDLE_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_IDLE_HELPER_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -11,7 +11,7 @@
 #include "third_party/blink/public/platform/scheduler/single_thread_idle_task_runner.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
-#include "third_party/blink/renderer/platform/scheduler/child/cancelable_closure_holder.h"
+#include "third_party/blink/renderer/platform/scheduler/common/cancelable_closure_holder.h"
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 
 namespace blink {
@@ -248,4 +248,4 @@ class PLATFORM_EXPORT IdleHelper : public base::MessageLoop::TaskObserver,
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_IDLE_HELPER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_IDLE_HELPER_H_

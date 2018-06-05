@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/child/idle_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/common/idle_helper.h"
 
 #include <utility>
 
@@ -459,9 +459,9 @@ TEST_F(IdleHelperTestWithIdlePeriodObserver, TestEnterAndExitIdlePeriod) {
   ON_CALL(*idle_helper_, OnIdlePeriodStarted())
       .WillByDefault(
           Invoke([fixture]() { EXPECT_TRUE(fixture->IsInIdlePeriod()); }));
-  ON_CALL(*idle_helper_, OnIdlePeriodEnded())
-      .WillByDefault(
-          Invoke([fixture]() { EXPECT_FALSE(fixture->IsInIdlePeriod()); }));
+  ON_CALL(*idle_helper_, OnIdlePeriodEnded()).WillByDefault(Invoke([fixture]() {
+    EXPECT_FALSE(fixture->IsInIdlePeriod());
+  }));
 
   ExpectIdlePeriodStartsAndEnds(Exactly(1));
 
