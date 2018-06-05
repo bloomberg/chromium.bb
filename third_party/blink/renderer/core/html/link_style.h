@@ -15,7 +15,7 @@
 namespace blink {
 
 class HTMLLinkElement;
-class KURL;
+struct LinkLoadParameters;
 
 // LinkStyle handles dynamically change-able link resources, which is
 // typically @rel="stylesheet".
@@ -62,9 +62,8 @@ class LinkStyle final : public LinkResource, ResourceClient {
   void NotifyFinished(Resource*) override;
   String DebugName() const override { return "LinkStyle"; }
   enum LoadReturnValue { kLoaded, kNotNeeded, kBail };
-  LoadReturnValue LoadStylesheetIfNeeded(const KURL&,
-                                         const WTF::TextEncoding&,
-                                         const String& type);
+  LoadReturnValue LoadStylesheetIfNeeded(const LinkLoadParameters&,
+                                         const WTF::TextEncoding&);
 
   enum DisabledState { kUnset, kEnabledViaScript, kDisabled };
 

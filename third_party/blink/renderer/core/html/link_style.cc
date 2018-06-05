@@ -253,14 +253,12 @@ void LinkStyle::SetCrossOriginStylesheetStatus(CSSStyleSheet* sheet) {
   fetch_following_cors_ = false;
 }
 
-// TODO(yoav): move that logic to LinkLoader
 LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
-    const KURL& url,
-    const WTF::TextEncoding& charset,
-    const String& type) {
+    const LinkLoadParameters& parameters,
+    const WTF::TextEncoding& charset) {
   if (disabled_state_ == kDisabled || !owner_->RelAttribute().IsStyleSheet() ||
-      !StyleSheetTypeIsSupported(type) || !ShouldLoadResource() ||
-      !url.IsValid())
+      !StyleSheetTypeIsSupported(parameters.type) || !ShouldLoadResource() ||
+      !parameters.href.IsValid())
     return kNotNeeded;
 
   if (GetResource()) {
@@ -294,11 +292,13 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
                   owner_->IsCreatedByParser();
   AddPendingSheet(blocking ? kBlocking : kNonBlocking);
 
-  ResourceRequest resource_request(GetDocument().CompleteURL(url));
+  // TODO(domfarolino): move the below fetching logic to
+  // LinkLoader::LoadStylesheet
+  ResourceRequest resource_request(GetDocument().CompleteURL(parameters.href));
   ReferrerPolicy referrer_policy = owner_->GetReferrerPolicy();
   if (referrer_policy != kReferrerPolicyDefault) {
     resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-        referrer_policy, url, GetDocument().OutgoingReferrer()));
+        referrer_policy, parameters.href, GetDocument().OutgoingReferrer()));
   }
 
   if (RuntimeEnabledFeatures::PriorityHintsEnabled()) {
@@ -384,8 +384,7 @@ void LinkStyle::Process() {
   if (!sheet_ && !owner_->LoadLink(params))
     return;
 
-  if (LoadStylesheetIfNeeded(params.href, charset, params.type) == kNotNeeded &&
-      sheet_) {
+  if (LoadStylesheetIfNeeded(params, charset) == kNotNeeded && sheet_) {
     // we no longer contain a stylesheet, e.g. perhaps rel or type was changed
     ClearSheet();
     GetDocument().GetStyleEngine().SetNeedsActiveStyleUpdate(
