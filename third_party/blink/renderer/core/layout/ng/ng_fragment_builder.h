@@ -41,6 +41,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
 
   NGFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit);
   NGFragmentBuilder& SetPadding(const NGBoxStrut&);
+  NGFragmentBuilder& SetPadding(const NGLineBoxStrut&);
 
   using NGContainerFragmentBuilder::AddChild;
 

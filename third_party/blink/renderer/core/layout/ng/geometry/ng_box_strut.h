@@ -13,6 +13,7 @@
 
 namespace blink {
 
+struct NGLineBoxStrut;
 struct NGPhysicalBoxStrut;
 
 // This struct is used for storing margins, borders or padding of a box on all
@@ -27,6 +28,7 @@ struct CORE_EXPORT NGBoxStrut {
         inline_end(inline_end),
         block_start(block_start),
         block_end(block_end) {}
+  NGBoxStrut(const NGLineBoxStrut&, bool is_flipped_lines);
 
   LayoutUnit LineLeft(TextDirection direction) const {
     return IsLtr(direction) ? inline_start : inline_end;
@@ -43,11 +45,6 @@ struct CORE_EXPORT NGBoxStrut {
   bool IsEmpty() const;
 
   NGPhysicalBoxStrut ConvertToPhysical(WritingMode, TextDirection) const;
-
-  // Returns a new NGBoxStrut whose block-start and -end are flipped.
-  NGBoxStrut ToFlippedBlock() const {
-    return {inline_start, inline_end, block_end, block_start};
-  }
 
   // The following two operators exist primarily to have an easy way to access
   // the sum of border and padding.
@@ -90,6 +87,33 @@ struct CORE_EXPORT NGBoxStrut {
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGBoxStrut&);
+
+// A variant of NGBoxStrut in the line-relative coordinate system.
+//
+// 'line-over' is 'block-start' and 'line-under' is 'block-end' unless it is in
+// flipped-lines writing-mode (i.e., 'vertical-lr'), in which case they are
+// swapped.
+//
+// https://drafts.csswg.org/css-writing-modes-3/#line-mappings
+struct CORE_EXPORT NGLineBoxStrut {
+  NGLineBoxStrut() = default;
+  NGLineBoxStrut(LayoutUnit inline_start,
+                 LayoutUnit inline_end,
+                 LayoutUnit line_over,
+                 LayoutUnit line_under)
+      : inline_start(inline_start),
+        inline_end(inline_end),
+        line_over(line_over),
+        line_under(line_under) {}
+  NGLineBoxStrut(const NGBoxStrut&, bool is_flipped_lines);
+
+  LayoutUnit InlineSum() const { return inline_start + inline_end; }
+
+  LayoutUnit inline_start;
+  LayoutUnit inline_end;
+  LayoutUnit line_over;
+  LayoutUnit line_under;
+};
 
 struct NGPixelSnappedPhysicalBoxStrut;
 

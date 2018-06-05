@@ -69,7 +69,17 @@ NGFragmentBuilder& NGFragmentBuilder::SetIntrinsicBlockSize(
 }
 
 NGFragmentBuilder& NGFragmentBuilder::SetPadding(const NGBoxStrut& padding) {
+  DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
   padding_ = padding;
+  return *this;
+}
+
+NGFragmentBuilder& NGFragmentBuilder::SetPadding(
+    const NGLineBoxStrut& padding) {
+  DCHECK_EQ(BoxType(), NGPhysicalFragment::kInlineBox);
+  // Convert to flow-relative, because ToInlineBoxFragment() will convert
+  // the padding to physical coordinates using flow-relative writing-mode.
+  padding_ = NGBoxStrut(padding, IsFlippedLinesWritingMode(GetWritingMode()));
   return *this;
 }
 
