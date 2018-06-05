@@ -89,7 +89,8 @@ class CONTENT_EXPORT ResourceDispatcher {
   //
   // |routing_id| is used to associated the bridge with a frame's network
   // context.
-  // |timeout| (in seconds) is used to abort the sync request on timeouts.
+  // |timeout| is used to abort the sync request on timeouts. TimeDelta::Max()
+  // is interpreted as no-timeout.
   // If |download_to_blob_registry| is not null, it is used to redirect the
   // download to a blob, using StartAsync's |pass_response_pipe_to_peer| flag.
   virtual void StartSync(
@@ -99,7 +100,7 @@ class CONTENT_EXPORT ResourceDispatcher {
       SyncLoadResponse* response,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-      double timeout,
+      base::TimeDelta timeout,
       blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
       std::unique_ptr<RequestPeer> peer);
 

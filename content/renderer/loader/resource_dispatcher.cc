@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
@@ -520,7 +521,7 @@ void ResourceDispatcher::StartSync(
     SyncLoadResponse* response,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-    double timeout,
+    base::TimeDelta timeout,
     blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
     std::unique_ptr<RequestPeer> peer) {
   CheckSchemeForReferrerPolicy(*request);

@@ -36,7 +36,8 @@
 
 namespace blink {
 
-double ResourceRequest::default_timeout_interval_ = INT_MAX;
+base::TimeDelta ResourceRequest::default_timeout_interval_ =
+    base::TimeDelta::Max();
 
 ResourceRequest::ResourceRequest() : ResourceRequest(NullURL()) {}
 
@@ -257,11 +258,12 @@ void ResourceRequest::SetCacheMode(mojom::FetchCacheMode cache_mode) {
   cache_mode_ = cache_mode;
 }
 
-double ResourceRequest::TimeoutInterval() const {
+base::TimeDelta ResourceRequest::TimeoutInterval() const {
   return timeout_interval_;
 }
 
-void ResourceRequest::SetTimeoutInterval(double timout_interval_seconds) {
+void ResourceRequest::SetTimeoutInterval(
+    base::TimeDelta timout_interval_seconds) {
   timeout_interval_ = timout_interval_seconds;
 }
 

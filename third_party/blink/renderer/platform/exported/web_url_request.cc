@@ -31,6 +31,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 
 #include <memory>
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -122,7 +123,7 @@ void WebURLRequest::SetCacheMode(mojom::FetchCacheMode cache_mode) {
   resource_request_->SetCacheMode(cache_mode);
 }
 
-double WebURLRequest::TimeoutInterval() const {
+base::TimeDelta WebURLRequest::TimeoutInterval() const {
   return resource_request_->TimeoutInterval();
 }
 

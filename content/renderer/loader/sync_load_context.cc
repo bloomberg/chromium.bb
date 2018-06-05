@@ -7,7 +7,9 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/time/time.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/sync_load_response.h"
@@ -24,32 +26,42 @@ class SyncLoadContext::SignalHelper final {
   SignalHelper(SyncLoadContext* context,
                base::WaitableEvent* redirect_or_response_event,
                base::WaitableEvent* abort_event,
-               double timeout)
+               base::TimeDelta timeout)
       : context_(context),
         redirect_or_response_event_(redirect_or_response_event),
         abort_event_(abort_event) {
-    Start(base::TimeDelta::FromSecondsD(timeout));
+    // base::TimeDelta::Max() means no timeout.
+    if (timeout != base::TimeDelta::Max()) {
+      // Instantiate a base::OneShotTimer instance.
+      timeout_timer_.emplace();
+    }
+    Start(timeout);
   }
 
   void SignalRedirectOrResponseComplete() {
     abort_watcher_.StopWatching();
-    timeout_timer_.AbandonAndStop();
+    if (timeout_timer_)
+      timeout_timer_->AbandonAndStop();
     redirect_or_response_event_->Signal();
   }
 
   bool RestartAfterRedirect() {
     if (abort_event_ && abort_event_->IsSignaled())
       return false;
-    base::TimeDelta timeout_remainder =
-        timeout_timer_.desired_run_time() - base::TimeTicks::Now();
-    if (timeout_remainder <= base::TimeDelta())
-      return false;
+
+    base::TimeDelta timeout_remainder = base::TimeDelta::Max();
+    if (timeout_timer_) {
+      timeout_remainder =
+          timeout_timer_->desired_run_time() - base::TimeTicks::Now();
+      if (timeout_remainder <= base::TimeDelta())
+        return false;
+    }
     Start(timeout_remainder);
     return true;
   }
 
  private:
-  void Start(const base::TimeDelta& timeout) {
+  void Start(base::TimeDelta timeout) {
     DCHECK(!redirect_or_response_event_->IsSignaled());
     if (abort_event_) {
       abort_watcher_.StartWatching(
@@ -57,9 +69,10 @@ class SyncLoadContext::SignalHelper final {
           base::BindOnce(&SyncLoadContext::OnAbort, base::Unretained(context_)),
           context_->task_runner_);
     }
-    if (timeout > base::TimeDelta()) {
-      timeout_timer_.Start(FROM_HERE, timeout, context_,
-                           &SyncLoadContext::OnTimeout);
+    if (timeout_timer_) {
+      DCHECK_NE(base::TimeDelta::Max(), timeout);
+      timeout_timer_->Start(FROM_HERE, timeout, context_,
+                            &SyncLoadContext::OnTimeout);
     }
   }
 
@@ -67,7 +80,7 @@ class SyncLoadContext::SignalHelper final {
   base::WaitableEvent* redirect_or_response_event_;
   base::WaitableEvent* abort_event_;
   base::WaitableEventWatcher abort_watcher_;
-  base::OneShotTimer timeout_timer_;
+  base::Optional<base::OneShotTimer> timeout_timer_;
 };
 
 // static
@@ -82,7 +95,7 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
     SyncLoadResponse* response,
     base::WaitableEvent* redirect_or_response_event,
     base::WaitableEvent* abort_event,
-    double timeout,
+    base::TimeDelta timeout,
     blink::mojom::BlobRegistryPtrInfo download_to_blob_registry) {
   bool download_to_blob = download_to_blob_registry.is_valid();
   auto* context = new SyncLoadContext(
@@ -104,7 +117,7 @@ SyncLoadContext::SyncLoadContext(
     SyncLoadResponse* response,
     base::WaitableEvent* redirect_or_response_event,
     base::WaitableEvent* abort_event,
-    double timeout,
+    base::TimeDelta timeout,
     blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : response_(response),

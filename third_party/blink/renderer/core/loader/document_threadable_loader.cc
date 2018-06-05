@@ -1171,7 +1171,7 @@ void DocumentThreadableLoader::LoadRequestSync(
   }
   if (options_.timeout_milliseconds > 0) {
     fetch_params.MutableResourceRequest().SetTimeoutInterval(
-        options_.timeout_milliseconds / 1000.0);
+        base::TimeDelta::FromMilliseconds(options_.timeout_milliseconds));
   }
 
   checker_.WillAddClient();
