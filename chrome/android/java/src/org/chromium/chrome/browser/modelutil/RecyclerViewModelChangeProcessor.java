@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.modelutil;
 
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 
@@ -17,14 +18,16 @@ import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
  *
  * @param <E> The type of the {@link ListObservable} model.
  * @param <VH> The {@link ViewHolder} type for the RecyclerView.
+ * @param <P> The payload type for partial updates. Use {@link Void} for models that don't support
+ *         partial updates.
  */
-public class RecyclerViewModelChangeProcessor<E extends ListObservable, VH extends ViewHolder>
-        implements ListObserver {
+public class RecyclerViewModelChangeProcessor<E extends ListObservable, VH extends ViewHolder, P>
+        implements ListObserver<P> {
     private RecyclerViewAdapter<E, VH> mAdapter;
 
     /**
      * Constructs a new {@link RecyclerViewModelChangeProcessor}.
-     * @param adapter The {@link RecyclerViewAdapter<VH>} to be notified of changes to a
+     * @param adapter The {@link RecyclerViewAdapter} to be notified of changes to a
      *                {@link ListObservable} model.
      */
     public RecyclerViewModelChangeProcessor(RecyclerViewAdapter<E, VH> adapter) {
@@ -42,7 +45,8 @@ public class RecyclerViewModelChangeProcessor<E extends ListObservable, VH exten
     }
 
     @Override
-    public void onItemRangeChanged(ListObservable source, int index, int count, Object payload) {
+    public void onItemRangeChanged(
+            ListObservable<P> source, int index, int count, @Nullable P payload) {
         mAdapter.notifyItemRangeChanged(index, count, payload);
     }
 }

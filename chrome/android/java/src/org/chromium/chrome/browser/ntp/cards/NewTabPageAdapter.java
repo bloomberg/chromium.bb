@@ -43,8 +43,8 @@ import java.util.Set;
  * the above-the-fold view (containing the logo, search box, and most visited tiles) and subsequent
  * elements will be the cards shown to the user
  */
-public class NewTabPageAdapter
-        extends Adapter<NewTabPageViewHolder> implements ListObservable.ListObserver {
+public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
+        implements ListObservable.ListObserver<PartialBindCallback> {
     private final SuggestionsUiDelegate mUiDelegate;
     private final ContextMenuManager mContextMenuManager;
     private final OfflinePageBridge mOfflinePageBridge;
@@ -279,8 +279,8 @@ public class NewTabPageAdapter
     }
 
     @Override
-    public void onItemRangeChanged(
-            ListObservable child, int itemPosition, int itemCount, @Nullable Object payload) {
+    public void onItemRangeChanged(ListObservable child, int itemPosition, int itemCount,
+            @Nullable PartialBindCallback payload) {
         assert child == mRoot;
         notifyItemRangeChanged(itemPosition, itemCount, payload);
     }

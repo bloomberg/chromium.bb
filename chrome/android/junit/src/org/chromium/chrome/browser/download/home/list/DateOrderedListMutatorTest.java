@@ -35,12 +35,12 @@ import java.util.Collections;
 @Config(manifest = Config.NONE)
 public class DateOrderedListMutatorTest {
     @Mock
-    OfflineItemFilterSource mSource;
+    private OfflineItemFilterSource mSource;
 
     @Mock
-    ListObserver mObserver;
+    private ListObserver<Void> mObserver;
 
-    ListItemModel mModel;
+    private ListItemModel mModel;
 
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();

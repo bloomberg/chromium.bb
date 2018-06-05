@@ -43,9 +43,9 @@ public class KeyboardAccessoryControllerTest {
     @Mock
     private PropertyObserver<KeyboardAccessoryModel.PropertyKey> mMockPropertyObserver;
     @Mock
-    private ListObservable.ListObserver mMockTabListObserver;
+    private ListObservable.ListObserver<Void> mMockTabListObserver;
     @Mock
-    private ListObservable.ListObserver mMockActionListObserver;
+    private ListObservable.ListObserver<Void> mMockActionListObserver;
     @Mock
     private WindowAndroid mMockWindow;
     @Mock

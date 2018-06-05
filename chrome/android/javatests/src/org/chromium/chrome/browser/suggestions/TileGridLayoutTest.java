@@ -42,7 +42,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -433,7 +433,7 @@ public class TileGridLayoutTest {
 
     private TileGridLayout renderTiles(List<SiteSuggestion> siteSuggestions)
             throws IOException, InterruptedException {
-        return renderTiles(siteSuggestions, Collections.<String>emptyList());
+        return renderTiles(siteSuggestions, Collections.emptyList());
     }
 
     private SiteSection createSiteSection(
@@ -468,13 +468,11 @@ public class TileGridLayoutTest {
         SiteSection siteSection =
                 new SiteSection(uiDelegate, null, delegate, offlinePageBridge, uiConfig);
 
-        siteSection.addObserver(new ListObservable.ListObserver() {
+        siteSection.addObserver(new ListObservable.ListObserver<PartialBindCallback>() {
             @Override
-            public void onItemRangeChanged(
-                    ListObservable child, int index, int count, @Nullable Object payload) {
-                if (payload != null) {
-                    ((NewTabPageViewHolder.PartialBindCallback) payload).onResult(viewHolder);
-                }
+            public void onItemRangeChanged(ListObservable child, int index, int count,
+                    @Nullable PartialBindCallback payload) {
+                if (payload != null) payload.onResult(viewHolder);
             }
         });
 

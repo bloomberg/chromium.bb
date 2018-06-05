@@ -46,7 +46,7 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
         mTabListObservable = new SimpleListObservable<>();
     }
 
-    void addActionListObserver(ListObservable.ListObserver observer) {
+    void addActionListObserver(ListObservable.ListObserver<Void> observer) {
         mActionListObservable.addObserver(observer);
     }
 
@@ -58,7 +58,7 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
         return mActionListObservable;
     }
 
-    void addTabListObserver(ListObservable.ListObserver observer) {
+    void addTabListObserver(ListObservable.ListObserver<Void> observer) {
         mTabListObservable.addObserver(observer);
     }
 

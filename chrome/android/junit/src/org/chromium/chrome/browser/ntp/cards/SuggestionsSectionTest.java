@@ -21,7 +21,6 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -39,6 +38,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
@@ -101,7 +101,7 @@ public class SuggestionsSectionTest {
     @Mock
     private SuggestionsSection.Delegate mDelegate;
     @Mock
-    private ListObserver mObserver;
+    private ListObserver<PartialBindCallback> mObserver;
     @Mock
     private SuggestionsUiDelegate mUiDelegate;
     @Mock
@@ -210,7 +210,7 @@ public class SuggestionsSectionTest {
         // Simulate initialisation by the adapter. Here we don't care about the notifications, since
         // the RecyclerView will be updated through notifyDataSetChanged.
         section.setStatus(CategoryStatus.AVAILABLE);
-        reset(mObserver);
+        Mockito.<ListObserver>reset(mObserver);
 
         assertEquals(2, section.getItemCount()); // When empty, we have the header and status card.
         assertEquals(ItemViewType.STATUS, section.getItemViewType(1));
@@ -234,7 +234,7 @@ public class SuggestionsSectionTest {
         section.setStatus(CategoryStatus.AVAILABLE);
         section.appendSuggestions(snippets, /* keepSectionSize = */ true,
                 /* reportPrefetchedSuggestionsCount = */ false);
-        reset(mObserver);
+        Mockito.<ListObserver>reset(mObserver);
 
         // We don't clear suggestions when the status is AVAILABLE.
         section.setStatus(CategoryStatus.AVAILABLE);
@@ -270,7 +270,7 @@ public class SuggestionsSectionTest {
 
         SuggestionsSection section = createSectionWithFetchAction(false);
         section.setStatus(CategoryStatus.AVAILABLE);
-        reset(mObserver);
+        Mockito.<ListObserver>reset(mObserver);
 
         section.appendSuggestions(snippets, /* keepSectionSize = */ true,
                 /* reportPrefetchedSuggestionsCount = */ false);
@@ -299,7 +299,7 @@ public class SuggestionsSectionTest {
                                                .build();
         SuggestionsSection section = createSection(info);
         section.setStatus(CategoryStatus.AVAILABLE);
-        reset(mObserver);
+        Mockito.<ListObserver>reset(mObserver);
         assertEquals(3, section.getItemCount()); // We have the header and status card and a button.
 
         section.appendSuggestions(snippets, /* keepSectionSize = */ true,
@@ -322,7 +322,7 @@ public class SuggestionsSectionTest {
     public void testDismissSection() {
         SuggestionsSection section = createSectionWithFetchAction(false);
         section.setStatus(CategoryStatus.AVAILABLE);
-        reset(mObserver);
+        Mockito.<ListObserver>reset(mObserver);
         assertEquals(2, section.getItemCount());
 
         @SuppressWarnings("unchecked")
@@ -346,7 +346,7 @@ public class SuggestionsSectionTest {
         mSuggestionsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
         section.setStatus(CategoryStatus.AVAILABLE);
 
-        reset(mObserver);
+        Mockito.<ListObserver>reset(mObserver);
         assertEquals(1, section.getItemCount());
         assertEquals(ItemViewType.HEADER, section.getItemViewType(0));
 
@@ -382,7 +382,7 @@ public class SuggestionsSectionTest {
         section.appendSuggestions(suggestions,
                 /* keepSectionSize = */ true, /* reportPrefetchedSuggestionsCount = */ false);
 
-        reset(mObserver);
+        Mockito.<ListObserver>reset(mObserver);
         assertEquals(5, section.getItemCount());
         assertEquals(ItemViewType.HEADER, section.getItemViewType(0));
         assertEquals(ItemViewType.SNIPPET, section.getItemViewType(1));
@@ -829,7 +829,7 @@ public class SuggestionsSectionTest {
         // Two suggestions left, one seen, one unseen.
         assertEquals(2, section.getSuggestionsCount());
 
-        reset(mObserver);
+        Mockito.<ListObserver>reset(mObserver);
 
         mSuggestionsSource.setSuggestionsForCategory(
                 TEST_CATEGORY_ID, createDummySuggestions(4, TEST_CATEGORY_ID));
@@ -912,7 +912,7 @@ public class SuggestionsSectionTest {
         SuggestionsSection section = createSectionWithFetchAction(false);
         section.appendSuggestions(suggestions, /* keepSectionSize = */ true,
                 /* reportPrefetchedSuggestionsCount = */ false);
-        reset(mObserver);
+        Mockito.<ListObserver>reset(mObserver);
 
         // Remove the first card. The second one should get the update.
         section.removeSuggestionById(suggestions.get(0).mIdWithinCategory);
@@ -927,7 +927,7 @@ public class SuggestionsSectionTest {
         SuggestionsSection section = createSectionWithFetchAction(false);
         section.appendSuggestions(suggestions, /* keepSectionSize = */ true,
                 /* reportPrefetchedSuggestionsCount = */ false);
-        reset(mObserver);
+        Mockito.<ListObserver>reset(mObserver);
 
         // Remove the last card. The penultimate one should get the update.
         section.removeSuggestionById(suggestions.get(4).mIdWithinCategory);
@@ -942,7 +942,7 @@ public class SuggestionsSectionTest {
         SuggestionsSection section = createSectionWithFetchAction(false);
         section.appendSuggestions(suggestions, /* keepSectionSize = */ true,
                 /* reportPrefetchedSuggestionsCount = */ false);
-        reset(mObserver);
+        Mockito.<ListObserver>reset(mObserver);
 
         // Remove the last card. The penultimate one should get the update.
         section.removeSuggestionById(suggestions.get(1).mIdWithinCategory);
@@ -986,7 +986,7 @@ public class SuggestionsSectionTest {
 
         section.appendSuggestions(suggestions, /* keepSectionSize = */ true,
                 /* reportPrefetchedSuggestionsCount = */ false);
-        reset(mObserver);
+        Mockito.<ListObserver>reset(mObserver);
 
         section.appendSuggestions(createDummySuggestions(2, /* categoryId = */ 42, "new"),
                 /* keepSectionSize = */ false, /* reportPrefetchedSuggestionsCount = */ false);
@@ -1002,7 +1002,7 @@ public class SuggestionsSectionTest {
 
         // Reset any notification invocations on the parent from setting the initial list
         // of suggestions.
-        reset(mObserver);
+        Mockito.<ListObserver>reset(mObserver);
         return section;
     }
 

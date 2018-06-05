@@ -16,6 +16,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -32,7 +33,7 @@ class ContentCoordinator {
     private ContextualSuggestionsModel mModel;
     private WindowAndroid mWindowAndroid;
     private ContextMenuManager mContextMenuManager;
-    private RecyclerViewModelChangeProcessor<ClusterList, NewTabPageViewHolder>
+    private RecyclerViewModelChangeProcessor<ClusterList, NewTabPageViewHolder, PartialBindCallback>
             mModelChangeProcessor;
 
     /**

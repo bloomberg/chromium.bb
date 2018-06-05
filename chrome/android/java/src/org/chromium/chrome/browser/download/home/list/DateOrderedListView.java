@@ -41,7 +41,7 @@ class DateOrderedListView {
 
         DateOrderedListViewBinder listViewBinder = new DateOrderedListViewBinder();
         DateOrderedListViewAdapter adapter = new DateOrderedListViewAdapter(mModel, listViewBinder);
-        RecyclerViewModelChangeProcessor<DecoratedListItemModel, ListItemViewHolder>
+        RecyclerViewModelChangeProcessor<DecoratedListItemModel, ListItemViewHolder, Void>
                 modelChangeProcessor = new RecyclerViewModelChangeProcessor<>(adapter);
         mModel.addObserver(modelChangeProcessor);
 

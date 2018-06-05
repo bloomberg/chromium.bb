@@ -18,6 +18,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
 
 /**
  * Basic test ensuring the {@link SimpleListObservable} notifies listeners properly.
@@ -26,7 +27,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 @Config(manifest = Config.NONE)
 public class SimpleListObservableTest {
     @Mock
-    private ListObservable.ListObserver mObserver;
+    private ListObserver<Void> mObserver;
 
     private SimpleListObservable<Integer> mIntegerList = new SimpleListObservable<>();
 

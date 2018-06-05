@@ -19,7 +19,7 @@ import android.support.v7.widget.RecyclerView;
  * @param <V> The view object that is changing.
  */
 public class ListModelChangeProcessor<M extends ListObservable, V>
-        implements ListObservable.ListObserver {
+        implements ListObservable.ListObserver<Void> {
     /**
      * A generic view binder that associates a view with a model.
      * @param <M> The {@link ListObservable} model.
@@ -61,7 +61,7 @@ public class ListModelChangeProcessor<M extends ListObservable, V>
 
     @Override
     public void onItemRangeChanged(
-            ListObservable source, int index, int count, @Nullable Object payload) {
+            ListObservable source, int index, int count, @Nullable Void payload) {
         assert source == mModel;
         mViewBinder.onItemsChanged(mModel, mView, index, count);
     }

@@ -13,7 +13,7 @@ import java.util.List;
  * It allows models to compose different ListObservables.
  * @param <T> The object type that this class manages in a list.
  */
-public class SimpleListObservable<T> extends ListObservable {
+public class SimpleListObservable<T> extends ListObservable<Void> {
     private final List<T> mItems = new ArrayList<>();
 
     /**

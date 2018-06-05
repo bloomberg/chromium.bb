@@ -14,7 +14,7 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCal
  *
  * This class mostly serves as a convenience base class for implementations of {@link TreeNode}.
  */
-public abstract class ChildNode extends ListObservable implements TreeNode {
+public abstract class ChildNode extends ListObservable<PartialBindCallback> implements TreeNode {
     private int mNumItems = 0;
 
     @Override
@@ -27,10 +27,10 @@ public abstract class ChildNode extends ListObservable implements TreeNode {
     }
 
     @Override
-    protected void notifyItemRangeChanged(int index, int count, @Nullable Object payload) {
-        // TODO(bauerb): Parameterize the payload type.
+    protected void notifyItemRangeChanged(
+            int index, int count, @Nullable PartialBindCallback callback) {
         assert isRangeValid(index, count);
-        super.notifyItemRangeChanged(index, count, payload);
+        super.notifyItemRangeChanged(index, count, callback);
     }
 
     // TODO(bauerb): Push these convenience methods to the base class once they're only called
