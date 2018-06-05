@@ -16,42 +16,31 @@
 using autofill::PasswordForm;
 using Item = PasswordAccessoryViewInterface::AccessoryItem;
 
-// static
-base::WeakPtr<PasswordAccessoryController>
-PasswordAccessoryController::GetOrCreate(
-    base::WeakPtr<PasswordAccessoryController> previous,
-    gfx::NativeView container_view) {
-  // TODO(fhorschig): Check if the container_view really must be different.
-  if (previous.get() && previous->container_view() == container_view)
-    return previous;
-
-  std::unique_ptr<PasswordAccessoryController> controller(
-      new PasswordAccessoryController(container_view));
-  auto weak_controller = controller->weak_ptr_factory_.GetWeakPtr();
-  // TODO(fhorschig): Move ownership to view.
-  return weak_controller;  // == NULL for now.
-}
-
-// static
-std::unique_ptr<PasswordAccessoryController>
-PasswordAccessoryController::CreateForTesting(
-    std::unique_ptr<PasswordAccessoryViewInterface> view) {
-  std::unique_ptr<PasswordAccessoryController> controller(
-      new PasswordAccessoryController(/*container_view=*/nullptr));
-  controller->view_ = std::move(view);
-  return controller;
-}
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordAccessoryController);
 
 PasswordAccessoryController::PasswordAccessoryController(
-    gfx::NativeView container_view)
-    : container_view_(container_view), weak_ptr_factory_(this) {}
+    content::WebContents* web_contents)
+    : PasswordAccessoryController(
+          web_contents,
+          PasswordAccessoryViewInterface::Create(this)) {}
+
+// Additional creation functions in unit tests only:
+PasswordAccessoryController::PasswordAccessoryController(
+    content::WebContents* web_contents,
+    std::unique_ptr<PasswordAccessoryViewInterface> view)
+    : view_(std::move(view)), container_view_(web_contents->GetNativeView()) {}
 
 PasswordAccessoryController::~PasswordAccessoryController() = default;
 
-void PasswordAccessoryController::Destroy() {
-  // The view should not exist without controller. Also, destroying the view
-  // should destroy the controller.
-  view_.reset();
+// static
+void PasswordAccessoryController::CreateForWebContentsForTesting(
+    content::WebContents* web_contents,
+    std::unique_ptr<PasswordAccessoryViewInterface> view) {
+  DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
+  DCHECK(!FromWebContents(web_contents)) << "Controller already attached!";
+  web_contents->SetUserData(UserDataKey(),
+                            base::WrapUnique(new PasswordAccessoryController(
+                                web_contents, std::move(view))));
 }
 
 void PasswordAccessoryController::OnPasswordsAvailable(
@@ -83,6 +72,11 @@ void PasswordAccessoryController::OnPasswordsAvailable(
   view_->OnItemsAvailable(origin, items);
 }
 
-gfx::NativeView PasswordAccessoryController::container_view() {
+void PasswordAccessoryController::OnFillingTriggered(
+    const base::string16& textToFill) const {
+  // TODO(fhorschig): Actually fill |textToFill| into focused field.
+}
+
+gfx::NativeView PasswordAccessoryController::container_view() const {
   return container_view_;
 }

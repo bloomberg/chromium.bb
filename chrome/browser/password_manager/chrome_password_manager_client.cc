@@ -83,9 +83,11 @@
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #include "chrome/browser/password_manager/auto_signin_first_run_dialog_android.h"
 #include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
+#include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "chrome/browser/password_manager/save_password_infobar_delegate_android.h"
 #include "chrome/browser/password_manager/update_password_infobar_delegate_android.h"
 #include "chrome/browser/ui/android/snackbars/auto_signin_prompt_controller.h"
+#include "ui/base/ui_base_features.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -445,7 +447,16 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
     const std::map<base::string16, const autofill::PasswordForm*>& best_matches,
     const GURL& origin,
     const std::vector<const autofill::PasswordForm*>* federated_matches) const {
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordsKeyboardAccessory)) {
+    return;  // No need to even create the bridge if it's not going to be used.
+  }
+  // If an accessory exists already, |CreateForWebContents| is a NoOp.
+  PasswordAccessoryController::CreateForWebContents(web_contents());
+  PasswordAccessoryController::FromWebContents(web_contents())
+      ->OnPasswordsAvailable(best_matches, origin);
+#else  // !defined(OS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());
   manage_passwords_ui_controller->OnPasswordAutofilled(best_matches, origin,
