@@ -1385,7 +1385,7 @@ if (enable_java_templates) {
       _filter_output_jar = "$target_out_dir/$target_name-filtered.jar"
 
       action(_filter_target) {
-        script = "//build/android/gyp/jar.py"
+        script = "//build/android/gyp/filter_zip.py"
         deps = _deps
         if (defined(invoker.deps)) {
           deps += invoker.deps
@@ -1398,12 +1398,12 @@ if (enable_java_templates) {
           _filter_output_jar,
         ]
         args = [
-          "--input-jar",
+          "--input",
           rebase_path(_filter_input_jar, root_build_dir),
-          "--jar-path",
+          "--output",
           rebase_path(_filter_output_jar, root_build_dir),
-          "--excluded-classes=$_jar_excluded_patterns",
-          "--included-classes=$_jar_included_patterns",
+          "--exclude-globs=$_jar_excluded_patterns",
+          "--include-globs=$_jar_included_patterns",
         ]
         if (_strip_resource_classes) {
           args += [ "--strip-resource-classes-for=@FileArg($_rebased_build_config:javac:resource_packages)" ]

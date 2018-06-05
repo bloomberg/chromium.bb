@@ -22,6 +22,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.os.Bundle;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -76,6 +77,11 @@ public class CctOfflinePageModelObserverTest {
 
         ContextUtils.initApplicationContextForTests(mContext);
         AppHooks.setInstanceForTesting(mAppHooks);
+    }
+
+    @After
+    public void tearDown() {
+        AppHooks.setInstanceForTesting(null);
     }
 
     @Test
