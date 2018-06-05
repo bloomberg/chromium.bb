@@ -71,10 +71,19 @@ void BlinkNotificationServiceImpl::GetPermissionStatus(
     return;
   }
 
-  blink::mojom::PermissionStatus permission_status =
-      CheckPermissionStatusOnIOThread();
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &BlinkNotificationServiceImpl::GetPermissionStatusOnUIThread,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
 
-  std::move(callback).Run(permission_status);
+void BlinkNotificationServiceImpl::GetPermissionStatusOnUIThread(
+    GetPermissionStatusCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(std::move(callback), CheckPermissionStatus()));
 }
 
 void BlinkNotificationServiceImpl::OnConnectionError() {

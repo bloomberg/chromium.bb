@@ -193,8 +193,10 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
   }
 
   void DidGetPermissionStatus(
+      base::OnceClosure quit_closure,
       blink::mojom::PermissionStatus permission_status) {
     permission_callback_result_ = permission_status;
+    std::move(quit_closure).Run();
   }
 
   blink::mojom::PermissionStatus GetPermissionCallbackResult() {
@@ -321,26 +323,39 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
 TEST_F(BlinkNotificationServiceImplTest, GetPermissionStatus) {
   mock_platform_service_.SetPermission(blink::mojom::PermissionStatus::GRANTED);
 
-  notification_service_->GetPermissionStatus(
-      base::BindOnce(&BlinkNotificationServiceImplTest::DidGetPermissionStatus,
-                     base::Unretained(this)));
+  {
+    base::RunLoop run_loop;
+    notification_service_->GetPermissionStatus(base::BindOnce(
+        &BlinkNotificationServiceImplTest::DidGetPermissionStatus,
+        base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
 
   EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
             GetPermissionCallbackResult());
 
   mock_platform_service_.SetPermission(blink::mojom::PermissionStatus::DENIED);
 
-  notification_service_->GetPermissionStatus(
-      base::BindOnce(&BlinkNotificationServiceImplTest::DidGetPermissionStatus,
-                     base::Unretained(this)));
+  {
+    base::RunLoop run_loop;
+    notification_service_->GetPermissionStatus(base::BindOnce(
+        &BlinkNotificationServiceImplTest::DidGetPermissionStatus,
+        base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
 
   EXPECT_EQ(blink::mojom::PermissionStatus::DENIED,
             GetPermissionCallbackResult());
 
   mock_platform_service_.SetPermission(blink::mojom::PermissionStatus::ASK);
-  notification_service_->GetPermissionStatus(
-      base::BindOnce(&BlinkNotificationServiceImplTest::DidGetPermissionStatus,
-                     base::Unretained(this)));
+
+  {
+    base::RunLoop run_loop;
+    notification_service_->GetPermissionStatus(base::BindOnce(
+        &BlinkNotificationServiceImplTest::DidGetPermissionStatus,
+        base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
 
   EXPECT_EQ(blink::mojom::PermissionStatus::ASK, GetPermissionCallbackResult());
 }
