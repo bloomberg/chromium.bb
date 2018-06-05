@@ -770,7 +770,7 @@ def GetHostName(fully_qualified=False):
   hostname = socket.gethostname()
   try:
     hostname = socket.gethostbyaddr(hostname)[0]
-  except socket.gaierror as e:
+  except (socket.gaierror, socket.herror) as e:
     logging.warning('please check your /etc/hosts file; resolving your hostname'
                     ' (%s) failed: %s', hostname, e)
 
