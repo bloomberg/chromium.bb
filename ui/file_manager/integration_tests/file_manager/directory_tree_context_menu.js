@@ -15,10 +15,7 @@ function setupForDirectoryTreeContextMenuTest() {
     // Add destination directory.
     return new addEntries(['local'], [new TestEntryInfo({
                             type: EntryType.DIRECTORY,
-                            sourceFileName: null,
                             targetPath: 'destination',
-                            mimeType: null,
-                            sharedOption: SharedOption.NONE,
                             lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
                             nameText: 'destination',
                             sizeText: '--',
@@ -40,10 +37,7 @@ var ITEMS_IN_DEST_DIR_BEFORE_PASTE = TestEntryInfo.getExpectedRows([]);
 var ITEMS_IN_DEST_DIR_AFTER_PASTE =
     TestEntryInfo.getExpectedRows([new TestEntryInfo({
       type: EntryType.DIRECTORY,
-      sourceFileName: null,
       targetPath: 'photos',
-      mimeType: null,
-      sharedOption: SharedOption.NONE,
       lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
       nameText: 'photos',
       sizeText: '--',
