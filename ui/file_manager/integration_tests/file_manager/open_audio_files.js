@@ -590,10 +590,21 @@ function audioNoRepeatModeMultipleFile(path) {
       const playFile = audioPlayingQuery('newly added file.ogg');
       audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
     },
+    // Leap forward in time.
+    function() {
+      audioTimeLeapForward(audioAppId);
+      this.next();
+    },
+    // Check: the same file should still be playing (non-repeated).
+    function() {
+      const playFile = audioPlayingQuery('newly added file.ogg');
+      const initial = playFile + '[playcount="0"]';
+      audioPlayerApp.waitForElement(audioAppId, initial).then(this.next);
+    },
     // When it ends, Audio Player should stop playing.
     function() {
-      const stopped = 'audio-player:not([playing])';
-      audioPlayerApp.waitForElement(audioAppId, stopped).then(this.next);
+      const playStop = 'audio-player[playcount="1"]:not([playing])';
+      audioPlayerApp.waitForElement(audioAppId, playStop).then(this.next);
     },
     function() {
       checkIfNoErrorsOccured(this.next);
