@@ -118,3 +118,6 @@ Current patches:
     Fix heap overflow bug.  Sent for upstream approval.
     https://crbug.com/847060 .
 
+  libavcodec/vp3.c
+    avcodec/vp3: Fix end of bitstream check in unpack_superblocks()
+    Cherry-pick from upstream (c525c15617f).
