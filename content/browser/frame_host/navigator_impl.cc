@@ -857,10 +857,11 @@ void NavigatorImpl::DidStartMainFrameNavigation(
     SiteInstanceImpl* site_instance,
     NavigationHandleImpl* navigation_handle) {
   // If there is no browser-initiated pending entry for this navigation and it
-  // is not for the error URL, create a pending entry using the current
-  // SiteInstance, and ensure the address bar updates accordingly.  We don't
-  // know the referrer or extra headers at this point, but the referrer will
-  // be set properly upon commit.
+  // is not for the error URL, create a pending entry and ensure the address bar
+  // updates accordingly.  We don't know the referrer or extra headers at this
+  // point, but the referrer will be set properly upon commit.  This does not
+  // set the SiteInstance for the pending entry, because it may change
+  // before the URL commits.
   NavigationEntryImpl* pending_entry = controller_->GetPendingEntry();
   bool has_browser_initiated_pending_entry =
       pending_entry && !pending_entry->is_renderer_initiated();
@@ -885,7 +886,6 @@ void NavigatorImpl::DidStartMainFrameNavigation(
                 true /* is_renderer_initiated */, std::string(),
                 controller_->GetBrowserContext(),
                 nullptr /* blob_url_loader_factory */));
-    entry->set_site_instance(site_instance);
     // TODO(creis): If there's a pending entry already, find a safe way to
     // update it instead of replacing it and copying over things like this.
     // That will allow us to skip the NavigationHandle update below as well.

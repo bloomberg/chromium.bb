@@ -88,11 +88,15 @@ class CONTENT_EXPORT FrameNavigationEntry
   void set_document_sequence_number(int64_t document_sequence_number);
   int64_t document_sequence_number() const { return document_sequence_number_; }
 
-  // The SiteInstance responsible for rendering this frame.  All frames sharing
-  // a SiteInstance must live in the same process.  This is a refcounted pointer
-  // that keeps the SiteInstance (not necessarily the process) alive as long as
-  // this object remains in the session history.
+  // The SiteInstance, as assigned at commit time, responsible for rendering
+  // this frame.  All frames sharing a SiteInstance must live in the same
+  // process.  This is a refcounted pointer that keeps the SiteInstance (not
+  // necessarily the process) alive as long as this object remains in the
+  // session history.
+  // TODO(nasko, creis): The SiteInstance of a FrameNavigationEntry should
+  // not change once it has been assigned.  See https://crbug.com/849430.
   void set_site_instance(scoped_refptr<SiteInstanceImpl> site_instance) {
+    CHECK(!site_instance_ || site_instance_ == site_instance);
     site_instance_ = std::move(site_instance);
   }
   SiteInstanceImpl* site_instance() const { return site_instance_.get(); }
