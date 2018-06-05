@@ -16,8 +16,7 @@ ShelfSpinnerItemController::ShelfSpinnerItemController(
       start_time_(base::Time::Now()) {}
 
 ShelfSpinnerItemController::~ShelfSpinnerItemController() {
-  if (host_)
-    host_->Remove(app_id());
+  DCHECK(!(host_ && host_->HasApp(app_id())));
 }
 
 void ShelfSpinnerItemController::SetHost(

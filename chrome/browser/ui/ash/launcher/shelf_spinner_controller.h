@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 
+#include "ash/public/cpp/shelf_model_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -25,10 +26,10 @@ class ImageSkia;
 // ShelfSpinnerController displays visual feedback that the application the user
 // has just activated will not be immediately available, as it is for example
 // waiting for ARC or Crostini to be ready.
-class ShelfSpinnerController {
+class ShelfSpinnerController : public ash::ShelfModelObserver {
  public:
   explicit ShelfSpinnerController(ChromeLauncherController* owner);
-  ~ShelfSpinnerController();
+  ~ShelfSpinnerController() override;
 
   bool HasApp(const std::string& app_id) const;
 
@@ -43,14 +44,16 @@ class ShelfSpinnerController {
   void MaybeApplySpinningEffect(const std::string& app_id,
                                 gfx::ImageSkia* image);
 
-  // Removes entry from the list of tracking items.
-  void Remove(const std::string& app_id);
-
   // Closes Shelf item if it has ShelfSpinnerItemController controller
   // and removes entry from the list of tracking items.
   void Close(const std::string& app_id);
 
   Profile* OwnerProfile();
+
+  // ash::ShelfModelObserver:
+  void ShelfItemDelegateChanged(const ash::ShelfID& id,
+                                ash::ShelfItemDelegate* old_delegate,
+                                ash::ShelfItemDelegate* delegate) override;
 
  private:
   // Defines mapping of a shelf app id to a corresponded controller. Shelf app
