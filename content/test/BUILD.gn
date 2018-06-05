@@ -54,6 +54,8 @@ jumbo_static_library("test_support") {
     "../browser/service_worker/service_worker_test_utils.h",
     "../browser/web_package/mock_signed_exchange_handler.cc",
     "../browser/web_package/mock_signed_exchange_handler.h",
+    "../public/test/audio_service_test_helper.cc",
+    "../public/test/audio_service_test_helper.h",
     "../public/test/background_sync_test_util.cc",
     "../public/test/background_sync_test_util.h",
     "../public/test/blink_test_environment.cc",
@@ -337,6 +339,7 @@ jumbo_static_library("test_support") {
     "//media/capture/mojom:image_capture",
     "//mojo/edk",
     "//net:test_support",
+    "//services/audio/public/mojom",
     "//services/device/public/mojom",
     "//services/ui/public/cpp/gpu",
 

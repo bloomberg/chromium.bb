@@ -8,7 +8,8 @@
         "info": [ "audio.mojom.SystemInfo" ],
         "debug_recording": [ "audio.mojom.DebugRecording" ],
         "stream_factory": [ "audio.mojom.StreamFactory" ],
-        "device_notifier": [ "audio.mojom.DeviceNotifier" ]
+        "device_notifier": [ "audio.mojom.DeviceNotifier" ],
+        "testing_api": [ "audio.mojom.TestingApi" ]
       },
       "requires": {
         "service_manager": [ "service_manager:all_users" ]

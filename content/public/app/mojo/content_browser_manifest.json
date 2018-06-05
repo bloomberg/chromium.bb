@@ -78,7 +78,8 @@
           "info",
           "debug_recording",
           "device_notifier",
-          "stream_factory"
+          "stream_factory",
+          "testing_api"
         ],
         "cdm": [ "media:cdm" ],
         "content_gpu": [ "browser" ],

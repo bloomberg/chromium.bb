@@ -5,6 +5,7 @@
 #include "services/audio/service_factory.h"
 
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
@@ -59,14 +60,17 @@ std::unique_ptr<service_manager::Service> CreateEmbeddedService(
   return std::make_unique<Service>(
       std::make_unique<InProcessAudioManagerAccessor>(audio_manager),
       base::TimeDelta() /* do not quit if all clients disconnected */,
-      false /* enable_device_notifications */);
+      false /* enable_device_notifications */,
+      std::make_unique<service_manager::BinderRegistry>());
 }
 
-std::unique_ptr<service_manager::Service> CreateStandaloneService() {
+std::unique_ptr<service_manager::Service> CreateStandaloneService(
+    std::unique_ptr<service_manager::BinderRegistry> registry) {
   return std::make_unique<Service>(
       std::make_unique<audio::OwningAudioManagerAccessor>(
           base::BindOnce(&media::AudioManager::Create)),
-      GetQuitTimeout(), true /* enable_device_notifications */);
+      GetQuitTimeout(), true /* enable_device_notifications */,
+      std::move(registry));
 }
 
 }  // namespace audio

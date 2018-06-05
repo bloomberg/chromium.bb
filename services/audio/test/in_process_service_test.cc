@@ -12,6 +12,7 @@
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/service.h"
 #include "services/audio/test/service_lifetime_test_template.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
@@ -45,7 +46,8 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
       service_context_ = std::make_unique<service_manager::ServiceContext>(
           std::make_unique<audio::Service>(
               std::make_unique<InProcessAudioManagerAccessor>(audio_manager_),
-              service_quit_timeout_, false /* device_notifications_enabled */),
+              service_quit_timeout_, false /* device_notifications_enabled */,
+              std::make_unique<service_manager::BinderRegistry>()),
           std::move(request));
       service_context_->SetQuitClosure(base::BindRepeating(
           &AudioThreadContext::QuitOnAudioThread, base::Unretained(this)));

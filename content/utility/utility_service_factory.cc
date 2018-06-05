@@ -4,7 +4,8 @@
 
 #include "content/utility/utility_service_factory.h"
 
-#include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -107,7 +108,8 @@ std::unique_ptr<service_manager::Service> CreateVizService() {
 }  // namespace
 
 UtilityServiceFactory::UtilityServiceFactory()
-    : network_registry_(std::make_unique<service_manager::BinderRegistry>()) {}
+    : network_registry_(std::make_unique<service_manager::BinderRegistry>()),
+      audio_registry_(std::make_unique<service_manager::BinderRegistry>()) {}
 
 UtilityServiceFactory::~UtilityServiceFactory() {}
 
@@ -131,8 +133,10 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
   services->insert(
       std::make_pair(video_capture::mojom::kServiceName, video_capture_info));
 
+  GetContentClient()->utility()->RegisterAudioBinders(audio_registry_.get());
   service_manager::EmbeddedServiceInfo audio_info;
-  audio_info.factory = base::BindRepeating(&audio::CreateStandaloneService);
+  audio_info.factory = base::BindRepeating(
+      &UtilityServiceFactory::CreateAudioService, base::Unretained(this));
   services->insert(std::make_pair(audio::mojom::kServiceName, audio_info));
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -183,6 +187,11 @@ std::unique_ptr<service_manager::Service>
 UtilityServiceFactory::CreateNetworkService() {
   return std::make_unique<network::NetworkService>(
       std::move(network_registry_));
+}
+
+std::unique_ptr<service_manager::Service>
+UtilityServiceFactory::CreateAudioService() {
+  return audio::CreateStandaloneService(std::move(audio_registry_));
 }
 
 }  // namespace content
