@@ -3808,6 +3808,8 @@ crbug.com/702837 fast/text/aat-morx.html [ Skip ]
 
 crbug.com/688670 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cue-rendering-after-controls-removed.html [ Pass Failure ]
 
+crbug.com/849670 [ Debug ] http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Crash Timeout ]
+
 crbug.com/664858 virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Skip ]
 crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/main-thread-scrolling-reason-added.html [ Skip ]
@@ -4445,7 +4447,6 @@ crbug.com/786235 http/tests/misc/resource-timing-sizes-tags.html [ Failure Pass 
 crbug.com/786641 [ Win Linux Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing-in-worker.html [ Timeout Pass ]
 
 # Sheriff failures 2017-11-28
-crbug.com/789111 http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Failure Timeout ]
 crbug.com/785179 [ Mac10.11 Debug ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Pass Failure ]
 
 # Sheriff failures 2017-11-29

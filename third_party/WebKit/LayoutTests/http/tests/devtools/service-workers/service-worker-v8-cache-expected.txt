@@ -14,13 +14,13 @@ v8.compile Properties:
     type : "v8.compile"
 }
 Text details for v8.compile: v8-cache-worker.js:1
------------------------------------------------
---- Trace events while executing scripts ------
 v8.compile Properties:
 {
     data : {
+        cacheProduceOptions : "full code"
         columnNumber : 0
         lineNumber : 0
+        producedCacheSize : <number>
         streamed : <boolean>
         url : .../devtools/resources/v8-cache-script.js
     }
@@ -29,13 +29,16 @@ v8.compile Properties:
     type : "v8.compile"
 }
 Text details for v8.compile: v8-cache-script.js:1
+-----------------------------------------------
+--- Trace events while executing scripts ------
 v8.compile Properties:
 {
     data : {
-        cacheProduceOptions : "code"
+        cacheConsumeOptions : "code"
+        cacheRejected : false
         columnNumber : 0
+        consumedCacheSize : <number>
         lineNumber : 0
-        producedCacheSize : <number>
         streamed : <boolean>
         url : .../devtools/resources/v8-cache-script.js
     }
