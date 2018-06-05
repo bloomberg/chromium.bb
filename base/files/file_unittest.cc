@@ -540,7 +540,13 @@ TEST(FileTest, DuplicateDeleteOnClose) {
   ASSERT_FALSE(base::PathExists(file_path));
 }
 
-TEST(FileTest, WriteDataToLargeOffset) {
+#if defined(OS_WIN)
+// Flakily times out on Windows, see http://crbug.com/846276.
+#define MAYBE_WriteDataToLargeOffset DISABLED_WriteDataToLargeOffset
+#else
+#define MAYBE_WriteDataToLargeOffset WriteDataToLargeOffset
+#endif
+TEST(FileTest, MAYBE_WriteDataToLargeOffset) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path = temp_dir.GetPath().AppendASCII("file");
