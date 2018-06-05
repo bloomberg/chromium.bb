@@ -19,7 +19,7 @@ body { width: 800px; margin: 0; overflow-y: hidden; }
     This text should not be autosized (its computed font size should remain 16px), since the float:left causes this to be a new cluster, and this cluster doesn't contain enough text.
 </div>
 
-<div style="-webkit-writing-mode: vertical-rl">
+<div style="-webkit-writing-mode: vertical-rl; height:min-content;">
     This text should not be autosized (its computed font size should remain 16px), since the perpendicular writing-mode compared to its containing block causes this to be a new cluster, and this cluster doesn't contain enough text (or have large enough logicalWidth).
 </div>
 
