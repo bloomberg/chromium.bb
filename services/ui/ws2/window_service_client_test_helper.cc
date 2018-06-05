@@ -54,6 +54,11 @@ aura::Window* WindowServiceClientTestHelper::NewTopLevelWindow(
       window_service_client_->MakeClientWindowId(transport_window_id));
 }
 
+aura::Window* WindowServiceClientTestHelper::NewTopLevelWindow(
+    const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
+  return NewTopLevelWindow(0u, properties);
+}
+
 bool WindowServiceClientTestHelper::SetCapture(aura::Window* window) {
   return window_service_client_->SetCaptureImpl(
       ClientWindowIdForWindow(window));

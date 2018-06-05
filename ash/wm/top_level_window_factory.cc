@@ -19,6 +19,8 @@
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
+#include "services/ui/ws2/window_delegate_impl.h"
+#include "services/ui/ws2/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/property_utils.h"
@@ -170,7 +172,12 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
     return renderer->widget()->GetNativeView();
   }
 
-  aura::Window* window = new aura::Window(nullptr);
+  // WindowDelegateImpl() deletes itself when the associated window is
+  // destroyed.
+  ui::ws2::WindowDelegateImpl* window_delegate =
+      new ui::ws2::WindowDelegateImpl();
+  aura::Window* window = new aura::Window(window_delegate);
+  window_delegate->set_window(window);
   aura::SetWindowType(window, window_type);
   window->SetProperty(aura::client::kEmbedType,
                       aura::client::WindowEmbedType::TOP_LEVEL_IN_WM);
@@ -199,6 +206,9 @@ aura::Window* CreateAndParentTopLevelWindow(
     ui::mojom::WindowType window_type,
     aura::PropertyConverter* property_converter,
     std::map<std::string, std::vector<uint8_t>>* properties) {
+  if (window_type == ui::mojom::WindowType::UNKNOWN)
+    return nullptr;  // Clients must supply a valid type.
+
   RootWindowController* root_window_controller =
       GetRootWindowControllerForNewTopLevelWindow(properties);
   aura::Window* window = CreateAndParentTopLevelWindowInRoot(
@@ -216,6 +226,7 @@ aura::Window* CreateAndParentTopLevelWindow(
     properties->erase(ignored_by_shelf_iter);
   }
 
+  // TODO: kFocusable_InitProperty should be removed. http://crbug.com/837713.
   auto focusable_iter =
       properties->find(ui::mojom::WindowManager::kFocusable_InitProperty);
   if (focusable_iter != properties->end()) {
@@ -225,6 +236,7 @@ aura::Window* CreateAndParentTopLevelWindow(
       window_manager->window_tree_client()->SetCanFocus(window, can_focus);
     NonClientFrameController* non_client_frame_controller =
         NonClientFrameController::Get(window);
+    window->SetProperty(ui::ws2::kCanFocus, can_focus);
     if (non_client_frame_controller)
       non_client_frame_controller->set_can_activate(can_focus);
     // No need to persist this value.

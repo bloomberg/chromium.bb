@@ -28,6 +28,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
   // A client requested a new top-level window. Implementations should create a
   // new window, parenting it in the appropriate container. Return null to
   // reject the request.
+  // NOTE: it is recommended that when clients create a new window they use
+  // WindowDelegateImpl as the WindowDelegate of the Window (this must be done
+  // by the WindowServiceDelegate, as the Window's delegate can not be changed
+  // after creation).
   virtual std::unique_ptr<aura::Window> NewTopLevel(
       aura::PropertyConverter* property_converter,
       const base::flat_map<std::string, std::vector<uint8_t>>& properties) = 0;

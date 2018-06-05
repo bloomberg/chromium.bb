@@ -89,6 +89,7 @@ class DetachedTitleAreaRendererForClient : public views::WidgetDelegate {
   views::Widget* widget() { return widget_; }
 
   // views::WidgetDelegate:
+  bool CanActivate() const override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
   void DeleteDelegate() override;

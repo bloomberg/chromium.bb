@@ -47,9 +47,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
 
   aura::Window* window() { return window_; }
 
-  void set_can_focus(bool value) { can_focus_ = value; }
-  bool can_focus() const { return can_focus_; }
-
   // Returns the ClientWindow associated with a window, null if not created yet.
   static ClientWindow* GetMayBeNull(aura::Window* window) {
     return const_cast<ClientWindow*>(
@@ -162,11 +159,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
   // This serves the same purpose as |capture_owner_|, but is used for focus.
   // See |capture_owner_| for details.
   WindowServiceClient* focus_owner_ = nullptr;
-
-  // True if the window is allowed to receive focus.
-  // TODO(sky): provide way for client code to make use of this. It's needed
-  // when client code creates the top-level. http://crbug.com/837703.
-  bool can_focus_ = true;
 
   base::Optional<viz::LocalSurfaceId> local_surface_id_;
 

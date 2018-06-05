@@ -4,7 +4,7 @@
 
 #include "services/ui/ws2/window_delegate_impl.h"
 
-#include "services/ui/ws2/client_window.h"
+#include "services/ui/ws2/window_properties.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
@@ -41,7 +41,7 @@ bool WindowDelegateImpl::ShouldDescendIntoChildForEventHandling(
 }
 
 bool WindowDelegateImpl::CanFocus() {
-  return ClientWindow::GetMayBeNull(window_)->can_focus();
+  return window_->GetProperty(kCanFocus);
 }
 
 void WindowDelegateImpl::OnCaptureLost() {}

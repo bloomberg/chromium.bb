@@ -1894,6 +1894,7 @@ test("ash_unittests") {
     "wm/tablet_mode/accelerometer_test_data_literals.cc",
     "wm/tablet_mode/tablet_mode_controller_unittest.cc",
     "wm/tablet_mode/tablet_mode_window_manager_unittest.cc",
+    "wm/top_level_window_factory_unittest.cc",
     "wm/toplevel_window_event_handler_unittest.cc",
     "wm/video_detector_unittest.cc",
     "wm/window_animations_unittest.cc",
@@ -2380,7 +2381,7 @@ source_set("mash_unittests") {
     "display/display_synchronizer_unittest.cc",
     "window_manager_unittest.cc",
     "wm/non_client_frame_controller_unittest.cc",
-    "wm/top_level_window_factory_unittest.cc",
+    "wm/top_level_window_factory_mash_unittest.cc",
   ]
 
   deps = [

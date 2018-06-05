@@ -11,6 +11,7 @@
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_state.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
+#include "services/ui/ws2/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/property_converter.h"
@@ -131,6 +132,10 @@ void DetachedTitleAreaRendererForClient::Attach(views::Widget* frame) {
 void DetachedTitleAreaRendererForClient::Detach() {
   is_attached_ = false;
   widget_->SetContentsView(new views::View());
+}
+
+bool DetachedTitleAreaRendererForClient::CanActivate() const {
+  return widget_->GetNativeView()->GetProperty(ui::ws2::kCanFocus);
 }
 
 views::Widget* DetachedTitleAreaRendererForClient::GetWidget() {

@@ -7,8 +7,10 @@
 #include "services/ui/ws2/client_change.h"
 #include "services/ui/ws2/client_change_tracker.h"
 #include "services/ui/ws2/client_window.h"
+#include "services/ui/ws2/window_properties.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_client.h"
+#include "services/ui/ws2/window_service_delegate.h"
 #include "ui/aura/client/focus_client.h"
 
 namespace ui {
@@ -63,7 +65,7 @@ bool FocusHandler::SetFocus(aura::Window* window) {
 void FocusHandler::SetCanFocus(aura::Window* window, bool can_focus) {
   if (window && (window_service_client_->IsClientCreatedWindow(window) ||
                  window_service_client_->IsClientRootWindow(window))) {
-    ClientWindow::GetMayBeNull(window)->set_can_focus(can_focus);
+    window->SetProperty(kCanFocus, can_focus);
   } else {
     DVLOG(1) << "SetCanFocus failed (invalid or unknown window)";
   }
