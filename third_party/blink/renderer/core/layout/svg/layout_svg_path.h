@@ -47,11 +47,8 @@ class LayoutSVGPath final : public LayoutSVGShape {
 
   void UpdateShapeFromElement() override;
   FloatRect HitTestStrokeBoundingBox() const override;
-  FloatRect CalculateUpdatedStrokeBoundingBox() const;
 
-  FloatRect MarkerRect(float stroke_width) const;
-  bool ShouldGenerateMarkerPositions() const;
-  void ProcessMarkerPositions();
+  void UpdateMarkers();
 
   Vector<MarkerPosition> marker_positions_;
 };

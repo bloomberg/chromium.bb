@@ -51,9 +51,7 @@ void LayoutSVGPath::WillBeDestroyed() {
 
 void LayoutSVGPath::UpdateShapeFromElement() {
   LayoutSVGShape::UpdateShapeFromElement();
-  ProcessMarkerPositions();
-
-  stroke_bounding_box_ = CalculateUpdatedStrokeBoundingBox();
+  UpdateMarkers();
 }
 
 FloatRect LayoutSVGPath::HitTestStrokeBoundingBox() const {
@@ -62,71 +60,47 @@ FloatRect LayoutSVGPath::HitTestStrokeBoundingBox() const {
   return ApproximateStrokeBoundingBox(fill_bounding_box_);
 }
 
-FloatRect LayoutSVGPath::CalculateUpdatedStrokeBoundingBox() const {
-  FloatRect stroke_bounding_box = stroke_bounding_box_;
-  if (!marker_positions_.IsEmpty())
-    stroke_bounding_box.Unite(MarkerRect(StrokeWidth()));
-  return stroke_bounding_box;
-}
-
-FloatRect LayoutSVGPath::MarkerRect(float stroke_width) const {
-  DCHECK(!marker_positions_.IsEmpty());
-
-  SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(*this);
-  DCHECK(resources);
-
-  LayoutSVGResourceMarker* marker_start = resources->MarkerStart();
-  LayoutSVGResourceMarker* marker_mid = resources->MarkerMid();
-  LayoutSVGResourceMarker* marker_end = resources->MarkerEnd();
-  DCHECK(marker_start || marker_mid || marker_end);
-
-  FloatRect boundaries;
-  unsigned size = marker_positions_.size();
-  for (unsigned i = 0; i < size; ++i) {
-    if (LayoutSVGResourceMarker* marker = SVGMarkerData::MarkerForType(
-            marker_positions_[i].type, marker_start, marker_mid, marker_end))
-      boundaries.Unite(marker->MarkerBoundaries(marker->MarkerTransformation(
-          marker_positions_[i].origin, marker_positions_[i].angle,
-          stroke_width)));
-  }
-  return boundaries;
-}
-
-bool LayoutSVGPath::ShouldGenerateMarkerPositions() const {
-  if (!Style()->SvgStyle().HasMarkers())
-    return false;
-
-  if (!SVGResources::SupportsMarkers(*ToSVGGraphicsElement(GetElement())))
-    return false;
-
-  SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(*this);
-  if (!resources)
-    return false;
-
-  return resources->MarkerStart() || resources->MarkerMid() ||
-         resources->MarkerEnd();
-}
-
-void LayoutSVGPath::ProcessMarkerPositions() {
+void LayoutSVGPath::UpdateMarkers() {
   marker_positions_.clear();
 
-  if (!ShouldGenerateMarkerPositions())
+  if (!StyleRef().SvgStyle().HasMarkers() ||
+      !SVGResources::SupportsMarkers(*ToSVGGraphicsElement(GetElement())))
     return;
 
   SVGResources* resources =
       SVGResourcesCache::CachedResourcesForLayoutObject(*this);
-  DCHECK(resources);
+  if (!resources)
+    return;
 
   LayoutSVGResourceMarker* marker_start = resources->MarkerStart();
+  LayoutSVGResourceMarker* marker_mid = resources->MarkerMid();
+  LayoutSVGResourceMarker* marker_end = resources->MarkerEnd();
+  if (!(marker_start || marker_mid || marker_end))
+    return;
 
-  SVGMarkerData marker_data(marker_positions_,
-                            marker_start ? marker_start->OrientType() ==
-                                               kSVGMarkerOrientAutoStartReverse
-                                         : false);
-  GetPath().Apply(&marker_data, SVGMarkerData::UpdateFromPathElement);
-  marker_data.PathIsDone();
+  {
+    SVGMarkerData marker_data(
+        marker_positions_,
+        marker_start &&
+            marker_start->OrientType() == kSVGMarkerOrientAutoStartReverse);
+    GetPath().Apply(&marker_data, SVGMarkerData::UpdateFromPathElement);
+    marker_data.PathIsDone();
+  }
+
+  if (marker_positions_.IsEmpty())
+    return;
+
+  const float stroke_width = StrokeWidth();
+  FloatRect boundaries;
+  for (const auto& position : marker_positions_) {
+    if (LayoutSVGResourceMarker* marker = SVGMarkerData::MarkerForType(
+            position.type, marker_start, marker_mid, marker_end)) {
+      boundaries.Unite(marker->MarkerBoundaries(marker->MarkerTransformation(
+          position.origin, position.angle, stroke_width)));
+    }
+  }
+
+  stroke_bounding_box_.Unite(boundaries);
 }
 
 }  // namespace blink
