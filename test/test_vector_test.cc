@@ -76,7 +76,9 @@ class TestVectorTest : public ::libaom_test::DecoderTest,
 // The md5 checksums are computed for each frame in the video file. If md5
 // checksums match the correct md5 data, then the test is passed. Otherwise,
 // the test failed.
-TEST_P(TestVectorTest, MD5Match) {
+// TODO(yaowu): Regenerate the test vectors and re-enable the test after the
+// bitstream changes for the decoder model are made.
+TEST_P(TestVectorTest, DISABLED_MD5Match) {
   const DecodeParam input = GET_PARAM(1);
   const std::string filename = ::testing::get<kFileName>(input);
   aom_codec_flags_t flags = 0;
