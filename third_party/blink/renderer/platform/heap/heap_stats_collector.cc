@@ -35,6 +35,10 @@ void ThreadHeapStatsCollector::Stop() {
   current_.reset();
 }
 
+void ThreadHeapStatsCollector::UpdateReason(BlinkGC::GCReason reason) {
+  current_.reason = reason;
+}
+
 void ThreadHeapStatsCollector::Event::reset() {
   marked_object_size = 0;
   compaction_freed_pages = 0;
