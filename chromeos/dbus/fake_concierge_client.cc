@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/fake_concierge_client.h"
 
+#include <utility>
+
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace chromeos {
@@ -49,6 +51,16 @@ void FakeConciergeClient::DestroyDiskImage(
   destroy_disk_image_called_ = true;
   vm_tools::concierge::DestroyDiskImageResponse response;
   response.set_status(vm_tools::concierge::DISK_STATUS_DESTROYED);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(response)));
+}
+
+void FakeConciergeClient::ListVmDisks(
+    const vm_tools::concierge::ListVmDisksRequest& request,
+    DBusMethodCallback<vm_tools::concierge::ListVmDisksResponse> callback) {
+  list_vm_disks_called_ = true;
+  vm_tools::concierge::ListVmDisksResponse response;
+  response.set_success(true);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(response)));
 }
