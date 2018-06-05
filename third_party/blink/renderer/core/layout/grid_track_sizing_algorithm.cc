@@ -191,7 +191,7 @@ bool GridTrackSizingAlgorithm::IsIntrinsicSizedGridArea(const LayoutBox& child,
   GridTrackSizingDirection direction = GridDirectionForAxis(axis);
   const GridSpan& span = grid_.GridItemSpan(child, direction);
   for (const auto& track_position : span) {
-    GridTrackSize track_size = GetGridTrackSize(direction, track_position);
+    GridTrackSize track_size = RawGridTrackSize(direction, track_position);
     if (track_size.IsContentSized() || track_size.IsFitContent() ||
         (track_size.MaxTrackBreadth().IsFlex() && !FreeSpace(direction)))
       return true;
