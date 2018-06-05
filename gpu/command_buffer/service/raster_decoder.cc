@@ -296,6 +296,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   void Destroy(bool have_context) override;
   bool MakeCurrent() override;
   gl::GLContext* GetGLContext() override;
+  gl::GLSurface* GetGLSurface() override;
   const FeatureInfo* GetFeatureInfo() const override {
     return feature_info_.get();
   }
@@ -355,6 +356,14 @@ class RasterDecoderImpl final : public RasterDecoder,
                  bool can_bind_to_sampler) override;
   gles2::ContextGroup* GetContextGroup() override;
   gles2::ErrorState* GetErrorState() override;
+  std::unique_ptr<AbstractTexture> CreateAbstractTexture(GLenum target,
+                                                         GLenum internal_format,
+                                                         GLsizei width,
+                                                         GLsizei height,
+                                                         GLsizei depth,
+                                                         GLint border,
+                                                         GLenum format,
+                                                         GLenum type) override;
   bool IsCompressedTextureFormat(unsigned format) override;
   bool ClearLevel(gles2::Texture* texture,
                   unsigned target,
@@ -1106,6 +1115,10 @@ gl::GLContext* RasterDecoderImpl::GetGLContext() {
   return context_.get();
 }
 
+gl::GLSurface* RasterDecoderImpl::GetGLSurface() {
+  return surface_.get();
+}
+
 Capabilities RasterDecoderImpl::GetCapabilities() {
   Capabilities caps;
   caps.gpu_rasterization =
@@ -1601,6 +1614,18 @@ gles2::ContextGroup* RasterDecoderImpl::GetContextGroup() {
 
 gles2::ErrorState* RasterDecoderImpl::GetErrorState() {
   return state_.GetErrorState();
+}
+
+std::unique_ptr<AbstractTexture> RasterDecoderImpl::CreateAbstractTexture(
+    GLenum target,
+    GLenum internal_format,
+    GLsizei width,
+    GLsizei height,
+    GLsizei depth,
+    GLint border,
+    GLenum format,
+    GLenum type) {
+  return nullptr;
 }
 
 bool RasterDecoderImpl::IsCompressedTextureFormat(unsigned format) {

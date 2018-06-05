@@ -70,6 +70,7 @@
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/transform_feedback_manager.h"
+#include "gpu/command_buffer/service/validating_abstract_texture_impl.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/config/gpu_preferences.h"
@@ -98,6 +99,7 @@
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/gpu_timing.h"
 #include "ui/gl/init/create_gr_gl_interface.h"
+#include "ui/gl/scoped_make_current.h"
 
 #if defined(OS_MACOSX)
 #include <IOSurface/IOSurface.h>
@@ -603,6 +605,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   gl::GLApi* api() const { return state_.api(); }
   GLES2Util* GetGLES2Util() override { return &util_; }
   gl::GLContext* GetGLContext() override { return context_.get(); }
+  gl::GLSurface* GetGLSurface() override { return surface_.get(); }
   ContextGroup* GetContextGroup() override { return group_.get(); }
   const FeatureInfo* GetFeatureInfo() const override {
     return feature_info_.get();
@@ -682,6 +685,15 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   ErrorState* GetErrorState() override;
   const ContextState* GetContextState() override { return &state_; }
+  std::unique_ptr<AbstractTexture> CreateAbstractTexture(GLenum target,
+                                                         GLenum internal_format,
+                                                         GLsizei width,
+                                                         GLsizei height,
+                                                         GLsizei depth,
+                                                         GLint border,
+                                                         GLenum format,
+                                                         GLenum type) override;
+
   scoped_refptr<ShaderTranslatorInterface> GetTranslator(GLenum type) override;
   scoped_refptr<ShaderTranslatorInterface> GetOrCreateTranslator(GLenum type);
 
@@ -2349,6 +2361,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void UnbindTexture(TextureRef* texture_ref,
                      bool supports_separate_framebuffer_binds);
 
+  void OnAbstractTextureDestroyed(ValidatingAbstractTextureImpl* texture,
+                                  scoped_refptr<TextureRef> texture_ref);
+
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
 #define GLES2_CMD_OP(name) \
@@ -2607,6 +2622,13 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   std::unique_ptr<CALayerSharedState> ca_layer_shared_state_;
   std::unique_ptr<DCLayerSharedState> dc_layer_shared_state_;
+
+  // All currently outstanding AbstractTextures that we've created.
+  std::set<ValidatingAbstractTextureImpl*> abstract_textures_;
+
+  // Set of texture refs that are pending destruction, at some point in the
+  // future when our context is current.
+  std::set<scoped_refptr<TextureRef>> texture_refs_pending_destruction_;
 
   base::WeakPtrFactory<GLES2DecoderImpl> weak_ptr_factory_;
 
@@ -4553,6 +4575,10 @@ bool GLES2DecoderImpl::MakeCurrent() {
   // Rebind textures if the service ids may have changed.
   RestoreAllExternalTextureBindingsIfNeeded();
 
+  // Since we have a context now, take the opportunity to drop any TextureRefs
+  // that are pending destruction.
+  texture_refs_pending_destruction_.clear();
+
   return true;
 }
 
@@ -4971,6 +4997,18 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   // some surface destructors make GL calls.
   if (surface_)
     surface_->PrepareToDestroy(have_context);
+
+  // Destroy any textures that are pending destruction.
+  if (!have_context) {
+    for (auto iter : texture_refs_pending_destruction_)
+      iter->ForceContextLost();
+  }
+  texture_refs_pending_destruction_.clear();
+
+  // Notify any AbstractTextures to drop their texture ref.
+  for (auto* iter : abstract_textures_)
+    iter->OnDecoderWillDestroy(have_context);
+  abstract_textures_.clear();
 
   ReleaseAllBackTextures(have_context);
   if (have_context) {
@@ -16506,7 +16544,8 @@ void GLES2DecoderImpl::ProcessDescheduleUntilFinished() {
 
 bool GLES2DecoderImpl::HasMoreIdleWork() const {
   return !pending_readpixel_fences_.empty() ||
-         gpu_tracer_->HasTracesToProcess();
+         gpu_tracer_->HasTracesToProcess() ||
+         !texture_refs_pending_destruction_.empty();
 }
 
 void GLES2DecoderImpl::PerformIdleWork() {
@@ -20183,6 +20222,51 @@ void GLES2DecoderImpl::DoUnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
       y, width, height, GL_FALSE /* unpack_flip_y */,
       GL_FALSE /* unpack_premultiply_alpha */,
       GL_TRUE /* unpack_unmultiply_alpha */, GL_TRUE /* dither */);
+}
+
+std::unique_ptr<AbstractTexture> GLES2DecoderImpl::CreateAbstractTexture(
+    GLenum target,
+    GLenum internal_format,
+    GLsizei width,
+    GLsizei height,
+    GLsizei depth,
+    GLint border,
+    GLenum format,
+    GLenum type) {
+  GLuint service_id;
+  api()->glGenTexturesFn(1, &service_id);
+  service_id = 1;
+  scoped_refptr<gpu::gles2::TextureRef> texture_ref =
+      TextureRef::Create(texture_manager(), 0, service_id);
+  texture_manager()->SetTarget(texture_ref.get(), target);
+  const GLint level = 0;
+  gfx::Rect cleared_rect;
+  // Mark OES textures as cleared, though maybe the client should do this via
+  // a call to AbstractTexture.
+  if (target == GL_TEXTURE_EXTERNAL_OES)
+    cleared_rect = gfx::Rect(width, height);
+  texture_manager()->SetLevelInfo(texture_ref.get(), target, level,
+                                  internal_format, width, height, depth, border,
+                                  format, type, cleared_rect);
+
+  // Unretained is safe, because of the destruction cb.
+  std::unique_ptr<ValidatingAbstractTextureImpl> abstract_texture =
+      std::make_unique<ValidatingAbstractTextureImpl>(
+          std::move(texture_ref), this,
+          base::BindOnce(&GLES2DecoderImpl::OnAbstractTextureDestroyed,
+                         base::Unretained(this)));
+  abstract_textures_.insert(abstract_texture.get());
+
+  return abstract_texture;
+}
+
+void GLES2DecoderImpl::OnAbstractTextureDestroyed(
+    ValidatingAbstractTextureImpl* abstract_texture,
+    scoped_refptr<TextureRef> texture_ref) {
+  DCHECK(texture_ref);
+  abstract_textures_.erase(abstract_texture);
+  // Keep |texture_ref| until we have a current context to destroy it.
+  texture_refs_pending_destruction_.insert(std::move(texture_ref));
 }
 
 // Include the auto-generated part of this file. We split this because it means

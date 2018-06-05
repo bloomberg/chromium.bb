@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/context_state.h"
+#include "gpu/command_buffer/service/gl_stream_texture_image_stub.h"
 #include "gpu/command_buffer/service/gl_surface_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/image_manager.h"
@@ -22,11 +23,12 @@
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/config/gpu_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_image_stub.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gpu_timing_fake.h"
-
+#include "ui/gl/scoped_make_current.h"
 
 #if !defined(GL_DEPTH24_STENCIL8)
 #define GL_DEPTH24_STENCIL8 0x88F0
@@ -251,6 +253,93 @@ TEST_P(GLES2DecoderTest, IsTexture) {
   EXPECT_TRUE(DoIsTexture(client_texture_id_));
   DoDeleteTexture(client_texture_id_, kServiceTextureId);
   EXPECT_FALSE(DoIsTexture(client_texture_id_));
+}
+
+TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
+  EXPECT_CALL(*gl_, GenTextures(1, _)).Times(1).RetiresOnSaturation();
+  const GLenum target = GL_TEXTURE_EXTERNAL_OES;
+  std::unique_ptr<AbstractTexture> abstract_texture =
+      GetDecoder()->CreateAbstractTexture(target, GL_RGBA, 256, /* width */
+                                          256,                  /* height */
+                                          1,                    /* depth */
+                                          0,                    /* border */
+                                          GL_RGBA, GL_UNSIGNED_BYTE);
+  EXPECT_EQ(abstract_texture->GetTextureBase()->target(), target);
+
+  // Set some parameters, and verify that we set them.
+  Texture* texture = static_cast<Texture*>(abstract_texture->GetTextureBase());
+  // These three are for ScopedTextureBinder.
+  // TODO(liberato): Is there a way to make this less brittle?
+  EXPECT_CALL(*gl_, GetIntegerv(_, _)).Times(1).RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindTexture(target, _)).Times(1).RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindTexture(target, abstract_texture->service_id()))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  // This one we actually care about.
+  EXPECT_CALL(*gl_, TexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+  abstract_texture->SetParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  EXPECT_EQ(texture->min_filter(), static_cast<GLenum>(GL_LINEAR));
+
+  // Attach an image and see if it works.
+  scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
+  abstract_texture->SetOverlayImage(image.get());
+  EXPECT_EQ(texture->GetLevelImage(target, 0), image.get());
+
+  // Attach a stream image, and verify that the image changes and the service_id
+  // matches the one we provide.
+  scoped_refptr<gpu::gles2::GLStreamTextureImage> stream_image(
+      new gpu::gles2::GLStreamTextureImageStub);
+  GLuint surface_texture_service_id = 123;
+  abstract_texture->SetStreamTextureImage(stream_image.get(),
+                                          surface_texture_service_id);
+  EXPECT_EQ(texture->GetLevelStreamTextureImage(target, 0), stream_image.get());
+  EXPECT_EQ(abstract_texture->service_id(), surface_texture_service_id);
+
+  // Deleting |abstract_texture| should delete the platform texture as well,
+  // since we haven't make a copy of the TextureRef.
+  EXPECT_CALL(*gl_, DeleteTextures(1, _)).Times(1).RetiresOnSaturation();
+  abstract_texture.reset();
+}
+
+TEST_P(GLES2DecoderTest, AbstractTextureIsDestroyedWithDecoder) {
+  // Deleting the decoder should delete the AbstractTexture's TextureRef.
+  EXPECT_CALL(*gl_, GenTextures(1, _)).Times(1).RetiresOnSaturation();
+  const GLenum target = GL_TEXTURE_EXTERNAL_OES;
+  std::unique_ptr<AbstractTexture> abstract_texture =
+      GetDecoder()->CreateAbstractTexture(target, GL_RGBA, 256, /* width */
+                                          256,                  /* height */
+                                          1,                    /* depth */
+                                          0,                    /* border */
+                                          GL_RGBA, GL_UNSIGNED_BYTE);
+
+  // There is only one TextureRef, so it should delete the platform texture.
+  EXPECT_CALL(*gl_, DeleteTextures(1, _)).Times(1).RetiresOnSaturation();
+  ResetDecoder();
+  // The texture should no longer have a TextureRef.
+  EXPECT_EQ(abstract_texture->GetTextureBase(), nullptr);
+}
+
+TEST_P(GLES2DecoderTest, AbstractTextureIsDestroyedWhenMadeCurrent) {
+  // When an AbstractTexture is destroyed, the ref will be dropped by the next
+  // call to MakeCurrent.
+  EXPECT_CALL(*gl_, GenTextures(1, _)).Times(1).RetiresOnSaturation();
+  const GLenum target = GL_TEXTURE_EXTERNAL_OES;
+  std::unique_ptr<AbstractTexture> abstract_texture =
+      GetDecoder()->CreateAbstractTexture(target, GL_RGBA, 256, /* width */
+                                          256,                  /* height */
+                                          1,                    /* depth */
+                                          0,                    /* border */
+                                          GL_RGBA, GL_UNSIGNED_BYTE);
+
+  abstract_texture.reset();
+  // Having textures to delete should signal idle work.
+  EXPECT_EQ(GetDecoder()->HasMoreIdleWork(), true);
+  EXPECT_CALL(*gl_, DeleteTextures(1, _)).Times(1).RetiresOnSaturation();
+
+  // Allow the context to be made current.
+  EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(true));
+  GetDecoder()->MakeCurrent();
 }
 
 TEST_P(GLES3DecoderTest, GetInternalformativValidArgsSamples) {

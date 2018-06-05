@@ -1136,6 +1136,10 @@ gl::GLContext* GLES2DecoderPassthroughImpl::GetGLContext() {
   return context_.get();
 }
 
+gl::GLSurface* GLES2DecoderPassthroughImpl::GetGLSurface() {
+  return surface_.get();
+}
+
 gpu::gles2::ContextGroup* GLES2DecoderPassthroughImpl::GetContextGroup() {
   return group_.get();
 }
@@ -1409,6 +1413,18 @@ gpu::gles2::ErrorState* GLES2DecoderPassthroughImpl::GetErrorState() {
 
 void GLES2DecoderPassthroughImpl::WaitForReadPixels(
     base::OnceClosure callback) {}
+
+std::unique_ptr<AbstractTexture>
+GLES2DecoderPassthroughImpl::CreateAbstractTexture(GLenum target,
+                                                   GLenum internal_format,
+                                                   GLsizei width,
+                                                   GLsizei height,
+                                                   GLsizei depth,
+                                                   GLint border,
+                                                   GLenum format,
+                                                   GLenum type) {
+  return nullptr;
+}
 
 bool GLES2DecoderPassthroughImpl::WasContextLost() const {
   return context_lost_;
