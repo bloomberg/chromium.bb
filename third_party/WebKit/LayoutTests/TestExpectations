@@ -2806,6 +2806,7 @@ crbug.com/800898 external/wpt/FileAPI/url/url-with-fetch.any.worker.html [ Pass 
 crbug.com/800898 external/wpt/FileAPI/url/url-with-xhr.any.worker.html [ Pass Failure ]
 crbug.com/800898 external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Timeout ]
 crbug.com/800901 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Timeout ]
+crbug.com/800901 virtual/mojo-blob-urls/external/wpt/FileAPI/url/sandboxed-iframe.html [ Timeout ]
 
 # Websockets
 crbug.com/803558 external/wpt/websockets/opening-handshake/003-sets-origin.worker.html [ Timeout ]
