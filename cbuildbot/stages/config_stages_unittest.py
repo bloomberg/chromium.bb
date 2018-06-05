@@ -72,7 +72,7 @@ class CheckTemplateStageTest(generic_stages_unittest.AbstractStageTestCase):
     stage = self.ConstructStage()
 
     stage.PerformStage()
-    self.assertTrue(self.update_mock.call_count == 2)
+    self.assertEqual(self.update_mock.call_count, 2)
 
   def testSortAndGetReleasePaths(self):
     """Test SortAndGetReleasePaths."""
@@ -91,7 +91,7 @@ class UpdateConfigStageTest(generic_stages_unittest.AbstractStageTestCase):
     self._Prepare()
     self.PatchObject(config_stages.UpdateConfigStage, '_DownloadTemplate')
     self.PatchObject(config_stages.UpdateConfigStage, '_CheckoutBranch')
-    self.PatchObject(config_stages.UpdateConfigStage, '_UpdateConfigDump')
+    self.PatchObject(config_stages.UpdateConfigStage, '_RunUnitTest')
     self.PatchObject(git, 'PushBranch')
     self.PatchObject(git, 'RunGit')
     self.PatchObject(repository, 'CloneWorkingRepo')
