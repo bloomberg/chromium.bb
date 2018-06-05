@@ -61,6 +61,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
+#include "ui/gfx/presentation_feedback.h"
 
 namespace {
 static base::AtomicSequenceNumber s_layer_tree_host_sequence_number;
@@ -688,6 +689,7 @@ void LayerTreeHost::DidPresentCompositorFrame(
     uint32_t flags) {
   for (auto& callback : callbacks)
     std::move(callback).Run(time, refresh, flags);
+  client_->DidPresentCompositorFrame(frame_token, {time, refresh, flags});
 }
 
 void LayerTreeHost::DidCompletePageScaleAnimation() {

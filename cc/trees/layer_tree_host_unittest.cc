@@ -7529,6 +7529,57 @@ class LayerTreeHostTestPresentationTimeRequest : public LayerTreeHostTest {
 };
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPresentationTimeRequest);
 
+// A SwapPromise that turns on |request_presentation_feedback| during
+// WillSwap().
+class RequestPresentationFeedbackSwapPromise : public SwapPromise {
+ public:
+  RequestPresentationFeedbackSwapPromise() = default;
+  ~RequestPresentationFeedbackSwapPromise() override = default;
+
+  // SwapPromise:
+  void DidActivate() override {}
+  void WillSwap(viz::CompositorFrameMetadata* metadata) override {
+    metadata->request_presentation_feedback = true;
+  }
+  void DidSwap() override {}
+  DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
+    return DidNotSwapAction::BREAK_PROMISE;
+  }
+  int64_t TraceId() const override { return 0; }
+};
+
+// Tests that a presentation-token can be requested during swap.
+class LayerTreeHostTestPresentationTimeRequestDuringSwap
+    : public LayerTreeHostTest {
+ protected:
+  void BeginTest() override {
+    layer_tree_host()->QueueSwapPromise(
+        std::make_unique<RequestPresentationFeedbackSwapPromise>());
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void DisplayReceivedCompositorFrameOnThread(
+      const viz::CompositorFrame& frame) override {
+    EXPECT_TRUE(frame.metadata.request_presentation_feedback);
+    frame_token_ = frame.metadata.frame_token;
+  }
+
+  void DidReceivePresentationTimeOnThread(
+      LayerTreeHostImpl* host_impl,
+      uint32_t frame_token,
+      const gfx::PresentationFeedback& feedback) override {
+    EXPECT_EQ(frame_token_, frame_token);
+    EndTest();
+  }
+
+  void AfterTest() override { ASSERT_GT(frame_token_, 0u); }
+
+ private:
+  uint32_t frame_token_ = 0;
+};
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostTestPresentationTimeRequestDuringSwap);
+
 // Makes sure that viz::LocalSurfaceId is propagated to the LayerTreeFrameSink.
 class LayerTreeHostTestLocalSurfaceId : public LayerTreeHostTest {
  protected:
