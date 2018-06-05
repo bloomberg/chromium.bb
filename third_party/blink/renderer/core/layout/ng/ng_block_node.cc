@@ -158,6 +158,16 @@ void CopyFragmentDataToLayoutBoxForInlineChildren(
   }
 }
 
+NGConstraintSpaceBuilder CreateConstraintSpaceBuilderForMinMax(
+    NGBlockNode node) {
+  return NGConstraintSpaceBuilder(node.Style().GetWritingMode(),
+                                  node.InitialContainingBlockSize())
+      .SetTextDirection(node.Style().Direction())
+      .SetIsIntermediateLayout(true)
+      .SetIsNewFormattingContext(node.CreatesNewFormattingContext())
+      .SetFloatsBfcOffset(NGBfcOffset());
+}
+
 }  // namespace
 
 NGBlockNode::NGBlockNode(LayoutBox* box) : NGLayoutInputNode(box, kBlock) {}
@@ -256,12 +266,8 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   }
 
   scoped_refptr<NGConstraintSpace> zero_constraint_space =
-      NGConstraintSpaceBuilder(Style().GetWritingMode(),
-                               InitialContainingBlockSize())
-          .SetTextDirection(Style().Direction())
-          .SetIsIntermediateLayout(true)
-          .SetFloatsBfcOffset(NGBfcOffset())
-          .ToConstraintSpace(Style().GetWritingMode());
+      CreateConstraintSpaceBuilderForMinMax(*this).ToConstraintSpace(
+          Style().GetWritingMode());
 
   if (!constraint_space)
     constraint_space = zero_constraint_space.get();
@@ -293,12 +299,9 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
 
   // Now, redo with infinite space for max_content
   scoped_refptr<NGConstraintSpace> infinite_constraint_space =
-      NGConstraintSpaceBuilder(Style().GetWritingMode(),
-                               InitialContainingBlockSize())
-          .SetTextDirection(Style().Direction())
+      CreateConstraintSpaceBuilderForMinMax(*this)
           .SetAvailableSize({LayoutUnit::Max(), LayoutUnit()})
           .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
-          .SetIsIntermediateLayout(true)
           .ToConstraintSpace(Style().GetWritingMode());
 
   layout_result = Layout(*infinite_constraint_space);
