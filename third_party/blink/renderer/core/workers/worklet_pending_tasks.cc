@@ -45,9 +45,10 @@ void WorkletPendingTasks::DecrementCounter() {
   //     2: "If pendingTaskStruct's counter is 0, then resolve promise."
   if (counter_ != -1) {
     --counter_;
-    if (counter_ == 0)
+    if (counter_ == 0) {
       worklet_->FinishPendingTasks(this);
       resolver_->Resolve();
+    }
   }
 }
 
