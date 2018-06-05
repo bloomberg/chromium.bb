@@ -41,13 +41,14 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     kLazySweepOnAllocation,
     kMarkInvokeEphemeronCallbacks,
     kMarkProcessWorklist,
+    kMarkNotFullyConstructedObjects,
     kMarkWeakProcessing,
     kVisitCrossThreadPersistents,
     kVisitDOMWrappers,
     kVisitPersistentRoots,
     kVisitPersistents,
     kVisitStackRoots,
-    kNumScopeIds,
+    kLastScopeId = kVisitStackRoots,
   };
 
   static const char* ToString(Id id) {
@@ -78,6 +79,8 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
         return "BlinkGC.LazySweepOnAllocation";
       case Id::kMarkInvokeEphemeronCallbacks:
         return "BlinkGC.MarkInvokeEphemeronCallbacks";
+      case Id::kMarkNotFullyConstructedObjects:
+        return "BlinkGC.MarkNotFullyConstructedObjects";
       case Id::kMarkProcessWorklist:
         return "BlinkGC.MarkProcessWorklist";
       case Id::kMarkWeakProcessing:
@@ -92,12 +95,10 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
         return "BlinkGC.VisitPersistents";
       case Id::kVisitStackRoots:
         return "BlinkGC.VisitStackRoots";
-      case Id::kNumScopeIds:
-        break;
     }
-    CHECK(false);
-    return nullptr;
   }
+
+  static constexpr int kNumScopeIds = kLastScopeId + 1;
 
   enum TraceDefaultBehavior {
     kEnabled,

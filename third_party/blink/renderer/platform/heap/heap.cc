@@ -261,8 +261,10 @@ void ThreadHeap::ProcessMarkingStack(Visitor* visitor) {
 }
 
 void ThreadHeap::MarkNotFullyConstructedObjects(Visitor* visitor) {
-  TRACE_EVENT0("blink_gc", "ThreadHeap::MarkNotFullyConstructedObjects");
   DCHECK(!thread_state_->IsIncrementalMarking());
+  ThreadHeapStatsCollector::Scope stats_scope(
+      stats_collector(),
+      ThreadHeapStatsCollector::kMarkNotFullyConstructedObjects);
 
   NotFullyConstructedItem item;
   while (
@@ -481,7 +483,6 @@ void ThreadHeap::ResetHeapCounters() {
 
 void ThreadHeap::MakeConsistentForGC() {
   DCHECK(thread_state_->InAtomicMarkingPause());
-  TRACE_EVENT0("blink_gc", "ThreadHeap::MakeConsistentForGC");
   for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
     arenas_[i]->MakeConsistentForGC();
 }

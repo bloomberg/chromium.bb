@@ -664,9 +664,6 @@ void ThreadState::PerformIdleGC(double deadline_seconds) {
   }
 #endif
 
-  TRACE_EVENT2("blink_gc", "ThreadState::performIdleGC", "idleDeltaInSeconds",
-               idle_delta_in_seconds, "estimatedMarkingTime",
-               heap_->HeapStats().EstimatedMarkingTime());
   CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
                  BlinkGC::kLazySweeping, BlinkGC::kIdleGC);
 }

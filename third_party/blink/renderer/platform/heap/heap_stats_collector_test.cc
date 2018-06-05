@@ -15,7 +15,7 @@ namespace blink {
 TEST(ThreadHeapStatsCollectorTest, InitialEmpty) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.Start(BlinkGC::kTesting);
-  for (int i = 0; i < ThreadHeapStatsCollector::Id::kNumScopeIds; i++) {
+  for (int i = 0; i < ThreadHeapStatsCollector::kNumScopeIds; i++) {
     EXPECT_DOUBLE_EQ(0.0, stats_collector.current().scope_data[i]);
   }
   stats_collector.Stop();
