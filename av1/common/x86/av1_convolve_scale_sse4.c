@@ -19,22 +19,6 @@
 #include "aom_dsp/aom_filter.h"
 #include "av1/common/convolve.h"
 
-// Make a mask for coefficients of 10/12 tap filters. The coefficients are
-// packed "89ab89ab". If it's a 12-tap filter, we want all 1's; if it's a
-// 10-tap filter, we want "11001100" to just match the 8,9 terms.
-static __m128i make_1012_mask(int ntaps) {
-  uint32_t low = 0xffffffff;
-  uint32_t high = (ntaps == 12) ? low : 0;
-  return _mm_set_epi32(high, low, high, low);
-}
-
-// Load an SSE register from p and bitwise AND with a.
-static __m128i load_and_128i(const void *p, __m128i a) {
-  const __m128d ad = _mm_castsi128_pd(a);
-  const __m128d bd = _mm_load1_pd((const double *)p);
-  return _mm_castpd_si128(_mm_and_pd(ad, bd));
-}
-
 // A specialised version of hfilter, the horizontal filter for
 // av1_convolve_2d_scale_sse4_1. This version only supports 8 tap filters.
 static void hfilter8(const uint8_t *src, int src_stride, int16_t *dst, int w,
@@ -112,28 +96,6 @@ static void hfilter8(const uint8_t *src, int src_stride, int16_t *dst, int w,
       dst[y + x * h] = ROUND_POWER_OF_TWO(sum, round);
     }
   }
-}
-
-// Do a 12-tap convolution with the given coefficients, loading data from src.
-static __m128i convolve_32(const int32_t *src, __m128i coeff03, __m128i coeff47,
-                           __m128i coeff8d) {
-  const __m128i data03 = _mm_loadu_si128((__m128i *)src);
-  const __m128i data47 = _mm_loadu_si128((__m128i *)(src + 4));
-  const __m128i data8d = _mm_loadu_si128((__m128i *)(src + 8));
-  const __m128i conv03 = _mm_mullo_epi32(data03, coeff03);
-  const __m128i conv47 = _mm_mullo_epi32(data47, coeff47);
-  const __m128i conv8d = _mm_mullo_epi32(data8d, coeff8d);
-  return _mm_add_epi32(_mm_add_epi32(conv03, conv47), conv8d);
-}
-
-// Do an 8-tap convolution with the given coefficients, loading data from src.
-static __m128i convolve_32_8(const int32_t *src, __m128i coeff03,
-                             __m128i coeff47) {
-  const __m128i data03 = _mm_loadu_si128((__m128i *)src);
-  const __m128i data47 = _mm_loadu_si128((__m128i *)(src + 4));
-  const __m128i conv03 = _mm_mullo_epi32(data03, coeff03);
-  const __m128i conv47 = _mm_mullo_epi32(data47, coeff47);
-  return _mm_add_epi32(conv03, conv47);
 }
 
 static __m128i convolve_16_8(const int16_t *src, __m128i coeff) {
@@ -293,15 +255,6 @@ void av1_convolve_2d_scale_sse4_1(const uint8_t *src, int src_stride,
   // vertical filter (input is transposed)
   vfilter8(tmp, im_h, dst8, dst8_stride, w, h, subpel_y_qn, y_step_qn,
            filter_params_y, conv_params, 8);
-}
-
-// An wrapper to generate the SHUFPD instruction with __m128i types (just
-// writing _mm_shuffle_pd at the callsites gets a bit ugly because of the
-// casts)
-static __m128i mm_shuffle0_si128(__m128i a, __m128i b) {
-  __m128d ad = _mm_castsi128_pd(a);
-  __m128d bd = _mm_castsi128_pd(b);
-  return _mm_castpd_si128(_mm_shuffle_pd(ad, bd, 0));
 }
 
 // A specialised version of hfilter, the horizontal filter for
