@@ -4225,13 +4225,16 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // retrieved state will be pending until |didCommitNavigation| callback.
   [self updatePendingNavigationInfoFromNavigationAction:action];
 
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
+      base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
     // If this is a placeholder navigation, pass through.
     if (IsPlaceholderUrl(requestURL)) {
       decisionHandler(WKNavigationActionPolicyAllow);
       return;
     }
+  }
 
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     // WKBasedNavigationManager doesn't use |loadCurrentURL| for reload or back/
     // forward navigation. So this is the first point where a form repost would
     // be detected. Display the confirmation dialog.
@@ -4305,7 +4308,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   GURL responseURL = net::GURLWithNSURL(navigationResponse.response.URL);
 
   // If this is a placeholder navigation, pass through.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+  if ((web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
+       base::FeatureList::IsEnabled(web::features::kWebErrorPages)) &&
       IsPlaceholderUrl(responseURL)) {
     handler(WKNavigationResponsePolicyAllow);
     return;
