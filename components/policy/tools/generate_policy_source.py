@@ -78,7 +78,8 @@ class PolicyDetails:
     self.supported_chrome_os_management = \
         policy.get('supported_chrome_os_management',
                    ['active_directory', 'google_cloud'])
-    self.schema = policy.get('schema', {})
+    self.schema = policy['schema']
+    self.validation_schema = policy.get('validation_schema')
     self.has_enterprise_default = 'default_for_enterprise_users' in policy
     if self.has_enterprise_default:
       self.enterprise_default = policy['default_for_enterprise_users']
@@ -125,7 +126,6 @@ class PolicyDetails:
                                 (policy['name'], policy['type']))
     self.policy_type, self.protobuf_type, self.policy_protobuf_type, \
         self.restriction_type = PolicyDetails.TYPE_MAP[policy['type']]
-    self.schema = policy['schema']
 
     self.desc = '\n'.join(
         map(str.strip,
@@ -671,6 +671,8 @@ class SchemaNodesGenerator:
     f.write('  kRestrictionNodes,\n' if self.restriction_nodes else '  NULL,\n')
     f.write('  kIntegerEnumerations,\n' if self.int_enums else '  NULL,\n')
     f.write('  kStringEnumerations,\n' if self.string_enums else '  NULL,\n')
+    f.write('  %d,  // validation_schema root index\n'
+        % self.validation_schema_root_index)
     f.write('};\n\n')
 
   def GetByID(self, id_str):
@@ -743,11 +745,18 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
     'type': 'object',
     'properties': {},
   }
+  chrome_validation_schema = {
+    'type': 'object',
+    'properties': {},
+  }
   shared_strings = {}
   for policy in policies:
     shared_strings[policy.name] = "key::k%s" % policy.name
     if policy.is_supported:
       chrome_schema['properties'][policy.name] = policy.schema
+      if policy.validation_schema is not None:
+        (chrome_validation_schema
+            ['properties'][policy.name]) = policy.validation_schema
 
   # Note: this list must be kept in sync with the known property list of the
   # Chrome schema, so that binary searching in the PropertyNode array gets the
@@ -769,6 +778,14 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
 
   schema_generator = SchemaNodesGenerator(shared_strings)
   schema_generator.GenerateAndCollectID(chrome_schema, 'root node')
+
+  if chrome_validation_schema['properties']:
+    schema_generator.validation_schema_root_index = \
+        schema_generator.GenerateAndCollectID(chrome_validation_schema,
+                                              'validation_schema root node')
+  else:
+    schema_generator.validation_schema_root_index = -1
+
   schema_generator.ResolveReferences()
   schema_generator.Write(f)
 

@@ -156,6 +156,13 @@ class Schema::InternalStorage
     return schema(0);
   }
 
+  const SchemaNode* validation_schema_root_node() const {
+    // Fail fast if no validation_schema root node has been generated.
+    // A valid index should be greater than zero (since zero is the root node).
+    CHECK_GT(schema_data_.validation_schema_root_index, 0);
+    return schema(schema_data_.validation_schema_root_index);
+  }
+
   const SchemaNode* schema(int index) const {
     return schema_data_.schema_nodes + index;
   }
@@ -280,6 +287,8 @@ scoped_refptr<const Schema::InternalStorage> Schema::InternalStorage::Wrap(
   storage->schema_data_.restriction_nodes = data->restriction_nodes;
   storage->schema_data_.int_enums = data->int_enums;
   storage->schema_data_.string_enums = data->string_enums;
+  storage->schema_data_.validation_schema_root_index =
+      data->validation_schema_root_index;
   return storage;
 }
 
@@ -340,6 +349,7 @@ Schema::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
   data->restriction_nodes = storage->restriction_nodes_.data();
   data->int_enums = storage->int_enums_.data();
   data->string_enums = storage->string_enums_.data();
+  data->validation_schema_root_index = -1;
   return storage;
 }
 
