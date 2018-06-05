@@ -1542,7 +1542,7 @@ static void save_tile_row_boundary_lines(const YV12_BUFFER_CONFIG *frame,
 
   RestorationStripeBoundaries *boundaries = &cm->rst_info[plane].boundaries;
 
-  int plane_height = ROUND_POWER_OF_TWO(cm->height, ss_y);
+  const int plane_height = ROUND_POWER_OF_TWO(cm->height, ss_y);
 
   int tile_stripe;
   for (tile_stripe = 0;; ++tile_stripe) {
@@ -1555,12 +1555,11 @@ static void save_tile_row_boundary_lines(const YV12_BUFFER_CONFIG *frame,
 
     const int frame_stripe = stripe0 + tile_stripe;
 
-    int use_deblock_above, use_deblock_below;
     // In this case, we should only use CDEF pixels at the top
     // and bottom of the frame as a whole; internal tile boundaries
     // can use deblocked pixels from adjacent tiles for context.
-    use_deblock_above = (frame_stripe > 0);
-    use_deblock_below = (y1 < plane_height);
+    const int use_deblock_above = (frame_stripe > 0);
+    const int use_deblock_below = (y1 < plane_height);
 
     if (!after_cdef) {
       // Save deblocked context where needed.
