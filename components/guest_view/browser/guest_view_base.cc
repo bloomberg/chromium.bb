@@ -187,7 +187,7 @@ GuestViewBase::GuestViewBase(WebContents* owner_web_contents)
 GuestViewBase::~GuestViewBase() {}
 
 void GuestViewBase::Init(const base::DictionaryValue& create_params,
-                         const WebContentsCreatedCallback& callback) {
+                         WebContentsCreatedCallback callback) {
   if (initialized_)
     return;
   initialized_ = true;
@@ -196,16 +196,15 @@ void GuestViewBase::Init(const base::DictionaryValue& create_params,
     // The derived class did not create a WebContents so this class serves no
     // purpose. Let's self-destruct.
     delete this;
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
   std::unique_ptr<base::DictionaryValue> params(create_params.DeepCopy());
   CreateWebContents(create_params,
-                    base::Bind(&GuestViewBase::CompleteInit,
-                               weak_ptr_factory_.GetWeakPtr(),
-                               base::Passed(&params),
-                               callback));
+                    base::BindOnce(&GuestViewBase::CompleteInit,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   base::Passed(&params), std::move(callback)));
 }
 
 void GuestViewBase::InitWithWebContents(
@@ -783,17 +782,17 @@ void GuestViewBase::SendQueuedEvents() {
 
 void GuestViewBase::CompleteInit(
     std::unique_ptr<base::DictionaryValue> create_params,
-    const WebContentsCreatedCallback& callback,
+    WebContentsCreatedCallback callback,
     WebContents* guest_web_contents) {
   if (!guest_web_contents) {
     // The derived class did not create a WebContents so this class serves no
     // purpose. Let's self-destruct.
     delete this;
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
   InitWithWebContents(*create_params, guest_web_contents);
-  callback.Run(guest_web_contents);
+  std::move(callback).Run(guest_web_contents);
 }
 
 double GuestViewBase::GetEmbedderZoomFactor() const {

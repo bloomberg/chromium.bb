@@ -150,17 +150,17 @@ int MimeHandlerViewGuest::GetTaskPrefix() const {
 
 void MimeHandlerViewGuest::CreateWebContents(
     const base::DictionaryValue& create_params,
-    const WebContentsCreatedCallback& callback) {
+    WebContentsCreatedCallback callback) {
   std::string view_id;
   create_params.GetString(mime_handler_view::kViewId, &view_id);
   if (view_id.empty()) {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
   stream_ =
       MimeHandlerStreamManager::Get(browser_context())->ReleaseStream(view_id);
   if (!stream_) {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
   const Extension* mime_handler_extension =
@@ -172,7 +172,7 @@ void MimeHandlerViewGuest::CreateWebContents(
   if (!mime_handler_extension) {
     LOG(ERROR) << "Extension for mime_type not found, mime_type = "
                << stream_->mime_type();
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -195,7 +195,7 @@ void MimeHandlerViewGuest::CreateWebContents(
   params.guest_delegate = this;
   // TODO(erikchen): Fix ownership semantics for guest views.
   // https://crbug.com/832879.
-  callback.Run(WebContents::Create(params).release());
+  std::move(callback).Run(WebContents::Create(params).release());
 
   registry_.AddInterface(
       base::Bind(&MimeHandlerServiceImpl::Create, stream_->GetWeakPtr()));

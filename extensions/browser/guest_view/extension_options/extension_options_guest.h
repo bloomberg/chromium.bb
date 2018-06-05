@@ -29,7 +29,7 @@ class ExtensionOptionsGuest
 
   // GuestViewBase implementation.
   void CreateWebContents(const base::DictionaryValue& create_params,
-                         const WebContentsCreatedCallback& callback) final;
+                         WebContentsCreatedCallback callback) final;
   void DidInitialize(const base::DictionaryValue& create_params) final;
   void GuestViewDidStopLoading() final;
   const char* GetAPINamespace() const final;

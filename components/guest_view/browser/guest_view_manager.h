@@ -107,11 +107,11 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
                                        const base::Closure& callback);
 
   using WebContentsCreatedCallback =
-      base::Callback<void(content::WebContents*)>;
+      base::OnceCallback<void(content::WebContents*)>;
   void CreateGuest(const std::string& view_type,
                    content::WebContents* owner_web_contents,
                    const base::DictionaryValue& create_params,
-                   const WebContentsCreatedCallback& callback);
+                   WebContentsCreatedCallback callback);
 
   content::WebContents* CreateGuestWithWebContentsParams(
       const std::string& view_type,
