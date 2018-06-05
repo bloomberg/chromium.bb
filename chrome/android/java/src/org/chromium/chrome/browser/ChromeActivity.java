@@ -1784,6 +1784,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mCompositorViewHolder.setControlContainer(controlContainer);
         mCompositorViewHolder.setFullscreenHandler(getFullscreenManager());
         mCompositorViewHolder.setUrlBar(urlBar);
+        mCompositorViewHolder.setInsetObserverView(getInsetObserverView());
         mCompositorViewHolder.onFinishNativeInitialization(getTabModelSelector(), this,
                 getTabContentManager(), contentContainer, mContextualSearchManager);
 
