@@ -86,8 +86,10 @@ void AutofillProviderAndroid::StartNewSession(AutofillHandlerProxy* handler,
   form_ = std::make_unique<FormDataAndroid>(form);
 
   size_t index;
-  if (!form_->GetFieldIndex(field, &index))
+  if (!form_->GetFieldIndex(field, &index)) {
+    form_.reset();
     return;
+  }
 
   gfx::RectF transformed_bounding = ToClientAreaBound(bounding_box);
 
