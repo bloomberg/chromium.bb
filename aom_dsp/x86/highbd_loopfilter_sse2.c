@@ -161,13 +161,6 @@ static INLINE void highbd_flat_mask4_13(const __m128i *th, const __m128i *p,
   flat_mask_internal(th, p, q, bd, 4, 7, flat);
 }
 
-// Note:
-//  access p[7-4], p[0], and q[7-4], q[0]
-static INLINE void highbd_flat_mask5(const __m128i *th, const __m128i *p,
-                                     const __m128i *q, __m128i *flat, int bd) {
-  flat_mask_internal(th, p, q, bd, 4, 8, flat);
-}
-
 static AOM_FORCE_INLINE void highbd_filter4_sse2(__m128i *p1p0, __m128i *q1q0,
                                                  __m128i *hev, __m128i *mask,
                                                  __m128i *qs1qs0,
