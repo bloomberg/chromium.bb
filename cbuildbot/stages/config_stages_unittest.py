@@ -91,7 +91,7 @@ class UpdateConfigStageTest(generic_stages_unittest.AbstractStageTestCase):
     self._Prepare()
     self.PatchObject(config_stages.UpdateConfigStage, '_DownloadTemplate')
     self.PatchObject(config_stages.UpdateConfigStage, '_CheckoutBranch')
-    self.PatchObject(config_stages.UpdateConfigStage, '_UpdateConfigDump')
+    self.PatchObject(config_stages.UpdateConfigStage, '_RunUnitTest')
     self.PatchObject(git, 'PushBranch')
     self.PatchObject(git, 'RunGit')
     self.PatchObject(repository, 'CloneWorkingRepo')
