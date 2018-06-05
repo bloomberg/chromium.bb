@@ -8,10 +8,12 @@
 
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/engine/commit_queue.h"
+#include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/undo/bookmark_undo_utils.h"
 
 namespace sync_bookmarks {
@@ -388,10 +390,49 @@ void BookmarkModelTypeProcessor::AssociatePermanentFolder(
   }
 }
 
-base::WeakPtr<syncer::ModelTypeProcessor>
+base::WeakPtr<syncer::ModelTypeControllerDelegate>
 BookmarkModelTypeProcessor::GetWeakPtr() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void BookmarkModelTypeProcessor::OnSyncStarting(
+    const syncer::ModelErrorHandler& error_handler,
+    StartCallback start_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(start_callback);
+  DVLOG(1) << "Sync is starting for Bookmarks";
+
+  auto activation_context = std::make_unique<syncer::ActivationContext>();
+  // TODO(crbug.com/516866): Read the model type state from persisted sync
+  // metadata instead of feeding an empty one.
+  sync_pb::ModelTypeState model_type_state;
+  model_type_state.mutable_progress_marker()->set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(syncer::BOOKMARKS));
+  activation_context->model_type_state = model_type_state;
+  activation_context->type_processor =
+      std::make_unique<syncer::ModelTypeProcessorProxy>(
+          weak_ptr_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get());
+  std::move(start_callback).Run(std::move(activation_context));
+}
+
+void BookmarkModelTypeProcessor::DisableSync() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  NOTIMPLEMENTED();
+}
+void BookmarkModelTypeProcessor::GetAllNodesForDebugging(
+    AllNodesCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  NOTIMPLEMENTED();
+}
+void BookmarkModelTypeProcessor::GetStatusCountersForDebugging(
+    StatusCountersCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  NOTIMPLEMENTED();
+}
+void BookmarkModelTypeProcessor::RecordMemoryUsageHistogram() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  NOTIMPLEMENTED();
 }
 
 }  // namespace sync_bookmarks

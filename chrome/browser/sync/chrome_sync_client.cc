@@ -512,6 +512,10 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
       return ProfileSyncServiceFactory::GetForProfile(profile_)
           ->GetSessionSyncControllerDelegateOnUIThread();
     }
+    case syncer::BOOKMARKS: {
+      return ProfileSyncServiceFactory::GetForProfile(profile_)
+          ->GetBookmarkSyncControllerDelegateOnUIThread();
+    }
     default:
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeControllerDelegate>();

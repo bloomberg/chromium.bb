@@ -59,6 +59,7 @@
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
+#include "components/sync_bookmarks/bookmark_model_type_processor.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/session_data_type_controller.h"
@@ -263,6 +264,12 @@ void ProfileSyncService::Initialize() {
             base::BindRepeating(
                 &ProfileSyncService::NotifyForeignSessionUpdated,
                 sync_enabled_weak_factory_.GetWeakPtr()));
+  }
+
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks)) {
+    bookmark_model_type_processor_ =
+        std::make_unique<sync_bookmarks::BookmarkModelTypeProcessor>(
+            sync_client_.get());
   }
 
   device_info_sync_bridge_ = std::make_unique<DeviceInfoSyncBridge>(
@@ -2067,6 +2074,14 @@ ProfileSyncService::GetSessionSyncControllerDelegateOnUIThread() {
   return sessions_sync_manager_->GetModelTypeSyncBridge()
       ->change_processor()
       ->GetControllerDelegateOnUIThread();
+}
+
+base::WeakPtr<syncer::ModelTypeControllerDelegate>
+ProfileSyncService::GetBookmarkSyncControllerDelegateOnUIThread() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!bookmark_model_type_processor_)
+    return nullptr;
+  return bookmark_model_type_processor_->GetWeakPtr();
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
