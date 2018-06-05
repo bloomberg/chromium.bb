@@ -220,6 +220,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, StartAndStop);
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, DetachDuringStart);
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, StopDuringStart);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerNewScriptLoaderTest, AccessedNetwork);
 
   // Constructor is called via EmbeddedWorkerRegistry::CreateWorker().
   // This instance holds a ref of |registry|.

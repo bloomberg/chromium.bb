@@ -184,6 +184,9 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
 
   // The following sequence is equivalent to
   // ServiceWorkerWriteToCacheJob::OnResponseStarted.
+  // TODO(falken): Make these steps be in the same order as the spec. Right now
+  // there are slight differences, like we only bump last update check time on
+  // OK status.
 
   if (response_head.headers->response_code() / 100 != 2) {
     // Non-2XX HTTP status code is handled as an error.
@@ -234,6 +237,9 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
           error_message);
       return;
     }
+
+    if (response_head.network_accessed)
+      version_->embedded_worker()->OnNetworkAccessedForScriptLoad();
 
     version_->SetMainScriptHttpResponseInfo(*response_info);
   }

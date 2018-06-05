@@ -5,6 +5,8 @@
 #include "content/browser/service_worker/service_worker_new_script_loader.h"
 
 #include <map>
+#include <memory>
+#include <string>
 #include <utility>
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -95,6 +97,7 @@ class MockNetworkURLLoaderFactory final
     network::ResourceResponseHead response_head;
     response_head.headers = info.headers;
     response_head.headers->GetMimeType(&response_head.mime_type);
+    response_head.network_accessed = access_network_;
     if (response.has_certificate_error) {
       response_head.cert_status = net::CERT_STATUS_DATE_INVALID;
     }
@@ -118,6 +121,10 @@ class MockNetworkURLLoaderFactory final
     client->OnComplete(status);
   }
 
+  void set_to_access_network(bool access_network) {
+    access_network_ = access_network;
+  }
+
   network::ResourceRequest last_request() const { return last_request_; }
 
   void Clone(network::mojom::URLLoaderFactoryRequest factory) override {
@@ -130,6 +137,9 @@ class MockNetworkURLLoaderFactory final
 
   // The most recent request received by this factory.
   network::ResourceRequest last_request_;
+
+  // Controls whether a load simulates accessing network or cache.
+  bool access_network_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockNetworkURLLoaderFactory);
 };
@@ -813,6 +823,45 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, ForceBypassCache) {
   client->RunUntilComplete();
   request = mock_url_loader_factory_->last_request();
   EXPECT_TRUE(request.load_flags & net::LOAD_BYPASS_CACHE);
+}
+
+// Tests that EmbeddedWorkerInstance's |network_accessed_for_script_| flag is
+// set when the script loader accesses network. This flag is used to enforce the
+// 24 hour cache bypass.
+TEST_F(ServiceWorkerNewScriptLoaderTest, AccessedNetwork) {
+  const GURL kScriptURL(kNormalScriptURL);
+  const GURL kImportedScriptURL(kNormalImportedScriptURL);
+  std::unique_ptr<network::TestURLLoaderClient> client;
+  std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
+
+  SetUpRegistration(kScriptURL);
+
+  // Install the main script. The network accessed flag should be flipped on.
+  version_->embedded_worker()->network_accessed_for_script_ = false;
+  mock_url_loader_factory_->set_to_access_network(true);
+  DoRequest(kScriptURL, &client, &loader);
+  client->RunUntilComplete();
+  EXPECT_EQ(net::OK, client->completion_status().error_code);
+  EXPECT_TRUE(version_->embedded_worker()->network_accessed_for_script());
+
+  // Install the imported script. The network accessed flag should be unchanged,
+  // as it's only meant for main scripts.
+  version_->embedded_worker()->network_accessed_for_script_ = false;
+  mock_url_loader_factory_->set_to_access_network(true);
+  DoRequest(kImportedScriptURL, &client, &loader);
+  client->RunUntilComplete();
+  EXPECT_EQ(net::OK, client->completion_status().error_code);
+  EXPECT_FALSE(version_->embedded_worker()->network_accessed_for_script());
+
+  // Install a new main script, this time simulating coming from cache. The
+  // network accessed flag should be off.
+  SetUpRegistration(kScriptURL);
+  version_->embedded_worker()->network_accessed_for_script_ = false;
+  mock_url_loader_factory_->set_to_access_network(false);
+  DoRequest(kScriptURL, &client, &loader);
+  client->RunUntilComplete();
+  EXPECT_EQ(net::OK, client->completion_status().error_code);
+  EXPECT_FALSE(version_->embedded_worker()->network_accessed_for_script());
 }
 
 }  // namespace content

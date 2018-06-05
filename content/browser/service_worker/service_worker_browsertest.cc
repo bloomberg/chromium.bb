@@ -916,15 +916,37 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     fetch_dispatcher_->Run();
   }
 
-  void ResetLastUpdateCheckOnIOThread(
-      int64_t registration_id,
-      const base::RepeatingClosure& done_on_ui) {
+  base::Time GetLastUpdateCheck(int64_t registration_id) {
+    base::Time last_update_time;
+    base::RunLoop time_run_loop;
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&self::GetLastUpdateCheckOnIOThread,
+                       base::Unretained(this), registration_id,
+                       &last_update_time, time_run_loop.QuitClosure()));
+    time_run_loop.Run();
+    return last_update_time;
+  }
+
+  void GetLastUpdateCheckOnIOThread(int64_t registration_id,
+                                    base::Time* out_time,
+                                    const base::RepeatingClosure& done_on_ui) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ServiceWorkerRegistration* registration =
         wrapper()->context()->GetLiveRegistration(registration_id);
     ASSERT_TRUE(registration);
-    registration->set_last_update_check(base::Time::Now() -
-                                        base::TimeDelta::FromHours(24));
+    *out_time = registration->last_update_check();
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done_on_ui);
+  }
+
+  void SetLastUpdateCheckOnIOThread(int64_t registration_id,
+                                    base::Time last_update_time,
+                                    const base::RepeatingClosure& done_on_ui) {
+    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    ServiceWorkerRegistration* registration =
+        wrapper()->context()->GetLiveRegistration(registration_id);
+    ASSERT_TRUE(registration);
+    registration->set_last_update_check(last_update_time);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done_on_ui);
   }
 
@@ -1399,6 +1421,11 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
 
 // Tests that the browser cache is bypassed on update checks after 24 hours
 // elapsed since the last update check that accessed network.
+//
+// Due to the nature of what this is testing, this test depends on the system
+// clock being reasonable during the test. So it might break on daylight savings
+// leap or something:
+// https://groups.google.com/a/chromium.org/d/msg/chromium-dev/C3EvKPrb0XM/4Jv02SpNYncJ
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        UpdateBypassesCacheAfter24Hours) {
   const char kScope[] = "/service_worker/handle_fetch.html";
@@ -1425,6 +1452,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   observer->Wait();
   int64_t registration_id = observer->registration_id();
 
+  // The registration's last update time should be non-null.
+  base::Time last_update_time = GetLastUpdateCheck(registration_id);
+  EXPECT_NE(base::Time(), last_update_time);
+
   // Try to update. The request should hit the browser cache so no update should
   // be found.
   {
@@ -1434,15 +1465,20 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
     EXPECT_EQ(SERVICE_WORKER_OK, status);
     EXPECT_FALSE(update_found);
   }
+  // The last update time should be unchanged.
+  EXPECT_EQ(last_update_time, GetLastUpdateCheck(registration_id));
 
-  // Set the registration's last update time far in the past.
-  base::RunLoop time_run_loop;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&self::ResetLastUpdateCheckOnIOThread,
-                     base::Unretained(this), registration_id,
-                     time_run_loop.QuitClosure()));
-  time_run_loop.Run();
+  // Set the last update time far in the past.
+  {
+    last_update_time = base::Time::Now() - base::TimeDelta::FromHours(24);
+    base::RunLoop time_run_loop;
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&self::SetLastUpdateCheckOnIOThread,
+                       base::Unretained(this), registration_id,
+                       last_update_time, time_run_loop.QuitClosure()));
+    time_run_loop.Run();
+  }
 
   // Try to update again. The browser cache should be bypassed so the update
   // should be found.
@@ -1453,6 +1489,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
     EXPECT_EQ(SERVICE_WORKER_OK, status);
     EXPECT_TRUE(update_found);
   }
+  // The last update time should be bumped.
+  EXPECT_LT(last_update_time, GetLastUpdateCheck(registration_id));
 }
 
 class MockContentBrowserClient : public TestContentBrowserClient {
