@@ -759,7 +759,7 @@ TEST_F(UiTest, PropagateContentBoundsOnFullscreen) {
 TEST_F(UiTest, DontPropagateContentBoundsOnNegligibleChange) {
   CreateScene(kNotInCct, kNotInWebVr);
 
-  EXPECT_TRUE(RunForMs(0));
+  EXPECT_FALSE(RunForMs(0));
   ui_->OnProjMatrixChanged(kPixelDaydreamProjMatrix);
 
   UiElement* content_quad = scene_->GetUiElementByName(kContentQuad);
@@ -907,7 +907,7 @@ TEST_F(UiTest, SpeechRecognitionUiVisibility) {
 
   // The visibility of Speech Recognition UI should not change at this point,
   // but it will be animating.
-  EXPECT_TRUE(RunForMs(10));
+  EXPECT_FALSE(RunForMs(10));
 
   EXPECT_TRUE(RunForMs(kSpeechRecognitionResultTimeoutMs));
   // Start hide speech recognition result and show browsing foreground.
@@ -1026,7 +1026,7 @@ TEST_F(UiTest, ControllerQuiescence) {
 
   model_->skips_redraw_when_not_dirty = false;
   model_->controller.quiescent = true;
-  EXPECT_TRUE(RunForMs(1000));
+  EXPECT_FALSE(RunForMs(1000));
   EXPECT_TRUE(IsVisible(kControllerGroup));
 }
 
@@ -1382,6 +1382,13 @@ TEST_F(UiTest, MenuItems) {
   model_->standalone_vr_device = true;
   OnBeginFrame();
   EXPECT_EQ(IsVisible(kOverflowMenuPreferencesItem), true);
+}
+
+TEST_F(UiTest, SteadyState) {
+  CreateScene(kNotInCct, kNotInWebVr);
+  RunForSeconds(10.0f);
+  // Should have reached steady state.
+  EXPECT_FALSE(OnBeginFrame());
 }
 
 }  // namespace vr

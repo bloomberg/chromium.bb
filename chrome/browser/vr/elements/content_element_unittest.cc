@@ -137,7 +137,7 @@ TEST_F(ContentElementSceneTest, WebInputFocus) {
   EXPECT_CALL(*kb_delegate, OnBeginFrame());
   EXPECT_CALL(*kb_delegate, SetTransform(_));
   content->OnFocusChanged(true);
-  EXPECT_TRUE(OnBeginFrame());
+  EXPECT_FALSE(OnBeginFrame());
 
   // Updates from the browser should update keyboard state.
   TextInputInfo info(base::ASCIIToUTF16("asdfg"));
@@ -184,7 +184,7 @@ TEST_F(ContentElementSceneTest, ClearWebInputInfoModel) {
   // Initial state gets pushed when the content element is focused.
   EXPECT_CALL(*text_input_delegate_, UpdateInput(info));
   content->OnFocusChanged(true);
-  EXPECT_TRUE(OnBeginFrame());
+  EXPECT_FALSE(OnBeginFrame());
 
   // Unfocus the content element.
   content->OnFocusChanged(false);
@@ -195,7 +195,7 @@ TEST_F(ContentElementSceneTest, ClearWebInputInfoModel) {
   // so we shouldn't be pushing the stale state.
   EXPECT_CALL(*text_input_delegate_, UpdateInput(TextInputInfo()));
   content->OnFocusChanged(true);
-  EXPECT_TRUE(OnBeginFrame());
+  EXPECT_FALSE(OnBeginFrame());
 }
 
 class ContentElementInputEditingTest : public UiTest {
