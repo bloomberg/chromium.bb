@@ -32,8 +32,8 @@
 
 #include <stdint.h>
 
+#include "base/logging.h"
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/wtf/atomics.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
