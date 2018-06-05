@@ -4,15 +4,16 @@
 
 import os
 
-from telemetry.page import page as page_module
 from telemetry import story
 
 from page_sets import webgl_supported_shared_state
+from page_sets.rendering import rendering_story
+from page_sets.rendering import story_tags
 
+# pylint: disable=line-too-long
+_MAPS_PERF_TEST_DIR = os.path.join(os.path.dirname(__file__), '../maps_perf_test')
 
-_MAPS_PERF_TEST_DIR = os.path.join(os.path.dirname(__file__), 'maps_perf_test')
-
-class MapsPage(page_module.Page):
+class MapsPage(rendering_story.RenderingStory):
   """Google Maps benchmarks and pixel tests.
 
   The Maps team gave us a build of their test. The static files are stored in
@@ -25,15 +26,21 @@ class MapsPage(page_module.Page):
   <path to depot_tools>/upload_to_google_storage.py \
       maps_perf_test/load_dataset --bucket=chromium-telemetry
 """
+  BASE_NAME = 'maps_perf_test'
+  URL = 'file://performance.html'
+  TAGS = [story_tags.REQUIRED_WEBGL]
 
-  def __init__(self, page_set):
+  def __init__(self,
+               page_set,
+               shared_page_state_class,
+               name_suffix='',
+               extra_browser_args=None):
     super(MapsPage, self).__init__(
-      url='file://performance.html',
-      base_dir=_MAPS_PERF_TEST_DIR,
-      page_set=page_set,
-      shared_page_state_class=(
-          webgl_supported_shared_state.WebGLSupportedSharedState),
-      name='maps_perf_test')
+        page_set=page_set,
+        shared_page_state_class=shared_page_state_class,
+        name_suffix=name_suffix,
+        extra_browser_args=extra_browser_args,
+        base_dir=_MAPS_PERF_TEST_DIR)
 
   @property
   def skipped_gpus(self):
@@ -46,7 +53,8 @@ class MapsPage(page_module.Page):
     with action_runner.CreateInteraction('MapAnimation'):
       action_runner.WaitForJavaScriptCondition('window.testDone', timeout=120)
 
-
+# TODO(crbug.com/760553):remove this class after smoothness.maps
+# benchmark is completely replaced by rendering benchmarks
 class MapsPageSet(story.StorySet):
 
   """ Google Maps examples """
@@ -54,4 +62,7 @@ class MapsPageSet(story.StorySet):
   def __init__(self):
     super(MapsPageSet,self).__init__(cloud_storage_bucket=story.PUBLIC_BUCKET)
 
-    self.AddStory(MapsPage(self))
+    self.AddStory(MapsPage(
+        self,
+        shared_page_state_class=(
+          webgl_supported_shared_state.WebGLSupportedSharedState)))
