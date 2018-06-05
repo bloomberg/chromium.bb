@@ -74,11 +74,7 @@ action("blobstore_extended_fvm") {
   # limitation in the future.
   _extend_size = "1073741824"  # 1GB
 
-  if (current_cpu == "arm64") {
-    _target_dir = "//third_party/fuchsia-sdk/sdk/target/aarch64"
-  } else if (current_cpu == "x64") {
-    _target_dir = "//third_party/fuchsia-sdk/sdk/target/x86_64"
-  }
+  _target_dir = "//third_party/fuchsia-sdk/sdk/target/${current_cpu}"
 
   script = "//build/config/fuchsia/extend_fvm.py"
 
