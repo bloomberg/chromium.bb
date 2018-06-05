@@ -71,7 +71,8 @@ void BlinkNotificationServiceImpl::GetPermissionStatus(
     return;
   }
 
-  blink::mojom::PermissionStatus permission_status = CheckPermissionStatus();
+  blink::mojom::PermissionStatus permission_status =
+      CheckPermissionStatusOnIOThread();
 
   std::move(callback).Run(permission_status);
 }
@@ -88,8 +89,6 @@ void BlinkNotificationServiceImpl::DisplayNonPersistentNotification(
     blink::mojom::NonPersistentNotificationListenerPtr event_listener_ptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!Service())
-    return;
-  if (CheckPermissionStatus() != blink::mojom::PermissionStatus::GRANTED)
     return;
 
   std::string notification_id =
@@ -112,6 +111,10 @@ void BlinkNotificationServiceImpl::DisplayNonPersistentNotificationOnUIThread(
     const content::PlatformNotificationData& notification_data,
     const content::NotificationResources& notification_resources,
     blink::mojom::NonPersistentNotificationListenerPtrInfo listener_ptr_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (CheckPermissionStatus() != blink::mojom::PermissionStatus::GRANTED)
+    return;
+
   NotificationEventDispatcherImpl* event_dispatcher =
       NotificationEventDispatcherImpl::GetInstance();
   event_dispatcher->RegisterNonPersistentNotificationListener(
@@ -140,6 +143,10 @@ void BlinkNotificationServiceImpl::CloseNonPersistentNotification(
 
 void BlinkNotificationServiceImpl::CloseNonPersistentNotificationOnUIThread(
     const std::string& notification_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (CheckPermissionStatus() != blink::mojom::PermissionStatus::GRANTED)
+    return;
+
   Service()->CloseNotification(browser_context_, notification_id);
 
   // TODO(https://crbug.com/442141): Pass a callback here to focus the tab
@@ -150,6 +157,12 @@ void BlinkNotificationServiceImpl::CloseNonPersistentNotificationOnUIThread(
 
 blink::mojom::PermissionStatus
 BlinkNotificationServiceImpl::CheckPermissionStatus() {
+  return Service()->CheckPermissionOnUIThread(
+      browser_context_, origin_.GetURL(), render_process_id_);
+}
+
+blink::mojom::PermissionStatus
+BlinkNotificationServiceImpl::CheckPermissionStatusOnIOThread() {
   return Service()->CheckPermissionOnIOThread(
       resource_context_, origin_.GetURL(), render_process_id_);
 }
@@ -165,7 +178,8 @@ void BlinkNotificationServiceImpl::DisplayPersistentNotification(
         blink::mojom::PersistentNotificationError::INTERNAL_ERROR);
     return;
   }
-  if (CheckPermissionStatus() != blink::mojom::PermissionStatus::GRANTED) {
+  if (CheckPermissionStatusOnIOThread() !=
+      blink::mojom::PermissionStatus::GRANTED) {
     std::move(callback).Run(
         blink::mojom::PersistentNotificationError::PERMISSION_DENIED);
     return;
@@ -252,8 +266,10 @@ void BlinkNotificationServiceImpl::ClosePersistentNotification(
     const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (CheckPermissionStatus() != blink::mojom::PermissionStatus::GRANTED)
+  if (CheckPermissionStatusOnIOThread() !=
+      blink::mojom::PermissionStatus::GRANTED) {
     return;
+  }
 
   // Using base::Unretained here is safe because Service() returns a singleton.
   BrowserThread::PostTask(
@@ -272,7 +288,8 @@ void BlinkNotificationServiceImpl::GetNotifications(
     GetNotificationsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (CheckPermissionStatus() != blink::mojom::PermissionStatus::GRANTED) {
+  if (CheckPermissionStatusOnIOThread() !=
+      blink::mojom::PermissionStatus::GRANTED) {
     // No permission has been granted for the given origin. It is harmless to
     // try to get notifications without permission, so return empty vectors
     // indicating that no (accessible) notifications exist at this time.

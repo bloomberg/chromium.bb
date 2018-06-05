@@ -87,6 +87,7 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
       const std::string& notification_id);
 
   blink::mojom::PermissionStatus CheckPermissionStatus();
+  blink::mojom::PermissionStatus CheckPermissionStatusOnIOThread();
 
   void DidGetNotifications(
       const std::string& filter_tag,
