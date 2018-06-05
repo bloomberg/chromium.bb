@@ -264,6 +264,9 @@ ChromeLauncherController::~ChromeLauncherController() {
   // Reset the app window controllers here since it has a weak pointer to this.
   app_window_controllers_.clear();
 
+  // Destroy the ShelfSpinnerController before clearing delegates.
+  shelf_spinner_controller_.reset();
+
   // Destroy local shelf item delegates; some subclasses have complex cleanup.
   model_->DestroyItemDelegates();
 

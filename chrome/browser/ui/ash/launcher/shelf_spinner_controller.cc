@@ -56,9 +56,13 @@ class SpinningEffectSource : public gfx::CanvasImageSource {
 }  // namespace
 
 ShelfSpinnerController::ShelfSpinnerController(ChromeLauncherController* owner)
-    : owner_(owner), weak_ptr_factory_(this) {}
+    : owner_(owner), weak_ptr_factory_(this) {
+  owner->shelf_model()->AddObserver(this);
+}
 
-ShelfSpinnerController::~ShelfSpinnerController() {}
+ShelfSpinnerController::~ShelfSpinnerController() {
+  owner_->shelf_model()->RemoveObserver(this);
+}
 
 void ShelfSpinnerController::MaybeApplySpinningEffect(const std::string& app_id,
                                                       gfx::ImageSkia* image) {
@@ -76,10 +80,6 @@ void ShelfSpinnerController::MaybeApplySpinningEffect(const std::string& app_id,
       image->size());
 }
 
-void ShelfSpinnerController::Remove(const std::string& app_id) {
-  app_controller_map_.erase(app_id);
-}
-
 void ShelfSpinnerController::Close(const std::string& app_id) {
   // Code below may invalidate passed |app_id|. Use local variable for safety.
   const std::string safe_app_id(app_id);
@@ -89,11 +89,9 @@ void ShelfSpinnerController::Close(const std::string& app_id) {
     return;
 
   const ash::ShelfID shelf_id(safe_app_id);
-  const bool need_close_item =
-      it->second == owner_->shelf_model()->GetShelfItemDelegate(shelf_id);
+  DCHECK_EQ(it->second, owner_->shelf_model()->GetShelfItemDelegate(shelf_id));
   app_controller_map_.erase(it);
-  if (need_close_item)
-    owner_->CloseLauncherItem(shelf_id);
+  owner_->CloseLauncherItem(shelf_id);
   UpdateShelfItemIcon(safe_app_id);
 }
 
@@ -112,6 +110,19 @@ base::TimeDelta ShelfSpinnerController::GetActiveTime(
 
 Profile* ShelfSpinnerController::OwnerProfile() {
   return owner_->profile();
+}
+
+void ShelfSpinnerController::ShelfItemDelegateChanged(
+    const ash::ShelfID& id,
+    ash::ShelfItemDelegate* old_delegate,
+    ash::ShelfItemDelegate* delegate) {
+  auto it = app_controller_map_.find(id.app_id);
+  if (it == app_controller_map_.end())
+    return;
+  DCHECK_EQ(it->second, old_delegate);
+  app_controller_map_.erase(it);
+  // Update the icon one more time so it doesn't remain stuck with a spinner.
+  UpdateShelfItemIcon(id.app_id);
 }
 
 void ShelfSpinnerController::UpdateShelfItemIcon(const std::string& app_id) {
