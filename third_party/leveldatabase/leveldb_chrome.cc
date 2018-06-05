@@ -5,10 +5,13 @@
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
 #include <memory>
+#include <set>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file.h"
+#include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/metrics/histogram_macros.h"
@@ -255,6 +258,37 @@ void Globals::DumpAllTrackedEnvs(const MemoryDumpArgs& dump_args,
     static_cast<ChromeMemEnv*>(env)->OnMemoryDump(dump_args, pmd);
 }
 
+// Delete all files in a |directory| using using the provided |env|.
+// Note, this is not recursive as it is only called to delete files in an
+// in-memory Env's filesystem.
+leveldb::Status DeleteEnvDirectory(const std::string& directory,
+                                   leveldb::Env* env) {
+  std::vector<std::string> filenames;
+  leveldb::Status result = env->GetChildren(directory, &filenames);
+  if (!result.ok()) {
+    // Ignore error in case directory does not exist
+    return leveldb::Status::OK();
+  }
+
+  leveldb::FileLock* lock;
+  const std::string lockname = leveldb::LockFileName(directory);
+  result = env->LockFile(lockname, &lock);
+  if (!result.ok())
+    return result;
+
+  for (const std::string& filename : filenames) {
+    leveldb::Status del = env->DeleteFile(directory + "/" + filename);
+    if (result.ok() && !del.ok())
+      result = del;
+  }
+  env->UnlockFile(lock);  // Ignore error since state is already gone
+  env->DeleteFile(lockname);
+  if (result.ok())
+    result = env->DeleteDir(directory);
+
+  return result;
+}
+
 }  // namespace
 
 // Returns a separate (from the default) block cache for use by web APIs.
@@ -309,6 +343,35 @@ bool CorruptClosedDBForTesting(const base::FilePath& db_path) {
     return false;
   current.Close();
   return true;
+}
+
+bool PossiblyValidDB(const base::FilePath& db_path, leveldb::Env* env) {
+  const base::FilePath current = db_path.Append(FILE_PATH_LITERAL("CURRENT"));
+  return env->FileExists(current.AsUTF8Unsafe());
+}
+
+leveldb::Status DeleteDB(const base::FilePath& db_path,
+                         const leveldb::Options& options) {
+  leveldb::Status status = leveldb::DestroyDB(db_path.AsUTF8Unsafe(), options);
+  if (!status.ok())
+    return status;
+
+  if (options.env && leveldb_chrome::IsMemEnv(options.env)) {
+    // DeleteEnvDirectory isn't recursive, but this function assumes that (for
+    // in-memory env's only) leveldb is the only one writing to the Env so this
+    // is OK.
+    return DeleteEnvDirectory(db_path.AsUTF8Unsafe(), options.env);
+  }
+
+  // TODO(cmumford): To be fully safe this implementation should acquire a lock
+  // as there is some daylight in between DestroyDB and DeleteFile.
+  if (!base::DeleteFile(db_path, true)) {
+    // Only delete the directory when when DestroyDB is successful. This is
+    // because DestroyDB checks for database locks, and will fail if in use.
+    return leveldb::Status::IOError(db_path.AsUTF8Unsafe(), "Error deleting");
+  }
+
+  return leveldb::Status::OK();
 }
 
 MemoryAllocatorDump* GetEnvAllocatorDump(ProcessMemoryDump* pmd,

@@ -1226,12 +1226,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DestroyDatabase() {
     return STATUS_OK;
   }
 
-  // Directly delete the database instead of calling leveldb::DestroyDB()
-  // because the API does not delete the directory if there are unrelated files.
-  // (https://code.google.com/p/chromium/issues/detail?id=468926#c24)
-  Status status = base::DeleteFile(path_, true /* recursive */)
-                      ? STATUS_OK
-                      : STATUS_ERROR_FAILED;
+  Status status = LevelDBStatusToServiceWorkerDBStatus(
+      leveldb_chrome::DeleteDB(path_, leveldb_env::Options()));
   ServiceWorkerMetrics::RecordDestroyDatabaseResult(status);
   return status;
 }
@@ -1246,12 +1242,11 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
   if (IsOpen())
     return STATUS_OK;
 
-  if (!create_if_missing) {
+  if (!create_if_missing &&
+      (IsDatabaseInMemory() ||
+       !leveldb_chrome::PossiblyValidDB(path_, leveldb::Env::Default()))) {
     // Avoid opening a database if it does not exist at the |path_|.
-    if (IsDatabaseInMemory() || !base::PathExists(path_) ||
-        base::IsDirectoryEmpty(path_)) {
-      return STATUS_ERROR_NOT_FOUND;
-    }
+    return STATUS_ERROR_NOT_FOUND;
   }
 
   leveldb_env::Options options;
