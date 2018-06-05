@@ -7,8 +7,8 @@
 #include <set>
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -290,7 +290,7 @@ BOOL IsTypedUrlPresentOnClient(const GURL& url,
   __block int count = 0;
   using history::OriginCountAndLastVisitMap;
   history_service->GetCountsAndLastVisitForOriginsForTesting(
-      origins, base::BindBlockArc(^(const OriginCountAndLastVisitMap& result) {
+      origins, base::BindRepeating(^(const OriginCountAndLastVisitMap& result) {
         auto iter = result.find(block_safe_url);
         if (iter != result.end())
           count = iter->second.first;
