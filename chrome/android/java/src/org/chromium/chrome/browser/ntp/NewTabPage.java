@@ -365,7 +365,7 @@ public class NewTabPage
     }
 
     private boolean isInSingleUrlBarMode() {
-        return !mIsTablet && !FeatureUtilities.isChromeHomeEnabled() && mSearchProviderHasLogo;
+        return !mIsTablet && mSearchProviderHasLogo;
     }
 
     private void updateSearchProviderHasLogo() {

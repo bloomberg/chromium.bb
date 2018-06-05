@@ -92,7 +92,7 @@ public class AllDismissedItemTest {
         // TODO(peconn): Extract common code between this and ArticleSnippetsTest for rendering
         // views in isolation.
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            viewHolder.onBindViewHolder(hour, null);
+            viewHolder.onBindViewHolder(hour);
             mContentView.addView(viewHolder.itemView);
         });
         mRenderTestRule.render(viewHolder.itemView, renderId);
