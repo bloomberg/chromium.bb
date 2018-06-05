@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/chromeos/resource_metadata.h"
+#include "components/drive/chromeos/team_drive_list_observer.h"
 #include "components/drive/file_errors.h"
 #include "google_apis/drive/drive_api_requests.h"
 
@@ -58,7 +59,13 @@ class TeamDriveListLoader {
   // Loads the state of the users team drives. |callback| must not be null.
   void LoadIfNeeded(const FileOperationCallback& callback);
 
+  // Adds or removes an observer for team drive related changes.
+  void AddObserver(TeamDriveListObserver* observer);
+  void RemoveObserver(TeamDriveListObserver* observer);
+
  private:
+  struct TeamDriveUpdateData;
+
   void OnTeamDriveListLoaded(
       google_apis::DriveApiErrorCode status,
       std::unique_ptr<google_apis::TeamDriveList> team_drives);
@@ -68,7 +75,11 @@ class TeamDriveListLoader {
                              FileError error);
 
   void OnTeamDrivesRemoved(ResourceEntryVector remote_resources,
+                           const TeamDriveUpdateData& team_drive_updates,
                            FileError error);
+
+  void OnAddOrUpdateTeamDrives(const TeamDriveUpdateData& team_drive_updates,
+                               FileError error);
 
   void OnTeamDriveListLoadComplete(FileError error);
 
@@ -78,6 +89,7 @@ class TeamDriveListLoader {
   std::vector<std::unique_ptr<ChangeList>> change_lists_;
   std::vector<FileOperationCallback> pending_load_callbacks_;
   bool loaded_ = false;
+  base::ObserverList<TeamDriveListObserver> observers_;
 
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;              // Not owned.
