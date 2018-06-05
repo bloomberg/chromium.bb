@@ -77,9 +77,12 @@ std::unique_ptr<CastContentWindow> CastContentWindow::Create(
 CastContentWindowAura::CastContentWindowAura(
     CastContentWindow::Delegate* delegate,
     bool is_touch_enabled)
-    : back_gesture_dispatcher_(
-          std::make_unique<CastBackGestureDispatcher>(delegate)),
-      is_touch_enabled_(is_touch_enabled) {}
+    : delegate_(delegate),
+      back_gesture_dispatcher_(
+          std::make_unique<CastBackGestureDispatcher>(delegate_)),
+      is_touch_enabled_(is_touch_enabled) {
+  DCHECK(delegate_);
+}
 
 CastContentWindowAura::~CastContentWindowAura() {
   if (window_manager_)
@@ -117,6 +120,11 @@ void CastContentWindowAura::EnableTouchInput(bool enabled) {
 
 void CastContentWindowAura::RequestVisibility(
     VisibilityPriority visibility_priority){};
+
+void CastContentWindowAura::NotifyVisibilityChange(
+    VisibilityType visibility_type) {
+  delegate_->OnVisibilityChange(visibility_type);
+}
 
 void CastContentWindowAura::RequestMoveOut(){};
 
