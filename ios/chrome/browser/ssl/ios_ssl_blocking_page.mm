@@ -77,16 +77,15 @@ IOSChromeMetricsHelper* CreateMetricsHelper(web::WebState* web_state,
 
 // Note that we always create a navigation entry with SSL errors.
 // No error happening loading a sub-resource triggers an interstitial so far.
-IOSSSLBlockingPage::IOSSSLBlockingPage(
-    web::WebState* web_state,
-    int cert_error,
-    const net::SSLInfo& ssl_info,
-    const GURL& request_url,
-    int options_mask,
-    const base::Time& time_triggered,
-    const base::Callback<void(bool)>& callback)
+IOSSSLBlockingPage::IOSSSLBlockingPage(web::WebState* web_state,
+                                       int cert_error,
+                                       const net::SSLInfo& ssl_info,
+                                       const GURL& request_url,
+                                       int options_mask,
+                                       const base::Time& time_triggered,
+                                       base::OnceCallback<void(bool)> callback)
     : IOSSecurityInterstitialPage(web_state, request_url),
-      callback_(callback),
+      callback_(std::move(callback)),
       ssl_info_(ssl_info),
       overridable_(IsOverridable(options_mask)),
       expired_but_previously_allowed_(
@@ -154,8 +153,7 @@ void IOSSSLBlockingPage::OnProceed() {
 
   // Accepting the certificate resumes the loading of the page.
   DCHECK(!callback_.is_null());
-  callback_.Run(true);
-  callback_.Reset();
+  std::move(callback_).Run(true);
 }
 
 void IOSSSLBlockingPage::OnDontProceed() {
@@ -184,8 +182,7 @@ void IOSSSLBlockingPage::NotifyDenyCertificate() {
   if (callback_.is_null())
     return;
 
-  callback_.Run(false);
-  callback_.Reset();
+  std::move(callback_).Run(false);
 }
 
 // static

@@ -24,11 +24,10 @@ class IOSCaptivePortalBlockingPage : public IOSSecurityInterstitialPage {
   // the web page which allows the user to complete their connection to the
   // network. |callback| will be called after the user is done interacting with
   // this interstitial.
-  IOSCaptivePortalBlockingPage(
-      web::WebState* web_state,
-      const GURL& request_url,
-      const GURL& landing_url,
-      const base::Callback<void(bool)>& callback);
+  IOSCaptivePortalBlockingPage(web::WebState* web_state,
+                               const GURL& request_url,
+                               const GURL& landing_url,
+                               base::OnceCallback<void(bool)> callback);
 
  private:
   // IOSSecurityInterstitialPage overrides:
@@ -44,7 +43,7 @@ class IOSCaptivePortalBlockingPage : public IOSSecurityInterstitialPage {
   // |callback_| is run when the user is done with this interstitial. The
   // parameter will be true if the user has successfully connected to the
   // captive portal network.
-  base::Callback<void(bool)> callback_;
+  base::OnceCallback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSCaptivePortalBlockingPage);
 };
