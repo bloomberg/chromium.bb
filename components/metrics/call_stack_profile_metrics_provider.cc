@@ -237,7 +237,7 @@ void CopySampleToProto(
     const StackSamplingProfiler::Sample& sample,
     const std::vector<StackSamplingProfiler::Module>& modules,
     CallStackProfile::Sample* proto_sample) {
-  for (const StackSamplingProfiler::Frame& frame : sample.frames) {
+  for (const auto& frame : sample.frames) {
     CallStackProfile::Entry* entry = proto_sample->add_entry();
     // A frame may not have a valid module. If so, we can't compute the
     // instruction pointer offset, and we don't want to send bare pointers, so
@@ -319,7 +319,7 @@ void CopyProfileToProto(
     }
   }
 
-  for (const StackSamplingProfiler::Module& module : profile.modules) {
+  for (const auto& module : profile.modules) {
     CallStackProfile::ModuleIdentifier* module_id =
         proto_profile->add_module_id();
     module_id->set_build_id(module.id);
@@ -445,9 +445,8 @@ void CallStackProfileMetricsProvider::ProvideCurrentSessionData(
   DCHECK(base::FeatureList::IsEnabled(kEnableReporting) ||
          pending_profiles.empty());
 
-  for (const ProfilesState& profiles_state : pending_profiles) {
-    for (const StackSamplingProfiler::CallStackProfile& profile :
-         profiles_state.profiles) {
+  for (const auto& profiles_state : pending_profiles) {
+    for (const auto& profile : profiles_state.profiles) {
       SampledProfile* sampled_profile = uma_proto->add_sampled_profile();
       sampled_profile->set_process(
           ToExecutionContextProcess(profiles_state.params.process));
