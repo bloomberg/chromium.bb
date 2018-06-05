@@ -90,14 +90,25 @@ bool CanvasResource::PrepareTransferableResource(
     MailboxSyncMode sync_mode) {
   DCHECK(IsValid());
 
-  // This should never be called on unaccelerated canvases (for now).
+  scoped_refptr<CanvasResource> this_ref(this);
+  auto func = WTF::Bind(&ReleaseFrameResources, provider_,
+                        WTF::Passed(std::move(this_ref)));
+  *out_callback = viz::SingleReleaseCallback::Create(std::move(func));
 
-  // Gpu compositing is a prerequisite for accelerated 2D canvas
-  // TODO: For WebGL to use this, we must add software composing support.
+  if (SupportsAcceleratedCompositing()) {
+    return PrepareAcceleratedTransferableResource(out_resource, sync_mode);
+  }
+
+  return PrepareUnacceleratedTransferableResource(out_resource);
+}
+
+bool CanvasResource::PrepareAcceleratedTransferableResource(
+    viz::TransferableResource* out_resource,
+    MailboxSyncMode sync_mode) {
+  // Gpu compositing is a prerequisite for compositing an accelerated resource
   DCHECK(SharedGpuContext::IsGpuCompositingEnabled());
   auto* gl = ContextGL();
   DCHECK(gl);
-
   const gpu::Mailbox& mailbox = GetOrCreateGpuMailbox(sync_mode);
   if (mailbox.IsZero())
     return false;
@@ -110,11 +121,14 @@ bool CanvasResource::PrepareTransferableResource(
   out_resource->format = color_params_.TransferableResourceFormat();
   out_resource->read_lock_fences_enabled = NeedsReadLockFences();
 
-  scoped_refptr<CanvasResource> this_ref(this);
-  auto func = WTF::Bind(&ReleaseFrameResources, provider_,
-                        WTF::Passed(std::move(this_ref)));
-  *out_callback = viz::SingleReleaseCallback::Create(std::move(func));
   return true;
+}
+
+bool CanvasResource::PrepareUnacceleratedTransferableResource(
+    viz::TransferableResource* out_resource) {
+  // TODO: add support for shared bitmap
+  NOTREACHED();
+  return false;
 }
 
 GrContext* CanvasResource::GetGrContext() const {
@@ -252,6 +266,12 @@ CanvasResourceBitmap::ContextProviderWrapper() const {
   return image_->ContextProviderWrapper();
 }
 
+void CanvasResourceBitmap::TakeSkImage(sk_sp<SkImage> image) {
+  DCHECK(IsAccelerated() == image->isTextureBacked());
+  image_ =
+      StaticBitmapImage::Create(std::move(image), ContextProviderWrapper());
+}
+
 // CanvasResourceGpuMemoryBuffer
 //==============================================================================
 
@@ -260,16 +280,26 @@ CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
     const CanvasColorParams& color_params,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     base::WeakPtr<CanvasResourceProvider> provider,
-    SkFilterQuality filter_quality)
+    SkFilterQuality filter_quality,
+    bool is_accelerated)
     : CanvasResource(provider, filter_quality, color_params),
       context_provider_wrapper_(std::move(context_provider_wrapper)),
-      color_params_(color_params) {
+      color_params_(color_params),
+      is_accelerated_(is_accelerated) {
   if (!context_provider_wrapper_)
     return;
   auto* gl = context_provider_wrapper_->ContextProvider()->ContextGL();
   auto* gr = context_provider_wrapper_->ContextProvider()->GetGrContext();
   if (!gl || !gr)
     return;
+
+  gfx::BufferUsage buffer_usage;
+  if (is_accelerated) {
+    buffer_usage = gfx::BufferUsage::SCANOUT;
+  } else {
+    buffer_usage = gfx::BufferUsage::SCANOUT_CPU_READ_WRITE;
+  }
+
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
       Platform::Current()->GetGpuMemoryBufferManager();
   if (!gpu_memory_buffer_manager)
@@ -277,10 +307,12 @@ CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
   gpu_memory_buffer_ = gpu_memory_buffer_manager->CreateGpuMemoryBuffer(
       gfx::Size(size.Width(), size.Height()),
       color_params_.GetBufferFormat(),  // Use format
-      gfx::BufferUsage::SCANOUT, gpu::kNullSurfaceHandle);
+      buffer_usage, gpu::kNullSurfaceHandle);
   if (!gpu_memory_buffer_) {
     return;
   }
+  gpu_memory_buffer_->SetColorSpace(color_params.GetStorageGfxColorSpace());
+
   image_id_ = gl->CreateImageCHROMIUM(gpu_memory_buffer_->AsClientBuffer(),
                                       size.Width(), size.Height(),
                                       color_params_.GLInternalFormat());
@@ -288,8 +320,6 @@ CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
     gpu_memory_buffer_ = nullptr;
     return;
   }
-
-  gpu_memory_buffer_->SetColorSpace(color_params.GetStorageGfxColorSpace());
   gl->GenTextures(1, &texture_id_);
   const GLenum target = TextureTarget();
   gl->BindTexture(target, texture_id_);
@@ -298,6 +328,10 @@ CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
 
 CanvasResourceGpuMemoryBuffer::~CanvasResourceGpuMemoryBuffer() {
   OnDestroy();
+}
+
+bool CanvasResourceGpuMemoryBuffer::IsValid() const {
+  return context_provider_wrapper_ && image_id_;
 }
 
 GLenum CanvasResourceGpuMemoryBuffer::TextureTarget() const {
@@ -315,30 +349,36 @@ CanvasResourceGpuMemoryBuffer::Create(
     const CanvasColorParams& color_params,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     base::WeakPtr<CanvasResourceProvider> provider,
-    SkFilterQuality filter_quality) {
+    SkFilterQuality filter_quality,
+    bool is_accelerated) {
   scoped_refptr<CanvasResourceGpuMemoryBuffer> resource =
       AdoptRef(new CanvasResourceGpuMemoryBuffer(
           size, color_params, std::move(context_provider_wrapper), provider,
-          filter_quality));
+          filter_quality, is_accelerated));
   if (resource->IsValid())
     return resource;
   return nullptr;
 }
 
 void CanvasResourceGpuMemoryBuffer::TearDown() {
-  if (!context_provider_wrapper_ || !image_id_)
-    return;
-  auto* gl = context_provider_wrapper_->ContextProvider()->ContextGL();
-  if (gl && image_id_)
-    gl->DestroyImageCHROMIUM(image_id_);
-  if (gl && texture_id_)
-    gl->DeleteTextures(1, &texture_id_);
+  // Unref should result in destruction.
+  DCHECK(!surface_ || surface_->unique());
+
+  surface_ = nullptr;
+  if (context_provider_wrapper_ && image_id_) {
+    auto* gl = context_provider_wrapper_->ContextProvider()->ContextGL();
+    if (gl && image_id_)
+      gl->DestroyImageCHROMIUM(image_id_);
+    if (gl && texture_id_)
+      gl->DeleteTextures(1, &texture_id_);
+  }
   image_id_ = 0;
   texture_id_ = 0;
   gpu_memory_buffer_ = nullptr;
 }
 
 void CanvasResourceGpuMemoryBuffer::Abandon() {
+  surface_ = nullptr;
   image_id_ = 0;
   texture_id_ = 0;
   gpu_memory_buffer_ = nullptr;
@@ -358,6 +398,7 @@ const gpu::Mailbox& CanvasResourceGpuMemoryBuffer::GetOrCreateGpuMailbox(
 }
 
 bool CanvasResourceGpuMemoryBuffer::HasGpuMailbox() const {
+  DCHECK(is_accelerated_);
   return !gpu_mailbox_.IsZero();
 }
 
@@ -378,6 +419,7 @@ const gpu::SyncToken& CanvasResourceGpuMemoryBuffer::GetSyncToken() {
 void CanvasResourceGpuMemoryBuffer::CopyFromTexture(GLuint source_texture,
                                                     GLenum format,
                                                     GLenum type) {
+  DCHECK(is_accelerated_);
   if (!IsValid())
     return;
 
@@ -386,6 +428,63 @@ void CanvasResourceGpuMemoryBuffer::CopyFromTexture(GLuint source_texture,
       0 /*destLevel*/, format, type, false /*unpackFlipY*/,
       false /*unpackPremultiplyAlpha*/, false /*unpackUnmultiplyAlpha*/);
   mailbox_needs_new_sync_token_ = true;
+}
+
+void CanvasResourceGpuMemoryBuffer::TakeSkImage(sk_sp<SkImage> image) {
+  WillPaint();
+  if (!surface_)
+    return;
+  surface_->getCanvas()->drawImage(image, 0, 0);
+  DidPaint();
+}
+
+void CanvasResourceGpuMemoryBuffer::WillPaint() {
+  if (!IsValid()) {
+    surface_ = nullptr;
+    return;
+  }
+
+  if (is_accelerated_) {
+    if (!surface_) {  // When accelerated it is okay to re-use previous
+                      // SkSurface
+      GrGLTextureInfo texture_info;
+      texture_info.fTarget = TextureTarget();
+      texture_info.fID = texture_id_;
+      texture_info.fFormat =
+          color_params_.GLInternalFormat();  // unsized format
+      GrBackendTexture backend_texture(Size().Width(), Size().Height(),
+                                       GrMipMapped::kNo, texture_info);
+      constexpr int sample_count = 0;
+      surface_ = SkSurface::MakeFromBackendTexture(
+          GetGrContext(), backend_texture, kTopLeft_GrSurfaceOrigin,
+          sample_count, color_params_.GetSkColorType(),
+          color_params_.GetSkColorSpace(), nullptr /*surface props*/);
+    }
+  } else {
+    gpu_memory_buffer_->Map();
+    void* buffer_base_address = gpu_memory_buffer_->memory(0);
+    if (!surface_ || buffer_base_address != buffer_base_address_) {
+      buffer_base_address_ = buffer_base_address;
+      SkImageInfo image_info = SkImageInfo::Make(
+          Size().Width(), Size().Height(), color_params_.GetSkColorType(),
+          color_params_.GetSkAlphaType(), color_params_.GetSkColorSpace());
+      surface_ = SkSurface::MakeRasterDirect(image_info, buffer_base_address_,
+                                             gpu_memory_buffer_->stride(0));
+    }
+  }
+
+  DCHECK(surface_);
+}
+
+void CanvasResourceGpuMemoryBuffer::DidPaint() {
+  if (is_accelerated_) {
+    auto* gr = context_provider_wrapper_->ContextProvider()->GetGrContext();
+    if (gr)
+      gr->flush();
+    mailbox_needs_new_sync_token_ = true;
+  } else {
+    gpu_memory_buffer_->Unmap();
+  }
 }
 
 base::WeakPtr<WebGraphicsContext3DProviderWrapper>
