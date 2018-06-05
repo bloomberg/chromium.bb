@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/optional.h"
+#include "base/rand_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -77,6 +79,9 @@ using ::testing::WithArg;
 namespace password_manager {
 
 namespace {
+
+constexpr int kNumberOfPasswordAttributes =
+    static_cast<int>(autofill::PasswordAttribute::kPasswordAttributesCount);
 
 // Enum that describes what button the user pressed on the save prompt.
 enum SavePromptInteraction { SAVE, NEVER, NO_INTERACTION };
@@ -313,6 +318,13 @@ MATCHER_P2(UploadedFormClassifierVoteIs,
 
 MATCHER_P(PasswordsWereRevealed, revealed, "") {
   return arg.passwords_were_revealed() == revealed;
+}
+
+MATCHER_P(HasPasswordAttributesVote, is_vote_expected, "") {
+  base::Optional<std::pair<autofill::PasswordAttribute, bool>> vote =
+      arg.get_password_attributes_vote_for_testing();
+  EXPECT_EQ(is_vote_expected, vote.has_value());
+  return true;
 }
 
 // Matches iff the masks in |expected_field_properties| match the mask in the
@@ -604,7 +616,8 @@ class PasswordFormManagerTest : public testing::Test {
                                      VoteTypesAre(VoteTypeMap(
                                          {{match.username_element,
                                            autofill::AutofillUploadContents::
-                                               Field::CREDENTIALS_REUSED}}))),
+                                               Field::CREDENTIALS_REUSED}})),
+                                     HasPasswordAttributesVote(false)),
                                false, expected_available_field_types,
                                expected_login_signature, true));
       } else {
@@ -612,7 +625,8 @@ class PasswordFormManagerTest : public testing::Test {
             *client()->mock_driver()->mock_autofill_download_manager(),
             StartUploadRequest(AllOf(SignatureIsSameAs(*saved_match()),
                                      UploadedAutofillTypesAre(expected_types),
-                                     HasGenerationVote(expect_generation_vote)),
+                                     HasGenerationVote(expect_generation_vote),
+                                     HasPasswordAttributesVote(false)),
                                false, expected_available_field_types,
                                expected_login_signature, true));
       }
@@ -714,11 +728,12 @@ class PasswordFormManagerTest : public testing::Test {
     }
     EXPECT_CALL(
         *client()->mock_driver()->mock_autofill_download_manager(),
-        StartUploadRequest(AllOf(SignatureIsSameAs(*observed_form()),
-                                 UploadedAutofillTypesAre(expected_types),
-                                 HasGenerationVote(false)),
-                           false, expected_available_field_types,
-                           expected_login_signature, true));
+        StartUploadRequest(
+            AllOf(SignatureIsSameAs(*observed_form()),
+                  UploadedAutofillTypesAre(expected_types),
+                  HasGenerationVote(false), HasPasswordAttributesVote(false)),
+            false, expected_available_field_types, expected_login_signature,
+            true));
 
     switch (field_type) {
       case autofill::NEW_PASSWORD:
@@ -4845,6 +4860,79 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote_KnownValue) {
           _, true));
 
   form_manager()->Save();
+}
+
+TEST_F(PasswordFormManagerTest, GeneratePasswordAttributesVote) {
+  // Checks that randomization distorts information about present and missed
+  // character classess, but a true value is still restorable with aggregation
+  // of many distorted reports.
+  const char* kPasswordSnippets[] = {"abc", "XYZ", "123", "*-_"};
+  for (int test_case = 0; test_case < 10; ++test_case) {
+    bool has_password_attribute[kNumberOfPasswordAttributes];
+    base::string16 password_value;
+    for (int i = 0; i < kNumberOfPasswordAttributes; ++i) {
+      has_password_attribute[i] = base::RandGenerator(2);
+      if (has_password_attribute[i])
+        password_value += ASCIIToUTF16(kPasswordSnippets[i]);
+    }
+    if (password_value.empty())
+      continue;
+
+    autofill::FormData form;
+    autofill::FormStructure form_structure(form);
+    int reported_false[kNumberOfPasswordAttributes] = {0, 0, 0, 0};
+    int reported_true[kNumberOfPasswordAttributes] = {0, 0, 0, 0};
+
+    for (int i = 0; i < 1000; ++i) {
+      form_manager()->GeneratePasswordAttributesVote(password_value,
+                                                     &form_structure);
+      base::Optional<std::pair<autofill::PasswordAttribute, bool>> vote =
+          form_structure.get_password_attributes_vote_for_testing();
+      int attribute_index = static_cast<int>(vote->first);
+      if (vote->second)
+        reported_true[attribute_index]++;
+      else
+        reported_false[attribute_index]++;
+    }
+    for (int i = 0; i < kNumberOfPasswordAttributes; i++) {
+      EXPECT_LT(0, reported_false[i]);
+      EXPECT_LT(0, reported_true[i]);
+
+      // If the actual value is |true|, then it should report more |true|s than
+      // |false|s.
+      if (has_password_attribute[i]) {
+        EXPECT_LT(reported_false[i], reported_true[i])
+            << "Wrong distribution for attribute " << i
+            << ". password_value = " << password_value;
+      } else {
+        EXPECT_GT(reported_false[i], reported_true[i])
+            << "Wrong distribution for attribute " << i
+            << ". password_value = " << password_value;
+      }
+    }
+  }
+}
+
+TEST_F(PasswordFormManagerTest, UploadPasswordAttributesVote) {
+  PasswordForm credentials = *observed_form();
+  // Set FormData to enable crowdsourcing.
+  credentials.form_data = saved_match()->form_data;
+  FakeFormFetcher fetcher;
+  PasswordFormManager form_manager(
+      password_manager(), client(), client()->driver(), credentials,
+      std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
+  form_manager.Init(nullptr);
+  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+
+  credentials.username_value = saved_match()->username_value;
+  credentials.password_value = ASCIIToUTF16("12345");
+  form_manager.ProvisionallySave(credentials);
+
+  EXPECT_CALL(
+      *client()->mock_driver()->mock_autofill_download_manager(),
+      StartUploadRequest(HasPasswordAttributesVote(true /* is_vote_expected */),
+                         _, _, _, _));
+  form_manager.Save();
 }
 
 }  // namespace password_manager

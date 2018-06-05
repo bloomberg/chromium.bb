@@ -52,7 +52,7 @@ message AutofillQueryResponseContents {
 
 // This message contains information about the field types in a single form.
 // It is sent by the toolbar to contribute to the field type statistics.
-// Next available id: 25
+// Next available id: 29
 message AutofillUploadContents {
   required string client_version = 1;
   required fixed64 form_signature = 2;
@@ -167,4 +167,21 @@ message AutofillUploadContents {
 
   // True iff the the non-obfuscated password values were shown to the user.
   optional bool passwords_revealed = 24;
+
+  // The section of noisified data about password attributes.
+  // Upload only one attribute and only when a password is saved first time.
+  // Used to adjust the password generator's settings to site's requirements.
+
+  // Whether the password has any lowercase letter.
+  optional bool password_has_lowercase_letter = 25;
+
+  // Whether the password has any uppercase letter.
+  optional bool password_has_uppercase_letter = 26;
+
+  // Whether the password has any digit.
+  optional bool password_has_numeric = 27;
+
+  // Whether the password has any special symbol.
+  optional bool password_has_special_symbol = 28;
+  // The end of the section of password attributes.
 }

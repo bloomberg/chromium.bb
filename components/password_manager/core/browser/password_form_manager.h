@@ -211,6 +211,11 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   void SaveGenerationFieldDetectedByClassifier(
       const base::string16& generation_field);
 
+  // Generates a password attributes vote based on |password_value| and saves it
+  // to |form_structure|. Declared as public for testing.
+  void GeneratePasswordAttributesVote(const base::string16& password_value,
+                                      FormStructure* form_structure);
+
   FormSaver* form_saver() { return form_saver_.get(); }
 
   // Clears references to matches derived from the associated FormFetcher data.

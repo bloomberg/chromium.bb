@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_form_manager.h"
 
+#include <ctype.h>
 #include <stddef.h>
 
 #include <algorithm>
@@ -15,6 +16,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
@@ -839,6 +841,12 @@ bool PasswordFormManager::UploadPasswordVote(
             autofill::AutofillUploadContents::Field::CREDENTIALS_REUSED;
       }
     }
+    if (autofill_type == autofill::PASSWORD) {
+      // The password attributes should be uploaded only on the first save.
+      DCHECK(pending_credentials_.times_used == 0);
+      GeneratePasswordAttributesVote(pending_credentials_.password_value,
+                                     &form_structure);
+    }
   } else {  // User overwrites username.
     field_types[form_to_upload.username_element] = autofill::USERNAME;
     field_types[form_to_upload.password_element] =
@@ -1427,8 +1435,9 @@ void PasswordFormManager::SendVotesOnSave() {
   }
 
   if (pending_credentials_.times_used == 1 ||
-      IsAddingUsernameToExistingMatch(pending_credentials_, best_matches_))
+      IsAddingUsernameToExistingMatch(pending_credentials_, best_matches_)) {
     UploadFirstLoginVotes(*submitted_form_);
+  }
 
   // Upload credentials the first time they are saved. This data is used
   // by password generation to help determine account creation sites.
@@ -1459,6 +1468,40 @@ void PasswordFormManager::SendSignInVote(const FormData& form_data) {
   autofill_manager->MaybeStartVoteUploadProcess(std::move(form_structure),
                                                 base::TimeTicks::Now(),
                                                 /*observed_submission=*/true);
+}
+
+void PasswordFormManager::GeneratePasswordAttributesVote(
+    const base::string16& password_value,
+    FormStructure* form_structure) {
+  // Select a password attribute to upload. Do upload symbols more often as
+  // 2/3rd of issues are because of missing special symbols.
+  int bucket = base::RandGenerator(9);
+  int (*predicate)(int c) = nullptr;
+  autofill::PasswordAttribute attribute =
+      autofill::PasswordAttribute::kHasSpecialSymbol;
+  if (bucket == 0) {
+    predicate = &islower;
+    attribute = autofill::PasswordAttribute::kHasLowercaseLetter;
+  } else if (bucket == 1) {
+    predicate = &isupper;
+    attribute = autofill::PasswordAttribute::kHasUppercaseLetter;
+  } else if (bucket == 2) {
+    predicate = &isdigit;
+    attribute = autofill::PasswordAttribute::kHasNumeric;
+  } else {  //  3 <= bucket < 9
+    predicate = &ispunct;
+    attribute = autofill::PasswordAttribute::kHasSpecialSymbol;
+  }
+  bool actual_value =
+      std::any_of(password_value.begin(), password_value.end(), predicate);
+
+  // Apply the randomized response technique to noisify the actual value
+  // (https://en.wikipedia.org/wiki/Randomized_response).
+  bool randomized_value =
+      base::RandGenerator(2) ? actual_value : base::RandGenerator(2);
+
+  form_structure->set_password_attributes_vote(
+      std::make_pair(attribute, randomized_value));
 }
 
 void PasswordFormManager::SetUserAction(UserAction user_action) {
