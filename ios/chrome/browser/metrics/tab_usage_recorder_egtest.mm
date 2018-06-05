@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -207,7 +207,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
     __block bool finished = false;
     chrome_test_util::GetCurrentWebState()->ExecuteJavaScript(
         base::UTF8ToUTF16(kClearPageScript),
-        base::BindBlockArc(^(const base::Value*) {
+        base::BindOnce(^(const base::Value*) {
           finished = true;
         }));
 

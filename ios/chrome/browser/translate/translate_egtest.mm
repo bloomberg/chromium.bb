@@ -6,8 +6,8 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -316,7 +316,8 @@ using translate::LanguageDetectionController;
 - (void)setUp {
   [super setUp];
   language::IOSLanguageDetectionTabHelper::Callback copyDetailsCallback =
-      base::BindBlockArc(^(const translate::LanguageDetectionDetails& details) {
+      base::BindRepeating(^(
+          const translate::LanguageDetectionDetails& details) {
         _language_detection_details =
             std::make_unique<translate::LanguageDetectionDetails>(details);
       });

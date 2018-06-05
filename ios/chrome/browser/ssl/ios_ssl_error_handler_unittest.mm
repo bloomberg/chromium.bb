@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 
-#include "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
@@ -75,7 +75,7 @@ TEST_F(IOSSSLErrorHandlerTest, NonOverridable) {
   __block bool do_not_proceed_callback_called = false;
   IOSSSLErrorHandler::HandleSSLError(
       web_state(), net::ERR_CERT_AUTHORITY_INVALID, ssl_info, url, false,
-      base::BindBlockArc(^(bool proceed) {
+      base::BindRepeating(^(bool proceed) {
         EXPECT_FALSE(proceed);
         do_not_proceed_callback_called = true;
       }));
@@ -102,7 +102,7 @@ TEST_F(IOSSSLErrorHandlerTest, DISABLED_OverridableProceed) {
   __block bool proceed_callback_called = false;
   IOSSSLErrorHandler::HandleSSLError(
       web_state(), net::ERR_CERT_AUTHORITY_INVALID, ssl_info, url, true,
-      base::BindBlockArc(^(bool proceed) {
+      base::BindRepeating(^(bool proceed) {
         EXPECT_TRUE(proceed);
         proceed_callback_called = true;
       }));
@@ -128,7 +128,7 @@ TEST_F(IOSSSLErrorHandlerTest, OverridableDontProceed) {
   __block bool do_not_proceed_callback_called = false;
   IOSSSLErrorHandler::HandleSSLError(
       web_state(), net::ERR_CERT_AUTHORITY_INVALID, ssl_info, url, true,
-      base::BindBlockArc(^(bool proceed) {
+      base::BindRepeating(^(bool proceed) {
         EXPECT_FALSE(proceed);
         do_not_proceed_callback_called = true;
       }));

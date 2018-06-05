@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/passwords/notify_auto_signin_view_controller.h"
 
-#import "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/image_fetcher/ios/ios_image_decoder_impl.h"
@@ -144,8 +144,8 @@ const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     __weak NotifyUserAutoSigninViewController* weakSelf = self;
     _imageFetcher->FetchImage(
         _iconURL.spec(), _iconURL,
-        base::BindBlockArc(^(const std::string& id, const gfx::Image& image,
-                             const image_fetcher::RequestMetadata& metadata) {
+        base::BindOnce(^(const std::string& id, const gfx::Image& image,
+                         const image_fetcher::RequestMetadata& metadata) {
           if (!image.IsEmpty()) {
             weakSelf.avatarView.image = [image.ToUIImage() copy];
           }

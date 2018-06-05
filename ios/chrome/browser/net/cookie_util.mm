@@ -9,8 +9,8 @@
 #include <stdint.h>
 #include <sys/sysctl.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_scheduler/post_task.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -135,7 +135,7 @@ bool ShouldClearSessionCookies() {
 void ClearSessionCookies(ios::ChromeBrowserState* browser_state) {
   scoped_refptr<net::URLRequestContextGetter> getter =
       browser_state->GetRequestContext();
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
+  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindOnce(^{
                              getter->GetURLRequestContext()
                                  ->cookie_store()
                                  ->DeleteSessionCookiesAsync(base::DoNothing());

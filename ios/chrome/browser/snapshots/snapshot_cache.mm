@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/critical_closure.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -14,7 +15,6 @@
 #import "base/ios/crb_protocol_observers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
 #include "base/sequence_checker.h"
@@ -351,12 +351,12 @@ void ConvertAndSaveGreyImage(NSString* session_id,
   __weak LRUCache* weakLRUCache = lruCache_;
   base::PostTaskAndReplyWithResult(
       taskRunner_.get(), FROM_HERE,
-      base::BindBlockArc(^base::scoped_nsobject<UIImage>() {
+      base::BindOnce(^base::scoped_nsobject<UIImage>() {
         // Retrieve the image on a high priority thread.
         return base::scoped_nsobject<UIImage>(ReadImageForSessionFromDisk(
             sessionID, IMAGE_TYPE_COLOR, snapshotsScale, cacheDirectory));
       }),
-      base::BindBlockArc(^(base::scoped_nsobject<UIImage> image) {
+      base::BindOnce(^(base::scoped_nsobject<UIImage> image) {
         if (image)
           [weakLRUCache setObject:image forKey:sessionID];
         callback(image);
@@ -378,7 +378,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 
   // Save the image to disk.
   taskRunner_->PostTask(
-      FROM_HERE, base::BindBlockArc(^{
+      FROM_HERE, base::BindOnce(^{
         WriteImageToDisk(image, ImagePath(sessionID, IMAGE_TYPE_COLOR,
                                           snapshotsScale, cacheDirectory));
       }));
@@ -400,7 +400,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
   const ImageScale snapshotsScale = snapshotsScale_;
 
   taskRunner_->PostTask(
-      FROM_HERE, base::BindBlockArc(^{
+      FROM_HERE, base::BindOnce(^{
         for (size_t index = 0; index < arraysize(kImageTypes); ++index) {
           base::DeleteFile(ImagePath(sessionID, kImageTypes[index],
                                      snapshotsScale, cacheDirectory),
@@ -450,7 +450,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
   const ImageScale snapshotsScale = snapshotsScale_;
 
   taskRunner_->PostTask(
-      FROM_HERE, base::BindBlockArc(^{
+      FROM_HERE, base::BindOnce(^{
         if (!base::DirectoryExists(cacheDirectory))
           return;
 
@@ -539,7 +539,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
   __weak SnapshotCache* weakSelf = self;
   base::PostTaskAndReplyWithResult(
       taskRunner_.get(), FROM_HERE,
-      base::BindBlockArc(^base::scoped_nsobject<UIImage>() {
+      base::BindOnce(^base::scoped_nsobject<UIImage>() {
         // If the image is not in the cache, load it from disk.
         UIImage* localImage = image;
         if (!localImage) {
@@ -550,7 +550,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
           localImage = GreyImage(localImage);
         return base::scoped_nsobject<UIImage>(localImage);
       }),
-      base::BindBlockArc(^(base::scoped_nsobject<UIImage> greyImage) {
+      base::BindOnce(^(base::scoped_nsobject<UIImage> greyImage) {
         [weakSelf saveGreyImage:greyImage forKey:sessionID];
       }));
 }
@@ -616,12 +616,12 @@ void ConvertAndSaveGreyImage(NSString* session_id,
   __weak SnapshotCache* weakSelf = self;
   base::PostTaskAndReplyWithResult(
       taskRunner_.get(), FROM_HERE,
-      base::BindBlockArc(^base::scoped_nsobject<UIImage>() {
+      base::BindOnce(^base::scoped_nsobject<UIImage>() {
         // Retrieve the image on a high priority thread.
         return base::scoped_nsobject<UIImage>(ReadImageForSessionFromDisk(
             sessionID, IMAGE_TYPE_GREYSCALE, snapshotsScale, cacheDirectory));
       }),
-      base::BindBlockArc(^(base::scoped_nsobject<UIImage> image) {
+      base::BindOnce(^(base::scoped_nsobject<UIImage> image) {
         if (image) {
           callback(image);
           return;
@@ -657,7 +657,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
   const ImageScale snapshotsScale = snapshotsScale_;
 
   taskRunner_->PostTask(
-      FROM_HERE, base::BindBlockArc(^{
+      FROM_HERE, base::BindOnce(^{
         ConvertAndSaveGreyImage(sessionID, snapshotsScale,
                                 backgroundingColorImage, cacheDirectory);
       }));

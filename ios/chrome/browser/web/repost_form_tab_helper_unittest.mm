@@ -7,7 +7,6 @@
 #import <UIKit/UIKit.h>
 
 #include "base/bind.h"
-#include "base/mac/bind_objc_block.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -111,7 +110,7 @@ TEST_F(RepostFormTabHelperTest, Location) {
 TEST_F(RepostFormTabHelperTest, CancelRepost) {
   ASSERT_FALSE(delegate_.presentingDialog);
   __block bool callback_called = false;
-  tab_helper()->PresentDialog(location_, base::BindBlockArc(^(bool repost) {
+  tab_helper()->PresentDialog(location_, base::BindOnce(^(bool repost) {
                                 EXPECT_FALSE(repost);
                                 callback_called = true;
                               }));
@@ -126,7 +125,7 @@ TEST_F(RepostFormTabHelperTest, CancelRepost) {
 TEST_F(RepostFormTabHelperTest, AllowRepost) {
   ASSERT_FALSE(delegate_.presentingDialog);
   __block bool callback_called = false;
-  tab_helper()->PresentDialog(location_, base::BindBlockArc(^(bool repost) {
+  tab_helper()->PresentDialog(location_, base::BindOnce(^(bool repost) {
                                 EXPECT_TRUE(repost);
                                 callback_called = true;
                               }));

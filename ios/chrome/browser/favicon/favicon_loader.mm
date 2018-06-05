@@ -6,7 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/favicon/core/fallback_url_util.h"
@@ -76,7 +76,7 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
   DCHECK(large_icon_service_);
   large_icon_service_->GetLargeIconOrFallbackStyle(
       url, min_favicon_size, favicon_size_in_pixels,
-      base::BindBlockArc(favicon_block), &cancelable_task_tracker_);
+      base::BindRepeating(favicon_block), &cancelable_task_tracker_);
 
   return [FaviconAttributes
       attributesWithImage:[UIImage imageNamed:@"default_favicon"]];
