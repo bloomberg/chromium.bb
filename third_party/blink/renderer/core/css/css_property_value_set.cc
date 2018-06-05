@@ -190,28 +190,34 @@ MutableCSSPropertyValueSet::MutableCSSPropertyValueSet(
 
 static String SerializeShorthand(const CSSPropertyValueSet& property_set,
                                  CSSPropertyID property_id) {
-  return StylePropertySerializer(property_set).GetPropertyValue(property_id);
+  StylePropertyShorthand shorthand = shorthandForProperty(property_id);
+  if (!shorthand.length())
+    return String();
+
+  return StylePropertySerializer(property_set).SerializeShorthand(property_id);
 }
 
 static String SerializeShorthand(const CSSPropertyValueSet&,
                                  const AtomicString& custom_property_name) {
   // Custom properties are never shorthands.
-  return "";
+  return String();
 }
 
 static String SerializeShorthand(const CSSPropertyValueSet& property_set,
                                  AtRuleDescriptorID atrule_id) {
-  return StylePropertySerializer(property_set)
-      .GetPropertyValue(AtRuleDescriptorIDAsCSSPropertyID(atrule_id));
-  ;
+  // Descriptor shorthands aren't handled yet.
+  return String();
 }
 
 template <typename T>
 String CSSPropertyValueSet::GetPropertyValue(T property) const {
+  String shorthand_serialization = SerializeShorthand(*this, property);
+  if (!shorthand_serialization.IsNull())
+    return shorthand_serialization;
   const CSSValue* value = GetPropertyCSSValue(property);
   if (value)
     return value->CssText();
-  return SerializeShorthand(*this, property);
+  return g_empty_string;
 }
 template CORE_EXPORT String
     CSSPropertyValueSet::GetPropertyValue<CSSPropertyID>(CSSPropertyID) const;

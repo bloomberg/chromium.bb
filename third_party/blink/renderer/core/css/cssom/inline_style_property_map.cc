@@ -90,7 +90,7 @@ String InlineStylePropertyMap::SerializationForShorthand(
   DCHECK(property.IsShorthand());
   if (const CSSPropertyValueSet* inline_style = owner_element_->InlineStyle()) {
     return StylePropertySerializer(*inline_style)
-        .GetPropertyValue(property.PropertyID());
+        .SerializeShorthand(property.PropertyID());
   }
 
   NOTREACHED();
