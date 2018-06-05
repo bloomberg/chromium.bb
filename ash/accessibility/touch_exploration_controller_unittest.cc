@@ -1356,6 +1356,67 @@ TEST_F(TouchExplorationTest, GestureSwipe) {
   }
 }
 
+TEST_F(TouchExplorationTest, GestureSwipePortrit) {
+  // Rotate the window 90-degrees counter-clockwise.
+  root_window()->GetHost()->SetRootTransform(
+      gfx::Transform(0, 1, 0, 0, -1, 0, 0, root_window()->bounds().height(), 0,
+                     0, 0, 0, 0, 0, 0, 0));
+
+  SwitchTouchExplorationMode(true);
+
+  // Test 2-4 finger gestures.
+  struct GestureInfo {
+    int move_x;
+    int move_y;
+    int num_fingers;
+    ax::mojom::Gesture expected_gesture;
+  } gestures_to_test[] = {
+      {-1, 0, 2, ax::mojom::Gesture::kSwipeDown2},
+      {0, -1, 2, ax::mojom::Gesture::kSwipeLeft2},
+      {1, 0, 2, ax::mojom::Gesture::kSwipeUp2},
+      {0, 1, 2, ax::mojom::Gesture::kSwipeRight2},
+      {-1, 0, 3, ax::mojom::Gesture::kSwipeDown3},
+      {0, -1, 3, ax::mojom::Gesture::kSwipeLeft3},
+      {1, 0, 3, ax::mojom::Gesture::kSwipeUp3},
+      {0, 1, 3, ax::mojom::Gesture::kSwipeRight3},
+      {-1, 0, 4, ax::mojom::Gesture::kSwipeDown4},
+      {0, -1, 4, ax::mojom::Gesture::kSwipeLeft4},
+      {1, 0, 4, ax::mojom::Gesture::kSwipeUp4},
+      {0, 1, 4, ax::mojom::Gesture::kSwipeRight4},
+  };
+
+  // This value was taken from gesture_recognizer_unittest.cc in a swipe
+  // detector test, since it seems to be about the right amount to get a swipe.
+  const int kSteps = 15;
+
+  for (size_t i = 0; i < base::size(gestures_to_test); ++i) {
+    const float distance = 2 * gesture_detector_config_.touch_slop + 1;
+    int move_x = gestures_to_test[i].move_x * distance;
+    int move_y = gestures_to_test[i].move_y * distance;
+    int num_fingers = gestures_to_test[i].num_fingers;
+    ax::mojom::Gesture expected_gesture = gestures_to_test[i].expected_gesture;
+
+    std::vector<gfx::Point> start_points;
+    for (int j = 0; j < num_fingers; j++) {
+      start_points.push_back(gfx::Point(j * 10 + 100, j * 10 + 200));
+    }
+    gfx::Point* start_points_array = &start_points[0];
+
+    // A swipe is made when a fling starts
+    float delta_time =
+        distance / gesture_detector_config_.maximum_fling_velocity;
+    // delta_time is in seconds, so we convert to ms.
+    int delta_time_ms = floor(delta_time * 1000);
+    generator_->GestureMultiFingerScroll(num_fingers, start_points_array,
+                                         delta_time_ms, kSteps, move_x, move_y);
+    EXPECT_EQ(expected_gesture, delegate_.GetLastGesture());
+    EXPECT_TRUE(IsInNoFingersDownState());
+    EXPECT_FALSE(IsInTouchToMouseMode());
+    EXPECT_FALSE(IsInGestureInProgressState());
+    ClearCapturedEvents();
+  }
+}
+
 // Since there are so many permutations, this test is fairly slow. Therefore, it
 // is disabled and will be turned on to check during development.
 
