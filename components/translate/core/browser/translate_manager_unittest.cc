@@ -354,6 +354,126 @@ TEST_F(TranslateManagerTest, OverrideTriggerWithIndiaEnglishExperiment) {
       translate::TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR, 1);
 }
 
+TEST_F(TranslateManagerTest,
+       OverrideTriggerWithIndiaEnglishExperimentThresholdAlreadyReached) {
+  manager_->set_application_locale("en");
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      language::kOverrideTranslateTriggerInIndia,
+      {{"override_model", "heuristic"},
+       {"enforce_ranker", "false"},
+       {"backoff_threshold", "0"}});
+  TranslateManager::SetIgnoreMissingKeyForTesting(true);
+  mock_language_model_.details = {
+      MockLanguageModel::LanguageDetails("en", 1.0),
+      MockLanguageModel::LanguageDetails("hi", 0.5),
+  };
+  ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
+      .WillByDefault(Return(true));
+  TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
+  ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
+      .WillByDefault(Return(&accept_langugages));
+
+  translate_manager_.reset(new translate::TranslateManager(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+
+  base::HistogramTester histogram_tester;
+  prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
+  network_notifier_.SimulateOnline();
+
+  translate_manager_->InitiateTranslation("en");
+  histogram_tester.ExpectUniqueSample(
+      kInitiationStatusName,
+      translate::TranslateBrowserMetrics::INITIATION_STATUS_SIMILAR_LANGUAGES,
+      1);
+}
+
+TEST_F(TranslateManagerTest,
+       OverrideTriggerWithIndiaEnglishExperimentReachingThreshold) {
+  manager_->set_application_locale("en");
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      language::kOverrideTranslateTriggerInIndia,
+      {{"override_model", "heuristic"},
+       {"enforce_ranker", "false"},
+       {"backoff_threshold", "1"}});
+  TranslateManager::SetIgnoreMissingKeyForTesting(true);
+  mock_language_model_.details = {
+      MockLanguageModel::LanguageDetails("en", 1.0),
+      MockLanguageModel::LanguageDetails("hi", 0.5),
+  };
+  ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
+      .WillByDefault(Return(true));
+  TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
+  ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
+      .WillByDefault(Return(&accept_langugages));
+
+  translate_manager_.reset(new translate::TranslateManager(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+
+  base::HistogramTester histogram_tester;
+  prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
+  network_notifier_.SimulateOnline();
+
+  translate_manager_->InitiateTranslation("en");
+  histogram_tester.ExpectUniqueSample(
+      kInitiationStatusName,
+      translate::TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR, 1);
+
+  // Initiate translation again. No other UI should be shown because the
+  // threshold has been reached.
+  translate_manager_->InitiateTranslation("en");
+  histogram_tester.ExpectBucketCount(
+      kInitiationStatusName,
+      translate::TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR, 1);
+  histogram_tester.ExpectBucketCount(
+      kInitiationStatusName,
+      translate::TranslateBrowserMetrics::INITIATION_STATUS_SIMILAR_LANGUAGES,
+      1);
+}
+
+TEST_F(TranslateManagerTest,
+       OverrideTriggerWithIndiaEnglishExperimentAcceptPrompt) {
+  manager_->set_application_locale("en");
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      language::kOverrideTranslateTriggerInIndia,
+      {{"override_model", "heuristic"},
+       {"enforce_ranker", "false"},
+       {"backoff_threshold", "1"}});
+  TranslateManager::SetIgnoreMissingKeyForTesting(true);
+  mock_language_model_.details = {
+      MockLanguageModel::LanguageDetails("en", 1.0),
+      MockLanguageModel::LanguageDetails("hi", 0.5),
+  };
+  ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
+      .WillByDefault(Return(true));
+  TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
+  ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
+      .WillByDefault(Return(&accept_langugages));
+
+  translate_manager_.reset(new translate::TranslateManager(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+
+  base::HistogramTester histogram_tester;
+  prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
+  network_notifier_.SimulateOnline();
+
+  translate_manager_->InitiateTranslation("en");
+  histogram_tester.ExpectUniqueSample(
+      kInitiationStatusName,
+      translate::TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR, 1);
+
+  translate_manager_->TranslatePage("en", "hi", false);
+
+  // Initiate translation again. The UI should be shown because Translation was
+  // accepted by the user.
+  translate_manager_->InitiateTranslation("en");
+  histogram_tester.ExpectUniqueSample(
+      kInitiationStatusName,
+      translate::TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR, 2);
+}
+
 TEST_F(TranslateManagerTest, ShouldHonorExperimentRankerEnforcement_Enforce) {
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       language::kOverrideTranslateTriggerInIndia,
