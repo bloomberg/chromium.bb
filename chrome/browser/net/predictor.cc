@@ -87,9 +87,6 @@ class InitialObserver {
   // Potentially add a new URL to our startup list.
   void Append(const GURL& url, Predictor* predictor);
 
-  // Get an HTML version of our current planned first_navigations_.
-  void GetFirstResolutionsHtml(std::string* output);
-
   // Persist the current first_navigations_ for storage in a list.
   void GetInitialDnsResolutionList(base::ListValue* startup_list);
 
@@ -482,103 +479,6 @@ void Predictor::LearnFromNavigation(const GURL& referring_url,
     it = referrers_.Put(referring_url_with_hsts, Referrer());
 
   it->second.SuggestHost(target_url);
-}
-
-//-----------------------------------------------------------------------------
-// This section supports the about:dns page.
-
-void Predictor::PredictorGetHtmlInfo(Predictor* predictor,
-                                     std::string* output) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  output->append("<html><head><title>About DNS</title>"
-                 // We'd like the following no-cache... but it doesn't work.
-                 // "<META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">"
-                 "</head><body>");
-  if (predictor && predictor->PredictorEnabled() &&
-      predictor->CanPreresolveAndPreconnect()) {
-    predictor->GetHtmlInfo(output);
-  } else {
-    output->append("DNS pre-resolution and TCP pre-connection is disabled.");
-  }
-  output->append("</body></html>");
-}
-
-void Predictor::GetHtmlReferrerLists(std::string* output) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (referrers_.empty())
-    return;
-
-  // TODO(jar): Remove any plausible JavaScript from names before displaying.
-  output->append("<br><table border>");
-  output->append(
-      "<tr><th>Host for Page</th>"
-      "<th>Page Load<br>Count</th>"
-      "<th>Subresource<br>Navigations</th>"
-      "<th>Subresource<br>PreConnects</th>"
-      "<th>Subresource<br>PreResolves</th>"
-      "<th>Expected<br>Connects</th>"
-      "<th>Subresource Spec</th></tr>");
-
-  for (Referrers::iterator it = referrers_.begin(); referrers_.end() != it;
-       ++it) {
-    const Referrer& referrer = it->second;
-    bool first_set_of_futures = true;
-    for (Referrer::const_iterator future_url = referrer.begin();
-         future_url != referrer.end(); ++future_url) {
-      output->append("<tr align=right>");
-      if (first_set_of_futures) {
-        base::StringAppendF(
-            output, "<td rowspan=%d>%s</td><td rowspan=%d>%d</td>",
-            static_cast<int>(referrer.size()), it->first.spec().c_str(),
-            static_cast<int>(referrer.size()),
-            static_cast<int>(referrer.use_count()));
-      }
-      first_set_of_futures = false;
-      base::StringAppendF(output,
-          "<td>%d</td><td>%d</td><td>%d</td><td>%2.3f</td><td>%s</td></tr>",
-          static_cast<int>(future_url->second.navigation_count()),
-          static_cast<int>(future_url->second.preconnection_count()),
-          static_cast<int>(future_url->second.preresolution_count()),
-          static_cast<double>(future_url->second.subresource_use_rate()),
-          future_url->first.spec().c_str());
-    }
-  }
-  output->append("</table>");
-}
-
-void Predictor::GetHtmlInfo(std::string* output) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (kInitialDnsPrefetchListEnabled && initial_observer_)
-    initial_observer_->GetFirstResolutionsHtml(output);
-  // Show list of subresource predictions and stats.
-  GetHtmlReferrerLists(output);
-
-  // Local lists for calling UrlInfo
-  UrlInfo::UrlInfoTable name_not_found;
-  UrlInfo::UrlInfoTable name_preresolved;
-
-  // UrlInfo supports value semantics, so we can do a shallow copy.
-  for (Results::iterator it(results_.begin()); it != results_.end(); it++) {
-    if (it->second.was_nonexistent()) {
-      name_not_found.push_back(it->second);
-      continue;
-    }
-    if (!it->second.was_found())
-      continue;  // Still being processed.
-    name_preresolved.push_back(it->second);
-  }
-
-  bool brief = false;
-#ifdef NDEBUG
-  brief = true;
-#endif  // NDEBUG
-
-  // Call for display of each table, along with title.
-  UrlInfo::GetHtmlTable(name_preresolved,
-      "Preresolution DNS records performed for ", brief, output);
-  UrlInfo::GetHtmlTable(name_not_found,
-      "Preresolving DNS records revealed non-existence for ", brief, output);
 }
 
 // Iterating through a MRUCache goes through most recent first. Iterate
@@ -1132,21 +1032,6 @@ void InitialObserver::GetInitialDnsResolutionList(
     DCHECK(url_time.first == Predictor::CanonicalizeUrl(url_time.first));
     startup_list->AppendString(url_time.first.spec());
   }
-}
-
-void InitialObserver::GetFirstResolutionsHtml(std::string* output) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  UrlInfo::UrlInfoTable resolution_list;
-  for (const auto& url_time : first_navigations_) {
-    UrlInfo info;
-    info.SetUrl(url_time.first);
-    info.set_time(url_time.second);
-    resolution_list.push_back(info);
-  }
-  UrlInfo::GetHtmlTable(resolution_list,
-                        "Future startups will prefetch DNS records for ", false,
-                        output);
 }
 
 //-----------------------------------------------------------------------------

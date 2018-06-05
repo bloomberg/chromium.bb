@@ -201,16 +201,6 @@ class Predictor {
   // canonicalized to not have a path.
   void LearnFromNavigation(const GURL& referring_url, const GURL& target_url);
 
-  // When displaying info in about:dns, the following API is called.
-  static void PredictorGetHtmlInfo(Predictor* predictor, std::string* output);
-
-  // Dump HTML table containing list of referrers for about:dns.
-  void GetHtmlReferrerLists(std::string* output);
-
-  // Dump the list of currently known referrer domains and related prefetchable
-  // domains for about:dns.
-  void GetHtmlInfo(std::string* output);
-
   // Construct a ListValue object that contains all the data in the referrers_
   // so that it can be persisted in a pref.
   void SerializeReferrers(base::ListValue* referral_list);
@@ -311,10 +301,6 @@ class Predictor {
  private:
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, PriorityQueuePushPopTest);
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, PriorityQueueReorderTest);
-  FRIEND_TEST_ALL_PREFIXES(PredictorTest, ReferrerSerializationTrimTest);
-  FRIEND_TEST_ALL_PREFIXES(PredictorTest, SingleLookupTestWithDisabledAdvisor);
-  FRIEND_TEST_ALL_PREFIXES(PredictorTest, SingleLookupTestWithEnabledAdvisor);
-  FRIEND_TEST_ALL_PREFIXES(PredictorTest, TestSimplePreconnectAdvisor);
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, NoProxyService);
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, ProxyDefinitelyEnabled);
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, ProxyDefinitelyNotEnabled);

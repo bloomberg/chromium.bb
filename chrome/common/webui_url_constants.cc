@@ -41,7 +41,6 @@ const char kChromeUICrashHost[] = "crash";
 const char kChromeUICrashesHost[] = "crashes";
 const char kChromeUICreditsHost[] = "credits";
 const char kChromeUICreditsURL[] = "chrome://credits/";
-const char kChromeUIDNSHost[] = "dns";
 const char kChromeUIDefaultHost[] = "version";
 const char kChromeUIDelayedHangUIHost[] = "delayeduithreadhang";
 const char kChromeUIDevToolsBlankPath[] = "blank";
@@ -311,7 +310,6 @@ const char* const kChromeHostURLs[] = {
     kChromeUIComponentsHost,
     kChromeUICrashesHost,
     kChromeUICreditsHost,
-    kChromeUIDNSHost,
 #if defined(OS_CHROMEOS) && !defined(OFFICIAL_BUILD)
     kChromeUIDeviceEmulatorHost,
 #endif
