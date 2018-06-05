@@ -40,7 +40,7 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSource
   WebRtcVideoSource(WebRtcVideoCapturerAdapter* capture_adapter,
                     bool is_screencast,
                     rtc::Optional<bool> needs_denoising)
-      : VideoTrackSource(capture_adapter, false),
+      : VideoTrackSource(false),
         capture_adapter_(capture_adapter),
         is_screencast_(is_screencast),
         needs_denoising_(needs_denoising) {}
@@ -52,6 +52,11 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSource
   bool is_screencast() const override { return is_screencast_; }
   rtc::Optional<bool> needs_denoising() const override {
     return needs_denoising_;
+  }
+
+ protected:
+  rtc::VideoSourceInterface<webrtc::VideoFrame>* source() override {
+    return capture_adapter_.get();
   }
 
  private:
