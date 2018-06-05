@@ -4821,6 +4821,8 @@ static_library("test_support") {
       "sessions/session_restore_test_helper.h",
       "sessions/session_service_test_helper.cc",
       "sessions/session_service_test_helper.h",
+      "sessions/tab_loader_tester.cc",
+      "sessions/tab_loader_tester.h",
       "ui/tabs/tab_activity_simulator.cc",
       "ui/tabs/tab_activity_simulator.h",
     ]
