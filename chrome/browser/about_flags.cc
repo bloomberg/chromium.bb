@@ -1359,6 +1359,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-future-v8-vm-features", flag_descriptions::kV8VmFutureName,
      flag_descriptions::kV8VmFutureDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kV8VmFuture)},
+    {"enable-v8-orinoco", flag_descriptions::kV8OrinocoName,
+     flag_descriptions::kV8OrinocoDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kV8Orinoco)},
     {"disable-software-rasterizer", flag_descriptions::kSoftwareRasterizerName,
      flag_descriptions::kSoftwareRasterizerDescription,
 #if BUILDFLAG(ENABLE_SWIFTSHADER)

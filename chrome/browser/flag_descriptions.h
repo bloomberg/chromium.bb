@@ -1105,6 +1105,9 @@ extern const char kV8ContextSnapshotDescription[];
 extern const char kV8VmFutureName[];
 extern const char kV8VmFutureDescription[];
 
+extern const char kV8OrinocoName[];
+extern const char kV8OrinocoDescription[];
+
 extern const char kVideoFullscreenOrientationLockName[];
 extern const char kVideoFullscreenOrientationLockDescription[];
 
