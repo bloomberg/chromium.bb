@@ -11,6 +11,7 @@
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/service.h"
 #include "services/audio/system_info.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +37,8 @@ class AudioServiceLifetimeConnectorTest : public testing::Test {
             false /*not using a separate audio thread*/));
     std::unique_ptr<Service> service_impl = std::make_unique<Service>(
         std::make_unique<InProcessAudioManagerAccessor>(audio_manager_.get()),
-        kQuitTimeout, false /* device_notifications_enabled */);
+        kQuitTimeout, false /* device_notifications_enabled */,
+        std::make_unique<service_manager::BinderRegistry>());
     service_ = service_impl.get();
     service_->SetQuitClosureForTesting(quit_request_.Get());
     connector_factory_ =

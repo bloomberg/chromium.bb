@@ -64,7 +64,8 @@ class Service : public service_manager::Service {
   // subscribe to notifications about device changes.
   Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
           base::TimeDelta quit_timeout,
-          bool device_notifier_enabled);
+          bool device_notifier_enabled,
+          std::unique_ptr<service_manager::BinderRegistry> registry);
   ~Service() final;
 
   // service_manager::Service implementation.
@@ -113,7 +114,7 @@ class Service : public service_manager::Service {
   std::unique_ptr<DeviceNotifier> device_notifier_;
   std::unique_ptr<ServiceMetrics> metrics_;
 
-  service_manager::BinderRegistry registry_;
+  std::unique_ptr<service_manager::BinderRegistry> registry_;
 
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 

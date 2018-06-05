@@ -28,10 +28,12 @@ namespace audio {
 
 Service::Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
                  base::TimeDelta quit_timeout,
-                 bool device_notifier_enabled)
+                 bool device_notifier_enabled,
+                 std::unique_ptr<service_manager::BinderRegistry> registry)
     : quit_timeout_(quit_timeout),
       audio_manager_accessor_(std::move(audio_manager_accessor)),
-      device_notifier_enabled_(device_notifier_enabled) {
+      device_notifier_enabled_(device_notifier_enabled),
+      registry_(std::move(registry)) {
   DCHECK(audio_manager_accessor_);
   if (!device_notifier_enabled)
     InitializeDeviceMonitor();
@@ -66,14 +68,14 @@ void Service::OnStart() {
   ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
       base::BindRepeating(&Service::MaybeRequestQuitDelayed,
                           base::Unretained(this)));
-  registry_.AddInterface<mojom::SystemInfo>(base::BindRepeating(
+  registry_->AddInterface<mojom::SystemInfo>(base::BindRepeating(
       &Service::BindSystemInfoRequest, base::Unretained(this)));
-  registry_.AddInterface<mojom::DebugRecording>(base::BindRepeating(
+  registry_->AddInterface<mojom::DebugRecording>(base::BindRepeating(
       &Service::BindDebugRecordingRequest, base::Unretained(this)));
-  registry_.AddInterface<mojom::StreamFactory>(base::BindRepeating(
+  registry_->AddInterface<mojom::StreamFactory>(base::BindRepeating(
       &Service::BindStreamFactoryRequest, base::Unretained(this)));
   if (device_notifier_enabled_) {
-    registry_.AddInterface<mojom::DeviceNotifier>(base::BindRepeating(
+    registry_->AddInterface<mojom::DeviceNotifier>(base::BindRepeating(
         &Service::BindDeviceNotifierRequest, base::Unretained(this)));
   }
 }
@@ -90,7 +92,7 @@ void Service::OnBindInterface(
   if (ref_factory_->HasNoRefs())
     metrics_->HasConnections();
 
-  registry_.BindInterface(interface_name, std::move(interface_pipe));
+  registry_->BindInterface(interface_name, std::move(interface_pipe));
   DCHECK(!ref_factory_->HasNoRefs());
   quit_timer_.AbandonAndStop();
 }

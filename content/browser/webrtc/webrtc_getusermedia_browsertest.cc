@@ -18,6 +18,7 @@
 #include "content/browser/webrtc/webrtc_internals.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -26,6 +27,9 @@
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/audio/public/mojom/constants.mojom.h"
+#include "services/audio/public/mojom/testing_api.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 
 #if defined(OS_WIN)
@@ -840,6 +844,29 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   EXPECT_EQ("onmute: muted=true, readyState=live",
             ExecuteJavascriptAndReturnResult(
                 "failTestAfterTimeout('Got no mute event', 1500);"));
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
+                       RecoverFromCrashInAudioService) {
+  // This test only makes sense with the audio service running out of process.
+  if (!GetParam())
+    return;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  ExecuteJavascriptAndWaitForOk("setUpForAudioServiceCrash()");
+
+  // Crash the utility process for the audio service
+  service_manager::Connector* connector =
+      ServiceManagerConnection::GetForProcess()->GetConnector();
+  audio::mojom::TestingApiPtr service_testing_api;
+  connector->BindInterface(audio::mojom::kServiceName,
+                           mojo::MakeRequest(&service_testing_api));
+  service_testing_api->Crash();
+
+  ExecuteJavascriptAndWaitForOk("verifyAfterAudioServiceCrash()");
 }
 
 // We run these tests with the audio service both in and out of the the browser

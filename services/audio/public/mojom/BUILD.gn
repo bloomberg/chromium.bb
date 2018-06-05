@@ -11,6 +11,7 @@ mojom("mojom") {
     "device_notifications.mojom",
     "stream_factory.mojom",
     "system_info.mojom",
+    "testing_api.mojom",
   ]
 
   public_deps = [

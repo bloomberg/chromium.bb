@@ -33,6 +33,9 @@ class CONTENT_EXPORT ContentUtilityClient {
 
   virtual void RegisterNetworkBinders(
       service_manager::BinderRegistry* registry) {}
+
+  virtual void RegisterAudioBinders(service_manager::BinderRegistry* registry) {
+  }
 };
 
 }  // namespace content
