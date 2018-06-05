@@ -136,6 +136,10 @@ class ASH_EXPORT DisplayColorManager
   // the key.
   base::flat_map<int64_t, std::unique_ptr<ColorCalibrationData>>
       calibration_map_;
+
+  std::vector<display::GammaRampRGBEntry> default_gamma_lut_;
+  std::vector<display::GammaRampRGBEntry> default_degamma_lut_;
+
   SEQUENCE_CHECKER(sequence_checker_);
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 

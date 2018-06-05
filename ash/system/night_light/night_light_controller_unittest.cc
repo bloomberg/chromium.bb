@@ -48,9 +48,8 @@ NightLightController* GetController() {
 }
 
 // Tests that the given display with |display_id| has the expected color matrix
-// on its compositor that corresponds to the given |expected_temperature|.
-void TestDisplayCompositorTemperature(int64_t display_id,
-                                      float expected_temperature) {
+// on its compositor that corresponds to the given |temperature|.
+void TestDisplayCompositorTemperature(int64_t display_id, float temperature) {
   WindowTreeHostManager* wth_manager = Shell::Get()->window_tree_host_manager();
   aura::Window* root_window =
       wth_manager->GetRootWindowForDisplayId(display_id);
@@ -64,19 +63,19 @@ void TestDisplayCompositorTemperature(int64_t display_id,
   const float blue_scale = matrix.get(2, 2);
   const float green_scale = matrix.get(1, 1);
   EXPECT_FLOAT_EQ(
-      expected_temperature,
-      NightLightController::TemperatureFromBlueColorScale(blue_scale));
-  EXPECT_FLOAT_EQ(
-      expected_temperature,
-      NightLightController::TemperatureFromGreenColorScale(green_scale));
+      blue_scale,
+      NightLightController::BlueColorScaleFromTemperature(temperature));
+  EXPECT_FLOAT_EQ(green_scale,
+                  NightLightController::GreenColorScaleFromTemperature(
+                      temperature, false /* in_linear_gamma_space */));
 }
 
 // Tests that the display color matrices of all compositors correctly correspond
-// to the given |expected_temperature|.
-void TestCompositorsTemperature(float expected_temperature) {
+// to the given |temperature|.
+void TestCompositorsTemperature(float temperature) {
   for (int64_t display_id :
        Shell::Get()->display_manager()->GetCurrentDisplayIdList()) {
-    TestDisplayCompositorTemperature(display_id, expected_temperature);
+    TestDisplayCompositorTemperature(display_id, temperature);
   }
 }
 
@@ -861,11 +860,13 @@ class NightLightCrtcTest : public NightLightTest {
   bool VerifyCrtcMatrix(int64_t display_id,
                         float temperature,
                         const std::string& logger_actions_string) const {
+    temperature = NightLightController::GetNonLinearTemperature(temperature);
     constexpr float kRedScale = 1.0f;
     const float blue_scale =
         NightLightController::BlueColorScaleFromTemperature(temperature);
     const float green_scale =
-        NightLightController::GreenColorScaleFromTemperature(temperature);
+        NightLightController::GreenColorScaleFromTemperature(
+            temperature, true /* in_linear_gamma_space */);
     std::stringstream pattern_stream;
     pattern_stream << "*set_color_matrix(id=" << display_id
                    << ",ctm[0]=" << kRedScale << "*ctm[4]=" << green_scale

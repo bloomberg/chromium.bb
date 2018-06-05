@@ -26,7 +26,9 @@ namespace ash {
 namespace {
 
 constexpr gfx::Size kDisplaySize(1024, 768);
-const char kResetGammaAction[] = "*set_gamma_correction(id=123)";
+const char kResetGammaAction[] =
+    "*set_gamma_correction(id=123,degamma[0]*degamma[511]*,"
+    "gamma[0]*gamma[511]*)";
 const char kSetGammaAction[] =
     "*set_gamma_correction(id=123,gamma[0]*gamma[255]=???????????\?)";
 const char kSetFullCTMAction[] =

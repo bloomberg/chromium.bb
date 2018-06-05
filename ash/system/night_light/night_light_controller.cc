@@ -111,13 +111,21 @@ int GetTemperatureRange(float temperature) {
 }
 
 // Returns the color matrix that corresponds to the given |temperature|.
-SkMatrix44 MatrixFromTemperature(float temperature) {
+// If |in_linear_gamma_space| is true, the generated matrix is the one that
+// should be applied after gamma correction, and it corresponds to the
+// non-linear temperature value for the given |temperature|.
+SkMatrix44 MatrixFromTemperature(float temperature,
+                                 bool in_linear_gamma_space) {
+  if (in_linear_gamma_space)
+    temperature = NightLightController::GetNonLinearTemperature(temperature);
+
   SkMatrix44 matrix(SkMatrix44::kIdentity_Constructor);
   if (temperature != 0.0f) {
     const float blue_scale =
         NightLightController::BlueColorScaleFromTemperature(temperature);
     const float green_scale =
-        NightLightController::GreenColorScaleFromTemperature(temperature);
+        NightLightController::GreenColorScaleFromTemperature(
+            temperature, in_linear_gamma_space);
 
     matrix.set(1, 1, green_scale);
     matrix.set(2, 2, blue_scale);
@@ -152,17 +160,22 @@ void ApplyTemperatureToHost(aura::WindowTreeHost* host, float temperature) {
     return;
   }
 
-  const SkMatrix44 matrix = MatrixFromTemperature(temperature);
+  const SkMatrix44 linear_gamma_space_matrix =
+      MatrixFromTemperature(temperature, true);
   const bool crtc_result =
-      Shell::Get()->display_color_manager()->SetDisplayColorMatrix(display_id,
-                                                                   matrix);
-  UpdateCompositorMatrix(host, matrix, crtc_result);
+      Shell::Get()->display_color_manager()->SetDisplayColorMatrix(
+          display_id, linear_gamma_space_matrix);
+  UpdateCompositorMatrix(host, MatrixFromTemperature(temperature, false),
+                         crtc_result);
 }
 
 // Applies the given |temperature| value by converting it to the corresponding
 // color matrix that will be set on the output displays.
 void ApplyTemperatureToAllDisplays(float temperature) {
-  const SkMatrix44 matrix = MatrixFromTemperature(temperature);
+  const SkMatrix44 linear_gamma_space_matrix =
+      MatrixFromTemperature(temperature, true);
+  const SkMatrix44 gamma_compressed_matrix =
+      MatrixFromTemperature(temperature, false);
 
   Shell* shell = Shell::Get();
   DisplayColorManager* color_manager = shell->display_color_manager();
@@ -171,8 +184,8 @@ void ApplyTemperatureToAllDisplays(float temperature) {
        shell->display_manager()->GetCurrentDisplayIdList()) {
     DCHECK_NE(display_id, display::kUnifiedDisplayId);
 
-    const bool crtc_result =
-        color_manager->SetDisplayColorMatrix(display_id, matrix);
+    const bool crtc_result = color_manager->SetDisplayColorMatrix(
+        display_id, linear_gamma_space_matrix);
 
     aura::Window* root_window =
         wth_manager->GetRootWindowForDisplayId(display_id);
@@ -185,7 +198,7 @@ void ApplyTemperatureToAllDisplays(float temperature) {
 
     auto* host = root_window->GetHost();
     DCHECK(host);
-    UpdateCompositorMatrix(host, matrix, crtc_result);
+    UpdateCompositorMatrix(host, gamma_compressed_matrix, crtc_result);
   }
 }
 
@@ -296,21 +309,19 @@ float NightLightController::BlueColorScaleFromTemperature(float temperature) {
 }
 
 // static
-float NightLightController::GreenColorScaleFromTemperature(float temperature) {
+float NightLightController::GreenColorScaleFromTemperature(
+    float temperature,
+    bool in_linear_space) {
   // If we only tone down the blue scale, the screen will look very green so
   // we also need to tone down the green, but with a less value compared to
   // the blue scale to avoid making things look very red.
-  return 1.0f - 0.4f * temperature;
+  return 1.0f - (in_linear_space ? 0.7f : 0.4f) * temperature;
 }
 
 // static
-float NightLightController::TemperatureFromBlueColorScale(float blue_scale) {
-  return 1.0f - blue_scale;
-}
-
-// static
-float NightLightController::TemperatureFromGreenColorScale(float green_scale) {
-  return 2.5f * (1.0f - green_scale);
+float NightLightController::GetNonLinearTemperature(float temperature) {
+  constexpr float kGammaFactor = 1.0f / 2.2f;
+  return std::pow(temperature, kGammaFactor);
 }
 
 void NightLightController::BindRequest(
