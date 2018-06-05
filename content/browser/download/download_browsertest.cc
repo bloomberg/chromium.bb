@@ -3470,41 +3470,65 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
             std::string("header_value"));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadContentTest,
-                       DISABLED_ForceDownloadMultipartRelatedPage) {
-  // Force downloading the MHTML.
-  DownloadTestContentBrowserClient new_client;
-  new_client.set_allowed_rendering_mhtml_over_http(false);
-  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
+// Test fixture for forcing MHTML download.
+class MhtmlDownloadTest : public DownloadContentTest {
+ protected:
+  void SetUpOnMainThread() override {
+    DownloadContentTest::SetUpOnMainThread();
 
+    // Force downloading the MHTML.
+    new_client_.set_allowed_rendering_mhtml_over_http(false);
+    old_client_ = SetBrowserClientForTesting(&new_client_);
+  }
+
+  void TearDownOnMainThread() override {
+    SetBrowserClientForTesting(old_client_);
+    DownloadContentTest::TearDownOnMainThread();
+  }
+
+ private:
+  DownloadTestContentBrowserClient new_client_;
+  ContentBrowserClient* old_client_;
+};
+
+IN_PROC_BROWSER_TEST_F(MhtmlDownloadTest, ForceDownloadMultipartRelatedPage) {
   NavigateToURLAndWaitForDownload(
       shell(),
       // .mhtml file is mapped to "multipart/related" by the test server.
       embedded_test_server()->GetURL("/download/hello.mhtml"),
       download::DownloadItem::COMPLETE);
-  SetBrowserClientForTesting(old_client);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, ForceDownloadMessageRfc822Page) {
-  // Force downloading the MHTML.
-  DownloadTestContentBrowserClient new_client;
-  new_client.set_allowed_rendering_mhtml_over_http(false);
-  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
-
+IN_PROC_BROWSER_TEST_F(MhtmlDownloadTest, ForceDownloadMessageRfc822Page) {
   NavigateToURLAndWaitForDownload(
       shell(),
       // .mht file is mapped to "message/rfc822" by the test server.
       embedded_test_server()->GetURL("/download/test.mht"),
       download::DownloadItem::COMPLETE);
-  SetBrowserClientForTesting(old_client);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, AllowRenderMultipartRelatedPage) {
-  // Allows loading the MHTML, instead of downloading it.
-  DownloadTestContentBrowserClient new_client;
-  new_client.set_allowed_rendering_mhtml_over_http(true);
-  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
+// Test fixture for loading MHTML.
+class MhtmlLoadingTest : public DownloadContentTest {
+ protected:
+  void SetUpOnMainThread() override {
+    DownloadContentTest::SetUpOnMainThread();
 
+    // Allows loading the MHTML, instead of downloading it.
+    new_client_.set_allowed_rendering_mhtml_over_http(true);
+    old_client_ = SetBrowserClientForTesting(&new_client_);
+  }
+
+  void TearDownOnMainThread() override {
+    SetBrowserClientForTesting(old_client_);
+    DownloadContentTest::TearDownOnMainThread();
+  }
+
+ private:
+  DownloadTestContentBrowserClient new_client_;
+  ContentBrowserClient* old_client_;
+};
+
+IN_PROC_BROWSER_TEST_F(MhtmlLoadingTest, AllowRenderMultipartRelatedPage) {
   // .mhtml file is mapped to "multipart/related" by the test server.
   GURL url = embedded_test_server()->GetURL("/download/hello.mhtml");
   auto observer = std::make_unique<content::TestNavigationObserver>(url);
@@ -3514,15 +3538,9 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, AllowRenderMultipartRelatedPage) {
   NavigateToURL(shell(), url);
 
   observer->WaitForNavigationFinished();
-  SetBrowserClientForTesting(old_client);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, AllowRenderMessageRfc822Page) {
-  // Allows loading the MHTML, instead of downloading it.
-  DownloadTestContentBrowserClient new_client;
-  new_client.set_allowed_rendering_mhtml_over_http(true);
-  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
-
+IN_PROC_BROWSER_TEST_F(MhtmlLoadingTest, AllowRenderMessageRfc822Page) {
   // .mht file is mapped to "message/rfc822" by the test server.
   GURL url = embedded_test_server()->GetURL("/download/test.mht");
   auto observer = std::make_unique<content::TestNavigationObserver>(url);
@@ -3532,7 +3550,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, AllowRenderMessageRfc822Page) {
   NavigateToURL(shell(), url);
 
   observer->WaitForNavigationFinished();
-  SetBrowserClientForTesting(old_client);
 }
 
 }  // namespace content
