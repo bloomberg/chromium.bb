@@ -81,8 +81,6 @@ static_library("browser") {
     "gaia_cookie_manager_service.h",
     "mirror_account_reconcilor_delegate.cc",
     "mirror_account_reconcilor_delegate.h",
-    "profile_identity_provider.cc",
-    "profile_identity_provider.h",
     "profile_management_switches.cc",
     "profile_management_switches.h",
     "profile_oauth2_token_service.cc",

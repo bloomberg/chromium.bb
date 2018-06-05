@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/profile_identity_provider.h"
+#include "components/invalidation/impl/profile_identity_provider.h"
 
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+
+namespace invalidation {
 
 ProfileIdentityProvider::ProfileIdentityProvider(
     SigninManagerBase* signin_manager,
@@ -39,3 +41,5 @@ void ProfileIdentityProvider::GoogleSignedOut(const std::string& account_id,
                                               const std::string& username) {
   FireOnActiveAccountLogout();
 }
+
+}  // namespace invalidation
