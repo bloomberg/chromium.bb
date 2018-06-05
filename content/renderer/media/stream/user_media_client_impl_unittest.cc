@@ -860,7 +860,7 @@ TEST_F(UserMediaClientImplTest, DefaultConstraintsPropagate) {
   const AudioProcessingProperties& properties =
       audio_capture_settings.audio_processing_properties();
   EXPECT_TRUE(properties.enable_sw_echo_cancellation);
-  EXPECT_FALSE(properties.disable_hw_echo_cancellation);
+  EXPECT_TRUE(properties.disable_hw_echo_cancellation);
   EXPECT_FALSE(properties.goog_audio_mirroring);
   EXPECT_TRUE(properties.goog_auto_gain_control);
   // The default value for goog_experimental_echo_cancellation is platform
@@ -929,7 +929,7 @@ TEST_F(UserMediaClientImplTest, DefaultTabCapturePropagate) {
   const AudioProcessingProperties& properties =
       audio_capture_settings.audio_processing_properties();
   EXPECT_FALSE(properties.enable_sw_echo_cancellation);
-  EXPECT_FALSE(properties.disable_hw_echo_cancellation);
+  EXPECT_TRUE(properties.disable_hw_echo_cancellation);
   EXPECT_FALSE(properties.goog_audio_mirroring);
   EXPECT_FALSE(properties.goog_auto_gain_control);
   EXPECT_FALSE(properties.goog_experimental_echo_cancellation);
@@ -992,7 +992,7 @@ TEST_F(UserMediaClientImplTest, DefaultDesktopCapturePropagate) {
   const AudioProcessingProperties& properties =
       audio_capture_settings.audio_processing_properties();
   EXPECT_FALSE(properties.enable_sw_echo_cancellation);
-  EXPECT_FALSE(properties.disable_hw_echo_cancellation);
+  EXPECT_TRUE(properties.disable_hw_echo_cancellation);
   EXPECT_FALSE(properties.goog_audio_mirroring);
   EXPECT_FALSE(properties.goog_auto_gain_control);
   EXPECT_FALSE(properties.goog_experimental_echo_cancellation);
