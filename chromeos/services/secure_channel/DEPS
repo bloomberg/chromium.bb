@@ -1,5 +1,6 @@
 include_rules = [
   "+chromeos/components/proximity_auth/logging/logging.h",
   "+components/cryptauth",
+  "+device/bluetooth",
   "+mojo/public/cpp",
 ]

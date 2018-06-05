@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/error_tolerant_ble_advertisement_impl.h"
+#include "chromeos/services/secure_channel/error_tolerant_ble_advertisement_impl.h"
 
 #include <memory>
 
@@ -10,14 +10,15 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/no_destructor.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
-#include "chromeos/components/tether/ble_constants.h"
-#include "chromeos/components/tether/ble_synchronizer.h"
+#include "chromeos/services/secure_channel/ble_constants.h"
+#include "chromeos/services/secure_channel/ble_synchronizer.h"
 #include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
-namespace tether {
+namespace secure_channel {
 
 namespace {
 
@@ -27,26 +28,25 @@ const uint8_t kInvertedConnectionFlag = 0x01;
 
 // static
 ErrorTolerantBleAdvertisementImpl::Factory*
-    ErrorTolerantBleAdvertisementImpl::Factory::factory_instance_ = nullptr;
+    ErrorTolerantBleAdvertisementImpl::Factory::test_factory_ = nullptr;
 
 // static
-std::unique_ptr<ErrorTolerantBleAdvertisement>
-ErrorTolerantBleAdvertisementImpl::Factory::NewInstance(
-    const std::string& device_id,
-    std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
-    BleSynchronizerBase* ble_synchronizer) {
-  if (!factory_instance_)
-    factory_instance_ = new Factory();
+ErrorTolerantBleAdvertisementImpl::Factory*
+ErrorTolerantBleAdvertisementImpl::Factory::Get() {
+  if (test_factory_)
+    return test_factory_;
 
-  return factory_instance_->BuildInstance(
-      device_id, std::move(advertisement_data), ble_synchronizer);
+  static base::NoDestructor<Factory> factory;
+  return factory.get();
 }
 
 // static
-void ErrorTolerantBleAdvertisementImpl::Factory::SetInstanceForTesting(
-    Factory* factory) {
-  factory_instance_ = factory;
+void ErrorTolerantBleAdvertisementImpl::Factory::SetFactoryForTesting(
+    Factory* test_factory) {
+  test_factory_ = test_factory;
 }
+
+ErrorTolerantBleAdvertisementImpl::Factory::~Factory() = default;
 
 std::unique_ptr<ErrorTolerantBleAdvertisement>
 ErrorTolerantBleAdvertisementImpl::Factory::BuildInstance(
@@ -56,8 +56,6 @@ ErrorTolerantBleAdvertisementImpl::Factory::BuildInstance(
   return base::WrapUnique(new ErrorTolerantBleAdvertisementImpl(
       device_id, std::move(advertisement_data), ble_synchronizer));
 }
-
-ErrorTolerantBleAdvertisementImpl::Factory::~Factory() = default;
 
 ErrorTolerantBleAdvertisementImpl::ErrorTolerantBleAdvertisementImpl(
     const std::string& device_id,
@@ -235,6 +233,6 @@ void ErrorTolerantBleAdvertisementImpl::OnErrorUnregisteringAdvertisement(
   UpdateRegistrationStatus();
 }
 
-}  // namespace tether
+}  // namespace secure_channel
 
 }  // namespace chromeos

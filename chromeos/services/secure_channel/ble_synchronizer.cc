@@ -2,24 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/ble_synchronizer.h"
+#include "chromeos/services/secure_channel/ble_synchronizer.h"
 
 #include <memory>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 
-namespace tether {
+namespace secure_channel {
 
 namespace {
 
 const int64_t kTimeBetweenEachCommandMs = 200;
 
 }  // namespace
+
+// static
+BleSynchronizer::Factory* BleSynchronizer::Factory::test_factory_ = nullptr;
+
+// static
+BleSynchronizer::Factory* BleSynchronizer::Factory::Get() {
+  if (test_factory_)
+    return test_factory_;
+
+  static base::NoDestructor<Factory> factory;
+  return factory.get();
+}
+
+// static
+void BleSynchronizer::Factory::SetFactoryForTesting(Factory* test_factory) {
+  test_factory_ = test_factory;
+}
+
+BleSynchronizer::Factory::~Factory() = default;
+
+std::unique_ptr<BleSynchronizerBase> BleSynchronizer::Factory::BuildInstance(
+    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) {
+  return base::WrapUnique(new BleSynchronizer(bluetooth_adapter));
+}
 
 BleSynchronizer::BleSynchronizer(
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter)
@@ -289,6 +314,6 @@ void BleSynchronizer::RecordDiscoverySessionStopped(bool success) {
                         success);
 }
 
-}  // namespace tether
+}  // namespace secure_channel
 
 }  // namespace chromeos

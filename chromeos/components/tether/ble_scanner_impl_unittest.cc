@@ -10,9 +10,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
-#include "chromeos/components/tether/ble_constants.h"
-#include "chromeos/components/tether/fake_ble_synchronizer.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
+#include "chromeos/services/secure_channel/ble_constants.h"
+#include "chromeos/services/secure_channel/fake_ble_synchronizer.h"
 #include "components/cryptauth/fake_background_eid_generator.h"
 #include "components/cryptauth/mock_foreground_eid_generator.h"
 #include "components/cryptauth/mock_local_device_data_provider.h"
@@ -208,7 +208,8 @@ class BleScannerImplTest : public testing::Test {
     mock_seed_fetcher_ =
         std::make_unique<cryptauth::MockRemoteBeaconSeedFetcher>();
 
-    fake_ble_synchronizer_ = std::make_unique<FakeBleSynchronizer>();
+    fake_ble_synchronizer_ =
+        std::make_unique<secure_channel::FakeBleSynchronizer>();
     fake_tether_host_fetcher_ =
         std::make_unique<FakeTetherHostFetcher>(test_devices_);
 
@@ -297,7 +298,7 @@ class BleScannerImplTest : public testing::Test {
   std::unique_ptr<cryptauth::MockLocalDeviceDataProvider>
       mock_local_device_data_provider_;
   std::unique_ptr<cryptauth::MockRemoteBeaconSeedFetcher> mock_seed_fetcher_;
-  std::unique_ptr<FakeBleSynchronizer> fake_ble_synchronizer_;
+  std::unique_ptr<secure_channel::FakeBleSynchronizer> fake_ble_synchronizer_;
   std::unique_ptr<FakeTetherHostFetcher> fake_tether_host_fetcher_;
 
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
@@ -544,7 +545,7 @@ TEST_F(BleScannerImplTest, TestRegistrationLimit) {
 
   // Attempt to register another device. Registration should fail since the
   // maximum number of devices have already been registered.
-  ASSERT_EQ(2u, kMaxConcurrentAdvertisements);
+  ASSERT_EQ(2u, secure_channel::kMaxConcurrentAdvertisements);
   EXPECT_FALSE(ble_scanner_->RegisterScanFilterForDevice(
       test_devices_[2].GetDeviceId()));
   EXPECT_FALSE(IsDeviceRegistered(test_devices_[2].GetDeviceId()));

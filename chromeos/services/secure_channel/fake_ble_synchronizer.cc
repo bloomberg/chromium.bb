@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/fake_ble_synchronizer.h"
+#include "chromeos/services/secure_channel/fake_ble_synchronizer.h"
 
 namespace chromeos {
 
-namespace tether {
+namespace secure_channel {
 
 FakeBleSynchronizer::FakeBleSynchronizer() = default;
 
@@ -88,6 +88,6 @@ FakeBleSynchronizer::GetStopDiscoveryErrorCallback(size_t index) {
 // commands.
 void FakeBleSynchronizer::ProcessQueue() {}
 
-}  // namespace tether
+}  // namespace secure_channel
 
 }  // namespace chromeos

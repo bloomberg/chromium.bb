@@ -33,6 +33,10 @@ class ManagedNetworkConfigurationHandler;
 class NetworkConnectionHandler;
 class NetworkStateHandler;
 
+namespace secure_channel {
+class BleSynchronizerBase;
+}  // namespace secure_channel
+
 namespace device_sync {
 class DeviceSyncClient;
 }  // namespace device_sync
@@ -42,7 +46,6 @@ namespace tether {
 class BleAdvertisementDeviceQueue;
 class BleConnectionManager;
 class BleConnectionMetricsLogger;
-class BleSynchronizer;
 class NetworkConfigurationRemover;
 class TetherHostFetcher;
 class WifiHotspotDisconnector;
@@ -135,7 +138,7 @@ class AsynchronousShutdownObjectContainerImpl
   std::unique_ptr<cryptauth::RemoteBeaconSeedFetcher>
       remote_beacon_seed_fetcher_;
   std::unique_ptr<BleAdvertisementDeviceQueue> ble_advertisement_device_queue_;
-  std::unique_ptr<BleSynchronizer> ble_synchronizer_;
+  std::unique_ptr<secure_channel::BleSynchronizerBase> ble_synchronizer_;
   std::unique_ptr<BleAdvertiser> ble_advertiser_;
   std::unique_ptr<BleScanner> ble_scanner_;
   std::unique_ptr<BleConnectionManager> ble_connection_manager_;

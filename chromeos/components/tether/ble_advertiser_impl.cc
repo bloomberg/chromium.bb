@@ -8,7 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
-#include "chromeos/components/tether/error_tolerant_ble_advertisement_impl.h"
+#include "chromeos/services/secure_channel/error_tolerant_ble_advertisement_impl.h"
 #include "components/cryptauth/ble/ble_advertisement_generator.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/remote_device_ref.h"
@@ -26,7 +26,7 @@ BleAdvertiserImpl::Factory* BleAdvertiserImpl::Factory::factory_instance_ =
 std::unique_ptr<BleAdvertiser> BleAdvertiserImpl::Factory::NewInstance(
     cryptauth::LocalDeviceDataProvider* local_device_data_provider,
     cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
-    BleSynchronizerBase* ble_synchronizer) {
+    secure_channel::BleSynchronizerBase* ble_synchronizer) {
   if (!factory_instance_)
     factory_instance_ = new Factory();
 
@@ -42,7 +42,7 @@ void BleAdvertiserImpl::Factory::SetInstanceForTesting(Factory* factory) {
 std::unique_ptr<BleAdvertiser> BleAdvertiserImpl::Factory::BuildInstance(
     cryptauth::LocalDeviceDataProvider* local_device_data_provider,
     cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
-    BleSynchronizerBase* ble_synchronizer) {
+    secure_channel::BleSynchronizerBase* ble_synchronizer) {
   return base::WrapUnique(new BleAdvertiserImpl(local_device_data_provider,
                                                 remote_beacon_seed_fetcher,
                                                 ble_synchronizer));
@@ -58,7 +58,7 @@ BleAdvertiserImpl::AdvertisementMetadata::~AdvertisementMetadata() = default;
 BleAdvertiserImpl::BleAdvertiserImpl(
     cryptauth::LocalDeviceDataProvider* local_device_data_provider,
     cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
-    BleSynchronizerBase* ble_synchronizer)
+    secure_channel::BleSynchronizerBase* ble_synchronizer)
     : remote_beacon_seed_fetcher_(remote_beacon_seed_fetcher),
       local_device_data_provider_(local_device_data_provider),
       ble_synchronizer_(ble_synchronizer),
@@ -69,7 +69,7 @@ BleAdvertiserImpl::~BleAdvertiserImpl() = default;
 
 bool BleAdvertiserImpl::StartAdvertisingToDevice(const std::string& device_id) {
   int index_for_device = -1;
-  for (size_t i = 0; i < kMaxConcurrentAdvertisements; ++i) {
+  for (size_t i = 0; i < secure_channel::kMaxConcurrentAdvertisements; ++i) {
     if (!registered_device_metadata_[i]) {
       index_for_device = i;
       break;
@@ -127,11 +127,11 @@ void BleAdvertiserImpl::SetTaskRunnerForTesting(
 }
 
 void BleAdvertiserImpl::UpdateAdvertisements() {
-  for (size_t i = 0; i < kMaxConcurrentAdvertisements; ++i) {
+  for (size_t i = 0; i < secure_channel::kMaxConcurrentAdvertisements; ++i) {
     std::unique_ptr<AdvertisementMetadata>& metadata =
         registered_device_metadata_[i];
-    std::unique_ptr<ErrorTolerantBleAdvertisement>& advertisement =
-        advertisements_[i];
+    std::unique_ptr<secure_channel::ErrorTolerantBleAdvertisement>&
+        advertisement = advertisements_[i];
 
     // If there is a registered device but no associated advertisement, create
     // the advertisement.
@@ -140,9 +140,9 @@ void BleAdvertiserImpl::UpdateAdvertisements() {
           std::make_unique<cryptauth::DataWithTimestamp>(
               *metadata->service_data);
       advertisements_[i] =
-          ErrorTolerantBleAdvertisementImpl::Factory::NewInstance(
-              metadata->device_id, std::move(service_data_copy),
-              ble_synchronizer_);
+          secure_channel::ErrorTolerantBleAdvertisementImpl::Factory::Get()
+              ->BuildInstance(metadata->device_id, std::move(service_data_copy),
+                              ble_synchronizer_);
       continue;
     }
 

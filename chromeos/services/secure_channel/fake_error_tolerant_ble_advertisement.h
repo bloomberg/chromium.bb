@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_FAKE_ERROR_TOLERANT_BLE_ADVERTISEMENT_H_
-#define CHROMEOS_COMPONENTS_FAKE_ERROR_TOLERANT_BLE_ADVERTISEMENT_H_
+#ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_FAKE_ERROR_TOLERANT_BLE_ADVERTISEMENT_H_
+#define CHROMEOS_SERVICES_SECURE_CHANNEL_FAKE_ERROR_TOLERANT_BLE_ADVERTISEMENT_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chromeos/components/tether/error_tolerant_ble_advertisement.h"
+#include "chromeos/services/secure_channel/error_tolerant_ble_advertisement.h"
 
 namespace chromeos {
 
-namespace tether {
+namespace secure_channel {
 
 // Test double for ErrorTolerantBleAdvertisement.
 class FakeErrorTolerantBleAdvertisement : public ErrorTolerantBleAdvertisement {
@@ -37,8 +37,8 @@ class FakeErrorTolerantBleAdvertisement : public ErrorTolerantBleAdvertisement {
   DISALLOW_COPY_AND_ASSIGN(FakeErrorTolerantBleAdvertisement);
 };
 
-}  // namespace tether
+}  // namespace secure_channel
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_COMPONENTS_FAKE_ERROR_TOLERANT_BLE_ADVERTISEMENT_H_
+#endif  // CHROMEOS_SERVICES_SECURE_CHANNEL_FAKE_ERROR_TOLERANT_BLE_ADVERTISEMENT_H_

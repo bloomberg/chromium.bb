@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_TETHER_FAKE_BLE_SYNCHRONIZER_H_
-#define CHROMEOS_COMPONENTS_TETHER_FAKE_BLE_SYNCHRONIZER_H_
+#ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_FAKE_BLE_SYNCHRONIZER_H_
+#define CHROMEOS_SERVICES_SECURE_CHANNEL_FAKE_BLE_SYNCHRONIZER_H_
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "chromeos/components/tether/ble_synchronizer_base.h"
+#include "chromeos/services/secure_channel/ble_synchronizer_base.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 
 namespace chromeos {
 
-namespace tether {
+namespace secure_channel {
 
 // Test double for BleSynchronizer.
 class FakeBleSynchronizer : public BleSynchronizerBase {
@@ -50,8 +50,8 @@ class FakeBleSynchronizer : public BleSynchronizerBase {
   DISALLOW_COPY_AND_ASSIGN(FakeBleSynchronizer);
 };
 
-}  // namespace tether
+}  // namespace secure_channel
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_COMPONENTS_TETHER_FAKE_BLE_SYNCHRONIZER_H_
+#endif  // CHROMEOS_SERVICES_SECURE_CHANNEL_FAKE_BLE_SYNCHRONIZER_H_
