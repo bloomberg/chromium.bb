@@ -7,7 +7,6 @@
 #import <UIKit/UIKit.h>
 
 #include "base/bind.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/ios/wait_util.h"
 #include "base/values.h"
@@ -40,12 +39,11 @@ TEST_F(WebStateTest, ScriptExecution) {
   // Execute script with callback.
   __block std::unique_ptr<base::Value> execution_result;
   __block bool execution_complete = false;
-  web_state()->ExecuteJavaScript(
-      base::UTF8ToUTF16("window.foo"),
-      base::BindBlockArc(^(const base::Value* value) {
-        execution_result = value->CreateDeepCopy();
-        execution_complete = true;
-      }));
+  web_state()->ExecuteJavaScript(base::UTF8ToUTF16("window.foo"),
+                                 base::BindOnce(^(const base::Value* value) {
+                                   execution_result = value->CreateDeepCopy();
+                                   execution_complete = true;
+                                 }));
   WaitForCondition(^{
     return execution_complete;
   });
@@ -89,7 +87,7 @@ TEST_F(WebStateTest, LoadingProgress) {
 TEST_F(WebStateTest, OverridingWebKitObject) {
   // Add a script command handler.
   __block bool message_received = false;
-  const web::WebState::ScriptCommandCallback callback = base::BindBlockArc(
+  const web::WebState::ScriptCommandCallback callback = base::BindRepeating(
       ^bool(const base::DictionaryValue&, const GURL&, bool) {
         message_received = true;
         return true;

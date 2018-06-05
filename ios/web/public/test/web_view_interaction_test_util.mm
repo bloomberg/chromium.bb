@@ -4,7 +4,7 @@
 
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 
-#import "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -37,7 +37,7 @@ std::unique_ptr<base::Value> ExecuteJavaScript(web::WebState* web_state,
   __block std::unique_ptr<base::Value> result;
   __block bool did_finish = false;
   web_state->ExecuteJavaScript(base::UTF8ToUTF16(script),
-                               base::BindBlockArc(^(const base::Value* value) {
+                               base::BindOnce(^(const base::Value* value) {
                                  if (value)
                                    result = value->CreateDeepCopy();
                                  did_finish = true;

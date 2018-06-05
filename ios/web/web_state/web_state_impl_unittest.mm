@@ -13,7 +13,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#import "base/mac/bind_objc_block.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -580,7 +579,7 @@ TEST_F(WebStateImplTest, DelegateTest) {
 
   __block bool callback_called = false;
   web_state_->RunJavaScriptDialog(GURL(), JAVASCRIPT_DIALOG_TYPE_ALERT, @"",
-                                  nil, base::BindBlockArc(^(bool, NSString*) {
+                                  nil, base::BindOnce(^(bool, NSString*) {
                                     callback_called = true;
                                   }));
 

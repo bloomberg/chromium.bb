@@ -4,9 +4,9 @@
 
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/strings/stringprintf.h"
 #import "base/test/ios/wait_util.h"
 #include "base/values.h"
@@ -95,7 +95,7 @@ bool AddVerifierToElementWithId(web::WebState* web_state,
 
   // The callback doesn't care about any of the parameters, just whether it is
   // called or not.
-  auto callback = base::BindBlockArc(
+  auto callback = base::BindRepeating(
       ^bool(const base::DictionaryValue& /* json */,
             const GURL& /* origin_url */, bool /* user_is_interacting */) {
         *verified = true;

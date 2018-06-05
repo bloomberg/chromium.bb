@@ -23,7 +23,6 @@
 #import "base/ios/ns_error_util.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -3180,7 +3179,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   _webStateImpl->OnAuthRequired(
       space, challenge.proposedCredential,
-      base::BindBlockArc(^(NSString* user, NSString* password) {
+      base::BindRepeating(^(NSString* user, NSString* password) {
         [CRWWebController processHTTPAuthForUser:user
                                         password:password
                                completionHandler:completionHandler];
@@ -3233,7 +3232,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   self.webStateImpl->RunJavaScriptDialog(
       requestURL, type, message, defaultText,
-      base::BindBlockArc(^(bool success, NSString* input) {
+      base::BindOnce(^(bool success, NSString* input) {
         completionHandler(success, input);
       }));
 }
@@ -3758,7 +3757,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   web::GetWebClient()->AllowCertificateError(
       _webStateImpl, net::MapCertStatusToNetError(info.cert_status), info,
       net::GURLWithNSURL(requestURL), recoverable,
-      base::BindBlockArc(^(bool proceed) {
+      base::BindRepeating(^(bool proceed) {
         if (proceed) {
           DCHECK(recoverable);
           [_certVerificationController allowCert:leafCert

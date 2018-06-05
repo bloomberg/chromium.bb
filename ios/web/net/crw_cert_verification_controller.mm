@@ -6,9 +6,9 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #import "base/ios/block_types.h"
 #include "base/logging.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
@@ -127,7 +127,7 @@ loadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
     DCHECK(cert);
   }
   DCHECK(cert->intermediate_buffers().empty());
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
+  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindOnce(^{
                              _certPolicyCache->AllowCertForHost(
                                  cert.get(), base::SysNSStringToUTF8(host),
                                  status);
@@ -165,7 +165,7 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(handler);
   web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
+      web::WebThread::IO, FROM_HERE, base::BindOnce(^{
         // |loadPolicyForRejectedTrustResult:certStatus:serverTrust:host:| can
         // only be called on IO thread.
         net::CertStatus certStatus =
@@ -178,7 +178,7 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
                                               host:host];
 
         web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
-                                 base::BindBlockArc(^{
+                                 base::BindOnce(^{
                                    handler(policy, certStatus);
                                  }));
       }));
@@ -191,8 +191,7 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
   // SecTrustEvaluate performs trust evaluation synchronously, possibly making
   // network requests. The UI thread should not be blocked by that operation.
   base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindBlockArc(^{
+      FROM_HERE, {base::TaskShutdownBehavior::BLOCK_SHUTDOWN}, base::BindOnce(^{
         SecTrustResultType trustResult = kSecTrustResultInvalid;
         if (SecTrustEvaluate(trust.get(), &trustResult) != errSecSuccess) {
           trustResult = kSecTrustResultInvalid;

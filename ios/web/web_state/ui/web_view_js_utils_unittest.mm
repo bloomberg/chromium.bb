@@ -4,9 +4,9 @@
 
 #import "ios/web/web_state/ui/web_view_js_utils.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -140,7 +140,7 @@ TEST_F(WebViewJsUtilsTest, ValueResultFromDictionaryWithDepthCheckWKResult) {
   test_dictionary_2[obj_c_key] = test_dictionary;
 
   // Break the retain cycle so that the dictionaries are freed.
-  base::ScopedClosureRunner runner(base::BindBlockArc(^{
+  base::ScopedClosureRunner runner(base::BindOnce(^{
     [test_dictionary_2 removeAllObjects];
   }));
 
@@ -173,7 +173,7 @@ TEST_F(WebViewJsUtilsTest, ValueResultFromArrayWithDepthCheckWKResult) {
   test_array_2[0] = test_array;
 
   // Break the retain cycle so that the arrays are freed.
-  base::ScopedClosureRunner runner(base::BindBlockArc(^{
+  base::ScopedClosureRunner runner(base::BindOnce(^{
     [test_array removeAllObjects];
   }));
 
