@@ -6,11 +6,14 @@
 
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/mock_callback.h"
 #include "base/values.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "net/http/http_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,42 +52,46 @@ MATCHER_P(EqualsJSON, json, "equals JSON") {
 class SubscriptionJsonRequestTest : public testing::Test {
  public:
   SubscriptionJsonRequestTest()
-      : request_context_getter_(
-            new net::TestURLRequestContextGetter(message_loop_.task_runner())) {
+      : test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {}
+
+ protected:
+  scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory() {
+    return test_shared_loader_factory_;
   }
 
-  scoped_refptr<net::URLRequestContextGetter> GetRequestContext() {
-    return request_context_getter_.get();
+  network::TestURLLoaderFactory* GetURLLoaderFactory() {
+    return &test_url_loader_factory_;
   }
 
-  net::TestURLFetcher* GetRunningFetcher() {
-    // All created TestURLFetchers have ID 0 by default.
-    net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(0);
-    DCHECK(url_fetcher);
-    return url_fetcher;
+  void RespondWithData(const GURL& url, const std::string& data) {
+    GetURLLoaderFactory()->AddResponse(url.spec(), data);
+    base::RunLoop().RunUntilIdle();
   }
 
-  void RespondWithData(const std::string& data) {
-    net::TestURLFetcher* url_fetcher = GetRunningFetcher();
-    url_fetcher->set_status(net::URLRequestStatus());
-    url_fetcher->set_response_code(net::HTTP_OK);
-    url_fetcher->SetResponseString(data);
-    // Call the URLFetcher delegate to continue the test.
-    url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+  void RespondWithError(const GURL& url, int error_code) {
+    network::URLLoaderCompletionStatus status(error_code);
+    test_url_loader_factory_.AddResponse(url, network::ResourceResponseHead(),
+                                         "", status);
+    base::RunLoop().RunUntilIdle();
   }
 
-  void RespondWithError(int error_code) {
-    net::TestURLFetcher* url_fetcher = GetRunningFetcher();
-    url_fetcher->set_status(net::URLRequestStatus::FromError(error_code));
-    url_fetcher->SetResponseString(std::string());
-    // Call the URLFetcher delegate to continue the test.
-    url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+  std::string GetBodyFromRequest(const network::ResourceRequest& request) {
+    auto body = request.request_body;
+    if (!body)
+      return std::string();
+
+    CHECK_EQ(1u, body->elements()->size());
+    auto& element = body->elements()->at(0);
+    CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
+    return std::string(element.bytes(), element.length());
   }
 
  private:
   base::MessageLoop message_loop_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
-  net::TestURLFetcherFactory url_fetcher_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SubscriptionJsonRequestTest);
 };
@@ -95,28 +102,6 @@ TEST_F(SubscriptionJsonRequestTest, BuildRequest) {
 
   base::MockCallback<SubscriptionJsonRequest::CompletedCallback> callback;
 
-  SubscriptionJsonRequest::Builder builder;
-  std::unique_ptr<SubscriptionJsonRequest> request =
-      builder.SetToken(token)
-          .SetUrl(url)
-          .SetUrlRequestContextGetter(GetRequestContext())
-          .SetLocale("en-US")
-          .SetCountryCode("us")
-          .Build();
-  request->Start(callback.Get());
-
-  net::TestURLFetcher* url_fetcher = GetRunningFetcher();
-
-  EXPECT_EQ(url, url_fetcher->GetOriginalURL());
-
-  net::HttpRequestHeaders headers;
-  url_fetcher->GetExtraRequestHeaders(&headers);
-
-  std::string header;
-  EXPECT_FALSE(headers.GetHeader("Authorization", &header));
-  EXPECT_TRUE(headers.GetHeader("Content-Type", &header));
-  EXPECT_EQ(header, "application/json; charset=UTF-8");
-
   std::string expected_body = R"(
     {
       "token": "1234567890",
@@ -124,7 +109,27 @@ TEST_F(SubscriptionJsonRequestTest, BuildRequest) {
       "country_code": "us"
     }
   )";
-  EXPECT_THAT(url_fetcher->upload_data(), EqualsJSON(expected_body));
+  std::string header;
+  std::string actual_body;
+  GetURLLoaderFactory()->SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        EXPECT_FALSE(request.headers.GetHeader("Authorization", &header));
+        EXPECT_TRUE(request.headers.GetHeader(
+            net::HttpRequestHeaders::kContentType, &header));
+        EXPECT_EQ(header, "application/json; charset=UTF-8");
+        actual_body = GetBodyFromRequest(request);
+        EXPECT_THAT(actual_body, EqualsJSON(expected_body));
+      }));
+
+  SubscriptionJsonRequest::Builder builder;
+  std::unique_ptr<SubscriptionJsonRequest> request =
+      builder.SetToken(token)
+          .SetUrl(url)
+          .SetUrlLoaderFactory(GetSharedURLLoaderFactory())
+          .SetLocale("en-US")
+          .SetCountryCode("us")
+          .Build();
+  request->Start(callback.Get());
 }
 
 TEST_F(SubscriptionJsonRequestTest, ShouldNotInvokeCallbackWhenCancelled) {
@@ -138,8 +143,9 @@ TEST_F(SubscriptionJsonRequestTest, ShouldNotInvokeCallbackWhenCancelled) {
   std::unique_ptr<SubscriptionJsonRequest> request =
       builder.SetToken(token)
           .SetUrl(url)
-          .SetUrlRequestContextGetter(GetRequestContext())
+          .SetUrlLoaderFactory(GetSharedURLLoaderFactory())
           .Build();
+  GetURLLoaderFactory()->AddResponse(url.spec(), "{}");
   request->Start(callback.Get());
 
   // Destroy the request before getting any response.
@@ -158,11 +164,11 @@ TEST_F(SubscriptionJsonRequestTest, SubscribeWithoutErrors) {
   std::unique_ptr<SubscriptionJsonRequest> request =
       builder.SetToken(token)
           .SetUrl(url)
-          .SetUrlRequestContextGetter(GetRequestContext())
+          .SetUrlLoaderFactory(GetSharedURLLoaderFactory())
           .Build();
   request->Start(callback.Get());
 
-  RespondWithData("{}");
+  RespondWithData(url, "{}");
 
   EXPECT_EQ(status.code, StatusCode::SUCCESS);
 }
@@ -179,11 +185,11 @@ TEST_F(SubscriptionJsonRequestTest, SubscribeWithErrors) {
   std::unique_ptr<SubscriptionJsonRequest> request =
       builder.SetToken(token)
           .SetUrl(url)
-          .SetUrlRequestContextGetter(GetRequestContext())
+          .SetUrlLoaderFactory(GetSharedURLLoaderFactory())
           .Build();
   request->Start(callback.Get());
 
-  RespondWithError(net::ERR_TIMED_OUT);
+  RespondWithError(url, net::ERR_TIMED_OUT);
 
   EXPECT_EQ(status.code, StatusCode::TEMPORARY_ERROR);
 }

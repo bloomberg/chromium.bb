@@ -17,6 +17,7 @@
 #include "components/variations/service/variations_service.h"
 #include "net/base/url_util.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace ntp_snippets {
 
@@ -30,7 +31,7 @@ const char kAuthorizationRequestHeaderFormat[] = "Bearer %s";
 }  // namespace
 
 SubscriptionManagerImpl::SubscriptionManagerImpl(
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     PrefService* pref_service,
     variations::VariationsService* variations_service,
     identity::IdentityManager* identity_manager,
@@ -38,7 +39,7 @@ SubscriptionManagerImpl::SubscriptionManagerImpl(
     const std::string& api_key,
     const GURL& subscribe_url,
     const GURL& unsubscribe_url)
-    : url_request_context_getter_(std::move(url_request_context_getter)),
+    : url_loader_factory_(std::move(url_loader_factory)),
       pref_service_(pref_service),
       variations_service_(variations_service),
       identity_manager_(identity_manager),
@@ -69,8 +70,7 @@ void SubscriptionManagerImpl::SubscribeInternal(
     const std::string& subscription_token,
     const std::string& access_token) {
   SubscriptionJsonRequest::Builder builder;
-  builder.SetToken(subscription_token)
-      .SetUrlRequestContextGetter(url_request_context_getter_);
+  builder.SetToken(subscription_token).SetUrlLoaderFactory(url_loader_factory_);
 
   if (!access_token.empty()) {
     builder.SetUrl(subscribe_url_);
@@ -171,8 +171,7 @@ void SubscriptionManagerImpl::ResubscribeInternal(
   }
 
   SubscriptionJsonRequest::Builder builder;
-  builder.SetToken(old_token).SetUrlRequestContextGetter(
-      url_request_context_getter_);
+  builder.SetToken(old_token).SetUrlLoaderFactory(url_loader_factory_);
   builder.SetUrl(
       net::AppendQueryParameter(unsubscribe_url_, kApiKeyParamName, api_key_));
 
