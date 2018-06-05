@@ -38,7 +38,7 @@ class CONTROLLER_EXPORT OomInterventionImpl
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OomInterventionImplTest, DetectedAndDeclined);
-  FRIEND_TEST_ALL_PREFIXES(OomInterventionImplTest, CalculatePMFAndSwap);
+  FRIEND_TEST_ALL_PREFIXES(OomInterventionImplTest, CalculateProcessFootprint);
 
   void Check(TimerBase*);
 
