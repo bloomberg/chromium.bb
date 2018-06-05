@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/run_segmenter.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 
@@ -100,7 +101,6 @@ class CORE_EXPORT NGInlineItem {
   // direction.
   UBiDiLevel BidiLevelForReorder() const;
 
-  UScriptCode GetScript() const { return script_; }
   const ComputedStyle* Style() const { return style_.get(); }
   LayoutObject* GetLayoutObject() const { return layout_object_; }
 
@@ -129,6 +129,26 @@ class CORE_EXPORT NGInlineItem {
   bool EndMayCollapse() const { return end_may_collapse_; }
 
   static void Split(Vector<NGInlineItem>&, unsigned index, unsigned offset);
+
+  // Get RunSegmenter properties.
+  UScriptCode Script() const;
+  FontFallbackPriority FontFallbackPriority() const;
+  OrientationIterator::RenderOrientation RenderOrientation() const;
+  RunSegmenter::RunSegmenterRange CreateRunSegmenterRange() const;
+  // Whether the other item has the same RunSegmenter properties or not.
+  bool EqualsRunSegment(const NGInlineItem&) const;
+  // Set RunSegmenter properties.
+  static unsigned PopulateItemsFromRun(Vector<NGInlineItem>&,
+                                       unsigned index,
+                                       const RunSegmenter::RunSegmenterRange&);
+  void SetRunSegment(const RunSegmenter::RunSegmenterRange&);
+  static unsigned PopulateItemsFromFontOrientation(
+      Vector<NGInlineItem>&,
+      unsigned index,
+      unsigned end_offset,
+      OrientationIterator::RenderOrientation);
+  void SetFontOrientation(OrientationIterator::RenderOrientation);
+
   void SetBidiLevel(UBiDiLevel);
   static unsigned SetBidiLevel(Vector<NGInlineItem>&,
                                unsigned index,
@@ -148,13 +168,17 @@ class CORE_EXPORT NGInlineItem {
 
   unsigned start_offset_;
   unsigned end_offset_;
-  UScriptCode script_;
   scoped_refptr<const ShapeResult> shape_result_;
   scoped_refptr<const ComputedStyle> style_;
   LayoutObject* layout_object_;
 
+  static constexpr unsigned kScriptBits = 8;  // UScriptCode, see Script().
+
   unsigned type_ : 4;
-  unsigned bidi_level_ : 8;  // UBiDiLevel is defined as uint8_t.
+  unsigned script_ : kScriptBits;
+  unsigned font_fallback_priority_ : 2;  // FontFallbackPriority.
+  unsigned render_orientation_ : 1;      // RenderOrientation (excl. kInvalid.)
+  unsigned bidi_level_ : 8;              // UBiDiLevel is defined as uint8_t.
   unsigned shape_options_ : 2;
   unsigned is_empty_item_ : 1;
   unsigned should_create_box_fragment_ : 1;

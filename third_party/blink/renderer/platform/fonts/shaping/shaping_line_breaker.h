@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPING_LINE_BREAKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPING_LINE_BREAKER_H_
 
+#include "third_party/blink/renderer/platform/fonts/shaping/run_segmenter.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -35,10 +36,15 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
   STACK_ALLOCATED();
 
  public:
+  // Construct a ShapingLineBreaker.
+  //
+  // When the ShapeResult is from a RunSegmenterRange, giving it can skip
+  // running RunSegmenter for much better performance.
   ShapingLineBreaker(const HarfBuzzShaper*,
                      const Font*,
                      const ShapeResult*,
                      const LazyLineBreakIterator*,
+                     const RunSegmenter::RunSegmenterRange* = nullptr,
                      ShapeResultSpacing<String>* = nullptr,
                      const Hyphenation* = nullptr);
   ~ShapingLineBreaker() = default;
@@ -104,6 +110,7 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
   const HarfBuzzShaper* shaper_;
   const Font* font_;
   const ShapeResult* result_;
+  const RunSegmenter::RunSegmenterRange* pre_segmented_;
   const LazyLineBreakIterator* break_iterator_;
   // TODO(kojii): ShapeResultSpacing is not const because it's stateful when it
   // has expansions. Split spacing and expansions to make this const.

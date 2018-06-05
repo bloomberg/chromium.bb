@@ -58,10 +58,15 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
   // occur, such as at the beginning or end of lines or at element boundaries.
   // If given arbitrary positions the results are not guaranteed to be correct.
   // May be called multiple times; font and direction may vary between calls.
-  scoped_refptr<ShapeResult> Shape(const Font*,
-                            TextDirection,
-                            unsigned start,
-                            unsigned end) const;
+  //
+  // If |pre_segmented| is given, it is assumed that the string is already
+  // segmented. Otherwise the string is segmented into runs before shaping.
+  scoped_refptr<ShapeResult> Shape(
+      const Font*,
+      TextDirection,
+      unsigned start,
+      unsigned end,
+      const RunSegmenter::RunSegmenterRange* pre_segmented = nullptr) const;
 
   // Shape the entire string with a single font and direction.
   // Equivalent to calling the range version with a start offset of zero and an
@@ -80,7 +85,7 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
   // parameters are for the entire text run, not the segment, and are used to
   // determine pre- and post-context for shaping.
   void ShapeSegment(RangeData*,
-                    RunSegmenter::RunSegmenterRange,
+                    const RunSegmenter::RunSegmenterRange&,
                     ShapeResult*) const;
 
   void ExtractShapeResults(RangeData*,

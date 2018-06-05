@@ -18,11 +18,13 @@ ShapingLineBreaker::ShapingLineBreaker(
     const Font* font,
     const ShapeResult* result,
     const LazyLineBreakIterator* break_iterator,
+    const RunSegmenter::RunSegmenterRange* pre_segmented,
     ShapeResultSpacing<String>* spacing,
     const Hyphenation* hyphenation)
     : shaper_(shaper),
       font_(font),
       result_(result),
+      pre_segmented_(pre_segmented),
       break_iterator_(break_iterator),
       spacing_(spacing),
       hyphenation_(hyphenation),
@@ -171,9 +173,10 @@ inline scoped_refptr<ShapeResult> ShapingLineBreaker::Shape(TextDirection direct
                                                      unsigned start,
                                                      unsigned end) {
   if (!spacing_ || !spacing_->HasSpacing())
-    return shaper_->Shape(font_, direction, start, end);
+    return shaper_->Shape(font_, direction, start, end, pre_segmented_);
 
-  scoped_refptr<ShapeResult> result = shaper_->Shape(font_, direction, start, end);
+  scoped_refptr<ShapeResult> result =
+      shaper_->Shape(font_, direction, start, end, pre_segmented_);
   result->ApplySpacing(*spacing_);
   return result;
 }
