@@ -1925,6 +1925,7 @@
   },
 
   'non_android_and_cast_and_chromeos_chromium_gtests': {
+    'battor_agent_unittests': {},
     'blink_platform_unittests': {},
     'cronet_tests': {},
     'cronet_unittests': {},
@@ -1932,7 +1933,6 @@
   },
 
   'non_android_and_cast_and_chromeos_and_clang_and_mac_fyi_chromium_gtests': {
-    'battor_agent_unittests': {},
     'headless_browsertests': {},
     'headless_unittests': {},
   },
@@ -2505,6 +2505,7 @@
   'chromium_mac_clang_gtests': [
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
+    'linux_and_mac_specific_chromium_gtests',
     'mac_specific_chromium_gtests',
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
@@ -2564,8 +2565,8 @@
     'chromium_gtests_for_devices_with_graphical_output',
     'linux_and_mac_specific_chromium_gtests',
     'mac_specific_chromium_gtests',
-    'non_android_and_cast_and_chromeos_chromium_gtests',
     'non_android_chromium_gtests',
+    'non_android_and_cast_and_chromeos_chromium_gtests',
     'non_linux_chromium_gtests',
   ],
 
