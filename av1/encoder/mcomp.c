@@ -715,6 +715,28 @@ static unsigned int upsampled_setup_center_error(
   return besterr;
 }
 
+// when use_accurate_subpel_search == 0
+static INLINE unsigned int estimate_upsampled_pref_error(
+    MACROBLOCKD *xd, const aom_variance_fn_ptr_t *vfp, const uint8_t *const src,
+    const int src_stride, const uint8_t *const pre, int y_stride,
+    int subpel_x_q3, int subpel_y_q3, const uint8_t *second_pred,
+    const uint8_t *mask, int mask_stride, int invert_mask, unsigned int *sse) {
+  if (second_pred == NULL) {
+    return vfp->svf(pre, y_stride, subpel_x_q3, subpel_y_q3, src, src_stride,
+                    sse);
+  } else if (mask) {
+    return vfp->msvf(pre, y_stride, subpel_x_q3, subpel_y_q3, src, src_stride,
+                     second_pred, mask, mask_stride, invert_mask, sse);
+  } else {
+    if (xd->jcp_param.use_jnt_comp_avg)
+      return vfp->jsvaf(pre, y_stride, subpel_x_q3, subpel_y_q3, src,
+                        src_stride, sse, second_pred, &xd->jcp_param);
+    else
+      return vfp->svaf(pre, y_stride, subpel_x_q3, subpel_y_q3, src, src_stride,
+                       sse, second_pred);
+  }
+}
+
 int av1_find_best_sub_pixel_tree(
     MACROBLOCK *x, const AV1_COMMON *const cm, int mi_row, int mi_col,
     const MV *ref_mv, int allow_hp, int error_per_bit,
@@ -781,23 +803,10 @@ int av1_find_best_sub_pixel_tree(
               pre(y, y_stride, tr, tc), y_stride, sp(tc), sp(tr), second_pred,
               mask, mask_stride, invert_mask, w, h, &sse);
         } else {
-          const uint8_t *const pre_address = pre(y, y_stride, tr, tc);
-          if (second_pred == NULL) {
-            thismse = vfp->svf(pre_address, y_stride, sp(tc), sp(tr),
-                               src_address, src_stride, &sse);
-          } else if (mask) {
-            thismse = vfp->msvf(pre_address, y_stride, sp(tc), sp(tr),
-                                src_address, src_stride, second_pred, mask,
-                                mask_stride, invert_mask, &sse);
-          } else {
-            if (xd->jcp_param.use_jnt_comp_avg)
-              thismse =
-                  vfp->jsvaf(pre_address, y_stride, sp(tc), sp(tr), src_address,
-                             src_stride, &sse, second_pred, &xd->jcp_param);
-            else
-              thismse = vfp->svaf(pre_address, y_stride, sp(tc), sp(tr),
-                                  src_address, src_stride, &sse, second_pred);
-          }
+          thismse = estimate_upsampled_pref_error(
+              xd, vfp, src_address, src_stride, pre(y, y_stride, tr, tc),
+              y_stride, sp(tc), sp(tr), second_pred, mask, mask_stride,
+              invert_mask, &sse);
         }
 
         cost_array[idx] = thismse + mv_err_cost(&this_mv, ref_mv, mvjcost,
@@ -829,24 +838,10 @@ int av1_find_best_sub_pixel_tree(
             pre(y, y_stride, tr, tc), y_stride, sp(tc), sp(tr), second_pred,
             mask, mask_stride, invert_mask, w, h, &sse);
       } else {
-        const uint8_t *const pre_address = pre(y, y_stride, tr, tc);
-
-        if (second_pred == NULL) {
-          thismse = vfp->svf(pre_address, y_stride, sp(tc), sp(tr), src_address,
-                             src_stride, &sse);
-        } else if (mask) {
-          thismse = vfp->msvf(pre_address, y_stride, sp(tc), sp(tr),
-                              src_address, src_stride, second_pred, mask,
-                              mask_stride, invert_mask, &sse);
-        } else {
-          if (xd->jcp_param.use_jnt_comp_avg)
-            thismse =
-                vfp->jsvaf(pre_address, y_stride, sp(tc), sp(tr), src_address,
-                           src_stride, &sse, second_pred, &xd->jcp_param);
-          else
-            thismse = vfp->svaf(pre_address, y_stride, sp(tc), sp(tr),
-                                src_address, src_stride, &sse, second_pred);
-        }
+        thismse = estimate_upsampled_pref_error(
+            xd, vfp, src_address, src_stride, pre(y, y_stride, tr, tc),
+            y_stride, sp(tc), sp(tr), second_pred, mask, mask_stride,
+            invert_mask, &sse);
       }
 
       cost_array[4] = thismse + mv_err_cost(&this_mv, ref_mv, mvjcost, mvcost,
