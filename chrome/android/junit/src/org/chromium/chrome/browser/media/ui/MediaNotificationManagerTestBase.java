@@ -141,6 +141,7 @@ public class MediaNotificationManagerTestBase {
 
     @After
     public void tearDown() {
+        AppHooks.setInstanceForTesting(null);
         MediaNotificationManager.clear(NOTIFICATION_ID);
     }
 

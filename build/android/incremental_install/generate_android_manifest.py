@@ -142,8 +142,9 @@ def main():
              '--debug-mode']
       subprocess.check_call(cmd)
       with zipfile.ZipFile(f.name, 'a') as z:
+        path_transform = lambda p: None if p == 'AndroidManifest.xml' else p
         build_utils.MergeZips(
-            z, [options.in_apk], exclude_patterns=['AndroidManifest.xml'])
+            z, [options.in_apk], path_transform=path_transform)
       shutil.copyfile(f.name, options.out_apk)
 
 

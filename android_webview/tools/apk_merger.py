@@ -87,7 +87,7 @@ def GetDiffFiles(dcmp, base_dir):
     copy_files.extend(
         GetNonDirFiles(os.path.join(dcmp.right, file_name), base_dir))
 
-  # we cannot merge APKs with files with similar names but different contents
+# we cannot merge APKs with files with similar names but different contents
   if len(dcmp.diff_files) > 0:
     raise ApkMergeFailure('found differing files: %s in %s and %s' %
                           (dcmp.diff_files, dcmp.left, dcmp.right))
@@ -218,7 +218,10 @@ def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
       exclude_patterns.extend(['*' + f for f in args.loadable_module_32 if
                                f not in args.loadable_module_64])
 
-    build_utils.MergeZips(out_zip, [args.apk_64bit], exclude_patterns)
+    path_transform = (
+        lambda p: None if build_utils.MatchesGlob(p, exclude_patterns) else p)
+    build_utils.MergeZips(
+        out_zip, [args.apk_64bit], path_transform=path_transform)
     AddDiffFiles(diff_files, tmp_dir_32, out_zip, expected_files,
                  args.component_build, args.uncompress_shared_libraries)
 

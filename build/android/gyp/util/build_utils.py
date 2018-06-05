@@ -353,8 +353,16 @@ def MatchesGlob(path, filters):
   return filters and any(fnmatch.fnmatch(path, f) for f in filters)
 
 
-def MergeZips(output, inputs, exclude_patterns=None, path_transform=None):
-  path_transform = path_transform or (lambda p, z: p)
+def MergeZips(output, input_zips, path_transform=None):
+  """Combines all files from |input_zips| into |output|.
+
+  Args:
+    output: Path or ZipFile instance to add files to.
+    input_zips: Iterable of paths to zip files to merge.
+    path_transform: Called for each entry path. Returns a new path, or None to
+        skip the file.
+  """
+  path_transform = path_transform or (lambda p: p)
   added_names = set()
 
   output_is_already_open = not isinstance(output, basestring)
@@ -365,16 +373,19 @@ def MergeZips(output, inputs, exclude_patterns=None, path_transform=None):
     out_zip = zipfile.ZipFile(output, 'w')
 
   try:
-    for in_file in inputs:
+    for in_file in input_zips:
       with zipfile.ZipFile(in_file, 'r') as in_zip:
+        # ijar creates zips with null CRCs.
         in_zip._expected_crc = None
         for info in in_zip.infolist():
           # Ignore directories.
           if info.filename[-1] == '/':
             continue
-          dst_name = path_transform(info.filename, in_file)
+          dst_name = path_transform(info.filename)
+          if not dst_name:
+            continue
           already_added = dst_name in added_names
-          if not already_added and not MatchesGlob(dst_name, exclude_patterns):
+          if not already_added:
             AddToZipHermetic(out_zip, dst_name, data=in_zip.read(info),
                              compress=info.compress_type != zipfile.ZIP_STORED)
             added_names.add(dst_name)

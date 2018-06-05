@@ -27,6 +27,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -43,6 +44,20 @@ class ByteCodeProcessor {
     private static final String CLASS_FILE_SUFFIX = ".class";
     private static final String TEMPORARY_FILE_SUFFIX = ".temp";
     private static final int BUFFER_SIZE = 16384;
+
+    private static void writeZipEntry(ZipOutputStream zipStream, String zipPath, byte[] data)
+            throws IOException {
+        ZipEntry entry = new ZipEntry(zipPath);
+        entry.setMethod(ZipEntry.STORED);
+        entry.setTime(0);
+        entry.setSize(data.length);
+        CRC32 crc = new CRC32();
+        crc.update(data);
+        entry.setCrc(crc.getValue());
+        zipStream.putNextEntry(entry);
+        zipStream.write(data);
+        zipStream.closeEntry();
+    }
 
     private static void process(String inputJarPath, String outputJarPath, boolean shouldAssert,
             boolean shouldUseCustomResources, ClassLoader classPathJarsClassLoader) {
@@ -94,9 +109,7 @@ class ByteCodeProcessor {
                 }
                 reader.accept(chain, 0);
                 byte[] patchedByteCode = writer.toByteArray();
-                tempStream.putNextEntry(new ZipEntry(entry.getName()));
-                tempStream.write(patchedByteCode);
-                tempStream.closeEntry();
+                writeZipEntry(tempStream, entry.getName(), patchedByteCode);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
