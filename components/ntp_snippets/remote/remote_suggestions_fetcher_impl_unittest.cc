@@ -53,6 +53,9 @@ using testing::StartsWith;
 
 const char kAPIKey[] = "fakeAPIkey";
 const char kTestEmail[] = "foo@bar.com";
+const char kFetchSuggestionsEndpoint[] =
+    "https://chromefeedcontentsuggestions-pa.googleapis.com/v2/suggestions/"
+    "fetch";
 
 // Artificial time delay for JSON parsing.
 const int64_t kTestJsonParsingLatencyMs = 20;
@@ -390,10 +393,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldFetchSuccessfully) {
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=user_action"),
-      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/kJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
                   /*fetched_categories=*/AllOf(
@@ -413,11 +416,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldFetchSuccessfully) {
 }
 
 TEST_F(RemoteSuggestionsFetcherImplTest, ShouldExposeRequestPriorityInUrl) {
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=background_prefetch"),
-      /*response_data=*/"{\"categories\" : []}", net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=background_prefetch"),
+                  /*response_data=*/"{\"categories\" : []}", net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(Property(&Status::IsSuccess, true),
                                    /*fetched_categories=*/_));
 
@@ -437,8 +439,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
   SetVariationParam("append_request_priority_as_query_parameter", "false");
 
   SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey"),
+      GURL(std::string(kFetchSuggestionsEndpoint) + "?key=fakeAPIkey"),
       /*response_data=*/"{\"categories\" : []}", net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(Property(&Status::IsSuccess, true),
@@ -476,8 +477,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldFetchSuccessfullyWhenSignedIn) {
       "  }]"
       "}]}";
   SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?priority=user_action"),
+      GURL(std::string(kFetchSuggestionsEndpoint) + "?priority=user_action"),
       /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
@@ -508,11 +508,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
        ShouldExposeRequestPriorityInUrlWhenSignedIn) {
   SignIn();
 
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?priority=background_prefetch"),
-      /*response_data=*/"{\"categories\" : []}", net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?priority=background_prefetch"),
+                  /*response_data=*/"{\"categories\" : []}", net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(Property(&Status::IsSuccess, true),
                                    /*fetched_categories=*/_));
 
@@ -536,11 +535,9 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
 
   SignIn();
 
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch"),
-      /*response_data=*/"{\"categories\" : []}", net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(kFetchSuggestionsEndpoint),
+                  /*response_data=*/"{\"categories\" : []}", net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(Property(&Status::IsSuccess, true),
                                    /*fetched_categories=*/_));
 
@@ -580,8 +577,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
       "  }]"
       "}]}";
   SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?priority=user_action"),
+      GURL(std::string(kFetchSuggestionsEndpoint) + "?priority=user_action"),
       /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
@@ -620,10 +616,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest, EmptyCategoryIsOK) {
       "  \"id\": 1,"
       "  \"localizedTitle\": \"Articles for You\""
       "}]}";
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=user_action"),
-      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/kJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
                   /*fetched_categories=*/IsEmptyArticleList()));
@@ -674,10 +670,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ServerCategories) {
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=user_action"),
-      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/kJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories;
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true), /*fetched_categories=*/_))
@@ -738,10 +734,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=user_action"),
-      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/kJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories;
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true), /*fetched_categories=*/_))
@@ -806,10 +802,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ExclusiveCategoryOnly) {
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=user_action"),
-      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/kJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories;
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true), /*fetched_categories=*/_))
@@ -856,10 +852,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldNotFetchWithoutApiKey) {
 
 TEST_F(RemoteSuggestionsFetcherImplTest, ShouldFetchSuccessfullyEmptyList) {
   const std::string kJsonStr = "{\"categories\": []}";
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=user_action"),
-      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/kJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
                   /*fetched_categories=*/IsEmptyCategoriesList()));
@@ -920,11 +916,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
 }
 
 TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportUrlStatusError) {
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=user_action"),
-      /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
-      net::URLRequestStatus::FAILED);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
+                  net::URLRequestStatus::FAILED);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -948,11 +943,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportUrlStatusError) {
 }
 
 TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportHttpError) {
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=user_action"),
-      /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -975,11 +969,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportHttpError) {
 
 TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportJsonError) {
   const std::string kInvalidJsonStr = "{ \"recos\": []";
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=user_action"),
-      /*response_data=*/kInvalidJsonStr, net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/kInvalidJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1005,11 +998,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportJsonError) {
 
 TEST_F(RemoteSuggestionsFetcherImplTest,
        ShouldReportJsonErrorForEmptyResponse) {
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=user_action"),
-      /*response_data=*/std::string(), net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/std::string(), net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1031,10 +1023,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
 TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportInvalidListError) {
   const std::string kJsonStr =
       "{\"recos\": [{ \"contentInfo\": { \"foo\" : \"bar\" }}]}";
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=user_action"),
-      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/kJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1078,11 +1070,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=user_action"),
-      /*response_data=*/kValidJsonStr, net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/kValidJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1125,11 +1116,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=user_action"),
-      /*response_data=*/kValidJsonStr, net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/kValidJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1164,11 +1154,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=user_action"),
-      /*response_data=*/kValidJsonStr, net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/kValidJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1184,11 +1173,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
 
 TEST_F(RemoteSuggestionsFetcherImplTest,
        ShouldReportRequestFailureAsTemporaryError) {
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=user_action"),
-      /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
-      net::URLRequestStatus::FAILED);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
+                  net::URLRequestStatus::FAILED);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1218,10 +1206,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
 
 TEST_F(RemoteSuggestionsFetcherImplTest, ShouldProcessConcurrentFetches) {
   const std::string kJsonStr = "{ \"categories\": [] }";
-  SetFakeResponse(
-      GURL("https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
-           "fetch?key=fakeAPIkey&priority=user_action"),
-      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/kJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
                   /*fetched_categories=*/IsEmptyCategoriesList()))
