@@ -30,6 +30,7 @@
 
 #include <memory>
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "services/network/public/mojom/cors.mojom-blink.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
@@ -106,8 +107,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   mojom::FetchCacheMode GetCacheMode() const;
   void SetCacheMode(mojom::FetchCacheMode);
 
-  double TimeoutInterval() const;  // May return 0 when using platform default.
-  void SetTimeoutInterval(double);
+  base::TimeDelta TimeoutInterval() const;
+  void SetTimeoutInterval(base::TimeDelta);
 
   const KURL& SiteForCookies() const;
   void SetSiteForCookies(const KURL&);
@@ -390,8 +391,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool NeedsHTTPOrigin() const;
 
   KURL url_;
-  double timeout_interval_;  // 0 is a magic value for platform default on
-                             // platforms that have one.
+  // TimeDelta::Max() represents the default timeout on platforms that have one.
+  base::TimeDelta timeout_interval_;
   KURL site_for_cookies_;
 
   // The SecurityOrigin specified by the ResourceLoaderOptions in case e.g.
@@ -442,7 +443,7 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   mutable CacheControlHeader cache_control_header_cache_;
 
-  static double default_timeout_interval_;
+  static base::TimeDelta default_timeout_interval_;
 
   TimeTicks navigation_start_;
 
@@ -469,7 +470,7 @@ struct CrossThreadResourceRequestData {
   KURL url_;
 
   mojom::FetchCacheMode cache_mode_;
-  double timeout_interval_;
+  base::TimeDelta timeout_interval_;
   KURL site_for_cookies_;
   scoped_refptr<const SecurityOrigin> requestor_origin_;
 

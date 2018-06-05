@@ -77,7 +77,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
       SyncLoadResponse* response,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-      double timeout,
+      base::TimeDelta timeout,
       blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
       std::unique_ptr<RequestPeer> peer) override {
     *response = std::move(sync_load_response_);

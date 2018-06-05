@@ -50,7 +50,7 @@ class SyncLoadContext : public RequestPeer {
       SyncLoadResponse* response,
       base::WaitableEvent* completed_event,
       base::WaitableEvent* abort_event,
-      double timeout,
+      base::TimeDelta timeout,
       blink::mojom::BlobRegistryPtrInfo download_to_blob_registry);
 
   ~SyncLoadContext() override;
@@ -65,7 +65,7 @@ class SyncLoadContext : public RequestPeer {
       SyncLoadResponse* response,
       base::WaitableEvent* completed_event,
       base::WaitableEvent* abort_event,
-      double timeout,
+      base::TimeDelta timeout,
       blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   // RequestPeer implementation:
