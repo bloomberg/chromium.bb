@@ -610,7 +610,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors)
       override;
-  void SetHasReceivedUserGesture() override;
+  void UpdateUserActivationState(
+      blink::UserActivationUpdateType update_type) override;
   void SetHasReceivedUserGestureBeforeNavigation(bool value) override;
   bool ShouldReportDetailedMessageForSource(
       const blink::WebString& source) override;

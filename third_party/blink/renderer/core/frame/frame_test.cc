@@ -163,4 +163,24 @@ TEST_F(FrameTest, NavigateSameDomainNoGesture) {
       GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
 }
 
+TEST_F(FrameTest, UserActivationInterfaceTest) {
+  RuntimeEnabledFeatures::SetUserActivationV2Enabled(true);
+
+  // Initially both sticky and transient bits are false.
+  EXPECT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
+  EXPECT_FALSE(Frame::HasTransientUserActivation(GetDocument().GetFrame()));
+
+  Frame::NotifyUserActivation(GetDocument().GetFrame());
+
+  // Now both sticky and transient bits are true, hence consumable.
+  EXPECT_TRUE(GetDocument().GetFrame()->HasBeenActivated());
+  EXPECT_TRUE(Frame::HasTransientUserActivation(GetDocument().GetFrame()));
+  EXPECT_TRUE(Frame::ConsumeTransientUserActivation(GetDocument().GetFrame()));
+
+  // After consumption, only the transient bit resets to false.
+  EXPECT_TRUE(GetDocument().GetFrame()->HasBeenActivated());
+  EXPECT_FALSE(Frame::HasTransientUserActivation(GetDocument().GetFrame()));
+  EXPECT_FALSE(Frame::ConsumeTransientUserActivation(GetDocument().GetFrame()));
+}
+
 }  // namespace blink

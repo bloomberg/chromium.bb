@@ -322,8 +322,10 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   web_frame_->SetReplicatedInsecureNavigationsSet(
       state.insecure_navigations_set);
   web_frame_->SetReplicatedFeaturePolicyHeader(state.feature_policy_header);
-  if (state.has_received_user_gesture)
-    web_frame_->SetHasReceivedUserGesture();
+  if (state.has_received_user_gesture) {
+    web_frame_->UpdateUserActivationState(
+        blink::UserActivationUpdateType::kNotifyActivation);
+  }
   web_frame_->SetHasReceivedUserGestureBeforeNavigation(
       state.has_received_user_gesture_before_nav);
 
@@ -431,8 +433,8 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DisableAutoResize, OnDisableAutoResize)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFocusedFrame, OnSetFocusedFrame)
     IPC_MESSAGE_HANDLER(FrameMsg_WillEnterFullscreen, OnWillEnterFullscreen)
-    IPC_MESSAGE_HANDLER(FrameMsg_SetHasReceivedUserGesture,
-                        OnSetHasReceivedUserGesture)
+    IPC_MESSAGE_HANDLER(FrameMsg_UpdateUserActivationState,
+                        OnUpdateUserActivationState)
     IPC_MESSAGE_HANDLER(FrameMsg_ScrollRectToVisible, OnScrollRectToVisible)
     IPC_MESSAGE_HANDLER(FrameMsg_SetHasReceivedUserGestureBeforeNavigation,
                         OnSetHasReceivedUserGestureBeforeNavigation)
@@ -563,8 +565,9 @@ void RenderFrameProxy::OnWillEnterFullscreen() {
   web_frame_->WillEnterFullscreen();
 }
 
-void RenderFrameProxy::OnSetHasReceivedUserGesture() {
-  web_frame_->SetHasReceivedUserGesture();
+void RenderFrameProxy::OnUpdateUserActivationState(
+    blink::UserActivationUpdateType update_type) {
+  web_frame_->UpdateUserActivationState(update_type);
 }
 
 void RenderFrameProxy::OnScrollRectToVisible(

@@ -1250,10 +1250,16 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
                                     WebSandboxFlags sandbox_flags) {
   RenderFrameImpl* creator_frame = RenderFrameImpl::FromWebFrame(creator);
   mojom::CreateNewWindowParamsPtr params = mojom::CreateNewWindowParams::New();
-  params->user_gesture =
-      WebUserGestureIndicator::IsProcessingUserGesture(creator);
+
+  // User Activation v2 moves user gesture checks to the browser process, with
+  // the exception of the extensions case handled through the following |if|.
+  params->mimic_user_gesture =
+      base::FeatureList::IsEnabled(features::kUserActivationV2)
+          ? false
+          : WebUserGestureIndicator::IsProcessingUserGesture(creator);
   if (GetContentClient()->renderer()->AllowPopup())
-    params->user_gesture = true;
+    params->mimic_user_gesture = true;
+
   params->window_container_type = WindowFeaturesToContainerType(features);
 
   params->session_storage_namespace_id = AllocateSessionStorageNamespaceId();
@@ -1280,7 +1286,7 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   // moved on send.
   bool is_background_tab =
       params->disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB;
-  bool opened_by_user_gesture = params->user_gesture;
+  bool opened_by_user_gesture = params->mimic_user_gesture;
 
   mojom::CreateNewWindowStatus status;
   mojom::CreateNewWindowReplyPtr reply;
@@ -1306,6 +1312,13 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   DCHECK_NE(MSG_ROUTING_NONE, reply->main_frame_route_id);
   DCHECK_NE(MSG_ROUTING_NONE, reply->main_frame_widget_route_id);
 
+  // This consumption call also propagates to browser and other renderer
+  // processes.  With UAv2, only the part of the call for the current renderer
+  // process is needed; and the rest (IPCs to the browser then to all other
+  // renderers) are redundant and should be removed.
+  //
+  // TODO(mustaq): Clean this up after considering nuking all renderer-side
+  // consumptions.
   WebUserGestureIndicator::ConsumeUserGesture(creator);
 
   // While this view may be a background extension page, it can spawn a visible

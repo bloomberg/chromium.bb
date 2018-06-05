@@ -37,6 +37,7 @@
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider.h"
@@ -291,8 +292,9 @@ class BLINK_EXPORT WebLocalFrameClient {
       const WebVector<WebString>& newly_matching_selectors,
       const WebVector<WebString>& stopped_matching_selectors) {}
 
-  // Called the first time this frame is the target of a user gesture.
-  virtual void SetHasReceivedUserGesture() {}
+  // Replicate user activation state updates for this frame to the embedder.
+  virtual void UpdateUserActivationState(UserActivationUpdateType update_type) {
+  }
 
   // Called if the previous document had a user gesture and is on the same
   // eTLD+1 as the current document.

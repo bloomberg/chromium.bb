@@ -175,28 +175,31 @@ void Frame::DidChangeVisibilityState() {
 }
 
 void Frame::NotifyUserActivationInLocalTree() {
-  user_activation_state_.Activate();
-  for (Frame* parent = Tree().Parent(); parent;
-       parent = parent->Tree().Parent()) {
-    parent->user_activation_state_.Activate();
-  }
+  for (Frame* node = this; node; node = node->Tree().Parent())
+    node->user_activation_state_.Activate();
 }
 
 void Frame::NotifyUserActivation() {
+  ToLocalFrame(this)->Client()->NotifyUserActivation();
   NotifyUserActivationInLocalTree();
-  ToLocalFrame(this)->Client()->SetHasReceivedUserGesture();
+}
+
+bool Frame::ConsumeTransientUserActivationInLocalTree() {
+  bool was_active = user_activation_state_.IsActive();
+
+  // Note that consumption "touches" the whole frame tree, to guarantee that a
+  // malicious subframe can't embed sub-subframes in a way that could allow
+  // multiple consumptions per user activation.
+  Frame& root = Tree().Top();
+  for (Frame* node = &root; node; node = node->Tree().TraverseNext(&root))
+    node->user_activation_state_.ConsumeIfActive();
+
+  return was_active;
 }
 
 bool Frame::ConsumeTransientUserActivation() {
-  for (Frame* parent = Tree().Parent(); parent;
-       parent = parent->Tree().Parent()) {
-    parent->user_activation_state_.ConsumeIfActive();
-  }
-  for (Frame* child = Tree().FirstChild(); child;
-       child = child->Tree().TraverseNext(this)) {
-    child->user_activation_state_.ConsumeIfActive();
-  }
-  return user_activation_state_.ConsumeIfActive();
+  ToLocalFrame(this)->Client()->ConsumeUserActivation();
+  return ConsumeTransientUserActivationInLocalTree();
 }
 
 // static

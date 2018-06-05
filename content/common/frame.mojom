@@ -154,7 +154,10 @@ interface FrameFactory {
 
 struct CreateNewWindowParams {
   // True if this open request came in the context of a user gesture.
-  bool user_gesture;
+  //
+  // TODO(mustaq): We have cases where a user gesture is assumed to be
+  // there even when it's not the case.  See https://crbug.com/843233.
+  bool mimic_user_gesture;
 
   // Type of window requested.
   WindowContainerType window_container_type;

@@ -336,10 +336,16 @@ void WebRemoteFrameImpl::WillEnterFullscreen() {
       Fullscreen::RequestType::kPrefixedForCrossProcessDescendant);
 }
 
-void WebRemoteFrameImpl::SetHasReceivedUserGesture() {
-  RemoteFrame* frame = GetFrame();
-  if (frame)
-    frame->NotifyUserActivationInLocalTree();
+void WebRemoteFrameImpl::UpdateUserActivationState(
+    UserActivationUpdateType update_type) {
+  switch (update_type) {
+    case UserActivationUpdateType::kNotifyActivation:
+      GetFrame()->NotifyUserActivationInLocalTree();
+      break;
+    case UserActivationUpdateType::kConsumeTransientActivation:
+      GetFrame()->ConsumeTransientUserActivationInLocalTree();
+      break;
+  }
 }
 
 void WebRemoteFrameImpl::ScrollRectToVisible(

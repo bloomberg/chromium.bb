@@ -58,6 +58,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
 #include "third_party/blink/public/common/message_port/transferable_message.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
@@ -137,6 +138,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::CSPDisposition,
                           content::CSPDisposition::LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTriggeringEventInfo,
                           blink::WebTriggeringEventInfo::kLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::UserActivationUpdateType,
+                          blink::UserActivationUpdateType::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatSize)
   IPC_STRUCT_TRAITS_MEMBER(width)
@@ -1114,12 +1117,15 @@ IPC_MESSAGE_ROUTED0(FrameMsg_EnableViewSourceMode)
 // ScopedPageLoadDeferrer is on the stack for SwapOut.
 IPC_MESSAGE_ROUTED0(FrameMsg_SuppressFurtherDialogs)
 
-// Notifies the RenderFrame about a user activation from the browser side.
+// Notifies the RenderFrame about a user activation detected in the browser side
+// (e.g. during Android voice search).
 IPC_MESSAGE_ROUTED0(FrameMsg_NotifyUserActivation)
 
-// Tells the frame to consider itself to have received a user gesture (based
-// on a user gesture processed in a different renderer process).
-IPC_MESSAGE_ROUTED0(FrameMsg_SetHasReceivedUserGesture)
+// Tells the frame to update the user activation state in appropriate part of
+// the frame tree (ancestors for activation notification and all nodes for
+// consumption).
+IPC_MESSAGE_ROUTED1(FrameMsg_UpdateUserActivationState,
+                    blink::UserActivationUpdateType /* type of state update */)
 
 // Tells the frame to mark that the previous document on that frame had received
 // a user gesture on the same eTLD+1.
@@ -1503,9 +1509,11 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_UpdateRenderThrottlingStatus,
                     bool /* is_throttled */,
                     bool /* subtree_throttled */)
 
-// Indicates that this frame recieved a user gesture, so that the state can be
-// propagated to any remote frames.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_SetHasReceivedUserGesture)
+// Indicates that the user activation state in the current frame has been
+// updated, so the replicated states need to be synced (in the browser process
+// as well as in all other renderer processes).
+IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateUserActivationState,
+                    blink::UserActivationUpdateType /* type of state update */)
 
 // Indicates that this frame received a user gesture on a previous navigation on
 // the same eTLD+1. This ensures the state is propagated to any remote frames.

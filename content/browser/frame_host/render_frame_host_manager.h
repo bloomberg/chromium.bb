@@ -22,6 +22,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/common/referrer.h"
+#include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "ui/base/page_transition_types.h"
 #include "url/origin.h"
 
@@ -467,7 +468,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // match the provided |render_frame_host|.
   void CancelPendingIfNecessary(RenderFrameHostImpl* render_frame_host);
 
-  void OnSetHasReceivedUserGesture();
+  void UpdateUserActivationState(blink::UserActivationUpdateType update_type);
   void OnSetHasReceivedUserGestureBeforeNavigation(bool value);
 
   // Sets up the necessary state for a new RenderViewHost.  If |proxy| is not

@@ -16,6 +16,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/platform/web_canvas.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
@@ -249,7 +250,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnSetPageFocus(bool is_focused);
   void OnSetFocusedFrame();
   void OnWillEnterFullscreen();
-  void OnSetHasReceivedUserGesture();
+  void OnUpdateUserActivationState(blink::UserActivationUpdateType update_type);
   void OnScrollRectToVisible(const gfx::Rect& rect_to_scroll,
                              const blink::WebScrollIntoViewParams& params);
   void OnDidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);

@@ -33,12 +33,12 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/frame_lifecycle.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
-#include "third_party/blink/renderer/core/frame/user_activation_state.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
@@ -166,6 +166,9 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // This should never be called from outside Frame or WebFrame.
   void NotifyUserActivationInLocalTree();
 
+  // This should never be called from outside Frame or WebFrame.
+  bool ConsumeTransientUserActivationInLocalTree();
+
   bool HasBeenActivated() const {
     return user_activation_state_.HasBeenActive();
   }
@@ -254,9 +257,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   Member<FrameOwner> owner_;
   Member<DOMWindow> dom_window_;
 
-  // A LocalFrame is the primary "owner" of the activation state.  The state in
-  // a RemoteFrame serves as a cache for the corresponding LocalFrame state (to
-  // avoid double hops through the browser during reading).
+  // The user activation state of the current frame.  See
+  // FrameTreeNode::user_activation_state_ for details.
   UserActivationState user_activation_state_;
 
   bool has_received_user_gesture_before_nav_ = false;

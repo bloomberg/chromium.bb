@@ -2552,7 +2552,7 @@ void WebContentsImpl::CreateNewWindow(
 
       delegate_->AddNewContents(this, std::move(new_contents),
                                 params.disposition, initial_rect,
-                                params.user_gesture, &was_blocked);
+                                params.mimic_user_gesture, &was_blocked);
       if (!weak_new_contents)
         return;  // The delegate deleted |new_contents| during AddNewContents().
     }
@@ -2562,7 +2562,7 @@ void WebContentsImpl::CreateNewWindow(
                                 WindowOpenDisposition::CURRENT_TAB,
                                 ui::PAGE_TRANSITION_LINK,
                                 true /* is_renderer_initiated */);
-      open_params.user_gesture = params.user_gesture;
+      open_params.user_gesture = params.mimic_user_gesture;
 
       if (delegate_ && !is_guest &&
           !delegate_->ShouldResumeRequestsForCreatedWindow()) {

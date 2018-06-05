@@ -170,6 +170,7 @@
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/interface_provider.h"
@@ -3710,8 +3711,9 @@ void RenderFrameImpl::DidMatchCSS(
     observer.DidMatchCSS(newly_matching_selectors, stopped_matching_selectors);
 }
 
-void RenderFrameImpl::SetHasReceivedUserGesture() {
-  Send(new FrameHostMsg_SetHasReceivedUserGesture(routing_id_));
+void RenderFrameImpl::UpdateUserActivationState(
+    blink::UserActivationUpdateType update_type) {
+  Send(new FrameHostMsg_UpdateUserActivationState(routing_id_, update_type));
 }
 
 void RenderFrameImpl::SetHasReceivedUserGestureBeforeNavigation(bool value) {
