@@ -149,7 +149,6 @@ public class FeatureUtilities {
      * Caches flags that must take effect on startup but are set via native code.
      */
     public static void cacheNativeFlags() {
-        cacheChromeHomeEnabled();
         cacheSoleEnabled();
         cacheCommandLineOnNonRootedEnabled();
         FirstRunUtils.cacheFirstRunPrefs();
@@ -242,18 +241,6 @@ public class FeatureUtilities {
     }
 
     /**
-     * DEPRECATED: DO NOT USE.
-     *
-     * Cache whether or not Chrome Home and related features are enabled. If this method is called
-     * multiple times, the existing cached state is cleared and re-computed.
-     */
-    public static void cacheChromeHomeEnabled() {
-        // Chrome Home doesn't work with tablets.
-        if (DeviceFormFactor.isTablet()) return;
-        ChromePreferenceManager.getInstance().clearObsoleteChromeHomePrefs();
-    }
-
-    /**
      * Cache whether or not command line is enabled on non-rooted devices.
      */
     private static void cacheCommandLineOnNonRootedEnabled() {
@@ -264,27 +251,11 @@ public class FeatureUtilities {
     }
 
     /**
-     * DEPRECATED: DO NOT USE.
-     *
-     * @return Whether or not chrome should attach the toolbar to the bottom of the screen.
-     */
-    public static boolean isChromeHomeEnabled() {
-        return false;
-    }
-
-    /**
      * @return Whether or not the download progress infobar is enabled.
      */
     public static boolean isDownloadProgressInfoBarEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_PROGRESS_INFOBAR);
     }
-
-    /**
-     * Resets whether Chrome Home is enabled for tests. After this is called, the next call to
-     * #isChromeHomeEnabled() will retrieve the value from shared preferences.
-     */
-    @Deprecated
-    public static void resetChromeHomeEnabledForTests() {}
 
     /**
      * @return Whether Chrome Duplex, split toolbar Chrome Home, is enabled.

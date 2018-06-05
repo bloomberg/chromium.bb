@@ -15,7 +15,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnClickListener;
-import android.widget.PopupWindow.OnDismissListener;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -107,7 +106,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
          *
          * @param isLoading Whether the current tab is loading.
          */
-        public void updateReloadButtonState(boolean isLoading);
+        void updateReloadButtonState(boolean isLoading);
     }
 
     /**
@@ -122,7 +121,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      * The minimum load progress that can be shown when a page is loading.  This is not 0 so that
      * it's obvious to the user that something is attempting to load.
      */
-    public static final int MINIMUM_LOAD_PROGRESS = 5;
+    private static final int MINIMUM_LOAD_PROGRESS = 5;
 
     private final ToolbarLayout mToolbar;
     private final ToolbarControlContainer mControlContainer;
@@ -168,11 +167,15 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
     private TextBubble mTextBubble;
 
-    private HomepageStateListener mHomepageStateListener;
+    private HomepageStateListener mHomepageStateListener = new HomepageStateListener() {
+        @Override
+        public void onHomepageStateUpdated() {
+            mToolbar.onHomeButtonUpdate(HomepageManager.isHomepageEnabled());
+        }
+    };
 
     private boolean mInitializedWithNative;
 
-    private boolean mShouldUpdateTabCount = true;
     private boolean mShouldUpdateToolbarPrimaryColor = true;
     private int mCurrentThemeColor;
 
@@ -196,7 +199,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mControlContainer = controlContainer;
         assert mControlContainer != null;
 
-        mToolbar = (ToolbarLayout) controlContainer.findViewById(R.id.toolbar);
+        mToolbar = controlContainer.findViewById(R.id.toolbar);
 
         mToolbar.setPaintInvalidator(invalidator);
         if (activity.getBottomSheet() != null) mToolbar.setBottomSheet(activity.getBottomSheet());
@@ -231,12 +234,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
         mAppMenuPropertiesDelegate = appMenuPropertiesDelegate;
 
-        mHomepageStateListener = new HomepageStateListener() {
-            @Override
-            public void onHomepageStateUpdated() {
-                mToolbar.onHomeButtonUpdate(HomepageManager.isHomepageEnabled());
-            }
-        };
         HomepageManager.getInstance().addListener(mHomepageStateListener);
 
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
@@ -619,23 +616,16 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         ViewRectProvider rectProvider = new ViewRectProvider(getMenuButton());
         int yInsetPx = mToolbar.getContext().getResources().getDimensionPixelOffset(
                 R.dimen.text_bubble_menu_anchor_y_inset);
-        rectProvider.setInsetPx(0, FeatureUtilities.isChromeHomeEnabled() ? yInsetPx : 0, 0,
-                FeatureUtilities.isChromeHomeEnabled() ? 0 : yInsetPx);
+        rectProvider.setInsetPx(0, 0, 0, yInsetPx);
         mTextBubble = new TextBubble(mToolbar.getContext(), getMenuButton(),
                 R.string.iph_download_page_for_offline_usage_text,
                 R.string.iph_download_page_for_offline_usage_accessibility_text, rectProvider);
         mTextBubble.setDismissOnTouchInteraction(true);
-        mTextBubble.addOnDismissListener(new OnDismissListener() {
-            @Override
-            public void onDismiss() {
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        tracker.dismissed(featureName);
-                        activity.getAppMenuHandler().setMenuHighlight(null);
-                    }
-                }, ViewHighlighter.IPH_MIN_DELAY_BETWEEN_TWO_HIGHLIGHTS);
-            }
+        mTextBubble.addOnDismissListener(() -> {
+            mHandler.postDelayed(() -> {
+                tracker.dismissed(featureName);
+                activity.getAppMenuHandler().setMenuHighlight(null);
+            }, ViewHighlighter.IPH_MIN_DELAY_BETWEEN_TWO_HIGHLIGHTS);
         });
         activity.getAppMenuHandler().setMenuHighlight(R.id.offline_page_id);
         mTextBubble.show();
@@ -926,20 +916,15 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
         });
         mAppMenuButtonHelper = new AppMenuButtonHelper(menuHandler);
-        mAppMenuButtonHelper.setOnAppMenuShownListener(new Runnable() {
-            @Override
-            public void run() {
-                RecordUserAction.record("MobileToolbarShowMenu");
-                mToolbar.onMenuShown();
+        mAppMenuButtonHelper.setOnAppMenuShownListener(() -> {
+            RecordUserAction.record("MobileToolbarShowMenu");
+            mToolbar.onMenuShown();
 
-                // Assume data saver footer is shown only if data reduction proxy is enabled and
-                // Chrome home is not
-                if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()
-                        && !FeatureUtilities.isChromeHomeEnabled()) {
-                    Tracker tracker =
-                            TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-                    tracker.notifyEvent(EventConstants.OVERFLOW_OPENED_WITH_DATA_SAVER_SHOWN);
-                }
+            // Assume data saver footer is shown only if data reduction proxy is enabled and
+            // Chrome home is not
+            if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
+                Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+                tracker.notifyEvent(EventConstants.OVERFLOW_OPENED_WITH_DATA_SAVER_SHOWN);
             }
         });
     }
@@ -948,7 +933,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      * Set the delegate that will handle updates from toolbar driven state changes.
      * @param menuDelegatePhone The menu delegate to be updated (only applicable to phones).
      */
-    public void setMenuDelegatePhone(MenuDelegatePhone menuDelegatePhone) {
+    private void setMenuDelegatePhone(MenuDelegatePhone menuDelegatePhone) {
         mMenuDelegatePhone = menuDelegatePhone;
     }
 
@@ -1148,11 +1133,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         // Record startup performance statistics
         long elapsedTime = SystemClock.elapsedRealtime() - activityCreationTimeMs;
         if (elapsedTime < RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS) {
-            ThreadUtils.postOnUiThreadDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    onDeferredStartup(activityCreationTimeMs, activityName);
-                }
+            ThreadUtils.postOnUiThreadDelayed(() -> {
+                onDeferredStartup(activityCreationTimeMs, activityName);
             }, RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS - elapsedTime);
         }
         RecordHistogram.recordTimesHistogram("MobileStartup.ToolbarFirstDrawTime." + activityName,
@@ -1178,7 +1160,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      * Updates the current number of Tabs based on the TabModel this Toolbar contains.
      */
     private void updateTabCount() {
-        if (!mTabRestoreCompleted || !mShouldUpdateTabCount) return;
+        if (!mTabRestoreCompleted) return;
         mToolbar.updateTabCountVisuals(mTabModelSelector.getCurrentModel().getCount());
     }
 
@@ -1432,10 +1414,5 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         public void cancel() {
             mHandler.removeMessages(MSG_ID_UPDATE_PROGRESS);
         }
-    }
-
-    @VisibleForTesting
-    public ToolbarDataProvider getToolbarDataProviderForTests() {
-        return mToolbarModel;
     }
 }

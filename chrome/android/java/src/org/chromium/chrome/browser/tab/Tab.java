@@ -1716,9 +1716,6 @@ public class Tab
             tracker.notifyEvent(EventConstants.DATA_SAVED_ON_PAGE_LOAD);
         }
 
-        // Don't show data saver footer if Chrome Home is enabled (temporary fix for M61)
-        if (FeatureUtilities.isChromeHomeEnabled()) return;
-
         maybeShowDataSaverInProductHelp(tracker);
     }
 
@@ -1748,8 +1745,7 @@ public class Tab
         });
         int yInsetPx = mThemedApplicationContext.getResources().getDimensionPixelOffset(
                 R.dimen.text_bubble_menu_anchor_y_inset);
-        rectProvider.setInsetPx(0, FeatureUtilities.isChromeHomeEnabled() ? yInsetPx : 0, 0,
-                FeatureUtilities.isChromeHomeEnabled() ? 0 : yInsetPx);
+        rectProvider.setInsetPx(0, 0, 0, yInsetPx);
         textBubble.show();
     }
 

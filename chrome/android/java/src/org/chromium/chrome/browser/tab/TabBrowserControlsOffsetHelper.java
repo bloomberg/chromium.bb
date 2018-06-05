@@ -11,7 +11,6 @@ import android.animation.ValueAnimator;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate.VrModeObserver;
 
@@ -148,16 +147,13 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver {
 
         boolean topOffsetsInitialized =
                 !Float.isNaN(mPreviousTopControlsOffsetY) && !Float.isNaN(mPreviousContentOffsetY);
-        boolean bottomOffsetsInitialized = !Float.isNaN(mPreviousBottomControlsOffsetY);
-        boolean isChromeHomeEnabled = FeatureUtilities.isChromeHomeEnabled();
 
         // Make sure the dominant control offsets have been set.
-        if ((!topOffsetsInitialized && !isChromeHomeEnabled)
-                || (!bottomOffsetsInitialized && isChromeHomeEnabled)) {
-            showAndroidControls(false);
-        } else {
+        if (topOffsetsInitialized) {
             updateFullscreenManagerOffsets(false, mPreviousTopControlsOffsetY,
                     mPreviousBottomControlsOffsetY, mPreviousContentOffsetY);
+        } else {
+            showAndroidControls(false);
         }
         mTab.updateFullscreenEnabledState();
     }
@@ -165,7 +161,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver {
     /**
      * Clears the cached browser controls positions.
      */
-    void clearPreviousPositions() {
+    private void clearPreviousPositions() {
         mPreviousTopControlsOffsetY = Float.NaN;
         mPreviousBottomControlsOffsetY = Float.NaN;
         mPreviousContentOffsetY = Float.NaN;

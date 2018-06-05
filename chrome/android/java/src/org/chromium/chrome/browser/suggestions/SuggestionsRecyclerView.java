@@ -206,14 +206,6 @@ public class SuggestionsRecyclerView extends RecyclerView {
         if (mContextMenuManager != null) mContextMenuManager.closeContextMenu();
     }
 
-    /** Highlights the current length of the view by temporarily showing the scrollbar. */
-    public void highlightContentLength() {
-        int defaultDelay = getScrollBarDefaultDelayBeforeFade();
-        setScrollBarDefaultDelayBeforeFade(NEW_CONTENT_HIGHLIGHT_DURATION_MS);
-        awakenScrollBars();
-        setScrollBarDefaultDelayBeforeFade(defaultDelay);
-    }
-
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         int numberViews = getChildCount();

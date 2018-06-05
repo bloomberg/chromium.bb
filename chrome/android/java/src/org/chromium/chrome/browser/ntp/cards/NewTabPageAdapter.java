@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.TileGroup;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 import java.util.List;
@@ -57,8 +56,6 @@ public class NewTabPageAdapter
 
     private final InnerNode mRoot;
 
-    private final @Nullable AboveTheFoldItem mAboveTheFold;
-    private final @Nullable LogoItem mLogo;
     private final @Nullable SiteSection mSiteSection;
     private final SectionList mSections;
     private final @Nullable SignInPromo mSigninPromo;
@@ -95,19 +92,9 @@ public class NewTabPageAdapter
         mSigninPromo = SignInPromo.maybeCreatePromo(mUiDelegate);
         mAllDismissed = new AllDismissedItem();
 
-        if (mAboveTheFoldView == null) {
-            mAboveTheFold = null;
-        } else {
-            mAboveTheFold = new AboveTheFoldItem();
-            mRoot.addChildren(mAboveTheFold);
-        }
+        if (mAboveTheFoldView != null) mRoot.addChildren(new AboveTheFoldItem());
 
-        if (mLogoView == null) {
-            mLogo = null;
-        } else {
-            mLogo = new LogoItem();
-            mRoot.addChildren(mLogo);
-        }
+        if (mLogoView != null) mRoot.addChildren(new LogoItem());
 
         if (tileGroupDelegate == null) {
             mSiteSection = null;
@@ -216,11 +203,7 @@ public class NewTabPageAdapter
 
     /** Resets suggestions, pulling the current state as known by the backend. */
     public void refreshSuggestions() {
-        if (FeatureUtilities.isChromeHomeEnabled()) {
-            mSections.synchroniseWithSource();
-        } else {
-            mSections.refreshSuggestions();
-        }
+        mSections.refreshSuggestions();
 
         if (mSiteSection != null) {
             mSiteSection.getTileGroup().onSwitchToForeground(/* trackLoadTask = */ true);
@@ -306,10 +289,6 @@ public class NewTabPageAdapter
     public void onItemRangeInserted(ListObservable child, int itemPosition, int itemCount) {
         assert child == mRoot;
         notifyItemRangeInserted(itemPosition, itemCount);
-        if (mRecyclerView != null && FeatureUtilities.isChromeHomeEnabled()
-                && mSections.hasRecentlyInsertedContent()) {
-            mRecyclerView.highlightContentLength();
-        }
 
         updateAllDismissedVisibility();
     }
@@ -373,31 +352,10 @@ public class NewTabPageAdapter
         mRoot.dismissItem(position, itemRemovedCallback);
     }
 
-    /**
-     * Sets the visibility of the logo.
-     * @param visible Whether the logo should be visible.
-     */
-    public void setLogoVisibility(boolean visible) {
-        assert mLogo != null;
-        mLogo.setVisible(visible);
-    }
-
-    /**
-     * Drops all but the first {@code n} thumbnails on articles.
-     * @param n The number of article thumbnails to keep.
-     */
-    public void dropAllButFirstNArticleThumbnails(int n) {
-        mSections.dropAllButFirstNArticleThumbnails(n);
-    }
-
     private boolean hasAllBeenDismissed() {
         if (mSigninPromo != null && mSigninPromo.isVisible()) return false;
 
-        if (!FeatureUtilities.isChromeHomeEnabled()) return mSections.isEmpty();
-
-        // In Chrome Home we only consider articles.
-        SuggestionsSection suggestions = mSections.getSection(KnownCategories.ARTICLES);
-        return suggestions == null || !suggestions.hasCards();
+        return mSections.isEmpty();
     }
 
     @VisibleForTesting

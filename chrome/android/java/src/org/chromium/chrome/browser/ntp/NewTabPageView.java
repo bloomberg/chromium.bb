@@ -31,16 +31,14 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.locale.LocaleManager;
-import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
-import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SiteSection;
 import org.chromium.chrome.browser.suggestions.SiteSectionViewHolder;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
@@ -51,7 +49,6 @@ import org.chromium.chrome.browser.suggestions.TileGroup;
 import org.chromium.chrome.browser.suggestions.TileRenderer;
 import org.chromium.chrome.browser.suggestions.TileView;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
@@ -241,9 +238,7 @@ public class NewTabPageView
 
         // Don't store a direct reference to the activity, because it might change later if the tab
         // is reparented.
-        Runnable closeContextMenuCallback = () -> {
-            mTab.getActivity().closeContextMenu();
-        };
+        Runnable closeContextMenuCallback = () -> mTab.getActivity().closeContextMenu();
         mContextMenuManager = new ContextMenuManager(mManager.getNavigationDelegate(),
                 mRecyclerView::setTouchEnabled, closeContextMenuCallback);
         mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
@@ -271,7 +266,7 @@ public class NewTabPageView
             mSearchBoxView.getLayoutParams().height =
                     getResources().getDimensionPixelSize(R.dimen.ntp_search_box_height_modern);
 
-            if (!DeviceFormFactor.isTablet()) {
+            if (!DeviceFormFactor.isWindowOnTablet(mTab.getWindowAndroid())) {
                 mSearchBoxBoundsVerticalInset = getResources().getDimensionPixelSize(
                         R.dimen.ntp_search_box_bounds_vertical_inset_modern);
             }
@@ -288,7 +283,7 @@ public class NewTabPageView
         setSearchProviderInfo(searchProviderHasLogo, searchProviderIsGoogle);
         mSearchProviderLogoView.showSearchProviderInitialView();
 
-        mTileGroup.startObserving(getMaxTileRows(searchProviderHasLogo) * getMaxTileColumns());
+        mTileGroup.startObserving(getMaxTileRows() * getMaxTileColumns());
 
         mRecyclerView.init(mUiConfig, mContextMenuManager);
 
@@ -334,12 +329,7 @@ public class NewTabPageView
         VrShellDelegate.registerVrModeObserver(this);
         if (VrShellDelegate.isInVr()) onEnterVr();
 
-        manager.addDestructionObserver(new DestructionObserver() {
-            @Override
-            public void onDestroy() {
-                NewTabPageView.this.onDestroy();
-            }
-        });
+        manager.addDestructionObserver(NewTabPageView.this::onDestroy);
 
         mInitialized = true;
 
@@ -361,8 +351,7 @@ public class NewTabPageView
     private void initializeSearchBoxTextView() {
         TraceEvent.begin(TAG + ".initializeSearchBoxTextView()");
 
-        final TextView searchBoxTextView =
-                (TextView) mSearchBoxView.findViewById(R.id.search_box_text);
+        final TextView searchBoxTextView = mSearchBoxView.findViewById(R.id.search_box_text);
         String hintText = getResources().getString(R.string.search_or_type_web_address);
         if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())
                 || SuggestionsConfig.useModernLayout()) {
@@ -370,12 +359,7 @@ public class NewTabPageView
         } else {
             searchBoxTextView.setContentDescription(hintText);
         }
-        searchBoxTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mManager.focusSearchBox(false, null);
-            }
-        });
+        searchBoxTextView.setOnClickListener(v -> mManager.focusSearchBox(false, null));
         searchBoxTextView.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -399,7 +383,7 @@ public class NewTabPageView
      * Updates the small search engine logo shown in the search box.
      */
     private void updateSearchBoxLogo() {
-        TextView searchBoxTextView = (TextView) mSearchBoxView.findViewById(R.id.search_box_text);
+        TextView searchBoxTextView = mSearchBoxView.findViewById(R.id.search_box_text);
         LocaleManager localeManager = LocaleManager.getInstance();
         if (mSearchProviderIsGoogle && !localeManager.hasCompletedSearchEnginePromo()
                 && !localeManager.hasShownSearchEnginePromoThisSession()
@@ -419,15 +403,11 @@ public class NewTabPageView
 
     private void initializeVoiceSearchButton() {
         TraceEvent.begin(TAG + ".initializeVoiceSearchButton()");
-        mVoiceSearchButton = (ImageView) mNewTabPageLayout.findViewById(R.id.voice_search_button);
-        mVoiceSearchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mManager.focusSearchBox(true, null);
-            }
-        });
+        mVoiceSearchButton = mNewTabPageLayout.findViewById(R.id.voice_search_button);
+        mVoiceSearchButton.setOnClickListener(v -> mManager.focusSearchBox(true, null));
 
-        if (SuggestionsConfig.useModernLayout() && !DeviceFormFactor.isTablet()) {
+        if (SuggestionsConfig.useModernLayout()
+                && !DeviceFormFactor.isWindowOnTablet(mTab.getWindowAndroid())) {
             ApiCompatibilityUtils.setMarginEnd(
                     (MarginLayoutParams) mVoiceSearchButton.getLayoutParams(),
                     getResources().getDimensionPixelSize(
@@ -439,41 +419,35 @@ public class NewTabPageView
 
     private void initializeLayoutChangeListeners() {
         TraceEvent.begin(TAG + ".initializeLayoutChangeListeners()");
-        mNewTabPageLayout.addOnLayoutChangeListener(new OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                int oldHeight = oldBottom - oldTop;
-                int newHeight = bottom - top;
+        mNewTabPageLayout.addOnLayoutChangeListener(
+                (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                    int oldHeight = oldBottom - oldTop;
+                    int newHeight = bottom - top;
 
-                if (oldHeight == newHeight && !mTileCountChanged) return;
-                mTileCountChanged = false;
+                    if (oldHeight == newHeight && !mTileCountChanged) return;
+                    mTileCountChanged = false;
 
-                // Re-apply the url focus change amount after a rotation to ensure the views are
-                // correctly placed with their new layout configurations.
-                onUrlFocusAnimationChanged();
-                updateSearchBoxOnScroll();
+                    // Re-apply the url focus change amount after a rotation to ensure the views are
+                    // correctly placed with their new layout configurations.
+                    onUrlFocusAnimationChanged();
+                    updateSearchBoxOnScroll();
 
-                // The positioning of elements may have been changed (since the elements expand to
-                // fill the available vertical space), so adjust the scroll.
-                mRecyclerView.snapScroll(mSearchBoxView, getHeight());
-            }
-        });
+                    // The positioning of elements may have been changed (since the elements expand
+                    // to fill the available vertical space), so adjust the scroll.
+                    mRecyclerView.snapScroll(mSearchBoxView, getHeight());
+                });
 
         // Listen for layout changes on the NewTabPageView itself to catch changes in scroll
         // position that are due to layout changes after e.g. device rotation. This contrasts with
         // regular scrolling, which is observed through an OnScrollListener.
-        addOnLayoutChangeListener(new OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                int scrollY = mRecyclerView.computeVerticalScrollOffset();
-                if (mLastScrollY != scrollY) {
-                    mLastScrollY = scrollY;
-                    handleScroll();
-                }
-            }
-        });
+        addOnLayoutChangeListener(
+                (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                    int scrollY = mRecyclerView.computeVerticalScrollOffset();
+                    if (mLastScrollY != scrollY) {
+                        mLastScrollY = scrollY;
+                        handleScroll();
+                    }
+                });
         TraceEvent.end(TAG + ".initializeLayoutChangeListeners()");
     }
 
@@ -565,22 +539,20 @@ public class NewTabPageView
             }
         });
 
-        mRecyclerView.setOnTouchListener(new OnTouchListener() {
-            @Override
-            @SuppressLint("ClickableViewAccessibility")
-            public boolean onTouch(View v, MotionEvent event) {
-                mRecyclerView.removeCallbacks(mSnapScrollRunnable);
+        @SuppressLint("ClickableViewAccessibility")
+        OnTouchListener onTouchListener = (v, event) -> {
+            mRecyclerView.removeCallbacks(mSnapScrollRunnable);
 
-                if (event.getActionMasked() == MotionEvent.ACTION_CANCEL
-                        || event.getActionMasked() == MotionEvent.ACTION_UP) {
-                    mPendingSnapScroll = true;
-                    mRecyclerView.postDelayed(mSnapScrollRunnable, SNAP_SCROLL_DELAY_MS);
-                } else {
-                    mPendingSnapScroll = false;
-                }
-                return false;
+            if (event.getActionMasked() == MotionEvent.ACTION_CANCEL
+                    || event.getActionMasked() == MotionEvent.ACTION_UP) {
+                mPendingSnapScroll = true;
+                mRecyclerView.postDelayed(mSnapScrollRunnable, SNAP_SCROLL_DELAY_MS);
+            } else {
+                mPendingSnapScroll = false;
             }
-        });
+            return false;
+        };
+        mRecyclerView.setOnTouchListener(onTouchListener);
         TraceEvent.end(TAG + ".setupScrollHandling()");
     }
 
@@ -627,15 +599,12 @@ public class NewTabPageView
 
         mSearchProviderLogoView.showSearchProviderInitialView();
 
-        mLogoDelegate.getSearchProviderLogo(new LogoObserver() {
-            @Override
-            public void onLogoAvailable(Logo logo, boolean fromCache) {
-                if (logo == null && fromCache) return;
+        mLogoDelegate.getSearchProviderLogo((logo, fromCache) -> {
+            if (logo == null && fromCache) return;
 
-                mSearchProviderLogoView.setDelegate(mLogoDelegate);
-                mSearchProviderLogoView.updateLogo(logo);
-                mSnapshotTileGridChanged = true;
-            }
+            mSearchProviderLogoView.setDelegate(mLogoDelegate);
+            mSearchProviderLogoView.updateLogo(logo);
+            mSnapshotTileGridChanged = true;
         });
     }
 
@@ -747,10 +716,7 @@ public class NewTabPageView
     }
 
     private void onUrlFocusAnimationChanged() {
-        if (mDisableUrlFocusChangeAnimations || FeatureUtilities.isChromeHomeEnabled()
-                || mIsMovingNewTabPageView) {
-            return;
-        }
+        if (mDisableUrlFocusChangeAnimations || mIsMovingNewTabPageView) return;
 
         // Translate so that the search box is at the top, but only upwards.
         float percent = mSearchProviderHasLogo ? mUrlFocusChangePercent : 0;
@@ -882,8 +848,7 @@ public class NewTabPageView
     }
 
     /**
-     * @see org.chromium.chrome.browser.compositor.layouts.content.
-     *         InvalidationAwareThumbnailProvider#shouldCaptureThumbnail()
+     * @see InvalidationAwareThumbnailProvider#shouldCaptureThumbnail()
      */
     boolean shouldCaptureThumbnail() {
         if (getWidth() == 0 || getHeight() == 0) return false;
@@ -894,8 +859,7 @@ public class NewTabPageView
     }
 
     /**
-     * @see org.chromium.chrome.browser.compositor.layouts.content.
-     *         InvalidationAwareThumbnailProvider#captureThumbnail(Canvas)
+     * @see InvalidationAwareThumbnailProvider#captureThumbnail(Canvas)
      */
     void captureThumbnail(Canvas canvas) {
         mSearchProviderLogoView.endFadeAnimation();
@@ -932,7 +896,7 @@ public class NewTabPageView
         }
     }
 
-    private static int getMaxTileRows(boolean searchProviderHasLogo) {
+    private static int getMaxTileRows() {
         return 2;
     }
 

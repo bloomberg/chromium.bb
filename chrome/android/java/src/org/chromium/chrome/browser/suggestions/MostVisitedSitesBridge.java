@@ -6,10 +6,8 @@ package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNIAdditionalImport;
-import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,27 +36,6 @@ public class MostVisitedSitesBridge
      */
     public MostVisitedSitesBridge(Profile profile) {
         mNativeMostVisitedSitesBridge = nativeInit(profile);
-        // The first tile replaces the home page button (only) in Chrome Home. To support that,
-        // provide information about the home page.
-        if (FeatureUtilities.isChromeHomeEnabled()) {
-            nativeSetHomePageClient(mNativeMostVisitedSitesBridge, new HomePageClient() {
-                @Override
-                public boolean isHomePageEnabled() {
-                    return HomepageManager.isHomepageEnabled();
-                }
-
-                @Override
-                public boolean isNewTabPageUsedAsHomePage() {
-                    return NewTabPage.isNTPUrl(getHomePageUrl());
-                }
-
-                @Override
-                public String getHomePageUrl() {
-                    return HomepageManager.getHomepageUri();
-                }
-            });
-            HomepageManager.getInstance().addListener(this);
-        }
     }
 
     /**
@@ -160,13 +137,6 @@ public class MostVisitedSitesBridge
                 titleSources, sources, dataGenerationTimesMs));
 
         mWrappedObserver.onSiteSuggestionsAvailable(suggestions);
-    }
-
-    private boolean allSuggestionsArePersonalized(List<SiteSuggestion> suggestions) {
-        for (SiteSuggestion suggestion : suggestions) {
-            if (suggestion.sectionType != TileSectionType.PERSONALIZED) return false;
-        }
-        return true;
     }
 
     /**

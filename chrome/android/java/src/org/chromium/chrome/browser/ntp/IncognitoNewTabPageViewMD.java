@@ -26,7 +26,6 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
@@ -180,18 +179,10 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
 
         boolean bulletpointsArrangedHorizontally;
 
-        boolean usingChromeHome = FeatureUtilities.isChromeHomeEnabled();
-        if (mWidthDp <= WIDE_LAYOUT_THRESHOLD_DP || usingChromeHome) {
+        if (mWidthDp <= WIDE_LAYOUT_THRESHOLD_DP) {
             // Small padding.
-            // Set the padding to a default for Chrome Home, since we want less padding in this
-            // case.
-            if (usingChromeHome) {
-                paddingHorizontalDp = 16;
-                paddingVerticalDp = 0;
-            } else {
-                paddingHorizontalDp = mWidthDp <= 240 ? 24 : 32;
-                paddingVerticalDp = (mHeightDp <= 600) ? 32 : 72;
-            }
+            paddingHorizontalDp = mWidthDp <= 240 ? 24 : 32;
+            paddingVerticalDp = (mHeightDp <= 600) ? 32 : 72;
 
             // Align left.
             mContainer.setGravity(Gravity.START);
@@ -248,14 +239,7 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
         // Set up paddings and margins.
         int paddingTop;
         int paddingBottom;
-        if (usingChromeHome) {
-            // Preserve the intentional padding given to the new tab view in Chrome Home to
-            // accomodate the bottom navigation menu.
-            paddingTop = mContainer.getPaddingTop();
-            paddingBottom = mContainer.getPaddingBottom();
-        } else {
-            paddingTop = paddingBottom = dpToPx(mContext, paddingVerticalDp);
-        }
+        paddingTop = paddingBottom = dpToPx(mContext, paddingVerticalDp);
         mContainer.setPadding(dpToPx(mContext, paddingHorizontalDp), paddingTop,
                 dpToPx(mContext, paddingHorizontalDp), paddingBottom);
 
@@ -303,14 +287,6 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
 
         mSubtitle.setClickable(learnMoreInSubtitle);
         mLearnMore.setVisibility(learnMoreInSubtitle ? View.GONE : View.VISIBLE);
-
-        if (FeatureUtilities.isChromeHomeEnabled()) {
-            // Additional padding below "Learn More" helps keep distance from the bottom navigation
-            // menu making it easier to tap.
-            mLearnMore.setPadding(mLearnMore.getPaddingLeft(), mLearnMore.getPaddingTop(),
-                    mLearnMore.getPaddingBottom(),
-                    dpToPx(mContext, CHROME_HOME_LEARN_MORE_BOTTOM_PADDING_DP));
-        }
 
         if (!learnMoreInSubtitle) {
             // Revert to the original text.

@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,7 +52,7 @@ public class SuggestionsSection extends InnerNode {
     // Children
     private final SectionHeader mHeader;
     private final SuggestionsList mSuggestionsList;
-    private final @Nullable StatusItem mStatus;
+    private final StatusItem mStatus;
     private final ActionItem mMoreButton;
 
     /**
@@ -68,9 +67,6 @@ public class SuggestionsSection extends InnerNode {
      * when the user stops interacting with this UI surface.
      */
     private boolean mIsDataStale;
-
-    /** Whether content has been recently inserted. We reset this flag upon reading its value. */
-    private boolean mHasInsertedContent;
 
     /**
      * Whether the section has been destroyed.
@@ -87,9 +83,6 @@ public class SuggestionsSection extends InnerNode {
          * @param section The section to be dismissed.
          */
         void dismissSection(SuggestionsSection section);
-
-        /** Returns whether the UI surface is in a state that allows the suggestions to be reset. */
-        boolean isResetAllowed();
     }
 
     public SuggestionsSection(Delegate delegate, SuggestionsUiDelegate uiDelegate,
@@ -110,21 +103,13 @@ public class SuggestionsSection extends InnerNode {
         mSuggestionsList = new SuggestionsList(mSuggestionsSource, ranker, info);
         mMoreButton = new ActionItem(this, ranker);
 
-        boolean isChromeHomeEnabled = FeatureUtilities.isChromeHomeEnabled();
-        if (isChromeHomeEnabled) {
-            mStatus = null;
-            addChildren(mHeader, mSuggestionsList, mMoreButton);
-        } else {
-            mStatus = StatusItem.createNoSuggestionsItem(info);
-            addChildren(mHeader, mSuggestionsList, mStatus, mMoreButton);
-        }
+        mStatus = StatusItem.createNoSuggestionsItem(info);
+        mStatus.setVisible(shouldShowStatusItem());
+        addChildren(mHeader, mSuggestionsList, mStatus, mMoreButton);
 
         mOfflineModelObserver = new OfflineModelObserver(offlinePageBridge);
         uiDelegate.addDestructionObserver(mOfflineModelObserver);
 
-        if (!isChromeHomeEnabled) {
-            mStatus.setVisible(shouldShowStatusItem());
-        }
     }
 
     private static class SuggestionsList extends ChildNode implements Iterable<SnippetArticle> {
@@ -266,19 +251,7 @@ public class SuggestionsSection extends InnerNode {
         int newSuggestionsCount = getSuggestionsCount();
         if ((newSuggestionsCount == 0) == (oldSuggestionsCount == 0)) return;
 
-        // We should be able to check here whether Chrome Home is enabled or not, however because
-        // of https://crbug.com/778004, we check whether mStatus is null. That crash is caused by
-        // the SuggestionsSection being created when Chrome Home was enabled (and so mStatus is
-        // null) and then this method being called when Chrome Home is disabled.
-        // When Chrome Home is disabled while Chrome is running the Activity is restarted, the
-        // SnippetsBridge is destroyed and things should be kept consistent, however the crash
-        // reports suggest otherwise.
-        // We put an assert in here to cause a crash in debug builds only - so hopefully we can
-        // track down what's going wrong.
-        assert (mStatus == null) == FeatureUtilities.isChromeHomeEnabled();
-        if (mStatus != null) {
-            mStatus.setVisible(shouldShowStatusItem());
-        }
+        mStatus.setVisible(shouldShowStatusItem());
 
         // When the ActionItem stops being dismissable, it is possible that it was being
         // interacted with. We need to reset the view's related property changes.
@@ -307,7 +280,6 @@ public class SuggestionsSection extends InnerNode {
     public void onItemRangeInserted(ListObservable child, int index, int count) {
         super.onItemRangeInserted(child, index, count);
         if (child == mSuggestionsList) {
-            mHasInsertedContent = true;
             onSuggestionsListCountChanged(getSuggestionsCount() - count);
         }
     }
@@ -389,16 +361,6 @@ public class SuggestionsSection extends InnerNode {
         return hasSuggestions();
     }
 
-    /**
-     * Returns whether content has been inserted in the section since last time this method was
-     * called.
-     */
-    public boolean hasRecentlyInsertedContent() {
-        boolean value = mHasInsertedContent;
-        mHasInsertedContent = false;
-        return value;
-    }
-
     private String[] getDisplayedSuggestionIds() {
         String[] suggestionIds = new String[mSuggestionsList.getItemCount()];
         for (int i = 0; i < mSuggestionsList.getItemCount(); ++i) {
@@ -418,8 +380,6 @@ public class SuggestionsSection extends InnerNode {
      * reasons; e.g. a user clearing their history).
      */
     public void updateSuggestions() {
-        if (mDelegate.isResetAllowed()) clearData();
-
         int numberOfSuggestionsExposed = getNumberOfSuggestionsExposed();
         if (!canUpdateSuggestions(numberOfSuggestionsExposed)) {
             mIsDataStale = true;
@@ -583,17 +543,6 @@ public class SuggestionsSection extends InnerNode {
         mIsDataStale = false;
     }
 
-    /**
-     * Drops all but the first {@code n} thumbnails on suggestions.
-     * @param n The number of thumbnails to keep.
-     */
-    public void dropAllButFirstNThumbnails(int n) {
-        for (SnippetArticle suggestion : mSuggestionsList) {
-            if (n-- > 0) continue;
-            suggestion.clearThumbnail();
-        }
-    }
-
     @CategoryInt
     public int getCategory() {
         return mCategoryInfo.getCategory();
@@ -633,9 +582,7 @@ public class SuggestionsSection extends InnerNode {
      * (as opposed to individual items in it).
      */
     private Set<Integer> getSectionDismissalRange() {
-        if (hasSuggestions() || FeatureUtilities.isChromeHomeEnabled()) {
-            return Collections.emptySet();
-        }
+        if (hasSuggestions()) return Collections.emptySet();
 
         int statusCardIndex = getStartingOffsetForChild(mStatus);
         if (!mMoreButton.isVisible()) return Collections.singleton(statusCardIndex);
