@@ -10,7 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/child/cancelable_closure_holder.h"
+#include "third_party/blink/renderer/platform/scheduler/common/cancelable_closure_holder.h"
 
 namespace blink {
 namespace scheduler {

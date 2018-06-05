@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/child/idle_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/common/idle_helper.h"
 
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"

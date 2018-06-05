@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/child/cancelable_closure_holder.h"
+#include "third_party/blink/renderer/platform/scheduler/common/cancelable_closure_holder.h"
 
 namespace blink {
 namespace scheduler {
