@@ -16,7 +16,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/ios/block_types.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
@@ -1792,7 +1791,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // deleted. All of the request trackers associated with the closed OTR tabs
   // will have posted CancelRequest calls to the IO thread by now; this just
   // waits for those calls to run before calling |deleteIncognitoBrowserState|.
-  web::RequestTrackerImpl::RunAfterRequestsCancel(base::BindBlockArc(^{
+  web::RequestTrackerImpl::RunAfterRequestsCancel(base::BindRepeating(^{
     [self deleteIncognitoBrowserState];
   }));
 
@@ -1877,7 +1876,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   if (currentTab && currentTab.webState) {
     SnapshotTabHelper::FromWebState(currentTab.webState)
         ->SetSnapshotCoalescingEnabled(true);
-    runner.ReplaceClosure(base::BindBlockArc(^{
+    runner.ReplaceClosure(base::BindOnce(^{
       SnapshotTabHelper::FromWebState(currentTab.webState)
           ->SetSnapshotCoalescingEnabled(false);
     }));
@@ -2089,7 +2088,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
 
   BrowsingDataRemoverFactory::GetForBrowserState(browserState)
-      ->Remove(timePeriod, removeMask, base::BindBlockArc(^{
+      ->Remove(timePeriod, removeMask, base::BindOnce(^{
                  // Activates browsing and enables web views.
                  // Must be called only on the main thread.
                  DCHECK([NSThread isMainThread]);
