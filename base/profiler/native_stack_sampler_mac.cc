@@ -132,7 +132,7 @@ size_t GetModuleIndex(const uintptr_t instruction_pointer,
 
   StackSamplingProfiler::Module module(
       reinterpret_cast<uintptr_t>(inf.dli_fbase), GetUniqueId(inf.dli_fbase),
-      base::FilePath(inf.dli_fname));
+      FilePath(inf.dli_fname));
   modules->push_back(module);
 
   auto base_module_address = reinterpret_cast<uintptr_t>(inf.dli_fbase);
