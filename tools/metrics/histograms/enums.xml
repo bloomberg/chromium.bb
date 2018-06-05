@@ -18897,6 +18897,8 @@ Called by update_net_error_codes.py.-->
   <int value="2463" label="CSSContainLayoutPositionedDescendants"/>
   <int value="2464" label="HTMLFrameSetElementAnonymousNamedGetter"/>
   <int value="2465" label="CanvasConvertToBlob"/>
+  <int value="2466" label="PolymerV1Detected"/>
+  <int value="2467" label="PolymerV2Detected"/>
 </enum>
 
 <enum name="FeedbackSource">

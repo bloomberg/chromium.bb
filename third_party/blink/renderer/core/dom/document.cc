@@ -1134,6 +1134,13 @@ ScriptValue Document::registerElement(ScriptState* script_state,
     return ScriptValue();
   }
 
+  // Polymer V1 uses Custom Elements V0. <dom-module> is defined in its base
+  // library and is a strong signal that this is a Polymer V1.
+  // This counter is used to research how much users are affected once Custom
+  // Element V0 is deprecated.
+  if (name == "dom-module")
+    UseCounter::Count(*this, WebFeature::kPolymerV1Detected);
+
   V0CustomElementConstructorBuilder constructor_builder(script_state, options);
   RegistrationContext()->RegisterElement(this, &constructor_builder, name,
                                          valid_names, exception_state);
