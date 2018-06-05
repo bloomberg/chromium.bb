@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <utility>
+#include <set>
 
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
@@ -10,16 +10,54 @@
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/timer/arc_timer.h"
 #include "components/arc/timer/arc_timer_bridge.h"
 #include "components/arc/timer/arc_timer_struct_traits.h"
+#include "mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace arc {
 
 namespace {
+
+// Tag to be used with the powerd timer API.
+constexpr char kTag[] = "ARC";
+
+mojom::ArcTimerResult ConvertBoolResultToMojo(bool result) {
+  return result ? mojom::ArcTimerResult::SUCCESS
+                : mojom::ArcTimerResult::FAILURE;
+}
+
+// Callback for powerd API called in |StartTimer|.
+void OnStartTimer(mojom::TimerHost::StartTimerCallback callback, bool result) {
+  std::move(callback).Run(ConvertBoolResultToMojo(result));
+}
+
+// Unwraps a mojo handle to a file descriptor on the system.
+base::ScopedFD UnwrapScopedHandle(mojo::ScopedHandle handle) {
+  base::PlatformFile platform_file;
+  if (mojo::UnwrapPlatformFile(std::move(handle), &platform_file) !=
+      MOJO_RESULT_OK) {
+    LOG(ERROR) << "Failed to unwrap mojo handle";
+    return base::ScopedFD();
+  }
+  return base::ScopedFD(platform_file);
+}
+
+// Returns true iff |arc_timer_requests| contains duplicate clock id values.
+bool ContainsDuplicateClocks(
+    const std::vector<arc::mojom::CreateTimerRequestPtr>& arc_timer_requests) {
+  std::set<clockid_t> seen_clock_ids;
+  for (const auto& request : arc_timer_requests) {
+    if (!seen_clock_ids.emplace(request->clock_id).second)
+      return true;
+  }
+  return false;
+}
 
 // Singleton factory for ArcTimerBridge.
 class ArcTimerBridgeFactory
@@ -39,10 +77,6 @@ class ArcTimerBridgeFactory
   ArcTimerBridgeFactory() = default;
   ~ArcTimerBridgeFactory() override = default;
 };
-
-bool IsSupportedClock(int32_t clock_id) {
-  return clock_id == CLOCK_BOOTTIME_ALARM || clock_id == CLOCK_REALTIME_ALARM;
-}
 
 }  // namespace
 
@@ -65,9 +99,7 @@ ArcTimerBridge* ArcTimerBridge::GetForBrowserContextForTesting(
 
 ArcTimerBridge::ArcTimerBridge(content::BrowserContext* context,
                                ArcBridgeService* bridge_service)
-    : timer_task_runner_(
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
-      arc_bridge_service_(bridge_service),
+    : arc_bridge_service_(bridge_service),
       binding_(this),
       weak_ptr_factory_(this) {
   arc_bridge_service_->timer()->SetHost(this);
@@ -79,170 +111,137 @@ ArcTimerBridge::~ArcTimerBridge() {
   arc_bridge_service_->timer()->SetHost(nullptr);
 }
 
-void ArcTimerBridge::CreateTimers(
-    std::vector<CreateTimerRequest> arc_timer_requests,
-    CreateTimersCallback callback) {
-  DVLOG(1) << "Received CreateTimers";
-  // Alarm timers can't be created on the UI thread because they make syscalls
-  // in the constructor. Post a task to create |ArcTimer| objects containing
-  // alarm timer objects.
-  base::PostTaskAndReplyWithResult(
-      timer_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&CreateArcTimers, !arc_timers_.empty(),
-                     base::SequencedTaskRunnerHandle::Get(), timer_task_runner_,
-                     std::move(arc_timer_requests),
-                     weak_ptr_factory_.GetWeakPtr()),
-      base::BindOnce(&ArcTimerBridge::OnArcTimersCreated,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
 void ArcTimerBridge::OnConnectionClosed() {
-  DVLOG(1) << "OnConnectionClosed";
   DeleteArcTimers();
 }
 
-// Deleter for |ArcTimer|s. Deletes the timer object on |task_runner|.
-class ArcTimerBridge::DeleteOnSequence {
- public:
-  explicit DeleteOnSequence(
-      scoped_refptr<base::SequencedTaskRunner> task_runner)
-      : task_runner_(std::move(task_runner)) {}
-  ~DeleteOnSequence() = default;
-  DeleteOnSequence(DeleteOnSequence&&) = default;
-  DeleteOnSequence& operator=(DeleteOnSequence&&) = default;
-
-  void operator()(ArcTimer* timer) const {
-    task_runner_->DeleteSoon(FROM_HERE, timer);
-  }
-
- private:
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeleteOnSequence);
-};
-
-void ArcTimerBridge::OnConnectionError(ArcTimer* timer) {
-  DVLOG(1) << "OnConnectionError";
-  // At this point the mojo binding for |timer| has an error. Find and delete
-  // the timer. Since the lifetime of |ArcTimer| objects is managed by this
-  // class it is safe to compare |timer|.
-  base::EraseIf(
-      arc_timers_,
-      [timer](const std::unique_ptr<ArcTimer, DeleteOnSequence>& element) {
-        return element.get() == timer;
-      });
-}
-
-// static.
-void ArcTimerBridge::OnConnectionErrorOnTimerThread(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    base::WeakPtr<ArcTimerBridge> weak_self,
-    ArcTimer* timer) {
-  // Post task on the main thread since the task will access class members.
-  task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ArcTimerBridge::OnConnectionError, weak_self, timer));
-}
-
-struct ArcTimerBridge::TimersAndProxies {
-  TimersAndProxies() = default;
-  ~TimersAndProxies() = default;
-  TimersAndProxies(TimersAndProxies&&) = default;
-  TimersAndProxies& operator=(TimersAndProxies&&) = default;
-  std::vector<int32_t> clocks;
-  std::vector<std::unique_ptr<ArcTimer, DeleteOnSequence>> timers;
-  std::vector<mojom::TimerPtrInfo> proxies;
-};
-
-// static.
-base::Optional<ArcTimerBridge::TimersAndProxies>
-ArcTimerBridge::CreateArcTimers(
-    bool timers_already_created,
-    scoped_refptr<base::SequencedTaskRunner> original_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> timer_task_runner,
-    std::vector<arc::CreateTimerRequest> arc_timer_requests,
-    base::WeakPtr<ArcTimerBridge> weak_self) {
-  if (timers_already_created) {
-    LOG(ERROR) << "Double creation not supported";
-    return base::nullopt;
-  }
-
-  // Iterate over the list of {clock_id, expiration_fd} and create an |ArcTimer|
-  // and |mojom::TimerPtrInfo| entry for each clock.
-  base::flat_set<int32_t> seen_clocks;
-  ArcTimerBridge::TimersAndProxies result;
-  for (auto& request : arc_timer_requests) {
-    // Read each entry one by one. Each entry will have an |ArcTimer| entry
-    // associated with it.
-    int32_t clock_id = request.clock_id;
-
-    if (!IsSupportedClock(clock_id)) {
-      LOG(ERROR) << "Unsupported clock=" << clock_id;
-      return base::nullopt;
-    }
-
-    if (!seen_clocks.insert(clock_id).second) {
-      LOG(ERROR) << "Duplicate clocks not supported";
-      return base::nullopt;
-    }
-
-    base::ScopedFD expiration_fd = std::move(request.expiration_fd);
-    if (!expiration_fd.is_valid()) {
-      LOG(ERROR) << "Bad file descriptor for clock=" << clock_id;
-      return base::nullopt;
-    }
-
-    mojom::TimerPtrInfo timer_proxy_info;
-    // TODO(b/69759087): Make |ArcTimer| take |clock_id| to create timers of
-    // different clock types.
-    // The instance opens clocks of type CLOCK_BOOTTIME_ALARM and
-    // CLOCK_REALTIME_ALARM. However, it uses only CLOCK_BOOTTIME_ALARM to set
-    // wake up alarms. At this point, it's okay to pretend the host supports
-    // CLOCK_REALTIME_ALARM instead of returning an error.
-    //
-    // Mojo guarantees to call all callbacks on the task runner that the
-    // mojo::Binding i.e. |ArcTimer| was created on.
-    result.clocks.push_back(clock_id);
-    result.timers.push_back(std::unique_ptr<ArcTimer, DeleteOnSequence>(
-        new ArcTimer(
-            std::move(expiration_fd), mojo::MakeRequest(&timer_proxy_info),
-            base::BindOnce(&ArcTimerBridge::OnConnectionErrorOnTimerThread,
-                           original_task_runner, weak_self)),
-        DeleteOnSequence(timer_task_runner)));
-    result.proxies.push_back(std::move(timer_proxy_info));
-  }
-  return result;
-}
-
-void ArcTimerBridge::OnArcTimersCreated(
-    CreateTimersCallback callback,
-    base::Optional<TimersAndProxies> timers_and_proxies) {
-  if (timers_and_proxies == base::nullopt) {
-    std::move(callback).Run(base::nullopt);
+void ArcTimerBridge::CreateTimers(
+    std::vector<arc::mojom::CreateTimerRequestPtr> arc_timer_requests,
+    CreateTimersCallback callback) {
+  // Duplicate clocks are not allowed.
+  if (ContainsDuplicateClocks(arc_timer_requests)) {
+    std::move(callback).Run(mojom::ArcTimerResult::FAILURE);
     return;
   }
-  DCHECK_EQ(timers_and_proxies->clocks.size(),
-            timers_and_proxies->timers.size());
-  DCHECK_EQ(timers_and_proxies->clocks.size(),
-            timers_and_proxies->proxies.size());
-  arc_timers_ = std::move(timers_and_proxies->timers);
 
-  // Respond to instance with timer proxies.
-  std::vector<mojom::CreateTimerResponsePtr> result;
-  for (size_t i = 0; i < timers_and_proxies->clocks.size(); i++) {
-    mojom::CreateTimerResponsePtr response = mojom::CreateTimerResponse::New();
-    response->clock_id =
-        mojo::EnumTraits<arc::mojom::ClockId, int32_t>::ToMojom(
-            timers_and_proxies->clocks[i]);
-    response->timer = std::move(timers_and_proxies->proxies[i]);
-    result.push_back(std::move(response));
+  // Convert mojo arguments to D-Bus arguments required by powerd to create
+  // timers.
+  std::vector<std::pair<clockid_t, base::ScopedFD>> requests;
+  for (auto& request : arc_timer_requests) {
+    clockid_t clock_id = request->clock_id;
+    base::ScopedFD expiration_fd =
+        UnwrapScopedHandle(std::move(request->expiration_fd));
+    if (!expiration_fd.is_valid()) {
+      LOG(ERROR) << "Unwrapped expiration fd is invalid for clock=" << clock_id;
+      std::move(callback).Run(mojom::ArcTimerResult::FAILURE);
+      return;
+    }
+    requests.emplace_back(clock_id, std::move(expiration_fd));
   }
-  std::move(callback).Run(std::move(result));
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->DeleteArcTimers(
+      kTag, base::BindOnce(&ArcTimerBridge::OnDeleteBeforeCreateArcTimers,
+                           weak_ptr_factory_.GetWeakPtr(), std::move(requests),
+                           std::move(callback)));
+}
+
+void ArcTimerBridge::StartTimer(clockid_t clock_id,
+                                base::TimeTicks absolute_expiration_time,
+                                StartTimerCallback callback) {
+  auto timer_id = GetTimerId(clock_id);
+  if (!timer_id.has_value()) {
+    LOG(ERROR) << "Timer for clock=" << clock_id << " not created";
+    std::move(callback).Run(mojom::ArcTimerResult::FAILURE);
+    return;
+  }
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->StartArcTimer(
+      timer_id.value(), absolute_expiration_time,
+      base::BindOnce(&OnStartTimer, std::move(callback)));
 }
 
 void ArcTimerBridge::DeleteArcTimers() {
-  // The timer objects are deleted on |timer_task_runner_|.
-  arc_timers_.clear();
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->DeleteArcTimers(
+      kTag, base::BindOnce(&ArcTimerBridge::OnDeleteArcTimers,
+                           weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ArcTimerBridge::OnDeleteArcTimers(bool result) {
+  if (!result) {
+    LOG(ERROR) << "Delete timers failed";
+    return;
+  }
+
+  // If the delete call succeeded then delete any timer ids stored and make a
+  // create timers call.
+  DVLOG(1) << "Delete timers succeeded";
+  timer_ids_.clear();
+}
+
+void ArcTimerBridge::OnDeleteBeforeCreateArcTimers(
+    std::vector<std::pair<clockid_t, base::ScopedFD>>
+        create_arc_timers_requests,
+    CreateTimersCallback callback,
+    bool result) {
+  if (!result) {
+    LOG(ERROR) << "Delete timers before create failed";
+    std::move(callback).Run(mojom::ArcTimerResult::FAILURE);
+    return;
+  }
+
+  DVLOG(1) << "Delete before create timers succeeded";
+  // If the delete call succeeded then delete any timer ids stored and make a
+  // create timers call.
+  timer_ids_.clear();
+  std::vector<clockid_t> clock_ids;
+  for (const auto& request : create_arc_timers_requests)
+    clock_ids.emplace_back(request.first);
+
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->CreateArcTimers(
+      kTag, std::move(create_arc_timers_requests),
+      base::BindOnce(&ArcTimerBridge::OnCreateArcTimers,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(clock_ids),
+                     std::move(callback)));
+}
+
+void ArcTimerBridge::OnCreateArcTimers(
+    std::vector<clockid_t> clock_ids,
+    CreateTimersCallback callback,
+    base::Optional<std::vector<TimerId>> timer_ids) {
+  // The API returns a list of timer ids corresponding to each clock in
+  // |clock_ids|.
+  if (!timer_ids.has_value()) {
+    LOG(ERROR) << "Create timers failed";
+    std::move(callback).Run(mojom::ArcTimerResult::FAILURE);
+    return;
+  }
+
+  std::vector<TimerId> result = timer_ids.value();
+  if (result.size() != clock_ids.size()) {
+    std::move(callback).Run(mojom::ArcTimerResult::FAILURE);
+    return;
+  }
+
+  // Map clock id values to timer ids.
+  auto timer_id_iter = result.begin();
+  for (clockid_t clock_id : clock_ids) {
+    DVLOG(1) << "Storing clock=" << clock_id << " timer id=" << *timer_id_iter;
+    if (!timer_ids_.emplace(clock_id, *timer_id_iter).second) {
+      // This should never happen as any collision should have been detected on
+      // the powerd side and it should have returned an error.
+      LOG(ERROR) << "Can't store clock=" << clock_id;
+      timer_ids_.clear();
+      std::move(callback).Run(mojom::ArcTimerResult::FAILURE);
+      return;
+    }
+    timer_id_iter++;
+  }
+  std::move(callback).Run(mojom::ArcTimerResult::SUCCESS);
+}
+
+base::Optional<ArcTimerBridge::TimerId> ArcTimerBridge::GetTimerId(
+    clockid_t clock_id) const {
+  auto it = timer_ids_.find(clock_id);
+  return (it == timer_ids_.end()) ? base::nullopt
+                                  : base::make_optional<TimerId>(it->second);
 }
 
 }  // namespace arc

@@ -101,6 +101,42 @@ PowerManagerClient::TabletMode GetTabletModeFromProtoEnum(
   return PowerManagerClient::TabletMode::UNSUPPORTED;
 }
 
+// Callback for D-Bus call made in |CreateArcTimers|.
+void OnCreateArcTimersDBusMethod(
+    DBusMethodCallback<std::vector<PowerManagerClient::TimerId>> callback,
+    dbus::Response* response) {
+  if (response == nullptr) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  dbus::MessageReader reader(response);
+  dbus::MessageReader array_reader(nullptr);
+  if (!reader.PopArray(&array_reader)) {
+    POWER_LOG(ERROR) << "No timer ids returned";
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  std::vector<PowerManagerClient::TimerId> timer_ids;
+  while (array_reader.HasMoreData()) {
+    int32_t timer_id;
+    if (!array_reader.PopInt32(&timer_id)) {
+      POWER_LOG(ERROR) << "Failed to pop timer id";
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    timer_ids.push_back(timer_id);
+  }
+  std::move(callback).Run(std::move(timer_ids));
+}
+
+// Callback for D-Bus call made in |StartArcTimer| and |DeleteArcTimers|.
+void OnVoidDBusMethod(VoidDBusMethodCallback callback,
+                      dbus::Response* response) {
+  std::move(callback).Run(response != nullptr);
+}
+
 }  // namespace
 
 // The PowerManagerClient implementation used in production.
@@ -178,10 +214,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::kSetScreenBrightnessPercentMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendDouble(percent);
-    writer.AppendInt32(
-        gradual ?
-        power_manager::kBrightnessTransitionGradual :
-        power_manager::kBrightnessTransitionInstant);
+    writer.AppendInt32(gradual ? power_manager::kBrightnessTransitionGradual
+                               : power_manager::kBrightnessTransitionInstant);
     power_manager_proxy_->CallMethod(&method_call,
                                      dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                                      base::DoNothing());
@@ -244,9 +278,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
   }
 
   void NotifyUserActivity(power_manager::UserActivityType type) override {
-    dbus::MethodCall method_call(
-        power_manager::kPowerManagerInterface,
-        power_manager::kHandleUserActivityMethod);
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kHandleUserActivityMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendInt32(type);
 
@@ -256,9 +289,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
   }
 
   void NotifyVideoActivity(bool is_fullscreen) override {
-    dbus::MethodCall method_call(
-        power_manager::kPowerManagerInterface,
-        power_manager::kHandleVideoActivityMethod);
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kHandleVideoActivityMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(is_fullscreen);
 
@@ -269,9 +301,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   void SetPolicy(const power_manager::PowerManagementPolicy& policy) override {
     POWER_LOG(USER) << "SetPolicy";
-    dbus::MethodCall method_call(
-        power_manager::kPowerManagerInterface,
-        power_manager::kSetPolicyMethod);
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kSetPolicyMethod);
     dbus::MessageWriter writer(&method_call);
     if (!writer.AppendProtoAsArrayOfBytes(policy)) {
       POWER_LOG(ERROR) << "Error calling " << power_manager::kSetPolicyMethod;
@@ -284,9 +315,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   void SetIsProjecting(bool is_projecting) override {
     POWER_LOG(USER) << "SetIsProjecting";
-    dbus::MethodCall method_call(
-        power_manager::kPowerManagerInterface,
-        power_manager::kSetIsProjectingMethod);
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kSetIsProjectingMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(is_projecting);
     power_manager_proxy_->CallMethod(&method_call,
@@ -358,6 +388,66 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   int GetNumPendingSuspendReadinessCallbacks() override {
     return pending_suspend_readiness_callbacks_.size();
+  }
+
+  void CreateArcTimers(
+      const std::string& tag,
+      std::vector<std::pair<clockid_t, base::ScopedFD>> arc_timer_requests,
+      DBusMethodCallback<std::vector<TimerId>> callback) override {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kCreateArcTimersMethod);
+
+    // Write mojo arguments i.e. client's tag and array of {int, fd} as a D-Bus
+    // message.
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(tag);
+    dbus::MessageWriter array_writer(nullptr);
+    writer.OpenArray("(ih)", &array_writer);
+    for (const auto& request : arc_timer_requests) {
+      dbus::MessageWriter struct_writer(nullptr);
+      array_writer.OpenStruct(&struct_writer);
+      struct_writer.AppendInt32(static_cast<int32_t>(request.first));
+      // This dups the file descriptor and the original one stored as
+      // base::ScopedFD in |arc_timer_requests| will be closed when the function
+      // ends and it goes out of scope.
+      struct_writer.AppendFileDescriptor(request.second.get());
+      array_writer.CloseContainer(&struct_writer);
+    }
+    writer.CloseContainer(&array_writer);
+
+    power_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&OnCreateArcTimersDBusMethod, std::move(callback)));
+  }
+
+  void StartArcTimer(TimerId timer_id,
+                     base::TimeTicks absolute_expiration_time,
+                     VoidDBusMethodCallback callback) override {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kStartArcTimerMethod);
+
+    // Write clock id and 64-bit expiration time ticks value as a D-Bus message.
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendInt32(timer_id);
+    // The absolute ticks are still being sent because base::TimeTicks() returns
+    // 0.
+    writer.AppendInt64(
+        (absolute_expiration_time - base::TimeTicks()).InMicroseconds());
+
+    power_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&OnVoidDBusMethod, std::move(callback)));
+  }
+
+  void DeleteArcTimers(const std::string& tag,
+                       VoidDBusMethodCallback callback) override {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kDeleteArcTimersMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(tag);
+    power_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&OnVoidDBusMethod, std::move(callback)));
   }
 
  protected:
@@ -863,8 +953,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
       const std::string& method_name,
       const power_manager::RegisterSuspendDelayRequest& protobuf_request,
       dbus::ObjectProxy::ResponseCallback callback) {
-    dbus::MethodCall method_call(
-        power_manager::kPowerManagerInterface, method_name);
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 method_name);
     dbus::MessageWriter writer(&method_call);
 
     if (!writer.AppendProtoAsArrayOfBytes(protobuf_request)) {
@@ -947,8 +1037,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
     if (render_process_manager_delegate_ && !suspending_from_dark_resume_)
       render_process_manager_delegate_->SuspendImminent();
 
-    dbus::MethodCall method_call(
-        power_manager::kPowerManagerInterface, method_name);
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 method_name);
     dbus::MessageWriter writer(&method_call);
 
     POWER_LOG(EVENT) << "Announcing readiness of suspend delay " << delay_id

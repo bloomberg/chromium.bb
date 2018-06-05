@@ -5,9 +5,13 @@
 #ifndef CHROMEOS_DBUS_POWER_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_POWER_MANAGER_CLIENT_H_
 
+#include <map>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/callback.h"
+#include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -25,13 +29,15 @@
 namespace power_manager {
 class BacklightBrightnessChange;
 class ScreenIdleState;
-}
+}  // namespace power_manager
 
 namespace chromeos {
 
 // PowerManagerClient is used to communicate with the power manager.
 class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
  public:
+  using TimerId = int32_t;
+
   enum class LidState {
     OPEN,
     CLOSED,
@@ -256,6 +262,36 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   // Returns the number of callbacks returned by GetSuspendReadinessCallback()
   // for the current suspend attempt but not yet called. Used by tests.
   virtual int GetNumPendingSuspendReadinessCallbacks() = 0;
+
+  // Creates timers corresponding to clocks present in |arc_timer_requests|.
+  // ScopedFDs are used to indicate timer expiration as described in
+  // |StartArcTimer|. Aysnchronously runs |callback| with the created timers'
+  // ids corresponding to all clocks in the arguments i.e timer id at index 0
+  // corresponds to the clock id at position 0 in |arc_timer_requests|. Only one
+  // timer per clock is allowed per tag, asynchronously runs |callback| with
+  // base::nullopt if the same clock is present more than once in the arguments.
+  // Also, runs |callback| with base::nullopt if timers are already created for
+  // |tag|.
+  virtual void CreateArcTimers(
+      const std::string& tag,
+      std::vector<std::pair<clockid_t, base::ScopedFD>> arc_timer_requests,
+      DBusMethodCallback<std::vector<TimerId>> callback) = 0;
+
+  // Starts a timer created via |CreateArcTimers|. Starts the timer of type
+  // |clock_id| (from <sys/timerfd.h>) to run at |absolute_expiration_time| in
+  // the future. If the timer is already running, it will be replaced.
+  // Notification will be performed as an 8-byte write to the associated
+  // expiration fd. Asynchronously runs |callback| with true iff the timer can
+  // be started successfully or false otherwise.
+  virtual void StartArcTimer(TimerId timer_id,
+                             base::TimeTicks absolute_expiration_time,
+                             VoidDBusMethodCallback callback) = 0;
+
+  // Deletes all timer state and clears any pending timers started by
+  // |StartArcTimer|. Asynchronously runs |callback| with true on success or
+  // false on failure.
+  virtual void DeleteArcTimers(const std::string& tag,
+                               VoidDBusMethodCallback callback) = 0;
 
   // Creates the instance.
   static PowerManagerClient* Create(DBusClientImplementationType type);
