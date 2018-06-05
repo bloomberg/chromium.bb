@@ -79,7 +79,10 @@ public class SpinnerPreference extends Preference {
      * @return The currently selected option.
      */
     public Object getSelectedOption() {
-        if (mSpinner == null) return null;
+        if (mSpinner == null) {
+            // Use the adapter directly if the view hasn't been created yet.
+            return mAdapter.getItem(mSelectedIndex);
+        }
         return mSpinner.getSelectedItem();
     }
 
