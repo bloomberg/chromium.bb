@@ -67,6 +67,7 @@ class WebMediaStreamTrack {
     base::Optional<bool> echo_cancellation;
     base::Optional<bool> auto_gain_control;
     base::Optional<bool> noise_supression;
+    WebString echo_cancellation_type;
     // Media Capture Depth Stream Extensions.
     WebString video_kind;
     double focal_length_x = -1.0;

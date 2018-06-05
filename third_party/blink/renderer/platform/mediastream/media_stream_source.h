@@ -72,6 +72,8 @@ class PLATFORM_EXPORT MediaStreamSource final
     kReadyStateEnded = 2
   };
 
+  enum class EchoCancellationMode { kDisabled, kSoftware, kHardware };
+
   static MediaStreamSource* Create(const String& id,
                                    StreamType,
                                    const String& name,
@@ -97,7 +99,7 @@ class PLATFORM_EXPORT MediaStreamSource final
     extra_data_ = std::move(extra_data);
   }
 
-  void SetAudioProcessingProperties(bool echo_cancellation,
+  void SetAudioProcessingProperties(EchoCancellationMode echo_cancellation_mode,
                                     bool auto_gain_control,
                                     bool noise_supression);
 
@@ -151,7 +153,7 @@ class PLATFORM_EXPORT MediaStreamSource final
   std::unique_ptr<ExtraData> extra_data_;
   WebMediaConstraints constraints_;
   WebMediaStreamSource::Capabilities capabilities_;
-  base::Optional<bool> echo_cancellation_;
+  base::Optional<EchoCancellationMode> echo_cancellation_mode_;
   base::Optional<bool> auto_gain_control_;
   base::Optional<bool> noise_supression_;
 };

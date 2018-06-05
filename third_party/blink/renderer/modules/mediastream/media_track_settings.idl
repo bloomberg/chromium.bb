@@ -17,6 +17,7 @@ dictionary MediaTrackSettings {
     boolean echoCancellation;
     boolean autoGainControl;
     boolean noiseSuppression;
+    [OriginTrialEnabled=ExperimentalHardwareEchoCancellation] DOMString echoCancellationType;
     // latency and channelCount are not implemented.
     // double latency;
     // long channelCount;
