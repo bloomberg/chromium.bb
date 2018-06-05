@@ -708,8 +708,7 @@ cdm::Status ClearKeyCdm::InitializeAudioDecoder(
 
   return cdm::kSuccess;
 #else
-  NOTIMPLEMENTED();
-  return cdm::kSessionError;
+  return cdm::kInitializationError;
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 }
 
