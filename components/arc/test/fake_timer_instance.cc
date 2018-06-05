@@ -18,10 +18,8 @@ void FakeTimerInstance::Init(mojom::TimerHostPtr host_ptr,
   std::move(callback).Run();
 }
 
-void FakeTimerInstance::CallCreateTimers(
-    std::vector<CreateTimerRequest> arc_timer_requests,
-    mojom::TimerHost::CreateTimersCallback callback) {
-  host_ptr_->CreateTimers(std::move(arc_timer_requests), std::move(callback));
+mojom::TimerHost* FakeTimerInstance::GetTimerHost() const {
+  return host_ptr_.get();
 }
 
 }  // namespace arc

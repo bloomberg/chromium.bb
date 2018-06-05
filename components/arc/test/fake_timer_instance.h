@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "components/arc/common/timer.mojom.h"
-#include "components/arc/timer/create_timer_request.h"
 
 namespace arc {
 
@@ -20,9 +19,7 @@ class FakeTimerInstance : public mojom::TimerInstance {
   // mojom::TimerInstance overrides:
   void Init(mojom::TimerHostPtr host_ptr, InitCallback callback) override;
 
-  // Calls mojom::TimerHost::CreateTimers.
-  void CallCreateTimers(std::vector<CreateTimerRequest> arc_timer_requests,
-                        mojom::TimerHost::CreateTimersCallback callback);
+  mojom::TimerHost* GetTimerHost() const;
 
  private:
   mojom::TimerHostPtr host_ptr_;

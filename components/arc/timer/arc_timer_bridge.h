@@ -5,17 +5,18 @@
 #ifndef COMPONENTS_ARC_TIMER_ARC_TIMER_BRIDGE_H_
 #define COMPONENTS_ARC_TIMER_ARC_TIMER_BRIDGE_H_
 
+#include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "components/arc/common/timer.mojom.h"
 #include "components/arc/connection_observer.h"
-#include "components/arc/timer/arc_timer.h"
-#include "components/arc/timer/create_timer_request.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -34,6 +35,8 @@ class ArcTimerBridge : public KeyedService,
                        public ConnectionObserver<mojom::TimerInstance>,
                        public mojom::TimerHost {
  public:
+  using TimerId = int32_t;
+
   // Returns the factory instance for this class.
   static BrowserContextKeyedServiceFactory* GetFactory();
 
@@ -52,52 +55,42 @@ class ArcTimerBridge : public KeyedService,
   void OnConnectionClosed() override;
 
   // mojom::TimerHost overrides.
-  void CreateTimers(std::vector<CreateTimerRequest> arc_timer_requests,
-                    CreateTimersCallback callback) override;
+  void CreateTimers(
+      std::vector<arc::mojom::CreateTimerRequestPtr> arc_timer_requests,
+      CreateTimersCallback callback) override;
+  void StartTimer(clockid_t clock_id,
+                  base::TimeTicks absolute_expiration_time,
+                  StartTimerCallback callback) override;
 
  private:
-  class DeleteOnSequence;
-  struct TimersAndProxies;
-
-  // Deletes |timer| from |arc_timers_|.
-  void OnConnectionError(ArcTimer* timer);
-
-  // Callback invoked when an |ArcTimer| object has a connection error on it's
-  // mojo binding. It schedules |OnConnectionErrror| on |task_runner| which
-  // finally deletes |timer|. Since, |ArcTimerBridge| lives on the main thread
-  // and this function runs on |timer_task_runner_| this function needs to be
-  // static to be thread safe.
-  static void OnConnectionErrorOnTimerThread(
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      base::WeakPtr<ArcTimerBridge> weak_self,
-      ArcTimer* timer);
-
-  // Creates timers with the given arguments. Returns base::nullopt on failure.
-  // On success, returns a non-empty vector of |TimersAndProxies| objects. Runs
-  // on |timer_task_runner| and should only access thread-safe members of the
-  // parent class. For this reason it is also a static member.
-  static base::Optional<TimersAndProxies> CreateArcTimers(
-      bool timers_already_created,
-      scoped_refptr<base::SequencedTaskRunner> original_task_runner,
-      scoped_refptr<base::SequencedTaskRunner> timer_task_runner,
-      std::vector<arc::CreateTimerRequest> arc_timer_requests,
-      base::WeakPtr<ArcTimerBridge> weak_self);
-
-  // Callback for |CreateArcTimers|. Runs |callback| before exiting. Runs on the
-  // main thread.
-  void OnArcTimersCreated(CreateTimersCallback callback,
-                          base::Optional<TimersAndProxies> timers_and_proxies);
-
   // Deletes all timers.
   void DeleteArcTimers();
 
-  // Task runner on which all |ArcTimer| related operations are scheduled.
-  scoped_refptr<base::SequencedTaskRunner> timer_task_runner_;
+  // Callback for (powerd API) call made in |DeleteArcTimers|.
+  void OnDeleteArcTimers(bool result);
 
-  ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
+  // Callback for delete timers (powerd API) call made in |CreateTimers|.
+  void OnDeleteBeforeCreateArcTimers(
+      std::vector<std::pair<clockid_t, base::ScopedFD>>
+          create_arc_timers_requests,
+      CreateTimersCallback callback,
+      bool result);
 
-  // Store of |ArcTimer| objects.
-  std::vector<std::unique_ptr<ArcTimer, DeleteOnSequence>> arc_timers_;
+  // Callback for powerd's D-Bus API called in |CreateTimers|.
+  void OnCreateArcTimers(std::vector<clockid_t> clock_ids,
+                         CreateTimersCallback callback,
+                         base::Optional<std::vector<TimerId>> timer_ids);
+
+  // Retrieves the timer id corresponding to |clock_id|. If a mapping exists in
+  // |timer_ids_| then returns an int32_t >= 0. Else returns base::nullopt.
+  base::Optional<TimerId> GetTimerId(clockid_t clock_id) const;
+
+  // Owned by ArcServiceManager.
+  ArcBridgeService* const arc_bridge_service_;
+
+  // Mapping of clock ids (coresponding to <sys/timerfd.h>) sent by the instance
+  // in |CreateTimers| to timer ids returned in |OnCreateArcTimersDBusMethod|.
+  std::map<clockid_t, TimerId> timer_ids_;
 
   mojo::Binding<mojom::TimerHost> binding_;
 

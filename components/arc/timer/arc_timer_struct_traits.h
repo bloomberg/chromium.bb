@@ -5,30 +5,16 @@
 #ifndef COMPONENTS_ARC_TIMER_ARC_TIMER_STRUCT_TRAITS_H_
 #define COMPONENTS_ARC_TIMER_ARC_TIMER_STRUCT_TRAITS_H_
 
+#include <time.h>
+
 #include "components/arc/common/timer.mojom.h"
-#include "components/arc/timer/create_timer_request.h"
 
 namespace mojo {
 
 template <>
-struct EnumTraits<arc::mojom::ClockId, int32_t> {
-  static arc::mojom::ClockId ToMojom(int32_t clock_id);
-  static bool FromMojom(arc::mojom::ClockId input, int32_t* output);
-};
-
-template <>
-struct StructTraits<arc::mojom::CreateTimerRequestDataView,
-                    arc::CreateTimerRequest> {
-  // Due to already defined EnumTraits for |ClockId| the return type is int32_t
-  // and not |arc::mojom::ClockId|.
-  static arc::mojom::ClockId clock_id(
-      const arc::CreateTimerRequest& arc_timer_request);
-
-  static mojo::ScopedHandle expiration_fd(
-      arc::CreateTimerRequest& arc_timer_request);
-
-  static bool Read(arc::mojom::CreateTimerRequestDataView input,
-                   arc::CreateTimerRequest* output);
+struct EnumTraits<arc::mojom::ClockId, clockid_t> {
+  static arc::mojom::ClockId ToMojom(clockid_t clock_id);
+  static bool FromMojom(arc::mojom::ClockId input, clockid_t* output);
 };
 
 }  // namespace mojo

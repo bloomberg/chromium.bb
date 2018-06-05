@@ -5,9 +5,12 @@
 #ifndef CHROMEOS_DBUS_FAKE_POWER_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_POWER_MANAGER_CLIENT_H_
 
+#include <map>
+#include <memory>
 #include <queue>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/containers/circular_deque.h"
@@ -15,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
@@ -96,6 +100,15 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   base::Closure GetSuspendReadinessCallback(
       const base::Location& from_where) override;
   int GetNumPendingSuspendReadinessCallbacks() override;
+  void CreateArcTimers(
+      const std::string& tag,
+      std::vector<std::pair<clockid_t, base::ScopedFD>> arc_timer_requests,
+      DBusMethodCallback<std::vector<TimerId>> callback) override;
+  void StartArcTimer(TimerId timer_id,
+                     base::TimeTicks absolute_expiration_time,
+                     VoidDBusMethodCallback callback) override;
+  void DeleteArcTimers(const std::string& tag,
+                       VoidDBusMethodCallback callback) override;
 
   // Pops the first report from |video_activity_reports_|, returning whether the
   // activity was fullscreen or not. There must be at least one report.
@@ -215,6 +228,17 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   // States returned by GetSwitchStates().
   LidState lid_state_ = LidState::OPEN;
   TabletMode tablet_mode_ = TabletMode::UNSUPPORTED;
+
+  // Monotonically increasing timer id assigned to created timers.
+  TimerId next_timer_id_ = 1;
+
+  // Represents the timer expiration fd associated with a timer id stored as
+  // the key. The fd is written to when the timer associated with the clock
+  // expires.
+  std::map<TimerId, base::ScopedFD> timer_expiration_fds_;
+
+  // Maps a client's tag to its list of timer ids.
+  std::map<std::string, std::vector<TimerId>> client_timer_ids_;
 
   // Video activity reports that we were requested to send, in the order they
   // were requested. True if fullscreen.
