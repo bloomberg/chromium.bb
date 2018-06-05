@@ -1715,10 +1715,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   WebContents* base_web_contents = shell()->web_contents();
   ASSERT_TRUE(base_web_contents);
 
-  GURL url(embedded_test_server()->GetURL("c.com", "/title3.html"));
   WebContents::CreateParams create_params(
       base_web_contents->GetBrowserContext());
-  create_params.initialize_renderer = true;
+  create_params.desired_renderer_state =
+      WebContents::CreateParams::kInitializeAndWarmupRendererProcess;
   create_params.initial_size =
       base_web_contents->GetContainerBounds().size();
   std::unique_ptr<WebContents> web_contents(WebContents::Create(create_params));
@@ -1727,11 +1727,18 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // There is no navigation (to about:blank or something like that).
   EXPECT_FALSE(web_contents->IsLoading());
 
+  // The WebContents have an associated main frame and a renderer process that
+  // has either already launched (or is in the process of being launched).
   ASSERT_TRUE(web_contents->GetMainFrame());
   EXPECT_TRUE(web_contents->GetMainFrame()->IsRenderFrameLive());
   EXPECT_TRUE(web_contents->GetController().IsInitialBlankNavigation());
-  int renderer_id = web_contents->GetMainFrame()->GetProcess()->GetID();
+  RenderProcessHost* process = web_contents->GetMainFrame()->GetProcess();
+  int renderer_id = process->GetID();
+  ASSERT_TRUE(process);
+  EXPECT_TRUE(process->HasConnection());
 
+  // Navigate the WebContents.
+  GURL url(embedded_test_server()->GetURL("c.com", "/title3.html"));
   TestNavigationObserver same_tab_observer(web_contents.get());
   NavigationController::LoadURLParams params(url);
   params.transition_type = ui::PageTransitionFromInt(
@@ -1741,12 +1748,74 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(same_tab_observer.last_navigation_succeeded());
 
   // Check that pre-warmed process is used.
+  EXPECT_EQ(process, web_contents->GetMainFrame()->GetProcess());
   EXPECT_EQ(renderer_id, web_contents->GetMainFrame()->GetProcess()->GetID());
   EXPECT_EQ(1, web_contents->GetController().GetEntryCount());
   NavigationEntry* entry =
       web_contents->GetController().GetLastCommittedEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(url, entry->GetURL());
+}
+
+// Regression test for https://crbug.com/840409.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       CreateWebContentsWithoutRendererProcess) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContents* base_web_contents = shell()->web_contents();
+  ASSERT_TRUE(base_web_contents);
+
+  for (int i = 1; i <= 2; i++) {
+    SCOPED_TRACE(testing::Message() << "Iteration #" << i);
+
+    WebContents::CreateParams create_params(
+        base_web_contents->GetBrowserContext());
+    create_params.desired_renderer_state =
+        WebContents::CreateParams::kNoRendererProcess;
+    create_params.initial_size = base_web_contents->GetContainerBounds().size();
+    std::unique_ptr<WebContents> web_contents(
+        WebContents::Create(create_params));
+    ASSERT_TRUE(web_contents);
+    base::RunLoop().RunUntilIdle();
+
+    // There is no navigation (to about:blank or something like that) yet.
+    EXPECT_FALSE(web_contents->IsLoading());
+
+    // The WebContents have an associated main frame and a RenderProcessHost
+    // object, but no actual OS process has been launched yet.
+    ASSERT_TRUE(web_contents->GetMainFrame());
+    EXPECT_FALSE(web_contents->GetMainFrame()->IsRenderFrameLive());
+    EXPECT_TRUE(web_contents->GetController().IsInitialBlankNavigation());
+    RenderProcessHost* process = web_contents->GetMainFrame()->GetProcess();
+    int renderer_id = process->GetID();
+    ASSERT_TRUE(process);
+    EXPECT_FALSE(process->HasConnection());
+    EXPECT_EQ(base::kNullProcessHandle, process->GetProcess().Handle());
+
+    // Navigate the WebContents.
+    GURL url(embedded_test_server()->GetURL("c.com", "/title3.html"));
+    TestNavigationObserver same_tab_observer(web_contents.get());
+    NavigationController::LoadURLParams params(url);
+    params.transition_type = ui::PageTransitionFromInt(
+        ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+    web_contents->GetController().LoadURLWithParams(params);
+    same_tab_observer.Wait();
+    EXPECT_TRUE(same_tab_observer.last_navigation_succeeded());
+
+    // The process should be launched now.
+    EXPECT_TRUE(process->HasConnection());
+    EXPECT_NE(base::kNullProcessHandle, process->GetProcess().Handle());
+
+    // Check that the RenderProcessHost and its ID didn't change.
+    EXPECT_EQ(process, web_contents->GetMainFrame()->GetProcess());
+    EXPECT_EQ(renderer_id, web_contents->GetMainFrame()->GetProcess()->GetID());
+
+    // Verify that the navigation succeeded.
+    EXPECT_EQ(1, web_contents->GetController().GetEntryCount());
+    NavigationEntry* entry =
+        web_contents->GetController().GetLastCommittedEntry();
+    ASSERT_TRUE(entry);
+    EXPECT_EQ(url, entry->GetURL());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -1759,7 +1828,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   WebContents::CreateParams create_params(
       base_web_contents->GetBrowserContext());
-  create_params.initialize_renderer = true;
+  create_params.desired_renderer_state =
+      WebContents::CreateParams::kInitializeAndWarmupRendererProcess;
   create_params.initial_size =
       base_web_contents->GetContainerBounds().size();
   std::unique_ptr<WebContents> web_contents(WebContents::Create(create_params));
@@ -2130,7 +2200,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
 class UpdateTargetURLWaiter : public WebContentsDelegate {
  public:
-  UpdateTargetURLWaiter(WebContents* web_contents) {
+  explicit UpdateTargetURLWaiter(WebContents* web_contents) {
     web_contents->SetDelegate(this);
   }
 

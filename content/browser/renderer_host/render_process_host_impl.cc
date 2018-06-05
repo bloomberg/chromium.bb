@@ -567,7 +567,7 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
 
   RenderProcessHost* MaybeTakeSpareRenderProcessHost(
       BrowserContext* browser_context,
-      SiteInstance* site_instance,
+      SiteInstanceImpl* site_instance,
       bool is_for_guests_only) {
     // Give embedder a chance to disable using a spare RenderProcessHost for
     // certain SiteInstances.  Some navigations, such as to NTP or extensions,
@@ -575,9 +575,12 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
     // launch time, but this cannot be done for spare RenderProcessHosts, which
     // are started before it is known which navigation might use them.  So, a
     // spare RenderProcessHost should not be used in such cases.
-    bool should_use_spare =
+    bool embedder_allows_spare_usage =
         GetContentClient()->browser()->ShouldUseSpareRenderProcessHost(
             browser_context, site_instance->GetSiteURL());
+
+    bool site_instance_allows_spare_usage =
+        site_instance->CanAssociateWithSpareProcess();
 
     // Get the StoragePartition for |site_instance|.  Note that this might be
     // different than the default StoragePartition for |browser_context|.
@@ -595,8 +598,10 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
       action = SpareProcessMaybeTakeAction::kMismatchedBrowserContext;
     else if (site_storage != spare_render_process_host_->GetStoragePartition())
       action = SpareProcessMaybeTakeAction::kMismatchedStoragePartition;
-    else if (!should_use_spare)
+    else if (!embedder_allows_spare_usage)
       action = SpareProcessMaybeTakeAction::kRefusedByEmbedder;
+    else if (!site_instance_allows_spare_usage)
+      action = SpareProcessMaybeTakeAction::kRefusedBySiteInstance;
     else
       action = SpareProcessMaybeTakeAction::kSpareTaken;
     UMA_HISTOGRAM_ENUMERATION(
@@ -607,7 +612,8 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
     if (spare_render_process_host_ &&
         browser_context == spare_render_process_host_->GetBrowserContext() &&
         site_storage == spare_render_process_host_->GetStoragePartition() &&
-        !is_for_guests_only && should_use_spare) {
+        !is_for_guests_only && embedder_allows_spare_usage &&
+        site_instance_allows_spare_usage) {
       CHECK(spare_render_process_host_->HostHasNotBeenUsed());
 
       // If the spare process ends up getting killed, the spare manager should

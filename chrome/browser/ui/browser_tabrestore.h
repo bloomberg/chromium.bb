@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_TABRESTORE_H_
 #define CHROME_BROWSER_UI_BROWSER_TABRESTORE_H_
 
+#include <string>
 #include <vector>
 
 #include "components/sessions/core/session_types.h"

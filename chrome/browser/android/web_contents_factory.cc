@@ -26,7 +26,12 @@ static ScopedJavaLocalRef<jobject> JNI_WebContentsFactory_CreateWebContents(
 
   content::WebContents::CreateParams params(profile);
   params.initially_hidden = static_cast<bool>(initially_hidden);
-  params.initialize_renderer = static_cast<bool>(initialize_renderer);
+  params.desired_renderer_state =
+      static_cast<bool>(initialize_renderer)
+          ? content::WebContents::CreateParams::
+                kInitializeAndWarmupRendererProcess
+          : content::WebContents::CreateParams::kOkayToHaveRendererProcess;
+
   // Ownership is passed into java, and then to TabAndroid::InitWebContents.
   return content::WebContents::Create(params).release()->GetJavaWebContents();
 }

@@ -1043,6 +1043,38 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
     rph->RemoveObserver(this);
 }
 
+// This test verifies properties of RenderProcessHostImpl *before* Init method
+// is called.
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ConstructedButNotInitializedYet) {
+  RenderProcessHost* process = RenderProcessHostImpl::CreateRenderProcessHost(
+      ShellContentBrowserClient::Get()->browser_context(), nullptr, nullptr,
+      false /* is_for_guests_only */);
+
+  // Just verifying that the arguments of CreateRenderProcessHost got processed
+  // correctly.
+  EXPECT_EQ(ShellContentBrowserClient::Get()->browser_context(),
+            process->GetBrowserContext());
+  EXPECT_FALSE(process->IsForGuestsOnly());
+
+  // There should be no OS process before Init() method is called.
+  EXPECT_FALSE(process->HasConnection());
+  EXPECT_FALSE(process->IsReady());
+  EXPECT_FALSE(process->GetProcess().IsValid());
+  EXPECT_EQ(base::kNullProcessHandle, process->GetProcess().Handle());
+
+  // TODO(lukasza): https://crbug.com/813045: RenderProcessHost shouldn't have
+  // an associated IPC channel (and shouldn't accumulate IPC messages) unless
+  // the Init() method was called and the RPH either has connection to an actual
+  // OS process or is currently attempting to spawn the OS process.  After this
+  // bug is fixed the 1st test assertion below should be reversed (unsure about
+  // the 2nd one).
+  EXPECT_TRUE(process->GetChannel());
+  EXPECT_TRUE(process->GetRendererInterface());
+
+  // Cleanup the resources acquired by the test.
+  process->Cleanup();
+}
+
 // This test verifies that a fast shutdown is possible for a starting process.
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, FastShutdownForStartingProcess) {
   RenderProcessHost* process = RenderProcessHostImpl::CreateRenderProcessHost(
@@ -1050,6 +1082,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, FastShutdownForStartingProcess) {
       false /* is_for_guests_only */);
   process->Init();
   EXPECT_TRUE(process->FastShutdownIfPossible());
+  process->Cleanup();
 }
 
 // Regression test for one part of https://crbug.com/813045.
