@@ -287,6 +287,9 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
   }
 
   void OnJobCompleted(int trial_result_error) {
+    DCHECK(primary_result_.verified_cert);
+    DCHECK(trial_result_.verified_cert);
+
     trial_error_ = trial_result_error;
 
     bool errors_equal = trial_result_error == primary_error_;
@@ -326,25 +329,69 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
     }
 #endif
 
-    bool chains_equal = primary_result_.verified_cert &&
-                        trial_result_.verified_cert &&
-                        primary_result_.verified_cert->EqualsIncludingChain(
-                            trial_result_.verified_cert.get());
+    const bool chains_equal =
+        primary_result_.verified_cert->EqualsIncludingChain(
+            trial_result_.verified_cert.get());
 
-    if (chains_equal && (trial_result_.cert_status & net::CERT_STATUS_IS_EV) &&
-        !(primary_result_.cert_status & net::CERT_STATUS_IS_EV) &&
-        (primary_error_ == trial_error_)) {
+    if (!chains_equal &&
+        (trial_error_ == net::OK || primary_error_ != net::OK)) {
+      // Chains were different, reverify the trial_result_.verified_cert chain
+      // using the platform verifier and compare results again.
+      RequestParams reverification_params(
+          trial_result_.verified_cert, params_.hostname(), params_.flags(),
+          params_.ocsp_response(), params_.additional_trust_anchors());
+
+      int rv = cert_verifier_->primary_reverifier()->Verify(
+          reverification_params, crl_set_.get(), &reverification_result_,
+          base::AdaptCallbackForRepeating(
+              base::BindOnce(&TrialVerificationJob::
+                                 OnPrimaryReverifiyWithSecondaryChainCompleted,
+                             base::Unretained(this))),
+          &reverification_request_, net_log_);
+      if (rv != net::ERR_IO_PENDING)
+        OnPrimaryReverifiyWithSecondaryChainCompleted(rv);
+      return;
+    }
+
+    TrialComparisonResult ignorable_difference =
+        IsSynchronouslyIgnorableDifference(primary_error_, primary_result_,
+                                           trial_error_, trial_result_);
+    if (ignorable_difference != kInvalid) {
+      FinishSuccess(ignorable_difference);
+      return;
+    }
+
+    FinishWithError();
+  }
+
+  // Check if the differences between the primary and trial verifiers can be
+  // ignored. This only handles differences that can be checked synchronously.
+  // If the difference is ignorable, returns the relevant TrialComparisonResult,
+  // otherwise returns kInvalid.
+  static TrialComparisonResult IsSynchronouslyIgnorableDifference(
+      int primary_error,
+      const net::CertVerifyResult& primary_result,
+      int trial_error,
+      const net::CertVerifyResult& trial_result) {
+    DCHECK(primary_result.verified_cert);
+    DCHECK(trial_result.verified_cert);
+
+    const bool chains_equal =
+        primary_result.verified_cert->EqualsIncludingChain(
+            trial_result.verified_cert.get());
+
+    if (chains_equal && (trial_result.cert_status & net::CERT_STATUS_IS_EV) &&
+        !(primary_result.cert_status & net::CERT_STATUS_IS_EV) &&
+        (primary_error == trial_error)) {
       // The platform CertVerifyProc impls only check a single potential EV
       // policy from the leaf.  If the leaf had multiple policies, builtin
       // verifier may verify it as EV when the platform verifier did not.
       if (CertHasMultipleEVPoliciesAndOneMatchesRoot(
-              trial_result_.verified_cert.get())) {
-        FinishSuccess(kIgnoredMultipleEVPoliciesAndOneMatchesRoot);
-        return;
+              trial_result.verified_cert.get())) {
+        return kIgnoredMultipleEVPoliciesAndOneMatchesRoot;
       }
     }
-
-    FinishWithError();
+    return kInvalid;
   }
 
 #if defined(OS_MACOSX)
@@ -356,6 +403,30 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
     FinishWithError();
   }
 #endif
+
+  void OnPrimaryReverifiyWithSecondaryChainCompleted(int reverification_error) {
+    if (reverification_error == trial_error_ &&
+        CertVerifyResultEqual(reverification_result_, trial_result_)) {
+      // The new result matches the builtin verifier, so this was just
+      // a difference in the platform's path-building ability.
+      // Ignore the difference.
+      FinishSuccess(kIgnoredDifferentPathReVerifiesEquivalent);
+      return;
+    }
+
+    if (IsSynchronouslyIgnorableDifference(reverification_error,
+                                           reverification_result_, trial_error_,
+                                           trial_result_) != kInvalid) {
+      // The new result matches if ignoring differences. Still use the
+      // |kIgnoredDifferentPathReVerifiesEquivalent| code rather than the
+      // result of IsSynchronouslyIgnorableDifference, since it's the higher
+      // level description of what the difference is in this case.
+      FinishSuccess(kIgnoredDifferentPathReVerifiesEquivalent);
+      return;
+    }
+
+    FinishWithError();
+  }
 
  private:
   const net::CertVerifier::RequestParams params_;
@@ -394,6 +465,8 @@ TrialComparisonCertVerifier::TrialComparisonCertVerifier(
                   &TrialComparisonCertVerifier::OnPrimaryVerifierComplete,
                   base::Unretained(this)),
               true /* should_record_histograms */)),
+      primary_reverifier_(std::make_unique<net::MultiThreadedCertVerifier>(
+          primary_verify_proc)),
       trial_verifier_(
           net::MultiThreadedCertVerifier::CreateForDualVerificationTrial(
               trial_verify_proc,

@@ -30,7 +30,8 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
     kBothErrorDifferentDetails = 5,
     kIgnoredMacUndesiredRevocationChecking = 6,
     kIgnoredMultipleEVPoliciesAndOneMatchesRoot = 7,
-    kMaxValue = kIgnoredMultipleEVPoliciesAndOneMatchesRoot
+    kIgnoredDifferentPathReVerifiesEquivalent = 8,
+    kMaxValue = kIgnoredDifferentPathReVerifiesEquivalent
   };
 
   TrialComparisonCertVerifier(
@@ -54,6 +55,13 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
 
   bool SupportsOCSPStapling() override;
 
+  // Returns a CertVerifier using the primary CertVerifyProc, which will not
+  // cause OnPrimaryVerifierComplete to be called. This can be used to
+  // attempt to re-verify a cert with different chain or flags without
+  // messing up the stats or potentially causing an infinite loop.
+  net::CertVerifier* primary_reverifier() const {
+    return primary_reverifier_.get();
+  }
   net::CertVerifier* trial_verifier() const { return trial_verifier_.get(); }
 
  private:
@@ -88,6 +96,7 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
   void* profile_id_;
 
   std::unique_ptr<net::CertVerifier> primary_verifier_;
+  std::unique_ptr<net::CertVerifier> primary_reverifier_;
   std::unique_ptr<net::CertVerifier> trial_verifier_;
 
   std::set<std::unique_ptr<TrialVerificationJob>, base::UniquePtrComparator>

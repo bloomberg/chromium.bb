@@ -45,6 +45,7 @@ using certificate_reporting_test_utils::RetryStatus;
 using net::test::IsError;
 using testing::_;
 using testing::Return;
+using testing::SetArgPointee;
 
 namespace {
 
@@ -697,7 +698,8 @@ TEST_F(TrialComparisonCertVerifierTest, BothVerifiersDifferentErrors) {
 }
 
 TEST_F(TrialComparisonCertVerifierTest,
-       BothVerifiersOk_DifferentVerifiedChains) {
+       BothVerifiersOkDifferentVerifiedChains) {
+  // Primary verifier returns chain1 regardless of arguments.
   net::CertVerifyResult primary_result;
   primary_result.verified_cert = cert_chain_1_;
   scoped_refptr<FakeCertVerifyProc> verify_proc1 =
@@ -754,13 +756,180 @@ TEST_F(TrialComparisonCertVerifierTest,
   EXPECT_THAT(report.cert_chain(), CertChainMatches(cert_chain_1_));
   EXPECT_THAT(trial_info.cert_chain(), CertChainMatches(cert_chain_2_));
 
-  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
+  // Main CertVerifier_Job_Latency should have 2 counts since the
+  // primary_reverifier was used.
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency", 2);
+  // CertVerifier_Job_Latency_TrialPrimary only has 1 count since
+  // primary_reverifier doesn't use the same CertVerifier.
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
                                1);
   histograms_.ExpectUniqueSample(
       "Net.CertVerifier_TrialComparisonResult",
       TrialComparisonCertVerifier::kBothValidDifferentDetails, 1);
+}
+
+TEST_F(TrialComparisonCertVerifierTest,
+       BothVerifiersOkDifferentVerifiedChainsEqualAfterReverification) {
+  net::CertVerifyResult chain1_result;
+  chain1_result.verified_cert = cert_chain_1_;
+  net::CertVerifyResult chain2_result;
+  chain2_result.verified_cert = cert_chain_2_;
+
+  scoped_refptr<MockCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<MockCertVerifyProc>();
+  // Primary verifier returns ok status and chain1 if verifying the leaf alone.
+  EXPECT_CALL(*verify_proc1,
+              VerifyInternal(leaf_cert_1_.get(), _, _, _, _, _, _))
+      .WillRepeatedly(DoAll(SetArgPointee<6>(chain1_result), Return(net::OK)));
+  // Primary verifier returns ok status and chain2 if verifying chain2.
+  EXPECT_CALL(*verify_proc1,
+              VerifyInternal(cert_chain_2_.get(), _, _, _, _, _, _))
+      .WillRepeatedly(DoAll(SetArgPointee<6>(chain2_result), Return(net::OK)));
+
+  // Trial verifier returns ok status and chain2.
+  scoped_refptr<FakeCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, chain2_result);
+
+  TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
+
+  net::CertVerifier::RequestParams params(
+      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
+      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifyResult result;
+  net::TestCompletionCallback callback;
+  std::unique_ptr<net::CertVerifier::Request> request;
+  int error =
+      verifier.Verify(params, nullptr /* crl_set */, &result,
+                      callback.callback(), &request, net::NetLogWithSource());
+  ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
+  EXPECT_TRUE(request);
+
+  error = callback.WaitForResult();
+  EXPECT_THAT(error, IsError(net::OK));
+
+  verify_proc2->WaitForVerifyCall();
+
+  // Expect no report.
+  reporting_service_test_helper()->ExpectNoRequests(service());
+
+  // Main CertVerifier_Job_Latency should have 2 counts since the
+  // primary_reverifier was used.
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency", 2);
+  // CertVerifier_Job_Latency_TrialPrimary only has 1 count since
+  // primary_reverifier doesn't use the same CertVerifier.
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
+                               1);
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kIgnoredDifferentPathReVerifiesEquivalent,
+      1);
+}
+
+TEST_F(TrialComparisonCertVerifierTest,
+       DifferentVerifiedChainsIgnorableDifferenceAfterReverification) {
+  base::FilePath certs_dir;
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &certs_dir));
+  certs_dir = certs_dir.AppendASCII("net")
+                  .AppendASCII("trial_comparison_cert_verifier_unittest")
+                  .AppendASCII("target-multiple-policies");
+  scoped_refptr<net::X509Certificate> cert_chain =
+      CreateCertificateChainFromFile(certs_dir, "chain.pem",
+                                     net::X509Certificate::FORMAT_AUTO);
+  ASSERT_TRUE(cert_chain);
+  ASSERT_EQ(2U, cert_chain->intermediate_buffers().size());
+
+  scoped_refptr<net::X509Certificate> leaf =
+      net::X509Certificate::CreateFromBuffer(
+          net::x509_util::DupCryptoBuffer(cert_chain->cert_buffer()), {});
+  ASSERT_TRUE(leaf);
+
+  // Chain with the same leaf and different root. This is not a valid chain, but
+  // doesn't matter for the unittest since this uses mock CertVerifyProcs.
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
+  intermediates.push_back(net::x509_util::DupCryptoBuffer(
+      cert_chain_1_->intermediate_buffers().back().get()));
+  scoped_refptr<net::X509Certificate> different_chain =
+      net::X509Certificate::CreateFromBuffer(
+          net::x509_util::DupCryptoBuffer(cert_chain->cert_buffer()),
+          std::move(intermediates));
+  ASSERT_TRUE(different_chain);
+
+  net::CertVerifyResult different_chain_result;
+  different_chain_result.verified_cert = different_chain;
+
+  net::CertVerifyResult nonev_chain_result;
+  nonev_chain_result.verified_cert = cert_chain;
+
+  net::CertVerifyResult ev_chain_result;
+  ev_chain_result.verified_cert = cert_chain;
+  ev_chain_result.cert_status =
+      net::CERT_STATUS_IS_EV | net::CERT_STATUS_REV_CHECKING_ENABLED;
+
+  net::SHA256HashValue root_fingerprint;
+  crypto::SHA256HashString(net::x509_util::CryptoBufferAsStringPiece(
+                               cert_chain->intermediate_buffers().back().get()),
+                           root_fingerprint.data,
+                           sizeof(root_fingerprint.data));
+  // Both policies in the target are EV policies, but only 1.2.6.7 is valid for
+  // the root in cert_chain.
+  net::ScopedTestEVPolicy scoped_ev_policy_1(
+      net::EVRootCAMetadata::GetInstance(), root_fingerprint, "1.2.6.7");
+  net::ScopedTestEVPolicy scoped_ev_policy_2(
+      net::EVRootCAMetadata::GetInstance(), net::SHA256HashValue(), "1.2.3.4");
+
+  scoped_refptr<MockCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<MockCertVerifyProc>();
+  // Primary verifier returns ok status and different_chain if verifying leaf
+  // alone.
+  EXPECT_CALL(*verify_proc1, VerifyInternal(leaf.get(), _, _, _, _, _, _))
+      .WillRepeatedly(
+          DoAll(SetArgPointee<6>(different_chain_result), Return(net::OK)));
+  // Primary verifier returns ok status and nonev_chain_result if verifying
+  // cert_chain.
+  EXPECT_CALL(*verify_proc1, VerifyInternal(cert_chain.get(), _, _, _, _, _, _))
+      .WillRepeatedly(
+          DoAll(SetArgPointee<6>(nonev_chain_result), Return(net::OK)));
+
+  // Trial verifier returns ok status and ev_chain_result.
+  scoped_refptr<FakeCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, ev_chain_result);
+
+  TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
+
+  net::CertVerifier::RequestParams params(leaf, "test.example", 0 /* flags */,
+                                          std::string() /* ocsp_response */,
+                                          {} /* additional_trust_anchors */);
+  net::CertVerifyResult result;
+  net::TestCompletionCallback callback;
+  std::unique_ptr<net::CertVerifier::Request> request;
+  int error =
+      verifier.Verify(params, nullptr /* crl_set */, &result,
+                      callback.callback(), &request, net::NetLogWithSource());
+  ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
+  EXPECT_TRUE(request);
+
+  error = callback.WaitForResult();
+  EXPECT_THAT(error, IsError(net::OK));
+
+  verify_proc2->WaitForVerifyCall();
+
+  // Expect no report.
+  reporting_service_test_helper()->ExpectNoRequests(service());
+
+  // Main CertVerifier_Job_Latency should have 2 counts since the
+  // primary_reverifier was used.
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency", 2);
+  // CertVerifier_Job_Latency_TrialPrimary only has 1 count since
+  // primary_reverifier doesn't use the same CertVerifier.
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
+                               1);
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kIgnoredDifferentPathReVerifiesEquivalent,
+      1);
 }
 
 TEST_F(TrialComparisonCertVerifierTest, BothVerifiersOkDifferentCertStatus) {
@@ -1162,25 +1331,30 @@ TEST_F(TrialComparisonCertVerifierTest,
 }
 
 TEST_F(TrialComparisonCertVerifierTest, MacUndesiredRevocationChecking) {
+  net::CertVerifyResult revoked_result;
+  revoked_result.verified_cert = cert_chain_1_;
+  revoked_result.cert_status = net::CERT_STATUS_REVOKED;
+
+  net::CertVerifyResult ok_result;
+  ok_result.verified_cert = cert_chain_1_;
+
   // Primary verifier returns an error status.
-  net::CertVerifyResult primary_result;
-  primary_result.verified_cert = cert_chain_1_;
-  primary_result.cert_status = net::CERT_STATUS_REVOKED;
   scoped_refptr<FakeCertVerifyProc> verify_proc1 =
       base::MakeRefCounted<FakeCertVerifyProc>(net::ERR_CERT_REVOKED,
-                                               primary_result);
+                                               revoked_result);
 
-  net::CertVerifyResult secondary_result;
-  secondary_result.verified_cert = cert_chain_1_;
   scoped_refptr<MockCertVerifyProc> verify_proc2 =
       base::MakeRefCounted<MockCertVerifyProc>();
+  // Secondary verifier returns ok status...
   EXPECT_CALL(*verify_proc2, VerifyInternal(_, _, _, _, _, _, _))
-      .WillRepeatedly(Return(net::OK));
+      .WillRepeatedly(DoAll(SetArgPointee<6>(ok_result), Return(net::OK)));
+  // ...unless it was called with REV_CHECKING_ENABLED.
   EXPECT_CALL(
       *verify_proc2,
       VerifyInternal(_, _, _, net::CertVerifier::VERIFY_REV_CHECKING_ENABLED, _,
                      _, _))
-      .WillRepeatedly(Return(net::ERR_CERT_REVOKED));
+      .WillRepeatedly(DoAll(SetArgPointee<6>(revoked_result),
+                            Return(net::ERR_CERT_REVOKED)));
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
@@ -1231,20 +1405,24 @@ TEST_F(TrialComparisonCertVerifierTest, MacUndesiredRevocationChecking) {
 }
 
 TEST_F(TrialComparisonCertVerifierTest, PrimaryRevokedSecondaryOk) {
+  net::CertVerifyResult revoked_result;
+  revoked_result.verified_cert = cert_chain_1_;
+  revoked_result.cert_status = net::CERT_STATUS_REVOKED;
+
+  net::CertVerifyResult ok_result;
+  ok_result.verified_cert = cert_chain_1_;
+
   // Primary verifier returns an error status.
-  net::CertVerifyResult primary_result;
-  primary_result.verified_cert = cert_chain_1_;
-  primary_result.cert_status = net::CERT_STATUS_REVOKED;
   scoped_refptr<FakeCertVerifyProc> verify_proc1 =
       base::MakeRefCounted<FakeCertVerifyProc>(net::ERR_CERT_REVOKED,
-                                               primary_result);
+                                               revoked_result);
 
-  net::CertVerifyResult secondary_result;
-  secondary_result.verified_cert = cert_chain_1_;
+  // Secondary verifier returns ok status regardless of whether
+  // REV_CHECKING_ENABLED was passed.
   scoped_refptr<MockCertVerifyProc> verify_proc2 =
       base::MakeRefCounted<MockCertVerifyProc>();
   EXPECT_CALL(*verify_proc2, VerifyInternal(_, _, _, _, _, _, _))
-      .WillRepeatedly(Return(net::OK));
+      .WillRepeatedly(DoAll(SetArgPointee<6>(ok_result), Return(net::OK)));
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
