@@ -117,10 +117,9 @@ void TranslateScript::Request(const RequestCallback& callback) {
 
   fetcher_.reset(new TranslateURLFetcher(kFetcherId));
   fetcher_->set_extra_request_header(kRequestHeader);
-  fetcher_->Request(
-      translate_script_url,
-      base::Bind(&TranslateScript::OnScriptFetchComplete,
-                 base::Unretained(this)));
+  fetcher_->Request(translate_script_url,
+                    base::BindOnce(&TranslateScript::OnScriptFetchComplete,
+                                   base::Unretained(this)));
 }
 
 
@@ -165,7 +164,8 @@ void TranslateScript::OnScriptFetchComplete(
     // scripts.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&TranslateScript::Clear, weak_method_factory_.GetWeakPtr()),
+        base::BindOnce(&TranslateScript::Clear,
+                       weak_method_factory_.GetWeakPtr()),
         expiration_delay_);
   }
 

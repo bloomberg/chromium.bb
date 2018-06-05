@@ -27,9 +27,8 @@ TranslateURLFetcher::TranslateURLFetcher(int id)
 
 TranslateURLFetcher::~TranslateURLFetcher() {}
 
-bool TranslateURLFetcher::Request(
-    const GURL& url,
-    const TranslateURLFetcher::Callback& callback) {
+bool TranslateURLFetcher::Request(const GURL& url,
+                                  TranslateURLFetcher::Callback callback) {
   // This function is not supposed to be called if the previous operation is not
   // finished.
   if (state_ == REQUESTING) {
@@ -43,7 +42,7 @@ bool TranslateURLFetcher::Request(
 
   state_ = REQUESTING;
   url_ = url;
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   // If the TranslateDownloadManager's request context getter is nullptr then
   // shutdown is in progress. Abort the request, which can't proceed with a
@@ -125,7 +124,7 @@ void TranslateURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 
   // Transfer URLFetcher's ownership before invoking a callback.
   std::unique_ptr<const net::URLFetcher> delete_ptr(fetcher_.release());
-  callback_.Run(id_, state_ == COMPLETED, data);
+  std::move(callback_).Run(id_, state_ == COMPLETED, data);
 }
 
 }  // namespace translate

@@ -19,7 +19,7 @@ namespace translate {
 class TranslateURLFetcher : public net::URLFetcherDelegate {
  public:
   // Callback type for Request().
-  typedef base::Callback<void(int, bool, const std::string&)> Callback;
+  using Callback = base::OnceCallback<void(int, bool, const std::string&)>;
 
   // Represents internal state if the fetch is completed successfully.
   enum State {
@@ -50,7 +50,7 @@ class TranslateURLFetcher : public net::URLFetcherDelegate {
   // true, and the request is finished asynchronously.
   // Returns false if the previous request is not finished, or the request
   // is omitted due to retry limitation.
-  bool Request(const GURL& url, const Callback& callback);
+  bool Request(const GURL& url, Callback callback);
 
   // Gets internal state.
   State state() { return state_; }
