@@ -128,5 +128,5 @@
 
     <!-- Tags -->
     <item type="id" name="highlight_state" />
-
+    <item type="id" name="item_animator" />
 </resources>

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.download.home.list;
 
+import android.os.Handler;
+
 import org.chromium.chrome.browser.download.home.OfflineItemSource;
 import org.chromium.chrome.browser.download.home.filter.DeleteUndoOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
@@ -61,6 +63,7 @@ class DateOrderedListMediator {
         mSearchFilter = new SearchOfflineItemFilter(mTypeFilter);
         mListMutator = new DateOrderedListMutator(mSearchFilter, mModel);
 
+        mModel.getProperties().setEnableItemAnimations(true);
         mModel.getProperties().setOpenCallback(item -> mProvider.openItem(item));
         mModel.getProperties().setPauseCallback(item -> mProvider.pauseDownload(item));
         mModel.getProperties().setResumeCallback(item -> mProvider.resumeDownload(item, true));
@@ -106,17 +109,14 @@ class DateOrderedListMediator {
 
     /** Helper class to disable animations for certain list changes. */
     private class AnimationDisableClosable implements Closeable {
-        private final long mOriginalDuration;
-
         AnimationDisableClosable() {
-            mOriginalDuration = mModel.getProperties().getItemAnimationDurationMs();
-            mModel.getProperties().setItemAnimationDurationMs(0);
+            mModel.getProperties().setEnableItemAnimations(false);
         }
 
         // Closeable implementation.
         @Override
         public void close() {
-            mModel.getProperties().setItemAnimationDurationMs(mOriginalDuration);
+            new Handler().post(() -> mModel.getProperties().setEnableItemAnimations(true));
         }
     }
 }
