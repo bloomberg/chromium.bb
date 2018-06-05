@@ -511,14 +511,33 @@ function audioRepeatAllModeMultipleFile(path) {
       audioPlayerApp.callRemoteTestUtil(
           'fakeMouseClick', audioAppId, repeatButton, this.next);
     },
-    // Wait for next song.
+    // Leap forward in time.
     function(result) {
       chrome.test.assertTrue(result, 'Failed to click the repeat button');
+      audioTimeLeapForward(audioAppId);
+      this.next();
+    },
+    // Check: the same file should still be playing (non-repeated).
+    function() {
+      const playFile = audioPlayingQuery('newly added file.ogg');
+      const initial = playFile + '[playcount="0"]';
+      audioPlayerApp.waitForElement(audioAppId, initial).then(this.next);
+    },
+    // When it ends, Audio Player should play the next file.
+    function() {
       const playFile = audioPlayingQuery('Beautiful Song.ogg');
       audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
     },
-    // TODO(noel): this test is broken. It should check that the first
-    // song plays again (since repeat-all mode is active).
+    // Leap forward in time.
+    function() {
+      audioTimeLeapForward(audioAppId);
+      this.next();
+    },
+    // When it ends, Audio Player should replay the first file (repeat-all).
+    function() {
+      const playFile = audioPlayingQuery('newly added file.ogg');
+      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
+    },
     function() {
       checkIfNoErrorsOccured(this.next);
     }
