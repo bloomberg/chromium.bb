@@ -1134,8 +1134,10 @@ public class DownloadUtils {
      * @return If the path is in the download directory on primary storage.
      */
     public static boolean isInPrimaryStorageDownloadDirectory(String path) {
-        StrictModeContext c = StrictModeContext.allowDiskReads();
-        File primaryDir = Environment.getExternalStorageDirectory();
+        File primaryDir = null;
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            primaryDir = Environment.getExternalStorageDirectory();
+        }
         if (primaryDir == null || path == null) return false;
         String primaryPath = primaryDir.getAbsolutePath();
         if (primaryPath == null) return false;
