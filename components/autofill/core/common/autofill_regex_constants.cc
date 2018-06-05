@@ -43,7 +43,11 @@ const char kAddressLine1Re[] =
     "|地址"                                   // zh-CN
     "|^주소.?$|주소.?1";                      // ko-KR
 const char kAddressLine1LabelRe[] =
-    "address"
+    "(^\\W*address)"
+    "|(address\\W*$)"
+    "|(?:shipping|billing|mailing|pick.?up|drop.?off|delivery|sender|postal|"
+    "recipient|home|work|office|school|business|mail)[\\s\\-]+address"
+    "|address\\s+(of|for|to|from)"
     "|adresse"    // fr-FR
     "|indirizzo"  // it-IT
     "|住所"       // ja-JP
@@ -109,7 +113,7 @@ const char kCityRe[] =
     "|分區"                                  // zh-TW
     "|^시[^도·・]|시[·・]?군[·・]?구";       // ko-KR
 const char kStateRe[] =
-    "(?<!united )state|county|region|province"
+    "(?<!(united|hist|history).?)state|county|region|province"
     "|land"                 // de-DE
     "|county|principality"  // en-UK
     "|都道府県"             // ja-JP
@@ -120,7 +124,10 @@ const char kStateRe[] =
     "|^시[·・]?도";         // ko-KR
 
 const char kSearchTermRe[] =
-    "search"
+    "^q$"
+    "|search"
+    "|query"
+    "|qry"
     "|suche.*"              // de-DE
     "|搜索"                 // zh-CN zh-TW
     "|探す|検索"            // ja-JP to search

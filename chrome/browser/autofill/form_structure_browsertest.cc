@@ -146,7 +146,9 @@ FormStructureBrowserTest::FormStructureBrowserTest()
       // Enabled
       {},
       // Disabled
-      {autofill::features::kAutofillEnforceMinRequiredFieldsForUpload,
+      {autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics,
+       autofill::features::kAutofillEnforceMinRequiredFieldsForQuery,
+       autofill::features::kAutofillEnforceMinRequiredFieldsForUpload,
        autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
 }
 

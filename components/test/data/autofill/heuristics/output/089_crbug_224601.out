@@ -1,4 +1,4 @@
-UNKNOWN_TYPE | txtSearch | Buy tickets Live train information | Search | txtSearch_1-default
+SEARCH_TERM | txtSearch | Buy tickets Live train information | Search | txtSearch_1-default
 UNKNOWN_TYPE | JP1$txtFrom | From * |  | txtSearch_1-default
 UNKNOWN_TYPE | JP1$txtTo | To * |  | txtSearch_1-default
 UNKNOWN_TYPE | JP1$txtDepartureDate | Out date | 18/04/2013 | txtSearch_1-default

@@ -1,4 +1,4 @@
-UNKNOWN_TYPE | ctl00$ctl00$ctl00$SiteMasterBody$NewNavigationTabs$txtQuery |  |  | ctl00$ctl00$ctl00$SiteMasterBody$NewNavigationTabs$txtQuery_1-default
+SEARCH_TERM | ctl00$ctl00$ctl00$SiteMasterBody$NewNavigationTabs$txtQuery |  |  | ctl00$ctl00$ctl00$SiteMasterBody$NewNavigationTabs$txtQuery_1-default
 NAME_FIRST | ctl00$ctl00$ctl00$SiteMasterBody$ContentPlaceHolder1$ContentPlaceHolder1$txtFirstName | First Name * |  | ctl00$ctl00$ctl00$SiteMasterBody$NewNavigationTabs$txtQuery_1-default
 NAME_LAST | ctl00$ctl00$ctl00$SiteMasterBody$ContentPlaceHolder1$ContentPlaceHolder1$txtLastName | Last Name * |  | ctl00$ctl00$ctl00$SiteMasterBody$NewNavigationTabs$txtQuery_1-default
 EMAIL_ADDRESS | ctl00$ctl00$ctl00$SiteMasterBody$ContentPlaceHolder1$ContentPlaceHolder1$txtUserName | Email Address * |  | ctl00$ctl00$ctl00$SiteMasterBody$NewNavigationTabs$txtQuery_1-default
