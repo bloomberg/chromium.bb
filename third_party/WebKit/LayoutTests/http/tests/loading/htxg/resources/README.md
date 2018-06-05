@@ -29,7 +29,7 @@ gen-signedexchange \
   -content htxg-location.html \
   -certificate ../../../../../../../blink/tools/blinkpy/third_party/wpt/certs/127.0.0.1.pem \
   -certUrl http://localhost:8000/loading/htxg/resources/127.0.0.1.pem.cbor \
-  -validityUrl http://localhost:8000/loading/htxg/resources/resource.validity.msg \
+  -validityUrl https://www.127.0.0.1/loading/htxg/resources/resource.validity.msg \
   -privateKey ../../../../../../../blink/tools/blinkpy/third_party/wpt/certs/127.0.0.1.key \
   -date 2018-04-01T00:00:00Z \
   -expire 168h \
@@ -43,10 +43,25 @@ gen-signedexchange \
   -content htxg-location.html \
   -certificate ../../../../../../../blink/tools/blinkpy/third_party/wpt/certs/127.0.0.1.pem \
   -certUrl http://localhost:8000/loading/htxg/resources/not_found_cert.pem.cbor \
-  -validityUrl http://localhost:8000/loading/htxg/resources/not_found_cert.validity.msg \
+  -validityUrl https://www.127.0.0.1/loading/htxg/resources/not_found_cert.validity.msg \
   -privateKey ../../../../../../../blink/tools/blinkpy/third_party/wpt/certs/127.0.0.1.key \
   -date 2018-04-01T00:00:00Z \
   -expire 168h \
   -o htxg-cert-not-found.sxg \
+  -miRecordSize 100
+
+# Generate the signed exchange file which validity URL is different origin from
+# request URL.
+gen-signedexchange \
+  -uri https://www.127.0.0.1/test.html \
+  -status 200 \
+  -content htxg-location.html \
+  -certificate ../../../../../../../blink/tools/blinkpy/third_party/wpt/certs/127.0.0.1.pem \
+  -certUrl http://localhost:8000/loading/htxg/resources/127.0.0.1.pem.cbor \
+  -validityUrl https://www2.127.0.0.1/loading/htxg/resources/resource.validity.msg \
+  -privateKey ../../../../../../../blink/tools/blinkpy/third_party/wpt/certs/127.0.0.1.key \
+  -date 2018-04-01T00:00:00Z \
+  -expire 168h \
+  -o htxg-invalid-validity-url.sxg \
   -miRecordSize 100
 ```

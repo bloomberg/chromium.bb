@@ -16,6 +16,7 @@
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "net/http/http_util.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -309,6 +310,19 @@ base::Optional<SignedExchangeEnvelope> SignedExchangeEnvelope::Parse(
   }
 
   ret.signature_ = (*signatures)[0];
+
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cross-origin-trust
+  // If the signature’s “validity-url” parameter is not same-origin with
+  // exchange’s effective request URI (Section 5.5 of [RFC7230]), return
+  // “invalid” [spec text]
+  const GURL request_url = ret.request_url();
+  const GURL validity_url = ret.signature().validity_url;
+  if (!url::IsSameOriginWith(request_url, validity_url)) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy, "Validity URL must be same-origin with request URL.");
+    return base::nullopt;
+  }
+
   return std::move(ret);
 }
 

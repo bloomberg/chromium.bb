@@ -45,7 +45,7 @@ gen-signedexchange \
   -content test.html \
   -certificate /tmp/wildcard_example.org.public.pem \
   -certUrl https://cert.example.org/cert.msg \
-  -validityUrl https://cert.example.org/resource.validity.msg \
+  -validityUrl https://test.example.org/resource.validity.msg \
   -privateKey /tmp/wildcard_example.org.private.pem \
   -date 2018-03-12T05:53:20Z \
   -o test.example.org_test.htxg \
@@ -58,7 +58,7 @@ gen-signedexchange \
   -content test.html \
   -certificate /tmp/wildcard_example.org.public.pem \
   -certUrl https://cert.example.org/cert.msg \
-  -validityUrl https://cert.example.org/resource.validity.msg \
+  -validityUrl https://test.example.org/resource.validity.msg \
   -privateKey /tmp/wildcard_example.org.private.pem \
   -date 2018-03-12T05:53:20Z \
   -o test.example.com_invalid_test.htxg \
@@ -71,7 +71,7 @@ gen-signedexchange \
   -content hello.txt \
   -certificate /tmp/wildcard_example.org.public.pem \
   -certUrl https://cert.example.org/cert.msg \
-  -validityUrl https://cert.example.org/resource.validity.msg \
+  -validityUrl https://test.example.org/resource.validity.msg \
   -privateKey /tmp/wildcard_example.org.private.pem \
   -responseHeader 'Content-Type: text/plain; charset=iso-8859-1' \
   -date 2018-03-12T05:53:20Z \
