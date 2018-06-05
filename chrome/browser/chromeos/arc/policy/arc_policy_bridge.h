@@ -91,9 +91,8 @@ class ArcPolicyBridge : public KeyedService,
   static ArcPolicyBridge* GetForBrowserContext(
       content::BrowserContext* context);
 
-  // Set the ArcPolicyBridge that will be returned by GetForBrowserContext in
-  // testing code.
-  static void SetForTesting(ArcPolicyBridge* arc_policy_bridge);
+  static ArcPolicyBridge* GetForBrowserContextForTesting(
+      content::BrowserContext* context);
 
   base::WeakPtr<ArcPolicyBridge> GetWeakPtr();
 

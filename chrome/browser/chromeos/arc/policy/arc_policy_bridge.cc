@@ -338,24 +338,18 @@ class ArcPolicyBridgeFactory
   ~ArcPolicyBridgeFactory() override = default;
 };
 
-static ArcPolicyBridge* g_testing_arc_policy_bridge = nullptr;
-
 }  // namespace
 
 // static
 ArcPolicyBridge* ArcPolicyBridge::GetForBrowserContext(
     content::BrowserContext* context) {
-  if (g_testing_arc_policy_bridge)
-    return g_testing_arc_policy_bridge;
   return ArcPolicyBridgeFactory::GetForBrowserContext(context);
 }
 
-// TODO(isandrk): Replace with something more sensible in a follow-up CL.
 // static
-void ArcPolicyBridge::SetForTesting(ArcPolicyBridge* arc_policy_bridge) {
-  // Only allow setting an instance, and resetting it to nullptr.
-  CHECK(g_testing_arc_policy_bridge == nullptr || arc_policy_bridge == nullptr);
-  g_testing_arc_policy_bridge = arc_policy_bridge;
+ArcPolicyBridge* ArcPolicyBridge::GetForBrowserContextForTesting(
+    content::BrowserContext* context) {
+  return ArcPolicyBridgeFactory::GetForBrowserContextForTesting(context);
 }
 
 base::WeakPtr<ArcPolicyBridge> ArcPolicyBridge::GetWeakPtr() {
