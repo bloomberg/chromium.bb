@@ -79,7 +79,10 @@ source_set("clients") {
 }
 
 source_set("jpeg_decode_accelerator") {
-  visibility = [ "//content/browser" ]
+  visibility = [
+    "//content/browser",
+    "//media/capture:capture_lib",
+  ]
 
   sources = [
     "mojo_jpeg_decode_accelerator.cc",

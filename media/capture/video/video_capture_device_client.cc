@@ -64,7 +64,8 @@ void GetI420BufferAccess(
   *y_plane_stride = dimensions.width();
   *uv_plane_stride = *y_plane_stride / 2;
 }
-}
+
+}  // anonymous namespace
 
 namespace media {
 
@@ -98,10 +99,10 @@ class BufferPoolBufferHandleProvider
 VideoCaptureDeviceClient::VideoCaptureDeviceClient(
     std::unique_ptr<VideoFrameReceiver> receiver,
     scoped_refptr<VideoCaptureBufferPool> buffer_pool,
-    const VideoCaptureJpegDecoderFactoryCB& jpeg_decoder_factory)
+    VideoCaptureJpegDecoderFactoryCB optional_jpeg_decoder_factory_callback)
     : receiver_(std::move(receiver)),
-      jpeg_decoder_factory_callback_(jpeg_decoder_factory),
-      external_jpeg_decoder_initialized_(false),
+      optional_jpeg_decoder_factory_callback_(
+          std::move(optional_jpeg_decoder_factory_callback)),
       buffer_pool_(std::move(buffer_pool)),
       last_captured_pixel_format_(PIXEL_FORMAT_UNKNOWN) {
   on_started_using_gpu_cb_ =
@@ -138,6 +139,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     base::TimeTicks reference_time,
     base::TimeDelta timestamp,
     int frame_feedback_id) {
+  DFAKE_SCOPED_RECURSIVE_LOCK(call_from_producer_);
   TRACE_EVENT0("media", "VideoCaptureDeviceClient::OnIncomingCapturedData");
 
   if (last_captured_pixel_format_ != format.pixel_format) {
@@ -145,11 +147,11 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     last_captured_pixel_format_ = format.pixel_format;
 
     if (format.pixel_format == PIXEL_FORMAT_MJPEG &&
-        !external_jpeg_decoder_initialized_) {
-      external_jpeg_decoder_initialized_ = true;
-      external_jpeg_decoder_ = jpeg_decoder_factory_callback_.Run();
-      if (external_jpeg_decoder_)
-        external_jpeg_decoder_->Initialize();
+        optional_jpeg_decoder_factory_callback_) {
+      external_jpeg_decoder_ =
+          std::move(optional_jpeg_decoder_factory_callback_).Run();
+      DCHECK(external_jpeg_decoder_);
+      external_jpeg_decoder_->Initialize();
     }
   }
 
