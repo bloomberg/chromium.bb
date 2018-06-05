@@ -76,6 +76,7 @@ FetchRequestData* FetchRequestData::CloneExceptBody() {
   request->response_tainting_ = response_tainting_;
   request->mime_type_ = mime_type_;
   request->integrity_ = integrity_;
+  request->importance_ = importance_;
   request->keepalive_ = keepalive_;
   return request;
 }
@@ -119,6 +120,7 @@ FetchRequestData::FetchRequestData()
       credentials_(network::mojom::FetchCredentialsMode::kOmit),
       cache_mode_(mojom::FetchCacheMode::kDefault),
       redirect_(network::mojom::FetchRedirectMode::kFollow),
+      importance_(mojom::FetchImportanceMode::kImportanceAuto),
       response_tainting_(kBasicTainting),
       keepalive_(false) {}
 

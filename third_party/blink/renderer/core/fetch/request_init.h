@@ -39,6 +39,7 @@ class RequestInit {
   const String& CacheMode() const { return cache_; }
   const String& Redirect() const { return redirect_; }
   const String& Integrity() const { return integrity_; }
+  const String& Importance() const { return importance_; }
   const base::Optional<bool>& Keepalive() const { return keepalive_; }
   base::Optional<AbortSignal*> Signal() const;
   bool AreAnyMembersSet() const { return are_any_members_set_; }
@@ -68,6 +69,7 @@ class RequestInit {
   String cache_;
   String redirect_;
   String integrity_;
+  String importance_;
   base::Optional<bool> keepalive_;
   base::Optional<Member<AbortSignal>> signal_;
   // True if any members in RequestInit are set and hence the referrer member
