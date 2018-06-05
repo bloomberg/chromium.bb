@@ -24,7 +24,7 @@ const char kSignatureString[] =
     " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
     "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
     " integrity=\"mi\";"
-    " validity-url=\"https://example.com/resource.validity.1511128380\";"
+    " validity-url=\"https://test.example.org/resource.validity.1511128380\";"
     " cert-url=\"https://example.com/oldcerts\";"
     " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
     " date=1511128380; expires=1511733180";
@@ -202,6 +202,16 @@ TEST(SignedExchangeEnvelopeTest, UppercaseResponseMap) {
           {kUrlKey, "https://test.example.org/test/"}, {kMethodKey, "GET"},
       },
       {{kStatusKey, "200"}, {"Content-Length", "123"}});
+  ASSERT_FALSE(header.has_value());
+}
+
+TEST(SignedExchangeEnvelopeTest, InvalidValidityURLHeader) {
+  auto header = GenerateHeaderAndParse(
+      kSignatureString,
+      {
+          {kUrlKey, "https://test2.example.org/test/"}, {kMethodKey, "GET"},
+      },
+      {{kStatusKey, "200"}, {"content-type", "text/html"}});
   ASSERT_FALSE(header.has_value());
 }
 
