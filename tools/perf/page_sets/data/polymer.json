@@ -1,30 +1,30 @@
 {
     "archives": {
-        "http://www.polymer-project.org/components/core-scroll-header-panel/demo.html": {
+        "core_scroll_header_panel": {
             "DEFAULT": "polymer_001.wprgo"
         },
-        "http://www.polymer-project.org/components/paper-button/demo.html": {
+        "paper_button": {
             "DEFAULT": "polymer_001.wprgo"
         },
-        "http://www.polymer-project.org/components/paper-calculator/demo.html": {
+        "paper_calculator": {
             "DEFAULT": "polymer_001.wprgo"
         },
-        "http://www.polymer-project.org/components/paper-checkbox/demo.html": {
+        "paper_checkbox": {
             "DEFAULT": "polymer_001.wprgo"
         },
-        "http://www.polymer-project.org/components/paper-fab/demo.html": {
+        "paper_fab": {
             "DEFAULT": "polymer_001.wprgo"
         },
-        "http://www.polymer-project.org/components/paper-icon-button/demo.html": {
+        "paper_icon_button": {
             "DEFAULT": "polymer_001.wprgo"
         },
-        "http://www.polymer-project.org/components/paper-shadow/demo.html": {
+        "paper_shadow": {
             "DEFAULT": "polymer_001.wprgo"
         },
-        "http://www.polymer-project.org/components/paper-tabs/demo.html": {
+        "paper_tabs": {
             "DEFAULT": "polymer_001.wprgo"
         },
-        "http://www.polymer-project.org/components/paper-toggle-button/demo.html": {
+        "paper_toggle_button": {
             "DEFAULT": "polymer_001.wprgo"
         }
     },
