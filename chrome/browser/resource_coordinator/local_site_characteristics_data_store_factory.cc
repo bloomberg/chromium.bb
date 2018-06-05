@@ -91,7 +91,7 @@ LocalSiteCharacteristicsDataStoreFactory::GetBrowserContextToUse(
 
 bool LocalSiteCharacteristicsDataStoreFactory::
     ServiceIsCreatedWithBrowserContext() const {
-  return base::FeatureList::IsEnabled(features::kProactiveTabFreezeAndDiscard);
+  return base::FeatureList::IsEnabled(features::kSiteCharacteristicsDatabase);
 }
 
 bool LocalSiteCharacteristicsDataStoreFactory::ServiceIsNULLWhileTesting()
