@@ -160,8 +160,8 @@ viewer won't be supported.
 
 Assuming your current directory is `chromium/src/`, you can run tests with:
 
-`./tools/perf/run_benchmark blink_perf [--test-path=<path to your tests>]`
+`./tools/perf/run_benchmark run blink_perf [--test-path=<path to your tests>]`
 
 For information about all supported options, run:
 
-`./tools/perf/run_benchmark blink_perf --help`
+`./tools/perf/run_benchmark run blink_perf --help`
