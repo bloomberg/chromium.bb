@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator_manager_delegate.h"
+#include "ui/base/accelerators/test_accelerator_target.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -17,38 +18,6 @@ namespace ui {
 namespace test {
 
 namespace {
-
-class TestTarget : public AcceleratorTarget {
- public:
-  TestTarget() = default;
-  ~TestTarget() override = default;
-
-  int accelerator_pressed_count() const {
-    return accelerator_pressed_count_;
-  }
-
-  void set_accelerator_pressed_count(int accelerator_pressed_count) {
-    accelerator_pressed_count_ = accelerator_pressed_count;
-  }
-
-  // Overridden from AcceleratorTarget:
-  bool AcceleratorPressed(const Accelerator& accelerator) override;
-  bool CanHandleAccelerators() const override;
-
- private:
-  int accelerator_pressed_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTarget);
-};
-
-bool TestTarget::AcceleratorPressed(const Accelerator& accelerator) {
-  ++accelerator_pressed_count_;
-  return true;
-}
-
-bool TestTarget::CanHandleAccelerators() const {
-  return true;
-}
 
 Accelerator GetAccelerator(KeyboardCode code, int mask) {
   return Accelerator(code, mask);
@@ -126,7 +95,7 @@ class AcceleratorManagerTest : public testing::Test {
 };
 
 TEST_F(AcceleratorManagerTest, Register) {
-  TestTarget target;
+  TestAcceleratorTarget target;
   const Accelerator accelerator_a(VKEY_A, EF_NONE);
   delegate_.SetIdForAccelerator(accelerator_a, "a");
 
@@ -150,17 +119,17 @@ TEST_F(AcceleratorManagerTest, Register) {
   EXPECT_TRUE(manager_.Process(accelerator_b));
   EXPECT_TRUE(manager_.Process(accelerator_c));
   EXPECT_TRUE(manager_.Process(accelerator_d));
-  EXPECT_EQ(4, target.accelerator_pressed_count());
+  EXPECT_EQ(4, target.accelerator_count());
 }
 
 TEST_F(AcceleratorManagerTest, RegisterMultipleTarget) {
   const Accelerator accelerator_a(VKEY_A, EF_NONE);
   delegate_.SetIdForAccelerator(accelerator_a, "a");
-  TestTarget target1;
+  TestAcceleratorTarget target1;
   manager_.Register({accelerator_a}, AcceleratorManager::kNormalPriority,
                     &target1);
   EXPECT_EQ("Register a", delegate_.GetAndClearCommands());
-  TestTarget target2;
+  TestAcceleratorTarget target2;
   manager_.Register({accelerator_a}, AcceleratorManager::kNormalPriority,
                     &target2);
   // Registering the same command shouldn't notify the delegate.
@@ -169,14 +138,14 @@ TEST_F(AcceleratorManagerTest, RegisterMultipleTarget) {
   // If multiple targets are registered with the same accelerator, the target
   // registered later processes the accelerator.
   EXPECT_TRUE(manager_.Process(accelerator_a));
-  EXPECT_EQ(0, target1.accelerator_pressed_count());
-  EXPECT_EQ(1, target2.accelerator_pressed_count());
+  EXPECT_EQ(0, target1.accelerator_count());
+  EXPECT_EQ(1, target2.accelerator_count());
 }
 
 TEST_F(AcceleratorManagerTest, Unregister) {
   const Accelerator accelerator_a(VKEY_A, EF_NONE);
   delegate_.SetIdForAccelerator(accelerator_a, "a");
-  TestTarget target;
+  TestAcceleratorTarget target;
   const Accelerator accelerator_b(VKEY_B, EF_NONE);
   delegate_.SetIdForAccelerator(accelerator_b, "b");
   manager_.Register({accelerator_a, accelerator_b},
@@ -188,27 +157,27 @@ TEST_F(AcceleratorManagerTest, Unregister) {
   manager_.Unregister(accelerator_b, &target);
   EXPECT_EQ("Unregister b", delegate_.GetAndClearCommands());
   EXPECT_TRUE(manager_.Process(accelerator_a));
-  EXPECT_EQ(1, target.accelerator_pressed_count());
+  EXPECT_EQ(1, target.accelerator_count());
 
   // The unregistered accelerator is no longer processed.
-  target.set_accelerator_pressed_count(0);
+  target.ResetCounts();
   manager_.Unregister(accelerator_a, &target);
   EXPECT_EQ("Unregister a", delegate_.GetAndClearCommands());
   EXPECT_FALSE(manager_.Process(accelerator_a));
-  EXPECT_EQ(0, target.accelerator_pressed_count());
+  EXPECT_EQ(0, target.accelerator_count());
 }
 
 TEST_F(AcceleratorManagerTest, UnregisterAll) {
   const Accelerator accelerator_a(VKEY_A, EF_NONE);
   delegate_.SetIdForAccelerator(accelerator_a, "a");
-  TestTarget target1;
+  TestAcceleratorTarget target1;
   const Accelerator accelerator_b(VKEY_B, EF_NONE);
   delegate_.SetIdForAccelerator(accelerator_b, "b");
   manager_.Register({accelerator_a, accelerator_b},
                     AcceleratorManager::kNormalPriority, &target1);
   const Accelerator accelerator_c(VKEY_C, EF_NONE);
   delegate_.SetIdForAccelerator(accelerator_c, "c");
-  TestTarget target2;
+  TestAcceleratorTarget target2;
   manager_.Register({accelerator_c}, AcceleratorManager::kNormalPriority,
                     &target2);
   EXPECT_EQ("Register a Register b Register c",
@@ -224,15 +193,15 @@ TEST_F(AcceleratorManagerTest, UnregisterAll) {
   // All the accelerators registered for |target1| are no longer processed.
   EXPECT_FALSE(manager_.Process(accelerator_a));
   EXPECT_FALSE(manager_.Process(accelerator_b));
-  EXPECT_EQ(0, target1.accelerator_pressed_count());
+  EXPECT_EQ(0, target1.accelerator_count());
 
   // UnregisterAll with a different target does not affect the other target.
   EXPECT_TRUE(manager_.Process(accelerator_c));
-  EXPECT_EQ(1, target2.accelerator_pressed_count());
+  EXPECT_EQ(1, target2.accelerator_count());
 }
 
 TEST_F(AcceleratorManagerTest, Process) {
-  TestTarget target;
+  TestAcceleratorTarget target;
 
   // Test all cases of possible modifiers.
   for (size_t i = 0; i < (1 << arraysize(kAcceleratorModifiers)); ++i) {
@@ -242,9 +211,9 @@ TEST_F(AcceleratorManagerTest, Process) {
                       &target);
 
     // The registered accelerator is processed.
-    const int last_count = target.accelerator_pressed_count();
+    const int last_count = target.accelerator_count();
     EXPECT_TRUE(manager_.Process(accelerator)) << i;
-    EXPECT_EQ(last_count + 1, target.accelerator_pressed_count()) << i;
+    EXPECT_EQ(last_count + 1, target.accelerator_count()) << i;
 
     // The non-registered accelerators are not processed.
     accelerator.set_key_state(Accelerator::KeyState::RELEASED);
@@ -268,7 +237,7 @@ TEST_F(AcceleratorManagerTest, Process) {
                                                        << " test_i=" << test_i;
     }
 
-    EXPECT_EQ(last_count + 1, target.accelerator_pressed_count()) << i;
+    EXPECT_EQ(last_count + 1, target.accelerator_count()) << i;
     manager_.UnregisterAll(&target);
   }
 }
@@ -277,7 +246,7 @@ TEST_F(AcceleratorManagerTest, Process) {
 // with the same accelerator.
 TEST_F(AcceleratorManagerTest, Reregister) {
   const Accelerator accelerator_a(VKEY_A, EF_NONE);
-  TestTarget target;
+  TestAcceleratorTarget target;
   delegate_.SetIdForAccelerator(accelerator_a, "a");
   manager_.Register({accelerator_a}, AcceleratorManager::kNormalPriority,
                     &target);
