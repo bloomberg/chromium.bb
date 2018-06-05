@@ -450,19 +450,6 @@ static void iadst16_low1_new_avx2(const __m256i *input, __m256i *output,
   iadst16_stage9_avx2(output, x1);
 }
 
-static void iidentity16_new_avx2(const __m256i *input, __m256i *output,
-                                 int8_t cos_bit) {
-  (void)cos_bit;
-  const int16_t scale_fractional = 2 * (NewSqrt2 - (1 << NewSqrt2Bits));
-  const __m256i scale =
-      _mm256_set1_epi16(scale_fractional << (15 - NewSqrt2Bits));
-  for (int i = 0; i < 16; ++i) {
-    __m256i x = _mm256_mulhrs_epi16(input[i], scale);
-    __m256i srcx2 = _mm256_adds_epi16(input[i], input[i]);
-    output[i] = _mm256_adds_epi16(x, srcx2);
-  }
-}
-
 static INLINE void idct32_high16_stage3_avx2(__m256i *x) {
   btf_16_adds_subs_avx2(x[16], x[17]);
   btf_16_subs_adds_avx2(x[19], x[18]);
