@@ -2305,6 +2305,10 @@ TEST_P(GLES2DecoderManualInitTest, DrawClearsDepthTexture) {
       .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
       .RetiresOnSaturation();
 
+  EXPECT_CALL(*gl_, ColorMask(1, 1, 1, 1)).Times(1).RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearColor(0.0f, 0.0f, 0.0f, 0.0f))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, ClearStencil(0)).Times(1).RetiresOnSaturation();
   SetupExpectationsForStencilMask(GLES2Decoder::kDefaultStencilMask,
                                   GLES2Decoder::kDefaultStencilMask);
@@ -2324,6 +2328,80 @@ TEST_P(GLES2DecoderManualInitTest, DrawClearsDepthTexture) {
       .RetiresOnSaturation();
 
   SetupExpectationsForApplyingDefaultDirtyState();
+  EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawArrays cmd;
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderManualInitTest, DrawClearsLargeTexture) {
+  InitState init;
+  init.extensions = "GL_ANGLE_depth_texture";
+  init.gl_version = "OpenGL ES 2.0";
+  init.has_alpha = true;
+  init.has_depth = true;
+  init.request_alpha = true;
+  init.request_depth = true;
+  init.bind_generates_resource = true;
+  InitDecoder(init);
+
+  SetupDefaultProgram();
+  SetupAllNeededVertexBuffers();
+  const GLenum attachment = GL_COLOR_ATTACHMENT0;
+  const GLenum target = GL_TEXTURE_2D;
+  const GLint level = 0;
+  DoBindTexture(target, client_texture_id_, kServiceTextureId);
+
+  // Create an RGBA texture.
+  DoTexImage2D(target, level, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               0, 0);
+
+  // Set scissor rect and disable GL_SCISSOR_TEST to make sure we enable it in
+  // the clear, then disable it and restore the rect again.
+  DoScissor(0, 0, 32, 32);
+  DoEnableDisable(GL_SCISSOR_TEST, false);
+
+  EXPECT_CALL(*gl_, GenFramebuffersEXT(1, _)).Times(1).RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, FramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER_EXT, attachment,
+                                            target, kServiceTextureId, level))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_DRAW_FRAMEBUFFER_EXT))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, ColorMask(1, 1, 1, 1)).Times(1).RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearColor(0.0f, 0.0f, 0.0f, 0.0f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearStencil(0)).Times(1).RetiresOnSaturation();
+  SetupExpectationsForStencilMask(GLES2Decoder::kDefaultStencilMask,
+                                  GLES2Decoder::kDefaultStencilMask);
+  EXPECT_CALL(*gl_, ClearDepth(1.0f)).Times(1).RetiresOnSaturation();
+  SetupExpectationsForDepthMask(true);
+  SetupExpectationsForEnableDisable(GL_SCISSOR_TEST, true);
+  EXPECT_CALL(*gl_, Scissor(0, 0, 256, 256)).Times(1).RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, Clear(GL_COLOR_BUFFER_BIT)).Times(1).RetiresOnSaturation();
+
+  SetupExpectationsForRestoreClearState(0.0f, 0.0f, 0.0f, 0.0f, 0, 1.0f, false,
+                                        0, 0, 32, 32);
+
+  EXPECT_CALL(*gl_, DeleteFramebuffersEXT(1, _)).Times(1).RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  SetupExpectationsForApplyingDefaultDirtyState();
+  EXPECT_CALL(*gl_, ActiveTexture(_)).Times(3).RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindTexture(_, _)).Times(2).RetiresOnSaturation();
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
       .RetiresOnSaturation();

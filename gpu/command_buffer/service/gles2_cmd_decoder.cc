@@ -1375,6 +1375,17 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                   int width,
                   int height) override;
 
+  // Helper function for ClearLevel that attempts to clear using a glClear call
+  // to a temporary FBO, rather than using glTexSubImage2D.
+  bool ClearLevelUsingGL(Texture* texture,
+                         uint32_t channels,
+                         unsigned target,
+                         int level,
+                         int xoffset,
+                         int yoffset,
+                         int width,
+                         int height);
+
   // overridden from GLES2Decoder
   bool ClearCompressedTextureLevel(Texture* texture,
                                    unsigned target,
@@ -13034,59 +13045,19 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
                                   int yoffset,
                                   int width,
                                   int height) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::ClearLevel");
   DCHECK(target != GL_TEXTURE_3D && target != GL_TEXTURE_2D_ARRAY &&
          target != GL_TEXTURE_EXTERNAL_OES);
   uint32_t channels = GLES2Util::GetChannelsForFormat(format);
+
+  bool must_use_gl_clear = false;
   if ((channels & GLES2Util::kDepth) != 0 &&
       feature_info_->feature_flags().angle_depth_texture &&
       feature_info_->gl_version_info().is_es2) {
     // It's a depth format and ANGLE doesn't allow texImage2D or texSubImage2D
     // on depth formats in ES2.
-    GLuint fb = 0;
-    api()->glGenFramebuffersEXTFn(1, &fb);
-    api()->glBindFramebufferEXTFn(GL_DRAW_FRAMEBUFFER_EXT, fb);
-
-    api()->glFramebufferTexture2DEXTFn(GL_DRAW_FRAMEBUFFER_EXT,
-                                       GL_DEPTH_ATTACHMENT, target,
-                                       texture->service_id(), level);
-    bool have_stencil = (channels & GLES2Util::kStencil) != 0;
-    if (have_stencil) {
-      api()->glFramebufferTexture2DEXTFn(GL_DRAW_FRAMEBUFFER_EXT,
-                                         GL_STENCIL_ATTACHMENT, target,
-                                         texture->service_id(), level);
-    }
-
-    // ANGLE promises a depth only attachment ok.
-    if (api()->glCheckFramebufferStatusEXTFn(GL_DRAW_FRAMEBUFFER_EXT) !=
-        GL_FRAMEBUFFER_COMPLETE) {
-      return false;
-    }
-    api()->glClearStencilFn(0);
-    state_.SetDeviceStencilMaskSeparate(GL_FRONT, kDefaultStencilMask);
-    state_.SetDeviceStencilMaskSeparate(GL_BACK, kDefaultStencilMask);
-    api()->glClearDepthFn(1.0f);
-    state_.SetDeviceDepthMask(GL_TRUE);
-    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, true);
-    gfx::Vector2d scissor_offset = GetBoundFramebufferDrawOffset();
-    api()->glScissorFn(xoffset + scissor_offset.x(),
-                       yoffset + scissor_offset.y(), width, height);
-    ClearDeviceWindowRectangles();
-
-    api()->glClearFn(GL_DEPTH_BUFFER_BIT |
-                     (have_stencil ? GL_STENCIL_BUFFER_BIT : 0));
-
-    RestoreClearState();
-
-    api()->glDeleteFramebuffersEXTFn(1, &fb);
-    Framebuffer* framebuffer =
-        GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
-    GLuint fb_service_id =
-        framebuffer ? framebuffer->service_id() : GetBackbufferServiceId();
-    api()->glBindFramebufferEXTFn(GL_DRAW_FRAMEBUFFER_EXT, fb_service_id);
-    return true;
+    must_use_gl_clear = true;
   }
-
-  const uint32_t kMaxZeroSize = 1024 * 1024 * 4;
 
   uint32_t size;
   uint32_t padded_row_size;
@@ -13096,10 +13067,26 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
     return false;
   }
 
-  TRACE_EVENT1("gpu", "GLES2DecoderImpl::ClearLevel", "size", size);
+  // Prefer to do the clear using a glClear call unless the clear is very small
+  // (less than 64x64, or one page). Calls to TexSubImage2D on large textures
+  // can take hundreds of milliseconds.
+  // https://crbug.com/848952
+  const uint32_t kMinSizeForGLClear = 4 * 1024;
+  bool prefer_use_gl_clear = size > kMinSizeForGLClear;
+  if (must_use_gl_clear || prefer_use_gl_clear) {
+    if (ClearLevelUsingGL(texture, channels, target, level, xoffset, yoffset,
+                          width, height)) {
+      return true;
+    }
+  }
+  if (must_use_gl_clear)
+    return false;
+
+  TRACE_EVENT1("gpu", "Clear using TexSubImage2D", "size", size);
 
   int tile_height;
 
+  const uint32_t kMaxZeroSize = 1024 * 1024 * 4;
   if (size > kMaxZeroSize) {
     if (kMaxZeroSize < padded_row_size) {
       // That'd be an awfully large texture.
@@ -13143,6 +13130,70 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
                          bound_texture ? bound_texture->service_id() : 0);
   DCHECK(glGetError() == GL_NO_ERROR);
   return true;
+}
+
+bool GLES2DecoderImpl::ClearLevelUsingGL(Texture* texture,
+                                         uint32_t channels,
+                                         unsigned target,
+                                         int level,
+                                         int xoffset,
+                                         int yoffset,
+                                         int width,
+                                         int height) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::ClearLevelUsingGL");
+  GLuint fb = 0;
+  api()->glGenFramebuffersEXTFn(1, &fb);
+  api()->glBindFramebufferEXTFn(GL_DRAW_FRAMEBUFFER_EXT, fb);
+
+  bool have_color = (channels & GLES2Util::kRGBA) != 0;
+  if (have_color) {
+    api()->glFramebufferTexture2DEXTFn(GL_DRAW_FRAMEBUFFER_EXT,
+                                       GL_COLOR_ATTACHMENT0, target,
+                                       texture->service_id(), level);
+  }
+  bool have_depth = (channels & GLES2Util::kDepth) != 0;
+  if (have_depth) {
+    api()->glFramebufferTexture2DEXTFn(GL_DRAW_FRAMEBUFFER_EXT,
+                                       GL_DEPTH_ATTACHMENT, target,
+                                       texture->service_id(), level);
+  }
+  bool have_stencil = (channels & GLES2Util::kStencil) != 0;
+  if (have_stencil) {
+    api()->glFramebufferTexture2DEXTFn(GL_DRAW_FRAMEBUFFER_EXT,
+                                       GL_STENCIL_ATTACHMENT, target,
+                                       texture->service_id(), level);
+  }
+  // Attempt to do the clear only if the framebuffer is complete. ANGLE
+  // promises a depth only attachment ok.
+  bool result = false;
+  if (api()->glCheckFramebufferStatusEXTFn(GL_DRAW_FRAMEBUFFER_EXT) ==
+      GL_FRAMEBUFFER_COMPLETE) {
+    api()->glColorMaskFn(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    api()->glClearColorFn(0.0, 0.0, 0.0, 0.0);
+    api()->glClearStencilFn(0);
+    state_.SetDeviceStencilMaskSeparate(GL_FRONT, kDefaultStencilMask);
+    state_.SetDeviceStencilMaskSeparate(GL_BACK, kDefaultStencilMask);
+    api()->glClearDepthFn(1.0f);
+    state_.SetDeviceDepthMask(GL_TRUE);
+    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, true);
+    gfx::Vector2d scissor_offset = GetBoundFramebufferDrawOffset();
+    api()->glScissorFn(xoffset + scissor_offset.x(),
+                       yoffset + scissor_offset.y(), width, height);
+    ClearDeviceWindowRectangles();
+
+    api()->glClearFn((have_color ? GL_COLOR_BUFFER_BIT : 0) |
+                     (have_depth ? GL_DEPTH_BUFFER_BIT : 0) |
+                     (have_stencil ? GL_STENCIL_BUFFER_BIT : 0));
+    result = true;
+  }
+  RestoreClearState();
+  api()->glDeleteFramebuffersEXTFn(1, &fb);
+  Framebuffer* framebuffer =
+      GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+  GLuint fb_service_id =
+      framebuffer ? framebuffer->service_id() : GetBackbufferServiceId();
+  api()->glBindFramebufferEXTFn(GL_DRAW_FRAMEBUFFER_EXT, fb_service_id);
+  return result;
 }
 
 bool GLES2DecoderImpl::ClearCompressedTextureLevel(Texture* texture,
