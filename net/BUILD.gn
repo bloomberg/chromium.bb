@@ -1951,6 +1951,8 @@ component("net") {
 
     if (is_fuchsia) {
       sources += [
+        "base/network_change_notifier_fuchsia.cc",
+        "base/network_change_notifier_fuchsia.h",
         "base/network_interfaces_fuchsia.cc",
         "base/platform_mime_util_fuchsia.cc",
         "cert/test_root_certs_fuchsia.cc",
@@ -5435,6 +5437,11 @@ test("net_unittests") {
 
   if (is_fuchsia) {
     use_test_server = true
+    deps += [
+      "//third_party/fuchsia-sdk:fidl_cpp",
+      "//third_party/fuchsia-sdk:netstack",
+    ]
+    sources += [ "base/network_change_notifier_fuchsia_unittest.cc" ]
   }
 
   if (!use_nss_certs) {
