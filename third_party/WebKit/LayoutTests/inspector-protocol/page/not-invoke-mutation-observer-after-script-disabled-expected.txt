@@ -1,0 +1,4 @@
+Tests mutation observer invocation.
+Count: 2.
+Count: 2.
+
