@@ -437,6 +437,9 @@ const base::Feature kUseVideoCaptureApiForDevToolsSnapshots{
 const base::Feature kV8ContextSnapshot{"V8ContextSnapshot",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables to use the V8 Orinoco garbage collector.
+const base::Feature kV8Orinoco{"V8Orinoco", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables future V8 VM features
 const base::Feature kV8VmFuture{"V8VmFuture",
                                 base::FEATURE_DISABLED_BY_DEFAULT};

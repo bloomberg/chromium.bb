@@ -1818,6 +1818,10 @@ const char kV8VmFutureDescription[] =
     "This enables upcoming and experimental V8 VM features. "
     "This flag does not enable experimental JavaScript features.";
 
+const char kV8OrinocoName[] = "V8 Orinoco garbage collection features";
+const char kV8OrinocoDescription[] =
+    "This enables the V8 Orinoco garbage collection features.";
+
 const char kVideoFullscreenOrientationLockName[] =
     "Lock screen orientation when playing a video fullscreen.";
 const char kVideoFullscreenOrientationLockDescription[] =
