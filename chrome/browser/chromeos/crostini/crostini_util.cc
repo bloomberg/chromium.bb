@@ -15,6 +15,9 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/virtual_machines/virtual_machines_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
+#include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -45,7 +48,12 @@ void RecordAppLaunchHistogram(CrostiniAppLaunchAppType app_type) {
 }
 
 void OnLaunchFailed(const std::string& app_id) {
-  // TODO(timloh): Consider displaying a notification of some sort.
+  // Remove the spinner so it doesn't stay around forever.
+  // TODO(timloh): Consider also displaying a notification of some sort.
+  ChromeLauncherController* chrome_controller =
+      ChromeLauncherController::instance();
+  DCHECK(chrome_controller);
+  chrome_controller->GetShelfSpinnerController()->Close(app_id);
 }
 
 void OnCrostiniRestarted(const std::string& app_id,
@@ -135,6 +143,13 @@ void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
 
   // Update the last launched time.
   registry_service->AppLaunched(app_id);
+
+  // Show a spinner as it may take a while for the app window to appear.
+  ChromeLauncherController* chrome_controller =
+      ChromeLauncherController::instance();
+  DCHECK(chrome_controller);
+  chrome_controller->GetShelfSpinnerController()->AddSpinnerToShelf(
+      app_id, std::make_unique<ShelfSpinnerItemController>(app_id));
 
   crostini_manager->RestartCrostini(
       profile, vm_name, container_name,

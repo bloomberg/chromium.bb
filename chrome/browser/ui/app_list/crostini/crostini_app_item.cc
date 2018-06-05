@@ -50,11 +50,9 @@ void CrostiniAppItem::Activate(int event_flags) {
   ChromeLauncherController::instance()->ActivateApp(
       id(), ash::LAUNCH_FROM_APP_LIST, event_flags);
 
-  // TODO(timloh): Launching Crostini apps can take a few seconds if the
-  // container is not currently running. Hiding the launcher at least provides
-  // the user some feedback that they actually clicked an icon. We should make
-  // this better, e.g. by showing some sort of spinner. We also need to handle
-  // failures to start the container or app, as those are currently ignored.
+  // Launching Crostini apps can take a few seconds if the container is not
+  // currently running. We show a spinner in the shelf but it looks nicer to
+  // also dismiss the app list.
   if (!GetController()->IsHomeLauncherEnabledInTabletMode())
     GetController()->DismissView();
 }
