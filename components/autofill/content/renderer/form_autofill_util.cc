@@ -1992,5 +1992,67 @@ bool InferLabelForElementForTesting(const WebFormControlElement& element,
   return InferLabelForElement(element, stop_words, label, label_source);
 }
 
+WebFormElement FindFormByUniqueRendererId(WebDocument doc,
+                                          uint32_t form_renderer_id) {
+  blink::WebVector<WebFormElement> forms;
+  doc.Forms(forms);
+
+  for (const auto& form : forms) {
+    if (form.UniqueRendererFormId() == form_renderer_id)
+      return form;
+  }
+  return WebFormElement();
+}
+
+std::vector<WebFormControlElement> FindFormControlElementsByUniqueRendererId(
+    WebDocument doc,
+    const std::vector<uint32_t>& form_control_renderer_ids) {
+  DCHECK_LE(form_control_renderer_ids.size(), 10u)
+      << "More effective look-up should be implemented";
+  WebElementCollection elements = doc.All();
+  std::vector<WebFormControlElement> result(form_control_renderer_ids.size());
+
+  for (WebElement element = elements.FirstItem(); !element.IsNull();
+       element = elements.NextItem()) {
+    if (!element.IsFormControlElement())
+      continue;
+    WebFormControlElement control = element.To<WebFormControlElement>();
+    auto it = std::find(form_control_renderer_ids.begin(),
+                        form_control_renderer_ids.end(),
+                        control.UniqueRendererFormControlId());
+    if (it == form_control_renderer_ids.end())
+      continue;
+    size_t index = std::distance(form_control_renderer_ids.begin(), it);
+    result[index] = control;
+  }
+
+  return result;
+}
+
+std::vector<WebFormControlElement> FindFormControlElementsByUniqueRendererId(
+    WebDocument doc,
+    uint32_t form_renderer_id,
+    const std::vector<uint32_t>& form_control_renderer_ids) {
+  DCHECK_LE(form_control_renderer_ids.size(), 10u)
+      << "More effective look-up should be implemented";
+  std::vector<WebFormControlElement> result(form_control_renderer_ids.size());
+  WebFormElement form = FindFormByUniqueRendererId(doc, form_renderer_id);
+  if (form.IsNull())
+    return result;
+
+  WebVector<WebFormControlElement> fields;
+  form.GetFormControlElements(fields);
+  for (const auto& field : fields) {
+    auto it = std::find(form_control_renderer_ids.begin(),
+                        form_control_renderer_ids.end(),
+                        field.UniqueRendererFormControlId());
+    if (it == form_control_renderer_ids.end())
+      continue;
+    size_t index = std::distance(form_control_renderer_ids.begin(), it);
+    result[index] = field;
+  }
+  return result;
+}
+
 }  // namespace form_util
 }  // namespace autofill

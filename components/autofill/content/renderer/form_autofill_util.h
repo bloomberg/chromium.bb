@@ -288,6 +288,37 @@ bool InferLabelForElementForTesting(const blink::WebFormControlElement& element,
                                     base::string16* label,
                                     FormFieldData::LabelSource* label_source);
 
+// Returns form by unique renderer id. Return null element if there is no form
+// with given form renderer id.
+blink::WebFormElement FindFormByUniqueRendererId(blink::WebDocument doc,
+                                                 uint32_t form_renderer_id);
+
+// Returns form control elements by unique renderer id. The result has the same
+// number elements as |form_control_renderer_ids| and i-th element of the result
+// corresponds to the i-th element of |form_control_renderer_ids|.
+// |form_control_renderer_ids| is supposed to be small (<=10 elements), because
+// it is being frequently searched by linear pass over its elements.
+// The call of this function might be time expensive, because it retrieves all
+// DOM elements.
+std::vector<blink::WebFormControlElement>
+FindFormControlElementsByUniqueRendererId(
+    blink::WebDocument doc,
+    const std::vector<uint32_t>& form_control_renderer_ids);
+
+// Returns form control elements by unique renderer id from the form with unique
+// id |form_renderer_id|. The result has the same number elements as
+// |form_control_renderer_ids| and i-th element of the result corresponds to the
+// i-th element of |form_control_renderer_ids|.
+// |form_control_renderer_ids| is supposed to be small (<=10 elements), because
+// it is being frequently searched by linear pass over its elements.
+// This function is faster than the previous one, because it only retrieves form
+// control elements from a single form.
+std::vector<blink::WebFormControlElement>
+FindFormControlElementsByUniqueRendererId(
+    blink::WebDocument doc,
+    uint32_t form_renderer_id,
+    const std::vector<uint32_t>& form_control_renderer_ids);
+
 }  // namespace form_util
 }  // namespace autofill
 

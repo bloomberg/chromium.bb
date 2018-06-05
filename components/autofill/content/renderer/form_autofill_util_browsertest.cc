@@ -448,3 +448,76 @@ TEST_F(FormAutofillUtilsTest, IsFocusable) {
     EXPECT_TRUE(target.fields[1].is_focusable);
   }
 }
+
+TEST_F(FormAutofillUtilsTest, FindFormByUniqueId) {
+  LoadHTML("<body><form id='form1'></form><form id='form2'></form></body>");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  blink::WebVector<WebFormElement> forms;
+  doc.Forms(forms);
+
+  for (const auto& form : forms) {
+    EXPECT_EQ(form, autofill::form_util::FindFormByUniqueRendererId(
+                        doc, form.UniqueRendererFormId()));
+  }
+
+  // Expect null form element for non-existing form id.
+  uint32_t non_existing_id = forms[0].UniqueRendererFormId() + 1000;
+  EXPECT_TRUE(
+      autofill::form_util::FindFormByUniqueRendererId(doc, non_existing_id)
+          .IsNull());
+}
+
+TEST_F(FormAutofillUtilsTest, FindFormControlElementsByUniqueIdNoForm) {
+  LoadHTML("<body><input id='i1'><input id='i2'><input id='i3'></body>");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto input1 = doc.GetElementById("i1").To<WebInputElement>();
+  auto input3 = doc.GetElementById("i3").To<WebInputElement>();
+  uint32_t non_existing_id = input3.UniqueRendererFormControlId() + 1000;
+
+  std::vector<uint32_t> renderer_ids = {input3.UniqueRendererFormControlId(),
+                                        non_existing_id,
+                                        input1.UniqueRendererFormControlId()};
+
+  auto elements =
+      autofill::form_util::FindFormControlElementsByUniqueRendererId(
+          doc, renderer_ids);
+
+  ASSERT_EQ(3u, elements.size());
+  EXPECT_EQ(input3, elements[0]);
+  EXPECT_TRUE(elements[1].IsNull());
+  EXPECT_EQ(input1, elements[2]);
+}
+
+TEST_F(FormAutofillUtilsTest, FindFormControlElementsByUniqueIdWithForm) {
+  LoadHTML(
+      "<body><form id='f1'><input id='i1'><input id='i2'></form><input "
+      "id='i3'></body>");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto form = doc.GetElementById("f1").To<WebFormElement>();
+  auto input1 = doc.GetElementById("i1").To<WebInputElement>();
+  auto input3 = doc.GetElementById("i3").To<WebInputElement>();
+  uint32_t non_existing_id = input3.UniqueRendererFormControlId() + 1000;
+
+  std::vector<uint32_t> renderer_ids = {input3.UniqueRendererFormControlId(),
+                                        non_existing_id,
+                                        input1.UniqueRendererFormControlId()};
+
+  auto elements =
+      autofill::form_util::FindFormControlElementsByUniqueRendererId(
+          doc, form.UniqueRendererFormId(), renderer_ids);
+
+  // |input3| is not in the form, so it shouldn't be returned.
+  ASSERT_EQ(3u, elements.size());
+  EXPECT_TRUE(elements[0].IsNull());
+  EXPECT_TRUE(elements[1].IsNull());
+  EXPECT_EQ(input1, elements[2]);
+
+  // Expect that no elements are retured for non existing form id.
+  uint32_t non_existing_form_id = form.UniqueRendererFormId() + 1000;
+  elements = autofill::form_util::FindFormControlElementsByUniqueRendererId(
+      doc, non_existing_form_id, renderer_ids);
+  ASSERT_EQ(3u, elements.size());
+  EXPECT_TRUE(elements[0].IsNull());
+  EXPECT_TRUE(elements[1].IsNull());
+  EXPECT_TRUE(elements[2].IsNull());
+}
