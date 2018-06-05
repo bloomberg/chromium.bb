@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_mediator.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller.h"
 
@@ -106,13 +107,20 @@
 - (void)identityChooserCoordinatorDidClose:
     (IdentityChooserCoordinator*)coordinator {
   CHECK_EQ(self.identityChooserCoordinator, coordinator);
-  if (self.identityChooserCoordinator.addAccountTapped) {
-    [self.delegate unifiedConsentCoordinatorDidTapOnAddAccount:self];
-  } else {
-    self.selectedIdentity = self.identityChooserCoordinator.selectedIdentity;
-  }
   self.identityChooserCoordinator.delegate = nil;
   self.identityChooserCoordinator = nil;
+}
+
+- (void)identityChooserCoordinatorDidTapOnAddAccount:
+    (IdentityChooserCoordinator*)coordinator {
+  CHECK_EQ(self.identityChooserCoordinator, coordinator);
+  [self.delegate unifiedConsentCoordinatorDidTapOnAddAccount:self];
+}
+
+- (void)identityChooserCoordinator:(IdentityChooserCoordinator*)coordinator
+                 didSelectIdentity:(ChromeIdentity*)identity {
+  CHECK_EQ(self.identityChooserCoordinator, coordinator);
+  self.selectedIdentity = identity;
 }
 
 @end

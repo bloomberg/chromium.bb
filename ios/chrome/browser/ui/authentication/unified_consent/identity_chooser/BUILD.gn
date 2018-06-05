@@ -9,6 +9,7 @@ source_set("identity_chooser") {
   sources = [
     "identity_chooser_coordinator.h",
     "identity_chooser_coordinator.mm",
+    "identity_chooser_coordinator_delegate.h",
     "identity_chooser_mediator.h",
     "identity_chooser_mediator.mm",
   ]
@@ -36,7 +37,6 @@ source_set("identity_chooser_ui") {
     "identity_chooser_view_controller.h",
     "identity_chooser_view_controller.mm",
     "identity_chooser_view_controller_presentation_delegate.h",
-    "identity_chooser_view_controller_selection_delegate.h",
     "identity_view.h",
     "identity_view.mm",
   ]
