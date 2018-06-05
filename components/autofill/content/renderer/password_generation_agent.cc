@@ -606,7 +606,7 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
     }
   } else if (element.Value().length() > kMaximumOfferSize) {
     // User has rejected the feature and has started typing a password.
-    HidePopup();
+    GenerationRejectedByTyping();
   } else {
     // Password isn't generated and there are fewer than kMaximumOfferSize
     // characters typed, so keep offering the password. Note this function
@@ -665,8 +665,8 @@ void PasswordGenerationAgent::ShowEditingPopup() {
   editing_popup_shown_ = true;
 }
 
-void PasswordGenerationAgent::HidePopup() {
-  GetPasswordManagerClient()->HidePasswordGenerationPopup();
+void PasswordGenerationAgent::GenerationRejectedByTyping() {
+  GetPasswordManagerClient()->PasswordGenerationRejectedByTyping();
 }
 
 void PasswordGenerationAgent::PasswordNoLongerGenerated() {

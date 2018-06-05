@@ -42,6 +42,6 @@ void FakePasswordManagerClient::GenerationAvailableForForm(
   called_generation_available_for_form_ = true;
 }
 
-void FakePasswordManagerClient::HidePasswordGenerationPopup() {
-  called_hide_pw_generation_popup_ = true;
+void FakePasswordManagerClient::PasswordGenerationRejectedByTyping() {
+  called_password_generation_rejected_by_typing_ = true;
 }

@@ -172,6 +172,8 @@ interface PasswordManagerClient {
   // is the form associated with the password field.
   ShowPasswordEditingPopup(gfx.mojom.RectF bounds, PasswordForm password_form);
 
-  // Instructs the browser to hide any password generation popups.
-  HidePasswordGenerationPopup();
+  // Informs the browser that the password generation option was rejected
+  // by the user typing more characters than the maximum offer size into the
+  // password field.
+  PasswordGenerationRejectedByTyping();
 };

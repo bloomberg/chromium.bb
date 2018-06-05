@@ -120,7 +120,9 @@ class ChromePasswordManagerClient
   void ShowPasswordEditingPopup(const gfx::RectF& bounds,
                                 const autofill::PasswordForm& form) override;
   void GenerationAvailableForForm(const autofill::PasswordForm& form) override;
-  void HidePasswordGenerationPopup() override;
+  void PasswordGenerationRejectedByTyping() override;
+
+  void HidePasswordGenerationPopup();
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()

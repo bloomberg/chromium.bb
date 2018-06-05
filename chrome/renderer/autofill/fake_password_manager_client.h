@@ -39,8 +39,8 @@ class FakePasswordManagerClient
     return called_generation_available_for_form_;
   }
 
-  bool called_hide_pw_generation_popup() const {
-    return called_hide_pw_generation_popup_;
+  bool called_password_generation_rejected_by_typing() const {
+    return called_password_generation_rejected_by_typing_;
   }
 
   void reset_called_automatic_generation_status_changed_true() {
@@ -55,8 +55,8 @@ class FakePasswordManagerClient
     called_generation_available_for_form_ = false;
   }
 
-  void reset_called_hide_pw_generation_popup() {
-    called_hide_pw_generation_popup_ = false;
+  void reset_called_password_generation_rejected_by_typing() {
+    called_password_generation_rejected_by_typing_ = false;
   }
 
  private:
@@ -76,7 +76,7 @@ class FakePasswordManagerClient
 
   void GenerationAvailableForForm(const autofill::PasswordForm& form) override;
 
-  void HidePasswordGenerationPopup() override;
+  void PasswordGenerationRejectedByTyping() override;
 
   // Records whether AutomaticGenerationStatusChanged(true) gets called.
   bool called_automatic_generation_status_changed_true_ = false;
@@ -87,8 +87,8 @@ class FakePasswordManagerClient
   // Records whether GenerationAvailableForForm() gets called.
   bool called_generation_available_for_form_ = false;
 
-  // Records whether HidePasswordGenerationPopup() gets called.
-  bool called_hide_pw_generation_popup_ = false;
+  // Records whether PasswordGenerationRejecteByTyping() gets called.
+  bool called_password_generation_rejected_by_typing_ = false;
 
   mojo::AssociatedBinding<autofill::mojom::PasswordManagerClient> binding_;
 };
