@@ -34438,6 +34438,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="(non-invalidated) replies received"/>
 </enum>
 
+<enum name="OomInterventionBrowserMonitorStatus">
+  <int value="0" label="Enabled with a valid config"/>
+  <int value="1" label="Disabled since bad config param"/>
+  <int value="2" label="Disabled since device has no swap"/>
+</enum>
+
+<enum name="OomInterventionRendererStatus">
+  <int value="0" label="Detection only enabled on renderer"/>
+  <int value="1" label="Detection with trigger enabled on renderer"/>
+  <int value="2" label="Disabled since renderer cannot fetch memory total"/>
+</enum>
+
 <enum name="OomInterventionUserDecision">
   <int value="0" label="Declined"/>
   <int value="1" label="Accepted"/>

@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include "base/metrics/histogram_macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -79,6 +80,20 @@ uint64_t BlinkMemoryWorkloadCaculator() {
   return v8_size + blink_gc_size + partition_alloc_size;
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class RendererInterventionEnabledStatus {
+  kDetectionOnlyEnabled = 0,
+  kTriggerEnabled = 1,
+  kDisabledFailedMemoryMetricsFetch = 2,
+  kMaxValue = kDisabledFailedMemoryMetricsFetch
+};
+
+void RecordEnabledStatus(RendererInterventionEnabledStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Memory.Experimental.OomIntervention.RendererEnabledStatus", status);
+}
+
 }  // namespace
 
 // static
@@ -109,10 +124,15 @@ void OomInterventionImpl::StartDetection(
   if (!status_fd_.is_valid())
     status_fd_.reset(open("/proc/self/status", O_RDONLY));
   // Disable intervention if we cannot get memory details of current process.
-  // TODO(ssid): Add UMA here to make sure we don't stop disable intervention
-  // more often than expected.
-  if (!statm_fd_.is_valid() || !status_fd_.is_valid())
+  if (!statm_fd_.is_valid() || !status_fd_.is_valid()) {
+    RecordEnabledStatus(
+        RendererInterventionEnabledStatus::kDisabledFailedMemoryMetricsFetch);
     return;
+  }
+  RecordEnabledStatus(
+      trigger_intervention
+          ? RendererInterventionEnabledStatus::kTriggerEnabled
+          : RendererInterventionEnabledStatus::kDetectionOnlyEnabled);
 
   detection_args_ = std::move(detection_args);
   trigger_intervention_ = trigger_intervention;

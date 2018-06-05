@@ -61,7 +61,7 @@ void RecordInterventionStateOnCrash(bool accepted) {
 
 // static
 bool OomInterventionTabHelper::IsEnabled() {
-  return NearOomMonitor::GetInstance() != nullptr;
+  return OomInterventionConfig::GetInstance()->is_intervention_enabled();
 }
 
 OomInterventionTabHelper::OomInterventionTabHelper(

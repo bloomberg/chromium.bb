@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "chrome/common/chrome_features.h"
@@ -95,6 +96,15 @@ bool GetSwapFreeThreshold(uint64_t* threshold) {
   return true;
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class OomInterventionBrowserMonitorStatus {
+  kEnabledWithValidConfig = 0,
+  kDisabledWithInvalidParam = 1,
+  kDisabledWithNoSwap = 2,
+  kMaxValue = kDisabledWithNoSwap
+};
+
 }  // namespace
 
 OomInterventionConfig::OomInterventionConfig()
@@ -114,10 +124,17 @@ OomInterventionConfig::OomInterventionConfig()
 
   // Enable intervention only if at least one threshold is set for detection
   // in each process.
-  if (!GetSwapFreeThreshold(&swapfree_threshold_) ||
-      !GetRendererMemoryThresholds(&renderer_detection_args_)) {
+  OomInterventionBrowserMonitorStatus status =
+      OomInterventionBrowserMonitorStatus::kEnabledWithValidConfig;
+  if (!GetSwapFreeThreshold(&swapfree_threshold_)) {
     is_intervention_enabled_ = false;
+    status = OomInterventionBrowserMonitorStatus::kDisabledWithNoSwap;
+  } else if (!GetRendererMemoryThresholds(&renderer_detection_args_)) {
+    is_intervention_enabled_ = false;
+    status = OomInterventionBrowserMonitorStatus::kDisabledWithInvalidParam;
   }
+  UMA_HISTOGRAM_ENUMERATION(
+      "Memory.Experimental.OomIntervention.BrowserMonitorStatus", status);
 }
 
 // static
