@@ -297,10 +297,12 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
     software_rendering_while_hidden_ = true;
   }
 
+  // TODO: switch to kSoftwareResourceUsage and start using mailbox+layer
+  // for non-accelerated 2D canvas.
   CanvasResourceProvider::ResourceUsage usage =
       want_acceleration
           ? CanvasResourceProvider::kAcceleratedCompositedResourceUsage
-          : CanvasResourceProvider::kSoftwareCompositedResourceUsage;
+          : CanvasResourceProvider::kSoftwareResourceUsage;
 
   resource_host_->ReplaceResourceProvider(CanvasResourceProvider::Create(
       size_, usage, SharedGpuContext::ContextProviderWrapper(),

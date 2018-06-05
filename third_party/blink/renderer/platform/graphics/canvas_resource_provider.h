@@ -93,8 +93,10 @@ class PLATFORM_EXPORT CanvasResourceProvider
   virtual bool IsAccelerated() const = 0;
   uint32_t ContentUniqueID() const;
 
-  virtual void RecycleResource(scoped_refptr<CanvasResource>);
-  virtual void SetResourceRecyclingEnabled(bool) {}
+  void RecycleResource(scoped_refptr<CanvasResource>);
+  void SetResourceRecyclingEnabled(bool);
+  void ClearRecycledResources();
+  scoped_refptr<CanvasResource> NewOrRecycledResource();
 
   SkSurface* GetSkSurface() const;
   bool IsGpuContextLost() const;
@@ -165,6 +167,9 @@ class PLATFORM_EXPORT CanvasResourceProvider
   cc::PaintImage::ContentId snapshot_paint_image_content_id_ =
       cc::PaintImage::kInvalidContentId;
   uint32_t snapshot_sk_image_id_ = 0u;
+
+  WTF::Vector<scoped_refptr<CanvasResource>> recycled_resources_;
+  bool resource_recycling_enabled_ = true;
 
   base::WeakPtrFactory<CanvasResourceProvider> weak_ptr_factory_;
 

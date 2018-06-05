@@ -43,6 +43,7 @@ class PLATFORM_EXPORT CanvasResource
   virtual void Abandon() { TearDown(); }
   virtual bool IsRecycleable() const = 0;
   virtual bool IsAccelerated() const = 0;
+  virtual bool SupportsAcceleratedCompositing() const = 0;
   virtual bool IsValid() const = 0;
   virtual bool NeedsReadLockFences() const { return false; }
   virtual IntSize Size() const = 0;
@@ -68,6 +69,9 @@ class PLATFORM_EXPORT CanvasResource
     NOTREACHED();
   }
 
+  // Only CanvasResourceProvider and derivatives should call this.
+  virtual void TakeSkImage(sk_sp<SkImage> image) = 0;
+
  protected:
   CanvasResource(base::WeakPtr<CanvasResourceProvider>,
                  SkFilterQuality,
@@ -82,6 +86,11 @@ class PLATFORM_EXPORT CanvasResource
   GrContext* GetGrContext() const;
   virtual base::WeakPtr<WebGraphicsContext3DProviderWrapper>
   ContextProviderWrapper() const = 0;
+  bool PrepareAcceleratedTransferableResource(
+      viz::TransferableResource* out_resource,
+      MailboxSyncMode);
+  bool PrepareUnacceleratedTransferableResource(
+      viz::TransferableResource* out_resource);
   SkFilterQuality FilterQuality() const { return filter_quality_; }
   const CanvasColorParams& ColorParams() const { return color_params_; }
   void OnDestroy();
@@ -112,6 +121,9 @@ class PLATFORM_EXPORT CanvasResourceBitmap final : public CanvasResource {
   // cheap to allocate.
   bool IsRecycleable() const final { return false; }
   bool IsAccelerated() const final;
+  bool SupportsAcceleratedCompositing() const override {
+    return IsAccelerated();
+  }
   bool IsValid() const final;
   IntSize Size() const final;
   bool IsBitmap() final;
@@ -121,6 +133,7 @@ class PLATFORM_EXPORT CanvasResourceBitmap final : public CanvasResource {
   scoped_refptr<CanvasResource> MakeAccelerated(
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final;
   scoped_refptr<CanvasResource> MakeUnaccelerated() final;
+  void TakeSkImage(sk_sp<SkImage> image) final;
 
  private:
   void TearDown() override;
@@ -148,13 +161,13 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
       const CanvasColorParams&,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       base::WeakPtr<CanvasResourceProvider>,
-      SkFilterQuality);
+      SkFilterQuality,
+      bool is_accelerated);
   ~CanvasResourceGpuMemoryBuffer() override;
   bool IsRecycleable() const final { return IsValid(); }
-  bool IsAccelerated() const final { return true; }
-  bool IsValid() const override {
-    return context_provider_wrapper_ && image_id_;
-  }
+  bool IsAccelerated() const final { return is_accelerated_; }
+  bool IsValid() const override;
+  bool SupportsAcceleratedCompositing() const override { return true; }
   bool NeedsReadLockFences() const final { return true; }
   scoped_refptr<CanvasResource> MakeAccelerated(
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
@@ -166,6 +179,10 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
   }
   void Abandon() final;
   IntSize Size() const final;
+  void TakeSkImage(sk_sp<SkImage> image) final;
+  void CopyFromTexture(GLuint source_texture,
+                       GLenum format,
+                       GLenum type) override;
 
  private:
   void TearDown() override;
@@ -176,26 +193,29 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
   const gpu::SyncToken& GetSyncToken() override;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
       const override;
-  void CopyFromTexture(GLuint source_texture,
-                       GLenum format,
-                       GLenum type) override;
+  void WillPaint();
+  void DidPaint();
 
   CanvasResourceGpuMemoryBuffer(
       const IntSize&,
       const CanvasColorParams&,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       base::WeakPtr<CanvasResourceProvider>,
-      SkFilterQuality);
+      SkFilterQuality,
+      bool is_accelerated);
 
   gpu::Mailbox gpu_mailbox_;
   gpu::SyncToken sync_token_;
   bool mailbox_needs_new_sync_token_ = false;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
+  void* buffer_base_address_ = nullptr;
+  sk_sp<SkSurface> surface_;
   GLuint image_id_ = 0;
   GLuint texture_id_ = 0;
   CanvasColorParams color_params_;
   MailboxSyncMode mailbox_sync_mode_ = kVerifiedSyncToken;
+  bool is_accelerated_;
 };
 
 }  // namespace blink

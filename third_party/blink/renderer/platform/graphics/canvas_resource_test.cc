@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 
 #include "base/run_loop.h"
+#include "components/viz/common/resources/single_release_callback.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -142,7 +144,7 @@ TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
           IntSize(10, 10), CanvasColorParams(),
           SharedGpuContext::ContextProviderWrapper(),
           nullptr,  // Resource provider
-          kLow_SkFilterQuality);
+          kLow_SkFilterQuality, true /*is_accelerated*/);
 
   EXPECT_TRUE(bool(resource));
 
@@ -292,6 +294,52 @@ TEST_F(CanvasResourceTest, MakeUnacceleratedFromAcceleratedResource) {
   EXPECT_NE(new_resource.get(), resource.get());
   EXPECT_TRUE(resource->IsAccelerated());
   EXPECT_FALSE(new_resource->IsAccelerated());
+}
+
+TEST_F(CanvasResourceTest, RamGpuMemoryBuffer_ResourcePreparation) {
+  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+
+  SkImageInfo image_info =
+      SkImageInfo::MakeN32(10, 10, kPremul_SkAlphaType, nullptr);
+  sk_sp<SkSurface> surface = SkSurface::MakeRaster(image_info);
+  SkPaint paint;
+  paint.setColor(SK_ColorYELLOW);
+  surface->getCanvas()->drawRect(SkRect::MakeXYWH(0, 0, 10, 10), paint);
+
+  EXPECT_TRUE(!!context_provider_wrapper_);
+  constexpr GLuint image_id = 1;
+  EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id));
+  EXPECT_CALL(gl_, BindTexture(gpu::GetPlatformSpecificTextureTarget(), _));
+
+  constexpr bool is_accelerated = false;
+  scoped_refptr<CanvasResource> canvas_resource =
+      CanvasResourceGpuMemoryBuffer::Create(
+          IntSize(10, 10), CanvasColorParams(), context_provider_wrapper_,
+          nullptr /*CanvasResourceProvider*/, kLow_SkFilterQuality,
+          is_accelerated);
+
+  EXPECT_TRUE(!!canvas_resource);
+  testing::Mock::VerifyAndClearExpectations(&gl_);
+
+  if (canvas_resource) {
+    gpu::Mailbox test_mailbox;
+    test_mailbox.name[0] = 1;
+    EXPECT_CALL(gl_, GenMailboxCHROMIUM(_))
+        .WillOnce(SetArrayArgument<0>(
+            test_mailbox.name, test_mailbox.name + GL_MAILBOX_SIZE_CHROMIUM));
+
+    canvas_resource->TakeSkImage(surface->makeImageSnapshot());
+
+    viz::TransferableResource transferable_resource;
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback;
+
+    bool success = canvas_resource->PrepareTransferableResource(
+        &transferable_resource, &release_callback, kUnverifiedSyncToken);
+
+    EXPECT_TRUE(success);
+
+    release_callback->Run(gpu::SyncToken(), false);
+  }
 }
 
 }  // namespace blink
