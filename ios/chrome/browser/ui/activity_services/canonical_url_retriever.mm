@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
 
-#include "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -95,6 +95,6 @@ void RetrieveCanonicalUrl(web::WebState* web_state,
       };
 
   web_state->ExecuteJavaScript(base::UTF8ToUTF16(kCanonicalURLScript),
-                               base::BindBlockArc(javascript_completion));
+                               base::BindOnce(javascript_completion));
 }
 }  // namespace activity_services

@@ -4,10 +4,10 @@
 
 #import "ios/chrome/browser/ui/open_in_controller.h"
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/task_scheduler/post_task.h"
 
 #include "base/sequenced_task_runner.h"
@@ -578,7 +578,7 @@ class OpenInControllerBridge
     NSURL* fileURL =
         [NSURL fileURLWithPath:base::SysUTF8ToNSString(filePath.value())];
     if (downloadCanceled_) {
-      sequencedTaskRunner_->PostTask(FROM_HERE, base::BindBlockArc(^{
+      sequencedTaskRunner_->PostTask(FROM_HERE, base::BindOnce(^{
                                        [self
                                            removeDocumentAtPath:[fileURL path]];
                                      }));
@@ -599,7 +599,7 @@ class OpenInControllerBridge
 
 - (void)documentInteractionController:(UIDocumentInteractionController*)contr
            didEndSendingToApplication:(NSString*)application {
-  sequencedTaskRunner_->PostTask(FROM_HERE, base::BindBlockArc(^{
+  sequencedTaskRunner_->PostTask(FROM_HERE, base::BindOnce(^{
                                    [self
                                        removeDocumentAtPath:[[contr URL] path]];
                                  }));

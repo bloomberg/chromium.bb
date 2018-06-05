@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 
 #include "base/bind.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/optional.h"
 #include "base/strings/sys_string_conversions.h"
@@ -468,7 +467,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
                                               .sectionInfo],
       suggestedItem.suggestionIdentifier.IDInSection);
   self.contentService->FetchSuggestionImage(
-      suggestionID, base::BindBlockArc(^(const gfx::Image& image) {
+      suggestionID, base::BindOnce(^(const gfx::Image& image) {
         if (image.IsEmpty()) {
           return;
         }

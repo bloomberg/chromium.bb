@@ -6,9 +6,9 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/ios/block_types.h"
 #include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
@@ -120,7 +120,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
   _watchdogTimer->Start(
       FROM_HERE,
       base::TimeDelta::FromSeconds(kAuthenticationFlowTimeoutSeconds),
-      base::BindBlockArc(onTimeout));
+      base::BindRepeating(onTimeout));
 }
 
 - (BOOL)stopWatchdogTimer {

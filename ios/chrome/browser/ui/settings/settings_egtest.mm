@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/browsing_data/core/pref_names.h"
@@ -160,7 +159,7 @@ void SetCertificate() {
   scoped_refptr<net::URLRequestContextGetter> getter =
       browserState->GetRequestContext();
   web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
+      web::WebThread::IO, FROM_HERE, base::BindOnce(^{
         net::ChannelIDService* channel_id_service =
             getter->GetURLRequestContext()->channel_id_service();
         net::ChannelIDStore* channel_id_store =
@@ -195,7 +194,7 @@ bool IsCertificateCleared() {
   scoped_refptr<net::URLRequestContextGetter> getter =
       browserState->GetRequestContext();
   web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
+      web::WebThread::IO, FROM_HERE, base::BindOnce(^{
         net::ChannelIDService* channel_id_service =
             getter->GetURLRequestContext()->channel_id_service();
         std::unique_ptr<crypto::ECPrivateKey> dummy_key;

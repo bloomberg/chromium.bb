@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/history/favicon_view_provider.h"
 
+#include "base/bind.h"
 #include "base/i18n/case_conversion.h"
-#include "base/mac/bind_objc_block.h"
 #import "base/mac/foundation_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/sys_string_conversions.h"
@@ -125,7 +125,7 @@
   CGFloat faviconSize = [UIScreen mainScreen].scale * size;
   CGFloat minFaviconSize = [UIScreen mainScreen].scale * minSize;
   largeIconService->GetLargeIconOrFallbackStyle(
-      URL, minFaviconSize, faviconSize, base::BindBlockArc(faviconBlock),
+      URL, minFaviconSize, faviconSize, base::BindRepeating(faviconBlock),
       &_faviconTaskTracker);
 }
 
