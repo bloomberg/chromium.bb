@@ -6,9 +6,9 @@
 
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "content/public/browser/video_capture_device_launcher.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
@@ -44,6 +44,17 @@ class MockDeviceFactoryProvider
     DoConnectToDeviceFactory(request);
   }
 
+  void InjectGpuDependencies(
+      ui::mojom::GpuMemoryBufferFactoryPtr memory_buffer_factory,
+      video_capture::mojom::AcceleratorFactoryPtr accelerator_factory)
+      override {
+    DoInjectGpuDependencies(memory_buffer_factory, accelerator_factory);
+  }
+
+  MOCK_METHOD2(
+      DoInjectGpuDependencies,
+      void(ui::mojom::GpuMemoryBufferFactoryPtr& memory_buffer_factory,
+           video_capture::mojom::AcceleratorFactoryPtr& accelerator_factory));
   MOCK_METHOD1(SetShutdownDelayInSeconds, void(float seconds));
   MOCK_METHOD1(DoConnectToDeviceFactory,
                void(video_capture::mojom::DeviceFactoryRequest& request));
@@ -110,7 +121,13 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
     auto mock_service_connector = std::make_unique<MockServiceConnector>();
     mock_service_connector_ = mock_service_connector.get();
     provider_ = std::make_unique<ServiceVideoCaptureProvider>(
-        std::move(mock_service_connector), kIgnoreLogMessageCB);
+        std::move(mock_service_connector), base::BindRepeating([]() {
+          return std::unique_ptr<ui::mojom::GpuMemoryBufferFactory>();
+        }),
+        base::BindRepeating([]() {
+          return std::unique_ptr<video_capture::mojom::AcceleratorFactory>();
+        }),
+        kIgnoreLogMessageCB);
 
     ON_CALL(*mock_service_connector_, BindFactoryProvider(_))
         .WillByDefault(
@@ -133,7 +150,7 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
 
   void TearDown() override {}
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   MockServiceConnector* mock_service_connector_;
   MockDeviceFactoryProvider mock_device_factory_provider_;
   mojo::Binding<video_capture::mojom::DeviceFactoryProvider>
