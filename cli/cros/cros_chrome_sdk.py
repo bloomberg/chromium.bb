@@ -1072,15 +1072,18 @@ class ChromeSDKCommand(command.CliCommand):
           goma_dir = os.path.join(tempdir, 'goma')
           osutils.SafeMakedirs(goma_dir)
           with osutils.ChdirContext(tempdir):
-            result = retry_util.RunCurl([self._GOMA_DOWNLOAD_URL],
-                                        stdout_to_pipe=True)
-            if result.returncode:
-              raise GomaError('Failed to fetch Goma Download URL')
-            download_url = result.output.strip()
-            result = retry_util.RunCurl(
-                ['%s/%s' % (download_url, self._GOMA_TGZ),
-                 '--output', self._GOMA_TGZ])
-            if result.returncode:
+            try:
+              result = retry_util.RunCurl(['--fail', self._GOMA_DOWNLOAD_URL],
+                                          stdout_to_pipe=True)
+              if result.returncode:
+                raise GomaError('Failed to fetch Goma Download URL')
+              download_url = result.output.strip()
+              result = retry_util.RunCurl(
+                  ['--fail', '%s/%s' % (download_url, self._GOMA_TGZ),
+                   '--output', self._GOMA_TGZ])
+              if result.returncode:
+                raise GomaError('Failed to fetch Goma')
+            except retry_util.DownloadError as e:
               raise GomaError('Failed to fetch Goma')
             result = cros_build_lib.DebugRunCommand(
                 ['tar', 'xf', self._GOMA_TGZ,

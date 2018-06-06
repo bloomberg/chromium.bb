@@ -9,11 +9,16 @@ from __future__ import print_function
 
 import functools
 import random
+import re
 import sys
 import time
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+
+
+# Match stderr of curl's --fail option to see HTTP status code.
+CURL_STATUS_RE = re.compile(r'The requested URL returned error: (\d+) ')
 
 
 def _CreateExceptionRetryHandler(exception):
@@ -392,8 +397,15 @@ def RunCurl(curl_args, *args, **kwargs):
     Curl will exit(22) for a wide range of HTTP codes -- both the 4xx and 5xx
     set.  For the 4xx, we don't want to retry.  We have to look at the output.
     """
+    assert isinstance(exc, cros_build_lib.RunCommandError)
     if exc.result.returncode == 22:
-      return '404 Not Found' not in exc.result.error
+      logging.debug('curl stderr %s', exc.result.error)
+      matched = CURL_STATUS_RE.search(exc.result.error)
+      if not matched:
+        # Unexpected stderr.  It may not be error output from --fail.
+        return True
+      status_code = matched.group(1)
+      return not status_code.startswith('4')
 
     # We'll let the common exit code filter do the right thing.
     return None
@@ -401,7 +413,8 @@ def RunCurl(curl_args, *args, **kwargs):
   try:
     return RunCommandWithRetries(
         10, cmd, retry_on=retriable_exits, error_check=_CheckExit,
-        sleep=3, backoff_factor=1.6, *args, **kwargs)
+        sleep=3, backoff_factor=1.6,
+        redirect_stderr=True, env={'LC_MESSAGES': 'C'}, *args, **kwargs)
   except cros_build_lib.RunCommandError as e:
     if e.result.returncode in (51, 58, 60):
       # These are the return codes of failing certs as per 'man curl'.
