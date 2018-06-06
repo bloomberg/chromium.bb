@@ -24,73 +24,85 @@
 
 namespace blink {
 
-// This list must be in sync with |coreExceptions| in DOMExceptions.cpp.
-// Some of these are considered historical since they have been
-// changed or removed from the specifications.
+// DOMException's error code
+// https://heycam.github.io/webidl/#idl-DOMException-error-names
 enum {
-  kIndexSizeError = 1,
-  kHierarchyRequestError,
-  kWrongDocumentError,
-  kInvalidCharacterError,
-  kNoModificationAllowedError,
-  kNotFoundError,
-  kNotSupportedError,
-  kInUseAttributeError,  // Historical. Only used in setAttributeNode etc which
-                         // have been removed from the DOM specs.
+  // DOMExceptions with the legacy error code.
 
-  // Introduced in DOM Level 2:
-  kInvalidStateError,
-  kSyntaxError,
-  kInvalidModificationError,
-  kNamespaceError,
-  kInvalidAccessError,
+  // The minimum value of the legacy error code of DOMException defined in
+  // Web IDL.
+  // https://heycam.github.io/webidl/#idl-DOMException
+  kDOMExceptionLegacyCodeMin = 1,
 
-  // Introduced in DOM Level 3:
-  kTypeMismatchError,  // Historical; use TypeError instead
+  kIndexSizeError = 1,  // Deprecated. Use ECMAScript RangeError instead.
+  // DOMStringSizeError (= 2) is deprecated and no longer supported.
+  kHierarchyRequestError = 3,
+  kWrongDocumentError = 4,
+  kInvalidCharacterError = 5,
+  // NoDataAllowedError (= 6) is deprecated and no longer supported.
+  kNoModificationAllowedError = 7,
+  kNotFoundError = 8,
+  kNotSupportedError = 9,
+  kInUseAttributeError = 10,  // Historical. Only used in setAttributeNode etc
+                              // which have been removed from the DOM specs.
+  kInvalidStateError = 11,
+  // Web IDL 2.7.1 Error names
+  // https://heycam.github.io/webidl/#idl-DOMException-error-names
+  // Note: Don't confuse the "SyntaxError" DOMException defined here with
+  // ECMAScript's SyntaxError. "SyntaxError" DOMException is used to report
+  // parsing errors in web APIs, for example when parsing selectors, while
+  // the ECMAScript SyntaxError is reserved for the ECMAScript parser.
+  kSyntaxError = 12,
+  kInvalidModificationError = 13,
+  kNamespaceError = 14,
+  // kInvalidAccessError is deprecated. Use ECMAScript TypeError for invalid
+  // arguments, |kNotSupportedError| for unsupported operations, and
+  // |kNotAllowedError| for denied requests instead.
+  kInvalidAccessError = 15,  // Deprecated.
+  // ValidationError (= 16) is deprecated and no longer supported.
+  kTypeMismatchError = 17,  // Deprecated. Use ECMAScript TypeError instead.
+  kSecurityError = 18,
+  kNetworkError = 19,
+  kAbortError = 20,
+  kURLMismatchError = 21,
+  kQuotaExceededError = 22,
+  kTimeoutError = 23,
+  kInvalidNodeTypeError = 24,
+  kDataCloneError = 25,
 
-  // XMLHttpRequest extension:
-  kSecurityError,
+  // The maximum value of the legacy error code of DOMException defined in
+  // Web IDL.
+  // https://heycam.github.io/webidl/#idl-DOMException
+  kDOMExceptionLegacyCodeMax = 25,
 
-  // Others introduced in HTML5:
-  kNetworkError,
-  kAbortError,
-  kURLMismatchError,
-  kQuotaExceededError,
-  kTimeoutError,
-  kInvalidNodeTypeError,
-  kDataCloneError,
-
-  // The operation failed for an unknown transient reason (e.g. out of memory).
-  // Note: The error message is
-  // "An unknown error occurred within Indexed Database."
-  // (defined in third_party/blink/renderer/core/dom/dom_exception.cc)
-  // so, this code shouldn't be abused.
+  // DOMExceptions without the legacy error code.
+  kEncodingError,
+  kNotReadableError,
   kUnknownError,
-
-  // These are IDB-specific.
   kConstraintError,
   kDataError,
   kTransactionInactiveError,
   kReadOnlyError,
   kVersionError,
-
-  // File system
-  kNotReadableError,
-  kEncodingError,
-  kPathExistsError,
-
-  // SQL
-  kSQLDatabaseError,  // Naming conflict with DatabaseError class.
-
-  // Web Crypto
   kOperationError,
-
-  // Push API
-  kPermissionDeniedError,
-
   kNotAllowedError,
 
+  // The rest of entries are defined out of scope of Web IDL.
+
+  // DOMError (obsolete, not DOMException) defined in File system (obsolete).
+  // https://www.w3.org/TR/2012/WD-file-system-api-20120417/
+  kPathExistsError,
+
+  // Push API
+  //
+  // PermissionDeniedError (obsolete) was replaced with NotAllowedError in the
+  // standard.
+  // https://github.com/WICG/BackgroundSync/issues/124
+  kPermissionDeniedError,
+
   // Pointer Events
+  // https://w3c.github.io/pointerevents/
+  // Pointer Events introduced a new DOMException outside Web IDL.
   kInvalidPointerId,
 };
 

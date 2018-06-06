@@ -32,8 +32,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -49,6 +47,9 @@ class CORE_EXPORT DOMException final : public ScriptWrappable {
   // Constructor exposed to script.
   static DOMException* Create(const String& message, const String& name);
 
+  static String GetErrorName(ExceptionCode);
+  static String GetErrorMessage(ExceptionCode);
+
   unsigned short code() const { return code_; }
   String name() const { return name_; }
 
@@ -63,9 +64,6 @@ class CORE_EXPORT DOMException final : public ScriptWrappable {
                                            : sanitized_message_;
   }
   String ToStringForConsole() const;
-
-  static String GetErrorName(ExceptionCode);
-  static String GetErrorMessage(ExceptionCode);
 
  private:
   DOMException(unsigned short code,
