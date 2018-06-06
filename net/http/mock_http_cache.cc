@@ -425,6 +425,7 @@ int32_t MockDiskCache::GetEntryCount() const {
 }
 
 int MockDiskCache::OpenEntry(const std::string& key,
+                             net::RequestPriority request_priority,
                              disk_cache::Entry** entry,
                              const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
@@ -457,6 +458,7 @@ int MockDiskCache::OpenEntry(const std::string& key,
 }
 
 int MockDiskCache::CreateEntry(const std::string& key,
+                               net::RequestPriority request_priority,
                                disk_cache::Entry** entry,
                                const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
@@ -507,6 +509,7 @@ int MockDiskCache::CreateEntry(const std::string& key,
 }
 
 int MockDiskCache::DoomEntry(const std::string& key,
+                             net::RequestPriority request_priority,
                              const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   EntryMap::iterator it = entries_.find(key);
@@ -710,7 +713,7 @@ bool MockHttpCache::WriteResponseInfo(disk_cache::Entry* disk_entry,
 bool MockHttpCache::OpenBackendEntry(const std::string& key,
                                      disk_cache::Entry** entry) {
   TestCompletionCallback cb;
-  int rv = backend()->OpenEntry(key, entry, cb.callback());
+  int rv = backend()->OpenEntry(key, net::HIGHEST, entry, cb.callback());
   return (cb.GetResult(rv) == OK);
 }
 
@@ -718,7 +721,7 @@ bool MockHttpCache::CreateBackendEntry(const std::string& key,
                                        disk_cache::Entry** entry,
                                        NetLog* net_log) {
   TestCompletionCallback cb;
-  int rv = backend()->CreateEntry(key, entry, cb.callback());
+  int rv = backend()->CreateEntry(key, net::HIGHEST, entry, cb.callback());
   return (cb.GetResult(rv) == OK);
 }
 
@@ -768,6 +771,7 @@ int MockHttpCache::GetCountWriterTransactions(const std::string& key) {
 //-----------------------------------------------------------------------------
 
 int MockDiskCacheNoCB::CreateEntry(const std::string& key,
+                                   net::RequestPriority request_priority,
                                    disk_cache::Entry** entry,
                                    const CompletionCallback& callback) {
   return ERR_IO_PENDING;

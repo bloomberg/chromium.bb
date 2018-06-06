@@ -166,6 +166,7 @@ int32_t MemBackendImpl::GetEntryCount() const {
 }
 
 int MemBackendImpl::OpenEntry(const std::string& key,
+                              net::RequestPriority request_priority,
                               Entry** entry,
                               const CompletionCallback& callback) {
   EntryMap::iterator it = entries_.find(key);
@@ -179,6 +180,7 @@ int MemBackendImpl::OpenEntry(const std::string& key,
 }
 
 int MemBackendImpl::CreateEntry(const std::string& key,
+                                net::RequestPriority request_priority,
                                 Entry** entry,
                                 const CompletionCallback& callback) {
   std::pair<EntryMap::iterator, bool> create_result =
@@ -195,6 +197,7 @@ int MemBackendImpl::CreateEntry(const std::string& key,
 }
 
 int MemBackendImpl::DoomEntry(const std::string& key,
+                              net::RequestPriority priority,
                               const CompletionCallback& callback) {
   EntryMap::iterator it = entries_.find(key);
   if (it == entries_.end())

@@ -815,8 +815,8 @@ void CacheStorageCache::QueryCache(
         base::AdaptCallbackForRepeating(base::BindOnce(
             &CacheStorageCache::QueryCacheDidOpenFastPath,
             weak_ptr_factory_.GetWeakPtr(), std::move(query_cache_context)));
-    int rv = backend_->OpenEntry(request_ptr->url.spec(), entry_ptr,
-                                 open_entry_callback);
+    int rv = backend_->OpenEntry(request_ptr->url.spec(), net::HIGHEST,
+                                 entry_ptr, open_entry_callback);
     if (rv != net::ERR_IO_PENDING)
       std::move(open_entry_callback).Run(rv);
     return;
@@ -1128,7 +1128,11 @@ void CacheStorageCache::WriteSideDataImpl(ErrorCallback callback,
                      expected_response_time, buffer, buf_len,
                      std::move(scoped_entry_ptr)));
 
-  int rv = backend_->OpenEntry(url.spec(), entry_ptr, open_entry_callback);
+
+  // Use LOWEST priority here as writing side data is less important than
+  // loading resources on the page.
+  int rv = backend_->OpenEntry(url.spec(), net::LOWEST, entry_ptr,
+                               open_entry_callback);
   if (rv != net::ERR_IO_PENDING)
     std::move(open_entry_callback).Run(rv);
 }
@@ -1312,8 +1316,8 @@ void CacheStorageCache::PutDidDeleteEntry(
           &CacheStorageCache::PutDidCreateEntry, weak_ptr_factory_.GetWeakPtr(),
           std::move(scoped_entry_ptr), std::move(put_context)));
 
-  int rv = backend_ptr->CreateEntry(request_ptr->url.spec(), entry_ptr,
-                                    create_entry_callback);
+  int rv = backend_ptr->CreateEntry(request_ptr->url.spec(), net::HIGHEST,
+                                    entry_ptr, create_entry_callback);
 
   if (rv != net::ERR_IO_PENDING)
     std::move(create_entry_callback).Run(rv);

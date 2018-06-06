@@ -82,6 +82,7 @@ class DelayableBackend : public disk_cache::Backend {
   }
   int32_t GetEntryCount() const override { return backend_->GetEntryCount(); }
   int OpenEntry(const std::string& key,
+                net::RequestPriority request_priority,
                 disk_cache::Entry** entry,
                 const CompletionCallback& callback) override {
     if (delay_open_entry_ && open_entry_callback_.is_null()) {
@@ -90,17 +91,19 @@ class DelayableBackend : public disk_cache::Backend {
           base::Unretained(entry), callback);
       return net::ERR_IO_PENDING;
     }
-    return backend_->OpenEntry(key, entry, callback);
+    return backend_->OpenEntry(key, request_priority, entry, callback);
   }
 
   int CreateEntry(const std::string& key,
+                  net::RequestPriority request_priority,
                   disk_cache::Entry** entry,
                   const CompletionCallback& callback) override {
-    return backend_->CreateEntry(key, entry, callback);
+    return backend_->CreateEntry(key, request_priority, entry, callback);
   }
   int DoomEntry(const std::string& key,
+                net::RequestPriority request_priority,
                 const CompletionCallback& callback) override {
-    return backend_->DoomEntry(key, callback);
+    return backend_->DoomEntry(key, request_priority, callback);
   }
   int DoomAllEntries(const CompletionCallback& callback) override {
     return backend_->DoomAllEntries(callback);
@@ -149,7 +152,7 @@ class DelayableBackend : public disk_cache::Backend {
   void OpenEntryDelayedImpl(const std::string& key,
                             disk_cache::Entry** entry,
                             const CompletionCallback& callback) {
-    int rv = backend_->OpenEntry(key, entry, callback);
+    int rv = backend_->OpenEntry(key, net::HIGHEST, entry, callback);
     if (rv != net::ERR_IO_PENDING)
       callback.Run(rv);
   }

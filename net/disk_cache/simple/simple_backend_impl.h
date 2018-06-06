@@ -31,7 +31,11 @@
 namespace base {
 class SequencedTaskRunner;
 class TaskRunner;
-}
+}  // namespace base
+
+namespace net {
+class PrioritizedTaskRunner;
+}  // namespace net
 
 namespace disk_cache {
 
@@ -56,6 +60,8 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
     public SimpleIndexDelegate,
     public base::SupportsWeakPtr<SimpleBackendImpl> {
  public:
+  static const base::Feature kPrioritizedSimpleCacheTasks;
+
   // Note: only pass non-nullptr for |file_tracker| if you don't want the global
   // one (which things other than tests would want). |file_tracker| must outlive
   // the backend and all the entries, including their asynchronous close.
@@ -72,7 +78,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   net::CacheType cache_type() const { return cache_type_; }
   SimpleIndex* index() { return index_.get(); }
 
-  base::TaskRunner* worker_pool() { return worker_pool_.get(); }
+  void SetWorkerPoolForTesting(scoped_refptr<base::TaskRunner> task_runner);
 
   int Init(const CompletionCallback& completion_callback);
 
@@ -102,12 +108,15 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   net::CacheType GetCacheType() const override;
   int32_t GetEntryCount() const override;
   int OpenEntry(const std::string& key,
+                net::RequestPriority request_priority,
                 Entry** entry,
                 const CompletionCallback& callback) override;
   int CreateEntry(const std::string& key,
+                  net::RequestPriority request_priority,
                   Entry** entry,
                   const CompletionCallback& callback) override;
   int DoomEntry(const std::string& key,
+                net::RequestPriority priority,
                 const CompletionCallback& callback) override;
   int DoomAllEntries(const CompletionCallback& callback) override;
   int DoomEntriesBetween(base::Time initial_time,
@@ -128,6 +137,10 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
       const std::string& parent_absolute_name) const override;
   uint8_t GetEntryInMemoryData(const std::string& key) override;
   void SetEntryInMemoryData(const std::string& key, uint8_t data) override;
+
+  net::PrioritizedTaskRunner* prioritized_task_runner() const {
+    return prioritized_task_runner_.get();
+  }
 
  private:
   class SimpleIterator;
@@ -197,6 +210,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   scoped_refptr<SimpleEntryImpl> CreateOrFindActiveOrDoomedEntry(
       uint64_t entry_hash,
       const std::string& key,
+      net::RequestPriority request_priority,
       std::vector<PostDoomWaiter>** post_doom);
 
   // Given a hash, will try to open the corresponding Entry. If we have an Entry
@@ -237,6 +251,9 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                            const CompletionCallback& callback,
                            int result);
 
+  // Calculates and returns a new entry's worker pool priority.
+  uint32_t GetNewEntryPriority(net::RequestPriority request_priority);
+
   // We want this destroyed after every other field.
   scoped_refptr<BackendCleanupTracker> cleanup_tracker_;
 
@@ -251,7 +268,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   const scoped_refptr<base::SequencedTaskRunner> cache_runner_;
 
   // This is used for all the entry I/O.
-  scoped_refptr<base::TaskRunner> worker_pool_;
+  scoped_refptr<net::PrioritizedTaskRunner> prioritized_task_runner_;
 
   int orig_max_size_;
   const SimpleEntryImpl::OperationsMode entry_operations_mode_;
@@ -266,6 +283,8 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
       entries_pending_doom_;
 
   net::NetLog* const net_log_;
+
+  uint32_t entry_count_ = 0;
 };
 
 }  // namespace disk_cache

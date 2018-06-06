@@ -21,6 +21,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
+#include "net/base/request_priority.h"
 
 namespace base {
 class FilePath;
@@ -140,8 +141,11 @@ class NET_EXPORT Backend {
   // is no longer needed, its Close method should be called. The return value is
   // a net error code. If this method returns ERR_IO_PENDING, the |callback|
   // will be invoked when the entry is available. The pointer to receive the
-  // |entry| must remain valid until the operation completes.
-  virtual int OpenEntry(const std::string& key, Entry** entry,
+  // |entry| must remain valid until the operation completes. The |priority|
+  // of the entry determines its priority in the background worker pools.
+  virtual int OpenEntry(const std::string& key,
+                        net::RequestPriority priority,
+                        Entry** entry,
                         const CompletionCallback& callback) = 0;
 
   // Creates a new entry. Upon success, the out param holds a pointer to an
@@ -149,14 +153,19 @@ class NET_EXPORT Backend {
   // entry pointer is no longer needed, its Close method should be called. The
   // return value is a net error code. If this method returns ERR_IO_PENDING,
   // the |callback| will be invoked when the entry is available. The pointer to
-  // receive the |entry| must remain valid until the operation completes.
-  virtual int CreateEntry(const std::string& key, Entry** entry,
+  // receive the |entry| must remain valid until the operation completes. The
+  // |priority| of the entry determines its priority in the background worker
+  // pools.
+  virtual int CreateEntry(const std::string& key,
+                          net::RequestPriority priority,
+                          Entry** entry,
                           const CompletionCallback& callback) = 0;
 
   // Marks the entry, specified by the given key, for deletion. The return value
   // is a net error code. If this method returns ERR_IO_PENDING, the |callback|
   // will be invoked after the entry is doomed.
   virtual int DoomEntry(const std::string& key,
+                        net::RequestPriority priority,
                         const CompletionCallback& callback) = 0;
 
   // Marks all entries for deletion. The return value is a net error code. If

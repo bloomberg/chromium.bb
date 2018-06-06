@@ -279,12 +279,15 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   net::CacheType GetCacheType() const override;
   int32_t GetEntryCount() const override;
   int OpenEntry(const std::string& key,
+                net::RequestPriority request_priority,
                 Entry** entry,
                 const CompletionCallback& callback) override;
   int CreateEntry(const std::string& key,
+                  net::RequestPriority request_priority,
                   Entry** entry,
                   const CompletionCallback& callback) override;
   int DoomEntry(const std::string& key,
+                net::RequestPriority priority,
                 const CompletionCallback& callback) override;
   int DoomAllEntries(const CompletionCallback& callback) override;
   int DoomEntriesBetween(base::Time initial_time,
