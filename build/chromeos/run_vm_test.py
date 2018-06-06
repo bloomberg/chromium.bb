@@ -85,6 +85,16 @@ def host_cmd(args):
 def vm_test(args):
   is_sanity_test = args.test_exe == 'cros_vm_sanity_test'
 
+  # To keep things easy for us, ensure both types of output locations are
+  # the same.
+  if args.test_launcher_summary_output and args.vm_logs_dir:
+    json_output_dir = os.path.dirname(args.test_launcher_summary_output) or '.'
+    if os.path.abspath(json_output_dir) != os.path.abspath(args.vm_logs_dir):
+      logging.error(
+          '--test-launcher-summary-output and --vm-logs-dir must point to '
+          'the same directory.')
+      return 1
+
   cros_run_vm_test_cmd = [
       CROS_RUN_VM_TEST_PATH,
       '--start',
@@ -114,6 +124,12 @@ def vm_test(args):
           ['--cwd', os.path.relpath(args.path_to_outdir, CHROMIUM_SRC_PATH)])
   for f in runtime_files:
     cros_run_vm_test_cmd.extend(['--files', f])
+
+  if args.vm_logs_dir:
+    cros_run_vm_test_cmd += [
+        '--results-src', '/var/log/',
+        '--results-dest-dir', args.vm_logs_dir,
+    ]
 
   if args.test_launcher_summary_output and not is_sanity_test:
     result_dir, result_file = os.path.split(args.test_launcher_summary_output)
@@ -266,6 +282,10 @@ def main():
            'will be added onto PATH in the VM. WARNING: The arch of the VM '
            'might not match the arch of the host, so avoid using "${platform}" '
            'when downloading vpython via CIPD.')
+  vm_test_parser.add_argument(
+      '--vm-logs-dir', type=str,
+      help='Will copy everything under /var/log/ from the VM after the test '
+           'into the specified dir.')
   args = parser.parse_args()
 
   logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARN)
