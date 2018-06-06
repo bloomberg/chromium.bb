@@ -6,11 +6,22 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/numerics/ranges.h"
+#include "base/sys_info.h"
 #include "chrome/common/chrome_features.h"
 
 namespace {
 
 constexpr char kTabLoadTimeoutInMsParameterName[] = "tabLoadTimeoutInMs";
+
+// The number of cores to use for testing when computing InfiniteSessionRestore
+// parameters. Setting this to zero means the actual system info is used.
+static size_t g_num_cores_for_testing = 0;
+
+size_t GetNumCores() {
+  if (g_num_cores_for_testing != 0)
+    return g_num_cores_for_testing;
+  return base::SysInfo::NumberOfProcessors();
+}
 
 }  // namespace
 
@@ -22,6 +33,11 @@ namespace features {
 // feature is disabled.
 const base::Feature kCustomizedTabLoadTimeout{
     "CustomizedTabLoadTimeout", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables TabLoader improvements for reducing the overhead of session restores
+// involving many many tabs.
+const base::Feature kInfiniteSessionRestore{"InfiniteSessionRestore",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables proactive tab freezing and discarding.
 const base::Feature kProactiveTabFreezeAndDiscard{
@@ -102,6 +118,21 @@ const char kSiteCharacteristicsDb_AudioUsageObservationWindow[] =
 const char kSiteCharacteristicsDb_NotificationsUsageObservationWindow[] =
     "NotificationsUsageObservationWindow";
 
+const char kInfiniteSessionRestore_MinSimultaneousTabLoads[] =
+    "MinSimultaneousTabLoads";
+const char kInfiniteSessionRestore_MaxSimultaneousTabLoads[] =
+    "MaxSimultaneousTabLoads";
+const char kInfiniteSessionRestore_CoresPerSimultaneousTabLoad[] =
+    "CoresPerSimultaneousTabLoad";
+const char kInfiniteSessionRestore_MinTabsToRestore[] = "MinTabsToRestore";
+const char kInfiniteSessionRestore_MaxTabsToRestore[] = "MaxTabsToRestore";
+const char kInfiniteSessionRestore_MbFreeMemoryPerTabToRestore[] =
+    "MbFreeMemoryPerTabToRestore";
+const char kInfiniteSessionRestore_MaxTimeSinceLastUseToRestore[] =
+    "MaxTimeSinceLastUseToRestore";
+const char kInfiniteSessionRestore_MinSiteEngagementToRestore[] =
+    "MinSiteEngagementToRestore";
+
 // Default values for ProactiveTabFreezeAndDiscardParams.
 const bool kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardDefault =
     false;
@@ -149,6 +180,24 @@ const base::TimeDelta
     kSiteCharacteristicsDb_NotificationsUsageObservationWindow_Default =
         base::TimeDelta::FromHours(2);
 
+// Default values for infinite session restore feature. Many of these are taken
+// from thin air, but others are motivated by existing metrics.
+const uint32_t kInfiniteSessionRestore_MinSimultaneousTabLoadsDefault = 1;
+const uint32_t kInfiniteSessionRestore_MaxSimultaneousTabLoadsDefault = 4;
+const uint32_t kInfiniteSessionRestore_CoresPerSimultaneousTabLoadDefault = 2;
+const uint32_t kInfiniteSessionRestore_MinTabsToRestoreDefault = 4;
+const uint32_t kInfiniteSessionRestore_MaxTabsToRestoreDefault = 20;
+// This is the 75th percentile of Memory.Renderer.PrivateMemoryFootprint.
+const uint32_t kInfiniteSessionRestore_MbFreeMemoryPerTabToRestoreDefault = 150;
+// This is the 75th percentile of SessionRestore.RestoredTab.TimeSinceActive.
+const base::TimeDelta
+    kInfiniteSessionRestore_MaxTimeSinceLastUseToRestoreDefault =
+        base::TimeDelta::FromHours(6);
+// Taken from an informal survey of Googlers on min engagement of things they
+// think *must* load. Note that about 25% of session-restore tabs fall above
+// this threshold (see SessionRestore.RestoredTab.SiteEngagementScore).
+const uint32_t kInfiniteSessionRestore_MinSiteEngagementToRestoreDefault = 15;
+
 ProactiveTabFreezeAndDiscardParams::ProactiveTabFreezeAndDiscardParams() =
     default;
 ProactiveTabFreezeAndDiscardParams::ProactiveTabFreezeAndDiscardParams(
@@ -158,6 +207,10 @@ SiteCharacteristicsDatabaseParams::SiteCharacteristicsDatabaseParams() =
     default;
 SiteCharacteristicsDatabaseParams::SiteCharacteristicsDatabaseParams(
     const SiteCharacteristicsDatabaseParams& rhs) = default;
+
+InfiniteSessionRestoreParams::InfiniteSessionRestoreParams() = default;
+InfiniteSessionRestoreParams::InfiniteSessionRestoreParams(
+    const InfiniteSessionRestoreParams& rhs) = default;
 
 ProactiveTabFreezeAndDiscardParams GetProactiveTabFreezeAndDiscardParams(
     int memory_in_gb) {
@@ -269,6 +322,92 @@ GetStaticSiteCharacteristicsDatabaseParams() {
   static base::NoDestructor<SiteCharacteristicsDatabaseParams> params(
       GetSiteCharacteristicsDatabaseParams());
   return *params;
+}
+
+InfiniteSessionRestoreParams GetInfiniteSessionRestoreParams() {
+  InfiniteSessionRestoreParams params = {};
+
+  params.min_simultaneous_tab_loads = base::GetFieldTrialParamByFeatureAsInt(
+      features::kInfiniteSessionRestore,
+      kInfiniteSessionRestore_MinSimultaneousTabLoads,
+      kInfiniteSessionRestore_MinSimultaneousTabLoadsDefault);
+  params.max_simultaneous_tab_loads = base::GetFieldTrialParamByFeatureAsInt(
+      features::kInfiniteSessionRestore,
+      kInfiniteSessionRestore_MaxSimultaneousTabLoads,
+      kInfiniteSessionRestore_MaxSimultaneousTabLoadsDefault);
+  params.cores_per_simultaneous_tab_load =
+      base::GetFieldTrialParamByFeatureAsInt(
+          features::kInfiniteSessionRestore,
+          kInfiniteSessionRestore_CoresPerSimultaneousTabLoad,
+          kInfiniteSessionRestore_CoresPerSimultaneousTabLoadDefault);
+  params.min_tabs_to_restore = base::GetFieldTrialParamByFeatureAsInt(
+      features::kInfiniteSessionRestore,
+      kInfiniteSessionRestore_MinTabsToRestore,
+      kInfiniteSessionRestore_MinTabsToRestoreDefault);
+  params.max_tabs_to_restore = base::GetFieldTrialParamByFeatureAsInt(
+      features::kInfiniteSessionRestore,
+      kInfiniteSessionRestore_MaxTabsToRestore,
+      kInfiniteSessionRestore_MaxTabsToRestoreDefault);
+  params.mb_free_memory_per_tab_to_restore =
+      base::GetFieldTrialParamByFeatureAsInt(
+          features::kInfiniteSessionRestore,
+          kInfiniteSessionRestore_MbFreeMemoryPerTabToRestore,
+          kInfiniteSessionRestore_MbFreeMemoryPerTabToRestoreDefault);
+  params.max_time_since_last_use_to_restore =
+      base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+          features::kInfiniteSessionRestore,
+          kInfiniteSessionRestore_MaxTimeSinceLastUseToRestore,
+          kInfiniteSessionRestore_MaxTimeSinceLastUseToRestoreDefault
+              .InSeconds()));
+  params.min_site_engagement_to_restore =
+      base::GetFieldTrialParamByFeatureAsInt(
+          features::kInfiniteSessionRestore,
+          kInfiniteSessionRestore_MinSiteEngagementToRestore,
+          kInfiniteSessionRestore_MinSiteEngagementToRestoreDefault);
+
+  params.simultaneous_tab_loads = CalculateSimultaneousTabLoads(
+      params.min_simultaneous_tab_loads, params.max_simultaneous_tab_loads,
+      params.cores_per_simultaneous_tab_load, GetNumCores());
+
+  return params;
+}
+
+const InfiniteSessionRestoreParams& GetStaticInfiniteSessionRestoreParams() {
+  static base::NoDestructor<InfiniteSessionRestoreParams> params(
+      GetInfiniteSessionRestoreParams());
+  return *params;
+}
+
+size_t CalculateSimultaneousTabLoads(size_t min_loads,
+                                     size_t max_loads,
+                                     size_t cores_per_load,
+                                     size_t num_cores) {
+  DCHECK(max_loads == 0 || min_loads <= max_loads);
+
+  if (num_cores == 0)
+    num_cores = GetNumCores();
+  DCHECK(num_cores > 0);
+
+  size_t loads = 0;
+
+  // Setting |cores_per_load| == 0 means that no per-core limit is applied.
+  if (cores_per_load == 0) {
+    loads = std::numeric_limits<size_t>::max();
+  } else {
+    loads = num_cores / cores_per_load;
+  }
+
+  // If |max_loads| isn't zero then apply the maximum that it implies.
+  if (max_loads != 0)
+    loads = std::min(loads, max_loads);
+
+  loads = std::max(loads, min_loads);
+
+  return loads;
+}
+
+void SetCoresForTesting(size_t num_cores) {
+  g_num_cores_for_testing = num_cores;
 }
 
 }  // namespace resource_coordinator
