@@ -16,6 +16,9 @@ static_library("multidevice_setup") {
     "multidevice_setup_service.h",
     "observer_notifier.cc",
     "observer_notifier.h",
+    "setup_flow_completion_recorder.h",
+    "setup_flow_completion_recorder_impl.cc",
+    "setup_flow_completion_recorder_impl.h",
   ]
 
   deps = [
@@ -42,6 +45,8 @@ static_library("test_support") {
   sources = [
     "fake_multidevice_setup_observer.cc",
     "fake_multidevice_setup_observer.h",
+    "fake_setup_flow_completion_recorder.cc",
+    "fake_setup_flow_completion_recorder.h",
   ]
 
   public_deps = [
@@ -63,6 +68,7 @@ source_set("unit_tests") {
   sources = [
     "multidevice_setup_service_unittest.cc",
     "observer_notifier_unittest.cc",
+    "setup_flow_completion_recorder_impl_unittest.cc",
   ]
 
   deps = [
