@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.feed;
 
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.view.View;
@@ -22,6 +23,8 @@ import com.google.android.libraries.feed.host.stream.StreamConfiguration;
 import com.google.android.libraries.feed.hostimpl.logging.LoggingApiImpl;
 import com.google.android.libraries.feed.hostimpl.scheduler.TimeoutScheduler;
 
+import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.NativePageHost;
@@ -43,18 +46,27 @@ public class FeedNewTabPage extends BasicNativePage {
     private String mTitle;
     private FeedImageLoader mImageLoader;
 
-    private static class StubStreamConfiguration implements StreamConfiguration {
+    private static class BasicStreamConfiguration implements StreamConfiguration {
+        private final Resources mResources;
+        private final int mPadding;
+
+        public BasicStreamConfiguration(Resources resources) {
+            mResources = resources;
+            mPadding = mResources.getDimensionPixelSize(
+                    R.dimen.content_suggestions_card_modern_margin);
+        }
+
         @Override
         public int getPaddingStart() {
-            return 0;
+            return mPadding;
         }
         @Override
         public int getPaddingEnd() {
-            return 0;
+            return mPadding;
         }
         @Override
         public int getPaddingTop() {
-            return 0;
+            return mPadding;
         }
         @Override
         public int getPaddingBottom() {
@@ -62,18 +74,35 @@ public class FeedNewTabPage extends BasicNativePage {
         }
     }
 
-    private static class StubCardConfiguration implements CardConfiguration {
+    private static class BasicCardConfiguration implements CardConfiguration {
+        private final Resources mResources;
+        private final int mCornerRadius;
+        private final Drawable mCardBackground;
+        private final int mCardMarginBottom;
+
+        public BasicCardConfiguration(Resources resources) {
+            mResources = resources;
+            mCornerRadius = mResources.getDimensionPixelSize(
+                    R.dimen.content_suggestions_card_modern_corner_radius);
+            mCardBackground = ApiCompatibilityUtils.getDrawable(
+                    mResources, R.drawable.content_card_modern_background);
+            mCardMarginBottom = mResources.getDimensionPixelSize(
+                    R.dimen.content_suggestions_card_modern_margin);
+        }
+
         @Override
         public int getDefaultCornerRadius() {
-            return 0;
+            return mCornerRadius;
         }
+
         @Override
         public Drawable getCardBackground() {
-            return null;
+            return mCardBackground;
         }
+
         @Override
         public float getCardBottomPadding() {
-            return 0;
+            return mCardMarginBottom;
         }
     }
 
@@ -104,7 +133,7 @@ public class FeedNewTabPage extends BasicNativePage {
                                     new LoggingApiImpl(), new FeedNetworkBridge(profile),
                                     new TimeoutScheduler(new ThreadUtils(), new SystemClockImpl(),
                                             configHostApi),
-                                    DebugBehavior.VERBOSE)
+                                    DebugBehavior.SILENT)
                             .build();
         }
 
@@ -112,12 +141,13 @@ public class FeedNewTabPage extends BasicNativePage {
         SuggestionsNavigationDelegateImpl navigationDelegate =
                 new SuggestionsNavigationDelegateImpl(
                         activity, profile, nativePageHost, tabModelSelector);
-        FeedStreamScope streamScope = sFeedProcessScope
-                                              .createFeedStreamScopeBuilder(activity, mImageLoader,
-                                                      new FeedActionHandler(navigationDelegate),
-                                                      new StubStreamConfiguration(),
-                                                      new StubCardConfiguration(), configHostApi)
-                                              .build();
+        FeedStreamScope streamScope =
+                sFeedProcessScope
+                        .createFeedStreamScopeBuilder(activity, mImageLoader,
+                                new FeedActionHandler(navigationDelegate),
+                                new BasicStreamConfiguration(activity.getResources()),
+                                new BasicCardConfiguration(activity.getResources()), configHostApi)
+                        .build();
 
         Stream stream = streamScope.getStream();
         stream.onCreate(null);
