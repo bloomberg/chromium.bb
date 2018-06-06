@@ -311,7 +311,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
 
     @Override
     public void onItemRemoved(ContentId id) {
-        if (!mTrackedItems.containsKey(id)) return;
+        if (!mSeenItems.contains(id)) return;
 
         mTrackedItems.remove(id);
         mNotificationIds.remove(id);
