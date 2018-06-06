@@ -1660,13 +1660,6 @@ bool RenderProcessHostImpl::Init() {
     ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
   }
 
-  GetRendererInterface()->SetUserAgent(GetContentClient()->GetUserAgent());
-
-  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites() &&
-      base::FeatureList::IsEnabled(features::kV8LowMemoryModeForSubframes)) {
-    GetRendererInterface()->EnableV8LowMemoryMode();
-  }
-
   is_initialized_ = true;
   init_time_ = base::TimeTicks::Now();
   return true;
@@ -2549,10 +2542,25 @@ bool RenderProcessHostImpl::HostHasNotBeenUsed() {
 void RenderProcessHostImpl::LockToOrigin(const GURL& lock_url) {
   ChildProcessSecurityPolicyImpl::GetInstance()->LockToOrigin(GetID(),
                                                               lock_url);
-  // Notify renderer that it has been locked to a site, if |lock_url| has
-  // scheme and host.
-  if (SiteInstanceImpl::IsOriginLockASite(lock_url))
-    GetRendererInterface()->SetIsLockedToSite();
+
+  // Note that LockToOrigin is only called once per RenderProcessHostImpl (when
+  // committing a navigation into an empty renderer).  Therefore, the call to
+  // NotifyRendererIfLockedToSite below is insufficient for setting up renderers
+  // respawned after crashing - this is handled by another call to
+  // NotifyRendererIfLockedToSite from OnProcessLaunched.
+  NotifyRendererIfLockedToSite();
+}
+
+void RenderProcessHostImpl::NotifyRendererIfLockedToSite() {
+  GURL lock_url =
+      ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(GetID());
+  if (!lock_url.is_valid())
+    return;
+
+  if (!SiteInstanceImpl::IsOriginLockASite(lock_url))
+    return;
+
+  GetRendererInterface()->SetIsLockedToSite();
 }
 
 bool RenderProcessHostImpl::IsForGuestsOnly() const {
@@ -4121,6 +4129,14 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 
     // Share histograms between the renderer and this process.
     CreateSharedRendererHistogramAllocator();
+  }
+
+  // Pass bits of global renderer state to the renderer.
+  GetRendererInterface()->SetUserAgent(GetContentClient()->GetUserAgent());
+  NotifyRendererIfLockedToSite();
+  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites() &&
+      base::FeatureList::IsEnabled(features::kV8LowMemoryModeForSubframes)) {
+    GetRendererInterface()->EnableV8LowMemoryMode();
   }
 
   // NOTE: This needs to be before flushing queued messages, because

@@ -1064,6 +1064,10 @@ bool ChildProcessSecurityPolicyImpl::HasSpecificPermissionForOrigin(
 
 void ChildProcessSecurityPolicyImpl::LockToOrigin(int child_id,
                                                   const GURL& gurl) {
+  // LockToOrigin should only be called on the UI thread (OTOH, it is okay to
+  // call GetOriginLock or CheckOriginLock from any thread).
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // "gurl" can be currently empty in some cases, such as file://blah.
   DCHECK(SiteInstanceImpl::GetSiteForURL(nullptr, gurl) == gurl);
   base::AutoLock lock(lock_);
