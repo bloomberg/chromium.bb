@@ -1662,6 +1662,11 @@ bool RenderProcessHostImpl::Init() {
 
   GetRendererInterface()->SetUserAgent(GetContentClient()->GetUserAgent());
 
+  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites() &&
+      base::FeatureList::IsEnabled(features::kV8LowMemoryModeForSubframes)) {
+    GetRendererInterface()->EnableV8LowMemoryMode();
+  }
+
   is_initialized_ = true;
   init_time_ = base::TimeTicks::Now();
   return true;

@@ -259,4 +259,11 @@ interface Renderer {
   // scheme plus eTLD+1, such as https://google.com), or to a more specific
   // origin.
   SetIsLockedToSite();
+
+  // Tells the renderer to enable V8's memory saving mode when possible.
+  // This is only used when site-per-process is enabled. If the process
+  // only contains subframes, V8's low memory mode will be enabled.
+  // If a main frame exists or is created, the low memory mode will
+  // be disabled.
+  EnableV8LowMemoryMode();
 };

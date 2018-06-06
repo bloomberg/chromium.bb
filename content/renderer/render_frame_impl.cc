@@ -117,6 +117,7 @@
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/loader/web_url_request_util.h"
 #include "content/renderer/loader/weburlresponse_extradata_impl.h"
+#include "content/renderer/low_memory_mode_controller.h"
 #include "content/renderer/manifest/manifest_change_notifier.h"
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/media/audio_device_factory.h"
@@ -1407,6 +1408,12 @@ RenderFrameImpl::~RenderFrameImpl() {
   if (auto* factory = AudioOutputIPCFactory::get())
     factory->MaybeDeregisterRemoteFactory(GetRoutingID());
 
+  // |thread| may be null in tests.
+  if (auto* thread = RenderThreadImpl::current()) {
+    if (auto* controller = thread->low_memory_mode_controller())
+      controller->OnFrameDestroyed(IsMainFrame());
+  }
+
   if (is_main_frame_) {
     // Ensure the RenderView doesn't point to this object, once it is destroyed.
     // TODO(nasko): Add a check that the |main_render_frame_| of |render_view_|
@@ -1440,6 +1447,12 @@ void RenderFrameImpl::Initialize() {
     TRACE_EVENT2("navigation,rail", "RenderFrameImpl::Initialize",
                  "id", routing_id_,
                  "parent", parent_id);
+  }
+
+  // |thread| may be null in tests.
+  if (auto* thread = RenderThreadImpl::current()) {
+    if (auto* controller = thread->low_memory_mode_controller())
+      controller->OnFrameCreated(IsMainFrame());
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
