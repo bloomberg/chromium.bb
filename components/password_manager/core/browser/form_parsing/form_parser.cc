@@ -168,7 +168,7 @@ bool HasPasswordField(const std::vector<const FormFieldData*>& fields) {
 std::unique_ptr<ParseResult> ParseUsingAutocomplete(
     const std::vector<const FormFieldData*>& fields,
     const AutocompleteCache& autocomplete_cache) {
-  std::unique_ptr<ParseResult> result = std::make_unique<ParseResult>();
+  auto result = std::make_unique<ParseResult>();
   for (const FormFieldData* field : fields) {
     AutocompleteFlag flag = autocomplete_cache.RetrieveFor(field);
     const bool is_password = field->form_control_type == "password";
