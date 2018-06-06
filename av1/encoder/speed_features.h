@@ -392,6 +392,9 @@ typedef struct SPEED_FEATURES {
   // aggressiveness of pruning in order.
   int prune_ext_partition_types_search_level;
 
+  // Use a ML model to prune horz_a, horz_b, vert_a and vert_b partitions.
+  int ml_prune_ab_partition;
+
   int fast_cdef_search;
 
   // 2-pass coding block partition search

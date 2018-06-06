@@ -41,6 +41,7 @@
 #include "av1/common/seg_common.h"
 #include "av1/common/tile_common.h"
 
+#include "av1/encoder/ab_partition_model_weights.h"
 #include "av1/encoder/aq_complexity.h"
 #include "av1/encoder/aq_cyclicrefresh.h"
 #include "av1/encoder/aq_variance.h"
@@ -52,6 +53,7 @@
 #include "av1/encoder/encodetxb.h"
 #include "av1/encoder/ethread.h"
 #include "av1/encoder/extend.h"
+#include "av1/encoder/ml.h"
 #include "av1/encoder/rd.h"
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/segmentation.h"
@@ -2782,6 +2784,8 @@ static int ml_prune_2pass_split_partition(const PC_TREE_STATS *pc_tree_stats,
   }
   if (!split_weights || !none_weights) return 0;
 
+  aom_clear_system_state();
+
   float features[FEATURE_SIZE];
   int feature_index = 0;
   features[feature_index++] = (float)pc_tree_stats->split;
@@ -2815,6 +2819,92 @@ static int ml_prune_2pass_split_partition(const PC_TREE_STATS *pc_tree_stats,
   return 1;
 }
 #undef FEATURE_SIZE
+
+// Use a ML model to predict if horz_a, horz_b, vert_a, and vert_b should be
+// considered.
+static void ml_prune_ab_partition(BLOCK_SIZE bsize, int part_ctx, int var_ctx,
+                                  int64_t best_rd, int64_t horz_rd[2],
+                                  int64_t vert_rd[2], int64_t split_rd[4],
+                                  int *const horza_partition_allowed,
+                                  int *const horzb_partition_allowed,
+                                  int *const verta_partition_allowed,
+                                  int *const vertb_partition_allowed) {
+  if (bsize < BLOCK_8X8 || best_rd >= 1000000000) return;
+  const NN_CONFIG *nn_config = NULL;
+  switch (bsize) {
+    case BLOCK_8X8: nn_config = NULL; break;
+    case BLOCK_16X16: nn_config = &av1_ab_partition_nnconfig_16; break;
+    case BLOCK_32X32: nn_config = &av1_ab_partition_nnconfig_32; break;
+    case BLOCK_64X64: nn_config = &av1_ab_partition_nnconfig_64; break;
+    case BLOCK_128X128: nn_config = &av1_ab_partition_nnconfig_128; break;
+    default: assert(0 && "Unexpected bsize.");
+  }
+  if (!nn_config) return;
+
+  aom_clear_system_state();
+
+  // Generate features.
+  float features[10];
+  int feature_index = 0;
+  features[feature_index++] = (float)part_ctx;
+  features[feature_index++] = (float)var_ctx;
+  const int rdcost = (int)AOMMIN(INT_MAX, best_rd);
+  int sub_block_rdcost[8] = { 0 };
+  int rd_index = 0;
+  for (int i = 0; i < 2; ++i) {
+    if (horz_rd[i] > 0 && horz_rd[i] < 1000000000)
+      sub_block_rdcost[rd_index] = (int)horz_rd[i];
+    ++rd_index;
+  }
+  for (int i = 0; i < 2; ++i) {
+    if (vert_rd[i] > 0 && vert_rd[i] < 1000000000)
+      sub_block_rdcost[rd_index] = (int)vert_rd[i];
+    ++rd_index;
+  }
+  for (int i = 0; i < 4; ++i) {
+    if (split_rd[i] > 0 && split_rd[i] < 1000000000)
+      sub_block_rdcost[rd_index] = (int)split_rd[i];
+    ++rd_index;
+  }
+  for (int i = 0; i < 8; ++i) {
+    // Ratio between the sub-block RD and the whole-block RD.
+    float rd_ratio = 1.0f;
+    if (sub_block_rdcost[i] > 0 && sub_block_rdcost[i] < rdcost)
+      rd_ratio = (float)sub_block_rdcost[i] / (float)rdcost;
+    features[feature_index++] = rd_ratio;
+  }
+  assert(feature_index == 10);
+
+  // Calculate scores using the NN model.
+  float score[16] = { 0.0f };
+  av1_nn_predict(features, nn_config, score);
+  int int_score[16];
+  int max_score = -1000;
+  for (int i = 0; i < 16; ++i) {
+    int_score[i] = (int)(100 * score[i]);
+    max_score = AOMMAX(int_score[i], max_score);
+  }
+
+  // Make decisions based on the model scores.
+  int thresh = max_score;
+  switch (bsize) {
+    case BLOCK_16X16: thresh -= 150; break;
+    case BLOCK_32X32: thresh -= 100; break;
+    default: break;
+  }
+  *horza_partition_allowed = 0;
+  *horzb_partition_allowed = 0;
+  *verta_partition_allowed = 0;
+  *vertb_partition_allowed = 0;
+  for (int i = 0; i < 16; ++i) {
+    if (int_score[i] >= thresh) {
+      if ((i >> 0) & 1) *horza_partition_allowed = 1;
+      if ((i >> 1) & 1) *horzb_partition_allowed = 1;
+      if ((i >> 2) & 1) *verta_partition_allowed = 1;
+      if ((i >> 3) & 1) *vertb_partition_allowed = 1;
+    }
+  }
+}
 
 // TODO(jingning,jimbankoski,rbultje): properly skip partition types that are
 // unlikely to be selected depending on previous rate-distortion optimization
@@ -3475,6 +3565,33 @@ BEGIN_PARTITION_SEARCH:
     }
   }
 
+  int verta_partition_allowed = vertab_partition_allowed;
+  int vertb_partition_allowed = vertab_partition_allowed;
+  if (cpi->sf.prune_ext_partition_types_search_level) {
+    const int64_t vert_a_rd = vert_rd[1] + split_rd[0] + split_rd[2];
+    const int64_t vert_b_rd = vert_rd[0] + split_rd[1] + split_rd[3];
+    switch (cpi->sf.prune_ext_partition_types_search_level) {
+      case 1:
+        verta_partition_allowed &= (vert_a_rd / 16 * 14 < best_rdc.rdcost);
+        vertb_partition_allowed &= (vert_b_rd / 16 * 14 < best_rdc.rdcost);
+        break;
+      case 2:
+      default:
+        verta_partition_allowed &= (vert_a_rd / 16 * 15 < best_rdc.rdcost);
+        vertb_partition_allowed &= (vert_b_rd / 16 * 15 < best_rdc.rdcost);
+        break;
+    }
+  }
+
+  if (cpi->sf.ml_prune_ab_partition && ext_partition_allowed &&
+      partition_horz_allowed && partition_vert_allowed) {
+    ml_prune_ab_partition(bsize, pc_tree->partitioning,
+                          get_unsigned_bits(x->source_variance),
+                          best_rdc.rdcost, horz_rd, vert_rd, split_rd,
+                          &horza_partition_allowed, &horzb_partition_allowed,
+                          &verta_partition_allowed, &vertb_partition_allowed);
+  }
+
   // PARTITION_HORZ_A
   if (partition_horz_allowed && horza_partition_allowed) {
     subsize = get_partition_subsize(bsize, PARTITION_HORZ_A);
@@ -3516,24 +3633,6 @@ BEGIN_PARTITION_SEARCH:
                        mi_row + mi_step, mi_col, bsize2, mi_row + mi_step,
                        mi_col + mi_step, bsize2);
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
-  }
-
-  int verta_partition_allowed = vertab_partition_allowed;
-  int vertb_partition_allowed = vertab_partition_allowed;
-  if (cpi->sf.prune_ext_partition_types_search_level) {
-    const int64_t vert_a_rd = vert_rd[1] + split_rd[0] + split_rd[2];
-    const int64_t vert_b_rd = vert_rd[0] + split_rd[1] + split_rd[3];
-    switch (cpi->sf.prune_ext_partition_types_search_level) {
-      case 1:
-        verta_partition_allowed &= (vert_a_rd / 16 * 14 < best_rdc.rdcost);
-        vertb_partition_allowed &= (vert_b_rd / 16 * 14 < best_rdc.rdcost);
-        break;
-      case 2:
-      default:
-        verta_partition_allowed &= (vert_a_rd / 16 * 15 < best_rdc.rdcost);
-        vertb_partition_allowed &= (vert_b_rd / 16 * 15 < best_rdc.rdcost);
-        break;
-    }
   }
 
   // PARTITION_VERT_A
