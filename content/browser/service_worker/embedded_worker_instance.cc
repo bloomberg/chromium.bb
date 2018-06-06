@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_content_settings_proxy_impl.h"
@@ -25,7 +26,6 @@
 #include "content/common/url_schemes.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -137,6 +137,19 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   }
 
   // S13nServiceWorker:
+  // Create a default loader for network fallback.
+  // The factory from RPH::CreateURLLoaderFactory() doesn't support
+  // reconnection to the network service after a crash, but it's probably OK
+  // since it's used for a single service worker startup until installation
+  // finishes (with the exception of https://crbug.com/719052).
+  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+    network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
+    rph->CreateURLLoaderFactory(mojo::MakeRequest(&default_factory_info));
+    factory_bundle = std::make_unique<URLLoaderFactoryBundleInfo>();
+    factory_bundle->default_factory_info() = std::move(default_factory_info);
+  }
+
+  // S13nServiceWorker:
   // Create the loader factories for non-http(s) URLs, for example
   // chrome-extension:// URLs. For performance, only do this step when the main
   // script URL is non-http(s). We assume an http(s) service worker cannot
@@ -149,7 +162,6 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
         ->RegisterNonNetworkSubresourceURLLoaderFactories(
             rph->GetID(), MSG_ROUTING_NONE, &factories);
 
-    factory_bundle = std::make_unique<URLLoaderFactoryBundleInfo>();
     for (auto& pair : factories) {
       const std::string& scheme = pair.first;
       std::unique_ptr<network::mojom::URLLoaderFactory> factory =
@@ -481,23 +493,9 @@ class EmbeddedWorkerInstance::StartTask {
     // S13nServiceWorker: Build the URLLoaderFactory for loading new scripts.
     scoped_refptr<network::SharedURLLoaderFactory> factory_for_new_scripts;
     if (ServiceWorkerUtils::IsServicificationEnabled()) {
-      if (factory_bundle) {
-        network::mojom::URLLoaderFactoryPtr network_factory_ptr;
-        // The factory from CloneNetworkFactory() doesn't support reconnection
-        // to the network service after a crash, but it's probably OK since it's
-        // used for a single service worker startup until installation finishes
-        // (with the exception of https://crbug.com/719052).
-        instance_->context_->loader_factory_getter()->CloneNetworkFactory(
-            mojo::MakeRequest(&network_factory_ptr));
-        scoped_refptr<URLLoaderFactoryBundle> factory =
-            base::MakeRefCounted<URLLoaderFactoryBundle>(
-                std::move(factory_bundle));
-        factory->SetDefaultFactory(std::move(network_factory_ptr));
-        factory_for_new_scripts = std::move(factory);
-      } else {
-        factory_for_new_scripts =
-            instance_->context_->loader_factory_getter()->GetNetworkFactory();
-      }
+      DCHECK(factory_bundle);
+      factory_for_new_scripts = base::MakeRefCounted<URLLoaderFactoryBundle>(
+          std::move(factory_bundle));
     }
 
     instance_->SendStartWorker(std::move(params),

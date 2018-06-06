@@ -134,6 +134,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   mojom::Renderer* GetRendererInterface() override;
   resource_coordinator::ProcessResourceCoordinator*
   GetProcessResourceCoordinator() override;
+  void CreateURLLoaderFactory(
+      network::mojom::URLLoaderFactoryRequest request) override;
 
   void SetIsNeverSuitableForReuse() override;
   bool MayReuseHost() override;
@@ -175,6 +177,8 @@ class MockRenderProcessHost : public RenderProcessHost {
       std::unique_ptr<mojo::AssociatedInterfacePtr<mojom::Renderer>>
           renderer_interface);
 
+  void OverrideURLLoaderFactory(network::mojom::URLLoaderFactory* factory);
+
   bool is_renderer_locked_to_site() const {
     return is_renderer_locked_to_site_;
   }
@@ -207,6 +211,7 @@ class MockRenderProcessHost : public RenderProcessHost {
       process_resource_coordinator_;
   service_manager::Identity child_identity_;
   bool is_renderer_locked_to_site_ = false;
+  network::mojom::URLLoaderFactory* url_loader_factory_;
   base::WeakPtrFactory<MockRenderProcessHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
