@@ -79,6 +79,9 @@ typedef struct AV1Decoder {
 
   TileBufferDec tile_buffers[MAX_TILE_ROWS][MAX_TILE_COLS];
 
+  YV12_BUFFER_CONFIG *output_frame;
+  int output_frame_index;  // Buffer pool index
+
   int allow_lowbitdepth;
   int max_threads;
   int inv_tile_order;
