@@ -46,7 +46,7 @@ struct segmentation {
   unsigned int feature_mask[MAX_SEGMENTS];
   int last_active_segid;  // The highest numbered segment id that has some
                           // enabled feature.
-  uint8_t preskip_segid;  // Whether the segment id will be read before the
+  uint8_t segid_preskip;  // Whether the segment id will be read before the
                           // skip syntax element.
                           // 1: the segment id will be read first.
                           // 0: the skip syntax element will be read first.
@@ -74,7 +74,7 @@ static INLINE void segfeatures_copy(struct segmentation *dst,
       dst->feature_data[i][j] = src->feature_data[i][j];
     }
   }
-  dst->preskip_segid = src->preskip_segid;
+  dst->segid_preskip = src->segid_preskip;
   dst->last_active_segid = src->last_active_segid;
 }
 

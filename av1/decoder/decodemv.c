@@ -378,9 +378,9 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
   int segment_id;
   if (preskip) {
-    if (!seg->preskip_segid) return 0;
+    if (!seg->segid_preskip) return 0;
   } else {
-    if (seg->preskip_segid) return mbmi->segment_id;
+    if (seg->segid_preskip) return mbmi->segment_id;
     if (mbmi->skip) {
       if (seg->temporal_update) {
         mbmi->seg_id_predicted = 0;
@@ -731,13 +731,13 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
-  if (seg->preskip_segid)
+  if (seg->segid_preskip)
     mbmi->segment_id =
         read_intra_segment_id(cm, xd, mi_row, mi_col, bsize, r, 0);
 
   mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
 
-  if (!seg->preskip_segid)
+  if (!seg->segid_preskip)
     mbmi->segment_id =
         read_intra_segment_id(cm, xd, mi_row, mi_col, bsize, r, mbmi->skip);
 

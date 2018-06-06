@@ -907,9 +907,9 @@ static void write_inter_segment_id(AV1_COMP *cpi, aom_writer *w,
 
   if (seg->update_map) {
     if (preskip) {
-      if (!seg->preskip_segid) return;
+      if (!seg->segid_preskip) return;
     } else {
-      if (seg->preskip_segid) return;
+      if (seg->segid_preskip) return;
       if (skip) {
         write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, 1);
         if (seg->temporal_update) ((MB_MODE_INFO *)mbmi)->seg_id_predicted = 0;
@@ -1180,12 +1180,12 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const PREDICTION_MODE mode = mbmi->mode;
 
-  if (seg->preskip_segid && seg->update_map)
+  if (seg->segid_preskip && seg->update_map)
     write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, 0);
 
   const int skip = write_skip(cm, xd, mbmi->segment_id, mbmi, w);
 
-  if (!seg->preskip_segid && seg->update_map)
+  if (!seg->segid_preskip && seg->update_map)
     write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, skip);
 
   write_cdef(cm, xd, w, skip, mi_col, mi_row);
