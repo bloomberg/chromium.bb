@@ -117,6 +117,39 @@ def _LinterRunCommand(cmd, debug, **kwargs):
                                    debug_level=logging.NOTICE, **kwargs)
 
 
+def _WhiteSpaceLintData(path, data):
+  """Run basic whitespace checks on |data|.
+
+  Args:
+    path: The name of the file (for diagnostics).
+    data: The file content to lint.
+
+  Returns:
+    True if everything passed.
+  """
+  ret = True
+
+  # Make sure files all have a trailing newline.
+  if not data.endswith('\n'):
+    ret = False
+    logging.warn('%s: file needs a trailing newline', path)
+
+  # Disallow leading & trailing blank lines.
+  if data.startswith('\n'):
+    ret = False
+    logging.warn('%s: delete leading blank lines', path)
+  if data.endswith('\n\n'):
+    ret = False
+    logging.warn('%s: delete trailing blank lines', path)
+
+  for i, line in enumerate(data.splitlines(), start=1):
+    if line.rstrip() != line:
+      ret = False
+      logging.warn('%s:%i: trim trailing whitespace: %s', path, i, line)
+
+  return ret
+
+
 def _CpplintFile(path, output_format, debug):
   """Returns result of running cpplint on |path|."""
   cmd = [os.path.join(constants.DEPOT_TOOLS_DIR, 'cpplint.py')]
@@ -143,17 +176,35 @@ def _JsonLintFile(path, _output_format, _debug):
   result = cros_build_lib.CommandResult('python -mjson.tool "%s"' % path,
                                         returncode=0)
 
-  # Strip out comments.
-  regex = re.compile(r'^\s*#.*')
-  with open(path) as f:
-    data = ''.join(regex.sub('', line) for line in f)
+  data = osutils.ReadFile(path)
+
+  # Strip out comments for JSON parsing.
+  stripped_data = re.sub(r'^\s*#.*', '', data, flags=re.M)
 
   # See if it validates.
   try:
-    json.loads(data)
+    json.loads(stripped_data)
   except ValueError as e:
     result.returncode = 1
     logging.notice('%s: %s', path, e)
+
+  # Check whitespace.
+  if not _WhiteSpaceLintData(path, data):
+    result.returncode = 1
+
+  return result
+
+
+def _MarkdownLintFile(path, _output_format, _debug):
+  """Returns result of running lint checks on |path|."""
+  result = cros_build_lib.CommandResult('mdlint(internal) "%s"' % path,
+                                        returncode=0)
+
+  data = osutils.ReadFile(path)
+
+  # Check whitespace.
+  if not _WhiteSpaceLintData(path, data):
+    result.returncode = 1
 
   return result
 
@@ -249,6 +300,7 @@ _EXT_TO_LINTER_MAP = {
     frozenset({'.py'}): _PylintFile,
     frozenset({'.sh'}): _ShellLintFile,
     frozenset({'.ebuild', '.eclass', '.bashrc'}): _GentooShellLintFile,
+    frozenset({'.md'}): _MarkdownLintFile,
 }
 
 
