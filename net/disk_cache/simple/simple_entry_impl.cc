@@ -23,6 +23,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/prioritized_task_runner.h"
 #include "net/disk_cache/backend_cleanup_tracker.h"
 #include "net/disk_cache/net_log_parameters.h"
 #include "net/disk_cache/simple/simple_backend_impl.h"
@@ -186,12 +187,12 @@ SimpleEntryImpl::SimpleEntryImpl(
     OperationsMode operations_mode,
     SimpleBackendImpl* backend,
     SimpleFileTracker* file_tracker,
-    net::NetLog* net_log)
+    net::NetLog* net_log,
+    uint32_t entry_priority)
     : cleanup_tracker_(std::move(cleanup_tracker)),
       backend_(backend->AsWeakPtr()),
       file_tracker_(file_tracker),
       cache_type_(cache_type),
-      worker_pool_(backend->worker_pool()),
       path_(path),
       entry_hash_(entry_hash),
       use_optimistic_operations_(operations_mode == OPTIMISTIC_OPERATIONS),
@@ -204,10 +205,12 @@ SimpleEntryImpl::SimpleEntryImpl(
       optimistic_create_pending_doom_state_(CREATE_NORMAL),
       state_(STATE_UNINITIALIZED),
       synchronous_entry_(NULL),
+      prioritized_task_runner_(backend_->prioritized_task_runner()),
       net_log_(
           net::NetLogWithSource::Make(net_log,
                                       net::NetLogSourceType::DISK_CACHE_ENTRY)),
-      stream_0_data_(new net::GrowableIOBuffer()) {
+      stream_0_data_(new net::GrowableIOBuffer()),
+      entry_priority_(entry_priority) {
   static_assert(arraysize(data_size_) == arraysize(crc32s_end_offset_),
                 "arrays should be the same size");
   static_assert(arraysize(data_size_) == arraysize(crc32s_),
@@ -616,6 +619,10 @@ size_t SimpleEntryImpl::EstimateMemoryUsage() const {
          (stream_1_prefetch_data_ ? stream_1_prefetch_data_->capacity() : 0);
 }
 
+void SimpleEntryImpl::SetPriority(uint32_t entry_priority) {
+  entry_priority_ = entry_priority;
+}
+
 SimpleEntryImpl::~SimpleEntryImpl() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(0U, pending_operations_.size());
@@ -781,14 +788,18 @@ void SimpleEntryImpl::OpenEntryInternal(bool have_index,
   std::unique_ptr<SimpleEntryCreationResults> results(
       new SimpleEntryCreationResults(SimpleEntryStat(
           last_used_, last_modified_, data_size_, sparse_data_size_)));
-  Closure task = base::Bind(&SimpleSynchronousEntry::OpenEntry, cache_type_,
-                            path_, key_, entry_hash_, have_index, start_time,
-                            file_tracker_, results.get());
-  Closure reply =
-      base::Bind(&SimpleEntryImpl::CreationOperationComplete, this, callback,
-                 start_time, base::Passed(&results), out_entry,
-                 net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_END);
-  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
+
+  base::OnceClosure task = base::BindOnce(
+      &SimpleSynchronousEntry::OpenEntry, cache_type_, path_, key_, entry_hash_,
+      have_index, start_time, file_tracker_, results.get());
+
+  base::OnceClosure reply =
+      base::BindOnce(&SimpleEntryImpl::CreationOperationComplete, this,
+                     callback, start_time, base::Passed(&results), out_entry,
+                     net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_END);
+
+  prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
+                                             std::move(reply), entry_priority_);
 }
 
 void SimpleEntryImpl::CreateEntryInternal(bool have_index,
@@ -830,7 +841,8 @@ void SimpleEntryImpl::CreateEntryInternal(bool have_index,
       base::Bind(&SimpleEntryImpl::CreationOperationComplete, this, callback,
                  start_time, base::Passed(&results), out_entry,
                  net::NetLogEventType::SIMPLE_CACHE_ENTRY_CREATE_END);
-  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
+  prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
+                                             std::move(reply), entry_priority_);
 }
 
 void SimpleEntryImpl::CloseInternal() {
@@ -866,7 +878,8 @@ void SimpleEntryImpl::CloseInternal() {
         base::Passed(&crc32s_to_write), base::RetainedRef(stream_0_data_));
     Closure reply = base::Bind(&SimpleEntryImpl::CloseOperationComplete, this);
     synchronous_entry_ = NULL;
-    worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
+    prioritized_task_runner_->PostTaskAndReply(
+        FROM_HERE, std::move(task), std::move(reply), entry_priority_);
 
     for (int i = 0; i < kSimpleEntryStreamCount; ++i) {
       if (!have_written_[i]) {
@@ -968,7 +981,8 @@ int SimpleEntryImpl::ReadDataInternal(bool sync_possible,
   Closure reply = base::Bind(&SimpleEntryImpl::ReadOperationComplete, this,
                              stream_index, offset, callback,
                              base::Passed(&entry_stat), base::Passed(&result));
-  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
+  prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
+                                             std::move(reply), entry_priority_);
   return net::ERR_IO_PENDING;
 }
 
@@ -1086,7 +1100,8 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
       base::Bind(&SimpleEntryImpl::WriteOperationComplete, this, stream_index,
                  callback, base::Passed(&entry_stat),
                  base::Passed(&write_result), base::RetainedRef(buf));
-  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
+  prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
+                                             std::move(reply), entry_priority_);
 }
 
 void SimpleEntryImpl::ReadSparseDataInternal(
@@ -1127,12 +1142,11 @@ void SimpleEntryImpl::ReadSparseDataInternal(
                  base::Unretained(synchronous_entry_),
                  SimpleSynchronousEntry::SparseRequest(sparse_offset, buf_len),
                  base::RetainedRef(buf), last_used.get(), result.get());
-  Closure reply = base::Bind(&SimpleEntryImpl::ReadSparseOperationComplete,
-                             this,
-                             callback,
-                             base::Passed(&last_used),
-                             base::Passed(&result));
-  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
+  Closure reply =
+      base::Bind(&SimpleEntryImpl::ReadSparseOperationComplete, this, callback,
+                 base::Passed(&last_used), base::Passed(&result));
+  prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
+                                             std::move(reply), entry_priority_);
 }
 
 void SimpleEntryImpl::WriteSparseDataInternal(
@@ -1184,12 +1198,11 @@ void SimpleEntryImpl::WriteSparseDataInternal(
                  SimpleSynchronousEntry::SparseRequest(sparse_offset, buf_len),
                  base::RetainedRef(buf), max_sparse_data_size, entry_stat.get(),
                  result.get());
-  Closure reply = base::Bind(&SimpleEntryImpl::WriteSparseOperationComplete,
-                             this,
-                             callback,
-                             base::Passed(&entry_stat),
-                             base::Passed(&result));
-  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
+  Closure reply =
+      base::Bind(&SimpleEntryImpl::WriteSparseOperationComplete, this, callback,
+                 base::Passed(&entry_stat), base::Passed(&result));
+  prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
+                                             std::move(reply), entry_priority_);
 }
 
 void SimpleEntryImpl::GetAvailableRangeInternal(
@@ -1218,12 +1231,11 @@ void SimpleEntryImpl::GetAvailableRangeInternal(
                  base::Unretained(synchronous_entry_),
                  SimpleSynchronousEntry::SparseRequest(sparse_offset, len),
                  out_start, result.get());
-  Closure reply = base::Bind(
-      &SimpleEntryImpl::GetAvailableRangeOperationComplete,
-      this,
-      callback,
-      base::Passed(&result));
-  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
+  Closure reply =
+      base::Bind(&SimpleEntryImpl::GetAvailableRangeOperationComplete, this,
+                 callback, base::Passed(&result));
+  prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
+                                             std::move(reply), entry_priority_);
 }
 
 void SimpleEntryImpl::DoomEntryInternal(const CompletionCallback& callback) {
@@ -1244,14 +1256,15 @@ void SimpleEntryImpl::DoomEntryInternal(const CompletionCallback& callback) {
     // numbers will not be found), and the files will actually be removed.
     // Since there is no backend, new entries to conflict with us also can't be
     // created.
-    PostTaskAndReplyWithResult(
-        worker_pool_.get(), FROM_HERE,
-        base::Bind(&SimpleSynchronousEntry::TruncateEntryFiles, path_,
-                   entry_hash_),
-        base::Bind(&SimpleEntryImpl::DoomOperationComplete, this, callback,
-                   // Return to STATE_FAILURE after dooming, since no operation
-                   // can succeed on the truncated entry files.
-                   STATE_FAILURE));
+    prioritized_task_runner_->PostTaskAndReplyWithResult(
+        FROM_HERE,
+        base::BindOnce(&SimpleSynchronousEntry::TruncateEntryFiles, path_,
+                       entry_hash_),
+        base::BindOnce(&SimpleEntryImpl::DoomOperationComplete, this, callback,
+                       // Return to STATE_FAILURE after dooming, since no
+                       // operation can succeed on the truncated entry files.
+                       STATE_FAILURE),
+        entry_priority_);
     state_ = STATE_IO_PENDING;
     return;
   }
@@ -1259,23 +1272,25 @@ void SimpleEntryImpl::DoomEntryInternal(const CompletionCallback& callback) {
   if (synchronous_entry_) {
     // If there is a backing object, we have to go through its instance methods,
     // so that it can rename itself and keep track of the altenative name.
-    PostTaskAndReplyWithResult(
-        worker_pool_.get(), FROM_HERE,
-        base::Bind(&SimpleSynchronousEntry::Doom,
-                   base::Unretained(synchronous_entry_)),
-        base::Bind(&SimpleEntryImpl::DoomOperationComplete, this, callback,
-                   state_));
+    prioritized_task_runner_->PostTaskAndReplyWithResult(
+        FROM_HERE,
+        base::BindOnce(&SimpleSynchronousEntry::Doom,
+                       base::Unretained(synchronous_entry_)),
+        base::BindOnce(&SimpleEntryImpl::DoomOperationComplete, this, callback,
+                       state_),
+        entry_priority_);
   } else {
     DCHECK_EQ(STATE_UNINITIALIZED, state_);
     // If nothing is open, we can just delete the files. We know they have the
     // base names, since if we ever renamed them our doom_state_ would be
     // DOOM_COMPLETED, and we would exit at function entry.
-    PostTaskAndReplyWithResult(
-        worker_pool_.get(), FROM_HERE,
-        base::Bind(&SimpleSynchronousEntry::DeleteEntryFiles, path_,
-                   cache_type_, entry_hash_),
-        base::Bind(&SimpleEntryImpl::DoomOperationComplete, this, callback,
-                   state_));
+    prioritized_task_runner_->PostTaskAndReplyWithResult(
+        FROM_HERE,
+        base::BindOnce(&SimpleSynchronousEntry::DeleteEntryFiles, path_,
+                       cache_type_, entry_hash_),
+        base::BindOnce(&SimpleEntryImpl::DoomOperationComplete, this, callback,
+                       state_),
+        entry_priority_);
   }
   state_ = STATE_IO_PENDING;
 }

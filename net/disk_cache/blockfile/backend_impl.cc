@@ -1253,14 +1253,18 @@ int32_t BackendImpl::GetEntryCount() const {
   return not_deleted;
 }
 
-int BackendImpl::OpenEntry(const std::string& key, Entry** entry,
+int BackendImpl::OpenEntry(const std::string& key,
+                           net::RequestPriority request_priority,
+                           Entry** entry,
                            const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   background_queue_.OpenEntry(key, entry, callback);
   return net::ERR_IO_PENDING;
 }
 
-int BackendImpl::CreateEntry(const std::string& key, Entry** entry,
+int BackendImpl::CreateEntry(const std::string& key,
+                             net::RequestPriority request_priority,
+                             Entry** entry,
                              const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   background_queue_.CreateEntry(key, entry, callback);
@@ -1268,6 +1272,7 @@ int BackendImpl::CreateEntry(const std::string& key, Entry** entry,
 }
 
 int BackendImpl::DoomEntry(const std::string& key,
+                           net::RequestPriority priority,
                            const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   background_queue_.DoomEntry(key, callback);

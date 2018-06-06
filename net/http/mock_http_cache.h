@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "base/strings/string_split.h"
+#include "net/base/request_priority.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_test_util.h"
@@ -146,12 +147,15 @@ class MockDiskCache : public disk_cache::Backend {
   CacheType GetCacheType() const override;
   int32_t GetEntryCount() const override;
   int OpenEntry(const std::string& key,
+                net::RequestPriority request_priority,
                 disk_cache::Entry** entry,
                 const CompletionCallback& callback) override;
   int CreateEntry(const std::string& key,
+                  net::RequestPriority request_priority,
                   disk_cache::Entry** entry,
                   const CompletionCallback& callback) override;
   int DoomEntry(const std::string& key,
+                net::RequestPriority request_priority,
                 const CompletionCallback& callback) override;
   int DoomAllEntries(const CompletionCallback& callback) override;
   int DoomEntriesBetween(base::Time initial_time,
@@ -313,6 +317,7 @@ class MockHttpCache {
 // This version of the disk cache doesn't invoke CreateEntry callbacks.
 class MockDiskCacheNoCB : public MockDiskCache {
   int CreateEntry(const std::string& key,
+                  net::RequestPriority request_priority,
                   disk_cache::Entry** entry,
                   const CompletionCallback& callback) override;
 };

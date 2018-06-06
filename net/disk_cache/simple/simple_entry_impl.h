@@ -16,6 +16,7 @@
 #include "base/threading/thread_checker.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_export.h"
+#include "net/base/request_priority.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_entry_operation.h"
@@ -31,6 +32,7 @@ namespace net {
 class GrowableIOBuffer;
 class IOBuffer;
 class NetLog;
+class PrioritizedTaskRunner;
 }
 
 namespace disk_cache {
@@ -69,7 +71,8 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
                   OperationsMode operations_mode,
                   SimpleBackendImpl* backend,
                   SimpleFileTracker* file_tracker,
-                  net::NetLog* net_log);
+                  net::NetLog* net_log,
+                  uint32_t entry_priority);
 
   void SetActiveEntryProxy(
       std::unique_ptr<ActiveEntryProxy> active_entry_proxy);
@@ -136,6 +139,9 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
 
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
+
+  // Changes the entry's priority in its TaskRunner.
+  void SetPriority(uint32_t entry_priority);
 
  private:
   class ScopedOperationRunner;
@@ -357,7 +363,6 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   const base::WeakPtr<SimpleBackendImpl> backend_;
   SimpleFileTracker* const file_tracker_;
   const net::CacheType cache_type_;
-  const scoped_refptr<base::TaskRunner> worker_pool_;
   const base::FilePath path_;
   const uint64_t entry_hash_;
   const bool use_optimistic_operations_;
@@ -414,6 +419,8 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // would leak the SimpleSynchronousEntry.
   SimpleSynchronousEntry* synchronous_entry_;
 
+  scoped_refptr<net::PrioritizedTaskRunner> prioritized_task_runner_;
+
   base::queue<SimpleEntryOperation> pending_operations_;
 
   net::NetLogWithSource net_log_;
@@ -435,6 +442,11 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // If a write to the stream occurs on the entry the prefetch buffer is
   // discarded. It may also be null if it wasn't prefetched in the first place.
   scoped_refptr<net::GrowableIOBuffer> stream_1_prefetch_data_;
+
+  // Choosing uint32_t over uint64_t for space savings. Pages have in the
+  // hundres to possibly thousands of resources. Wrapping every 4 billion
+  // shouldn't cause inverted priorities very often.
+  uint32_t entry_priority_ = 0;
 };
 
 }  // namespace disk_cache

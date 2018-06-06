@@ -153,7 +153,8 @@ void WriteHandler::CreateNextEntry() {
   net::CompletionCallback callback =
       base::Bind(&WriteHandler::CreateCallback, base::Unretained(this),
                  base::Passed(&unique_entry_ptr), test_entry.data_len);
-  int result = cache_->CreateEntry(test_entry.key, entry_ptr, callback);
+  int result =
+      cache_->CreateEntry(test_entry.key, net::HIGHEST, entry_ptr, callback);
   if (result != net::ERR_IO_PENDING)
     callback.Run(result);
 }
@@ -283,7 +284,8 @@ void ReadHandler::OpenNextEntry(int parallel_operation_index) {
       base::Bind(&ReadHandler::OpenCallback, base::Unretained(this),
                  parallel_operation_index, base::Passed(&unique_entry_ptr),
                  test_entry.data_len);
-  int result = cache_->OpenEntry(test_entry.key, entry_ptr, callback);
+  int result =
+      cache_->OpenEntry(test_entry.key, net::HIGHEST, entry_ptr, callback);
   if (result != net::ERR_IO_PENDING)
     callback.Run(result);
 }
@@ -520,8 +522,8 @@ TEST_F(DiskCachePerfTest, SimpleCacheInitialReadPortion) {
   disk_cache::Entry* cache_entry[kBatchSize];
   for (int i = 0; i < kBatchSize; ++i) {
     net::TestCompletionCallback cb;
-    int rv = cache_->CreateEntry(base::IntToString(i), &cache_entry[i],
-                                 cb.callback());
+    int rv = cache_->CreateEntry(base::IntToString(i), net::HIGHEST,
+                                 &cache_entry[i], cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
 
     rv = cache_entry[i]->WriteData(0, 0, buffer1.get(), kHeadersSize,

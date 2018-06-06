@@ -174,8 +174,8 @@ void ShaderDiskCacheEntry::Cache() {
                              weak_ptr_factory_.GetWeakPtr(),
                              base::Passed(std::move(entry)));
 
-  int rv =
-      cache_->backend()->OpenEntry(key_, closure_owned_entry_ptr, callback);
+  int rv = cache_->backend()->OpenEntry(key_, net::HIGHEST,
+                                        closure_owned_entry_ptr, callback);
 
   if (rv != net::ERR_IO_PENDING) {
     entry_ = *closure_owned_entry_ptr;
@@ -224,8 +224,8 @@ int ShaderDiskCacheEntry::OpenCallback(int rv) {
                              weak_ptr_factory_.GetWeakPtr(),
                              base::Passed(std::move(entry)));
 
-  int create_rv =
-      cache_->backend()->CreateEntry(key_, closure_owned_entry_ptr, callback);
+  int create_rv = cache_->backend()->CreateEntry(
+      key_, net::HIGHEST, closure_owned_entry_ptr, callback);
 
   if (create_rv != net::ERR_IO_PENDING)
     entry_ = *closure_owned_entry_ptr;
