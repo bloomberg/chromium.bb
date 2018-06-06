@@ -4,8 +4,7 @@
 
 #include "components/offline_pages/core/model/offline_page_model_taskified.h"
 
-#include <memory>
-#include <vector>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -250,13 +249,17 @@ void OfflinePageModelTaskified::SavePage(
   create_archive_params.remove_popup_overlay = save_page_params.is_background;
   create_archive_params.use_page_problem_detectors =
       save_page_params.use_page_problem_detectors;
-  archiver->CreateArchive(
+
+  // Note: the archiver instance must be kept alive until the final callback
+  // coming from it takes place.
+  OfflinePageArchiver* raw_archiver = archiver.get();
+  raw_archiver->CreateArchive(
       GetInternalArchiveDirectory(save_page_params.client_id.name_space),
       create_archive_params, web_contents,
       base::BindOnce(&OfflinePageModelTaskified::OnCreateArchiveDone,
                      weak_ptr_factory_.GetWeakPtr(), save_page_params,
-                     offline_id, GetCurrentTime(), std::move(callback)));
-  pending_archivers_.push_back(std::move(archiver));
+                     offline_id, GetCurrentTime(), std::move(archiver),
+                     std::move(callback)));
 }
 
 void OfflinePageModelTaskified::AddPage(const OfflinePageItem& page,
@@ -489,19 +492,18 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
     const SavePageParams& save_page_params,
     int64_t offline_id,
     const base::Time& start_time,
+    std::unique_ptr<OfflinePageArchiver> archiver,
     SavePageCallback callback,
-    OfflinePageArchiver* archiver,
     ArchiverResult archiver_result,
     const GURL& saved_url,
     const base::FilePath& file_path,
     const base::string16& title,
     int64_t file_size,
-    const std::string& file_hash) {
+    const std::string& digest) {
   if (archiver_result != ArchiverResult::SUCCESSFULLY_CREATED) {
     SavePageResult result = ArchiverResultToSavePageResult(archiver_result);
     InformSavePageDone(std::move(callback), result, save_page_params.client_id,
                        offline_id);
-    ErasePendingArchiver(archiver);
     return;
   }
   if (save_page_params.url != saved_url) {
@@ -509,7 +511,6 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
     InformSavePageDone(std::move(callback),
                        SavePageResult::ARCHIVE_CREATION_FAILED,
                        save_page_params.client_id, offline_id);
-    ErasePendingArchiver(archiver);
     return;
   }
 
@@ -517,7 +518,7 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
                                save_page_params.client_id, file_path, file_size,
                                start_time);
   offline_page.title = title;
-  offline_page.digest = file_hash;
+  offline_page.digest = digest;
   offline_page.request_origin = save_page_params.request_origin;
   // Don't record the original URL if it is identical to the final URL. This is
   // because some websites might route the redirect finally back to itself upon
@@ -531,51 +532,41 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
       policy_controller_->IsUserRequestedDownload(
           offline_page.client_id.name_space)) {
     // If the user intentionally downloaded the page, move it to a public place.
-    PublishArchive(offline_page, std::move(callback), archiver);
-  } else {
-    // For pages that we download on the user's behalf, we keep them in an
-    // internal chrome directory, and add them here to the OfflinePageModel
-    // database.
-    AddPage(offline_page,
-            base::BindOnce(&OfflinePageModelTaskified::OnAddPageForSavePageDone,
-                           weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                           offline_page));
+    // Note: Moving the archiver instance into the callback so it won't be
+    // deleted.
+    OfflinePageArchiver* raw_archiver = archiver.get();
+    raw_archiver->PublishArchive(
+        offline_page, task_runner_, archive_manager_->GetPublicArchivesDir(),
+        download_manager_.get(),
+        base::BindOnce(&OfflinePageModelTaskified::PublishArchiveDone,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(archiver),
+                       std::move(callback)));
+    return;
   }
-  ErasePendingArchiver(archiver);
-}
 
-void OfflinePageModelTaskified::ErasePendingArchiver(
-    OfflinePageArchiver* archiver) {
-  pending_archivers_.erase(
-      std::find_if(pending_archivers_.begin(), pending_archivers_.end(),
-                   [archiver](const std::unique_ptr<OfflinePageArchiver>& a) {
-                     return a.get() == archiver;
-                   }));
-}
-
-void OfflinePageModelTaskified::PublishArchive(
-    const OfflinePageItem& offline_page,
-    SavePageCallback save_page_callback,
-    OfflinePageArchiver* archiver) {
-  archiver->PublishArchive(
-      offline_page, task_runner_, archive_manager_->GetPublicArchivesDir(),
-      download_manager_.get(),
-      base::BindOnce(&OfflinePageModelTaskified::PublishArchiveDone,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(save_page_callback)));
+  // For pages that we download on the user's behalf, we keep them in an
+  // internal chrome directory, and add them here to the OfflinePageModel
+  // database.
+  AddPage(offline_page,
+          base::BindOnce(&OfflinePageModelTaskified::OnAddPageForSavePageDone,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                         offline_page));
+  // Note: If the archiver instance ownership was not transferred, it will be
+  // deleted here.
 }
 
 void OfflinePageModelTaskified::PublishArchiveDone(
+    std::unique_ptr<OfflinePageArchiver> archiver,
     SavePageCallback save_page_callback,
     const OfflinePageItem& offline_page,
-    PublishArchiveResult* move_results) {
-  if (move_results->move_result != SavePageResult::SUCCESS) {
-    std::move(save_page_callback).Run(move_results->move_result, 0LL);
+    PublishArchiveResult publish_results) {
+  if (publish_results.move_result != SavePageResult::SUCCESS) {
+    std::move(save_page_callback).Run(publish_results.move_result, 0LL);
     return;
   }
   OfflinePageItem page = offline_page;
-  page.file_path = move_results->new_file_path;
-  page.system_download_id = move_results->download_id;
+  page.file_path = publish_results.new_file_path;
+  page.system_download_id = publish_results.download_id;
 
   AddPage(page,
           base::BindOnce(&OfflinePageModelTaskified::OnAddPageForSavePageDone,
@@ -587,20 +578,24 @@ void OfflinePageModelTaskified::PublishInternalArchive(
     const OfflinePageItem& offline_page,
     std::unique_ptr<OfflinePageArchiver> archiver,
     PublishPageCallback publish_done_callback) {
-  archiver->PublishArchive(
+  // Note: the archiver instance must be kept alive until the final callback
+  // coming from it takes place.
+  OfflinePageArchiver* raw_archiver = archiver.get();
+  raw_archiver->PublishArchive(
       offline_page, task_runner_, archive_manager_->GetPublicArchivesDir(),
       download_manager_.get(),
       base::BindOnce(&OfflinePageModelTaskified::PublishInternalArchiveDone,
-                     weak_ptr_factory_.GetWeakPtr(),
+                     weak_ptr_factory_.GetWeakPtr(), std::move(archiver),
                      std::move(publish_done_callback)));
 }
 
 void OfflinePageModelTaskified::PublishInternalArchiveDone(
+    std::unique_ptr<OfflinePageArchiver> archiver,
     PublishPageCallback publish_done_callback,
     const OfflinePageItem& offline_page,
-    PublishArchiveResult* publish_results) {
-  base::FilePath file_path = publish_results->new_file_path;
-  SavePageResult result = publish_results->move_result;
+    PublishArchiveResult publish_results) {
+  base::FilePath file_path = publish_results.new_file_path;
+  SavePageResult result = publish_results.move_result;
   // Call the callback with success == false if we failed to move the page.
   if (result != SavePageResult::SUCCESS) {
     std::move(publish_done_callback).Run(file_path, result);

@@ -216,7 +216,6 @@ void OfflinePageModelTaskifiedTest::TearDown() {
     if (!public_archive_dir_.Delete())
       DLOG(ERROR) << "public_archive_dir not created";
   }
-  EXPECT_EQ(0UL, model_->pending_archivers_.size());
   model_->RemoveObserver(this);
   model_.reset();
   PumpLoop();
@@ -242,7 +241,6 @@ void OfflinePageModelTaskifiedTest::BuildModel() {
   model_->AddObserver(this);
   histogram_tester_ = std::make_unique<base::HistogramTester>();
   ResetResults();
-  EXPECT_EQ(0UL, model_->pending_archivers_.size());
 }
 
 void OfflinePageModelTaskifiedTest::ResetModel() {

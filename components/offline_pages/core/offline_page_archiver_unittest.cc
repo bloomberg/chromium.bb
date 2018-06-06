@@ -67,7 +67,7 @@ class OfflinePageArchiverTest
 
   void PublishArchiveDone(SavePageCallback save_page_callback,
                           const OfflinePageItem& offline_page,
-                          PublishArchiveResult* archive_result);
+                          PublishArchiveResult archive_result);
 
  private:
   base::ScopedTempDir temporary_dir_;
@@ -89,8 +89,8 @@ void OfflinePageArchiverTest::SetUp() {
 void OfflinePageArchiverTest::PublishArchiveDone(
     SavePageCallback save_page_callback,
     const OfflinePageItem& offline_page,
-    PublishArchiveResult* archive_result) {
-  publish_archive_result_ = *archive_result;
+    PublishArchiveResult archive_result) {
+  publish_archive_result_ = archive_result;
 }
 
 void OfflinePageArchiverTest::PumpLoop() {

@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -89,7 +90,6 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
   bool delayed_;
   base::string16 result_title_;
   std::string digest_to_report_;
-  PublishArchiveResult publish_archive_result_;
   CreateArchiveCallback callback_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
