@@ -468,6 +468,12 @@ error::Error GLES2DecoderPassthroughImpl::DoBindTexture(GLenum target,
   DCHECK(GLenumToTextureTarget(target) != TextureTarget::kUnkown);
   scoped_refptr<TexturePassthrough> texture_passthrough = nullptr;
 
+  TargetUnitPair target_unit_pair(target, active_texture_unit_);
+
+  // If there was anything bound to |target_unit_pair| that required an image
+  // bind / copy, forget it since it's no longer bound to a sampler.
+  textures_pending_binding_.erase(target_unit_pair);
+
   if (service_id != 0) {
     // Create a new texture object to track this texture
     if (!resources_->texture_object_map.GetServiceID(texture,
@@ -478,6 +484,15 @@ error::Error GLES2DecoderPassthroughImpl::DoBindTexture(GLenum target,
       // Shouldn't be possible to get here if this texture has a different
       // target than the one it was just bound to
       DCHECK(texture_passthrough->target() == target);
+    }
+
+    DCHECK(texture_passthrough);
+
+    // If |texture_passthrough| has a bound image that requires processing
+    // before a draw, then keep track of it.
+    if (texture_passthrough->is_bind_pending()) {
+      textures_pending_binding_[target_unit_pair] =
+          texture_passthrough->AsWeakPtr();
     }
   }
 
@@ -1022,6 +1037,7 @@ error::Error GLES2DecoderPassthroughImpl::DoDisableVertexAttribArray(
 error::Error GLES2DecoderPassthroughImpl::DoDrawArrays(GLenum mode,
                                                        GLint first,
                                                        GLsizei count) {
+  BindPendingImagesForSamplersIfNeeded();
   api()->glDrawArraysFn(mode, first, count);
   return error::kNoError;
 }
@@ -1030,6 +1046,7 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawElements(GLenum mode,
                                                          GLsizei count,
                                                          GLenum type,
                                                          const void* indices) {
+  BindPendingImagesForSamplersIfNeeded();
   api()->glDrawElementsFn(mode, count, type, indices);
   return error::kNoError;
 }
@@ -1162,6 +1179,7 @@ error::Error GLES2DecoderPassthroughImpl::DoFramebufferTexture2D(
                 "Cannot change the attachments of the default framebuffer.");
     return error::kNoError;
   }
+  BindPendingImageForClientIDIfNeeded(texture);
   api()->glFramebufferTexture2DEXTFn(
       target, attachment, textarget,
       GetTextureServiceID(api(), texture, resources_, false), level);
@@ -3860,6 +3878,7 @@ error::Error GLES2DecoderPassthroughImpl::DoCopyTextureCHROMIUM(
     GLboolean unpack_flip_y,
     GLboolean unpack_premultiply_alpha,
     GLboolean unpack_unmultiply_alpha) {
+  BindPendingImageForClientIDIfNeeded(source_id);
   api()->glCopyTextureCHROMIUMFn(
       GetTextureServiceID(api(), source_id, resources_, false), source_level,
       dest_target, GetTextureServiceID(api(), dest_id, resources_, false),
@@ -3883,6 +3902,7 @@ error::Error GLES2DecoderPassthroughImpl::DoCopySubTextureCHROMIUM(
     GLboolean unpack_flip_y,
     GLboolean unpack_premultiply_alpha,
     GLboolean unpack_unmultiply_alpha) {
+  BindPendingImageForClientIDIfNeeded(source_id);
   api()->glCopySubTextureCHROMIUMFn(
       GetTextureServiceID(api(), source_id, resources_, false), source_level,
       dest_target, GetTextureServiceID(api(), dest_id, resources_, false),
@@ -3894,6 +3914,7 @@ error::Error GLES2DecoderPassthroughImpl::DoCopySubTextureCHROMIUM(
 error::Error GLES2DecoderPassthroughImpl::DoCompressedCopyTextureCHROMIUM(
     GLuint source_id,
     GLuint dest_id) {
+  BindPendingImageForClientIDIfNeeded(source_id);
   api()->glCompressedCopyTextureCHROMIUMFn(
       GetTextureServiceID(api(), source_id, resources_, false),
       GetTextureServiceID(api(), dest_id, resources_, false));
@@ -3905,6 +3926,7 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawArraysInstancedANGLE(
     GLint first,
     GLsizei count,
     GLsizei primcount) {
+  BindPendingImagesForSamplersIfNeeded();
   api()->glDrawArraysInstancedANGLEFn(mode, first, count, primcount);
   return error::kNoError;
 }
@@ -3915,6 +3937,7 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawElementsInstancedANGLE(
     GLenum type,
     const void* indices,
     GLsizei primcount) {
+  BindPendingImagesForSamplersIfNeeded();
   api()->glDrawElementsInstancedANGLEFn(mode, count, type, indices, primcount);
   return error::kNoError;
 }

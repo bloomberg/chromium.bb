@@ -422,6 +422,35 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   error::Error CheckSwapBuffersResult(gfx::SwapResult result,
                                       const char* function_name);
 
+  // Issue BindTexImage / CopyTexImage calls for |passthrough_texture|, if
+  // they're pending.
+  void BindOnePendingImage(GLenum target, TexturePassthrough* texture);
+
+  // Issue BindTexImage / CopyTexImage calls for any GLImages that
+  // requested it in BindImage, and are currently bound to textures that
+  // are bound to samplers (i.e., are in |textures_pending_binding_|).
+  void BindPendingImagesForSamplers();
+
+  // Fail-fast inline version of BindPendingImagesForSamplers.
+  inline void BindPendingImagesForSamplersIfNeeded() {
+    if (textures_pending_binding_.size() > 0)
+      BindPendingImagesForSamplers();
+  }
+
+  // Fail-fast version of BindPendingImages that operates on a single texture
+  // that's specified by |client_id|.
+  inline void BindPendingImageForClientIDIfNeeded(int client_id) {
+    scoped_refptr<TexturePassthrough> texture = nullptr;
+
+    // We could keep track of the number of |is_bind_pending| textures in
+    // |resources_|, and elide all of this if it's zero.
+    if (!resources_->texture_object_map.GetServiceID(client_id, &texture))
+      return;
+
+    if (texture && texture->is_bind_pending())
+      BindOnePendingImage(texture->target(), texture.get());
+  }
+
   DecoderClient* client_;
 
   int commands_to_process_;
@@ -521,6 +550,21 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
       static_cast<size_t>(TextureTarget::kCount);
   std::array<std::array<BoundTexture, kMaxTextureUnits>, kNumTextureTypes>
       bound_textures_;
+
+  // [target, texture unit] = texture that has a bound GLImage that requires
+  // bind / copy before draw.
+  using TargetUnitPair = std::pair<GLenum, GLuint>;
+  struct TargetUnitPairHasher {
+    std::size_t operator()(const TargetUnitPair& target_unit_pair) const {
+      // Combine them into disjoint ints.
+      return target_unit_pair.first * kMaxTextureUnits +
+             target_unit_pair.second;
+    }
+  };
+  std::unordered_map<TargetUnitPair,
+                     base::WeakPtr<TexturePassthrough>,
+                     TargetUnitPairHasher>
+      textures_pending_binding_;
 
   // State tracking of currently bound buffers
   std::unordered_map<GLenum, GLuint> bound_buffers_;

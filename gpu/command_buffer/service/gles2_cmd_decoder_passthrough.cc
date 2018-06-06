@@ -1481,37 +1481,57 @@ void GLES2DecoderPassthroughImpl::BindImage(uint32_t client_texture_id,
 
   DCHECK(passthrough_texture != nullptr);
 
+  // |can_bind_to_sampler| indicates that we don't need to take any action.
+  // Otherwise, we do it when the texture is first used for drawing.
+  passthrough_texture->set_is_bind_pending(!can_bind_to_sampler);
+
   GLenum bind_target = GLES2Util::GLFaceTargetToTextureTarget(texture_target);
   if (passthrough_texture->target() != bind_target) {
     return;
   }
 
-  if (can_bind_to_sampler) {
-    // Binding an image to a texture requires that the texture is currently
-    // bound.
-    scoped_refptr<TexturePassthrough> current_texture =
-        bound_textures_[static_cast<size_t>(GLenumToTextureTarget(bind_target))]
-                       [active_texture_unit_]
-                           .texture;
-    bool bind_new_texture = current_texture != passthrough_texture;
-    if (bind_new_texture) {
-      api()->glBindTextureFn(bind_target, passthrough_texture->service_id());
-    }
-
-    if (!image->BindTexImage(texture_target)) {
-      image->CopyTexImage(texture_target);
-    }
-
-    // Re-bind the old texture
-    if (bind_new_texture) {
-      GLuint current_service_texture =
-          current_texture ? current_texture->service_id() : 0;
-      api()->glBindTextureFn(bind_target, current_service_texture);
-    }
-  }
-
   // Reference the image even if it is not bound as a sampler.
   passthrough_texture->SetLevelImage(texture_target, 0, image);
+}
+
+void GLES2DecoderPassthroughImpl::BindOnePendingImage(
+    GLenum target,
+    TexturePassthrough* texture) {
+  // It's possible that this texture was processed by some other decoder
+  // while it was also bound here, or that it has been destroyed.  In
+  // either case, do nothing.
+  if (!texture || !texture->is_bind_pending())
+    return;
+
+  // TODO(liberato): make this work for non-0 levels.
+  gl::GLImage* image = texture->GetLevelImage(target, 0);
+
+  // Note that we might not have an image anymore, if it was unbound from
+  // the texture by some other decoder while the texture was still bound
+  // here.  In that case, just ignore it.
+  //
+  // Similarly, we might not even get here if an image was bound to a
+  // texture that requries bind/copy, but that texture was already bound
+  // to a sampler in this decoder.
+  if (!image)
+    return;
+
+  // TODO: internalformat?
+  if (!image->BindTexImage(target))
+    image->CopyTexImage(target);
+
+  // If copy / bind fail, then we could keep the bind state the same.
+  // However, for now, we only try once.
+  texture->set_is_bind_pending(false);
+}
+
+void GLES2DecoderPassthroughImpl::BindPendingImagesForSamplers() {
+  for (auto iter : textures_pending_binding_)
+    BindOnePendingImage(iter.first.first /* target */, iter.second.get());
+
+  // Note that we clear the texures even if they fail.  We could keep
+  // them around.
+  textures_pending_binding_.clear();
 }
 
 void GLES2DecoderPassthroughImpl::OnDebugMessage(GLenum source,
@@ -2059,6 +2079,10 @@ error::Error GLES2DecoderPassthroughImpl::BindTexImage2DCHROMIUMImpl(
 
   DCHECK(bound_texture.texture != nullptr);
   bound_texture.texture->SetLevelImage(target, 0, image);
+
+  // If there was any GLImage bound to |target| on this texture unit, then
+  // forget it.
+  textures_pending_binding_.erase(TargetUnitPair(target, active_texture_unit_));
 
   return error::kNoError;
 }
