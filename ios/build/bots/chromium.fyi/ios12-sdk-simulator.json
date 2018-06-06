@@ -29,6 +29,10 @@
         {
           "os": "Mac-10.13.4",
           "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
+          "pool": "Chrome"
         }
       ]
     },
@@ -39,6 +43,10 @@
       "dimensions": [
         {
           "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
           "pool": "Chrome"
         }
       ]
@@ -51,6 +59,10 @@
         {
           "os": "Mac-10.13.4",
           "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
+          "pool": "Chrome"
         }
       ]
     },
@@ -61,6 +73,10 @@
       "dimensions": [
         {
           "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
           "pool": "Chrome"
         }
       ]
@@ -185,6 +201,10 @@
         {
           "os": "Mac-10.13.4",
           "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
+          "pool": "Chrome"
         }
       ]
     },
@@ -196,6 +216,10 @@
         {
           "os": "Mac-10.13.4",
           "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
+          "pool": "Chrome"
         }
       ]
     },
@@ -206,6 +230,10 @@
       "dimensions": [
         {
           "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
           "pool": "Chrome"
         }
       ]
@@ -249,6 +277,10 @@
       "dimensions": [
         {
           "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
           "pool": "Chrome"
         }
       ]
@@ -292,6 +324,10 @@
       "dimensions": [
         {
           "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
           "pool": "Chrome"
         }
       ]
