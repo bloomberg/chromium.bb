@@ -60,6 +60,8 @@ class CORE_EXPORT MediaElementEventQueue final
   void DispatchEvent(Event* event);
 
   void ContextDestroyed(ExecutionContext*) override;
+  void DoClose(ExecutionContext*);
+  void DoCancelAllEvents(ExecutionContext*);
 
   Member<EventTarget> owner_;
   HeapHashSet<Member<Event>> pending_events_;

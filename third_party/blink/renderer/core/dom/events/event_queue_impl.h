@@ -60,6 +60,8 @@ class CORE_EXPORT EventQueueImpl final : public EventQueue,
   void DispatchEvent(Event*);
 
   void ContextDestroyed(ExecutionContext*) override;
+  void DoClose(ExecutionContext*);
+  void DoCancelAllEvents(ExecutionContext*);
 
   const TaskType task_type_;
   HeapLinkedHashSet<Member<Event>> queued_events_;
