@@ -18,6 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -32,6 +33,7 @@
 #include "media/video/jpeg_decode_accelerator.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/codec/png_codec.h"
 
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -97,7 +99,11 @@ class JpegClient : public JpegDecodeAccelerator::Client {
 
  private:
   void SetState(ClientState new_state);
-  void SaveToFile(int32_t bitstream_buffer_id);
+
+  // Save a video frame that contains a decoded JPEG. The output is a PNG file.
+  // The suffix will be added before the .png extension.
+  void SaveToFile(int32_t bitstream_buffer_id,
+                  const scoped_refptr<VideoFrame>& in_frame);
 
   // Calculate mean absolute difference of hardware and software decode results
   // to check the similarity.
@@ -120,6 +126,8 @@ class JpegClient : public JpegDecodeAccelerator::Client {
   std::unique_ptr<base::SharedMemory> in_shm_;
   // Mapped memory of output buffer from hardware decoder.
   std::unique_ptr<base::SharedMemory> hw_out_shm_;
+  // Video frame corresponding to the output of the hardware decoder.
+  scoped_refptr<VideoFrame> hw_out_frame_;
   // Mapped memory of output buffer from software decoder.
   std::unique_ptr<base::SharedMemory> sw_out_shm_;
 
@@ -181,7 +189,7 @@ void JpegClient::VideoFrameReady(int32_t bitstream_buffer_id) {
     return;
   }
   if (g_save_to_file) {
-    SaveToFile(bitstream_buffer_id);
+    SaveToFile(bitstream_buffer_id, hw_out_frame_);
   }
 
   double difference = GetMeanAbsoluteDifference(bitstream_buffer_id);
@@ -232,15 +240,50 @@ void JpegClient::SetState(ClientState new_state) {
   state_ = new_state;
 }
 
-void JpegClient::SaveToFile(int32_t bitstream_buffer_id) {
+void JpegClient::SaveToFile(int32_t bitstream_buffer_id,
+                            const scoped_refptr<VideoFrame>& in_frame) {
+  LOG_ASSERT(in_frame.get());
   TestImageFile* image_file = test_image_files_[bitstream_buffer_id];
 
-  base::FilePath in_filename(image_file->filename);
-  base::FilePath out_filename = in_filename.ReplaceExtension(".yuv");
-  int size = base::checked_cast<int>(image_file->output_size);
-  ASSERT_EQ(size,
-            base::WriteFile(out_filename,
-                            static_cast<char*>(hw_out_shm_->memory()), size));
+  // First convert to ARGB format. Note that in our case, the coded size and the
+  // visible size will be the same.
+  scoped_refptr<VideoFrame> argb_out_frame = VideoFrame::CreateFrame(
+      VideoPixelFormat::PIXEL_FORMAT_ARGB, image_file->visible_size,
+      gfx::Rect(image_file->visible_size), image_file->visible_size,
+      base::TimeDelta());
+  LOG_ASSERT(argb_out_frame.get());
+  LOG_ASSERT(in_frame->visible_rect() == argb_out_frame->visible_rect());
+
+  // Note that we use J420ToARGB instead of I420ToARGB so that the
+  // kYuvJPEGConstants YUV-to-RGB conversion matrix is used.
+  const int conversion_status =
+      libyuv::J420ToARGB(in_frame->data(VideoFrame::kYPlane),
+                         in_frame->stride(VideoFrame::kYPlane),
+                         in_frame->data(VideoFrame::kUPlane),
+                         in_frame->stride(VideoFrame::kUPlane),
+                         in_frame->data(VideoFrame::kVPlane),
+                         in_frame->stride(VideoFrame::kVPlane),
+                         argb_out_frame->data(VideoFrame::kARGBPlane),
+                         argb_out_frame->stride(VideoFrame::kARGBPlane),
+                         argb_out_frame->visible_rect().width(),
+                         argb_out_frame->visible_rect().height());
+  LOG_ASSERT(conversion_status == 0);
+
+  // Save as a PNG.
+  std::vector<uint8_t> png_output;
+  const bool png_encode_status = gfx::PNGCodec::Encode(
+      argb_out_frame->data(VideoFrame::kARGBPlane), gfx::PNGCodec::FORMAT_BGRA,
+      argb_out_frame->visible_rect().size(),
+      argb_out_frame->stride(VideoFrame::kARGBPlane),
+      true, /* discard_transparency */
+      std::vector<gfx::PNGCodec::Comment>(), &png_output);
+  LOG_ASSERT(png_encode_status);
+  const base::FilePath in_filename(image_file->filename);
+  const base::FilePath out_filename = in_filename.ReplaceExtension(".png");
+  const int size = base::checked_cast<int>(png_output.size());
+  const int file_written_bytes = base::WriteFile(
+      out_filename, reinterpret_cast<char*>(png_output.data()), size);
+  LOG_ASSERT(file_written_bytes == size);
 }
 
 double JpegClient::GetMeanAbsoluteDifference(int32_t bitstream_buffer_id) {
@@ -267,13 +310,13 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id,
   dup_handle = base::SharedMemory::DuplicateHandle(in_shm_->handle());
   BitstreamBuffer bitstream_buffer(bitstream_buffer_id, dup_handle,
                                    image_file->data_str.size());
-  scoped_refptr<VideoFrame> out_frame_ = VideoFrame::WrapExternalSharedMemory(
+  hw_out_frame_ = VideoFrame::WrapExternalSharedMemory(
       PIXEL_FORMAT_I420, image_file->visible_size,
       gfx::Rect(image_file->visible_size), image_file->visible_size,
       static_cast<uint8_t*>(hw_out_shm_->memory()), image_file->output_size,
       hw_out_shm_->handle(), 0, base::TimeDelta());
-  LOG_ASSERT(out_frame_.get());
-  decoder_->Decode(bitstream_buffer, out_frame_);
+  LOG_ASSERT(hw_out_frame_.get());
+  decoder_->Decode(bitstream_buffer, hw_out_frame_);
 }
 
 bool JpegClient::GetSoftwareDecodeResult(int32_t bitstream_buffer_id) {
