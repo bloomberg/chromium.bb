@@ -26,6 +26,9 @@
           "discardable_memory.mojom.DiscardableSharedMemoryManager",
           "media.mojom.AndroidOverlayProvider"
         ],
+        "gpu_client": [
+          "ui.mojom.Gpu"
+        ],
         "plugin": [
           "discardable_memory.mojom.DiscardableSharedMemoryManager",
           "ui.mojom.Gpu"
