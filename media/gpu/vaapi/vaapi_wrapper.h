@@ -122,7 +122,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Data submitted via this method awaits in the HW codec until
   // ExecuteAndDestroyPendingBuffers() is called to execute or
   // DestroyPendingBuffers() is used to cancel a pending job.
-  bool SubmitBuffer(VABufferType va_buffer_type, size_t size, void* buffer);
+  bool SubmitBuffer(VABufferType va_buffer_type,
+                    size_t size,
+                    const void* buffer);
 
   // Submit a VAEncMiscParameterBuffer of given |misc_param_type|, copying its
   // data from |buffer| of size |size|, into HW codec. The data in |buffer| is

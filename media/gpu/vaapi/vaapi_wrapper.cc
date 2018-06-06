@@ -909,13 +909,29 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
 
 bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,
                                 size_t size,
-                                void* buffer) {
+                                const void* buffer) {
   base::AutoLock auto_lock(*va_lock_);
 
   VABufferID buffer_id;
   VAStatus va_res = vaCreateBuffer(va_display_, va_context_id_, va_buffer_type,
-                                   size, 1, buffer, &buffer_id);
+                                   size, 1, nullptr, &buffer_id);
   VA_SUCCESS_OR_RETURN(va_res, "Failed to create a VA buffer", false);
+
+  void* va_buffer_data = nullptr;
+  va_res = vaMapBuffer(va_display_, buffer_id, &va_buffer_data);
+  VA_LOG_ON_ERROR(va_res, "vaMapBuffer failed");
+  if (va_res != VA_STATUS_SUCCESS) {
+    vaDestroyBuffer(va_display_, buffer_id);
+    return false;
+  }
+
+  DCHECK(va_buffer_data);
+  // TODO(selcott): Investigate potentially faster alternatives to memcpy here
+  // such as libyuv::CopyX and family.
+  memcpy(va_buffer_data, buffer, size);
+
+  va_res = vaUnmapBuffer(va_display_, buffer_id);
+  VA_LOG_ON_ERROR(va_res, "vaUnmapBuffer failed");
 
   switch (va_buffer_type) {
     case VASliceParameterBufferType:
