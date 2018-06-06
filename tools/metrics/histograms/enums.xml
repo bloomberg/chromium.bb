@@ -42227,6 +42227,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SimpleCacheHeaderSizeChange">
+  <obsolete>
+    Removed 2018-06-05
+  </obsolete>
   <int value="0" label="Written for the first time"/>
   <int value="1" label="Rewritten with same size"/>
   <int value="2" label="Rewritten with larger size"/>

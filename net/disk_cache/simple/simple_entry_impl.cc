@@ -55,16 +55,6 @@ enum WriteResult {
   WRITE_RESULT_MAX = 6,
 };
 
-// Used in histograms, please only add entries at the end.
-enum HeaderSizeChange {
-  HEADER_SIZE_CHANGE_INITIAL,
-  HEADER_SIZE_CHANGE_SAME,
-  HEADER_SIZE_CHANGE_INCREASE,
-  HEADER_SIZE_CHANGE_DECREASE,
-  HEADER_SIZE_CHANGE_UNEXPECTED_WRITE,
-  HEADER_SIZE_CHANGE_MAX
-};
-
 void RecordReadResult(net::CacheType cache_type, SimpleReadResult result) {
   SIMPLE_CACHE_UMA(ENUMERATION,
                    "ReadResult", cache_type, result, READ_RESULT_MAX);
@@ -75,45 +65,8 @@ void RecordWriteResult(net::CacheType cache_type, WriteResult result) {
                    "WriteResult2", cache_type, result, WRITE_RESULT_MAX);
 }
 
-// TODO(morlovich): Consider removing this once we have a good handle on
-// header size changes.
-void RecordHeaderSizeChange(net::CacheType cache_type,
-                            int old_size, int new_size) {
-  HeaderSizeChange size_change;
-
-  SIMPLE_CACHE_UMA(COUNTS_10000, "HeaderSize", cache_type, new_size);
-
-  if (old_size == 0) {
-    size_change = HEADER_SIZE_CHANGE_INITIAL;
-  } else if (new_size == old_size) {
-    size_change = HEADER_SIZE_CHANGE_SAME;
-  } else if (new_size > old_size) {
-    int delta = new_size - old_size;
-    SIMPLE_CACHE_UMA(COUNTS_10000,
-                     "HeaderSizeIncreaseAbsolute", cache_type, delta);
-    SIMPLE_CACHE_UMA(PERCENTAGE,
-                     "HeaderSizeIncreasePercentage", cache_type,
-                     delta * 100 / old_size);
-    size_change = HEADER_SIZE_CHANGE_INCREASE;
-  } else {  // new_size < old_size
-    int delta = old_size - new_size;
-    SIMPLE_CACHE_UMA(COUNTS_10000,
-                     "HeaderSizeDecreaseAbsolute", cache_type, delta);
-    SIMPLE_CACHE_UMA(PERCENTAGE,
-                     "HeaderSizeDecreasePercentage", cache_type,
-                     delta * 100 / old_size);
-    size_change = HEADER_SIZE_CHANGE_DECREASE;
-  }
-
-  SIMPLE_CACHE_UMA(ENUMERATION,
-                   "HeaderSizeChange", cache_type,
-                   size_change, HEADER_SIZE_CHANGE_MAX);
-}
-
-void RecordUnexpectedStream0Write(net::CacheType cache_type) {
-  SIMPLE_CACHE_UMA(ENUMERATION,
-                   "HeaderSizeChange", cache_type,
-                   HEADER_SIZE_CHANGE_UNEXPECTED_WRITE, HEADER_SIZE_CHANGE_MAX);
+void RecordHeaderSize(net::CacheType cache_type, int size) {
+  SIMPLE_CACHE_UMA(COUNTS_10000, "HeaderSize", cache_type, size);
 }
 
 int g_open_entry_count = 0;
@@ -1683,12 +1636,10 @@ int SimpleEntryImpl::SetStream0Data(net::IOBuffer* buf,
   have_written_[0] = true;
   int data_size = GetDataSize(0);
   if (offset == 0 && truncate) {
-    RecordHeaderSizeChange(cache_type_, data_size, buf_len);
     stream_0_data_->SetCapacity(buf_len);
     memcpy(stream_0_data_->data(), buf->data(), buf_len);
     data_size_[0] = buf_len;
   } else {
-    RecordUnexpectedStream0Write(cache_type_);
     const int buffer_size =
         truncate ? offset + buf_len : std::max(offset + buf_len, data_size);
     stream_0_data_->SetCapacity(buffer_size);
@@ -1701,6 +1652,7 @@ int SimpleEntryImpl::SetStream0Data(net::IOBuffer* buf,
       memcpy(stream_0_data_->data() + offset, buf->data(), buf_len);
     data_size_[0] = buffer_size;
   }
+  RecordHeaderSize(cache_type_, data_size_[0]);
   base::Time modification_time = base::Time::Now();
 
   // Reset checksum; SimpleSynchronousEntry::Close will compute it for us,
