@@ -336,11 +336,18 @@ static void decode_mbmi_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);
 }
 
+typedef struct PadBlock {
+  int x0;
+  int x1;
+  int y0;
+  int y1;
+} PadBlock;
+
 static INLINE void dec_calc_subpel_params(
     MACROBLOCKD *xd, const struct scale_factors *const sf, const MV mv,
     int plane, const int pre_x, const int pre_y, int x, int y,
-    struct buf_2d *const pre_buf, uint8_t **pre, SubpelParams *subpel_params,
-    int bw, int bh) {
+    struct buf_2d *const pre_buf, SubpelParams *subpel_params, int bw, int bh,
+    PadBlock *block) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int is_scaled = av1_is_scaled(sf);
   if (is_scaled) {
@@ -363,20 +370,40 @@ static INLINE void dec_calc_subpel_params(
     pos_y = clamp(pos_y, top, bottom);
     pos_x = clamp(pos_x, left, right);
 
-    *pre = pre_buf->buf0 + (pos_y >> SCALE_SUBPEL_BITS) * pre_buf->stride +
-           (pos_x >> SCALE_SUBPEL_BITS);
     subpel_params->subpel_x = pos_x & SCALE_SUBPEL_MASK;
     subpel_params->subpel_y = pos_y & SCALE_SUBPEL_MASK;
     subpel_params->xs = sf->x_step_q4;
     subpel_params->ys = sf->y_step_q4;
+
+    // Get reference block top left coordinate.
+    block->x0 = pos_x >> SCALE_SUBPEL_BITS;
+    block->y0 = pos_y >> SCALE_SUBPEL_BITS;
+
+    // Get reference block bottom right coordinate.
+    block->x1 =
+        ((pos_x + (bw - 1) * subpel_params->xs) >> SCALE_SUBPEL_BITS) + 1;
+    block->y1 =
+        ((pos_y + (bh - 1) * subpel_params->ys) >> SCALE_SUBPEL_BITS) + 1;
   } else {
+    // Get block position in current frame.
+    int pos_x = (pre_x + x) << SUBPEL_BITS;
+    int pos_y = (pre_y + y) << SUBPEL_BITS;
+
     const MV mv_q4 = clamp_mv_to_umv_border_sb(
         xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
     subpel_params->xs = subpel_params->ys = SCALE_SUBPEL_SHIFTS;
     subpel_params->subpel_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;
     subpel_params->subpel_y = (mv_q4.row & SUBPEL_MASK) << SCALE_EXTRA_BITS;
-    *pre = pre_buf->buf + (y + (mv_q4.row >> SUBPEL_BITS)) * pre_buf->stride +
-           (x + (mv_q4.col >> SUBPEL_BITS));
+
+    // Get reference block top left coordinate.
+    pos_x += mv_q4.col;
+    pos_y += mv_q4.row;
+    block->x0 = pos_x >> SUBPEL_BITS;
+    block->y0 = pos_y >> SUBPEL_BITS;
+
+    // Get reference block bottom right coordinate.
+    block->x1 = (pos_x >> SUBPEL_BITS) + (bw - 1) + 1;
+    block->y1 = (pos_y >> SUBPEL_BITS) + (bh - 1) + 1;
   }
 }
 
@@ -438,6 +465,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
     const struct buf_2d orig_pred_buf[2] = { pd->pre[0], pd->pre[1] };
 
     int row = row_start;
+    int src_stride;
     for (int y = 0; y < b8_h; y += b4_h) {
       int col = col_start;
       for (int x = 0; x < b8_w; x += b4_w) {
@@ -474,13 +502,15 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
 
         uint8_t *pre;
         SubpelParams subpel_params;
+        PadBlock block;
         WarpTypesAllowed warp_types;
         warp_types.global_warp_allowed = is_global[ref];
         warp_types.local_warp_allowed = this_mbmi->motion_mode == WARPED_CAUSAL;
 
         dec_calc_subpel_params(xd, sf, mv, plane, pre_x, pre_y, x, y, pre_buf,
-                               &pre, &subpel_params, bw, bh);
-
+                               &subpel_params, bw, bh, &block);
+        pre = pre_buf->buf0 + block.y0 * pre_buf->stride + block.x0;
+        src_stride = pre_buf->stride;
         conv_params.ref = ref;
         conv_params.do_average = ref;
         if (is_masked_compound_type(mi->interinter_compound_type)) {
@@ -489,8 +519,8 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         }
 
         av1_make_inter_predictor(
-            pre, pre_buf->stride, dst, dst_buf->stride, &subpel_params, sf,
-            b4_w, b4_h, &conv_params, this_mbmi->interp_filters, &warp_types,
+            pre, src_stride, dst, dst_buf->stride, &subpel_params, sf, b4_w,
+            b4_h, &conv_params, this_mbmi->interp_filters, &warp_types,
             (mi_x >> pd->subsampling_x) + x, (mi_y >> pd->subsampling_y) + y,
             plane, ref, mi, build_for_obmc, xd, cm->allow_warped_motion);
 
@@ -509,14 +539,18 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
     uint8_t *pre[2];
     SubpelParams subpel_params[2];
     DECLARE_ALIGNED(32, uint16_t, tmp_dst[MAX_SB_SIZE * MAX_SB_SIZE]);
+    int src_stride[2];
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       const struct scale_factors *const sf =
           is_intrabc ? &cm->sf_identity : &xd->block_refs[ref]->sf;
       struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
       const MV mv = mi->mv[ref].as_mv;
+      PadBlock block;
 
       dec_calc_subpel_params(xd, sf, mv, plane, pre_x, pre_y, 0, 0, pre_buf,
-                             &pre[ref], &subpel_params[ref], bw, bh);
+                             &subpel_params[ref], bw, bh, &block);
+      pre[ref] = pre_buf->buf0 + block.y0 * pre_buf->stride + block.x0;
+      src_stride[ref] = pre_buf->stride;
     }
 
     ConvolveParams conv_params = get_conv_params_no_round(
@@ -528,7 +562,6 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       const struct scale_factors *const sf =
           is_intrabc ? &cm->sf_identity : &xd->block_refs[ref]->sf;
-      struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
       WarpTypesAllowed warp_types;
       warp_types.global_warp_allowed = is_global[ref];
       warp_types.local_warp_allowed = mi->motion_mode == WARPED_CAUSAL;
@@ -541,13 +574,13 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
 
       if (ref && is_masked_compound_type(mi->interinter_compound_type))
         av1_make_masked_inter_predictor(
-            pre[ref], pre_buf->stride, dst, dst_buf->stride,
+            pre[ref], src_stride[ref], dst, dst_buf->stride,
             &subpel_params[ref], sf, bw, bh, &conv_params, mi->interp_filters,
             plane, &warp_types, mi_x >> pd->subsampling_x,
             mi_y >> pd->subsampling_y, ref, xd, cm->allow_warped_motion);
       else
         av1_make_inter_predictor(
-            pre[ref], pre_buf->stride, dst, dst_buf->stride,
+            pre[ref], src_stride[ref], dst, dst_buf->stride,
             &subpel_params[ref], sf, bw, bh, &conv_params, mi->interp_filters,
             &warp_types, mi_x >> pd->subsampling_x, mi_y >> pd->subsampling_y,
             plane, ref, mi, build_for_obmc, xd, cm->allow_warped_motion);
