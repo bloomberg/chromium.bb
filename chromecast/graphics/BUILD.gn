@@ -32,8 +32,6 @@ cast_source_set("graphics") {
       "accessibility/accessibility_highlight_layer.h",
       "accessibility/accessibility_layer.cc",
       "accessibility/accessibility_layer.h",
-      "accessibility/accessibility_manager.cc",
-      "accessibility/accessibility_manager.h",
       "accessibility/accessibility_observer.h",
       "accessibility/focus_ring_controller.cc",
       "accessibility/focus_ring_controller.h",

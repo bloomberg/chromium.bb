@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "chromecast/chromecast_buildflags.h"
 
 class TtsController;
 class PrefService;
@@ -19,9 +20,6 @@ class NetLog;
 }  // namespace net
 
 namespace chromecast {
-#if defined(USE_AURA)
-class AccessibilityManager;
-#endif  // defined(USE_AURA)
 class CastService;
 class CastScreen;
 class ConnectivityChecker;
@@ -31,6 +29,11 @@ class CastMetricsServiceClient;
 }  // namespace metrics
 
 namespace shell {
+
+#if defined(USE_AURA) && BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+class AccessibilityManager;
+#endif  // defined(USE_AURA) && BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+
 class CastBrowserContext;
 class CastContentBrowserClient;
 class RemoteDebuggingServer;
@@ -49,8 +52,12 @@ class CastBrowserProcess {
   void SetCastService(std::unique_ptr<CastService> cast_service);
 
 #if defined(USE_AURA)
+
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   void SetAccessibilityManager(
       std::unique_ptr<AccessibilityManager> accessibility_manager);
+#endif  // BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+
   void SetCastScreen(std::unique_ptr<CastScreen> cast_screen);
 #endif  // defined(USE_AURA)
   void SetMetricsServiceClient(
@@ -71,9 +78,13 @@ class CastBrowserProcess {
   CastService* cast_service() const { return cast_service_.get(); }
 #if defined(USE_AURA)
   CastScreen* cast_screen() const { return cast_screen_.get(); }
+
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   AccessibilityManager* accessibility_manager() const {
     return accessibility_manager_.get();
   }
+#endif  //  BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+
 #endif  // defined(USE_AURA)
   metrics::CastMetricsServiceClient* metrics_service_client() const {
     return metrics_service_client_.get();
@@ -93,7 +104,11 @@ class CastBrowserProcess {
   // CastBrowserMainParts.
 #if defined(USE_AURA)
   std::unique_ptr<CastScreen> cast_screen_;
+
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   std::unique_ptr<AccessibilityManager> accessibility_manager_;
+#endif  // BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+
 #endif  // defined(USE_AURA)
   std::unique_ptr<PrefService> pref_service_;
   scoped_refptr<ConnectivityChecker> connectivity_checker_;
