@@ -6,7 +6,7 @@
 // https://wicg.github.io/picture-in-picture/#documentorshadowroot-extension
 [
     ImplementedAs=DocumentPictureInPicture,
-    OriginTrialEnabled=PictureInPictureAPI
+    RuntimeEnabled=PictureInPictureAPI
 ]
 partial interface Document {
     [Measure] readonly attribute boolean pictureInPictureEnabled;
