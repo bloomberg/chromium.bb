@@ -296,19 +296,10 @@ void WindowPerformance::ReportLongTask(
   }
 }
 
-// We buffer Long-latency events until onload, i.e., LoadEventStar is not
+// We buffer long-latency events until onload, i.e., LoadEventStart is not
 // reached yet.
 bool WindowPerformance::ShouldBufferEventTiming() {
-  if (!GetFrame())
-    return true;
-  const DocumentLoader* loader = GetFrame()->Loader().GetDocumentLoader();
-  // Document loader will only be nullptr for a brief window
-  // during creation (i.e., until the initial empty document is committed) and
-  // after detach.
-  if (!loader)
-    return true;
-  TimeTicks load_start = loader->GetTiming().LoadEventStart();
-  return load_start.is_null();
+  return !timing() || !timing()->loadEventStart();
 }
 
 bool WindowPerformance::ObservingEventTimingEntries() {
