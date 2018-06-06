@@ -107,11 +107,8 @@ class LayoutGrid final : public LayoutBlock {
 
   LayoutUnit GridGap(GridTrackSizingDirection) const;
   LayoutUnit GridItemOffset(GridTrackSizingDirection) const;
-  void SetEstimatedGridAreaLogicalSize(const Grid&, LayoutBox&) const;
 
-  LayoutUnit EstimatedGridAreaBreadthForChild(const Grid&,
-                                              const LayoutBox&,
-                                              GridTrackSizingDirection) const;
+  void UpdateGridAreaLogicalSize(LayoutBox&, LayoutSize) const;
 
   StyleContentAlignmentData ContentAlignment(GridTrackSizingDirection) const;
 
@@ -165,11 +162,11 @@ class LayoutGrid final : public LayoutBlock {
       Grid&,
       GridTrackSizingDirection) const;
 
-  void LayoutOrthogonalWritingModeRoots(const Grid&,
+  void LayoutOrthogonalWritingModeRoots(const GridTrackSizingAlgorithm&,
                                         const Vector<LayoutBox*>&) const;
 
   void PlaceItemsOnGrid(
-      Grid&,
+      GridTrackSizingAlgorithm&,
       base::Optional<LayoutUnit> available_logical_width) const;
   void PopulateExplicitGridAndOrderIterator(Grid&) const;
   std::unique_ptr<GridArea> CreateEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
@@ -189,7 +186,6 @@ class LayoutGrid final : public LayoutBlock {
 
   void ComputeTrackSizesForIndefiniteSize(GridTrackSizingAlgorithm&,
                                           GridTrackSizingDirection,
-                                          Grid&,
                                           LayoutUnit& min_intrinsic_size,
                                           LayoutUnit& max_intrinsic_size) const;
   LayoutUnit ComputeTrackBasedLogicalHeight() const;
@@ -199,7 +195,6 @@ class LayoutGrid final : public LayoutBlock {
   void RepeatTracksSizingIfNeeded(LayoutUnit available_space_for_columns,
                                   LayoutUnit available_space_for_rows);
 
-  void UpdateGridAreaLogicalSize(LayoutBox&, LayoutSize) const;
   void LayoutGridItems();
   void PrepareChildForPositionedLayout(LayoutBox&);
   bool HasStaticPositionForChild(const LayoutBox&,

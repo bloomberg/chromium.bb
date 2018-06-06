@@ -164,13 +164,56 @@ void GridTrackSizingAlgorithmStrategy::
     child.SetOverrideContainingBlockContentLogicalHeight(size);
 }
 
+LayoutSize GridTrackSizingAlgorithm::EstimatedGridAreaBreadthForChild(
+    const LayoutBox& child) const {
+  return {EstimatedGridAreaBreadthForChild(child, kForColumns),
+          EstimatedGridAreaBreadthForChild(child, kForRows)};
+}
+
+LayoutUnit GridTrackSizingAlgorithm::EstimatedGridAreaBreadthForChild(
+    const LayoutBox& child,
+    GridTrackSizingDirection direction) const {
+  const GridSpan& span = grid_.GridItemSpan(child, direction);
+  LayoutUnit grid_area_size;
+  bool grid_area_is_indefinite = false;
+  base::Optional<LayoutUnit> available_size = AvailableSpace(direction);
+  for (auto track_position : span) {
+    // We may need to estimate the grid area size before running the track
+    // sizing algorithm in order to perform the pre-layout of orthogonal
+    // items.
+    GridTrackSize track_size =
+        WasSetup() ? GetGridTrackSize(direction, track_position)
+                   : RawGridTrackSize(direction, track_position);
+    GridLength max_track_size = track_size.MaxTrackBreadth();
+    if (max_track_size.IsContentSized() || max_track_size.IsFlex() ||
+        IsRelativeGridLengthAsAuto(max_track_size, direction)) {
+      grid_area_is_indefinite = true;
+    } else {
+      grid_area_size += ValueForLength(max_track_size.length(),
+                                       available_size.value_or(LayoutUnit()));
+    }
+  }
+
+  grid_area_size += layout_grid_->GuttersSize(
+      grid_, direction, span.StartLine(), span.IntegerSpan(), available_size);
+
+  GridTrackSizingDirection child_inline_direction =
+      GridLayoutUtils::FlowAwareDirectionForChild(*layout_grid_, child,
+                                                  kForColumns);
+  if (grid_area_is_indefinite) {
+    return direction == child_inline_direction
+               ? std::max(child.MaxPreferredLogicalWidth(), grid_area_size)
+               : LayoutUnit(-1);
+  }
+  return grid_area_size;
+}
+
 LayoutUnit GridTrackSizingAlgorithm::GridAreaBreadthForChild(
     const LayoutBox& child,
     GridTrackSizingDirection direction) const {
   if (direction == kForRows && sizing_state_ == kColumnSizingFirstIteration) {
     DCHECK(GridLayoutUtils::IsOrthogonalChild(*layout_grid_, child));
-    return layout_grid_->EstimatedGridAreaBreadthForChild(grid_, child,
-                                                          kForRows);
+    return EstimatedGridAreaBreadthForChild(child, kForRows);
   }
 
   const Vector<GridTrack>& all_tracks = Tracks(direction);
@@ -308,8 +351,7 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MinSizeForChild(
         algorithm_.GetGrid().GridItemSpan(child, Direction());
     LayoutUnit max_breadth;
     for (const auto& track_position : span) {
-      GridTrackSize track_size =
-          algorithm_.GetGridTrackSize(Direction(), track_position);
+      GridTrackSize track_size = GetGridTrackSize(Direction(), track_position);
       if (!track_size.HasFixedMaxTrackBreadth())
         return min_size;
       max_breadth += ValueForLength(track_size.MaxTrackBreadth().length(),
@@ -512,11 +554,10 @@ double IndefiniteSizeStrategy::FindUsedFlexFraction(
     // really matter as we know the track is a flex sized track. It'd be nice
     // not to have to do that.
     flex_fraction = std::max(
-        flex_fraction, NormalizedFlexFraction(
-                           all_tracks[track_index],
-                           algorithm_.GetGridTrackSize(direction, track_index)
-                               .MaxTrackBreadth()
-                               .Flex()));
+        flex_fraction,
+        NormalizedFlexFraction(
+            all_tracks[track_index],
+            GetGridTrackSize(direction, track_index).MaxTrackBreadth().Flex()));
   }
 
   const Grid& grid = algorithm_.GetGrid();
@@ -642,6 +683,7 @@ base::Optional<LayoutUnit> GridTrackSizingAlgorithm::AvailableSpace(
 }
 
 base::Optional<LayoutUnit> GridTrackSizingAlgorithm::AvailableSpace() const {
+  DCHECK(WasSetup());
   return AvailableSpace(direction_);
 }
 
@@ -729,9 +771,34 @@ GridTrackSize GridTrackSizingAlgorithm::RawGridTrackSize(
   return track_styles[untranslated_index - auto_repeat_tracks_count];
 }
 
+bool GridTrackSizingAlgorithm::IsRelativeGridLengthAsAuto(
+    const GridLength& length,
+    GridTrackSizingDirection direction) const {
+  if (!length.HasPercentage())
+    return false;
+  // TODO(svillar): we should remove the second check later. We need it
+  // because during the second iteration of the algorithm we set definite
+  // sizes in the grid container so percents would not resolve properly (it
+  // would think that the height is definite when it is not).
+  return !AvailableSpace(direction) ||
+         (direction == kForRows &&
+          !layout_grid_->CachedHasDefiniteLogicalHeight());
+}
+
+bool GridTrackSizingAlgorithm::IsRelativeSizedTrackAsAuto(
+    const GridTrackSize& track_size,
+    GridTrackSizingDirection direction) const {
+  if (track_size.MinTrackBreadth().HasPercentage())
+    return IsRelativeGridLengthAsAuto(track_size.MinTrackBreadth(), direction);
+  if (track_size.MaxTrackBreadth().HasPercentage())
+    return IsRelativeGridLengthAsAuto(track_size.MaxTrackBreadth(), direction);
+  return false;
+}
+
 GridTrackSize GridTrackSizingAlgorithm::GetGridTrackSize(
     GridTrackSizingDirection direction,
     size_t translated_index) const {
+  DCHECK(WasSetup());
   // Collapse empty auto repeat tracks if auto-fit.
   if (grid_.HasAutoRepeatEmptyTracks(direction) &&
       grid_.IsEmptyAutoRepeatTrack(direction, translated_index))
@@ -746,21 +813,13 @@ GridTrackSize GridTrackSizingAlgorithm::GetGridTrackSize(
   GridLength max_track_breadth = track_size.MaxTrackBreadth();
   // If the logical width/height of the grid container is indefinite, percentage
   // values are treated as <auto>.
-  if (min_track_breadth.HasPercentage() || max_track_breadth.HasPercentage()) {
-    // TODO(svillar): we should remove the second check later. We need it
-    // because during the second iteration of the algorithm we set definite
-    // sizes in the grid container so percents would not resolve properly (it
-    // would think that the height is definite when it is not).
-    if (!AvailableSpace(direction) ||
-        (direction == kForRows &&
-         !layout_grid_->CachedHasDefiniteLogicalHeight())) {
-      UseCounter::Count(layout_grid_->GetDocument(),
-                        WebFeature::kGridRowTrackPercentIndefiniteHeight);
-      if (min_track_breadth.HasPercentage())
-        min_track_breadth = Length(kAuto);
-      if (max_track_breadth.HasPercentage())
-        max_track_breadth = Length(kAuto);
-    }
+  if (IsRelativeSizedTrackAsAuto(track_size, direction)) {
+    UseCounter::Count(layout_grid_->GetDocument(),
+                      WebFeature::kGridRowTrackPercentIndefiniteHeight);
+    if (min_track_breadth.HasPercentage())
+      min_track_breadth = Length(kAuto);
+    if (max_track_breadth.HasPercentage())
+      max_track_breadth = Length(kAuto);
   }
 
   // Flex sizes are invalid as a min sizing function. However we still can have
@@ -1517,7 +1576,8 @@ void GridTrackSizingAlgorithm::UpdateBaselineAlignmentContext(
        child.HasRelativeLogicalWidth()) ||
       (can_participate_in_column_axis_baseline &&
        child.HasRelativeLogicalHeight())) {
-    layout_grid_->SetEstimatedGridAreaLogicalSize(grid_, child);
+    layout_grid_->UpdateGridAreaLogicalSize(
+        child, EstimatedGridAreaBreadthForChild(child));
   }
   child.LayoutIfNeeded();
 
@@ -1536,6 +1596,7 @@ void GridTrackSizingAlgorithm::ComputeBaselineAlignmentContext() {
 
 // Described in https://drafts.csswg.org/css-grid/#algo-track-sizing
 void GridTrackSizingAlgorithm::Run() {
+  DCHECK(WasSetup());
   StateMachine state_machine(*this);
 
   // Step 1.
@@ -1573,6 +1634,7 @@ void GridTrackSizingAlgorithm::Run() {
 }
 
 void GridTrackSizingAlgorithm::Reset() {
+  DCHECK(WasSetup());
   sizing_state_ = kColumnSizingFirstIteration;
   columns_.Shrink(0);
   rows_.Shrink(0);

@@ -317,7 +317,7 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     TextAutosizer::LayoutScope text_autosizer_layout_scope(this, &layout_scope);
 
     LayoutUnit available_space_for_columns = AvailableLogicalWidth();
-    PlaceItemsOnGrid(*grid_, available_space_for_columns);
+    PlaceItemsOnGrid(track_sizing_algorithm_, available_space_for_columns);
 
     track_sizing_algorithm_.ComputeBaselineAlignmentContext();
 
@@ -337,7 +337,7 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
           kForRows, AvailableLogicalHeight(kExcludeMarginBorderPadding));
     } else {
       ComputeTrackSizesForIndefiniteSize(track_sizing_algorithm_, kForRows,
-                                         *grid_, min_content_height_,
+                                         min_content_height_,
                                          max_content_height_);
     }
     LayoutUnit track_based_logical_height = ComputeTrackBasedLogicalHeight() +
@@ -498,12 +498,12 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
   std::unique_ptr<Grid> grid = Grid::Create(this);
-  PlaceItemsOnGrid(*grid, base::nullopt);
-
   GridTrackSizingAlgorithm algorithm(this, *grid);
+  PlaceItemsOnGrid(algorithm, base::nullopt);
+
   algorithm.ComputeBaselineAlignmentContext();
-  ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns, *grid,
-                                     min_logical_width, max_logical_width);
+  ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns, min_logical_width,
+                                     max_logical_width);
 
   LayoutUnit scrollbar_width = LayoutUnit(ScrollbarLogicalWidth());
   min_logical_width += scrollbar_width;
@@ -513,9 +513,9 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
 void LayoutGrid::ComputeTrackSizesForIndefiniteSize(
     GridTrackSizingAlgorithm& algo,
     GridTrackSizingDirection direction,
-    Grid& grid,
     LayoutUnit& min_intrinsic_size,
     LayoutUnit& max_intrinsic_size) const {
+  const Grid& grid = algo.GetGrid();
   algo.Setup(direction, NumTracks(direction, grid), base::nullopt);
   algo.Run();
 
@@ -746,8 +746,9 @@ size_t LayoutGrid::ClampAutoRepeatTracks(GridTrackSizingDirection direction,
 // (preferred widths). That's why we pass the responsibility to the caller who
 // does know whether the available logical width is indefinite or not.
 void LayoutGrid::PlaceItemsOnGrid(
-    Grid& grid,
+    GridTrackSizingAlgorithm& algorithm,
     base::Optional<LayoutUnit> available_logical_width) const {
+  Grid& grid = algorithm.GetMutableGrid();
   size_t auto_repeat_rows = ComputeAutoRepeatTracksCount(
       kForRows, ConvertLayoutUnitToOptional(
                     AvailableLogicalHeightForPercentageComputation()));
@@ -843,7 +844,7 @@ void LayoutGrid::PlaceItemsOnGrid(
   // don't participate in this process (see the function
   // PrepareOrthogonalWritingModeRootForLayout) because it's useless
   // and even wrong if they don't have their corresponding Grid Area.
-  LayoutOrthogonalWritingModeRoots(grid, orthogonal_grid_items);
+  LayoutOrthogonalWritingModeRoots(algorithm, orthogonal_grid_items);
 
 #if DCHECK_IS_ON()
   for (LayoutBox* child = grid.GetOrderIterator().First(); child;
@@ -872,7 +873,7 @@ static bool PrepareOrthogonalWritingModeRootForLayout(LayoutObject& root) {
 // TODO(lajava): Consider rafactoring this code with
 // LocalFrameView::LayoutOrthogonalWritingModeRoots
 void LayoutGrid::LayoutOrthogonalWritingModeRoots(
-    const Grid& grid,
+    const GridTrackSizingAlgorithm& algorithm,
     const Vector<LayoutBox*>& orthogonal_grid_items) const {
   if (!GetDocument().View()->IsInPerformLayout())
     return;
@@ -881,9 +882,7 @@ void LayoutGrid::LayoutOrthogonalWritingModeRoots(
     DCHECK(GridLayoutUtils::IsOrthogonalChild(*this, *root));
     if (PrepareOrthogonalWritingModeRootForLayout(*root)) {
       UpdateGridAreaLogicalSize(
-          *root,
-          LayoutSize(EstimatedGridAreaBreadthForChild(grid, *root, kForColumns),
-                     EstimatedGridAreaBreadthForChild(grid, *root, kForRows)));
+          *root, algorithm.EstimatedGridAreaBreadthForChild(*root));
       root->LayoutIfNeeded();
     }
   }
@@ -1347,40 +1346,6 @@ void LayoutGrid::LayoutPositionedObjects(bool relayout_children,
         !HasStaticPositionForChild(*child, kForRows))
       child->SetLogicalLocation(FindChildLogicalPosition(*child));
   }
-}
-
-LayoutUnit LayoutGrid::EstimatedGridAreaBreadthForChild(
-    const Grid& grid,
-    const LayoutBox& child,
-    GridTrackSizingDirection direction) const {
-  const GridSpan& span = grid.GridItemSpan(child, direction);
-  LayoutUnit grid_area_size;
-  bool grid_area_is_indefinite = false;
-  base::Optional<LayoutUnit> available_size =
-      track_sizing_algorithm_.AvailableSpace(direction);
-  for (auto track_position : span) {
-    GridLength max_track_size =
-        track_sizing_algorithm_.GetGridTrackSize(direction, track_position)
-            .MaxTrackBreadth();
-    if (max_track_size.IsContentSized() || max_track_size.IsFlex()) {
-      grid_area_is_indefinite = true;
-    } else {
-      grid_area_size += ValueForLength(max_track_size.length(),
-                                       available_size.value_or(LayoutUnit()));
-    }
-  }
-
-  grid_area_size += GuttersSize(*grid_, direction, span.StartLine(),
-                                span.IntegerSpan(), available_size);
-
-  GridTrackSizingDirection child_inline_direction =
-      GridLayoutUtils::FlowAwareDirectionForChild(*this, child, kForColumns);
-  if (grid_area_is_indefinite) {
-    return direction == child_inline_direction
-               ? std::max(child.MaxPreferredLogicalWidth(), grid_area_size)
-               : LayoutUnit(-1);
-  }
-  return grid_area_size;
 }
 
 LayoutUnit LayoutGrid::GridAreaBreadthForChildIncludingAlignmentOffsets(
@@ -2363,14 +2328,6 @@ size_t LayoutGrid::NumTracks(GridTrackSizingDirection direction,
              ? grid.NumTracks(kForColumns)
              : GridPositionsResolver::ExplicitGridColumnCount(
                    StyleRef(), grid.AutoRepeatTracks(kForColumns));
-}
-
-void LayoutGrid::SetEstimatedGridAreaLogicalSize(const Grid& grid,
-                                                 LayoutBox& child) const {
-  UpdateGridAreaLogicalSize(
-      child,
-      LayoutSize(EstimatedGridAreaBreadthForChild(grid, child, kForColumns),
-                 EstimatedGridAreaBreadthForChild(grid, child, kForRows)));
 }
 
 LayoutUnit LayoutGrid::GridItemOffset(
