@@ -298,12 +298,6 @@ class CommandBufferSetup {
     auto* command_line = base::CommandLine::ForCurrentProcess();
     ALLOW_UNUSED_LOCAL(command_line);
 
-#if defined(GPU_FUZZER_USE_RASTER_DECODER)
-    // TODO(backer): Remove this. Currently used to set
-    // |chromium_raster_transport| features flag (https://crbug.com/786591).
-    command_line->AppendSwitch(switches::kEnableOOPRasterization);
-#endif
-
 #if defined(GPU_FUZZER_USE_ANGLE)
     command_line->AppendSwitchASCII(switches::kUseGL,
                                     gl::kGLImplementationANGLEName);
@@ -341,18 +335,25 @@ class CommandBufferSetup {
     }
 
     context_->MakeCurrent(surface_.get());
+    GpuFeatureInfo gpu_feature_info;
+#if defined(GPU_FUZZER_USE_RASTER_DECODER)
+    // Cause feature_info's |chromium_raster_transport| to be enabled.
+    gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
+        kGpuFeatureStatusEnabled;
+#endif
     scoped_refptr<gles2::FeatureInfo> feature_info =
-        new gles2::FeatureInfo(config_.workarounds, gpu_preferences_);
+        new gles2::FeatureInfo(config_.workarounds, gpu_feature_info);
     scoped_refptr<gles2::ContextGroup> context_group = new gles2::ContextGroup(
         gpu_preferences_, true, &mailbox_manager_, nullptr /* memory_tracker */,
         &translator_cache_, &completeness_cache_, feature_info,
         config_.attrib_helper.bind_generates_resource, &image_manager_,
         nullptr /* image_factory */, nullptr /* progress_reporter */,
-        GpuFeatureInfo(), discardable_manager_.get());
+        gpu_feature_info, discardable_manager_.get());
     command_buffer_.reset(new CommandBufferDirect(
         context_group->transfer_buffer_manager(), &sync_point_manager_));
 
 #if defined(GPU_FUZZER_USE_RASTER_DECODER)
+    CHECK(feature_info->feature_flags().chromium_raster_transport);
     decoder_.reset(raster::RasterDecoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,
         context_group.get()));

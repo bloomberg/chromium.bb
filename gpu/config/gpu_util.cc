@@ -56,6 +56,39 @@ GpuFeatureStatus GetGpuRasterizationFeatureStatus(
   return kGpuFeatureStatusEnabled;
 }
 
+GpuFeatureStatus GetOopRasterizationFeatureStatus(
+    const std::set<int>& blacklisted_features,
+    const base::CommandLine& command_line,
+    const GpuPreferences& gpu_preferences,
+    const GPUInfo& gpu_info) {
+  // OOP rasterization requires GPU rasterization, so if blacklisted or
+  // disabled, report the same.
+  auto status =
+      GetGpuRasterizationFeatureStatus(blacklisted_features, command_line);
+  if (status != kGpuFeatureStatusEnabled)
+    return status;
+
+  // If we can't create a GrContext for whatever reason, don't enable oop
+  // rasterization.
+  if (!gpu_info.oop_rasterization_supported)
+    return kGpuFeatureStatusDisabled;
+
+  if (gpu_preferences.disable_oop_rasterization)
+    return kGpuFeatureStatusDisabled;
+  else if (gpu_preferences.enable_oop_rasterization)
+    return kGpuFeatureStatusEnabled;
+
+  if (blacklisted_features.count(GPU_FEATURE_TYPE_OOP_RASTERIZATION))
+    return kGpuFeatureStatusBlacklisted;
+
+  // OOP Rasterization on platforms that are not fully enabled is controlled by
+  // a finch experiment.
+  if (!base::FeatureList::IsEnabled(features::kDefaultEnableOopRasterization))
+    return kGpuFeatureStatusDisabled;
+
+  return kGpuFeatureStatusEnabled;
+}
+
 GpuFeatureStatus GetWebGLFeatureStatus(
     const std::set<int>& blacklisted_features,
     bool use_swift_shader) {
@@ -212,6 +245,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithHardwareAccelerationDisabled() {
       kGpuFeatureStatusSoftware;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE] =
       kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
+      kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);
@@ -242,6 +277,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithNoGpu() {
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE] =
       kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
+      kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);
@@ -271,6 +308,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader() {
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
       kGpuFeatureStatusSoftware;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
@@ -342,6 +381,9 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE] =
       GetProtectedVideoDecodeFeatureStatus(blacklisted_features, gpu_info,
                                            use_swift_shader);
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
+      GetOopRasterizationFeatureStatus(blacklisted_features, *command_line,
+                                       gpu_preferences, gpu_info);
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);

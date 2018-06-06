@@ -444,6 +444,14 @@ const FeatureEntry::Choice kEnableGpuRasterizationChoices[] = {
      switches::kForceGpuRasterization, ""},
 };
 
+const FeatureEntry::Choice kEnableOopRasterizationChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flags_ui::kGenericExperimentChoiceEnabled,
+     switches::kEnableOopRasterization, ""},
+    {flags_ui::kGenericExperimentChoiceDisabled,
+     switches::kDisableOopRasterization, ""},
+};
+
 #if defined(OS_CHROMEOS)
 const FeatureEntry::Choice kMemoryPressureThresholdChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -1376,6 +1384,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-gpu-rasterization", flag_descriptions::kGpuRasterizationName,
      flag_descriptions::kGpuRasterizationDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableGpuRasterizationChoices)},
+    {"enable-oop-rasterization", flag_descriptions::kOopRasterizationName,
+     flag_descriptions::kOopRasterizationDescription, kOsAll,
+     MULTI_VALUE_TYPE(kEnableOopRasterizationChoices)},
     {"gpu-rasterization-msaa-sample-count",
      flag_descriptions::kGpuRasterizationMsaaSampleCountName,
      flag_descriptions::kGpuRasterizationMsaaSampleCountDescription, kOsAll,

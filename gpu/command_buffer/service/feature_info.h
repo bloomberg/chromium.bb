@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gl/extension_set.h"
 
@@ -26,7 +27,6 @@ struct GLVersionInfo;
 }
 
 namespace gpu {
-struct GpuPreferences;
 namespace gles2 {
 
 // FeatureInfo records the features that are available for a ContextGroup.
@@ -135,7 +135,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   // Constructor with workarounds taken from the current process's CommandLine
   FeatureInfo(const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds,
-              const GpuPreferences& gpu_preferences);
+              const GpuFeatureInfo& gpu_feature_info);
 
   // Initializes the feature information. Needs a current GL context.
   void Initialize(ContextType context_type,

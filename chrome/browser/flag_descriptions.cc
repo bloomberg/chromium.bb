@@ -1166,6 +1166,11 @@ const char kOmniboxVoiceSearchAlwaysVisibleDescription[] =
     "Always displays voice search icon in focused omnibox as long as voice "
     "search is possible";
 
+const char kOopRasterizationName[] = "Out of process rasterization";
+const char kOopRasterizationDescription[] =
+    "Perform Ganesh raster in the GPU Process instead of the renderer.  "
+    "Must also enable GPU rasterization";
+
 const char kOriginTrialsName[] = "Origin Trials";
 const char kOriginTrialsDescription[] =
     "Enables origin trials for controlling access to feature/API experiments.";

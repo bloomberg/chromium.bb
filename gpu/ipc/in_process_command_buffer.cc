@@ -327,7 +327,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
     GpuDriverBugWorkarounds workarounds(
         service_->gpu_feature_info().enabled_gpu_driver_bug_workarounds);
     auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
-        workarounds, service_->gpu_preferences());
+        workarounds, service_->gpu_feature_info());
 
     context_group_ = base::MakeRefCounted<gles2::ContextGroup>(
         service_->gpu_preferences(),
@@ -359,11 +359,11 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   command_buffer_ = std::make_unique<CommandBufferService>(
       this, transfer_buffer_manager_.get());
 
-  // Check gpu_preferences() as well as attribs.enable_oop_rasterization to
-  // prevent compromised renderer from unilaterally enabling RasterDecoder until
-  // we have fuzzed it (https://crbug.com/829469).
-  if (service_->gpu_preferences().enable_oop_rasterization &&
-      params.attribs.enable_oop_rasterization &&
+  bool supports_oop_rasterization =
+      service_->gpu_feature_info()
+          .status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
+      kGpuFeatureStatusEnabled;
+  if (supports_oop_rasterization && params.attribs.enable_oop_rasterization &&
       params.attribs.enable_raster_interface &&
       !params.attribs.enable_gles2_interface) {
     decoder_.reset(raster::RasterDecoder::Create(this, command_buffer_.get(),

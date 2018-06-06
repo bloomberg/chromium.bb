@@ -36,7 +36,6 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
-#include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -327,15 +326,16 @@ void GLManager::InitializeWithWorkaroundsImpl(
       std::make_unique<gles2::ShaderTranslatorCache>(gpu_preferences_);
 
   if (!context_group) {
+    GpuFeatureInfo gpu_feature_info;
     scoped_refptr<gles2::FeatureInfo> feature_info =
-        new gles2::FeatureInfo(workarounds, GpuPreferences());
+        new gles2::FeatureInfo(workarounds, gpu_feature_info);
     // Always mark the passthrough command decoder as supported so that tests do
     // not unexpectedly use the wrong command decoder
     context_group = new gles2::ContextGroup(
         gpu_preferences_, true, mailbox_manager_, nullptr /* memory_tracker */,
         translator_cache_.get(), &completeness_cache_, feature_info,
         options.bind_generates_resource, &image_manager_, options.image_factory,
-        nullptr /* progress_reporter */, GpuFeatureInfo(),
+        nullptr /* progress_reporter */, gpu_feature_info,
         &discardable_manager_);
   }
 

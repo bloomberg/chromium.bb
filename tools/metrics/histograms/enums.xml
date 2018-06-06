@@ -27195,6 +27195,7 @@ from previous Chrome versions.
   <int value="-1151766565" label="enable-fullscreen-tab-detaching"/>
   <int value="-1145702446" label="ChromeHomeInactivitySheetExpansion:enabled"/>
   <int value="-1145246849" label="ThirdPartyDoodles:enabled"/>
+  <int value="-1143496217" label="enable-oop-rasterization"/>
   <int value="-1137442543" label="enable-slimming-paint"/>
   <int value="-1136627751" label="ignore-autocomplete-off-autofill"/>
   <int value="-1136509631" label="ssl-interstitial-v1"/>
@@ -28510,6 +28511,7 @@ from previous Chrome versions.
   <int value="1845131710" label="Newblue:enabled"/>
   <int value="1847024354" label="enable-hotword-hardware"/>
   <int value="1849379463" label="OfflinePagesCTV2:enabled"/>
+  <int value="1849580433" label="disable-oop-rasterization"/>
   <int value="1851358497" label="enable-ash-sidebar"/>
   <int value="1852630189" label="NTPBookmarkSuggestions:disabled"/>
   <int value="1855524566" label="allow-insecure-websocket-from-https-origin"/>

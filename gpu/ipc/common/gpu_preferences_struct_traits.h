@@ -116,6 +116,7 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
         prefs.disable_gpu_driver_bug_workarounds();
     out->ignore_gpu_blacklist = prefs.ignore_gpu_blacklist();
     out->enable_oop_rasterization = prefs.enable_oop_rasterization();
+    out->disable_oop_rasterization = prefs.disable_oop_rasterization();
     out->use_gpu_fences_for_overlay_planes =
         prefs.use_gpu_fences_for_overlay_planes();
     out->watchdog_starts_backgrounded = prefs.watchdog_starts_backgrounded();
@@ -245,6 +246,9 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   }
   static bool enable_oop_rasterization(const gpu::GpuPreferences& prefs) {
     return prefs.enable_oop_rasterization;
+  }
+  static bool disable_oop_rasterization(const gpu::GpuPreferences& prefs) {
+    return prefs.disable_oop_rasterization;
   }
   static bool use_gpu_fences_for_overlay_planes(
       const gpu::GpuPreferences& prefs) {

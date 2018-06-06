@@ -480,7 +480,14 @@ const char kFieldTrialHandle[] = "field-trial-handle";
 // Always use the Skia GPU backend for drawing layer tiles. Only valid with GPU
 // accelerated compositing + impl-side painting. Overrides the
 // kEnableGpuRasterization flag.
-const char kForceGpuRasterization[]        = "force-gpu-rasterization";
+const char kForceGpuRasterization[] = "force-gpu-rasterization";
+
+// Disables OOP rasterization.  Takes precedence over the enable flag.
+const char kDisableOopRasterization[] = "disable-oop-rasterization";
+
+// Turns on out of process raster for the renderer whenever gpu raster
+// would have been used.  Enables the chromium_raster_transport extension.
+const char kEnableOopRasterization[] = "enable-oop-rasterization";
 
 // The number of multisample antialiasing samples for GPU rasterization.
 // Requires MSAA support on GPU to have an effect. 0 disables MSAA.

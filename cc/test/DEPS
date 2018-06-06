@@ -15,4 +15,7 @@ specific_include_rules = {
   "run_all_(perf|unit)tests\.cc": [
     "+mojo/edk/embedder/embedder.h",
   ],
+  "cc_test_suite\.cc": [
+    "+gpu/config",
+  ],
 }

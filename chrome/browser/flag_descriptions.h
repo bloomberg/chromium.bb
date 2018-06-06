@@ -729,6 +729,9 @@ extern const char kOmniboxUIVerticalMarginDescription[];
 extern const char kOmniboxVoiceSearchAlwaysVisibleName[];
 extern const char kOmniboxVoiceSearchAlwaysVisibleDescription[];
 
+extern const char kOopRasterizationName[];
+extern const char kOopRasterizationDescription[];
+
 extern const char kOverflowIconsForMediaControlsName[];
 extern const char kOverflowIconsForMediaControlsDescription[];
 

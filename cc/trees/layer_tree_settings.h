@@ -138,10 +138,6 @@ class CC_EXPORT LayerTreeSettings {
   // produces the active tree as its 'sync tree'.
   bool commit_to_active_tree = true;
 
-  // Whether to use out of process raster.  If true, whenever gpu raster
-  // would have been used, out of process gpu raster will be used instead.
-  bool enable_oop_rasterization = false;
-
   // Whether image animations can be reset to the beginning to avoid skipping
   // many frames.
   bool enable_image_animation_resync = true;

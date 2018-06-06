@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/texture_definition.h"
-#include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_fence.h"
@@ -219,13 +218,14 @@ FeatureInfo::FeatureInfo() {
 
 FeatureInfo::FeatureInfo(
     const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds,
-    const GpuPreferences& gpu_preferences)
+    const GpuFeatureInfo& gpu_feature_info)
     : workarounds_(gpu_driver_bug_workarounds) {
   InitializeBasicState(base::CommandLine::InitializedForCurrentProcess()
                            ? base::CommandLine::ForCurrentProcess()
                            : nullptr);
   feature_flags_.chromium_raster_transport =
-      gpu_preferences.enable_oop_rasterization;
+      gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
+      gpu::kGpuFeatureStatusEnabled;
 }
 
 void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {

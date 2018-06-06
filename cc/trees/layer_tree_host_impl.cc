@@ -3069,17 +3069,12 @@ bool LayerTreeHostImpl::InitializeRenderer(
       GetTaskRunner(), ResourcePool::kDefaultExpirationDelay,
       settings_.disallow_non_exact_resource_reuse);
 
-  // TODO(piman): Make oop raster always supported: http://crbug.com/786591
-  use_oop_rasterization_ = settings_.enable_oop_rasterization;
-  if (use_oop_rasterization_) {
-    auto* context = layer_tree_frame_sink_->worker_context_provider();
-    if (context) {
-      viz::RasterContextProvider::ScopedRasterContextLock hold(context);
-      use_oop_rasterization_ &=
-          context->ContextCapabilities().supports_oop_raster;
-    } else {
-      use_oop_rasterization_ = false;
-    }
+  auto* context = layer_tree_frame_sink_->worker_context_provider();
+  if (context) {
+    viz::RasterContextProvider::ScopedRasterContextLock hold(context);
+    use_oop_rasterization_ = context->ContextCapabilities().supports_oop_raster;
+  } else {
+    use_oop_rasterization_ = false;
   }
 
   // Since the new context may be capable of MSAA, update status here. We don't
