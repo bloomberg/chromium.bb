@@ -11,17 +11,16 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
-#include "components/invalidation/impl/fake_identity_provider.h"
 #include "components/invalidation/impl/fake_invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
+#include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/impl/ticl_invalidation_service.h"
 #include "components/invalidation/impl/ticl_settings_provider.h"
-#include "components/invalidation/public/identity_provider.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +42,7 @@ class TiclProfileSettingsProviderTest : public testing::Test {
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   gcm::FakeGCMDriver gcm_driver_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
-  FakeOAuth2TokenService token_service_;
+  FakeProfileOAuth2TokenService token_service_;
 
   std::unique_ptr<TiclInvalidationService> invalidation_service_;
 
@@ -63,8 +62,9 @@ void TiclProfileSettingsProviderTest::SetUp() {
       new net::TestURLRequestContextGetter(base::ThreadTaskRunnerHandle::Get());
 
   invalidation_service_.reset(new TiclInvalidationService(
-      "TestUserAgent", std::unique_ptr<IdentityProvider>(
-                           new FakeIdentityProvider(&token_service_)),
+      "TestUserAgent",
+      std::unique_ptr<IdentityProvider>(
+          new ProfileIdentityProvider(&token_service_)),
       std::unique_ptr<TiclSettingsProvider>(
           new TiclProfileSettingsProvider(&pref_service_)),
       &gcm_driver_, request_context_getter_));

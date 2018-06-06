@@ -6,6 +6,7 @@
 #define COMPONENTS_INVALIDATION_IMPL_PROFILE_IDENTITY_PROVIDER_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/invalidation/public/identity_provider.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 
@@ -20,6 +21,16 @@ class ProfileIdentityProvider : public IdentityProvider,
  public:
   ProfileIdentityProvider(SigninManagerBase* signin_manager,
                           ProfileOAuth2TokenService* token_service);
+#if defined(UNIT_TEST)
+  // Provide a testing constructor that allows for a null SigninManager instance
+  // to be passed, as there are tests that don't interact with the login
+  // functionality and it is a pain to set up FakeSigninManager(Base).
+  // TODO(809452): Eliminate this testing constructor when this class is
+  // converted to take in IdentityManager, at which point the tests can use
+  // IdentityTestEnvironment.
+  ProfileIdentityProvider(ProfileOAuth2TokenService* token_service)
+      : signin_manager_(nullptr), token_service_(token_service) {}
+#endif
   ~ProfileIdentityProvider() override;
 
   // IdentityProvider:

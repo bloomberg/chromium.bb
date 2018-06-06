@@ -13,14 +13,14 @@
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_driver.h"
-#include "components/invalidation/impl/fake_identity_provider.h"
 #include "components/invalidation/impl/fake_invalidation_state_tracker.h"
 #include "components/invalidation/impl/fake_invalidator.h"
 #include "components/invalidation/impl/gcm_invalidation_bridge.h"
 #include "components/invalidation/impl/invalidation_service_test_template.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidator.h"
-#include "google_apis/gaia/fake_oauth2_token_service.h"
+#include "components/invalidation/impl/profile_identity_provider.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,7 +68,7 @@ class TiclInvalidationServiceTestDelegate {
     gcm_driver_.reset(new gcm::FakeGCMDriver());
     invalidation_service_.reset(new TiclInvalidationService(
         "TestUserAgent",
-        std::make_unique<FakeIdentityProvider>(&token_service_),
+        std::make_unique<ProfileIdentityProvider>(&token_service_),
         std::unique_ptr<TiclSettingsProvider>(new FakeTiclSettingsProvider),
         gcm_driver_.get(), nullptr));
   }
@@ -97,7 +97,7 @@ class TiclInvalidationServiceTestDelegate {
     fake_invalidator_->EmitOnIncomingInvalidation(invalidation_map);
   }
 
-  FakeOAuth2TokenService token_service_;
+  FakeProfileOAuth2TokenService token_service_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
   syncer::FakeInvalidator* fake_invalidator_;  // Owned by the service.
 
