@@ -5,7 +5,7 @@
 // https://wicg.github.io/picture-in-picture/#interface-picture-in-picture-window
 [
     ActiveScriptWrappable,
-    OriginTrialEnabled=PictureInPictureAPI
+    RuntimeEnabled=PictureInPictureAPI
 ]
 interface PictureInPictureWindow : EventTarget {
   [Measure] readonly attribute long width;

@@ -5,7 +5,7 @@
 // https://wicg.github.io/picture-in-picture/#documentorshadowroot-extension
 [
     ImplementedAs=ShadowRootPictureInPicture,
-    OriginTrialEnabled=PictureInPictureAPI
+    RuntimeEnabled=PictureInPictureAPI
 ]
 partial interface ShadowRoot {
     // TODO(crbug.com/656517): Define this attribute in DocumentOrShadowRoot.

@@ -145,9 +145,10 @@ bool IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature feature) {
     case mojom::FeaturePolicyFeature::kAmbientLightSensor:
     case mojom::FeaturePolicyFeature::kGyroscope:
     case mojom::FeaturePolicyFeature::kMagnetometer:
-    case mojom::FeaturePolicyFeature::kPictureInPicture:
     case mojom::FeaturePolicyFeature::kSyncXHR:
       return true;
+    case mojom::FeaturePolicyFeature::kPictureInPicture:
+      return RuntimeEnabledFeatures::PictureInPictureAPIEnabled();
     case mojom::FeaturePolicyFeature::kUnsizedMedia:
     case mojom::FeaturePolicyFeature::kVerticalScroll:
     case mojom::FeaturePolicyFeature::kLegacyImageFormats:
@@ -192,8 +193,10 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                  mojom::FeaturePolicyFeature::kGyroscope);
     default_feature_name_map.Set("magnetometer",
                                  mojom::FeaturePolicyFeature::kMagnetometer);
-    default_feature_name_map.Set("picture-in-picture",
-                                 mojom::FeaturePolicyFeature::kPictureInPicture);
+    if (RuntimeEnabledFeatures::PictureInPictureAPIEnabled()) {
+      default_feature_name_map.Set(
+          "picture-in-picture", mojom::FeaturePolicyFeature::kPictureInPicture);
+    }
     if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
       default_feature_name_map.Set(
           "document-stream-insertion",
