@@ -289,7 +289,7 @@ TestingBrowserProcess::extension_event_router_forwarder() {
 }
 
 NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   if (!notification_ui_manager_.get())
     notification_ui_manager_.reset(NotificationUIManager::Create());
   return notification_ui_manager_.get();

@@ -139,7 +139,6 @@
 #include "ui/base/idle/idle.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/message_center/message_center.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -149,6 +148,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/ash_util.h"
+#else
+#include "ui/message_center/message_center.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -264,16 +265,9 @@ void BrowserProcessImpl::Init() {
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 #endif
 
-  bool initialize_message_center = true;
-#if defined(OS_CHROMEOS)
-  // On Chrome OS, the message center is initialized and shut down by Ash and
-  // should not be directly accessible to Chrome. However, ARC++ still relies
-  // on the existence of a MessageCenter object, so in Mash, initialize one
-  // here.
-  initialize_message_center = ash_util::IsRunningInMash();
+#if !defined(OS_CHROMEOS)
+  message_center::MessageCenter::Initialize();
 #endif
-  if (initialize_message_center)
-    message_center::MessageCenter::Initialize();
 
   update_client::UpdateQueryParams::SetDelegate(
       ChromeUpdateQueryParamsDelegate::GetInstance());
@@ -403,8 +397,10 @@ void BrowserProcessImpl::StartTearDown() {
   storage_monitor::StorageMonitor::Destroy();
 #endif
 
+#if !defined(OS_CHROMEOS)
   if (message_center::MessageCenter::Get())
     message_center::MessageCenter::Shutdown();
+#endif
 
   // The policy providers managed by |browser_policy_connector_| need to shut
   // down while the IO and FILE threads are still alive. The monitoring
@@ -686,19 +682,13 @@ NotificationUIManager* BrowserProcessImpl::notification_ui_manager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 // TODO(miguelg) return NULL for MAC as well once native notifications
 // are enabled by default.
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   return nullptr;
-#else  // !defined(OS_ANDROID)
-#if defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(features::kNativeNotifications) ||
-      base::FeatureList::IsEnabled(features::kMash)) {
-    return nullptr;
-  }
-#endif  // defined(OS_CHROMEOS)
+#else
   if (!created_notification_ui_manager_)
     CreateNotificationUIManager();
   return notification_ui_manager_.get();
-#endif  // !defined(OS_ANDROID)
+#endif
 }
 
 NotificationPlatformBridge* BrowserProcessImpl::notification_platform_bridge() {

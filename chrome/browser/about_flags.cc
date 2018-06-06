@@ -1833,7 +1833,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTranslateRankerEnforcementName,
      flag_descriptions::kTranslateRankerEnforcementDescription, kOsAll,
      FEATURE_VALUE_TYPE(translate::kTranslateRankerEnforcement)},
-#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
+#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS) && !defined(OS_CHROMEOS)
     {"enable-native-notifications",
      flag_descriptions::kNotificationsNativeFlagName,
      flag_descriptions::kNotificationsNativeFlagDescription,

@@ -21,16 +21,18 @@ namespace message_center {
 class Notification;
 }
 
-// This interface is used to manage the UI surfaces for desktop notifications.
-// There is just one instance for all profiles. This represents the middle layer
-// of notification and it's aware of profile. It identifies a notification by
-// the id string and a profile, hence two notifications from two different
-// profiles, even though they may have identical ids, will not be considered the
-// same notification. This interface will generate a new id behind the scene
-// based on the id string and the profile's characteristics for each
-// notification and use this new id to call lower layer MessageCenter interface
-// which is profile agnostic. Therefore the ids passed into this interface are
-// not the same as those passed into the MessageCenter interface.
+// This interface is used to manage the UI surfaces for non-native desktop
+// notifications (hence, this is not used by Chrome OS and is not used for
+// Windows Action Center notifications). There is just one instance for all
+// profiles. This represents the middle layer of notification and it's aware of
+// profile. It identifies a notification by the id string and a profile, hence
+// two notifications from two different profiles, even though they may have
+// identical ids, will not be considered the same notification. This interface
+// will generate a new id behind the scene based on the id string and the
+// profile's characteristics for each notification and use this new id to call
+// lower layer MessageCenter interface which is profile agnostic. Therefore the
+// ids passed into this interface are not the same as those passed into the
+// MessageCenter interface.
 class NotificationUIManager {
  public:
   // Convert a profile pointer into an opaque profile id, which can be safely
