@@ -319,7 +319,9 @@ interface WindowTree {
   DeactivateWindow(uint64 window_id);
 
   // Stacks the window |above_id| above |below_id|. These two windows must
-  // share the same parent.
+  // share the same parent. This function is intended for use with top-levels
+  // only. For non-top-levels, use ReorderWindow().
+  // TODO(sky): unify this and ReorderWindow(). https://crbug.com/850133.
   StackAbove(uint32 change_id, uint64 above_id, uint64 below_id);
 
   // Stacks the window above all sibling windows.

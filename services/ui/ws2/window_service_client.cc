@@ -843,6 +843,25 @@ bool WindowServiceClient::SetFocusImpl(const ClientWindowId& window_id) {
   return focus_handler_.SetFocus(GetWindowByClientId(window_id));
 }
 
+bool WindowServiceClient::StackAboveImpl(
+    const ClientWindowId& above_window_id,
+    const ClientWindowId& below_window_id) {
+  DVLOG(3) << "StackAbove above_window_id=" << above_window_id
+           << " below_window_id=" << below_window_id;
+  aura::Window* above_window = GetWindowByClientId(above_window_id);
+  aura::Window* below_window = GetWindowByClientId(below_window_id);
+  // This function only applies to top-levels.
+  if (!IsClientCreatedWindow(above_window) ||
+      !IsClientCreatedWindow(below_window) || !IsTopLevel(above_window) ||
+      !IsTopLevel(below_window) || !above_window->parent() ||
+      above_window->parent() != below_window->parent()) {
+    DVLOG(1) << "StackAbove failed (invalid windows)";
+    return false;
+  }
+  above_window->parent()->StackChildAbove(above_window, below_window);
+  return true;
+}
+
 bool WindowServiceClient::StackAtTopImpl(const ClientWindowId& window_id) {
   DVLOG(3) << "StackAtTop window_id= " << window_id;
 
@@ -1265,7 +1284,9 @@ void WindowServiceClient::DeactivateWindow(Id window_id) {
 void WindowServiceClient::StackAbove(uint32_t change_id,
                                      Id above_id,
                                      Id below_id) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  const bool result = StackAboveImpl(MakeClientWindowId(above_id),
+                                     MakeClientWindowId(below_id));
+  window_tree_client_->OnChangeCompleted(change_id, result);
 }
 
 void WindowServiceClient::StackAtTop(uint32_t change_id, Id window_id) {

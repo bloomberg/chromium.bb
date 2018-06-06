@@ -117,10 +117,9 @@ Embedding* WindowServiceClientTestHelper::Embed(
     mojom::WindowTreeClientPtr client_ptr,
     mojom::WindowTreeClient* client,
     uint32_t embed_flags) {
-  if (!window_service_client_->EmbedImpl(
-          window_service_client_->MakeClientWindowId(
-              TransportIdForWindow(window)),
-          std::move(client_ptr), client, embed_flags)) {
+  if (!window_service_client_->EmbedImpl(ClientWindowIdForWindow(window),
+                                         std::move(client_ptr), client,
+                                         embed_flags)) {
     return nullptr;
   }
   return ClientWindow::GetMayBeNull(window)->embedding();
@@ -139,9 +138,16 @@ void WindowServiceClientTestHelper::OnWindowInputEventAck(
   window_service_client_->OnWindowInputEventAck(event_id, result);
 }
 
+bool WindowServiceClientTestHelper::StackAbove(aura::Window* above_window,
+                                               aura::Window* below_window) {
+  return window_service_client_->StackAboveImpl(
+      ClientWindowIdForWindow(above_window),
+      ClientWindowIdForWindow(below_window));
+}
+
 bool WindowServiceClientTestHelper::StackAtTop(aura::Window* window) {
   return window_service_client_->StackAtTopImpl(
-      window_service_client_->MakeClientWindowId(TransportIdForWindow(window)));
+      ClientWindowIdForWindow(window));
 }
 
 Id WindowServiceClientTestHelper::TransportIdForWindow(aura::Window* window) {
@@ -150,8 +156,7 @@ Id WindowServiceClientTestHelper::TransportIdForWindow(aura::Window* window) {
 }
 
 bool WindowServiceClientTestHelper::SetFocus(aura::Window* window) {
-  return window_service_client_->SetFocusImpl(
-      window_service_client_->MakeClientWindowId(TransportIdForWindow(window)));
+  return window_service_client_->SetFocusImpl(ClientWindowIdForWindow(window));
 }
 
 void WindowServiceClientTestHelper::SetCanFocus(aura::Window* window,
