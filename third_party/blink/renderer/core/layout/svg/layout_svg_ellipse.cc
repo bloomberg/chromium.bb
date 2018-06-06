@@ -98,10 +98,13 @@ void LayoutSVGEllipse::CalculateRadiiAndCenter() {
 }
 
 bool LayoutSVGEllipse::ShapeDependentStrokeContains(const FloatPoint& point) {
-  // The optimized check below for circles does not support non-scaling or
-  // discontinuous strokes.
-  if (use_path_fallback_ || !HasContinuousStroke() ||
-      radii_.Width() != radii_.Height()) {
+  if (radii_.Width() < 0 || radii_.Height() < 0)
+    return false;
+
+  // The optimized check below for circles does not support non-circular and
+  // the cases that we set use_path_fallback_ in UpdateShapeFromElement().
+  if (use_path_fallback_ || radii_.Width() != radii_.Height()) {
+    // Create path for non-circular if needed.
     if (!HasPath())
       CreatePath();
     return LayoutSVGShape::ShapeDependentStrokeContains(point);

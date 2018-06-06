@@ -51,8 +51,8 @@ struct LayoutSVGShapeRareData {
 
  public:
   LayoutSVGShapeRareData() = default;
-  Path cached_non_scaling_stroke_path_;
-  AffineTransform cached_non_scaling_stroke_transform_;
+  Path non_scaling_stroke_path_;
+  AffineTransform non_scaling_stroke_transform_;
   DISALLOW_COPY_AND_ASSIGN(LayoutSVGShapeRareData);
 };
 
@@ -88,8 +88,17 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   bool HasNonScalingStroke() const {
     return Style()->SvgStyle().VectorEffect() == VE_NON_SCALING_STROKE;
   }
-  Path* NonScalingStrokePath(const Path*, const AffineTransform&) const;
-  AffineTransform NonScalingStrokeTransform() const;
+  const Path& NonScalingStrokePath() const {
+    DCHECK(HasNonScalingStroke());
+    DCHECK(rare_data_);
+    return rare_data_->non_scaling_stroke_path_;
+  }
+  const AffineTransform& NonScalingStrokeTransform() const {
+    DCHECK(HasNonScalingStroke());
+    DCHECK(rare_data_);
+    return rare_data_->non_scaling_stroke_transform_;
+  }
+
   AffineTransform LocalSVGTransform() const final { return local_transform_; }
 
   virtual const Vector<MarkerPosition>* MarkerPositions() const {
@@ -158,6 +167,7 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   FloatRect StrokeBoundingBox() const final { return stroke_bounding_box_; }
   FloatRect CalculateObjectBoundingBox() const;
   FloatRect CalculateStrokeBoundingBox() const;
+  void UpdateNonScalingStrokeData();
   bool UpdateLocalTransform();
 
  private:

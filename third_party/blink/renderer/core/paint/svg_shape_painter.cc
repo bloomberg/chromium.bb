@@ -190,10 +190,9 @@ void SVGShapePainter::StrokeShape(GraphicsContext& context,
       break;
     default:
       DCHECK(layout_svg_shape_.HasPath());
-      Path* use_path = &layout_svg_shape_.GetPath();
+      const Path* use_path = &layout_svg_shape_.GetPath();
       if (layout_svg_shape_.HasNonScalingStroke())
-        use_path = layout_svg_shape_.NonScalingStrokePath(
-            use_path, layout_svg_shape_.NonScalingStrokeTransform());
+        use_path = &layout_svg_shape_.NonScalingStrokePath();
       context.DrawPath(use_path->GetSkPath(), flags);
   }
 }
