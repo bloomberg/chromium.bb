@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 65 tests; 1 PASS, 64 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 68 tests; 1 PASS, 67 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Basic check
 FAIL WebSocket blocked port test 1 Failed to construct 'WebSocket': The port 1 is not allowed.
 FAIL WebSocket blocked port test 7 Failed to construct 'WebSocket': The port 7 is not allowed.
@@ -39,6 +39,7 @@ FAIL WebSocket blocked port test 139 Failed to construct 'WebSocket': The port 1
 FAIL WebSocket blocked port test 143 Failed to construct 'WebSocket': The port 143 is not allowed.
 FAIL WebSocket blocked port test 179 Failed to construct 'WebSocket': The port 179 is not allowed.
 FAIL WebSocket blocked port test 389 Failed to construct 'WebSocket': The port 389 is not allowed.
+FAIL WebSocket blocked port test 427 Failed to construct 'WebSocket': The port 427 is not allowed.
 FAIL WebSocket blocked port test 465 Failed to construct 'WebSocket': The port 465 is not allowed.
 FAIL WebSocket blocked port test 512 Failed to construct 'WebSocket': The port 512 is not allowed.
 FAIL WebSocket blocked port test 513 Failed to construct 'WebSocket': The port 513 is not allowed.
@@ -49,6 +50,7 @@ FAIL WebSocket blocked port test 530 Failed to construct 'WebSocket': The port 5
 FAIL WebSocket blocked port test 531 Failed to construct 'WebSocket': The port 531 is not allowed.
 FAIL WebSocket blocked port test 532 Failed to construct 'WebSocket': The port 532 is not allowed.
 FAIL WebSocket blocked port test 540 Failed to construct 'WebSocket': The port 540 is not allowed.
+FAIL WebSocket blocked port test 548 Failed to construct 'WebSocket': The port 548 is not allowed.
 FAIL WebSocket blocked port test 556 Failed to construct 'WebSocket': The port 556 is not allowed.
 FAIL WebSocket blocked port test 563 Failed to construct 'WebSocket': The port 563 is not allowed.
 FAIL WebSocket blocked port test 587 Failed to construct 'WebSocket': The port 587 is not allowed.
@@ -65,5 +67,6 @@ FAIL WebSocket blocked port test 6666 Failed to construct 'WebSocket': The port 
 FAIL WebSocket blocked port test 6667 Failed to construct 'WebSocket': The port 6667 is not allowed.
 FAIL WebSocket blocked port test 6668 Failed to construct 'WebSocket': The port 6668 is not allowed.
 FAIL WebSocket blocked port test 6669 Failed to construct 'WebSocket': The port 6669 is not allowed.
+FAIL WebSocket blocked port test 6697 Failed to construct 'WebSocket': The port 6697 is not allowed.
 Harness: the test ran to completion.
 
