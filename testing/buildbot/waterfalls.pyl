@@ -2028,19 +2028,6 @@
           'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
         },
       },
-      'linux-annotator-rel': {
-        'test_suites': {
-          'scripts': 'test_traffic_annotation_auditor_script',
-        }
-      },
-      'mac-views-rel': {
-        'test_suites': {
-          'gtest_tests': 'chromium_mac_fyi_gtests',
-        },
-        'args': [
-          '--enable-features=ViewsBrowserWindows',
-        ],
-      },
       'Chromium Mac 10.11': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_fyi_gtests',
@@ -2063,6 +2050,31 @@
       'Chromium Win 10 GCE Tests': {
         'test_suites': {
           'gtest_tests': 'chromium_win_fyi_gtests',
+        },
+      },
+      'chromeos-amd64-generic-rel-goma-canary': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
+      'chromeos-amd64-generic-rel-vm-tests': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_gtests_experimental',
+          'isolated_scripts': 'chromeos_isolated_scripts',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+              'os': 'Ubuntu-14.04',
+              'pool': 'Chrome-CrOS-VM',
+            },
+          ],
+          'hard_timeout': 3600,
+          'io_timeout': 3600,
         },
       },
       'Dummy WebKit Mac10.13': {
@@ -2196,6 +2208,11 @@
           'isolated_scripts': 'linux_viz_isolated_scripts',
         },
       },
+      'linux-annotator-rel': {
+        'test_suites': {
+          'scripts': 'test_traffic_annotation_auditor_script',
+        }
+      },
       'linux-blink-gen-property-trees': {
         'test_suites': {
           'isolated_scripts': 'webkit_layout_tests_isolated_scripts',
@@ -2261,6 +2278,14 @@
         'test_suites': {
           'gtest_tests': 'goma_mac_gtests',
         },
+      },
+      'mac-views-rel': {
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_fyi_gtests',
+        },
+        'args': [
+          '--enable-features=ViewsBrowserWindows',
+        ],
       },
       'Mojo Android': {
         'swarming': {
@@ -2475,30 +2500,10 @@
           'v8:gn_all', 'pdfium_all', 'libANGLE',
         ],
       },
-      'chromeos-amd64-generic-rel-goma-canary': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-      },
-      'chromeos-amd64-generic-rel-vm-tests': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
+      'win-annotator-rel': {
         'test_suites': {
-          'gtest_tests': 'chromeos_gtests_experimental',
-          'isolated_scripts': 'chromeos_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-              'os': 'Ubuntu-14.04',
-              'pool': 'Chrome-CrOS-VM',
-            },
-          ],
-          'hard_timeout': 3600,
-          'io_timeout': 3600,
-        },
+          'scripts': 'test_traffic_annotation_auditor_script',
+        }
       },
     },
   },

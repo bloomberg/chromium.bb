@@ -249,6 +249,7 @@
       'Windows deterministic': 'release_bot_x86_minimal_symbols',
       'Windows Clang deterministic': 'clang_release_bot_minimal_symbols_x86',
       'Windows Clang Analyzer': 'windows_chromium_analysis',
+      'win-annotator-rel': 'release_bot',
     },
 
     'chromium.goma': {
@@ -690,6 +691,7 @@
       'win10_chromium_x64_dbg_ng': 'debug_trybot',
       'win10_chromium_x64_rel_ng': 'release_trybot',
       'win10_chromium_x64_rel_ng_exp': 'release_trybot',
+      'win-annotator-rel': 'release_trybot',
       'win-jumbo-rel': 'jumbo_release_bot_minimal_symbols',
       'win_chromium_gn_upload': 'release_bot_x86_minimal_symbols',
       'win_x64_archive': 'release_trybot',

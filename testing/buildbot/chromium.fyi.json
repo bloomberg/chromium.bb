@@ -9413,5 +9413,13 @@
         "test": "wtf_unittests"
       }
     ]
+  },
+  "win-annotator-rel": {
+    "scripts": [
+      {
+        "name": "test_traffic_annotation_auditor",
+        "script": "test_traffic_annotation_auditor.py"
+      }
+    ]
   }
 }
