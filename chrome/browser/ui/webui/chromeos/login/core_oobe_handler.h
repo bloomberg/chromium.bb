@@ -94,7 +94,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void ShowPasswordChangedScreen(bool show_password_error,
                                  const std::string& email) override;
   void SetUsageStats(bool checked) override;
-  void SetOemEulaUrl(const std::string& oem_eula_url) override;
   void SetTpmPassword(const std::string& tmp_password) override;
   void ClearErrors() override;
   void ReloadContent(const base::DictionaryValue& dictionary) override;

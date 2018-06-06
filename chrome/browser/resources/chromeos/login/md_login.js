@@ -80,7 +80,6 @@ cr.define('cr.ui.Oobe', function() {
     handleHighContrastClick: function(e) {},
     handleScreenMagnifierClick: function(e) {},
     setUsageStats: function(checked) {},
-    setOemEulaUrl: function(oemEulaUrl) {},
     setTpmPassword: function(password) {},
     refreshA11yInfo: function(data) {},
     reloadEulaContent: function(data) {},

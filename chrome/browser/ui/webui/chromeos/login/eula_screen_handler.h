@@ -49,8 +49,6 @@ class EulaScreenHandler : public EulaView,
  private:
   // JS messages handlers.
   void HandleOnLearnMore();
-  void HandleOnChromeCredits();
-  void HandleOnChromeOSCredits();
   void HandleOnInstallationSettingsPopupOpened();
 
   void UpdateLocalizedValues(::login::SecureModuleUsed secure_module_used);

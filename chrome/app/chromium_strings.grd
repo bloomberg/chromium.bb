@@ -216,14 +216,8 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
         Copyright <ph name="YEAR">{0,date,y}<ex>2016</ex></ph> The Chromium Authors. All rights reserved.
       </message>
       <if expr="chromeos">
-        <message name="IDS_ABOUT_VERSION_LICENSE_EULA" desc="The label below the copyright message, containing the URLs.">
-          Chromium open source licenses
-        </message>
         <message name="IDS_ABOUT_CROS_VERSION_LICENSE" desc="Additional text displayed beneath the Chromium open source URLs for Chrome OS.">
           Chromium OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>.
-        </message>
-        <message name="IDS_ABOUT_CROS_VERSION_LICENSE_EULA"  desc="Additional text displayed beneath the Chromium open source URLs for Chrome OS.">
-          Chromium OS open source licenses
         </message>
       </if>
       <message name="IDS_ABOUT_TERMS_OF_SERVICE" desc="The terms of service label in the About box." translateable="false">

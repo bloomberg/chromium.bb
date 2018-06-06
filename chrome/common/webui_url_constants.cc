@@ -218,7 +218,6 @@ const char kChromeUISlowHost[] = "slow";
 const char kChromeUISlowTraceHost[] = "slow_trace";
 const char kChromeUISlowURL[] = "chrome://slow/";
 const char kChromeUISysInternalsHost[] = "sys-internals";
-const char kChromeUITermsOemURL[] = "chrome://terms/oem";
 const char kChromeUIUserImageHost[] = "userimage";
 const char kChromeUIUserImageURL[] = "chrome://userimage/";
 const char kChromeUIAssistantOptInHost[] = "assistant-optin";
