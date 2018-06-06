@@ -88,6 +88,13 @@ static const char kPageAgentScriptsToEvaluateOnLoad[] =
 static const char kScreencastEnabled[] = "screencastEnabled";
 static const char kLifecycleEventsEnabled[] = "lifecycleEventsEnabled";
 static const char kBypassCSPEnabled[] = "bypassCSPEnabled";
+static const char kStandardFontFamily[] = "standardFontFamily";
+static const char kFixedFontFamily[] = "fixedFontFamily";
+static const char kSerifFontFamily[] = "serifFontFamily";
+static const char kSansSerifFontFamily[] = "sansSerifFontFamily";
+static const char kCursiveFontFamily[] = "cursiveFontFamily";
+static const char kFantasyFontFamily[] = "fantasyFontFamily";
+static const char kPictographFontFamily[] = "pictographFontFamily";
 }  // namespace PageAgentState
 
 namespace {
@@ -463,6 +470,46 @@ void InspectorPageAgent::Restore() {
     enable();
   if (state_->booleanProperty(PageAgentState::kBypassCSPEnabled, false))
     setBypassCSP(true);
+
+  // Re-apply generic fonts overrides.
+  String font;
+  bool notifyGenericFontFamilyChange = false;
+  LocalFrame* frame = inspected_frames_->Root();
+  auto* settings = frame->GetSettings();
+  if (settings) {
+    auto& family_settings = settings->GetGenericFontFamilySettings();
+    if (state_->getString(PageAgentState::kStandardFontFamily, &font)) {
+      family_settings.UpdateStandard(AtomicString(font));
+      notifyGenericFontFamilyChange = true;
+    }
+    if (state_->getString(PageAgentState::kFixedFontFamily, &font)) {
+      family_settings.UpdateFixed(AtomicString(font));
+      notifyGenericFontFamilyChange = true;
+    }
+    if (state_->getString(PageAgentState::kSerifFontFamily, &font)) {
+      family_settings.UpdateSerif(AtomicString(font));
+      notifyGenericFontFamilyChange = true;
+    }
+    if (state_->getString(PageAgentState::kSansSerifFontFamily, &font)) {
+      family_settings.UpdateSansSerif(AtomicString(font));
+      notifyGenericFontFamilyChange = true;
+    }
+    if (state_->getString(PageAgentState::kCursiveFontFamily, &font)) {
+      family_settings.UpdateCursive(AtomicString(font));
+      notifyGenericFontFamilyChange = true;
+    }
+    if (state_->getString(PageAgentState::kFantasyFontFamily, &font)) {
+      family_settings.UpdateFantasy(AtomicString(font));
+      notifyGenericFontFamilyChange = true;
+    }
+    if (state_->getString(PageAgentState::kPictographFontFamily, &font)) {
+      family_settings.UpdatePictograph(AtomicString(font));
+      notifyGenericFontFamilyChange = true;
+    }
+    if (notifyGenericFontFamilyChange) {
+      settings->NotifyGenericFontFamilyChange();
+    }
+  }
 }
 
 Response InspectorPageAgent::enable() {
@@ -1147,6 +1194,60 @@ protocol::Response InspectorPageAgent::createIsolatedWorld(
   v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
   *execution_context_id = v8_inspector::V8ContextInfo::executionContextId(
       isolated_world_window_proxy->ContextIfInitialized());
+  return Response::OK();
+}
+
+Response InspectorPageAgent::setFontFamilies(
+    std::unique_ptr<protocol::Page::FontFamilies> font_families) {
+  LocalFrame* frame = inspected_frames_->Root();
+  auto* settings = frame->GetSettings();
+  if (settings) {
+    auto& family_settings = settings->GetGenericFontFamilySettings();
+    if (font_families->hasStandard()) {
+      state_->setString(PageAgentState::kStandardFontFamily,
+                        font_families->getStandard(String()));
+      family_settings.UpdateStandard(
+          AtomicString(font_families->getStandard(String())));
+    }
+    if (font_families->hasFixed()) {
+      state_->setString(PageAgentState::kFixedFontFamily,
+                        font_families->getFixed(String()));
+      family_settings.UpdateFixed(
+          AtomicString(font_families->getFixed(String())));
+    }
+    if (font_families->hasSerif()) {
+      state_->setString(PageAgentState::kSerifFontFamily,
+                        font_families->getSerif(String()));
+      family_settings.UpdateSerif(
+          AtomicString(font_families->getSerif(String())));
+    }
+    if (font_families->hasSansSerif()) {
+      state_->setString(PageAgentState::kSansSerifFontFamily,
+                        font_families->getSansSerif(String()));
+      family_settings.UpdateSansSerif(
+          AtomicString(font_families->getSansSerif(String())));
+    }
+    if (font_families->hasCursive()) {
+      state_->setString(PageAgentState::kCursiveFontFamily,
+                        font_families->getCursive(String()));
+      family_settings.UpdateCursive(
+          AtomicString(font_families->getCursive(String())));
+    }
+    if (font_families->hasFantasy()) {
+      state_->setString(PageAgentState::kFantasyFontFamily,
+                        font_families->getFantasy(String()));
+      family_settings.UpdateFantasy(
+          AtomicString(font_families->getFantasy(String())));
+    }
+    if (font_families->hasPictograph()) {
+      state_->setString(PageAgentState::kPictographFontFamily,
+                        font_families->getPictograph(String()));
+      family_settings.UpdatePictograph(
+          AtomicString(font_families->getPictograph(String())));
+    }
+    settings->NotifyGenericFontFamilyChange();
+  }
+
   return Response::OK();
 }
 
