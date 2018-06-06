@@ -4,6 +4,7 @@
 
 #include "ui/app_list/paged_view_structure.h"
 
+#include "ash/app_list/model/app_list_item.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/views/view_model.h"
@@ -19,21 +20,63 @@ PagedViewStructure::PagedViewStructure(const PagedViewStructure& other) =
 PagedViewStructure::~PagedViewStructure() = default;
 
 void PagedViewStructure::LoadFromMetadata() {
-  // TODO(weidongg): Change the fake loading here and implement loading view
-  // structure from position and page position in metadata.
   auto* view_model = apps_grid_view_->view_model();
+  const auto* item_list = apps_grid_view_->item_list_;
+  int model_index = 0;
+
   pages_.clear();
   pages_.emplace_back();
-  auto& page = pages_[0];
-  for (int i = 0; i < view_model->view_size(); ++i) {
-    page.emplace_back(view_model->view_at(i));
+  for (size_t i = 0; i < item_list->item_count(); ++i) {
+    const auto* item = item_list->item_at(i);
+    auto* current_page = &pages_.back();
+    if (item->is_page_break()) {
+      // Create a new page if a "page break" item is detected and current page
+      // is not empty. Otherwise, ignore the "page break" item.
+      if (!current_page->empty())
+        pages_.emplace_back();
+      continue;
+    }
+
+    // Create a new page if the current page is full.
+    const size_t current_page_max_items =
+        apps_grid_view_->TilesPerPage(pages_.size() - 1);
+    if (current_page->size() == current_page_max_items) {
+      pages_.emplace_back();
+      current_page = &pages_.back();
+    }
+
+    current_page->emplace_back(view_model->view_at(model_index++));
   }
-  Sanitize();
+
+  // Remove trailing empty page if exist.
+  if (pages_.back().empty())
+    pages_.erase(pages_.end() - 1);
 }
 
 void PagedViewStructure::SaveToMetadata() {
-  // TODO(weidongg): Implement saving page position change of each item into
-  // metadata.
+  auto* item_list = apps_grid_view_->item_list_;
+  size_t item_index = 0;
+
+  for (const auto& page : pages_) {
+    // Skip all "page break" items before current page and after previous page.
+    while (item_index < item_list->item_count() &&
+           item_list->item_at(item_index)->is_page_break()) {
+      ++item_index;
+    }
+    item_index += page.size();
+    if (item_index < item_list->item_count() &&
+        !item_list->item_at(item_index)->is_page_break()) {
+      // There's no "page break" item at the end of current page, so add one to
+      // push overflowing items to next page.
+      apps_grid_view_->model_->AddPageBreakItemAfter(
+          item_list->item_at(item_index - 1));
+    }
+  }
+
+  // Note that we do not remove redundant "page break" items here because the
+  // item list we can access here may not be complete (e.g. Devices that do not
+  // support ARC++ or Crostini apps filter out those items.). We leave this
+  // operation to AppListSyncableService which has complete item list.
 }
 
 bool PagedViewStructure::Sanitize() {
@@ -207,6 +250,51 @@ int PagedViewStructure::GetTargetModelIndexForMove(
   // because the following item views will fill the gap in the page.
   target_model_index += index.slot;
   return target_model_index;
+}
+
+int PagedViewStructure::GetTargetItemIndexForMove(
+    AppListItemView* moved_view,
+    const GridIndex& index) const {
+  GridIndex current_index(0, 0);
+  size_t current_item_index = 0;
+  size_t offset = 0;
+  const auto* item_list = apps_grid_view_->item_list_;
+
+  // Skip the leading "page break" items.
+  while (current_item_index < item_list->item_count() &&
+         item_list->item_at(current_item_index)->is_page_break()) {
+    ++current_item_index;
+  }
+
+  while (current_item_index < item_list->item_count()) {
+    while (current_item_index < item_list->item_count() &&
+           !item_list->item_at(current_item_index)->is_page_break() &&
+           current_index != index) {
+      if (moved_view->item() == item_list->item_at(current_item_index) &&
+          current_index.page < index.page) {
+        // If the item view is moved to a following page, we need to skip the
+        // item view. If the view is moved to the same page, do not skip the
+        // item view because the following item views will fill the gap left
+        // after dragging complete.
+        offset = 1;
+      }
+      ++current_index.slot;
+      ++current_item_index;
+    }
+
+    if (current_index == index)
+      return current_item_index - offset;
+
+    // Skip the "page break" items at the end of the page.
+    while (current_item_index < item_list->item_count() &&
+           item_list->item_at(current_item_index)->is_page_break()) {
+      ++current_item_index;
+    }
+    ++current_index.page;
+    current_index.slot = 0;
+  }
+  DCHECK(current_index == index);
+  return current_item_index - offset;
 }
 
 bool PagedViewStructure::IsValidReorderTargetIndex(

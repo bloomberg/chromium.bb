@@ -67,8 +67,7 @@ int ViewModelBase::GetIndexOfView(const View* view) const {
   return -1;
 }
 
-ViewModelBase::ViewModelBase() {
-}
+ViewModelBase::ViewModelBase() = default;
 
 void ViewModelBase::AddUnsafe(View* view, int index) {
   DCHECK_LE(index, static_cast<int>(entries_.size()));
