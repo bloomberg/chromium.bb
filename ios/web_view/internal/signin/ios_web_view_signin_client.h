@@ -17,8 +17,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-@class CWVAuthenticationController;
-
 // iOS WebView specific signin client.
 class IOSWebViewSigninClient : public SigninClient,
                                public SigninErrorController::Observer {
@@ -67,11 +65,6 @@ class IOSWebViewSigninClient : public SigninClient,
   // SigninErrorController::Observer implementation.
   void OnErrorChanged() override;
 
-  // Setter and getter for |authentication_controller_|.
-  void SetAuthenticationController(
-      CWVAuthenticationController* authentication_controller);
-  CWVAuthenticationController* GetAuthenticationController();
-
  private:
   // SigninClient private implementation.
   void OnSignedOut() override;
@@ -91,9 +84,6 @@ class IOSWebViewSigninClient : public SigninClient,
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   // The TokenWebData associated with this service.
   scoped_refptr<TokenWebData> token_web_data_;
-
-  // The CWVAuthenticationController associated with this service.
-  __weak CWVAuthenticationController* authentication_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSWebViewSigninClient);
 };

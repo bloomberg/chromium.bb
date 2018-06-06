@@ -69,9 +69,9 @@ PrefService* ApplicationContext::GetLocalState() {
     scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple);
     flags_ui::PrefServiceFlagsStorage::RegisterPrefs(pref_registry.get());
     PrefProxyConfigTrackerImpl::RegisterPrefs(pref_registry.get());
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
     SigninManagerBase::RegisterPrefs(pref_registry.get());
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
     base::FilePath local_state_path;
     base::PathService::Get(base::DIR_APP_DATA, &local_state_path);
