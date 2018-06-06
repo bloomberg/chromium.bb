@@ -97,20 +97,15 @@ var LOG_INTERVAL = 3000;
  *     as returned by exception stack trace. Example "at /a_file.js:1:1".
  */
 function getCaller() {
-  var caller = '';
-  try {
-    throw new Error('Force an exception to produce error.stack');
-  } catch (error) {
-    var ignoreStackLines = 3;
-    var lines = error.stack.split('\n');
-    if (ignoreStackLines < lines.length) {
-      caller = lines[ignoreStackLines];
-      // Strip 'chrome-extension://oobinhbdbiehknkpbpejbbpdbkdjmoco' prefix.
-      caller = caller.replace(/(chrome-extension:\/\/\w*)/gi, '').trim();
-      return caller;
-    }
+  let error = new Error('For extracting error.stack');
+  let ignoreStackLines = 3;
+  let lines = error.stack.split('\n');
+  if (ignoreStackLines < lines.length) {
+    let caller = lines[ignoreStackLines];
+    // Strip 'chrome-extension://oobinhbdbiehknkpbpejbbpdbkdjmoco' prefix.
+    return caller.replace(/(chrome-extension:\/\/\w*)/gi, '').trim();
   }
-  return caller;
+  return '';
 }
 
 
