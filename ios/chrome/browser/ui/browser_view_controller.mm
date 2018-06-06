@@ -4542,9 +4542,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)bookmarkPage {
   [self initializeBookmarkInteractionController];
   [_bookmarkInteractionController
-      presentBookmarkForTab:[_model currentTab]
-        currentlyBookmarked:
-            [self.helper isWebStateBookmarkedByUser:self.currentWebState]];
+      presentBookmarkEditorForTab:[_model currentTab]
+              currentlyBookmarked:[self.helper isWebStateBookmarkedByUser:
+                                                   self.currentWebState]];
 }
 
 - (void)openNewTab:(OpenNewTabCommand*)command {
