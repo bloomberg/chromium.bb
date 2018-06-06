@@ -119,7 +119,8 @@ class PaintRecordMatcher
   do {                                                                       \
     const auto* concat = (op_buffer).GetOpAtForTesting<cc::ConcatOp>(index); \
     ASSERT_NE(nullptr, concat);                                              \
-    EXPECT_EQ(transform, TransformationMatrix(concat->matrix));              \
+    EXPECT_EQ(SkMatrix(TransformationMatrix::ToSkMatrix44(transform)),       \
+              concat->matrix);                                               \
   } while (false)
 
 #define EXPECT_TRANSLATE(x, y, op_buffer, index)               \
@@ -738,6 +739,50 @@ TEST_F(PaintChunksToCcLayerTest, CombineClips) {
            cc::PaintOpType::DrawRecord,                     // <p1/>
            cc::PaintOpType::Restore,                        // </c3 t1>
            cc::PaintOpType::Restore}));                     // </c1+c2>
+}
+
+TEST_F(PaintChunksToCcLayerTest, CombineClipsAcrossTransform) {
+  FloatRoundedRect clip_rect(0, 0, 100, 100);
+  auto identity = CreateTransform(t0(), TransformationMatrix());
+  auto non_identity =
+      CreateTransform(*identity, TransformationMatrix().Scale(2));
+  auto non_invertible =
+      CreateTransform(*non_identity, TransformationMatrix().Scale(0));
+  EXPECT_FALSE(non_invertible->Matrix().IsInvertible());
+  auto c1 = CreateClip(c0(), &t0(), FloatRoundedRect(0, 0, 100, 100));
+  auto c2 = CreateClip(*c1, identity.get(), FloatRoundedRect(50, 50, 100, 100));
+  auto c3 = CreateClip(*c2, non_identity.get(), FloatRoundedRect(1, 2, 3, 4));
+  auto c4 = CreateClip(*c3, non_invertible.get(), FloatRoundedRect(5, 6, 7, 8));
+
+  TestChunks chunks;
+  chunks.AddChunk(*non_invertible, *c4, e0());
+
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState::Root(), gfx::Vector2dF(),
+          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+
+  // We combine c1/c2 across |identity|, but not c2/c3 across |non_identity|
+  // and c3/c4 across |non_invertible|.
+  EXPECT_THAT(
+      *output,
+      PaintRecordMatcher::Make(
+          {cc::PaintOpType::Save, cc::PaintOpType::ClipRect,  // <c1+c2>
+           cc::PaintOpType::Save, cc::PaintOpType::Concat,    // <non_identity
+           cc::PaintOpType::ClipRect,                         //  c3>
+           cc::PaintOpType::Save, cc::PaintOpType::Concat,    // <non_invertible
+           cc::PaintOpType::ClipRect,                         //  c4>
+           cc::PaintOpType::DrawRecord,                       // <p0/>
+           cc::PaintOpType::Restore,     // </c4 non_invertible>
+           cc::PaintOpType::Restore,     // </c3 non_identity>
+           cc::PaintOpType::Restore}));  // </c1+c2>
+
+  EXPECT_CLIP(FloatRect(50, 50, 50, 50), *output, 1);
+  EXPECT_TRANSFORM_MATRIX(non_identity->Matrix(), *output, 3);
+  EXPECT_CLIP(FloatRect(1, 2, 3, 4), *output, 4);
+  EXPECT_TRANSFORM_MATRIX(non_invertible->Matrix(), *output, 6);
+  EXPECT_CLIP(FloatRect(5, 6, 7, 8), *output, 7);
 }
 
 TEST_F(PaintChunksToCcLayerTest, CombineClipsWithRoundedRects) {
