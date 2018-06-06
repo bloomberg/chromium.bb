@@ -66,7 +66,7 @@ NSString* const kStartProfileStartupTaskRunners =
       GetApplicationContext()
           ->GetIOSChromeIOThread()
           ->system_url_request_context_getter(),
-      base::BindOnce(^(const UpgradeRecommendedDetails& details) {
+      base::BindRepeating(^(const UpgradeRecommendedDetails& details) {
         [[UpgradeCenter sharedInstance] upgradeNotificationDidOccur:details];
       }));
 #endif  // defined(GOOGLE_CHROME_BUILD)
