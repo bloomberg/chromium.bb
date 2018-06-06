@@ -350,8 +350,9 @@ class SkylabHWTestStage(HWTestStage):
     build = 'lumpy-release/R65-10323.58.0'
     board = 'lumpy'
 
-    # Skip all non-provision suites first.
-    if not self.suite_config.suite == constants.HWTEST_PROVISION_SUITE:
+    # TODO (xixuan): Only allow to run provision & bvt-inline suite.
+    if self.suite_config.suite not in [constants.HWTEST_PROVISION_SUITE,
+                                       constants.HWTEST_BVT_SUITE]:
       return
 
     cmd_result = commands.RunSkylabHWTestSuite(
