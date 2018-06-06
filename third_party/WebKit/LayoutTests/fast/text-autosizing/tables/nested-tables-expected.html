@@ -24,7 +24,6 @@
     border: 1px dotted darkgreen;
   }
 </style>
-<script src="../resources/autosizingTest.js"></script>
 <script>
 if (window.testRunner) {
     testRunner.waitUntilDone();
@@ -40,11 +39,11 @@ if (window.testRunner) {
 Table autosizing tests - nested-tables.html<br/>
 This test passes if "This text should not overlap itself" doesn't overlap itself.
 </div>
-  <table cellspacing="0" cellpadding="0">
+  <table cellspacing="0" cellpadding="0" style="font-size:2.5rem;">
     <tr>
       <td>
         Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize 
-        <table border="1">
+        <table border="1" style="font-size:1rem;">
           <tr>
             <td>This text<br/>should not overlap<br/>itself.</td>
           </tr>
