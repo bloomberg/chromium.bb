@@ -299,13 +299,11 @@ void AppListItemView::OnContextMenuModelReceived(
                  views::MenuRunner::FIXED_ANCHOR |
                  views::MenuRunner::CONTEXT_MENU;
     anchor_position = views::MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT;
-    if (source_type == ui::MENU_SOURCE_TOUCH) {
-      anchor_rect = apps_grid_view_->GetIdealBounds(this);
-      // Anchor the menu to the same rect that is used for selection highlight.
-      anchor_rect.ClampToCenteredSize(
-          gfx::Size(kGridSelectedSize, kGridSelectedSize));
-      views::View::ConvertRectToScreen(apps_grid_view_, &anchor_rect);
-    }
+    anchor_rect = apps_grid_view_->GetIdealBounds(this);
+    // Anchor the menu to the same rect that is used for selection highlight.
+    anchor_rect.ClampToCenteredSize(
+        gfx::Size(kGridSelectedSize, kGridSelectedSize));
+    views::View::ConvertRectToScreen(apps_grid_view_, &anchor_rect);
   }
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(

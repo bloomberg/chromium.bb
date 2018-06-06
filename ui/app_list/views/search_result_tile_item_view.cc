@@ -373,12 +373,10 @@ void SearchResultTileItemView::OnGetContextMenuModel(
     run_types |= views::MenuRunner::USE_TOUCHABLE_LAYOUT |
                  views::MenuRunner::CONTEXT_MENU |
                  views::MenuRunner::FIXED_ANCHOR;
-    if (source_type == ui::MenuSourceType::MENU_SOURCE_TOUCH) {
-      anchor_rect = source->GetBoundsInScreen();
-      // Anchor the menu to the same rect that is used for selection highlight.
-      anchor_rect.ClampToCenteredSize(
-          gfx::Size(kGridSelectedSize, kGridSelectedSize));
-    }
+    anchor_rect = source->GetBoundsInScreen();
+    // Anchor the menu to the same rect that is used for selection highlight.
+    anchor_rect.ClampToCenteredSize(
+        gfx::Size(kGridSelectedSize, kGridSelectedSize));
   }
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
