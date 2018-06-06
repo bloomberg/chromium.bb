@@ -1016,7 +1016,8 @@ bool UiElement::UpdateWorldSpaceTransform(bool parent_changed) {
     return false;
 
   bool changed = false;
-  if (ShouldUpdateWorldSpaceTransform(parent_changed)) {
+  bool should_update = ShouldUpdateWorldSpaceTransform(parent_changed);
+  if (should_update) {
     gfx::Transform transform;
     transform.Translate(local_origin_.x(), local_origin_.y());
 
@@ -1042,7 +1043,10 @@ bool UiElement::UpdateWorldSpaceTransform(bool parent_changed) {
   bool child_changed = false;
   set_update_phase(kUpdatedWorldSpaceTransform);
   for (auto& child : children_) {
-    child_changed |= child->UpdateWorldSpaceTransform(changed);
+    // TODO(crbug.com/850260): it's unfortunate that we're not passing down the
+    // same dirtiness signal that we return. I.e., we'd ideally use |changed|
+    // here.
+    child_changed |= child->UpdateWorldSpaceTransform(should_update);
   }
 
   OnUpdatedWorldSpaceTransform();
