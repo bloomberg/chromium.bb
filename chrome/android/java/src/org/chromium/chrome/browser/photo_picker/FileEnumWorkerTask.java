@@ -4,9 +4,14 @@
 
 package org.chromium.chrome.browser.photo_picker;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.os.Process;
 
+import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 
 import java.io.File;
@@ -107,7 +112,11 @@ class FileEnumWorkerTask extends AsyncTask<Void, Void, List<PickerBitmap>> {
         Collections.sort(pickerBitmaps);
 
         pickerBitmaps.add(0, new PickerBitmap("", 0, PickerBitmap.GALLERY));
-        pickerBitmaps.add(0, new PickerBitmap("", 0, PickerBitmap.CAMERA));
+        if (ApiCompatibilityUtils.checkPermission(ContextUtils.getApplicationContext(),
+                    Manifest.permission.CAMERA, Process.myPid(), Process.myUid())
+                == PackageManager.PERMISSION_GRANTED) {
+            pickerBitmaps.add(0, new PickerBitmap("", 0, PickerBitmap.CAMERA));
+        }
 
         return pickerBitmaps;
     }
