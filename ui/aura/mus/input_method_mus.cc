@@ -150,6 +150,11 @@ void InputMethodMus::OnDidChangeFocusedClient(
   InputMethodBase::OnDidChangeFocusedClient(focused_before, focused);
   UpdateTextInputType();
 
+  // We are about to close the pipe with pending callbacks. Closing the pipe
+  // results in none of the callbacks being run. We have to run the callbacks
+  // else mus won't process the next event immediately.
+  AckPendingCallbacksUnhandled();
+
   if (!focused) {
     input_method_ = nullptr;
     input_method_ptr_.reset();
@@ -159,11 +164,6 @@ void InputMethodMus::OnDidChangeFocusedClient(
 
   text_input_client_ =
       std::make_unique<TextInputClientImpl>(focused, delegate());
-
-  // We are about to close the pipe with pending callbacks. Closing the pipe
-  // results in none of the callbacks being run. We have to run the callbacks
-  // else mus won't process the next event immediately.
-  AckPendingCallbacksUnhandled();
 
   if (ime_driver_) {
     ui::mojom::StartSessionDetailsPtr details =

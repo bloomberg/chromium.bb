@@ -158,6 +158,35 @@ TEST_F(InputMethodMusTest, PendingCallbackRunFromOnDidChangeFocusedClient) {
   EXPECT_TRUE(was_event_result_callback_run);
 }
 
+TEST_F(InputMethodMusTest,
+       PendingCallbackRunFromOnDidChangeFocusedClientToNull) {
+  aura::Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  bool was_event_result_callback_run = false;
+  // Create an InputMethodMus and foward an event to it.
+  TestInputMethodDelegate input_method_delegate;
+  InputMethodMus input_method_mus(&input_method_delegate, &window);
+  TestInputMethod test_input_method;
+  InputMethodMusTestApi::SetInputMethod(&input_method_mus, &test_input_method);
+  EventResultCallback callback = base::BindOnce(&RunFunctionWithEventResult,
+                                                &was_event_result_callback_run);
+  ui::EventDispatchDetails details =
+      InputMethodMusTestApi::CallSendKeyEventToInputMethod(
+          &input_method_mus,
+          ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0),
+          std::move(callback));
+  ASSERT_TRUE(!details.dispatcher_destroyed && !details.target_destroyed);
+  // The event should have been queued.
+  EXPECT_EQ(1u, test_input_method.process_key_event_callbacks()->size());
+  // Callback should not have been run yet.
+  EXPECT_FALSE(was_event_result_callback_run);
+
+  InputMethodMusTestApi::CallOnDidChangeFocusedClient(&input_method_mus,
+                                                      nullptr, nullptr);
+  // Changing the focused client should trigger running the callback.
+  EXPECT_TRUE(was_event_result_callback_run);
+}
+
 // See description of ChangeTextInputTypeWhileProcessingCallback for details.
 class TestInputMethodDelegate2 : public ui::internal::InputMethodDelegate {
  public:

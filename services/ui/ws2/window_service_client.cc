@@ -1274,6 +1274,8 @@ void WindowServiceClient::OnWindowInputEventAck(uint32_t event_id,
       window_service_->delegate()->OnUnhandledKeyEvent(
           *(in_flight_event->event->AsKeyEvent()));
     }
+  } else if (event_id != kDefaultEventId) {
+    DVLOG(1) << "OnWindowInputEventAck supplied unexpected id " << event_id;
   }
 }
 
