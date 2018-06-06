@@ -35,7 +35,8 @@ class MockTransferBuffer : public TransferBufferInterface {
                   unsigned int result_size,
                   unsigned int /* min_buffer_size */,
                   unsigned int /* max_buffer_size */,
-                  unsigned int alignment) override;
+                  unsigned int alignment,
+                  unsigned int size_to_flush) override;
   int GetShmId() override;
   void* GetResultBuffer() override;
   int GetResultOffset() override;

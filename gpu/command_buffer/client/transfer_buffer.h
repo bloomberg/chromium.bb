@@ -36,11 +36,13 @@ class GPU_EXPORT TransferBufferInterface {
   // Otherwise, this returns an invalid handle.
   virtual base::SharedMemoryHandle shared_memory_handle() const = 0;
 
-  virtual bool Initialize(unsigned int buffer_size,
-                          unsigned int result_size,
-                          unsigned int min_buffer_size,
-                          unsigned int max_buffer_size,
-                          unsigned int alignment) = 0;
+  virtual bool Initialize(
+      unsigned int buffer_size,
+      unsigned int result_size,
+      unsigned int min_buffer_size,
+      unsigned int max_buffer_size,
+      unsigned int alignment,
+      unsigned int size_to_flush) = 0;
 
   virtual int GetShmId() = 0;
   virtual void* GetResultBuffer() = 0;
@@ -84,7 +86,8 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
                   unsigned int result_size,
                   unsigned int min_buffer_size,
                   unsigned int max_buffer_size,
-                  unsigned int alignment) override;
+                  unsigned int alignment,
+                  unsigned int size_to_flush) override;
   int GetShmId() override;
   void* GetResultBuffer() override;
   int GetResultOffset() override;
@@ -127,6 +130,12 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
 
   // alignment for allocations
   unsigned int alignment_;
+
+  // Size at which to do an async flush. 0 = never.
+  unsigned int size_to_flush_;
+
+  // Number of bytes since we last flushed.
+  unsigned int bytes_since_last_flush_;
 
   // the current buffer.
   scoped_refptr<gpu::Buffer> buffer_;
