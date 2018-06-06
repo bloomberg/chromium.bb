@@ -20,7 +20,9 @@ class LauncherContextMenu : public ui::SimpleMenuModel::Delegate {
   // the end just before MENU_ITEM_COUNT. If you're adding to this enum with the
   // intention that it will be logged, add checks to ensure stability of the
   // enum and update the ChromeOSUICommands enum listing in
-  // tools/metrics/histograms/enums.xml.
+  // tools/metrics/histograms/enums.xml. Besides LAUNCH_APP_SHORTCUT_FIRST and
+  // LAUNCH_APP_SHORTCUT_LAST, these enums must not overlap with enums in
+  // AppContextMenu::CommandId.
   enum MenuItem {
     MENU_OPEN_NEW = 0,
     MENU_CLOSE = 1,
@@ -31,8 +33,10 @@ class LauncherContextMenu : public ui::SimpleMenuModel::Delegate {
     LAUNCH_TYPE_WINDOW = 6,
     MENU_NEW_WINDOW = 7,
     MENU_NEW_INCOGNITO_WINDOW = 8,
-    LAUNCH_APP_SHORTCUT_FIRST = 100,
-    LAUNCH_APP_SHORTCUT_LAST = 199,
+    // Range of command ids reserved for launching app shortcuts from context
+    // menu for Android app. Must overlap with AppContextMenu::CommandId.
+    LAUNCH_APP_SHORTCUT_FIRST = 1000,
+    LAUNCH_APP_SHORTCUT_LAST = 1999,
     MENU_ITEM_COUNT
   };
 
