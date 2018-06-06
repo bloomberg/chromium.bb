@@ -11,16 +11,10 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/sha1.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 
 namespace {
-
-std::string GenerateCodeId(const ModuleInfoKey& module_key) {
-  return base::StringPrintf("%08X%x", module_key.module_time_date_stamp,
-                            module_key.module_size);
-}
 
 bool MatchesModuleGroup(const chrome::conflicts::ModuleGroup& module_group,
                         base::StringPiece module_basename_hash,

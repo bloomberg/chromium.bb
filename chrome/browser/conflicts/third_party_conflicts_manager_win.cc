@@ -4,18 +4,28 @@
 
 #include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
 
+#include <string>
 #include <utility>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/installed_applications_win.h"
+#include "chrome/browser/conflicts/module_blacklist_cache_updater_win.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 
@@ -58,6 +68,46 @@ ThirdPartyConflictsManager::ThirdPartyConflictsManager(
 
 ThirdPartyConflictsManager::~ThirdPartyConflictsManager() = default;
 
+// static
+void ThirdPartyConflictsManager::RegisterLocalStatePrefs(
+    PrefRegistrySimple* registry) {
+  // Register the pref used to disable the Incompatible Applications warning and
+  // the blocking of third-party modules using group policy. Enabled by default.
+  registry->RegisterBooleanPref(prefs::kThirdPartyBlockingEnabled, true);
+
+  // Register the pref that remembers the MD5 digest for the current module
+  // blacklist cache. The default value is an invalid MD5 digest.
+  registry->RegisterStringPref(prefs::kModuleBlacklistCacheMD5Digest, "");
+}
+
+// static
+bool ThirdPartyConflictsManager::IsThirdPartyBlockingPolicyEnabled() {
+  const PrefService::Preference* third_party_blocking_enabled_pref =
+      g_browser_process->local_state()->FindPreference(
+          prefs::kThirdPartyBlockingEnabled);
+  return !third_party_blocking_enabled_pref->IsManaged() ||
+         third_party_blocking_enabled_pref->GetValue()->GetBool();
+}
+
+// static
+void ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Delete the module blacklist cache. Since the NtMapViewOfSection hook only
+  // blocks if the file is present, this will deactivate third-party modules
+  // blocking for the next browser launch.
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
+      base::BindOnce(&ModuleBlacklistCacheUpdater::DeleteModuleBlacklistCache));
+
+  // Also clear the MD5 digest since there will no longer be a current module
+  // blacklist cache.
+  g_browser_process->local_state()->ClearPref(
+      prefs::kModuleBlacklistCacheMD5Digest);
+}
+
 void ThirdPartyConflictsManager::OnModuleDatabaseIdle() {
   if (on_module_database_idle_called_)
     return;
@@ -96,6 +146,9 @@ void ThirdPartyConflictsManager::OnExeCertificateCreated(
 
   if (module_list_filter_ && installed_applications_)
     InitializeIncompatibleApplicationsUpdater();
+
+  if (module_list_filter_)
+    MaybeInitializeModuleBlacklistCacheUpdater();
 }
 
 void ThirdPartyConflictsManager::OnModuleListFilterCreated(
@@ -115,6 +168,9 @@ void ThirdPartyConflictsManager::OnModuleListFilterCreated(
 
   if (exe_certificate_info_ && installed_applications_)
     InitializeIncompatibleApplicationsUpdater();
+
+  if (exe_certificate_info_)
+    MaybeInitializeModuleBlacklistCacheUpdater();
 }
 
 void ThirdPartyConflictsManager::OnInstalledApplicationsCreated(
@@ -135,4 +191,49 @@ void ThirdPartyConflictsManager::InitializeIncompatibleApplicationsUpdater() {
           *exe_certificate_info_, *module_list_filter_,
           *installed_applications_);
   module_database_->AddObserver(incompatible_applications_updater_.get());
+}
+
+void ThirdPartyConflictsManager::MaybeInitializeModuleBlacklistCacheUpdater() {
+  DCHECK(exe_certificate_info_);
+  DCHECK(module_list_filter_);
+
+  if (!base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking))
+    return;
+
+  // Create the instance. It is safe to use base::Unretained() since the
+  // callback is not invoked when the updater is freed.
+  module_blacklist_cache_updater_ =
+      std::make_unique<ModuleBlacklistCacheUpdater>(
+          *exe_certificate_info_, *module_list_filter_,
+          base::BindRepeating(
+              &ThirdPartyConflictsManager::OnModuleBlacklistCacheUpdated,
+              base::Unretained(this)));
+  module_database_->AddObserver(module_blacklist_cache_updater_.get());
+}
+
+void ThirdPartyConflictsManager::OnModuleBlacklistCacheUpdated(
+    const ModuleBlacklistCacheUpdater::CacheUpdateResult& result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Check that the MD5 digest of the old cache matches what was expected. Only
+  // used for reporting a metric.
+  const PrefService::Preference* preference =
+      g_browser_process->local_state()->FindPreference(
+          prefs::kModuleBlacklistCacheMD5Digest);
+  DCHECK(preference);
+
+  // The first time this is executed, the pref doesn't yet hold a valid MD5
+  // digest.
+  if (!preference->IsDefaultValue()) {
+    const std::string old_md5_string =
+        base::MD5DigestToBase16(result.old_md5_digest);
+    const std::string& current_md5_string = preference->GetValue()->GetString();
+    UMA_HISTOGRAM_BOOLEAN("ModuleBlacklistCache.ExpectedMD5Digest",
+                          old_md5_string == current_md5_string);
+  }
+
+  // Set the expected MD5 digest for the next time the cache is updated.
+  g_browser_process->local_state()->Set(
+      prefs::kModuleBlacklistCacheMD5Digest,
+      base::Value(base::MD5DigestToBase16(result.new_md5_digest)));
 }

@@ -136,6 +136,13 @@ const base::Feature kTabMetricsLogging{"TabMetricsLogging",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+// Enables the blocking of third-party modules. This feature depends on
+// ModuleDatabase and IncompatibleApplicationsWarning.
+const base::Feature kThirdPartyModulesBlocking{
+    "ThirdPartyModulesBlocking", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
 // Enables the dual certificate verification trial feature.
 // https://crbug.com/649026

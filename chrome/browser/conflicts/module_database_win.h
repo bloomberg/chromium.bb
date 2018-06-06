@@ -21,7 +21,6 @@
 class ModuleDatabaseObserver;
 
 #if defined(GOOGLE_CHROME_BUILD)
-class PrefRegistrySimple;
 class ThirdPartyConflictsManager;
 #endif
 
@@ -115,8 +114,6 @@ class ModuleDatabase {
   void IncreaseInspectionPriority();
 
 #if defined(GOOGLE_CHROME_BUILD)
-  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
-
   // Accessor for the third party conflicts manager. This is exposed so that the
   // manager can be wired up to the ThirdPartyModuleListComponentInstaller.
   // Returns null if the tracking of incompatible applications is disabled.
@@ -174,7 +171,8 @@ class ModuleDatabase {
 
 #if defined(GOOGLE_CHROME_BUILD)
   // Initializes the ThirdPartyConflictsManager, which controls the warning of
-  // incompatible applications that injects into Chrome.
+  // incompatible applications that injects into Chrome and the blocking of
+  // third-party modules.
   // The manager is not initialized if it is disabled via a base::Feature or a
   // group policy. Note that it is also not initialized on Windows version
   // 8.1 and less.

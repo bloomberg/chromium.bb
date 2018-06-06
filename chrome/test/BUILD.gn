@@ -1952,8 +1952,10 @@ test("browser_tests") {
       data_deps += [ "../../device/vr:openvr_mock" ]
 
       if (is_chrome_branded) {
-        sources +=
-            [ "../browser/conflicts/incompatible_applications_browsertest.cc" ]
+        sources += [
+          "../browser/conflicts/incompatible_applications_browsertest.cc",
+          "../browser/conflicts/third_party_blocking_browsertest.cc",
+        ]
         deps += [ ":conflicts_dll" ]
       }
     } else {  # Not Windows.
@@ -4251,6 +4253,7 @@ test("unit_tests") {
       sources += [
         "../browser/conflicts/incompatible_applications_updater_win_unittest.cc",
         "../browser/conflicts/installed_applications_win_unittest.cc",
+        "../browser/conflicts/module_blacklist_cache_updater_win_unittest.cc",
         "../browser/conflicts/module_blacklist_cache_util_win_unittest.cc",
         "../browser/conflicts/module_list_filter_win_unittest.cc",
         "../browser/conflicts/module_load_attempt_log_listener_win_unittest.cc",

@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 
 // A format string for generating paths to COM class in-proc server keys under
 // HKEY_CLASSES_ROOT.
@@ -46,6 +47,13 @@ struct CertificateInfo {
 // constructed.
 void GetCertificateInfo(const base::FilePath& file,
                         CertificateInfo* certificate_info);
+
+// Returns true if the signer name begins with "Microsoft ". Signatures are
+// typically "Microsoft Corporation" or "Microsoft Windows", but others may
+// exist.
+// Note: This is not a secure check to validate the owner of a certificate. It
+//       simply does string comparison on the subject name.
+bool IsMicrosoftModule(base::StringPiece16 subject);
 
 // Returns a mapping of the value of an environment variable to its name.
 // Removes any existing trailing backslash in the values.

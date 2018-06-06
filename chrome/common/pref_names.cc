@@ -2427,6 +2427,11 @@ const char kHistoryPageIOSPromoDismissed[] = "history_page_ios_promo_dismissed";
 // for the Incompatible Applications Warning feature.
 const char kIncompatibleApplications[] = "incompatible_applications";
 
+// Contains the MD5 digest of the current module blacklist cache. Used to detect
+// external tampering.
+const char kModuleBlacklistCacheMD5Digest[] =
+    "module_blacklist_cache_md5_digest";
+
 // Acts as a cache to remember problematic programs through restarts. Used for
 // the Incompatible Applications Warning feature.
 // Note: Deprecated. Renamed to kIncompatibleApplications.
