@@ -78,13 +78,16 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   LayoutRect VisualRect() const override { return visual_rect_; }
   void SetVisualRect(const LayoutRect& rect) { visual_rect_ = rect; }
 
+  LayoutRect SelectionVisualRect() const { return selection_visual_rect_; }
+  void SetSelectionVisualRect(const LayoutRect& rect) {
+    selection_visual_rect_ = rect;
+  }
+
   // CSS ink overflow https://www.w3.org/TR/css-overflow-3/#ink
   // Encloses all pixels painted by self + children.
   LayoutRect SelfInkOverflow() const;
   // Union of children's ink overflows.
   LayoutRect ChildrenInkOverflow() const;
-
-  LayoutRect PartialInvalidationVisualRect() const override;
 
   NGPhysicalOffsetRect ComputeLocalSelectionRect(
       const LayoutSelectionStatus&) const;
@@ -232,6 +235,7 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   //
 
   LayoutRect visual_rect_;
+  LayoutRect selection_visual_rect_;
 };
 
 }  // namespace blink

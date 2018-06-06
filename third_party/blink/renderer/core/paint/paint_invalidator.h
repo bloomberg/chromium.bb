@@ -172,9 +172,10 @@ class PaintInvalidator {
   ComputeVisualRectInBacking(const LayoutObject&,
                              const PaintInvalidatorContext&);
   ALWAYS_INLINE LayoutRect
-  ComputeVisualRectInBacking(const NGPaintFragment&,
-                             const LayoutObject&,
-                             const PaintInvalidatorContext&);
+  MapFragmentLocalRectToVisualRect(const LayoutRect&,
+                                   const LayoutObject&,
+                                   const NGPaintFragment&,
+                                   const PaintInvalidatorContext&);
   ALWAYS_INLINE LayoutPoint
   ComputeLocationInBacking(const LayoutObject&, const PaintInvalidatorContext&);
   ALWAYS_INLINE void UpdatePaintingLayer(const LayoutObject&,

@@ -64,7 +64,7 @@ void LayoutTextControl::StyleDidChange(StyleDifference diff,
     // ::selection style is or was present on LayoutTextControl.
     if (StyleRef().HasPseudoStyle(kPseudoIdSelection) ||
         (old_style && old_style->HasPseudoStyle(kPseudoIdSelection))) {
-      inner_editor_layout_object->InvalidateSelectionOfSelectedChildren();
+      inner_editor_layout_object->InvalidateSelectedChildrenOnStyleChange();
     }
   }
   GetTextControlElement()->UpdatePlaceholderVisibility();

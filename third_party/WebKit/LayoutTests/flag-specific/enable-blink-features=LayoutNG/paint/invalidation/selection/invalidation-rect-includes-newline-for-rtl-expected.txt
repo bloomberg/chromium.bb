@@ -24,7 +24,7 @@
         },
         {
           "object": "NGPaintFragment",
-          "rect": [24, 24, 32, 32],
+          "rect": [24, 24, 16, 16],
           "reason": "selection"
         }
       ]

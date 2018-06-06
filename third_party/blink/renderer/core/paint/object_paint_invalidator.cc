@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/find_paint_offset_and_visual_rect_needing_update.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -506,6 +507,15 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
 DISABLE_CFI_PERF
 void ObjectPaintInvalidatorWithContext::InvalidateSelection(
     PaintInvalidationReason reason) {
+  // In LayoutNG, if NGPaintFragment paints the selection, we invalidate for
+  // selection change in PaintInvalidator.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled() && object_.IsInline() &&
+      // LayoutReplaced still paints selection tint by itself.
+      !object_.IsLayoutReplaced() &&
+      NGPaintFragment::InlineFragmentsFor(&object_)
+          .IsInLayoutNGInlineFormattingContext())
+    return;
+
   // Update selection rect when we are doing full invalidation with geometry
   // change (in case that the object is moved, composite status changed, etc.)
   // or shouldInvalidationSelection is set (in case that the selection itself
