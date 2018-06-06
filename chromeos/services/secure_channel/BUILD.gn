@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//services/service_manager/public/service_manifest.gni")
+
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 static_library("secure_channel") {
@@ -68,6 +70,12 @@ static_library("secure_channel") {
     "pending_connection_request_base.h",
     "pending_connection_request_delegate.cc",
     "pending_connection_request_delegate.h",
+    "secure_channel_base.cc",
+    "secure_channel_base.h",
+    "secure_channel_impl.cc",
+    "secure_channel_impl.h",
+    "secure_channel_service.cc",
+    "secure_channel_service.h",
     "single_client_message_proxy.cc",
     "single_client_message_proxy.h",
     "single_client_message_proxy_impl.cc",
@@ -82,7 +90,13 @@ static_library("secure_channel") {
     "//chromeos/services/secure_channel/public/mojom",
     "//components/cryptauth",
     "//device/bluetooth",
+    "//services/service_manager/public/cpp",
   ]
+}
+
+service_manifest("manifest") {
+  name = "secure_channel"
+  source = "manifest.json"
 }
 
 static_library("test_support") {
@@ -157,6 +171,7 @@ source_set("unit_tests") {
     "pending_ble_listener_connection_request_unittest.cc",
     "pending_connection_manager_impl_unittest.cc",
     "pending_connection_request_base_unittest.cc",
+    "secure_channel_service_unittest.cc",
     "single_client_message_proxy_impl_unittest.cc",
   ]
 
@@ -168,8 +183,10 @@ source_set("unit_tests") {
     "//chromeos/services/secure_channel/public/cpp/shared:connection_priority",
     "//chromeos/services/secure_channel/public/cpp/shared:test_support",
     "//chromeos/services/secure_channel/public/mojom",
+    "//chromeos/services/secure_channel/public/mojom:unit_tests",
     "//components/cryptauth:test_support",
     "//device/bluetooth:mocks",
+    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
