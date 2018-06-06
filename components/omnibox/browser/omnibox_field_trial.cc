@@ -27,6 +27,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/ui_base_features.h"
 
 using metrics::OmniboxEventProto;
 
@@ -639,8 +640,10 @@ int OmniboxFieldTrial::KeywordScoreForSufficientlyCompleteMatch() {
 OmniboxFieldTrial::EmphasizeTitlesCondition
 OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
     const AutocompleteInput& input) {
-  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentSwapTitleAndUrl))
+  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentSwapTitleAndUrl) ||
+      base::FeatureList::IsEnabled(features::kExperimentalUi)) {
     return EMPHASIZE_WHEN_NONEMPTY;
+  }
 
   // Touch-optimized UI and MD Refresh also always swap title and URL.
   if (ui::MaterialDesignController::is_mode_initialized() &&
@@ -676,9 +679,36 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
   return static_cast<EmphasizeTitlesCondition>(value);
 }
 
-// static
-bool OmniboxFieldTrial::InTabSwitchSuggestionTrial() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions);
+bool OmniboxFieldTrial::IsNewAnswerLayoutEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxNewAnswerLayout) ||
+         base::FeatureList::IsEnabled(features::kExperimentalUi);
+}
+
+bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions) ||
+         base::FeatureList::IsEnabled(features::kExperimentalUi);
+}
+
+bool OmniboxFieldTrial::IsHideSteadyStateUrlSchemeAndSubdomainsEnabled() {
+  return base::FeatureList::IsEnabled(
+             omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains) ||
+         base::FeatureList::IsEnabled(features::kExperimentalUi);
+}
+
+bool OmniboxFieldTrial::IsShowSuggestionFaviconsEnabled() {
+  return base::FeatureList::IsEnabled(
+             omnibox::kUIExperimentShowSuggestionFavicons) ||
+         base::FeatureList::IsEnabled(features::kExperimentalUi);
+}
+
+int OmniboxFieldTrial::GetSuggestionVerticalMargin() {
+  if (base::FeatureList::IsEnabled(features::kExperimentalUi))
+    return 10;
+
+  using Md = ui::MaterialDesignController;
+  return base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kUIExperimentVerticalMargin, kUIVerticalMarginParam,
+      Md::GetMode() == Md::MATERIAL_HYBRID ? 8 : 4);
 }
 
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =

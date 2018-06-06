@@ -277,8 +277,7 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
   if (!extension_icon.IsEmpty())
     return extension_icon;
 
-  if (base::FeatureList::IsEnabled(
-          omnibox::kUIExperimentShowSuggestionFavicons) &&
+  if (OmniboxFieldTrial::IsShowSuggestionFaviconsEnabled() &&
       !AutocompleteMatch::IsSearchType(match.type)) {
     // Because the Views UI code calls GetMatchIcon in both the layout and
     // painting code, we may generate multiple OnFaviconFetched callbacks,

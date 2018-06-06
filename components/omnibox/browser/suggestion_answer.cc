@@ -238,7 +238,7 @@ std::unique_ptr<SuggestionAnswer> SuggestionAnswer::ParseAnswer(
 
   std::string image_url;
   const base::DictionaryValue* optional_image;
-  if (base::FeatureList::IsEnabled(omnibox::kOmniboxNewAnswerLayout) &&
+  if (OmniboxFieldTrial::IsNewAnswerLayoutEnabled() &&
       answer_json->GetDictionary("i", &optional_image) &&
       optional_image->GetString("d", &image_url)) {
     result->image_url_ = GURL(image_url);

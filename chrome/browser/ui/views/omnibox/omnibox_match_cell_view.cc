@@ -103,20 +103,16 @@ gfx::Insets GetMarginInsets(int text_height, bool is_two_line) {
   // Regardless of the text size, we ensure a minimum size for the content line
   // here. This minimum is larger for hybrid mouse/touch devices to ensure an
   // adequately sized touch target.
-  using Md = ui::MaterialDesignController;
-  const int kIconVerticalPad = base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kUIExperimentVerticalMargin,
-      OmniboxFieldTrial::kUIVerticalMarginParam,
-      Md::GetMode() == Md::MATERIAL_HYBRID ? 8 : 4);
   const int min_height_for_icon =
-      GetLayoutConstant(LOCATION_BAR_ICON_SIZE) + (kIconVerticalPad * 2);
+      GetLayoutConstant(LOCATION_BAR_ICON_SIZE) +
+      (OmniboxFieldTrial::GetSuggestionVerticalMargin() * 2);
   const int min_height_for_text = text_height + 2 * kMinVerticalMargin;
   int min_height = std::max(min_height_for_icon, min_height_for_text);
 
   int alignment_offset = GetIconAlignmentOffset();
   // Make sure the minimum height of an omnibox result matches the height of the
   // location bar view / non-results section of the omnibox popup in touch.
-  if (Md::IsTouchOptimizedUiEnabled()) {
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
     min_height = std::max(
         min_height, RoundedOmniboxResultsFrame::GetNonResultSectionHeight());
     if (is_two_line) {
@@ -255,8 +251,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
                                          const AutocompleteMatch& match) {
   is_old_style_answer_ = !!match.answer;
   is_rich_suggestion_ =
-      (base::FeatureList::IsEnabled(omnibox::kOmniboxNewAnswerLayout) &&
-       !!match.answer) ||
+      (OmniboxFieldTrial::IsNewAnswerLayoutEnabled() && !!match.answer) ||
       (base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions) &&
        !match.image_url.empty());
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);

@@ -583,10 +583,8 @@ void OmniboxViewViews::ClearAccessibilityLabel() {
 }
 
 bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
-  if (!base::FeatureList::IsEnabled(
-          omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains)) {
+  if (!OmniboxFieldTrial::IsHideSteadyStateUrlSchemeAndSubdomainsEnabled())
     return false;
-  }
 
   // No need to update the text if the user is already inputting text.
   if (model()->user_input_in_progress())

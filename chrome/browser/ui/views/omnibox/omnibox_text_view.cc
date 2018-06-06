@@ -254,7 +254,7 @@ std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateText(
     const SuggestionAnswer::ImageLine& line) const {
   std::unique_ptr<gfx::RenderText> destination =
       CreateRenderText(base::string16());
-  if (!base::FeatureList::IsEnabled(omnibox::kOmniboxNewAnswerLayout)) {
+  if (!OmniboxFieldTrial::IsNewAnswerLayoutEnabled()) {
     // This assumes that the first text type in the line can be used to specify
     // the font for all the text fields in the line.  For now this works but
     // eventually it may be necessary to get RenderText to support multiple font
@@ -325,7 +325,7 @@ void OmniboxTextView::AppendTextHelper(gfx::RenderText* destination,
   int offset = destination->text().length();
   gfx::Range range(offset, offset + text.length());
   destination->AppendText(text);
-  if (base::FeatureList::IsEnabled(omnibox::kOmniboxNewAnswerLayout)) {
+  if (OmniboxFieldTrial::IsNewAnswerLayoutEnabled()) {
     destination->ApplyColor(
         result_view_->GetColor(OmniboxPart::RESULTS_TEXT_DIMMED), range);
   } else {

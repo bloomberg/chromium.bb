@@ -209,8 +209,7 @@ bool OmniboxEditModel::ResetDisplayUrls() {
 
   url_for_editing_ = controller()->GetToolbarModel()->GetFormattedFullURL();
   display_only_url_ =
-      base::FeatureList::IsEnabled(
-          omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains)
+      OmniboxFieldTrial::IsHideSteadyStateUrlSchemeAndSubdomainsEnabled()
           ? controller()->GetToolbarModel()->GetURLForDisplay()
           : url_for_editing_;
 
