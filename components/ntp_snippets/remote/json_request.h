@@ -16,15 +16,18 @@
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/status.h"
-#include "net/http/http_request_headers.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 
 namespace base {
 class Value;
 class Clock;
 }  // namespace base
+
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
 
 namespace ntp_snippets {
 class UserClassifier;
@@ -50,7 +53,7 @@ enum class FetchResult {
 
 // A single request to query remote suggestions. On success, the suggestions are
 // returned in parsed JSON form (base::Value).
-class JsonRequest : public net::URLFetcherDelegate {
+class JsonRequest {
  public:
   // A client can expect error_details only, if there was any error during the
   // fetching or parsing. In successful cases, it will be an empty string.
@@ -83,8 +86,8 @@ class JsonRequest : public net::URLFetcherDelegate {
     // It has to be alive until the request is destroyed.
     Builder& SetClock(base::Clock* clock);
     Builder& SetUrl(const GURL& url);
-    Builder& SetUrlRequestContextGetter(
-        const scoped_refptr<net::URLRequestContextGetter>& context_getter);
+    Builder& SetUrlLoaderFactory(
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
     Builder& SetUserClassifier(const UserClassifier& user_classifier);
 
     // These preview methods allow to inspect the Request without exposing it
@@ -92,7 +95,9 @@ class JsonRequest : public net::URLFetcherDelegate {
     // TODO(fhorschig): Remove these when moving the Builder to
     // snippets::internal and trigger the request to intercept the request.
     std::string PreviewRequestBodyForTesting() { return BuildBody(); }
-    std::string PreviewRequestHeadersForTesting() { return BuildHeaders(); }
+    std::string PreviewRequestHeadersForTesting() {
+      return BuildResourceRequest()->headers.ToString();
+    }
     Builder& SetUserClassForTesting(const std::string& user_class) {
       user_class_ = user_class;
       return *this;
@@ -101,11 +106,9 @@ class JsonRequest : public net::URLFetcherDelegate {
     bool is_interactive_request() const { return params_.interactive_request; }
 
    private:
-    std::string BuildHeaders() const;
+    std::unique_ptr<network::ResourceRequest> BuildResourceRequest() const;
     std::string BuildBody() const;
-    std::unique_ptr<net::URLFetcher> BuildURLFetcher(
-        net::URLFetcherDelegate* request,
-        const std::string& headers,
+    std::unique_ptr<network::SimpleURLLoader> BuildURLLoader(
         const std::string& body) const;
 
     void PrepareLanguages(
@@ -118,7 +121,7 @@ class JsonRequest : public net::URLFetcherDelegate {
     RequestParams params_;
     ParseJSONCallback parse_json_callback_;
     GURL url_;
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
     // Optional properties.
     std::string obfuscated_gaia_id_;
@@ -132,9 +135,11 @@ class JsonRequest : public net::URLFetcherDelegate {
               base::Clock* clock,
               const ParseJSONCallback& callback);
   JsonRequest(JsonRequest&&);
-  ~JsonRequest() override;
+  ~JsonRequest();
 
   void Start(CompletedCallback callback);
+
+  static int Get5xxRetryCount(bool interactive_request);
 
   const base::Optional<Category>& exclusive_category() const {
     return exclusive_category_;
@@ -144,16 +149,18 @@ class JsonRequest : public net::URLFetcherDelegate {
   std::string GetResponseString() const;
 
  private:
-  // URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   void ParseJsonResponse();
   void OnJsonParsed(std::unique_ptr<base::Value> result);
   void OnJsonError(const std::string& error);
 
-  // The fetcher for downloading the snippets. Only non-null if a fetch is
+  // The loader for downloading the snippets. Only non-null if a load is
   // currently ongoing.
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
+
+  // The loader factory for downloading the snippets.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // If set, only return results for this category.
   base::Optional<Category> exclusive_category_;
@@ -170,6 +177,9 @@ class JsonRequest : public net::URLFetcherDelegate {
 
   // The callback to notify when URLFetcher finished and results are available.
   CompletedCallback request_completed_callback_;
+
+  // The last response string
+  std::string last_response_string_;
 
   base::WeakPtrFactory<JsonRequest> weak_ptr_factory_;
 

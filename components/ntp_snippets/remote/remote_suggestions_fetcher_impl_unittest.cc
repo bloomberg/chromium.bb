@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -29,10 +30,12 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_params_manager.h"
+#include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -137,100 +140,6 @@ class MockSnippetsAvailableCallback {
                         fetched_categories));
 };
 
-// TODO(fhorschig): Transfer this class' functionality to call delegates
-// automatically as option to TestURLFetcherFactory where it was just deleted.
-// This can be represented as a single member there and would reduce the amount
-// of fake implementations from three to two.
-
-// DelegateCallingTestURLFetcherFactory can be used to temporarily inject
-// TestURLFetcher instances into a scope.
-// Client code can access the last created fetcher to verify expected
-// properties. When the factory gets destroyed, all available delegates of still
-// valid fetchers will be called.
-// This ensures once-bound callbacks (like SnippetsAvailableCallback) will be
-// called at some point and are not leaked.
-class DelegateCallingTestURLFetcherFactory
-    : public net::TestURLFetcherFactory,
-      public net::TestURLFetcherDelegateForTests {
- public:
-  DelegateCallingTestURLFetcherFactory() {
-    SetDelegateForTests(this);
-    set_remove_fetcher_on_delete(true);
-  }
-
-  ~DelegateCallingTestURLFetcherFactory() override {
-    while (!fetchers_.empty()) {
-      DropAndCallDelegate(fetchers_.front());
-    }
-  }
-
-  std::unique_ptr<net::URLFetcher> CreateURLFetcher(
-      int id,
-      const GURL& url,
-      net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* d,
-      net::NetworkTrafficAnnotationTag traffic_annotation) override {
-    if (GetFetcherByID(id)) {
-      LOG(WARNING) << "The ID " << id << " was already assigned to a fetcher."
-                   << "Its delegate will thereforde be called right now.";
-      DropAndCallDelegate(id);
-    }
-    fetchers_.push_back(id);
-    return TestURLFetcherFactory::CreateURLFetcher(id, url, request_type, d,
-                                                   traffic_annotation);
-  }
-
-  // Returns the raw pointer of the last created URL fetcher.
-  // If it was destroyed or no fetcher was created, it will return a nulltpr.
-  net::TestURLFetcher* GetLastCreatedFetcher() {
-    if (fetchers_.empty()) {
-      return nullptr;
-    }
-    return GetFetcherByID(fetchers_.front());
-  }
-
- private:
-  // The fetcher can either be destroyed because the delegate was called during
-  // execution or because we called it on destruction.
-  void DropAndCallDelegate(int fetcher_id) {
-    auto found_id_iter =
-        std::find(fetchers_.begin(), fetchers_.end(), fetcher_id);
-    if (found_id_iter == fetchers_.end()) {
-      return;
-    }
-    fetchers_.erase(found_id_iter);
-    net::TestURLFetcher* fetcher = GetFetcherByID(fetcher_id);
-    if (!fetcher->delegate()) {
-      return;
-    }
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
-  }
-
-  // net::TestURLFetcherDelegateForTests overrides:
-  void OnRequestStart(int fetcher_id) override {}
-  void OnChunkUpload(int fetcher_id) override {}
-  void OnRequestEnd(int fetcher_id) override {
-    DropAndCallDelegate(fetcher_id);
-  }
-
-  base::circular_deque<int> fetchers_;
-};
-
-// Factory for FakeURLFetcher objects that always generate errors.
-class FailingFakeURLFetcherFactory : public net::URLFetcherFactory {
- public:
-  std::unique_ptr<net::URLFetcher> CreateURLFetcher(
-      int id,
-      const GURL& url,
-      net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* delegate,
-      net::NetworkTrafficAnnotationTag traffic_annotation) override {
-    return std::make_unique<net::FakeURLFetcher>(
-        url, delegate, /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
-        net::URLRequestStatus::FAILED);
-  }
-};
-
 void ParseJson(const std::string& json,
                const SuccessCallback& success_callback,
                const ErrorCallback& error_callback) {
@@ -280,12 +189,13 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
   void ResetFetcher() { ResetFetcherWithAPIKey(kAPIKey); }
 
   void ResetFetcherWithAPIKey(const std::string& api_key) {
-    scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
-        new net::TestURLRequestContextGetter(mock_task_runner_.get());
+    scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory_);
 
     fetcher_ = std::make_unique<RemoteSuggestionsFetcherImpl>(
         identity_test_env_.identity_manager(),
-        std::move(request_context_getter), utils_.pref_service(), nullptr,
+        std::move(test_shared_loader_factory), utils_.pref_service(), nullptr,
         base::BindRepeating(&ParseJsonDelayed),
         GetFetchEndpoint(version_info::Channel::STABLE), api_key,
         user_classifier_.get());
@@ -315,16 +225,6 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
     return result;
   }
 
-  void InitFakeURLFetcherFactory() {
-    if (fake_url_fetcher_factory_) {
-      return;
-    }
-    // Instantiation of factory automatically sets itself as URLFetcher's
-    // factory.
-    fake_url_fetcher_factory_.reset(new net::FakeURLFetcherFactory(
-        /*default_factory=*/&failing_url_fetcher_factory_));
-  }
-
   void SetVariationParam(std::string param_name, std::string value) {
     std::map<std::string, std::string> params = default_variation_params_;
     params[param_name] = value;
@@ -338,23 +238,29 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
   void SetFakeResponse(const GURL& request_url,
                        const std::string& response_data,
                        net::HttpStatusCode response_code,
-                       net::URLRequestStatus::Status status) {
-    InitFakeURLFetcherFactory();
-    fake_url_fetcher_factory_->SetFakeResponse(request_url, response_data,
-                                               response_code, status);
+                       net::Error error) {
+    network::ResourceResponseHead head;
+    std::string headers(base::StringPrintf(
+        "HTTP/1.1 %d %s\nContent-type: application/json\n\n",
+        static_cast<int>(response_code), GetHttpReasonPhrase(response_code)));
+    head.headers = new net::HttpResponseHeaders(
+        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+    head.mime_type = "application/json";
+    network::URLLoaderCompletionStatus status(error);
+    status.decoded_body_length = response_data.size();
+    test_url_loader_factory_.AddResponse(request_url, head, response_data,
+                                         status);
   }
 
  protected:
   std::map<std::string, std::string> default_variation_params_;
   identity::IdentityTestEnvironment identity_test_env_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
 
  private:
   test::RemoteSuggestionsTestUtils utils_;
   variations::testing::VariationParamsManager params_manager_;
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
-  FailingFakeURLFetcherFactory failing_url_fetcher_factory_;
-  // Initialized lazily in SetFakeResponse().
-  std::unique_ptr<net::FakeURLFetcherFactory> fake_url_fetcher_factory_;
   std::unique_ptr<RemoteSuggestionsFetcherImpl> fetcher_;
   std::unique_ptr<UserClassifier> user_classifier_;
   MockSnippetsAvailableCallback mock_callback_;
@@ -395,8 +301,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldFetchSuccessfully) {
       "}]}";
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
-                  /*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  /*response_data=*/kJsonStr, net::HTTP_OK, net::OK);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
                   /*fetched_categories=*/AllOf(
@@ -419,7 +324,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldExposeRequestPriorityInUrl) {
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=background_prefetch"),
                   /*response_data=*/"{\"categories\" : []}", net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  net::OK);
   EXPECT_CALL(mock_callback(), Run(Property(&Status::IsSuccess, true),
                                    /*fetched_categories=*/_));
 
@@ -440,8 +345,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
 
   SetFakeResponse(
       GURL(std::string(kFetchSuggestionsEndpoint) + "?key=fakeAPIkey"),
-      /*response_data=*/"{\"categories\" : []}", net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+      /*response_data=*/"{\"categories\" : []}", net::HTTP_OK, net::OK);
   EXPECT_CALL(mock_callback(), Run(Property(&Status::IsSuccess, true),
                                    /*fetched_categories=*/_));
 
@@ -478,7 +382,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldFetchSuccessfullyWhenSignedIn) {
       "}]}";
   SetFakeResponse(
       GURL(std::string(kFetchSuggestionsEndpoint) + "?priority=user_action"),
-      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+      /*response_data=*/kJsonStr, net::HTTP_OK, net::OK);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
                   /*fetched_categories=*/AllOf(
@@ -511,7 +415,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?priority=background_prefetch"),
                   /*response_data=*/"{\"categories\" : []}", net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  net::OK);
   EXPECT_CALL(mock_callback(), Run(Property(&Status::IsSuccess, true),
                                    /*fetched_categories=*/_));
 
@@ -537,7 +441,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
 
   SetFakeResponse(GURL(kFetchSuggestionsEndpoint),
                   /*response_data=*/"{\"categories\" : []}", net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  net::OK);
   EXPECT_CALL(mock_callback(), Run(Property(&Status::IsSuccess, true),
                                    /*fetched_categories=*/_));
 
@@ -578,7 +482,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
       "}]}";
   SetFakeResponse(
       GURL(std::string(kFetchSuggestionsEndpoint) + "?priority=user_action"),
-      /*response_data=*/kJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+      /*response_data=*/kJsonStr, net::HTTP_OK, net::OK);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
                   /*fetched_categories=*/AllOf(
@@ -618,8 +522,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest, EmptyCategoryIsOK) {
       "}]}";
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
-                  /*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  /*response_data=*/kJsonStr, net::HTTP_OK, net::OK);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
                   /*fetched_categories=*/IsEmptyArticleList()));
@@ -672,8 +575,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ServerCategories) {
       "}]}";
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
-                  /*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  /*response_data=*/kJsonStr, net::HTTP_OK, net::OK);
   RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories;
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true), /*fetched_categories=*/_))
@@ -736,8 +638,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
       "}]}";
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
-                  /*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  /*response_data=*/kJsonStr, net::HTTP_OK, net::OK);
   RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories;
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true), /*fetched_categories=*/_))
@@ -804,8 +705,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ExclusiveCategoryOnly) {
       "}]}";
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
-                  /*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  /*response_data=*/kJsonStr, net::HTTP_OK, net::OK);
   RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories;
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true), /*fetched_categories=*/_))
@@ -854,8 +754,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldFetchSuccessfullyEmptyList) {
   const std::string kJsonStr = "{\"categories\": []}";
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
-                  /*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  /*response_data=*/kJsonStr, net::HTTP_OK, net::OK);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
                   /*fetched_categories=*/IsEmptyCategoriesList()));
@@ -873,16 +772,12 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldFetchSuccessfullyEmptyList) {
 }
 
 TEST_F(RemoteSuggestionsFetcherImplTest, RetryOnInteractiveRequests) {
-  DelegateCallingTestURLFetcherFactory fetcher_factory;
   RequestParams params = test_params();
   params.interactive_request = true;
 
-  fetcher().FetchSnippets(params,
-                          ToSnippetsAvailableCallback(&mock_callback()));
-
-  net::TestURLFetcher* fetcher = fetcher_factory.GetLastCreatedFetcher();
-  ASSERT_THAT(fetcher, NotNull());
-  EXPECT_THAT(fetcher->GetMaxRetriesOn5xx(), Eq(2));
+  EXPECT_THAT(
+      internal::JsonRequest::Get5xxRetryCount(params.interactive_request),
+      Eq(2));
 }
 
 TEST_F(RemoteSuggestionsFetcherImplTest,
@@ -902,15 +797,11 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
   params.interactive_request = false;
 
   for (const auto& retry_config : retry_config_expectation) {
-    DelegateCallingTestURLFetcherFactory fetcher_factory;
+    // DelegateCallingTestURLFetcherFactory fetcher_factory;
     SetVariationParam("background_5xx_retries_count", retry_config.param_value);
 
-    fetcher().FetchSnippets(params,
-                            ToSnippetsAvailableCallback(&mock_callback()));
-
-    net::TestURLFetcher* fetcher = fetcher_factory.GetLastCreatedFetcher();
-    ASSERT_THAT(fetcher, NotNull());
-    EXPECT_THAT(fetcher->GetMaxRetriesOn5xx(), Eq(retry_config.expected_value))
+    EXPECT_THAT(internal::JsonRequest::Get5xxRetryCount(false),
+                Eq(retry_config.expected_value))
         << retry_config.description;
   }
 }
@@ -919,7 +810,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportUrlStatusError) {
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
                   /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
-                  net::URLRequestStatus::FAILED);
+                  net::ERR_FAILED);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -946,7 +837,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportHttpError) {
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
                   /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
-                  net::URLRequestStatus::SUCCESS);
+                  net::OK);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -971,8 +862,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportJsonError) {
   const std::string kInvalidJsonStr = "{ \"recos\": []";
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
-                  /*response_data=*/kInvalidJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  /*response_data=*/kInvalidJsonStr, net::HTTP_OK, net::OK);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1000,8 +890,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
        ShouldReportJsonErrorForEmptyResponse) {
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
-                  /*response_data=*/std::string(), net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  /*response_data=*/std::string(), net::HTTP_OK, net::OK);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1025,8 +914,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportInvalidListError) {
       "{\"recos\": [{ \"contentInfo\": { \"foo\" : \"bar\" }}]}";
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
-                  /*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  /*response_data=*/kJsonStr, net::HTTP_OK, net::OK);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1072,8 +960,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
       "}]}";
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
-                  /*response_data=*/kValidJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  /*response_data=*/kValidJsonStr, net::HTTP_OK, net::OK);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1118,8 +1005,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
       "}]}";
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
-                  /*response_data=*/kValidJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  /*response_data=*/kValidJsonStr, net::HTTP_OK, net::OK);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1156,8 +1042,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
       "}]}";
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
-                  /*response_data=*/kValidJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  /*response_data=*/kValidJsonStr, net::HTTP_OK, net::OK);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1176,7 +1061,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
                   /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
-                  net::URLRequestStatus::FAILED);
+                  net::ERR_FAILED);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1192,7 +1077,10 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
 // hard-to-reproduce test failures.
 TEST_F(RemoteSuggestionsFetcherImplTest,
        ShouldReportHttpErrorForMissingBakedResponse) {
-  InitFakeURLFetcherFactory();
+  SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
+                       "?key=fakeAPIkey&priority=user_action"),
+                  /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
+                  net::ERR_FAILED);
   EXPECT_CALL(
       mock_callback(),
       Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
@@ -1208,8 +1096,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldProcessConcurrentFetches) {
   const std::string kJsonStr = "{ \"categories\": [] }";
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),
-                  /*response_data=*/kJsonStr, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  /*response_data=*/kJsonStr, net::HTTP_OK, net::OK);
   EXPECT_CALL(mock_callback(),
               Run(Property(&Status::IsSuccess, true),
                   /*fetched_categories=*/IsEmptyCategoriesList()))

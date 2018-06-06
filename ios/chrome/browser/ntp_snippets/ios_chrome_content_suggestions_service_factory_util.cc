@@ -166,6 +166,9 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       IdentityManagerFactory::GetForBrowserState(chrome_browser_state);
   scoped_refptr<net::URLRequestContextGetter> request_context =
       browser_state->GetRequestContext();
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+      browser_state->GetSharedURLLoaderFactory();
+
   base::FilePath database_dir(
       browser_state->GetStatePath().Append(ntp_snippets::kDatabaseFolder));
 
@@ -178,7 +181,7 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
                                 : google_apis::GetNonStableAPIKey();
   }
   auto suggestions_fetcher = std::make_unique<RemoteSuggestionsFetcherImpl>(
-      identity_manager, request_context, prefs, nullptr,
+      identity_manager, url_loader_factory, prefs, nullptr,
       base::BindRepeating(&ParseJson), GetFetchEndpoint(GetChannel()), api_key,
       service->user_classifier());
 

@@ -18,15 +18,10 @@
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/url_util.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using language::UrlLanguageHistogram;
-using net::HttpRequestHeaders;
-using net::URLFetcher;
-using net::URLRequestContextGetter;
-using net::URLRequestStatus;
 
 namespace ntp_snippets {
 
@@ -154,7 +149,7 @@ void FilterCategories(FetchedCategoriesVector* categories,
 
 RemoteSuggestionsFetcherImpl::RemoteSuggestionsFetcherImpl(
     identity::IdentityManager* identity_manager,
-    scoped_refptr<URLRequestContextGetter> url_request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     PrefService* pref_service,
     UrlLanguageHistogram* language_histogram,
     const ParseJSONCallback& parse_json_callback,
@@ -162,7 +157,7 @@ RemoteSuggestionsFetcherImpl::RemoteSuggestionsFetcherImpl(
     const std::string& api_key,
     const UserClassifier* user_classifier)
     : identity_manager_(identity_manager),
-      url_request_context_getter_(std::move(url_request_context_getter)),
+      url_loader_factory_(std::move(url_loader_factory)),
       language_histogram_(language_histogram),
       parse_json_callback_(parse_json_callback),
       fetch_url_(api_endpoint),
@@ -208,7 +203,7 @@ void RemoteSuggestionsFetcherImpl::FetchSnippets(
       .SetParams(params)
       .SetParseJsonCallback(parse_json_callback_)
       .SetClock(clock_)
-      .SetUrlRequestContextGetter(url_request_context_getter_)
+      .SetUrlLoaderFactory(url_loader_factory_)
       .SetUserClassifier(*user_classifier_);
 
   if (identity_manager_->HasPrimaryAccount()) {
