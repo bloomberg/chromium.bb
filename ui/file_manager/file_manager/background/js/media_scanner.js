@@ -613,7 +613,7 @@ importer.DefaultDirectoryWatcher.prototype.addDirectory = function(entry) {
 };
 
 /**
- * @param {FileWatchEvent} event
+ * @param {chrome.fileManagerPrivate.FileWatchEvent} event
  * @private
  */
 importer.DefaultDirectoryWatcher.prototype.onWatchedDirectoryModified_ =

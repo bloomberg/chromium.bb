@@ -7,7 +7,7 @@
  * An item in the model. Represents a single providing extension.
  *
  * @param {string} providerId
- * @param {!IconSet} iconSet
+ * @param {!chrome.fileManagerPrivate.IconSet} iconSet
  * @param {string} name
  * @param {boolean} configurable
  * @param {boolean} watchable
@@ -26,7 +26,7 @@ function ProvidersModelItem(
   this.providerId_ = providerId;
 
   /**
-   * @private {!IconSet}
+   * @private {!chrome.fileManagerPrivate.IconSet}
    * @const
    */
   this.iconSet_ = iconSet;
@@ -71,7 +71,7 @@ ProvidersModelItem.prototype = {
   },
 
   /**
-   * @return {!IconSet}
+   * @return {!chrome.fileManagerPrivate.IconSet}
    */
   get iconSet() {
     return this.iconSet_;

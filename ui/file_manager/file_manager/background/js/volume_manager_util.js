@@ -50,8 +50,9 @@ volumeManagerUtil.validateError = function(error) {
 };
 
 /**
- * Builds the VolumeInfo data from VolumeMetadata.
- * @param {VolumeMetadata} volumeMetadata Metadata instance for the volume.
+ * Builds the VolumeInfo data from chrome.fileManagerPrivate.VolumeMetadata.
+ * @param {chrome.fileManagerPrivate.VolumeMetadata} volumeMetadata Metadata
+ * instance for the volume.
  * @return {!Promise<!VolumeInfo>} Promise settled with the VolumeInfo instance.
  */
 volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
@@ -201,7 +202,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
  * Note that errorType and volumeType must be an element of fixed set of strings
  * to avoid sending dynamic strings to analytics.
  *
- * @param {VolumeMetadata} volumeMetadata
+ * @param {chrome.fileManagerPrivate.VolumeMetadata} volumeMetadata
  * @param {*} error
  */
 volumeManagerUtil.reportMountError = function(volumeMetadata, error) {

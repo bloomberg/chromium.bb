@@ -70,7 +70,7 @@ VolumeManagerImpl.prototype.__proto__ = cr.EventTarget.prototype;
 /**
  * Adds new volume info from the given volumeMetadata. If the corresponding
  * volume info has already been added, the volumeMetadata is ignored.
- * @param {!VolumeMetadata} volumeMetadata
+ * @param {!chrome.fileManagerPrivate.VolumeMetadata} volumeMetadata
  * @return {!Promise<!VolumeInfo>}
  * @private
  */
@@ -103,7 +103,7 @@ VolumeManagerImpl.prototype.addVolumeMetadata_ = function(volumeMetadata) {
           // Update the network connection status, because until the drive is
           // initialized, the status is set to not ready.
           // TODO(mtomasz): The connection status should be migrated into
-          // VolumeMetadata.
+          // chrome.fileManagerPrivate.VolumeMetadata.
           if (volumeMetadata.volumeType ===
               VolumeManagerCommon.VolumeType.DRIVE) {
             this.onDriveConnectionStatusChanged_();
@@ -160,7 +160,7 @@ VolumeManagerImpl.prototype.initialize_ = function(callback) {
 
 /**
  * Event handler called when some volume was mounted or unmounted.
- * @param {MountCompletedEvent} event Received event.
+ * @param {chrome.fileManagerPrivate.MountCompletedEvent} event Received event.
  * @private
  */
 VolumeManagerImpl.prototype.onMountCompleted_ = function(event) {

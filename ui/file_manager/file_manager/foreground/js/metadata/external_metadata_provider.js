@@ -58,7 +58,7 @@ ExternalMetadataProvider.prototype.get = function(requests) {
 /**
  * @param {!Array<!MetadataRequest>} requests
  * @param {!Object<boolean>} nameMap
- * @param {!Array<!EntryProperties>} propertiesList
+ * @param {!Array<!chrome.fileManagerPrivate.EntryProperties>} propertiesList
  * @return {!Array<!MetadataItem>}
  */
 ExternalMetadataProvider.prototype.convertResults_ =

@@ -8,7 +8,7 @@
 var util = {};
 
 /**
- * @param {!IconSet} iconSet Set of icons.
+ * @param {!chrome.fileManagerPrivate.IconSet} iconSet Set of icons.
  * @return {string} CSS value.
  */
 util.iconSetToCSSBackgroundImageValue = function(iconSet) {

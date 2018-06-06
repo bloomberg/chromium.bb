@@ -1749,7 +1749,7 @@ SlideMode.prototype.hideProgressBar_ = function() {
 
 /**
  * Updates progress bar.
- * @param {!FileTransferStatus} status
+ * @param {!chrome.fileManagerPrivate.FileTransferStatus} status
  * @private
  */
 SlideMode.prototype.updateProgressBar_ = function(status) {

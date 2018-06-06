@@ -134,7 +134,7 @@ DriveSyncHandler.prototype.showDisabledMobileSyncNotification = function() {
 
 /**
  * Handles file transfer updated events.
- * @param {FileTransferStatus} status Transfer status.
+ * @param {chrome.fileManagerPrivate.FileTransferStatus} status Transfer status.
  * @private
  */
 DriveSyncHandler.prototype.onFileTransfersUpdated_ = function(status) {
@@ -157,7 +157,7 @@ DriveSyncHandler.prototype.onFileTransfersUpdated_ = function(status) {
 
 /**
  * Updates the item involved with the given status.
- * @param {FileTransferStatus} status Transfer status.
+ * @param {chrome.fileManagerPrivate.FileTransferStatus} status Transfer status.
  * @private
  */
 DriveSyncHandler.prototype.updateItem_ = function(status) {
@@ -183,7 +183,7 @@ DriveSyncHandler.prototype.updateItem_ = function(status) {
 
 /**
  * Removes the item involved with the given status.
- * @param {FileTransferStatus} status Transfer status.
+ * @param {chrome.fileManagerPrivate.FileTransferStatus} status Transfer status.
  * @private
  */
 DriveSyncHandler.prototype.removeItem_ = function(status) {
@@ -207,7 +207,8 @@ DriveSyncHandler.prototype.requestCancel_ = function() {
 
 /**
  * Handles drive's sync errors.
- * @param {DriveSyncErrorEvent} event Drive sync error event.
+ * @param {chrome.fileManagerPrivate.DriveSyncErrorEvent} event Drive sync
+ * error event.
  * @private
  */
 DriveSyncHandler.prototype.onDriveSyncError_ = function(event) {

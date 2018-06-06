@@ -285,7 +285,7 @@ DeviceHandler.Notification.prototype.makeId_ = function(devicePath) {
 
 /**
  * Handles notifications from C++ sides.
- * @param {DeviceEvent} event Device event.
+ * @param {chrome.fileManagerPrivate.DeviceEvent} event Device event.
  * @private
  */
 DeviceHandler.prototype.onDeviceChanged_ = function(event) {
@@ -295,7 +295,7 @@ DeviceHandler.prototype.onDeviceChanged_ = function(event) {
 };
 
 /**
- * @param {DeviceEvent} event Device event.
+ * @param {chrome.fileManagerPrivate.DeviceEvent} event Device event.
  * @private
  */
 DeviceHandler.prototype.onDeviceChangedInternal_ = function(event) {
@@ -357,7 +357,8 @@ Object.freeze(DeviceHandler.MountStatus);
 
 /**
  * Handles mount completed events to show notifications for removable devices.
- * @param {MountCompletedEvent} event Mount completed event.
+ * @param {chrome.fileManagerPrivate.MountCompletedEvent} event Mount completed
+ * event.
  * @private
  */
 DeviceHandler.prototype.onMountCompleted_ = function(event) {
@@ -468,7 +469,7 @@ DeviceHandler.prototype.onMountCompletedInternal_ = function(event) {
 
 /**
  * Handles mount events.
- * @param {MountCompletedEvent} event
+ * @param {chrome.fileManagerPrivate.MountCompletedEvent} event
  * @private
  */
 DeviceHandler.prototype.onMount_ = function(event) {

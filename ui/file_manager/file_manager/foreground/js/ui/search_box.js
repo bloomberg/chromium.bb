@@ -144,7 +144,8 @@ SearchBox.AutocompleteList.prototype.onMouseOver_ = function(event) {
  * ListItem element for autocomplete.
  *
  * @param {Document} document Document.
- * @param {SearchItem|SearchResult} item An object representing a suggestion.
+ * @param {SearchItem|chrome.fileManagerPrivate.SearchResult} item An object
+ * representing a suggestion.
  * @constructor
  * @private
  */
