@@ -64,27 +64,25 @@ void GetFallbackFontForCharacter(int32_t character,
 }
 
 void GetRenderStyleForStrike(const char* family,
-                             int size_and_style,
+                             int size,
+                             bool is_bold,
+                             bool is_italic,
+                             float device_scale_factor,
                              blink::WebFontRenderStyle* out) {
   TRACE_EVENT0("sandbox_ipc", "GetRenderStyleForStrike");
 
   *out = blink::WebFontRenderStyle();
 
-  if (size_and_style < 0)
-    return;
-
-  const bool bold = size_and_style & 1;
-  const bool italic = size_and_style & 2;
-  const int pixel_size = size_and_style >> 2;
-  if (pixel_size > std::numeric_limits<uint16_t>::max())
+  if (size < 0 || size > std::numeric_limits<uint16_t>::max())
     return;
 
   base::Pickle request;
   request.WriteInt(service_manager::SandboxLinux::METHOD_GET_STYLE_FOR_STRIKE);
   request.WriteString(family);
-  request.WriteBool(bold);
-  request.WriteBool(italic);
-  request.WriteUInt16(pixel_size);
+  request.WriteBool(is_bold);
+  request.WriteBool(is_italic);
+  request.WriteUInt16(size);
+  request.WriteFloat(device_scale_factor);
 
   uint8_t buf[512];
   const ssize_t n = base::UnixDomainSocket::SendRecvMsg(

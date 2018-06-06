@@ -40,7 +40,10 @@ class UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport
       const char* preferred_locale,
       blink::WebFallbackFont* fallbackFont) override;
   void GetWebFontRenderStyleForStrike(const char* family,
-                                      int sizeAndStyle,
+                                      int size,
+                                      bool is_bold,
+                                      bool is_italic,
+                                      float device_scale_factor,
                                       blink::WebFontRenderStyle* out) override;
 
  private:
@@ -110,9 +113,13 @@ void UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport::
 
 void UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport::
     GetWebFontRenderStyleForStrike(const char* family,
-                                   int size_and_style,
+                                   int size,
+                                   bool is_bold,
+                                   bool is_italic,
+                                   float device_scale_factor,
                                    blink::WebFontRenderStyle* out) {
-  GetRenderStyleForStrike(family, size_and_style, out);
+  GetRenderStyleForStrike(family, size, is_bold, is_italic, device_scale_factor,
+                          out);
 }
 
 #endif
