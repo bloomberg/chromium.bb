@@ -5,6 +5,7 @@
 import("//build/util/branding.gni")
 import("//build/util/version.gni")
 import("//build/config/features.gni")
+import("//build/config/mac/base_rules.gni")
 
 group("mac") {
   public_deps = [
@@ -71,6 +72,7 @@ copy("copies") {
 
   deps = [
     ":copy_variables",
+    "//chrome:entitlements",
     "//chrome/installer/mac/third_party/bsdiff:goobsdiff",
     "//chrome/installer/mac/third_party/bsdiff:goobspatch",
     "//chrome/installer/mac/third_party/xz:lzma_decompress",
@@ -79,6 +81,7 @@ copy("copies") {
   ]
 
   sources = [
+    "$root_gen_dir/chrome/entitlements.plist",
     "$root_out_dir/goobsdiff",
     "$root_out_dir/goobspatch",
     "$root_out_dir/liblzma_decompress.dylib",
@@ -99,6 +102,8 @@ copy("copies") {
     sources += [
       "//chrome/app/theme/google_chrome/mac/app_canary.icns",
       "//chrome/app/theme/google_chrome/mac/document_canary.icns",
+      "internal/Google_Chrome.provisionprofile",
+      "internal/Google_Chrome_Canary.provisionprofile",
       "internal/chrome_canary_dmg_dsstore",
       "internal/chrome_canary_dmg_icon.icns",
       "internal/chrome_dmg_background.png",
