@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="../../../../ui/login/bubble.css">
   <link rel="stylesheet" href="../../../../ui/login/oobe.css">
   <link rel="stylesheet" href="../../../../ui/login/screen_container.css">
+  <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
 
   <link rel="import" href="chrome://resources/html/polymer.html">
@@ -33,7 +34,7 @@
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
   <style is="custom-style" include="shared-styles">
     body {
-      background-color: var(--paper-grey-100);
+      background-color: var(--md-background-color);
     }
 
     user-manager-pages,
@@ -84,8 +85,8 @@
     }
 
     .pod {
-      box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .24),
-                  0 0 2px 0 rgba(0, 0, 0, .12);
+      @apply --cr-card-elevation;
+      border-radius: var(--cr-card-border-radius);
       color: var(--primary-text-color);
       cursor: default;
       height: auto;
@@ -260,6 +261,7 @@
 
     .action-box-area.active ~ .action-box-menu {
       border: none;
+      border-radius: var(--cr-card-border-radius);
       box-shadow: 0 10px 20px 0 rgba(0, 0, 0, .19);
       right: 8px;
       width: 224px;
@@ -285,6 +287,7 @@
     }
 
     .action-box-menu-remove {
+      border-radius: var(--cr-card-border-radius);
       border-top: var(--user-manager-separator-line);
       line-height: 32px;
       padding: 8px 12px;
@@ -314,15 +317,8 @@
     }
 
     .action-box-remove-user-warning .remove-warning-button {
-      --paper-button: {
-        background: var(--google-red-700);
-        color: white;
-        font-weight: 500;
-      };
-      --paper-button-flat-keyboard-focus: {
-        background: rgb(173, 50, 36);
-      };
-      @apply --action-button;
+      background-color: white;
+      color: var(--google-red-700);
     }
 
     #user-manager-prompt-message {

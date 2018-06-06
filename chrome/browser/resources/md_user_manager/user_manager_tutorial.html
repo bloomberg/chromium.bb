@@ -2,17 +2,18 @@
 
 <link rel="import" href="/shared_styles.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 
 <dom-module id="user-manager-tutorial">
   <template>
     <style include="shared-styles">
       .tutorial-slide {
+        @apply --cr-card-elevation;
         -webkit-transition: opacity 200ms ease-in-out;
         background-color: white;
-        border-radius: 2px;
+        border-radius: var(--cr-card-border-radius);
         bottom: 0;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
         height: 408px;
         left: 0;
         margin: auto;
@@ -97,13 +98,17 @@
       }
 
       .arrow-down {
-        border-left: 15px solid transparent;
-        border-right: 15px solid transparent;
-        border-top: 15px solid white;
-        bottom: -15px;
+        border-bottom: 10px solid white;
+        border-left: 10px solid white;
+        border-right: 10px solid transparent;
+        border-top: 10px solid transparent;
+        bottom: -10px;
+        box-shadow: rgba(60, 64, 67, .4) -1px 1px 1px 0,
+            rgba(60, 64, 67, .15) -2px 2px 2px 0;
         height: 0;
         position: absolute;
         right: 40px;
+        transform: rotate(-45deg);
         width: 0;
       }
 
@@ -122,6 +127,8 @@
       }
 
       .slide-image {
+        border-radius:
+            var(--cr-card-border-radius) var(--cr-card-border-radius) 0 0;
         height: 182px;
       }
 
@@ -149,6 +156,7 @@
       }
 
       #notYou #dismiss {
+        cursor: pointer;
         position: absolute;
         right: 5px;
         top: 5px;

@@ -1,14 +1,10 @@
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+
 <dom-module id="shared-styles">
   <template>
-    <style>
+    <style include="paper-button-style">
       :root {
-        --action-button: {
-          border-radius: 2px;
-          line-height: 20px;
-          margin: 0;
-          min-width: 52px;
-          padding: 6px 16px;
-        };
         --error-color: var(--google-red-700);
         --page-width: 624px;
         --primary-text-color: var(--paper-grey-800);
@@ -23,39 +19,6 @@
         color: var(--google-blue-700);
         cursor: pointer;
         text-decoration: none;
-      }
-
-      paper-button.action {
-        @apply --action-button;
-      }
-
-      paper-button.action.primary {
-        --paper-button: {
-          background: var(--google-blue-500);
-          color: white;
-          font-weight: 500;
-        };
-        --paper-button-flat-keyboard-focus: {
-          background: rgb(58, 117, 215);
-        };
-        --paper-button-disabled: {
-          background: var(--paper-grey-300);
-          color: var(--paper-grey-500);
-        };
-      }
-
-      paper-button.action.secondary {
-        --paper-button: {
-          color: var(--paper-grey-600);
-          font-weight: 500;
-        };
-        --paper-button-flat-keyboard-focus: {
-          background: rgba(0, 0, 0, .12);
-        };
-      }
-
-      paper-button.action + paper-button.action {
-        -webkit-margin-start: 8px;
       }
 
       .product-logo {
