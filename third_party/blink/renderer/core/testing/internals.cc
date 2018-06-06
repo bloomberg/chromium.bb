@@ -3307,38 +3307,6 @@ void Internals::setVisualViewportOffset(int x, int y) {
   GetFrame()->GetPage()->GetVisualViewport().SetLocation(FloatPoint(x, y));
 }
 
-int Internals::visualViewportHeight() {
-  if (!GetFrame())
-    return 0;
-
-  return ExpandedIntSize(
-             GetFrame()->GetPage()->GetVisualViewport().VisibleRect().Size())
-      .Height();
-}
-
-int Internals::visualViewportWidth() {
-  if (!GetFrame())
-    return 0;
-
-  return ExpandedIntSize(
-             GetFrame()->GetPage()->GetVisualViewport().VisibleRect().Size())
-      .Width();
-}
-
-float Internals::visualViewportScrollX() {
-  if (!GetFrame())
-    return 0;
-
-  return GetFrame()->View()->GetScrollableArea()->GetScrollOffset().Width();
-}
-
-float Internals::visualViewportScrollY() {
-  if (!GetFrame())
-    return 0;
-
-  return GetFrame()->View()->GetScrollableArea()->GetScrollOffset().Height();
-}
-
 bool Internals::isUseCounted(Document* document, uint32_t feature) {
   if (feature >= static_cast<int32_t>(WebFeature::kNumberOfFeatures))
     return false;

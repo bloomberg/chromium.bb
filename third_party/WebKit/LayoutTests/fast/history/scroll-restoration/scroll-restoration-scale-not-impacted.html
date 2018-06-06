@@ -4,6 +4,10 @@
     height: 10000px;
     width: 10000px;
   }
+  ::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+  }
 </style>
 
 <body></body>
@@ -19,7 +23,7 @@
         assert_array_equals([window.innerWidth, window.innerHeight], [800, 600], 'initial page size is valid');
         if (window.internals) {
           internals.setPageScaleFactor(2);
-          assert_array_equals([internals.visualViewportWidth(), internals.visualViewportHeight()], [400, 300], 'page is scaled');
+          assert_array_equals([window.visualViewport.width, window.visualViewport.height], [400, 300], 'page is scaled');
         }
 
         history.scrollRestoration = 'manual';
@@ -32,7 +36,7 @@
           window.location = "../../../resources/back.html";
         }, 0);
       } else {
-        assert_array_equals([internals.visualViewportWidth(), internals.visualViewportHeight()], [400, 300], 'page scale is restored');
+        assert_array_equals([window.visualViewport.width, window.visualViewport.height], [400, 300], 'page scale is restored');
         assert_array_equals([window.scrollX, window.scrollY], [0, 0], 'scroll position is not restored');
         // clean up
         window.name = '';

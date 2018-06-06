@@ -1133,12 +1133,6 @@ Response InspectorPageAgent::getLayoutMetrics(
   float page_zoom = main_frame->PageZoomFactor();
   FloatRect visible_rect = visual_viewport.VisibleRect();
   float scale = visual_viewport.Scale();
-  float scrollbar_width =
-      frame_view->LayoutViewportScrollableArea()->VerticalScrollbarWidth() /
-      scale;
-  float scrollbar_height =
-      frame_view->LayoutViewportScrollableArea()->HorizontalScrollbarHeight() /
-      scale;
 
   IntSize content_size = frame_view->GetScrollableArea()->ContentsSize();
   *out_content_size = protocol::DOM::Rect::create()
@@ -1148,20 +1142,19 @@ Response InspectorPageAgent::getLayoutMetrics(
                           .setHeight(content_size.Height())
                           .build();
 
-  *out_visual_viewport =
-      protocol::Page::VisualViewport::create()
-          .setOffsetX(
-              AdjustForAbsoluteZoom::AdjustScroll(visible_rect.X(), page_zoom))
-          .setOffsetY(
-              AdjustForAbsoluteZoom::AdjustScroll(visible_rect.Y(), page_zoom))
-          .setPageX(AdjustForAbsoluteZoom::AdjustScroll(page_offset.Width(),
-                                                        page_zoom))
-          .setPageY(AdjustForAbsoluteZoom::AdjustScroll(page_offset.Height(),
-                                                        page_zoom))
-          .setClientWidth(visible_rect.Width() - scrollbar_width)
-          .setClientHeight(visible_rect.Height() - scrollbar_height)
-          .setScale(scale)
-          .build();
+  *out_visual_viewport = protocol::Page::VisualViewport::create()
+                             .setOffsetX(AdjustForAbsoluteZoom::AdjustScroll(
+                                 visible_rect.X(), page_zoom))
+                             .setOffsetY(AdjustForAbsoluteZoom::AdjustScroll(
+                                 visible_rect.Y(), page_zoom))
+                             .setPageX(AdjustForAbsoluteZoom::AdjustScroll(
+                                 page_offset.Width(), page_zoom))
+                             .setPageY(AdjustForAbsoluteZoom::AdjustScroll(
+                                 page_offset.Height(), page_zoom))
+                             .setClientWidth(visible_rect.Width())
+                             .setClientHeight(visible_rect.Height())
+                             .setScale(scale)
+                             .build();
   return Response::OK();
 }
 

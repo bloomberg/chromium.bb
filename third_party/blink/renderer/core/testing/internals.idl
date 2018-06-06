@@ -349,10 +349,6 @@ enum EffectiveConnectionType {
     DOMString selectedTextForClipboard();
 
     void setVisualViewportOffset(long x, long y);
-    long visualViewportHeight();
-    long visualViewportWidth();
-    double visualViewportScrollX();
-    double visualViewportScrollY();
 
     boolean magnifyScaleAroundAnchor(float offset, float x, float y);
 

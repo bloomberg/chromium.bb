@@ -1869,7 +1869,8 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
   } else {
     location_in_root_frame = IntPoint(
         right_aligned
-            ? visual_viewport.VisibleRect().MaxX() - kContextMenuMargin
+            ? visual_viewport.VisibleRect(kIncludeScrollbars).MaxX() -
+                  kContextMenuMargin
             : visual_viewport.GetScrollOffset().Width() + kContextMenuMargin,
         visual_viewport.GetScrollOffset().Height() + kContextMenuMargin);
   }
