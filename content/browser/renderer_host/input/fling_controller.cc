@@ -7,7 +7,6 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/public/common/content_features.h"
-#include "ui/compositor/compositor.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/fling_booster.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
@@ -53,10 +52,7 @@ FlingController::FlingController(
   DCHECK(scheduler_client);
 }
 
-FlingController::~FlingController() {
-  if (compositor_)
-    compositor_->RemoveAnimationObserver(this);
-}
+FlingController::~FlingController() = default;
 
 bool FlingController::ShouldForwardForGFCFiltering(
     const GestureEventWithLatencyInfo& gesture_event) const {
@@ -439,26 +435,6 @@ bool FlingController::TouchscreenFlingInProgress() const {
 
 gfx::Vector2dF FlingController::CurrentFlingVelocity() const {
   return current_fling_parameters_.velocity;
-}
-
-void FlingController::OnAnimationStep(base::TimeTicks timestamp) {
-  ProgressFling(timestamp);
-}
-
-void FlingController::OnCompositingShuttingDown(ui::Compositor* compositor) {
-  compositor->RemoveAnimationObserver(this);
-  compositor_ = nullptr;
-}
-
-void FlingController::SetCompositor(ui::Compositor* compositor) {
-  if (compositor) {
-    DCHECK(!compositor_);
-    compositor->AddAnimationObserver(this);
-  } else {
-    DCHECK(compositor_);
-    compositor_->RemoveAnimationObserver(this);
-  }
-  compositor_ = compositor;
 }
 
 TouchpadTapSuppressionController*

@@ -18,35 +18,35 @@ namespace content {
 FlingScheduler::FlingScheduler(RenderWidgetHostImpl* host) : host_(host) {
   DCHECK(host);
 }
-FlingScheduler::~FlingScheduler() = default;
+
+FlingScheduler::~FlingScheduler() {
+  if (observed_compositor_)
+    observed_compositor_->RemoveAnimationObserver(this);
+}
 
 void FlingScheduler::ScheduleFlingProgress(
     base::WeakPtr<FlingController> fling_controller) {
   DCHECK(fling_controller);
   fling_controller_ = fling_controller;
+  // Don't do anything if a ui::Compositor is already being observed.
+  if (observed_compositor_)
+    return;
   ui::Compositor* compositor = GetCompositor();
-
-  if (compositor) {
-    // |fling_controller->SetCompositor(compositor)| adds the fling_controller
-    // as an animation observer to this compositor when fling_controller has
-    // called |ScheduleFlingProgress| for the first time.
-    if (!is_observer_added_) {
-      fling_controller->SetCompositor(compositor);
-      is_observer_added_ = true;
-    }
-  } else {  // No compositor is available.
+  // If a ui::Compositor can't be obtained, ask the host for BeginFrames.
+  if (!compositor) {
     host_->SetNeedsBeginFrameForFlingProgress();
+    return;
   }
+  compositor->AddAnimationObserver(this);
+  observed_compositor_ = compositor;
 }
+
 void FlingScheduler::DidStopFlingingOnBrowser(
     base::WeakPtr<FlingController> fling_controller) {
   DCHECK(fling_controller);
-  if (GetCompositor()) {
-    // |fling_controller->SetCompositor(nullptr)| removes the fling_controller
-    // as an animation observer from its current compositor when flinging has
-    // stopped.
-    fling_controller->SetCompositor(nullptr);
-    is_observer_added_ = false;
+  if (observed_compositor_) {
+    observed_compositor_->RemoveAnimationObserver(this);
+    observed_compositor_ = nullptr;
   }
   fling_controller_ = nullptr;
   host_->DidStopFlinging();
@@ -59,7 +59,7 @@ void FlingScheduler::ProgressFlingOnBeginFrameIfneeded(
     return;
 
   // FlingProgress will be called within FlingController::OnAnimationStep.
-  if (is_observer_added_)
+  if (observed_compositor_)
     return;
 
   fling_controller_->ProgressFling(current_time);
@@ -75,6 +75,16 @@ ui::Compositor* FlingScheduler::GetCompositor() {
 #endif
 
   return nullptr;
+}
+
+void FlingScheduler::OnAnimationStep(base::TimeTicks timestamp) {
+  fling_controller_->ProgressFling(timestamp);
+}
+
+void FlingScheduler::OnCompositingShuttingDown(ui::Compositor* compositor) {
+  DCHECK_EQ(observed_compositor_, compositor);
+  observed_compositor_->RemoveAnimationObserver(this);
+  observed_compositor_ = nullptr;
 }
 
 }  // namespace content

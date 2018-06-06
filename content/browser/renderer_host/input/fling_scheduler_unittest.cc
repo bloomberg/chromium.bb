@@ -33,6 +33,7 @@ class FakeFlingScheduler : public FlingScheduler {
   bool fling_in_progress() const { return fling_in_progress_; }
 
   ui::Compositor* compositor() { return GetCompositor(); }
+  ui::Compositor* observed_compositor() { return observed_compositor_; }
 
   base::WeakPtr<FlingController> fling_controller() const {
     return fling_controller_;
@@ -136,7 +137,8 @@ TEST_F(FlingSchedulerTest, ScheduleNextFlingProgress) {
   EXPECT_TRUE(fling_scheduler_->fling_in_progress());
   EXPECT_EQ(fling_controller_.get(),
             fling_scheduler_->fling_controller().get());
-  EXPECT_EQ(fling_scheduler_->compositor(), fling_controller_->compositor());
+  EXPECT_EQ(fling_scheduler_->compositor(),
+            fling_scheduler_->observed_compositor());
 
   progress_time += base::TimeDelta::FromMilliseconds(17);
   fling_controller_->ProgressFling(progress_time);
@@ -148,12 +150,13 @@ TEST_F(FlingSchedulerTest, FlingCancelled) {
   EXPECT_TRUE(fling_scheduler_->fling_in_progress());
   EXPECT_EQ(fling_controller_.get(),
             fling_scheduler_->fling_controller().get());
-  EXPECT_EQ(fling_scheduler_->compositor(), fling_controller_->compositor());
+  EXPECT_EQ(fling_scheduler_->compositor(),
+            fling_scheduler_->observed_compositor());
 
   SimulateFlingCancel();
   EXPECT_FALSE(fling_scheduler_->fling_in_progress());
   EXPECT_EQ(nullptr, fling_scheduler_->fling_controller());
-  EXPECT_EQ(nullptr, fling_controller_->compositor());
+  EXPECT_EQ(nullptr, fling_scheduler_->observed_compositor());
 }
 
 }  // namespace content

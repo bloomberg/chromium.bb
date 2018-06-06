@@ -8,14 +8,12 @@
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/browser/renderer_host/input/touchscreen_tap_suppression_controller.h"
 #include "content/public/common/input_event_ack_state.h"
-#include "ui/compositor/compositor_animation_observer.h"
 
 namespace blink {
 class WebGestureCurve;
 }
 
 namespace ui {
-class Compositor;
 class FlingBooster;
 }
 
@@ -50,7 +48,7 @@ class CONTENT_EXPORT FlingControllerSchedulerClient {
       base::WeakPtr<FlingController> fling_controller) = 0;
 };
 
-class CONTENT_EXPORT FlingController : public ui::CompositorAnimationObserver {
+class CONTENT_EXPORT FlingController {
  public:
   struct CONTENT_EXPORT Config {
     Config();
@@ -78,7 +76,7 @@ class CONTENT_EXPORT FlingController : public ui::CompositorAnimationObserver {
                   FlingControllerSchedulerClient* scheduler_client,
                   const Config& config);
 
-  ~FlingController() override;
+  ~FlingController();
 
   // Used to progress an active fling on every begin frame.
   void ProgressFling(base::TimeTicks current_time);
@@ -99,8 +97,6 @@ class CONTENT_EXPORT FlingController : public ui::CompositorAnimationObserver {
 
   bool fling_in_progress() const { return fling_in_progress_; }
 
-  ui::Compositor* compositor() const { return compositor_; }
-
   bool FlingCancellationIsDeferred() const;
 
   bool TouchscreenFlingInProgress() const;
@@ -109,12 +105,6 @@ class CONTENT_EXPORT FlingController : public ui::CompositorAnimationObserver {
 
   // Returns the |TouchpadTapSuppressionController| instance.
   TouchpadTapSuppressionController* GetTouchpadTapSuppressionController();
-
-  // ui::CompositorAnimationObserver
-  void OnAnimationStep(base::TimeTicks timestamp) override;
-  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
-
-  void SetCompositor(ui::Compositor* compositor);
 
  protected:
   std::unique_ptr<ui::FlingBooster> fling_booster_;
@@ -189,8 +179,6 @@ class CONTENT_EXPORT FlingController : public ui::CompositorAnimationObserver {
   bool has_fling_animation_started_;
 
   bool send_wheel_events_nonblocking_;
-
-  ui::Compositor* compositor_ = nullptr;
 
   base::WeakPtrFactory<FlingController> weak_ptr_factory_;
 
