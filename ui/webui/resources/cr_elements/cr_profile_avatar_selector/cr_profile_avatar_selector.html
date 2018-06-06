@@ -1,7 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="cr_profile_avatar_selector_grid.html">
 
 <dom-module id="cr-profile-avatar-selector">
@@ -20,7 +22,7 @@
         background-position: center;
         background-repeat: no-repeat;
         border: 1px solid rgba(0, 0, 0, .12);
-        border-radius: 2px;
+        border-radius: var(--cr-card-border-radius);
         display: flex;
         height: var(--avatar-size);
         margin: calc(var(--avatar-spacing) / 2);

@@ -131,11 +131,11 @@
       <div id="actions">
         <paper-spinner-lite active="[[isSpinnerActive_(createInProgress_)]]">
         </paper-spinner-lite>
-        <paper-button id="cancel" class="action secondary"
+        <paper-button id="cancel" class="cancel-button"
             on-tap="onCancelTap_">
           $i18n{cancel}
         </paper-button>
-        <paper-button id="save" class="action primary" on-tap="onSaveTap_"
+        <paper-button id="save" class="action-button" on-tap="onSaveTap_"
             disabled="[[isSaveDisabled_(createInProgress_, profileName_)]]">
           $i18n{createProfileConfirm}
         </paper-button>
