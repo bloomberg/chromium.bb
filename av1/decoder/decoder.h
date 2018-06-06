@@ -111,6 +111,10 @@ typedef struct AV1Decoder {
   // State if the camera frame header is already decoded while
   // large_scale_tile = 1.
   int camera_frame_header_ready;
+  int output_frame_width_in_tiles_minus_1;
+  int output_frame_height_in_tiles_minus_1;
+  int tile_count_minus_1;
+  uint32_t coded_tile_data_size;
   int ext_tile_debug;  // for ext-tile software debug & testing
 } AV1Decoder;
 

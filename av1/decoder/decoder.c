@@ -269,26 +269,31 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
 
   if (frame_decoded) {
     lock_buffer_pool(pool);
-    for (mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
-      const int old_idx = cm->ref_frame_map[ref_index];
+
+    // In ext-tile decoding, the camera frame header is only decoded once. So,
+    // we don't release the references here.
+    if (!pbi->camera_frame_header_ready) {
+      for (mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
+        const int old_idx = cm->ref_frame_map[ref_index];
+        // Current thread releases the holding of reference frame.
+        decrease_ref_count(old_idx, frame_bufs, pool);
+
+        // Release the reference frame holding in the reference map for the
+        // decoding of the next frame.
+        if (mask & 1) decrease_ref_count(old_idx, frame_bufs, pool);
+        cm->ref_frame_map[ref_index] = cm->next_ref_frame_map[ref_index];
+        ++ref_index;
+      }
+
       // Current thread releases the holding of reference frame.
-      decrease_ref_count(old_idx, frame_bufs, pool);
-
-      // Release the reference frame holding in the reference map for the
-      // decoding of the next frame.
-      if (mask & 1) decrease_ref_count(old_idx, frame_bufs, pool);
-      cm->ref_frame_map[ref_index] = cm->next_ref_frame_map[ref_index];
-      ++ref_index;
-    }
-
-    // Current thread releases the holding of reference frame.
-    const int check_on_show_existing_frame =
-        !cm->show_existing_frame || cm->reset_decoder_state;
-    for (; ref_index < REF_FRAMES && check_on_show_existing_frame;
-         ++ref_index) {
-      const int old_idx = cm->ref_frame_map[ref_index];
-      decrease_ref_count(old_idx, frame_bufs, pool);
-      cm->ref_frame_map[ref_index] = cm->next_ref_frame_map[ref_index];
+      const int check_on_show_existing_frame =
+          !cm->show_existing_frame || cm->reset_decoder_state;
+      for (; ref_index < REF_FRAMES && check_on_show_existing_frame;
+           ++ref_index) {
+        const int old_idx = cm->ref_frame_map[ref_index];
+        decrease_ref_count(old_idx, frame_bufs, pool);
+        cm->ref_frame_map[ref_index] = cm->next_ref_frame_map[ref_index];
+      }
     }
 
     YV12_BUFFER_CONFIG *cur_frame = get_frame_new_buffer(cm);
@@ -320,12 +325,14 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
     unlock_buffer_pool(pool);
   }
 
-  pbi->hold_ref_buf = 0;
+  if (!pbi->camera_frame_header_ready) {
+    pbi->hold_ref_buf = 0;
 
-  // Invalidate these references until the next frame starts.
-  for (ref_index = 0; ref_index < INTER_REFS_PER_FRAME; ref_index++) {
-    cm->frame_refs[ref_index].idx = INVALID_IDX;
-    cm->frame_refs[ref_index].buf = NULL;
+    // Invalidate these references until the next frame starts.
+    for (ref_index = 0; ref_index < INTER_REFS_PER_FRAME; ref_index++) {
+      cm->frame_refs[ref_index].idx = INVALID_IDX;
+      cm->frame_refs[ref_index].buf = NULL;
+    }
   }
 }
 
@@ -362,7 +369,8 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   // Assign a MV array to the frame buffer.
   cm->cur_frame = &pool->frame_bufs[cm->new_fb_idx];
 
-  pbi->hold_ref_buf = 0;
+  if (!pbi->camera_frame_header_ready) pbi->hold_ref_buf = 0;
+
   pbi->cur_buf = &frame_bufs[cm->new_fb_idx];
 
   if (setjmp(cm->error.jmp)) {

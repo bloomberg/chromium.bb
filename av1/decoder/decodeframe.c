@@ -2213,6 +2213,16 @@ static const uint8_t *get_ls_tile_buffers(
 }
 #endif  // EXT_TILE_DEBUG
 
+static const uint8_t *get_ls_single_tile_buffer(
+    AV1Decoder *pbi, const uint8_t *data,
+    TileBufferDec (*const tile_buffers)[MAX_TILE_COLS]) {
+  assert(pbi->dec_tile_row >= 0 && pbi->dec_tile_col >= 0);
+  tile_buffers[pbi->dec_tile_row][pbi->dec_tile_col].data = data;
+  tile_buffers[pbi->dec_tile_row][pbi->dec_tile_col].size =
+      (size_t)pbi->coded_tile_data_size;
+  return data + pbi->coded_tile_data_size;
+}
+
 // Reads the next tile returning its size and adjusting '*data' accordingly
 // based on 'is_last'.
 static void get_tile_buffer(const uint8_t *const data_end,
@@ -2387,7 +2397,9 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   assert(tile_cols <= MAX_TILE_COLS);
 
 #if EXT_TILE_DEBUG
-  if (cm->large_scale_tile)
+  if (cm->large_scale_tile && !pbi->ext_tile_debug)
+    raw_data_end = get_ls_single_tile_buffer(pbi, data, tile_buffers);
+  else if (cm->large_scale_tile && pbi->ext_tile_debug)
     raw_data_end = get_ls_tile_buffers(pbi, data, data_end, tile_buffers);
   else
 #endif  // EXT_TILE_DEBUG
@@ -4019,7 +4031,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   if (initialize_flag) setup_frame_info(pbi);
 
-  if (pbi->max_threads > 1 && tile_count_tg > 1)
+  if (pbi->max_threads > 1 && tile_count_tg > 1 && !cm->large_scale_tile)
     *p_data_end = decode_tiles_mt(pbi, data, data_end, startTile, endTile);
   else
     *p_data_end = decode_tiles(pbi, data, data_end, startTile, endTile);
@@ -4032,7 +4044,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
     return;
   }
 
-  if (!cm->allow_intrabc) {
+  if (!cm->allow_intrabc && !cm->single_tile_decoding) {
     if (cm->lf.filter_level[0] || cm->lf.filter_level[1]) {
 #if LOOP_FILTER_BITMASK
       av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb, 0,
