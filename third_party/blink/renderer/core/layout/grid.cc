@@ -12,39 +12,54 @@
 
 namespace blink {
 
-Grid::Grid(const LayoutGrid* grid) : order_iterator_(grid) {}
-
-size_t Grid::NumTracks(GridTrackSizingDirection direction) const {
-  if (direction == kForRows)
-    return grid_.size();
-  return grid_.size() ? grid_[0].size() : 0;
+std::unique_ptr<Grid> Grid::Create(const LayoutGrid* layout_grid) {
+  return base::WrapUnique(new VectorGrid(layout_grid));
 }
 
-void Grid::EnsureGridSize(size_t maximum_row_size, size_t maximum_column_size) {
+Grid::Grid(const LayoutGrid* grid) : order_iterator_(grid) {}
+
+VectorGrid::VectorGrid(const LayoutGrid* grid) : Grid(grid) {}
+
+size_t VectorGrid::NumTracks(GridTrackSizingDirection direction) const {
+  if (direction == kForRows)
+    return matrix_.size();
+  return matrix_.size() ? matrix_[0].size() : 0;
+}
+
+void VectorGrid::EnsureGridSize(size_t maximum_row_size,
+                                size_t maximum_column_size) {
   const size_t old_row_size = NumTracks(kForRows);
   if (maximum_row_size > old_row_size) {
-    grid_.Grow(maximum_row_size);
+    matrix_.Grow(maximum_row_size);
     for (size_t row = old_row_size; row < NumTracks(kForRows); ++row)
-      grid_[row].Grow(NumTracks(kForColumns));
+      matrix_[row].Grow(NumTracks(kForColumns));
   }
 
   if (maximum_column_size > NumTracks(kForColumns)) {
     for (size_t row = 0; row < NumTracks(kForRows); ++row)
-      grid_[row].Grow(maximum_column_size);
+      matrix_[row].Grow(maximum_column_size);
   }
 }
 
-void Grid::insert(LayoutBox& child, const GridArea& area) {
+void VectorGrid::insert(LayoutBox& child, const GridArea& area) {
   DCHECK(area.rows.IsTranslatedDefinite());
   DCHECK(area.columns.IsTranslatedDefinite());
   EnsureGridSize(area.rows.EndLine(), area.columns.EndLine());
 
   for (const auto& row : area.rows) {
     for (const auto& column : area.columns)
-      grid_[row][column].push_back(&child);
+      matrix_[row][column].push_back(&child);
   }
 
   SetGridItemArea(child, area);
+}
+
+std::unique_ptr<Grid::GridIterator> VectorGrid::CreateIterator(
+    GridTrackSizingDirection direction,
+    size_t fixed_track_index,
+    size_t varying_track_index) const {
+  return base::WrapUnique(new VectorGridIterator(
+      *this, direction, fixed_track_index, varying_track_index));
 }
 
 void Grid::SetSmallestTracksStart(int row_start, int column_start) {
@@ -71,10 +86,6 @@ size_t Grid::GridItemPaintOrder(const LayoutBox& item) const {
 
 void Grid::SetGridItemPaintOrder(const LayoutBox& item, size_t order) {
   grid_items_indexes_map_.Set(&item, order);
-}
-
-const GridCell& Grid::Cell(size_t row, size_t column) const {
-  return grid_[row][column];
 }
 
 #if DCHECK_IS_ON()
@@ -139,11 +150,11 @@ void Grid::SetNeedsItemsPlacement(bool needs_items_placement) {
   needs_items_placement_ = needs_items_placement;
 
   if (!needs_items_placement) {
-    grid_.ShrinkToFit();
+    ConsolidateGridDataStructure();
     return;
   }
 
-  grid_.resize(0);
+  ClearGridDataStructure();
   grid_item_area_.clear();
   grid_items_indexes_map_.clear();
   has_any_orthogonal_grid_item_ = false;
@@ -155,34 +166,39 @@ void Grid::SetNeedsItemsPlacement(bool needs_items_placement) {
   auto_repeat_empty_rows_ = nullptr;
 }
 
-GridIterator::GridIterator(const Grid& grid,
-                           GridTrackSizingDirection direction,
-                           size_t fixed_track_index,
-                           size_t varying_track_index)
-    : grid_(grid.grid_),
-      direction_(direction),
+Grid::GridIterator::GridIterator(GridTrackSizingDirection direction,
+                                 size_t fixed_track_index,
+                                 size_t varying_track_index)
+    : direction_(direction),
       row_index_((direction == kForColumns) ? varying_track_index
                                             : fixed_track_index),
       column_index_((direction == kForColumns) ? fixed_track_index
                                                : varying_track_index),
-      child_index_(0) {
-  DCHECK(!grid_.IsEmpty());
-  DCHECK(!grid_[0].IsEmpty());
-  DCHECK_LT(row_index_, grid_.size());
-  DCHECK_LT(column_index_, grid_[0].size());
+      child_index_(0) {}
+
+VectorGridIterator::VectorGridIterator(const VectorGrid& grid,
+                                       GridTrackSizingDirection direction,
+                                       size_t fixed_track_index,
+                                       size_t varying_track_index)
+    : GridIterator(direction, fixed_track_index, varying_track_index),
+      matrix_(grid.matrix_) {
+  DCHECK(!matrix_.IsEmpty());
+  DCHECK(!matrix_[0].IsEmpty());
+  DCHECK_LT(row_index_, matrix_.size());
+  DCHECK_LT(column_index_, matrix_[0].size());
 }
 
-LayoutBox* GridIterator::NextGridItem() {
-  DCHECK(!grid_.IsEmpty());
-  DCHECK(!grid_[0].IsEmpty());
+LayoutBox* VectorGridIterator::NextGridItem() {
+  DCHECK(!matrix_.IsEmpty());
+  DCHECK(!matrix_[0].IsEmpty());
 
   size_t& varying_track_index =
       (direction_ == kForColumns) ? row_index_ : column_index_;
   const size_t end_of_varying_track_index =
-      (direction_ == kForColumns) ? grid_.size() : grid_[0].size();
+      (direction_ == kForColumns) ? matrix_.size() : matrix_[0].size();
   for (; varying_track_index < end_of_varying_track_index;
        ++varying_track_index) {
-    const GridCell& children = grid_[row_index_][column_index_];
+    const GridCell& children = matrix_[row_index_][column_index_];
     if (child_index_ < children.size())
       return children[child_index_++];
 
@@ -191,19 +207,20 @@ LayoutBox* GridIterator::NextGridItem() {
   return nullptr;
 }
 
-bool GridIterator::CheckEmptyCells(size_t row_span, size_t column_span) const {
-  DCHECK(!grid_.IsEmpty());
-  DCHECK(!grid_[0].IsEmpty());
+bool VectorGridIterator::CheckEmptyCells(size_t row_span,
+                                         size_t column_span) const {
+  DCHECK(!matrix_.IsEmpty());
+  DCHECK(!matrix_[0].IsEmpty());
 
   // Ignore cells outside current grid as we will grow it later if needed.
-  size_t max_rows = std::min(row_index_ + row_span, grid_.size());
-  size_t max_columns = std::min(column_index_ + column_span, grid_[0].size());
+  size_t max_rows = std::min(row_index_ + row_span, matrix_.size());
+  size_t max_columns = std::min(column_index_ + column_span, matrix_[0].size());
 
   // This adds a O(N^2) behavior that shouldn't be a big deal as we expect
   // spanning areas to be small.
   for (size_t row = row_index_; row < max_rows; ++row) {
     for (size_t column = column_index_; column < max_columns; ++column) {
-      const GridCell& children = grid_[row][column];
+      const GridCell& children = matrix_[row][column];
       if (!children.IsEmpty())
         return false;
     }
@@ -212,11 +229,11 @@ bool GridIterator::CheckEmptyCells(size_t row_span, size_t column_span) const {
   return true;
 }
 
-std::unique_ptr<GridArea> GridIterator::NextEmptyGridArea(
+std::unique_ptr<GridArea> VectorGridIterator::NextEmptyGridArea(
     size_t fixed_track_span,
     size_t varying_track_span) {
-  DCHECK(!grid_.IsEmpty());
-  DCHECK(!grid_[0].IsEmpty());
+  DCHECK(!matrix_.IsEmpty());
+  DCHECK(!matrix_[0].IsEmpty());
   DCHECK_GE(fixed_track_span, 1u);
   DCHECK_GE(varying_track_span, 1u);
 
@@ -228,7 +245,7 @@ std::unique_ptr<GridArea> GridIterator::NextEmptyGridArea(
   size_t& varying_track_index =
       (direction_ == kForColumns) ? row_index_ : column_index_;
   const size_t end_of_varying_track_index =
-      (direction_ == kForColumns) ? grid_.size() : grid_[0].size();
+      (direction_ == kForColumns) ? matrix_.size() : matrix_[0].size();
   for (; varying_track_index < end_of_varying_track_index;
        ++varying_track_index) {
     if (CheckEmptyCells(row_span, column_span)) {

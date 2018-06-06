@@ -29,14 +29,19 @@ class GridIterator;
 // LayoutGrid object to place the grid items on a grid like structure, so that
 // they could be accessed by rows/columns instead of just traversing the DOM or
 // Layout trees.
-class Grid final {
+class Grid {
  public:
-  Grid(const LayoutGrid*);
+  static std::unique_ptr<Grid> Create(const LayoutGrid*);
 
-  size_t NumTracks(GridTrackSizingDirection) const;
+  virtual size_t NumTracks(GridTrackSizingDirection) const = 0;
 
-  void EnsureGridSize(size_t maximum_row_size, size_t maximum_column_size);
-  void insert(LayoutBox&, const GridArea&);
+  virtual void EnsureGridSize(size_t maximum_row_size,
+                              size_t maximum_column_size) = 0;
+  virtual void insert(LayoutBox&, const GridArea&) = 0;
+
+  virtual const GridCell& Cell(size_t row, size_t column) const = 0;
+
+  virtual ~Grid(){};
 
   // Note that out of flow children are not grid items.
   bool HasGridItems() const { return !grid_item_area_.IsEmpty(); }
@@ -53,8 +58,6 @@ class Grid final {
 
   size_t GridItemPaintOrder(const LayoutBox&) const;
   void SetGridItemPaintOrder(const LayoutBox&, size_t order);
-
-  const GridCell& Cell(size_t row, size_t column) const;
 
   int SmallestTrackStart(GridTrackSizingDirection) const;
   void SetSmallestTracksStart(int row_start, int column_start);
@@ -81,6 +84,42 @@ class Grid final {
   bool HasAnyGridItemPaintOrder() const;
 #endif
 
+  class GridIterator {
+   public:
+    virtual LayoutBox* NextGridItem() = 0;
+
+    virtual std::unique_ptr<GridArea> NextEmptyGridArea(
+        size_t fixed_track_span,
+        size_t varying_track_span) = 0;
+
+    virtual ~GridIterator() = default;
+
+   protected:
+    // |direction| is the direction that is fixed to |fixed_track_index| so e.g
+    // GridIterator(grid_, kForColumns, 1) will walk over the rows of the 2nd
+    // column.
+    GridIterator(GridTrackSizingDirection,
+                 size_t fixed_track_index,
+                 size_t varying_track_index);
+
+    GridTrackSizingDirection direction_;
+    size_t row_index_;
+    size_t column_index_;
+    size_t child_index_;
+    DISALLOW_COPY_AND_ASSIGN(GridIterator);
+  };
+
+  virtual std::unique_ptr<GridIterator> CreateIterator(
+      GridTrackSizingDirection,
+      size_t fixed_track_index,
+      size_t varying_track_index = 0) const = 0;
+
+ protected:
+  Grid(const LayoutGrid*);
+
+  virtual void ClearGridDataStructure() = 0;
+  virtual void ConsolidateGridDataStructure() = 0;
+
  private:
   friend class GridIterator;
 
@@ -95,8 +134,6 @@ class Grid final {
   bool has_any_orthogonal_grid_item_{false};
   bool needs_items_placement_{true};
 
-  GridAsMatrix grid_;
-
   HashMap<const LayoutBox*, GridArea> grid_item_area_;
   HashMap<const LayoutBox*, size_t> grid_items_indexes_map_;
 
@@ -104,32 +141,50 @@ class Grid final {
   std::unique_ptr<OrderedTrackIndexSet> auto_repeat_empty_rows_{nullptr};
 };
 
-// TODO(svillar): ideally the Grid class should be the one returning an iterator
-// for its contents.
-class GridIterator final {
+class VectorGrid final : public Grid {
  public:
-  // |direction| is the direction that is fixed to |fixedTrackIndex| so e.g
-  // GridIterator(m_grid, ForColumns, 1) will walk over the rows of the 2nd
-  // column.
-  GridIterator(const Grid&,
-               GridTrackSizingDirection,
-               size_t fixed_track_index,
-               size_t varying_track_index = 0);
+  explicit VectorGrid(const LayoutGrid*);
 
-  LayoutBox* NextGridItem();
-
-  bool CheckEmptyCells(size_t row_span, size_t column_span) const;
-
-  std::unique_ptr<GridArea> NextEmptyGridArea(size_t fixed_track_span,
-                                              size_t varying_track_span);
+  size_t NumTracks(GridTrackSizingDirection) const override;
+  const GridCell& Cell(size_t row, size_t column) const override {
+    return matrix_[row][column];
+  }
+  void insert(LayoutBox&, const GridArea&) override;
 
  private:
-  const GridAsMatrix& grid_;
-  GridTrackSizingDirection direction_;
-  size_t row_index_;
-  size_t column_index_;
-  size_t child_index_;
-  DISALLOW_COPY_AND_ASSIGN(GridIterator);
+  friend class VectorGridIterator;
+
+  void EnsureGridSize(size_t maximum_row_size,
+                      size_t maximum_column_size) override;
+
+  void ClearGridDataStructure() override { matrix_.resize(0); };
+  void ConsolidateGridDataStructure() override { matrix_.ShrinkToFit(); }
+
+  std::unique_ptr<GridIterator> CreateIterator(
+      GridTrackSizingDirection,
+      size_t fixed_track_index,
+      size_t varying_track_index = 0) const override;
+
+  GridAsMatrix matrix_;
+};
+
+class VectorGridIterator final : public Grid::GridIterator {
+ public:
+  VectorGridIterator(const VectorGrid&,
+                     GridTrackSizingDirection,
+                     size_t fixed_track_span,
+                     size_t varying_track_span = 0);
+
+  LayoutBox* NextGridItem() override;
+  std::unique_ptr<GridArea> NextEmptyGridArea(
+      size_t fixed_track_span,
+      size_t varying_track_span) override;
+
+ private:
+  bool CheckEmptyCells(size_t row_span, size_t column_span) const;
+
+  const GridAsMatrix& matrix_;
+  DISALLOW_COPY_AND_ASSIGN(VectorGridIterator);
 };
 
 }  // namespace blink

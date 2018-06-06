@@ -524,8 +524,9 @@ double IndefiniteSizeStrategy::FindUsedFlexFraction(
     return flex_fraction;
 
   for (size_t i = 0; i < flexible_sized_tracks_index.size(); ++i) {
-    GridIterator iterator(grid, direction, flexible_sized_tracks_index[i]);
-    while (LayoutBox* grid_item = iterator.NextGridItem()) {
+    auto iterator =
+        grid.CreateIterator(direction, flexible_sized_tracks_index[i]);
+    while (LayoutBox* grid_item = iterator->NextGridItem()) {
       const GridSpan& span = grid.GridItemSpan(*grid_item, direction);
 
       // Do not include already processed items.
@@ -1226,9 +1227,9 @@ void GridTrackSizingAlgorithm::ResolveIntrinsicTrackSizes() {
   if (grid_.HasGridItems()) {
     HashSet<LayoutBox*> items_set;
     for (const auto& track_index : content_sized_tracks_index_) {
-      GridIterator iterator(grid_, direction_, track_index);
+      auto iterator = grid_.CreateIterator(direction_, track_index);
       GridTrack& track = Tracks(direction_)[track_index];
-      while (LayoutBox* grid_item = iterator.NextGridItem()) {
+      while (auto* grid_item = iterator->NextGridItem()) {
         if (items_set.insert(grid_item).is_new_entry) {
           const GridSpan& span = grid_.GridItemSpan(*grid_item, direction_);
           if (span.IntegerSpan() == 1) {
