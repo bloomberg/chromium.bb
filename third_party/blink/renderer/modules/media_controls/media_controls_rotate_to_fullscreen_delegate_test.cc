@@ -190,8 +190,8 @@ void MediaControlsRotateToFullscreenDelegateTest::InitScreenAndVideo(
   WebScreenInfo screen_info;
   screen_info.orientation_type = initial_screen_orientation;
   EXPECT_CALL(GetChromeClient(), GetScreenInfo())
-      .Times(1)
-      .WillOnce(Return(screen_info));
+      .Times(AtLeast(1))
+      .WillRepeatedly(Return(screen_info));
 
   // Set up the WebMediaPlayer instance.
   GetDocument().body()->AppendChild(&GetVideo());

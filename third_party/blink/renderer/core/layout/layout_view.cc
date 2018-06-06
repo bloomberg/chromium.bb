@@ -23,7 +23,9 @@
 
 #include <inttypes.h>
 
+#include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -52,6 +54,10 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#endif
 
 namespace blink {
 
@@ -312,6 +318,21 @@ void LayoutView::UpdateLayout() {
 
   DCHECK(!layout_state_);
   LayoutState root_layout_state(*this);
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  // The font code in FontPlatformData does not have a direct connection to the
+  // document, the frame or anything from which we could retrieve the device
+  // scale factor. After using zoom for DSF, the GraphicsContext does only ever
+  // have a DSF of 1 on Linux. In order for the font code to be aware of an up
+  // to date DSF when layout happens, we plumb this through to the FontCache, so
+  // that we can correctly retrieve RenderStyleForStrike from out of
+  // process. crbug.com/845468
+  FontCache::SetDeviceScaleFactor(GetFrameView()
+                                      ->GetFrame()
+                                      .GetChromeClient()
+                                      .GetScreenInfo()
+                                      .device_scale_factor);
+#endif
 
   LayoutBlockFlow::UpdateLayout();
 

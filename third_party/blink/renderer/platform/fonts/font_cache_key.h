@@ -49,22 +49,31 @@ struct FontCacheKey {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  FontCacheKey() : creation_params_(), font_size_(0), options_(0) {}
+  FontCacheKey()
+      : creation_params_(),
+        font_size_(0),
+        options_(0),
+        device_scale_factor_(0) {}
   FontCacheKey(FontFaceCreationParams creation_params,
                float font_size,
                unsigned options,
+               float device_scale_factor,
                scoped_refptr<FontVariationSettings> variation_settings)
       : creation_params_(creation_params),
         font_size_(font_size * kFontSizePrecisionMultiplier),
         options_(options),
+        device_scale_factor_(device_scale_factor),
         variation_settings_(std::move(variation_settings)) {}
 
   FontCacheKey(WTF::HashTableDeletedValueType)
       : font_size_(HashTableDeletedSize()) {}
 
   unsigned GetHash() const {
-    unsigned hash_codes[4] = {
+    // Convert from float with 3 digit precision before hashing.
+    unsigned device_scale_factor_hash = device_scale_factor_ * 1000;
+    unsigned hash_codes[5] = {
         creation_params_.GetHash(), font_size_, options_,
+        device_scale_factor_hash,
         variation_settings_ ? variation_settings_->GetHash() : 0};
     return StringHasher::HashMemory<sizeof(hash_codes)>(hash_codes);
   }
@@ -72,6 +81,7 @@ struct FontCacheKey {
   bool operator==(const FontCacheKey& other) const {
     return creation_params_ == other.creation_params_ &&
            font_size_ == other.font_size_ && options_ == other.options_ &&
+           device_scale_factor_ == other.device_scale_factor_ &&
            variation_settings_ == other.variation_settings_;
   }
 
@@ -89,6 +99,11 @@ struct FontCacheKey {
   FontFaceCreationParams creation_params_;
   unsigned font_size_;
   unsigned options_;
+  // FontCacheKey is the key to retrieve FontPlatformData entries from the
+  // FontCache. FontPlatformData queries the platform's font render style, which
+  // is dependent on the device scale factor. That's why we need
+  // device_scale_factor_ to be a part of computing the cache key.
+  float device_scale_factor_;
   scoped_refptr<FontVariationSettings> variation_settings_;
 };
 
