@@ -99,6 +99,7 @@ void FlushQueue() {
 }  // namespace
 
 // static
+int NativeViewAccessibilityBase::menu_depth_ = 0;
 int32_t NativeViewAccessibilityBase::fake_focus_view_id_ = 0;
 
 NativeViewAccessibilityBase::NativeViewAccessibilityBase(View* view)
@@ -134,15 +135,51 @@ void NativeViewAccessibilityBase::NotifyAccessibilityEvent(
 
   ax_node_->NotifyAccessibilityEvent(event_type);
 
-  // A focus context event is intended to send a focus event and a delay
-  // before the next focus event. It makes sense to delay the entire next
-  // synchronous batch of next events so that ordering remains the same.
-  if (event_type == ax::mojom::Event::kFocusContext) {
-    // Begin queueing subsequent events and flush queue asynchronously.
-    g_is_queueing_events = true;
-    base::OnceCallback<void()> cb = base::BindOnce(&FlushQueue);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(cb));
+  // Some events have special handling.
+  switch (event_type) {
+    case ax::mojom::Event::kMenuStart:
+      OnMenuStart();
+      break;
+    case ax::mojom::Event::kMenuEnd:
+      OnMenuEnd();
+      break;
+    case ax::mojom::Event::kSelection:
+      if (menu_depth_ && GetData().role == ax::mojom::Role::kMenuItem)
+        OnMenuItemActive();
+      break;
+    case ax::mojom::Event::kFocusContext: {
+      // A focus context event is intended to send a focus event and a delay
+      // before the next focus event. It makes sense to delay the entire next
+      // synchronous batch of next events so that ordering remains the same.
+      // Begin queueing subsequent events and flush queue asynchronously.
+      g_is_queueing_events = true;
+      base::OnceCallback<void()> cb = base::BindOnce(&FlushQueue);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(cb));
+      break;
+    }
+    default:
+      break;
   }
+}
+
+void NativeViewAccessibilityBase::OnMenuItemActive() {
+  // When a native menu is shown and has an item selected, treat it and the
+  // currently selected item as focused, even though the actual focus is in the
+  // browser's currently focused textfield.
+  fake_focus_view_id_ = GetUniqueId().Get();
+}
+
+void NativeViewAccessibilityBase::OnMenuStart() {
+  ++menu_depth_;
+}
+
+void NativeViewAccessibilityBase::OnMenuEnd() {
+  // When a native menu is hidden, restore accessibility focus to the current
+  // focus in the document.
+  DCHECK_GE(menu_depth_, 1);
+  --menu_depth_;
+  if (menu_depth_ == 0)
+    fake_focus_view_id_ = 0;
 }
 
 // ui::AXPlatformNodeDelegate
@@ -279,23 +316,6 @@ gfx::NativeViewAccessible NativeViewAccessibilityBase::HitTestSync(int x,
 
   // If it's not inside any of our children, it's inside this view.
   return GetNativeObject();
-}
-
-void NativeViewAccessibilityBase::OnAutofillShown() {
-  // When the autofill is shown, treat it and the currently selected item as
-  // focused, even though the actual focus is in the browser's currently
-  // focused textfield.
-  DCHECK(!fake_focus_view_id_) << "Cannot have more that one fake focus.";
-  fake_focus_view_id_ = GetUniqueId().Get();
-  ui::AXPlatformNode::OnAutofillShown();
-}
-
-void NativeViewAccessibilityBase::OnAutofillHidden() {
-  DCHECK(fake_focus_view_id_) << "No autofill fake focus set.";
-  DCHECK_EQ(fake_focus_view_id_, GetUniqueId().Get())
-      << "Cannot clear autofill fake focus on an object that did not have it.";
-  fake_focus_view_id_ = 0;
-  ui::AXPlatformNode::OnAutofillHidden();
 }
 
 gfx::NativeViewAccessible NativeViewAccessibilityBase::GetFocus() {

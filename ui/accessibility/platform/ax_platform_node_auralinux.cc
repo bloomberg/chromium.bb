@@ -1251,7 +1251,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kSearchBox:
       if (!GetStringAttribute(ax::mojom::StringAttribute::kAutoComplete)
                .empty() ||
-          IsAutofillField()) {
+          IsFocusedInputWithSuggestions()) {
         return ATK_ROLE_AUTOCOMPLETE;
         ;
       }

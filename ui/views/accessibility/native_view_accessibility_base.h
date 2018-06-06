@@ -37,8 +37,6 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
   // ViewAccessibility:
   gfx::NativeViewAccessible GetNativeObject() override;
   void NotifyAccessibilityEvent(ax::mojom::Event event_type) override;
-  void OnAutofillShown() override;
-  void OnAutofillHidden() override;
 
   // ui::AXPlatformNodeDelegate
   const ui::AXNodeData& GetData() const override;
@@ -77,13 +75,20 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
  private:
   void PopulateChildWidgetVector(std::vector<Widget*>* result_child_widgets);
 
+  void OnMenuItemActive();
+  void OnMenuStart();
+  void OnMenuEnd();
+
   // We own this, but it is reference-counted on some platforms so we can't use
   // a scoped_ptr. It is dereferenced in the destructor.
   ui::AXPlatformNode* ax_node_;
 
   mutable ui::AXNodeData data_;
 
-  // This allows UI popups like autofill to act as if they are focused in the
+  // Levels of menu are currently open, e.g. 0: none, 1: top, 2: submenu ...
+  static int32_t menu_depth_;
+
+  // This allows UI menu popups like to act as if they are focused in the
   // exposed platform accessibility API, even though true focus remains in
   // underlying content.
   static int32_t fake_focus_view_id_;

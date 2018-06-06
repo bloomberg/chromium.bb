@@ -3190,7 +3190,7 @@ int32_t AXPlatformNodeWin::ComputeIA2State() {
   }
 
   if (!GetStringAttribute(ax::mojom::StringAttribute::kAutoComplete).empty() ||
-      IsAutofillField()) {
+      IsFocusedInputWithSuggestions()) {
     ia2_state |= IA2_STATE_SUPPORTS_AUTOCOMPLETION;
   }
 
@@ -3421,7 +3421,7 @@ std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
   StringAttributeToIA2(result, ax::mojom::StringAttribute::kAutoComplete,
                        "autocomplete");
   if (!HasStringAttribute(ax::mojom::StringAttribute::kAutoComplete) &&
-      IsAutofillField()) {
+      IsFocusedInputWithSuggestions()) {
     result.push_back(L"autocomplete:list");
   }
 
@@ -3489,9 +3489,9 @@ std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
         result.push_back(L"haspopup:dialog");
         break;
     }
-  } else if (IsAutofillField()) {
-    // Note: autofill is special-cased here because there is no way for the
-    // browser to know when the autofill popup is shown.
+  } else if (IsFocusedInputWithSuggestions()) {
+    // Note: suggestions are special-cased here because there is no way
+    // for the browser to know when a suggestion popup is available.
     result.push_back(L"haspopup:menu");
   }
 
@@ -3837,10 +3837,10 @@ int AXPlatformNodeWin::MSAAState() {
   if (ShouldNodeHaveFocusableState(data))
     msaa_state |= STATE_SYSTEM_FOCUSABLE;
 
-  // Note: autofill is special-cased here because there is no way for the
-  // browser to know when the autofill popup is shown.
+  // Note: suggestions are special-cased here because there is no way
+  // for the browser to know when a suggestion popup is available.
   if (data.HasIntAttribute(ax::mojom::IntAttribute::kHasPopup) ||
-      IsAutofillField())
+      IsFocusedInputWithSuggestions())
     msaa_state |= STATE_SYSTEM_HASPOPUP;
 
   // TODO(dougt) unhandled ux::ax::mojom::State::kHorizontal

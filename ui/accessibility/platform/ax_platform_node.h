@@ -12,6 +12,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_mode_observer.h"
+#include "ui/accessibility/ax_modes.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -49,13 +50,25 @@ class AX_EXPORT AXPlatformNode {
   static void AddAXModeObserver(AXModeObserver* observer);
   static void RemoveAXModeObserver(AXModeObserver* observer);
 
+  // Convenience method to get the current accessibility mode.
+  static AXMode GetAccessibilityMode() { return ax_mode_; }
+
   // Helper static function to notify all global observers about
   // the addition of an AXMode flag.
   static void NotifyAddAXModeFlags(AXMode mode_flags);
 
-  static void OnAutofillShown();
-  static void OnAutofillHidden();
-  static bool IsAutofillShown();
+  // Must be called by native suggestion code when there are suggestions which
+  // could be presented in a popup, even if the popup is not presently visible.
+  // The availability of the popup changes the interactions that will occur
+  // (down arrow will move the focus into the suggestion popup). An example of a
+  // suggestion popup is seen in the Autofill feature.
+  static void OnInputSuggestionsAvailable();
+  // Must be called when the system goes from a state of having an available
+  // suggestion popup to none available. If the suggestion popup is still
+  // available but just hidden, this method should not be called.
+  static void OnInputSuggestionsUnavailable();
+
+  static bool HasInputSuggestions();
 
   // Call Destroy rather than deleting this, because the subclass may
   // use reference counting.
@@ -88,7 +101,9 @@ class AX_EXPORT AXPlatformNode {
   static base::LazyInstance<NativeWindowHandlerCallback>::Leaky
       native_window_handler_;
 
-  static bool is_autofill_shown_;
+  static AXMode ax_mode_;
+
+  static bool has_input_suggestions_;
 
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNode);
 };

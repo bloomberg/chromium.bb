@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/suggestion.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -417,9 +418,19 @@ gfx::Size AutofillPopupViewNativeViews::CalculatePreferredSize() const {
 void AutofillPopupViewNativeViews::VisibilityChanged(View* starting_from,
                                                      bool is_visible) {
   if (is_visible) {
-    GetViewAccessibility().OnAutofillShown();
+    // TODO(https://crbug.com/848427) Call this when suggestions become
+    // available at all, even if it not currently visible.
+    ui::AXPlatformNode::OnInputSuggestionsAvailable();
+    // Fire these the first time a menu is visible. By firing these and the
+    // matching end events, we are telling screen readers that the focus
+    // is only changing temporarily, and the screen reader will restore the
+    // focus back to the appropriate textfield when the menu closes.
+    NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
   } else {
-    GetViewAccessibility().OnAutofillHidden();
+    // TODO(https://crbug.com/848427) Only call if suggestions are actually no
+    // longer available. The suggestions could be hidden but still available, as
+    // is the case when the Escape key is pressed.
+    ui::AXPlatformNode::OnInputSuggestionsUnavailable();
     NotifyAccessibilityEvent(ax::mojom::Event::kMenuEnd, true);
   }
 }
@@ -429,15 +440,6 @@ void AutofillPopupViewNativeViews::OnSelectedRowChanged(
     base::Optional<int> current_row_selection) {
   if (previous_row_selection) {
     rows_[*previous_row_selection]->SetSelected(false);
-  } else {
-    // Fire this the first time a row is selected. By firing this and the
-    // matching kMenuEnd event, we are telling screen readers that the focus
-    // is only changing temporarily, and the screen reader will restore the
-    // focus back to the appropriate textfield when the menu closes.
-    // This is deferred until the first focus so that the screen reader doesn't
-    // treat the textfield as unfocused while the user edits, just because
-    // autofill options are visible.
-    NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
   }
 
   if (current_row_selection)
