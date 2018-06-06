@@ -980,6 +980,46 @@ TEST_P(BackgroundFetchDataManagerTest, WriteToCache) {
   EXPECT_TRUE(MatchCache(request2));
 }
 
+TEST_P(BackgroundFetchDataManagerTest, CacheDeleted) {
+  // This test only applies to persistent storage.
+  if (registration_storage_ ==
+      BackgroundFetchRegistrationStorage::kNonPersistent)
+    return;
+
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  BackgroundFetchRegistrationId registration_id(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+
+  ServiceWorkerFetchRequest request;
+  request.url = GURL(origin().GetURL().spec());
+
+  BackgroundFetchOptions options;
+  blink::mojom::BackgroundFetchError error;
+
+  CreateRegistration(registration_id, {request}, options, &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  scoped_refptr<BackgroundFetchRequestInfo> request_info;
+  PopNextRequest(registration_id, &request_info);
+  ASSERT_TRUE(request_info);
+
+  AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
+                                                 true /* success */);
+  MarkRequestAsComplete(registration_id, request_info.get());
+
+  EXPECT_TRUE(HasCache(kExampleUniqueId));
+  EXPECT_TRUE(MatchCache(request));
+
+  MarkRegistrationForDeletion(registration_id, &error);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  DeleteRegistration(registration_id, &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  EXPECT_FALSE(HasCache(kExampleUniqueId));
+}
+
 TEST_P(BackgroundFetchDataManagerTest, GetSettledFetchesForRegistration) {
   // This test only applies to persistent storage.
   if (registration_storage_ ==
