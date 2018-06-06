@@ -21,7 +21,16 @@ registerPaint('shadow', class {
     paint(ctx) {
         ctx.shadowBlur = 20;
         ctx.shadowColor = 'red';
-        ctx.fillRect(20, 20, 50, 50);
+        ctx.shadowOffsetX = 30;
+        ctx.shadowOffsetY = 40;
+        // When we query these things from JS they should not be affected by
+        // the page zoom.
+        if (ctx.shadowBlur == 20 && ctx.shadowOffsetX == 30 &&
+            ctx.shadowOffsetY == 40) {
+            ctx.fillRect(20, 20, 50, 50);
+        } else {
+            ctx.fillRect(0, 0, 10, 10);
+        }
     }
 });
 </script>

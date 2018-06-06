@@ -58,6 +58,13 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
 
   void DidDraw(const SkIRect&) final;
 
+  double shadowOffsetX() const final;
+  void setShadowOffsetX(double) final;
+
+  double shadowOffsetY() const final;
+  void setShadowOffsetY(double) final;
+
+  double shadowBlur() const final;
   void setShadowBlur(double) final;
 
   bool StateHasFilter() final;

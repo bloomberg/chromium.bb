@@ -69,8 +69,28 @@ bool PaintRenderingContext2D::ParseColorOrCurrentColor(
   return ::blink::ParseColorOrCurrentColor(color, color_string, nullptr);
 }
 
+double PaintRenderingContext2D::shadowBlur() const {
+  return BaseRenderingContext2D::shadowBlur() / effective_zoom_;
+}
+
 void PaintRenderingContext2D::setShadowBlur(double blur) {
   BaseRenderingContext2D::setShadowBlur(blur * effective_zoom_);
+}
+
+double PaintRenderingContext2D::shadowOffsetX() const {
+  return BaseRenderingContext2D::shadowOffsetX() / effective_zoom_;
+}
+
+void PaintRenderingContext2D::setShadowOffsetX(double x) {
+  BaseRenderingContext2D::setShadowOffsetX(x * effective_zoom_);
+}
+
+double PaintRenderingContext2D::shadowOffsetY() const {
+  return BaseRenderingContext2D::shadowOffsetY() / effective_zoom_;
+}
+
+void PaintRenderingContext2D::setShadowOffsetY(double y) {
+  BaseRenderingContext2D::setShadowOffsetY(y * effective_zoom_);
 }
 
 PaintCanvas* PaintRenderingContext2D::DrawingCanvas() const {
