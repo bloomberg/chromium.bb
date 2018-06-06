@@ -1010,6 +1010,14 @@ bool ChunkDemuxer::IsParsingMediaSegment(const std::string& id) {
   return source_state_map_[id]->parsing_media_segment();
 }
 
+bool ChunkDemuxer::GetGenerateTimestampsFlag(const std::string& id) {
+  base::AutoLock auto_lock(lock_);
+  DVLOG(1) << "GetGenerateTimestampsFlag(" << id << ")";
+  CHECK(IsValidId(id));
+
+  return source_state_map_[id]->generate_timestamps_flag();
+}
+
 void ChunkDemuxer::SetSequenceMode(const std::string& id,
                                    bool sequence_mode) {
   base::AutoLock auto_lock(lock_);

@@ -278,6 +278,10 @@ void Mp2tStreamParser::Flush() {
   timestamp_unroller_.Reset();
 }
 
+bool Mp2tStreamParser::GetGenerateTimestampsFlag() const {
+  return false;
+}
+
 bool Mp2tStreamParser::Parse(const uint8_t* buf, int size) {
   DVLOG(1) << "Mp2tStreamParser::Parse size=" << size;
 

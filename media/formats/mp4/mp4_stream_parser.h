@@ -48,6 +48,7 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
             const EndMediaSegmentCB& end_of_segment_cb,
             MediaLog* media_log) override;
   void Flush() override;
+  bool GetGenerateTimestampsFlag() const override;
   bool Parse(const uint8_t* buf, int size) override;
 
   // Calculates the rotation value from the track header display matricies.

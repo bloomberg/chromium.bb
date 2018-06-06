@@ -68,6 +68,10 @@ void WebMStreamParser::Flush() {
     ChangeState(kParsingHeaders);
 }
 
+bool WebMStreamParser::GetGenerateTimestampsFlag() const {
+  return false;
+}
+
 bool WebMStreamParser::Parse(const uint8_t* buf, int size) {
   DCHECK_NE(state_, kWaitingForInit);
 

@@ -91,6 +91,12 @@ class MEDIA_EXPORT SourceBufferState {
   // Returns true if currently parsing a media segment, or false otherwise.
   bool parsing_media_segment() const { return parsing_media_segment_; }
 
+  // Returns the 'Generate Timestamps Flag' for this SourceBuffer's byte stream
+  // format parser as described in the MSE Byte Stream Format Registry.
+  bool generate_timestamps_flag() const {
+    return stream_parser_->GetGenerateTimestampsFlag();
+  }
+
   // Sets |frame_processor_|'s sequence mode to |sequence_mode|.
   void SetSequenceMode(bool sequence_mode);
 

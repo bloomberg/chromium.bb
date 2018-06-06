@@ -308,6 +308,10 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // a media segment, or false otherwise.
   bool IsParsingMediaSegment(const std::string& id);
 
+  // Returns the 'Generate Timestamps Flag', as described in the MSE Byte Stream
+  // Format Registry, for the source buffer associated with |id|.
+  bool GetGenerateTimestampsFlag(const std::string& id);
+
   // Set the append mode to be applied to subsequent buffers appended to the
   // source buffer associated with |id|. If |sequence_mode| is true, caller
   // is requesting "sequence" mode. Otherwise, caller is requesting "segments"

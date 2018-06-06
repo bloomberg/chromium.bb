@@ -91,6 +91,10 @@ void MPEGAudioStreamParserBase::Flush() {
   in_media_segment_ = false;
 }
 
+bool MPEGAudioStreamParserBase::GetGenerateTimestampsFlag() const {
+  return true;
+}
+
 bool MPEGAudioStreamParserBase::Parse(const uint8_t* buf, int size) {
   DVLOG(1) << __func__ << "(" << size << ")";
   DCHECK(buf);

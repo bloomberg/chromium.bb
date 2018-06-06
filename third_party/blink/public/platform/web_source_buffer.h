@@ -51,6 +51,7 @@ class WebSourceBuffer {
   virtual void SetClient(WebSourceBufferClient*) = 0;
 
   virtual bool SetMode(AppendMode) = 0;
+  virtual bool GetGenerateTimestampsFlag() = 0;
   virtual WebTimeRanges Buffered() = 0;
 
   // Returns the highest buffered presentation timestamp of all buffered coded

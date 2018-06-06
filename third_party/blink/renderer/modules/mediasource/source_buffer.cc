@@ -172,26 +172,39 @@ void SourceBuffer::setMode(const AtomicString& new_mode,
                            ExceptionState& exception_state) {
   BLINK_SBLOG << __func__ << " this=" << this << " newMode=" << new_mode;
   // Section 3.1 On setting mode attribute steps.
-  // 1. Let new mode equal the new value being assigned to this attribute.
-  // 2. If this object has been removed from the sourceBuffers attribute of the
+  // https://www.w3.org/TR/media-source/#dom-sourcebuffer-mode
+  // 1. If this object has been removed from the sourceBuffers attribute of the
   //    parent media source, then throw an INVALID_STATE_ERR exception and abort
   //    these steps.
-  // 3. If the updating attribute equals true, then throw an INVALID_STATE_ERR
+  // 2. If the updating attribute equals true, then throw an INVALID_STATE_ERR
   //    exception and abort these steps.
+  // 3. Let new mode equal the new value being assigned to this attribute.
   if (ThrowExceptionIfRemovedOrUpdating(IsRemoved(), updating_,
-                                        exception_state))
+                                        exception_state)) {
     return;
+  }
 
-  // 4. If the readyState attribute of the parent media source is in the "ended"
+  // 4. If generate timestamps flag equals true and new mode equals "segments",
+  //    then throw a TypeError exception and abort these steps.
+  if (web_source_buffer_->GetGenerateTimestampsFlag() &&
+      new_mode == SegmentsKeyword()) {
+    MediaSource::LogAndThrowTypeError(
+        exception_state, "The mode value provided (" + SegmentsKeyword() +
+                             ") is invalid for a byte stream format that uses "
+                             "generated timestamps.");
+    return;
+  }
+
+  // 5. If the readyState attribute of the parent media source is in the "ended"
   //    state then run the following steps:
-  // 4.1 Set the readyState attribute of the parent media source to "open"
-  // 4.2 Queue a task to fire a simple event named sourceopen at the parent
+  // 5.1 Set the readyState attribute of the parent media source to "open"
+  // 5.2 Queue a task to fire a simple event named sourceopen at the parent
   //     media source.
   source_->OpenIfInEndedState();
 
-  // 5. If the append state equals PARSING_MEDIA_SEGMENT, then throw an
+  // 6. If the append state equals PARSING_MEDIA_SEGMENT, then throw an
   //    INVALID_STATE_ERR and abort these steps.
-  // 6. If the new mode equals "sequence", then set the group start timestamp to
+  // 7. If the new mode equals "sequence", then set the group start timestamp to
   //    the highest presentation end timestamp.
   WebSourceBuffer::AppendMode append_mode =
       WebSourceBuffer::kAppendModeSegments;
@@ -205,7 +218,7 @@ void SourceBuffer::setMode(const AtomicString& new_mode,
     return;
   }
 
-  // 7. Update the attribute to new mode.
+  // 8. Update the attribute to new mode.
   mode_ = new_mode;
 }
 

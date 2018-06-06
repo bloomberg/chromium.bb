@@ -149,7 +149,7 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type,
   BLINK_MSLOG << __func__ << " this=" << this << " type=" << type;
 
   // 2.2
-  // https://www.w3.org/TR/media-source/#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type/
+  // https://www.w3.org/TR/media-source/#dom-mediasource-addsourcebuffer
   // 1. If type is an empty string then throw a TypeError exception
   //    and abort these steps.
   if (type.IsEmpty()) {
@@ -190,13 +190,27 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type,
     return nullptr;
   }
 
+  bool generate_timestamps_flag =
+      web_source_buffer->GetGenerateTimestampsFlag();
+
   SourceBuffer* buffer = SourceBuffer::Create(std::move(web_source_buffer),
                                               this, async_event_queue_.Get());
-  // 6. Add the new object to sourceBuffers and fire a addsourcebuffer on that
-  //    object.
+  // 8. Add the new object to sourceBuffers and queue a simple task to fire a
+  //    simple event named addsourcebuffer at sourceBuffers.
   source_buffers_->Add(buffer);
 
-  // 7. Return the new object to the caller.
+  // Steps 6 and 7 (Set the SourceBuffer's mode attribute based on the byte
+  // stream format's generate timestamps flag). We do this after adding to
+  // sourceBuffers (step 8) to enable direct reuse of the setMode() logic here,
+  // which depends on |buffer| being in |source_buffers_| in our
+  // implementation.
+  if (generate_timestamps_flag) {
+    buffer->setMode(SourceBuffer::SequenceKeyword(), exception_state);
+  } else {
+    buffer->setMode(SourceBuffer::SegmentsKeyword(), exception_state);
+  }
+
+  // 9. Return the new object to the caller.
   BLINK_MSLOG << __func__ << " this=" << this << " type=" << type << " -> "
               << buffer;
   return buffer;

@@ -86,6 +86,10 @@ void WebSourceBufferImpl::SetClient(blink::WebSourceBufferClient* client) {
   client_ = client;
 }
 
+bool WebSourceBufferImpl::GetGenerateTimestampsFlag() {
+  return demuxer_->GetGenerateTimestampsFlag(id_);
+}
+
 bool WebSourceBufferImpl::SetMode(WebSourceBuffer::AppendMode mode) {
   if (demuxer_->IsParsingMediaSegment(id_))
     return false;

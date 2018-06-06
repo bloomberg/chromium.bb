@@ -37,6 +37,7 @@ class MEDIA_EXPORT WebMStreamParser : public StreamParser {
             const EndMediaSegmentCB& end_of_segment_cb,
             MediaLog* media_log) override;
   void Flush() override;
+  bool GetGenerateTimestampsFlag() const override;
   bool Parse(const uint8_t* buf, int size) override;
 
  private:

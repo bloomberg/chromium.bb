@@ -136,6 +136,10 @@ class MEDIA_EXPORT StreamParser {
   // algorithm already resets the segment parsing state.
   virtual void Flush() = 0;
 
+  // Returns the MSE byte stream format registry's "Generate Timestamps Flag"
+  // for the byte stream corresponding to this parser.
+  virtual bool GetGenerateTimestampsFlag() const = 0;
+
   // Called when there is new data to parse.
   //
   // Returns true if the parse succeeds.
