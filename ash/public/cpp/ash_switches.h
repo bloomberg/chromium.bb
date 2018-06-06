@@ -26,7 +26,6 @@ ASH_PUBLIC_EXPORT extern const char kAshDisableTouchExplorationMode[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableCursorMotionBlur[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableV1AppBackButton[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
-ASH_PUBLIC_EXPORT extern const char kAshEnableNightLight[];
 ASH_PUBLIC_EXPORT extern const char kAshEnablePaletteOnAllDisplays[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableScaleSettingsTray[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableTabletMode[];
@@ -62,7 +61,6 @@ ASH_PUBLIC_EXPORT extern const char kSuppressMessageCenterPopups[];
 ASH_PUBLIC_EXPORT extern const char kTouchscreenUsableWhileScreenOff[];
 
 ASH_PUBLIC_EXPORT bool IsDisplayMoveWindowAccelsEnabled();
-ASH_PUBLIC_EXPORT bool IsNightLightEnabled();
 ASH_PUBLIC_EXPORT bool IsSidebarEnabled();
 ASH_PUBLIC_EXPORT bool IsTrilinearFilteringEnabled();
 ASH_PUBLIC_EXPORT bool IsUsingViewsLock();

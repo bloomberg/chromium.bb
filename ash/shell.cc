@@ -518,7 +518,7 @@ DockedMagnifierController* Shell::docked_magnifier_controller() {
 }
 
 NightLightController* Shell::night_light_controller() {
-  DCHECK(switches::IsNightLightEnabled());
+  DCHECK(features::IsNightLightEnabled());
   return night_light_controller_.get();
 }
 
@@ -1057,7 +1057,7 @@ void Shell::Init(ui::ContextFactory* context_factory,
 
   // Night Light depends on the display manager, the display color manager, and
   // aura::Env, so initialize it after all have been initialized.
-  if (switches::IsNightLightEnabled())
+  if (features::IsNightLightEnabled())
     night_light_controller_ = std::make_unique<NightLightController>();
 
   // The WindowModalityController needs to be at the front of the input event
