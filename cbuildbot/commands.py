@@ -1865,7 +1865,8 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols,
   compression = cros_build_lib.CompressionExtToType(debug_tarball)
   cros_build_lib.CreateTarball(
       debug_tarball, board_dir, sudo=True, compression=compression,
-      inputs=inputs, ignore_failed_read=True, extra_args=extra_args)
+      inputs=inputs, ignore_failed_read=True, extra_args=extra_args,
+      chroot=chroot)
 
   # Fix permissions and ownership on debug tarball.
   cros_build_lib.SudoRunCommand(['chown', str(os.getuid()), debug_tarball])
