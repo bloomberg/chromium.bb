@@ -216,27 +216,25 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     cached_computed_bounds_[node] = ComputeEnclosingBounds(node);
   }
 
-  std::vector<ExtensionMsg_AccessibilityEventParams> events;
-  events.emplace_back();
-  ExtensionMsg_AccessibilityEventParams& params = events.back();
-  params.event_type = ToAXEvent(event_data->event_type);
+  ExtensionMsg_AccessibilityEventBundleParams event_bundle;
+  event_bundle.tree_id = tree_id();
 
-  params.tree_id = tree_id();
-  params.id = event_data->source_id;
+  event_bundle.events.emplace_back();
+  ui::AXEvent& event = event_bundle.events.back();
+  event.event_type = ToAXEvent(event_data->event_type);
+  event.id = event_data->source_id;
 
-  ui::AXTreeUpdate update;
-
+  event_bundle.updates.emplace_back();
   if (event_data->event_type == AXEventType::WINDOW_CONTENT_CHANGED) {
     current_tree_serializer_->DeleteClientSubtree(
         GetFromId(event_data->source_id));
   }
-
   current_tree_serializer_->SerializeChanges(GetFromId(event_data->source_id),
-                                             &params.update);
+                                             &event_bundle.updates.back());
 
   extensions::AutomationEventRouter* router =
       extensions::AutomationEventRouter::GetInstance();
-  router->DispatchAccessibilityEvents(events);
+  router->DispatchAccessibilityEvents(event_bundle);
 }
 
 void AXTreeSourceArc::NotifyActionResult(const ui::AXActionData& data,

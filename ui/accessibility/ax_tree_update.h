@@ -69,6 +69,9 @@ template<typename AXNodeData, typename AXTreeData> struct AXTreeUpdateBase {
   // A vector of nodes to update, according to the rules above.
   std::vector<AXNodeData> nodes;
 
+  // The source of the event.
+  ax::mojom::EventFrom event_from = ax::mojom::EventFrom::kNone;
+
   // Return a multi-line indented string representation, for logging.
   std::string ToString() const;
 

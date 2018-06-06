@@ -166,13 +166,10 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   text2.id = 2;
   text2.role = ax::mojom::Role::kStaticText;
   text2.SetName("new text");
-  AXEventNotificationDetails param;
-  param.event_type = ax::mojom::Event::kChildrenChanged;
-  param.update.nodes.push_back(text2);
-  param.id = text2.id;
-  std::vector<AXEventNotificationDetails> events;
-  events.push_back(param);
-  manager->OnAccessibilityEvents(events);
+  AXEventNotificationDetails event_bundle;
+  event_bundle.updates.resize(1);
+  event_bundle.updates[0].nodes.push_back(text2);
+  manager->OnAccessibilityEvents(event_bundle);
 
   // Query for the text IAccessible and verify that it now returns "new text"
   // as its value.
@@ -232,13 +229,10 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   // Notify the BrowserAccessibilityManager that the div node and its children
   // were removed and ensure that only one BrowserAccessibility instance exists.
   root.child_ids.clear();
-  AXEventNotificationDetails param;
-  param.event_type = ax::mojom::Event::kChildrenChanged;
-  param.update.nodes.push_back(root);
-  param.id = root.id;
-  std::vector<AXEventNotificationDetails> events;
-  events.push_back(param);
-  manager->OnAccessibilityEvents(events);
+  AXEventNotificationDetails event_bundle;
+  event_bundle.updates.resize(1);
+  event_bundle.updates[0].nodes.push_back(root);
+  manager->OnAccessibilityEvents(event_bundle);
 
   // Delete the manager and test that all BrowserAccessibility instances are
   // deleted.
@@ -659,15 +653,12 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   tree1_2.role = ax::mojom::Role::kTextField;
 
   // Process a load complete.
-  std::vector<AXEventNotificationDetails> params;
-  params.push_back(AXEventNotificationDetails());
-  AXEventNotificationDetails* msg = &params[0];
-  msg->event_type = ax::mojom::Event::kLoadComplete;
-  msg->update.root_id = tree1_1.id;
-  msg->update.nodes.push_back(tree1_1);
-  msg->update.nodes.push_back(tree1_2);
-  msg->id = tree1_1.id;
-  manager->OnAccessibilityEvents(params);
+  AXEventNotificationDetails event_bundle;
+  event_bundle.updates.resize(1);
+  event_bundle.updates[0].root_id = tree1_1.id;
+  event_bundle.updates[0].nodes.push_back(tree1_1);
+  event_bundle.updates[0].nodes.push_back(tree1_2);
+  manager->OnAccessibilityEvents(event_bundle);
 
   // Save for later comparison.
   BrowserAccessibility* acc1_2 = manager->GetFromID(2);
@@ -689,13 +680,12 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   tree2_2.id = 3;
   tree2_2.role = ax::mojom::Role::kButton;
 
-  msg->update.nodes.clear();
-  msg->update.nodes.push_back(tree2_1);
-  msg->update.nodes.push_back(tree2_2);
-  msg->id = tree2_1.id;
+  event_bundle.updates[0].nodes.clear();
+  event_bundle.updates[0].nodes.push_back(tree2_1);
+  event_bundle.updates[0].nodes.push_back(tree2_2);
 
   // Fire another load complete.
-  manager->OnAccessibilityEvents(params);
+  manager->OnAccessibilityEvents(event_bundle);
 
   BrowserAccessibility* acc2_2 = manager->GetFromID(3);
 
@@ -2491,12 +2481,10 @@ TEST_F(BrowserAccessibilityTest, TestIAccessible2Relations) {
   std::vector<int32_t> labelledby_ids = {3};
   child1.AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
                              labelledby_ids);
-  AXEventNotificationDetails event;
-  event.event_type = ax::mojom::Event::kAriaAttributeChanged;
-  event.update.nodes.push_back(child1);
-  event.id = child1.id;
-  std::vector<AXEventNotificationDetails> events = {event};
-  manager->OnAccessibilityEvents(events);
+  AXEventNotificationDetails event_bundle;
+  event_bundle.updates.resize(1);
+  event_bundle.updates[0].nodes.push_back(child1);
+  manager->OnAccessibilityEvents(event_bundle);
 
   EXPECT_HRESULT_SUCCEEDED(ax_child1->GetCOM()->get_nRelations(&n_relations));
   EXPECT_EQ(2, n_relations);

@@ -24,7 +24,7 @@ namespace ui {
 struct AXActionData;
 }  // namespace ui
 
-struct ExtensionMsg_AccessibilityEventParams;
+struct ExtensionMsg_AccessibilityEventBundleParams;
 struct ExtensionMsg_AccessibilityLocationChangeParams;
 
 namespace extensions {
@@ -50,7 +50,7 @@ class AutomationEventRouter : public content::NotificationObserver {
                                              int listener_process_id);
 
   void DispatchAccessibilityEvents(
-      const std::vector<ExtensionMsg_AccessibilityEventParams>& events);
+      const ExtensionMsg_AccessibilityEventBundleParams& events);
 
   void DispatchAccessibilityLocationChange(
       const ExtensionMsg_AccessibilityLocationChangeParams& params);

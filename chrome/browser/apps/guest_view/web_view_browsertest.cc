@@ -3777,13 +3777,27 @@ class WebContentsAccessibilityEventWatcher
   }
 
   void AccessibilityEventReceived(
-      const std::vector<content::AXEventNotificationDetails>& details_vector)
-          override {
-    for (auto& details : details_vector) {
-      if (details.event_type == event_ && details.update.nodes.size() > 0) {
-        count_++;
-        node_data_ = details.update.nodes[0];
-        loop_runner_->Quit();
+      const content::AXEventNotificationDetails& event_bundle) override {
+    bool found = false;
+    int event_node_id = 0;
+    for (auto& event : event_bundle.events) {
+      if (event.event_type == event_) {
+        event_node_id = event.id;
+        found = true;
+        break;
+      }
+    }
+    if (!found)
+      return;
+
+    for (auto& update : event_bundle.updates) {
+      for (auto& node : update.nodes) {
+        if (node.id == event_node_id) {
+          count_++;
+          node_data_ = node;
+          loop_runner_->Quit();
+          return;
+        }
       }
     }
   }

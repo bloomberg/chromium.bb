@@ -422,7 +422,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // from a render frame, but only when the accessibility mode has the
   // ui::AXMode::kWebContents flag set.
   virtual void AccessibilityEventReceived(
-      const std::vector<AXEventNotificationDetails>& details) {}
+      const AXEventNotificationDetails& details) {}
   virtual void AccessibilityLocationChangesReceived(
       const std::vector<AXLocationChangeNotificationDetails>& details) {}
 

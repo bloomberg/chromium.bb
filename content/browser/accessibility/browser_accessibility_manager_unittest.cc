@@ -238,14 +238,11 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   EXPECT_EQ(2, child3_accessible->GetIndexInParent());
 
   // Process a notification containing the changed subtree.
-  std::vector<AXEventNotificationDetails> params;
-  params.push_back(AXEventNotificationDetails());
-  AXEventNotificationDetails* msg = &params[0];
-  msg->event_type = ax::mojom::Event::kChildrenChanged;
-  msg->update.nodes.push_back(tree2_root);
-  msg->update.nodes.push_back(tree2_child0);
-  msg->id = tree2_root.id;
-  manager->OnAccessibilityEvents(params);
+  AXEventNotificationDetails notification;
+  notification.updates.resize(1);
+  notification.updates[0].nodes.push_back(tree2_root);
+  notification.updates[0].nodes.push_back(tree2_child0);
+  manager->OnAccessibilityEvents(notification);
 
   // There should be 5 objects now: the 4 from the new tree, plus the
   // reference to child3 we kept.
@@ -403,15 +400,12 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
 
   // Process a notification containing the changed subtree rooted at
   // the container.
-  std::vector<AXEventNotificationDetails> params;
-  params.push_back(AXEventNotificationDetails());
-  AXEventNotificationDetails* msg = &params[0];
-  msg->event_type = ax::mojom::Event::kChildrenChanged;
-  msg->update.nodes.push_back(tree2_container);
-  msg->update.nodes.push_back(tree2_child0);
-  msg->update.nodes.push_back(tree2_grandchild0);
-  msg->id = tree2_container.id;
-  manager->OnAccessibilityEvents(params);
+  AXEventNotificationDetails notification;
+  notification.updates.resize(1);
+  notification.updates[0].nodes.push_back(tree2_container);
+  notification.updates[0].nodes.push_back(tree2_child0);
+  notification.updates[0].nodes.push_back(tree2_grandchild0);
+  manager->OnAccessibilityEvents(notification);
 
   // There should be 9 objects now: the 8 from the new tree, plus the
   // reference to child3 we kept.
@@ -501,16 +495,13 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   ASSERT_EQ(4, CountedBrowserAccessibility::global_obj_count_);
 
   // Process a notification containing the changed subtree.
-  std::vector<AXEventNotificationDetails> params;
-  params.push_back(AXEventNotificationDetails());
-  AXEventNotificationDetails* msg = &params[0];
-  msg->event_type = ax::mojom::Event::kChildrenChanged;
-  msg->update.nodes.push_back(tree2_1);
-  msg->update.nodes.push_back(tree2_4);
-  msg->update.nodes.push_back(tree2_5);
-  msg->update.nodes.push_back(tree2_6);
-  msg->id = tree2_1.id;
-  manager->OnAccessibilityEvents(params);
+  AXEventNotificationDetails notification;
+  notification.updates.resize(1);
+  notification.updates[0].nodes.push_back(tree2_1);
+  notification.updates[0].nodes.push_back(tree2_4);
+  notification.updates[0].nodes.push_back(tree2_5);
+  notification.updates[0].nodes.push_back(tree2_6);
+  manager->OnAccessibilityEvents(notification);
 
   // There should be 4 objects now.
   EXPECT_EQ(4, CountedBrowserAccessibility::global_obj_count_);
@@ -1515,11 +1506,9 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {
   root2.id = 3;
   root2.role = ax::mojom::Role::kRootWebArea;
 
-  std::vector<AXEventNotificationDetails> events2;
-  events2.push_back(AXEventNotificationDetails());
-  events2[0].update = MakeAXTreeUpdate(root2);
-  events2[0].id = -1;
-  events2[0].event_type = ax::mojom::Event::kNone;
+  AXEventNotificationDetails events2;
+  events2.updates.resize(1);
+  events2.updates[0] = MakeAXTreeUpdate(root2);
   manager->OnAccessibilityEvents(events2);
 
   // Make sure that the focused node was updated to the new root and
@@ -1562,12 +1551,10 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
   root2.role = ax::mojom::Role::kRootWebArea;
 
   // Make an update the explicitly clears the previous root.
-  std::vector<AXEventNotificationDetails> events2;
-  events2.push_back(AXEventNotificationDetails());
-  events2[0].update = MakeAXTreeUpdate(root2);
-  events2[0].update.node_id_to_clear = 1;
-  events2[0].id = -1;
-  events2[0].event_type = ax::mojom::Event::kNone;
+  AXEventNotificationDetails events2;
+  events2.updates.resize(1);
+  events2.updates[0] = MakeAXTreeUpdate(root2);
+  events2.updates[0].node_id_to_clear = 1;
   manager->OnAccessibilityEvents(events2);
 
   // Make sure that the focused node was updated to the new root and

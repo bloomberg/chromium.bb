@@ -27,6 +27,9 @@ struct StructTraits<ax::mojom::AXTreeUpdateDataView, ui::AXTreeUpdate> {
   static std::vector<ui::AXNodeData> nodes(const ui::AXTreeUpdate& p) {
     return p.nodes;
   }
+  static ax::mojom::EventFrom event_from(const ui::AXTreeUpdate& p) {
+    return p.event_from;
+  }
 
   static bool Read(ax::mojom::AXTreeUpdateDataView data, ui::AXTreeUpdate* out);
 };

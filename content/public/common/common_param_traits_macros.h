@@ -26,6 +26,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_frame_serializer_cache_control_policy.h"
 #include "third_party/blink/public/web/window_features.mojom.h"
+#include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -280,6 +281,13 @@ IPC_STRUCT_TRAITS_BEGIN(ui::AXRelativeBounds)
   IPC_STRUCT_TRAITS_MEMBER(offset_container_id)
   IPC_STRUCT_TRAITS_MEMBER(bounds)
   IPC_STRUCT_TRAITS_MEMBER(transform)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ui::AXEvent)
+  IPC_STRUCT_TRAITS_MEMBER(event_type)
+  IPC_STRUCT_TRAITS_MEMBER(id)
+  IPC_STRUCT_TRAITS_MEMBER(event_from)
+  IPC_STRUCT_TRAITS_MEMBER(action_request_id)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_MACROS_H_

@@ -87,7 +87,7 @@
 #endif
 
 class GURL;
-struct AccessibilityHostMsg_EventParams;
+struct AccessibilityHostMsg_EventBundleParams;
 struct AccessibilityHostMsg_FindInPageResultParams;
 struct AccessibilityHostMsg_LocationChangeParams;
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
@@ -848,7 +848,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const ResourceTimingInfo& resource_timing);
   void OnDispatchLoad();
   void OnAccessibilityEvents(
-      const std::vector<AccessibilityHostMsg_EventParams>& params,
+      const AccessibilityHostMsg_EventBundleParams& params,
       int reset_token,
       int ack_token);
   void OnAccessibilityLocationChanges(

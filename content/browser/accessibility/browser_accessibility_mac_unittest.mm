@@ -68,12 +68,10 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
     if (!manager_)
       return;
     root_.SetValue(value);
-    AXEventNotificationDetails param;
-    param.update.nodes.push_back(root_);
-    param.event_type = ax::mojom::Event::kValueChanged;
-    param.id = root_.id;
-    std::vector<AXEventNotificationDetails> events{param};
-    manager_->OnAccessibilityEvents(events);
+    AXEventNotificationDetails event_bundle;
+    event_bundle.updates.resize(1);
+    event_bundle.updates[0].nodes.push_back(root_);
+    manager_->OnAccessibilityEvents(event_bundle);
   }
 
   ui::AXNodeData root_;

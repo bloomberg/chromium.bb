@@ -57,7 +57,7 @@ bool SwappedOutMessages::CanHandleWhileSwappedOut(
     // Sends an ACK.
     case ViewHostMsg_RequestMove::ID:
     // Sends an ACK.
-    case AccessibilityHostMsg_Events::ID:
+    case AccessibilityHostMsg_EventBundle::ID:
       return true;
     default:
       break;

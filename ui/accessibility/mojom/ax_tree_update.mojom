@@ -15,4 +15,5 @@ struct AXTreeUpdate {
   int32 node_id_to_clear;
   int32 root_id;
   array<AXNodeData> nodes;
+  ax.mojom.EventFrom event_from;
 };

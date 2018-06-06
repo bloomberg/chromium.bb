@@ -29,6 +29,7 @@
 #include "ipc/message_filter.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -950,7 +951,7 @@ void AutomationInternalCustomBindings::Invalidate() {
 void AutomationInternalCustomBindings::OnMessageReceived(
     const IPC::Message& message){
   IPC_BEGIN_MESSAGE_MAP(AutomationInternalCustomBindings, message)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityEvents,
+    IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityEventBundle,
                         OnAccessibilityEvents)
     IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityLocationChange,
                         OnAccessibilityLocationChange)
@@ -1341,14 +1342,14 @@ void AutomationInternalCustomBindings::GetChildIDAtIndex(
 //
 
 void AutomationInternalCustomBindings::OnAccessibilityEvents(
-    const std::vector<ExtensionMsg_AccessibilityEventParams>& events,
+    const ExtensionMsg_AccessibilityEventBundleParams& event_bundle,
     bool is_active_profile) {
   is_active_profile_ = is_active_profile;
-  int tree_id = events[0].tree_id;
+  int tree_id = event_bundle.tree_id;
   AutomationAXTreeWrapper* tree_wrapper;
   auto iter = tree_id_to_tree_wrapper_map_.find(tree_id);
   if (iter == tree_id_to_tree_wrapper_map_.end()) {
-    tree_wrapper = new AutomationAXTreeWrapper(events[0].tree_id, this);
+    tree_wrapper = new AutomationAXTreeWrapper(tree_id, this);
     tree_id_to_tree_wrapper_map_.insert(
         std::make_pair(tree_id, base::WrapUnique(tree_wrapper)));
     axtree_to_tree_wrapper_map_.insert(
@@ -1357,7 +1358,7 @@ void AutomationInternalCustomBindings::OnAccessibilityEvents(
     tree_wrapper = iter->second.get();
   }
 
-  if (!tree_wrapper->OnAccessibilityEvents(events, is_active_profile)) {
+  if (!tree_wrapper->OnAccessibilityEvents(event_bundle, is_active_profile)) {
     LOG(ERROR) << tree_wrapper->tree()->error();
     base::ListValue args;
     args.AppendInteger(tree_id);
@@ -1459,17 +1460,18 @@ void AutomationInternalCustomBindings::SendTreeChangeEvent(
 }
 
 void AutomationInternalCustomBindings::SendAutomationEvent(
-    const ExtensionMsg_AccessibilityEventParams& params,
-    int target_id,
+    int tree_id,
+    const gfx::Point& mouse_location,
+    ui::AXEvent& event,
     api::automation::EventType event_type) {
   auto event_params = std::make_unique<base::DictionaryValue>();
-  event_params->SetInteger("treeID", params.tree_id);
-  event_params->SetInteger("targetID", target_id);
+  event_params->SetInteger("treeID", tree_id);
+  event_params->SetInteger("targetID", event.id);
   event_params->SetString("eventType", api::automation::ToString(event_type));
-  event_params->SetString("eventFrom", ui::ToString(params.event_from));
-  event_params->SetInteger("actionRequestID", params.action_request_id);
-  event_params->SetInteger("mouseX", params.mouse_location.x());
-  event_params->SetInteger("mouseY", params.mouse_location.y());
+  event_params->SetString("eventFrom", ui::ToString(event.event_from));
+  event_params->SetInteger("actionRequestID", event.action_request_id);
+  event_params->SetInteger("mouseX", mouse_location.x());
+  event_params->SetInteger("mouseY", mouse_location.y());
   base::ListValue args;
   args.Append(std::move(event_params));
   bindings_system_->DispatchEventInContext(

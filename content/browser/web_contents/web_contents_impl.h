@@ -523,7 +523,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsNeverVisible() override;
   ui::AXMode GetAccessibilityMode() const override;
   void AccessibilityEventReceived(
-      const std::vector<AXEventNotificationDetails>& details) override;
+      const AXEventNotificationDetails& details) override;
   void AccessibilityLocationChangesReceived(
       const std::vector<AXLocationChangeNotificationDetails>& details) override;
   RenderFrameHost* GetGuestByInstanceID(
