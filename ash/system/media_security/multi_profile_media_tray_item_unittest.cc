@@ -6,6 +6,7 @@
 
 #include "ash/ash_view_ids.h"
 #include "ash/media_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/media.mojom.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
@@ -38,6 +39,11 @@ class MultiProfileMediaTrayItemTest : public AshTestBase {
 };
 
 TEST_F(MultiProfileMediaTrayItemTest, NotifyMediaCaptureChange) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   GetSessionControllerClient()->CreatePredefinedUserSessions(2);
 
   SystemTray* system_tray = GetPrimarySystemTray();
