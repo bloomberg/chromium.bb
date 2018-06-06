@@ -31,6 +31,11 @@ from chromite.lib import terminal
 site_config = config_lib.GetConfig()
 
 
+# Locate actions that are exposed to the user.  All functions that start
+# with "UserAct" are fair game.
+ACTION_PREFIX = 'UserAct'
+
+
 COLOR = None
 
 # Map the internal names to the ones we normally show on the web ui.
@@ -499,11 +504,9 @@ def UserActAccount(opts):
           (acct['_account_id'], acct['name'], acct['email']))
 
 
-def main(argv):
-  # Locate actions that are exposed to the user.  All functions that start
-  # with "UserAct" are fair game.
-  act_pfx = 'UserAct'
-  actions = [x for x in globals() if x.startswith(act_pfx)]
+def GetParser():
+  """Returns the parser to use for this module."""
+  actions = [x for x in globals() if x.startswith(ACTION_PREFIX)]
 
   usage = """%(prog)s [options] <action> [action args]
 
@@ -529,9 +532,9 @@ ready.
   $ gerrit --json search 'assignee:self'    # Dump all pending CLs in JSON.
 
 Actions:"""
-  indent = max([len(x) - len(act_pfx) for x in actions])
+  indent = max([len(x) - len(ACTION_PREFIX) for x in actions])
   for a in sorted(actions):
-    cmd = a[len(act_pfx):]
+    cmd = a[len(ACTION_PREFIX):]
     # Sanity check for devs adding new commands.  Should be quick.
     if cmd != cmd.lower().capitalize():
       raise RuntimeError('callback "%s" is misnamed; should be "%s"' %
@@ -569,6 +572,12 @@ Actions:"""
                       help='Limit output to the specific topic')
   parser.add_argument('action', help='The gerrit action to perform')
   parser.add_argument('args', nargs='*', help='Action arguments')
+
+  return parser
+
+
+def main(argv):
+  parser = GetParser()
   opts = parser.parse_args(argv)
 
   # A cache of gerrit helpers we'll load on demand.
@@ -580,7 +589,7 @@ Actions:"""
   COLOR = terminal.Color(enabled=opts.color)
 
   # Now look up the requested user action and run it.
-  functor = globals().get(act_pfx + opts.action.capitalize())
+  functor = globals().get(ACTION_PREFIX + opts.action.capitalize())
   if functor:
     argspec = inspect.getargspec(functor)
     if argspec.varargs:
