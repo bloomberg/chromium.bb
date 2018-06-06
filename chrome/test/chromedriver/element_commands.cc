@@ -327,12 +327,17 @@ Status ExecuteSendKeysToElement(Session* session,
       paths_string.append(path_part);
     }
 
+    ChromeDesktopImpl* chrome_desktop = nullptr;
+    bool is_desktop = session->chrome->GetAsDesktop(&chrome_desktop).IsOk();
+
     // Separate the string into separate paths, delimited by '\n'.
     std::vector<base::FilePath> paths;
     for (const auto& path_piece : base::SplitStringPiece(
              paths_string, base::FilePath::StringType(1, '\n'),
              base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-      if (!base::PathExists(base::FilePath(path_piece))) {
+      // For local desktop browser, verify that the file exists.
+      // No easy way to do that for remote or mobile browser.
+      if (is_desktop && !base::PathExists(base::FilePath(path_piece))) {
         return Status(
             kInvalidArgument,
             base::StringPrintf("File not found : %" PRIsFP,
