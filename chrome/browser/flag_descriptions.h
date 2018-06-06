@@ -1649,6 +1649,9 @@ extern const char kAcceleratedMjpegDecodeDescription[];
 extern const char kAllowTouchpadThreeFingerClickName[];
 extern const char kAllowTouchpadThreeFingerClickDescription[];
 
+extern const char kArcAvailableForChildName[];
+extern const char kArcAvailableForChildDescription[];
+
 extern const char kArcBootCompleted[];
 extern const char kArcBootCompletedDescription[];
 

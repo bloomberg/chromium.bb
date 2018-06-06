@@ -2690,6 +2690,10 @@ const char kAllowTouchpadThreeFingerClickName[] = "Touchpad three-finger-click";
 const char kAllowTouchpadThreeFingerClickDescription[] =
     "Enables touchpad three-finger-click as middle button.";
 
+const char kArcAvailableForChildName[] = "Allow ARC for child accounts";
+const char kArcAvailableForChildDescription[] =
+    "Allow child accounts to start Android apps.";
+
 const char kArcBootCompleted[] = "Load Android apps automatically";
 const char kArcBootCompletedDescription[] =
     "Allow Android apps to start automatically after signing in.";

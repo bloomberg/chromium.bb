@@ -2749,6 +2749,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kEHVInputOnImeMenu)},
 #endif  // OS_CHROMEOS
 #if defined(OS_CHROMEOS)
+    {"arc-available-for-child", flag_descriptions::kArcAvailableForChildName,
+     flag_descriptions::kArcAvailableForChildDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kAvailableForChildAccountFeature)},
     {"arc-boot-completed-broadcast", flag_descriptions::kArcBootCompleted,
      flag_descriptions::kArcBootCompletedDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kBootCompletedBroadcastFeature)},
