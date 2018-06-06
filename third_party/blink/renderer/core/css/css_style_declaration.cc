@@ -33,7 +33,6 @@
 #include <algorithm>
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_float.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_property_id_templates.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
@@ -41,6 +40,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -148,26 +148,23 @@ CSSPropertyID CssPropertyInfo(const AtomicString& name) {
 
 }  // namespace
 
-void CSSStyleDeclaration::AnonymousNamedGetter(const AtomicString& name,
-                                               StringOrFloat& result) {
+String CSSStyleDeclaration::AnonymousNamedGetter(const AtomicString& name) {
   // Search the style declaration.
   CSSPropertyID unresolved_property = CssPropertyInfo(name);
 
   // Do not handle non-property names.
   if (!unresolved_property)
-    return;
+    return String();
   CSSPropertyID resolved_property = resolveCSSPropertyID(unresolved_property);
 
   const CSSValue* css_value = GetPropertyCSSValueInternal(resolved_property);
   if (css_value) {
     const String css_text = css_value->CssText();
-    if (!css_text.IsNull()) {
-      result.SetString(css_text);
-      return;
-    }
+    if (!css_text.IsNull())
+      return css_text;
   }
 
-  result.SetString(GetPropertyValueInternal(resolved_property));
+  return GetPropertyValueInternal(resolved_property);
 }
 
 bool CSSStyleDeclaration::AnonymousNamedSetter(ScriptState* script_state,
