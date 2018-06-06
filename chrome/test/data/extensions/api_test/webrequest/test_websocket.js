@@ -75,7 +75,7 @@ chrome.tabs.getCurrent(function(tab) {
           ['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
           'onHeadersReceived', 'onResponseStarted', 'onCompleted']
         ],
-        {urls: ['<all_urls>']},  // filter
+        {urls: ['ws://*/*']},  // filter
         ['blocking']  // extraInfoSpec
       );
       testWebSocketConnection(url, true /* expectedToConnect*/);
@@ -112,7 +112,7 @@ chrome.tabs.getCurrent(function(tab) {
         [  // event order
           ['onBeforeRequest', 'onErrorOccurred']
         ],
-        {urls: ['<all_urls>']},  // filter
+        {urls: ['ws://*/*']},  // filter
         ['blocking']  // extraInfoSpec
       );
       testWebSocketConnection(url, false /* expectedToConnect*/);
@@ -192,7 +192,7 @@ chrome.tabs.getCurrent(function(tab) {
           ['onBeforeRequest', 'onBeforeSendHeaders', 'onHeadersReceived',
           'onResponseStarted', 'onCompleted']
         ],
-        {urls: ['<all_urls>']},  // filter
+        {urls: ['ws://*/*']},  // filter
         ['blocking']  // extraInfoSpec
       );
       testWebSocketConnection(url, true /* expectedToConnect*/);
