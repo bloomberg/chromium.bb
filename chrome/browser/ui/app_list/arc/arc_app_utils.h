@@ -157,6 +157,12 @@ std::string GetLaunchIntent(const std::string& package_name,
 // cannot be parsed.
 bool ParseIntent(const std::string& intent_as_string, Intent* intent);
 
+// Returns current active locale and list of preferred languages for the given
+// |profile|.
+void GetLocaleAndPreferredLanguages(const Profile* profle,
+                                    std::string* out_locale,
+                                    std::string* out_preferred_languages);
+
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_UTILS_H_

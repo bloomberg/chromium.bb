@@ -6,6 +6,7 @@
 #define COMPONENTS_ARC_ARC_SESSION_RUNNER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -74,9 +75,13 @@ class ArcSessionRunner : public ArcSession::Observer {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Starts the ARC service, then it will connect the Mojo channel. When the
-  // bridge becomes ready, registered Observer's OnSessionReady() is called.
-  void RequestStart(ArcInstanceMode request_mode);
+  // Starts the mini ARC instance.
+  void RequestStartMiniInstance();
+
+  // Starts the full ARC instance, then it will connect the Mojo channel. When
+  // the bridge becomes ready, registered Observer's OnSessionReady() is called.
+  void RequestUpgrade(const std::string& locale,
+                      const std::vector<std::string>& preferred_languages);
 
   // Stops the ARC service.
   void RequestStop();
@@ -100,6 +105,9 @@ class ArcSessionRunner : public ArcSession::Observer {
 
   // Restarts an ARC instance.
   void RestartArcSession();
+
+  // Starts an ARC instance in |request_mode|.
+  void RequestStart(ArcInstanceMode request_mode);
 
   // ArcSession::Observer:
   void OnSessionStopped(ArcStopReason reason,
@@ -127,6 +135,10 @@ class ArcSessionRunner : public ArcSession::Observer {
   // ArcSession object for currently running ARC instance. This should be
   // nullptr if the state is STOPPED, otherwise non-nullptr.
   std::unique_ptr<ArcSession> arc_session_;
+
+  // Locale and preferred languages to set in Android container during the boot.
+  std::string locale_;
+  std::vector<std::string> preferred_languages_;
 
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcSessionRunner> weak_ptr_factory_;

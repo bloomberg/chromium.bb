@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -790,7 +791,7 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
 
   // Start the mini-container here to save time starting the container if the
   // user decides to opt-in.
-  arc_session_runner_->RequestStart(ArcInstanceMode::MINI_INSTANCE);
+  arc_session_runner_->RequestStartMiniInstance();
 
   terms_of_service_negotiator_->StartNegotiation(
       base::Bind(&ArcSessionManager::OnTermsOfServiceNegotiated,
@@ -935,7 +936,14 @@ void ArcSessionManager::StartArc() {
 
   arc_start_time_ = base::Time::Now();
   provisioning_reported_ = false;
-  arc_session_runner_->RequestStart(ArcInstanceMode::FULL_INSTANCE);
+
+  std::string locale;
+  std::string preferred_lanaguages;
+  GetLocaleAndPreferredLanguages(profile_, &locale, &preferred_lanaguages);
+  // Empty |preferred_lanaguages| is converted to empty array.
+  arc_session_runner_->RequestUpgrade(
+      locale, base::SplitString(preferred_lanaguages, ",",
+                                base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL));
 }
 
 void ArcSessionManager::StopArc() {
@@ -1078,7 +1086,7 @@ void ArcSessionManager::EmitLoginPromptVisibleCalled() {
   if (!IsArcAvailable())
     return;
 
-  arc_session_runner_->RequestStart(ArcInstanceMode::MINI_INSTANCE);
+  arc_session_runner_->RequestStartMiniInstance();
 }
 
 std::ostream& operator<<(std::ostream& os,

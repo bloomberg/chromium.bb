@@ -146,7 +146,6 @@ class ArcSettingsServiceImpl
   void SyncBootTimeSettings() const;
   // Retrieves Chrome's state for the settings that need to be synced on each
   // Android boot after AppInstance is ready and send it to Android.
-  // TODO(crbug.com/762553): Sync settings at proper time.
   void SyncAppTimeSettings();
   // Send particular settings to Android.
   // Keep these lines ordered lexicographically.
@@ -369,13 +368,19 @@ void ArcSettingsServiceImpl::SyncBootTimeSettings() const {
 }
 
 void ArcSettingsServiceImpl::SyncAppTimeSettings() {
-  SyncLocale();
-
   // Applying system locales change on ARC will cause restarting other services
   // and applications on ARC and doing such change in early phase may lead to
-  // ARC OptIn failure.  So that observing preferred languages change should be
-  // deferred at least until |mojom::AppInstance| is ready. But it's not ideal
-  // (b/6773449, b/65385376).
+  // ARC OptIn failure b/65385376. So that observing preferred languages change
+  // should be deferred at least until |mojom::AppInstance| is ready.
+  // Note that locale and preferred languages are passed to Android container on
+  // boot time and current sync is redundant in most cases. However there is
+  // race when preferred languages may be changed during the ARC booting.
+  // Tracking and applying this information is complex task thar requires
+  // syncronization ARC session start, ArcSettingsService and
+  // ArcSettingsServiceImpl creation/destroying. Android framework has ability
+  // to supress reduntant calls so having this little overhead simplifies common
+  // implementation.
+  SyncLocale();
   AddPrefToObserve(::prefs::kApplicationLocale);
   AddPrefToObserve(::prefs::kLanguagePreferredLanguages);
 }

@@ -112,7 +112,7 @@ void SupervisedUserCreationFlow::LaunchExtraSteps(Profile* profile) {
   LOG(ERROR) << "LaunchExtraSteps for " << this << " host is " << host();
   logged_in_ = true;
   manager_profile_ = profile;
-  ProfileHelper::Get()->ProfileStartup(profile, true);
+  ProfileHelper::Get()->ProfileStartup(profile);
 
   if (token_validated_ && logged_in_) {
     if (!session_started_)
