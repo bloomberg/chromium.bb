@@ -24,6 +24,7 @@ source_set("bookmarks") {
     "bookmark_home_waiting_view.mm",
     "bookmark_interaction_controller.h",
     "bookmark_interaction_controller.mm",
+    "bookmark_interaction_controller_delegate.h",
     "bookmark_mediator.h",
     "bookmark_mediator.mm",
     "bookmark_model_bridge_observer.h",

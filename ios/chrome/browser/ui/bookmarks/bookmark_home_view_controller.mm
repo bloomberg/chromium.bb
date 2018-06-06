@@ -31,6 +31,8 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_shared_state.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
+#include "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller_delegate.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
@@ -140,17 +142,15 @@ const CGFloat kShadowRadius = 12.0f;
 
 @end
 
-@interface BookmarkHomeViewController ()<
-    BookmarkEditViewControllerDelegate,
-    BookmarkFolderEditorViewControllerDelegate,
-    BookmarkFolderViewControllerDelegate,
-    BookmarkHomeConsumer,
-    BookmarkHomeSharedStateObserver,
-    BookmarkModelBridgeObserver,
-    BookmarkTableCellTitleEditDelegate,
-    UIGestureRecognizerDelegate,
-    UITableViewDataSource,
-    UITableViewDelegate> {
+@interface BookmarkHomeViewController ()<BookmarkFolderViewControllerDelegate,
+                                         BookmarkHomeConsumer,
+                                         BookmarkHomeSharedStateObserver,
+                                         BookmarkInteractionControllerDelegate,
+                                         BookmarkModelBridgeObserver,
+                                         BookmarkTableCellTitleEditDelegate,
+                                         UIGestureRecognizerDelegate,
+                                         UITableViewDataSource,
+                                         UITableViewDelegate> {
   // Bridge to register for bookmark changes.
   std::unique_ptr<bookmarks::BookmarkModelBridge> _bridge;
 
@@ -188,12 +188,6 @@ const CGFloat kShadowRadius = 12.0f;
 // Object to load URLs.
 @property(nonatomic, weak) id<UrlLoader> loader;
 
-// The view controller used to view and edit a single bookmark.
-@property(nonatomic, strong) BookmarkEditViewController* editViewController;
-
-// The view controller to present when editing the current folder.
-@property(nonatomic, strong) BookmarkFolderEditorViewController* folderEditor;
-
 // The current state of the context bar UI.
 @property(nonatomic, assign) BookmarksContextBarState contextBarState;
 
@@ -227,14 +221,15 @@ const CGFloat kShadowRadius = 12.0f;
 // The action sheet coordinator, if one is currently being shown.
 @property(nonatomic, strong) AlertCoordinator* actionSheetCoordinator;
 
+@property(nonatomic, strong)
+    BookmarkInteractionController* bookmarkInteractionController;
+
 @end
 
 @implementation BookmarkHomeViewController
 
 @synthesize bookmarks = _bookmarks;
 @synthesize browserState = _browserState;
-@synthesize editViewController = _editViewController;
-@synthesize folderEditor = _folderEditor;
 @synthesize folderSelector = _folderSelector;
 @synthesize loader = _loader;
 @synthesize homeDelegate = _homeDelegate;
@@ -249,6 +244,7 @@ const CGFloat kShadowRadius = 12.0f;
 @synthesize spinnerView = _spinnerView;
 @synthesize emptyTableBackgroundView = _emptyTableBackgroundView;
 @synthesize actionSheetCoordinator = _actionSheetCoordinator;
+@synthesize bookmarkInteractionController = _bookmarkInteractionController;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -656,31 +652,16 @@ const CGFloat kShadowRadius = 12.0f;
 
 // Opens the editor on the given node.
 - (void)editNode:(const BookmarkNode*)node {
-  DCHECK(!self.editViewController);
-  DCHECK(!self.folderEditor);
-  UIViewController* editorController = nil;
-  if (node->is_folder()) {
-    BookmarkFolderEditorViewController* folderEditor =
-        [BookmarkFolderEditorViewController
-            folderEditorWithBookmarkModel:self.bookmarks
-                                   folder:node
-                             browserState:self.browserState];
-    folderEditor.delegate = self;
-    self.folderEditor = folderEditor;
-    editorController = folderEditor;
-  } else {
-    BookmarkEditViewController* controller =
-        [[BookmarkEditViewController alloc] initWithBookmark:node
-                                                browserState:self.browserState];
-    self.editViewController = controller;
-    self.editViewController.delegate = self;
-    editorController = self.editViewController;
+  if (!self.bookmarkInteractionController) {
+    self.bookmarkInteractionController = [[BookmarkInteractionController alloc]
+        initWithBrowserState:self.browserState
+                      loader:self.loader
+            parentController:self
+                  dispatcher:self.dispatcher];
+    self.bookmarkInteractionController.delegate = self;
   }
-  DCHECK(editorController);
-  UINavigationController* navController = [[BookmarkNavigationController alloc]
-      initWithRootViewController:editorController];
-  navController.modalPresentationStyle = UIModalPresentationFormSheet;
-  [self presentViewController:navController animated:YES completion:NULL];
+
+  [self.bookmarkInteractionController presentEditorForNode:node];
 }
 
 - (void)openAllNodes:(const std::vector<const bookmarks::BookmarkNode*>&)nodes
@@ -834,51 +815,17 @@ const CGFloat kShadowRadius = 12.0f;
   self.folderSelector = nil;
 }
 
-#pragma mark - BookmarkFolderEditorViewControllerDelegate
+#pragma mark - BookmarkInteractionControllerDelegate
 
-- (void)bookmarkFolderEditor:(BookmarkFolderEditorViewController*)folderEditor
-      didFinishEditingFolder:(const BookmarkNode*)folder {
-  DCHECK(folder);
-  [self dismissViewControllerAnimated:YES completion:nil];
-  self.folderEditor.delegate = nil;
-  self.folderEditor = nil;
-}
-
-- (void)bookmarkFolderEditorDidDeleteEditedFolder:
-    (BookmarkFolderEditorViewController*)folderEditor {
-  [self dismissViewControllerAnimated:YES completion:nil];
-  self.folderEditor.delegate = nil;
-  self.folderEditor = nil;
-}
-
-- (void)bookmarkFolderEditorDidCancel:
-    (BookmarkFolderEditorViewController*)folderEditor {
-  [self dismissViewControllerAnimated:YES completion:nil];
-  self.folderEditor.delegate = nil;
-  self.folderEditor = nil;
-}
-
-- (void)bookmarkFolderEditorWillCommitTitleChange:
-    (BookmarkFolderEditorViewController*)controller {
+- (void)bookmarkInteractionControllerWillCommitTitleOrUrlChange:
+    (BookmarkInteractionController*)controller {
   [self setTableViewEditing:NO];
 }
 
-#pragma mark - BookmarkEditViewControllerDelegate
-
-- (BOOL)bookmarkEditor:(BookmarkEditViewController*)controller
-    shoudDeleteAllOccurencesOfBookmark:(const BookmarkNode*)bookmark {
-  return NO;
-}
-
-- (void)bookmarkEditorWantsDismissal:(BookmarkEditViewController*)controller {
-  self.editViewController.delegate = nil;
-  self.editViewController = nil;
-  [self dismissViewControllerAnimated:YES completion:NULL];
-}
-
-- (void)bookmarkEditorWillCommitTitleOrUrlChange:
-    (BookmarkEditViewController*)controller {
-  [self setTableViewEditing:NO];
+- (void)bookmarkInteractionControllerDidStop:
+    (BookmarkInteractionController*)controller {
+  // TODO(crbug.com/805182): Use this method to tear down
+  // |self.bookmarkInteractionController|.
 }
 
 #pragma mark - BookmarkModelBridgeObserver
