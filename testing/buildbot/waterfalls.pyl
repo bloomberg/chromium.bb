@@ -2371,7 +2371,7 @@
           'vr_testapp',
         ],
         'test_suites': {
-          'gtest_tests': 'vr_platform_specific_non_clang_win_chromium_gtests',
+          'gtest_tests': 'vr_platform_specific_chromium_gtests',
         },
       },
       'WebKit Linux layout_ng Dummy Builder': {
