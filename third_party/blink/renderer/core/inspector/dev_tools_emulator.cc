@@ -103,7 +103,10 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* web_view)
       script_execution_disabled_(false),
       embedder_hide_scrollbars_(
           web_view->GetPage()->GetSettings().GetHideScrollbars()),
-      scrollbars_hidden_(false) {}
+      scrollbars_hidden_(false),
+      embedder_cookie_enabled_(
+          web_view->GetPage()->GetSettings().GetCookieEnabled()),
+      document_cookie_disabled_(false) {}
 
 DevToolsEmulator::~DevToolsEmulator() = default;
 
@@ -170,6 +173,12 @@ void DevToolsEmulator::SetHideScrollbars(bool hide) {
   embedder_hide_scrollbars_ = hide;
   if (!scrollbars_hidden_)
     web_view_->GetPage()->GetSettings().SetHideScrollbars(hide);
+}
+
+void DevToolsEmulator::SetCookieEnabled(bool enabled) {
+  embedder_cookie_enabled_ = enabled;
+  if (!document_cookie_disabled_)
+    web_view_->GetPage()->GetSettings().SetCookieEnabled(enabled);
 }
 
 void DevToolsEmulator::SetDoubleTapToZoomEnabled(bool enabled) {
@@ -516,6 +525,14 @@ void DevToolsEmulator::SetScrollbarsHidden(bool hidden) {
   scrollbars_hidden_ = hidden;
   web_view_->GetPage()->GetSettings().SetHideScrollbars(
       scrollbars_hidden_ ? true : embedder_hide_scrollbars_);
+}
+
+void DevToolsEmulator::SetDocumentCookieDisabled(bool disabled) {
+  if (document_cookie_disabled_ == disabled)
+    return;
+  document_cookie_disabled_ = disabled;
+  web_view_->GetPage()->GetSettings().SetCookieEnabled(
+      document_cookie_disabled_ ? false : embedder_cookie_enabled_);
 }
 
 }  // namespace blink

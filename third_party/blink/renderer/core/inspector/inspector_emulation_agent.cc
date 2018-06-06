@@ -30,6 +30,7 @@ using protocol::Response;
 namespace EmulationAgentState {
 static const char kScriptExecutionDisabled[] = "scriptExecutionDisabled";
 static const char kScrollbarsHidden[] = "scrollbarsHidden";
+static const char kDocumentCookieDisabled[] = "documentCookieDisabled";
 static const char kTouchEventEmulationEnabled[] = "touchEventEmulationEnabled";
 static const char kMaxTouchPoints[] = "maxTouchPoints";
 static const char kEmulatedMedia[] = "emulatedMedia";
@@ -79,6 +80,10 @@ void InspectorEmulationAgent::Restore() {
   }
   if (state_->booleanProperty(EmulationAgentState::kScrollbarsHidden, false))
     GetWebViewImpl()->GetDevToolsEmulator()->SetScrollbarsHidden(true);
+  if (state_->booleanProperty(EmulationAgentState::kDocumentCookieDisabled,
+                              false)) {
+    GetWebViewImpl()->GetDevToolsEmulator()->SetDocumentCookieDisabled(true);
+  }
   setTouchEmulationEnabled(
       state_->booleanProperty(EmulationAgentState::kTouchEventEmulationEnabled,
                               false),
@@ -158,6 +163,7 @@ Response InspectorEmulationAgent::disable() {
     instrumenting_agents_->removeInspectorEmulationAgent(this);
   setScriptExecutionDisabled(false);
   setScrollbarsHidden(false);
+  setDocumentCookieDisabled(false);
   setTouchEmulationEnabled(false, Maybe<int>());
   setEmulatedMedia(String());
   setCPUThrottlingRate(1);
@@ -211,6 +217,19 @@ Response InspectorEmulationAgent::setScrollbarsHidden(bool hidden) {
   }
   state_->setBoolean(EmulationAgentState::kScrollbarsHidden, hidden);
   GetWebViewImpl()->GetDevToolsEmulator()->SetScrollbarsHidden(hidden);
+  return response;
+}
+
+Response InspectorEmulationAgent::setDocumentCookieDisabled(bool disabled) {
+  Response response = AssertPage();
+  if (!response.isSuccess())
+    return response;
+  if (state_->booleanProperty(EmulationAgentState::kDocumentCookieDisabled,
+                              false) == disabled) {
+    return response;
+  }
+  state_->setBoolean(EmulationAgentState::kDocumentCookieDisabled, disabled);
+  GetWebViewImpl()->GetDevToolsEmulator()->SetDocumentCookieDisabled(disabled);
   return response;
 }
 

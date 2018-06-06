@@ -663,7 +663,7 @@ void WebSettingsImpl::SetSyncXHRInDocumentsEnabled(bool enabled) {
 }
 
 void WebSettingsImpl::SetCookieEnabled(bool enabled) {
-  settings_->SetCookieEnabled(enabled);
+  dev_tools_emulator_->SetCookieEnabled(enabled);
 }
 
 void WebSettingsImpl::SetNavigateOnDragDrop(bool enabled) {

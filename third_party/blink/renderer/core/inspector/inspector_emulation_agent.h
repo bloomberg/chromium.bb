@@ -43,6 +43,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   protocol::Response setPageScaleFactor(double) override;
   protocol::Response setScriptExecutionDisabled(bool value) override;
   protocol::Response setScrollbarsHidden(bool hidden) override;
+  protocol::Response setDocumentCookieDisabled(bool disabled) override;
   protocol::Response setTouchEmulationEnabled(
       bool enabled,
       protocol::Maybe<int> max_touch_points) override;
