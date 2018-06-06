@@ -182,6 +182,15 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     // This UMA metric tracks the time between the final frame swap for the
     // first scroll event in a sequence and the original timestamp of that
     // scroll event's underlying touch/wheel event.
+    UMA_HISTOGRAM_INPUT_LATENCY_BROADER_RANGE_MICROSECONDS(
+        "Event.Latency." + scroll_name + "." + input_modality +
+            ".TimeToScrollUpdateSwapBegin3",
+        original_component, gpu_swap_begin_component);
+
+    // This is the same metric as above. But due to a change in rebucketing,
+    // UMA pipeline cannot process this for the chirp alerts. Hence adding a
+    // newer version the this metric above. TODO(nzolghadr): Remove it in a
+    // future milesone like M70.
     UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
         "Event.Latency." + scroll_name + "." + input_modality +
             ".TimeToScrollUpdateSwapBegin2",
@@ -210,6 +219,15 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     // This UMA metric tracks the time from when the original touch/wheel event
     // is created to when the scroll gesture results in final frame swap.
     // First scroll events are excluded from this metric.
+    UMA_HISTOGRAM_INPUT_LATENCY_BROADER_RANGE_MICROSECONDS(
+        "Event.Latency." + scroll_name + "." + input_modality +
+            ".TimeToScrollUpdateSwapBegin3",
+        original_component, gpu_swap_begin_component);
+
+    // This is the same metric as above. But due to a change in rebucketing,
+    // UMA pipeline cannot process this for the chirp alerts. Hence adding a
+    // newer version the this metric above. TODO(nzolghadr): Remove it in a
+    // future milesone like M70.
     UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
         "Event.Latency." + scroll_name + "." + input_modality +
             ".TimeToScrollUpdateSwapBegin2",
