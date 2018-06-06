@@ -59,9 +59,7 @@ bool EventQueueImpl::EnqueueEvent(const base::Location& from_here,
 
   DCHECK(GetExecutionContext());
 
-  DCHECK(event->target());
-  probe::AsyncTaskScheduled(event->target()->GetExecutionContext(),
-                            event->type(), event);
+  probe::AsyncTaskScheduled(GetExecutionContext(), event->type(), event);
 
   bool was_added = queued_events_.insert(event).is_new_entry;
   DCHECK(was_added);  // It should not have already been in the list.
@@ -79,16 +77,20 @@ bool EventQueueImpl::EnqueueEvent(const base::Location& from_here,
 }
 
 void EventQueueImpl::CancelAllEvents() {
-  for (const auto& queued_event : queued_events_) {
-    probe::AsyncTaskCanceled(queued_event->target()->GetExecutionContext(),
-                             queued_event);
+  if (!GetExecutionContext()) {
+    DCHECK(!queued_events_.size());
+    return;
   }
-  queued_events_.clear();
+  DoCancelAllEvents(GetExecutionContext());
 }
 
 void EventQueueImpl::Close() {
-  is_closed_ = true;
-  CancelAllEvents();
+  if (!GetExecutionContext()) {
+    DCHECK(is_closed_);
+    DCHECK(!queued_events_.size());
+    return;
+  }
+  DoClose(GetExecutionContext());
 }
 
 bool EventQueueImpl::RemoveEvent(Event* event) {
@@ -103,16 +105,32 @@ void EventQueueImpl::DispatchEvent(Event* event) {
   if (!event || !RemoveEvent(event))
     return;
 
+  DCHECK(GetExecutionContext());
+
+  probe::AsyncTask async_task(GetExecutionContext(), event);
+  // TODO(hajimehoshi): Don't use |event->target()| here. Assuming the taget
+  // exists here is weird since event target is set later at
+  // |EventTarget::DispatchEvent|.
   EventTarget* event_target = event->target();
-  probe::AsyncTask async_task(event_target->GetExecutionContext(), event);
   if (LocalDOMWindow* window = event_target->ToLocalDOMWindow())
     window->DispatchEvent(event, nullptr);
   else
     event_target->DispatchEvent(event);
 }
 
-void EventQueueImpl::ContextDestroyed(ExecutionContext*) {
-  Close();
+void EventQueueImpl::ContextDestroyed(ExecutionContext* context) {
+  DoClose(context);
+}
+
+void EventQueueImpl::DoClose(ExecutionContext* context) {
+  is_closed_ = true;
+  DoCancelAllEvents(context);
+}
+
+void EventQueueImpl::DoCancelAllEvents(ExecutionContext* context) {
+  for (const auto& queued_event : queued_events_)
+    probe::AsyncTaskCanceled(context, queued_event);
+  queued_events_.clear();
 }
 
 }  // namespace blink
