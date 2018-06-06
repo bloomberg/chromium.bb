@@ -77,6 +77,13 @@ TEST_F(SurfaceChooserHelperTest, SetIsFullscreen) {
   // We don't really care if it sets expecting_relayout, clears it, or not.
 }
 
+TEST_F(SurfaceChooserHelperTest, SetVideoRotation) {
+  // VideoRotation should be forwarded to the chooser.
+  helper_->SetVideoRotation(VIDEO_ROTATION_90);
+  UpdateChooserState();
+  ASSERT_EQ(chooser_->current_state_.video_rotation, VIDEO_ROTATION_90);
+}
+
 TEST_F(SurfaceChooserHelperTest, SetIsOverlayRequired) {
   // The default helper was created without |is_required|, so verify that.
   UpdateChooserState();

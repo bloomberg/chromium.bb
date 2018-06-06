@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "media/base/android/android_overlay.h"
+#include "media/base/video_rotation.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -42,6 +43,9 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooser {
     // efficient even if not otherwise required.  Otherwise, we'll require other
     // signals, like fs or secure, before we promote.
     bool promote_aggressively = false;
+
+    // Default orientation for the video.
+    VideoRotation video_rotation = VIDEO_ROTATION_0;
 
     // Hint to use for the initial position when transitioning to an overlay.
     gfx::Rect initial_position;

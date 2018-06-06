@@ -185,6 +185,8 @@ void MediaCodecVideoDecoder::Initialize(
   }
   decoder_config_ = config;
 
+  surface_chooser_helper_.SetVideoRotation(decoder_config_.video_rotation());
+
   output_cb_ = output_cb;
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)

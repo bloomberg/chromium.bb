@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "media/base/video_rotation.h"
 #include "media/gpu/android/android_video_surface_chooser.h"
 #include "media/gpu/android/promotion_hint_aggregator.h"
 #include "media/gpu/media_gpu_export.h"
@@ -73,6 +74,9 @@ class MEDIA_GPU_EXPORT SurfaceChooserHelper {
 
   // Notify us about the fullscreen state.  Does not update the chooser state.
   void SetIsFullscreen(bool is_fullscreen);
+
+  // Notify us about the default rotation for the video.
+  void SetVideoRotation(VideoRotation video_rotation);
 
   // Update the chooser state using the given factory.
   void UpdateChooserState(base::Optional<AndroidOverlayFactoryCB> new_factory);
