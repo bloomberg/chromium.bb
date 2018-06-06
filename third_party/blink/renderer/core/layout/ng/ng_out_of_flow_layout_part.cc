@@ -49,7 +49,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
       NGPhysicalOffset(physical_borders.left, physical_borders.top);
 }
 
-void NGOutOfFlowLayoutPart::Run(bool update_legacy) {
+void NGOutOfFlowLayoutPart::Run(LayoutObject* only_layout) {
   Vector<NGOutOfFlowPositionedDescendant> descendant_candidates;
   container_builder_->GetAndClearOutOfFlowDescendantCandidates(
       &descendant_candidates, container_builder_->GetLayoutObject());
@@ -57,12 +57,13 @@ void NGOutOfFlowLayoutPart::Run(bool update_legacy) {
   while (descendant_candidates.size() > 0) {
     ComputeInlineContainingBlocks(descendant_candidates);
     for (auto& candidate : descendant_candidates) {
-      if (IsContainingBlockForDescendant(candidate)) {
+      if (IsContainingBlockForDescendant(candidate) &&
+          (!only_layout || candidate.node.GetLayoutObject() == only_layout)) {
         NGLogicalOffset offset;
         scoped_refptr<NGLayoutResult> result =
             LayoutDescendant(candidate, &offset);
         container_builder_->AddChild(std::move(result), offset);
-        if (update_legacy)
+        if (candidate.node.GetLayoutObject() != only_layout)
           candidate.node.UseOldOutOfFlowPositioning();
       } else {
         container_builder_->AddOutOfFlowDescendant(candidate);
