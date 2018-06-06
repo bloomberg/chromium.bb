@@ -118,8 +118,7 @@ gfx::Size InkDropHostView::CalculateLargeInkDropSize(
 InkDropHostView::InkDropHostView()
     : ink_drop_mode_(InkDropMode::OFF),
       ink_drop_(nullptr),
-      ink_drop_visible_opacity_(
-          PlatformStyle::kUseRipples ? kInkDropVisibleOpacity : 0),
+      ink_drop_visible_opacity_(kInkDropVisibleOpacity),
       ink_drop_small_corner_radius_(kInkDropSmallCornerRadius),
       ink_drop_large_corner_radius_(kInkDropLargeCornerRadius),
       old_paint_to_layer_(false),

@@ -297,7 +297,7 @@ std::unique_ptr<views::InkDropRipple> IconLabelBubbleView::CreateInkDropRipple()
 
   return std::make_unique<views::FloodFillInkDropRipple>(
       ink_drop_container_->size(), center_point, GetInkDropBaseColor(),
-      views::PlatformStyle::kUseRipples ? ink_drop_visible_opacity() : 0);
+      ink_drop_visible_opacity());
 }
 
 std::unique_ptr<views::InkDropHighlight>

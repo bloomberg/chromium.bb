@@ -15,6 +15,7 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/views/animation/ink_drop_util.h"
+#include "ui/views/style/platform_style.h"
 
 namespace {
 
@@ -447,8 +448,10 @@ float FloodFillInkDropRipple::MaxDistanceToCorners(
 
 // Returns the InkDropState sub animation duration for the given |state|.
 base::TimeDelta FloodFillInkDropRipple::GetAnimationDuration(int state) {
-  if (!gfx::Animation::ShouldRenderRichAnimation())
+  if (!PlatformStyle::kUseRipples ||
+      !gfx::Animation::ShouldRenderRichAnimation()) {
     return base::TimeDelta();
+  }
 
   int state_override = state;
   // Override the requested state if needed.
