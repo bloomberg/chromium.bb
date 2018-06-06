@@ -5,6 +5,8 @@
 #include "ash/wm/non_client_frame_controller.h"
 
 #include "ash/public/cpp/ash_layout_constants.h"
+#include "ash/public/cpp/config.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/window_manager.h"
@@ -15,6 +17,8 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
+#include "services/ui/ws2/test_change_tracker.h"
+#include "services/ui/ws2/test_window_tree_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
@@ -74,10 +78,10 @@ bool FindTiledContentQuad(const viz::CompositorFrame& frame,
 
 }  // namespace
 
-class NonClientFrameControllerTest : public AshTestBase {
+class NonClientFrameControllerMashTest : public AshTestBase {
  public:
-  NonClientFrameControllerTest() = default;
-  ~NonClientFrameControllerTest() override = default;
+  NonClientFrameControllerMashTest() = default;
+  ~NonClientFrameControllerMashTest() override = default;
 
   const viz::CompositorFrame& GetLastCompositorFrame() const {
     return context_factory_.GetLastCompositorFrame();
@@ -101,10 +105,13 @@ class NonClientFrameControllerTest : public AshTestBase {
   ui::FakeContextFactory context_factory_;
   ui::ContextFactory* context_factory_to_restore_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(NonClientFrameControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(NonClientFrameControllerMashTest);
 };
 
-TEST_F(NonClientFrameControllerTest, ContentRegionNotDrawnForClient) {
+TEST_F(NonClientFrameControllerMashTest, ContentRegionNotDrawnForClient) {
+  if (Shell::GetAshConfig() != Config::MASH)
+    return;  // TODO: decide if this test should be made to work with ws2.
+
   std::map<std::string, std::vector<uint8_t>> properties;
   auto* window_manager =
       ash_test_helper()->window_manager_service()->window_manager();
@@ -180,6 +187,23 @@ TEST_F(NonClientFrameControllerTest, ContentRegionNotDrawnForClient) {
     caption_bound.set_height(caption_height);
     EXPECT_TRUE(FindTiledContentQuad(frame, caption_bound));
   }
+}
+
+using NonClientFrameControllerTest = AshTestBase;
+
+TEST_F(NonClientFrameControllerTest, CallsRequestClose) {
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  NonClientFrameController* non_client_frame_controller =
+      NonClientFrameController::Get(window.get());
+  ASSERT_TRUE(non_client_frame_controller);
+  non_client_frame_controller->GetWidget()->Close();
+  // Close should not have been scheduled on the widget yet (because the request
+  // goes to the remote client).
+  EXPECT_FALSE(non_client_frame_controller->GetWidget()->IsClosed());
+  auto* changes = GetTestWindowTreeClient()->tracker()->changes();
+  ASSERT_FALSE(changes->empty());
+  // The remote client should have a request to close the window.
+  EXPECT_EQ("RequestClose", ui::ws2::ChangeToDescription(changes->back()));
 }
 
 }  // namespace ash

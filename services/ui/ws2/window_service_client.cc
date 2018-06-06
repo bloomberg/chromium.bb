@@ -141,6 +141,12 @@ bool WindowServiceClient::IsTopLevel(aura::Window* window) {
   return iter != client_roots_.end() && (*iter)->is_top_level();
 }
 
+void WindowServiceClient::RequestClose(ClientWindow* window) {
+  DCHECK(window->IsTopLevel());
+  DCHECK_EQ(this, window->owning_window_service_client());
+  window_tree_client_->RequestClose(TransportIdForWindow(window->window()));
+}
+
 ClientRoot* WindowServiceClient::CreateClientRoot(
     aura::Window* window,
     bool is_top_level,

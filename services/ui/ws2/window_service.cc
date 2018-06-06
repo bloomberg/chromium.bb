@@ -68,6 +68,12 @@ bool WindowService::HasRemoteClient(aura::Window* window) {
   return ClientWindow::GetMayBeNull(window);
 }
 
+void WindowService::RequestClose(aura::Window* window) {
+  ClientWindow* client_window = ClientWindow::GetMayBeNull(window);
+  DCHECK(window && client_window->IsTopLevel());
+  client_window->owning_window_service_client()->RequestClose(client_window);
+}
+
 void WindowService::OnStart() {
   window_tree_factory_ = std::make_unique<WindowTreeFactory>(this);
 

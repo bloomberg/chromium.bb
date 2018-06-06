@@ -44,6 +44,7 @@ enum ChangeType {
   CHANGE_TYPE_ON_CHANGE_COMPLETED,
   CHANGE_TYPE_ON_TOP_LEVEL_CREATED,
   CHANGE_TYPE_OPACITY,
+  CHANGE_TYPE_REQUEST_CLOSE,
   CHANGE_TYPE_SURFACE_CHANGED,
   CHANGE_TYPE_TRANSFORM_CHANGED,
 };
@@ -202,6 +203,7 @@ class TestChangeTracker {
                          bool drawn);
   void OnWindowSurfaceChanged(Id window_id,
                               const viz::SurfaceInfo& surface_info);
+  void RequestClose(Id window_id);
 
  private:
   void AddChange(const Change& change);

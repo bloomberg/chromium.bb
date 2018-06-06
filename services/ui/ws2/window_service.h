@@ -86,6 +86,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   aura::client::FocusClient* focus_client() { return focus_client_; }
 
+  // Asks the client that created |window| to close |window|. |window| must be
+  // a top-level window.
+  void RequestClose(aura::Window* window);
+
   // service_manager::Service:
   void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& remote_info,

@@ -84,6 +84,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   // NewTopLevelWindow().
   bool IsTopLevel(aura::Window* window);
 
+  // Asks the client to close |window|. |window| must be a top-level window.
+  void RequestClose(ClientWindow* window);
+
   WindowService* window_service() { return window_service_; }
 
  private:

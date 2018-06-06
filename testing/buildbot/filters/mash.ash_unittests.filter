@@ -189,6 +189,9 @@
 # TODO: Maybe due to dragging across displays. http://crbug.com/698888
 -NormalPanelPopup/PanelWindowResizerTransientTest.PanelWithTransientChild/0
 
+# Only works with classic.
+-NonClientFrameControllerTest.CallsRequestClose
+
 # TODO: Triage
 -OverviewGestureHandlerTest.HorizontalScrollInOverview
 -OverviewGestureHandlerTest.ScrollUpDownWithoutReleasing
