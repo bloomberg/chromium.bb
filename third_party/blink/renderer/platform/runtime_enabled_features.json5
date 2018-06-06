@@ -411,7 +411,8 @@
     },
     {
       name: "EncryptedMediaHdcpPolicyCheck",
-      status: "test",
+      origin_trial_feature_name: "EncryptedMediaHdcpPolicyCheck",
+      status: "experimental",
     },
     {
       name: "EventTiming",
