@@ -16,7 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_driver.h"
-#include "components/invalidation/impl/fake_identity_provider.h"
+#include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/ip_endpoint.h"
@@ -60,7 +60,7 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
     token_service_->UpdateCredentials("", "fake_refresh_token");
     gcm_driver_.reset(new CustomFakeGCMDriver());
 
-    identity_provider_.reset(new FakeIdentityProvider(token_service_.get()));
+    identity_provider_.reset(new ProfileIdentityProvider(token_service_.get()));
     bridge_.reset(new GCMInvalidationBridge(gcm_driver_.get(),
                                             identity_provider_.get()));
 
@@ -96,7 +96,7 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
   base::MessageLoop message_loop_;
   std::unique_ptr<FakeProfileOAuth2TokenService> token_service_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
-  std::unique_ptr<FakeIdentityProvider> identity_provider_;
+  std::unique_ptr<ProfileIdentityProvider> identity_provider_;
 
   std::vector<std::string> issued_tokens_;
   std::vector<GoogleServiceAuthError> request_token_errors_;

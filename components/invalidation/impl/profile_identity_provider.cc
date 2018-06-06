@@ -16,10 +16,24 @@ ProfileIdentityProvider::ProfileIdentityProvider(
 }
 
 ProfileIdentityProvider::~ProfileIdentityProvider() {
+  // In unittests |signin_manager_| is allowed to be null.
+  // TODO(809452): Eliminate this short-circuit when this class is converted to
+  // take in IdentityManager, at which point the tests can use
+  // IdentityTestEnvironment.
+  if (!signin_manager_)
+    return;
+
   signin_manager_->RemoveObserver(this);
 }
 
 std::string ProfileIdentityProvider::GetActiveAccountId() {
+  // In unittests |signin_manager_| is allowed to be null.
+  // TODO(809452): Eliminate this short-circuit when this class is converted to
+  // take in IdentityManager, at which point the tests can use
+  // IdentityTestEnvironment.
+  if (!signin_manager_)
+    return std::string();
+
   return signin_manager_->GetAuthenticatedAccountId();
 }
 
