@@ -171,7 +171,7 @@ js_library("password_prompt_dialog") {
   deps = [
     ":lock_screen_constants",
     "..:route",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input",
+    "//third_party/polymer/v1_0/components-chromium/paper-input:paper-input-extracted",
   ]
   externs_list = [ "$externs_path/quick_unlock_private.js" ]
   extra_sources = [ "$interfaces_path/quick_unlock_private_interface.js" ]
@@ -228,8 +228,8 @@ js_library("sync_page") {
     "..:page_visibility",
     "..:route",
     "../settings_page:settings_animated_pages",
+    "//third_party/polymer/v1_0/components-chromium/paper-input:paper-input-extracted",
     "//ui/webui/resources/cr_elements/cr_expand_button:cr_expand_button",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:util",
