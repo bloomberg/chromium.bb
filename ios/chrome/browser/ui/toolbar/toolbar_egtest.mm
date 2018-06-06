@@ -279,6 +279,12 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 
 // Verifies that copying and pasting a URL includes the hidden protocol prefix.
 - (void)testCopyPasteURL {
+  // TODO(crbug.com/849932): re-enable this test on iOS 10 once the share button
+  // is implemented.
+  if (!base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled until share button is implemented.");
+  }
+
   // Clear generalPasteboard before and after the test.
   [UIPasteboard generalPasteboard].string = @"";
   [self setTearDownHandler:^{
