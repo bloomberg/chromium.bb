@@ -283,7 +283,7 @@ void BookmarkModelTypeProcessor::ProcessRemoteCreate(
                 << update_data.specifics.bookmark().url();
     return;
   }
-  bookmark_tracker_.Associate(update_data.id, bookmark_node);
+  bookmark_tracker_.Add(update_data.id, bookmark_node);
   // TODO(crbug.com/516866): Update metadata (e.g. server version,
   // specifics_hash).
 }
@@ -359,7 +359,7 @@ void BookmarkModelTypeProcessor::ProcessRemoteDelete(
   }
 
   bookmark_model_->Remove(node);
-  bookmark_tracker_.Disassociate(update_data.id);
+  bookmark_tracker_.Remove(update_data.id);
 }
 
 const bookmarks::BookmarkNode* BookmarkModelTypeProcessor::GetParentNode(
@@ -386,7 +386,7 @@ void BookmarkModelTypeProcessor::AssociatePermanentFolder(
   }
 
   if (permanent_node != nullptr) {
-    bookmark_tracker_.Associate(update_data.id, permanent_node);
+    bookmark_tracker_.Add(update_data.id, permanent_node);
   }
 }
 

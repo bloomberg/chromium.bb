@@ -38,13 +38,12 @@ const SyncedBookmarkTracker::Entity* SyncedBookmarkTracker::GetEntityForSyncId(
   return it != sync_id_to_entities_map_.end() ? it->second.get() : nullptr;
 }
 
-void SyncedBookmarkTracker::Associate(
-    const std::string& sync_id,
-    const bookmarks::BookmarkNode* bookmark_node) {
+void SyncedBookmarkTracker::Add(const std::string& sync_id,
+                                const bookmarks::BookmarkNode* bookmark_node) {
   sync_id_to_entities_map_[sync_id] = std::make_unique<Entity>(bookmark_node);
 }
 
-void SyncedBookmarkTracker::Disassociate(const std::string& sync_id) {
+void SyncedBookmarkTracker::Remove(const std::string& sync_id) {
   sync_id_to_entities_map_.erase(sync_id);
 }
 

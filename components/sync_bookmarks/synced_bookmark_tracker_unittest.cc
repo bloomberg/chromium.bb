@@ -21,7 +21,7 @@ TEST(SyncedBookmarkTrackerTest, ShouldGetAssociatedNodes) {
   const std::string kSyncId = "SYNC_ID";
   const int64_t kId = 1;
   bookmarks::BookmarkNode node(kId, GURL());
-  tracker.Associate(kSyncId, &node);
+  tracker.Add(kSyncId, &node);
   const SyncedBookmarkTracker::Entity* entity =
       tracker.GetEntityForSyncId(kSyncId);
   ASSERT_THAT(entity, NotNull());
@@ -34,9 +34,9 @@ TEST(SyncedBookmarkTrackerTest, ShouldReturnNullForDisassociatedNodes) {
   const std::string kSyncId = "SYNC_ID";
   const int64_t kId = 1;
   bookmarks::BookmarkNode node(kId, GURL());
-  tracker.Associate(kSyncId, &node);
+  tracker.Add(kSyncId, &node);
   ASSERT_THAT(tracker.GetEntityForSyncId(kSyncId), NotNull());
-  tracker.Disassociate(kSyncId);
+  tracker.Remove(kSyncId);
   EXPECT_THAT(tracker.GetEntityForSyncId(kSyncId), IsNull());
 }
 
