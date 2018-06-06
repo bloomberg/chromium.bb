@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/win/hwnd_util.h"
 
@@ -48,6 +49,12 @@ void HitTestPerimeter(views::View* view) {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewTestWin, HitTestFrameItems) {
+  if (ui::MaterialDesignController::IsRefreshUi()) {
+    // In Refresh the avatar button in the frame area is replaced by a toolbar
+    // button. Since there is nothing else in the frame area, skip this test.
+    return;
+  }
+
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   views::Widget* widget = browser_view->GetWidget();
 
