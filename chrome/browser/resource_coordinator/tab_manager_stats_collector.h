@@ -14,6 +14,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "chrome/browser/resource_coordinator/decision_details.h"
+#include "chrome/browser/resource_coordinator/discard_reason.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
 
@@ -100,6 +103,16 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
 
   // Record background tab count for BackgroundTabOpening.
   void RecordBackgroundTabCount();
+
+  // Records information about a freezing/discarding event, which may or may not
+  // have been successful.
+  static void RecordFreezeDecision(LifecycleUnit* lifecycle_unit,
+                                   const DecisionDetails& decision_details,
+                                   LifecycleUnitState old_state);
+  static void RecordDiscardDecision(LifecycleUnit* lifecycle_unit,
+                                    const DecisionDetails& decision_details,
+                                    LifecycleUnitState old_state,
+                                    DiscardReason reason);
 
   // SessionRestoreObserver
   void OnSessionRestoreStartedLoadingTabs() override;

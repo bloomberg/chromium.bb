@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
+#include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
@@ -411,6 +412,15 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
 
   FinishDiscard(discard_reason);
   return true;
+}
+
+ukm::SourceId TabLifecycleUnitSource::TabLifecycleUnit::GetUkmSourceId() const {
+  resource_coordinator::ResourceCoordinatorTabHelper* observer =
+      resource_coordinator::ResourceCoordinatorTabHelper::FromWebContents(
+          web_contents());
+  if (!observer)
+    return ukm::kInvalidSourceId;
+  return observer->ukm_source_id();
 }
 
 void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(

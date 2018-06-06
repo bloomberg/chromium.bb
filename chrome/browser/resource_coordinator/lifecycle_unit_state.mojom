@@ -30,4 +30,6 @@ enum LifecycleUnitStateChangeReason {
   RENDERER_INITIATED = 1,
   // A system wide memory pressure condition initiated the state change.
   SYSTEM_MEMORY_PRESSURE = 2,
+  // Initiated by an extension.
+  EXTENSION_INITIATED = 3,
 };

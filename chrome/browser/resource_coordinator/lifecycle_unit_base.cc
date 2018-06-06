@@ -36,6 +36,10 @@ void LifecycleUnitBase::RemoveObserver(LifecycleUnitObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+ukm::SourceId LifecycleUnitBase::GetUkmSourceId() const {
+  return ukm::kInvalidSourceId;
+}
+
 void LifecycleUnitBase::SetState(LifecycleUnitState state) {
   if (state == state_)
     return;
