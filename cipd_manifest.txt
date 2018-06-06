@@ -14,7 +14,7 @@ infra/tools/luci/vpython/${platform}  git_revision:4d19637ec2c3d1efd8c6a1b052851
 infra/tools/luci/led/${platform}  git_revision:7ba61969ccbe1f9679661555f72ca947da508a70
 
 # Mac toolchain installer
-infra/tools/mac_toolchain/${os=mac}-${arch} git_revision:478dc9dbbaa60dd9827f2b1106c5e70f1f6b429c
+infra/tools/mac_toolchain/${os=mac}-${arch} git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a
 
 # LUCI rpc command line tool
 infra/tools/prpc/${platform} git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c
