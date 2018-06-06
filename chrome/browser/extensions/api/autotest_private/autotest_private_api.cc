@@ -46,7 +46,6 @@
 #include "net/base/filename_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #endif
 
@@ -419,27 +418,17 @@ AutotestPrivateGetVisibleNotificationsFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateGetVisibleNotificationsFunction::Run() {
   DVLOG(1) << "AutotestPrivateGetVisibleNotificationsFunction";
-  std::unique_ptr<base::ListValue> values(new base::ListValue);
 #if defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(features::kNativeNotifications) ||
-      base::FeatureList::IsEnabled(features::kMash)) {
-    auto* connection = content::ServiceManagerConnection::GetForProcess();
-    connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
-                                              &controller_);
-    controller_->GetActiveNotifications(base::BindOnce(
-        &AutotestPrivateGetVisibleNotificationsFunction::OnGotNotifications,
-        this));
-    return RespondLater();
-  }
-
-  CHECK(message_center::MessageCenter::Get());
-  for (auto* notification :
-       message_center::MessageCenter::Get()->GetVisibleNotifications()) {
-    values->Append(MakeDictionaryFromNotification(*notification));
-  }
-
+  auto* connection = content::ServiceManagerConnection::GetForProcess();
+  connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
+                                            &controller_);
+  controller_->GetActiveNotifications(base::BindOnce(
+      &AutotestPrivateGetVisibleNotificationsFunction::OnGotNotifications,
+      this));
+  return RespondLater();
+#else
+  return RespondNow(OneArgument(std::make_unique<base::ListValue>()));
 #endif
-  return RespondNow(OneArgument(std::move(values)));
 }
 
 #if defined(OS_CHROMEOS)

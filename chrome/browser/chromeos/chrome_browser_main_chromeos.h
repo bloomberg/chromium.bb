@@ -14,7 +14,6 @@
 #include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chromeos/system/version_loader.h"
 
-class NotificationPlatformBridge;
 class SpokenFeedbackEventRewriterDelegate;
 
 namespace lock_screen_apps {
@@ -120,11 +119,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<lock_screen_apps::StateController>
       lock_screen_apps_state_controller_;
-
-  // TODO(estade): Remove this when Chrome OS uses native notifications by
-  // default (as it will be instantiated elsewhere). For now it's necessary to
-  // send notifier settings information to Ash.
-  std::unique_ptr<NotificationPlatformBridge> notification_client_;
 
   std::unique_ptr<power::ml::AdaptiveScreenBrightnessManager>
       adaptive_screen_brightness_manager_;
