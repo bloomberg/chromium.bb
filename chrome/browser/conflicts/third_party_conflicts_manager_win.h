@@ -9,13 +9,15 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/conflicts/module_blacklist_cache_updater_win.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 
-struct CertificateInfo;
+class IncompatibleApplicationsUpdater;
 class InstalledApplications;
 class ModuleDatabase;
 class ModuleListFilter;
-class IncompatibleApplicationsUpdater;
+class PrefRegistrySimple;
+struct CertificateInfo;
 
 namespace base {
 class FilePath;
@@ -27,6 +29,17 @@ class ThirdPartyConflictsManager : public ModuleDatabaseObserver {
  public:
   explicit ThirdPartyConflictsManager(ModuleDatabase* module_database);
   ~ThirdPartyConflictsManager() override;
+
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
+  // Returns true if the ThirdPartyBlocking policy is enabled. This can only
+  // return false if it is disabled via admin policy.
+  static bool IsThirdPartyBlockingPolicyEnabled();
+
+  // Explicitely disables the third-party module blocking feature. This is
+  // needed because simply turning off the feature using either the Feature List
+  // API or via group policy is not sufficient.
+  static void DisableThirdPartyModuleBlocking();
 
   // ModuleDatabaseObserver:
   void OnModuleDatabaseIdle() override;
@@ -52,6 +65,15 @@ class ThirdPartyConflictsManager : public ModuleDatabaseObserver {
   // installed_applications_ are available.
   void InitializeIncompatibleApplicationsUpdater();
 
+  // Initializes |module_blacklist_cache_updater_| if third-party module
+  // blocking is enabled.
+  void MaybeInitializeModuleBlacklistCacheUpdater();
+
+  // Checks if the |old_md5_digest| matches the expected one from the Local
+  // State file, and updates it to |new_md5_digest|.
+  void OnModuleBlacklistCacheUpdated(
+      const ModuleBlacklistCacheUpdater::CacheUpdateResult& result);
+
   ModuleDatabase* module_database_;
 
   // Indicates if the initial Module List has been received. Used to prevent the
@@ -75,6 +97,10 @@ class ThirdPartyConflictsManager : public ModuleDatabaseObserver {
   // Maintains the cache of incompatible applications.
   std::unique_ptr<IncompatibleApplicationsUpdater>
       incompatible_applications_updater_;
+
+  // Maintains the module blacklist cache. This member is only initialized when
+  // the ThirdPartyModuleBlocking feature is enabled.
+  std::unique_ptr<ModuleBlacklistCacheUpdater> module_blacklist_cache_updater_;
 
   base::WeakPtrFactory<ThirdPartyConflictsManager> weak_ptr_factory_;
 

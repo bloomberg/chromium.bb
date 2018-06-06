@@ -252,6 +252,11 @@ void GetCertificateInfo(const base::FilePath& filename,
   certificate_info->subject = subject;
 }
 
+bool IsMicrosoftModule(base::StringPiece16 subject) {
+  static constexpr wchar_t kMicrosoft[] = L"Microsoft ";
+  return subject.starts_with(kMicrosoft);
+}
+
 StringMapping GetEnvironmentVariablesMapping(
     const std::vector<base::string16>& environment_variables) {
   std::unique_ptr<base::Environment> environment(base::Environment::Create());

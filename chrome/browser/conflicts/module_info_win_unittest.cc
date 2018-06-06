@@ -50,6 +50,12 @@ TEST(ModuleInfoTest, InspectModule) {
                inspection_result->certificate_info.subject.c_str());
 }
 
+TEST(ModuleInfoTest, GenerateCodeId) {
+  static const char kExpected[] = "00000BADf00d";
+  ModuleInfoKey module_key = {base::FilePath(), 0xf00d, 0xbad, 1};
+  EXPECT_STREQ(kExpected, GenerateCodeId(module_key).c_str());
+}
+
 TEST(ModuleInfoTest, NormalizeInspectionResult) {
   ModuleInspectionResult test_case;
   test_case.location = L"%variable%\\PATH\\TO\\file.txt";

@@ -302,6 +302,10 @@ extern const base::Feature kSysInternals;
 extern const base::Feature kTabMetricsLogging;
 #endif
 
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+extern const base::Feature kThirdPartyModulesBlocking;
+#endif
+
 extern const base::Feature kTopSitesFromSiteEngagement;
 
 extern const base::Feature kUseGoogleLocalNtp;

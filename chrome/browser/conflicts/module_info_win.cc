@@ -15,6 +15,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 
 namespace {
 
@@ -100,6 +101,11 @@ std::unique_ptr<ModuleInspectionResult> InspectModule(
                                &inspection_result->location);
 
   return inspection_result;
+}
+
+std::string GenerateCodeId(const ModuleInfoKey& module_key) {
+  return base::StringPrintf("%08X%x", module_key.module_time_date_stamp,
+                            module_key.module_size);
 }
 
 namespace internal {

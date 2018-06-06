@@ -10,7 +10,7 @@
 #include <windows.h>
 
 #include <algorithm>
-#include <memory>
+#include <utility>
 
 #include "base/base_switches.h"
 #include "base/bind_helpers.h"
@@ -21,7 +21,6 @@
 #include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
@@ -87,6 +86,10 @@
 #include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/switches.h"
 #include "ui/strings/grit/app_locale_settings.h"
+
+#if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
+#endif
 
 namespace {
 
@@ -512,6 +515,23 @@ void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
 
 void ChromeBrowserMainPartsWin::PostProfileInit() {
   ChromeBrowserMainParts::PostProfileInit();
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // Explicitly disable the third-party modules blocking.
+  //
+  // Because the blocking code lives in chrome_elf, it is not possible to check
+  // the feature (via the FeatureList API) or the policy to control whether it
+  // is enabled or not.
+  //
+  // What truly controls if the blocking is enabled is the presence of the
+  // module blacklist cache file. This means that to disable the feature, the
+  // cache must be deleted and the browser relaunched.
+  if (!base::FeatureList::IsEnabled(features::kModuleDatabase) ||
+      !ThirdPartyConflictsManager::IsThirdPartyBlockingPolicyEnabled() ||
+      !base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking)) {
+    ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking();
+  }
+#endif
 
   // Create the module database and hook up the in-process module watcher. This
   // needs to be done before any child processes are initialized as the

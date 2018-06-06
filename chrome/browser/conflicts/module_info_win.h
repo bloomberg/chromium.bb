@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CONFLICTS_MODULE_INFO_WIN_H_
 
 #include <memory>
+#include <string>
 
 #include "base/files/file_path.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
@@ -112,6 +113,9 @@ struct ModuleInfoData {
 std::unique_ptr<ModuleInspectionResult> InspectModule(
     const StringMapping& env_variable_mapping,
     const ModuleInfoKey& module_key);
+
+// Generate the code id of a module.
+std::string GenerateCodeId(const ModuleInfoKey& module_key);
 
 namespace internal {
 
