@@ -107,6 +107,8 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   void OnFolderCreated(ash::mojom::AppListItemMetadataPtr item) override;
   void OnFolderDeleted(ash::mojom::AppListItemMetadataPtr item) override;
   void OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) override;
+  void OnPageBreakItemAdded(const std::string& id,
+                            const syncer::StringOrdinal& position) override;
 
   void SetDelegate(AppListModelUpdaterDelegate* delegate) override;
 

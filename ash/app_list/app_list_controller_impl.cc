@@ -365,6 +365,8 @@ void AppListControllerImpl::ShowAppList() {
 void AppListControllerImpl::OnAppListItemAdded(app_list::AppListItem* item) {
   if (item->is_folder())
     client_->OnFolderCreated(item->CloneMetadata());
+  else if (item->is_page_break())
+    client_->OnPageBreakItemAdded(item->id(), item->position());
 }
 
 void AppListControllerImpl::OnSessionStateChanged(

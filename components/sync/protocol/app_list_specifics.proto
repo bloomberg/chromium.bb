@@ -31,6 +31,8 @@ message AppListSpecifics {
     TYPE_FOLDER = 3;
     // A URL shortcut (functionally equivalent to a bookmark).
     TYPE_URL = 4;
+    // A "page break" item (Indicate creation of a new page in app list).
+    TYPE_PAGE_BREAK = 5;
   }
   optional AppListItemType item_type = 2;
 

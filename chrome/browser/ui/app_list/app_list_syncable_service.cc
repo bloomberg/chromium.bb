@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
+#include <algorithm>
 #include <set>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -100,18 +102,19 @@ void GetSyncSpecificsFromSyncItem(const AppListSyncableService::SyncItem* item,
   specifics->set_item_type(item->item_type);
   specifics->set_item_name(item->item_name);
   specifics->set_parent_id(item->parent_id);
-  specifics->set_item_ordinal(item->item_ordinal.IsValid() ?
-      item->item_ordinal.ToInternalValue() : std::string());
-  specifics->set_item_pin_ordinal(item->item_pin_ordinal.IsValid() ?
-      item->item_pin_ordinal.ToInternalValue() : std::string());
+  specifics->set_item_ordinal(item->item_ordinal.IsValid()
+                                  ? item->item_ordinal.ToInternalValue()
+                                  : std::string());
+  specifics->set_item_pin_ordinal(item->item_pin_ordinal.IsValid()
+                                      ? item->item_pin_ordinal.ToInternalValue()
+                                      : std::string());
 }
 
 syncer::SyncData GetSyncDataFromSyncItem(
     const AppListSyncableService::SyncItem* item) {
   sync_pb::EntitySpecifics specifics;
   GetSyncSpecificsFromSyncItem(item, specifics.mutable_app_list());
-  return syncer::SyncData::CreateLocalData(item->item_id,
-                                           item->item_id,
+  return syncer::SyncData::CreateLocalData(item->item_id, item->item_id,
                                            specifics);
 }
 
@@ -140,6 +143,8 @@ sync_pb::AppListSpecifics::AppListItemType GetAppListItemType(
     const ChromeAppListItem* item) {
   if (item->is_folder())
     return sync_pb::AppListSpecifics::TYPE_FOLDER;
+  else if (item->is_page_break())
+    return sync_pb::AppListSpecifics::TYPE_PAGE_BREAK;
   else
     return sync_pb::AppListSpecifics::TYPE_APP;
 }
@@ -159,8 +164,8 @@ bool IsDriveAppSyncId(const std::string& sync_id) {
 
 void RemoveSyncItemFromLocalStorage(Profile* profile,
                                     const std::string& item_id) {
-  DictionaryPrefUpdate(profile->GetPrefs(), prefs::kAppListLocalState)->
-      Remove(item_id, nullptr);
+  DictionaryPrefUpdate(profile->GetPrefs(), prefs::kAppListLocalState)
+      ->Remove(item_id, nullptr);
 }
 
 void UpdateSyncItemInLocalStorage(
@@ -193,6 +198,16 @@ void UpdateSyncItemInLocalStorage(
 AppListSyncableService::ModelUpdaterFactoryCallback*
     g_model_updater_factory_callback_for_test_ = nullptr;
 
+// Returns true if the sync item does not have parent.
+bool IsTopLevelAppItem(const AppListSyncableService::SyncItem& sync_item) {
+  return sync_item.parent_id.empty();
+}
+
+// Returns true if the sync item is a page break item.
+bool IsPageBreakItem(const AppListSyncableService::SyncItem& sync_item) {
+  return sync_item.item_type == sync_pb::AppListSpecifics::TYPE_PAGE_BREAK;
+}
+
 }  // namespace
 
 // AppListSyncableService::ScopedModelUpdaterFactoryForTest
@@ -216,12 +231,9 @@ AppListSyncableService::ScopedModelUpdaterFactoryForTest::
 AppListSyncableService::SyncItem::SyncItem(
     const std::string& id,
     sync_pb::AppListSpecifics::AppListItemType type)
-    : item_id(id),
-      item_type(type) {
-}
+    : item_id(id), item_type(type) {}
 
-AppListSyncableService::SyncItem::~SyncItem() {
-}
+AppListSyncableService::SyncItem::~SyncItem() = default;
 
 // AppListSyncableService::ModelUpdaterDelegate
 
@@ -334,7 +346,7 @@ AppListSyncableService::~AppListSyncableService() {
 
 bool AppListSyncableService::IsExtensionServiceReady() const {
   return extension_system_->extension_service() &&
-      extension_system_->extension_service()->is_ready();
+         extension_system_->extension_service()->is_ready();
 }
 
 void AppListSyncableService::InitFromLocalStorage() {
@@ -343,12 +355,12 @@ void AppListSyncableService::InitFromLocalStorage() {
   DCHECK(!IsInitialized());
 
   // Restore initial state from local storage.
-  const base::DictionaryValue* local_items = profile_->GetPrefs()->
-      GetDictionary(prefs::kAppListLocalState);
+  const base::DictionaryValue* local_items =
+      profile_->GetPrefs()->GetDictionary(prefs::kAppListLocalState);
   DCHECK(local_items);
 
   for (base::DictionaryValue::Iterator item(*local_items); !item.IsAtEnd();
-      item.Advance()) {
+       item.Advance()) {
     const base::DictionaryValue* dict_item;
     if (!item.value().GetAsDictionary(&dict_item)) {
       LOG(ERROR) << "Dictionary not found for " << item.key() + ".";
@@ -362,7 +374,8 @@ void AppListSyncableService::InitFromLocalStorage() {
       continue;
     }
 
-    SyncItem* sync_item = CreateSyncItem(item.key(),
+    SyncItem* sync_item = CreateSyncItem(
+        item.key(),
         static_cast<sync_pb::AppListSpecifics::AppListItemType>(type));
 
     dict_item->GetString(kNameKey, &sync_item->item_name);
@@ -430,8 +443,8 @@ size_t AppListSyncableService::GetNumSyncItemsForTest() {
   return sync_items_.size();
 }
 
-const AppListSyncableService::SyncItem*
-AppListSyncableService::GetSyncItem(const std::string& id) const {
+const AppListSyncableService::SyncItem* AppListSyncableService::GetSyncItem(
+    const std::string& id) const {
   auto iter = sync_items_.find(id);
   if (iter != sync_items_.end())
     return iter->second.get();
@@ -487,6 +500,8 @@ void AppListSyncableService::AddItem(
             << folder_id << "'";
     model_updater_->AddItemToFolder(std::move(app_item), folder_id);
   }
+
+  PruneRedundantPageBreakItems();
 }
 
 AppListSyncableService::SyncItem* AppListSyncableService::FindOrAddSyncItem(
@@ -590,8 +605,8 @@ bool AppListSyncableService::RemoveDefaultApp(const ChromeAppListItem* item,
   // installed as a Default app, uninstall the app instead of adding it.
   if (sync_item->item_type == sync_pb::AppListSpecifics::TYPE_APP &&
       AppIsDefault(extension_system_->extension_service(), item->id())) {
-    VLOG(2) << this << ": HandleDefaultApp: Uninstall: "
-            << sync_item->ToString();
+    VLOG(2) << this
+            << ": HandleDefaultApp: Uninstall: " << sync_item->ToString();
     UninstallExtension(extension_system_->extension_service(), item->id());
     return true;
   }
@@ -613,8 +628,8 @@ void AppListSyncableService::DeleteSyncItem(const std::string& item_id) {
     VLOG(2) << this << " -> SYNC DELETE: " << sync_item->ToString();
     SyncChange sync_change(FROM_HERE, SyncChange::ACTION_DELETE,
                            GetSyncDataFromSyncItem(sync_item));
-    sync_processor_->ProcessSyncChanges(
-        FROM_HERE, syncer::SyncChangeList(1, sync_change));
+    sync_processor_->ProcessSyncChanges(FROM_HERE,
+                                        syncer::SyncChangeList(1, sync_change));
   }
   RemoveSyncItemFromLocalStorage(profile_, item_id);
   sync_items_.erase(item_id);
@@ -633,18 +648,21 @@ void AppListSyncableService::UpdateSyncItem(const ChromeAppListItem* app_item) {
   }
   UpdateSyncItemInLocalStorage(profile_, sync_item);
   SendSyncChange(sync_item, SyncChange::ACTION_UPDATE);
+  PruneRedundantPageBreakItems();
 }
 
 void AppListSyncableService::RemoveItem(const std::string& id) {
   RemoveSyncItem(id);
   model_updater_->RemoveItem(id);
   PruneEmptySyncFolders();
+  PruneRedundantPageBreakItems();
 }
 
 void AppListSyncableService::RemoveUninstalledItem(const std::string& id) {
   RemoveSyncItem(id);
   model_updater_->RemoveUninstalledItem(id);
   PruneEmptySyncFolders();
+  PruneRedundantPageBreakItems();
 }
 
 void AppListSyncableService::UpdateItem(const ChromeAppListItem* app_item) {
@@ -677,8 +695,8 @@ void AppListSyncableService::RemoveSyncItem(const std::string& id) {
       AppIsDefault(extension_system_->extension_service(), id)) {
     // This is a Default app; update the entry to a REMOVE_DEFAULT entry. This
     // will overwrite any existing entry for the item.
-    VLOG(2) << this << " -> SYNC UPDATE: REMOVE_DEFAULT: "
-            << sync_item->item_id;
+    VLOG(2) << this
+            << " -> SYNC UPDATE: REMOVE_DEFAULT: " << sync_item->item_id;
     sync_item->item_type = sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP;
     UpdateSyncItemInLocalStorage(profile_, sync_item);
     SendSyncChange(sync_item, SyncChange::ACTION_UPDATE);
@@ -759,8 +777,7 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
 
   syncer::SyncMergeResult result = syncer::SyncMergeResult(type);
   result.set_num_items_before_association(sync_items_.size());
-  VLOG(1) << this << ": MergeDataAndStartSyncing: "
-          << initial_sync_data.size();
+  VLOG(1) << this << ": MergeDataAndStartSyncing: " << initial_sync_data.size();
 
   // Copy all sync items to |unsynced_items|.
   std::set<std::string> unsynced_items;
@@ -783,8 +800,7 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
     else
       ++updated_items;
     if (specifics.item_type() != sync_pb::AppListSpecifics::TYPE_FOLDER &&
-        !IsUnRemovableDefaultApp(item_id) &&
-        !AppIsOem(item_id) &&
+        !IsUnRemovableDefaultApp(item_id) && !AppIsOem(item_id) &&
         !AppIsDefault(extension_system_->extension_service(), item_id)) {
       VLOG(2) << "Syncing non-default item: " << item_id;
       first_app_list_sync_ = false;
@@ -810,7 +826,7 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
       continue;
     VLOG(2) << this << " -> SYNC ADD: " << sync_item->ToString();
     UpdateSyncItemInLocalStorage(profile_, sync_item);
-    change_list.push_back(SyncChange(FROM_HERE,  SyncChange::ACTION_ADD,
+    change_list.push_back(SyncChange(FROM_HERE, SyncChange::ACTION_ADD,
                                      GetSyncDataFromSyncItem(sync_item)));
   }
 
@@ -837,7 +853,7 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
       VLOG(1) << "Fixing sync item by generating new position ordinal: "
               << sync_item;
     }
-    change_list.push_back(SyncChange(FROM_HERE,  SyncChange::ACTION_UPDATE,
+    change_list.push_back(SyncChange(FROM_HERE, SyncChange::ACTION_UPDATE,
                                      GetSyncDataFromSyncItem(sync_item)));
   }
 
@@ -872,8 +888,7 @@ syncer::SyncError AppListSyncableService::ProcessSyncChanges(
     const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   if (!sync_processor_.get()) {
-    return syncer::SyncError(FROM_HERE,
-                             syncer::SyncError::DATATYPE_ERROR,
+    return syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
                              "App List syncable service is not started.",
                              syncer::APP_LIST);
   }
@@ -885,8 +900,8 @@ syncer::SyncError AppListSyncableService::ProcessSyncChanges(
        iter != change_list.end(); ++iter) {
     const SyncChange& change = *iter;
     VLOG(2) << this << "  Change: "
-            << change.sync_data().GetSpecifics().app_list().item_id()
-            << " (" << change.change_type() << ")";
+            << change.sync_data().GetSpecifics().app_list().item_id() << " ("
+            << change.change_type() << ")";
     if (change.change_type() == SyncChange::ACTION_ADD ||
         change.change_type() == SyncChange::ACTION_UPDATE) {
       ProcessSyncItemSpecifics(change.sync_data().GetSpecifics().app_list());
@@ -930,9 +945,9 @@ bool AppListSyncableService::ProcessSyncItemSpecifics(
     }
     // Otherwise, one of the entries should be TYPE_REMOVE_DEFAULT_APP.
     if (sync_item->item_type !=
-        sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP &&
+            sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP &&
         specifics.item_type() !=
-        sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP) {
+            sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP) {
       LOG(ERROR) << "Synced item type: " << specifics.item_type()
                  << " != existing sync item type: " << sync_item->item_type
                  << " Deleting item from model!";
@@ -980,6 +995,15 @@ void AppListSyncableService::ProcessNewSyncItem(SyncItem* sync_item) {
     case sync_pb::AppListSpecifics::TYPE_URL: {
       // TODO(stevenjb): Implement
       LOG(WARNING) << "TYPE_URL not supported";
+      return;
+    }
+    case sync_pb::AppListSpecifics::TYPE_PAGE_BREAK: {
+      std::unique_ptr<ChromeAppListItem> page_break_item =
+          std::make_unique<ChromeAppListItem>(profile_, sync_item->item_id,
+                                              model_updater_.get());
+      page_break_item->SetPosition(sync_item->item_ordinal);
+      page_break_item->SetIsPageBreak(true);
+      model_updater_->AddItem(std::move(page_break_item));
       return;
     }
   }
@@ -1034,20 +1058,19 @@ void AppListSyncableService::SendSyncChange(
     VLOG(2) << this << " -> SYNC UPDATE: " << sync_item->ToString();
   SyncChange sync_change(FROM_HERE, sync_change_type,
                          GetSyncDataFromSyncItem(sync_item));
-  sync_processor_->ProcessSyncChanges(
-      FROM_HERE, syncer::SyncChangeList(1, sync_change));
+  sync_processor_->ProcessSyncChanges(FROM_HERE,
+                                      syncer::SyncChangeList(1, sync_change));
 }
 
-AppListSyncableService::SyncItem*
-AppListSyncableService::FindSyncItem(const std::string& item_id) {
+AppListSyncableService::SyncItem* AppListSyncableService::FindSyncItem(
+    const std::string& item_id) {
   auto iter = sync_items_.find(item_id);
   if (iter == sync_items_.end())
     return NULL;
   return iter->second.get();
 }
 
-AppListSyncableService::SyncItem*
-AppListSyncableService::CreateSyncItem(
+AppListSyncableService::SyncItem* AppListSyncableService::CreateSyncItem(
     const std::string& item_id,
     sync_pb::AppListSpecifics::AppListItemType item_type) {
   DCHECK(!base::ContainsKey(sync_items_, item_id));
@@ -1113,6 +1136,9 @@ std::string AppListSyncableService::SyncItem::ToString() const {
   std::string res = item_id.substr(0, 8);
   if (item_type == sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP) {
     res += " { RemoveDefault }";
+  } else if (item_type == sync_pb::AppListSpecifics::TYPE_PAGE_BREAK) {
+    res += " { PageBreakItem }";
+    res += " [" + item_ordinal.ToDebugString() + "]";
   } else {
     res += " { " + item_name + " }";
     res += " [" + item_ordinal.ToDebugString() + "]";
@@ -1132,6 +1158,53 @@ void AppListSyncableService::RemoveDriveAppItems() {
 
   for (const auto& item_id : drive_app_item_ids)
     DeleteSyncItem(item_id);
+}
+
+std::vector<AppListSyncableService::SyncItem*>
+AppListSyncableService::GetSortedTopLevelSyncItems() const {
+  // Filter out items in folder.
+  std::vector<SyncItem*> sync_items;
+  for (const auto& sync_pair : sync_items_) {
+    const auto* sync_item = sync_pair.second.get();
+    if (IsTopLevelAppItem(*sync_item) && sync_item->item_ordinal.IsValid())
+      sync_items.emplace_back(sync_pair.second.get());
+  }
+
+  // Sort remaining items based on their positions.
+  std::sort(sync_items.begin(), sync_items.end(),
+            [](SyncItem* const& item1, SyncItem* const& item2) -> bool {
+              return item1->item_ordinal.LessThan(item2->item_ordinal);
+            });
+  return sync_items;
+}
+
+void AppListSyncableService::PruneRedundantPageBreakItems() {
+  auto top_level_sync_items = GetSortedTopLevelSyncItems();
+
+  // If the first item is a "page break" item, delete it. If there are
+  // contiguous "page break" items, delete duplicate.
+  bool was_page_break = true;
+  for (auto iter = top_level_sync_items.begin();
+       iter != top_level_sync_items.end();) {
+    if (!IsPageBreakItem(**iter)) {
+      was_page_break = false;
+      ++iter;
+      continue;
+    }
+    auto current_iter = iter++;
+    if (was_page_break) {
+      DeleteSyncItem((*current_iter)->item_id);
+      iter = top_level_sync_items.erase(current_iter);
+    } else {
+      was_page_break = true;
+    }
+  }
+
+  // Remove the trailing "page break" itme if it exists.
+  if (!top_level_sync_items.empty() &&
+      IsPageBreakItem(*top_level_sync_items.back())) {
+    DeleteSyncItem(top_level_sync_items.back()->item_id);
+  }
 }
 
 }  // namespace app_list

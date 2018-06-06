@@ -64,6 +64,9 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
   AppListItem* AddItemToFolder(std::unique_ptr<AppListItem> item,
                                const std::string& folder_id);
 
+  // Add a "page break" item right after the specified item in item list.
+  void AddPageBreakItemAfter(const AppListItem* previous_item);
+
   // Merges two items. If the target item is a folder, the source item is
   // added to the end of the target folder. Otherwise a new folder is created
   // in the same position as the target item with the target item as the first
