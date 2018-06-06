@@ -278,10 +278,11 @@ static bool CombineClip(const ClipPaintPropertyNode* clip,
     return false;
 
   // Don't combine clips in different transform spaces.
-  if (clip->LocalTransformSpace() != clip->Parent()->LocalTransformSpace() &&
-      !GeometryMapper::SourceToDestinationProjection(
-           clip->Parent()->LocalTransformSpace(), clip->LocalTransformSpace())
-           .IsIdentity())
+  const auto* transform_space = clip->LocalTransformSpace();
+  const auto* parent_transform_space = clip->Parent()->LocalTransformSpace();
+  if (transform_space != parent_transform_space &&
+      (transform_space->Parent() != parent_transform_space ||
+       !transform_space->Matrix().IsIdentity()))
     return false;
 
   // Don't combine two rounded clip rects.
