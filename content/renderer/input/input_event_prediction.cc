@@ -5,8 +5,11 @@
 #include "content/renderer/input/input_event_prediction.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "content/public/common/content_features.h"
 #include "ui/events/blink/prediction/empty_predictor.h"
+#include "ui/events/blink/prediction/least_squares_predictor.h"
 
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
@@ -18,14 +21,19 @@ namespace content {
 
 namespace {
 
-std::unique_ptr<ui::InputPredictor> SetUpPredictor() {
-  return std::make_unique<ui::EmptyPredictor>();
+constexpr char kPredictor[] = "predictor";
+constexpr char kInputEventPredictorTypeLsq[] = "lsq";
 }
 
-}  // namespace
-
 InputEventPrediction::InputEventPrediction() {
-  mouse_predictor_ = SetUpPredictor();
+  std::string predictor_type_ = GetFieldTrialParamValueByFeature(
+      features::kResamplingInputEvents, kPredictor);
+  if (predictor_type_ == kInputEventPredictorTypeLsq)
+    selected_predictor_type_ = PredictorType::kLsq;
+  else
+    selected_predictor_type_ = PredictorType::kEmpty;
+
+  mouse_predictor_ = CreatePredictor();
 }
 
 InputEventPrediction::~InputEventPrediction() {}
@@ -51,6 +59,16 @@ void InputEventPrediction::HandleEvents(
       break;
     default:
       ResetPredictor(*event);
+  }
+}
+
+std::unique_ptr<ui::InputPredictor> InputEventPrediction::CreatePredictor()
+    const {
+  switch (selected_predictor_type_) {
+    case PredictorType::kEmpty:
+      return std::make_unique<ui::EmptyPredictor>();
+    case PredictorType::kLsq:
+      return std::make_unique<ui::LeastSquaresPredictor>();
   }
 }
 
@@ -121,7 +139,7 @@ void InputEventPrediction::UpdateSinglePointer(
     } else {
       // Workaround for GLIBC C++ < 7.3 that fails to insert with braces
       // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82522
-      auto pair = std::make_pair(event.id, SetUpPredictor());
+      auto pair = std::make_pair(event.id, CreatePredictor());
       pointer_id_predictor_map_.insert(std::move(pair));
       pointer_id_predictor_map_[event.id]->Update(data);
     }

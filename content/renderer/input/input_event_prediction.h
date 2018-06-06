@@ -28,7 +28,14 @@ class CONTENT_EXPORT InputEventPrediction {
                     base::TimeTicks frame_time,
                     blink::WebInputEvent* event);
 
+  // Initialize predictor for different pointer.
+  std::unique_ptr<ui::InputPredictor> CreatePredictor() const;
+
  private:
+  friend class InputEventPredictionTest;
+
+  enum class PredictorType { kEmpty, kLsq };
+
   // The following three function is for handling multiple TouchPoints in a
   // WebTouchEvent. They should be more neat when WebTouchEvent is elimated.
   // Cast events from WebInputEvent to WebPointerProperties. Call
@@ -52,11 +59,13 @@ class CONTENT_EXPORT InputEventPrediction {
   // predictor, for other pointer type, remove it from mapping.
   void ResetSinglePredictor(const WebPointerProperties& event);
 
-  friend class InputEventPredictionTest;
-
   std::unordered_map<ui::PointerId, std::unique_ptr<ui::InputPredictor>>
       pointer_id_predictor_map_;
   std::unique_ptr<ui::InputPredictor> mouse_predictor_;
+
+  // Store the field trial parameter used for choosing different types of
+  // predictor.
+  PredictorType selected_predictor_type_;
 
   DISALLOW_COPY_AND_ASSIGN(InputEventPrediction);
 };

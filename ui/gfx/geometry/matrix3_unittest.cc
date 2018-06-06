@@ -34,10 +34,14 @@ TEST(Matrix3fTest, DataAccess) {
   Matrix3F identity = Matrix3F::Identity();
 
   EXPECT_EQ(Vector3dF(0.0f, 1.0f, 0.0f), identity.get_column(1));
+  EXPECT_EQ(Vector3dF(0.0f, 1.0f, 0.0f), identity.get_row(1));
   matrix.set(0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
   EXPECT_EQ(Vector3dF(2.0f, 5.0f, 8.0f), matrix.get_column(2));
+  EXPECT_EQ(Vector3dF(6.0f, 7.0f, 8.0f), matrix.get_row(2));
+  matrix.set_column(0, Vector3dF(0.1f, 0.2f, 0.3f));
   matrix.set_column(0, Vector3dF(0.1f, 0.2f, 0.3f));
   EXPECT_EQ(Vector3dF(0.1f, 0.2f, 0.3f), matrix.get_column(0));
+  EXPECT_EQ(Vector3dF(0.1f, 1.0f, 2.0f), matrix.get_row(0));
 
   EXPECT_EQ(0.1f, matrix.get(0, 0));
   EXPECT_EQ(5.0f, matrix.get(1, 2));
@@ -84,6 +88,19 @@ TEST(Matrix3fTest, Inverse) {
               -0.61552266f,  1.34920184f, -0.55573636f,
               -0.32653861f,  0.04002158f,  1.32488726f);
   EXPECT_TRUE(regular.IsNear(inv_regular, 0.00001f));
+}
+
+TEST(Matrix3fTest, Transpose) {
+  Matrix3F matrix = Matrix3F::Zeros();
+
+  matrix.set(0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+
+  Matrix3F transpose = matrix.Transpose();
+  EXPECT_EQ(Vector3dF(0.0f, 1.0f, 2.0f), transpose.get_column(0));
+  EXPECT_EQ(Vector3dF(3.0f, 4.0f, 5.0f), transpose.get_column(1));
+  EXPECT_EQ(Vector3dF(6.0f, 7.0f, 8.0f), transpose.get_column(2));
+
+  EXPECT_TRUE(matrix.IsEqual(transpose.Transpose()));
 }
 
 TEST(Matrix3fTest, EigenvectorsIdentity) {
