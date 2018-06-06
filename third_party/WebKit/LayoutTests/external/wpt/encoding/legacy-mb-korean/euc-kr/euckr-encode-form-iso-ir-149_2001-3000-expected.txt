@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL iso-ir-149 encoding (form) Uncaught ReferenceError: rangesAll is not defined
-Harness: the test ran to completion.
-
