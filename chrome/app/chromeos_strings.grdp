@@ -170,6 +170,9 @@
   </message>
 
   <!-- File Manager -->
+  <message name="IDS_FILE_BROWSER_ANDROID_FILES_ROOT_LABEL" desc="A label for the 'Play Files' root which shows Android files.">
+    Play Files
+  </message>
   <message name="IDS_FILE_SYSTEM_PROVIDER_UNRESPONSIVE_WARNING" desc="A warning shown in a notification that an operation is taking longer than expected.">
     An operation is taking longer than expected. Do you want to abort it?
   </message>
