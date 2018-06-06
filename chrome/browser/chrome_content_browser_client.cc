@@ -59,6 +59,7 @@
 #include "chrome/browser/memory/chrome_memory_coordinator_delegate.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
+#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -73,6 +74,8 @@
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
+#include "chrome/browser/predictors/loading_predictor.h"
+#include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -3330,10 +3333,16 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
   if (NetBenchmarking::CheckBenchmarkingEnabled()) {
     Profile* profile =
         Profile::FromBrowserContext(render_process_host->GetBrowserContext());
+    auto* loading_predictor =
+        predictors::LoadingPredictorFactory::GetForProfile(profile);
+    auto* predictor = profile->GetNetworkPredictor();
     net::URLRequestContextGetter* context =
         render_process_host->GetStoragePartition()->GetURLRequestContext();
-    registry->AddInterface(base::Bind(&NetBenchmarking::Create, profile,
-                                      base::RetainedRef(context)));
+    registry->AddInterface(base::Bind(
+        &NetBenchmarking::Create,
+        loading_predictor ? loading_predictor->GetWeakPtr() : nullptr,
+        predictor ? predictor->GetUIWeakPtr() : nullptr,
+        base::RetainedRef(context)));
   }
 
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)

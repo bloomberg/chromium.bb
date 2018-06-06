@@ -6,26 +6,41 @@
 #define CHROME_BROWSER_NET_BENCHMARKING_H_
 
 #include "base/macros.h"
-#include "chrome/browser/profiles/profile.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/common/net_benchmarking.mojom.h"
 
 namespace net {
 class URLRequestContextGetter;
 }
 
-class Profile;
+namespace chrome_browser_net {
+class Predictor;
+}
 
-// This class handles Chrome-specific benchmarking IPC messages
-// for the renderer process.
+namespace predictors {
+class LoadingPredictor;
+}
+
+// This class handles Chrome-specific benchmarking IPC messages for the renderer
+// process.
+// All methods of this class should be called on the IO thread unless the
+// contrary is explicitly specified.
 class NetBenchmarking : public chrome::mojom::NetBenchmarking {
  public:
-  NetBenchmarking(Profile* profile,
+  NetBenchmarking(base::WeakPtr<predictors::LoadingPredictor> loading_predictor,
+                  base::WeakPtr<chrome_browser_net::Predictor> predictor,
                   net::URLRequestContextGetter* request_context);
   ~NetBenchmarking() override;
 
-  static void Create(Profile* profile,
-                     net::URLRequestContextGetter* request_context,
-                     chrome::mojom::NetBenchmarkingRequest request);
+  // Creates a NetBenchmarking instance and connects it strongly to a mojo pipe.
+  // Callers should prefer this over using the constructor directly.
+  static void Create(
+      base::WeakPtr<predictors::LoadingPredictor> loading_predictor,
+      base::WeakPtr<chrome_browser_net::Predictor> predictor,
+      net::URLRequestContextGetter* request_context,
+      chrome::mojom::NetBenchmarkingRequest request);
+
+  // This method is thread-safe.
   static bool CheckBenchmarkingEnabled();
 
  private:
@@ -38,10 +53,10 @@ class NetBenchmarking : public chrome::mojom::NetBenchmarking {
   void ClearPredictorCache(
       const ClearPredictorCacheCallback& callback) override;
 
-  // The Profile associated with our renderer process.  This should only be
-  // accessed on the UI thread!
-  // TODO(623967): Store the Predictor* here instead of the Profile.
-  Profile* profile_;
+  // These weak pointers should be dereferenced only on the UI thread.
+  base::WeakPtr<predictors::LoadingPredictor> loading_predictor_;
+  base::WeakPtr<chrome_browser_net::Predictor> predictor_;
+
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NetBenchmarking);

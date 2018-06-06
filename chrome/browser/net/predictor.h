@@ -298,6 +298,10 @@ class Predictor {
 
   TimedCache* timed_cache() { return timed_cache_.get(); }
 
+  base::WeakPtr<Predictor> GetUIWeakPtr() {
+    return ui_weak_factory_->GetWeakPtr();
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, PriorityQueuePushPopTest);
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, PriorityQueueReorderTest);

@@ -566,6 +566,28 @@ TEST_F(ResourcePrefetchPredictorTest, DeleteUrls) {
   EXPECT_TRUE(mock_tables_->host_redirect_table_.data_.empty());
 }
 
+// Tests that DeleteAllUrls deletes all urls even if called before the
+// initialization is completed.
+TEST_F(ResourcePrefetchPredictorTest, DeleteAllUrlsUninitialized) {
+  mock_tables_->host_redirect_table_.data_ = test_host_redirect_data_;
+  mock_tables_->origin_table_.data_ = test_origin_data_;
+  ResetPredictor();
+
+  CHECK_EQ(predictor_->initialization_state_,
+           ResourcePrefetchPredictor::NOT_INITIALIZED);
+  EXPECT_FALSE(mock_tables_->origin_table_.data_.empty());
+
+  predictor_->DeleteAllUrls();
+  // Caches aren't initialized yet, so data should be deleted only after the
+  // initialization.
+  EXPECT_FALSE(mock_tables_->origin_table_.data_.empty());
+
+  InitializePredictor();
+  CHECK_EQ(predictor_->initialization_state_,
+           ResourcePrefetchPredictor::INITIALIZED);
+  EXPECT_TRUE(mock_tables_->origin_table_.data_.empty());
+}
+
 TEST_F(ResourcePrefetchPredictorTest, GetRedirectEndpoint) {
   auto& redirect_data = *predictor_->host_redirect_data_;
   std::string redirect_endpoint;
