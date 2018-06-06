@@ -95,6 +95,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDownloadProgressInfoBar,
     &kDownloadHomeShowStorageInfo,
     &data_reduction_proxy::features::kDataReductionMainMenu,
+    &kExploreSites,
     &kFullscreenActivity,
     &kHomePageButtonForceEnabled,
     &kHorizontalTabSwitcherAndroid,
@@ -255,6 +256,9 @@ const base::Feature kDownloadProgressInfoBar{"DownloadProgressInfoBar",
 
 const base::Feature kDownloadHomeShowStorageInfo{
     "DownloadHomeShowStorageInfo", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kExploreSites{"ExploreSites",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kFullscreenActivity{"FullscreenActivity",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
