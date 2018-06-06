@@ -339,8 +339,17 @@ Status LaunchDesktopChrome(URLRequestContextGetter* context_getter,
   base::ScopedTempDir user_data_dir_temp_dir;
   base::FilePath user_data_dir;
   base::ScopedTempDir extension_dir;
+  Status status = Status(kOk);
   std::vector<std::string> extension_bg_pages;
-  Status status =
+
+  if (capabilities.switches.HasSwitch("user-data-dir")) {
+    status = internal::RemoveOldDevToolsActivePortFile(base::FilePath(
+        capabilities.switches.GetSwitchValueNative("user-data-dir")));
+    if (status.IsError()) {
+      return status;
+    }
+  }
+  status =
       PrepareCommandLine(capabilities, &command, &user_data_dir_temp_dir,
                          &extension_dir, &extension_bg_pages, &user_data_dir);
   if (status.IsError())
@@ -907,6 +916,21 @@ Status ParseDevToolsActivePortFile(const base::FilePath& user_data_dir,
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
   }
   return result;
+}
+
+Status RemoveOldDevToolsActivePortFile(const base::FilePath& user_data_dir) {
+  base::FilePath port_filepath = user_data_dir.Append(kDevToolsActivePort);
+  // Note that calling DeleteFile on a path that doesn't exist returns True.
+  if (base::DeleteFile(port_filepath, false)) {
+    return Status(kOk);
+  }
+  return Status(
+      kUnknownError,
+      std::string("Could not remove old devtools port file. Perhaps "
+                  "the given user-data-dir at ") +
+          user_data_dir.AsUTF8Unsafe() +
+          std::string(" is still attached to a running Chrome or Chromium "
+                      "process."));
 }
 
 }  // namespace internal

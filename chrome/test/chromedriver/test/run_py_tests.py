@@ -2617,6 +2617,26 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
     raise RuntimeError('Cannot find open port')
 
 
+class ExistingUserDataDirTest(ChromeDriverBaseTest):
+
+  def setUp(self):
+    self.user_data_dir = tempfile.mkdtemp()
+
+  def tearDown(self):
+    shutil.rmtree(self.user_data_dir, ignore_errors=True)
+
+  def testStartUpWithExistingDevToolsPortFile(self):
+    dev_tools_port_file = os.path.join(self.user_data_dir, 'DevToolsActivePort')
+    with open(dev_tools_port_file, 'w') as fd:
+      fd.write('34\n/devtools/browser/2dab5fb1-5571-40d8-a6ad-98823bc5ff84')
+    driver = self.CreateDriver(
+        chrome_switches=['user-data-dir=' + self.user_data_dir])
+    with open(dev_tools_port_file, 'r') as fd:
+      port = int(fd.readlines()[0])
+    # Ephemeral ports are always high numbers.
+    self.assertTrue(port > 100)
+
+
 class PerfTest(ChromeDriverBaseTest):
   """Tests for ChromeDriver perf."""
   def setUp(self):
