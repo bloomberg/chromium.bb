@@ -18,11 +18,11 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -34,6 +34,8 @@ import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Tests whether popup windows appear.
@@ -118,28 +120,57 @@ public class PopupTest {
         Assert.assertEquals(1, selector.getTotalTabCount());
     }
 
+    private void waitForForegroundInfoBar(@InfoBarIdentifier int id) {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                if (getNumInfobarsShowing() == 0) {
+                    updateFailureReason("No infobars present");
+                    return false;
+                }
+                InfoBar frontInfoBar = mActivityTestRule.getInfoBars().get(0);
+                if (frontInfoBar.getInfoBarIdentifier() != id) {
+                    updateFailureReason(String.format(Locale.ENGLISH,
+                            "Invalid infobar type shown: %d", frontInfoBar.getInfoBarIdentifier()));
+                    frontInfoBar.onCloseButtonClicked();
+                    return false;
+                }
+                return true;
+            }
+        });
+    }
+
+    private void waitForNoInfoBarOfType(@InfoBarIdentifier int id) {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                List<InfoBar> infoBars = mActivityTestRule.getInfoBars();
+                if (infoBars.isEmpty()) return true;
+                for (InfoBar infoBar : infoBars) {
+                    if (infoBar.getInfoBarIdentifier() == id) return false;
+                }
+                return true;
+            }
+        });
+    }
+
     @Test
     @MediumTest
     @Feature({"Popup"})
-    @FlakyTest(message = "crbug.com/771103")
     public void testPopupWindowsAppearWhenAllowed() throws Exception {
         final TabModelSelector selector = mActivityTestRule.getActivity().getTabModelSelector();
 
         mActivityTestRule.loadUrl(mPopupHtmlUrl);
-        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> getNumInfobarsShowing()));
+        waitForForegroundInfoBar(InfoBarIdentifier.POPUP_BLOCKED_INFOBAR_DELEGATE_MOBILE);
         Assert.assertEquals(1, selector.getTotalTabCount());
         final InfoBarContainer container = selector.getCurrentTab().getInfoBarContainer();
         ArrayList<InfoBar> infobars = container.getInfoBarsForTesting();
-        Assert.assertEquals(1, infobars.size());
 
         // Wait until the animations are done, then click the "open popups" button.
         final InfoBar infobar = infobars.get(0);
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return !container.isAnimating();
-            }
-        });
+        Assert.assertEquals(InfoBarIdentifier.POPUP_BLOCKED_INFOBAR_DELEGATE_MOBILE,
+                infobar.getInfoBarIdentifier());
+        CriteriaHelper.pollUiThread(Criteria.equals(false, () -> container.isAnimating()));
         TouchCommon.singleClickView(infobar.getView().findViewById(R.id.button_primary));
 
         // Document mode popups appear slowly and sequentially to prevent Android from throwing them
@@ -160,11 +191,21 @@ public class PopupTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                if (getNumInfobarsShowing() != 0) return false;
-                if (selector.getTotalTabCount() != 5) return false;
-                return TextUtils.equals("Two", selector.getCurrentTab().getTitle());
+                int tabCount = selector.getTotalTabCount();
+                if (tabCount != 5) {
+                    updateFailureReason(String.format(
+                            Locale.ENGLISH, "Expected 5 tabs, but found: %d", tabCount));
+                    return false;
+                }
+
+                String tabTitle = selector.getCurrentTab().getTitle();
+                updateFailureReason(String.format(
+                        Locale.ENGLISH, "Exepcted title 'Two', but found: %s", tabTitle));
+                return TextUtils.equals("Two", tabTitle);
             }
         }, 7500, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        waitForNoInfoBarOfType(InfoBarIdentifier.POPUP_BLOCKED_INFOBAR_DELEGATE_MOBILE);
+
         Assert.assertNotSame(currentTabId, selector.getCurrentTab().getId());
     }
 }
