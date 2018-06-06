@@ -64,6 +64,11 @@ PlayerUtils.registerEMEEventListeners = function(player) {
       });
     }
 
+    // Call getStatusForPolicy() and compare the result with |expectedResult|.
+    // |expectedResult| can be a valid key status, e.g. "usable", in which case
+    // getStatusForPolicy() should return a resolved promise. It can also be
+    // "rejected", in which getStatusForPolicy() should return a rejected
+    // promise.
     function getStatusForHdcpPolicy(mediaKeys, hdcpVersion, expectedResult) {
       return mediaKeys.getStatusForPolicy({minHdcpVersion: hdcpVersion})
           .then(
@@ -97,12 +102,19 @@ PlayerUtils.registerEMEEventListeners = function(player) {
           return getStatusForHdcpPolicy(
               mediaKeys, "hdcp-2.2", "output-restricted");
         });
-      } else {
-        return Promise.resolve().then(function() {
+      } else if (keySystem == CLEARKEY) {
+        return Promise.resolve().then(function () {
           return getStatusForHdcpPolicy(mediaKeys, "", "rejected");
-        }).then(function() {
+        }).then(function () {
           return getStatusForHdcpPolicy(mediaKeys, "hdcp-1.0", "rejected");
         });
+      } else if (keySystem == WIDEVINE_KEYSYSTEM) {
+        // TODO(crbug.com/849846): Currently support on HDCP policy check by
+        // Widevine CDM varies on different platforms. Update this to test more
+        // specific behaviors.
+        return Promise.resolve();
+      } else {
+        return Promise.reject("Unsupported key system");
       }
     }
 
