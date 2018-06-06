@@ -18,6 +18,7 @@ UI_BASE_EXPORT extern const base::Feature kEnableFloatingVirtualKeyboard;
 UI_BASE_EXPORT extern const base::Feature
     kEnableFullscreenHandwritingVirtualKeyboard;
 UI_BASE_EXPORT extern const base::Feature kEnableStylusVirtualKeyboard;
+UI_BASE_EXPORT extern const base::Feature kExperimentalUi;
 UI_BASE_EXPORT extern const base::Feature kSecondaryUiMd;
 UI_BASE_EXPORT extern const base::Feature kSystemKeyboardLock;
 UI_BASE_EXPORT extern const base::Feature kTouchableAppContextMenu;
@@ -28,10 +29,6 @@ UI_BASE_EXPORT bool IsTouchableAppContextMenuEnabled();
 UI_BASE_EXPORT bool IsNotificationIndicatorEnabled();
 
 UI_BASE_EXPORT bool IsUiGpuRasterizationEnabled();
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-UI_BASE_EXPORT extern const base::Feature kExperimentalUi;
-#endif
 
 #if defined(OS_WIN)
 UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;

@@ -448,8 +448,10 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
     const GURL& origin,
     const std::vector<const autofill::PasswordForm*>* federated_matches) const {
 #if defined(OS_ANDROID)
+  // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
   if (!base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordsKeyboardAccessory)) {
+          password_manager::features::kPasswordsKeyboardAccessory) &&
+      !base::FeatureList::IsEnabled(features::kExperimentalUi)) {
     return;  // No need to even create the bridge if it's not going to be used.
   }
   // If an accessory exists already, |CreateForWebContents| is a NoOp.
