@@ -142,15 +142,15 @@ void CrostiniAppWindowShelfController::OnWindowPropertyChanged(
       crostini_app_display_.GetDisplayIdForStartupId(*startup_id);
   if (display_id == display::kInvalidDisplayId)
     return;
-  gfx::Rect bounds = window->bounds();
   display::Display display;
   if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id,
                                                              &display))
     return;
-  window->SetBoundsInScreen(window->GetBoundsInScreen(), display);
-  // The origin of the window is off after the above statement and needs to be
-  // reset. http://crbug.com/848970.
-  window->SetBounds(bounds);
+  gfx::Rect bounds = window->bounds();
+  gfx::Point origin = display.bounds().origin();
+  origin.Offset(bounds.x(), bounds.y());
+  bounds.set_origin(origin);
+  window->SetBoundsInScreen(bounds, display);
 }
 
 void CrostiniAppWindowShelfController::OnWindowVisibilityChanged(
