@@ -315,7 +315,9 @@ camera.Camera.prototype.onErrorIconClicked_ = function() {
 camera.Camera.prototype.onKeyPressed_ = function(event) {
   if (this.context_.hasError)
     return;
-  this.currentView.onKeyPressed(event);
+
+  if (this.currentView)
+    this.currentView.onKeyPressed(event);
 };
 
 /**
