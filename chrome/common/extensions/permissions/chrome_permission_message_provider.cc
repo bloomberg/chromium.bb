@@ -229,9 +229,6 @@ bool ChromePermissionMessageProvider::IsHostPrivilegeIncrease(
   const URLPatternSet& granted_list = granted_permissions.effective_hosts();
   const URLPatternSet& requested_list = requested_permissions.effective_hosts();
 
-  // TODO(jstritar): This is overly conservative with respect to subdomains.
-  // For example, going from *.google.com to www.google.com will be
-  // considered an elevation, even though it is not (http://crbug.com/65337).
   std::set<std::string> requested_hosts_set(
       permission_message_util::GetDistinctHosts(requested_list, false, false));
   std::set<std::string> granted_hosts_set(
@@ -240,7 +237,34 @@ bool ChromePermissionMessageProvider::IsHostPrivilegeIncrease(
       base::STLSetDifference<std::set<std::string>>(requested_hosts_set,
                                                     granted_hosts_set);
 
-  return !requested_hosts_only.empty();
+  // Try to match any domain permissions against existing domain permissions
+  // that overlap, so that migrating from *.example.com -> foo.example.com
+  // does not constitute a permissions increase, even though the strings are
+  // not exactly the same.
+  for (const auto& requested : requested_hosts_only) {
+    bool host_matched = false;
+    const base::StringPiece unmatched(requested);
+    for (const auto& granted : granted_hosts_set) {
+      if (granted.size() > 2 && granted[0] == '*' && granted[1] == '.') {
+        const base::StringPiece stripped_granted(granted.data() + 1,
+                                                 granted.length() - 1);
+        // If the unmatched host ends with the the granted host,
+        // after removing the '*', then it's a match. In addition,
+        // because we consider having access to "*.domain.com" as
+        // granting access to "domain.com" then compare the string
+        // with both the "*" and the "." removed.
+        if (unmatched.ends_with(stripped_granted) ||
+            unmatched == stripped_granted.substr(1)) {
+          host_matched = true;
+          break;
+        }
+      }
+    }
+    if (!host_matched) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace extensions
