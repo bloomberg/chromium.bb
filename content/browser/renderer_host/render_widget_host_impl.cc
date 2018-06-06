@@ -577,7 +577,7 @@ void RenderWidgetHostImpl::UpdatePriority() {
 }
 
 void RenderWidgetHostImpl::Init() {
-  DCHECK(process_->HasConnection());
+  DCHECK(process_->IsInitializedAndNotDead());
 
   renderer_initialized_ = true;
 
@@ -592,7 +592,7 @@ void RenderWidgetHostImpl::Init() {
 }
 
 void RenderWidgetHostImpl::InitForFrame() {
-  DCHECK(process_->HasConnection());
+  DCHECK(process_->IsInitializedAndNotDead());
   renderer_initialized_ = true;
 
   if (view_)
@@ -603,7 +603,7 @@ void RenderWidgetHostImpl::ShutdownAndDestroyWidget(bool also_delete) {
   CancelKeyboardLock();
   RejectMouseLockOrUnlockIfNecessary();
 
-  if (process_->HasConnection()) {
+  if (process_->IsInitializedAndNotDead()) {
     // Tell the renderer object to close.
     bool rv = Send(new ViewMsg_Close(routing_id_));
     DCHECK(rv);
@@ -907,8 +907,8 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
     bool scroll_focused_node_into_view) {
   // Skip if the |delegate_| has already been detached because
   // it's web contents is being deleted.
-  if (visual_properties_ack_pending_ || !process_->HasConnection() || !view_ ||
-      !view_->HasSize() || !renderer_initialized_ || !delegate_) {
+  if (visual_properties_ack_pending_ || !process_->IsInitializedAndNotDead() ||
+      !view_ || !view_->HasSize() || !renderer_initialized_ || !delegate_) {
     return false;
   }
 
@@ -1426,7 +1426,7 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
   if (ShouldDropInputEvents())
     return;
 
-  if (!process_->HasConnection())
+  if (!process_->IsInitializedAndNotDead())
     return;
 
   // First, let keypress listeners take a shot at handling the event.  If a
@@ -2440,7 +2440,7 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
   if (ShouldDropInputEvents() && event.GetType() != WebInputEvent::kTouchCancel)
     return INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
 
-  if (!process_->HasConnection())
+  if (!process_->IsInitializedAndNotDead())
     return INPUT_EVENT_ACK_STATE_UNKNOWN;
 
   if (delegate_) {

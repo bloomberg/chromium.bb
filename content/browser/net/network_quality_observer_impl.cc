@@ -91,7 +91,7 @@ class NetworkQualityObserverImpl::UiThreadObserver
     // Notify all the existing renderers of the change in the network quality.
     for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
          !it.IsAtEnd(); it.Advance()) {
-      if (it.GetCurrentValue()->HasConnection()) {
+      if (it.GetCurrentValue()->IsInitializedAndNotDead()) {
         it.GetCurrentValue()->GetRendererInterface()->OnNetworkQualityChanged(
             last_notified_type_, last_notified_network_quality_.http_rtt(),
             last_notified_network_quality_.transport_rtt(),
@@ -109,7 +109,7 @@ class NetworkQualityObserverImpl::UiThreadObserver
     // Notify all the existing renderers of the change in the network quality.
     for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
          !it.IsAtEnd(); it.Advance()) {
-      if (it.GetCurrentValue()->HasConnection()) {
+      if (it.GetCurrentValue()->IsInitializedAndNotDead()) {
         it.GetCurrentValue()->GetRendererInterface()->OnNetworkQualityChanged(
             last_notified_type_, last_notified_network_quality_.http_rtt(),
             last_notified_network_quality_.transport_rtt(),

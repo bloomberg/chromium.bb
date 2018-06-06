@@ -278,7 +278,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, RenderProcessGone) {
   // left the RPH and its connection alive, and the Wait below would hang.
   EXPECT_EQ(bad_message::RFMF_RENDERER_FAKED_ITS_OWN_DEATH, kill_waiter.Wait());
 
-  ASSERT_FALSE(web_rfh->GetProcess()->HasConnection());
+  ASSERT_FALSE(web_rfh->GetProcess()->IsInitializedAndNotDead());
   ASSERT_FALSE(web_rfh->IsRenderFrameLive());
 }
 

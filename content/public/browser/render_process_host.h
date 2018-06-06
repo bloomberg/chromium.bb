@@ -222,13 +222,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Returns true iff the Init() was called and the process hasn't died yet.
   //
-  // Note that even if HasConnection() returns true, then (for a short duration
-  // after calling Init()) the process might not be fully spawned *yet* - e.g.
-  // IsReady() might return false and GetProcess() might still return an invalid
-  // process with a null handle.
-  //
-  // TODO(lukasza): Rename to IsInitializedAndNotDead().
-  virtual bool HasConnection() const = 0;
+  // Note that even if IsInitializedAndNotDead() returns true, then (for a short
+  // duration after calling Init()) the process might not be fully spawned
+  // *yet*.  For example - IsReady() might return false and GetProcess() might
+  // still return an invalid process with a null handle.
+  virtual bool IsInitializedAndNotDead() const = 0;
 
   // Returns the renderer channel.
   virtual IPC::ChannelProxy* GetChannel() = 0;

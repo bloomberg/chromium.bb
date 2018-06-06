@@ -138,9 +138,9 @@ ServiceWorkerStatusCode ServiceWorkerProcessManager::AllocateWorkerProcess(
          rph->InSameStoragePartition(storage_partition_));
 
   ServiceWorkerMetrics::StartSituation start_situation;
-  if (!rph->HasConnection()) {
-    // HasConnection() is false means that Init() has not been called or the
-    // process has been killed.
+  if (!rph->IsInitializedAndNotDead()) {
+    // IsInitializedAndNotDead() is false means that Init() has not been called
+    // or the process has been killed.
     start_situation = ServiceWorkerMetrics::StartSituation::NEW_PROCESS;
   } else if (!rph->IsReady()) {
     start_situation =

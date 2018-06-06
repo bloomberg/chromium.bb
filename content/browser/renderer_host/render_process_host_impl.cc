@@ -618,7 +618,7 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
 
       // If the spare process ends up getting killed, the spare manager should
       // discard the spare RPH, so if one exists, it should always be live here.
-      CHECK(spare_render_process_host_->HasConnection());
+      CHECK(spare_render_process_host_->IsInitializedAndNotDead());
 
       DCHECK_EQ(SpareProcessMaybeTakeAction::kSpareTaken, action);
       returned_process = spare_render_process_host_;
@@ -1325,7 +1325,7 @@ int RenderProcessHost::GetCurrentRenderProcessCountForTesting() {
   int count = 0;
   while (!it.IsAtEnd()) {
     RenderProcessHost* host = it.GetCurrentValue();
-    if (host->HasConnection() &&
+    if (host->IsInitializedAndNotDead() &&
         host != RenderProcessHostImpl::GetSpareRenderProcessHostForTesting()) {
       count++;
     }
@@ -1523,7 +1523,7 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
 bool RenderProcessHostImpl::Init() {
   // calling Init() more than once does nothing, this makes it more convenient
   // for the view host which may not be sure in some cases
-  if (HasConnection())
+  if (IsInitializedAndNotDead())
     return true;
 
   is_dead_ = false;
@@ -2978,7 +2978,7 @@ bool RenderProcessHostImpl::Send(IPC::Message* msg) {
   if (message->is_sync()) {
     // If Init() hasn't been called yet since construction or the last
     // ProcessDied() we avoid blocking on sync IPC.
-    if (!HasConnection())
+    if (!IsInitializedAndNotDead())
       return false;
 
     // Likewise if we've done Init(), but process launch has not yet completed,
@@ -3093,7 +3093,7 @@ int RenderProcessHostImpl::GetID() const {
   return id_;
 }
 
-bool RenderProcessHostImpl::HasConnection() const {
+bool RenderProcessHostImpl::IsInitializedAndNotDead() const {
   return is_initialized_ && !is_dead_;
 }
 
@@ -3160,7 +3160,7 @@ void RenderProcessHostImpl::Cleanup() {
   // notify all observers that the process has exited cleanly, even though it
   // will be destroyed a bit later. Observers shouldn't rely on this process
   // anymore.
-  if (HasConnection()) {
+  if (IsInitializedAndNotDead()) {
     // Populates Android-only fields and closes the underlying base::Process.
     ChildProcessTerminationInfo info =
         child_process_launcher_->GetChildTerminationInfo(

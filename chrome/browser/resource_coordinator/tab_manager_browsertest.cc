@@ -893,7 +893,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, DiscardedTabHasNoProcess) {
   content::RenderProcessHost* process =
       web_contents->GetMainFrame()->GetProcess();
   ASSERT_TRUE(process);
-  EXPECT_TRUE(process->HasConnection());
+  EXPECT_TRUE(process->IsInitializedAndNotDead());
   EXPECT_NE(base::kNullProcessHandle, process->GetProcess().Handle());
   int renderer_id = process->GetID();
 
@@ -912,7 +912,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, DiscardedTabHasNoProcess) {
 
   // The renderer process should be dead after a discard.
   EXPECT_EQ(process, web_contents->GetMainFrame()->GetProcess());
-  EXPECT_FALSE(process->HasConnection());
+  EXPECT_FALSE(process->IsInitializedAndNotDead());
   EXPECT_EQ(base::kNullProcessHandle, process->GetProcess().Handle());
 
   // Here we simulate re-focussing the tab causing reload with navigation,
@@ -921,7 +921,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, DiscardedTabHasNoProcess) {
 
   // Reload should mean that the renderer process is alive now.
   EXPECT_EQ(process, web_contents->GetMainFrame()->GetProcess());
-  EXPECT_TRUE(process->HasConnection());
+  EXPECT_TRUE(process->IsInitializedAndNotDead());
   EXPECT_NE(base::kNullProcessHandle, process->GetProcess().Handle());
 }
 

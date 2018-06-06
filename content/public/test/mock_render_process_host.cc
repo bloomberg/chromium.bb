@@ -231,7 +231,7 @@ int MockRenderProcessHost::GetID() const {
   return id_;
 }
 
-bool MockRenderProcessHost::HasConnection() const {
+bool MockRenderProcessHost::IsInitializedAndNotDead() const {
   return has_connection_;
 }
 
