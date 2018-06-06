@@ -82,7 +82,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   void ClearCanvas(SkColor color);
   void ClearFramebuffer();
-  void SetClipRect(const gfx::Rect& rect);
 
   void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad);
   void DrawPictureQuad(const PictureDrawQuad* quad);
@@ -95,24 +94,10 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   bool CalculateRPDQParams(sk_sp<SkImage> src_image,
                            const RenderPassDrawQuad* quad,
                            DrawRenderPassDrawQuadParams* params);
-
   bool ShouldApplyBackgroundFilters(
       const RenderPassDrawQuad* quad,
       const cc::FilterOperations* background_filters) const;
-  gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
-      const RenderPassDrawQuad* quad,
-      const gfx::Transform& contents_device_transform,
-      const cc::FilterOperations* background_filters,
-      gfx::Rect* unclipped_rect) const;
-  sk_sp<SkImage> ApplyBackgroundFilters(SkImageFilter* filter,
-                                        const RenderPassDrawQuad* quad,
-                                        sk_sp<SkImage> src_image,
-                                        const gfx::Rect& rect) const;
-
-  sk_sp<SkImage> GetBackdropImage(const gfx::Rect& bounding_rect) const;
-  sk_sp<SkShader> GetBackgroundFilterShader(
-      const RenderPassDrawQuad* quad,
-      SkShader::TileMode content_tile_mode) const;
+  bool is_using_ddl() const { return !!skia_output_surface_; }
 
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   struct RenderPassBacking {
