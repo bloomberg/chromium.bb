@@ -19,6 +19,8 @@ FASTPATH = Tag(
     'fastpath', 'Fast path stories.')
 REQUIRED_WEBGL = Tag(
     'required_webgl', 'Stories that are skipped if no webgl support')
+PINCH_ZOOM = Tag(
+    'pinch_zoom', 'Stories that only run on Mac for desktop cases')
 
 
 def _ExtractAllTags():
