@@ -37,13 +37,13 @@ void UpdateLaunchOptionsForSandbox(service_manager::SandboxType type,
     options->clear_environ = true;
 
     // Propagate stdout/stderr/stdin to the child.
-    options->clone_flags = LP_CLONE_FDIO_STDIO;
+    options->spawn_flags = FDIO_SPAWN_CLONE_STDIO;
     return;
   }
 
   DCHECK_EQ(type, service_manager::SANDBOX_TYPE_NO_SANDBOX);
-  options->clone_flags =
-      LP_CLONE_FDIO_NAMESPACE | LP_CLONE_DEFAULT_JOB | LP_CLONE_FDIO_STDIO;
+  options->spawn_flags = FDIO_SPAWN_CLONE_NAMESPACE | FDIO_SPAWN_CLONE_JOB |
+                         FDIO_SPAWN_CLONE_STDIO;
   options->clear_environ = false;
 }
 
