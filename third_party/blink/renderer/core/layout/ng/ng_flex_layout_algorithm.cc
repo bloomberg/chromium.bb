@@ -46,6 +46,17 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     MinMaxSize min_max_sizes =
         child.ComputeMinMaxSize(ConstraintSpace().GetWritingMode(), zero_input);
 
+    NGConstraintSpaceBuilder space_builder(ConstraintSpace());
+    // TODO(dgrogan): Set the percentage size also, which is possibly same as
+    // container_logical_width. Also change NGSizeIndefinite to container size
+    // if it's definite.
+    space_builder.SetAvailableSize(
+        NGLogicalSize{container_logical_width, NGSizeIndefinite});
+    scoped_refptr<NGConstraintSpace> child_space =
+        space_builder.ToConstraintSpace(child.Style().GetWritingMode());
+
+    // Spec calls this "flex base size"
+    // https://www.w3.org/TR/css-flexbox-1/#algo-main-item
     LayoutUnit flex_base_content_size;
     if (child.Style().FlexBasis().IsAuto() && child.Style().Width().IsAuto()) {
       flex_base_content_size = min_max_sizes.max_size;
@@ -55,18 +66,12 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         length_to_resolve = child.Style().Width();
       DCHECK(!length_to_resolve.IsAuto());
 
-      // TODO(dgrogan): ResolveInlineLength will handle all the types?
-      DCHECK(length_to_resolve.IsFixed())
-          << "We only support auto and fixed flex base sizes";
-      flex_base_content_size = LayoutUnit(length_to_resolve.Value());
-    }
+      // TODO(dgrogan): Use ResolveBlockLength here for column flex boxes.
 
-    NGConstraintSpaceBuilder space_builder(ConstraintSpace());
-    // TODO(dgrogan): Set the percentage size also.
-    space_builder.SetAvailableSize(
-        NGLogicalSize{container_logical_width, NGSizeIndefinite});
-    scoped_refptr<NGConstraintSpace> child_space =
-        space_builder.ToConstraintSpace(child.Style().GetWritingMode());
+      flex_base_content_size = ResolveInlineLength(
+          *child_space, child.Style(), min_max_sizes, length_to_resolve,
+          LengthResolveType::kContentSize, LengthResolvePhase::kLayout);
+    }
 
     LayoutUnit main_axis_border_and_padding =
         ComputeBorders(*child_space, child.Style()).InlineSum() +
@@ -76,7 +81,11 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
 
     // TODO(dgrogan): When child has a min/max-{width,height} set, call
     // Resolve{Inline,Block}Length here with child's style and constraint space.
-    // Fill this in with the results.
+    // Pass kMinSize, kMaxSize as appropriate.
+    // Further, min-width:auto has special meaning for flex items. We'll need to
+    // calculate that here by either extracting the logic from legacy or
+    // reimplementing. When resolved, pass it here.
+    // https://www.w3.org/TR/css-flexbox-1/#min-size-auto
     MinMaxSize min_max_sizes_in_main_axis_direction{LayoutUnit(),
                                                     LayoutUnit::Max()};
     flex_items.emplace_back(ToLayoutBox(Node().GetLayoutObject()),
@@ -124,6 +133,9 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
           flex_item.layout_result,
           {flex_item.desired_location.X(), flex_item.desired_location.Y()});
     }
+
+    // TODO(dgrogan): For column flex containers, keep track of tallest flex
+    // line and pass to ComputeBlockSizeForFragment as content_size.
   }
   return container_builder_.ToBoxFragment();
 }

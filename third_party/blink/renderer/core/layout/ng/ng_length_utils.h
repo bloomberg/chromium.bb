@@ -50,8 +50,10 @@ CORE_EXPORT bool NeedMinMaxSize(const ComputedStyle&);
 CORE_EXPORT bool NeedMinMaxSizeForContentContribution(WritingMode mode,
                                                       const ComputedStyle&);
 
-// Convert an inline-axis length to a layout unit using the given constraint
-// space.
+// Resolve means translate a Length to a LayoutUnit, using parent info
+// (represented by ConstraintSpace) as necessary for things like percents.
+//
+// MinMaxSize is used only when the length is intrinsic (fit-content, etc)
 CORE_EXPORT LayoutUnit ResolveInlineLength(const NGConstraintSpace&,
                                            const ComputedStyle&,
                                            const base::Optional<MinMaxSize>&,
@@ -59,8 +61,8 @@ CORE_EXPORT LayoutUnit ResolveInlineLength(const NGConstraintSpace&,
                                            LengthResolveType,
                                            LengthResolvePhase);
 
-// Convert a block-axis length to a layout unit using the given constraint
-// space and content size.
+// Same as ResolveInlineLength, except here content_size roughly plays the part
+// of MinMaxSize.
 CORE_EXPORT LayoutUnit ResolveBlockLength(const NGConstraintSpace&,
                                           const ComputedStyle&,
                                           const Length&,
@@ -103,17 +105,15 @@ MinMaxSize ComputeMinAndMaxContentContribution(
     const MinMaxSizeInput& input,
     const NGConstraintSpace* space = nullptr);
 
-// Resolves the given length to a layout unit, constraining it by the min
-// logical width and max logical width properties from the ComputedStyle
-// object.
+// Resolves the computed value in style.logicalWidth (Length) to a layout unit,
+// then constrains the result by the resolved min logical width and max logical
+// width from the ComputedStyle object.
 CORE_EXPORT LayoutUnit
 ComputeInlineSizeForFragment(const NGConstraintSpace&,
                              const ComputedStyle&,
                              const base::Optional<MinMaxSize>&);
 
-// Resolves the given length to a layout unit, constraining it by the min
-// logical height and max logical height properties from the ComputedStyle
-// object.
+// Same as ComputeInlineSizeForFragment, but uses height instead of width.
 CORE_EXPORT LayoutUnit ComputeBlockSizeForFragment(const NGConstraintSpace&,
                                                    const ComputedStyle&,
                                                    LayoutUnit content_size);
