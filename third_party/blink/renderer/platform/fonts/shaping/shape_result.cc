@@ -50,9 +50,19 @@ constexpr unsigned HarfBuzzRunGlyphData::kMaxCharacterIndex;
 
 unsigned ShapeResult::RunInfo::NextSafeToBreakOffset(unsigned offset) const {
   DCHECK_LE(offset, num_characters_);
-  for (const auto& glyph_data : glyph_data_) {
-    if (glyph_data.safe_to_break_before && glyph_data.character_index >= offset)
-      return glyph_data.character_index;
+  if (!Rtl()) {
+    for (const auto& glyph_data : glyph_data_) {
+      if (glyph_data.safe_to_break_before &&
+          glyph_data.character_index >= offset)
+        return glyph_data.character_index;
+    }
+  } else {
+    for (auto it = glyph_data_.rbegin(); it != glyph_data_.rend(); ++it) {
+      const auto& glyph_data = *it;
+      if (glyph_data.safe_to_break_before &&
+          glyph_data.character_index >= offset)
+        return glyph_data.character_index;
+    }
   }
 
   // Next safe break is at the end of the run.
@@ -63,10 +73,19 @@ unsigned ShapeResult::RunInfo::PreviousSafeToBreakOffset(
     unsigned offset) const {
   if (offset >= num_characters_)
     return num_characters_;
-  for (auto it = glyph_data_.rbegin(); it != glyph_data_.rend(); ++it) {
-    const auto& glyph_data = *it;
-    if (glyph_data.safe_to_break_before && glyph_data.character_index <= offset)
-      return glyph_data.character_index;
+  if (!Rtl()) {
+    for (auto it = glyph_data_.rbegin(); it != glyph_data_.rend(); ++it) {
+      const auto& glyph_data = *it;
+      if (glyph_data.safe_to_break_before &&
+          glyph_data.character_index <= offset)
+        return glyph_data.character_index;
+    }
+  } else {
+    for (const auto& glyph_data : glyph_data_) {
+      if (glyph_data.safe_to_break_before &&
+          glyph_data.character_index <= offset)
+        return glyph_data.character_index;
+    }
   }
 
   // Next safe break is at the start of the run.
@@ -800,6 +819,9 @@ ShapeResult::RunInfo* ShapeResult::InsertRunForTesting(
     glyph_data.SetGlyphAndPositions(0, i++, 0, FloatSize(), false);
   for (uint16_t offset : safe_break_offsets)
     run->glyph_data_[offset].safe_to_break_before = true;
+  // RTL runs have glyphs in the descending order of character_index.
+  if (Rtl())
+    run->glyph_data_.Reverse();
   RunInfo* run_ptr = run.get();
   InsertRun(std::move(run));
   return run_ptr;
