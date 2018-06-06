@@ -14,9 +14,9 @@ source_set("sel_main") {
     "sel_main.c",
   ]
   deps = [
+    ":sel",
     "//build/config/nacl:nacl_base",
     "//native_client/src/trusted/debug_stub:debug_stub",
-    ":sel",
   ]
 }
 
@@ -25,9 +25,9 @@ source_set("sel_main_chrome") {
     "sel_main_chrome.c",
   ]
   deps = [
+    ":sel",
     "//build/config/nacl:nacl_base",
     "//native_client/src/trusted/debug_stub:debug_stub",
-    ":sel",
   ]
 }
 
@@ -233,9 +233,7 @@ source_set("sel") {
   }
 
   if (current_cpu == "x86" || current_cpu == "x64") {
-    sources += [
-      "arch/x86/nacl_ldt_x86.c",
-    ]
+    sources += [ "arch/x86/nacl_ldt_x86.c" ]
   }
 
   if (current_cpu == "x86") {
@@ -269,44 +267,44 @@ source_set("sel") {
     ]
     if (is_mac) {
       sources += [
-        "osx/nacl_signal_64.c",
         "arch/x86_64/sel_addrspace_posix_x86_64.c",
+        "osx/nacl_signal_64.c",
       ]
     }
     if (is_linux) {
       sources += [
-        "linux/nacl_signal_64.c",
         "arch/x86_64/sel_addrspace_posix_x86_64.c",
+        "linux/nacl_signal_64.c",
       ]
     }
     if (is_win) {
       sources += [
-        "win/exception_patch/ntdll_patch.c",
-        "win/nacl_signal_64.c",
         # We assemble the .asm assembly file with the Microsoft assembler
         # because we need to generate x86-64 Windows unwind info, which the
         # GNU assembler we use elsewhere does not support.
         "arch/x86_64/nacl_switch_unwind_win.asm",
         "arch/x86_64/sel_addrspace_win_x86_64.c",
+        "win/exception_patch/ntdll_patch.c",
+        "win/nacl_signal_64.c",
       ]
     }
     defines = [ "NACL_X86_64_ZERO_BASED_SANDBOX=0" ]
   }
 
   deps = [
-    "//build/config/nacl:nacl_base",
-    ":sel_asm($nacl_asm_toolchain)",
-    ":nacl_error_code",
     ":env_cleanser",
-    "//native_client/src/trusted/desc:nrd_xfer",
-    "//native_client/src/trusted/perf_counter:nacl_perf_counter",
-    "//native_client/src/trusted/nacl_base:nacl_base",
+    ":nacl_error_code",
+    ":sel_asm($nacl_asm_toolchain)",
+    "//build/config/nacl:nacl_base",
+    "//native_client/src/shared/gio:gio",
     "//native_client/src/shared/imc:imc",
+    "//native_client/src/shared/platform:platform",
+    "//native_client/src/trusted/desc:nrd_xfer",
     "//native_client/src/trusted/fault_injection:nacl_fault_inject",
     "//native_client/src/trusted/interval_multiset:nacl_interval",
-    "//native_client/src/shared/platform:platform",
+    "//native_client/src/trusted/nacl_base:nacl_base",
+    "//native_client/src/trusted/perf_counter:nacl_perf_counter",
     "//native_client/src/trusted/platform_qualify:platform_qual_lib",
-    "//native_client/src/shared/gio:gio",
     "//native_client/src/trusted/validator:validation_cache",
     "//native_client/src/trusted/validator:validators",
   ]
@@ -347,7 +345,6 @@ executable("sel_ldr") {
   ]
   deps = [
     ":sel_main",
-    "//build/config:exe_and_shlib_deps",
     "//build/win:default_exe_manifest",
   ]
   if (is_linux) {

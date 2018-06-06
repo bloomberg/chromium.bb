@@ -21,7 +21,6 @@ if (is_linux || is_nacl) {
 
     deps = [
       ":elf_loader",
-      "//build/config:exe_and_shlib_deps",
       "//native_client/src/nonsfi/irt:irt_interfaces",
       "//native_client/src/shared/platform",
     ]
