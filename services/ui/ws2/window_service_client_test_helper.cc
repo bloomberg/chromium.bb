@@ -69,6 +69,15 @@ bool WindowServiceClientTestHelper::ReleaseCapture(aura::Window* window) {
       ClientWindowIdForWindow(window));
 }
 
+bool WindowServiceClientTestHelper::ReorderWindow(
+    aura::Window* window,
+    aura::Window* relative_window,
+    mojom::OrderDirection direction) {
+  return window_service_client_->ReorderWindowImpl(
+      ClientWindowIdForWindow(window), ClientWindowIdForWindow(relative_window),
+      direction);
+}
+
 bool WindowServiceClientTestHelper::SetWindowBounds(
     aura::Window* window,
     const gfx::Rect& bounds,

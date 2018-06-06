@@ -1021,6 +1021,54 @@ TEST(WindowServiceClientTest, OnUnhandledKeyEvent) {
   EXPECT_TRUE(setup.delegate()->unhandled_key_events()->empty());
 }
 
+TEST(WindowServiceClientTest, ReorderWindow) {
+  // Create a top-level and two child windows.
+  WindowServiceTestSetup setup;
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  aura::Window* window1 = setup.client_test_helper()->NewWindow();
+  ASSERT_TRUE(window1);
+  top_level->AddChild(window1);
+  aura::Window* window2 = setup.client_test_helper()->NewWindow();
+  ASSERT_TRUE(window2);
+  top_level->AddChild(window2);
+
+  // Reorder |window1| on top of |window2|.
+  EXPECT_TRUE(setup.client_test_helper()->ReorderWindow(
+      window1, window2, mojom::OrderDirection::ABOVE));
+  EXPECT_EQ(window2, top_level->children()[0]);
+  EXPECT_EQ(window1, top_level->children()[1]);
+
+  // Reorder |window2| on top of |window1|.
+  EXPECT_TRUE(setup.client_test_helper()->ReorderWindow(
+      window2, window1, mojom::OrderDirection::ABOVE));
+  EXPECT_EQ(window1, top_level->children()[0]);
+  EXPECT_EQ(window2, top_level->children()[1]);
+
+  // Repeat, but use the WindowTree interface, which should result in an ack.
+  setup.changes()->clear();
+  uint32_t change_id = 101;
+  setup.client_test_helper()->window_tree()->ReorderWindow(
+      change_id, setup.client_test_helper()->TransportIdForWindow(window1),
+      setup.client_test_helper()->TransportIdForWindow(window2),
+      mojom::OrderDirection::ABOVE);
+  EXPECT_EQ("ChangeCompleted id=101 success=true",
+            SingleChangeToDescription(*setup.changes()));
+  setup.changes()->clear();
+
+  // Supply invalid window ids, which should fail.
+  setup.client_test_helper()->window_tree()->ReorderWindow(
+      change_id, 0, 1, mojom::OrderDirection::ABOVE);
+  EXPECT_EQ("ChangeCompleted id=101 success=false",
+            SingleChangeToDescription(*setup.changes()));
+
+  // These calls should fail as the windows are not siblings.
+  EXPECT_FALSE(setup.client_test_helper()->ReorderWindow(
+      window1, top_level, mojom::OrderDirection::ABOVE));
+  EXPECT_FALSE(setup.client_test_helper()->ReorderWindow(
+      top_level, window2, mojom::OrderDirection::ABOVE));
+}
+
 }  // namespace
 }  // namespace ws2
 }  // namespace ui
