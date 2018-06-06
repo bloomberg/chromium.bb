@@ -40,10 +40,9 @@ public class FeedSchedulerBridge implements SchedulerApi {
     }
 
     /*
-     * Sets our copy of the RequestManager. Should be done as early as possible,
-     * as the scheduler will be unable to trigger refreshes until after it has a
-     * reference to a RequestManager. When this is called, it is assumed that
-     * the RequestManager is initialized and can be used.
+     * Sets our copy of the RequestManager. Should be done as early as possible, as the scheduler
+     * will be unable to trigger refreshes until after it has a reference to a RequestManager. When
+     * this is called, it is assumed that the RequestManager is initialized and can be used.
      *
      * @param requestManager The interface that allows us make refresh requests.
      */
@@ -59,12 +58,11 @@ public class FeedSchedulerBridge implements SchedulerApi {
         int nativeBehavior = nativeShouldSessionRequestData(mNativeBridge,
                 sessionManagerState.hasContent, sessionManagerState.contentCreationDateTimeMs,
                 sessionManagerState.hasOutstandingRequest);
-        // If this breaks, it is because SchedulerApi.RequestBehavior and the
-        // NativeRequestBehavior defined in feed_scheduler_host.h have diverged.
-        // If this happens during a feed DEPS roll, it likely means that the
-        // native side needs to be updated. Note that this will not catch new
-        // values and should handle value changes. Only removals/renames will
-        // cause compile failures.
+        // If this breaks, it is because SchedulerApi.RequestBehavior and the NativeRequestBehavior
+        // defined in feed_scheduler_host.h have diverged. If this happens during a feed DEPS roll,
+        // it likely means that the native side needs to be updated. Note that this will not catch
+        // new values and should handle value changes. Only removals/renames will cause compile
+        // failures.
         switch (nativeBehavior) {
             case NativeRequestBehavior.REQUEST_WITH_WAIT:
                 return SchedulerApi.RequestBehavior.REQUEST_WITH_WAIT;

@@ -154,8 +154,7 @@ public class FeedNewTabPage extends BasicNativePage {
         stream.getView().setBackgroundColor(Color.WHITE);
         mRootView.addView(stream.getView());
 
-        // TODO(skym): This is a work around for outstanding Feed bug. Should be
-        // removed on next DEPS roll.
+        // TODO(skym): This is a work around for outstanding Feed bug.
         stream.triggerRefresh();
 
         // TODO(https://crbug.com/803317): Call appropriate lifecycle methods.
