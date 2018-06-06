@@ -876,6 +876,9 @@ def main():
     assert not args.native_targets, 'Native editing requires --all.'
     targets = [re.sub(r'_test_apk$', '_test_apk__apk', t)
                for t in targets_from_args]
+    # Necessary after "gn clean"
+    if not os.path.exists(os.path.join(output_dir, 'build_vars.txt')):
+      _RunGnGen(output_dir)
 
   build_vars = _ReadPropertiesFile(os.path.join(output_dir, 'build_vars.txt'))
   jinja_processor = jinja_template.JinjaProcessor(_FILE_DIR)
