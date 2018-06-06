@@ -30,6 +30,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
@@ -606,6 +607,34 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   }
 
   return ash::mojom::AssistantAllowedState::ALLOWED;
+}
+
+ArcSupervisionTransition GetSupervisionTransition(const Profile* profile) {
+  DCHECK(profile);
+  DCHECK(profile->GetPrefs());
+
+  const ArcSupervisionTransition supervision_transition =
+      static_cast<ArcSupervisionTransition>(
+          profile->GetPrefs()->GetInteger(prefs::kArcSupervisionTransition));
+  const bool is_child_to_regular_enabled =
+      base::FeatureList::IsEnabled(kEnableChildToRegularTransitionFeature);
+  const bool is_regular_to_child_enabled =
+      base::FeatureList::IsEnabled(kEnableRegularToChildTransitionFeature);
+
+  switch (supervision_transition) {
+    case ArcSupervisionTransition::NO_TRANSITION:
+      // Do nothing.
+      break;
+    case ArcSupervisionTransition::CHILD_TO_REGULAR:
+      if (!is_child_to_regular_enabled)
+        return ArcSupervisionTransition::NO_TRANSITION;
+      break;
+    case ArcSupervisionTransition::REGULAR_TO_CHILD:
+      if (!is_regular_to_child_enabled)
+        return ArcSupervisionTransition::NO_TRANSITION;
+      break;
+  }
+  return supervision_transition;
 }
 
 }  // namespace arc
