@@ -58,6 +58,7 @@ const char kLitePageBlackListVersion[] = "lite-page-blacklist-version";
 
 const char kWarmupFetchCallbackEnabledParam[] = "warmup_fetch_callback_enabled";
 const char kMissingViaBypassDisabledParam[] = "bypass_missing_via_disabled";
+const char kDiscardCanaryCheckResultParam[] = "store_canary_check_result";
 
 bool IsIncludedInFieldTrial(const std::string& name) {
   return base::StartsWith(base::FieldTrialList::FindFullName(name), kEnabled,
@@ -127,6 +128,16 @@ const char* GetWarmupCallbackParamName() {
 
 const char* GetMissingViaBypassParamName() {
   return kMissingViaBypassDisabledParam;
+}
+
+const char* GetDiscardCanaryCheckResultParam() {
+  return kDiscardCanaryCheckResultParam;
+}
+
+bool ShouldDiscardCanaryCheckResult() {
+  return GetFieldTrialParamByFeatureAsBool(
+      features::kDataReductionProxyRobustConnection,
+      GetDiscardCanaryCheckResultParam(), false);
 }
 
 bool IsIncludedInServerExperimentsFieldTrial() {

@@ -14,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/time/clock.h"
 #include "base/values.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
 
@@ -236,6 +237,8 @@ void NetworkPropertiesManager::OnChangeInNetworkID(
   if (it != network_properties_container_.end()) {
     network_properties_ = it->second;
     cached_entry_found = true;
+    if (params::ShouldDiscardCanaryCheckResult())
+      network_properties_.set_secure_proxy_disallowed_by_carrier(false);
 
   } else {
     // Reset to default state.
@@ -286,6 +289,8 @@ NetworkPropertiesManager::ConvertDictionaryValueToParsedPrefs(
         GetParsedNetworkProperty(it.second);
     if (!network_properties)
       continue;
+    if (params::ShouldDiscardCanaryCheckResult())
+      network_properties->set_secure_proxy_disallowed_by_carrier(false);
 
     read_prefs.emplace(std::make_pair(it.first, network_properties.value()));
   }
