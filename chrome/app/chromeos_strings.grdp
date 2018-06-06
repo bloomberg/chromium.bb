@@ -5008,35 +5008,35 @@ Installing the <ph name="APP_NAME">$2<ex>Terminal</ex></ph> will download <ph na
   <message name="IDS_CROSTINI_INSTALLER_COMPLETE" desc="Text shown in the Crostini installer dialog when installation is complete.">
     Finished installing <ph name="APP_NAME">$1<ex>Terminal</ex></ph>.
   </message>
-    <message name="IDS_CROSTINI_INSTALLER_LOAD_TERMINA_MESSAGE" desc="Text shown in the Crostini installer dialog when the 'Termina' component is loading">
-    Loading Termina component.
+    <message name="IDS_CROSTINI_INSTALLER_LOAD_TERMINA_MESSAGE" desc="Text shown in the Crostini installer dialog when the VM component is loading">
+    Loading VM component.
   </message>
-  <message name="IDS_CROSTINI_INSTALLER_START_CONCIERGE_MESSAGE" desc="Text shown in the Crostini installer dialog when the 'Concierge' service is starting">
-    Starting Concierge service.
+  <message name="IDS_CROSTINI_INSTALLER_START_CONCIERGE_MESSAGE" desc="Text shown in the Crostini installer dialog when the VM service is starting">
+    Starting VM service.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_MESSAGE" desc="Text shown in the Crostini installer dialog when the disk image is being created">
     Creating disk image.
   </message>
-  <message name="IDS_CROSTINI_INSTALLER_START_TERMINA_VM_MESSAGE" desc="Text shown in the Crostini installer dialog when the 'Termina VM' is starting">
-    Starting Termina VM.
+  <message name="IDS_CROSTINI_INSTALLER_START_TERMINA_VM_MESSAGE" desc="Text shown in the Crostini installer dialog when the VM itself is starting">
+    Starting VM.
   </message>
-  <message name="IDS_CROSTINI_INSTALLER_START_CONTAINER_MESSAGE" desc="Text shown in the Crostini installer dialog when the container inside the 'Termina VM' is starting">
-    Starting container inside Termina VM.
+  <message name="IDS_CROSTINI_INSTALLER_START_CONTAINER_MESSAGE" desc="Text shown in the Crostini installer dialog when the container inside the VM is starting">
+    Starting container inside VM.
   </message>
-  <message name="IDS_CROSTINI_INSTALLER_LOAD_TERMINA_ERROR" desc="Text shown in the Crostini installer dialog when the 'Termina' component fails to load">
-    ERROR: Failed to load Termina component.
+  <message name="IDS_CROSTINI_INSTALLER_LOAD_TERMINA_ERROR" desc="Text shown in the Crostini installer dialog when the VM component fails to load">
+    ERROR: Failed to load VM component.
   </message>
-  <message name="IDS_CROSTINI_INSTALLER_START_CONCIERGE_ERROR" desc="Text shown in the Crostini installer dialog when the 'Concierge' client fails to start">
-    ERROR: Failed to start Concierge client.
+  <message name="IDS_CROSTINI_INSTALLER_START_CONCIERGE_ERROR" desc="Text shown in the Crostini installer dialog when the VM service fails to start">
+    ERROR: Failed to start VM service.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_ERROR" desc="Text shown in the Crostini installer dialog when the failing to create the disk image">
     ERROR: Failed to create disk image.
   </message>
-  <message name="IDS_CROSTINI_INSTALLER_START_TERMINA_VM_ERROR" desc="Text shown in the Crostini installer dialog when the 'Termina VM' fails to start">
-    ERROR: Failed to start Termina VM.
+  <message name="IDS_CROSTINI_INSTALLER_START_TERMINA_VM_ERROR" desc="Text shown in the Crostini installer dialog when the VM itself fails to start">
+    ERROR: Failed to start VM.
   </message>
-  <message name="IDS_CROSTINI_INSTALLER_START_CONTAINER_ERROR" desc="Text shown in the Crostini installer dialog when the container fails to start inside the 'Termina VM'">
-    ERROR: Failed to start container inside Termina VM.
+  <message name="IDS_CROSTINI_INSTALLER_START_CONTAINER_ERROR" desc="Text shown in the Crostini installer dialog when the container fails to start inside the VM">
+    ERROR: Failed to start container inside VM.
   </message>
   <message name="IDS_CROSTINI_UNINSTALLER_TITLE" desc="Title of the Crostini uninstaller, a dialog for uninstalling the 'Terminal', the associated VM and Linux container.">
     <ph name="APP_NAME">$1<ex>Uninstall Terminal</ex></ph> for <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>
