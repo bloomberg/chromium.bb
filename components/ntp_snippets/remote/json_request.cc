@@ -27,17 +27,14 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using language::UrlLanguageHistogram;
-using net::URLFetcher;
-using net::URLRequestContextGetter;
-using net::HttpRequestHeaders;
-using net::URLRequestStatus;
 
 namespace ntp_snippets {
 
@@ -53,15 +50,6 @@ const char kSendTopLanguagesName[] = "send_top_languages";
 
 // Variation parameter for sending UserClassifier info to the server.
 const char kSendUserClassName[] = "send_user_class";
-
-int Get5xxRetryCount(bool interactive_request) {
-  if (interactive_request) {
-    return 2;
-  }
-  return std::max(0, variations::GetVariationParamByFeatureAsInt(
-                         ntp_snippets::kArticleSuggestionsFeature,
-                         kBackground5xxRetriesName, 0));
-}
 
 bool IsSendingTopLanguagesEnabled() {
   return variations::GetVariationParamByFeatureAsBool(
@@ -143,8 +131,25 @@ JsonRequest::~JsonRequest() {
 }
 
 void JsonRequest::Start(CompletedCallback callback) {
+  DCHECK(simple_url_loader_);
+  DCHECK(url_loader_factory_);
   request_completed_callback_ = std::move(callback);
-  url_fetcher_->Start();
+  last_response_string_.clear();
+  simple_url_loader_->SetAllowHttpErrorResults(true);
+  simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&JsonRequest::OnSimpleLoaderComplete,
+                     base::Unretained(this)));
+}
+
+// static
+int JsonRequest::Get5xxRetryCount(bool interactive_request) {
+  if (interactive_request) {
+    return 2;
+  }
+  return std::max(0, variations::GetVariationParamByFeatureAsInt(
+                         ntp_snippets::kArticleSuggestionsFeature,
+                         kBackground5xxRetriesName, 0));
 }
 
 base::TimeDelta JsonRequest::GetFetchDuration() const {
@@ -152,25 +157,26 @@ base::TimeDelta JsonRequest::GetFetchDuration() const {
 }
 
 std::string JsonRequest::GetResponseString() const {
-  std::string response;
-  url_fetcher_->GetResponseAsString(&response);
-  return response;
+  return last_response_string_;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// URLFetcherDelegate overrides
-void JsonRequest::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK_EQ(url_fetcher_.get(), source);
-  const URLRequestStatus& status = url_fetcher_->GetStatus();
-  int response = url_fetcher_->GetResponseCode();
+void JsonRequest::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
+  int net_error = simple_url_loader_->NetError();
+  int response_code = -1;
+  if (simple_url_loader_->ResponseInfo() &&
+      simple_url_loader_->ResponseInfo()->headers) {
+    response_code =
+        simple_url_loader_->ResponseInfo()->headers->response_code();
+  }
+  simple_url_loader_.reset();
   base::UmaHistogramSparse("NewTabPage.Snippets.FetchHttpResponseOrErrorCode",
-                           status.is_success() ? response : status.error());
-
-  if (!status.is_success()) {
+                           net_error == net::OK ? response_code : net_error);
+  if (net_error != net::OK) {
     std::move(request_completed_callback_)
         .Run(/*result=*/nullptr, FetchResult::URL_REQUEST_STATUS_ERROR,
-             /*error_details=*/base::StringPrintf(" %d", status.error()));
-  } else if (response != net::HTTP_OK) {
+             /*error_details=*/base::StringPrintf(" %d", net_error));
+  } else if (response_code / 100 != 2) {
     // TODO(jkrcal): https://crbug.com/609084
     // We need to deal with the edge case again where the auth
     // token expires just before we send the request (in which case we need to
@@ -178,22 +184,14 @@ void JsonRequest::OnURLFetchComplete(const net::URLFetcher* source) {
     // instead of adding it to every single class that uses auth tokens.
     std::move(request_completed_callback_)
         .Run(/*result=*/nullptr, FetchResult::HTTP_ERROR,
-             /*error_details=*/base::StringPrintf(" %d", response));
+             /*error_details=*/base::StringPrintf(" %d", response_code));
   } else {
-    ParseJsonResponse();
+    last_response_string_ = std::move(*response_body);
+    parse_json_callback_.Run(
+        last_response_string_,
+        base::Bind(&JsonRequest::OnJsonParsed, weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&JsonRequest::OnJsonError, weak_ptr_factory_.GetWeakPtr()));
   }
-}
-
-void JsonRequest::ParseJsonResponse() {
-  std::string json_string;
-  bool stores_result_to_string =
-      url_fetcher_->GetResponseAsString(&json_string);
-  DCHECK(stores_result_to_string);
-
-  parse_json_callback_.Run(
-      json_string,
-      base::Bind(&JsonRequest::OnJsonParsed, weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&JsonRequest::OnJsonError, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void JsonRequest::OnJsonParsed(std::unique_ptr<base::Value> result) {
@@ -203,9 +201,8 @@ void JsonRequest::OnJsonParsed(std::unique_ptr<base::Value> result) {
 }
 
 void JsonRequest::OnJsonError(const std::string& error) {
-  std::string json_string;
-  url_fetcher_->GetResponseAsString(&json_string);
-  LOG(WARNING) << "Received invalid JSON (" << error << "): " << json_string;
+  LOG(WARNING) << "Received invalid JSON (" << error
+               << "): " << last_response_string_;
   std::move(request_completed_callback_)
       .Run(/*result=*/nullptr, FetchResult::JSON_PARSE_ERROR,
            /*error_details=*/base::StringPrintf(" (error %s)", error.c_str()));
@@ -217,18 +214,13 @@ JsonRequest::Builder::~Builder() = default;
 
 std::unique_ptr<JsonRequest> JsonRequest::Builder::Build() const {
   DCHECK(!url_.is_empty());
-  DCHECK(url_request_context_getter_);
+  DCHECK(url_loader_factory_);
   DCHECK(clock_);
   auto request = std::make_unique<JsonRequest>(params_.exclusive_category,
                                                clock_, parse_json_callback_);
   std::string body = BuildBody();
-  std::string headers = BuildHeaders();
-  request->url_fetcher_ = BuildURLFetcher(request.get(), headers, body);
-
-  // Log the request for debugging network issues.
-  VLOG(1) << "Sending a NTP snippets request to " << url_ << ":\n"
-          << headers << "\n"
-          << body;
+  request->simple_url_loader_ = BuildURLLoader(body);
+  request->url_loader_factory_ = std::move(url_loader_factory_);
 
   return request;
 }
@@ -269,9 +261,9 @@ JsonRequest::Builder& JsonRequest::Builder::SetUrl(const GURL& url) {
   return *this;
 }
 
-JsonRequest::Builder& JsonRequest::Builder::SetUrlRequestContextGetter(
-    const scoped_refptr<net::URLRequestContextGetter>& context_getter) {
-  url_request_context_getter_ = context_getter;
+JsonRequest::Builder& JsonRequest::Builder::SetUrlLoaderFactory(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  url_loader_factory_ = std::move(url_loader_factory);
   return *this;
 }
 
@@ -283,18 +275,25 @@ JsonRequest::Builder& JsonRequest::Builder::SetUserClassifier(
   return *this;
 }
 
-std::string JsonRequest::Builder::BuildHeaders() const {
-  net::HttpRequestHeaders headers;
-  headers.SetHeader("Content-Type", "application/json; charset=UTF-8");
+std::unique_ptr<network::ResourceRequest>
+JsonRequest::Builder::BuildResourceRequest() const {
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url_;
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->method = "POST";
+  resource_request->headers.SetHeader("Content-Type",
+                                      "application/json; charset=UTF-8");
   if (!auth_header_.empty()) {
-    headers.SetHeader("Authorization", auth_header_);
+    resource_request->headers.SetHeader("Authorization", auth_header_);
   }
   // Add X-Client-Data header with experiment IDs from field trials.
   // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
   // transmission of experiments coming from the variations server.
   variations::AppendVariationHeaders(url_, variations::InIncognito::kNo,
-                                     variations::SignedIn::kNo, &headers);
-  return headers.ToString();
+                                     variations::SignedIn::kNo,
+                                     &resource_request->headers);
+  return resource_request;
 }
 
 std::string JsonRequest::Builder::BuildBody() const {
@@ -353,9 +352,7 @@ std::string JsonRequest::Builder::BuildBody() const {
   return request_json;
 }
 
-std::unique_ptr<net::URLFetcher> JsonRequest::Builder::BuildURLFetcher(
-    net::URLFetcherDelegate* delegate,
-    const std::string& headers,
+std::unique_ptr<network::SimpleURLLoader> JsonRequest::Builder::BuildURLLoader(
     const std::string& body) const {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("ntp_snippets_fetch", R"(
@@ -386,23 +383,26 @@ std::unique_ptr<net::URLFetcher> JsonRequest::Builder::BuildURLFetcher(
             }
           }
         })");
-  std::unique_ptr<net::URLFetcher> url_fetcher = net::URLFetcher::Create(
-      url_, net::URLFetcher::POST, delegate, traffic_annotation);
-  url_fetcher->SetRequestContext(url_request_context_getter_.get());
-  url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                            net::LOAD_DO_NOT_SAVE_COOKIES);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      url_fetcher.get(),
-      data_use_measurement::DataUseUserData::NTP_SNIPPETS_SUGGESTIONS);
+  auto resource_request = BuildResourceRequest();
 
-  url_fetcher->SetExtraRequestHeaders(headers);
-  url_fetcher->SetUploadData("application/json", body);
+  // Log the request for debugging network issues.
+  VLOG(1) << "Sending a NTP snippets request to " << url_ << ":\n"
+          << resource_request->headers.ToString() << "\n"
+          << body;
 
-  // Fetchers are sometimes cancelled because a network change was detected.
-  url_fetcher->SetAutomaticallyRetryOnNetworkChanges(3);
-  url_fetcher->SetMaxRetriesOn5xx(
-      Get5xxRetryCount(params_.interactive_request));
-  return url_fetcher;
+  // TODO(https://crbug.com/808498): Re-add data use measurement once
+  // SimpleURLLoader supports it.
+  // ID=data_use_measurement::DataUseUserData::NTP_SNIPPETS_SUGGESTIONS);
+  auto loader = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 traffic_annotation);
+  loader->AttachStringForUpload(body, "application/json");
+  int max_retries = JsonRequest::Get5xxRetryCount(params_.interactive_request);
+  if (max_retries > 0) {
+    loader->SetRetryOptions(
+        max_retries, network::SimpleURLLoader::RETRY_ON_5XX |
+                         network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
+  }
+  return loader;
 }
 
 void JsonRequest::Builder::PrepareLanguages(

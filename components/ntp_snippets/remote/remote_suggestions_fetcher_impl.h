@@ -18,7 +18,6 @@
 #include "components/ntp_snippets/remote/json_to_categories.h"
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
 #include "components/ntp_snippets/remote/request_params.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 class PrefService;
@@ -36,6 +35,10 @@ namespace language {
 class UrlLanguageHistogram;
 }  // namespace language
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace ntp_snippets {
 
 class UserClassifier;
@@ -44,7 +47,7 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
  public:
   RemoteSuggestionsFetcherImpl(
       identity::IdentityManager* identity_manager,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       PrefService* pref_service,
       language::UrlLanguageHistogram* language_histogram,
       const ParseJSONCallback& parse_json_callback,
@@ -97,8 +100,8 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
 
   std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
-  // Holds the URL request context.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  // Holds the URL loader factory
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Stores requests that wait for an access token.
   base::queue<
