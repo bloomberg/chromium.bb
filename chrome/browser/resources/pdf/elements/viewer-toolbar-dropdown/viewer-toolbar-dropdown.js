@@ -42,16 +42,17 @@ Polymer({
     /** Lowest vertical point that the dropdown should occupy (px). */
     lowerBound: {type: Number, observer: 'lowerBoundChanged_'},
 
-    /**
-     * True if the max-height CSS property for the dropdown scroll container
-     * is valid. If false, the height will be updated the next time the
-     * dropdown is visible.
-     */
-    maxHeightValid_: false,
-
     /** Current animation being played, or null if there is none. */
     animation_: Object
   },
+
+  /**
+   * True if the max-height CSS property for the dropdown scroll container
+   * is valid. If false, the height will be updated the next time the
+   * dropdown is visible.
+   * @private {boolean}
+   */
+  maxHeightValid_: false,
 
   computeIcon_: function(dropdownOpen, closedIcon, openIcon) {
     return dropdownOpen ? openIcon : closedIcon;

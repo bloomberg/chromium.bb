@@ -40,17 +40,18 @@ Polymer({
 
     childrenShown: {type: Boolean, reflectToAttribute: true, value: false},
 
-    keyEventTarget: {
-      type: Object,
-      value: function() {
-        return this.$.item;
-      }
-    }
+    /** @type {?HTMLElement} The target for the key bindings below. */
+    keyEventTarget: Object,
   },
 
   behaviors: [Polymer.IronA11yKeysBehavior],
 
   keyBindings: {'enter': 'onEnter_', 'space': 'onSpace_'},
+
+  /** @override */
+  attached: function() {
+    this.keyEventTarget = this.$.item;
+  },
 
   bookmarkChanged_: function() {
     this.$.expand.style.visibility =

@@ -53,7 +53,7 @@ Polymer({
   },
 
   computeVisibleTooltip_: function(tooltips, activeIndex) {
-    return tooltips[activeIndex];
+    return tooltips === undefined ? '' : tooltips[activeIndex];
   },
 
   delayChanged_: function() {
