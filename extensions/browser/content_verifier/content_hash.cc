@@ -169,7 +169,6 @@ void ContentHash::DidFetchVerifiedContents(
     ContentHash::CreatedCallback created_callback,
     const ContentHash::IsCancelledCallback& is_cancelled,
     const ContentHash::ExtensionKey& key,
-    const ContentHash::FetchParams& fetch_params,
     std::unique_ptr<std::string> fetched_contents) {
   base::AssertBlockingAllowed();
   if (!fetched_contents) {

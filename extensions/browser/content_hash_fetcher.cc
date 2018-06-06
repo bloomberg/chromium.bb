@@ -53,9 +53,8 @@ void ContentHashFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     response = nullptr;
   }
   response_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(hash_fetcher_callback_), extension_key_,
-                     fetch_params_, std::move(response)));
+      FROM_HERE, base::BindOnce(std::move(hash_fetcher_callback_),
+                                extension_key_, std::move(response)));
   delete this;
 }
 

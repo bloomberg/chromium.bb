@@ -153,7 +153,6 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
       CreatedCallback created_callback,
       const IsCancelledCallback& is_cancelled,
       const ExtensionKey& key,
-      const FetchParams& fetch_params,
       std::unique_ptr<std::string> fetched_contents);
 
   static void DispatchFetchFailure(const ExtensionKey& key,
