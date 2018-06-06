@@ -13,15 +13,15 @@ if(AOM_AOM_SCALE_AOM_SCALE_CMAKE_)
 endif() # AOM_AOM_SCALE_AOM_SCALE_CMAKE_
 set(AOM_AOM_SCALE_AOM_SCALE_CMAKE_ 1)
 
-set(AOM_SCALE_SOURCES "${AOM_ROOT}/aom_scale/aom_scale.h"
-    "${AOM_ROOT}/aom_scale/generic/aom_scale.c"
-    "${AOM_ROOT}/aom_scale/generic/gen_scalers.c"
-    "${AOM_ROOT}/aom_scale/generic/yv12config.c"
-    "${AOM_ROOT}/aom_scale/generic/yv12extend.c"
-    "${AOM_ROOT}/aom_scale/yv12config.h")
+list(APPEND AOM_SCALE_SOURCES "${AOM_ROOT}/aom_scale/aom_scale.h"
+            "${AOM_ROOT}/aom_scale/generic/aom_scale.c"
+            "${AOM_ROOT}/aom_scale/generic/gen_scalers.c"
+            "${AOM_ROOT}/aom_scale/generic/yv12config.c"
+            "${AOM_ROOT}/aom_scale/generic/yv12extend.c"
+            "${AOM_ROOT}/aom_scale/yv12config.h")
 
-set(AOM_SCALE_INTRIN_DSPR2
-    "${AOM_ROOT}/aom_scale/mips/dspr2/yv12extend_dspr2.c")
+list(APPEND AOM_SCALE_INTRIN_DSPR2
+            "${AOM_ROOT}/aom_scale/mips/dspr2/yv12extend_dspr2.c")
 
 # Creates the aom_scale build target and makes libaom depend on it. The libaom
 # target must exist before this function is called.
