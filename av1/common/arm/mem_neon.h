@@ -323,4 +323,55 @@ static INLINE void load_unaligned_u8_4x4(const uint8_t *buf, int stride,
   *tu1 = vset_lane_u32(a, *tu1, 1);
 }
 
+static INLINE void load_u8_16x8(const uint8_t *s, ptrdiff_t p,
+                                uint8x16_t *const s0, uint8x16_t *const s1,
+                                uint8x16_t *const s2, uint8x16_t *const s3,
+                                uint8x16_t *const s4, uint8x16_t *const s5,
+                                uint8x16_t *const s6, uint8x16_t *const s7) {
+  *s0 = vld1q_u8(s);
+  s += p;
+  *s1 = vld1q_u8(s);
+  s += p;
+  *s2 = vld1q_u8(s);
+  s += p;
+  *s3 = vld1q_u8(s);
+  s += p;
+  *s4 = vld1q_u8(s);
+  s += p;
+  *s5 = vld1q_u8(s);
+  s += p;
+  *s6 = vld1q_u8(s);
+  s += p;
+  *s7 = vld1q_u8(s);
+}
+
+static INLINE void load_u8_16x4(const uint8_t *s, ptrdiff_t p,
+                                uint8x16_t *const s0, uint8x16_t *const s1,
+                                uint8x16_t *const s2, uint8x16_t *const s3) {
+  *s0 = vld1q_u8(s);
+  s += p;
+  *s1 = vld1q_u8(s);
+  s += p;
+  *s2 = vld1q_u8(s);
+  s += p;
+  *s3 = vld1q_u8(s);
+}
+
+static INLINE void load_unaligned_u16_4x4(const uint16_t *buf, uint32_t stride,
+                                          uint64x2_t *tu0, uint64x2_t *tu1) {
+  uint64_t a;
+
+  memcpy(&a, buf, 8);
+  buf += stride;
+  *tu0 = vsetq_lane_u64(a, *tu0, 0);
+  memcpy(&a, buf, 8);
+  buf += stride;
+  *tu0 = vsetq_lane_u64(a, *tu0, 1);
+  memcpy(&a, buf, 8);
+  buf += stride;
+  *tu1 = vsetq_lane_u64(a, *tu1, 0);
+  memcpy(&a, buf, 8);
+  *tu1 = vsetq_lane_u64(a, *tu1, 1);
+}
+
 #endif  // AV1_COMMON_ARM_MEM_NEON_H_
