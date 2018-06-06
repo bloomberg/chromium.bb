@@ -20,7 +20,6 @@ class PrefService;
 namespace cryptauth {
 class CryptAuthService;
 class LocalDeviceDataProvider;
-class RemoteBeaconSeedFetcher;
 }  // namespace cryptauth
 
 namespace device {
@@ -139,8 +138,6 @@ class AsynchronousShutdownObjectContainerImpl
   TetherHostFetcher* tether_host_fetcher_;
   std::unique_ptr<cryptauth::LocalDeviceDataProvider>
       local_device_data_provider_;
-  std::unique_ptr<cryptauth::RemoteBeaconSeedFetcher>
-      remote_beacon_seed_fetcher_;
   std::unique_ptr<secure_channel::BleServiceDataHelper>
       ble_service_data_helper_;
   std::unique_ptr<BleAdvertisementDeviceQueue> ble_advertisement_device_queue_;
