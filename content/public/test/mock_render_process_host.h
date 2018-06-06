@@ -88,7 +88,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   const base::Process& GetProcess() const override;
   bool IsReady() const override;
   int GetID() const override;
-  bool HasConnection() const override;
+  bool IsInitializedAndNotDead() const override;
   void SetIgnoreInputEvents(bool ignore_input_events) override;
   bool IgnoreInputEvents() const override;
   void Cleanup() override;

@@ -1006,7 +1006,7 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest,
           << "a.com and bar.com should be in different processes.";
 
       EXPECT_TRUE(process_to_kill->FastShutdownIfPossible());
-      EXPECT_FALSE(process_to_kill->HasConnection());
+      EXPECT_FALSE(process_to_kill->IsInitializedAndNotDead());
       did_kill_a_process = true;
       break;
     }

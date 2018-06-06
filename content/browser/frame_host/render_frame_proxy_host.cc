@@ -98,7 +98,7 @@ RenderFrameProxyHost::~RenderFrameProxyHost() {
   if (!destruction_callback_.is_null())
     std::move(destruction_callback_).Run();
 
-  if (GetProcess()->HasConnection()) {
+  if (GetProcess()->IsInitializedAndNotDead()) {
     // TODO(nasko): For now, don't send this IPC for top-level frames, as
     // the top-level RenderFrame will delete the RenderFrameProxy.
     // This can be removed once we don't have a swapped out state on
@@ -172,7 +172,7 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
   // RenderFrame.  When that happens, the process will be reinitialized, and
   // all necessary proxies, including any of the ones we skipped here, will be
   // created by CreateProxiesForSiteInstance. See https://crbug.com/476846
-  if (!GetProcess()->HasConnection())
+  if (!GetProcess()->IsInitializedAndNotDead())
     return false;
 
   int parent_routing_id = MSG_ROUTING_NONE;

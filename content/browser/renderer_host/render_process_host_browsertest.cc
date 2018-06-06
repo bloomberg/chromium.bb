@@ -1057,7 +1057,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ConstructedButNotInitializedYet) {
   EXPECT_FALSE(process->IsForGuestsOnly());
 
   // There should be no OS process before Init() method is called.
-  EXPECT_FALSE(process->HasConnection());
+  EXPECT_FALSE(process->IsInitializedAndNotDead());
   EXPECT_FALSE(process->IsReady());
   EXPECT_FALSE(process->GetProcess().IsValid());
   EXPECT_EQ(base::kNullProcessHandle, process->GetProcess().Handle());
@@ -1112,7 +1112,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
       IPC::MojoBootstrap::kMaxOutgoingMessagesSizeForTesting + 2;
   for (size_t i = 0; i < kNumberOfTestIterations; i++) {
     // Verify that the process is still dead.
-    EXPECT_FALSE(process->HasConnection());
+    EXPECT_FALSE(process->IsInitializedAndNotDead());
     EXPECT_FALSE(process->GetChannel());
     EXPECT_FALSE(process->GetProcess().IsValid());
     EXPECT_EQ(base::kNullProcessHandle, process->GetProcess().Handle());
@@ -1139,7 +1139,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   EXPECT_EQ(process, shell()->web_contents()->GetMainFrame()->GetProcess());
   EXPECT_EQ(process->GetID(),
             shell()->web_contents()->GetMainFrame()->GetProcess()->GetID());
-  EXPECT_TRUE(process->HasConnection());
+  EXPECT_TRUE(process->IsInitializedAndNotDead());
 }
 
 }  // namespace

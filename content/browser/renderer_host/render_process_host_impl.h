@@ -160,7 +160,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   BrowserContext* GetBrowserContext() const override;
   bool InSameStoragePartition(StoragePartition* partition) const override;
   int GetID() const override;
-  bool HasConnection() const override;
+  bool IsInitializedAndNotDead() const override;
   void SetIgnoreInputEvents(bool ignore_input_events) override;
   bool IgnoreInputEvents() const override;
   void Cleanup() override;

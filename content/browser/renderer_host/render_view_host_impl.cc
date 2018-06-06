@@ -283,7 +283,7 @@ bool RenderViewHostImpl::CreateRenderView(
   // ignored, so this is safe.
   if (!GetProcess()->Init())
     return false;
-  DCHECK(GetProcess()->HasConnection());
+  DCHECK(GetProcess()->IsInitializedAndNotDead());
   DCHECK(GetProcess()->GetBrowserContext());
   CHECK(main_frame_routing_id_ != MSG_ROUTING_NONE ||
         proxy_route_id != MSG_ROUTING_NONE);
@@ -368,7 +368,8 @@ void RenderViewHostImpl::SetIsActive(bool is_active) {
 }
 
 bool RenderViewHostImpl::IsRenderViewLive() const {
-  return GetProcess()->HasConnection() && GetWidget()->renderer_initialized();
+  return GetProcess()->IsInitializedAndNotDead() &&
+         GetWidget()->renderer_initialized();
 }
 
 void RenderViewHostImpl::SyncRendererPrefs() {
@@ -790,7 +791,7 @@ void RenderViewHostImpl::RenderWidgetDidInit() {
 void RenderViewHostImpl::ShutdownAndDestroy() {
   // We can't release the SessionStorageNamespace until our peer
   // in the renderer has wound down.
-  if (GetProcess()->HasConnection()) {
+  if (GetProcess()->IsInitializedAndNotDead()) {
     RenderProcessHostImpl::ReleaseOnCloseACK(
         GetProcess(),
         delegate_->GetSessionStorageNamespaceMap(),

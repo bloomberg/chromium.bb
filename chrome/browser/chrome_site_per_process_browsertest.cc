@@ -733,7 +733,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   content::WebContentsDestroyedWatcher destroyed_watcher(popup_contents);
   EXPECT_TRUE(ExecuteScript(popup_contents, "window.close();"));
   destroyed_watcher.Wait();
-  EXPECT_TRUE(b_com_rph->HasConnection());
+  EXPECT_TRUE(b_com_rph->IsInitializedAndNotDead());
 
   // Resume the pending navigation in the original tab and ensure it finishes
   // loading successfully.

@@ -185,7 +185,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
         content::RenderProcessHost::AllHostsIterator();
     int count = 0;
     while (!hosts.IsAtEnd()) {
-      if (hosts.GetCurrentValue()->HasConnection())
+      if (hosts.GetCurrentValue()->IsInitializedAndNotDead())
         count++;
       hosts.Advance();
     }

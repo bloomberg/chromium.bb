@@ -2735,7 +2735,7 @@ std::unique_ptr<WebContents> WebContentsImpl::GetCreatedWindow(
   if (BrowserPluginGuest::IsGuest(raw_new_contents))
     return new_contents;
 
-  if (!new_contents->GetMainFrame()->GetProcess()->HasConnection() ||
+  if (!new_contents->GetMainFrame()->GetProcess()->IsInitializedAndNotDead() ||
       !new_contents->GetMainFrame()->GetView()) {
     return nullptr;
   }
@@ -2755,7 +2755,7 @@ RenderWidgetHostView* WebContentsImpl::GetCreatedWidget(int process_id,
   pending_widget_views_.erase(std::make_pair(process_id, route_id));
 
   RenderWidgetHost* widget_host = widget_host_view->GetRenderWidgetHost();
-  if (!widget_host->GetProcess()->HasConnection()) {
+  if (!widget_host->GetProcess()->IsInitializedAndNotDead()) {
     // The view has gone away or the renderer crashed. Nothing to do.
     return nullptr;
   }

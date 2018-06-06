@@ -1735,7 +1735,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   RenderProcessHost* process = web_contents->GetMainFrame()->GetProcess();
   int renderer_id = process->GetID();
   ASSERT_TRUE(process);
-  EXPECT_TRUE(process->HasConnection());
+  EXPECT_TRUE(process->IsInitializedAndNotDead());
 
   // Navigate the WebContents.
   GURL url(embedded_test_server()->GetURL("c.com", "/title3.html"));
@@ -1788,7 +1788,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
     RenderProcessHost* process = web_contents->GetMainFrame()->GetProcess();
     int renderer_id = process->GetID();
     ASSERT_TRUE(process);
-    EXPECT_FALSE(process->HasConnection());
+    EXPECT_FALSE(process->IsInitializedAndNotDead());
     EXPECT_EQ(base::kNullProcessHandle, process->GetProcess().Handle());
 
     // Navigate the WebContents.
@@ -1802,7 +1802,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
     EXPECT_TRUE(same_tab_observer.last_navigation_succeeded());
 
     // The process should be launched now.
-    EXPECT_TRUE(process->HasConnection());
+    EXPECT_TRUE(process->IsInitializedAndNotDead());
     EXPECT_NE(base::kNullProcessHandle, process->GetProcess().Handle());
 
     // Check that the RenderProcessHost and its ID didn't change.

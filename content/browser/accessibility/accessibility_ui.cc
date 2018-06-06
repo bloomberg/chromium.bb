@@ -131,7 +131,7 @@ bool HandleAccessibilityRequestCallback(
 
   while (RenderWidgetHost* widget = widgets->GetNextHost()) {
     // Ignore processes that don't have a connection, such as crashed tabs.
-    if (!widget->GetProcess()->HasConnection())
+    if (!widget->GetProcess()->IsInitializedAndNotDead())
       continue;
     RenderViewHost* rvh = RenderViewHost::From(widget);
     if (!rvh)

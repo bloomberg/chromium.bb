@@ -1247,7 +1247,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // The original process should still be alive, since it is still used in the
   // first window.
   RenderProcessHost* orig_process = orig_site_instance->GetProcess();
-  EXPECT_TRUE(orig_process->HasConnection());
+  EXPECT_TRUE(orig_process->IsInitializedAndNotDead());
 
   // Navigate the first window to a different site as well.  The original
   // process should exit, since all of its views are now swapped out.

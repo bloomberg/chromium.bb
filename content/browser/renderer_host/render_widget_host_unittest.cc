@@ -308,7 +308,7 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
   }
   ~RenderWidgetHostProcess() override {}
 
-  bool HasConnection() const override { return true; }
+  bool IsInitializedAndNotDead() const override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostProcess);

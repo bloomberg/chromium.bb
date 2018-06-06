@@ -56,7 +56,7 @@ bool BackgroundPageWatcher::IsBackgroundPageOpen() {
     return false;
   content::RenderProcessHost* rph =
       host->host_contents()->GetMainFrame()->GetProcess();
-  return rph && rph->HasConnection();
+  return rph && rph->IsInitializedAndNotDead();
 }
 
 void BackgroundPageWatcher::OnExtensionFrameRegistered(

@@ -124,7 +124,8 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   const int process_id = process_info->process_id;
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
   // TODO(falken): This CHECK should no longer fail, so turn to a DCHECK it if
-  // crash reports agree. Consider also checking for rph->HasConnection().
+  // crash reports agree. Consider also checking for
+  // rph->IsInitializedAndNotDead().
   CHECK(rph);
 
   // Bind |request|, which is attached to |EmbeddedWorkerInstance::client_|, to

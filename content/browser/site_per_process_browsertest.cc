@@ -9752,7 +9752,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   manager1.WaitForNavigationFinished();
 
   // Make sure the process is live and at the new URL.
-  EXPECT_TRUE(b_site_instance->GetProcess()->HasConnection());
+  EXPECT_TRUE(b_site_instance->GetProcess()->IsInitializedAndNotDead());
   EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
   EXPECT_EQ(root_speculative_rfh, root->current_frame_host());
   EXPECT_EQ(new_url_1, root->current_frame_host()->GetLastCommittedURL());
@@ -9844,7 +9844,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   manager2.WaitForNavigationFinished();
 
   // Make sure the process is live and at the new URL.
-  EXPECT_TRUE(b_site_instance->GetProcess()->HasConnection());
+  EXPECT_TRUE(b_site_instance->GetProcess()->IsInitializedAndNotDead());
   ASSERT_EQ(2U, root->child_count());
   EXPECT_TRUE(child->current_frame_host()->IsRenderFrameLive());
   EXPECT_EQ(child_speculative_rfh, child->current_frame_host());
