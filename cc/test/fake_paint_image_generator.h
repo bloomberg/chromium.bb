@@ -5,7 +5,7 @@
 #ifndef CC_TEST_FAKE_PAINT_IMAGE_GENERATOR_H_
 #define CC_TEST_FAKE_PAINT_IMAGE_GENERATOR_H_
 
-#include "base/containers/flat_set.h"
+#include "base/containers/flat_map.h"
 #include "cc/paint/paint_image_generator.h"
 
 namespace cc {
@@ -31,15 +31,15 @@ class FakePaintImageGenerator : public PaintImageGenerator {
                      size_t frame_index,
                      uint32_t lazy_pixel_ref) override;
 
-  const base::flat_set<size_t>& frames_decoded() const {
-    return frames_decoded_;
+  const base::flat_map<size_t, int>& frames_decoded() const {
+    return frames_decoded_count_;
   }
-  void reset_frames_decoded() { frames_decoded_.clear(); }
+  void reset_frames_decoded() { frames_decoded_count_.clear(); }
 
  private:
   std::vector<uint8_t> image_backing_memory_;
   SkPixmap image_pixmap_;
-  base::flat_set<size_t> frames_decoded_;
+  base::flat_map<size_t, int> frames_decoded_count_;
 };
 
 }  // namespace cc

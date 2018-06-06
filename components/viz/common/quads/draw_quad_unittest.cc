@@ -459,7 +459,7 @@ TEST(DrawQuadTest, CopyPictureDrawQuad) {
 
   CREATE_QUAD_NEW(PictureDrawQuad, visible_rect, needs_blending, tex_coord_rect,
                   texture_size, nearest_neighbor, texture_format, content_rect,
-                  contents_scale, display_item_list);
+                  contents_scale, {}, display_item_list);
   EXPECT_EQ(DrawQuad::PICTURE_CONTENT, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_EQ(needs_blending, copy_quad->needs_blending);
@@ -473,7 +473,7 @@ TEST(DrawQuadTest, CopyPictureDrawQuad) {
 
   CREATE_QUAD_ALL(PictureDrawQuad, tex_coord_rect, texture_size,
                   nearest_neighbor, texture_format, content_rect,
-                  contents_scale, display_item_list);
+                  contents_scale, {}, display_item_list);
   EXPECT_EQ(DrawQuad::PICTURE_CONTENT, copy_quad->material);
   EXPECT_EQ(tex_coord_rect, copy_quad->tex_coord_rect);
   EXPECT_EQ(texture_size, copy_quad->texture_size);

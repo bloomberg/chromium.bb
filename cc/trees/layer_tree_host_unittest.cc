@@ -8260,6 +8260,28 @@ class LayerTreeHostTestImageAnimationSynchronousScheduling
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestImageAnimationSynchronousScheduling);
 
+class LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw
+    : public LayerTreeHostTestImageAnimationSynchronousScheduling {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    LayerTreeHostTestImageAnimationSynchronousScheduling::InitializeSettings(
+        settings);
+    use_software_renderer_ = true;
+  }
+
+  void AfterTest() override {
+    LayerTreeHostTestImageAnimationSynchronousScheduling::AfterTest();
+    // 3 frames decoded twice, once during tile raster and once during raster
+    // for PictureDrawQuad.
+    for (size_t i = 0u; i < 3u; ++i) {
+      EXPECT_EQ(generator_->frames_decoded().find(i)->second, 2);
+    }
+  }
+};
+
+MULTI_THREAD_TEST_F(
+    LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw);
+
 class LayerTreeHostTestImageDecodingHints : public LayerTreeHostTest {
  public:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }

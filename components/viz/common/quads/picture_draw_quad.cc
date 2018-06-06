@@ -28,6 +28,7 @@ void PictureDrawQuad::SetNew(
     ResourceFormat texture_format,
     const gfx::Rect& content_rect,
     float contents_scale,
+    ImageAnimationMap image_animation_map,
     scoped_refptr<cc::DisplayItemList> display_item_list) {
   ContentDrawQuadBase::SetNew(
       shared_quad_state, DrawQuad::PICTURE_CONTENT, rect, visible_rect,
@@ -36,6 +37,7 @@ void PictureDrawQuad::SetNew(
       nearest_neighbor, false);
   this->content_rect = content_rect;
   this->contents_scale = contents_scale;
+  this->image_animation_map = std::move(image_animation_map);
   this->display_item_list = std::move(display_item_list);
   this->texture_format = texture_format;
 }
@@ -51,6 +53,7 @@ void PictureDrawQuad::SetAll(
     ResourceFormat texture_format,
     const gfx::Rect& content_rect,
     float contents_scale,
+    ImageAnimationMap image_animation_map,
     scoped_refptr<cc::DisplayItemList> display_item_list) {
   ContentDrawQuadBase::SetAll(
       shared_quad_state, DrawQuad::PICTURE_CONTENT, rect, visible_rect,
@@ -59,6 +62,7 @@ void PictureDrawQuad::SetAll(
       nearest_neighbor, false);
   this->content_rect = content_rect;
   this->contents_scale = contents_scale;
+  this->image_animation_map = std::move(image_animation_map);
   this->display_item_list = std::move(display_item_list);
   this->texture_format = texture_format;
 }
