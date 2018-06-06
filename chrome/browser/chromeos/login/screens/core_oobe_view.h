@@ -31,7 +31,6 @@ class CoreOobeView {
   virtual void ShowPasswordChangedScreen(bool show_password_error,
                                          const std::string& email) = 0;
   virtual void SetUsageStats(bool checked) = 0;
-  virtual void SetOemEulaUrl(const std::string& oem_eula_url) = 0;
   virtual void SetTpmPassword(const std::string& tmp_password) = 0;
   virtual void ClearErrors() = 0;
   virtual void ReloadContent(const base::DictionaryValue& dictionary) = 0;

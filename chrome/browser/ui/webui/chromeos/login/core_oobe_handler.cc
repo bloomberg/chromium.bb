@@ -257,10 +257,6 @@ void CoreOobeHandler::SetUsageStats(bool checked) {
   CallJSOrDefer("setUsageStats", checked);
 }
 
-void CoreOobeHandler::SetOemEulaUrl(const std::string& oem_eula_url) {
-  CallJSOrDefer("setOemEulaUrl", oem_eula_url);
-}
-
 void CoreOobeHandler::SetTpmPassword(const std::string& tpm_password) {
   CallJSOrDefer("setTpmPassword", tpm_password);
 }

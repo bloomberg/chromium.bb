@@ -81,15 +81,12 @@ cr.define('cr.ui.Oobe', function() {
       cr.ui.Bubble.decorate($('accessibility-menu'));
       $('connect-accessibility-link')
           .addEventListener('click', Oobe.handleAccessibilityLinkClick);
-      $('eula-accessibility-link')
-          .addEventListener('click', Oobe.handleAccessibilityLinkClick);
       // Same behaviour on hitting spacebar. See crbug.com/342991.
       function reactOnSpace(event) {
         if (event.keyCode == 32)
           Oobe.handleAccessibilityLinkClick(event);
       }
       $('connect-accessibility-link').addEventListener('keyup', reactOnSpace);
-      $('eula-accessibility-link').addEventListener('keyup', reactOnSpace);
 
       $('high-contrast')
           .addEventListener('click', Oobe.handleHighContrastClick);
@@ -213,16 +210,7 @@ cr.define('cr.ui.Oobe', function() {
      * @param {boolean} checked Is the checkbox checked?
      */
     setUsageStats: function(checked) {
-      $('usage-stats').checked = checked;
       $('oobe-eula-md').usageStatsChecked = checked;
-    },
-
-    /**
-     * Set OEM EULA URL.
-     * @param {text} oemEulaUrl OEM EULA URL.
-     */
-    setOemEulaUrl: function(oemEulaUrl) {
-      $('eula').setOemEulaUrl(oemEulaUrl);
     },
 
     /**

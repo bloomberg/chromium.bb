@@ -833,8 +833,10 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 // Tests that client certificate authentication is not enabled in a webview on
 // the sign-in screen which is not the sign-in frame. In this case, the EULA
 // webview is used.
+// TODO(pmarko): This is DISABLED because the eula UI it depends on has been
+// deprecated and removed. https://crbug.com/849710.
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       ClientCertRequestedInOtherWebView) {
+                       DISABLED_ClientCertRequestedInOtherWebView) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;

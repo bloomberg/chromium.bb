@@ -213,7 +213,6 @@ extern const char kChromeUISlowHost[];
 extern const char kChromeUISlowTraceHost[];
 extern const char kChromeUISlowURL[];
 extern const char kChromeUISysInternalsHost[];
-extern const char kChromeUITermsOemURL[];
 extern const char kChromeUIUserImageHost[];
 extern const char kChromeUIUserImageURL[];
 extern const char kChromeUIAssistantOptInHost[];
