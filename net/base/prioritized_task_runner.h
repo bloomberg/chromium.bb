@@ -48,7 +48,7 @@ class NET_EXPORT_PRIVATE PrioritizedTaskRunner
   // Similar to TaskRunner::PostTaskAndReply, except that the task runs at
   // |priority|. Priority 0 is the highest priority and will run before other
   // priority values. Multiple tasks with the same |priority| value are run in
-  // order of posting.
+  // arbitrary order.
   void PostTaskAndReply(const base::Location& from_here,
                         base::OnceClosure task,
                         base::OnceClosure reply,
@@ -80,8 +80,7 @@ class NET_EXPORT_PRIVATE PrioritizedTaskRunner
     Job(const base::Location& from_here,
         base::OnceClosure task,
         base::OnceClosure reply,
-        uint32_t priority,
-        uint32_t task_count);
+        uint32_t priority);
     ~Job();
 
     Job(Job&& other);
@@ -91,7 +90,6 @@ class NET_EXPORT_PRIVATE PrioritizedTaskRunner
     base::OnceClosure task;
     base::OnceClosure reply;
     uint32_t priority;
-    uint32_t task_count;
     scoped_refptr<base::TaskRunner> reply_task_runner =
         base::ThreadTaskRunnerHandle::Get();
 
@@ -101,8 +99,6 @@ class NET_EXPORT_PRIVATE PrioritizedTaskRunner
 
   struct JobComparer {
     bool operator()(const Job& left, const Job& right) {
-      if (left.priority == right.priority)
-        return left.task_count > right.task_count;
       return left.priority > right.priority;
     }
   };
@@ -123,11 +119,6 @@ class NET_EXPORT_PRIVATE PrioritizedTaskRunner
 
   // Accessed on Job::reply_task_runner.
   scoped_refptr<base::TaskRunner> task_runner_;
-
-  // Used to preserve order of jobs of equal priority. This can overflow and
-  // cause periodic priority inversion. This should be infrequent enough to be
-  // of negligible impact.
-  uint32_t task_count_;
 
   DISALLOW_COPY_AND_ASSIGN(PrioritizedTaskRunner);
 };
