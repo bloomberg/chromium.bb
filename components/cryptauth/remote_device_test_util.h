@@ -31,6 +31,8 @@ class RemoteDeviceRefBuilder {
       const SoftwareFeatureState new_state);
   RemoteDeviceRefBuilder& SetLastUpdateTimeMillis(
       int64_t last_update_time_millis);
+  RemoteDeviceRefBuilder& SetBeaconSeeds(
+      const std::vector<BeaconSeed>& beacon_seeds);
   RemoteDeviceRef Build();
 
  private:

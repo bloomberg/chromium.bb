@@ -30,6 +30,8 @@ class FakeBleServiceDataHelper : public BleServiceDataHelper {
   void SetAdvertisement(const DeviceIdPair& device_id_pair,
                         const cryptauth::DataWithTimestamp& service_data);
 
+  void RemoveAdvertisement(const DeviceIdPair& device_id_pair);
+
   // Sets the identified device to be returned by a IdentifyRemoteDevice() call.
   void SetIdentifiedDevice(const std::string& service_data,
                            cryptauth::RemoteDeviceRef identified_device,

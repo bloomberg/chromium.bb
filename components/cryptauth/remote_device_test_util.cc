@@ -63,6 +63,12 @@ RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetLastUpdateTimeMillis(
   return *this;
 }
 
+RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetBeaconSeeds(
+    const std::vector<BeaconSeed>& beacon_seeds) {
+  remote_device_->beacon_seeds = beacon_seeds;
+  return *this;
+}
+
 RemoteDeviceRef RemoteDeviceRefBuilder::Build() {
   return RemoteDeviceRef(remote_device_);
 }

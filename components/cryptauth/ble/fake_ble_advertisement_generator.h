@@ -27,9 +27,8 @@ class FakeBleAdvertisementGenerator : public BleAdvertisementGenerator {
 
  protected:
   std::unique_ptr<DataWithTimestamp> GenerateBleAdvertisementInternal(
-      const std::string& device_id,
-      LocalDeviceDataProvider* local_device_data_provider,
-      RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher) override;
+      RemoteDeviceRef remote_device,
+      const std::string& local_device_public_key) override;
 
  private:
   std::unique_ptr<DataWithTimestamp> advertisement_;

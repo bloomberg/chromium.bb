@@ -14,7 +14,6 @@
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/raw_eid_generator.h"
 #include "components/cryptauth/raw_eid_generator_impl.h"
-#include "components/cryptauth/remote_beacon_seed_fetcher.h"
 #include "components/cryptauth/remote_device_ref.h"
 
 namespace cryptauth {
@@ -94,9 +93,8 @@ std::unique_ptr<DataWithTimestamp> BackgroundEidGenerator::GenerateEid(
 }
 
 std::string BackgroundEidGenerator::IdentifyRemoteDeviceByAdvertisement(
-    cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
     const std::string& advertisement_service_data,
-    const std::vector<std::string>& device_ids) const {
+    const RemoteDeviceRefList& remote_devices) const {
   // Resize the service data to analyze only the first |kNumBytesInEidValue|
   // bytes. If there are any bytes after those first |kNumBytesInEidValue|
   // bytes, they are flags, so they are not needed to identify the device which
@@ -104,20 +102,11 @@ std::string BackgroundEidGenerator::IdentifyRemoteDeviceByAdvertisement(
   std::string service_data_without_flags = advertisement_service_data;
   service_data_without_flags.resize(RawEidGenerator::kNumBytesInEidValue);
 
-  const auto device_id_it = std::find_if(
-      device_ids.begin(), device_ids.end(),
-      [this, remote_beacon_seed_fetcher,
-       &service_data_without_flags](auto device_id) {
-        std::vector<BeaconSeed> beacon_seeds;
-        if (!remote_beacon_seed_fetcher->FetchSeedsForDeviceId(device_id,
-                                                               &beacon_seeds)) {
-          PA_LOG(WARNING) << "Error fetching beacon seeds for device with ID "
-                          << RemoteDeviceRef::TruncateDeviceIdForLogs(
-                                 device_id);
-          return false;
-        }
-
-        std::vector<DataWithTimestamp> eids = GenerateNearestEids(beacon_seeds);
+  const auto remote_device_it = std::find_if(
+      remote_devices.begin(), remote_devices.end(),
+      [this, &service_data_without_flags](const auto& remote_device) {
+        std::vector<DataWithTimestamp> eids =
+            GenerateNearestEids(remote_device.beacon_seeds());
         const auto eid_it = std::find_if(
             eids.begin(), eids.end(), [&service_data_without_flags](auto eid) {
               return eid.data == service_data_without_flags;
@@ -127,7 +116,9 @@ std::string BackgroundEidGenerator::IdentifyRemoteDeviceByAdvertisement(
       });
 
   // Return empty string if no matching device is found.
-  return device_id_it != device_ids.end() ? *device_id_it : std::string();
+  return remote_device_it != remote_devices.end()
+             ? remote_device_it->GetDeviceId()
+             : std::string();
 }
 
 }  // cryptauth

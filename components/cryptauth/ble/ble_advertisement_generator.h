@@ -13,25 +13,24 @@
 namespace chromeos {
 namespace tether {
 class BleAdvertiserImplTest;
+class BleServiceDataHelperImplTest;
 class AdHocBleAdvertiserImplTest;
 }  // namespace tether
 }  // namespace chromeos
 
 namespace cryptauth {
 
-class LocalDeviceDataProvider;
-class RemoteBeaconSeedFetcher;
+class RemoteDeviceRef;
 
 // Generates advertisements for the ProximityAuth BLE advertisement scheme.
 class BleAdvertisementGenerator {
  public:
-  // Generates an advertisement from the current device to the device with ID
-  // |device_id|. The generated advertisement should be used immediately since
-  // it is based on the current timestamp.
+  // Generates an advertisement from the current device to |remote_device|. The
+  // generated advertisement should be used immediately since it is based on the
+  // current timestamp.
   static std::unique_ptr<DataWithTimestamp> GenerateBleAdvertisement(
-      const std::string& device_id,
-      LocalDeviceDataProvider* local_device_data_provider,
-      RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher);
+      RemoteDeviceRef remote_device,
+      const std::string& local_device_public_key);
 
   virtual ~BleAdvertisementGenerator();
 
@@ -39,13 +38,13 @@ class BleAdvertisementGenerator {
   BleAdvertisementGenerator();
 
   virtual std::unique_ptr<DataWithTimestamp> GenerateBleAdvertisementInternal(
-      const std::string& device_id,
-      LocalDeviceDataProvider* local_device_data_provider,
-      RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher);
+      RemoteDeviceRef remote_device,
+      const std::string& local_device_public_key);
 
  private:
   friend class CryptAuthBleAdvertisementGeneratorTest;
   friend class chromeos::tether::BleAdvertiserImplTest;
+  friend class chromeos::tether::BleServiceDataHelperImplTest;
   friend class chromeos::tether::AdHocBleAdvertiserImplTest;
 
   static BleAdvertisementGenerator* instance_;

@@ -25,9 +25,8 @@ class FakeBackgroundEidGenerator : public BackgroundEidGenerator {
   std::vector<DataWithTimestamp> GenerateNearestEids(
       const std::vector<BeaconSeed>& beacon_seed) const override;
   std::string IdentifyRemoteDeviceByAdvertisement(
-      cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
       const std::string& advertisement_service_data,
-      const std::vector<std::string>& device_ids) const override;
+      const RemoteDeviceRefList& remote_devices) const override;
 
   void set_nearest_eids_(
       std::unique_ptr<std::vector<DataWithTimestamp>> nearest_eids) {

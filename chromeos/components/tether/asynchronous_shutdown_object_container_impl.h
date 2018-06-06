@@ -41,6 +41,10 @@ namespace device_sync {
 class DeviceSyncClient;
 }  // namespace device_sync
 
+namespace secure_channel {
+class BleServiceDataHelper;
+}  // namespace secure_channel
+
 namespace tether {
 
 class BleAdvertisementDeviceQueue;
@@ -137,6 +141,8 @@ class AsynchronousShutdownObjectContainerImpl
       local_device_data_provider_;
   std::unique_ptr<cryptauth::RemoteBeaconSeedFetcher>
       remote_beacon_seed_fetcher_;
+  std::unique_ptr<secure_channel::BleServiceDataHelper>
+      ble_service_data_helper_;
   std::unique_ptr<BleAdvertisementDeviceQueue> ble_advertisement_device_queue_;
   std::unique_ptr<secure_channel::BleSynchronizerBase> ble_synchronizer_;
   std::unique_ptr<BleAdvertiser> ble_advertiser_;

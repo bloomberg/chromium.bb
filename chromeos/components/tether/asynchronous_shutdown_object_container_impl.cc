@@ -10,6 +10,7 @@
 #include "chromeos/components/tether/ble_connection_manager.h"
 #include "chromeos/components/tether/ble_connection_metrics_logger.h"
 #include "chromeos/components/tether/ble_scanner_impl.h"
+#include "chromeos/components/tether/ble_service_data_helper_impl.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender_impl.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/wifi_hotspot_disconnector_impl.h"
@@ -91,21 +92,24 @@ AsynchronousShutdownObjectContainerImpl::
       remote_beacon_seed_fetcher_(
           std::make_unique<cryptauth::RemoteBeaconSeedFetcher>(
               cryptauth_service->GetCryptAuthDeviceManager())),
+      ble_service_data_helper_(
+          BleServiceDataHelperImpl::Factory::Get()->BuildInstance(
+              tether_host_fetcher_,
+              local_device_data_provider_.get(),
+              device_sync_client)),
       ble_advertisement_device_queue_(
           std::make_unique<BleAdvertisementDeviceQueue>()),
       ble_synchronizer_(
           secure_channel::BleSynchronizer::Factory::Get()->BuildInstance(
               adapter)),
       ble_advertiser_(BleAdvertiserImpl::Factory::NewInstance(
-          local_device_data_provider_.get(),
-          remote_beacon_seed_fetcher_.get(),
+          ble_service_data_helper_.get(),
           ble_synchronizer_.get())),
-      ble_scanner_(BleScannerImpl::Factory::NewInstance(
-          adapter,
-          local_device_data_provider_.get(),
-          remote_beacon_seed_fetcher_.get(),
-          ble_synchronizer_.get(),
-          tether_host_fetcher_)),
+      ble_scanner_(
+          BleScannerImpl::Factory::NewInstance(adapter,
+                                               ble_service_data_helper_.get(),
+                                               ble_synchronizer_.get(),
+                                               tether_host_fetcher_)),
       ble_connection_manager_(std::make_unique<BleConnectionManager>(
           adapter,
           ble_advertisement_device_queue_.get(),
