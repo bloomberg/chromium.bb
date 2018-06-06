@@ -587,6 +587,7 @@ class MockStreamParser : public StreamParser {
            const EndMediaSegmentCB& end_of_segment_cb,
            MediaLog* media_log));
   MOCK_METHOD0(Flush, void());
+  MOCK_CONST_METHOD0(GetGenerateTimestampsFlag, bool());
   MOCK_METHOD2(Parse, bool(const uint8_t*, int));
 
  private:

@@ -136,6 +136,10 @@ void MP4StreamParser::Flush() {
   ChangeState(kParsingBoxes);
 }
 
+bool MP4StreamParser::GetGenerateTimestampsFlag() const {
+  return false;
+}
+
 bool MP4StreamParser::Parse(const uint8_t* buf, int size) {
   DCHECK_NE(state_, kWaitingForInit);
 

@@ -933,6 +933,7 @@ void SourceBufferState::OnSourceInitDone(
   DCHECK_EQ(state_, PENDING_PARSER_INIT);
   state_ = PARSER_INITIALIZED;
   auto_update_timestamp_offset_ = params.auto_update_timestamp_offset;
+  DCHECK_EQ(auto_update_timestamp_offset_, generate_timestamps_flag());
   base::ResetAndReturn(&init_cb_).Run(params);
 }
 

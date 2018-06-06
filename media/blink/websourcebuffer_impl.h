@@ -27,6 +27,7 @@ class WebSourceBufferImpl : public blink::WebSourceBuffer {
 
   // blink::WebSourceBuffer implementation.
   void SetClient(blink::WebSourceBufferClient* client) override;
+  bool GetGenerateTimestampsFlag() override;
   bool SetMode(AppendMode mode) override;
   blink::WebTimeRanges Buffered() override;
   double HighestPresentationTimestamp() override;
