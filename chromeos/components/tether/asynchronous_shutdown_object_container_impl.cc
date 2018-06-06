@@ -18,7 +18,6 @@
 #include "chromeos/services/secure_channel/ble_synchronizer.h"
 #include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/local_device_data_provider.h"
-#include "components/cryptauth/remote_beacon_seed_fetcher.h"
 
 namespace chromeos {
 
@@ -89,9 +88,6 @@ AsynchronousShutdownObjectContainerImpl::
       local_device_data_provider_(
           std::make_unique<cryptauth::LocalDeviceDataProvider>(
               cryptauth_service)),
-      remote_beacon_seed_fetcher_(
-          std::make_unique<cryptauth::RemoteBeaconSeedFetcher>(
-              cryptauth_service->GetCryptAuthDeviceManager())),
       ble_service_data_helper_(
           BleServiceDataHelperImpl::Factory::Get()->BuildInstance(
               tether_host_fetcher_,

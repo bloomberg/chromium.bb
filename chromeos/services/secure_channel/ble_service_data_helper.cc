@@ -34,7 +34,7 @@ BleServiceDataHelper::IdentifyRemoteDevice(
   }
 
   PA_LOG(ERROR) << "BleServiceDataHelper::IdentifyRemoteDevice(): Identified "
-                << "device was not present in the provided DeviceIdPairSet.";
+                   "device was not present in the provided DeviceIdPairSet.";
   NOTREACHED();
   return base::nullopt;
 }

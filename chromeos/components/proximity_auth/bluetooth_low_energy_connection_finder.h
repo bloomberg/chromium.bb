@@ -17,7 +17,6 @@
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/connection_observer.h"
-#include "components/cryptauth/remote_beacon_seed_fetcher.h"
 #include "components/cryptauth/remote_device_ref.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
