@@ -37,8 +37,11 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
   // Return the bounds of the bubble in the screen.
   gfx::Rect GetBoundsInScreen() const;
 
-  // Activates the system tray bubble.
+  // Activate the system tray bubble.
   void ActivateBubble();
+
+  // Close the bubble immediately.
+  void CloseNow();
 
   // TrayBubbleBase:
   TrayBackgroundView* GetTray() const override;
