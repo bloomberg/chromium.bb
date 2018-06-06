@@ -377,8 +377,12 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
   EXPECT_EQ(1, target_fetch_count);
   EXPECT_TRUE(CheckPrefetchURLLoaderCountIfSupported(1));
 
-  // Test after this point requires SignedHTTPExchange support.
-  if (!base::FeatureList::IsEnabled(features::kSignedHTTPExchange))
+  // Test after this point requires SignedHTTPExchange support, which is now
+  // disabled when Network Service is enabled.
+  // TODO(https://crbug.com/849935): Remove the second condition once we
+  // re-enable Signed Exchange with Network Service.
+  if (!base::FeatureList::IsEnabled(features::kSignedHTTPExchange) ||
+      base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
 
   // If the header in the .htxg file is correctly extracted, we should

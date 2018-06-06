@@ -69,27 +69,17 @@ class NavigationFailureObserver : public WebContentsObserver {
 
 }  // namespace
 
-class WebPackageRequestHandlerBrowserTest
-    : public ContentBrowserTest,
-      public testing::WithParamInterface<bool> {
+class WebPackageRequestHandlerBrowserTest : public ContentBrowserTest {
  public:
   WebPackageRequestHandlerBrowserTest()
       : mock_cert_verifier_(std::make_unique<net::MockCertVerifier>()){};
-  ~WebPackageRequestHandlerBrowserTest() = default;
 
   void SetUp() override {
     SignedExchangeHandler::SetCertVerifierForTesting(mock_cert_verifier_.get());
     SignedExchangeHandler::SetVerificationTimeForTesting(
         base::Time::UnixEpoch() +
         base::TimeDelta::FromSeconds(kSignatureHeaderDate));
-
-    if (is_network_service_enabled()) {
-      feature_list_.InitWithFeatures(
-          {features::kSignedHTTPExchange, network::features::kNetworkService},
-          {});
-    } else {
-      feature_list_.InitWithFeatures({features::kSignedHTTPExchange}, {});
-    }
+    SetUpFeatures();
     ContentBrowserTest::SetUp();
   }
 
@@ -101,6 +91,11 @@ class WebPackageRequestHandlerBrowserTest
   }
 
  protected:
+  virtual void SetUpFeatures() {
+    feature_list_.InitWithFeatures({features::kSignedHTTPExchange},
+                                   {network::features::kNetworkService});
+  }
+
   static scoped_refptr<net::X509Certificate> LoadCertificate(
       const std::string& cert_file) {
     base::ScopedAllowBlockingForTesting allow_io;
@@ -125,6 +120,7 @@ class WebPackageRequestHandlerBrowserTest
     }
   }
 
+  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<net::MockCertVerifier> mock_cert_verifier_;
 
  private:
@@ -147,17 +143,22 @@ class WebPackageRequestHandlerBrowserTest
     return true;
   }
 
-  bool is_network_service_enabled() const { return GetParam(); }
-
-  base::test::ScopedFeatureList feature_list_;
-
   std::unique_ptr<URLLoaderInterceptor> interceptor_;
   std::map<GURL, std::string> interceptor_data_path_map_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPackageRequestHandlerBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, Simple) {
+class WebPackageRequestHandlerWithNetworkServiceBrowserTest
+    : public WebPackageRequestHandlerBrowserTest {
+  void SetUpFeatures() override {
+    feature_list_.InitWithFeatures(
+        {features::kSignedHTTPExchange, network::features::kNetworkService},
+        {});
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WebPackageRequestHandlerBrowserTest, Simple) {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
       "content/test/data/htxg/wildcard_example.org.public.pem.cbor");
@@ -208,7 +209,7 @@ IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, Simple) {
   EXPECT_EQ(original_fingerprint, fingerprint);
 }
 
-IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebPackageRequestHandlerBrowserTest,
                        InvalidContentType) {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
@@ -239,7 +240,7 @@ IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest,
   EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
 }
 
-IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, CertNotFound) {
+IN_PROC_BROWSER_TEST_F(WebPackageRequestHandlerBrowserTest, CertNotFound) {
   InstallUrlInterceptor(GURL("https://cert.example.org/cert.msg"),
                         "content/test/data/htxg/404.msg");
 
@@ -255,8 +256,34 @@ IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, CertNotFound) {
   EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
 }
 
-INSTANTIATE_TEST_CASE_P(WebPackageRequestHandlerBrowserTest,
-                        WebPackageRequestHandlerBrowserTest,
-                        testing::Bool());
+IN_PROC_BROWSER_TEST_F(WebPackageRequestHandlerWithNetworkServiceBrowserTest,
+                       NetworkServiceEnabled) {
+  InstallUrlInterceptor(
+      GURL("https://cert.example.org/cert.msg"),
+      "content/test/data/htxg/wildcard_example.org.public.pem.cbor");
+
+  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
+  // "*.example.org".
+  scoped_refptr<net::X509Certificate> original_cert =
+      LoadCertificate("wildcard.pem");
+  net::CertVerifyResult dummy_result;
+  dummy_result.verified_cert = original_cert;
+  dummy_result.cert_status = net::OK;
+  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
+  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
+  mock_cert_verifier_->AddResultForCertAndHost(original_cert, "*.example.org",
+                                               dummy_result, net::OK);
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/htxg/test.example.org_test.htxg");
+
+  NavigationFailureObserver failure_observer(shell()->web_contents());
+  NavigateToURL(shell(), url);
+  EXPECT_TRUE(failure_observer.did_fail());
+  NavigationEntry* entry =
+      shell()->web_contents()->GetController().GetVisibleEntry();
+  EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+}
 
 }  // namespace content

@@ -125,6 +125,25 @@ WebPackageLoader::WebPackageLoader(
     return;
   }
 
+  // TODO(https://crbug.com/849935): Remove this once we have Network Service
+  // friendly cert, OCSP, and CT verification.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    devtools_proxy_->ReportError(
+        "Currently, signed exchange does not work when "
+        "chrome://flags/#network-service is enabled. "
+        "See http://crbug.com/849935 for details.",
+        base::nullopt /* error_field */);
+    // Calls OnSignedExchangeReceived() to show the outer response in DevTool's
+    // Network panel and the error message in the Preview panel.
+    devtools_proxy_->OnSignedExchangeReceived(base::nullopt /* header */,
+                                              nullptr /* certificate */,
+                                              nullptr /* ssl_info */);
+    // This will asynchronously delete |this|.
+    forwarding_client_->OnComplete(
+        network::URLLoaderCompletionStatus(net::ERR_INVALID_SIGNED_EXCHANGE));
+    return;
+  }
+
   // Can't use HttpResponseHeaders::GetMimeType() because SignedExchangeHandler
   // checks "v=" parameter.
   outer_response.headers->EnumerateHeader(nullptr, "content-type",
