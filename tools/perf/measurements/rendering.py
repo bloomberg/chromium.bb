@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from tracing.metrics import metric_runner
+
 from telemetry.page import legacy_page_test
 from telemetry.timeline import model as model_module
 from telemetry.value import trace
@@ -55,6 +57,8 @@ class Rendering(legacy_page_test.LegacyPageTest):
 
   def ValidateAndMeasurePage(self, _, tab, results):
     self._results = results
+    tab.browser.platform.tracing_controller.telemetry_info = (
+        results.telemetry_info)
     trace_result = tab.browser.platform.tracing_controller.StopTracing()
 
     # TODO(charliea): This is part of a three-sided Chromium/Telemetry patch
@@ -81,6 +85,18 @@ class Rendering(legacy_page_test.LegacyPageTest):
 
     thread_times_metric = timeline.ThreadTimesTimelineMetric()
     thread_times_metric.AddResults(model, renderer_thread, records, results)
+
+    # TBMv2 metrics.
+    mre_result = metric_runner.RunMetric(
+        trace_value.filename, metrics=['renderingMetric'],
+        extra_import_options={'trackDetailedModelStats': True},
+        report_progress=False, canonical_url=results.telemetry_info.trace_url)
+
+    for f in mre_result.failures:
+      results.Fail(f.stack)
+
+    results.ImportHistogramDicts(mre_result.pairs.get('histograms', []),
+                                 import_immediately=False)
 
   def DidRunPage(self, platform):
     if platform.tracing_controller.is_tracing_running:
