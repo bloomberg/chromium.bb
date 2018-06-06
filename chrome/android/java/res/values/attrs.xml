@@ -49,6 +49,8 @@
 
     <declare-styleable name="BoundedView">
         <attr name="maxWidth" format="dimension" />
+        <attr name="maxWidthLandscape" format="dimension" />
+        <attr name="maxWidthPortrait" format="dimension" />
         <attr name="maxHeight" format="dimension" />
     </declare-styleable>
 

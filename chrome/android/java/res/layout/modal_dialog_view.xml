@@ -10,7 +10,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    chrome:maxWidth="@dimen/dialog_max_width">
+    chrome:maxWidthLandscape="@dimen/abc_dialog_min_width_major"
+    chrome:maxWidthPortrait="@dimen/abc_dialog_min_width_minor" >
 
     <android.support.v7.widget.DialogTitle
         android:id="@+id/title"
