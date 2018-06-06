@@ -4,7 +4,9 @@
 
 ## Introduction
 
-These are instructions for collecting a CPU profile of chromium. All of the profiling methods described here produce output that can be view using the `pprof` tool. `pprof` is highly customizable; here's a [screenshot](./media/profile-screenshot.png) of some example `pprof` output.
+These are instructions for collecting a CPU profile of chromium. All of the profiling methods described here produce output that can be view using the `pprof` tool. `pprof` is highly customizable; here's a screenshot of some example `pprof` output:
+
+![pprof output screenshot](./media/profile-screenshot.png)
 
 This doc is intended to be an authoritative one-stop resource for profiling chromium. At the time of writing, there are a number of existing docs with profiling instructions, in varying states of obsolescence:
 
