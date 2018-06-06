@@ -8,14 +8,14 @@
 
 namespace blink {
 
-void ThreadHeapStatsCollector::IncreaseMarkedObjectSize(size_t size) {
+void ThreadHeapStatsCollector::IncreaseMarkedObjectSize(size_t bytes) {
   DCHECK(is_started_);
-  current_.marked_object_size += size;
+  current_.marked_bytes += bytes;
 }
 
-void ThreadHeapStatsCollector::IncreaseCompactionFreedSize(size_t size) {
+void ThreadHeapStatsCollector::IncreaseCompactionFreedSize(size_t bytes) {
   DCHECK(is_started_);
-  current_.compaction_freed_bytes += size;
+  current_.compaction_freed_bytes += bytes;
 }
 
 void ThreadHeapStatsCollector::IncreaseCompactionFreedPages(size_t pages) {
@@ -23,28 +23,64 @@ void ThreadHeapStatsCollector::IncreaseCompactionFreedPages(size_t pages) {
   current_.compaction_freed_pages += pages;
 }
 
-void ThreadHeapStatsCollector::Start(BlinkGC::GCReason reason) {
+void ThreadHeapStatsCollector::IncreaseAllocatedObjectSize(size_t bytes) {
+  // The current GC may not have been started. This is ok as recording considers
+  // the whole time range between garbage collections.
+  allocated_bytes_since_prev_gc_ += bytes;
+}
+
+void ThreadHeapStatsCollector::DecreaseAllocatedObjectSize(size_t bytes) {
+  // See IncreaseAllocatedObjectSize.
+  allocated_bytes_since_prev_gc_ -= bytes;
+}
+
+void ThreadHeapStatsCollector::NotifyMarkingStarted(BlinkGC::GCReason reason) {
   DCHECK(!is_started_);
+  DCHECK_EQ(0.0, current_.marking_time_in_ms());
   is_started_ = true;
   current_.reason = reason;
 }
 
-void ThreadHeapStatsCollector::Stop() {
+void ThreadHeapStatsCollector::NotifyMarkingCompleted() {
+  current_.object_size_in_bytes_before_sweeping = object_size_in_bytes();
+  allocated_bytes_since_prev_gc_ = 0;
+}
+
+void ThreadHeapStatsCollector::NotifySweepingCompleted() {
   is_started_ = false;
+  current_.live_object_rate =
+      current_.object_size_in_bytes_before_sweeping
+          ? static_cast<double>(current().marked_bytes) /
+                current_.object_size_in_bytes_before_sweeping
+          : 0.0;
   previous_ = std::move(current_);
-  current_.reset();
+
+  // Reset the current state.
+  current_.compaction_freed_pages = 0;
+  current_.compaction_freed_bytes = 0;
+  current_.marked_bytes = 0;
+  current_.live_object_rate = 0.0;
+  memset(current_.scope_data, 0, sizeof(current_.scope_data));
+  current_.reason = BlinkGC::kTesting;
 }
 
 void ThreadHeapStatsCollector::UpdateReason(BlinkGC::GCReason reason) {
   current_.reason = reason;
 }
 
-void ThreadHeapStatsCollector::Event::reset() {
-  marked_object_size = 0;
-  compaction_freed_pages = 0;
-  compaction_freed_bytes = 0;
-  memset(scope_data, 0, sizeof(scope_data));
-  reason = BlinkGC::kTesting;
+size_t ThreadHeapStatsCollector::object_size_in_bytes() const {
+  return previous().marked_bytes + allocated_bytes_since_prev_gc_;
+}
+
+double ThreadHeapStatsCollector::estimated_marking_time_in_seconds() const {
+  // Assume 8ms time for an initial heap. 8 ms is long enough for low-end mobile
+  // devices to mark common real-world object graphs.
+  constexpr double kInitialMarkingTimeInSeconds = 0.008;
+
+  const double prev_marking_speed =
+      previous().marking_time_in_bytes_per_second();
+  return prev_marking_speed ? prev_marking_speed * object_size_in_bytes()
+                            : kInitialMarkingTimeInSeconds;
 }
 
 double ThreadHeapStatsCollector::Event::marking_time_in_ms() const {
@@ -54,14 +90,18 @@ double ThreadHeapStatsCollector::Event::marking_time_in_ms() const {
          scope_data[kAtomicPhaseMarking];
 }
 
-double ThreadHeapStatsCollector::Event::marking_time_per_byte_in_s() const {
-  return marked_object_size ? marking_time_in_ms() / 1000 / marked_object_size
-                            : 0.0;
+double ThreadHeapStatsCollector::Event::marking_time_in_bytes_per_second()
+    const {
+  return marked_bytes ? marking_time_in_ms() / 1000 / marked_bytes : 0.0;
 }
 
 double ThreadHeapStatsCollector::Event::sweeping_time_in_ms() const {
   return scope_data[kCompleteSweep] + scope_data[kEagerSweep] +
          scope_data[kLazySweepInIdle] + scope_data[kLazySweepOnAllocation];
+}
+
+size_t ThreadHeapStatsCollector::allocated_bytes_since_prev_gc() const {
+  return allocated_bytes_since_prev_gc_;
 }
 
 }  // namespace blink

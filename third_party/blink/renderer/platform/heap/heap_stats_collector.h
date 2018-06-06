@@ -18,10 +18,9 @@ namespace blink {
 //
 // Usage:
 //   ThreadHeapStatsCollector stats_collector;
-//   stats_collector.Start(<BlinkGC::GCReason>);
+//   stats_collector.NotifyMarkingStarted(<BlinkGC::GCReason>);
 //   // Use tracer.
-//   // Current event is available using stats_collector.current().
-//   stats_collector.Stop();
+//   stats_collector.NotifySweepingFinished();
 //   // Previous event is available using stats_collector.previous().
 class PLATFORM_EXPORT ThreadHeapStatsCollector {
  public:
@@ -128,7 +127,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     }
 
    private:
-    static const char* TraceCategory() {
+    constexpr static const char* TraceCategory() {
       return default_behavior == kEnabled
                  ? "blink_gc"
                  : TRACE_DISABLED_BY_DEFAULT("blink_gc");
@@ -154,22 +153,35 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   using Scope = InternalScope<kDisabled>;
   using EnabledScope = InternalScope<kEnabled>;
 
+  // POD to hold interesting data accumulated during a garbage collection cycle.
+  // The event is always fully polulated when looking at previous events but
+  // is only be partially populated when looking at the current event. See
+  // members on when they are available.
   struct PLATFORM_EXPORT Event {
-    void reset();
-
     double marking_time_in_ms() const;
-    double marking_time_per_byte_in_s() const;
+    double marking_time_in_bytes_per_second() const;
     double sweeping_time_in_ms() const;
 
-    size_t marked_object_size = 0;
+    // Marked bytes collected during sweeping.
+    size_t marked_bytes = 0;
     size_t compaction_freed_bytes = 0;
     size_t compaction_freed_pages = 0;
     double scope_data[kNumScopeIds] = {0};
     BlinkGC::GCReason reason;
+    size_t object_size_in_bytes_before_sweeping = 0;
+    double live_object_rate = 0;
   };
 
-  void Start(BlinkGC::GCReason);
-  void Stop();
+  // Indicates a new garbage collection cycle.
+  void NotifyMarkingStarted(BlinkGC::GCReason);
+
+  // Indicates that marking of the current garbage collection cycle is
+  // completed.
+  void NotifyMarkingCompleted();
+
+  // Indicates the end of a garbage collection cycle. This means that sweeping
+  // is finished at this point.
+  void NotifySweepingCompleted();
 
   void IncreaseScopeTime(Id id, double time) {
     DCHECK(is_started_);
@@ -180,15 +192,43 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   void IncreaseMarkedObjectSize(size_t);
   void IncreaseCompactionFreedSize(size_t);
   void IncreaseCompactionFreedPages(size_t);
+  void IncreaseAllocatedObjectSize(size_t);
+  void DecreaseAllocatedObjectSize(size_t);
+
+  // Size of objects on the heap. Based on marked bytes in the previous cycle
+  // and newly allocated bytes since the previous cycle.
+  size_t object_size_in_bytes() const;
+
+  // Estimated marking time in seconds. Based on marked bytes and mark speed in
+  // the previous cycle assuming that the collection rate of the current cycle
+  // is similar to the rate of the last GC.
+  double estimated_marking_time_in_seconds() const;
+
+  size_t allocated_bytes_since_prev_gc() const;
 
   bool is_started() const { return is_started_; }
-  const Event& current() const { return current_; }
+
+  // Statistics for the previously running garbage collection.
   const Event& previous() const { return previous_; }
 
  private:
+  // Statistics for the currently running garbage collection. Note that the
+  // Event may not be fully populated yet as some phase may not have been run.
+  const Event& current() const { return current_; }
+
   Event current_;
   Event previous_;
+
+  // Allocated bytes since the last garbage collection. These bytes are reset
+  // after marking as they should be accounted in marked_bytes then (which are
+  // only available after sweeping though).
+  size_t allocated_bytes_since_prev_gc_ = 0;
+
   bool is_started_ = false;
+
+  FRIEND_TEST_ALL_PREFIXES(ThreadHeapStatsCollectorTest, InitialEmpty);
+  FRIEND_TEST_ALL_PREFIXES(ThreadHeapStatsCollectorTest, IncreaseScopeTime);
+  FRIEND_TEST_ALL_PREFIXES(ThreadHeapStatsCollectorTest, StopResetsCurrent);
 };
 
 }  // namespace blink
