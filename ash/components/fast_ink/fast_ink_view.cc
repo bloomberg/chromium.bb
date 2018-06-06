@@ -221,12 +221,11 @@ class FastInkView::LayerTreeFrameSinkHolder
     if (view_)
       view_->DidReceiveCompositorFrameAck();
   }
-  void DidPresentCompositorFrame(uint32_t presentation_token,
-                                 base::TimeTicks time,
-                                 base::TimeDelta refresh,
-                                 uint32_t flags) override {
+  void DidPresentCompositorFrame(
+      uint32_t presentation_token,
+      const gfx::PresentationFeedback& feedback) override {
     if (view_)
-      view_->DidPresentCompositorFrame(time, refresh, flags);
+      view_->DidPresentCompositorFrame(feedback);
   }
   void DidDiscardCompositorFrame(uint32_t presentation_token) override {}
   void DidLoseLayerTreeFrameSink() override {
@@ -531,11 +530,10 @@ void FastInkView::DidReceiveCompositorFrameAck() {
   }
 }
 
-void FastInkView::DidPresentCompositorFrame(base::TimeTicks time,
-                                            base::TimeDelta refresh,
-                                            uint32_t flags) {
+void FastInkView::DidPresentCompositorFrame(
+    const gfx::PresentationFeedback& feedback) {
   DCHECK(!presentation_callback_.is_null());
-  presentation_callback_.Run(time, refresh, flags);
+  presentation_callback_.Run(feedback);
 }
 
 void FastInkView::ReclaimResource(std::unique_ptr<Resource> resource) {

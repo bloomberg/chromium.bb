@@ -26,6 +26,7 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/presentation_feedback.h"
 
 namespace exo {
 
@@ -132,7 +133,7 @@ void SurfaceTreeHost::SetRootSurface(Surface* root_surface) {
     DCHECK(presentation_callbacks_.empty());
     for (auto entry : active_presentation_callbacks_) {
       while (!entry.second.empty()) {
-        entry.second.front().Run(base::TimeTicks(), base::TimeDelta(), 0);
+        entry.second.front().Run(gfx::PresentationFeedback());
         entry.second.pop_front();
       }
     }
@@ -163,20 +164,18 @@ void SurfaceTreeHost::DidReceiveCompositorFrameAck() {
   UpdateNeedsBeginFrame();
 }
 
-void SurfaceTreeHost::DidPresentCompositorFrame(uint32_t presentation_token,
-                                                base::TimeTicks time,
-                                                base::TimeDelta refresh,
-                                                uint32_t flags) {
+void SurfaceTreeHost::DidPresentCompositorFrame(
+    uint32_t presentation_token,
+    const gfx::PresentationFeedback& feedback) {
   auto it = active_presentation_callbacks_.find(presentation_token);
   DCHECK(it != active_presentation_callbacks_.end());
   for (auto callback : it->second)
-    callback.Run(time, refresh, flags);
+    callback.Run(feedback);
   active_presentation_callbacks_.erase(it);
 }
 
 void SurfaceTreeHost::DidDiscardCompositorFrame(uint32_t presentation_token) {
-  DidPresentCompositorFrame(presentation_token, base::TimeTicks(),
-                            base::TimeDelta(), 0);
+  DidPresentCompositorFrame(presentation_token, gfx::PresentationFeedback());
 }
 
 void SurfaceTreeHost::SetBeginFrameSource(

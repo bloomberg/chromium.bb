@@ -55,9 +55,7 @@ class CC_EXPORT ProxyMain : public Proxy {
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
-      base::TimeTicks time,
-      base::TimeDelta refresh,
-      uint32_t flags);
+      const gfx::PresentationFeedback& feedback);
 
   CommitPipelineStage max_requested_pipeline_stage() const {
     return max_requested_pipeline_stage_;

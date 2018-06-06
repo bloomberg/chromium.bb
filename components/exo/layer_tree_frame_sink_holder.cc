@@ -153,12 +153,9 @@ void LayerTreeFrameSinkHolder::DidReceiveCompositorFrameAck() {
 
 void LayerTreeFrameSinkHolder::DidPresentCompositorFrame(
     uint32_t presentation_token,
-    base::TimeTicks time,
-    base::TimeDelta refresh,
-    uint32_t flags) {
+    const gfx::PresentationFeedback& feedback) {
   if (surface_tree_host_)
-    surface_tree_host_->DidPresentCompositorFrame(presentation_token, time,
-                                                  refresh, flags);
+    surface_tree_host_->DidPresentCompositorFrame(presentation_token, feedback);
 }
 
 void LayerTreeFrameSinkHolder::DidDiscardCompositorFrame(

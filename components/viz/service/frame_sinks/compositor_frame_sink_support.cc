@@ -352,8 +352,8 @@ CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
       ReturnResources(resources);
       DidReceiveCompositorFrameAck();
       if (frame.metadata.request_presentation_feedback) {
-        DidPresentCompositorFrame(frame.metadata.frame_token, base::TimeTicks(),
-                                  base::TimeDelta(), 0);
+        DidPresentCompositorFrame(frame.metadata.frame_token,
+                                  gfx::PresentationFeedback());
       }
       return SURFACE_INVARIANTS_VIOLATION;
     }
@@ -470,17 +470,14 @@ void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
 
 void CompositorFrameSinkSupport::DidPresentCompositorFrame(
     uint32_t presentation_token,
-    base::TimeTicks time,
-    base::TimeDelta refresh,
-    uint32_t flags) {
+    const gfx::PresentationFeedback& feedback) {
   DCHECK(presentation_token);
   if (client_) {
-    if (time != base::TimeTicks()) {
-      client_->DidPresentCompositorFrame(presentation_token, time, refresh,
-                                         flags);
-    } else {
+    bool presented = !feedback.timestamp.is_null();
+    if (presented)
+      client_->DidPresentCompositorFrame(presentation_token, feedback);
+    else
       client_->DidDiscardCompositorFrame(presentation_token);
-    }
   }
 }
 

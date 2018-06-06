@@ -31,6 +31,10 @@ namespace cc {
 class CopyOutputRequest;
 }
 
+namespace gfx {
+struct PresentationFeedback;
+}
+
 namespace ui {
 class LatencyInfo;
 }
@@ -76,7 +80,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
                                    const gfx::Rect& damage_rect,
                                    base::TimeTicks expected_display_time)>;
   using PresentedCallback =
-      base::OnceCallback<void(base::TimeTicks, base::TimeDelta, uint32_t)>;
+      base::OnceCallback<void(const gfx::PresentationFeedback&)>;
 
   Surface(const SurfaceInfo& surface_info,
           SurfaceManager* surface_manager,

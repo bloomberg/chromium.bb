@@ -56,9 +56,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
   // Call this to indicate that the CompositorFrame with given
   // |presentation_token| has been first time presented to user.
   void DidPresentCompositorFrame(uint32_t presentation_token,
-                                 base::TimeTicks time,
-                                 base::TimeDelta refresh,
-                                 uint32_t flags);
+                                 const gfx::PresentationFeedback& feedback);
 
   // Call this to indicate that the CompositorFrame with given
   // |presentation_token| has been discard. It has not been and will not be

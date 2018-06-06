@@ -14,6 +14,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
+namespace gfx {
+struct PresentationFeedback;
+}
+
 namespace cursor {
 
 // CursorView class can be used to display a cursor image with minimal
@@ -44,9 +48,7 @@ class CursorView : public fast_ink::FastInkView,
   void SetActiveOnPaintThread(bool active);
   void SetTimebaseAndIntervalOnPaintThread(base::TimeTicks timebase,
                                            base::TimeDelta interval);
-  void DidPresentCompositorFrame(base::TimeTicks time,
-                                 base::TimeDelta refresh,
-                                 uint32_t flags);
+  void DidPresentCompositorFrame(const gfx::PresentationFeedback& feedback);
 
   // Constants that can be used on any thread.
   const bool is_motion_blur_enabled_;

@@ -60,10 +60,9 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
   // viz::mojom::blink::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const WTF::Vector<viz::ReturnedResource>& resources) final;
-  void DidPresentCompositorFrame(uint32_t presentation_token,
-                                 mojo_base::mojom::blink::TimeTicksPtr,
-                                 WTF::TimeDelta refresh,
-                                 uint32_t flags) final;
+  void DidPresentCompositorFrame(
+      uint32_t presentation_token,
+      ::gfx::mojom::blink::PresentationFeedbackPtr feedback) final;
   void DidDiscardCompositorFrame(uint32_t presentation_token) final;
   void OnBeginFrame(const viz::BeginFrameArgs&) final;
   void OnBeginFramePausedChanged(bool paused) final{};

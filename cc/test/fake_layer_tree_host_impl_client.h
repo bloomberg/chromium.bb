@@ -41,9 +41,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void DidPresentCompositorFrameOnImplThread(
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
-      base::TimeTicks time,
-      base::TimeDelta refresh,
-      uint32_t flags) override {}
+      const gfx::PresentationFeedback& feedback) override {}
 
   void reset_did_request_impl_side_invalidation() {
     did_request_impl_side_invalidation_ = false;

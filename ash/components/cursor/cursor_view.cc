@@ -9,6 +9,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "ui/aura/window.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/widget/widget.h"
 
@@ -324,16 +325,16 @@ void CursorView::SetTimebaseAndIntervalOnPaintThread(base::TimeTicks timebase,
       timebase + base::TimeDelta::FromMilliseconds(kVSyncOffsetMs), interval);
 }
 
-void CursorView::DidPresentCompositorFrame(base::TimeTicks time,
-                                           base::TimeDelta refresh,
-                                           uint32_t flags) {
+void CursorView::DidPresentCompositorFrame(
+    const gfx::PresentationFeedback& feedback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(ui_sequence_checker_);
 
   // Unretained is safe as |paint_task_runner_| uses SKIP_ON_SHUTDOWN.
   paint_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&CursorView::SetTimebaseAndIntervalOnPaintThread,
-                     base::Unretained(this), time, refresh));
+                     base::Unretained(this), feedback.timestamp,
+                     feedback.interval));
 }
 
 }  // namespace cursor

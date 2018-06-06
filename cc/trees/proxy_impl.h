@@ -103,9 +103,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   void DidPresentCompositorFrameOnImplThread(
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
-      base::TimeTicks time,
-      base::TimeDelta refresh,
-      uint32_t flags) override;
+      const gfx::PresentationFeedback& feedback) override;
 
   // SchedulerClient implementation
   bool WillBeginImplFrame(const viz::BeginFrameArgs& args) override;

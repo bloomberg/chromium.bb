@@ -63,7 +63,7 @@ Display::Display(
 Display::~Display() {
   for (auto& callback_list : pending_presented_callbacks_) {
     for (auto& callback : callback_list)
-      std::move(callback).Run(base::TimeTicks(), base::TimeDelta(), 0);
+      std::move(callback).Run(gfx::PresentationFeedback());
   }
 
   // Only do this if Initialize() happened.
@@ -457,8 +457,7 @@ void Display::DidReceivePresentationFeedback(
   DCHECK(!pending_presented_callbacks_.empty());
   auto& callbacks = pending_presented_callbacks_.front();
   for (auto& callback : callbacks) {
-    std::move(callback).Run(feedback.timestamp, feedback.interval,
-                            feedback.flags);
+    std::move(callback).Run(feedback);
   }
   pending_presented_callbacks_.pop_front();
 }

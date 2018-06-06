@@ -48,6 +48,10 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace gfx {
+struct PresentationFeedback;
+}
+
 namespace cc {
 class HeadsUpDisplayLayer;
 class Layer;
@@ -242,7 +246,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // to the screen (it's entirely possible some frames may be dropped between
   // the time this is called and the callback is run).
   using PresentationTimeCallback =
-      base::OnceCallback<void(base::TimeTicks, base::TimeDelta, uint32_t)>;
+      base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   void RequestPresentationTimeForNextFrame(PresentationTimeCallback callback);
 
   void SetRootLayer(scoped_refptr<Layer> root_layer);
@@ -457,9 +461,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
-      base::TimeTicks time,
-      base::TimeDelta refresh,
-      uint32_t flags);
+      const gfx::PresentationFeedback& feedback);
   // Called when the compositor completed page scale animation.
   void DidCompletePageScaleAnimation();
   void ApplyScrollAndScale(ScrollAndScaleSet* info);
