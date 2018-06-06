@@ -1678,10 +1678,6 @@ void MediaControlsImpl::OnExitedFullscreen() {
   StartHideMediaControlsTimer();
 }
 
-void MediaControlsImpl::OnPictureInPictureChanged() {
-  picture_in_picture_button_->UpdateDisplayType();
-}
-
 void MediaControlsImpl::OnPanelKeypress() {
   // If the user is interacting with the controls via the keyboard, don't hide
   // the controls. This is called when the user mutes/unmutes, turns CC on/off,

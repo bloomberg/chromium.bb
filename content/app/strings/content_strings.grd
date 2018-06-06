@@ -660,14 +660,6 @@ below:
         exit full screen
       </message>
 
-      <message name="IDS_AX_MEDIA_ENTER_PICTURE_IN_PICTURE_BUTTON" desc="Accessibility role description for enter Picture-in-Picture button">
-        enter picture-in-picture
-      </message>
-
-      <message name="IDS_AX_MEDIA_EXIT_PICTURE_IN_PICTURE_BUTTON" desc="Accessibility role description for exit Picture-in-Picture button">
-        exit picture-in-picture
-      </message>
-
       <message name="IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_BUTTON" desc="Accessibility role description for show closed captions button">
         show closed captions
       </message>
@@ -738,14 +730,6 @@ below:
 
       <message name="IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON_HELP" desc="Accessibility help description for exit fullscreen button">
         exit full screen
-      </message>
-
-      <message name="IDS_AX_MEDIA_ENTER_PICTURE_IN_PICTURE_BUTTON_HELP" desc="Accessibility help description for enter Picture-in-Picture button">
-        play video in picture-in-picture mode
-      </message>
-
-      <message name="IDS_AX_MEDIA_EXIT_PICTURE_IN_PICTURE_BUTTON_HELP" desc="Accessibility help description for exit Picture-in-Picture button">
-        exit picture-in-picture
       </message>
 
       <message name="IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_BUTTON_HELP" desc="Accessibility help description for show closed captions button">
@@ -954,11 +938,8 @@ below:
       <message name="IDS_MEDIA_OVERFLOW_MENU_DOWNLOAD" desc="Media controls overflow menu item label for a download button.">
        Download
       </message>
-      <message name="IDS_MEDIA_OVERFLOW_MENU_ENTER_PICTURE_IN_PICTURE" desc="Media controls overflow menu item label for a button to enter Picture-in-Picture.">
+      <message name="IDS_MEDIA_OVERFLOW_MENU_PICTURE_IN_PICTURE" desc="Media controls overflow menu item label for a picture-in-picture button.">
         Picture-in-Picture
-      </message>
-      <message name="IDS_MEDIA_OVERFLOW_MENU_EXIT_PICTURE_IN_PICTURE" desc="Media controls overflow menu item label for a button to exit Picture-in-Picture.">
-        Exit Picture-in-Picture
       </message>
       <message name="IDS_MEDIA_PICTURE_IN_PICTURE_INTERSTITIAL_TEXT" desc="Text message shown to user when in picture in picture mode. When a video is in picture in picture mode, an interstitial with this text appears where the video player is positioned. The video continues to play back in another window that gives the experience that the video is 'popped out'.">
         This video is playing in Picture-in-Picture

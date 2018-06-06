@@ -40,13 +40,9 @@ class CORE_EXPORT PictureInPictureController
     kDisabledByAttribute,
   };
 
-  // Enter Picture-in-Picture for a video element and resolve promise if any.
+  // Enter Picture-in-Picture for a video element and resolve promise.
   virtual void EnterPictureInPicture(HTMLVideoElement*,
                                      ScriptPromiseResolver*) = 0;
-
-  // Exit Picture-in-Picture for a video element and resolve promise if any.
-  virtual void ExitPictureInPicture(HTMLVideoElement*,
-                                    ScriptPromiseResolver*) = 0;
 
   // Returns whether a given video element in a document associated with the
   // controller is allowed to request Picture-in-Picture.

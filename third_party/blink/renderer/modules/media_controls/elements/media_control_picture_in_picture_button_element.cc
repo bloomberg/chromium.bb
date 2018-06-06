@@ -29,29 +29,9 @@ bool MediaControlPictureInPictureButtonElement::
   return true;
 }
 
-void MediaControlPictureInPictureButtonElement::UpdateDisplayType() {
-  DCHECK(MediaElement().IsHTMLVideoElement());
-  bool isInPictureInPicture =
-      PictureInPictureControllerImpl::From(MediaElement().GetDocument())
-          .IsPictureInPictureElement(&ToHTMLVideoElement(MediaElement()));
-  SetDisplayType(isInPictureInPicture ? kMediaExitPictureInPictureButton
-                                      : kMediaEnterPictureInPictureButton);
-  SetClass("on", isInPictureInPicture);
-  UpdateOverflowString();
-
-  MediaControlInputElement::UpdateDisplayType();
-}
-
 WebLocalizedString::Name
 MediaControlPictureInPictureButtonElement::GetOverflowStringName() const {
-  DCHECK(MediaElement().IsHTMLVideoElement());
-  bool isInPictureInPicture =
-      PictureInPictureControllerImpl::From(MediaElement().GetDocument())
-          .IsPictureInPictureElement(&ToHTMLVideoElement(MediaElement()));
-
-  return isInPictureInPicture
-             ? WebLocalizedString::kOverflowMenuExitPictureInPicture
-             : WebLocalizedString::kOverflowMenuEnterPictureInPicture;
+  return WebLocalizedString::kOverflowMenuPictureInPicture;
 }
 
 bool MediaControlPictureInPictureButtonElement::HasOverflowButton() const {
@@ -71,11 +51,9 @@ void MediaControlPictureInPictureButtonElement::DefaultEventHandler(
         PictureInPictureControllerImpl::From(MediaElement().GetDocument());
 
     DCHECK(MediaElement().IsHTMLVideoElement());
-    HTMLVideoElement* video_element = &ToHTMLVideoElement(MediaElement());
-    if (controller.IsPictureInPictureElement(video_element))
-      controller.ExitPictureInPicture(video_element, nullptr);
-    else
-      controller.EnterPictureInPicture(video_element, nullptr);
+    // TODO(crbug.com/840516): Toggle PiP instead.
+    controller.EnterPictureInPicture(&ToHTMLVideoElement(MediaElement()),
+                                     nullptr);
   }
 
   MediaControlInputElement::DefaultEventHandler(event);
