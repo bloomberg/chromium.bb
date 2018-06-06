@@ -26,7 +26,6 @@
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
-#include "gpu/config/gpu_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_image_stub.h"
 #include "ui/gl/gl_mock.h"
@@ -75,7 +74,7 @@ class TextureManagerTest : public GpuServiceTest {
   TextureManagerTest() {
     GpuDriverBugWorkarounds gpu_driver_bug_workaround;
     feature_info_ =
-        new FeatureInfo(gpu_driver_bug_workaround, GpuPreferences());
+        new FeatureInfo(gpu_driver_bug_workaround, GpuFeatureInfo());
   }
 
   ~TextureManagerTest() override = default;

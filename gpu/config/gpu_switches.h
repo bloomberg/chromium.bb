@@ -12,7 +12,6 @@ namespace switches {
 GPU_EXPORT extern const char kDisableGpuDriverBugWorkarounds[];
 GPU_EXPORT extern const char kDisableGpuRasterization[];
 GPU_EXPORT extern const char kEnableGpuRasterization[];
-GPU_EXPORT extern const char kEnableOOPRasterization[];
 GPU_EXPORT extern const char kGpuPreferences[];
 GPU_EXPORT extern const char kIgnoreGpuBlacklist[];
 GPU_EXPORT extern const char kGpuBlacklistTestGroup[];

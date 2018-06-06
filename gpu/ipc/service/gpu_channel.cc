@@ -614,10 +614,11 @@ void GpuChannel::OnCreateCommandBuffer(
 
   std::unique_ptr<CommandBufferStub> stub;
 
-  // Check gpu_preferences() as well as attribs.enable_oop_rasterization to
-  // preventcompromised renderer from unilaterally enabling RasterDecoder until
-  // we have fuzzed it (https://crbug.com/829469).
-  if (gpu_channel_manager_->gpu_preferences().enable_oop_rasterization &&
+  bool supports_oop_rasterization =
+      gpu_channel_manager_->gpu_feature_info()
+          .status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
+      kGpuFeatureStatusEnabled;
+  if (supports_oop_rasterization &&
       init_params.attribs.enable_oop_rasterization &&
       init_params.attribs.enable_raster_interface &&
       !init_params.attribs.enable_gles2_interface) {

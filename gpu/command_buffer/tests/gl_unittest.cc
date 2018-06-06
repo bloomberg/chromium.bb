@@ -11,7 +11,6 @@
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
-#include "gpu/config/gpu_preferences.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -104,7 +103,7 @@ TEST_F(GLTest, SimpleShader) {
 
 TEST_F(GLTest, FeatureFlagsMatchCapabilities) {
   scoped_refptr<gles2::FeatureInfo> features =
-      new gles2::FeatureInfo(gl_.workarounds(), GpuPreferences());
+      new gles2::FeatureInfo(gl_.workarounds(), GpuFeatureInfo());
   features->InitializeForTesting();
   const auto& caps = gl_.GetCapabilities();
   const auto& flags = features->feature_flags();

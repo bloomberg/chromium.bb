@@ -405,8 +405,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       compositor_deps->IsElasticOverscrollEnabled();
   settings.resource_settings.use_gpu_memory_buffer_resources =
       compositor_deps->IsGpuMemoryBufferCompositorResourcesEnabled();
-  settings.enable_oop_rasterization =
-      cmd.HasSwitch(switches::kEnableOOPRasterization);
 
   // Build LayerTreeSettings from command line args.
   if (cmd.HasSwitch(cc::switches::kBrowserControlsShowThreshold)) {

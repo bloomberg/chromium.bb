@@ -57,16 +57,6 @@ ContextResult RasterInProcessContext::Initialize(
     return ContextResult::kFatalFailure;
   }
 
-  // TODO(backer): Remove this. Currently used to set
-  // |chromium_raster_transport| features flag (https://crbug.com/786591) and
-  // enable_oop_rasterization in GpuPreferences (https://crbug.com/829469).
-  if (attribs.enable_oop_rasterization &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableOOPRasterization)) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableOOPRasterization);
-  }
-
   command_buffer_ = std::make_unique<InProcessCommandBuffer>(service);
   auto result = command_buffer_->Initialize(
       nullptr /* surface */, true /* is_offscreen */, kNullSurfaceHandle,

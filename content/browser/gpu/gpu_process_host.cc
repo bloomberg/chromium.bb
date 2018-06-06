@@ -204,7 +204,6 @@ static const char* const kSwitchNames[] = {
 #endif
     switches::kEnableGpuRasterization,
     switches::kEnableLogging,
-    switches::kEnableOOPRasterization,
     switches::kEnableVizDevTools,
     switches::kHeadless,
     switches::kLoggingLevel,

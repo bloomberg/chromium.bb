@@ -13,6 +13,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -35,7 +36,7 @@ class OOPBrowserTest : public ContentBrowserTest {
     ContentBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableGpuRasterization);
     command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
-    command_line->AppendSwitch(switches::kEnableOOPRasterization);
+    command_line->AppendSwitch(switches::kEnableOopRasterization);
 
     const bool use_gpu_in_tests = !features::IsMashEnabled();
     if (use_gpu_in_tests)

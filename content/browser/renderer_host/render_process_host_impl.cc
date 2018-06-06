@@ -2724,7 +2724,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableLCDText,
     switches::kEnableLogging,
     switches::kEnableNetworkInformationDownlinkMax,
-    switches::kEnableOOPRasterization,
     switches::kEnablePluginPlaceholderTesting,
     switches::kEnablePreciseMemoryInfo,
     switches::kEnablePrintBrowser,

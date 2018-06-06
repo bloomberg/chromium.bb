@@ -13,7 +13,6 @@
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
-#include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_fence.h"
@@ -135,7 +134,7 @@ class FeatureInfoTest
 
   void SetupWithWorkarounds(const gpu::GpuDriverBugWorkarounds& workarounds) {
     GpuServiceTest::SetUp();
-    info_ = new FeatureInfo(workarounds, GpuPreferences());
+    info_ = new FeatureInfo(workarounds, GpuFeatureInfo());
   }
 
   void SetupInitExpectationsWithWorkarounds(
@@ -144,7 +143,7 @@ class FeatureInfoTest
     GpuServiceTest::SetUpWithGLVersion("2.0", extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         gl_.get(), extensions, "", "", GetContextType());
-    info_ = new FeatureInfo(workarounds, GpuPreferences());
+    info_ = new FeatureInfo(workarounds, GpuFeatureInfo());
     info_->Initialize(GetContextType(), IsPassthroughCmdDecoder(),
                       DisallowedFeatures());
   }

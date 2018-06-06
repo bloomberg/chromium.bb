@@ -13,7 +13,6 @@
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/test_helper.h"
-#include "gpu/config/gpu_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
 
@@ -250,8 +249,9 @@ class BufferManagerClientSideArraysTest : public BufferManagerTestBase {
   void SetUp() override {
     GpuDriverBugWorkarounds gpu_driver_bug_workarounds;
     gpu_driver_bug_workarounds.use_client_side_arrays_for_stream_buffers = true;
+    GpuFeatureInfo gpu_feature_info;
     feature_info_ =
-        new FeatureInfo(gpu_driver_bug_workarounds, GpuPreferences());
+        new FeatureInfo(gpu_driver_bug_workarounds, gpu_feature_info);
     SetUpBase(NULL, feature_info_.get(), "");
   }
 

@@ -181,8 +181,10 @@ struct GPU_EXPORT GpuPreferences {
   // Ignores GPU blacklist.
   bool ignore_gpu_blacklist = false;
 
-  // Enable GPU rasterization in the GPU process.
+  // Oop rasterization preferences in the GPU process.  disable wins over
+  // enable, and neither means use defaults from GpuFeatureInfo.
   bool enable_oop_rasterization = false;
+  bool disable_oop_rasterization = false;
 
   // Use GpuFence objects to synchronize display of overlay planes.
   bool use_gpu_fences_for_overlay_planes = false;

@@ -20,6 +20,11 @@ const base::Feature kDefaultEnableGpuRasterization{
     "DefaultEnableGpuRasterization", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Enable out of process rasterization by default.  This can still be overridden
+// by --enable-oop-rasterization or --disable-oop-rasterization.
+const base::Feature kDefaultEnableOopRasterization{
+    "DefaultEnableOopRasterization", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use the passthrough command decoder by default.  This can be overridden with
 // the --use-cmd-decoder=passthrough or --use-cmd-decoder=validating flags.
 const base::Feature kDefaultPassthroughCommandDecoder{

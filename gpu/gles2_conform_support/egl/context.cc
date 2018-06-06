@@ -257,14 +257,15 @@ void Context::ApplyContextReleased() {
 bool Context::CreateService(gl::GLSurface* gl_surface) {
   gpu::SharedMemoryLimits limits;
   gpu::GpuPreferences gpu_preferences;
+  gpu::GpuFeatureInfo gpu_feature_info;
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info(
       new gpu::gles2::FeatureInfo(gpu_driver_bug_workarounds_,
-                                  gpu_preferences));
+                                  gpu_feature_info));
   scoped_refptr<gpu::gles2::ContextGroup> group(new gpu::gles2::ContextGroup(
       gpu_preferences, true, &mailbox_manager_, nullptr /* memory_tracker */,
       &translator_cache_, &completeness_cache_, feature_info, true,
       &image_manager_, nullptr /* image_factory */,
-      nullptr /* progress_reporter */, gpu::GpuFeatureInfo(),
+      nullptr /* progress_reporter */, gpu_feature_info,
       &discardable_manager_));
 
   transfer_buffer_manager_ =

@@ -454,7 +454,7 @@ GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
       offscreen_(false),
       group_(group),
       feature_info_(new FeatureInfo(group->feature_info()->workarounds(),
-                                    group->gpu_preferences())),
+                                    group->gpu_feature_info())),
       emulated_back_buffer_(nullptr),
       offscreen_single_buffer_(false),
       offscreen_target_buffer_preserved_(false),

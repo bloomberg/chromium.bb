@@ -69,6 +69,7 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
             right.disable_gpu_driver_bug_workarounds);
   EXPECT_EQ(left.ignore_gpu_blacklist, right.ignore_gpu_blacklist);
   EXPECT_EQ(left.enable_oop_rasterization, right.enable_oop_rasterization);
+  EXPECT_EQ(left.disable_oop_rasterization, right.disable_oop_rasterization);
   EXPECT_EQ(left.use_gpu_fences_for_overlay_planes,
             right.use_gpu_fences_for_overlay_planes);
   EXPECT_EQ(left.watchdog_starts_backgrounded,
@@ -146,6 +147,7 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(disable_gpu_driver_bug_workarounds, true)
     GPU_PREFERENCES_FIELD(ignore_gpu_blacklist, true)
     GPU_PREFERENCES_FIELD(enable_oop_rasterization, true)
+    GPU_PREFERENCES_FIELD(disable_oop_rasterization, true)
     GPU_PREFERENCES_FIELD(use_gpu_fences_for_overlay_planes, true)
     GPU_PREFERENCES_FIELD(watchdog_starts_backgrounded, true)
 
