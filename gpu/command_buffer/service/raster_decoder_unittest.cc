@@ -401,6 +401,25 @@ TEST_P(RasterDecoderTest, CreateTextureETC1Unsupported) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
+// Need GL_EXT_texture_rg to support viz::ResourceFormat::RED_8
+TEST_P(RasterDecoderTest, RED_8DefaultUnsupported) {
+  GLuint source_texture_id = kNewClientId;
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
+  cmds::CreateTexture create_cmd;
+  create_cmd.Init(false /* use_buffer */, gfx::BufferUsage::GPU_READ,
+                  viz::ResourceFormat::RED_8, source_texture_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(create_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
+  cmds::TexStorage2D storage_cmd;
+  storage_cmd.Init(source_texture_id, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(storage_cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
 TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
   // Create uninitialized source texture.
   GLuint source_texture_id = kNewClientId;
