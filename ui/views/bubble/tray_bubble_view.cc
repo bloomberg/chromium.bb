@@ -274,7 +274,6 @@ void TrayBubbleView::InitializeAndShowBubble() {
 void TrayBubbleView::UpdateBubble() {
   if (GetWidget()) {
     SizeToContents();
-    bubble_content_mask_->layer()->SetBounds(GetBubbleBounds());
     GetWidget()->GetRootView()->SchedulePaint();
 
     // When extra keyboard accessibility is enabled, focus the default item if
@@ -326,7 +325,7 @@ ax::mojom::Role TrayBubbleView::GetAccessibleWindowRole() const {
 
 void TrayBubbleView::SizeToContents() {
   BubbleDialogDelegateView::SizeToContents();
-  bubble_content_mask_->layer()->SetBounds(GetBubbleBounds());
+  bubble_content_mask_->layer()->SetBounds(layer()->parent()->bounds());
 }
 
 void TrayBubbleView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
