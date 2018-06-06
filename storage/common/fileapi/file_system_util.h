@@ -126,9 +126,6 @@ STORAGE_COMMON_EXPORT bool GetFileSystemPublicType(
 //  - StringToFilePath(FilePathToString(path)) == path
 //  - StringToFilePath(FilePathToString(path) + "/" + "SubDirectory") ==
 //    path.AppendASCII("SubDirectory");
-//
-// TODO(tzik): Replace CreateFilePath and FilePathToString in
-// third_party/leveldatabase/env_chromium.cc with them.
 STORAGE_COMMON_EXPORT std::string FilePathToString(
     const base::FilePath& file_path);
 
