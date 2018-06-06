@@ -137,6 +137,7 @@ class FileSystemDispatcher;
 class FrameSwapMessageQueue;
 class GpuVideoAcceleratorFactoriesImpl;
 class IndexedDBDispatcher;
+class LowMemoryModeController;
 class MidiMessageFilter;
 class P2PSocketDispatcher;
 class PeerConnectionDependencyFactory;
@@ -372,6 +373,10 @@ class CONTENT_EXPORT RenderThreadImpl
     return vc_manager_.get();
   }
 
+  LowMemoryModeController* low_memory_mode_controller() const {
+    return low_memory_mode_controller_.get();
+  }
+
   mojom::RenderFrameMessageFilter* render_frame_message_filter();
   mojom::RenderMessageFilter* render_message_filter();
 
@@ -579,6 +584,7 @@ class CONTENT_EXPORT RenderThreadImpl
   void SetSchedulerKeepActive(bool keep_active) override;
   void ProcessPurgeAndSuspend() override;
   void SetIsLockedToSite() override;
+  void EnableV8LowMemoryMode() override;
 
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
@@ -719,6 +725,10 @@ class CONTENT_EXPORT RenderThreadImpl
   HistogramCustomizer histogram_customizer_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+
+  // Created in response to EnableV8LowMemoryMode(), this manages V8's
+  // memory saving mode.
+  std::unique_ptr<LowMemoryModeController> low_memory_mode_controller_;
 
   std::unique_ptr<ui::Gpu> gpu_;
 
