@@ -76,7 +76,7 @@ TouchIdAuthenticator::TouchIdAuthenticator() = default;
 
 base::StringPiece TouchIdAuthenticator::GetOrInitializeProfileId() {
   // TODO(martinkr): Implement.
-  return "TODO";
+  return "12345678901234567890123456789012";
 }
 
 }  // namespace mac
