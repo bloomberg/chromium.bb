@@ -91,6 +91,10 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   // before its contents is initialized. This is only set once.
   bool is_initialized_ = false;
 
+  // Whether or not the controls of the window should be shown. This is used in
+  // some event handlers (e.g. focus).
+  bool should_show_controls_ = false;
+
   // The upper and lower bounds of |current_size_|. These are determined by the
   // size of the primary display work area when Picture-in-Picture is initiated.
   // TODO(apacible): Update these bounds when the display the window is on
