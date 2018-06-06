@@ -257,10 +257,6 @@ def CleanBuildRoot(root, repo, metrics_fields, build_state):
       cros_sdk_lib.CleanupChrootMount(chroot_dir, delete_image=True)
     osutils.RmDir(root, ignore_missing=True, sudo=True)
   else:
-    # The previous run might have been killed in the middle leaving stale git
-    # locks. Clean those up.
-    repo.CleanStaleLocks()
-
     if previous_state.branch != repo.branch:
       logging.PrintBuildbotStepText('Branch change: Cleaning buildroot.')
       logging.info('Unmatched branch: %s -> %s', previous_state.branch,
@@ -280,6 +276,9 @@ def CleanBuildRoot(root, repo, metrics_fields, build_state):
 
     try:
       # If there is any failure doing the cleanup, wipe everything.
+      # The previous run might have been killed in the middle leaving stale git
+      # locks. Clean those up, first.
+      repo.CleanStaleLocks()
       repo.BuildRootGitCleanup(prune_all=True)
     except Exception:
       logging.info('Checkout cleanup failed, wiping buildroot:', exc_info=True)
