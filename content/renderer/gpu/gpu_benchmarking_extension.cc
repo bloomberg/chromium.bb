@@ -1118,6 +1118,10 @@ void GpuBenchmarking::Freeze() {
   GpuBenchmarkingContext context;
   if (!context.Init(true))
     return;
+  // TODO(fmeawad): Instead of forcing a visibility change, only allow
+  // freezing a page if it was already hidden.
+  context.web_view()->SetVisibilityState(
+      blink::mojom::PageVisibilityState::kHidden, false);
   context.web_view()->FreezePage();
 }
 
