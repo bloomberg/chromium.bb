@@ -68,12 +68,6 @@
                               forProtocol:@protocol(BrowserCommands)];
     [_dispatcher startDispatchingToTarget:applicationCommandEndpoint
                               forProtocol:@protocol(ApplicationCommands)];
-    // -startDispatchingToTarget:forProtocol: doesn't pick up protocols the
-    // passed protocol conforms to, so ApplicationSettingsCommands is explicitly
-    // dispatched to the endpoint as well.
-    [_dispatcher
-        startDispatchingToTarget:applicationCommandEndpoint
-                     forProtocol:@protocol(ApplicationSettingsCommands)];
   }
   return self;
 }
@@ -156,21 +150,6 @@
   mainViewController.remoteTabsViewController.browserState =
       _regularTabModel.browserState;
   self.remoteTabsMediator = [[RecentTabsMediator alloc] init];
-  self.remoteTabsMediator.browserState = _regularTabModel.browserState;
-  self.remoteTabsMediator.consumer = mainViewController.remoteTabsConsumer;
-  // TODO(crbug.com/845636) : Currently, the image data source must be set
-  // before the mediator starts updating its consumer. Fix this so that order of
-  // calls does not matter.
-  mainViewController.remoteTabsViewController.imageDataSource =
-      self.remoteTabsMediator;
-  mainViewController.remoteTabsViewController.delegate =
-      self.remoteTabsMediator;
-  mainViewController.remoteTabsViewController.dispatcher =
-      static_cast<id<ApplicationCommands>>(self.dispatcher);
-  if (self.remoteTabsMediator.browserState) {
-    [self.remoteTabsMediator initObservers];
-    [self.remoteTabsMediator refreshSessionsView];
-  }
 
   // Once the mediators are set up, stop keeping pointers to the tab models used
   // to initialize them.
@@ -183,8 +162,6 @@
 - (void)stop {
   [self.dispatcher stopDispatchingForProtocol:@protocol(BrowserCommands)];
   [self.dispatcher stopDispatchingForProtocol:@protocol(ApplicationCommands)];
-  [self.dispatcher
-      stopDispatchingForProtocol:@protocol(ApplicationSettingsCommands)];
 
   // TODO(crbug.com/845192) : RecentTabsTableViewController behaves like a
   // coordinator and that should be factored out.
