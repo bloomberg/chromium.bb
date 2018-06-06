@@ -1032,11 +1032,8 @@ CPP_VALUE_TO_V8_VALUE = {
     'StringOrNull': '{cpp_value}.IsNull() ? v8::Local<v8::Value>(v8::Null({isolate})) : V8String({isolate}, {cpp_value})',
     # Special cases
     'Dictionary': '{cpp_value}.V8Value()',
-    'EventHandler': (
-        '{cpp_value} ? ' +
-        'V8AbstractEventListener::Cast({cpp_value})->GetListenerOrNull(' +
-        '{isolate}, impl->GetExecutionContext()) : ' +
-        'v8::Null({isolate}).As<v8::Value>()'),
+    'EventHandler':
+        'V8AbstractEventListener::GetListenerOrNull({isolate}, impl, {cpp_value})',
     'NodeFilter': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     'Record': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     'ScriptValue': '{cpp_value}.V8Value()',

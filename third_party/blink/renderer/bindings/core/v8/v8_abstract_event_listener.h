@@ -42,6 +42,7 @@
 namespace blink {
 
 class Event;
+class EventTarget;
 class WorkerOrWorkletGlobalScope;
 
 // There are two kinds of event listeners: HTML or non-HMTL. onload,
@@ -67,6 +68,10 @@ class CORE_EXPORT V8AbstractEventListener : public EventListener {
         Cast(const_cast<const EventListener*>(listener)));
   }
 
+  static v8::Local<v8::Value> GetListenerOrNull(v8::Isolate*,
+                                                EventTarget*,
+                                                EventListener*);
+
   // Implementation of EventListener interface.
 
   bool operator==(const EventListener& other) const override {
@@ -75,13 +80,6 @@ class CORE_EXPORT V8AbstractEventListener : public EventListener {
 
   void handleEvent(ExecutionContext*, Event*) final;
   virtual void HandleEvent(ScriptState*, Event*);
-
-  v8::Local<v8::Value> GetListenerOrNull(v8::Isolate* isolate,
-                                         ExecutionContext* execution_context) {
-    v8::Local<v8::Object> listener = GetListenerObject(execution_context);
-    return listener.IsEmpty() ? v8::Null(isolate).As<v8::Value>()
-                              : listener.As<v8::Value>();
-  }
 
   // Returns the listener object, either a function or an object, or the empty
   // handle if the user script is not compilable.  No exception will be thrown
