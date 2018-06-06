@@ -206,6 +206,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   mojom::Renderer* GetRendererInterface() override;
   resource_coordinator::ProcessResourceCoordinator*
   GetProcessResourceCoordinator() override;
+  void CreateURLLoaderFactory(
+      network::mojom::URLLoaderFactoryRequest request) override;
 
   void SetIsNeverSuitableForReuse() override;
   bool MayReuseHost() override;
@@ -484,7 +486,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreateStoragePartitionService(
       mojom::StoragePartitionServiceRequest request);
   void CreateRendererHost(mojom::RendererHostAssociatedRequest request);
-  void CreateURLLoaderFactory(network::mojom::URLLoaderFactoryRequest request);
 
   // Control message handlers.
   void OnUserMetricsRecordAction(const std::string& action);

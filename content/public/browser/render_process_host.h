@@ -22,6 +22,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 #include "media/media_buildflags.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
@@ -384,6 +385,16 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Acquires the interface to the Global Resource Coordinator for this process.
   virtual resource_coordinator::ProcessResourceCoordinator*
   GetProcessResourceCoordinator() = 0;
+
+  // Create an URLLoaderFactory for this process.
+  // When NetworkService is enabled, |request| will be bound with a new
+  // URLLoaderFactory created from the storage partition's Network Context. Note
+  // that the URLLoaderFactory returned by this method does NOT support
+  // auto-reconnect after a crash of Network Service.
+  // When NetworkService is not enabled, |request| will be bound with a
+  // URLLoaderFactory which routes requests to ResourceDispatcherHost.
+  virtual void CreateURLLoaderFactory(
+      network::mojom::URLLoaderFactoryRequest request) = 0;
 
   // Whether this process is locked out from ever being reused for sites other
   // than the ones it currently has.

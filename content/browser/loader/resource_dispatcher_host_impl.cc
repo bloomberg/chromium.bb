@@ -1772,8 +1772,6 @@ void ResourceDispatcherHostImpl::OnRequestResourceWithMojo(
     network::mojom::URLLoaderRequest mojo_request,
     network::mojom::URLLoaderClientPtr url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-  DCHECK_EQ(network::mojom::kURLLoadOptionNone,
-            options & ~network::mojom::kURLLoadOptionSynchronous);
   if (!url_loader_client) {
     VLOG(1) << "Killed renderer for null client";
     bad_message::ReceivedBadMessage(requester_info->filter(),

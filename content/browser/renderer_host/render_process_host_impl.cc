@@ -144,6 +144,7 @@
 #include "content/common/resource_messages.h"
 #include "content/common/service_manager/child_connection.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -2113,20 +2114,6 @@ void RenderProcessHostImpl::CreateRendererHost(
   renderer_host_binding_.Bind(std::move(request));
 }
 
-void RenderProcessHostImpl::CreateURLLoaderFactory(
-    network::mojom::URLLoaderFactoryRequest request) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    NOTREACHED();
-    return;
-  }
-  network::mojom::URLLoaderFactoryParamsPtr params =
-      network::mojom::URLLoaderFactoryParams::New();
-  params->process_id = id_;
-  SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(params.get());
-  storage_partition_impl_->GetNetworkContext()->CreateURLLoaderFactory(
-      std::move(request), std::move(params));
-}
-
 int RenderProcessHostImpl::GetNextRoutingID() {
   return widget_helper_->GetNextRoutingID();
 }
@@ -2268,6 +2255,23 @@ RenderProcessHostImpl::GetProcessResourceCoordinator() {
             connection ? connection->GetConnector() : nullptr);
   }
   return process_resource_coordinator_.get();
+}
+
+void RenderProcessHostImpl::CreateURLLoaderFactory(
+    network::mojom::URLLoaderFactoryRequest request) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&ResourceMessageFilter::Clone, resource_message_filter_,
+                       std::move(request)));
+    return;
+  }
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = id_;
+  SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(params.get());
+  storage_partition_impl_->GetNetworkContext()->CreateURLLoaderFactory(
+      std::move(request), std::move(params));
 }
 
 void RenderProcessHostImpl::SetIsNeverSuitableForReuse() {

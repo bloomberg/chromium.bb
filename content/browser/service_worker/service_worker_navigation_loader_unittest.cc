@@ -15,6 +15,7 @@
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/single_request_url_loader_factory.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -209,6 +210,8 @@ class Helper : public EmbeddedWorkerTestHelper {
             base::FilePath(),
             base::MakeRefCounted<URLLoaderFactoryGetter>()) {
     url_loader_factory_getter()->SetNetworkFactoryForTesting(
+        &mock_url_loader_factory_);
+    mock_render_process_host()->OverrideURLLoaderFactory(
         &mock_url_loader_factory_);
   }
   ~Helper() override = default;
