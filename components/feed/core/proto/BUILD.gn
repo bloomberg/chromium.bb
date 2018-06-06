@@ -7,5 +7,6 @@ import("//third_party/protobuf/proto_library.gni")
 proto_library("proto") {
   sources = [
     "cached_image.proto",
+    "feed_storage.proto",
   ]
 }

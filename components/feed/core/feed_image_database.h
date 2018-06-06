@@ -108,6 +108,7 @@ class FeedImageDatabase {
   std::vector<std::pair<std::string, FeedImageDatabaseCallback>>
       pending_image_callbacks_;
 
+  // Used to check that functions are called on the correct sequence.
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<FeedImageDatabase> weak_ptr_factory_;
