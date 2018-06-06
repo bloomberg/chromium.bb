@@ -58,14 +58,14 @@ class SyncedBookmarkTracker {
   // Returns null if not entity is found.
   const Entity* GetEntityForSyncId(const std::string& sync_id) const;
 
-  // Associates a server id with the corresponding local bookmark node in
-  // |sync_id_to_entities_map_|.
-  void Associate(const std::string& sync_id,
-                 const bookmarks::BookmarkNode* bookmark_node);
+  // Adds an entry for the |sync_id| and the corresponding local bookmark node
+  // in |sync_id_to_entities_map_|.
+  void Add(const std::string& sync_id,
+           const bookmarks::BookmarkNode* bookmark_node);
 
-  // Removes the association that corresponds to |sync_id| from
+  // Removes the entry coressponding to the |sync_id| from
   // |sync_id_to_entities_map_|.
-  void Disassociate(const std::string& sync_id);
+  void Remove(const std::string& sync_id);
 
   // Returns number of tracked entities. Used only in test.
   std::size_t TrackedEntitiesCountForTest() const;
