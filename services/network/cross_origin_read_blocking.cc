@@ -559,6 +559,9 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const ResourceResponse& response,
     base::StringPiece excluded_initiator_scheme) {
   content_length_ = response.head.content_length;
+  http_response_code_ =
+      response.head.headers ? response.head.headers->response_code() : 0;
+
   should_block_based_on_headers_ =
       ShouldBlockBasedOnHeaders(request, response, excluded_initiator_scheme);
   if (should_block_based_on_headers_ == kNeedToSniffMore)
@@ -789,7 +792,7 @@ void CrossOriginReadBlocking::ResponseAnalyzer::SniffResponseBody(
   }
 }
 
-bool CrossOriginReadBlocking::ResponseAnalyzer::should_allow() const {
+bool CrossOriginReadBlocking::ResponseAnalyzer::ShouldAllow() const {
   switch (should_block_based_on_headers_) {
     case kAllow:
       return true;
@@ -800,7 +803,7 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::should_allow() const {
   }
 }
 
-bool CrossOriginReadBlocking::ResponseAnalyzer::should_block() const {
+bool CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlock() const {
   switch (should_block_based_on_headers_) {
     case kAllow:
       return false;
@@ -809,6 +812,21 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::should_block() const {
     case kBlock:
       return true;
   }
+}
+
+bool CrossOriginReadBlocking::ResponseAnalyzer::ShouldReportBlockedResponse()
+    const {
+  if (!ShouldBlock())
+    return false;
+
+  // Don't bother showing a warning message when blocking responses that are
+  // already empty.
+  if (content_length() == 0)
+    return false;
+  if (http_response_code() == 204)
+    return false;
+
+  return true;
 }
 
 void CrossOriginReadBlocking::ResponseAnalyzer::LogBytesReadForSniffing() {
@@ -821,15 +839,15 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogBytesReadForSniffing() {
 void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
   // Note that if a response is allowed because of hitting EOF or
   // kMaxBytesToSniff, then |sniffers_| are not emptied and consequently
-  // should_allow doesn't start returning true.  This means that we can't
-  // DCHECK(should_allow()) or DCHECK(sniffers_.empty()) here - the decision to
+  // ShouldAllow doesn't start returning true.  This means that we can't
+  // DCHECK(ShouldAllow()) or DCHECK(sniffers_.empty()) here - the decision to
   // allow the response could have been made in the
   // CrossSiteDocumentResourceHandler layer without CrossOriginReadBlocking
   // realizing that it has hit EOF or kMaxBytesToSniff.
 
-  // Note that the response might be allowed even if should_block() returns true
+  // Note that the response might be allowed even if ShouldBlock() returns true
   // - for example to allow responses to requests initiated by content scripts.
-  // This means that we cannot DCHECK(!should_block()) here.
+  // This means that we cannot DCHECK(!ShouldBlock()) here.
 
   CrossOriginReadBlocking::LogAction(
       needs_sniffing()
@@ -840,8 +858,8 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
 }
 
 void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
-  DCHECK(!should_allow());
-  DCHECK(should_block());
+  DCHECK(!ShouldAllow());
+  DCHECK(ShouldBlock());
   DCHECK(sniffers_.empty());
 
   CrossOriginReadBlocking::LogAction(

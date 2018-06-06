@@ -1012,7 +1012,7 @@ void InspectorNetworkAgent::DidFinishLoading(unsigned long identifier,
                                              TimeTicks monotonic_finish_time,
                                              int64_t encoded_data_length,
                                              int64_t decoded_body_length,
-                                             bool blocked_cross_site_document) {
+                                             bool should_report_corb_blocking) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
   NetworkResourcesData::ResourceData const* resource_data =
       resources_data_->Data(request_id);
@@ -1039,7 +1039,7 @@ void InspectorNetworkAgent::DidFinishLoading(unsigned long identifier,
   // TODO(npm): Use TimeTicks in Network.h.
   GetFrontend()->loadingFinished(
       request_id, TimeTicksInSeconds(monotonic_finish_time),
-      encoded_data_length, blocked_cross_site_document);
+      encoded_data_length, should_report_corb_blocking);
 }
 
 void InspectorNetworkAgent::DidReceiveCORSRedirectResponse(

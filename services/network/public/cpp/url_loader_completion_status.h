@@ -63,8 +63,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) URLLoaderCompletionStatus {
   // Optional SSL certificate info.
   base::Optional<net::SSLInfo> ssl_info;
 
-  // Set when response was blocked due to being cross-site document load.
-  bool blocked_cross_site_document = false;
+  // Set when response blocked by CORB needs to be reported to the DevTools
+  // console.
+  bool should_report_corb_blocking = false;
 };
 
 }  // namespace network

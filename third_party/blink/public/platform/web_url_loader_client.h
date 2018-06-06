@@ -105,7 +105,7 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
 
   // Called when the load completes successfully.
   // |total_encoded_data_length| may be equal to kUnknownEncodedDataLength.
-  // |blocked_cross_site_document| is used to report that cross-site document
+  // |should_report_corb_blocking| is used to report that cross-site document
   // request response was blocked from entering renderer. Corresponding message
   // will be generated in devtools console if this flag is set to true.
   // TODO(crbug.com/798625): use different callback for subresources
@@ -114,7 +114,7 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
                                 int64_t total_encoded_data_length,
                                 int64_t total_encoded_body_length,
                                 int64_t total_decoded_body_length,
-                                bool blocked_cross_site_document) {}
+                                bool should_report_corb_blocking) {}
 
   // Called when the load completes with an error.
   // |total_encoded_data_length| may be equal to kUnknownEncodedDataLength.

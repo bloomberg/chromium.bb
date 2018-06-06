@@ -245,7 +245,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
                         int64_t totalEncodedDataLength,
                         int64_t totalEncodedBodyLength,
                         int64_t totalDecodedBodyLength,
-                        bool blocked_cross_site_document) override {
+                        bool should_report_corb_blocking) override {
     EXPECT_TRUE(loader_);
     EXPECT_TRUE(did_receive_response_);
     EXPECT_FALSE(did_finish_);

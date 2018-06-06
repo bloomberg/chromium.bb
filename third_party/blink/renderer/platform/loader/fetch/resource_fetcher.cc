@@ -1449,7 +1449,7 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
                                          TimeTicks finish_time,
                                          LoaderFinishType type,
                                          uint32_t inflight_keepalive_bytes,
-                                         bool blocked_cross_site_document) {
+                                         bool should_report_corb_blocking) {
   DCHECK(resource);
 
   DCHECK_LE(inflight_keepalive_bytes, inflight_keepalive_bytes_);
@@ -1504,7 +1504,7 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
   resource->VirtualTimePauser().UnpauseVirtualTime();
   Context().DispatchDidFinishLoading(
       resource->Identifier(), finish_time, encoded_data_length,
-      resource->GetResponse().DecodedBodyLength(), blocked_cross_site_document);
+      resource->GetResponse().DecodedBodyLength(), should_report_corb_blocking);
 
   if (type == kDidFinishLoading)
     resource->Finish(finish_time, Context().GetLoadingTaskRunner().get());

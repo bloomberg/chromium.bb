@@ -291,7 +291,7 @@ IPC_STRUCT_TRAITS_BEGIN(network::URLLoaderCompletionStatus)
   IPC_STRUCT_TRAITS_MEMBER(decoded_body_length)
   IPC_STRUCT_TRAITS_MEMBER(cors_error_status)
   IPC_STRUCT_TRAITS_MEMBER(ssl_info)
-  IPC_STRUCT_TRAITS_MEMBER(blocked_cross_site_document)
+  IPC_STRUCT_TRAITS_MEMBER(should_report_corb_blocking)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(net::URLRequest::ReferrerPolicy,
