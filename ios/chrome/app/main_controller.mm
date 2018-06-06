@@ -956,6 +956,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [_browserViewWrangler shutdown];
   _browserViewWrangler = nil;
 
+  [_mainCoordinator stop];
+
   _chromeMain.reset();
 }
 
