@@ -100,6 +100,13 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   // The time of the first 'meaningful' paint, A meaningful paint is a paint
   // where the page's primary content is visible.
   unsigned long long FirstMeaningfulPaint() const;
+  // The time of the candidate of first 'meaningful' paint, A meaningful paint
+  // candidate indicates the first time we considered a paint to qualify as the
+  // potential first meaningful paint. But, be careful that it may be an
+  // optimistic (i.e., too early) estimate.
+  // TODO(crbug.com/848639): This function is exposed as an experiment, and if
+  // not useful, this function can be removed.
+  unsigned long long FirstMeaningfulPaintCandidate() const;
   // The first time the page is considered 'interactive'. This is determined
   // using heuristics based on main thread and network activity.
   unsigned long long PageInteractive() const;
