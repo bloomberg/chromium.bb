@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/assistant/assistant_bubble_controller.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
@@ -27,7 +28,7 @@ constexpr int kMaxHeightDip = 640;
 
 AssistantMainView::AssistantMainView(AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
-      caption_bar_(new CaptionBar()),
+      caption_bar_(new CaptionBar(assistant_controller->bubble_controller())),
       ui_element_container_(new UiElementContainerView(assistant_controller)),
       suggestions_container_(new SuggestionContainerView(assistant_controller)),
       dialog_plate_(new DialogPlate(assistant_controller)),

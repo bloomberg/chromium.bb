@@ -90,7 +90,8 @@ void AssistantBubbleView::Init() {
   assistant_main_view_->set_owned_by_client();
 
   // Mini view.
-  assistant_mini_view_ = std::make_unique<AssistantMiniView>();
+  assistant_mini_view_ =
+      std::make_unique<AssistantMiniView>(assistant_controller_);
   assistant_mini_view_->set_owned_by_client();
 
   // TODO(dmblack): Add Settings view.

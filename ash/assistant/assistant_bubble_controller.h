@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/assistant/model/assistant_bubble_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/ui/caption_bar.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -22,7 +23,8 @@ class AssistantController;
 
 class ASH_EXPORT AssistantBubbleController
     : public views::WidgetObserver,
-      public AssistantInteractionModelObserver {
+      public AssistantInteractionModelObserver,
+      public CaptionBarDelegate {
  public:
   explicit AssistantBubbleController(AssistantController* assistant_controller);
   ~AssistantBubbleController() override;
@@ -36,11 +38,16 @@ class ASH_EXPORT AssistantBubbleController
 
   // views::WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
+  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
   void OnWidgetDestroying(views::Widget* widget) override;
 
   // AssistantInteractionModelObserver:
   void OnInputModalityChanged(InputModality input_modality) override;
   void OnInteractionStateChanged(InteractionState interaction_state) override;
+  void OnMicStateChanged(MicState mic_state) override;
+
+  // CaptionBarDelegate:
+  bool OnCaptionButtonPressed(CaptionButtonId id) override;
 
   // Returns true if assistant bubble is visible, otherwise false.
   bool IsVisible() const;
@@ -48,6 +55,10 @@ class ASH_EXPORT AssistantBubbleController
  private:
   void Show();
   void Dismiss();
+
+  // Updates UI mode to |ui_mode| if specified. Otherwise UI mode is updated on
+  // the basis of interaction/widget visibility state.
+  void UpdateUiMode(base::Optional<AssistantUiMode> ui_mode = base::nullopt);
 
   AssistantBubbleModel assistant_bubble_model_;
   AssistantController* const assistant_controller_;  // Owned by Shell.
