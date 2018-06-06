@@ -189,7 +189,7 @@ public class VrShellImpl
         mTabRedirectHandler = new TabRedirectHandler(mActivity) {
             @Override
             public boolean shouldStayInChrome(boolean hasExternalProtocol) {
-                return true;
+                return !hasExternalProtocol;
             }
         };
 
