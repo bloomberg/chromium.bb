@@ -153,12 +153,12 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
 
   void ActivateKeyboard() {
     Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
-        keyboard::KeyboardController::GetInstance());
+        keyboard::KeyboardController::Get());
   }
 
   void DeactivateKeyboard() {
     Shell::GetPrimaryRootWindowController()->DeactivateKeyboard(
-        keyboard::KeyboardController::GetInstance());
+        keyboard::KeyboardController::Get());
   }
 
   aura::Window* OpenToplevelTestWindow(bool modal) {
@@ -177,9 +177,8 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
 
   // Show or hide the keyboard.
   void ShowKeyboard(bool show) {
-    keyboard::KeyboardController* keyboard =
-        keyboard::KeyboardController::GetInstance();
-    ASSERT_TRUE(keyboard);
+    auto* keyboard = keyboard::KeyboardController::Get();
+    ASSERT_TRUE(keyboard->enabled());
     if (show == keyboard->keyboard_visible())
       return;
 

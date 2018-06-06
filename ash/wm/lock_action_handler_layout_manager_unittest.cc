@@ -100,7 +100,7 @@ class LockActionHandlerLayoutManagerTest : public AshTestBase {
 
   void TearDown() override {
     Shell::GetPrimaryRootWindowController()->DeactivateKeyboard(
-        keyboard::KeyboardController::GetInstance());
+        keyboard::KeyboardController::Get());
     lock_window_.reset();
     AshTestBase::TearDown();
     LockScreenActionBackgroundController::SetFactoryCallbackForTesting(nullptr);
@@ -123,9 +123,8 @@ class LockActionHandlerLayoutManagerTest : public AshTestBase {
 
   // Show or hide the keyboard.
   void ShowKeyboard(bool show) {
-    keyboard::KeyboardController* keyboard =
-        keyboard::KeyboardController::GetInstance();
-    ASSERT_TRUE(keyboard);
+    auto* keyboard = keyboard::KeyboardController::Get();
+    ASSERT_TRUE(keyboard->enabled());
     if (show == keyboard->keyboard_visible())
       return;
 
@@ -311,7 +310,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, KeyboardBounds) {
   ShowKeyboard(true);
 
   gfx::Rect keyboard_bounds =
-      keyboard::KeyboardController::GetInstance()->visual_bounds_in_screen();
+      keyboard::KeyboardController::Get()->visual_bounds_in_screen();
   // Sanity check that the keyboard intersects woth original window bounds - if
   // this is not true, the window bounds would remain unchanged.
   ASSERT_TRUE(keyboard_bounds.Intersects(initial_bounds));

@@ -512,9 +512,9 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent,
 
 void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
   // If the virtual keyboard is visible, dismiss the keyboard and return early.
-  keyboard::KeyboardController* const keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
-  if (keyboard_controller && keyboard_controller->keyboard_visible()) {
+  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  if (keyboard_controller->enabled() &&
+      keyboard_controller->keyboard_visible()) {
     keyboard_controller->HideKeyboard(
         keyboard::KeyboardController::HIDE_REASON_MANUAL);
     return;

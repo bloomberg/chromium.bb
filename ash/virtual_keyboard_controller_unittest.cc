@@ -101,7 +101,7 @@ TEST_F(VirtualKeyboardControllerTest,
             client.last_keyset_);
 
   // Simulate the keyboard hiding.
-  if (keyboard::KeyboardController::GetInstance()->HasObserver(
+  if (keyboard::KeyboardController::Get()->HasObserver(
           Shell::Get()->virtual_keyboard_controller())) {
     Shell::Get()->virtual_keyboard_controller()->OnKeyboardHidden();
   }
@@ -146,7 +146,7 @@ TEST_F(VirtualKeyboardControllerTest,
             client.last_keyset_);
 
   // Simulate the keyboard hiding.
-  if (keyboard::KeyboardController::GetInstance()->HasObserver(
+  if (keyboard::KeyboardController::Get()->HasObserver(
           Shell::Get()->virtual_keyboard_controller())) {
     Shell::Get()->virtual_keyboard_controller()->OnKeyboardHidden();
   }

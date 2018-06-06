@@ -21,7 +21,6 @@
 #include "components/omnibox/browser/omnibox_view.h"
 #include "content/public/test/test_utils.h"
 
-
 class AutocompleteController;
 
 class OmniboxApiTest : public extensions::ExtensionApiTest {
