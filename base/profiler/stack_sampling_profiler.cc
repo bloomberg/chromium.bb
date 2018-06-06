@@ -36,7 +36,7 @@ constexpr WaitableEvent::ResetPolicy kResetPolicy =
 
 // This value is used when there is no collection in progress and thus no ID
 // for referencing the active collection to the SamplingThread.
-const int NULL_PROFILER_ID = -1;
+const int kNullProfilerId = -1;
 
 void ChangeAtomicFlags(subtle::Atomic32* flags,
                        subtle::Atomic32 set,
@@ -773,7 +773,7 @@ StackSamplingProfiler::StackSamplingProfiler(
       // The event starts "signaled" so code knows it's safe to start thread
       // and "manual" so that it can be waited in multiple places.
       profiling_inactive_(kResetPolicy, WaitableEvent::InitialState::SIGNALED),
-      profiler_id_(NULL_PROFILER_ID),
+      profiler_id_(kNullProfilerId),
       test_delegate_(test_delegate) {}
 
 StackSamplingProfiler::~StackSamplingProfiler() {
@@ -818,17 +818,17 @@ void StackSamplingProfiler::Start() {
     profiling_inactive_.Wait();
   profiling_inactive_.Reset();
 
-  DCHECK_EQ(NULL_PROFILER_ID, profiler_id_);
+  DCHECK_EQ(kNullProfilerId, profiler_id_);
   profiler_id_ = SamplingThread::GetInstance()->Add(
       std::make_unique<SamplingThread::CollectionContext>(
           thread_id_, params_, completed_callback_, &profiling_inactive_,
           std::move(native_sampler)));
-  DCHECK_NE(NULL_PROFILER_ID, profiler_id_);
+  DCHECK_NE(kNullProfilerId, profiler_id_);
 }
 
 void StackSamplingProfiler::Stop() {
   SamplingThread::GetInstance()->Remove(profiler_id_);
-  profiler_id_ = NULL_PROFILER_ID;
+  profiler_id_ = kNullProfilerId;
 }
 
 // static
