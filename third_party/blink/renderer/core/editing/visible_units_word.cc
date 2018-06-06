@@ -43,41 +43,44 @@ namespace blink {
 
 namespace {
 
-unsigned EndWordBoundary(
-    const UChar* characters,
-    unsigned length,
-    unsigned offset,
-    BoundarySearchContextAvailability may_have_more_context,
-    bool& need_more_context) {
-  DCHECK_LE(offset, length);
-  if (may_have_more_context &&
-      EndOfFirstWordBoundaryContext(characters + offset, length - offset) ==
-          static_cast<int>(length - offset)) {
-    need_more_context = true;
-    return length;
-  }
-  need_more_context = false;
-  return FindWordEndBoundary(characters, length, offset);
-}
+PositionInFlatTree EndOfWordPositionInternal(const PositionInFlatTree& position,
+                                             EWordSide side) {
+  class Finder final : public TextSegments::Finder {
+    STACK_ALLOCATED();
 
-template <typename Strategy>
-PositionTemplate<Strategy> EndOfWordAlgorithm(
-    const VisiblePositionTemplate<Strategy>& c,
-    EWordSide side) {
-  DCHECK(c.IsValid()) << c;
-  VisiblePositionTemplate<Strategy> p = c;
-  if (side == kPreviousWordIfOnBoundary) {
-    if (IsStartOfParagraph(c))
-      return c.DeepEquivalent();
+   public:
+    Finder(EWordSide side) : side_(side) {}
 
-    p = PreviousPositionOf(c);
-    if (p.IsNull())
-      return c.DeepEquivalent();
-  } else if (IsEndOfParagraph(c)) {
-    return c.DeepEquivalent();
-  }
+   private:
+    Position Find(const String text, unsigned offset) final {
+      DCHECK_LE(offset, text.length());
+      if (!is_first_time_)
+        return FindInternal(text, offset);
+      is_first_time_ = false;
+      if (side_ == kPreviousWordIfOnBoundary) {
+        if (offset == 0)
+          return Position::Before(0);
+        return FindInternal(text, offset - 1);
+      }
+      if (offset == text.length())
+        return Position::After(offset);
+      return FindInternal(text, offset);
+    }
 
-  return NextBoundary(p, EndWordBoundary);
+    static Position FindInternal(const String text, unsigned offset) {
+      DCHECK_LE(offset, text.length());
+      TextBreakIterator* it =
+          WordBreakIterator(text.Characters16(), text.length());
+      const int result = it->following(offset);
+      if (result == kTextBreakDone || result == 0)
+        return Position();
+      return Position::After(result - 1);
+    }
+
+    const EWordSide side_;
+    bool is_first_time_ = true;
+  } finder(side);
+  return TextSegments::FindBoundaryForward(position, &finder);
 }
 
 PositionInFlatTree NextWordPositionInternal(
@@ -162,24 +165,31 @@ PositionTemplate<Strategy> StartOfWordAlgorithm(
 
 }  // namespace
 
-Position EndOfWordPosition(const VisiblePosition& position, EWordSide side) {
-  return EndOfWordAlgorithm<EditingStrategy>(position, side);
+PositionInFlatTree EndOfWordPosition(const PositionInFlatTree& start,
+                                     EWordSide side) {
+  return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+             PositionInFlatTreeWithAffinity(
+                 EndOfWordPositionInternal(start, side)),
+             start)
+      .GetPosition();
+}
+
+Position EndOfWordPosition(const Position& position, EWordSide side) {
+  return ToPositionInDOMTree(
+      EndOfWordPosition(ToPositionInFlatTree(position), side));
 }
 
 VisiblePosition EndOfWord(const VisiblePosition& position, EWordSide side) {
-  return CreateVisiblePosition(EndOfWordPosition(position, side),
-                               TextAffinity::kUpstreamIfPossible);
-}
-
-PositionInFlatTree EndOfWordPosition(const VisiblePositionInFlatTree& position,
-                                     EWordSide side) {
-  return EndOfWordAlgorithm<EditingInFlatTreeStrategy>(position, side);
+  return CreateVisiblePosition(
+      EndOfWordPosition(position.DeepEquivalent(), side),
+      TextAffinity::kUpstreamIfPossible);
 }
 
 VisiblePositionInFlatTree EndOfWord(const VisiblePositionInFlatTree& position,
                                     EWordSide side) {
-  return CreateVisiblePosition(EndOfWordPosition(position, side),
-                               TextAffinity::kUpstreamIfPossible);
+  return CreateVisiblePosition(
+      EndOfWordPosition(position.DeepEquivalent(), side),
+      TextAffinity::kUpstreamIfPossible);
 }
 
 // ----

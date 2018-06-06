@@ -241,7 +241,7 @@ TEST_F(VisibleUnitsWordTest, StartOfWordTextSecurity) {
   EXPECT_EQ("|abc<s>foo bar</s>baz", DoStartOfWord("abc<s>foo bar</s>b|az"));
 }
 
-TEST_F(VisibleUnitsWordTest, EndOfWordBasic) {
+TEST_P(ParameterizedVisibleUnitsWordTest, EndOfWordBasic) {
   EXPECT_EQ("<p> (|1) abc def</p>", DoEndOfWord("<p>| (1) abc def</p>"));
   EXPECT_EQ("<p> (|1) abc def</p>", DoEndOfWord("<p> |(1) abc def</p>"));
   EXPECT_EQ("<p> (1|) abc def</p>", DoEndOfWord("<p> (|1) abc def</p>"));
@@ -258,7 +258,8 @@ TEST_F(VisibleUnitsWordTest, EndOfWordBasic) {
   EXPECT_EQ("<p> (1) abc def|</p>", DoEndOfWord("<p> (1) abc def</p>|"));
 }
 
-TEST_F(VisibleUnitsWordTest, EndOfWordPreviousWordIfOnBoundaryBasic) {
+TEST_P(ParameterizedVisibleUnitsWordTest,
+       EndOfWordPreviousWordIfOnBoundaryBasic) {
   EXPECT_EQ("<p> |(1) abc def</p>",
             DoEndOfWord("<p>| (1) abc def</p>",
                         EWordSide::kPreviousWordIfOnBoundary));
@@ -303,7 +304,7 @@ TEST_F(VisibleUnitsWordTest, EndOfWordPreviousWordIfOnBoundaryBasic) {
                         EWordSide::kPreviousWordIfOnBoundary));
 }
 
-TEST_F(VisibleUnitsWordTest, EndOfWordShadowDOM) {
+TEST_P(ParameterizedVisibleUnitsWordTest, EndOfWordShadowDOM) {
   const char* body_content =
       "<a id=host><b id=one>1</b> <b id=two>22</b></a><i id=three>333</i>";
   const char* shadow_content =
@@ -319,28 +320,28 @@ TEST_F(VisibleUnitsWordTest, EndOfWordShadowDOM) {
   Node* five = shadow_root->getElementById("five")->firstChild();
 
   EXPECT_EQ(
-      Position(three, 3),
+      Position(five, 5),
       EndOfWord(CreateVisiblePositionInDOMTree(*one, 0)).DeepEquivalent());
   EXPECT_EQ(
       PositionInFlatTree(five, 5),
       EndOfWord(CreateVisiblePositionInFlatTree(*one, 0)).DeepEquivalent());
 
   EXPECT_EQ(
-      Position(three, 3),
+      Position(five, 5),
       EndOfWord(CreateVisiblePositionInDOMTree(*one, 1)).DeepEquivalent());
   EXPECT_EQ(
       PositionInFlatTree(five, 5),
       EndOfWord(CreateVisiblePositionInFlatTree(*one, 1)).DeepEquivalent());
 
   EXPECT_EQ(
-      Position(three, 3),
+      Position(five, 5),
       EndOfWord(CreateVisiblePositionInDOMTree(*two, 0)).DeepEquivalent());
   EXPECT_EQ(
       PositionInFlatTree(two, 2),
       EndOfWord(CreateVisiblePositionInFlatTree(*two, 0)).DeepEquivalent());
 
   EXPECT_EQ(
-      Position(three, 3),
+      Position(two, 2),
       EndOfWord(CreateVisiblePositionInDOMTree(*two, 1)).DeepEquivalent());
   EXPECT_EQ(
       PositionInFlatTree(two, 2),
@@ -354,7 +355,7 @@ TEST_F(VisibleUnitsWordTest, EndOfWordShadowDOM) {
       EndOfWord(CreateVisiblePositionInFlatTree(*three, 1)).DeepEquivalent());
 
   EXPECT_EQ(
-      Position(four, 5),
+      Position(two, 2),
       EndOfWord(CreateVisiblePositionInDOMTree(*four, 1)).DeepEquivalent());
   EXPECT_EQ(
       PositionInFlatTree(two, 2),
@@ -368,7 +369,7 @@ TEST_F(VisibleUnitsWordTest, EndOfWordShadowDOM) {
       EndOfWord(CreateVisiblePositionInFlatTree(*five, 1)).DeepEquivalent());
 }
 
-TEST_F(VisibleUnitsWordTest, EndOfWordTextSecurity) {
+TEST_P(ParameterizedVisibleUnitsWordTest, EndOfWordTextSecurity) {
   // Note: |EndOfWord()| considers security characters as a sequence "x".
   InsertStyleElement("s {-webkit-text-security:disc;}");
   EXPECT_EQ("abc<s>foo bar</s>baz|", DoEndOfWord("|abc<s>foo bar</s>baz"));
