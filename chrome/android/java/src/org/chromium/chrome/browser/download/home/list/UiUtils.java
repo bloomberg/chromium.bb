@@ -9,6 +9,8 @@ import android.text.format.DateUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
+import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemFilter;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -46,5 +48,17 @@ public final class UiUtils {
                         | DateUtils.FORMAT_SHOW_YEAR));
 
         return builder;
+    }
+
+    /** @return Whether or not {@code item} can show a thumbnail in the UI. */
+    public static boolean canHaveThumbnails(OfflineItem item) {
+        switch (item.filter) {
+            case OfflineItemFilter.FILTER_PAGE:
+            case OfflineItemFilter.FILTER_VIDEO:
+            case OfflineItemFilter.FILTER_IMAGE:
+                return true;
+            default:
+                return false;
+        }
     }
 }

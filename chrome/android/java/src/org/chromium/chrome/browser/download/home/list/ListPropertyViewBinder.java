@@ -32,7 +32,8 @@ class ListPropertyViewBinder
                 || propertyKey == ListPropertyModel.PropertyKey.CALLBACK_RESUME
                 || propertyKey == ListPropertyModel.PropertyKey.CALLBACK_CANCEL
                 || propertyKey == ListPropertyModel.PropertyKey.CALLBACK_SHARE
-                || propertyKey == ListPropertyModel.PropertyKey.CALLBACK_REMOVE) {
+                || propertyKey == ListPropertyModel.PropertyKey.CALLBACK_REMOVE
+                || propertyKey == ListPropertyModel.PropertyKey.PROVIDER_VISUALS) {
             view.getAdapter().notifyItemChanged(0, view.getAdapter().getItemCount());
         }
     }
