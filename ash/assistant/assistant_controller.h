@@ -27,7 +27,7 @@ class UnguessableToken;
 
 namespace ash {
 
-class AssistantBubble;
+class AssistantBubbleController;
 class AssistantInteractionModelObserver;
 
 class AssistantController
@@ -133,9 +133,9 @@ class AssistantController
                          RequestScreenshotCallback callback) override;
   void OnCardPressed(const GURL& url) override;
 
-  const AssistantBubble& bubble() const {
-    DCHECK(assistant_bubble_);
-    return *assistant_bubble_;
+  AssistantBubbleController* bubble_controller() {
+    DCHECK(assistant_bubble_controller_);
+    return assistant_bubble_controller_.get();
   }
 
  private:
@@ -150,7 +150,7 @@ class AssistantController
   mojom::AssistantCardRendererPtr assistant_card_renderer_;
   mojom::AssistantImageDownloaderPtr assistant_image_downloader_;
 
-  std::unique_ptr<AssistantBubble> assistant_bubble_;
+  std::unique_ptr<AssistantBubbleController> assistant_bubble_controller_;
 
   // Indicates whether or not there is an active interaction in progress. If
   // there is no active interaction, UI related service events should be

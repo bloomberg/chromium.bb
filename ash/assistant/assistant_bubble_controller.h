@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASSISTANT_UI_ASSISTANT_BUBBLE_H_
-#define ASH_ASSISTANT_UI_ASSISTANT_BUBBLE_H_
+#ifndef ASH_ASSISTANT_ASSISTANT_BUBBLE_CONTROLLER_H_
+#define ASH_ASSISTANT_ASSISTANT_BUBBLE_CONTROLLER_H_
 
 #include "ash/ash_export.h"
 #include "ash/assistant/model/assistant_bubble_model.h"
@@ -20,11 +20,12 @@ namespace ash {
 class AssistantBubbleView;
 class AssistantController;
 
-class ASH_EXPORT AssistantBubble : public views::WidgetObserver,
-                                   public AssistantInteractionModelObserver {
+class ASH_EXPORT AssistantBubbleController
+    : public views::WidgetObserver,
+      public AssistantInteractionModelObserver {
  public:
-  explicit AssistantBubble(AssistantController* assistant_controller);
-  ~AssistantBubble() override;
+  explicit AssistantBubbleController(AssistantController* assistant_controller);
+  ~AssistantBubbleController() override;
 
   // Returns the underlying model.
   const AssistantBubbleModel* model() const { return &assistant_bubble_model_; }
@@ -53,9 +54,9 @@ class ASH_EXPORT AssistantBubble : public views::WidgetObserver,
 
   AssistantBubbleView* bubble_view_ = nullptr;  // Owned by view hierarchy.
 
-  DISALLOW_COPY_AND_ASSIGN(AssistantBubble);
+  DISALLOW_COPY_AND_ASSIGN(AssistantBubbleController);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ASSISTANT_UI_ASSISTANT_BUBBLE_H_
+#endif  // ASH_ASSISTANT_ASSISTANT_BUBBLE_CONTROLLER_H_

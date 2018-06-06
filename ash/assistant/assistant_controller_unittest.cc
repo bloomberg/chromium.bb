@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/assistant/ui/assistant_bubble.h"
+#include "ash/assistant/assistant_bubble_controller.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -43,7 +43,9 @@ class AssistantControllerTest : public AshTestBase {
     ASSERT_FALSE(IsAssistantBubbleShown());
   }
 
-  bool IsAssistantBubbleShown() { return controller_->bubble().IsVisible(); }
+  bool IsAssistantBubbleShown() {
+    return controller_->bubble_controller()->IsVisible();
+  }
 
   const AssistantInteractionModel* interaction_model() {
     return controller_->interaction_model();
