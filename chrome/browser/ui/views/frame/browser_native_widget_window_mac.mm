@@ -9,12 +9,9 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-
-namespace {
-constexpr NSInteger kWindowButtonsOffsetFromBottom = 9;
-constexpr NSInteger kWindowButtonsOffsetFromLeft = 11;
-constexpr NSInteger kTitleBarHeight = 37;
-}  // namespace
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "ui/views/widget/widget.h"
 
 @interface NSWindow (PrivateAPI)
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle;
@@ -25,6 +22,7 @@ constexpr NSInteger kTitleBarHeight = 37;
 // Weak lets Chrome launch even if a future macOS doesn't have NSThemeFrame.
 WEAK_IMPORT_ATTRIBUTE
 @interface NSThemeFrame : NSView
+- (CGFloat)_titlebarHeight;
 @end
 
 @interface BrowserWindowFrame : NSThemeFrame
@@ -34,16 +32,20 @@ WEAK_IMPORT_ATTRIBUTE
 
 // NSThemeFrame overrides.
 
-- (CGFloat)_minXTitlebarWidgetInset {
-  return kWindowButtonsOffsetFromLeft;
-}
-
-- (CGFloat)_minYTitlebarButtonsOffset {
-  return -kWindowButtonsOffsetFromBottom;
-}
-
 - (CGFloat)_titlebarHeight {
-  return kTitleBarHeight;
+  if (views::Widget* widget = views::Widget::GetWidgetForNativeView(self)) {
+    if (views::NonClientView* nonClientView = widget->non_client_view()) {
+      auto* frameView = static_cast<const BrowserNonClientFrameView*>(
+          nonClientView->frame_view());
+      BrowserView* browserView = frameView->browser_view();
+      return browserView->GetTabStripHeight() + frameView->GetTopInset(true);
+    }
+  }
+  return [super _titlebarHeight];
+}
+
+- (BOOL)_shouldCenterTrafficLights {
+  return YES;
 }
 
 // The base implementation justs tests [self class] == [NSThemeFrame class].
