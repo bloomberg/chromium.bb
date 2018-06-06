@@ -11,6 +11,7 @@
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/renderer_interface_binders.h"
 #include "content/browser/websockets/websocket_manager.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -53,9 +54,8 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
 
  private:
   void RegisterMojoInterfaces() {
-    registry_.AddInterface(
-        base::BindRepeating(&WebSocketManager::CreateWebSocket, process_id_,
-                            parent_render_frame_id_, origin_, nullptr));
+    registry_.AddInterface(base::BindRepeating(
+        &DedicatedWorkerHost::CreateWebSocket, base::Unretained(this)));
     registry_.AddInterface(base::BindRepeating(
         &DedicatedWorkerHost::CreateUsbDeviceManager, base::Unretained(this)));
   }
@@ -65,6 +65,17 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         RenderFrameHostImpl::FromID(process_id_, parent_render_frame_id_);
     GetContentClient()->browser()->CreateUsbDeviceManager(host,
                                                           std::move(request));
+  }
+
+  void CreateWebSocket(network::mojom::WebSocketRequest request) {
+    network::mojom::AuthenticationHandlerPtr auth_handler;
+    GetContentClient()->browser()->WillCreateWebSocket(
+        RenderFrameHost::FromID(process_id_, parent_render_frame_id_), &request,
+        &auth_handler);
+
+    WebSocketManager::CreateWebSocket(process_id_, parent_render_frame_id_,
+                                      origin_, std::move(auth_handler),
+                                      std::move(request));
   }
 
   const int process_id_;
