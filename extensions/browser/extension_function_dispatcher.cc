@@ -303,7 +303,9 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
   function_io->set_ipc_sender(ipc_sender, routing_id);
   function_io->set_extension_info_map(extension_info_map);
   if (extension) {
-    function->set_include_incognito(
+    // TODO(https://crbug.com/845845): Also check if the extension is in
+    // spanning mode (CanCrossIncognito).
+    function->set_include_incognito_information(
         extension_info_map->IsIncognitoEnabled(extension->id()));
   }
 
@@ -452,7 +454,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   if (extension &&
       ExtensionsBrowserClient::Get()->CanExtensionCrossIncognito(
           extension, browser_context_)) {
-    function->set_include_incognito(true);
+    function->set_include_incognito_information(true);
   }
 
   if (!CheckPermissions(function.get(), params, callback))

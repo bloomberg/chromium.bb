@@ -266,7 +266,7 @@ AutomationInternalEnableTabFunction::Run() {
   if (params->args.tab_id.get()) {
     int tab_id = *params->args.tab_id;
     if (!ExtensionTabUtil::GetTabById(
-            tab_id, browser_context(), include_incognito(),
+            tab_id, browser_context(), include_incognito_information(),
             NULL, /* browser out param*/
             NULL, /* tab_strip out param */
             &contents, NULL /* tab_index out param */)) {

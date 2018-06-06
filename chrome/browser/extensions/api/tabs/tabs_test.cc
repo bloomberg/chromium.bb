@@ -446,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
       new TabsUpdateFunction());
   scoped_refptr<Extension> extension(ExtensionBuilder("Test").Build());
   update_tab_function->set_extension(extension.get());
-  update_tab_function->set_include_incognito(true);
+  update_tab_function->set_include_incognito_information(true);
 
   static const char kArgsWithNonIncognitoUrl[] =
       "[null, {\"url\": \"chrome://extensions/configureCommands\"}]";

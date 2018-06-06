@@ -132,7 +132,7 @@ ContentSettingsContentSettingGetFunction::Run() {
   bool incognito = false;
   if (params->details.incognito.get())
     incognito = *params->details.incognito;
-  if (incognito && !include_incognito())
+  if (incognito && !include_incognito_information())
     return RespondNow(Error(pref_keys::kIncognitoErrorMessage));
 
   HostContentSettingsMap* map;

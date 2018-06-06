@@ -55,8 +55,8 @@ Browser* ChromeExtensionFunctionDetails::GetCurrentBrowser() const {
   Profile* profile = Profile::FromBrowserContext(
       web_contents ? web_contents->GetBrowserContext()
                    : function_->browser_context());
-  Browser* browser =
-      chrome::FindAnyBrowser(profile, function_->include_incognito());
+  Browser* browser = chrome::FindAnyBrowser(
+      profile, function_->include_incognito_information());
   if (browser)
     return browser;
 

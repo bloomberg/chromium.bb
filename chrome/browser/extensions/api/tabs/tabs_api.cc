@@ -519,9 +519,9 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
     // Find the tab. |source_tab_strip| and |tab_index| will later be used to
     // move the tab into the created window.
     Browser* source_browser = nullptr;
-    if (!GetTabById(*create_data->tab_id, calling_profile, include_incognito(),
-                    &source_browser, &source_tab_strip, nullptr, &tab_index,
-                    &error)) {
+    if (!GetTabById(*create_data->tab_id, calling_profile,
+                    include_incognito_information(), &source_browser,
+                    &source_tab_strip, nullptr, &tab_index, &error)) {
       return RespondNow(Error(error));
     }
 
@@ -673,7 +673,8 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
 
   std::unique_ptr<base::Value> result;
   if (new_window->profile()->IsOffTheRecord() &&
-      !browser_context()->IsOffTheRecord() && !include_incognito()) {
+      !browser_context()->IsOffTheRecord() &&
+      !include_incognito_information()) {
     // Don't expose incognito windows if extension itself works in non-incognito
     // profile and CanCrossIncognito isn't allowed.
     result = std::make_unique<base::Value>();
@@ -944,7 +945,7 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
   std::unique_ptr<base::ListValue> result(new base::ListValue());
   Profile* profile = Profile::FromBrowserContext(browser_context());
   Browser* last_active_browser =
-      chrome::FindAnyBrowser(profile, include_incognito());
+      chrome::FindAnyBrowser(profile, include_incognito_information());
   Browser* current_browser =
       ChromeExtensionFunctionDetails(this).GetCurrentBrowser();
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -954,7 +955,7 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
     if (!browser->window())
       continue;
 
-    if (!include_incognito() && profile != browser->profile())
+    if (!include_incognito_information() && profile != browser->profile())
       continue;
 
     if (!browser->extension_window_controller()->IsVisibleToTabsAPIForExtension(
@@ -1113,8 +1114,8 @@ ExtensionFunction::ResponseAction TabsDuplicateFunction::Run() {
   TabStripModel* tab_strip = NULL;
   int tab_index = -1;
   std::string error;
-  if (!GetTabById(tab_id, browser_context(), include_incognito(), &browser,
-                  &tab_strip, NULL, &tab_index, &error)) {
+  if (!GetTabById(tab_id, browser_context(), include_incognito_information(),
+                  &browser, &tab_strip, NULL, &tab_index, &error)) {
     return RespondNow(Error(error));
   }
 
@@ -1148,8 +1149,8 @@ ExtensionFunction::ResponseAction TabsGetFunction::Run() {
   WebContents* contents = NULL;
   int tab_index = -1;
   std::string error;
-  if (!GetTabById(tab_id, browser_context(), include_incognito(), NULL,
-                  &tab_strip, &contents, &tab_index, &error)) {
+  if (!GetTabById(tab_id, browser_context(), include_incognito_information(),
+                  NULL, &tab_strip, &contents, &tab_index, &error)) {
     return RespondNow(Error(error));
   }
 
@@ -1264,8 +1265,8 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
   TabStripModel* tab_strip = NULL;
   Browser* browser = nullptr;
   std::string error;
-  if (!GetTabById(tab_id, browser_context(), include_incognito(), &browser,
-                  &tab_strip, &contents, &tab_index, &error)) {
+  if (!GetTabById(tab_id, browser_context(), include_incognito_information(),
+                  &browser, &tab_strip, &contents, &tab_index, &error)) {
     return RespondNow(Error(error));
   }
 
@@ -1346,8 +1347,8 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
     if (opener_id == tab_id)
       return RespondNow(Error("Cannot set a tab's opener to itself."));
     if (!ExtensionTabUtil::GetTabById(opener_id, browser_context(),
-                                      include_incognito(), nullptr, nullptr,
-                                      &opener_contents, nullptr)) {
+                                      include_incognito_information(), nullptr,
+                                      nullptr, &opener_contents, nullptr)) {
       return RespondNow(Error(ErrorUtils::FormatErrorMessage(
           keys::kTabNotFoundError, base::IntToString(opener_id))));
     }
@@ -1522,7 +1523,7 @@ bool TabsMoveFunction::MoveTab(int tab_id,
   TabStripModel* source_tab_strip = NULL;
   WebContents* contents = NULL;
   int tab_index = -1;
-  if (!GetTabById(tab_id, browser_context(), include_incognito(),
+  if (!GetTabById(tab_id, browser_context(), include_incognito_information(),
                   &source_browser, &source_tab_strip, &contents, &tab_index,
                   error)) {
     return false;
@@ -1639,8 +1640,8 @@ ExtensionFunction::ResponseAction TabsReloadFunction::Run() {
 
     Browser* browser = NULL;
     std::string error;
-    if (!GetTabById(tab_id, browser_context(), include_incognito(), &browser,
-                    NULL, &web_contents, NULL, &error)) {
+    if (!GetTabById(tab_id, browser_context(), include_incognito_information(),
+                    &browser, NULL, &web_contents, NULL, &error)) {
       return RespondNow(Error(error));
     }
   }
@@ -1686,8 +1687,8 @@ ExtensionFunction::ResponseAction TabsRemoveFunction::Run() {
 bool TabsRemoveFunction::RemoveTab(int tab_id, std::string* error) {
   Browser* browser = NULL;
   WebContents* contents = NULL;
-  if (!GetTabById(tab_id, browser_context(), include_incognito(), &browser,
-                  nullptr, &contents, nullptr, error)) {
+  if (!GetTabById(tab_id, browser_context(), include_incognito_information(),
+                  &browser, nullptr, &contents, nullptr, error)) {
     return false;
   }
 
@@ -1835,8 +1836,8 @@ ExtensionFunction::ResponseAction TabsDetectLanguageFunction::Run() {
   std::string error;
   if (params->tab_id.get()) {
     tab_id = *params->tab_id;
-    if (!GetTabById(tab_id, browser_context(), include_incognito(), &browser,
-                    nullptr, &contents, nullptr, &error)) {
+    if (!GetTabById(tab_id, browser_context(), include_incognito_information(),
+                    &browser, nullptr, &contents, nullptr, &error)) {
       return RespondNow(Error(error));
     }
     // TODO(devlin): Can this happen? GetTabById() should return false if
@@ -1971,8 +1972,9 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage(std::string* error) {
   // If |tab_id| is specified, look for the tab. Otherwise default to selected
   // tab in the current window.
   CHECK_GE(execute_tab_id_, 0);
-  if (!GetTabById(execute_tab_id_, browser_context(), include_incognito(),
-                  nullptr, nullptr, &contents, nullptr, error)) {
+  if (!GetTabById(execute_tab_id_, browser_context(),
+                  include_incognito_information(), nullptr, nullptr, &contents,
+                  nullptr, error)) {
     return false;
   }
 
@@ -2028,10 +2030,10 @@ ScriptExecutor* ExecuteCodeInTabFunction::GetScriptExecutor(
   Browser* browser = nullptr;
   content::WebContents* contents = nullptr;
 
-  bool success =
-      GetTabById(execute_tab_id_, browser_context(), include_incognito(),
-                 &browser, nullptr, &contents, nullptr, error) &&
-      contents && browser;
+  bool success = GetTabById(execute_tab_id_, browser_context(),
+                            include_incognito_information(), &browser, nullptr,
+                            &contents, nullptr, error) &&
+                 contents && browser;
 
   if (!success)
     return nullptr;
@@ -2060,7 +2062,7 @@ content::WebContents* ZoomAPIFunction::GetWebContents(int tab_id,
   content::WebContents* web_contents = NULL;
   if (tab_id != -1) {
     // We assume this call leaves web_contents unchanged if it is unsuccessful.
-    GetTabById(tab_id, browser_context(), include_incognito(),
+    GetTabById(tab_id, browser_context(), include_incognito_information(),
                nullptr /* ignore Browser* output */,
                nullptr /* ignore TabStripModel* output */, &web_contents,
                nullptr /* ignore int tab_index output */, error);
@@ -2209,8 +2211,8 @@ ExtensionFunction::ResponseAction TabsDiscardFunction::Run() {
   if (params->tab_id) {
     int tab_id = *params->tab_id;
     std::string error;
-    if (!GetTabById(tab_id, browser_context(), include_incognito(), nullptr,
-                    nullptr, &contents, nullptr, &error)) {
+    if (!GetTabById(tab_id, browser_context(), include_incognito_information(),
+                    nullptr, nullptr, &contents, nullptr, &error)) {
       return RespondNow(Error(error));
     }
   }

@@ -203,7 +203,7 @@ ExtensionFunction::ResponseAction CookiesGetFunction::Run() {
       parsed_args_->details.store_id.get() ? *parsed_args_->details.store_id
                                            : std::string();
   network::mojom::CookieManager* cookie_manager = ParseStoreCookieManager(
-      browser_context(), include_incognito(), &store_id, &error);
+      browser_context(), include_incognito_information(), &store_id, &error);
   if (!cookie_manager)
     return RespondNow(Error(error));
 
@@ -257,7 +257,7 @@ ExtensionFunction::ResponseAction CookiesGetAllFunction::Run() {
       parsed_args_->details.store_id.get() ? *parsed_args_->details.store_id
                                            : std::string();
   network::mojom::CookieManager* cookie_manager = ParseStoreCookieManager(
-      browser_context(), include_incognito(), &store_id, &error);
+      browser_context(), include_incognito_information(), &store_id, &error);
   if (!cookie_manager)
     return RespondNow(Error(error));
 
@@ -308,7 +308,7 @@ ExtensionFunction::ResponseAction CookiesSetFunction::Run() {
       parsed_args_->details.store_id.get() ? *parsed_args_->details.store_id
                                            : std::string();
   network::mojom::CookieManager* cookie_manager = ParseStoreCookieManager(
-      browser_context(), include_incognito(), &store_id, &error);
+      browser_context(), include_incognito_information(), &store_id, &error);
   if (!cookie_manager)
     return RespondNow(Error(error));
 
@@ -444,7 +444,7 @@ ExtensionFunction::ResponseAction CookiesRemoveFunction::Run() {
       parsed_args_->details.store_id.get() ? *parsed_args_->details.store_id
                                            : std::string();
   network::mojom::CookieManager* cookie_manager = ParseStoreCookieManager(
-      browser_context(), include_incognito(), &store_id, &error);
+      browser_context(), include_incognito_information(), &store_id, &error);
   if (!cookie_manager)
     return RespondNow(Error(error));
 
@@ -481,7 +481,8 @@ ExtensionFunction::ResponseAction CookiesGetAllCookieStoresFunction::Run() {
   std::unique_ptr<base::ListValue> original_tab_ids(new base::ListValue());
   Profile* incognito_profile = NULL;
   std::unique_ptr<base::ListValue> incognito_tab_ids;
-  if (include_incognito() && original_profile->HasOffTheRecordProfile()) {
+  if (include_incognito_information() &&
+      original_profile->HasOffTheRecordProfile()) {
     incognito_profile = original_profile->GetOffTheRecordProfile();
     if (incognito_profile)
       incognito_tab_ids.reset(new base::ListValue());
