@@ -152,6 +152,8 @@ class CORE_EXPORT InspectorPageAgent final
                                          Maybe<String> world_name,
                                          Maybe<bool> grant_universal_access,
                                          int* execution_context_id) override;
+  protocol::Response setFontFamilies(
+      std::unique_ptr<protocol::Page::FontFamilies>) override;
 
   // InspectorInstrumentation API
   void DidClearDocumentOfWindowObject(LocalFrame*);
