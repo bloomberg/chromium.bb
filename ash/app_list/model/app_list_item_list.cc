@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/app_list/model/app_list_item.h"
+#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 
 namespace app_list {
@@ -121,6 +122,27 @@ void AppListItemList::SetItemPosition(AppListItem* item,
                          std::move(target_item));
   for (auto& observer : observers_)
     observer.OnListItemMoved(from_index, to_index, item);
+}
+
+AppListItem* AppListItemList::AddPageBreakItemAfter(
+    const AppListItem* previous_item) {
+  size_t previous_index;
+  CHECK(FindItemIndex(previous_item->id(), &previous_index));
+  CHECK(!previous_item->IsInFolder());
+  syncer::StringOrdinal position =
+      previous_index == item_count() - 1
+          ? previous_item->position().CreateAfter()
+          : previous_item->position().CreateBetween(
+                item_at(previous_index + 1)->position());
+  auto page_break_item = std::make_unique<AppListItem>(base::GenerateGUID());
+  page_break_item->set_position(position);
+  page_break_item->set_is_page_break(true);
+
+  AppListItem* item = page_break_item.get();
+  size_t index = GetItemSortOrderIndex(item->position(), item->id());
+  app_list_items_.insert(app_list_items_.begin() + index,
+                         std::move(page_break_item));
+  return item;
 }
 
 void AppListItemList::HighlightItemInstalledFromUI(const std::string& id) {

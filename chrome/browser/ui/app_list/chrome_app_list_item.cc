@@ -24,7 +24,8 @@ ash::mojom::AppListItemMetadataPtr CreateDefaultMetadata(
   return ash::mojom::AppListItemMetadata::New(
       app_id, std::string() /* name */, std::string() /* short_name */,
       std::string() /* folder_id */, syncer::StringOrdinal(),
-      false /* is_folder */, gfx::ImageSkia() /* icon */);
+      false /* is_folder */, gfx::ImageSkia() /* icon */,
+      false /* is_page_break */);
 }
 
 }  // namespace
@@ -186,6 +187,10 @@ void ChromeAppListItem::SetPosition(const syncer::StringOrdinal& position) {
   AppListModelUpdater* updater = model_updater();
   if (updater)
     updater->SetItemPosition(id(), position);
+}
+
+void ChromeAppListItem::SetIsPageBreak(bool is_page_break) {
+  metadata_->is_page_break = is_page_break;
 }
 
 void ChromeAppListItem::SetChromeFolderId(const std::string& folder_id) {

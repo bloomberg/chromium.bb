@@ -93,6 +93,11 @@ class APP_LIST_MODEL_EXPORT AppListItem {
 
   bool is_folder() const { return metadata_->is_folder; }
 
+  void set_is_page_break(bool is_page_break) {
+    metadata_->is_page_break = is_page_break;
+  }
+  bool is_page_break() const { return metadata_->is_page_break; }
+
  protected:
   friend class ::FastShowPickler;
   friend class ash::AppListControllerImpl;

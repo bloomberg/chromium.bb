@@ -25,6 +25,7 @@ struct AppListItemMetadata {
   syncer.mojom.StringOrdinal position; // The position of the item.
   bool is_folder;     // Whether this item is a folder.
   gfx.mojom.ImageSkia? icon;  // The icon of this item.
+  bool is_page_break; // Whether this item is a "page break" item.
 };
 
 // A structure holding the common information which is sent from chrome to ash,
@@ -356,6 +357,8 @@ interface AppListClient {
   OnFolderDeleted(AppListItemMetadata folder);
   // Invoked when user changes a folder's name or an item's position.
   OnItemUpdated(AppListItemMetadata folder);
+  // Invoked when a "page break" item is added with |id| and |position|.
+  OnPageBreakItemAdded(string id, syncer.mojom.StringOrdinal position);
 
   //////////////////////////////////////////////////////////////////////////////
   // Interfaces on voice interaction:

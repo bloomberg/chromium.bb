@@ -221,6 +221,14 @@ void AppListClientImpl::OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) {
   model_updater_->OnItemUpdated(std::move(item));
 }
 
+void AppListClientImpl::OnPageBreakItemAdded(
+    const std::string& id,
+    const syncer::StringOrdinal& position) {
+  if (!model_updater_)
+    return;
+  model_updater_->OnPageBreakItemAdded(id, position);
+}
+
 void AppListClientImpl::ActiveUserChanged(
     const user_manager::User* active_user) {
   if (!active_user->is_profile_created())

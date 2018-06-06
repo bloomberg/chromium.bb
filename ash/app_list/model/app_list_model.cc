@@ -74,6 +74,13 @@ AppListItem* AppListModel::AddItem(std::unique_ptr<AppListItem> item) {
   return AddItemToItemListAndNotify(std::move(item));
 }
 
+void AppListModel::AddPageBreakItemAfter(const AppListItem* previous_item) {
+  AppListItem* page_break_item =
+      top_level_item_list()->AddPageBreakItemAfter(previous_item);
+  for (auto& observer : observers_)
+    observer.OnAppListItemAdded(page_break_item);
+}
+
 AppListItem* AppListModel::AddItemToFolder(std::unique_ptr<AppListItem> item,
                                            const std::string& folder_id) {
   if (folder_id.empty())

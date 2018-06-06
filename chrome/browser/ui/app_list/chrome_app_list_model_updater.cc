@@ -510,3 +510,22 @@ void ChromeAppListModelUpdater::OnItemUpdated(
   if (delegate_)
     delegate_->OnAppListItemUpdated(chrome_item);
 }
+
+void ChromeAppListModelUpdater::OnPageBreakItemAdded(
+    const std::string& id,
+    const syncer::StringOrdinal& position) {
+  ChromeAppListItem* chrome_item = FindItem(id);
+
+  // If the item already exists, we should have set its information properly.
+  if (chrome_item)
+    return;
+
+  // Otherwise, create a new "page break" item.
+  auto new_item = std::make_unique<ChromeAppListItem>(profile_, id, this);
+  chrome_item = AddChromeItem(std::move(new_item));
+  chrome_item->SetPosition(position);
+  chrome_item->SetIsPageBreak(true);
+
+  if (delegate_)
+    delegate_->OnAppListItemAdded(chrome_item);
+}

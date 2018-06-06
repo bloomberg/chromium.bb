@@ -136,6 +136,8 @@ class AppListModelUpdater {
   virtual void OnFolderCreated(ash::mojom::AppListItemMetadataPtr item) = 0;
   virtual void OnFolderDeleted(ash::mojom::AppListItemMetadataPtr item) = 0;
   virtual void OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) = 0;
+  virtual void OnPageBreakItemAdded(const std::string& id,
+                                    const syncer::StringOrdinal& position) = 0;
 
   virtual void SetDelegate(AppListModelUpdaterDelegate* delegate) = 0;
 };
