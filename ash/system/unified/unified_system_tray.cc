@@ -165,7 +165,6 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
 
   SetInkDropMode(InkDropMode::ON);
   set_separator_visibility(false);
-  SetVisible(true);
 }
 
 UnifiedSystemTray::~UnifiedSystemTray() {
@@ -186,6 +185,11 @@ void UnifiedSystemTray::ActivateBubble() {
 
 gfx::Rect UnifiedSystemTray::GetBubbleBoundsInScreen() const {
   return bubble_ ? bubble_->GetBoundsInScreen() : gfx::Rect();
+}
+
+void UnifiedSystemTray::UpdateAfterLoginStatusChange() {
+  SetVisible(true);
+  PreferredSizeChanged();
 }
 
 bool UnifiedSystemTray::PerformAction(const ui::Event& event) {

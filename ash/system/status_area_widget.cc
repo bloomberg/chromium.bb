@@ -168,6 +168,8 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
 
   if (system_tray_)
     system_tray_->UpdateAfterLoginStatusChange(login_status);
+  if (unified_system_tray_)
+    unified_system_tray_->UpdateAfterLoginStatusChange();
   logout_button_tray_->UpdateAfterLoginStatusChange();
   overview_button_tray_->UpdateAfterLoginStatusChange(login_status);
 }
