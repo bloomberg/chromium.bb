@@ -60,15 +60,24 @@ class MutatorHost;
 class ScrollbarLayerInterface;
 
 // Base class for composited layers. Special layer types are derived from
-// this class.
+// this class. Each layer is an independent unit in the compositor, be that
+// for transforming or for content. If a layer has content it can be
+// transformed efficiently without requiring the content to be recreated.
+// Layers form a tree, with each layer having 0 or more children, and a single
+// parent (or none at the root). Layers within the tree, other than the root
+// layer, are kept alive by that tree relationship, with refpointer ownership
+// from parents to children.
 class CC_EXPORT Layer : public base::RefCounted<Layer> {
  public:
   using LayerListType = LayerList;
 
+  // An invalid layer id, as all layer ids are positive.
   enum LayerIdLabels {
     INVALID_ID = -1,
   };
 
+  // A layer can be attached to another layer as a mask for it. These
+  // describe how the mask would be generated as a texture in that case.
   enum LayerMaskType {
     NOT_MASK = 0,
     MULTI_TEXTURE_MASK,
@@ -77,21 +86,38 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   static scoped_refptr<Layer> Create();
 
+  // A unique and stable id for the Layer. Ids are always positive.
   int id() const { return inputs_.layer_id; }
 
+  // Returns a pointer to the highest ancestor of this layer, or itself.
   Layer* RootLayer();
+  // Returns a pointer to the direct ancestor of this layer if it exists,
+  // or null.
   Layer* parent() { return parent_; }
   const Layer* parent() const { return parent_; }
+  // Appends |child| to the list of children of this layer, and maintains
+  // ownership of a reference to that |child|.
   void AddChild(scoped_refptr<Layer> child);
+  // Inserts |child| into the list of children of this layer, before position
+  // |index| (0 based) and maintains ownership of a reference to that |child|.
   void InsertChild(scoped_refptr<Layer> child, size_t index);
+  // Removes an existing child |reference| from this layer's list of children,
+  // and inserts |new_layer| it its place in the list. This layer maintains
+  // ownership of a reference to the |new_layer|. The |new_layer| may be null,
+  // in which case |reference| is simply removed from the list of children,
+  // which ends this layers ownership of the child.
   void ReplaceChild(Layer* reference, scoped_refptr<Layer> new_layer);
+  // Removes this layer from the list of children in its parent, removing the
+  // parent's ownership of this layer.
   void RemoveFromParent();
+  // Removes all children from this layer's list of children, removing ownership
+  // of those children.
   void RemoveAllChildren();
-  void SetChildren(const LayerList& children);
+  // Returns true if |ancestor| is this layer's parent or higher ancestor.
   bool HasAncestor(const Layer* ancestor) const;
 
+  // The list of children of this layer.
   const LayerList& children() const { return inputs_.children; }
-  Layer* child_at(size_t index) { return inputs_.children[index].get(); }
 
   // This requests the layer and its subtree be rendered and given to the
   // callback. If the copy is unable to be produced (the layer is destroyed
@@ -99,57 +125,100 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // request's source property is set, any prior uncommitted requests having the
   // same source will be aborted.
   void RequestCopyOfOutput(std::unique_ptr<viz::CopyOutputRequest> request);
+  // True if a copy request has been inserted on this layer and a commit has not
+  // occured yet.
   bool HasCopyRequest() const { return !inputs_.copy_requests.empty(); }
 
-  void SetSubtreeHasCopyRequest(bool subtree_has_copy_request);
-  bool SubtreeHasCopyRequest() const;
-
-  void TakeCopyRequests(
-      std::vector<std::unique_ptr<viz::CopyOutputRequest>>* requests);
-
+  // Set and get the background color for the layer. This color is not used by
+  // basic Layers, but subclasses may make use of it.
   virtual void SetBackgroundColor(SkColor background_color);
   SkColor background_color() const { return inputs_.background_color; }
+
+  // Internal to property tree generation. Sets an opaque background color for
+  // the layer, to be used in place of the background_color() if the layer says
+  // contents_opaque() is true.
   void SetSafeOpaqueBackgroundColor(SkColor background_color);
-  // If contents_opaque(), return an opaque color else return a
-  // non-opaque color.  Tries to return background_color(), if possible.
+  // Returns a background color with opaque-ness equal to the value of
+  // contents_opaque().
+  // If the layer says contents_opaque() is true, this returns the value set by
+  // SetSafeOpaqueBackgroundColor() which should be an opaque color. Otherwise,
+  // it returns something non-opaque. It prefers to return the
+  // background_color(), but if the background_color() is opaque (and this layer
+  // claims to not be), then SK_ColorTRANSPARENT is returned.
   SkColor SafeOpaqueBackgroundColor() const;
 
-  // A layer's bounds are in logical, non-page-scaled pixels (however, the
-  // root layer's bounds are in physical pixels).
+  // Set and get the position of this layer, relative to its parent. This is
+  // specified in layer space, which excludes device scale and page scale
+  // factors, and ignoring transforms for this layer or ancestor layers. The
+  // root layer's position is not used as it always appears at the origin of
+  // the viewport.
+  void SetPosition(const gfx::PointF& position);
+  const gfx::PointF& position() const { return inputs_.position; }
+
+  // Set and get the layers bounds. This is specified in layer space, which
+  // excludes device scale and page scale factors, and ignoring transforms for
+  // this layer or ancestor layers.
+  //
+  // The root layer in the tree has bounds in viewport space, which includes
+  // the device scale factor.
   void SetBounds(const gfx::Size& bounds);
   const gfx::Size& bounds() const { return inputs_.bounds; }
 
+  // Set and get the behaviour to be applied for compositor-thread scrolling of
+  // this layer beyond the beginning or end of the layer's content.
   void SetOverscrollBehavior(const OverscrollBehavior& behavior);
   OverscrollBehavior overscroll_behavior() const {
     return inputs_.overscroll_behavior;
   }
 
+  // Set and get the snapping behaviour for compositor-thread scrolling of
+  // this layer. The default value of null means there is no snapping for the
+  // layer.
   void SetSnapContainerData(base::Optional<SnapContainerData> data);
   const base::Optional<SnapContainerData>& snap_container_data() const {
     return inputs_.snap_container_data;
   }
 
+  // Set or get that this layer clips its subtree to within its bounds. Content
+  // of children will be intersected with the bounds of this layer when true.
   void SetMasksToBounds(bool masks_to_bounds);
   bool masks_to_bounds() const { return inputs_.masks_to_bounds; }
 
+  // Set or get a layer that will mask the contents of this layer. The alpha
+  // channel of the mask layer's content is used as an alpha mask of this
+  // layer's content. IOW the mask's alpha is multiplied by this layer's alpha
+  // for each matching pixel.
   void SetMaskLayer(Layer* mask_layer);
   Layer* mask_layer() { return inputs_.mask_layer.get(); }
   const Layer* mask_layer() const { return inputs_.mask_layer.get(); }
 
   // Marks the |dirty_rect| as being changed, which will cause a commit and
   // the compositor to submit a new frame with a damage rect that includes the
-  // layer's dirty area.
+  // layer's dirty area. This rect is in layer space, the same as bounds().
   virtual void SetNeedsDisplayRect(const gfx::Rect& dirty_rect);
   // Marks the entire layer's bounds as being changed, which will cause a commit
   // and the compositor to submit a new frame with a damage rect that includes
-  // the entire layer.
+  // the entire layer. Note that if the layer resizes afterward, but before
+  // commit, the dirty rect would not cover the layer, however then the layer
+  // bounds change would implicitly damage the full layer.
   void SetNeedsDisplay() { SetNeedsDisplayRect(gfx::Rect(bounds())); }
 
+  // Set or get the opacity which should be applied to the contents of the layer
+  // and its subtree (together as a single composited entity) when blending them
+  // into their target. Note that this does not speak to the contents of this
+  // layer, which may be opaque or not (see contents_opaque()). Note that the
+  // opacity is cumulative since it applies to the layer's subtree.
   virtual void SetOpacity(float opacity);
   float opacity() const { return inputs_.opacity; }
+  // Gets the true opacity that will be used for blending the contents of this
+  // layer and its subtree into its target during composite. This value is the
+  // same as the user-specified opacity() unless the layer should not be visible
+  // at all for other reasons, in which case the opacity here becomes 0.
   float EffectiveOpacity() const;
-  virtual bool OpacityCanAnimateOnImplThread() const;
 
+  // Set or get the blend mode to be applied when blending the contents of the
+  // layer and its subtree (together as a single composited entity) when
+  // blending them into their target.
   void SetBlendMode(SkBlendMode blend_mode);
   SkBlendMode blend_mode() const { return inputs_.blend_mode; }
 
@@ -162,27 +231,37 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.is_root_for_isolated_group;
   }
 
-  // Make the layer hit testable even if |draws_content_| is false.
-  void SetHitTestableWithoutDrawsContent(bool should_hit_test);
-  bool hit_testable_without_draws_content() const {
-    return inputs_.hit_testable_without_draws_content;
-  }
-
+  // Set or get the list of filter effects to be applied to the contents of the
+  // layer and its subtree (together as a single composited entity) when
+  // drawing them into their target.
   void SetFilters(const FilterOperations& filters);
   const FilterOperations& filters() const { return inputs_.filters; }
 
-  // Background filters are filters applied to what is behind this layer, when
-  // they are viewed through non-opaque regions in this layer.
+  // Set or get the list of filters that should be applied to the content this
+  // layer and its subtree will be drawn into. The effect is clipped to only
+  // apply directly behind this layer and its subtree.
   void SetBackgroundFilters(const FilterOperations& filters);
   const FilterOperations& background_filters() const {
     return inputs_.background_filters;
   }
 
+  // Set or get an optimization hint that the contents of this layer are fully
+  // opaque or not. If true, every pixel of content inside the layer's bounds
+  // must be opaque or visual errors can occur. This applies only to this layer
+  // and not to children, and does not imply the layer should be composited
+  // opaquely, as effects may be applied such as opacity() or filters().
   void SetContentsOpaque(bool opaque);
   bool contents_opaque() const { return inputs_.contents_opaque; }
 
-  void SetPosition(const gfx::PointF& position);
-  const gfx::PointF& position() const { return inputs_.position; }
+  // Set or get whether this layer should be a hit test target even if not
+  // visible. Normally if DrawsContent() is false, making the layer not
+  // contribute to the final composited output, the layer will not be eligable
+  // for hit testing since it is invisible. Set this to true to allow the layer
+  // to be hit tested regardless.
+  void SetHitTestableWithoutDrawsContent(bool should_hit_test);
+  bool hit_testable_without_draws_content() const {
+    return inputs_.hit_testable_without_draws_content;
+  }
 
   // A layer that is a container for fixed position layers cannot be both
   // scrollable and have a non-identity transform.
@@ -468,6 +547,23 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   bool has_transform_node() { return has_transform_node_; }
   void SetHasTransformNode(bool val) { has_transform_node_ = val; }
+
+  // Internal to property tree construction. Whether this layer may animate its
+  // opacity on the compositor thread. Layer subclasses may override this to
+  // report true. If true, assumptions about opacity can not be made on the main
+  // thread.
+  virtual bool OpacityCanAnimateOnImplThread() const;
+
+  // Internal to property tree construction. Set to true if this layer or any
+  // layer below it in the tree has a CopyOutputRequest pending commit.
+  void SetSubtreeHasCopyRequest(bool subtree_has_copy_request);
+  // Internal to property tree construction. Returns true if this layer or any
+  // layer below it in the tree has a CopyOutputRequest pending commit.
+  bool SubtreeHasCopyRequest() const;
+  // Internal to property tree construction. Removes all CopyOutputRequests from
+  // this layer, moving them into |requests|.
+  void TakeCopyRequests(
+      std::vector<std::unique_ptr<viz::CopyOutputRequest>>* requests);
 
  protected:
   friend class LayerImpl;

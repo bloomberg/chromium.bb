@@ -36,7 +36,7 @@ static LayerImpl* ChildAt(LayerImpl* layer, int index) {
 }
 
 static Layer* ChildAt(Layer* layer, int index) {
-  return layer->child_at(index);
+  return layer->children()[index].get();
 }
 
 template <typename LayerType>

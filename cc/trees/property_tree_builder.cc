@@ -155,7 +155,7 @@ static LayerImpl* LayerChildAt(LayerImpl* layer, int index) {
 }
 
 static Layer* LayerChildAt(Layer* layer, int index) {
-  return layer->child_at(index);
+  return layer->children()[index].get();
 }
 
 static Layer* ScrollParent(Layer* layer) {

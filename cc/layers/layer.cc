@@ -361,16 +361,6 @@ void Layer::RemoveAllChildren() {
   }
 }
 
-void Layer::SetChildren(const LayerList& children) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (children == inputs_.children)
-    return;
-
-  RemoveAllChildren();
-  for (size_t i = 0; i < children.size(); ++i)
-    AddChild(children[i]);
-}
-
 bool Layer::HasAncestor(const Layer* ancestor) const {
   for (const Layer* layer = parent(); layer; layer = layer->parent()) {
     if (layer == ancestor)
@@ -423,9 +413,10 @@ void Layer::SetBackgroundColor(SkColor background_color) {
 
 void Layer::SetSafeOpaqueBackgroundColor(SkColor background_color) {
   DCHECK(IsPropertyChangeAllowed());
-  if (safe_opaque_background_color_ == background_color)
+  SkColor opaque_color = SkColorSetA(background_color, 255);
+  if (safe_opaque_background_color_ == opaque_color)
     return;
-  safe_opaque_background_color_ = background_color;
+  safe_opaque_background_color_ = opaque_color;
   SetNeedsPushProperties();
 }
 

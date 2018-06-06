@@ -48,8 +48,8 @@ void ThumbnailLayer::AddSelfToParentOrReplaceAt(scoped_refptr<cc::Layer> parent,
                                                 size_t index) {
   if (index >= parent->children().size())
     parent->AddChild(layer_);
-  else if (parent->child_at(index)->id() != layer_->id())
-    parent->ReplaceChild(parent->child_at(index), layer_);
+  else if (parent->children()[index]->id() != layer_->id())
+    parent->ReplaceChild(parent->children()[index].get(), layer_);
 }
 
 scoped_refptr<cc::Layer> ThumbnailLayer::layer() {
