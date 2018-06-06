@@ -408,8 +408,25 @@ class OmniboxFieldTrial {
   // ---------------------------------------------------------
   // For tab switch suggestions related experiments.
 
-  // Returns whether the tab switch suggestion experiment is enabled.
-  static bool InTabSwitchSuggestionTrial();
+  // Returns true if either the new answer layout flag or the
+  // #upcoming-ui-features flag is enabled.
+  static bool IsNewAnswerLayoutEnabled();
+
+  // Returns true if either the tab switch suggestions flag or the
+  // #upcoming-ui-features flag is enabled.
+  static bool IsTabSwitchSuggestionsEnabled();
+
+  // Returns true if either the steady-state elision flag or the
+  // #upcoming-ui-features flag is enabled.
+  static bool IsHideSteadyStateUrlSchemeAndSubdomainsEnabled();
+
+  // Returns true if either the show suggestion favicons flag or the
+  // #upcoming-ui-features flag is enabled.
+  static bool IsShowSuggestionFaviconsEnabled();
+
+  // Returns the size of the vertical margin that should be used in the
+  // suggestion view.
+  static int GetSuggestionVerticalMargin();
 
   // ---------------------------------------------------------
   // Clipboard URL suggestions:
