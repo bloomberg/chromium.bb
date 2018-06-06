@@ -176,8 +176,8 @@ class StackSamplingProfiler::SamplingThread : public Thread {
     Time profile_start_time;
 
     // Counters that indicate the current position along the acquisition.
-    int burst = 0;
-    int sample = 0;
+    int burst_count = 0;
+    int sample_count = 0;
 
     // The collected stack samples. The active profile is always at the back().
     CallStackProfiles profiles;
@@ -251,9 +251,10 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   void PerformCollectionTask(int collection_id);
   void ShutdownTask(int add_events);
 
-  // Updates the |next_sample_time| time based on configured parameters.
+  // Updates the |next_sample_time| time and the acquisition counters based on
+  // configured parameters.
   // Returns true if there is a next sample or false if sampling is complete.
-  bool UpdateNextSampleTime(CollectionContext* collection);
+  bool FinishSample(CollectionContext* collection);
 
   // Thread:
   void CleanUp() override;
@@ -527,7 +528,7 @@ void StackSamplingProfiler::SamplingThread::RecordSample(
 
   // If this is the first sample of a burst, a new Profile needs to be created
   // and filled.
-  if (collection->sample == 0) {
+  if (collection->sample_count == 0) {
     collection->profiles.push_back(CallStackProfile());
     CallStackProfile& profile = collection->profiles.back();
     profile.sampling_period = collection->params.sampling_interval;
@@ -544,7 +545,7 @@ void StackSamplingProfiler::SamplingThread::RecordSample(
                                                 &profile.samples.back());
 
   // If this is the last sample of a burst, record the total time.
-  if (collection->sample == collection->params.samples_per_burst - 1) {
+  if (collection->sample_count == collection->params.samples_per_burst - 1) {
     profile.profile_duration = Time::Now() - collection->profile_start_time +
                                collection->params.sampling_interval;
     collection->native_sampler->ProfileRecordingStopped();
@@ -632,8 +633,8 @@ void StackSamplingProfiler::SamplingThread::PerformCollectionTask(
   // Do the collection of a single sample.
   RecordSample(collection);
 
-  // Update the time of the next sample recording.
-  const bool collection_finished = !UpdateNextSampleTime(collection);
+  // Update the time of the next sample recording and acquisition counters.
+  const bool collection_finished = !FinishSample(collection);
   if (!collection_finished) {
     bool success = GetTaskRunnerOnSamplingThread()->PostDelayedTask(
         FROM_HERE,
@@ -690,20 +691,20 @@ void StackSamplingProfiler::SamplingThread::ShutdownTask(int add_events) {
   stack_buffer_.reset();
 }
 
-bool StackSamplingProfiler::SamplingThread::UpdateNextSampleTime(
+bool StackSamplingProfiler::SamplingThread::FinishSample(
     CollectionContext* collection) {
   // This will keep a consistent average interval between samples but will
   // result in constant series of acquisitions, thus nearly locking out the
   // target thread, if the interval is smaller than the time it takes to
   // actually acquire the sample. Anything sampling that quickly is going
   // to be a problem anyway so don't worry about it.
-  if (++collection->sample < collection->params.samples_per_burst) {
+  if (++collection->sample_count < collection->params.samples_per_burst) {
     collection->next_sample_time += collection->params.sampling_interval;
     return true;
   }
 
-  if (++collection->burst < collection->params.bursts) {
-    collection->sample = 0;
+  if (++collection->burst_count < collection->params.bursts) {
+    collection->sample_count = 0;
     collection->next_sample_time += collection->params.burst_interval;
     return true;
   }
