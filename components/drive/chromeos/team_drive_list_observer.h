@@ -14,6 +14,7 @@ namespace internal {
 
 // Interface for classes that need to observe events from the
 // TeamDriveListLoader.
+// TODO(slangley): Consider merging with ChangeListLoaderObserver.
 class TeamDriveListObserver {
  public:
   // Called every time that the complete list of team drives has been retrieved

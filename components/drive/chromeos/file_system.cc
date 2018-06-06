@@ -329,7 +329,8 @@ FileSystem::FileSystem(PrefService* pref_service,
 FileSystem::~FileSystem() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  default_corpus_change_list_loader_->RemoveObserver(this);
+  default_corpus_change_list_loader_->RemoveChangeListLoaderObserver(this);
+  default_corpus_change_list_loader_->RemoveTeamDriveListObserver(this);
 }
 
 void FileSystem::Reset(const FileOperationCallback& callback) {
@@ -359,7 +360,8 @@ void FileSystem::ResetComponents() {
           logger_, blocking_task_runner_.get(), resource_metadata_, scheduler_,
           about_resource_loader_.get(), loader_controller_.get());
 
-  default_corpus_change_list_loader_->AddObserver(this);
+  default_corpus_change_list_loader_->AddChangeListLoaderObserver(this);
+  default_corpus_change_list_loader_->AddTeamDriveListObserver(this);
 
   sync_client_ = std::make_unique<internal::SyncClient>(
       blocking_task_runner_.get(), delegate, scheduler_, resource_metadata_,
@@ -877,6 +879,13 @@ void FileSystem::OnInitialLoadComplete() {
                                              cache_,
                                              resource_metadata_));
   sync_client_->StartProcessingBacklog();
+}
+
+void FileSystem::OnTeamDriveListLoaded(
+    const std::vector<internal::TeamDrive>& team_drives_list,
+    const std::vector<internal::TeamDrive>& added_team_drives,
+    const std::vector<internal::TeamDrive>& removed_team_drives) {
+  // TODO(slangley): Create change list loaders for the team drives.
 }
 
 void FileSystem::GetMetadata(

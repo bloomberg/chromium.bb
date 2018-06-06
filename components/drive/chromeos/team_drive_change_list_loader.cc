@@ -64,16 +64,26 @@ TeamDriveChangeListLoader::TeamDriveChangeListLoader(
 TeamDriveChangeListLoader::~TeamDriveChangeListLoader() = default;
 
 // DriveChangeListLoader overrides
-void TeamDriveChangeListLoader::AddObserver(
+void TeamDriveChangeListLoader::AddChangeListLoaderObserver(
     ChangeListLoaderObserver* observer) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   change_list_loader_observers_.AddObserver(observer);
 }
 
-void TeamDriveChangeListLoader::RemoveObserver(
+void TeamDriveChangeListLoader::RemoveChangeListLoaderObserver(
     ChangeListLoaderObserver* observer) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   change_list_loader_observers_.RemoveObserver(observer);
+}
+
+void TeamDriveChangeListLoader::AddTeamDriveListObserver(
+    TeamDriveListObserver* observer) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+}
+
+void TeamDriveChangeListLoader::RemoveTeamDriveListObserver(
+    TeamDriveListObserver* observer) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 bool TeamDriveChangeListLoader::IsRefreshing() {

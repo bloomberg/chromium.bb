@@ -43,8 +43,11 @@ class DefaultCorpusChangeListLoader : public DriveChangeListLoader {
   ~DefaultCorpusChangeListLoader() override;
 
   // DriveChangeListLoader overrides
-  void AddObserver(ChangeListLoaderObserver* observer) override;
-  void RemoveObserver(ChangeListLoaderObserver* observer) override;
+  void AddChangeListLoaderObserver(ChangeListLoaderObserver* observer) override;
+  void RemoveChangeListLoaderObserver(
+      ChangeListLoaderObserver* observer) override;
+  void AddTeamDriveListObserver(TeamDriveListObserver* observer) override;
+  void RemoveTeamDriveListObserver(TeamDriveListObserver* observer) override;
 
   bool IsRefreshing() override;
   void LoadIfNeeded(const FileOperationCallback& callback) override;

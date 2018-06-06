@@ -19,6 +19,7 @@
 #include "components/drive/chromeos/change_list_loader_observer.h"
 #include "components/drive/chromeos/file_system/operation_delegate.h"
 #include "components/drive/chromeos/file_system_interface.h"
+#include "components/drive/chromeos/team_drive_list_observer.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 
 class PrefService;
@@ -45,6 +46,7 @@ class FileCache;
 class LoaderController;
 class ResourceMetadata;
 class SyncClient;
+class TeamDrive;
 }  // namespace internal
 
 namespace file_system {
@@ -65,6 +67,7 @@ class TruncateOperation;
 // The production implementation of FileSystemInterface.
 class FileSystem : public FileSystemInterface,
                    public internal::ChangeListLoaderObserver,
+                   public internal::TeamDriveListObserver,
                    public file_system::OperationDelegate {
  public:
   FileSystem(PrefService* pref_service,
@@ -184,6 +187,12 @@ class FileSystem : public FileSystemInterface,
   void OnFileChanged(const FileChange& changed_files) override;
   void OnLoadFromServerComplete() override;
   void OnInitialLoadComplete() override;
+
+  // TeamDriveListObserver overrides.
+  void OnTeamDriveListLoaded(
+      const std::vector<internal::TeamDrive>& team_drives_list,
+      const std::vector<internal::TeamDrive>& added_team_drives,
+      const std::vector<internal::TeamDrive>& removed_team_drives) override;
 
   // Used by tests.
   internal::DriveChangeListLoader* change_list_loader_for_testing() {
