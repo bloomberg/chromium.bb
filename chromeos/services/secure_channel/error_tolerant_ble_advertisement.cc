@@ -9,8 +9,8 @@ namespace chromeos {
 namespace secure_channel {
 
 ErrorTolerantBleAdvertisement::ErrorTolerantBleAdvertisement(
-    const std::string& device_id)
-    : device_id_(device_id) {}
+    const DeviceIdPair& device_id_pair)
+    : device_id_pair_(device_id_pair) {}
 
 ErrorTolerantBleAdvertisement::~ErrorTolerantBleAdvertisement() = default;
 

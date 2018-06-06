@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/error_tolerant_ble_advertisement.h"
 #include "components/cryptauth/foreground_eid_generator.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -31,7 +32,7 @@ class ErrorTolerantBleAdvertisementImpl
     static void SetFactoryForTesting(Factory* test_factory);
     virtual ~Factory();
     virtual std::unique_ptr<ErrorTolerantBleAdvertisement> BuildInstance(
-        const std::string& device_id,
+        const DeviceIdPair& device_id_pair,
         std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
         BleSynchronizerBase* ble_synchronizer);
 
@@ -41,26 +42,21 @@ class ErrorTolerantBleAdvertisementImpl
 
   ~ErrorTolerantBleAdvertisementImpl() override;
 
+ private:
+  friend class SecureChannelErrorTolerantBleAdvertisementImplTest;
+
+  ErrorTolerantBleAdvertisementImpl(
+      const DeviceIdPair& device_id_pair,
+      std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
+      BleSynchronizerBase* ble_synchronizer);
+
   // ErrorTolerantBleAdvertisement:
   void Stop(const base::Closure& callback) override;
   bool HasBeenStopped() override;
 
- protected:
-  ErrorTolerantBleAdvertisementImpl(
-      const std::string& device_id,
-      std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
-      BleSynchronizerBase* ble_synchronizer);
-
   // device::BluetoothAdvertisement::Observer
   void AdvertisementReleased(
       device::BluetoothAdvertisement* advertisement) override;
-
- private:
-  friend class SecureChannelErrorTolerantBleAdvertisementImplTest;
-
-  const cryptauth::DataWithTimestamp& advertisement_data() const {
-    return *advertisement_data_;
-  }
 
   void UpdateRegistrationStatus();
   void AttemptRegistration();
@@ -80,7 +76,10 @@ class ErrorTolerantBleAdvertisementImpl
   void OnErrorUnregisteringAdvertisement(
       device::BluetoothAdvertisement::ErrorCode error_code);
 
-  std::string device_id_;
+  const cryptauth::DataWithTimestamp& advertisement_data() const {
+    return *advertisement_data_;
+  }
+
   std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data_;
   BleSynchronizerBase* ble_synchronizer_;
 

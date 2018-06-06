@@ -50,18 +50,18 @@ ErrorTolerantBleAdvertisementImpl::Factory::~Factory() = default;
 
 std::unique_ptr<ErrorTolerantBleAdvertisement>
 ErrorTolerantBleAdvertisementImpl::Factory::BuildInstance(
-    const std::string& device_id,
+    const DeviceIdPair& device_id_pair,
     std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
     BleSynchronizerBase* ble_synchronizer) {
   return base::WrapUnique(new ErrorTolerantBleAdvertisementImpl(
-      device_id, std::move(advertisement_data), ble_synchronizer));
+      device_id_pair, std::move(advertisement_data), ble_synchronizer));
 }
 
 ErrorTolerantBleAdvertisementImpl::ErrorTolerantBleAdvertisementImpl(
-    const std::string& device_id,
+    const DeviceIdPair& device_id_pair,
     std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
     BleSynchronizerBase* ble_synchronizer)
-    : ErrorTolerantBleAdvertisement(device_id),
+    : ErrorTolerantBleAdvertisement(device_id_pair),
       advertisement_data_(std::move(advertisement_data)),
       ble_synchronizer_(ble_synchronizer),
       weak_ptr_factory_(this) {
@@ -94,10 +94,9 @@ void ErrorTolerantBleAdvertisementImpl::AdvertisementReleased(
   advertisement_->RemoveObserver(this);
   advertisement_ = nullptr;
 
-  PA_LOG(WARNING) << "Advertisement was released. Trying again. Device ID: \""
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                         device_id())
-                  << "\", Service data: " << advertisement_data_->DataInHex();
+  PA_LOG(WARNING) << "Advertisement was released. Trying again. Request: "
+                  << device_id_pair()
+                  << ", Service data: " << advertisement_data_->DataInHex();
 
   UpdateRegistrationStatus();
 }
@@ -189,10 +188,8 @@ void ErrorTolerantBleAdvertisementImpl::OnAdvertisementRegistered(
   advertisement_ = advertisement;
   advertisement_->AddObserver(this);
 
-  PA_LOG(INFO) << "Advertisement registered. Device ID: \""
-               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                      device_id())
-               << "\", Service data: " << advertisement_data_->DataInHex();
+  PA_LOG(INFO) << "Advertisement registered. Request: " << device_id_pair()
+               << ", Service data: " << advertisement_data_->DataInHex();
 
   UpdateRegistrationStatus();
 }
@@ -201,10 +198,9 @@ void ErrorTolerantBleAdvertisementImpl::OnErrorRegisteringAdvertisement(
     device::BluetoothAdvertisement::ErrorCode error_code) {
   registration_in_progress_ = false;
 
-  PA_LOG(ERROR) << "Error registering advertisement. Device ID: \""
-                << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                       device_id())
-                << "\", Service data: " << advertisement_data_->DataInHex()
+  PA_LOG(ERROR) << "Error registering advertisement. Request: "
+                << device_id_pair()
+                << ", Service data: " << advertisement_data_->DataInHex()
                 << ", Error code: " << error_code;
 
   UpdateRegistrationStatus();
@@ -224,10 +220,9 @@ void ErrorTolerantBleAdvertisementImpl::OnErrorUnregisteringAdvertisement(
     device::BluetoothAdvertisement::ErrorCode error_code) {
   unregistration_in_progress_ = false;
 
-  PA_LOG(ERROR) << "Error unregistering advertisement. Device ID: \""
-                << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                       device_id())
-                << "\", Service data: " << advertisement_data_->DataInHex()
+  PA_LOG(ERROR) << "Error unregistering advertisement. Request: "
+                << device_id_pair()
+                << ", Service data: " << advertisement_data_->DataInHex()
                 << ", Error code: " << error_code;
 
   UpdateRegistrationStatus();

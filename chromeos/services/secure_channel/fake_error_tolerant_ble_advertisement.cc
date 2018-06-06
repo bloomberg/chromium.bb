@@ -11,14 +11,14 @@ namespace chromeos {
 namespace secure_channel {
 
 FakeErrorTolerantBleAdvertisement::FakeErrorTolerantBleAdvertisement(
-    const std::string& device_id)
-    : ErrorTolerantBleAdvertisement(device_id) {}
+    const DeviceIdPair& device_id_pair)
+    : ErrorTolerantBleAdvertisement(device_id_pair) {}
 
 FakeErrorTolerantBleAdvertisement::FakeErrorTolerantBleAdvertisement(
-    const std::string& device_id,
+    const DeviceIdPair& device_id_pair,
     const base::Callback<void(FakeErrorTolerantBleAdvertisement*)>&
         deletion_callback)
-    : ErrorTolerantBleAdvertisement(device_id),
+    : ErrorTolerantBleAdvertisement(device_id_pair),
       deletion_callback_(deletion_callback) {}
 
 FakeErrorTolerantBleAdvertisement::~FakeErrorTolerantBleAdvertisement() {

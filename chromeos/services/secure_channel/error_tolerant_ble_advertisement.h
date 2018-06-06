@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/services/secure_channel/device_id_pair.h"
 
 namespace chromeos {
 
@@ -20,7 +21,6 @@ namespace secure_channel {
 // until the stop callback is invoked.
 class ErrorTolerantBleAdvertisement {
  public:
-  ErrorTolerantBleAdvertisement(const std::string& device_id);
   virtual ~ErrorTolerantBleAdvertisement();
 
   // Stops advertising. Because BLE advertisements start and stop
@@ -33,10 +33,13 @@ class ErrorTolerantBleAdvertisement {
   // Returns whether Stop() has been called.
   virtual bool HasBeenStopped() = 0;
 
-  const std::string& device_id() { return device_id_; }
+  const DeviceIdPair& device_id_pair() const { return device_id_pair_; }
+
+ protected:
+  ErrorTolerantBleAdvertisement(const DeviceIdPair& device_id_pair);
 
  private:
-  const std::string device_id_;
+  const DeviceIdPair device_id_pair_;
 
   DISALLOW_COPY_AND_ASSIGN(ErrorTolerantBleAdvertisement);
 };
