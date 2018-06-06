@@ -13,7 +13,6 @@
 
 namespace ash {
 
-class AssistantBubble;
 class AssistantController;
 class AssistantMainView;
 class AssistantMiniView;
@@ -21,8 +20,7 @@ class AssistantMiniView;
 class AssistantBubbleView : public views::BubbleDialogDelegateView,
                             public AssistantBubbleModelObserver {
  public:
-  AssistantBubbleView(AssistantController* assistant_controller,
-                      AssistantBubble* assistant_bubble);
+  explicit AssistantBubbleView(AssistantController* assistant_controller);
   ~AssistantBubbleView() override;
 
   // views::BubbleDialogDelegateView:
@@ -41,7 +39,6 @@ class AssistantBubbleView : public views::BubbleDialogDelegateView,
   void SetAnchor();
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
-  AssistantBubble* const assistant_bubble_;  // Owned by AssistantController.
 
   std::unique_ptr<AssistantMainView> assistant_main_view_;
   std::unique_ptr<AssistantMiniView> assistant_mini_view_;

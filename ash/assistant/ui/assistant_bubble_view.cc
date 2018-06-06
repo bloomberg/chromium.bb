@@ -4,9 +4,9 @@
 
 #include "ash/assistant/ui/assistant_bubble_view.h"
 
+#include "ash/assistant/assistant_bubble_controller.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/model/assistant_bubble_model.h"
-#include "ash/assistant/ui/assistant_bubble.h"
 #include "ash/assistant/ui/assistant_main_view.h"
 #include "ash/assistant/ui/assistant_mini_view.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,10 +30,8 @@ constexpr int kMarginDip = 8;
 }  // namespace
 
 AssistantBubbleView::AssistantBubbleView(
-    AssistantController* assistant_controller,
-    AssistantBubble* assistant_bubble)
-    : assistant_controller_(assistant_controller),
-      assistant_bubble_(assistant_bubble) {
+    AssistantController* assistant_controller)
+    : assistant_controller_(assistant_controller) {
   set_accept_events(true);
   SetAnchor();
   set_arrow(views::BubbleBorder::Arrow::BOTTOM_CENTER);
@@ -50,13 +48,13 @@ AssistantBubbleView::AssistantBubbleView(
   SetAlignment(views::BubbleBorder::BubbleAlignment::ALIGN_EDGE_TO_ANCHOR_EDGE);
   SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
 
-  // The AssistantBubble owns the view hierarchy to which AssistantBubbleView
-  // belongs so is guaranteed to outlive it.
-  assistant_bubble_->AddModelObserver(this);
+  // The AssistantController owns the view hierarchy to which
+  // AssistantBubbleView belongs so is guaranteed to outlive it.
+  assistant_controller_->bubble_controller()->AddModelObserver(this);
 }
 
 AssistantBubbleView::~AssistantBubbleView() {
-  assistant_bubble_->RemoveModelObserver(this);
+  assistant_controller_->bubble_controller()->RemoveModelObserver(this);
 }
 
 void AssistantBubbleView::ChildPreferredSizeChanged(views::View* child) {
@@ -98,7 +96,8 @@ void AssistantBubbleView::Init() {
   // TODO(dmblack): Add Settings view.
 
   // Update the view state based on the current UI mode.
-  OnUiModeChanged(assistant_bubble_->model()->ui_mode());
+  OnUiModeChanged(
+      assistant_controller_->bubble_controller()->model()->ui_mode());
 }
 
 void AssistantBubbleView::RequestFocus() {

@@ -4,10 +4,10 @@
 
 #include "ash/assistant/assistant_controller.h"
 
+#include "ash/assistant/assistant_bubble_controller.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/model/assistant_ui_element.h"
-#include "ash/assistant/ui/assistant_bubble.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -44,7 +44,8 @@ void ShowToast(const std::string& id, const std::string& text) {
 
 AssistantController::AssistantController()
     : assistant_event_subscriber_binding_(this),
-      assistant_bubble_(std::make_unique<AssistantBubble>(this)) {
+      assistant_bubble_controller_(
+          std::make_unique<AssistantBubbleController>(this)) {
   AddInteractionModelObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
 }
