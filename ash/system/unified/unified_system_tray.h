@@ -12,6 +12,10 @@
 
 namespace ash {
 
+namespace tray {
+class TimeView;
+}  // namespace tray
+
 class NotificationCounterView;
 class QuietModeView;
 class UnifiedSliderBubbleController;
@@ -29,9 +33,6 @@ class UnifiedSystemTrayModel;
 //
 // UnifiedSystemTray is alternative implementation of SystemTray that is going
 // to replace the original one. Eventually, SystemTray will be removed.
-// During the transition, we hide UnifiedSystemTray button and forward
-// PerformAction() from SystemTray button, as we still don't have implementation
-// of status icons on the UnifiedSystemTray button.
 class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
  public:
   explicit UnifiedSystemTray(Shelf* shelf);
@@ -57,6 +58,8 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   UnifiedSystemTrayModel* model() { return model_.get(); }
 
  private:
+  friend class UnifiedSystemTrayTestApi;
+
   // Private class implements message_center::UiDelegate.
   class UiDelegate;
 
@@ -82,6 +85,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
 
   NotificationCounterView* const notification_counter_item_;
   QuietModeView* const quiet_mode_view_;
+  tray::TimeView* const time_view_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTray);
 };

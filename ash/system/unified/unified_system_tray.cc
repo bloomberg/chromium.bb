@@ -142,7 +142,10 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
       slider_bubble_controller_(
           std::make_unique<UnifiedSliderBubbleController>(this)),
       notification_counter_item_(new NotificationCounterView()),
-      quiet_mode_view_(new QuietModeView()) {
+      quiet_mode_view_(new QuietModeView()),
+      time_view_(
+          new tray::TimeView(tray::TimeView::ClockLayout::HORIZONTAL_CLOCK,
+                             Shell::Get()->system_tray_model()->clock())) {
   tray_container()->AddChildView(notification_counter_item_);
   tray_container()->AddChildView(quiet_mode_view_);
 
@@ -157,9 +160,7 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   tray_container()->AddChildView(new tray::PowerTrayView(nullptr));
 
   TrayItemView* time_item = new TrayItemView(nullptr);
-  time_item->AddChildView(
-      new tray::TimeView(tray::TimeView::ClockLayout::HORIZONTAL_CLOCK,
-                         Shell::Get()->system_tray_model()->clock()));
+  time_item->AddChildView(time_view_);
   tray_container()->AddChildView(time_item);
 
   SetInkDropMode(InkDropMode::ON);
