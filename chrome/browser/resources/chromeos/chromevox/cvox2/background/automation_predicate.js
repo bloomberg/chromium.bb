@@ -395,9 +395,10 @@ AutomationPredicate.root = function(node) {
  * @param {AutomationNode} node
  * @return {boolean}
  */
-AutomationPredicate.editableRoot = function(node) {
+AutomationPredicate.rootOrEditableRoot = function(node) {
   return AutomationPredicate.root(node) ||
-      node.state.richlyEditable && node.state.focused;
+      (node.state.richlyEditable && node.state.focused &&
+       node.children.length > 0);
 };
 
 /**

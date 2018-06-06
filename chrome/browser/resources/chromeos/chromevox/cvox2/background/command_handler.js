@@ -250,7 +250,7 @@ CommandHandler.onCommand = function(command) {
   var dir = Dir.FORWARD;
   var pred = null;
   var predErrorMsg = undefined;
-  var rootPred = AutomationPredicate.editableRoot;
+  var rootPred = AutomationPredicate.rootOrEditableRoot;
   var shouldWrap = true;
   var speechProps = {};
   var skipSync = false;
@@ -756,7 +756,7 @@ CommandHandler.onCommand = function(command) {
         }
 
         var root = bound;
-        while (root && !AutomationPredicate.editableRoot(root))
+        while (root && !AutomationPredicate.rootOrEditableRoot(root))
           root = root.parent;
 
         if (!root)
