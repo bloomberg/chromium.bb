@@ -47,6 +47,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -510,6 +511,15 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent,
 }
 
 void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
+  // If the virtual keyboard is visible, dismiss the keyboard and return early.
+  keyboard::KeyboardController* const keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller && keyboard_controller->keyboard_visible()) {
+    keyboard_controller->HideKeyboard(
+        keyboard::KeyboardController::HIDE_REASON_MANUAL);
+    return;
+  }
+
   // Clear focus if the located event is not handled by any child view.
   GetFocusManager()->ClearFocus();
 
