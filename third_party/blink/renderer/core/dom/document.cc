@@ -350,18 +350,6 @@ class DocumentOutliveTimeReporter : public BlinkGCObserver {
   int gc_age_when_document_detached_ = 0;
 };
 
-class SetFocusedElementForbiddenScope {
- public:
-  SetFocusedElementForbiddenScope() { count_++; }
-  ~SetFocusedElementForbiddenScope() { count_--; }
-  static bool IsSetFocusedElementForbidden() { return count_ > 0; }
-
- private:
-  static int count_;
-};
-
-int SetFocusedElementForbiddenScope::count_ = 0;
-
 static const unsigned kCMaxWriteRecursionDepth = 21;
 
 // This amount of time must have elapsed before we will even consider scheduling
@@ -2371,7 +2359,6 @@ void Document::UpdateStyleAndLayoutTreeForNode(const Node* node) {
 
 void Document::UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(Node* node) {
   DCHECK(node);
-  SetFocusedElementForbiddenScope set_focused_element_scope;
   if (!node->InActiveDocument())
     return;
   UpdateStyleAndLayoutIgnorePendingStylesheets();
@@ -4536,10 +4523,6 @@ void Document::SetLastFocusType(WebFocusType last_focus_type) {
 bool Document::SetFocusedElement(Element* new_focused_element,
                                  const FocusParams& params) {
   DCHECK(!lifecycle_.InDetach());
-
-  // TODO(adithyas): This CHECK has been added to investigate
-  // https://crbug.com/848212, remove this after bug is resolved.
-  CHECK(!SetFocusedElementForbiddenScope::IsSetFocusedElementForbidden());
 
   clear_focused_element_timer_.Stop();
 
