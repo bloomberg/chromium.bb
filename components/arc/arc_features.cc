@@ -16,6 +16,19 @@ const base::Feature kBootCompletedBroadcastFeature {
     "ArcBootCompletedBroadcast", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
+// Controls whether we should delete all ARC data before transitioning a user
+// from regular to child account.
+const base::Feature kCleanArcDataOnRegularToChildTransitionFeature{
+    "ArcCleanDataOnRegularToChildTransition", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether ARC handles child->regular account transition.
+const base::Feature kEnableChildToRegularTransitionFeature{
+    "ArcEnableChildToRegularTransition", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether ARC handles regular->child account transition.
+const base::Feature kEnableRegularToChildTransitionFeature{
+    "ArcEnableRegularToChildTransition", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls experimental native bridge feature for ARC.
 const base::Feature kNativeBridgeExperimentFeature {
     "ArcNativeBridgeExperiment", base::FEATURE_ENABLED_BY_DEFAULT

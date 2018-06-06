@@ -40,9 +40,11 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_data_remover.h"
+#include "components/arc/arc_features.h"
 #include "components/arc/arc_instance_mode.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_session_runner.h"
+#include "components/arc/arc_supervision_transition.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/metrics/arc_metrics_service.h"
 #include "components/prefs/pref_service.h"
@@ -440,6 +442,18 @@ void ArcSessionManager::Initialize() {
 
   if (g_enable_check_android_management_in_tests.value_or(g_ui_enabled))
     ArcAndroidManagementChecker::StartClient();
+
+  // Request removing data if enabled for a regular->child transition.
+  if (GetSupervisionTransition(profile_) ==
+          ArcSupervisionTransition::REGULAR_TO_CHILD &&
+      base::FeatureList::IsEnabled(
+          kCleanArcDataOnRegularToChildTransitionFeature)) {
+    LOG(WARNING) << "User transited from regular to child, deleting ARC data";
+    data_remover_->Schedule();
+    profile_->GetPrefs()->SetInteger(
+        prefs::kArcSupervisionTransition,
+        static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
+  }
 
   // Chrome may be shut down before completing ARC data removal.
   // For such a case, start removing the data now, if necessary.
