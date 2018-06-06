@@ -164,6 +164,7 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   tray_container()->AddChildView(time_item);
 
   SetInkDropMode(InkDropMode::ON);
+  set_separator_visibility(false);
   SetVisible(true);
 }
 
@@ -221,6 +222,14 @@ void UnifiedSystemTray::HideBubbleWithView(
 
 void UnifiedSystemTray::ClickedOutsideBubble() {
   CloseBubble();
+}
+
+void UnifiedSystemTray::UpdateAfterShelfAlignmentChange() {
+  TrayBackgroundView::UpdateAfterShelfAlignmentChange();
+  time_view_->UpdateClockLayout(
+      shelf()->IsHorizontalAlignment()
+          ? tray::TimeView::ClockLayout::HORIZONTAL_CLOCK
+          : tray::TimeView::ClockLayout::VERTICAL_CLOCK);
 }
 
 void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {
