@@ -27,6 +27,14 @@ void BrowserXrDevice::OnChanged(
   }
 }
 
+void BrowserXrDevice::StopExclusiveSession() {
+  if (exclusive_session_controller_) {
+    exclusive_session_controller_->StopSession();
+    exclusive_session_controller_ = nullptr;
+    presenting_display_host_ = nullptr;
+  }
+}
+
 void BrowserXrDevice::OnExitPresent() {
   if (presenting_display_host_) {
     presenting_display_host_->OnExitPresent();
@@ -58,7 +66,7 @@ void BrowserXrDevice::OnDisplayHostRemoved(VRDisplayHost* display) {
   DCHECK(display);
   displays_.erase(display);
   if (display == presenting_display_host_) {
-    GetDevice()->ExitPresent();
+    ExitPresent(display);
     DCHECK(presenting_display_host_ == nullptr);
   }
   if (display == listening_for_activation_display_host_) {
@@ -70,8 +78,7 @@ void BrowserXrDevice::OnDisplayHostRemoved(VRDisplayHost* display) {
 
 void BrowserXrDevice::ExitPresent(VRDisplayHost* display) {
   if (display == presenting_display_host_) {
-    GetDevice()->ExitPresent();
-    DCHECK(presenting_display_host_ == nullptr);
+    StopExclusiveSession();
   }
 }
 
@@ -92,15 +99,17 @@ void BrowserXrDevice::OnRequestPresentResult(
     VRDisplayHost* display,
     device::mojom::VRDisplayHost::RequestPresentCallback callback,
     bool result,
-    device::mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
+    device::mojom::VRDisplayFrameTransportOptionsPtr transport_options,
+    device::XrSessionController* exclusive_session_controller) {
   if (result && (displays_.find(display) != displays_.end())) {
     presenting_display_host_ = display;
+    exclusive_session_controller_ = exclusive_session_controller;
     std::move(callback).Run(result, std::move(transport_options));
   } else {
     std::move(callback).Run(false, nullptr);
     if (result) {
-      // Stale request completed, so device thinks we are presenting.
-      GetDevice()->ExitPresent();
+      exclusive_session_controller_ = exclusive_session_controller;
+      StopExclusiveSession();
     }
   }
 }

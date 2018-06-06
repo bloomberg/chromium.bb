@@ -23,7 +23,8 @@ class VRDisplayImplTest : public testing::Test {
   void onDisplaySynced() {}
   void onPresentComplete(
       bool success,
-      device::mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
+      device::mojom::VRDisplayFrameTransportOptionsPtr transport_options,
+      XrSessionController* exclusive_session_controller) {
     is_request_presenting_success_ = success;
   }
 
@@ -56,7 +57,7 @@ class VRDisplayImplTest : public testing::Test {
                        base::Unretained(this)));
   }
 
-  void ExitPresent() { device_->ExitPresent(); }
+  void ExitPresent() { device_->StopSession(); }
 
   bool presenting() { return device_->IsPresenting(); }
   VRDeviceBase* device() { return device_.get(); }
