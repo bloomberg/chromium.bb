@@ -181,11 +181,13 @@ bool ZipLibraryOpener::Open(crazy_library_t** library,
 // |library_info| is a LibInfo handle used to communicate information
 // with the Java side.
 // Return true on success.
-jboolean LoadLibrary(JNIEnv* env,
-                     jclass clazz,
-                     jstring library_name,
-                     jlong load_address,
-                     jobject lib_info_obj) {
+JNI_GENERATOR_EXPORT jboolean
+Java_org_chromium_base_library_1loader_LegacyLinker_nativeLoadLibrary(
+    JNIEnv* env,
+    jclass clazz,
+    jstring library_name,
+    jlong load_address,
+    jobject lib_info_obj) {
   String lib_name(env, library_name);
   FileLibraryOpener opener;
 
@@ -218,12 +220,14 @@ jboolean LoadLibrary(JNIEnv* env,
 // |library_info| is a LibInfo handle used to communicate information
 // with the Java side.
 // Returns true on success.
-jboolean LoadLibraryInZipFile(JNIEnv* env,
-                              jclass clazz,
-                              jstring zipfile_name,
-                              jstring library_name,
-                              jlong load_address,
-                              jobject lib_info_obj) {
+JNI_GENERATOR_EXPORT jboolean
+Java_org_chromium_base_library_1loader_LegacyLinker_nativeLoadLibraryInZipFile(
+    JNIEnv* env,
+    jclass clazz,
+    jstring zipfile_name,
+    jstring library_name,
+    jlong load_address,
+    jobject lib_info_obj) {
   String zipfile_name_str(env, zipfile_name);
   String lib_name(env, library_name);
   ZipLibraryOpener opener(zipfile_name_str.c_str());
@@ -260,7 +264,11 @@ static JavaCallbackBindings_class s_java_callback_bindings;
 // |clazz| is the static class handle for org.chromium.base.Linker,
 // and is ignored here.
 // |arg| is a pointer to an allocated crazy_callback_t, deleted after use.
-void RunCallbackOnUiThread(JNIEnv* env, jclass clazz, jlong arg) {
+JNI_GENERATOR_EXPORT void
+Java_org_chromium_base_library_1loader_LegacyLinker_nativeRunCallbackOnUiThread(
+    JNIEnv* env,
+    jclass clazz,
+    jlong arg) {
   crazy_callback_t* callback = reinterpret_cast<crazy_callback_t*>(arg);
 
   LOG_INFO("Called back from java with handler %p, opaque %p",
@@ -319,11 +327,13 @@ static bool PostForLaterExecution(crazy_callback_t* callback_request,
   return true;
 }
 
-jboolean CreateSharedRelro(JNIEnv* env,
-                           jclass clazz,
-                           jstring library_name,
-                           jlong load_address,
-                           jobject lib_info_obj) {
+JNI_GENERATOR_EXPORT jboolean
+Java_org_chromium_base_library_1loader_LegacyLinker_nativeCreateSharedRelro(
+    JNIEnv* env,
+    jclass clazz,
+    jstring library_name,
+    jlong load_address,
+    jobject lib_info_obj) {
   String lib_name(env, library_name);
 
   LOG_INFO("Called for %s", lib_name.c_str());
@@ -362,10 +372,12 @@ jboolean CreateSharedRelro(JNIEnv* env,
   return true;
 }
 
-jboolean UseSharedRelro(JNIEnv* env,
-                        jclass clazz,
-                        jstring library_name,
-                        jobject lib_info_obj) {
+JNI_GENERATOR_EXPORT jboolean
+Java_org_chromium_base_library_1loader_LegacyLinker_nativeUseSharedRelro(
+    JNIEnv* env,
+    jclass clazz,
+    jstring library_name,
+    jobject lib_info_obj) {
   String lib_name(env, library_name);
 
   LOG_INFO("Called for %s, lib_info_ref=%p", lib_name.c_str(), lib_info_obj);
@@ -400,50 +412,6 @@ jboolean UseSharedRelro(JNIEnv* env,
   return true;
 }
 
-const JNINativeMethod kNativeMethods[] = {
-    {"nativeLoadLibrary",
-     "("
-     "Ljava/lang/String;"
-     "J"
-     "Lorg/chromium/base/library_loader/Linker$LibInfo;"
-     ")"
-     "Z",
-     reinterpret_cast<void*>(&LoadLibrary)},
-    {"nativeLoadLibraryInZipFile",
-     "("
-     "Ljava/lang/String;"
-     "Ljava/lang/String;"
-     "J"
-     "Lorg/chromium/base/library_loader/Linker$LibInfo;"
-     ")"
-     "Z",
-     reinterpret_cast<void*>(&LoadLibraryInZipFile)},
-    {"nativeRunCallbackOnUiThread",
-     "("
-     "J"
-     ")"
-     "V",
-     reinterpret_cast<void*>(&RunCallbackOnUiThread)},
-    {"nativeCreateSharedRelro",
-     "("
-     "Ljava/lang/String;"
-     "J"
-     "Lorg/chromium/base/library_loader/Linker$LibInfo;"
-     ")"
-     "Z",
-     reinterpret_cast<void*>(&CreateSharedRelro)},
-    {"nativeUseSharedRelro",
-     "("
-     "Ljava/lang/String;"
-     "Lorg/chromium/base/library_loader/Linker$LibInfo;"
-     ")"
-     "Z",
-     reinterpret_cast<void*>(&UseSharedRelro)},
-};
-
-const size_t kNumNativeMethods =
-    sizeof(kNativeMethods) / sizeof(kNativeMethods[0]);
-
 }  // namespace
 
 bool LegacyLinkerJNIInit(JavaVM* vm, JNIEnv* env) {
@@ -459,10 +427,6 @@ bool LegacyLinkerJNIInit(JavaVM* vm, JNIEnv* env) {
   if (!InitClassReference(env,
                           "org/chromium/base/library_loader/LegacyLinker",
                           &linker_class))
-    return false;
-
-  LOG_INFO("Registering native methods");
-  if (env->RegisterNatives(linker_class, kNativeMethods, kNumNativeMethods) < 0)
     return false;
 
   // Resolve and save the Java side Linker callback class and method.

@@ -147,7 +147,10 @@ bool InitStaticInt(JNIEnv* env,
 // then loads the library normally at any available address.
 // |env| is the current JNI environment handle, and |clazz| a class.
 // Returns the address selected by ASLR, or 0 on error.
-jlong GetRandomBaseLoadAddress(JNIEnv* env, jclass clazz) {
+JNI_GENERATOR_EXPORT jlong
+Java_org_chromium_base_library_1loader_Linker_nativeGetRandomBaseLoadAddress(
+    JNIEnv* env,
+    jclass clazz) {
   size_t bytes = kAddressSpaceReservationSize;
 
 #if RESERVE_BREAKPAD_GUARD_REGION
@@ -175,32 +178,8 @@ jlong GetRandomBaseLoadAddress(JNIEnv* env, jclass clazz) {
 
 namespace {
 
-const JNINativeMethod kNativeMethods[] = {
-    {"nativeGetRandomBaseLoadAddress",
-     "("
-     ")"
-     "J",
-     reinterpret_cast<void*>(&GetRandomBaseLoadAddress)},
-};
-
-const size_t kNumNativeMethods =
-    sizeof(kNativeMethods) / sizeof(kNativeMethods[0]);
-
 // JNI_OnLoad() initialization hook.
 bool LinkerJNIInit(JavaVM* vm, JNIEnv* env) {
-  LOG_INFO("Entering");
-
-  // Register native methods.
-  jclass linker_class;
-  if (!InitClassReference(env,
-                          "org/chromium/base/library_loader/Linker",
-                          &linker_class))
-    return false;
-
-  LOG_INFO("Registering native methods");
-  if (env->RegisterNatives(linker_class, kNativeMethods, kNumNativeMethods) < 0)
-    return false;
-
   // Find LibInfo field ids.
   LOG_INFO("Caching field IDs");
   if (!s_lib_info_fields.Init(env)) {
