@@ -151,6 +151,8 @@ class TestTargetPolicy : public sandbox::TargetPolicy {
     return app_container_profile_;
   }
 
+  void SetEffectiveToken(HANDLE token) override {}
+
  private:
   scoped_refptr<sandbox::AppContainerProfileBase> app_container_profile_;
 };

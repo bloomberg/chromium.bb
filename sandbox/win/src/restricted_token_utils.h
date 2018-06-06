@@ -20,11 +20,11 @@ namespace sandbox {
 // The type of the token returned by the CreateNakedToken.
 enum TokenType { IMPERSONATION = 0, PRIMARY };
 
-// Creates a restricted token based on the effective token of the current
-// process. The parameter security_level determines how much the token is
-// restricted. The token_type determines if the token will be used as a primary
-// token or impersonation token. The integrity level of the token is set to
-// |integrity level| on Vista only.
+// Creates a restricted token from effective token. If it's nullptr then
+// effective token of process is used instead. The parameter security_level
+// determines how much the token isrestricted. The token_type determines if
+// the token will be used as a primarytoken or impersonation token. The
+// integrity level of the token is set to |integrity level| on Vista only.
 // |token| is the output value containing the handle of the newly created
 // restricted token.
 // |lockdown_default_dacl| indicates the token's default DACL should be locked
@@ -33,7 +33,8 @@ enum TokenType { IMPERSONATION = 0, PRIMARY };
 // If the function succeeds, the return value is ERROR_SUCCESS. If the
 // function fails, the return value is the win32 error code corresponding to
 // the error.
-DWORD CreateRestrictedToken(TokenLevel security_level,
+DWORD CreateRestrictedToken(HANDLE effective_token,
+                            TokenLevel security_level,
                             IntegrityLevel integrity_level,
                             TokenType token_type,
                             bool lockdown_default_dacl,

@@ -457,4 +457,29 @@ TEST(PolicyTargetTest, ShareHandleTest) {
   ::WaitForSingleObject(target.process_handle(), INFINITE);
 }
 
+// Dummy target that just reports that's it spawned correctly.
+SBOX_TESTS_COMMAND int PolicyTargetTest_SetEffectiveToken(int argc,
+                                                          wchar_t** argv) {
+  return SBOX_TEST_SUCCEEDED;
+}
+
+// Test whether after using SetEffectiveToken spawning a target works as
+// expected.
+TEST(PolicyTargetTest, SetEffectiveToken) {
+  TestRunner runner;
+  HANDLE token;
+
+  // Get current process token.
+  EXPECT_TRUE(
+      ::OpenProcessToken(::GetCurrentProcess(), TOKEN_ALL_ACCESS, &token));
+
+  // Setup token guard.
+  base::win::ScopedHandle token_guard(token);
+
+  // Set token and run target.
+  runner.GetPolicy()->SetEffectiveToken(token_guard.Get());
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED,
+            runner.RunTest(L"PolicyTargetTest_SetEffectiveToken"));
+}
+
 }  // namespace sandbox

@@ -51,13 +51,14 @@ DWORD GetObjectSecurityDescriptor(HANDLE handle,
 
 }  // namespace
 
-DWORD CreateRestrictedToken(TokenLevel security_level,
+DWORD CreateRestrictedToken(HANDLE effective_token,
+                            TokenLevel security_level,
                             IntegrityLevel integrity_level,
                             TokenType token_type,
                             bool lockdown_default_dacl,
                             base::win::ScopedHandle* token) {
   RestrictedToken restricted_token;
-  restricted_token.Init(nullptr);  // Initialized with the current process token
+  restricted_token.Init(effective_token);
   if (lockdown_default_dacl)
     restricted_token.SetLockdownDefaultDacl();
 
