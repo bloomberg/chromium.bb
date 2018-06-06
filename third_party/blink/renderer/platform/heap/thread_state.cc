@@ -730,7 +730,7 @@ void ThreadState::ScheduleIncrementalMarkingFinalize() {
 }
 
 void ThreadState::ScheduleIdleGC() {
-  if (GCState() != kNoGCScheduled)
+  if (GcState() != kNoGCScheduled)
     return;
   SetGCState(kIdleGCScheduled);
   if (IsSweepingInProgress())
