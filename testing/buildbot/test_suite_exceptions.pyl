@@ -1201,9 +1201,7 @@
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
       # chromium.clang
-      'ToTLinux',
-      'ToTLinuxASan',
-      'ToTLinuxMSan',
+      'ToTLinuxASan',  # https://crbug.com/831667
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.11',
@@ -1224,6 +1222,7 @@
       'Mac10.13 Tests (dbg)',
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # https://crbug.com/831667
+      'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
       # On chromium.win, unclear why these only run on "Win7 Tests (1)".
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
