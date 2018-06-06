@@ -568,8 +568,10 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
 
   if (IsGuestModeTest()) {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
-    command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "");
+    command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "$guest");
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
     command_line->AppendSwitch(switches::kIncognito);
+    set_chromeos_user_ = false;
   }
 
   if (IsIncognitoModeTest()) {

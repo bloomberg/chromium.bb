@@ -9,14 +9,23 @@
  * When we are not in guest mode, we fill Google Drive with the basic entry set
  * which causes an extra tree-item to be added.
  */
-var TREEITEM_DRIVE = '#directory-tree > div:nth-child(1) ';
-var TREEITEM_DOWNLOADS = '#directory-tree > div:nth-child(2) ';
+var TREEITEM_DRIVE;
+var TREEITEM_DOWNLOADS;
+var NEWFOLDER;
+var TESTFOLDER;
+if (!chrome.extension.inIncognitoContext) {
+  TREEITEM_DRIVE = '#directory-tree > div:nth-child(1) ';
+  TREEITEM_DOWNLOADS = '#directory-tree > div:nth-child(2) ';
+  NEWFOLDER = '#tree-item-autogen-id-9';
+  TESTFOLDER = '#tree-item-autogen-id-10';
+} else {
+  // In guest mode Google Drive is not mounted so the folder indices differ.
+  TREEITEM_DOWNLOADS = '#directory-tree > div:nth-child(1) ';
+  NEWFOLDER = '#tree-item-autogen-id-3';
+  TESTFOLDER = '#tree-item-autogen-id-4';
+}
 var EXPAND_ICON = '> .tree-row > .expand-icon';
 var EXPANDED_SUBTREE = '> .tree-children[expanded]';
-var NEWFOLDER = '#tree-item-autogen-id-9';
-var TESTFOLDER  = '#tree-item-autogen-id-10';
-var NEWFOLDER_GUEST = '#tree-item-autogen-id-7';
-var TESTFOLDER_GUEST  = '#tree-item-autogen-id-8';
 
 /**
  * Selects the first item in the file list.
@@ -81,10 +90,7 @@ function createNewFolder(windowId, path, initialEntrySet) {
     chrome.test.assertTrue('renaming' in elements[0].attributes);
   }).then(function() {
     // Check directory tree for new folder.
-    if (chrome.extension.inIncognitoContext)
-      return remoteCall.waitForElement(windowId, NEWFOLDER_GUEST);
-    else
-      return remoteCall.waitForElement(windowId, NEWFOLDER);
+    return remoteCall.waitForElement(windowId, NEWFOLDER);
   }).then(function() {
     // Type new folder name.
     return remoteCall.callRemoteTestUtil(
@@ -100,16 +106,10 @@ function createNewFolder(windowId, path, initialEntrySet) {
     return remoteCall.waitForElementLost(windowId, 'input.rename');
   }).then(function() {
      // Once it is renamed, the original 'New Folder' item is removed.
-     if (chrome.extension.inIncognitoContext)
-       return remoteCall.waitForElementLost(windowId, NEWFOLDER_GUEST);
-     else
-       return remoteCall.waitForElementLost(windowId, NEWFOLDER);
+     return remoteCall.waitForElementLost(windowId, NEWFOLDER);
   }).then(function() {
     // A newer entry is then added for the renamed folder.
-    if (chrome.extension.inIncognitoContext)
-      return remoteCall.waitForElement(windowId, TESTFOLDER_GUEST);
-    else
-      return remoteCall.waitForElement(windowId, TESTFOLDER);
+    return remoteCall.waitForElement(windowId, TESTFOLDER);
   }).then(function() {
     var expectedEntryRows = TestEntryInfo.getExpectedRows(initialEntrySet);
     expectedEntryRows.push(['Test Folder Name', '--', 'Folder', '']);
