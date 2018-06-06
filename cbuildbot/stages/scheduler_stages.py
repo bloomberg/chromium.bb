@@ -106,7 +106,8 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
         branch=self._run.manifest_branch,
         master_cidb_id=master_build_id,
         master_buildbucket_id=master_buildbucket_id,
-        bucket=bucket)
+        bucket=bucket,
+        extra_args=['--buildbot'])  # TODO: This shouldn't be hard coded here.
     result = request.Submit(dryrun=dryrun)
 
     logging.info('Build_name %s buildbucket_id %s created_timestamp %s',
