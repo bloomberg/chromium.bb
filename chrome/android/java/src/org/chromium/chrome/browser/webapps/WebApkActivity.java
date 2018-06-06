@@ -13,6 +13,8 @@ import android.os.SystemClock;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.metrics.WebApkSplashscreenMetrics;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -29,6 +31,8 @@ public class WebApkActivity extends WebappActivity {
 
     /** The start time that the activity becomes focused. */
     private long mStartTime;
+
+    private WebApkSplashscreenMetrics mWebApkSplashscreenMetrics;
 
     private static final String TAG = "cr_WebApkActivity";
 
@@ -125,6 +129,9 @@ public class WebApkActivity extends WebappActivity {
         if (mUpdateManager != null) {
             mUpdateManager.destroy();
         }
+        if (mWebApkSplashscreenMetrics != null) {
+            mWebApkSplashscreenMetrics = null;
+        }
         super.onDestroyInternal();
     }
 
@@ -134,7 +141,21 @@ public class WebApkActivity extends WebappActivity {
         // in ChromeTabbedActivity.preInflationStartup refer to the comment there for why.
         if (!LibraryLoader.getInstance().isInitialized()) {
             getActivityTabStartupMetricsTracker().trackStartupMetrics(STARTUP_UMA_HISTOGRAM_SUFFIX);
+            // If there is a saved instance state, then the intent (and its stored timestamp) might
+            // be stale (Android replays intents if there is a recents entry for the activity).
+            if (getSavedInstanceState() == null) {
+                long shellLaunchTimestampMs =
+                        IntentHandler.getWebApkShellLaunchTimestampFromIntent(getIntent());
+                mWebApkSplashscreenMetrics.trackSplashscreenMetrics(shellLaunchTimestampMs);
+            }
         }
         super.preInflationStartup();
+    }
+
+    @Override
+    protected void initializeStartupMetrics() {
+        super.initializeStartupMetrics();
+        mWebApkSplashscreenMetrics = new WebApkSplashscreenMetrics();
+        addSplashscreenObserver(mWebApkSplashscreenMetrics);
     }
 }

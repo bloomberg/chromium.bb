@@ -960,4 +960,18 @@ public class WebappActivity extends SingleTabActivity {
         if (!isVerified()) return false;
         return mTrustedWebContentProvider.didVerificationFail();
     }
+
+    /**
+     * Register an observer to the splashscreen hidden/visible events for this activity.
+     */
+    protected void addSplashscreenObserver(SplashscreenObserver observer) {
+        mSplashController.addObserver(observer);
+    }
+
+    /**
+     * Deregister an observer to the splashscreen hidden/visible events for this activity.
+     */
+    protected void removeSplashscreenObserver(SplashscreenObserver observer) {
+        mSplashController.removeObserver(observer);
+    }
 }

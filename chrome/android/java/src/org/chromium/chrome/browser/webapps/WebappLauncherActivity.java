@@ -104,6 +104,10 @@ public class WebappLauncherActivity extends Activity {
             WebappActivity.addWebappInfo(webappInfo.id(), webappInfo);
             Intent launchIntent = createWebappLaunchIntent(webappInfo, validWebApk);
             IntentHandler.addTimestampToIntent(launchIntent, mCreateTime);
+            // Pass through WebAPK shell launch timestamp to the new intent.
+            long shellLaunchTimestamp =
+                    IntentHandler.getWebApkShellLaunchTimestampFromIntent(intent);
+            IntentHandler.addShellLaunchTimestampToIntent(launchIntent, shellLaunchTimestamp);
             startActivity(launchIntent);
             return;
         }

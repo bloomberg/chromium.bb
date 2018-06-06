@@ -80,6 +80,11 @@ public class WebApkUma {
 
     public static final String HISTOGRAM_UPDATE_REQUEST_QUEUED = "WebApk.Update.RequestQueued";
 
+    private static final String HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_VISIBLE =
+            "WebApk.Startup.Cold.ShellLaunchToSplashscreenVisible";
+    private static final String HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_HIDDEN =
+            "WebApk.Startup.Cold.ShellLaunchToSplashscreenHidden";
+
     private static final int WEBAPK_OPEN_MAX = 3;
     public static final int WEBAPK_OPEN_LAUNCH_SUCCESS = 0;
     // Obsolete: WEBAPK_OPEN_NO_LAUNCH_INTENT = 1;
@@ -106,6 +111,24 @@ public class WebApkUma {
     public static void recordUpdateRequestQueued(int times) {
         RecordHistogram.recordEnumeratedHistogram(HISTOGRAM_UPDATE_REQUEST_QUEUED, times,
                 UPDATE_REQUEST_QUEUED_MAX);
+    }
+
+    /**
+     * Records duration between starting of the WebAPK shell until the splashscreen is shown.
+     * @param durationMs duration in milliseconds
+     */
+    public static void recordShellApkLaunchToSplashscreenVisible(long durationMs) {
+        RecordHistogram.recordMediumTimesHistogram(
+                HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_VISIBLE, durationMs, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Records duration between starting of the WebAPK shell until the splashscreen is hidden.
+     * @param durationMs duration in milliseconds
+     */
+    public static void recordShellApkLaunchToSplashscreenHidden(long durationMs) {
+        RecordHistogram.recordMediumTimesHistogram(
+                HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_HIDDEN, durationMs, TimeUnit.MILLISECONDS);
     }
 
     /**
