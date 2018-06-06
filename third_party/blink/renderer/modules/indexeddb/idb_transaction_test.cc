@@ -184,7 +184,6 @@ TEST_F(IDBTransactionTest, ContextDestroyedAfterDone) {
   // The request completed, so it has enqueued a success event. Discard the
   // event, so that the transaction can go away.
   EXPECT_EQ(1U, live_transactions.size());
-  scope.GetExecutionContext()->GetEventQueue()->Close();
 
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(0U, live_transactions.size());

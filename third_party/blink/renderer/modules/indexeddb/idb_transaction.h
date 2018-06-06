@@ -280,6 +280,8 @@ class MODULES_EXPORT IDBTransaction final
   //
   // Only valid for versionchange transactions.
   IDBDatabaseMetadata old_database_metadata_;
+
+  Member<EventQueue> event_queue_;
 };
 
 }  // namespace blink
