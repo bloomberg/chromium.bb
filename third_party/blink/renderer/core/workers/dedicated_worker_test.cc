@@ -32,7 +32,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
   DedicatedWorkerThreadForTest(DedicatedWorkerObjectProxy& worker_object_proxy)
       : DedicatedWorkerThread(nullptr /* ThreadableLoadingContext */,
                               worker_object_proxy) {
-    worker_backing_thread_ = WorkerBackingThread::CreateForTest(
+    worker_backing_thread_ = WorkerBackingThread::Create(
         WebThreadCreationParams(WebThreadType::kTestThread));
   }
 

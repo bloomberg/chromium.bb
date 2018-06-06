@@ -23,7 +23,34 @@
 
 namespace blink {
 
-// Wrapper functions defined in WebKit.h
+namespace {
+
+Mutex& IsolatesMutex() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
+  return mutex;
+}
+
+HashSet<v8::Isolate*>& Isolates() {
+#if DCHECK_IS_ON()
+  DCHECK(IsolatesMutex().Locked());
+#endif
+  static HashSet<v8::Isolate*>& isolates = *new HashSet<v8::Isolate*>();
+  return isolates;
+}
+
+void AddWorkerIsolate(v8::Isolate* isolate) {
+  MutexLocker lock(IsolatesMutex());
+  Isolates().insert(isolate);
+}
+
+void RemoveWorkerIsolate(v8::Isolate* isolate) {
+  MutexLocker lock(IsolatesMutex());
+  Isolates().erase(isolate);
+}
+
+}  // namespace
+
+// Wrapper functions defined in third_party/blink/public/web/blink.h
 void MemoryPressureNotificationToWorkerThreadIsolates(
     v8::MemoryPressureLevel level) {
   WorkerBackingThread::MemoryPressureNotificationToWorkerThreadIsolates(level);
@@ -33,40 +60,13 @@ void SetRAILModeOnWorkerThreadIsolates(v8::RAILMode rail_mode) {
   WorkerBackingThread::SetRAILModeOnWorkerThreadIsolates(rail_mode);
 }
 
-static Mutex& IsolatesMutex() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
-  return mutex;
-}
-
-static HashSet<v8::Isolate*>& Isolates() {
-#if DCHECK_IS_ON()
-  DCHECK(IsolatesMutex().Locked());
-#endif
-  static HashSet<v8::Isolate*>& isolates = *new HashSet<v8::Isolate*>();
-  return isolates;
-}
-
-static void AddWorkerIsolate(v8::Isolate* isolate) {
-  MutexLocker lock(IsolatesMutex());
-  Isolates().insert(isolate);
-}
-
-static void RemoveWorkerIsolate(v8::Isolate* isolate) {
-  MutexLocker lock(IsolatesMutex());
-  Isolates().erase(isolate);
-}
-
-WorkerBackingThread::WorkerBackingThread(const WebThreadCreationParams& params,
-                                         bool should_call_gc_on_shutdown)
+WorkerBackingThread::WorkerBackingThread(const WebThreadCreationParams& params)
     : backing_thread_(WebThreadSupportingGC::Create(params)),
-      is_owning_thread_(true),
-      should_call_gc_on_shutdown_(should_call_gc_on_shutdown) {}
+      is_owning_thread_(true) {}
 
-WorkerBackingThread::WorkerBackingThread(WebThread* thread,
-                                         bool should_call_gc_on_shutdown)
+WorkerBackingThread::WorkerBackingThread(WebThread* thread)
     : backing_thread_(WebThreadSupportingGC::CreateForThread(thread)),
-      is_owning_thread_(false),
-      should_call_gc_on_shutdown_(should_call_gc_on_shutdown) {}
+      is_owning_thread_(false) {}
 
 WorkerBackingThread::~WorkerBackingThread() = default;
 
@@ -116,11 +116,6 @@ void WorkerBackingThread::ShutdownOnBackingThread() {
 
   V8PerIsolateData::WillBeDestroyed(isolate_);
   V8GCController::ClearDOMWrappers(isolate_);
-  // TODO(yhirano): Remove this when https://crbug.com/v8/1428 is fixed.
-  if (should_call_gc_on_shutdown_) {
-    // This statement runs only in tests.
-    V8GCController::CollectAllGarbageForTesting(isolate_);
-  }
   backing_thread_->ShutdownOnThread();
 
   RemoveWorkerIsolate(isolate_);

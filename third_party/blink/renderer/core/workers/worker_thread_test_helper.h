@@ -86,7 +86,7 @@ class WorkerThreadForTest : public WorkerThread {
   WorkerThreadForTest(ThreadableLoadingContext* loading_context,
                       WorkerReportingProxy& mock_worker_reporting_proxy)
       : WorkerThread(loading_context, mock_worker_reporting_proxy),
-        worker_backing_thread_(WorkerBackingThread::CreateForTest(
+        worker_backing_thread_(WorkerBackingThread::Create(
             WebThreadCreationParams(WebThreadType::kTestThread))) {}
 
   ~WorkerThreadForTest() override = default;
