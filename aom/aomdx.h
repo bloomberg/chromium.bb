@@ -160,6 +160,10 @@ enum aom_dec_control_id {
    * bitstream. This provides a way to access a specific tile's bitstream data.
    */
   AV1D_GET_TILE_DATA,
+  /** control function to enable the ext-tile software debug and testing code in
+   * the decoder.
+   */
+  AV1D_EXT_TILE_DEBUG,
 
   /** control function to indicate whether bitstream is in Annex-B format. */
   AV1D_SET_IS_ANNEXB,
@@ -215,6 +219,8 @@ AOM_CTRL_USE_TYPE(AV1_SET_TILE_MODE, unsigned int)
 #define AOM_CTRL_AV1_SET_TILE_MODE
 AOM_CTRL_USE_TYPE(AV1D_GET_TILE_DATA, aom_tile_data *)
 #define AOM_CTRL_AV1D_GET_TILE_DATA
+AOM_CTRL_USE_TYPE(AV1D_EXT_TILE_DEBUG, unsigned int)
+#define AOM_CTRL_AV1D_EXT_TILE_DEBUG
 AOM_CTRL_USE_TYPE(AV1D_SET_IS_ANNEXB, unsigned int)
 #define AOM_CTRL_AV1D_SET_IS_ANNEXB
 AOM_CTRL_USE_TYPE(AV1D_SET_OPERATING_POINT, int)
