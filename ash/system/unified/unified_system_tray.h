@@ -47,6 +47,9 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   // Return the bounds of the bubble in the screen.
   gfx::Rect GetBubbleBoundsInScreen() const;
 
+  // Updates when the login status of the system changes.
+  void UpdateAfterLoginStatusChange();
+
   // TrayBackgroundView:
   bool PerformAction(const ui::Event& event) override;
   void ShowBubble(bool show_by_click) override;
