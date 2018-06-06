@@ -344,7 +344,6 @@ static_library("extensions") {
     "api/settings_private/generated_prefs_factory.h",
     "api/settings_private/prefs_util.cc",
     "api/settings_private/prefs_util.h",
-    "api/settings_private/prefs_util.h",
     "api/settings_private/settings_private_api.cc",
     "api/settings_private/settings_private_api.h",
     "api/settings_private/settings_private_delegate.cc",
