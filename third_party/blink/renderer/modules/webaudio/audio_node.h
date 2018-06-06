@@ -182,9 +182,9 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   static void PrintNodeCounts();
 #endif
 #if DEBUG_AUDIONODE_REFERENCES > 1
-  void TailProcessingDebug(const char* debug_note);
+  void TailProcessingDebug(const char* debug_note, bool flag);
   void AddTailProcessingDebug();
-  void RemoveTailProcessingDebug();
+  void RemoveTailProcessingDebug(bool disable_outputs);
 #endif
 
   // True if the node has a tail time or latency time that requires

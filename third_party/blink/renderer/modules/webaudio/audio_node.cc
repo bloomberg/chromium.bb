@@ -413,6 +413,14 @@ void AudioHandler::EnableOutputsIfNecessary() {
   // outputs later on when the tail processing time has elapsed.
   Context()->GetDeferredTaskHandler().RemoveTailProcessingHandler(this, false);
 
+#if DEBUG_AUDIONODE_REFERENCES > 1
+  fprintf(stderr,
+          "[%16p]: %16p: %2d: EnableOutputsIfNecessary: is_disabled %d count "
+          "%d output size %zu\n",
+          Context(), this, GetNodeType(), is_disabled_, connection_ref_count_,
+          outputs_.size());
+#endif
+
   if (is_disabled_ && connection_ref_count_ > 0) {
     is_disabled_ = false;
     for (auto& output : outputs_)
@@ -537,9 +545,10 @@ void AudioHandler::PrintNodeCounts() {
 #endif  // DEBUG_AUDIONODE_REFERENCES
 
 #if DEBUG_AUDIONODE_REFERENCES > 1
-void AudioHandler::TailProcessingDebug(const char* note) {
-  fprintf(stderr, "[%16p]: %16p: %2d: %s %d @%.15g", Context(), this,
-          GetNodeType(), note, connection_ref_count_, Context()->currentTime());
+void AudioHandler::TailProcessingDebug(const char* note, bool flag) {
+  fprintf(stderr, "[%16p]: %16p: %2d: %s %d @%.15g flag=%d", Context(), this,
+          GetNodeType(), note, connection_ref_count_, Context()->currentTime(),
+          flag);
 
   // If we're on the audio thread, we can print out the tail and
   // latency times (because these methods can only be called from the
@@ -553,11 +562,11 @@ void AudioHandler::TailProcessingDebug(const char* note) {
 }
 
 void AudioHandler::AddTailProcessingDebug() {
-  TailProcessingDebug("addTail");
+  TailProcessingDebug("addTail", false);
 }
 
-void AudioHandler::RemoveTailProcessingDebug() {
-  TailProcessingDebug("remTail");
+void AudioHandler::RemoveTailProcessingDebug(bool disable_outputs) {
+  TailProcessingDebug("remTail", disable_outputs);
 }
 #endif  // DEBUG_AUDIONODE_REFERENCES > 1
 
@@ -587,8 +596,9 @@ AudioNode::AudioNode(BaseAudioContext& context)
 void AudioNode::Dispose() {
   DCHECK(IsMainThread());
 #if DEBUG_AUDIONODE_REFERENCES
-  fprintf(stderr, "[%16p]: %16p: %2d: AudioNode::dispose %16p\n", context(),
-          this, Handler().GetNodeType(), handler_.get());
+  fprintf(stderr, "[%16p]: %16p: %2d: AudioNode::dispose %16p @%g\n", context(),
+          this, Handler().GetNodeType(), handler_.get(),
+          context()->currentTime());
 #endif
   BaseAudioContext::GraphAutoLocker locker(context());
   Handler().Dispose();

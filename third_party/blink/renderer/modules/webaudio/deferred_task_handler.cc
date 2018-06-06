@@ -190,7 +190,7 @@ void DeferredTaskHandler::RemoveTailProcessingHandler(
   size_t index = tail_processing_handlers_.Find(handler);
   if (index != kNotFound) {
 #if DEBUG_AUDIONODE_REFERENCES > 1
-    handler->RemoveTailProcessingDebug();
+    handler->RemoveTailProcessingDebug(disable_outputs);
 #endif
 
     if (disable_outputs) {
@@ -199,6 +199,19 @@ void DeferredTaskHandler::RemoveTailProcessingHandler(
       finished_tail_processing_handlers_.push_back(handler);
     }
     tail_processing_handlers_.EraseAt(index);
+
+    return;
+  }
+
+  // Check finished tail handlers and remove this handler from the list so that
+  // we don't disable outputs later when these are processed.
+  index = finished_tail_processing_handlers_.Find(handler);
+  if (index != kNotFound) {
+#if DEBUG_AUDIONODE_REFERENCES > 1
+    handler->RemoveTailProcessingDebug(disable_outputs);
+#endif
+    finished_tail_processing_handlers_.EraseAt(index);
+    return;
   }
 }
 
@@ -351,7 +364,12 @@ void DeferredTaskHandler::DisableOutputsForTailProcessing() {
   // disable their outputs to indicate to downstream nodes that they're done.
   // This has to be done in the main thread because DisableOutputs() can cause
   // summing juctions to go away, which must be done on the main thread.
-  for (auto& handler : finished_tail_processing_handlers_) {
+  for (auto handler : finished_tail_processing_handlers_) {
+#if DEBUG_AUDIONODE_REFERENCES > 1
+    fprintf(stderr, "[%16p]: %16p: %2d: DisableOutputsForTailProcessing @%g\n",
+            handler->Context(), handler.get(), handler->GetNodeType(),
+            handler->Context()->currentTime());
+#endif
     handler->DisableOutputs();
   }
   finished_tail_processing_handlers_.clear();
