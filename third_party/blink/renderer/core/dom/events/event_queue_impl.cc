@@ -40,20 +40,24 @@ EventQueueImpl* EventQueueImpl::Create(ExecutionContext* context,
 }
 
 EventQueueImpl::EventQueueImpl(ExecutionContext* context, TaskType task_type)
-    : context_(context), task_type_(task_type), is_closed_(false) {}
+    : ContextLifecycleObserver(context),
+      task_type_(task_type),
+      is_closed_(false) {}
 
 EventQueueImpl::~EventQueueImpl() = default;
 
 void EventQueueImpl::Trace(blink::Visitor* visitor) {
-  visitor->Trace(context_);
   visitor->Trace(queued_events_);
   EventQueue::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 bool EventQueueImpl::EnqueueEvent(const base::Location& from_here,
                                   Event* event) {
   if (is_closed_)
     return false;
+
+  DCHECK(GetExecutionContext());
 
   DCHECK(event->target());
   probe::AsyncTaskScheduled(event->target()->GetExecutionContext(),
@@ -63,7 +67,7 @@ bool EventQueueImpl::EnqueueEvent(const base::Location& from_here,
   DCHECK(was_added);  // It should not have already been in the list.
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      context_->GetTaskRunner(task_type_);
+      GetExecutionContext()->GetTaskRunner(task_type_);
 
   // Pass the event as a weak persistent so that GC can collect an event-related
   // object like IDBTransaction as soon as possible.
@@ -105,6 +109,10 @@ void EventQueueImpl::DispatchEvent(Event* event) {
     window->DispatchEvent(event, nullptr);
   else
     event_target->DispatchEvent(event);
+}
+
+void EventQueueImpl::ContextDestroyed(ExecutionContext*) {
+  Close();
 }
 
 }  // namespace blink

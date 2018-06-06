@@ -28,6 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_QUEUE_IMPL_H_
 
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 
@@ -36,7 +37,10 @@ namespace blink {
 class Event;
 class ExecutionContext;
 
-class CORE_EXPORT EventQueueImpl final : public EventQueue {
+class CORE_EXPORT EventQueueImpl final : public EventQueue,
+                                         public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(EventQueueImpl);
+
  public:
   // TODO(hajimehoshi): TaskType should be determined based on an event instead
   // of specifying here.
@@ -55,7 +59,8 @@ class CORE_EXPORT EventQueueImpl final : public EventQueue {
   bool RemoveEvent(Event*);
   void DispatchEvent(Event*);
 
-  Member<ExecutionContext> context_;
+  void ContextDestroyed(ExecutionContext*) override;
+
   const TaskType task_type_;
   HeapLinkedHashSet<Member<Event>> queued_events_;
   bool is_closed_;

@@ -40,20 +40,22 @@ MediaElementEventQueue* MediaElementEventQueue::Create(
 
 MediaElementEventQueue::MediaElementEventQueue(EventTarget* owner,
                                                ExecutionContext* context)
-    : owner_(owner), context_(context), is_closed_(false) {}
+    : ContextLifecycleObserver(context), owner_(owner), is_closed_(false) {}
 
 MediaElementEventQueue::~MediaElementEventQueue() = default;
 
 void MediaElementEventQueue::Trace(blink::Visitor* visitor) {
   visitor->Trace(owner_);
-  visitor->Trace(context_);
   visitor->Trace(pending_events_);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 bool MediaElementEventQueue::EnqueueEvent(const base::Location& from_here,
                                           Event* event) {
   if (is_closed_)
     return false;
+
+  DCHECK(GetExecutionContext());
 
   TRACE_EVENT_ASYNC_BEGIN1("event", "MediaElementEventQueue:enqueueEvent",
                            event, "type", event->type().Ascii());
@@ -62,7 +64,8 @@ bool MediaElementEventQueue::EnqueueEvent(const base::Location& from_here,
                             event);
 
   pending_events_.insert(event);
-  context_->GetTaskRunner(TaskType::kMediaElementEvent)
+  GetExecutionContext()
+      ->GetTaskRunner(TaskType::kMediaElementEvent)
       ->PostTask(FROM_HERE,
                  WTF::Bind(&MediaElementEventQueue::DispatchEvent,
                            WrapPersistent(this), WrapPersistent(event)));
@@ -94,6 +97,7 @@ void MediaElementEventQueue::DispatchEvent(Event* event) {
 void MediaElementEventQueue::Close() {
   is_closed_ = true;
   CancelAllEvents();
+  owner_.Clear();
 }
 
 void MediaElementEventQueue::CancelAllEvents() {
@@ -109,6 +113,10 @@ void MediaElementEventQueue::CancelAllEvents() {
 
 bool MediaElementEventQueue::HasPendingEvents() const {
   return pending_events_.size() > 0;
+}
+
+void MediaElementEventQueue::ContextDestroyed(ExecutionContext*) {
+  Close();
 }
 
 }  // namespace blink

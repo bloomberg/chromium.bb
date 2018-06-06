@@ -29,6 +29,7 @@
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -38,12 +39,15 @@ namespace blink {
 // Queue for events originating in MediaElement and having
 // "media element event" task type according to the spec.
 class CORE_EXPORT MediaElementEventQueue final
-    : public GarbageCollectedFinalized<MediaElementEventQueue> {
+    : public GarbageCollectedFinalized<MediaElementEventQueue>,
+      public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(MediaElementEventQueue);
+
  public:
   static MediaElementEventQueue* Create(EventTarget*, ExecutionContext*);
   ~MediaElementEventQueue();
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   bool EnqueueEvent(const base::Location&, Event*);
   void Close();
 
@@ -55,8 +59,9 @@ class CORE_EXPORT MediaElementEventQueue final
   bool RemoveEvent(Event* event);
   void DispatchEvent(Event* event);
 
+  void ContextDestroyed(ExecutionContext*) override;
+
   Member<EventTarget> owner_;
-  Member<ExecutionContext> context_;
   HeapHashSet<Member<Event>> pending_events_;
 
   bool is_closed_;
