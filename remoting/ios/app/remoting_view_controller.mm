@@ -11,7 +11,7 @@
 #include <SystemConfiguration/SystemConfiguration.h>
 #include <netinet/in.h>
 
-#import "base/mac/bind_objc_block.h"
+#import "base/bind.h"
 #import "ios/third_party/material_components_ios/src/components/AnimationTiming/src/MaterialAnimationTiming.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
@@ -206,11 +206,11 @@ using remoting::HostListService;
 
   __weak __typeof(self) weakSelf = self;
   _hostListStateSubscription =
-      _hostListService->RegisterHostListStateCallback(base::BindBlockArc(^{
+      _hostListService->RegisterHostListStateCallback(base::BindRepeating(^{
         [weakSelf hostListStateDidChange];
       }));
   _hostListFetchFailureSubscription =
-      _hostListService->RegisterFetchFailureCallback(base::BindBlockArc(^{
+      _hostListService->RegisterFetchFailureCallback(base::BindRepeating(^{
         [weakSelf hostListFetchDidFail];
       }));
 }

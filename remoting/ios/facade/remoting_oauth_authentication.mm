@@ -11,7 +11,7 @@
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>
 
-#import "base/mac/bind_objc_block.h"
+#import "base/bind.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "remoting/ios/facade/host_info.h"
 #import "remoting/ios/facade/host_list_fetcher.h"
@@ -127,7 +127,7 @@ RemotingAuthenticationStatus oauthStatusToRemotingAuthenticationStatus(
   __weak RemotingOAuthAuthentication* weakSelf = self;
   _tokenGetter = CreateOAuthTokenGetterWithAuthorizationCode(
       std::string(base::SysNSStringToUTF8(authorizationCode)),
-      base::BindBlockArc(
+      base::BindRepeating(
           ^(const std::string& user_email, const std::string& refresh_token) {
             VLOG(1) << "New Creds: " << user_email << " " << refresh_token;
             UserInfo* user = [[UserInfo alloc] init];
@@ -169,7 +169,7 @@ RemotingAuthenticationStatus oauthStatusToRemotingAuthenticationStatus(
   // Be careful here since a failure to reset onAccessToken will end up with
   // retain cycle and memory leakage.
   if (_tokenGetter) {
-    _tokenGetter->CallWithToken(base::BindBlockArc(
+    _tokenGetter->CallWithToken(base::BindRepeating(
         ^(remoting::OAuthTokenGetter::Status status,
           const std::string& user_email, const std::string& access_token) {
           onAccessToken(oauthStatusToRemotingAuthenticationStatus(status),
