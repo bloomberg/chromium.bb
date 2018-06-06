@@ -104,7 +104,7 @@ const char kPageSizeAccessOnlineHistogramBase[] =
 const int64_t kDownloadId = 42LL;
 
 struct ResponseInfo {
-  ResponseInfo(int request_status) : request_status(request_status) {
+  explicit ResponseInfo(int request_status) : request_status(request_status) {
     DCHECK_NE(net::OK, request_status);
   }
   ResponseInfo(int request_status,
@@ -1262,7 +1262,8 @@ void OfflinePageRequestJobBuilder::TearDownOnReadCompletedOnIO(
 // service enabled.
 class OfflinePageURLLoaderBuilder : public TestURLLoaderClient::Observer {
  public:
-  OfflinePageURLLoaderBuilder(OfflinePageRequestHandlerTestBase* test_base);
+  explicit OfflinePageURLLoaderBuilder(
+      OfflinePageRequestHandlerTestBase* test_base);
 
   void OnReceiveRedirect(const GURL& redirected_url) override;
   void OnReceiveResponse(
