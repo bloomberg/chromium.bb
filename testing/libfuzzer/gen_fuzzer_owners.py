@@ -86,13 +86,70 @@ def GetOwnersForFuzzer(sources):
   return None
 
 
+def FindGroupsAndDepsInDeps(deps_list, build_dir):
+  """Return list of groups, as well as their deps, from a list of deps."""
+  groups = []
+  deps_for_groups = {}
+  for deps in deps_list:
+    output = subprocess.check_output([GNPath(), 'desc', build_dir, deps])
+    needle = 'Type: '
+    for line in output.splitlines():
+      if needle and not line.startswith(needle):
+        continue
+      if needle == 'Type: ':
+        if line != 'Type: group':
+          break
+        groups.append(deps)
+        assert deps not in deps_for_groups
+        deps_for_groups[deps] = []
+        needle = 'Direct dependencies'
+      elif needle == 'Direct dependencies':
+        needle = ''
+      else:
+        assert needle == ''
+        if needle == line:
+          break
+        deps_for_groups[deps].append(line.strip())
+
+  return groups, deps_for_groups
+
+
+def TraverseGroups(deps_list, build_dir):
+  """Filter out groups from a deps list. Add groups' direct dependencies."""
+  full_deps_set = set(deps_list)
+  deps_to_check = full_deps_set.copy()
+
+  # Keep track of groups to break circular dependendies, if any.
+  seen_groups = set()
+
+  while deps_to_check:
+    # Look for groups from the deps set.
+    groups, deps_for_groups = FindGroupsAndDepsInDeps(deps_to_check, build_dir)
+    groups = set(groups).difference(seen_groups)
+    if not groups:
+      break
+
+    # Update sets. Filter out groups from the full deps set.
+    full_deps_set.difference_update(groups)
+    deps_to_check.clear()
+    seen_groups.update(groups)
+
+    # Get the direct dependencies, and filter out known groups there too.
+    for group in groups:
+      deps_to_check.update(deps_for_groups[group])
+    deps_to_check.difference_update(seen_groups)
+    full_deps_set.update(deps_to_check)
+  return list(full_deps_set)
+
+
 def GetSourcesFromDeps(deps_list, build_dir):
   """Return list of sources from parsing deps."""
   if not deps_list:
     return None
 
+  full_deps_list = TraverseGroups(deps_list, build_dir)
   all_sources = []
-  for deps in deps_list:
+  for deps in full_deps_list:
     output = subprocess.check_output(
         [GNPath(), 'desc', build_dir, deps, 'sources'])
     for source in output.splitlines():
@@ -117,11 +174,7 @@ def GNPath():
 
 def SubStringExistsIn(substring_list, string):
   """Return true if one of the substring in the list is found in |string|."""
-  for substring in substring_list:
-    if substring in string:
-      return True
-
-  return False
+  return any([substring in string for substring in substring_list])
 
 
 def main():
