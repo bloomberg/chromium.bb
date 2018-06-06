@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_UI_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_UI_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -49,7 +51,7 @@ class CONTENT_EXPORT WebUI {
   virtual WebContents* GetWebContents() const = 0;
 
   virtual WebUIController* GetController() const = 0;
-  virtual void SetController(WebUIController* controller) = 0;
+  virtual void SetController(std::unique_ptr<WebUIController> controller) = 0;
 
   // Returns the device scale factor of the monitor that the renderer is on.
   // Whenever possible, WebUI should push resources with this scale factor to

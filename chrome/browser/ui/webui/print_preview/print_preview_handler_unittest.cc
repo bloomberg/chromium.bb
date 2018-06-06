@@ -270,7 +270,7 @@ class PrintPreviewHandlerTest : public testing::Test {
         web_ui(), std::move(preview_handler));
     preview_ui->SetInitiatorTitle(
         base::ASCIIToUTF16(printing::kDummyInitiatorName));
-    web_ui()->SetController(preview_ui.release());
+    web_ui()->SetController(std::move(preview_ui));
   }
 
   ~PrintPreviewHandlerTest() override {

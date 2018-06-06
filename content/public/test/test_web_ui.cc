@@ -4,6 +4,8 @@
 
 #include "content/public/test/test_web_ui.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -30,8 +32,8 @@ WebUIController* TestWebUI::GetController() const {
   return controller_.get();
 }
 
-void TestWebUI::SetController(WebUIController* controller) {
-  controller_.reset(controller);
+void TestWebUI::SetController(std::unique_ptr<WebUIController> controller) {
+  controller_ = std::move(controller);
 }
 
 float TestWebUI::GetDeviceScaleFactor() const {
