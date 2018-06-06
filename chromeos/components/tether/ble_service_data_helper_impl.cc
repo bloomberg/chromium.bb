@@ -9,12 +9,16 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
+#include "chromeos/services/secure_channel/ble_constants.h"
 #include "components/cryptauth/background_eid_generator.h"
 #include "components/cryptauth/ble/ble_advertisement_generator.h"
 #include "components/cryptauth/foreground_eid_generator.h"
 #include "components/cryptauth/local_device_data_provider.h"
-#include "components/cryptauth/remote_beacon_seed_fetcher.h"
+#include "device/bluetooth/bluetooth_device.h"
 
 namespace chromeos {
 
@@ -59,19 +63,18 @@ std::unique_ptr<secure_channel::BleServiceDataHelper>
 BleServiceDataHelperImpl::Factory::BuildInstance(
     TetherHostFetcher* tether_host_fetcher,
     cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-    cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher) {
+    device_sync::DeviceSyncClient* device_sync_client) {
   return base::WrapUnique(new BleServiceDataHelperImpl(
-      tether_host_fetcher, local_device_data_provider,
-      remote_beacon_seed_fetcher));
+      tether_host_fetcher, local_device_data_provider, device_sync_client));
 }
 
 BleServiceDataHelperImpl::BleServiceDataHelperImpl(
     TetherHostFetcher* tether_host_fetcher,
     cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-    cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher)
+    device_sync::DeviceSyncClient* device_sync_client)
     : tether_host_fetcher_(tether_host_fetcher),
       local_device_data_provider_(local_device_data_provider),
-      remote_beacon_seed_fetcher_(remote_beacon_seed_fetcher),
+      device_sync_client_(device_sync_client),
       background_eid_generator_(
           std::make_unique<cryptauth::BackgroundEidGenerator>()),
       foreground_eid_generator_(
@@ -85,12 +88,57 @@ BleServiceDataHelperImpl::~BleServiceDataHelperImpl() {
   tether_host_fetcher_->RemoveObserver(this);
 }
 
+base::Optional<secure_channel::BleServiceDataHelper::DeviceWithBackgroundBool>
+BleServiceDataHelperImpl::IdentifyRemoteDevice(
+    const std::string& service_data,
+    const std::vector<std::string>& remote_device_ids) {
+  base::Optional<std::string> local_device_public_key =
+      GetLocalDevicePublicKey();
+  if (!local_device_public_key)
+    return base::nullopt;
+
+  // BleServiceDataHelper::IdentifyRemoteDevice() verifies that the devices its
+  // subclasses return are actually in |device_id_pair_set|. However, clients of
+  // BleServiceDataHelperImpl don't have easy access to local device metadata;
+  // therefore, pass along that required data here.
+  secure_channel::DeviceIdPairSet device_id_pair_set;
+  for (const auto& remote_device_id : remote_device_ids) {
+    device_id_pair_set.insert(secure_channel::DeviceIdPair(
+        remote_device_id, cryptauth::RemoteDeviceRef::GenerateDeviceId(
+                              *local_device_public_key)));
+  }
+
+  return secure_channel::BleServiceDataHelper::IdentifyRemoteDevice(
+      service_data, device_id_pair_set);
+}
+
 std::unique_ptr<cryptauth::DataWithTimestamp>
 BleServiceDataHelperImpl::GenerateForegroundAdvertisement(
     const secure_channel::DeviceIdPair& device_id_pair) {
+  base::Optional<std::string> local_device_public_key =
+      GetLocalDevicePublicKey();
+  if (!local_device_public_key) {
+    PA_LOG(ERROR) << "Local device public key is invalid.";
+    return nullptr;
+  }
+
+  base::Optional<cryptauth::RemoteDeviceRef> remote_device;
+  const auto remote_device_it = std::find_if(
+      tether_hosts_from_last_fetch_.begin(),
+      tether_hosts_from_last_fetch_.end(),
+      [&device_id_pair](auto remote_device) {
+        return device_id_pair.remote_device_id() == remote_device.GetDeviceId();
+      });
+
+  if (remote_device_it == tether_hosts_from_last_fetch_.end()) {
+    PA_LOG(WARNING) << "Requested remote device ID is not a valid host: "
+                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                           device_id_pair.remote_device_id());
+    return nullptr;
+  }
+
   return cryptauth::BleAdvertisementGenerator::GenerateBleAdvertisement(
-      device_id_pair.remote_device_id(), local_device_data_provider_,
-      remote_beacon_seed_fetcher_);
+      *remote_device_it, *local_device_public_key);
 }
 
 base::Optional<secure_channel::BleServiceDataHelper::DeviceWithBackgroundBool>
@@ -103,12 +151,17 @@ BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
   // First try, identifying |service_data| as a foreground advertisement.
   if (service_data.size() >= kMinNumBytesInForegroundServiceData) {
     std::vector<cryptauth::BeaconSeed> beacon_seeds;
-    if (local_device_data_provider_->GetLocalDeviceData(nullptr,
-                                                        &beacon_seeds)) {
-      device_id =
-          foreground_eid_generator_->IdentifyRemoteDeviceByAdvertisement(
-              service_data, registered_remote_device_ids_, beacon_seeds);
+    if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+      beacon_seeds =
+          device_sync_client_->GetLocalDeviceMetadata()->beacon_seeds();
+    } else if (!local_device_data_provider_->GetLocalDeviceData(
+                   nullptr, &beacon_seeds)) {
+      PA_LOG(ERROR) << "Cannot fetch local beacon seeds.";
+      return base::nullopt;
     }
+
+    device_id = foreground_eid_generator_->IdentifyRemoteDeviceByAdvertisement(
+        service_data, registered_remote_device_ids_, beacon_seeds);
   }
 
   // If the device has not yet been identified, try identifying |service_data|
@@ -117,8 +170,7 @@ BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
       device_id.empty() && service_data.size() >= kMinNumBytesInServiceData &&
       service_data.size() <= kMaxNumBytesInBackgroundServiceData) {
     device_id = background_eid_generator_->IdentifyRemoteDeviceByAdvertisement(
-        remote_beacon_seed_fetcher_, service_data,
-        registered_remote_device_ids_);
+        service_data, tether_hosts_from_last_fetch_);
     is_background_advertisement = true;
   }
 
@@ -134,6 +186,9 @@ BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
     }
   }
 
+  PA_LOG(ERROR) << "Identified remote device ID is not a valid host: "
+                << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                       device_id);
   NOTREACHED();
   return base::nullopt;
 }
@@ -153,6 +208,33 @@ void BleServiceDataHelperImpl::OnTetherHostsFetched(
                  tether_hosts_from_last_fetch_.end(),
                  std::back_inserter(registered_remote_device_ids_),
                  [](const auto& host) { return host.GetDeviceId(); });
+}
+
+base::Optional<std::string>
+BleServiceDataHelperImpl::GetLocalDevicePublicKey() {
+  std::string local_device_public_key;
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+    if (!device_sync_client_->GetLocalDeviceMetadata())
+      return base::nullopt;
+    local_device_public_key =
+        device_sync_client_->GetLocalDeviceMetadata()->public_key();
+  } else if (!local_device_data_provider_->GetLocalDeviceData(
+                 &local_device_public_key, nullptr)) {
+    return base::nullopt;
+  }
+
+  if (local_device_public_key.empty())
+    return base::nullopt;
+
+  return local_device_public_key;
+}
+
+void BleServiceDataHelperImpl::SetTestDoubles(
+    std::unique_ptr<cryptauth::BackgroundEidGenerator> background_eid_generator,
+    std::unique_ptr<cryptauth::ForegroundEidGenerator>
+        foreground_eid_generator) {
+  background_eid_generator_ = std::move(background_eid_generator);
+  foreground_eid_generator_ = std::move(foreground_eid_generator);
 }
 
 }  // namespace tether

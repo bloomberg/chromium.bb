@@ -47,7 +47,7 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
     synced_devices_ = synced_devices;
   }
 
-  void setlocal_device_metadata(
+  void set_local_device_metadata(
       base::Optional<cryptauth::RemoteDeviceRef> local_device_metadata) {
     local_device_metadata_ = local_device_metadata;
   }

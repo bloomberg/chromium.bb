@@ -4,6 +4,8 @@
 
 #include "components/cryptauth/ble/fake_ble_advertisement_generator.h"
 
+#include "components/cryptauth/remote_device_ref.h"
+
 namespace cryptauth {
 
 FakeBleAdvertisementGenerator::FakeBleAdvertisementGenerator() {}
@@ -12,9 +14,8 @@ FakeBleAdvertisementGenerator::~FakeBleAdvertisementGenerator() {}
 
 std::unique_ptr<DataWithTimestamp>
 FakeBleAdvertisementGenerator::GenerateBleAdvertisementInternal(
-    const std::string& device_id,
-    LocalDeviceDataProvider* local_device_data_provider,
-    RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher) {
+    RemoteDeviceRef remote_device,
+    const std::string& local_device_public_key) {
   return std::move(advertisement_);
 }
 

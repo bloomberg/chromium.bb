@@ -11,10 +11,10 @@
 #include "base/strings/string_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
-#include "components/cryptauth/mock_remote_beacon_seed_fetcher.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/raw_eid_generator_impl.h"
 #include "components/cryptauth/remote_device_ref.h"
+#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -95,13 +95,18 @@ class CryptAuthBackgroundEidGeneratorTest : public testing::Test {
     beacon_seeds_.push_back(CreateBeaconSeed(
         kFourthSeed, kStartPeriodMs + 2 * kBeaconSeedDurationMs,
         kStartPeriodMs + 3 * kBeaconSeedDurationMs));
+
+    RemoteDeviceRef device_1 = RemoteDeviceRefBuilder()
+                                   .SetPublicKey("publicKey1")
+                                   .SetBeaconSeeds(beacon_seeds_)
+                                   .Build();
+    RemoteDeviceRef device_2 =
+        RemoteDeviceRefBuilder().SetPublicKey("publicKey2").Build();
+    test_remote_devices_ = {device_1, device_2};
   }
 
   void SetUp() override {
     SetTestTime(kCurrentTimeMs);
-
-    mock_seed_fetcher_ =
-        std::make_unique<cryptauth::MockRemoteBeaconSeedFetcher>();
 
     eid_generator_.reset(new BackgroundEidGenerator(
         std::make_unique<TestRawEidGenerator>(), &test_clock_));
@@ -114,9 +119,9 @@ class CryptAuthBackgroundEidGeneratorTest : public testing::Test {
   }
 
   std::unique_ptr<BackgroundEidGenerator> eid_generator_;
-  std::unique_ptr<MockRemoteBeaconSeedFetcher> mock_seed_fetcher_;
   base::SimpleTestClock test_clock_;
   std::vector<BeaconSeed> beacon_seeds_;
+  RemoteDeviceRefList test_remote_devices_;
 };
 
 TEST_F(CryptAuthBackgroundEidGeneratorTest,
@@ -228,11 +233,10 @@ TEST_F(CryptAuthBackgroundEidGeneratorTest,
   SetTestTime(kStartPeriodMs + kEidPeriodMs / 2);
   DataWithTimestamp advertisement_eid = CreateDataWithTimestamp(
       beacon_seeds_[0].data(), kStartPeriodMs - kEidPeriodMs);
-  mock_seed_fetcher_->SetSeedsForDeviceId(kDeviceId1, &beacon_seeds_);
 
-  EXPECT_EQ(std::string(), eid_generator_->IdentifyRemoteDeviceByAdvertisement(
-                               mock_seed_fetcher_.get(), advertisement_eid.data,
-                               {kDeviceId2}));
+  EXPECT_EQ(std::string(),
+            eid_generator_->IdentifyRemoteDeviceByAdvertisement(
+                advertisement_eid.data, {test_remote_devices_[1]}));
 }
 
 TEST_F(CryptAuthBackgroundEidGeneratorTest,
@@ -240,11 +244,10 @@ TEST_F(CryptAuthBackgroundEidGeneratorTest,
   SetTestTime(kStartPeriodMs + kEidPeriodMs / 2);
   DataWithTimestamp advertisement_eid = CreateDataWithTimestamp(
       beacon_seeds_[0].data(), kStartPeriodMs - kEidPeriodMs);
-  mock_seed_fetcher_->SetSeedsForDeviceId(kDeviceId1, &beacon_seeds_);
 
-  EXPECT_EQ(kDeviceId1, eid_generator_->IdentifyRemoteDeviceByAdvertisement(
-                            mock_seed_fetcher_.get(), advertisement_eid.data,
-                            {kDeviceId1, kDeviceId2}));
+  EXPECT_EQ(test_remote_devices_[0].GetDeviceId(),
+            eid_generator_->IdentifyRemoteDeviceByAdvertisement(
+                advertisement_eid.data, test_remote_devices_));
 }
 
 }  // namespace cryptauth

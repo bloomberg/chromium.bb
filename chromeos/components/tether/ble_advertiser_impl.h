@@ -18,14 +18,10 @@ namespace base {
 class TaskRunner;
 }  // namespace base
 
-namespace cryptauth {
-class LocalDeviceDataProvider;
-class RemoteBeaconSeedFetcher;
-}  // namespace cryptauth
-
 namespace chromeos {
 
 namespace secure_channel {
+class BleServiceDataHelper;
 class BleSynchronizerBase;
 class ErrorTolerantBleAdvertisement;
 }  // namespace secure_channel
@@ -38,15 +34,13 @@ class BleAdvertiserImpl : public BleAdvertiser {
   class Factory {
    public:
     static std::unique_ptr<BleAdvertiser> NewInstance(
-        cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-        cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
+        secure_channel::BleServiceDataHelper* ble_service_data_helper,
         secure_channel::BleSynchronizerBase* ble_synchronizer);
     static void SetInstanceForTesting(Factory* factory);
 
    protected:
     virtual std::unique_ptr<BleAdvertiser> BuildInstance(
-        cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-        cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
+        secure_channel::BleServiceDataHelper* ble_service_data_helper,
         secure_channel::BleSynchronizerBase* ble_synchronizer);
 
    private:
@@ -62,8 +56,7 @@ class BleAdvertiserImpl : public BleAdvertiser {
 
  protected:
   BleAdvertiserImpl(
-      cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-      cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
+      secure_channel::BleServiceDataHelper* ble_service_data_helper,
       secure_channel::BleSynchronizerBase* ble_synchronizer);
 
  private:
@@ -85,8 +78,7 @@ class BleAdvertiserImpl : public BleAdvertiser {
   void UpdateAdvertisements();
   void OnAdvertisementStopped(size_t index);
 
-  cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher_;
-  cryptauth::LocalDeviceDataProvider* local_device_data_provider_;
+  secure_channel::BleServiceDataHelper* ble_service_data_helper_;
   secure_channel::BleSynchronizerBase* ble_synchronizer_;
 
   scoped_refptr<base::TaskRunner> task_runner_;

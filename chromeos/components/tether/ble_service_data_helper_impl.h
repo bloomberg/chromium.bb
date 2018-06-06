@@ -22,10 +22,13 @@ namespace cryptauth {
 class BackgroundEidGenerator;
 class ForegroundEidGenerator;
 class LocalDeviceDataProvider;
-class RemoteBeaconSeedFetcher;
 }  // namespace cryptauth
 
 namespace chromeos {
+
+namespace device_sync {
+class DeviceSyncClient;
+}  // namespace device_sync
 
 namespace tether {
 
@@ -41,7 +44,7 @@ class BleServiceDataHelperImpl : public secure_channel::BleServiceDataHelper,
     virtual std::unique_ptr<secure_channel::BleServiceDataHelper> BuildInstance(
         TetherHostFetcher* tether_host_fetcher,
         cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-        cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher);
+        device_sync::DeviceSyncClient* device_sync_client);
 
    private:
     static Factory* test_factory_;
@@ -49,11 +52,17 @@ class BleServiceDataHelperImpl : public secure_channel::BleServiceDataHelper,
 
   ~BleServiceDataHelperImpl() override;
 
+  base::Optional<DeviceWithBackgroundBool> IdentifyRemoteDevice(
+      const std::string& service_data,
+      const std::vector<std::string>& remote_device_ids);
+
  private:
+  friend class BleServiceDataHelperImplTest;
+
   BleServiceDataHelperImpl(
       TetherHostFetcher* tether_host_fetcher,
       cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-      cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher);
+      device_sync::DeviceSyncClient* device_sync_client);
 
   // secure_channel::BleServiceDataHelper:
   std::unique_ptr<cryptauth::DataWithTimestamp> GenerateForegroundAdvertisement(
@@ -67,9 +76,16 @@ class BleServiceDataHelperImpl : public secure_channel::BleServiceDataHelper,
 
   void OnTetherHostsFetched(const cryptauth::RemoteDeviceRefList& tether_hosts);
 
+  base::Optional<std::string> GetLocalDevicePublicKey();
+
+  void SetTestDoubles(std::unique_ptr<cryptauth::BackgroundEidGenerator>
+                          background_eid_generator,
+                      std::unique_ptr<cryptauth::ForegroundEidGenerator>
+                          foreground_eid_generator);
+
   TetherHostFetcher* tether_host_fetcher_;
   cryptauth::LocalDeviceDataProvider* local_device_data_provider_;
-  cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher_;
+  device_sync::DeviceSyncClient* device_sync_client_;
 
   std::unique_ptr<cryptauth::BackgroundEidGenerator> background_eid_generator_;
   std::unique_ptr<cryptauth::ForegroundEidGenerator> foreground_eid_generator_;

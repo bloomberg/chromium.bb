@@ -20,6 +20,11 @@ void FakeBleServiceDataHelper::SetAdvertisement(
   device_id_pair_to_service_data_map_.insert({device_id_pair, service_data});
 }
 
+void FakeBleServiceDataHelper::RemoveAdvertisement(
+    const DeviceIdPair& device_id_pair) {
+  device_id_pair_to_service_data_map_.erase(device_id_pair);
+}
+
 void FakeBleServiceDataHelper::SetIdentifiedDevice(
     const std::string& service_data,
     cryptauth::RemoteDeviceRef identified_device,

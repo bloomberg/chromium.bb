@@ -12,12 +12,12 @@
 #include "base/macros.h"
 #include "base/time/clock.h"
 #include "components/cryptauth/data_with_timestamp.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace cryptauth {
 
 class BeaconSeed;
 class RawEidGenerator;
-class RemoteBeaconSeedFetcher;
 
 // Generates ephemeral ID (EID) values that are broadcast for background BLE
 // advertisements in the ProximityAuth protocol.
@@ -43,14 +43,13 @@ class BackgroundEidGenerator {
   virtual std::vector<DataWithTimestamp> GenerateNearestEids(
       const std::vector<BeaconSeed>& beacon_seed) const;
 
-  // Given an incoming background advertisement with |service_data|, identifies
-  // which device (if any) sent the advertisement. Returns a device ID which
-  // identifies the device. If no device can be identified, returns an empty
-  // string.
+  // Given an incoming background advertisement with
+  // |advertisement_service_data|, identifies which device (if any) sent the
+  // advertisement. Returns a device ID which identifies the device. If no
+  // device can be identified, returns an empty string.
   virtual std::string IdentifyRemoteDeviceByAdvertisement(
-      cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
       const std::string& advertisement_service_data,
-      const std::vector<std::string>& device_ids) const;
+      const RemoteDeviceRefList& remote_devices) const;
 
  private:
   friend class CryptAuthBackgroundEidGeneratorTest;
@@ -59,7 +58,7 @@ class BackgroundEidGenerator {
 
   // Helper function to generate the EID for any |timestamp_ms|, properly
   // calculating the start of the period. Returns nullptr if |timestamp_ms| is
-  // outside of range of |beacon_seeds|.
+  // outside the range of |beacon_seeds|.
   std::unique_ptr<DataWithTimestamp> GenerateEid(
       int64_t timestamp_ms,
       const std::vector<BeaconSeed>& beacon_seeds) const;

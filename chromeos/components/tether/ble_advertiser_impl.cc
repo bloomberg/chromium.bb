@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/services/secure_channel/ble_service_data_helper.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/error_tolerant_ble_advertisement_impl.h"
 #include "components/cryptauth/ble/ble_advertisement_generator.h"
@@ -39,14 +40,13 @@ BleAdvertiserImpl::Factory* BleAdvertiserImpl::Factory::factory_instance_ =
 
 // static
 std::unique_ptr<BleAdvertiser> BleAdvertiserImpl::Factory::NewInstance(
-    cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-    cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
+    secure_channel::BleServiceDataHelper* ble_service_data_helper,
     secure_channel::BleSynchronizerBase* ble_synchronizer) {
   if (!factory_instance_)
     factory_instance_ = new Factory();
 
-  return factory_instance_->BuildInstance(
-      local_device_data_provider, remote_beacon_seed_fetcher, ble_synchronizer);
+  return factory_instance_->BuildInstance(ble_service_data_helper,
+                                          ble_synchronizer);
 }
 
 // static
@@ -55,12 +55,10 @@ void BleAdvertiserImpl::Factory::SetInstanceForTesting(Factory* factory) {
 }
 
 std::unique_ptr<BleAdvertiser> BleAdvertiserImpl::Factory::BuildInstance(
-    cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-    cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
+    secure_channel::BleServiceDataHelper* ble_service_data_helper,
     secure_channel::BleSynchronizerBase* ble_synchronizer) {
-  return base::WrapUnique(new BleAdvertiserImpl(local_device_data_provider,
-                                                remote_beacon_seed_fetcher,
-                                                ble_synchronizer));
+  return base::WrapUnique(
+      new BleAdvertiserImpl(ble_service_data_helper, ble_synchronizer));
 }
 
 BleAdvertiserImpl::AdvertisementMetadata::AdvertisementMetadata(
@@ -71,11 +69,9 @@ BleAdvertiserImpl::AdvertisementMetadata::AdvertisementMetadata(
 BleAdvertiserImpl::AdvertisementMetadata::~AdvertisementMetadata() = default;
 
 BleAdvertiserImpl::BleAdvertiserImpl(
-    cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-    cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
+    secure_channel::BleServiceDataHelper* ble_service_data_helper,
     secure_channel::BleSynchronizerBase* ble_synchronizer)
-    : remote_beacon_seed_fetcher_(remote_beacon_seed_fetcher),
-      local_device_data_provider_(local_device_data_provider),
+    : ble_service_data_helper_(ble_service_data_helper),
       ble_synchronizer_(ble_synchronizer),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {}
@@ -98,8 +94,9 @@ bool BleAdvertiserImpl::StartAdvertisingToDevice(const std::string& device_id) {
   }
 
   std::unique_ptr<cryptauth::DataWithTimestamp> service_data =
-      cryptauth::BleAdvertisementGenerator::GenerateBleAdvertisement(
-          device_id, local_device_data_provider_, remote_beacon_seed_fetcher_);
+      ble_service_data_helper_->GenerateForegroundAdvertisement(
+          secure_channel::DeviceIdPair(device_id /* remote_device_id */,
+                                       kStubLocalDeviceId));
   if (!service_data) {
     PA_LOG(WARNING) << "Error generating advertisement for device with ID "
                     << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
