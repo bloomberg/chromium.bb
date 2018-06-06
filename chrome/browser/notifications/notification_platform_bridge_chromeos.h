@@ -46,6 +46,8 @@ class NotificationPlatformBridgeDelegate {
 };
 
 // A platform bridge that uses Ash's message center to display notifications.
+// Currently under development and controlled by feature:
+//   --enable-features=NativeNotifications
 class NotificationPlatformBridgeChromeOs
     : public NotificationPlatformBridge,
       public NotificationPlatformBridgeDelegate {
