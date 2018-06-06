@@ -47,6 +47,7 @@ Status PrepareUserDataDir(
 Status ParseDevToolsActivePortFile(const base::FilePath& user_data_dir,
                                    int* port);
 Status ReadInPort(const base::FilePath& port_filepath, int* port);
+Status RemoveOldDevToolsActivePortFile(const base::FilePath& user_data_dir);
 }  // namespace internal
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_LAUNCHER_H_

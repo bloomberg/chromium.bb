@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -245,3 +246,30 @@ TEST(DesktopLauncher, ReadInPort_NoFile) {
   ASSERT_FALSE(internal::ReadInPort(temp_file, &port).IsOk());
   ASSERT_EQ(port, 1111);
 }
+
+TEST(DesktopLauncher, RemoveOldDevToolsActivePortFile_Success) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath temp_file =
+      temp_dir.GetPath().Append(FILE_PATH_LITERAL("DevToolsActivePort"));
+  char data[] = "12345asdf\nblahblah";
+  base::WriteFile(temp_file, data, strlen(data));
+  ASSERT_TRUE(
+      internal::RemoveOldDevToolsActivePortFile(temp_dir.GetPath()).IsOk());
+  ASSERT_FALSE(base::PathExists(temp_file));
+  ASSERT_TRUE(base::PathExists(temp_dir.GetPath()));
+}
+
+#if defined(OS_WIN)
+TEST(DesktopLauncher, RemoveOldDevToolsActivePortFile_Failure) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath temp_file =
+      temp_dir.GetPath().Append(FILE_PATH_LITERAL("DevToolsActivePort"));
+  FILE* fd = base::OpenFile(temp_file, "w");
+  ASSERT_FALSE(
+      internal::RemoveOldDevToolsActivePortFile(temp_dir.GetPath()).IsOk());
+  ASSERT_TRUE(base::PathExists(temp_file));
+  base::CloseFile(fd);
+}
+#endif
