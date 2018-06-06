@@ -256,11 +256,12 @@ void DataReductionProxyConfigServiceClient::RetrieveConfig() {
     std::string override_config;
     bool b64_decode_ok =
         base::Base64Decode(client_config_override_, &override_config);
-    DCHECK(b64_decode_ok) << "The given ClientConfig is not valid base64";
+    LOG_IF(DFATAL, !b64_decode_ok)
+        << "The given ClientConfig is not valid base64";
 
     ClientConfig config;
     bool was_valid_config = config.ParseFromString(override_config);
-    DCHECK(was_valid_config) << "The given ClientConfig was invalid.";
+    LOG_IF(DFATAL, !was_valid_config) << "The given ClientConfig was invalid.";
     if (was_valid_config)
       ParseAndApplyProxyConfig(config);
     return;
