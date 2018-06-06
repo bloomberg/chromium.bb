@@ -55,6 +55,8 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
   void RecordTimeToClick() override;
 
  private:
+  friend class UnifiedSystemTrayTestApi;
+
   // Controller of UnifiedSystemTrayView. As the view is owned by views
   // hierarchy, we have to own the controller here.
   std::unique_ptr<UnifiedSystemTrayController> controller_;
