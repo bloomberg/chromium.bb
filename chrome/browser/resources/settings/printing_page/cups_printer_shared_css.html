@@ -1,6 +1,3 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
-
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../settings_vars_css.html">
@@ -19,21 +16,18 @@
       }
 
       [slot='dialog-body'] .settings-box .start .label {
-        @apply --cr-form-field-label;
+        color: var(--google-grey-700);
       }
 
-      [slot='dialog-body'] .settings-box cr-input {
+      [slot='dialog-body'] .settings-box paper-input {
+        --paper-input-container-input: {
+          font-size: inherit;
+        };
         width: 270px;
       }
 
-      /* The only input that has error-message are at the end, so we don't
-         need to allocate space for error-message under each input
-         for consistency. */
-      [slot='dialog-body'] .settings-box cr-input:not([error-message]) {
-        --cr-input-error-display: none;
-      }
-
       [slot='dialog-body'] .settings-box .md-select {
+        margin-top: 8px;
         width: 270px;
       }
 
@@ -42,12 +36,25 @@
       }
 
       [slot='dialog-body'] .settings-box .browse-file-input {
-        width: auto;
-        --cr-input-width: 270px;
+        --paper-input-container-input: {
+          border: 1px solid lightgray;
+          font-size: inherit;
+        };
+        --paper-input-container-underline: {
+          display: none;
+        };
+        --paper-input-container-underline-focus: {
+          display: none;
+        };
+        --paper-input-suffix: {
+          font-size: inherit;
+        };
+        width: 340px;
       }
 
       [slot='dialog-body'] .settings-box .browse-button {
         -webkit-margin-start: 5px;
+        color: black;
       }
 
       [slot='dialog-body'] .last {
