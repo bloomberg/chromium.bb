@@ -142,6 +142,7 @@ OverlayWindowViews::OverlayWindowViews(
   SetUpViews();
 
   is_initialized_ = true;
+  should_show_controls_ = false;
 }
 
 OverlayWindowViews::~OverlayWindowViews() = default;
@@ -279,7 +280,6 @@ void OverlayWindowViews::SetUpViews() {
   close_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   play_pause_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
 
-  // Don't show the controls until the mouse hovers over the window.
   UpdateControlsVisibility(false);
 }
 
@@ -323,6 +323,9 @@ void OverlayWindowViews::Close() {
 
 void OverlayWindowViews::Show() {
   views::Widget::Show();
+
+  // Don't show the controls until the mouse hovers over the window.
+  should_show_controls_ = false;
 }
 
 void OverlayWindowViews::Hide() {
@@ -483,8 +486,10 @@ void OverlayWindowViews::OnNativeFocus() {
   // Show the controls when the window takes focus. This is used for tab and
   // touch interactions. If initialisation happens after the window takes
   // focus, any tabbing or touch gesture will show the controls.
-  if (is_initialized_)
-    UpdateControlsVisibility(true);
+  if (is_initialized_) {
+    UpdateControlsVisibility(should_show_controls_);
+    should_show_controls_ = true;
+  }
 
   // Reset the first focused control to the play/pause button. This will
   // always be called before key events can be handled.
