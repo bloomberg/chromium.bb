@@ -938,13 +938,7 @@ class WillProcessResponseObserver : public content::WebContentsObserver {
 // not handler defined for the "ftp" protocol in
 // URLRequestJobFactoryImpl::protocol_handler_map_.
 // Flaky on Mac only.  http://crbug.com/816646
-#if defined(OS_MACOSX)
-#define MAYBE_BlockLegacySubresources DISABLED_BlockLegacySubresources
-#else
-#define MAYBE_BlockLegacySubresources BlockLegacySubresources
-#endif
-IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
-                       MAYBE_BlockLegacySubresources) {
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, BlockLegacySubresources) {
   net::SpawnedTestServer ftp_server(
       net::SpawnedTestServer::TYPE_FTP,
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
