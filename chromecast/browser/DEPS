@@ -49,6 +49,7 @@ include_rules = [
   "+ui/display",
   "+ui/ozone",
   "+ui/views",
+  "+ui/wm",
 
   # TODO(sanfin): Remove this by fixing the crash handler on android.
   "!chromecast/app",

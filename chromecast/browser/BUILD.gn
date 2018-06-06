@@ -284,6 +284,8 @@ cast_source_set("browser") {
     ]
     if (use_aura) {
       sources += [
+        "accessibility/accessibility_manager.cc",
+        "accessibility/accessibility_manager.h",
         "cast_web_view_extension.h",
         "cast_web_view_extension.h",
         "ui/aura/accessibility/automation_manager_aura.cc",
@@ -309,6 +311,7 @@ cast_source_set("browser") {
       "//extensions/common/api",
       "//google_apis:google_apis",
       "//ui/views:views",
+      "//ui/wm/public:public",
     ]
   }
 
