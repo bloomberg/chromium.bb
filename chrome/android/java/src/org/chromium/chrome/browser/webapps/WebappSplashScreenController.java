@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -62,8 +63,12 @@ class WebappSplashScreenController extends EmptyTabObserver {
 
     private @ActivityType int mActivityType;
 
+    private ObserverList<SplashscreenObserver> mObservers;
+
     public WebappSplashScreenController() {
         mWebappUma = new WebappUma();
+        mObservers = new ObserverList<>();
+        addObserver(mWebappUma);
     }
 
     /** Shows the splash screen. */
@@ -82,7 +87,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
         mParentView.addView(mSplashScreen);
         startSplashscreenTraceEvents();
 
-        mWebappUma.splashscreenVisible();
+        notifySplashscreenVisible();
         mWebappUma.recordSplashscreenBackgroundColor(webappInfo.hasValidBackgroundColor()
                         ? WebappUma.SPLASHSCREEN_COLOR_STATUS_CUSTOM
                         : WebappUma.SPLASHSCREEN_COLOR_STATUS_DEFAULT);
@@ -304,7 +309,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
                 tab.removeObserver(WebappSplashScreenController.this);
                 mSplashScreen = null;
                 mCompositorViewHolder = null;
-                mWebappUma.splashscreenHidden(reason);
+                notifySplashscreenHidden(reason);
             }
         });
     }
@@ -344,5 +349,32 @@ class WebappSplashScreenController extends EmptyTabObserver {
         TraceEvent.finishAsync("WebappSplashScreen", hashCode());
         SingleShotOnDrawListener.install(mParentView,
                 () -> { TraceEvent.finishAsync("WebappSplashScreen.visible", hashCode()); });
+    }
+
+    /**
+     * Register an observer for the splashscreen hidden/visible events.
+     */
+    public void addObserver(SplashscreenObserver observer) {
+        mObservers.addObserver(observer);
+    }
+
+    /**
+     * Deegister an observer for the splashscreen hidden/visible events.
+     */
+    public void removeObserver(SplashscreenObserver observer) {
+        mObservers.removeObserver(observer);
+    }
+
+    private void notifySplashscreenVisible() {
+        for (SplashscreenObserver observer : mObservers) {
+            observer.onSplashscreenShown();
+        }
+    }
+
+    private void notifySplashscreenHidden(int reason) {
+        for (SplashscreenObserver observer : mObservers) {
+            observer.onSplashscreenHidden(reason);
+        }
+        mObservers.clear();
     }
 }

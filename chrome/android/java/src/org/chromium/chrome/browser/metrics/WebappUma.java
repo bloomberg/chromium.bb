@@ -7,26 +7,27 @@ package org.chromium.chrome.browser.metrics;
 import android.os.SystemClock;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.webapps.SplashscreenObserver;
 
 import java.util.concurrent.TimeUnit;
 
 /**
  * Centralizes UMA data collection for web apps.
  */
-public class WebappUma {
-    // SplashscreenColorStatus defined in tools/metrics/histograms/histograms.xml.
+public class WebappUma implements SplashscreenObserver {
+    // SplashscreenColorStatus defined in tools/metrics/histograms/enums.xml.
     public static final int SPLASHSCREEN_COLOR_STATUS_DEFAULT = 0;
     public static final int SPLASHSCREEN_COLOR_STATUS_CUSTOM = 1;
     public static final int SPLASHSCREEN_COLOR_STATUS_MAX = 2;
 
-    // SplashscreenHidesReason defined in tools/metrics/histograms/histograms.xml.
+    // SplashscreenHidesReason defined in tools/metrics/histograms/enums.xml.
     public static final int SPLASHSCREEN_HIDES_REASON_PAINT = 0;
     public static final int SPLASHSCREEN_HIDES_REASON_LOAD_FINISHED = 1;
     public static final int SPLASHSCREEN_HIDES_REASON_LOAD_FAILED = 2;
     public static final int SPLASHSCREEN_HIDES_REASON_CRASH = 3;
     public static final int SPLASHSCREEN_HIDES_REASON_MAX = 4;
 
-    // SplashscreenBackgroundColorType defined in tools/metrics/histograms/histograms.xml.
+    // SplashscreenBackgroundColorType defined in tools/metrics/histograms/enums.xml.
     public static final int SPLASHSCREEN_ICON_TYPE_NONE = 0;
     public static final int SPLASHSCREEN_ICON_TYPE_FALLBACK = 1;
     public static final int SPLASHSCREEN_ICON_TYPE_CUSTOM = 2;
@@ -59,7 +60,8 @@ public class WebappUma {
      * Signal that the splash screen is now visible. This is being used to
      * record for how long the splash screen is left visible.
      */
-    public void splashscreenVisible() {
+    @Override
+    public void onSplashscreenShown() {
         assert mSplashScreenVisibleTime == 0;
         mSplashScreenVisibleTime = SystemClock.elapsedRealtime();
     }
@@ -78,9 +80,10 @@ public class WebappUma {
      * Signal that the splash screen is now hidden. It is used to record for how
      * long the splash screen was left visible. It is also used to know what
      * event triggered the splash screen to be hidden.
-     * @param type flag representing the reason why the splash screen was hidden.
+     * @param reason enum representing the reason why the splash screen was hidden.
      */
-    public void splashscreenHidden(int reason) {
+    @Override
+    public void onSplashscreenHidden(int reason) {
         assert reason >= 0 && reason < SPLASHSCREEN_HIDES_REASON_MAX;
         RecordHistogram.recordEnumeratedHistogram(HISTOGRAM_SPLASHSCREEN_HIDES,
                 reason, SPLASHSCREEN_HIDES_REASON_MAX);
