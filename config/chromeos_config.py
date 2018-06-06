@@ -50,8 +50,8 @@ def GetDefaultWaterfall(build_config, is_release_branch):
 
 def getInfoVMTest():
   suites = [
-      'vmtest-informational4',
-      'arc-gts']
+      'vmtest-informational4'
+  ]
   ret = []
   for suite in suites:
     ret.append(config_lib.VMTestConfig(
