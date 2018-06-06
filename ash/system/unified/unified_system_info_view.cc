@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/unified_system_info_view.h"
 
+#include "ash/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -252,6 +253,7 @@ EnterpriseManagedView::EnterpriseManagedView()
                        IDS_ASH_ENTERPRISE_DEVICE_MANAGED_SHORT,
                        kSystemMenuBusinessIcon) {
   DCHECK(Shell::Get());
+  set_id(VIEW_ID_TRAY_ENTERPRISE);
   Shell::Get()->system_tray_model()->enterprise_domain()->AddObserver(this);
   Update();
 }

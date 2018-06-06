@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/system_tray_client.h"
 
 #include "ash/ash_view_ids.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/system_tray_test_api.mojom.h"
 #include "base/i18n/time_formatting.h"
@@ -65,6 +66,12 @@ class SystemTrayClientTest : public InProcessBrowserTest {
 
 // Test that a chrome update shows the update icon in the system menu.
 IN_PROC_BROWSER_TEST_F(SystemTrayClientTest, UpdateTrayIcon) {
+  // The tray icon is removed in UnifiedSystemTray.
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (ash::features::IsSystemTrayUnifiedEnabled())
+    return;
+
   ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
 
   // When no update is pending, the icon isn't visible.
@@ -89,6 +96,12 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientTest, UpdateTrayIcon) {
 // after user's one time permission on the update is set successfully in Update
 // Engine.
 IN_PROC_BROWSER_TEST_F(SystemTrayClientTest, UpdateOverCellularTrayIcon) {
+  // The tray icon is removed in UnifiedSystemTray.
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (ash::features::IsSystemTrayUnifiedEnabled())
+    return;
+
   ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
   wait_for.DisableAnimations();
 
@@ -126,6 +139,12 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientTest, UpdateOverCellularTrayIcon) {
 
 // Test that a flash update causes the update UI to show in the system menu.
 IN_PROC_BROWSER_TEST_F(SystemTrayClientTest, FlashUpdateTrayIcon) {
+  // The tray icon is removed in UnifiedSystemTray.
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (ash::features::IsSystemTrayUnifiedEnabled())
+    return;
+
   ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
 
   // When no update is pending, the icon isn't visible.
