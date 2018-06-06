@@ -629,9 +629,13 @@ content::WebContents* TabManager::DiscardTabImpl(DiscardReason reason) {
 
   for (LifecycleUnit* lifecycle_unit : GetSortedLifecycleUnits()) {
     // TODO(chrisha): Report decision details!
+    auto old_state = lifecycle_unit->GetState();
     DecisionDetails decision_details;
     if (lifecycle_unit->CanDiscard(reason, &decision_details) &&
         lifecycle_unit->Discard(reason)) {
+      // TODO(chrisha): Move this into a LifecycleUnitObserver.
+      TabManagerStatsCollector::RecordDiscardDecision(
+          lifecycle_unit, decision_details, old_state, reason);
       TabLifecycleUnitExternal* tab_lifecycle_unit_external =
           lifecycle_unit->AsTabLifecycleUnitExternal();
       // For now, all LifecycleUnits are TabLifecycleUnitExternals.
@@ -926,11 +930,11 @@ void TabManager::PerformStateTransitions() {
   base::TimeTicks next_state_transition_time = base::TimeTicks::Max();
   base::TimeTicks now = NowTicks();
   LifecycleUnit* oldest_discardable_lifecycle_unit = nullptr;
+  DecisionDetails oldest_discardable_lifecycle_unit_decision_details;
 
   for (LifecycleUnit* lifecycle_unit : lifecycle_units_) {
     // Freeze LifecycleUnits that have been in the background for more than
     // |kBackgroundTabFreezeTimeout|.
-    // TODO(chrisha): Report decision details.
     DecisionDetails freeze_details;
     if (lifecycle_unit->CanFreeze(&freeze_details)) {
       const base::TimeDelta time_not_visible =
@@ -939,7 +943,12 @@ void TabManager::PerformStateTransitions() {
           proactive_freeze_discard_params_.freeze_timeout - time_not_visible;
 
       if (time_until_freeze <= base::TimeDelta()) {
-        lifecycle_unit->Freeze();
+        auto old_state = lifecycle_unit->GetState();
+        if (lifecycle_unit->Freeze()) {
+          // TODO(chrisha): Move this logging to an observer.
+          TabManagerStatsCollector::RecordFreezeDecision(
+              lifecycle_unit, freeze_details, old_state);
+        }
       } else {
         next_state_transition_time =
             std::min(now + time_until_freeze, next_state_transition_time);
@@ -948,7 +957,6 @@ void TabManager::PerformStateTransitions() {
 
     // Keep track of the discardable LifecycleUnit that has been non-visible for
     // the longest time. It might be discarded below.
-    // TODO(chrisha): Report decision details.
     DecisionDetails discard_details;
     if (lifecycle_unit->CanDiscard(DiscardReason::kProactive,
                                    &discard_details)) {
@@ -956,6 +964,8 @@ void TabManager::PerformStateTransitions() {
           lifecycle_unit->GetLastVisibleTime() <
               oldest_discardable_lifecycle_unit->GetLastVisibleTime()) {
         oldest_discardable_lifecycle_unit = lifecycle_unit;
+        oldest_discardable_lifecycle_unit_decision_details =
+            std::move(discard_details);
       }
     }
   }
@@ -977,7 +987,15 @@ void TabManager::PerformStateTransitions() {
         GetTimeInBackgroundBeforeProactiveDiscard() - time_not_visible;
 
     if (time_until_discard <= base::TimeDelta()) {
-      oldest_discardable_lifecycle_unit->Discard(DiscardReason::kProactive);
+      auto old_state = oldest_discardable_lifecycle_unit->GetState();
+      if (oldest_discardable_lifecycle_unit->Discard(
+              DiscardReason::kProactive)) {
+        // TODO(chrisha): Move this into a LifecycleUnitObserver.
+        TabManagerStatsCollector::RecordDiscardDecision(
+            oldest_discardable_lifecycle_unit,
+            oldest_discardable_lifecycle_unit_decision_details, old_state,
+            DiscardReason::kProactive);
+      }
       // As mentioned above, call PeformStateTransitions() again after a
       // discard.
       next_state_transition_time = base::TimeTicks();

@@ -217,6 +217,13 @@ DecisionDetails::DecisionDetails() : toggled_(false) {}
 
 DecisionDetails::~DecisionDetails() = default;
 
+DecisionDetails& DecisionDetails::operator=(DecisionDetails&& rhs) {
+  toggled_ = rhs.toggled_;
+  reasons_ = std::move(rhs.reasons_);
+  rhs.Clear();
+  return *this;
+}
+
 bool DecisionDetails::AddReason(const Reason& reason) {
   reasons_.push_back(reason);
   return CheckIfToggled();

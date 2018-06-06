@@ -26,6 +26,7 @@ class LifecycleUnitBase : public LifecycleUnit {
   LifecycleUnitState GetState() const override;
   void AddObserver(LifecycleUnitObserver* observer) override;
   void RemoveObserver(LifecycleUnitObserver* observer) override;
+  ukm::SourceId GetUkmSourceId() const override;
 
  protected:
   // Sets the state of this LifecycleUnit to |state| and notifies observers.

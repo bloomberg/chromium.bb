@@ -159,6 +159,9 @@ class DecisionDetails {
   DecisionDetails();
   ~DecisionDetails();
 
+  // Allow move assignment.
+  DecisionDetails& operator=(DecisionDetails&& rhs);
+
   // Adds a success or failure reason. Returns true if the chain of reasons has
   // "toggled", false otherwise.
   bool AddReason(const Reason& reason);

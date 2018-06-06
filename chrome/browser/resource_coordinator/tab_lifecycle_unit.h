@@ -90,6 +90,7 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   bool CanDiscard(DiscardReason reason,
                   DecisionDetails* decision_details) const override;
   bool Discard(DiscardReason discard_reason) override;
+  ukm::SourceId GetUkmSourceId() const override;
 
   // TabLifecycleUnitExternal:
   content::WebContents* GetWebContents() const override;

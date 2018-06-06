@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/arc/process/arc_process_service.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
+#include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -533,10 +534,17 @@ bool TabManagerDelegate::KillArcProcess(const int nspid) {
 
 bool TabManagerDelegate::KillTab(LifecycleUnit* lifecycle_unit,
                                  DiscardReason reason) {
-  // TODO(chrisha): Report decision details!
   DecisionDetails decision_details;
-  return lifecycle_unit->CanDiscard(reason, &decision_details) &&
-         lifecycle_unit->Discard(reason);
+  if (!lifecycle_unit->CanDiscard(reason, &decision_details))
+    return false;
+  auto old_state = lifecycle_unit->GetState();
+  bool did_discard = lifecycle_unit->Discard(reason);
+  if (did_discard) {
+    // TODO(chrisha): Move this to a LifecycleUnitObserver.
+    TabManagerStatsCollector::RecordDiscardDecision(
+        lifecycle_unit, decision_details, old_state, reason);
+  }
+  return did_discard;
 }
 
 chromeos::DebugDaemonClient* TabManagerDelegate::GetDebugDaemonClient() {
