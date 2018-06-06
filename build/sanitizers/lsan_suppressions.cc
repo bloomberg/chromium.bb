@@ -97,9 +97,6 @@ char kLSanDefaultSuppressions[] =
     // https://crbug.com/795148
     "leak:third_party/fontconfig/\n"
 
-    // https://crbug.com/831667
-    "leak:gin/*_unittest.cc\n"
-
     // PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
 
     // End of suppressions.
