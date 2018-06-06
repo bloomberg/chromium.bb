@@ -170,13 +170,8 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, TouchpadFling) {
   }
 }
 
-// TODO(sahel): This test is flaking on OS_CHROMEOS https://crbug.com/838769
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-#define MAYBE_AutoscrollFling DISABLED_AutoscrollFling
-#else
-#define MAYBE_AutoscrollFling AutoscrollFling
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, MAYBE_AutoscrollFling) {
+// TODO(sahel): This test is flaky https://crbug.com/838769
+IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, DISABLED_AutoscrollFling) {
   LoadURL(kBrowserFlingDataURL);
 
   // Start autoscroll with middle click.
