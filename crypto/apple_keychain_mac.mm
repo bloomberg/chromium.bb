@@ -15,53 +15,42 @@ AppleKeychain::AppleKeychain() {}
 
 AppleKeychain::~AppleKeychain() {}
 
-OSStatus AppleKeychain::ItemDelete(SecKeychainItemRef itemRef) const {
+OSStatus AppleKeychain::ItemDelete(AppleSecKeychainItemRef itemRef) const {
   base::AutoLock lock(GetMacSecurityServicesLock());
   return SecKeychainItemDelete(itemRef);
 }
 
-OSStatus AppleKeychain::FindGenericPassword(CFTypeRef keychainOrArray,
-                                            UInt32 serviceNameLength,
-                                            const char* serviceName,
-                                            UInt32 accountNameLength,
-                                            const char* accountName,
-                                            UInt32* passwordLength,
-                                            void** passwordData,
-                                            SecKeychainItemRef* itemRef) const {
+OSStatus AppleKeychain::FindGenericPassword(
+    UInt32 serviceNameLength,
+    const char* serviceName,
+    UInt32 accountNameLength,
+    const char* accountName,
+    UInt32* passwordLength,
+    void** passwordData,
+    AppleSecKeychainItemRef* itemRef) const {
   base::AutoLock lock(GetMacSecurityServicesLock());
-  return SecKeychainFindGenericPassword(keychainOrArray,
-                                        serviceNameLength,
-                                        serviceName,
-                                        accountNameLength,
-                                        accountName,
-                                        passwordLength,
-                                        passwordData,
-                                        itemRef);
+  return SecKeychainFindGenericPassword(nullptr, serviceNameLength, serviceName,
+                                        accountNameLength, accountName,
+                                        passwordLength, passwordData, itemRef);
 }
 
-OSStatus AppleKeychain::ItemFreeContent(SecKeychainAttributeList* attrList,
-                                        void* data) const {
+OSStatus AppleKeychain::ItemFreeContent(void* data) const {
   base::AutoLock lock(GetMacSecurityServicesLock());
-  return SecKeychainItemFreeContent(attrList, data);
+  return SecKeychainItemFreeContent(nullptr, data);
 }
 
-OSStatus AppleKeychain::AddGenericPassword(SecKeychainRef keychain,
-                                           UInt32 serviceNameLength,
-                                           const char* serviceName,
-                                           UInt32 accountNameLength,
-                                           const char* accountName,
-                                           UInt32 passwordLength,
-                                           const void* passwordData,
-                                           SecKeychainItemRef* itemRef) const {
+OSStatus AppleKeychain::AddGenericPassword(
+    UInt32 serviceNameLength,
+    const char* serviceName,
+    UInt32 accountNameLength,
+    const char* accountName,
+    UInt32 passwordLength,
+    const void* passwordData,
+    AppleSecKeychainItemRef* itemRef) const {
   base::AutoLock lock(GetMacSecurityServicesLock());
-  return SecKeychainAddGenericPassword(keychain,
-                                       serviceNameLength,
-                                       serviceName,
-                                       accountNameLength,
-                                       accountName,
-                                       passwordLength,
-                                       passwordData,
-                                       itemRef);
+  return SecKeychainAddGenericPassword(nullptr, serviceNameLength, serviceName,
+                                       accountNameLength, accountName,
+                                       passwordLength, passwordData, itemRef);
 }
 
 }  // namespace crypto

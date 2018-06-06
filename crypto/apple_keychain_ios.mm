@@ -112,20 +112,19 @@ AppleKeychain::AppleKeychain() {}
 
 AppleKeychain::~AppleKeychain() {}
 
-OSStatus AppleKeychain::ItemFreeContent(SecKeychainAttributeList* attrList,
-                                        void* data) const {
+OSStatus AppleKeychain::ItemFreeContent(void* data) const {
   free(data);
   return noErr;
 }
 
-OSStatus AppleKeychain::AddGenericPassword(SecKeychainRef keychain,
-                                           UInt32 serviceNameLength,
-                                           const char* serviceName,
-                                           UInt32 accountNameLength,
-                                           const char* accountName,
-                                           UInt32 passwordLength,
-                                           const void* passwordData,
-                                           SecKeychainItemRef* itemRef) const {
+OSStatus AppleKeychain::AddGenericPassword(
+    UInt32 serviceNameLength,
+    const char* serviceName,
+    UInt32 accountNameLength,
+    const char* accountName,
+    UInt32 passwordLength,
+    const void* passwordData,
+    AppleSecKeychainItemRef* itemRef) const {
   base::ScopedCFTypeRef<CFDictionaryRef> query(CreateGenericPasswordQuery(
       serviceNameLength, serviceName, accountNameLength, accountName));
   // Check that there is not already a password.
@@ -157,14 +156,14 @@ OSStatus AppleKeychain::AddGenericPassword(SecKeychainRef keychain,
   return status;
 }
 
-OSStatus AppleKeychain::FindGenericPassword(CFTypeRef keychainOrArray,
-                                            UInt32 serviceNameLength,
-                                            const char* serviceName,
-                                            UInt32 accountNameLength,
-                                            const char* accountName,
-                                            UInt32* passwordLength,
-                                            void** passwordData,
-                                            SecKeychainItemRef* itemRef) const {
+OSStatus AppleKeychain::FindGenericPassword(
+    UInt32 serviceNameLength,
+    const char* serviceName,
+    UInt32 accountNameLength,
+    const char* accountName,
+    UInt32* passwordLength,
+    void** passwordData,
+    AppleSecKeychainItemRef* itemRef) const {
   DCHECK((passwordData && passwordLength) ||
          (!passwordData && !passwordLength));
   base::ScopedCFTypeRef<CFDictionaryRef> query(CreateGenericPasswordQuery(

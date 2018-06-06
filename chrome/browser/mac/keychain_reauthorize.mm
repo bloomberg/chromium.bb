@@ -59,10 +59,9 @@ bool KeychainReauthorize() {
 
   crypto::AppleKeychain keychain;
   OSStatus error = keychain.FindGenericPassword(
-      nullptr, strlen(KeychainPassword::service_name),
-      KeychainPassword::service_name, strlen(KeychainPassword::account_name),
-      KeychainPassword::account_name, &pw_length, &password_data,
-      storage_item.InitializeInto());
+      strlen(KeychainPassword::service_name), KeychainPassword::service_name,
+      strlen(KeychainPassword::account_name), KeychainPassword::account_name,
+      &pw_length, &password_data, storage_item.InitializeInto());
 
   base::ScopedCFTypeRef<SecKeychainItemRef> backup_item;
   std::string backup_service_name =
@@ -70,7 +69,7 @@ bool KeychainReauthorize() {
   if (error != noErr) {
     // If the main entry does not exist, nor does the backup, exit.
     if (keychain.FindGenericPassword(
-            nullptr, backup_service_name.size(), backup_service_name.data(),
+            backup_service_name.size(), backup_service_name.data(),
             strlen(KeychainPassword::account_name),
             KeychainPassword::account_name, &pw_length, &password_data,
             backup_item.InitializeInto()) != noErr) {
@@ -86,12 +85,12 @@ bool KeychainReauthorize() {
       static_cast<uint8_t*>(password_data),
       static_cast<uint8_t*>(password_data) + pw_length));
   memset(password_data, 0x11, pw_length);
-  keychain.ItemFreeContent(nullptr, password_data);
+  keychain.ItemFreeContent(password_data);
 
   if (backup_item.get() == nullptr) {
     // If writing the backup fails, still attempt the re-auth.
     keychain.AddGenericPassword(
-        nullptr, backup_service_name.size(), backup_service_name.data(),
+        backup_service_name.size(), backup_service_name.data(),
         strlen(KeychainPassword::account_name), KeychainPassword::account_name,
         password.get()->size(), password.get()->data(),
         backup_item.InitializeInto());
@@ -106,10 +105,9 @@ bool KeychainReauthorize() {
   }
 
   error = keychain.AddGenericPassword(
-      nullptr, strlen(KeychainPassword::service_name),
-      KeychainPassword::service_name, strlen(KeychainPassword::account_name),
-      KeychainPassword::account_name, password.get()->size(),
-      password.get()->data(), nullptr);
+      strlen(KeychainPassword::service_name), KeychainPassword::service_name,
+      strlen(KeychainPassword::account_name), KeychainPassword::account_name,
+      password.get()->size(), password.get()->data(), nullptr);
 
   if (error != noErr) {
     OSSTATUS_LOG(ERROR, error) << "Failed to re-add storage password.";
@@ -121,7 +119,7 @@ bool KeychainReauthorize() {
     // This could happen if Chrome crashed after writing the backup entry and
     // before deleting the main entry.
     keychain.FindGenericPassword(
-        nullptr, backup_service_name.size(), backup_service_name.data(),
+        backup_service_name.size(), backup_service_name.data(),
         strlen(KeychainPassword::account_name), KeychainPassword::account_name,
         &pw_length, &password_data, backup_item.InitializeInto());
   }
