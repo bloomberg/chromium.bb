@@ -176,6 +176,10 @@ const base::Feature kClipboardContentSetting{"ClipboardContentSetting",
 #if defined(OS_CHROMEOS)
 // Enable project Crostini, Linux VMs on Chrome OS.
 const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Whether the UsageTimeLimit policy should be applied to the user.
+const base::Feature kUsageTimeLimitPolicy{"UsageTimeLimitPolicy",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_WIN)

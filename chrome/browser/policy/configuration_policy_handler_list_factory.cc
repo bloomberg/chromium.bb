@@ -75,6 +75,7 @@
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chrome/browser/chromeos/policy/secondary_google_account_signin_policy_handler.h"
 #include "chrome/browser/policy/default_geolocation_policy_handler.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/chromeos_pref_names.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/arc/arc_prefs.h"
@@ -1216,11 +1217,13 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       prefs::kNoteTakingAppsLockScreenWhitelist, false /*allow_wildcards*/));
   handlers->AddHandler(
       std::make_unique<SecondaryGoogleAccountSigninPolicyHandler>());
-  handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
-      key::kUsageTimeLimit, prefs::kUsageTimeLimit, chrome_schema,
-      SCHEMA_STRICT,
-      SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
-      SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+  if (base::FeatureList::IsEnabled(features::kUsageTimeLimitPolicy)) {
+    handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
+        key::kUsageTimeLimit, prefs::kUsageTimeLimit, chrome_schema,
+        SCHEMA_STRICT,
+        SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
+        SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+  }
   handlers->AddHandler(std::make_unique<ArcServicePolicyHandler>(
       key::kArcBackupRestoreServiceEnabled,
       arc::prefs::kArcBackupRestoreEnabled));
