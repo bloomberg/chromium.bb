@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "base/numerics/math_constants.h"
+#include "base/strings/stringprintf.h"
 
 namespace {
 
@@ -122,6 +123,13 @@ Matrix3F Matrix3F::Inverse() const {
       static_cast<float>((data_[M00] * data_[M11] - data_[M01] * data_[M10]) /
           determinant));
   return inverse;
+}
+
+Matrix3F Matrix3F::Transpose() const {
+  Matrix3F transpose;
+  transpose.set(data_[M00], data_[M10], data_[M20], data_[M01], data_[M11],
+                data_[M21], data_[M02], data_[M12], data_[M22]);
+  return transpose;
 }
 
 float Matrix3F::Determinant() const {
@@ -239,6 +247,31 @@ Vector3dF Matrix3F::SolveEigenproblem(Matrix3F* eigenvectors) const {
   }
 
   return Vector3dF(eigenvalues[0], eigenvalues[1], eigenvalues[2]);
+}
+
+Matrix3F MatrixProduct(const Matrix3F& lhs, const Matrix3F& rhs) {
+  Matrix3F result = Matrix3F::Zeros();
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+      result.set(i, j, DotProduct(lhs.get_row(i), rhs.get_column(j)));
+    }
+  }
+  return result;
+}
+
+Vector3dF MatrixProduct(const Matrix3F& lhs, const Vector3dF& rhs) {
+  return Vector3dF(DotProduct(lhs.get_row(0), rhs),
+                   DotProduct(lhs.get_row(1), rhs),
+                   DotProduct(lhs.get_row(2), rhs));
+}
+
+std::string Matrix3F::ToString() const {
+  return base::StringPrintf(
+      "[[%+0.4f, %+0.4f, %+0.4f],"
+      " [%+0.4f, %+0.4f, %+0.4f],"
+      " [%+0.4f, %+0.4f, %+0.4f]]",
+      data_[M00], data_[M01], data_[M02], data_[M10], data_[M11], data_[M12],
+      data_[M20], data_[M21], data_[M22]);
 }
 
 }  // namespace gfx
