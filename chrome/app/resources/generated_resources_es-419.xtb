@@ -420,7 +420,6 @@
 <translation id="1624026626836496796">Esta acción solo se llevará a cabo una vez; tus credenciales no se almacenarán.</translation>
 <translation id="1627276047960621195">Descriptores de archivos</translation>
 <translation id="1627408615528139100">Ya se descargó</translation>
-<translation id="1632551555529177478">ERROR: No se pudo iniciar el cliente Concierge.</translation>
 <translation id="1632803087685957583">Permite ajustar la velocidad de repetición del teclado, la predicción de palabras y más</translation>
 <translation id="1635033183663317347">Instalado por tu tutor</translation>
 <translation id="1637224376458524414">Obtener este favorito en tu iPhone</translation>
@@ -1108,7 +1107,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2686759344028411998">No se puede detectar ningún módulo cargado.</translation>
 <translation id="2688196195245426394">Se produjo un error al registrar el dispositivo en el servidor: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Mostrar opciones de idioma</translation>
-<translation id="2690824726518456119">Se está iniciando el servicio de Concierge.</translation>
 <translation id="2691385045260836588">Modelo</translation>
 <translation id="2693176596243495071">Se produjo un error desconocido. Vuelve a intentarlo más tarde o comunícate con tu administrador si el problema persiste.</translation>
 <translation id="2694026874607847549">Una cookie</translation>
@@ -1297,7 +1295,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2986010903908656993">Se bloqueó esta página para que no tenga el control total de los dispositivos MIDI.</translation>
 <translation id="2989474696604907455">no conectado</translation>
 <translation id="2989786307324390836">Certificado binario único con codificación DER</translation>
-<translation id="2993165626813508977">ERROR: No se pudo iniciar el contenedor dentro de Termina VM.</translation>
 <translation id="2993517869960930405">Información de la aplicación</translation>
 <translation id="2994669386200004489">No se pudo crear una copia de seguridad de <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Instalado por tus padres</translation>
@@ -1430,7 +1427,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3190558889382726167">Se guardó la contraseña</translation>
 <translation id="3192947282887913208">Archivos de audio</translation>
 <translation id="3194737229810486521"><ph name="URL" /> desea almacenar datos de forma permanente en el dispositivo</translation>
-<translation id="3197054279257119376">Se está cargando el componente de Termina.</translation>
 <translation id="3199127022143353223">Servidores</translation>
 <translation id="3202131003361292969">Ruta</translation>
 <translation id="3202173864863109533">El audio de esta pestaña está silenciado.</translation>
@@ -1556,7 +1552,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3407837288045706722">Para obtener más opciones de configuración relacionadas con la privacidad, la seguridad y la recopilación de datos, visita <ph name="BEGIN_LINK" />Sincronización y personalización<ph name="END_LINK" /></translation>
 <translation id="3412265149091626468">Saltar a selección</translation>
 <translation id="3413122095806433232">Emisores de certificados: <ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">Destaca lo que quieras escuchar y, luego, presiona Búsqueda + S. También puedes mantener presionado Búsqueda (o presionar el ícono Seleccionar para pronunciar que se encuentra cerca de tu imagen de perfil) y elegir una región para que se lea en voz alta.</translation>
 <translation id="3414856743105198592">El formato de los medios extraíbles borrará todos los datos. ¿Deseas continuar?</translation>
 <translation id="3414952576877147120">Tamaño:</translation>
 <translation id="3420980393175304359">Cambiar de persona</translation>
@@ -2091,7 +2086,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="4235200303672858594">Toda la pantalla</translation>
 <translation id="4235813040357936597">Agregar cuenta para <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Cancelar acceso</translation>
-<translation id="4239107879884489787">ERROR: No se pudo cargar el componente Termina.</translation>
 <translation id="4242533952199664413">Abrir la configuración</translation>
 <translation id="4242577469625748426">Se produjo un error al instalar la configuración de la política en el dispositivo: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Encontrar más apps para la pluma stylus</translation>
@@ -2243,7 +2237,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="4514542542275172126">Configurar un nuevo usuario supervisado</translation>
 <translation id="451515744433878153">Quitar</translation>
 <translation id="4518677423782794009">¿Se producen fallos en Chrome, se muestran páginas de inicio o barras de herramientas inusuales, aparecen anuncios inesperados que no puedes cerrar, o la experiencia de navegación cambia de alguna manera? Puedes solucionar el problema con la Herramienta para limpiar Chrome.</translation>
-<translation id="4518928191942891293">Se está iniciando el contenedor en la VM de Termina.</translation>
 <translation id="4520385623207007473">Cookies en uso</translation>
 <translation id="452039078290142656">dispositivos desconocidos de <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">Detalles</translation>
@@ -2943,15 +2936,14 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="5557991081552967863">Mantener el Wi-Fi encendido durante la suspensión</translation>
 <translation id="5558129378926964177">Acercar</translation>
 <translation id="5558446705802335921">Revisa los sitios que visitas y los archivos que descargas para detectar contenido o comportamiento dañinos, como suplantación de identidad (phishing) o software malicioso</translation>
-<translation id="5559719557406102971">Se está iniciando la VM de Termina.</translation>
 <translation id="55601339223879446">Ajustar los límites de tu escritorio en la pantalla</translation>
 <translation id="5562781907504170924">Esta pestaña está conectada con un dispositivo Bluetooth.</translation>
+<translation id="5563234215388768762">Realizar una búsqueda en Google o escribir una URL</translation>
 <translation id="5565871407246142825">Tarjetas de crédito</translation>
 <translation id="5567989639534621706">Cachés de aplicación</translation>
 <translation id="5568069709869097550">No puedo acceder</translation>
 <translation id="5568144734023334204">Almacenamiento de Android</translation>
 <translation id="5569544776448152862">Registrando en <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />…</translation>
-<translation id="5572572070321843880">ERROR: No se pudo iniciar Termina VM.</translation>
 <translation id="5575473780076478375">Extensión de incógnito: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Restablecer el dispositivo no afectará las cuentas de Google ni los datos sincronizados con esas cuentas. Sin embargo, se eliminarán todos los archivos guardados localmente en el dispositivo.</translation>
 <translation id="5578059481725149024">Acceso automático</translation>
@@ -3492,7 +3484,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="6410668567036790476">Agregar motor de búsqueda</translation>
 <translation id="641081527798843608">Coincidencia de asunto</translation>
 <translation id="641105183165925463">$1 MB</translation>
-<translation id="6411517327772365857">Busca en Google o escribe una dirección web</translation>
 <translation id="6412931879992742813">Nueva ventana de incógnito</translation>
 <translation id="6417265370957905582">Asistente de Google</translation>
 <translation id="6418160186546245112">Revirtiendo a la versión de <ph name="IDS_SHORT_PRODUCT_NAME" /> instalada previamente</translation>

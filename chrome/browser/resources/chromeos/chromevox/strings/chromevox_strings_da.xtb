@@ -146,6 +146,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="2416512023405990736">Et afkrydsningsfelt uden markering</translation>
 <translation id="2417569100218200841">Indholdsoplysninger</translation>
 <translation id="2417948780551741035">Slutnoter</translation>
+<translation id="2421113964388408478">Sletning</translation>
 <translation id="2422937916923936891">Afkrydsningsfelt til menupunkt</translation>
 <translation id="2428534162001909979">Kommandomenuer</translation>
 <translation id="2429669115401274487">e.m.</translation>
@@ -179,6 +180,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">lyd</translation>
 <translation id="2732718972699418926">f.m.</translation>
+<translation id="2737520612859577214">Slut på hævet skrift</translation>
 <translation id="2749275490991666823">Kontrolleret</translation>
 <translation id="27527859628328957">Gå til næste element, der kan fokuseres på</translation>
 <translation id="276402504937943375">indholdsfortegnelse</translation>
@@ -203,6 +205,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="288178314850623291">Brug hoppekommandoer til at springe til bestemte typer elementer. Tryk på Søg+H for at hoppe fremad mellem overskrifter, og tryk på Søg+Shift+H for at hoppe tilbage.</translation>
 <translation id="2894654529758326923">Oplysninger</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{venstre klammeparentes}one{# venstre klammeparenteser}other{# venstre klammeparenteser}}</translation>
+<translation id="2909478709401302630">Start på hævet skrift</translation>
 <translation id="2911433807131383493">Åbn ChromeVox-selvstudie</translation>
 <translation id="2932083475399492303">Skift linjetype mellem strukturel eller layout</translation>
 <translation id="2944762337049891859">Læs siden automatisk, når den er indlæst.</translation>
@@ -384,6 +387,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4148180433151187540">{COUNT,plural, =1{højre klammeparentes}one{# højre klammeparenteser}other{# højre klammeparenteser}}</translation>
 <translation id="4158704014418536539">Der er forskel på store og små bogstaver.</translation>
 <translation id="4161663686871496107">Talefeedback via ChromeVox er klar</translation>
+<translation id="4166192625054637755">Slut på sænket skrift</translation>
 <translation id="4173994908659439270">Ikke flere redigerbare tekstfelter.</translation>
 <translation id="4176463684765177261">Deaktiveret</translation>
 <translation id="4188530942454211480">Forrige sætning</translation>
@@ -423,6 +427,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4476183483923481720">ny linje</translation>
 <translation id="4482330759234983253">Forrige tabel</translation>
 <translation id="4491109536499578614">Billede</translation>
+<translation id="4505167975768625962">Indsættelse</translation>
 <translation id="4517854969512651305">Hæv værdien</translation>
 <translation id="4529987814483543472">Klassisk tastaturoversigt</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{skråstreg}one{# skråstreger}other{# skråstreger}}</translation>
@@ -527,6 +532,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="5330443287809544590">Linket <ph name="NAME" /></translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Backlink</translation>
+<translation id="5350654862897073517">Start på sænket skrift</translation>
 <translation id="536031132345979795">Spring tilbage under kontinuerlig læsning</translation>
 <translation id="5368000168321181111">Earcons fra</translation>
 <translation id="5374320867641260420">Ikke flere knapper.</translation>

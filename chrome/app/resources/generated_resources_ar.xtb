@@ -424,7 +424,6 @@
 <translation id="1624026626836496796">لن يحدث ذلك إلا مرة واحدة، ولن يتم تخزين بيانات اعتمادك.</translation>
 <translation id="1627276047960621195">أدوات وصف الملفات</translation>
 <translation id="1627408615528139100">تم التنزيل من قبل</translation>
-<translation id="1632551555529177478">‏خطأ: تعذّر بدء برنامج Concierge.</translation>
 <translation id="1632803087685957583">تسمح لك بضبط معدل تكرار لوحة المفاتيح، وتوقّع الكلمات، والمزيد</translation>
 <translation id="1635033183663317347">تم التثبيت من قبل الوصيّ.</translation>
 <translation id="1637224376458524414">‏الحصول على هذه الإشارة المرجعية على جهاز iPhone</translation>
@@ -1110,7 +1109,6 @@
 <translation id="2686759344028411998">يتعذر اكتشاف أي وحدات محملة.</translation>
 <translation id="2688196195245426394">حدث خطأ عند تسجيل الجهاز مع الخادم: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">عرض خيارات اللغة</translation>
-<translation id="2690824726518456119">‏جارٍ بدء خدمة Concierge.</translation>
 <translation id="2691385045260836588">الطراز</translation>
 <translation id="2693176596243495071">عفوًا،  حدث خطأ غير معروف. يُرجى إعادة المحاولة فيما بعد أو الاتصال بالمشرف في حال استمرار المشكلة.</translation>
 <translation id="2694026874607847549">ملف تعريف ارتباط واحد</translation>
@@ -1299,7 +1297,6 @@
 <translation id="2986010903908656993">‏تم حظر هذه الصفحة من التحكم تحكمًا كاملاً في أجهزة MIDI.</translation>
 <translation id="2989474696604907455">غير متصل</translation>
 <translation id="2989786307324390836">‏حفظ شهادة واحدة بتشفير DER ثنائي</translation>
-<translation id="2993165626813508977">‏خطأ: تعذّر بدء الحاوية داخل الجهاز الافتراضي (VM) Termina.</translation>
 <translation id="2993517869960930405">معلومات التطبيق</translation>
 <translation id="2994669386200004489">تعذر الاحتفاظ بنسخة احتياطية للملف <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">تم التثبيت من قبل والدك.</translation>
@@ -1432,7 +1429,6 @@
 <translation id="3190558889382726167">تم حفظ كلمة المرور</translation>
 <translation id="3192947282887913208">ملفات صوتية</translation>
 <translation id="3194737229810486521">يريد <ph name="URL" /> تخزين البيانات بشكل دائم على جهازك.</translation>
-<translation id="3197054279257119376">‏جارٍ تحميل مُكوِّن Termina.</translation>
 <translation id="3199127022143353223">الخوادم</translation>
 <translation id="3202131003361292969">المسار</translation>
 <translation id="3202173864863109533">تم كتم صوت علامة التبويب.</translation>
@@ -1557,7 +1553,6 @@
 <translation id="3407837288045706722">للحصول على مزيد من الإعدادات المتعلِّقة بالخصوصية والأمان وجمع البيانات، يمكنك الاطّلاع على <ph name="BEGIN_LINK" />المزامنة والتخصيص<ph name="END_LINK" /></translation>
 <translation id="3412265149091626468">انتقال سريع إلى التحديد</translation>
 <translation id="3413122095806433232">‏جهات إصدار المرجع المصدق (CA): <ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">‏يمكنك تمييز ما تريد سماعه ثم الضغط على زر "البحث + S"، أو الضغط مع الاستمرار على زر "البحث"، أو النقر على رمز "سماع الاختيار" بالقرب من صورة الملف الشخصي، ثم اختيار منطقة مُراد قراءتها بصوتٍ عالٍ.</translation>
 <translation id="3414856743105198592">يؤدي تنسيق الوسائط القابلة للإزالة إلى مسح جميع البيانات. هل تريد المتابعة؟</translation>
 <translation id="3414952576877147120">الحجم:</translation>
 <translation id="3420980393175304359">تبديل شخص</translation>
@@ -2088,7 +2083,6 @@
 <translation id="4235200303672858594">الشاشة بالكامل</translation>
 <translation id="4235813040357936597">إضافة حساب لـ <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">إلغاء تسجيل الدخول</translation>
-<translation id="4239107879884489787">‏خطأ: تعذّر تحميل مُكوِّن Termina.</translation>
 <translation id="4242533952199664413">فتح الإعدادات</translation>
 <translation id="4242577469625748426">تعذّر تثبيت إعدادات السياسة على الجهاز: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">العثور على المزيد من تطبيقات قلم الشاشة</translation>
@@ -2239,7 +2233,6 @@
 <translation id="4514542542275172126">إعداد مستخدم جديد تحت الإشراف</translation>
 <translation id="451515744433878153">إزالة</translation>
 <translation id="4518677423782794009">‏هل يظهر تعطّل Chrome صفحات بدء تشغيل أو أشرطة أدوات غير معتادة، أو إعلانات غير متوقعة لا يمكنك التخلص منها، أو تغييرًا آخر في تجربة التصفح؟ قد تتمكن من إصلاح المشكلة من خلال تشغيل أداة إزالة البرامج من Chrome.</translation>
-<translation id="4518928191942891293">‏جارٍ بدء الحاوية داخل الجهاز الافتراضي (Termina (VM.</translation>
 <translation id="4520385623207007473">ملفات تعريف الارتباط قيد الاستخدام</translation>
 <translation id="452039078290142656">أجهزة غير معروفة من <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">التفاصيل</translation>
@@ -2938,15 +2931,14 @@
 <translation id="5557991081552967863">‏إبقاء Wi-Fi في وضع التشغيل أثناء السكون</translation>
 <translation id="5558129378926964177">ت&amp;كبير</translation>
 <translation id="5558446705802335921">يتحقّق من المواقع التي تزورها والملفات التي تنزّلها بحثًا عن المحتوى أو السلوك الضار، مثل التصيّد الاحتيالي أو البرامج الضارة</translation>
-<translation id="5559719557406102971">‏جارٍ بدء الجهاز الافتراضي (Termina (VM.</translation>
 <translation id="55601339223879446">ضبط الحدود لسطح المكتب ضمن الشاشة</translation>
 <translation id="5562781907504170924">علامة التبويب هذه متصلة بجهاز بلوتوث.</translation>
+<translation id="5563234215388768762">‏البحث في Google أو كتابة عنوان URL</translation>
 <translation id="5565871407246142825">بطاقات ائتمان</translation>
 <translation id="5567989639534621706">ذاكرة التخزين المؤقت للتطبيقات</translation>
 <translation id="5568069709869097550">تعذّر الدخول</translation>
 <translation id="5568144734023334204">‏سعة تخزين Android</translation>
 <translation id="5569544776448152862">التسجيل في <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
-<translation id="5572572070321843880">‏خطأ: تعذّر بدء الجهاز الافتراضي (VM) Termina.</translation>
 <translation id="5575473780076478375">إضافة وضع التصفح المتخفي: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">‏لن يؤثر إعادة تعيين الجهاز على حسابات Google أو أي من البيانات التي تمت مزامنتها مع هذه الحسابات. ومع ذلك، سيتم حذف جميع الملفات التي تم حفظها محليًا على جهازك.</translation>
 <translation id="5578059481725149024">تسجيل الدخول التلقائي</translation>

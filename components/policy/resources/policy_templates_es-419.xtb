@@ -472,38 +472,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si esta configuración se habilita, el historial de navegación no se guarda. También se inhabilita la sincronización de pestañas.
 
       Si esta configuración se inhabilita o no se establece, se guarda el historial de navegación.</translation>
-<translation id="2424023834246613232">Anula las reglas de selección de la impresora predeterminada de <ph name="PRODUCT_NAME" />.
-
-      Esta política determina las reglas para seleccionar la impresora predeterminada en <ph name="PRODUCT_NAME" /> y ocurre la primera vez que se usa la función de impresión con un perfil.
-
-      Cuando esta política se establece, <ph name="PRODUCT_NAME" /> intentará encontrar una impresora que coincida con todos los atributos que se especificaron y la seleccionará como impresora predeterminada. Se selecciona la primera impresora que se encuentre que coincida con la política. En caso de que haya más de una coincidencia, cualquier impresora que coincida se puede seleccionar, según el orden en que se descubren las impresoras.
-
-      Si no se establece esta política o no se encuentra ninguna impresora que coincida dentro del tiempo de espera, se selecciona como predeterminada la impresora PDF integrada o, en caso de que no esté disponible, no se selecciona ninguna.
-
-      El valor se analiza como un objeto JSON, de acuerdo al siguiente esquema:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regular expression to match printer id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regular expression to match printer display name.",
-            "type": "string"
-          }
-        }
-      }
-
-      Las impresoras conectadas a <ph name="CLOUD_PRINT_NAME" /> se consideran <ph name="PRINTER_TYPE_CLOUD" />, el resto de las impresoras se clasifican como <ph name="PRINTER_TYPE_LOCAL" />.
-      Si se omite un campo, todos los valores se consideran coincidentes. Por ejemplo, si no se especifica la conectividad, la Vista previa de impresión iniciará la búsqueda de todo tipo de impresoras, ya sea locales o en la nube.
-      Los patrones de expresión regulares deben seguir la sintaxis de JavaScript RegExp y las coincidencias distinguen entre mayúsculas y minúsculas.</translation>
 <translation id="2426782419955104525">Habilita la función Instant de <ph name="PRODUCT_NAME" /> e impide que los usuarios modifiquen esta opción.
 
       Si se habilita esta opción, se habilitará <ph name="PRODUCT_NAME" /> Instant.

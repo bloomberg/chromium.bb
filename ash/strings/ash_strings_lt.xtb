@@ -91,6 +91,7 @@
 <translation id="2761704814324807722">Būsenos dėklas, laikas <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Iš naujo prisijungiama prie „<ph name="NAME" />“</translation>
 <translation id="2792498699870441125">„Alt“ + paieškos klavišas</translation>
+<translation id="2805756323405976993">Taikomosios programos</translation>
 <translation id="2819276065543622893">Būsite atjungti.</translation>
 <translation id="2825619548187458965">Lentyna</translation>
 <translation id="2844169650293029770">USB-C įrenginys (prievadas kairėje, priekinėje dalyje)</translation>
@@ -118,6 +119,7 @@
 <translation id="3236488194889173876">Nėra jokių pasiekiamų mobiliojo ryšio tinklų</translation>
 <translation id="3294437725009624529">Svečias</translation>
 <translation id="332587331255250389">Pakeiskite akumuliatorių</translation>
+<translation id="3351879221545518001">Šiuo metu perduodate ekrano vaizdą.</translation>
 <translation id="3364721542077212959">Rašiklio įrankiai</translation>
 <translation id="3368922792935385530">Prijungta</translation>
 <translation id="3371140690572404006">USB-C įrenginys (prievadas dešinėje, priekinėje dalyje)</translation>
@@ -173,6 +175,7 @@
 <translation id="4527045527269911712">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ prašo leidimo susieti.</translation>
 <translation id="453661520163887813">Liko <ph name="TIME" />, kol bus visiškai įkrautas</translation>
 <translation id="4544944664594876241">Pakeistas ekrano užrakinimo spartusis klavišas. Naudokite <ph name="NEW_SHORTCUT" /> vietoje <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4564869809620998694">Šriftų paslauga</translation>
 <translation id="4570957409596482333">Funkcijos „Teksto ištarimas“ mygtukas</translation>
 <translation id="4659419629803378708">„ChromeVox“ įgalinta</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> slaptažodis</translation>
@@ -209,11 +212,13 @@
 <translation id="5744083938413354016">Vilkimas palietus</translation>
 <translation id="5777841717266010279">Nutraukti ekrano bendrinimą?</translation>
 <translation id="57838592816432529">Nutildyti</translation>
+<translation id="5805697420284793859">Langų tvarkytuvė</translation>
 <translation id="5820394555380036790">„Chromium“ OS</translation>
 <translation id="5832805196449965646">Pridėti asmenį</translation>
 <translation id="5860033963881614850">Išjungta</translation>
 <translation id="5895138241574237353">Paleisti iš naujo</translation>
 <translation id="5901316534475909376">„Shift“ + „Esc“</translation>
+<translation id="5911533659001334206">Sparčiųjų klavišų peržiūros programa</translation>
 <translation id="5916664084637901428">Įjungta</translation>
 <translation id="5927132638760172455">Perduodama į nežinomą imtuvą</translation>
 <translation id="5947494881799873997">Grąžinti</translation>
@@ -252,6 +257,7 @@
 <translation id="6521655319214113338">Įvestis ranka</translation>
 <translation id="6528179044667508675">Netrukdyti</translation>
 <translation id="6537270692134705506">Užfiksuoti ekrano vaizdą</translation>
+<translation id="6542521951477560771">Perduodama į „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="6585808820553845416">Sesija baigsis po <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Paieškos klavišas + „Shift“ + K</translation>
 <translation id="6650933572246256093">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ prašo leidimo susieti. Šiame įrenginyje įveskite šį slaptąjį raktą: <ph name="PASSKEY" /></translation>
@@ -263,6 +269,8 @@
 <translation id="6715542151869432661">Nerasta jokių mobiliųjų įrenginių.</translation>
 <translation id="671928215901716392">Užrakinti ekraną</translation>
 <translation id="6723839937902243910">Maitinimas</translation>
+<translation id="6725073593266469338">NS paslauga</translation>
+<translation id="6751826523481687655">Našumo stebėjimas įjungtas</translation>
 <translation id="6785414152754474415">Likusi akumuliatoriaus įkrova: <ph name="PERCENTAGE" /> %. Jis įkraunamas.</translation>
 <translation id="6803622936009808957">Nepavyko dubliuoti vaizdų, nes nepavyko rasti palaikomų skyrų. Vietoje to įjungtas išplėstinio darbalaukio režimas.</translation>
 <translation id="6820676911989879663">Padarykite pertrauką!</translation>
@@ -327,6 +335,7 @@
 <translation id="8351131234907093545">Sukurti užrašą</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> skirtų parinkčių meniu</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
+<translation id="8431190899827883166">Rodyti palietimus</translation>
 <translation id="8433186206711564395">Tinklo nustatymai</translation>
 <translation id="8433977262951327081">Pakeistas įvesties parinkčių meniu debesėlio rodymo lentynoje spartusis klavišas. Naudokite <ph name="NEW_SHORTCUT" /> vietoje <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8452135315243592079">Nėra SIM kortelės</translation>
@@ -340,6 +349,7 @@
 <translation id="8652175077544655965">Uždaryti nustatymus</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Prijungtas mažos galios įkroviklis</translation>
+<translation id="8683506306463609433">Našumo stebėjimas aktyvus</translation>
 <translation id="8734991477317290293">Gali būti bandoma pavogti jūsų klavišų paspaudimus</translation>
 <translation id="8809737090443522491">Įveskite programos ar dokumento pavadinimą</translation>
 <translation id="8814190375133053267">WI-Fi</translation>
@@ -352,7 +362,9 @@
 <translation id="8921624153894383499">„Google“ padėjėjas nekalba šia kalba.</translation>
 <translation id="8938800817013097409">USB-C įrenginys (prievadas dešinėje, užpakalinėje dalyje)</translation>
 <translation id="8940956008527784070">Akumuliatorius senka (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8984179138335769204">Greitasis paleidimas</translation>
 <translation id="8995603266996330174">Valdoma „<ph name="DOMAIN" />“</translation>
+<translation id="9033907480196064950">Šiuo metu perduodate „<ph name="TAB_NAME" />“</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">„Wi-Fi“: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofonas naudojamas.</translation>
@@ -368,4 +380,5 @@
 <translation id="923686485342484400">Jei norite atsijungti, du kartus paspauskite „Control“ + „Shift“ + Q.</translation>
 <translation id="945522503751344254">Siųsti atsiliepimą</translation>
 <translation id="98515147261107953">Gulsčias</translation>
+<translation id="995927048686010764">Automatinis paspaudimas</translation>
 </translationbundle>

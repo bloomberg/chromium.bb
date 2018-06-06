@@ -207,6 +207,7 @@
 <translation id="1296497012903089238">证书类型</translation>
 <translation id="1297175357211070620">目标打印机</translation>
 <translation id="1297922636971898492">Google云端硬盘暂时无法使用。Google云端硬盘恢复正常后，系统将自动重新开始上传。</translation>
+<translation id="1300415640239881824"><ph name="DOMAIN" /> 想让 Google 验证您的设备的身份，以确定能否对受保护的内容使用增强播放功能。</translation>
 <translation id="1300806585489372370">要更改此设置，请先<ph name="BEGIN_LINK" />启用标识符<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">允许 Apple 事件中的 JavaScript</translation>
 <translation id="1303101771013849280">以前导出的书签（HTML 文件）</translation>
@@ -420,7 +421,6 @@
 <translation id="1624026626836496796">系统以后不会再提出此要求，且不会存储您的凭据。</translation>
 <translation id="1627276047960621195">文件描述符</translation>
 <translation id="1627408615528139100">已下载</translation>
-<translation id="1632551555529177478">错误：未能成功启动 Concierge 客户端。</translation>
 <translation id="1632803087685957583">可让您调整键盘重复输入速率、字词预测功能等</translation>
 <translation id="1635033183663317347">这是您的监护人安装的。</translation>
 <translation id="1637224376458524414">在您的 iPhone 上获取此书签</translation>
@@ -1107,7 +1107,6 @@
 <translation id="2686759344028411998">未检测到任何已加载的模块。</translation>
 <translation id="2688196195245426394">向服务器注册设备时出错：<ph name="CLIENT_ERROR" />。</translation>
 <translation id="2690024944919328218">显示语言选项</translation>
-<translation id="2690824726518456119">正在启动“Concierge”服务。</translation>
 <translation id="2691385045260836588">型号</translation>
 <translation id="2693176596243495071">糟糕！发生了未知错误。请稍后重试；如果问题依然存在，请与您的管理员联系。</translation>
 <translation id="2694026874607847549">1 个 Cookie</translation>
@@ -1296,7 +1295,6 @@
 <translation id="2986010903908656993">已禁止该网页完全控制 MIDI 设备。</translation>
 <translation id="2989474696604907455">未连接</translation>
 <translation id="2989786307324390836">DER 编码二进制，单一证书</translation>
-<translation id="2993165626813508977">错误：未能成功启动 Termina VM 内的容器。</translation>
 <translation id="2993517869960930405">应用信息</translation>
 <translation id="2994669386200004489">无法备份 <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">这是您的家长安装的。</translation>
@@ -1429,7 +1427,6 @@
 <translation id="3190558889382726167">密码已保存</translation>
 <translation id="3192947282887913208">音频文件</translation>
 <translation id="3194737229810486521"><ph name="URL" /> 想在您的设备上永久存储数据</translation>
-<translation id="3197054279257119376">正在加载“Termina”组件。</translation>
 <translation id="3199127022143353223">服务器</translation>
 <translation id="3202131003361292969">路径</translation>
 <translation id="3202173864863109533">此标签页已静音。</translation>
@@ -1553,7 +1550,6 @@
 <translation id="3407837288045706722">要了解更多与隐私、安全和数据收集相关的设置，请参阅<ph name="BEGIN_LINK" />同步和个性化<ph name="END_LINK" /></translation>
 <translation id="3412265149091626468">跳到所选部分</translation>
 <translation id="3413122095806433232">CA 证书颁发者：<ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">突出显示您想听到的内容，然后按“搜索键 + S”组合键。您也可以先按住搜索键，或点按您的个人资料图片附近的“随选朗读”图标，然后选择要朗读的区域。</translation>
 <translation id="3414856743105198592">格式化可移动设备会删除其中的所有数据。您要继续吗？</translation>
 <translation id="3414952576877147120">大小：</translation>
 <translation id="3420980393175304359">切换用户</translation>
@@ -2087,7 +2083,6 @@
 <translation id="4235200303672858594">整个屏幕</translation>
 <translation id="4235813040357936597">为<ph name="PROFILE_NAME" />添加帐号</translation>
 <translation id="4235965441080806197">取消登录</translation>
-<translation id="4239107879884489787">错误：未能成功加载 Termina 组件。</translation>
 <translation id="4242533952199664413">打开“设置”</translation>
 <translation id="4242577469625748426">无法在设备上安装策略设置：<ph name="VALIDATION_ERROR" />。</translation>
 <translation id="4244238649050961491">查找更多触控笔应用</translation>
@@ -2239,7 +2234,6 @@
 <translation id="4514542542275172126">设置新的受监管用户</translation>
 <translation id="451515744433878153">移除</translation>
 <translation id="4518677423782794009">Chrome 是否出现以下异常情况：崩溃、启动页或工具栏异常、您无法关闭不想看到的广告，或您的浏览设置遭到篡改？或许您可以通过运行 Chrome 清理工具来解决该问题。</translation>
-<translation id="4518928191942891293">正在启动“Termina VM”内的容器。</translation>
 <translation id="4520385623207007473">正在使用的 Cookie</translation>
 <translation id="452039078290142656">来自<ph name="VENDOR_NAME" />的未知设备</translation>
 <translation id="4522570452068850558">详细信息</translation>
@@ -2933,15 +2927,14 @@
 <translation id="5557991081552967863">休眠期间保持 Wi-Fi 连接</translation>
 <translation id="5558129378926964177">放大(&amp;I)</translation>
 <translation id="5558446705802335921">检查您访问的网站以及您下载的文件中是否存在有害行为或内容（例如网上诱骗或恶意软件）</translation>
-<translation id="5559719557406102971">正在启动“Termina VM”。</translation>
 <translation id="55601339223879446">调整您的桌面在显示屏内的边界</translation>
 <translation id="5562781907504170924">此标签页已连接到蓝牙设备。</translation>
+<translation id="5563234215388768762">在 Google 上搜索，或者输入一个网址</translation>
 <translation id="5565871407246142825">信用卡</translation>
 <translation id="5567989639534621706">应用缓存</translation>
 <translation id="5568069709869097550">无法登录</translation>
 <translation id="5568144734023334204">Android 存储空间</translation>
 <translation id="5569544776448152862">正在注册到 <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />…</translation>
-<translation id="5572572070321843880">错误：未能成功启动 Termina VM。</translation>
 <translation id="5575473780076478375">隐身模式下使用的应用...<ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">重置您的设备不会影响您的 Google 帐号或已同步到这些帐号的任何数据，但您的设备中本地保存的所有文件都将被删除。</translation>
 <translation id="5578059481725149024">自动登录</translation>
@@ -3482,7 +3475,6 @@
 <translation id="6410668567036790476">添加搜索引擎</translation>
 <translation id="641081527798843608">主题匹配</translation>
 <translation id="641105183165925463">$1 MB</translation>
-<translation id="6411517327772365857">在 Google 上搜索，或者输入一个网址</translation>
 <translation id="6412931879992742813">打开新的无痕式窗口</translation>
 <translation id="6417265370957905582">Google 智能助理</translation>
 <translation id="6418160186546245112">正在还原到之前安装的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 版本</translation>

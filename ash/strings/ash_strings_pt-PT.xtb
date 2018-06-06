@@ -91,6 +91,7 @@
 <translation id="2761704814324807722">Tabuleiro do estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">A restabelecer ligação a <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + Pesquisar</translation>
+<translation id="2805756323405976993">Aplicações</translation>
 <translation id="2819276065543622893">A sessão será terminada agora.</translation>
 <translation id="2825619548187458965">Prateleira</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (porta frontal do lado esquerdo)</translation>
@@ -118,6 +119,7 @@
 <translation id="3236488194889173876">Nenhuma rede móvel disponível</translation>
 <translation id="3294437725009624529">Convidado</translation>
 <translation id="332587331255250389">Substitua a bateria</translation>
+<translation id="3351879221545518001">Está a transmitir atualmente o ecrã.</translation>
 <translation id="3364721542077212959">Ferramentas da caneta stylus</translation>
 <translation id="3368922792935385530">Ligado</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal do lado direito)</translation>
@@ -172,6 +174,7 @@
 <translation id="4527045527269911712">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> até estar totalmente carregada</translation>
 <translation id="4544944664594876241">O atalho para bloquear o ecrã foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4564869809620998694">Serviço de tipos de letra</translation>
 <translation id="4570957409596482333">Botão Selecionar para falar</translation>
 <translation id="4659419629803378708">ChromeVox ativado</translation>
 <translation id="4776917500594043016">Palavra-passe para <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -208,11 +211,13 @@
 <translation id="5744083938413354016">Arrastamento através do toque</translation>
 <translation id="5777841717266010279">Parar a partilha do ecrã?</translation>
 <translation id="57838592816432529">Desativar som</translation>
+<translation id="5805697420284793859">Gestor de janelas</translation>
 <translation id="5820394555380036790">SO Chromium</translation>
 <translation id="5832805196449965646">Adicionar pessoa</translation>
 <translation id="5860033963881614850">Desativado</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5911533659001334206">Visualizador de atalhos</translation>
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="5927132638760172455">A transmitir para um recetor desconhecido</translation>
 <translation id="5947494881799873997">Reverter</translation>
@@ -251,6 +256,7 @@
 <translation id="6521655319214113338">Entrada de escrita manual</translation>
 <translation id="6528179044667508675">Não incomodar</translation>
 <translation id="6537270692134705506">Capturar ecrã</translation>
+<translation id="6542521951477560771">A transmitir para <ph name="RECEIVER_NAME" /></translation>
 <translation id="6585808820553845416">A sessão termina em <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Pesquisar+Shift+K</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Introduza esta chave nesse dispositivo: <ph name="PASSKEY" /></translation>
@@ -262,6 +268,8 @@
 <translation id="6715542151869432661">Não foram encontrados dispositivos móveis.</translation>
 <translation id="671928215901716392">Bloquear ecrã</translation>
 <translation id="6723839937902243910">Alimentação</translation>
+<translation id="6725073593266469338">Serviço da IU</translation>
+<translation id="6751826523481687655">O rastreio do desempenho está ativado.</translation>
 <translation id="6785414152754474415">A bateria está <ph name="PERCENTAGE" />% cheia e a carregar.</translation>
 <translation id="6803622936009808957">Não foi possível espelhar os ecrãs, porque não foram encontradas resoluções suportadas. Em vez disso, entrou no ambiente de trabalho expandido.</translation>
 <translation id="6820676911989879663">Faça uma pausa!</translation>
@@ -326,6 +334,7 @@
 <translation id="8351131234907093545">Criar nota</translation>
 <translation id="8392451568018454956">Menu de opções para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Definições</translation>
+<translation id="8431190899827883166">Mostrar toques</translation>
 <translation id="8433186206711564395">Definições de rede</translation>
 <translation id="8433977262951327081">O atalho para mostrar o balão do menu de opções de introdução na prateleira foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8452135315243592079">Cartão SIM em falta</translation>
@@ -339,6 +348,7 @@
 <translation id="8652175077544655965">Fechar definições</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Carregador de baixo consumo ligado</translation>
+<translation id="8683506306463609433">O rastreio do desempenho está ativo.</translation>
 <translation id="8734991477317290293">É possível que esteja a tentar roubar os seus toques de teclas.</translation>
 <translation id="8809737090443522491">Introduza o nome de uma aplicação ou de um documento.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
@@ -351,7 +361,9 @@
 <translation id="8921624153894383499">O Assistente Google não fala este idioma.</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira direita)</translation>
 <translation id="8940956008527784070">Bateria fraca (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8984179138335769204">Início rápido</translation>
 <translation id="8995603266996330174">Gerido por <ph name="DOMAIN" /></translation>
+<translation id="9033907480196064950">Está atualmente a transmitir <ph name="TAB_NAME" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">O microfone está a ser utilizado.</translation>
@@ -367,4 +379,5 @@
 <translation id="923686485342484400">Prima Control Shift Q duas vezes para terminar sessão.</translation>
 <translation id="945522503751344254">Enviar comentários</translation>
 <translation id="98515147261107953">Horizontal</translation>
+<translation id="995927048686010764">Clique automático</translation>
 </translationbundle>

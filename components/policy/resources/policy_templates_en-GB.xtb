@@ -508,38 +508,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this setting is enabled, browsing history is not saved. This setting also disables tab syncing.
 
       If this setting is disabled or not set, browsing history is saved.</translation>
-<translation id="2424023834246613232">Overrides <ph name="PRODUCT_NAME" /> default printer selection rules.
-
-      This policy determines the rules for selecting the default printer in <ph name="PRODUCT_NAME" /> which happens the first time the print function is used with a profile.
-
-      When this policy is set, <ph name="PRODUCT_NAME" /> will attempt to find a printer matching all of the specified attributes and select it as default printer. The first printer found that matches the policy is selected. In the case of non-unique match, any matching printer can be selected, depending on the order in which printers are discovered.
-
-      If this policy is not set or a matching printer is not found within the timeout, the printer defaults to built-in PDF printer or no printer selected when PDF printer is not available.
-
-      The value is parsed as JSON object, conforming to the following schema:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regular expression to match printer id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regular expression to match printer display name.",
-            "type": "string"
-          }
-        }
-      }
-
-      Printers connected to <ph name="CLOUD_PRINT_NAME" /> are considered <ph name="PRINTER_TYPE_CLOUD" />, the rest of the printers are classified as <ph name="PRINTER_TYPE_LOCAL" />.
-      Omitting a field means all values match, for example, not specifying connectivity will cause Print Preview to initiate the discovery of all types of printers, local and cloud.
-      Regular expression patterns must follow the JavaScript RegExp syntax and matches are case sensitive.</translation>
 <translation id="2426782419955104525">Enables <ph name="PRODUCT_NAME" />'s Instant feature and prevents users from changing this setting.
 
       If you enable this setting, <ph name="PRODUCT_NAME" /> Instant is enabled.

@@ -847,7 +847,7 @@
 <translation id="7186367841673660872">Esta página se tradujo de<ph name="ORIGINAL_LANGUAGE" />a<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="7192203810768312527">Esta acción libera hasta <ph name="SIZE" />. Es posible que algunos sitios carguen más lento en tu próxima visita.</translation>
 <translation id="719464814642662924">Visa</translation>
-<translation id="7210863904660874423"><ph name="HOST_NAME" /> no cumple con los estándares de seguridad.</translation>
+<translation id="7210863904660874423"><ph name="HOST_NAME" /> no cumple con las normas de seguridad.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /> acerca de este problema.</translation>
 <translation id="7219179957768738017">La conexión usa <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Procesando</translation>

@@ -91,6 +91,7 @@
 <translation id="2761704814324807722">Durum tepsisi, saat: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" /> ile yeniden bağlantı kuruluyor</translation>
 <translation id="2792498699870441125">Alt+Arama</translation>
+<translation id="2805756323405976993">Uygulamalar</translation>
 <translation id="2819276065543622893">Şimdi çıkış yapacaksınız.</translation>
 <translation id="2825619548187458965">Raf</translation>
 <translation id="2844169650293029770">USB-C cihaz (sol ön bağlantı noktası)</translation>
@@ -118,6 +119,7 @@
 <translation id="3236488194889173876">Kullanılabilir mobil ağ yok</translation>
 <translation id="3294437725009624529">Misafir</translation>
 <translation id="332587331255250389">Lütfen pili değiştirin</translation>
+<translation id="3351879221545518001">Şu anda ekranı yayınlıyorsunuz.</translation>
 <translation id="3364721542077212959">Ekran kalemi araçları</translation>
 <translation id="3368922792935385530">Bağlı</translation>
 <translation id="3371140690572404006">USB-C cihaz (sağ ön bağlantı noktası)</translation>
@@ -172,6 +174,7 @@
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor.</translation>
 <translation id="453661520163887813">Dolması için gereken süre: <ph name="TIME" /></translation>
 <translation id="4544944664594876241">Ekranı kilitleme kısayolu değişti. Lütfen <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> kısayolunu kullanın.</translation>
+<translation id="4564869809620998694">Yazı tipi hizmeti</translation>
 <translation id="4570957409596482333">Seç ve Dinle düğmesi</translation>
 <translation id="4659419629803378708">ChromeVox etkinleştirildi</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> için şifre</translation>
@@ -208,11 +211,13 @@
 <translation id="5744083938413354016">Dokunarak sürükleme</translation>
 <translation id="5777841717266010279">Ekran paylaşma durdurulsun mu?</translation>
 <translation id="57838592816432529">Sesi kapat</translation>
+<translation id="5805697420284793859">Pencere yöneticisi</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">Kişi Ekle</translation>
 <translation id="5860033963881614850">Kapalı</translation>
 <translation id="5895138241574237353">Yeniden başlat</translation>
 <translation id="5901316534475909376">Üst Karakter+Esc</translation>
+<translation id="5911533659001334206">Kısayol görüntüleyici</translation>
 <translation id="5916664084637901428">Açık</translation>
 <translation id="5927132638760172455">Bilinmeyen bir alıcıya yayınlanıyor</translation>
 <translation id="5947494881799873997">Geri döndür</translation>
@@ -252,6 +257,7 @@
 <translation id="6521655319214113338">El yazısı girişi</translation>
 <translation id="6528179044667508675">Rahatsız etmeyin</translation>
 <translation id="6537270692134705506">Ekran görüntüsünü kaydet</translation>
+<translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> alıcısına gönderiliyor</translation>
 <translation id="6585808820553845416">Oturumun süresi <ph name="SESSION_TIME_REMAINING" /> içinde bitiyor.</translation>
 <translation id="6627638273713273709">Ara+Üst Karakter+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor. Lütfen söz konusu cihazda bu parolayı girin: <ph name="PASSKEY" /></translation>
@@ -263,6 +269,8 @@
 <translation id="6715542151869432661">Mobil cihaz bulunamadı.</translation>
 <translation id="671928215901716392">Kilit ekranı</translation>
 <translation id="6723839937902243910">Güç</translation>
+<translation id="6725073593266469338">Kullanıcı arayüzü hizmeti</translation>
+<translation id="6751826523481687655">Performans izleme açık</translation>
 <translation id="6785414152754474415">Pil %<ph name="PERCENTAGE" /> dolu ve şarj oluyor.</translation>
 <translation id="6803622936009808957">Desteklenen bir çözünürlük bulunamadığı için ekranlar yansıtılamıyor. Bunun yerine genişletilmiş masaüstüne geçiliyor.</translation>
 <translation id="6820676911989879663">Mola verin!</translation>
@@ -327,6 +335,7 @@
 <translation id="8351131234907093545">Not oluştur</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> seçenekler menüsü</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
+<translation id="8431190899827883166">Dokunmaları göster</translation>
 <translation id="8433186206711564395">Ağ ayarları</translation>
 <translation id="8433977262951327081">Giriş seçenekleri menüsü balonunu rafta görüntüleme kısa yolu değişti. <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> kısayolunu kullanın.</translation>
 <translation id="8452135315243592079">SIM kart yok</translation>
@@ -340,6 +349,7 @@
 <translation id="8652175077544655965">Ayarları kapat</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Düşük güçlü şarj cihazı bağlandı</translation>
+<translation id="8683506306463609433">Performans izleme etkin</translation>
 <translation id="8734991477317290293">Bu klavye, tuş vuruşlarınızı çalmaya çalışıyor olabilir</translation>
 <translation id="8809737090443522491">Bir uygulamanın veya dokümanın adını yazın</translation>
 <translation id="8814190375133053267">Kablosuz</translation>
@@ -352,7 +362,9 @@
 <translation id="8921624153894383499">Google Asistan bu dili konuşmuyor.</translation>
 <translation id="8938800817013097409">USB-C cihaz (arkadaki sağ bağlantı noktası)</translation>
 <translation id="8940956008527784070">Pil gücü az (%<ph name="PERCENTAGE" />)</translation>
+<translation id="8984179138335769204">Hızlı başlat</translation>
 <translation id="8995603266996330174">Yöneten: <ph name="DOMAIN" /></translation>
+<translation id="9033907480196064950">Şu anda <ph name="TAB_NAME" /> sekmesini yayınlıyorsunuz</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Kablosuz: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon kullanımda.</translation>
@@ -368,4 +380,5 @@
 <translation id="923686485342484400">Oturumu kapatmak için Control ÜstKrktr Q tuşlarına iki defa basın.</translation>
 <translation id="945522503751344254">Geri bildirim gönder</translation>
 <translation id="98515147261107953">Yatay</translation>
+<translation id="995927048686010764">Otomatik tıkla</translation>
 </translationbundle>

@@ -145,6 +145,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="2416512023405990736">İşaretlenmemiş onay kutusu</translation>
 <translation id="2417569100218200841">İçerik bilgileri</translation>
 <translation id="2417948780551741035">Son notlar</translation>
+<translation id="2421113964388408478">Silme</translation>
 <translation id="2422937916923936891">Menü öğesi onay kutusu</translation>
 <translation id="2428534162001909979">Komut Menüleri</translation>
 <translation id="2429669115401274487">ÖS</translation>
@@ -178,6 +179,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">ses</translation>
 <translation id="2732718972699418926">ÖÖ</translation>
+<translation id="2737520612859577214">Üst simge sonu</translation>
 <translation id="2749275490991666823">İşaretli</translation>
 <translation id="27527859628328957">Odaklanabilir sonraki öğeye atla</translation>
 <translation id="276402504937943375">içindekiler</translation>
@@ -202,6 +204,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="288178314850623291">Belirli öğe türlerine atlamak için atlama komutlarını kullanın. Başlıklar arasında ileriye atlamak için Arama + H tuşlarına, geriye atlamak için de Arama + Üst Karakter + H tuşlarına basın.</translation>
 <translation id="2894654529758326923">Bilgiler</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{sol küme parantezi}other{# sol küme parantezi}}</translation>
+<translation id="2909478709401302630">Üst simge başlangıcı</translation>
 <translation id="2911433807131383493">ChromeVox eğiticiyi aç</translation>
 <translation id="2932083475399492303">Yapısal veya düzen satır türü arasında geçiş yap</translation>
 <translation id="2944762337049891859">Yüklenmesi bittikten sonra sayfayı otomatik olarak oku.</translation>
@@ -383,6 +386,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="4148180433151187540">{COUNT,plural, =1{sağ küme parantezi}other{# sağ küme parantezi}}</translation>
 <translation id="4158704014418536539">Büyük/küçük harfe duyarlı.</translation>
 <translation id="4161663686871496107">ChromeVox sesli geri bildirim hazır</translation>
+<translation id="4166192625054637755">Alt simge sonu</translation>
 <translation id="4173994908659439270">Düzenlenebilir sonraki metin alanı yok.</translation>
 <translation id="4176463684765177261">Devre dışı</translation>
 <translation id="4188530942454211480">Önceki Cümle</translation>
@@ -422,6 +426,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="4476183483923481720">yeni satır</translation>
 <translation id="4482330759234983253">Önceki tablo</translation>
 <translation id="4491109536499578614">Resim</translation>
+<translation id="4505167975768625962">Ekleme</translation>
 <translation id="4517854969512651305">Değeri artırma</translation>
 <translation id="4529987814483543472">Klasik tuş eşleşmesi</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{eğik çizgi}other{# eğik çizgi}}</translation>
@@ -526,6 +531,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="5330443287809544590"><ph name="NAME" />, bağlantı</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Geri bağlantı</translation>
+<translation id="5350654862897073517">Alt simge başlangıcı</translation>
 <translation id="536031132345979795">Sürekli okuma sırasında geriye doğru atla</translation>
 <translation id="5368000168321181111">Ses sinyalleri kapalı</translation>
 <translation id="5374320867641260420">Sonraki düğme yok.</translation>

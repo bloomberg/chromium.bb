@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
+<translation id="114721135501989771">Use a tecnologia do Google no Chrome</translation>
 <translation id="1326317727527857210">Para ver as guias dos seus outros dispositivos, faça login no Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Aviso de Privacidade do Google Chrome</translation>
@@ -12,6 +13,7 @@
 <translation id="2441696206556358796">Para salvar as imagens, toque em "Ajustes" para permitir que o Chrome use suas fotos</translation>
 <translation id="2576431527583832481">O Google Chrome ficou ainda melhor! Uma nova versão está disponível.</translation>
 <translation id="257708665678654955">Quer que na próxima vez o Google Chrome ofereça a tradução de páginas em <ph name="LANGUAGE_NAME" /> deste site?</translation>
+<translation id="2943166482989655199">Aprimore o Chrome e a segurança dele enviando dados de uso e do sistema para o Google</translation>
 <translation id="3148434565183091099">Para ter seus favoritos em todos os seus dispositivos, faça login no Chrome.</translation>
 <translation id="3148688391461398285">Tenha uma experiência melhor no Google Chrome com base no seu local.</translation>
 <translation id="3167189358072330585">Sua conta não funciona no Google Chrome. Entre em contato com o administrador do domínio ou use uma Conta do Google normal para fazer login.</translation>
@@ -29,6 +31,7 @@
 <translation id="4523886039239821078">Alguns complementos causam a falha do Google Chrome. Desinstale-os.</translation>
 <translation id="4615174829807303908">Você está saindo de uma conta gerenciada por <ph name="SIGNOUT_MANAGED_DOMAIN" />. Os dados do Chrome serão excluídos desse dispositivo, mas permanecerão na sua Conta do Google.</translation>
 <translation id="5389212809648216794">O Google Chrome não pode usar a câmera porque ela está sendo usada por outro app</translation>
+<translation id="5489543008378040943">As <ph name="BEGIN_LINK" />configurações<ph name="END_LINK" /> podem ser personalizadas a qualquer momento. O Google pode usar o conteúdo dos sites que você visita, interações do navegador e atividades para personalizar o Chrome e os serviços do Google, como o Tradutor, a Pesquisa e os anúncios.</translation>
 <translation id="5639704535586432836">Abra Ajustes &gt; Privacidade &gt; Câmera &gt; Google Chrome e ative a câmera.</translation>
 <translation id="5642200033778930880">O Google Chrome não pode usar a câmera no modo Visualização dividida</translation>
 <translation id="5703130498371792817">Está gostando do Chrome? <ph name="BEGIN_LINK" />Avalie este app<ph name="END_LINK" /></translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
+<translation id="114721135501989771">Pata Google mahiri kwenye Chrome</translation>
 <translation id="1326317727527857210">Ili upate vichupo kutoka kwenye vifaa vyako vingine, ingia katika Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Ilani ya Faragha ya Google Chrome</translation>
@@ -12,6 +13,7 @@
 <translation id="2441696206556358796">Ili kuhifadhi picha, gusa Mipangilio ili uruhusu Chrome itumie picha zako</translation>
 <translation id="2576431527583832481">Chrome imekuwa bora! Toleo jipya linapatikana.</translation>
 <translation id="257708665678654955">Ungependa Google Chrome ijitolee kutafsiri kurasa za <ph name="LANGUAGE_NAME" /> kutoka tovuti hii wakati ujao?</translation>
+<translation id="2943166482989655199">Boresha Chrome na usalama wake kwa kutuma kwa Google data ya mfumo na matumizi</translation>
 <translation id="3148434565183091099">Ingia katika Chrome ili upate alamisho zako kwenye vifaa vyako vyote.</translation>
 <translation id="3148688391461398285">Pata hali bora ya utumiaji katika Chrome kulingana na mahali pako.</translation>
 <translation id="3167189358072330585">Akaunti yako haifanyi kazi kwenye Google Chrome. Tafadhali wasiliana na msimamizi wako wa kikoa au utumie Akaunti yako ya kawaida ya Google kuingia.</translation>
@@ -29,6 +31,7 @@
 <translation id="4523886039239821078">Baadhi ya programu jalizi husababisha Chrome iache kufanya kazi. Tafadhali sanidua:</translation>
 <translation id="4615174829807303908">Unaondoka kwenye akaunti inayodhibitiwa na <ph name="SIGNOUT_MANAGED_DOMAIN" />. Hatua hii itafuta data yako ya Chrome kwenye kifaa hiki, lakini data yako itasalia katika akaunti yako ya Google.</translation>
 <translation id="5389212809648216794">Google Chrome imeshindwa kutumia kamera yako kwa sababu inatumiwa na programu nyingine</translation>
+<translation id="5489543008378040943"><ph name="BEGIN_LINK" />Mipangilio<ph name="END_LINK" /> inaweza kubadilishwa wakati wowote. Google inaweza kutumia maudhui kwenye tovuti unazotembelea, matumizi ya kivinjari na shughuli ili kuweka mapendeleo kwenye huduma za Chrome and Google kama vile Tafsiri, Tafuta na Google na matangazo</translation>
 <translation id="5639704535586432836">Fungua Mipangilio &gt; Faragha &gt; Kamera &gt; Google Chrome na uwashe kamera.</translation>
 <translation id="5642200033778930880">Google Chrome imeshindwa kutumia kamera yako katika hali ya Mwonekano wa Madirisha Mawili</translation>
 <translation id="5703130498371792817">Je, unafurahia Chrome? <ph name="BEGIN_LINK" />Kadiria programu hii<ph name="END_LINK" /></translation>

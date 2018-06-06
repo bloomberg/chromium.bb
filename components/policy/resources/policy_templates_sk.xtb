@@ -484,38 +484,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto nastavenie povolíte, história prehliadania sa nebude ukladať. Toto nastavenie tiež zakáže synchronizáciu kariet.
 
       Ak toto nastavenie zakážete alebo nenastavíte, história prehliadania sa bude ukladať.</translation>
-<translation id="2424023834246613232">Umožňuje prepísať pravidlá výberu predvolenej tlačiarne v prehliadači <ph name="PRODUCT_NAME" />.
-
-      Určuje pravidlá výberu predvolenej tlačiarne v prehliadači <ph name="PRODUCT_NAME" /> pri prvom použití funkcie tlače s určitým profilom.
-
-      Keď toto pravidlo nastavíte, <ph name="PRODUCT_NAME" /> sa pokúsi nájsť tlačiareň zodpovedajúcu všetkým špecifikovaným atribútom a vyberie ju ako predvolenú. Vyberie sa prvá tlačiareň zodpovedajúca tomuto pravidlu. Ak sa nájde tlačiareň, ktorá nie je jedinečná zhoda, môžete vybrať akúkoľvek zodpovedajúcu tlačiareň (v závislosti od poradia, v ktorom boli tlačiarne objavené).
-
-      Ak toto pravidlo nenastavíte alebo sa v rámci časového limitu nenájde zodpovedajúca tlačiareň, obnoví sa predvolené nastavenie vstavanej tlačiarne PDF alebo sa nevyberie žiadna tlačiareň (ak tlačiareň PDF nie je k dispozícii).
-
-      Hodnota sa analyzuje ako objekt JSON, a to podľa nasledujúcej schémy:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Či obmedziť vyhľadávanie zodpovedajúcej tlačiarne na konkrétnu skupinu tlačiarní.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regulárny výraz na priradenie identifikátora tlačiarne.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regulárny výraz na priradenie zobrazovaného názvu tlačiarne.",
-            "type": "string"
-          }
-        }
-      }
-
-      Tlačiarne pripojené do služby <ph name="CLOUD_PRINT_NAME" /> sa považujú za <ph name="PRINTER_TYPE_CLOUD" />, ostatné tlačiarne sú označené ako <ph name="PRINTER_TYPE_LOCAL" />.
-      Ak vynecháte určité pole, budú mu zodpovedať všetky príslušné hodnoty. Ak napríklad nešpecifikujete pripojenie, nástroj Print Preview spustí hľadanie všetkých druhov tlačiarní – miestnych aj v cloude.
-      Vzory bežných výrazov musia zodpovedať syntaxi JavaScript RegExp a vo všetkých zodpovedajúcich výrazoch sa rozlišujú veľké a malé písmená.</translation>
 <translation id="2426782419955104525">Povolí funkciu Dynamické vyhľadávanie prehliadača <ph name="PRODUCT_NAME" /> a zabráni používateľom zmeniť toto nastavenie.
 
 

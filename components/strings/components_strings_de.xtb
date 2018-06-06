@@ -496,6 +496,7 @@
 <translation id="4275830172053184480">Gerät neu starten</translation>
 <translation id="4277028893293644418">Passwort zurücksetzen</translation>
 <translation id="4280429058323657511">Gültig bis: <ph name="EXPIRATION_DATE_ABBR" /></translation>
+<translation id="4305817255990598646">Wechseln</translation>
 <translation id="4312866146174492540">Blockieren (Standardeinstellung)</translation>
 <translation id="4325863107915753736">Der Artikel wurde nicht gefunden.</translation>
 <translation id="4326324639298822553">Prüfen Sie Ihr Ablaufdatum und versuchen Sie es dann erneut</translation>
@@ -808,6 +809,7 @@
 <translation id="6825578344716086703">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat jedoch ein Zertifikat übermittelt, das einen schwachen Signaturalgorithmus verwendet, zum Beispiel SHA-1. Das bedeutet, dass die vom Server übermittelten Sicherheitsinformationen gefälscht sein könnten und es sich möglicherweise gar nicht um den erwarteten Server handelt, sondern Sie mit einem Hacker kommunizieren.</translation>
 <translation id="6831043979455480757">Übersetzen</translation>
 <translation id="6839929833149231406">Stadtteil</translation>
+<translation id="6852204201400771460">App neu laden?</translation>
 <translation id="6874604403660855544">&amp;Hinzufügen wiederholen</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Richtlinienebene wird nicht unterstützt.</translation>
@@ -1116,6 +1118,7 @@
 <translation id="9157595877708044936">Einrichtung läuft...</translation>
 <translation id="9169664750068251925">Auf dieser Website immer blockieren</translation>
 <translation id="9170848237812810038">&amp;Rückgängig</translation>
+<translation id="9171296965991013597">App schließen?</translation>
 <translation id="917450738466192189">Das Serverzertifikat ist ungültig.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> verwendet ein nicht unterstütztes Protokoll.</translation>
 <translation id="9205078245616868884">Ihre Daten sind mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie diese ein, um die Synchronisierung zu starten.</translation>

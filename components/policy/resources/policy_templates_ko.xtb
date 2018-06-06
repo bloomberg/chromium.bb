@@ -492,38 +492,6 @@
       이 설정을 사용하면 인터넷 사용 기록이 저장되지 않으며 탭 동기화도 사용 중지됩니다.
 
       이 설정을 사용 중지하거나 설정하지 않으면 인터넷 사용 기록이 저장됩니다.</translation>
-<translation id="2424023834246613232"><ph name="PRODUCT_NAME" /> 기본 프린터 선택 규칙을 무시합니다.
-
-      이 정책은 <ph name="PRODUCT_NAME" />의 기본 프린터 선택 규칙을 결정하며, 프로필로 인쇄 기능을 처음 사용할 때 적용됩니다.
-
-      이 정책을 설정하면 <ph name="PRODUCT_NAME" />에서 지정한 속성과 모두 일치하는 프린터를 찾으려고 시도하며, 찾은 프린터를 기본 프린터로 선택합니다. 정책과 일치하는 첫 번째 프린터가 선택되며, 일치하는 프린터가 여러 개인 경우 프린터가 발견되는 순서에 따라 일치하는 프린터라면 어떤 것이든 선택될 수 있습니다.
-
-      이 정책이 설정되어 있지 않거나 시간 내에 일치하는 프린터를 찾지 못한 경우 내장 PDF 프린터가 기본으로 설정되며, PDF 프린터를 사용할 수 없는 경우 프린터가 선택되지 않습니다.
-
-      값은 다음 스키마에 따라 JSON 객체로 파싱됩니다.
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regular expression to match printer id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regular expression to match printer display name.",
-            "type": "string"
-          }
-        }
-      }
-
-      <ph name="CLOUD_PRINT_NAME" />에 연결된 프린터는 <ph name="PRINTER_TYPE_CLOUD" />로 간주되며, 나머지 프린터는 <ph name="PRINTER_TYPE_LOCAL" />로 분류됩니다.
-      필드가 생략된 경우 모든 값이 가능하다는 의미입니다. 예를 들어 연결을 지정하지 않으면 인쇄 미리보기에서 로컬과 클라우드 프린터를 모두 검색합니다.
-      정규식 패턴은 자바스크립트 RegExp 구문을 따라야 하며, 검색결과는 대소문자를 구분합니다.</translation>
 <translation id="2426782419955104525"><ph name="PRODUCT_NAME" />의 순간 검색 기능을 사용하도록 설정하고 사용자가 이 설정을 변경하지 못하게 합니다.
 
       이 기능을 사용하도록 설정하면 <ph name="PRODUCT_NAME" /> 순간 검색이 활성화됩니다.

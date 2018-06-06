@@ -145,6 +145,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2416512023405990736">Una casella de selecció desmarcada</translation>
 <translation id="2417569100218200841">Informació sobre el contingut</translation>
 <translation id="2417948780551741035">Notes finals</translation>
+<translation id="2421113964388408478">Supressió</translation>
 <translation id="2422937916923936891">Casella de selecció de l'element de menú</translation>
 <translation id="2428534162001909979">Menús d'ordres</translation>
 <translation id="2429669115401274487">p. m.</translation>
@@ -178,6 +179,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">àudio</translation>
 <translation id="2732718972699418926">a. m.</translation>
+<translation id="2737520612859577214">Final del superíndex</translation>
 <translation id="2749275490991666823">Comprovat</translation>
 <translation id="27527859628328957">Ves a l'element enfocable següent</translation>
 <translation id="276402504937943375">Taula de continguts</translation>
@@ -202,6 +204,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="288178314850623291">Fes servir les ordres de salt per ometre tipus d'elements específics. Per avançar pels encapçalaments, prem Cerca+H i, per tornar enrere, prem Cerca+Maj+H.</translation>
 <translation id="2894654529758326923">Informació</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{clau d'obertura}other{# claus d'obertura}}</translation>
+<translation id="2909478709401302630">Inici del superíndex</translation>
 <translation id="2911433807131383493">Obre el tutorial de ChromeVox</translation>
 <translation id="2932083475399492303">Commuta el tipus de línia entre estructural o disseny.</translation>
 <translation id="2944762337049891859">Llegeix la pàgina automàticament quan s'acabi de carregar.</translation>
@@ -383,6 +386,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4148180433151187540">{COUNT,plural, =1{clau de tancament}other{# claus de tancament}}</translation>
 <translation id="4158704014418536539">Es distingeix entre majúscules i minúscules.</translation>
 <translation id="4161663686871496107">Ja podeu utilitzar els comentaris de veu de ChromeVox.</translation>
+<translation id="4166192625054637755">Final del subíndex</translation>
 <translation id="4173994908659439270">No hi ha cap més camp de text que es pugui editar.</translation>
 <translation id="4176463684765177261">Desactivat</translation>
 <translation id="4188530942454211480">Frase anterior</translation>
@@ -422,6 +426,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4476183483923481720">línia nova</translation>
 <translation id="4482330759234983253">Taula anterior</translation>
 <translation id="4491109536499578614">Imatge</translation>
+<translation id="4505167975768625962">Inserció</translation>
 <translation id="4517854969512651305">Augmenta el valor</translation>
 <translation id="4529987814483543472">Mapa de teclat clàssic</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra inclinada}other{# barres inclinades}}</translation>
@@ -526,6 +531,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="5330443287809544590"><ph name="NAME" />, enllaç</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Enllaç d'entrada</translation>
+<translation id="5350654862897073517">Inici del subíndex</translation>
 <translation id="536031132345979795">Retrocedeix durant la lectura contínua</translation>
 <translation id="5368000168321181111">Earcons desactivats</translation>
 <translation id="5374320867641260420">No hi ha cap botó més.</translation>

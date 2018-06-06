@@ -427,7 +427,6 @@
 <translation id="1624026626836496796">Túto akciu musíte vykonať iba raz a vaše prihlasovacie údaje sa neuložia.</translation>
 <translation id="1627276047960621195">Deskriptory súborov</translation>
 <translation id="1627408615528139100">Už je stiahnutý</translation>
-<translation id="1632551555529177478">CHYBA: Nepodarilo sa spustiť klienta Concierge.</translation>
 <translation id="1632803087685957583">Umožňuje nastaviť rýchlosť opakovania klávesnice, predpoveď ďalšieho slova a ďalšie</translation>
 <translation id="1635033183663317347">Nainštalované vaším opatrovníkom</translation>
 <translation id="1637224376458524414">Uložte si túto záložku do zariadenia iPhone</translation>
@@ -1119,7 +1118,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="2686759344028411998">Nenašli sa žiadne načítané moduly.</translation>
 <translation id="2688196195245426394">Pri registrácii zariadenia na serveri <ph name="CLIENT_ERROR" /> sa vyskytla chyba.</translation>
 <translation id="2690024944919328218">Zobraziť možnosti jazyka</translation>
-<translation id="2690824726518456119">Spúšťa sa služba Concierge.</translation>
 <translation id="2691385045260836588">Model</translation>
 <translation id="2693176596243495071">Ojoj, vyskytla sa neznáma chyba. Skúste to znova neskôr alebo, ak problém pretrváva, kontaktujte správcu.</translation>
 <translation id="2694026874607847549">Počet súborov cookie: 1</translation>
@@ -1308,7 +1306,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="2986010903908656993">Tejto stránke bola zablokovaná úplná kontrola nad zariadeniami MIDI.</translation>
 <translation id="2989474696604907455">nepripojené</translation>
 <translation id="2989786307324390836">Binárny súbor s kódovaním DER, jeden certifikát</translation>
-<translation id="2993165626813508977">CHYBA: Nepodarilo sa spustiť kontajner v nástroji Termina VM.</translation>
 <translation id="2993517869960930405">Informácie o aplikácii</translation>
 <translation id="2994669386200004489"><ph name="FILE_NAME" /> sa nepodarilo zálohovať</translation>
 <translation id="299483336428448530">Nainštalované vaším rodičom</translation>
@@ -1441,7 +1438,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="3190558889382726167">Heslo bolo uložené</translation>
 <translation id="3192947282887913208">Zvukové súbory</translation>
 <translation id="3194737229810486521"><ph name="URL" /> chce natrvalo ukladať dáta vo vašom zariadení</translation>
-<translation id="3197054279257119376">Načítava sa komponent Termina.</translation>
 <translation id="3199127022143353223">Servery</translation>
 <translation id="3202131003361292969">Cesta</translation>
 <translation id="3202173864863109533">Zvuk tejto karty bol stlmený.</translation>
@@ -1567,7 +1563,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="3407837288045706722">Ďalšie nastavenia týkajúce sa ochrany súkromia, zabezpečenia a zhromažďovania údajov nájdete v časti <ph name="BEGIN_LINK" />Synchornizácia a prispôsobenie<ph name="END_LINK" /></translation>
 <translation id="3412265149091626468">Prejsť na výber</translation>
 <translation id="3413122095806433232">Vydavatelia CA: <ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">Zvýraznite, čo chcete počuť, potom stlačte tlačidlá Hľadať + S. Prípadne pridržte tlačidlo Hľadať alebo klepnite na ikonu počúvania vybraného textu pri profilovej fotke a vyberte oblasť, ktorú chcete prečítať nahlas.</translation>
 <translation id="3414856743105198592">Formátovaním vymeniteľných médií sa vymažú všetky dáta. Chcete pokračovať?</translation>
 <translation id="3414952576877147120">Veľkosť:</translation>
 <translation id="3420980393175304359">Prepnutie osoby</translation>
@@ -2102,7 +2097,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="4235200303672858594">Celá obrazovka</translation>
 <translation id="4235813040357936597">Pridať účet k profilu <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Zrušiť prihlasovanie</translation>
-<translation id="4239107879884489787">CHYBA: Nepodarilo sa načítať komponent Termina.</translation>
 <translation id="4242533952199664413">Otvoriť nastavenia</translation>
 <translation id="4242577469625748426">Nastavenia pravidla sa nepodarilo nainštalovať na zariadenie: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Nájsť ďalšie aplikácie pre dotykové pero</translation>
@@ -2256,7 +2250,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="4514610446763173167">Prepnutím prehráte alebo pozastavíte video</translation>
 <translation id="451515744433878153">Odstrániť</translation>
 <translation id="4518677423782794009">Dochádza k zlyhaniam prehliadača Chrome, zobrazujú sa pri spustení nezvyčajné stránky, panely s nástrojmi, prípadne neočakávané reklamy, ktorých sa nemôžete zbaviť alebo ktoré iným spôsobom ovplyvňujú vaše prehliadanie? Tento problém môžete vyriešiť spustením nástroja Chrome Cleanup Tool.</translation>
-<translation id="4518928191942891293">Spúšťa sa kontajner v rámci Termina VM.</translation>
 <translation id="4520385623207007473">Používané súbory cookie</translation>
 <translation id="452039078290142656">neznáme zariadenia od dodávateľa <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">Podrobnosti</translation>
@@ -2958,15 +2951,14 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5557991081552967863">Počas spánku ponechať zapnutú sieť Wi‑Fi</translation>
 <translation id="5558129378926964177">Priblíž&amp;iť</translation>
 <translation id="5558446705802335921">Skontroluje navštívené weby a stiahnuté súbory, či nezahŕňajú škodlivé správanie alebo obsah, napríklad phishing alebo malvér</translation>
-<translation id="5559719557406102971">Spúšťa sa Termina VM.</translation>
 <translation id="55601339223879446">Úprava ohraničenia pracovnej plochy obrazovky</translation>
 <translation id="5562781907504170924">Táto karta je prepojená so zariadením Bluetooth.</translation>
+<translation id="5563234215388768762">Vyhľadajte na Googli alebo zadajte webovú adresu</translation>
 <translation id="5565871407246142825">Kreditné karty</translation>
 <translation id="5567989639534621706">Vyrovnávacie pamäte aplikácií</translation>
 <translation id="5568069709869097550">Nedá sa prihlásiť</translation>
 <translation id="5568144734023334204">Úložisko Android</translation>
 <translation id="5569544776448152862">Registruje sa v doméne <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
-<translation id="5572572070321843880">CHYBA: Nástroj Termina VM sa nepodarilo spustiť.</translation>
 <translation id="5575473780076478375">Rozšírenie inkognito: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Obnovenie vášho zariadenia neovplyvní účty Google ani údaje synchronizované do týchto účtov. Všetky súbory uložené miestne v zariadení sa však odstránia.</translation>
 <translation id="5578059481725149024">Automaticky prihlasovať</translation>
@@ -3508,7 +3500,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6410668567036790476">Pridať vyhľadávač</translation>
 <translation id="641081527798843608">Zhoda predmetu</translation>
 <translation id="641105183165925463">$1 MB</translation>
-<translation id="6411517327772365857">Vyhľadajte na Googli alebo zadajte webovú adresu</translation>
 <translation id="6412931879992742813">Nové okno inkognito</translation>
 <translation id="6417265370957905582">Asistent Google</translation>
 <translation id="6418160186546245112">Prebieha vrátenie späť na predchádzajúcu nainštalovanú verziu produktu <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

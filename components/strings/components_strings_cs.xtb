@@ -493,6 +493,7 @@
 <translation id="4275830172053184480">Restartovat zařízení</translation>
 <translation id="4277028893293644418">Resetovat heslo</translation>
 <translation id="4280429058323657511">s platností do <ph name="EXPIRATION_DATE_ABBR" /></translation>
+<translation id="4305817255990598646">Přepínač</translation>
 <translation id="4312866146174492540">Blokovat (výchozí)</translation>
 <translation id="4325863107915753736">Článek nebyl nalezen</translation>
 <translation id="4326324639298822553">Zkontrolujte datum vypršení platnosti a zkuste to znovu.</translation>
@@ -804,6 +805,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6825578344716086703">Pokusili jste se přejít na web <ph name="DOMAIN" />, server však předložil certifikát podepsaný slabým algoritmem (například SHA-1). To znamená, že bezpečnostní pověření předložená serverem mohou být falešná a může se jednat o úplně jiný server, než předpokládáte (můžete komunikovat s útočníkem).</translation>
 <translation id="6831043979455480757">Přeložit</translation>
 <translation id="6839929833149231406">Region</translation>
+<translation id="6852204201400771460">Načíst aplikaci znovu?</translation>
 <translation id="6874604403660855544">&amp;Opakovat přidání</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Úroveň zásady není podporována.</translation>
@@ -1111,6 +1113,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="9157595877708044936">Nastavování...</translation>
 <translation id="9169664750068251925">Blokovat vždy na tomto webu</translation>
 <translation id="9170848237812810038">Z&amp;pět</translation>
+<translation id="9171296965991013597">Zavřít aplikaci?</translation>
 <translation id="917450738466192189">Certifikát serveru je neplatný.</translation>
 <translation id="9183425211371246419">Web <ph name="HOST_NAME" /> používá nepodporovaný protokol.</translation>
 <translation id="9205078245616868884">Vaše data jsou šifrována pomocí heslové fráze pro synchronizaci. Chcete-li zahájit synchronizaci, zadejte ji.</translation>

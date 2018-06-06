@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
+<translation id="114721135501989771">Gaudeix de les eines intel·ligents de Google a Chrome</translation>
 <translation id="1326317727527857210">Inicieu la sessió a Chrome per accedir a les vostres pestanyes des dels altres dispositius que tingueu.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Avís de privadesa de Google Chrome</translation>
@@ -12,6 +13,7 @@
 <translation id="2441696206556358796">Per desar imatges, toca Configuració perquè Chrome pugui utilitzar les teves fotos</translation>
 <translation id="2576431527583832481">Chrome ara és millor. Hi ha una versió nova disponible.</translation>
 <translation id="257708665678654955">La propera vegada, voleu que Google Chrome s'ofereixi per traduir les pàgines d'aquest lloc escrites en <ph name="LANGUAGE_NAME" />?</translation>
+<translation id="2943166482989655199">Envia a Google dades d'ús i del sistema per millorar Chrome i la seva seguretat</translation>
 <translation id="3148434565183091099">Inicieu la sessió a Chrome per accedir a les adreces d'interès des de tots els dispositius.</translation>
 <translation id="3148688391461398285">Si compartiu la vostra ubicació, millorareu l'experiència a Chrome.</translation>
 <translation id="3167189358072330585">El vostre compte no funciona a Google Chrome. Contacteu amb l'administrador del domini o utilitzeu un compte de Google estàndard per iniciar la sessió.</translation>
@@ -29,6 +31,7 @@
 <translation id="4523886039239821078">Alguns complements fan que Chrome es bloquegi. Desinstal·leu-los.</translation>
 <translation id="4615174829807303908">Esteu tancant la sessió d'un compte gestionat per <ph name="SIGNOUT_MANAGED_DOMAIN" />. Se suprimiran les vostres dades de Chrome d'aquest dispositiu, però continuaran al vostre compte de Google.</translation>
 <translation id="5389212809648216794">Google Chrome no pot utilitzar la càmera perquè l'està utilitzant una altra aplicació</translation>
+<translation id="5489543008378040943">La <ph name="BEGIN_LINK" />configuració<ph name="END_LINK" /> es pot personalitzar en qualsevol moment. Google pot utilitzar contingut dels llocs web que visites, així com l'activitat i les interaccions al navegador per personalitzar Chrome i els serveis de Google, com ara el Traductor, la Cerca i els anuncis.</translation>
 <translation id="5639704535586432836">Obre Configuració &gt; Privacitat &gt; Càmera &gt; Google Chrome i activa la càmera.</translation>
 <translation id="5642200033778930880">Google Chrome no pot utilitzar la càmera en mode de visualització dividida</translation>
 <translation id="5703130498371792817">Us agrada Chrome? <ph name="BEGIN_LINK" />Puntueu aquesta aplicació<ph name="END_LINK" />.</translation>

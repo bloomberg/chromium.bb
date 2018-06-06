@@ -146,6 +146,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="2416512023405990736">En omarkerad kryssruta</translation>
 <translation id="2417569100218200841">Innehållsinformation</translation>
 <translation id="2417948780551741035">Slutnoter</translation>
+<translation id="2421113964388408478">Borttagning</translation>
 <translation id="2422937916923936891">Kryssruta för menyalternativ</translation>
 <translation id="2428534162001909979">Kommandomenyer</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -179,6 +180,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="2717271541250958000">flikpanel</translation>
 <translation id="2723001399770238859">ljud</translation>
 <translation id="2732718972699418926">AM</translation>
+<translation id="2737520612859577214">Upphöjd text slutar</translation>
 <translation id="2749275490991666823">Markerat</translation>
 <translation id="27527859628328957">Hoppa till nästa fokuserbara objekt</translation>
 <translation id="276402504937943375">innehåll</translation>
@@ -203,6 +205,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="288178314850623291">Använd hoppkommandon om du vill hoppa till specifika typer av element. Om du vill hoppa framåt mellan rubriker trycker du på söktangenten + H, och på söktangenten + Skift + H om du vill hoppa bakåt.</translation>
 <translation id="2894654529758326923">Information</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{vänster klammerparentes}other{# vänster-klammerparenteser}}</translation>
+<translation id="2909478709401302630">Upphöjd text börjar</translation>
 <translation id="2911433807131383493">Öppna självstudierna för ChromeVox</translation>
 <translation id="2932083475399492303">Byt mellan rader i strukturen och rader i layouten</translation>
 <translation id="2944762337049891859">Läs upp sidan automatiskt när den har lästs in.</translation>
@@ -384,6 +387,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="4148180433151187540">{COUNT,plural, =1{höger klammerparentes}other{# höger-klammerparenteser}}</translation>
 <translation id="4158704014418536539">Skiftlägeskänslig.</translation>
 <translation id="4161663686871496107">Uppläst feedback från ChromeVox har aktiverats</translation>
+<translation id="4166192625054637755">Nedsänkt text slutar</translation>
 <translation id="4173994908659439270">Det finns inga fler redigerbara textfält.</translation>
 <translation id="4176463684765177261">Inaktiverad</translation>
 <translation id="4188530942454211480">Föregående mening</translation>
@@ -423,6 +427,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="4476183483923481720">ny rad</translation>
 <translation id="4482330759234983253">Föregående tabell</translation>
 <translation id="4491109536499578614">Bild</translation>
+<translation id="4505167975768625962">Infogning</translation>
 <translation id="4517854969512651305">Öka värdet</translation>
 <translation id="4529987814483543472">Klassisk tangentuppsättning</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{snedstreck}other{# snedstreck}}</translation>
@@ -527,6 +532,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="5330443287809544590"><ph name="NAME" />, länk</translation>
 <translation id="5336381510091010269">autoslutför på raden och i lista</translation>
 <translation id="5349770431644471053">Bakåtlänk</translation>
+<translation id="5350654862897073517">Nedsänkt text börjar</translation>
 <translation id="536031132345979795">Hoppa bakåt under kontinuerlig uppläsning</translation>
 <translation id="5368000168321181111">Ljudikoner har inaktiverats</translation>
 <translation id="5374320867641260420">Det finns inga fler knappar.</translation>

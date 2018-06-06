@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="114721135501989771">Google-funkciók a Chrome-ban</translation>
 <translation id="1326317727527857210">Ha hozzá szeretne férni lapjaihoz a többi eszközéről, jelentkezzen be a Chrome-ba.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome – Adatvédelmi közlemény</translation>
@@ -12,6 +13,7 @@
 <translation id="2441696206556358796">A képek mentéséhez koppintson a Beállítások lehetőségre, hogy a Chrome felhasználhassa a fotóit</translation>
 <translation id="2576431527583832481">A Chrome most még jobb lett! Új verzió áll rendelkezésre.</translation>
 <translation id="257708665678654955">Szeretné, hogy a Google Chrome a jövőben felajánlja e webhely <ph name="LANGUAGE_NAME" /> nyelvű oldalainak fordítását?</translation>
+<translation id="2943166482989655199">A rendszer- és használati adatok Google-nak való elküldésével hozzájárulhat a Chrome fejlesztéséhez és a szolgáltatás biztonságának javításához</translation>
 <translation id="3148434565183091099">Ha az összes eszközén szeretné elérni könyvjelzőit, jelentkezzen be a Chrome-ba.</translation>
 <translation id="3148688391461398285">A helyadatokkal jobb felhasználói élményben lehet része a Chrome használatakor.</translation>
 <translation id="3167189358072330585">Fiókja nem működik a Google Chrome-on. Lépjen kapcsolatba domainrendszergazdájával, vagy használjon normál Google-fiókot a bejelentkezéshez.</translation>
@@ -29,6 +31,7 @@
 <translation id="4523886039239821078">Bizonyos bővítmények a Chrome összeomlását eredményezik. Távolítsa el a következő(ke)t:</translation>
 <translation id="4615174829807303908">Kijelentkezik egy <ph name="SIGNOUT_MANAGED_DOMAIN" /> által felügyelt fiókból. Ezzel törli az eszközön található Chrome-adatokat, amelyek azonban Google-fiókjában megmaradnak.</translation>
 <translation id="5389212809648216794">A Google Chrome nem tudja használni a kamerát, mivel egy másik alkalmazás használja</translation>
+<translation id="5489543008378040943">A <ph name="BEGIN_LINK" />Beállításokat<ph name="END_LINK" /> bármikor személyre szabhatja. A Google felhasználhatja az Ön által felkeresett webhelyeken lévő tartalmakat, a böngészési interakciókat és tevékenységeket a Chrome és az egyéb Google-szolgáltatások (például a Fordító, a Keresés és a megjelenő hirdetések) személyre szabásához.</translation>
 <translation id="5639704535586432836">Nyissa meg a Beállítások &gt; Adatvédelem &gt; Kamera &gt; Google Chrome elemet, és kapcsolja be a kamerát.</translation>
 <translation id="5642200033778930880">A Google Chrome Osztott nézet módban nem tudja használni a kamerát</translation>
 <translation id="5703130498371792817">Kedveli a Chrome-ot? <ph name="BEGIN_LINK" />Értékelje az alkalmazást<ph name="END_LINK" /></translation>

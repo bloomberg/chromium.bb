@@ -76,6 +76,7 @@
 <translation id="4730374152663651037">SAGELI KASUTATUD</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 kuu jäänud}other{# kuud jäänud}}</translation>
 <translation id="4820616160060340806">Käsk + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="4841881773802181781">Lisamine</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekund}other{# sekundit}}</translation>
 <translation id="4971687151119236543">Meediumi eelmine lugu</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
@@ -118,6 +119,7 @@
 <translation id="6612467943526193239">Kalibreerimisest väljumiseks vajutage paoklahvi Esc.</translation>
 <translation id="6620110761915583480">Faili salvestamine</translation>
 <translation id="6699343763173986273">Meediumi järgmine lugu</translation>
+<translation id="673773751041746814">Kustutamine</translation>
 <translation id="6786750046913594791">Kausta sulgemine</translation>
 <translation id="6808150112686056157">Meediumi peatamine</translation>
 <translation id="6845383723252244143">Kausta valimine</translation>

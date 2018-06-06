@@ -146,6 +146,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="2416512023405990736">Nem bejelölt négyzet</translation>
 <translation id="2417569100218200841">Tartalominformáció</translation>
 <translation id="2417948780551741035">Záró jegyzetek</translation>
+<translation id="2421113964388408478">Törlés</translation>
 <translation id="2422937916923936891">Menüelem – jelölőnégyzet</translation>
 <translation id="2428534162001909979">Parancsmenük</translation>
 <translation id="2429669115401274487">du.</translation>
@@ -179,6 +180,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="2717271541250958000">fülpanel</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2732718972699418926">de.</translation>
+<translation id="2737520612859577214">Felső index vége</translation>
 <translation id="2749275490991666823">Bejelölve</translation>
 <translation id="27527859628328957">Ugrás a következő fókuszálható elemre</translation>
 <translation id="276402504937943375">tartalomjegyzék</translation>
@@ -203,6 +205,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="288178314850623291">Az egyes elemtípusok kihagyásához használja az ugróparancsokat. A címsorok közötti előre ugráshoz nyomja le a Keresés + H, a visszaugráshoz pedig a Keresés + Shift + H billentyűkombinációt.</translation>
 <translation id="2894654529758326923">Információ</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{kapcsos nyitó zárójel}other{# kapcsos nyitó zárójel}}</translation>
+<translation id="2909478709401302630">Felső index kezdete</translation>
 <translation id="2911433807131383493">A ChromeVox útmutatójának megnyitása</translation>
 <translation id="2932083475399492303">Váltás a strukturális és elrendezési vonalak között</translation>
 <translation id="2944762337049891859">Oldal automatikus felolvasása a betöltés befejezése után.</translation>
@@ -384,6 +387,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="4148180433151187540">{COUNT,plural, =1{kapcsos berekesztő zárójel}other{# kapcsos berekesztő zárójel}}</translation>
 <translation id="4158704014418536539">A kis- és nagybetű különböző.</translation>
 <translation id="4161663686871496107">A ChromeVox hangos visszajelzés készen áll</translation>
+<translation id="4166192625054637755">Alsó index vége</translation>
 <translation id="4173994908659439270">Nincs következő szerkeszthető szövegmező.</translation>
 <translation id="4176463684765177261">Kikapcsolva</translation>
 <translation id="4188530942454211480">Előző mondat</translation>
@@ -423,6 +427,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="4476183483923481720">új sor</translation>
 <translation id="4482330759234983253">Előző táblázat</translation>
 <translation id="4491109536499578614">Kép</translation>
+<translation id="4505167975768625962">Beszúrás</translation>
 <translation id="4517854969512651305">Érték növelése</translation>
 <translation id="4529987814483543472">Hagyományos billentyűzetkiosztás</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{törtvonal}other{# törtvonal}}</translation>
@@ -527,6 +532,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5336381510091010269">automatikus kiegészítés (szövegközi és lista)</translation>
 <translation id="5349770431644471053">Visszamutató link</translation>
+<translation id="5350654862897073517">Alsó index kezdete</translation>
 <translation id="536031132345979795">Ugrás vissza folyamatos olvasáskor</translation>
 <translation id="5368000168321181111">Hangjelzések kikapcsolva</translation>
 <translation id="5374320867641260420">Nincs következő gomb.</translation>

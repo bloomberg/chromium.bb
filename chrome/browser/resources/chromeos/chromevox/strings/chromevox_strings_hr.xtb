@@ -146,6 +146,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="2416512023405990736">Prazan potvrdni okvir</translation>
 <translation id="2417569100218200841">Informacije o sadržaju</translation>
 <translation id="2417948780551741035">Završne napomene</translation>
+<translation id="2421113964388408478">Brisanje</translation>
 <translation id="2422937916923936891">Potvrdni okvir stavke izbornika</translation>
 <translation id="2428534162001909979">Naredbeni izbornici</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -179,6 +180,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="2717271541250958000">plkart</translation>
 <translation id="2723001399770238859">zvuk</translation>
 <translation id="2732718972699418926">AM</translation>
+<translation id="2737520612859577214">Kraj eksponenta</translation>
 <translation id="2749275490991666823">Označen</translation>
 <translation id="27527859628328957">Skok na sljedeću stavku s mogućnošću fokusiranja</translation>
 <translation id="276402504937943375">sadržaj</translation>
@@ -203,6 +205,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="288178314850623291">Za prelazak na određene vrste elemenata koristite skočne naredbe. Za pomicanje unaprijed po naslovima pritišćite tipku za pretraživanje i H, a za preskakanje unatrag pritisnite tipku za pretraživanje + Shift + H.</translation>
 <translation id="2894654529758326923">Informacije</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{lijeva vitičasta zagrada}one{# lijeva vitičasta zagrada}few{# lijeve vitičaste zagrade}other{# lijevih vitičasta zagrada}}</translation>
+<translation id="2909478709401302630">Početak eksponenta</translation>
 <translation id="2911433807131383493">Otvaranje vodiča za ChromeVox</translation>
 <translation id="2932083475399492303">Izmjenjivanje strukturne crte i crte rasporeda</translation>
 <translation id="2944762337049891859">Automatski pročitaj stranicu kad se učita.</translation>
@@ -384,6 +387,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="4148180433151187540">{COUNT,plural, =1{desna vitičasta zagrada}one{# desna vitičasta zagrada}few{# desne vitičaste zagrade}other{# desnih vitičastih zagrada}}</translation>
 <translation id="4158704014418536539">Osjetljivost na velika/mala slova.</translation>
 <translation id="4161663686871496107">Spremne su govorne povratne informacije ChromeVox</translation>
+<translation id="4166192625054637755">Kraj indeksa</translation>
 <translation id="4173994908659439270">Nema sljedećeg tekstualnog polja koje je moguće urediti.</translation>
 <translation id="4176463684765177261">Onemogućeno</translation>
 <translation id="4188530942454211480">Prethodna rečenica</translation>
@@ -423,6 +427,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="4476183483923481720">novi redak</translation>
 <translation id="4482330759234983253">Prethodna tablica</translation>
 <translation id="4491109536499578614">Slika</translation>
+<translation id="4505167975768625962">Umetanje</translation>
 <translation id="4517854969512651305">Povećavanje vrijednosti</translation>
 <translation id="4529987814483543472">Klasična karta tipkovnice</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{kosa crta}one{# kosa crta}few{# kose crte}other{# kosih crta}}</translation>
@@ -527,6 +532,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="5330443287809544590"><ph name="NAME" />, veza</translation>
 <translation id="5336381510091010269">autougr+pop</translation>
 <translation id="5349770431644471053">Povratna veza</translation>
+<translation id="5350654862897073517">Početak indeksa</translation>
 <translation id="536031132345979795">Preskoči natrag tijekom kontinuiranog čitanja</translation>
 <translation id="5368000168321181111">Zvučne su ikone isključene</translation>
 <translation id="5374320867641260420">Nema sljedećeg gumba.</translation>

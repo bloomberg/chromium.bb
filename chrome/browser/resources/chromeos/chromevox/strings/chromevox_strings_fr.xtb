@@ -146,6 +146,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2416512023405990736">Une case décochée</translation>
 <translation id="2417569100218200841">Infos sur le contenu</translation>
 <translation id="2417948780551741035">Notes de fin</translation>
+<translation id="2421113964388408478">Suppression</translation>
 <translation id="2422937916923936891">Case à cocher d'élément de menu</translation>
 <translation id="2428534162001909979">Menus de commandes</translation>
 <translation id="2429669115401274487">p.m.</translation>
@@ -179,6 +180,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2732718972699418926">a.m.</translation>
+<translation id="2737520612859577214">Fin du texte en exposant</translation>
 <translation id="2749275490991666823">Cochée</translation>
 <translation id="27527859628328957">Renvoyer à l'élément suivant pouvant être agrandi</translation>
 <translation id="276402504937943375">sommaire</translation>
@@ -203,6 +205,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="288178314850623291">Utilisez les commandes d'accès direct pour passer à des types spécifiques d'éléments. Pour accéder directement au titre suivant, appuyez sur la touche de recherche+H, et pour revenir directement au titre précédent, appuyez sur la touche de recherche+Maj+H.</translation>
 <translation id="2894654529758326923">Informations</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{accolade gauche}one{# accolade gauche}other{# accolades gauches}}</translation>
+<translation id="2909478709401302630">Début du texte en exposant</translation>
 <translation id="2911433807131383493">Ouvrir le didacticiel ChromeVox</translation>
 <translation id="2932083475399492303">Changer de type de ligne (ligne de structure et ligne de mise en page)</translation>
 <translation id="2944762337049891859">Lire la page automatiquement après son chargement.</translation>
@@ -384,6 +387,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4148180433151187540">{COUNT,plural, =1{accolade droite}one{# accolade droite}other{# accolades droites}}</translation>
 <translation id="4158704014418536539">Sensible à la casse</translation>
 <translation id="4161663686871496107">La fonctionnalité de commentaires audio ChromeVox est prête.</translation>
+<translation id="4166192625054637755">Fin du texte en indice</translation>
 <translation id="4173994908659439270">Aucun champ de texte modifiable suivant</translation>
 <translation id="4176463684765177261">Désactivé</translation>
 <translation id="4188530942454211480">Phrase précédente</translation>
@@ -423,6 +427,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4476183483923481720">Nouvelle ligne</translation>
 <translation id="4482330759234983253">Tableau précédent</translation>
 <translation id="4491109536499578614">Image</translation>
+<translation id="4505167975768625962">Insertion</translation>
 <translation id="4517854969512651305">Augmenter la valeur</translation>
 <translation id="4529987814483543472">Mappage classique du clavier</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barre oblique}one{# barre oblique}other{# barres obliques}}</translation>
@@ -527,6 +532,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5330443287809544590"><ph name="NAME" />, lien</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Lien entrant</translation>
+<translation id="5350654862897073517">Début du texte en indice</translation>
 <translation id="536031132345979795">Retour en arrière en lecture en continu</translation>
 <translation id="5368000168321181111">Icônes audio désactivées</translation>
 <translation id="5374320867641260420">Aucun bouton suivant</translation>

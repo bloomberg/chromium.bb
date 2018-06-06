@@ -88,6 +88,7 @@
 <translation id="1123187597739372905">Vis indstillinger for synkronisering</translation>
 <translation id="1123316951456119629">Hvis du fjerner tilknytningen til din Google-konto fra <ph name="PRODUCT_NAME" />, vil dine data forblive på denne computer, men ændringer vil ikke længere blive synkroniseret med din Google-konto. Data, der allerede er gemt på din Google-konto, bevares, indtil du fjerner dem ved hjælp af <ph name="BEGIN_LINK" />Google Betjeningspanel<ph name="END_LINK" />.</translation>
 <translation id="1124772482545689468">Bruger</translation>
+<translation id="1125550662859510761">Ligner <ph name="WIDTH" /> x <ph name="HEIGHT" /> (oprindelig)</translation>
 <translation id="1128109161498068552">Tillad ikke, at websites bruger interne systemmeddelelser til at få adgang til MIDI-enheder</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Rediger søgemaskine</translation>
@@ -100,6 +101,7 @@
 <translation id="1145292499998999162">Pluginnet blev blokeret</translation>
 <translation id="1145532888383813076">Søg på din enhed, i apps og på nettet.</translation>
 <translation id="1146204723345436916">Importer bogmærker fra HTML-fil...</translation>
+<translation id="114721135501989771">Få Googles smarte funktioner i Chrome</translation>
 <translation id="1148097584170732637">Der blev fundet <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
     Der er ikke nok tilgængelig plads på det lokale lager. Der er brug for <ph name="FILE_SIZE" /> mere.
@@ -270,6 +272,7 @@
 <translation id="1396963298126346194">Brugernavnet og adgangskoden, du har angivet, stemmer ikke overens.</translation>
 <translation id="1397854323885047133">Synkronisering og tilpasning</translation>
 <translation id="1398853756734560583">Maksimér</translation>
+<translation id="1399511500114202393">Ikke noget brugercertifikat</translation>
 <translation id="140250605646987970">Telefonen er fundet. Men Smart Lock virker kun på enheder med Android 5.0 eller nyere. &lt;a&gt;Få flere oplysninger&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (administreret)</translation>
 <translation id="1405476660552109915">Skal <ph name="PASSWORD_MANAGER_BRAND" /> gemme din konto for dette website?</translation>
@@ -356,6 +359,7 @@
 <translation id="1511388193702657997">Tilbyd at gemme dine adgangskoder fra nettet</translation>
 <translation id="1512210426710821809">Den eneste måde at fortryde dette på er ved at geninstallere <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Importeret fra Safari</translation>
+<translation id="1520605251886806589">Google kan bruge indhold på de websites, du besøger, samt browseraktivitet og -interaktioner til at tilpasse Chrome og andre Google-tjenester som f.eks. Oversæt, Søgning og annoncer. Du kan til enhver tid tilpasse dette i Indstillinger.</translation>
 <translation id="1521442365706402292">Administrer certifikater</translation>
 <translation id="152234381334907219">Aldrig gemt</translation>
 <translation id="1524430321211440688">Tastatur</translation>
@@ -423,12 +427,12 @@
 <translation id="1624026626836496796">Dette vil kun ske én gang, og dine loginoplysninger gemmes ikke.</translation>
 <translation id="1627276047960621195">Filbeskrivelser</translation>
 <translation id="1627408615528139100">Er allerede downloadet</translation>
-<translation id="1632551555529177478">FEJL: Concierge-klienten kunne ikke startes.</translation>
 <translation id="1632803087685957583">Giver dig mulighed for at justere gentagelseshastighed, ordforslag og meget mere for tastaturet</translation>
 <translation id="1635033183663317347">Installeret af din tilsynsførende.</translation>
 <translation id="1637224376458524414">Få dette bogmærke på din iPhone</translation>
 <translation id="1637765355341780467">Der gik noget galt ved åbningen af din profil. Nogle funktioner er muligvis ikke tilgængelige.</translation>
 <translation id="1639239467298939599">Indlæser...</translation>
+<translation id="163993578339087550"><ph name="SERVICE_NAME" /> vil gerne tjekke, om du bruger en kvalificeret Chrome OS-enhed.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 med RSA-kryptering</translation>
 <translation id="1642494467033190216">Fjernelse af rootfs-beskyttelse og efterfølgende genstart er påkrævet, før du aktiverer andre fejlfindingsfunktioner.</translation>
 <translation id="1643050526526937107">Kun synkronisering</translation>
@@ -759,6 +763,7 @@
 <translation id="2151576029659734873">Det angivne faneindeks er ugyldigt.</translation>
 <translation id="2154484045852737596">Rediger kort</translation>
 <translation id="2154710561487035718">Kopier webadresse</translation>
+<translation id="2155772377859296191">Ligner <ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="215753907730220065">Afslut fuld skærm</translation>
 <translation id="2157875535253991059">Denne side er nu i fuld skærm.</translation>
 <translation id="216169395504480358">Tilføj Wi-Fi...</translation>
@@ -917,6 +922,7 @@
 <translation id="2408955596600435184">Angiv din pinkode</translation>
 <translation id="241082044617551207">Ukendt plugin</translation>
 <translation id="2413749388954403953">Rediger brugergrænsefladen for bogmærker</translation>
+<translation id="2419706071571366386">Af sikkerhedshensyn skal du logge ud, når computeren ikke bruges.</translation>
 <translation id="2422426094670600218">&lt;ikke navngivet&gt;</translation>
 <translation id="2423578206845792524">&amp;Gem billede som...</translation>
 <translation id="2425665904502185219">Samlet filstørrelse</translation>
@@ -998,6 +1004,7 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="253434972992662860">&amp;Pause</translation>
 <translation id="2534460670861217804">Sikker HTTP-proxy</translation>
 <translation id="253557089021624350">Antal aktiviteter, der bruger udvidelsen</translation>
+<translation id="2538361623464451692">Synkronisering er deaktiveret</translation>
 <translation id="2541423446708352368">Vis alle downloads</translation>
 <translation id="2542049655219295786">Google-tabel</translation>
 <translation id="2544853746127077729">Godkendelsescertifikatet blev afvist af netværk</translation>
@@ -1109,7 +1116,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="2686759344028411998">Der blev ikke registreret nogen indlæste moduler.</translation>
 <translation id="2688196195245426394">Fejl ved registrering af enheden med serveren: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Vis sprogindstillinger</translation>
-<translation id="2690824726518456119">Starter Concierge-tjenesten.</translation>
 <translation id="2691385045260836588">Model</translation>
 <translation id="2693176596243495071">Ups! Der opstod en ukendt fejl. Prøv igen senere, eller kontakt din administrator, hvis problemet fortsætter.</translation>
 <translation id="2694026874607847549">Én cookie</translation>
@@ -1298,7 +1304,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="2986010903908656993">Denne side er blevet forhindret i at have fuld kontrol over MIDI-enheder.</translation>
 <translation id="2989474696604907455">ikke tilknyttet</translation>
 <translation id="2989786307324390836">DER-kodet binær, enkeltcertifikat</translation>
-<translation id="2993165626813508977">FEJL: Containeren inde i Termina VM kunne ikke startes.</translation>
 <translation id="2993517869960930405">Oplysninger om appen</translation>
 <translation id="2994669386200004489"><ph name="FILE_NAME" /> kunne ikke sikkerhedskopieres</translation>
 <translation id="299483336428448530">Installeret af din forælder.</translation>
@@ -1431,7 +1436,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="3190558889382726167">Adgangskoden er blevet gemt</translation>
 <translation id="3192947282887913208">Lydfiler</translation>
 <translation id="3194737229810486521"><ph name="URL" /> anmoder om at gemme data permanent på din enhed</translation>
-<translation id="3197054279257119376">Indlæser Termina-komponent.</translation>
 <translation id="3199127022143353223">Servere</translation>
 <translation id="3202131003361292969">Sti</translation>
 <translation id="3202173864863109533">Denne fanes lyd er slået fra.</translation>
@@ -1557,7 +1561,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="3407837288045706722">Du kan finde flere indstillinger vedrørende privatliv, sikkerhed og dataindsamling under <ph name="BEGIN_LINK" />Synkronisering og tilpasning<ph name="END_LINK" /></translation>
 <translation id="3412265149091626468">Hop til valg</translation>
 <translation id="3413122095806433232">CA-udstedere: <ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">Fremhæv det, du vil høre, og tryk på Søg+S. Du kan også holde Søg nede og derefter trykke på ikonet for tekstoplæsning i nærheden af dit profilbillede. Vælg derefter et område, der skal læses højt.</translation>
 <translation id="3414856743105198592">Formatering af de flytbare medier kommer til at slette alle data. Vil du fortsætte?</translation>
 <translation id="3414952576877147120">Størrelse:</translation>
 <translation id="3420980393175304359">Skift person</translation>
@@ -2092,7 +2095,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4235200303672858594">Hele skærmen</translation>
 <translation id="4235813040357936597">Tilføj konto for <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Annuller login</translation>
-<translation id="4239107879884489787">FEJL: Termina-komponenten kunne ikke indlæses.</translation>
 <translation id="4242533952199664413">Åbn Indstillinger</translation>
 <translation id="4242577469625748426">Det lykkedes ikke at installere politikindstillinger på enheden: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Find flere apps til styluspenne</translation>
@@ -2132,6 +2134,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4296575653627536209">Tilføj en administreret bruger</translation>
 <translation id="4297322094678649474">Skift sprog</translation>
 <translation id="4300305918532693141">Hvis du vil ændre denne indstilling, skal du<ph name="BEGIN_LINK" />nulstille synkroniseringen<ph name="END_LINK" />.</translation>
+<translation id="4301561945776138921">Der er ingen gemte adgangskoder for dette website.</translation>
 <translation id="4305227814872083840">lang (2 sek.)</translation>
 <translation id="4306119971288449206">Apps skal downloades med indholdstypen "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K live)</translation>
@@ -2242,9 +2245,9 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4508765956121923607">Vis k&amp;ilde</translation>
 <translation id="451407183922382411">Leveret af <ph name="COMPANY_NAME" /></translation>
 <translation id="4514542542275172126">Konfigurer ny administreret bruger</translation>
+<translation id="4514610446763173167">Afspil eller sæt video på pause</translation>
 <translation id="451515744433878153">Fjern</translation>
 <translation id="4518677423782794009">Har du oplevet, at Chrome går ned, viser usædvanlige startsider, værktøjslinjer eller uventede annoncer, du ikke kan komme af med, eller på anden vis ændrer din browsingoplevelse? Du kan muligvis løse problemet ved at køre Oprydningsværktøj til Chrome.</translation>
-<translation id="4518928191942891293">Starter container i Termina VM.</translation>
 <translation id="4520385623207007473">Cookies i brug</translation>
 <translation id="452039078290142656">ukendte enheder fra <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">Detaljer</translation>
@@ -2374,6 +2377,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4716483597559580346">Udfør powerwash som et ekstra sikkerhedsniveau</translation>
 <translation id="4720113199587244118">Tilføj enheder</translation>
 <translation id="4720185134442950733">Mobildatanetværk</translation>
+<translation id="4722735765955348426">Adgangskode til <ph name="USERNAME" /></translation>
 <translation id="4722920479021006856"><ph name="APP_NAME" /> deler din skærm.</translation>
 <translation id="4724450788351008910">Affiliering er blevet ændret</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> billeder blev sikkerhedskopieret</translation>
@@ -2459,6 +2463,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4858913220355269194">Laudrup</translation>
 <translation id="4862050643946421924">Tilføjer enhed…</translation>
 <translation id="4862642413395066333">Signering af OCSP-svar</translation>
+<translation id="4863769717153320198">Ligner <ph name="WIDTH" /> x <ph name="HEIGHT" /> (standard)</translation>
 <translation id="4864369630010738180">Logger ind...</translation>
 <translation id="486635084936119914">Åbn bestemte filtyper automatisk efter download</translation>
 <translation id="4869142322204669043">Google kan bruge indhold på de websites, du besøger, samt browseraktivitet og interaktioner til at tilpasse <ph name="IDS_SHORT_PRODUCT_NAME" /> og andre Google-tjenester som f.eks. Oversæt, Søgning og annoncer. Du kan til enhver tid tilpasse dette i Indstillinger.</translation>
@@ -2944,15 +2949,14 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5557991081552967863">Behold Wi-Fi slået til under dvale</translation>
 <translation id="5558129378926964177">Zoom &amp;ind</translation>
 <translation id="5558446705802335921">Tjekker websites, du besøger, og filer, du downloader, for adfærd eller indhold, der er skadeligt, f.eks. phishing og malware</translation>
-<translation id="5559719557406102971">Starter Termina VM.</translation>
 <translation id="55601339223879446">Tilpas grænserne for dit skrivebord inden for skærmvisningen</translation>
 <translation id="5562781907504170924">Denne fane er tilsluttet en Bluetooth-enhed.</translation>
+<translation id="5563234215388768762">Søg på Google, eller angiv en webadresse</translation>
 <translation id="5565871407246142825">Kreditkort</translation>
 <translation id="5567989639534621706">Applikationscaches</translation>
 <translation id="5568069709869097550">Kan ikke logge ind</translation>
 <translation id="5568144734023334204">Android-lagerplads</translation>
 <translation id="5569544776448152862">Tilmelder <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
-<translation id="5572572070321843880">FEJL: Termina VM kunne ikke startes.</translation>
 <translation id="5575473780076478375">Inkognitoudvidelse: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Nulstilling af din enhed påvirker ikke dine Google-konti eller de data, der er synkroniseret til disse konti. Men alle filer, der er gemt lokalt på din enhed, slettes.</translation>
 <translation id="5578059481725149024">Automatisk login</translation>
@@ -3052,6 +3056,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="572392919096807438">Husk mit valg</translation>
 <translation id="5727728807527375859">Udvidelser, programmer og temaer kan beskadige din computer. Er du sikker på, at du vil fortsætte?</translation>
 <translation id="5729712731028706266">&amp;Vis</translation>
+<translation id="5731185123186077399">Tilpassede Google-tjenester såsom Google Pay</translation>
 <translation id="5731247495086897348">Ind&amp;sæt og fortsæt</translation>
 <translation id="5731409020711461763">1 nyt billede</translation>
 <translation id="5734362860645681824">Kommunikation</translation>
@@ -3494,7 +3499,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6410668567036790476">Tilføj søgemaskine</translation>
 <translation id="641081527798843608">Emnematch</translation>
 <translation id="641105183165925463">$1 MB</translation>
-<translation id="6411517327772365857">Søg på Google, eller angiv en webadresse</translation>
 <translation id="6412931879992742813">Nyt inkognitovindue</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
 <translation id="6418160186546245112">Vende tilbage til den tidligere version af <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
@@ -4105,6 +4109,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7366415735885268578">Tilføj et website</translation>
 <translation id="7366909168761621528">Browserdata</translation>
 <translation id="7371006317849674875">Starttidspunkt</translation>
+<translation id="737439367876257440">Gør Chrome og dens sikkerhed bedre ved at sende systemoplysninger og oplysninger om brug til Google</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Fremhæv musemarkøren, når den bevæger sig</translation>
 <translation id="7377169924702866686">Caps Lock er slået til.</translation>
@@ -4532,6 +4537,7 @@ Installationen af <ph name="APP_NAME" /> downloader <ph name="DOWNLOAD_SIZE" /> 
 <translation id="7984068253310542383">Spejl <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540"><ph name="PRODUCT_NAME" /> krypterer dine data for at opnå øget sikkerhed.</translation>
 <translation id="7986295104073916105">Læse og redigere gemte indstillinger for adgangskode</translation>
+<translation id="7987764905897278458">Få flere af Googles smarte funktioner</translation>
 <translation id="7988355189918024273">Aktiver tilgængelighedsfunktioner</translation>
 <translation id="7994702968232966508">EAP-metode</translation>
 <translation id="799547531016638432">Fjern genvej</translation>
@@ -4801,6 +4807,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8427292751741042100">indlejret på hvilken som helst host</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8428634594422941299">OK</translation>
+<translation id="84297032718407999">Du logges ud om <ph name="LOGOUT_TIME_LEFT" /></translation>
 <translation id="8431909052837336408">Skift pinkode til SIM-kort</translation>
 <translation id="8434480141477525001">NaCl-fejlretningsport</translation>
 <translation id="843760761634048214">Gem kreditkort</translation>
@@ -5258,6 +5265,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="912419004897138677">Codec</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> tilbage)</translation>
 <translation id="9128870381267983090">Opret forbindelse til netværk</translation>
+<translation id="9129010913019873477"><ph name="PERCENTAGE" /> (standard)</translation>
 <translation id="9130015405878219958">Den angivne tilstand er ugyldig.</translation>
 <translation id="9130775360844693113">Medlemmer af "<ph name="DESTINATION_NAME" />" får adgang til disse elementer.</translation>
 <translation id="9131487537093447019">Sende beskeder til og modtage beskeder fra Bluetooth-enheder.</translation>
@@ -5334,6 +5342,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="960719561871045870">Operatørkode</translation>
 <translation id="960987915827980018">Omkring én time tilbage</translation>
 <translation id="962802172452141067">Bogmærkemappe i trævisning</translation>
+<translation id="964286338916298286">Din it-administrator har deaktiveret Chrome Goodies for din enhed.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{App}one{App}other{Apps}}</translation>
 <translation id="968000525894980488">Aktivér Google Play-tjenester.</translation>
 <translation id="968174221497644223">Applikationscache</translation>

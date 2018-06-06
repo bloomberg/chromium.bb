@@ -91,6 +91,7 @@
 <translation id="2761704814324807722">Област за състоянието, часът е <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Установява се повторна връзка с мрежата „<ph name="NAME" />“</translation>
 <translation id="2792498699870441125">Alt + търсене</translation>
+<translation id="2805756323405976993">Приложения</translation>
 <translation id="2819276065543622893">Ще излезете сега.</translation>
 <translation id="2825619548187458965">Лавица</translation>
 <translation id="2844169650293029770">Устройство с USB-C (предният ляв порт)</translation>
@@ -118,6 +119,7 @@
 <translation id="3236488194889173876">Няма мобилни мрежи</translation>
 <translation id="3294437725009624529">Гост</translation>
 <translation id="332587331255250389">Моля, заменете батерията</translation>
+<translation id="3351879221545518001">Понастоящем предавате екрана.</translation>
 <translation id="3364721542077212959">Инструменти за писане</translation>
 <translation id="3368922792935385530">Установена е връзка</translation>
 <translation id="3371140690572404006">устройство с USB-C (предният десен порт)</translation>
@@ -172,6 +174,7 @@
 <translation id="4527045527269911712">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> до пълно зареждане</translation>
 <translation id="4544944664594876241">Комбинацията за заключване на екрана е променена. Моля, използвайте „<ph name="NEW_SHORTCUT" />“ вместо „<ph name="OLD_SHORTCUT" />“.</translation>
+<translation id="4564869809620998694">Услуга за шрифтове</translation>
 <translation id="4570957409596482333">Бутон за функцията Прочитане на глас</translation>
 <translation id="4659419629803378708">Активирахте ChromeVox</translation>
 <translation id="4776917500594043016">Парола за <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -208,11 +211,13 @@
 <translation id="5744083938413354016">Преместване чрез докосване</translation>
 <translation id="5777841717266010279">Да се спре ли споделянето на екрана?</translation>
 <translation id="57838592816432529">Заглушаване</translation>
+<translation id="5805697420284793859">Мениджър на прозорците</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">Добавяне на човек</translation>
 <translation id="5860033963881614850">Изключено</translation>
 <translation id="5895138241574237353">Рестартиране</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
+<translation id="5911533659001334206">Визуализатор на клавишните комбинации</translation>
 <translation id="5916664084637901428">Включено</translation>
 <translation id="5927132638760172455">Предава се към неизвестен приемник</translation>
 <translation id="5947494881799873997">Възстановяване</translation>
@@ -251,6 +256,7 @@
 <translation id="6521655319214113338">Ръкописно въвеждане</translation>
 <translation id="6528179044667508675">Не безпокойте</translation>
 <translation id="6537270692134705506">Заснемане на екрана</translation>
+<translation id="6542521951477560771">Предава се към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="6585808820553845416">Сесията приключва след <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">клавиш „търсене“ + Shift + K</translation>
 <translation id="6650933572246256093">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Моля, въведете на него следния ключ за достъп: <ph name="PASSKEY" /></translation>
@@ -262,6 +268,8 @@
 <translation id="6715542151869432661">Няма намерени мобилни устройства.</translation>
 <translation id="671928215901716392">Заключване на екрана</translation>
 <translation id="6723839937902243910">Захранване</translation>
+<translation id="6725073593266469338">Услуга за управление на ПИ</translation>
+<translation id="6751826523481687655">Проследяването на ефективността е включено</translation>
 <translation id="6785414152754474415">Батерията е <ph name="PERCENTAGE" />% пълна и се зарежда.</translation>
 <translation id="6803622936009808957">Дисплеите не можаха да се дублират, тъй като не бяха намерени поддържани разделителни способности. Вместо това влязохте в режима за разширен работен плот.</translation>
 <translation id="6820676911989879663">Време е за почивка!</translation>
@@ -326,6 +334,7 @@
 <translation id="8351131234907093545">Създаване на бележка</translation>
 <translation id="8392451568018454956">Меню с опции за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Настройки</translation>
+<translation id="8431190899827883166">Показване на докосванията</translation>
 <translation id="8433186206711564395">Настройки на мрежата</translation>
 <translation id="8433977262951327081">Комбинацията за показване в лавицата на балончето с менюто за опциите за въвеждане е променена. Моля, използвайте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8452135315243592079">SIM картата липсва</translation>
@@ -339,6 +348,7 @@
 <translation id="8652175077544655965">Затваряне на настройките</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Свързано е зарядно устройство с малка мощност</translation>
+<translation id="8683506306463609433">Проследяването на ефективността е активно</translation>
 <translation id="8734991477317290293">Тя може да се опитва да записва кои клавиши натискате</translation>
 <translation id="8809737090443522491">Въведете името на приложение или документ</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
@@ -351,7 +361,9 @@
 <translation id="8921624153894383499">Google Асистент не поддържа този език.</translation>
 <translation id="8938800817013097409">Устройство с USB-C (десният порт на гърба)</translation>
 <translation id="8940956008527784070">Батерията е изтощена (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8984179138335769204">Бързо стартиране</translation>
 <translation id="8995603266996330174">Управлявано от <ph name="DOMAIN" /></translation>
+<translation id="9033907480196064950">Понастоящем предавате „<ph name="TAB_NAME" />“</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Микрофонът се използва.</translation>
@@ -367,4 +379,5 @@
 <translation id="923686485342484400">Натиснете два пъти „Control+Shift+Q“ за изход.</translation>
 <translation id="945522503751344254">Изпращане на отзиви</translation>
 <translation id="98515147261107953">Хоризонтално</translation>
+<translation id="995927048686010764">Автоматично кликване</translation>
 </translationbundle>

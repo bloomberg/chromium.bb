@@ -449,38 +449,6 @@
       如果此设置处于启用状态，系统将不会保存浏览记录，并且会停用标签页同步功能。
 
       如果此设置处于停用状态或未指定，系统将保存浏览记录。</translation>
-<translation id="2424023834246613232">覆盖 <ph name="PRODUCT_NAME" /> 默认打印机选择规则。
-
-      此政策用于确定，当用户以相应个人资料首次在 <ph name="PRODUCT_NAME" /> 中使用打印功能时，系统遵循哪些规则来选择默认打印机。
-
-      如果此政策已设置，<ph name="PRODUCT_NAME" /> 将尝试找到一台与所有指定属性相符的打印机，并选择该打印机作为默认打印机。系统将选择所找到的第一台与此政策相符的打印机（如果找到多台相符的打印机，则可能会选择其中任何一台，具体取决于找到这些打印机的顺序）。
-
-      如果此政策未设置或在规定的时间内未找到相符的打印机，系统将会选择内置的 PDF 打印机作为默认打印机；如果没有 PDF 打印机，则不选择任何打印机。
-
-      系统会按照以下范本将此政策的值作为 JSON 对象进行解析：
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "是否将搜索相符打印机的范围限定为特定的一组打印机。",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "用于匹配打印机 ID 的正则表达式。",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "用于匹配打印机显示名称的正则表达式。",
-            "type": "string"
-          }
-        }
-      }
-
-      连接到 <ph name="CLOUD_PRINT_NAME" />的打印机会被视为<ph name="PRINTER_TYPE_CLOUD" />，其余打印机则归类为<ph name="PRINTER_TYPE_LOCAL" />。
-      如果未在某个字段中输入值，则意味着所有打印机都符合此项属性。例如，如果不指定网络连接状态，那么进行打印预览时，系统将会查找所有类型的打印机（本地打印机和云端打印机）。
-      正则表达式格式必须遵循 JavaScript RegExp 语法，并在匹配时区分大小写。</translation>
 <translation id="2426782419955104525">启用 <ph name="PRODUCT_NAME" /> 的即搜即得功能，并禁止用户更改此设置。
 
       如果您启用了此设置，<ph name="PRODUCT_NAME" /> 的即搜即得功能将处于启用状态。

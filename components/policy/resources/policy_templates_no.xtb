@@ -487,38 +487,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis denne innstillingen er slått på, lagres ikke nettleserloggen, og fanesynkronisering blir slått av.
 
       Hvis denne innstillingen er slått av, eller hvis du ikke har spesifisert den, lagres nettleserloggen.</translation>
-<translation id="2424023834246613232">Overstyrer reglene for valg av standardskriver i <ph name="PRODUCT_NAME" />.
-
-      Denne regelen fastsetter reglene for valg av standardskriver i <ph name="PRODUCT_NAME" />, noe som skjer den første gangen utskriftsfunksjonen brukes med en profil.
-
-      Når denne regelen er angitt, prøver <ph name="PRODUCT_NAME" /> å finne en skriver som har alle de spesifiserte attributtene, og velger den som standardskriver. Den første skriveren som blir funnet og som samsvarer med regelen, blir valgt. Hvis flere skrivere har alle de spesifiserte attributtene, kan det velges en hvilken som helst av dem, avhengig av rekkefølgen de oppdages i.
-
-      Hvis denne regelen ikke er angitt, eller hvis det ikke blir funnet noen skriver som har alle attributtene, innen operasjonen blir tidsavbrutt, blir den innebygde PDF-skriveren valgt. Hvis PDF-skriveren ikke er tilgjengelig, blir det ikke valgt noen skriver.
-
-      Verdien parses som et JSON-objekt i henhold til følgende oppsett:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Om søket etter den samsvarende skriveren skal begrenses til et spesifikt sett med skrivere.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Et regulært uttrykk som samsvarer med skriverens ID.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Et regulært uttrykk som samsvarer med skriverens visningsnavn.",
-            "type": "string"
-          }
-        }
-      }
-
-      Skrivere som kobles til <ph name="CLOUD_PRINT_NAME" />, anses for å være <ph name="PRINTER_TYPE_CLOUD" />. Resten av skriverne klassifiseres som <ph name="PRINTER_TYPE_LOCAL" />.
-      Hvis du hopper over et felt, gjelder alle verdier. Det vil si at hvis du for eksempel ikke spesifiserer tilkoblingsmulighetene, søker forhåndsvisningen av utskrift etter alle slags skrivere – både lokale og i skyen.
-      Mønstrene for regulære uttrykk må følge JavaScript RegExp-syntaksen, og treffene skiller mellom store og små bokstaver.</translation>
 <translation id="2426782419955104525">Slår på Instant for <ph name="PRODUCT_NAME" /> og forhindrer brukere fra å endre denne innstillingen.
 
       Hvis du slår på denne innstillingen, slår du Instant på for <ph name="PRODUCT_NAME" />.

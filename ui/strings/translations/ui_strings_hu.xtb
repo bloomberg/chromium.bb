@@ -76,6 +76,7 @@
 <translation id="4730374152663651037">GYAKRAN HASZNÁLT</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{hátralévő idő: 1 hónap}other{hátralévő idő: # hónap}}</translation>
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="4841881773802181781">Beszúrás</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 másodperc}other{# másodperc}}</translation>
 <translation id="4971687151119236543">Előző szám</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
@@ -118,6 +119,7 @@
 <translation id="6612467943526193239">Ha ki szeretne lépni a kalibrálásból, nyomja meg az Esc billentyűt.</translation>
 <translation id="6620110761915583480">Fájl mentése</translation>
 <translation id="6699343763173986273">Következő szám</translation>
+<translation id="673773751041746814">Törlés</translation>
 <translation id="6786750046913594791">Mappa bezárása</translation>
 <translation id="6808150112686056157">Leállítás</translation>
 <translation id="6845383723252244143">Mappa választása</translation>

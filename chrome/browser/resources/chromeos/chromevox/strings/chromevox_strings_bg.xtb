@@ -145,6 +145,7 @@
 <translation id="2416512023405990736">Квадратче без отметка</translation>
 <translation id="2417569100218200841">Информация за съдържанието</translation>
 <translation id="2417948780551741035">Бележки в края</translation>
+<translation id="2421113964388408478">Изтриване</translation>
 <translation id="2422937916923936891">Квадратче за отметка на елемент от меню</translation>
 <translation id="2428534162001909979">Менюта с команди</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -178,6 +179,7 @@
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">звук</translation>
 <translation id="2732718972699418926">AM</translation>
+<translation id="2737520612859577214">Край на горния индекс</translation>
 <translation id="2749275490991666823">С отметка</translation>
 <translation id="27527859628328957">Преминаване към следващия елемент, който може да получи фокус</translation>
 <translation id="276402504937943375">съдържание</translation>
@@ -202,6 +204,7 @@
 <translation id="288178314850623291">Използвайте команди за преход, за да преминете направо към конкретни типове елементи. За преход по заглавията напред натиснете „търсене“ + H, а за преход назад натиснете „търсене“ + Shift + H.</translation>
 <translation id="2894654529758326923">Информация</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{лява фигурна скоба}other{# леви фигурни скоби}}</translation>
+<translation id="2909478709401302630">Начало на горния индекс</translation>
 <translation id="2911433807131383493">Отваряне на урока за ChromeVox</translation>
 <translation id="2932083475399492303">Превключване между структурен или тип ред за оформление</translation>
 <translation id="2944762337049891859">Автоматично прочитане на страницата след приключване на зареждането й.</translation>
@@ -383,6 +386,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{дясна фигурна скоба}other{# десни фигурни скоби}}</translation>
 <translation id="4158704014418536539">Регистърът на буквите е от значение.</translation>
 <translation id="4161663686871496107">Обратната връзка с говор от ChromeVox е в готовност</translation>
+<translation id="4166192625054637755">Край на долния индекс</translation>
 <translation id="4173994908659439270">Няма следващо текстово поле, което може да се редактира.</translation>
 <translation id="4176463684765177261">Деактивирано</translation>
 <translation id="4188530942454211480">Предишното изречение</translation>
@@ -422,6 +426,7 @@
 <translation id="4476183483923481720">нов ред</translation>
 <translation id="4482330759234983253">Предишната таблица</translation>
 <translation id="4491109536499578614">Изображение</translation>
+<translation id="4505167975768625962">Вмъкване</translation>
 <translation id="4517854969512651305">Увеличаване на стойността</translation>
 <translation id="4529987814483543472">Традиционна клавиатурна подредба</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{наклонена черта}other{# наклонени черти}}</translation>
@@ -526,6 +531,7 @@
 <translation id="5330443287809544590">„<ph name="NAME" />“, връзка</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Препратка</translation>
+<translation id="5350654862897073517">Начало на долния индекс</translation>
 <translation id="536031132345979795">Превъртане назад при непрекъснато четене</translation>
 <translation id="5368000168321181111">Звуковите сигнали са изключени</translation>
 <translation id="5374320867641260420">Няма следващ бутон.</translation>

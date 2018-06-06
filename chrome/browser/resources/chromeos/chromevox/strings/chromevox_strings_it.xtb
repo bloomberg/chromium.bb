@@ -145,6 +145,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="2416512023405990736">Una casella di controllo deselezionata</translation>
 <translation id="2417569100218200841">Informazioni sui contenuti</translation>
 <translation id="2417948780551741035">Note finali</translation>
+<translation id="2421113964388408478">Eliminazione</translation>
 <translation id="2422937916923936891">Casella di controllo voce di menu</translation>
 <translation id="2428534162001909979">Menu dei comandi</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -178,6 +179,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2732718972699418926">AM</translation>
+<translation id="2737520612859577214">Fine apice</translation>
 <translation id="2749275490991666823">Selezionato</translation>
 <translation id="27527859628328957">Passa a elemento attivabile successivo</translation>
 <translation id="276402504937943375">sommario</translation>
@@ -202,6 +204,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="288178314850623291">Utilizza i comandi di spostamento per passare a specifici tipi di elementi. Per avanzare tra le intestazioni, premi il tasto per la ricerca + H o per retrocedere il tasto per la ricerca + MAIUSC + H.</translation>
 <translation id="2894654529758326923">Informazioni</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{parentesi graffa di apertura}other{# parentesi graffe di apertura}}</translation>
+<translation id="2909478709401302630">Inizio apice</translation>
 <translation id="2911433807131383493">Apri il tutorial di ChromeVox</translation>
 <translation id="2932083475399492303">Alterna tipo di linea strutturale o di layout</translation>
 <translation id="2944762337049891859">Leggi automaticamente la pagina al termine del caricamento.</translation>
@@ -383,6 +386,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4148180433151187540">{COUNT,plural, =1{parentesi graffa di chiusura}other{# parentesi graffe di chiusura}}</translation>
 <translation id="4158704014418536539">Distinzione tra maiuscole e minuscole.</translation>
 <translation id="4161663686871496107">La lettura vocale di ChromeVox è pronta</translation>
+<translation id="4166192625054637755">Fine iscrizione</translation>
 <translation id="4173994908659439270">Nessun campo di testo modificabile successivo.</translation>
 <translation id="4176463684765177261">Disabilitato</translation>
 <translation id="4188530942454211480">Frase precedente</translation>
@@ -422,6 +426,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4476183483923481720">nuova riga</translation>
 <translation id="4482330759234983253">Tabella precedente</translation>
 <translation id="4491109536499578614">Immagine</translation>
+<translation id="4505167975768625962">Inserimento</translation>
 <translation id="4517854969512651305">Aumenta il valore</translation>
 <translation id="4529987814483543472">Mappa di chiavi classica</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra}other{# barre}}</translation>
@@ -526,6 +531,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Backlink</translation>
+<translation id="5350654862897073517">Inizio iscrizione</translation>
 <translation id="536031132345979795">Vai indietro durante la lettura continua</translation>
 <translation id="5368000168321181111">Icone audio disattivate</translation>
 <translation id="5374320867641260420">Nessun pulsante successivo.</translation>

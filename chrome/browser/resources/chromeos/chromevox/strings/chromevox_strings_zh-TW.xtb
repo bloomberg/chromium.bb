@@ -146,6 +146,7 @@
 <translation id="2416512023405990736">未勾選的核取方塊</translation>
 <translation id="2417569100218200841">內容資訊</translation>
 <translation id="2417948780551741035">章節附註</translation>
+<translation id="2421113964388408478">刪除</translation>
 <translation id="2422937916923936891">選單項目核取方塊</translation>
 <translation id="2428534162001909979">指令選單</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -179,6 +180,7 @@
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">音訊</translation>
 <translation id="2732718972699418926">AM</translation>
+<translation id="2737520612859577214">上標的結尾</translation>
 <translation id="2749275490991666823">已勾選</translation>
 <translation id="27527859628328957">跳至下一個可選擇的項目</translation>
 <translation id="276402504937943375">目錄</translation>
@@ -203,6 +205,7 @@
 <translation id="288178314850623291">使用跳轉指令可直接在特定類型的元素之間移動。如要跳到下一個標題，請按下搜尋鍵 + H 鍵；如要跳到下一個標題，請按下搜尋鍵 + Shift 鍵 + H 鍵。</translation>
 <translation id="2894654529758326923">資訊</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{左大括弧}other{# 個左大括弧}}</translation>
+<translation id="2909478709401302630">上標的開頭</translation>
 <translation id="2911433807131383493">開啟 ChromeVox 教學課程</translation>
 <translation id="2932083475399492303">切換行類型 (結構化或版面配置)</translation>
 <translation id="2944762337049891859">網頁載入完成後自動朗讀網頁內容。</translation>
@@ -384,6 +387,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{右大括弧}other{# 個右大括弧}}</translation>
 <translation id="4158704014418536539">區分大小寫。</translation>
 <translation id="4161663686871496107">ChromeVox 互動朗讀已啟用</translation>
+<translation id="4166192625054637755">下標的結尾</translation>
 <translation id="4173994908659439270">沒有可編輯的文字欄位。</translation>
 <translation id="4176463684765177261">已停用</translation>
 <translation id="4188530942454211480">上一句</translation>
@@ -423,6 +427,7 @@
 <translation id="4476183483923481720">換行</translation>
 <translation id="4482330759234983253">上一個表格</translation>
 <translation id="4491109536499578614">圖片</translation>
+<translation id="4505167975768625962">插入</translation>
 <translation id="4517854969512651305">調升值</translation>
 <translation id="4529987814483543472">傳統按鍵對應配置</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{斜線}other{# 個斜線}}</translation>
@@ -527,6 +532,7 @@
 <translation id="5330443287809544590"><ph name="NAME" />，連結</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">反向連結</translation>
+<translation id="5350654862897073517">下標的開頭</translation>
 <translation id="536031132345979795">在連續朗讀時向後跳過</translation>
 <translation id="5368000168321181111">聽覺標示已關閉</translation>
 <translation id="5374320867641260420">沒有下一個按鈕。</translation>

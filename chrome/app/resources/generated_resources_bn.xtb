@@ -422,7 +422,6 @@
 <translation id="1624026626836496796">এটি শুধুমাত্র একবার ঘটবে, এবং আপনার শংসাপত্রগুলি সংরক্ষণ করা হবে না৷</translation>
 <translation id="1627276047960621195">ফাইল বর্ণনাকারী</translation>
 <translation id="1627408615528139100">আগে থেকেই ডাউনলোড করা আছে</translation>
-<translation id="1632551555529177478">সমস্যা: Concierge ক্লায়েন্ট শুরু করা যায়নি।</translation>
 <translation id="1632803087685957583">আপনাকে আপনার কীবোর্ডের পুনরাবৃত্তি হার, শব্দ পূর্বাভাষ, এবং আরও অনেক কিছুর সমন্বয় করতে অনুমতি দেয়</translation>
 <translation id="1635033183663317347">আপনার কাস্টডিয়ান দ্বারা এটি ইনস্টল করা হয়েছে।</translation>
 <translation id="1637224376458524414">এই বুকমার্কটি আপনার iPhone এ পান</translation>
@@ -1100,7 +1099,6 @@
 <translation id="2686759344028411998">যে কোনও মডিউল লোড হওয়া শনাক্ত করতে অক্ষম৷</translation>
 <translation id="2688196195245426394">ডিভাইসটি সার্ভারে নথিভুক্ত করার সময়ে ত্রুটি: <ph name="CLIENT_ERROR" />৷</translation>
 <translation id="2690024944919328218">ভাষা বিকল্পগুলি দেখান</translation>
-<translation id="2690824726518456119">Concierge পরিষেবা চালু করা হচ্ছে।</translation>
 <translation id="2691385045260836588">মডেল</translation>
 <translation id="2693176596243495071">একটি অজানা সমস্যা হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন বা সমস্যাটি হতে থাকলে আপনার প্রশাসককে জানান।</translation>
 <translation id="2694026874607847549">1টি কুকি</translation>
@@ -1289,7 +1287,6 @@
 <translation id="2986010903908656993">MIDI ডিভাইসগুলির সম্পূর্ণ নিয়ন্ত্রণ থেকে এই পৃষ্ঠাটিকে অবরুদ্ধ করা হয়েছে৷</translation>
 <translation id="2989474696604907455">সংযুক্ত নয়</translation>
 <translation id="2989786307324390836">DER-এনকোডেড বাইনারি, একক শংসাপত্র</translation>
-<translation id="2993165626813508977">সমস্যা: Termina VM-এর ভিতরে কন্টেনার শুরু করা যায়নি।</translation>
 <translation id="2993517869960930405">অ্যাপ্লিকেশানের তথ্য</translation>
 <translation id="2994669386200004489"><ph name="FILE_NAME" /> ব্যাক-আপ নেওয়া যায়নি</translation>
 <translation id="299483336428448530">আপনার পিতামাতার দ্বারা এটি ইনস্টল করা হয়েছে।</translation>
@@ -1422,7 +1419,6 @@
 <translation id="3190558889382726167">পাসওয়ার্ড সংরক্ষিত</translation>
 <translation id="3192947282887913208">অডিও ফাইলসমূহ</translation>
 <translation id="3194737229810486521"><ph name="URL" /> স্থায়ীভাবে আপনার ডিভাইসে ডেটা স্টোর করতে চায়</translation>
-<translation id="3197054279257119376">Termina উপাদান লোড হচ্ছে।</translation>
 <translation id="3199127022143353223">সার্ভারসমূহ</translation>
 <translation id="3202131003361292969">পাথ</translation>
 <translation id="3202173864863109533">এই ট্যাবের অডিও নিঃশব্দ করা হচ্ছে৷</translation>
@@ -2074,7 +2070,6 @@
 <translation id="4235200303672858594">সম্পূর্ণ স্ক্রিন</translation>
 <translation id="4235813040357936597"><ph name="PROFILE_NAME" /> এর জন্য অ্যাকাউন্ট যোগ করুন</translation>
 <translation id="4235965441080806197">সাইন ইন বাতিল করুন</translation>
-<translation id="4239107879884489787">সমস্যা: Termina কম্পোনেন্ট লোড করা যায়নি।</translation>
 <translation id="4242533952199664413">সেটিংস খুলুন</translation>
 <translation id="4242577469625748426">ডিভাইসে নীতি সেটিংস ইনস্টল ব্যর্থ হয়েছে: <ph name="VALIDATION_ERROR" />৷</translation>
 <translation id="4244238649050961491">আরও লেখনী অ্যাপ্লিকেশান খুঁজুন</translation>
@@ -2226,7 +2221,6 @@
 <translation id="4514542542275172126">তত্ত্বাবধানে থাকা ব্যবহারকারী সেট করুন</translation>
 <translation id="451515744433878153">সরান</translation>
 <translation id="4518677423782794009">Chrome কি ক্র্যাশ করছে? অস্বাভাবিক শুরুর পৃষ্ঠা বা সরঞ্জামদন্ডগুলি দেখাচ্ছে? এমন অপ্রত্যাশিত বিজ্ঞাপন দেখাচ্ছে যেগুলির থেকে আপনি পরিত্রাণ পাচ্ছেন না, অথবা অন্য কোনোভাবে আপনার ব্রাউজিং অভিজ্ঞতা পরিবর্তন করছে? আপনি Chrome পরিষ্কারের সরঞ্জামটি ব্যবহার করে সমস্যাটির সমাধান করতে পারেন৷</translation>
-<translation id="4518928191942891293">Termina VM-এর মধ্যে কন্টেনার চালু করা হচ্ছে।</translation>
 <translation id="4520385623207007473">কুকিগুলি ব্যবহার করা হচ্ছে</translation>
 <translation id="452039078290142656"><ph name="VENDOR_NAME" /> থেকে অজানা ডিভাইসগুলি</translation>
 <translation id="4522570452068850558">বিশদ বিবরণ</translation>
@@ -2917,15 +2911,14 @@
 <translation id="5557991081552967863">নিষ্ক্রিয় থাকাকালীন ওয়াই-ফাই চালু রাখুন</translation>
 <translation id="5558129378926964177">Zoom &amp;In</translation>
 <translation id="5558446705802335921">আপনার দেখা সাইটে এবং ডাউনলোড করা ফাইলে ফিশিং বা ম্যালওয়্যারের মতো ক্ষতিকারক কিছু আছে কিনা দেখে</translation>
-<translation id="5559719557406102971">Termina VM চালু করা হচ্ছে।</translation>
 <translation id="55601339223879446">প্রদর্শনের মধ্যে আপনার ডেস্কটপ সীমানার সামঞ্জস্যবিধান করুন</translation>
 <translation id="5562781907504170924">এই ট্যাবটি একটি ব্লুটুথ ডিভাইসে সংযুক্ত হয়ে আছে।</translation>
+<translation id="5563234215388768762">Google-এ সার্চ করুন অথবা URL টাইপ করুন</translation>
 <translation id="5565871407246142825">ক্রেডিট কার্ডসমূহ</translation>
 <translation id="5567989639534621706">অ্যাপ্লিকেশন ক্যাশে</translation>
 <translation id="5568069709869097550">প্রবেশ করতে পারছেন না</translation>
 <translation id="5568144734023334204">Android সঞ্চয়স্থান</translation>
 <translation id="5569544776448152862"><ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> এ নথিভুক্ত করা হচ্ছে...</translation>
-<translation id="5572572070321843880">সমস্যা: Termina VM চালু করা যায়নি।</translation>
 <translation id="5575473780076478375">ছদ্মবেশী এক্সটেনশান: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">আপনার ডিভাইসকে আবার রিসেট করলে তা আপনার Google অ্যাকাউন্টগুলি বা এই অ্যাকাউন্টগুলিতে সিঙ্ক হওয়া যেকোনো ডেটাতে প্রভাব ফেলবে না৷ যদিও, স্থানীয়ভাবে সংরক্ষিত সমস্ত ফাইল মুছে ফেলা হবে৷</translation>
 <translation id="5578059481725149024">স্বয়ংক্রিয় সাইন ইন</translation>
@@ -3461,7 +3454,6 @@
 <translation id="6410668567036790476">সার্চ ইঞ্জিন যোগ করুন</translation>
 <translation id="641081527798843608">বিষয়ের মিল</translation>
 <translation id="641105183165925463">$১ MB</translation>
-<translation id="6411517327772365857">Google-এ সার্চ করুন বা একটি ওয়েব ঠিকানা টাইপ করুন</translation>
 <translation id="6412931879992742813">নতুন ছদ্মবেশ উইন্ডো</translation>
 <translation id="6417265370957905582">Google সহায়ক</translation>
 <translation id="6418160186546245112"><ph name="IDS_SHORT_PRODUCT_NAME" /> এর পূর্বে ইনস্টল করা সংস্করণে ফিরিয়ে নিয়ে যাওয়া হচ্ছে</translation>
