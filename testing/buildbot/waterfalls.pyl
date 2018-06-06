@@ -665,13 +665,13 @@
       },
       'ToTMac': {
         'test_suites': {
-          'gtest_tests': 'chromium_mac_clang_gtests',
+          'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
       'ToTMacASan': {
         'test_suites': {
-          'gtest_tests': 'chromium_mac_clang_gtests',
+          'gtest_tests': 'chromium_mac_gtests',
         },
       },
       'ToTWin': {
@@ -2839,7 +2839,7 @@
       },
       'Mac ASan 64 Tests (1)': {
         'test_suites': {
-          'gtest_tests': 'chromium_memory_mac_gtests',
+          'gtest_tests': 'chromium_mac_gtests',
         },
       },
     },
