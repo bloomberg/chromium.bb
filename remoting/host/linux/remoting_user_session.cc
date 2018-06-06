@@ -551,7 +551,10 @@ void HandleAlarm(int) {
   // Use write since fputs isn't async-signal-handler safe.
   ignore_result(write(STDERR_FILENO, kTimeoutMessage,
                       arraysize(kTimeoutMessage) - 1));
-  std::_Exit(EXIT_FAILURE);
+  // A slow system or directory replication delay may cause the host to take
+  // longer than expected to start. Since it may still succeed, optimistically
+  // return success to prevent the host from being automatically unregistered.
+  std::_Exit(EXIT_SUCCESS);
 }
 
 // Relay messages from the host session and then exit.
