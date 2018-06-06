@@ -107,15 +107,11 @@ void GetSettledFetchesTask::GetResponses() {
 
   settled_fetches_.reserve(completed_requests_.size());
   for (const auto& completed_request : completed_requests_) {
-    settled_fetches_.emplace_back(BackgroundFetchSettledFetch());
+    settled_fetches_.emplace_back();
     settled_fetches_.back().request =
         std::move(ServiceWorkerFetchRequest::ParseFromString(
             completed_request.serialized_request()));
-    if (!completed_request.succeeded()) {
-      FillFailedResponse(&settled_fetches_.back().response, barrier_closure);
-      continue;
-    }
-    FillSuccessfulResponse(&settled_fetches_.back(), barrier_closure);
+    FillResponse(&settled_fetches_.back(), barrier_closure);
   }
 
   // The callback within |barrier_closure| eventually calls Finished(), which
@@ -127,18 +123,7 @@ void GetSettledFetchesTask::GetResponses() {
   barrier_closure.Run();
 }
 
-void GetSettledFetchesTask::FillFailedResponse(ServiceWorkerResponse* response,
-                                               base::OnceClosure callback) {
-  DCHECK(response);
-  background_fetch_succeeded_ = false;
-
-  // TODO(rayankans): Fill failed response with error reports.
-  response->response_type = network::mojom::FetchResponseType::kError;
-
-  std::move(callback).Run();
-}
-
-void GetSettledFetchesTask::FillSuccessfulResponse(
+void GetSettledFetchesTask::FillResponse(
     BackgroundFetchSettledFetch* settled_fetch,
     base::OnceClosure callback) {
   DCHECK(settled_fetch);
@@ -147,23 +132,36 @@ void GetSettledFetchesTask::FillSuccessfulResponse(
   auto request =
       std::make_unique<ServiceWorkerFetchRequest>(settled_fetch->request);
 
-  handle_.value()->Match(
-      std::move(request), nullptr /* match_params */,
-      base::BindOnce(&GetSettledFetchesTask::DidMatchRequest,
-                     weak_factory_.GetWeakPtr(), &settled_fetch->response,
-                     std::move(callback)));
+  handle_.value()->Match(std::move(request), nullptr /* match_params */,
+                         base::BindOnce(&GetSettledFetchesTask::DidMatchRequest,
+                                        weak_factory_.GetWeakPtr(),
+                                        settled_fetch, std::move(callback)));
 }
 
 void GetSettledFetchesTask::DidMatchRequest(
-    ServiceWorkerResponse* response,
+    BackgroundFetchSettledFetch* settled_fetch,
     base::OnceClosure callback,
     blink::mojom::CacheStorageError error,
     std::unique_ptr<ServiceWorkerResponse> cache_response) {
   if (error != blink::mojom::CacheStorageError::kSuccess) {
-    FillFailedResponse(response, std::move(callback));
+    DCHECK(settled_fetch);
+    FillUncachedResponse(settled_fetch, std::move(callback));
     return;
   }
-  *response = std::move(*cache_response);
+  settled_fetch->response = std::move(*cache_response);
+  std::move(callback).Run();
+}
+
+void GetSettledFetchesTask::FillUncachedResponse(
+    BackgroundFetchSettledFetch* settled_fetch,
+    base::OnceClosure callback) {
+  background_fetch_succeeded_ = false;
+
+  // TODO(rayankans): Fill unmatched response with error reports.
+  settled_fetch->response.response_type =
+      network::mojom::FetchResponseType::kError;
+  settled_fetch->response.url_list.push_back(settled_fetch->request.url);
+
   std::move(callback).Run();
 }
 

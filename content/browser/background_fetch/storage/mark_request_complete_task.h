@@ -47,7 +47,7 @@ class MarkRequestCompleteTask : public DatabaseTask {
   void DidWriteToCache(CacheStorageCacheHandle handle,
                        blink::mojom::CacheStorageError error);
 
-  void CreateAndStoreCompletedRequest(bool succeeded);
+  void CreateAndStoreCompletedRequest();
 
   void DidStoreCompletedRequest(ServiceWorkerStatusCode status);
 
@@ -59,6 +59,7 @@ class MarkRequestCompleteTask : public DatabaseTask {
   MarkedCompleteCallback callback_;
 
   proto::BackgroundFetchCompletedRequest completed_request_;
+  bool is_response_successful_;
 
   base::WeakPtrFactory<MarkRequestCompleteTask> weak_factory_;  // Keep as last.
 

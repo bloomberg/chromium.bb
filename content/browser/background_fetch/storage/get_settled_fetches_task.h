@@ -47,13 +47,13 @@ class GetSettledFetchesTask : public DatabaseTask {
 
   void GetResponses();
 
-  void FillFailedResponse(ServiceWorkerResponse* response,
-                          base::OnceClosure callback);
+  void FillUncachedResponse(BackgroundFetchSettledFetch* settled_fetch,
+                            base::OnceClosure callback);
 
-  void FillSuccessfulResponse(BackgroundFetchSettledFetch* settled_fetch,
-                              base::OnceClosure callback);
+  void FillResponse(BackgroundFetchSettledFetch* settled_fetch,
+                    base::OnceClosure callback);
 
-  void DidMatchRequest(ServiceWorkerResponse* response,
+  void DidMatchRequest(BackgroundFetchSettledFetch* settled_fetch,
                        base::OnceClosure callback,
                        blink::mojom::CacheStorageError error,
                        std::unique_ptr<ServiceWorkerResponse> cache_response);
