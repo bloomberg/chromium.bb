@@ -245,6 +245,10 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
     PreviewsEligibilityReason status = previews_black_list_->IsLoadedAndAllowed(
         request.url(), type, &passed_reasons);
     if (status != PreviewsEligibilityReason::ALLOWED) {
+      if (type == PreviewsType::LITE_PAGE) {
+        PreviewsUserData::GetData(request)->set_black_listed_for_lite_page(
+            true);
+      }
       LogPreviewDecisionMade(status, request.url(), base::Time::Now(), type,
                              std::move(passed_reasons), page_id);
       return false;
@@ -346,6 +350,10 @@ bool PreviewsIOData::IsURLAllowedForPreview(const net::URLRequest& request,
     PreviewsEligibilityReason status = previews_black_list_->IsLoadedAndAllowed(
         request.url(), type, &passed_reasons);
     if (status != PreviewsEligibilityReason::ALLOWED) {
+      if (type == PreviewsType::LITE_PAGE) {
+        PreviewsUserData::GetData(request)->set_black_listed_for_lite_page(
+            true);
+      }
       LogPreviewDecisionMade(status, request.url(), base::Time::Now(), type,
                              std::move(passed_reasons),
                              PreviewsUserData::GetData(request)->page_id());

@@ -149,6 +149,9 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
   } else if (request_data.lite_page_received()) {
     request->set_previews_type(PageloadMetrics_PreviewsType_LITE_PAGE);
     was_preview_shown = true;
+  } else if (request_data.black_listed()) {
+    request->set_previews_type(
+        PageloadMetrics_PreviewsType_CLIENT_BLACKLIST_PREVENTED_PREVIEW);
   } else {
     request->set_previews_type(PageloadMetrics_PreviewsType_NONE);
   }

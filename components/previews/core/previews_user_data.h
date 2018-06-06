@@ -50,6 +50,15 @@ class PreviewsUserData : public base::SupportsUserData::Data {
     return data_savings_inflation_percent_;
   }
 
+  // Whether a lite page preview was prevented from being shown due to the
+  // blacklist.
+  bool black_listed_for_lite_page() const {
+    return black_listed_for_lite_page_;
+  }
+  void set_black_listed_for_lite_page(bool black_listed_for_lite_page) {
+    black_listed_for_lite_page_ = black_listed_for_lite_page;
+  }
+
   // Sets that the page load received the Cache-Control:no-transform
   // directive. Expected to be set upon receiving a committed response.
   void SetCacheControlNoTransformDirective() {
@@ -83,6 +92,10 @@ class PreviewsUserData : public base::SupportsUserData::Data {
   int data_savings_inflation_percent_ = 0;
   // Whether the origin provided a no-transform directive.
   bool cache_control_no_transform_directive_ = false;
+
+  // Whether a lite page preview was prevented from being shown due to the
+  // blacklist.
+  bool black_listed_for_lite_page_ = false;
 
   // The committed previews type, if any.
   previews::PreviewsType committed_previews_type_ = PreviewsType::NONE;

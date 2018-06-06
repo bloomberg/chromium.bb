@@ -123,7 +123,8 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
                              bool lite_page_received,
                              bool app_background_occurred,
                              bool opt_out_occurred,
-                             bool crash) {
+                             bool crash,
+                             bool black_listed) {
     timing_ = std::make_unique<DataReductionProxyPageLoadTiming>(
         base::Time::FromJsTime(1500) /* navigation_start */,
         base::Optional<base::TimeDelta>(
@@ -156,6 +157,7 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
     request_data.set_connection_type(
         net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
     request_data.set_lofi_received(lofi_received);
+    request_data.set_black_listed(black_listed);
     request_data.set_client_lofi_requested(client_lofi_requested);
     request_data.set_lite_page_received(lite_page_received);
     request_data.set_page_id(page_id_);
@@ -211,7 +213,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyPingbackContent) {
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, false /* renderer_crash */);
+      false /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher);
@@ -292,7 +295,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyHoldback) {
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, false /* renderer_crash */);
+      false /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher);
@@ -320,7 +324,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, false /* renderer_crash */);
+      false /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
 
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   // Two more pingbacks batched together.
@@ -329,13 +334,15 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, false /* renderer_crash */);
+      false /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 2);
   page_ids.push_back(page_id());
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, false /* renderer_crash */);
+      false /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 3);
 
   // Ignore the first pingback.
@@ -416,12 +423,14 @@ TEST_F(DataReductionProxyPingbackClientImplTest, SendTwoPingbacks) {
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, false /* renderer_crash */);
+      false /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, false /* renderer_crash */);
+      false /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 2);
 
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
@@ -444,7 +453,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, NoPingbackSent) {
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, false /* renderer_crash */);
+      false /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, false, 1);
   histogram_tester().ExpectTotalCount(kHistogramSucceeded, 0);
   EXPECT_FALSE(factory()->GetFetcherByID(0));
@@ -462,7 +472,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyReportingBehvaior) {
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, false /* renderer_crash */);
+      false /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher);
@@ -475,7 +486,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyReportingBehvaior) {
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, false /* renderer_crash */);
+      false /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectBucketCount(kHistogramAttempted, false, 1);
   test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_FALSE(test_fetcher);
@@ -489,7 +501,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyReportingBehvaior) {
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, false /* renderer_crash */);
+      false /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectBucketCount(kHistogramAttempted, false, 2);
   test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_FALSE(test_fetcher);
@@ -503,7 +516,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyReportingBehvaior) {
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, false /* renderer_crash */);
+      false /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectBucketCount(kHistogramAttempted, true, 2);
   test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher);
@@ -520,7 +534,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, FailedPingback) {
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, false /* renderer_crash */);
+      false /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher);
@@ -542,7 +557,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyLoFiContentNoOptOut) {
   CreateAndSendPingback(
       true /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, false /* renderer_crash */);
+      false /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher);
@@ -571,7 +587,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyLoFiContentOptOut) {
   CreateAndSendPingback(
       true /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      true /* opt_out_occurred */, false /* renderer_crash */);
+      true /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher);
@@ -601,7 +618,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
   CreateAndSendPingback(
       false /* lofi_received */, true /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      true /* opt_out_occurred */, false /* renderer_crash */);
+      true /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher);
@@ -630,7 +648,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyLoFiContentBackground) {
   CreateAndSendPingback(
       true /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, true /* app_background_occurred */,
-      true /* opt_out_occurred */, false /* renderer_crash */);
+      true /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher);
@@ -640,6 +659,36 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyLoFiContentBackground) {
   EXPECT_EQ(batched_request.pageloads_size(), 1);
   PageloadMetrics pageload_metrics = batched_request.pageloads(0);
   EXPECT_EQ(PageloadMetrics_PreviewsType_LOFI,
+            pageload_metrics.previews_type());
+  EXPECT_EQ(PageloadMetrics_PreviewsOptOut_UNKNOWN,
+            pageload_metrics.previews_opt_out());
+
+  test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
+  EXPECT_FALSE(factory()->GetFetcherByID(0));
+}
+
+TEST_F(DataReductionProxyPingbackClientImplTest, VerifyBlackListContent) {
+  Init();
+  EXPECT_FALSE(factory()->GetFetcherByID(0));
+  pingback_client()->OverrideRandom(true, 0.5f);
+  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+      ->SetPingbackReportingFraction(1.0f);
+  base::Time current_time = base::Time::UnixEpoch();
+  pingback_client()->set_current_time(current_time);
+  CreateAndSendPingback(
+      false /* lofi_received */, false /* client_lofi_requested */,
+      false /* lite_page_received */, false /* app_background_occurred */,
+      false /* opt_out_occurred */, false /* renderer_crash */,
+      true /* black_listed */);
+  histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
+  net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
+  EXPECT_TRUE(test_fetcher);
+  EXPECT_EQ(test_fetcher->upload_content_type(), "application/x-protobuf");
+  RecordPageloadMetricsRequest batched_request;
+  batched_request.ParseFromString(test_fetcher->upload_data());
+  EXPECT_EQ(batched_request.pageloads_size(), 1);
+  PageloadMetrics pageload_metrics = batched_request.pageloads(0);
+  EXPECT_EQ(PageloadMetrics_PreviewsType_CLIENT_BLACKLIST_PREVENTED_PREVIEW,
             pageload_metrics.previews_type());
   EXPECT_EQ(PageloadMetrics_PreviewsOptOut_UNKNOWN,
             pageload_metrics.previews_opt_out());
@@ -659,7 +708,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyLitePageContent) {
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       true /* lite_page_received */, false /* app_background_occurred */,
-      true /* opt_out_occurred */, false /* renderer_crash */);
+      true /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher);
@@ -688,11 +738,13 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyTwoLitePagePingbacks) {
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       true /* lite_page_received */, false /* app_background_occurred */,
-      true /* opt_out_occurred */, false /* renderer_crash */);
+      true /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       true /* lite_page_received */, false /* app_background_occurred */,
-      true /* opt_out_occurred */, false /* renderer_crash */);
+      true /* opt_out_occurred */, false /* renderer_crash */,
+      false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 2);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher);
@@ -730,7 +782,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyCrashOomBehavior) {
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, true /* renderer_crash */);
+      false /* opt_out_occurred */, true /* renderer_crash */,
+      false /* black_listed */);
 
   ReportCrash(true /* oom */);
 
@@ -763,7 +816,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyCrashNotOomBehavior) {
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, true /* renderer_crash */);
+      false /* opt_out_occurred */, true /* renderer_crash */,
+      false /* black_listed */);
 
   ReportCrash(false /* oom */);
 
@@ -797,7 +851,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, true /* renderer_crash */);
+      false /* opt_out_occurred */, true /* renderer_crash */,
+      false /* black_listed */);
 
   // Don't report the crash dump details.
   scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));

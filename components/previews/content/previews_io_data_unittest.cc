@@ -480,6 +480,25 @@ TEST_F(PreviewsIODataTest, TestDisallowPreviewBecauseOfBlackListState) {
   variations::testing::ClearAllVariationParams();
 }
 
+TEST_F(PreviewsIODataTest, TestSetBlacklistBoolDueToBlackListState) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
+  std::unique_ptr<net::URLRequest> request = CreateRequest();
+  base::HistogramTester histogram_tester;
+  InitializeUIServiceWithoutWaitingForBlackList();
+  base::RunLoop().RunUntilIdle();
+  io_data()->AddPreviewNavigation(GURL(request->url()), true,
+                                  PreviewsType::LITE_PAGE, 1);
+
+  auto* data =
+      PreviewsUserData::Create(request.get(), 54321 /* page_id, not used */);
+  EXPECT_FALSE(data->black_listed_for_lite_page());
+  EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
+      *request, PreviewsType::LITE_PAGE, net::EFFECTIVE_CONNECTION_TYPE_2G,
+      {}));
+  EXPECT_TRUE(data->black_listed_for_lite_page());
+}
+
 TEST_F(PreviewsIODataTest, TestDisallowOfflineWhenNetworkQualityUnavailable) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kPreviews);
