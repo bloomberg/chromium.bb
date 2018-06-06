@@ -393,7 +393,7 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
 
     /**
      * Called when clearing browsing data completes.
-     * Implements the ChromePreferences.OnClearBrowsingDataListener interface.
+     * Implements the BrowsingDataBridge.OnClearBrowsingDataListener interface.
      */
     @Override
     public void onBrowsingDataCleared() {
