@@ -90,15 +90,15 @@ class TraceEventDataSource::ThreadLocalEventSink {
     for (int i = 0;
          i < base::trace_event::kTraceMaxNumArgs && trace_event.arg_name(i);
          ++i) {
-      // TODO(oysteine): Support ConvertableToTraceFormat serialized into a JSON
-      // string.
       auto type = trace_event.arg_type(i);
-      if (type == TRACE_VALUE_TYPE_CONVERTABLE) {
-        continue;
-      }
-
       auto* new_arg = new_trace_event->add_args();
       new_arg->set_name(trace_event.arg_name(i));
+
+      if (type == TRACE_VALUE_TYPE_CONVERTABLE) {
+        std::string json = trace_event.arg_convertible_value(i)->ToString();
+        new_arg->set_json_value(json.c_str());
+        continue;
+      }
 
       auto& value = trace_event.arg_value(i);
       switch (type) {

@@ -162,6 +162,11 @@ void OutputJSONFromTraceEventProto(
       TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_STRING, value, out);
       continue;
     }
+
+    if (arg.has_json_value()) {
+      *out += arg.json_value();
+      continue;
+    }
   }
 
   *out += "}}";
