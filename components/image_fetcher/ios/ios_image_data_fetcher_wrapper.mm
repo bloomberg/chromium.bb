@@ -4,7 +4,7 @@
 
 #import "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 
-#import "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "base/task_scheduler/post_task.h"
 #import "components/image_fetcher/ios/webp_decoder.h"
 #include "net/http/http_response_headers.h"
@@ -55,8 +55,8 @@ void IOSImageDataFetcherWrapper::SetDataUseServiceName(
 ImageDataFetcher::ImageDataFetcherCallback
 IOSImageDataFetcherWrapper::CallbackForImageDataFetcher(
     IOSImageDataFetcherCallback callback) {
-  return base::BindBlockArc(^(const std::string& image_data,
-                              const RequestMetadata& metadata) {
+  return base::BindRepeating(^(const std::string& image_data,
+                               const RequestMetadata& metadata) {
     // Create a NSData from the returned data and notify the callback.
     NSData* data =
         [NSData dataWithBytes:image_data.data() length:image_data.size()];
@@ -75,10 +75,10 @@ IOSImageDataFetcherWrapper::CallbackForImageDataFetcher(
             base::TaskPriority::BACKGROUND,
             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
         },
-        base::BindBlockArc(^NSData*() {
+        base::BindOnce(^NSData*() {
           return webp_transcode::WebpDecoder::DecodeWebpImage(data);
         }),
-        base::BindBlockArc(^(NSData* decoded_data) {
+        base::BindOnce(^(NSData* decoded_data) {
           callback(decoded_data, webp_metadata);
         }));
   });

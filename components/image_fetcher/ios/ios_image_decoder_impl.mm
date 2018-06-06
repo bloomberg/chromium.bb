@@ -8,8 +8,8 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/callback.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task_scheduler/post_task.h"
@@ -81,9 +81,9 @@ void IOSImageDecoderImpl::DecodeImage(const std::string& image_data,
   }
 
   base::PostTaskAndReplyWithResult(
-      task_runner_.get(), FROM_HERE, base::BindBlockArc(decodeBlock),
-      base::Bind(&IOSImageDecoderImpl::CreateUIImageAndRunCallback,
-                 weak_factory_.GetWeakPtr(), callback));
+      task_runner_.get(), FROM_HERE, base::BindOnce(decodeBlock),
+      base::BindOnce(&IOSImageDecoderImpl::CreateUIImageAndRunCallback,
+                     weak_factory_.GetWeakPtr(), callback));
 }
 
 void IOSImageDecoderImpl::CreateUIImageAndRunCallback(
