@@ -272,7 +272,9 @@ void TestWindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
   tracker_.OnChangeCompleted(change_id, success);
 }
 
-void TestWindowTreeClient::RequestClose(Id window_id) {}
+void TestWindowTreeClient::RequestClose(Id window_id) {
+  tracker_.RequestClose(window_id);
+}
 
 void TestWindowTreeClient::GetWindowManager(
     mojo::AssociatedInterfaceRequest<mojom::WindowManager> internal) {}

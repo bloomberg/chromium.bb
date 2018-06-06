@@ -147,6 +147,8 @@ std::string ChangeToDescription(const Change& change,
       return base::StringPrintf("OpacityChanged window_id=%s opacity=%.2f",
                                 WindowIdToString(change.window_id).c_str(),
                                 change.float_value);
+    case CHANGE_TYPE_REQUEST_CLOSE:
+      return "RequestClose";
     case CHANGE_TYPE_SURFACE_CHANGED:
       return base::StringPrintf("SurfaceCreated window_id=%s surface_id=%s",
                                 WindowIdToString(change.window_id).c_str(),
@@ -472,6 +474,13 @@ void TestChangeTracker::OnWindowSurfaceChanged(
   change.surface_id = surface_info.id();
   change.frame_size = surface_info.size_in_pixels();
   change.device_scale_factor = surface_info.device_scale_factor();
+  AddChange(change);
+}
+
+void TestChangeTracker::RequestClose(Id window_id) {
+  Change change;
+  change.type = CHANGE_TYPE_REQUEST_CLOSE;
+  change.window_id = window_id;
   AddChange(change);
 }
 

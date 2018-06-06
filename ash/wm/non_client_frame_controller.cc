@@ -16,15 +16,18 @@
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/shell.h"
 #include "ash/wm/move_event_handler.h"
 #include "ash/wm/panels/panel_frame_view.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
+#include "ash/ws/window_service_owner.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/ws2/window_properties.h"
+#include "services/ui/ws2/window_service.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/property_converter.h"
@@ -253,14 +256,18 @@ class ClientViewMus : public views::ClientView {
 
   // views::ClientView:
   bool CanClose() override {
-    // TODO(crbug.com/842298): Add support for window-service as a library.
-    if (!frame_controller_->window() ||
-        !frame_controller_->window_manager_client()) {
-      return true;
+    // CanClose() is called when the user requests the window to close (such as
+    // clicking the close button). As this window is managed by a remote client
+    // pass the request to the remote client and return false (to cancel the
+    // close). If the remote client wants the window to close, it will close it
+    // in a way that does not reenter this code path.
+    if (frame_controller_->window_manager_client()) {
+      frame_controller_->window_manager_client()->RequestClose(
+          frame_controller_->window());
+    } else {
+      Shell::Get()->window_service_owner()->window_service()->RequestClose(
+          frame_controller_->window());
     }
-
-    frame_controller_->window_manager_client()->RequestClose(
-        frame_controller_->window());
     return false;
   }
 

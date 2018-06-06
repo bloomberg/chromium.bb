@@ -1880,6 +1880,7 @@ test("ash_unittests") {
     "wm/lock_state_controller_unittest.cc",
     "wm/mru_window_tracker_unittest.cc",
     "wm/native_cursor_manager_ash_unittest.cc",
+    "wm/non_client_frame_controller_unittest.cc",
     "wm/overlay_event_filter_unittest.cc",
     "wm/overview/cleanup_animation_observer_unittest.cc",
     "wm/overview/window_selector_unittest.cc",
@@ -2386,7 +2387,6 @@ source_set("mash_unittests") {
     "app_launch_unittest.cc",
     "display/display_synchronizer_unittest.cc",
     "window_manager_unittest.cc",
-    "wm/non_client_frame_controller_unittest.cc",
     "wm/top_level_window_factory_mash_unittest.cc",
   ]
 
