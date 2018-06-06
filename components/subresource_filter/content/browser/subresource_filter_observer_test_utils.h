@@ -38,10 +38,6 @@ class TestSubresourceFilterObserver : public SubresourceFilterObserver,
 
   // SubresourceFilterObserver:
   void OnSubresourceFilterGoingAway() override;
-  void OnSafeBrowsingCheckComplete(
-      content::NavigationHandle* navigation_handle,
-      safe_browsing::SBThreatType threat_type,
-      const safe_browsing::ThreatMetadata& threat_metadata) override;
   void OnPageActivationComputed(
       content::NavigationHandle* navigation_handle,
       const ActivationState& activation_state) override;
