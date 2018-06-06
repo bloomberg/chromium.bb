@@ -20,10 +20,8 @@ void InitMaterialMenuConfig(views::MenuConfig* config) {
   config->minimum_text_item_height = 32;
   config->minimum_container_item_height = 48;
   config->minimum_menu_width = 320;
-  config->item_left_margin = 8;
   config->label_to_arrow_padding = 0;
   config->arrow_to_edge_padding = 16;
-  config->icon_to_label_padding = 8;
   config->check_width = 16;
   config->check_height = 16;
   config->arrow_width = 8;
@@ -32,7 +30,6 @@ void InitMaterialMenuConfig(views::MenuConfig* config) {
   config->separator_upper_height = 9;
   config->separator_spacing_height = 9;
   config->separator_thickness = 1;
-  config->label_to_minor_text_padding = 8;
   config->align_arrow_and_shortcut = true;
   config->use_outer_border = false;
   config->icons_in_label = true;

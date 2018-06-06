@@ -17,8 +17,6 @@ void MenuConfig::Init() {
   separator_spacing_height = 7;
   separator_lower_height = 8;
   separator_upper_height = 8;
-  label_to_arrow_padding = 20;
-  label_to_minor_text_padding = 20;
   always_use_icon_to_label_padding = true;
   align_arrow_and_shortcut = true;
   offset_context_menus = true;
