@@ -56,7 +56,8 @@ void AndroidVideoSurfaceChooserImpl::UpdateState(
       // We don't want to pick TextureOwner permanently for that.
       if (overlay_factory_ &&
           (current_state_.is_fullscreen || current_state_.is_secure ||
-           current_state_.is_required)) {
+           current_state_.is_required) &&
+          current_state_.video_rotation == VIDEO_ROTATION_0) {
         SwitchToOverlay(false);
       } else {
         SwitchToTextureOwner();
@@ -132,12 +133,17 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
   }
 
   // If an overlay is required, then choose one.  The only way we won't is if we
-  // don't have a factory or our request fails.
+  // don't have a factory or our request fails, or if it's rotated.
   if (current_state_.is_required) {
     new_overlay_state = kUsingOverlay;
     // Required overlays don't need to be power efficient.
     needs_power_efficient = false;
   }
+
+  // Specifying a rotated overlay can NOTREACHED() in the compositor, so it's
+  // better to fail.
+  if (current_state_.video_rotation != VIDEO_ROTATION_0)
+    new_overlay_state = kUsingTextureOwner;
 
   // If we have no factory, then we definitely don't want to use overlays.
   if (!overlay_factory_)

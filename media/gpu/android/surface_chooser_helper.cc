@@ -89,6 +89,10 @@ void SurfaceChooserHelper::SetIsFullscreen(bool is_fullscreen) {
   surface_chooser_state_.is_fullscreen = is_fullscreen;
 }
 
+void SurfaceChooserHelper::SetVideoRotation(VideoRotation video_rotation) {
+  surface_chooser_state_.video_rotation = video_rotation;
+}
+
 void SurfaceChooserHelper::UpdateChooserState(
     base::Optional<AndroidOverlayFactoryCB> new_factory) {
   surface_chooser_->UpdateState(std::move(new_factory), surface_chooser_state_);
