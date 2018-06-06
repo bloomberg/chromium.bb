@@ -490,6 +490,9 @@
   "cros_vm_sanity_test": {
     "label": "//chromeos:cros_vm_sanity_test",
     "type": "raw",
+    "args": [
+        "--vm-logs-dir=${ISOLATED_OUTDIR}",
+    ]
   },
   "crypto_unittests": {
     "label": "//crypto:crypto_unittests",
