@@ -127,7 +127,7 @@ class IOSImageDataFetcherWrapperTest : public PlatformTest {
   // Message loop for the main test thread.
   base::test::ScopedTaskEnvironment environment_;
 
-  base::mac::ScopedBlock<IOSImageDataFetcherCallback> callback_;
+  base::mac::ScopedBlock<ImageDataFetcherBlock> callback_;
   network::TestURLLoaderFactory factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   std::unique_ptr<IOSImageDataFetcherWrapper> image_fetcher_;

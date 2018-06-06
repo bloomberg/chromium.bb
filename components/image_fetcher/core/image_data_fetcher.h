@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/image_fetcher/core/image_fetcher_types.h"
 #include "components/image_fetcher/core/request_metadata.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
@@ -27,16 +28,6 @@ namespace image_fetcher {
 
 class ImageDataFetcher {
  public:
-  // Callback with the |image_data|. If an error prevented a http response,
-  // |request_metadata.response_code| will be RESPONSE_CODE_INVALID.
-  // TODO(treib): Pass |image_data| out by value, or use RefCountedBytes, to
-  // avoid copying.
-  using ImageDataFetcherCallback =
-      base::Callback<void(const std::string& image_data,
-                          const RequestMetadata& request_metadata)>;
-
-  using DataUseServiceName = data_use_measurement::DataUseUserData::ServiceName;
-
   explicit ImageDataFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~ImageDataFetcher();
@@ -53,13 +44,13 @@ class ImageDataFetcher {
   // of an error an empty string is passed to the callback.
   void FetchImageData(
       const GURL& image_url,
-      const ImageDataFetcherCallback& callback,
+      ImageDataFetcherCallback callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Like above, but lets the caller set a referrer.
   void FetchImageData(
       const GURL& image_url,
-      const ImageDataFetcherCallback& callback,
+      ImageDataFetcherCallback callback,
       const std::string& referrer,
       net::URLRequest::ReferrerPolicy referrer_policy,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);

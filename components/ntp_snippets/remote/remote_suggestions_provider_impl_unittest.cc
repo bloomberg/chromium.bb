@@ -164,8 +164,8 @@ std::unique_ptr<RemoteSuggestion> CreateTestRemoteSuggestion(
 
 void ServeOneByOneImage(
     const std::string& id,
-    image_fetcher::ImageFetcher::ImageDataFetcherCallback* image_data_callback,
-    image_fetcher::ImageFetcher::ImageFetcherCallback* callback) {
+    image_fetcher::ImageDataFetcherCallback* image_data_callback,
+    image_fetcher::ImageFetcherCallback* callback) {
   std::move(*image_data_callback)
       .Run("1-by-1-image-data", image_fetcher::RequestMetadata());
   base::ThreadTaskRunnerHandle::Get()->PostTask(

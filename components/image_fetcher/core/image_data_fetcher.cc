@@ -28,9 +28,9 @@ namespace image_fetcher {
 // An active image URL fetcher request. The struct contains the related requests
 // state.
 struct ImageDataFetcher::ImageDataFetcherRequest {
-  ImageDataFetcherRequest(const ImageDataFetcherCallback& callback,
+  ImageDataFetcherRequest(ImageDataFetcherCallback callback,
                           std::unique_ptr<network::SimpleURLLoader> loader)
-      : callback(callback), loader(std::move(loader)) {}
+      : callback(std::move(callback)), loader(std::move(loader)) {}
 
   ~ImageDataFetcherRequest() {}
 
@@ -60,17 +60,17 @@ void ImageDataFetcher::SetImageDownloadLimit(
 
 void ImageDataFetcher::FetchImageData(
     const GURL& image_url,
-    const ImageDataFetcherCallback& callback,
+    ImageDataFetcherCallback callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   FetchImageData(
-      image_url, callback, /*referrer=*/std::string(),
+      image_url, std::move(callback), /*referrer=*/std::string(),
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
       traffic_annotation);
 }
 
 void ImageDataFetcher::FetchImageData(
     const GURL& image_url,
-    const ImageDataFetcherCallback& callback,
+    ImageDataFetcherCallback callback,
     const std::string& referrer,
     net::URLRequest::ReferrerPolicy referrer_policy,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
@@ -107,7 +107,7 @@ void ImageDataFetcher::FetchImageData(
   }
 
   std::unique_ptr<ImageDataFetcherRequest> request_track(
-      new ImageDataFetcherRequest(callback, std::move(loader)));
+      new ImageDataFetcherRequest(std::move(callback), std::move(loader)));
 
   pending_requests_[request_track->loader.get()] = std::move(request_track);
 }
@@ -142,7 +142,7 @@ void ImageDataFetcher::FinishRequest(const network::SimpleURLLoader* source,
                                      const std::string& image_data) {
   auto request_iter = pending_requests_.find(source);
   DCHECK(request_iter != pending_requests_.end());
-  request_iter->second->callback.Run(image_data, metadata);
+  std::move(request_iter->second->callback).Run(image_data, metadata);
   pending_requests_.erase(request_iter);
 }
 
