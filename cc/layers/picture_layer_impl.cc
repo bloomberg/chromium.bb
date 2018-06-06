@@ -336,10 +336,23 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     gfx::Size texture_size = quad_content_rect.size();
     gfx::RectF texture_rect = gfx::RectF(gfx::SizeF(texture_size));
 
+    viz::PictureDrawQuad::ImageAnimationMap image_animation_map;
+    const auto* controller = layer_tree_impl()->image_animation_controller();
+    WhichTree tree = layer_tree_impl()->IsPendingTree()
+                         ? WhichTree::PENDING_TREE
+                         : WhichTree::ACTIVE_TREE;
+    for (const auto& image_data : raster_source_->GetDisplayItemList()
+                                      ->discardable_image_map()
+                                      .animated_images_metadata()) {
+      image_animation_map[image_data.paint_image_id] =
+          controller->GetFrameIndexForImage(image_data.paint_image_id, tree);
+    }
+
     auto* quad = render_pass->CreateAndAppendDrawQuad<viz::PictureDrawQuad>();
     quad->SetNew(shared_quad_state, geometry_rect, visible_geometry_rect,
                  needs_blending, texture_rect, texture_size, nearest_neighbor_,
                  viz::RGBA_8888, quad_content_rect, max_contents_scale,
+                 std::move(image_animation_map),
                  raster_source_->GetDisplayItemList());
     ValidateQuadResources(quad);
     return;

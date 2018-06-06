@@ -29,7 +29,10 @@ bool FakePaintImageGenerator::GetPixels(const SkImageInfo& info,
                                         uint32_t lazy_pixel_ref) {
   if (image_backing_memory_.empty())
     return false;
-  frames_decoded_.insert(frame_index);
+  if (frames_decoded_count_.find(frame_index) == frames_decoded_count_.end())
+    frames_decoded_count_[frame_index] = 1;
+  else
+    frames_decoded_count_[frame_index]++;
   CHECK(image_pixmap_.readPixels(info, pixels, row_bytes, 0, 0));
   return true;
 }

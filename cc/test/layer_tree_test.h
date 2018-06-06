@@ -172,6 +172,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   }
 
   bool use_skia_renderer_ = false;
+  bool use_software_renderer_ = false;
 
  private:
   virtual void DispatchAddNoDamageAnimation(
