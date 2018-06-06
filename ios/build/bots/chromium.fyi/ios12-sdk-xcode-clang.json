@@ -7,14 +7,13 @@
   "use xcode build version": true,
   "gn_args": [
     "additional_target_cpus=[\"x86\",\"arm64\",\"arm\"]",
-    "goma_dir=\"$(goma_dir)\"",
     "ios_enable_code_signing=false",
     "is_component_build=false",
     "is_debug=true",
     "symbol_level=1",
     "target_cpu=\"x64\"",
     "target_os=\"ios\"",
-    "use_goma=true",
+    "use_goma=false",
     "use_xcode_clang=true"
   ],
   "env": {
