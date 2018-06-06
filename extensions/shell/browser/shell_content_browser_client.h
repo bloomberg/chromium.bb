@@ -74,6 +74,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       int render_frame_id,
       NonNetworkURLLoaderFactoryMap* factories) override;
   bool WillCreateURLLoaderFactory(
+      content::BrowserContext* browser_context,
       content::RenderFrameHost* frame_host,
       bool is_navigation,
       network::mojom::URLLoaderFactoryRequest* factory_request) override;

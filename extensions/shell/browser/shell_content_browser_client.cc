@@ -286,12 +286,13 @@ void ShellContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
 }
 
 bool ShellContentBrowserClient::WillCreateURLLoaderFactory(
+    content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,
     bool is_navigation,
     network::mojom::URLLoaderFactoryRequest* factory_request) {
   auto* web_request_api =
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
-          frame->GetProcess()->GetBrowserContext());
+          browser_context);
   return web_request_api->MaybeProxyURLLoaderFactory(frame, is_navigation,
                                                      factory_request);
 }

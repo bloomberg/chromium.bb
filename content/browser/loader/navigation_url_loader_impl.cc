@@ -1336,8 +1336,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     network::mojom::URLLoaderFactoryPtrInfo factory_info;
     auto factory_request = mojo::MakeRequest(&factory_info);
     bool use_proxy = GetContentClient()->browser()->WillCreateURLLoaderFactory(
-        frame_tree_node->current_frame_host(), true /* is_navigation */,
-        &factory_request);
+        partition->browser_context(), frame_tree_node->current_frame_host(),
+        true /* is_navigation */, &factory_request);
     if (RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
             frame_tree_node->current_frame_host(), true, false,
             &factory_request)) {
@@ -1463,9 +1463,10 @@ void NavigationURLLoaderImpl::BindNonNetworkURLLoaderFactoryRequest(
   }
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+  auto* frame = frame_tree_node->current_frame_host();
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
-      frame_tree_node->current_frame_host(), true /* is_navigation */,
-      &factory);
+      frame->GetSiteInstance()->GetBrowserContext(), frame,
+      true /* is_navigation */, &factory);
   it->second->Clone(std::move(factory));
 }
 

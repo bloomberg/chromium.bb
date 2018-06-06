@@ -487,16 +487,27 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
         std::make_unique<ExtensionNavigationUIData>(frame, tab_id, window_id);
   }
 
+  // NOTE: This request may be proxied on behalf of an incognito frame, but
+  // |this| will always be bound to a regular profile (see
+  // |BrowserContextKeyedAPI::kServiceRedirectedInIncognito|). As such, we use
+  // the frame's BrowserContext when |frame| is non-null.
+  auto* browser_context =
+      frame ? frame->GetProcess()->GetBrowserContext() : browser_context_;
+  DCHECK(browser_context == browser_context_ ||
+         (browser_context->IsOffTheRecord() &&
+          ExtensionsBrowserClient::Get()->GetOriginalContext(browser_context) ==
+              browser_context_));
+  const bool is_for_browser_initiated_requests = is_navigation || !frame;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
-          &WebRequestProxyingURLLoaderFactory::StartProxying,
-          frame->GetProcess()->GetBrowserContext(),
-          frame->GetProcess()->GetBrowserContext()->GetResourceContext(),
+          &WebRequestProxyingURLLoaderFactory::StartProxying, browser_context,
+          browser_context->GetResourceContext(),
           // Match the behavior of the WebRequestInfo constructor
           // which takes a net::URLRequest*.
-          is_navigation ? -1 : frame->GetProcess()->GetID(),
-          is_navigation ? MSG_ROUTING_NONE : frame->GetRoutingID(),
+          is_for_browser_initiated_requests ? -1 : frame->GetProcess()->GetID(),
+          is_for_browser_initiated_requests ? MSG_ROUTING_NONE
+                                            : frame->GetRoutingID(),
           request_id_generator_, std::move(navigation_ui_data),
           base::Unretained(info_map_), std::move(proxied_request),
           std::move(target_factory_info), proxies_));

@@ -4188,13 +4188,14 @@ void ChromeContentBrowserClient::
 }
 
 bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
+    content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,
     bool is_navigation,
     network::mojom::URLLoaderFactoryRequest* factory_request) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   auto* web_request_api =
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
-          frame->GetProcess()->GetBrowserContext());
+          browser_context);
 
   // NOTE: Some unit test environments do not initialize
   // BrowserContextKeyedAPI factories for e.g. WebRequest.
