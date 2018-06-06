@@ -253,8 +253,12 @@ gfx::Transform FakeARCore::GetProjectionMatrix(float near, float far) {
   return result;
 }
 
-mojom::VRPosePtr FakeARCore::Update() {
+mojom::VRPosePtr FakeARCore::Update(bool* camera_updated) {
   DCHECK(IsOnGlThread());
+  DCHECK(camera_updated);
+
+  *camera_updated = true;
+
   // 1m up from the origin, neutral orientation facing forward.
   mojom::VRPosePtr pose = mojom::VRPose::New();
   pose->orientation.emplace(4);

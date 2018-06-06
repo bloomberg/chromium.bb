@@ -128,19 +128,24 @@ std::vector<float> ARCoreImpl::TransformDisplayUvCoords(
   return uvs_out;
 }
 
-mojom::VRPosePtr ARCoreImpl::Update() {
+mojom::VRPosePtr ARCoreImpl::Update(bool* camera_updated) {
   DCHECK(IsOnGlThread());
   DCHECK(arcore_session_.is_valid());
   DCHECK(arcore_frame_.is_valid());
+  DCHECK(camera_updated);
 
   ArStatus status;
 
   status = ArSession_update(arcore_session_.get(), arcore_frame_.get());
   if (status != AR_SUCCESS) {
     DLOG(ERROR) << "ArSession_update failed: " << status;
+    *camera_updated = false;
     return nullptr;
   }
 
+  // If we get here, assume we have a valid camera image, but we don't know yet
+  // if tracking is working.
+  *camera_updated = true;
   internal::ScopedArCoreObject<ArCamera*> arcore_camera;
   ArFrame_acquireCamera(arcore_session_.get(), arcore_frame_.get(),
                         arcore_camera.receive());
@@ -153,8 +158,8 @@ mojom::VRPosePtr ARCoreImpl::Update() {
   ArCamera_getTrackingState(arcore_session_.get(), arcore_camera.get(),
                             &tracking_state);
   if (tracking_state != AR_TRACKING_STATE_TRACKING) {
-    DLOG(ERROR) << "Tracking state is not AR_TRACKING_STATE_TRACKING: "
-                << tracking_state;
+    DVLOG(1) << "Tracking state is not AR_TRACKING_STATE_TRACKING: "
+             << tracking_state;
     return nullptr;
   }
 

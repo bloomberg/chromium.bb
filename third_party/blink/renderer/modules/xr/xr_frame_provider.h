@@ -65,10 +65,6 @@ class XRFrameProvider final
       device::mojom::blink::VRMagicWindowFrameDataPtr frame_data,
       double timestamp);
 
-  void RenderBackgroundImage(
-      const device::mojom::blink::VRMagicWindowFrameDataPtr& frame_data,
-      XRSession* session);
-
   const Member<XRDevice> device_;
   Member<XRSession> exclusive_session_;
   Member<ScriptPromiseResolver> pending_exclusive_session_resolver_;

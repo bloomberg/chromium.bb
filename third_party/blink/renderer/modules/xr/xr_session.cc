@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_presentation_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_session_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
+#include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
@@ -422,7 +423,9 @@ void XRSession::OnFocusChanged() {
 
 void XRSession::OnFrame(
     std::unique_ptr<TransformationMatrix> base_pose_matrix,
-    const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder) {
+    const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
+    const base::Optional<gpu::MailboxHolder>& background_mailbox_holder,
+    const base::Optional<IntSize>& background_size) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DVLOG(2) << __FUNCTION__;
   // Don't process any outstanding frames once the session is ended.
@@ -449,7 +452,18 @@ void XRSession::OnFrame(
 
     // Cache the base layer, since it could change during the frame callback.
     XRLayer* frame_base_layer = base_layer_;
-    frame_base_layer->OnFrameStart(buffer_mailbox_holder);
+    frame_base_layer->OnFrameStart(output_mailbox_holder);
+
+    // TODO(836349): revisit sending background image data to blink at all.
+    if (background_mailbox_holder) {
+      // If using a background image, the caller must provide its pixel size
+      // also. The source size can differ from the current drawing buffer size.
+      DCHECK(background_size);
+      // TODO(https://crbug.com/837509): Remove this static_cast.
+      XRWebGLLayer* webgl_layer = static_cast<XRWebGLLayer*>(frame_base_layer);
+      webgl_layer->OverwriteColorBufferFromMailboxTexture(
+          background_mailbox_holder.value(), background_size.value());
+    }
 
     // Resolve the queued requestAnimationFrame callbacks. All XR rendering will
     // happen within these calls. resolving_frame_ will be true for the duration

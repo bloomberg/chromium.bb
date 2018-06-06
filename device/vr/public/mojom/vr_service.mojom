@@ -195,15 +195,17 @@ struct VRDisplayFrameTransportOptions {
 // just a VRPose - ex: non-exclusive AR needs a camera image and
 // to get a projection matrix directly from the backend rather than
 // FOV values to support features like focus.
+//
+// The pose may be null if the device lost tracking. It can still
+// send a camera image in that case.
 struct VRMagicWindowFrameData {
-  VRPose pose;
+  VRPose? pose;
   gpu.mojom.MailboxHolder buffer_holder;
   gfx.mojom.Size buffer_size;
   // TODO(https://crbug.com/838515): Is this delta since the last
   // frame? OR an unspecified origin? Something else?
   mojo_base.mojom.TimeDelta time_delta;
   array<float, 16> projection_matrix;
-
 };
 
 enum VRDisplayEventReason {
