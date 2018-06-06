@@ -654,7 +654,7 @@ video::-internal-media-controls-overflow-menu-list {
   position: fixed;
   max-width: 50%;
   max-height: 250px;
-  min-width: 150px;
+  min-width: 180px;
   overflow-x: hidden;
   overflow-y: auto;
   white-space: nowrap;
@@ -680,8 +680,71 @@ video::-internal-media-controls-overflow-menu-list-item {
   letter-spacing: 0;
 
   line-height: 48px;
-  padding-left: 15px;
-  padding-right: 15px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+video::-webkit-media-controls.sizing-small div[pseudo="-internal-media-controls-overflow-menu-list" i] {
+  min-width: 180px;
+  max-width: 180px;
+  max-height: 250px;
+}
+
+video::-webkit-media-controls.sizing-medium div[pseudo="-internal-media-controls-overflow-menu-list" i] {
+  min-width: 360px;
+  max-width: 360px;
+  max-height: 500px;
+}
+
+video::-webkit-media-controls.sizing-large div[pseudo="-internal-media-controls-overflow-menu-list" i] {
+  min-width: 540px;
+  max-width: 540px;
+  max-height: 750px;
+}
+
+video::-webkit-media-controls.sizing-small label[pseudo="-internal-media-controls-overflow-menu-list-item" i] {
+  font-size: 14px;
+  height: 48px;
+  padding: 0 16px 0;
+}
+
+video::-webkit-media-controls.sizing-medium label[pseudo="-internal-media-controls-overflow-menu-list-item" i] {
+  font-size: 24px;
+  height: 96px;
+  padding: 0 32px 0;
+}
+
+video::-webkit-media-controls.sizing-large label[pseudo="-internal-media-controls-overflow-menu-list-item" i] {
+  font-size: 36px;
+  height: 144px;
+  padding: 0 48px 0;
+}
+
+video::-webkit-media-controls.sizing-small label[pseudo="-internal-media-controls-overflow-menu-list-item" i] input {
+  margin-left: 0;
+  margin-right: 16px;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  background-size: 24px;
+}
+
+video::-webkit-media-controls.sizing-medium label[pseudo="-internal-media-controls-overflow-menu-list-item" i] input {
+  margin-left: 0;
+  margin-right: 32px;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  background-size: 48px;
+}
+
+video::-webkit-media-controls.sizing-large label[pseudo="-internal-media-controls-overflow-menu-list-item" i] input {
+  margin-left: 0;
+  margin-right: 48px;
+  width: 72px;
+  height: 72px;
+  min-width: 72px;
+  background-size: 72px;
 }
 
 label[pseudo="-internal-media-controls-overflow-menu-list-item"] input {
