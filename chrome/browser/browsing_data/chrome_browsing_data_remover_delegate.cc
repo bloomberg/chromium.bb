@@ -95,6 +95,7 @@
 #include "net/http/http_transaction_factory.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/customtabs/origin_verifier.h"
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/android/webapps/webapp_registry.h"
@@ -539,6 +540,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     // Clear the history information (last launch time and origin URL) of any
     // registered webapps.
     webapp_registry_->ClearWebappHistoryForUrls(filter);
+
+    // The OriginVerifier caches origins for Trusted Web Activities that have
+    // been verified and stores them in Android Preferences.
+    customtabs::OriginVerifier::ClearBrowsingData();
 #endif
 
     data_reduction_proxy::DataReductionProxySettings*

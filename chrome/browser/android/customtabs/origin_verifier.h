@@ -36,6 +36,8 @@ class OriginVerifier {
 
   void Destroy(JNIEnv* env, const base::android::JavaRef<jobject>& obj);
 
+  static void ClearBrowsingData();
+  static int GetClearBrowsingDataCallCountForTesting();
  private:
   void OnRelationshipCheckComplete(
       digital_asset_links::RelationshipCheckResult result);
@@ -44,6 +46,8 @@ class OriginVerifier {
       asset_link_handler_;
 
   base::android::ScopedJavaGlobalRef<jobject> jobject_;
+
+  static int clear_browsing_data_call_count_for_tests_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginVerifier);
 };

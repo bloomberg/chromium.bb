@@ -22,6 +22,9 @@ using digital_asset_links::RelationshipCheckResult;
 
 namespace customtabs {
 
+// static variables are zero-initialized.
+int OriginVerifier::clear_browsing_data_call_count_for_tests_;
+
 OriginVerifier::OriginVerifier(JNIEnv* env,
                                const JavaRef<jobject>& obj,
                                const JavaRef<jobject>& jprofile) {
@@ -73,6 +76,19 @@ void OriginVerifier::OnRelationshipCheckComplete(
 void OriginVerifier::Destroy(JNIEnv* env,
                              const base::android::JavaRef<jobject>& obj) {
   delete this;
+}
+
+// static
+void OriginVerifier::ClearBrowsingData() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  Java_OriginVerifier_clearBrowsingData(env);
+  clear_browsing_data_call_count_for_tests_++;
+}
+
+// static
+int OriginVerifier::GetClearBrowsingDataCallCountForTesting() {
+  return clear_browsing_data_call_count_for_tests_;
 }
 
 static jlong JNI_OriginVerifier_Init(

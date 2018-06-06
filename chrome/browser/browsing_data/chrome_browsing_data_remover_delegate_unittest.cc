@@ -92,6 +92,7 @@
 #include "ui/gfx/favicon_size.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/customtabs/origin_verifier.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #else  // !defined(OS_ANDROID)
@@ -2931,3 +2932,16 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
     }
   }
 }
+
+#if defined(OS_ANDROID)
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, WipeOriginVerifierData) {
+  int before =
+    customtabs::OriginVerifier::GetClearBrowsingDataCallCountForTesting();
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, false);
+  EXPECT_EQ(before + 1,
+      customtabs::OriginVerifier::GetClearBrowsingDataCallCountForTesting());
+}
+
+#endif  // defined(OS_ANDROID)

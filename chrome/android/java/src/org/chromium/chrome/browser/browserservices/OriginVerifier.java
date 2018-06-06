@@ -38,6 +38,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -384,6 +385,16 @@ public class OriginVerifier {
     private static String relationshipToString(String packageName, Origin origin, int relation) {
         // Neither package names nor origins contain commas.
         return packageName + "," + origin + "," + relation;
+    }
+
+    /**
+     * Removes any data about sites visited from static variables and Android Preferences.
+     */
+    @CalledByNative
+    public static void clearBrowsingData() {
+        ThreadUtils.assertOnUiThread();
+        if (sPackageToCachedOrigins != null) sPackageToCachedOrigins.clear();
+        ChromePreferenceManager.getInstance().setVerifiedDigitalAssetLinks(Collections.emptySet());
     }
 
     private native long nativeInit(Profile profile);
