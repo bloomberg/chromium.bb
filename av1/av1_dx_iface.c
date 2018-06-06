@@ -33,16 +33,6 @@
 
 #include "av1/av1_iface_common.h"
 
-// This limit is due to framebuffer numbers.
-// TODO(hkuang): Remove this limit after implementing ondemand framebuffers.
-#define FRAME_CACHE_SIZE 6  // Cache maximum 6 decoded frames.
-
-typedef struct cache_frame {
-  int fb_idx;
-  aom_image_t img;
-  aom_film_grain_t film_grain_params;
-} cache_frame;
-
 struct aom_codec_alg_priv {
   aom_codec_priv_t base;
   aom_codec_dec_cfg_t cfg;
@@ -70,11 +60,7 @@ struct aom_codec_alg_priv {
   int last_submit_worker_id;
   int next_output_worker_id;
   int available_threads;
-  cache_frame frame_cache[FRAME_CACHE_SIZE];
   aom_image_t *image_with_grain;
-  int frame_cache_write;
-  int frame_cache_read;
-  int num_cache_frames;
   int need_resync;  // wait for key/intra-only frame
   // BufferPool that holds all reference frames. Shared by all the FrameWorkers.
   BufferPool *buffer_pool;
@@ -349,9 +335,6 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
   ctx->next_submit_worker_id = 0;
   ctx->last_submit_worker_id = 0;
   ctx->next_output_worker_id = 0;
-  ctx->frame_cache_read = 0;
-  ctx->frame_cache_write = 0;
-  ctx->num_cache_frames = 0;
   ctx->need_resync = 1;
   ctx->num_frame_workers = 1;
   if (ctx->num_frame_workers > MAX_DECODE_THREADS)
@@ -590,18 +573,6 @@ aom_image_t *add_grain_if_needed(aom_image_t *img, aom_image_t *grain_img_buf,
 static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
                                       aom_codec_iter_t *iter) {
   aom_image_t *img = NULL;
-
-  // Output the frames in the cache first.
-  if (ctx->num_cache_frames > 0) {
-    ctx->last_show_frame = ctx->frame_cache[ctx->frame_cache_read].fb_idx;
-    if (ctx->need_resync) return NULL;
-    img = &ctx->frame_cache[ctx->frame_cache_read].img;
-    ctx->frame_cache_read = (ctx->frame_cache_read + 1) % FRAME_CACHE_SIZE;
-    --ctx->num_cache_frames;
-    return add_grain_if_needed(
-        img, ctx->image_with_grain,
-        &ctx->frame_cache[ctx->frame_cache_read].film_grain_params);
-  }
 
   // iter acts as a flip flop, so an image is only returned on the first
   // call to get_frame.
