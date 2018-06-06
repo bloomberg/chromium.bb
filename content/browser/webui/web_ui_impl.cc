@@ -177,8 +177,9 @@ WebUIController* WebUIImpl::GetController() const {
   return controller_.get();
 }
 
-void WebUIImpl::SetController(WebUIController* controller) {
-  controller_.reset(controller);
+void WebUIImpl::SetController(std::unique_ptr<WebUIController> controller) {
+  DCHECK(controller);
+  controller_ = std::move(controller);
 }
 
 bool WebUIImpl::CanCallJavascript() {

@@ -113,6 +113,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
@@ -6074,12 +6075,12 @@ void WebContentsImpl::OnUserInteraction(const blink::WebInputEvent::Type type) {
 
 std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUI(const GURL& url) {
   std::unique_ptr<WebUIImpl> web_ui = std::make_unique<WebUIImpl>(this);
-  WebUIController* controller =
+  std::unique_ptr<WebUIController> controller(
       WebUIControllerFactoryRegistry::GetInstance()
-          ->CreateWebUIControllerForURL(web_ui.get(), url);
+          ->CreateWebUIControllerForURL(web_ui.get(), url));
   if (controller) {
     web_ui->AddMessageHandler(std::make_unique<GenericHandler>());
-    web_ui->SetController(controller);
+    web_ui->SetController(std::move(controller));
     return web_ui;
   }
 

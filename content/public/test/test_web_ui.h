@@ -28,7 +28,7 @@ class TestWebUI : public WebUI {
   // WebUI overrides.
   WebContents* GetWebContents() const override;
   WebUIController* GetController() const override;
-  void SetController(WebUIController* controller) override;
+  void SetController(std::unique_ptr<WebUIController> controller) override;
   float GetDeviceScaleFactor() const override;
   const base::string16& GetOverriddenTitle() const override;
   void OverrideTitle(const base::string16& title) override {}
