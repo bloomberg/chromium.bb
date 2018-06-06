@@ -31,24 +31,21 @@ class CRYPTO_EXPORT MockAppleKeychain : public AppleKeychain {
   ~MockAppleKeychain() override;
 
   // AppleKeychain implementation.
-  OSStatus FindGenericPassword(CFTypeRef keychainOrArray,
-                               UInt32 serviceNameLength,
+  OSStatus FindGenericPassword(UInt32 serviceNameLength,
                                const char* serviceName,
                                UInt32 accountNameLength,
                                const char* accountName,
                                UInt32* passwordLength,
                                void** passwordData,
-                               SecKeychainItemRef* itemRef) const override;
-  OSStatus ItemFreeContent(SecKeychainAttributeList* attrList,
-                           void* data) const override;
-  OSStatus AddGenericPassword(SecKeychainRef keychain,
-                              UInt32 serviceNameLength,
+                               AppleSecKeychainItemRef* itemRef) const override;
+  OSStatus ItemFreeContent(void* data) const override;
+  OSStatus AddGenericPassword(UInt32 serviceNameLength,
                               const char* serviceName,
                               UInt32 accountNameLength,
                               const char* accountName,
                               UInt32 passwordLength,
                               const void* passwordData,
-                              SecKeychainItemRef* itemRef) const override;
+                              AppleSecKeychainItemRef* itemRef) const override;
 
   // Returns the password that OSCrypt uses to generate its encryption key.
   std::string GetEncryptionPassword() const;

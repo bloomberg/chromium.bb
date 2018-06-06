@@ -25,14 +25,13 @@ void IncrementKeychainAccessHistogram() {
 namespace crypto {
 
 OSStatus MockAppleKeychain::FindGenericPassword(
-    CFTypeRef keychainOrArray,
     UInt32 serviceNameLength,
     const char* serviceName,
     UInt32 accountNameLength,
     const char* accountName,
     UInt32* passwordLength,
     void** passwordData,
-    SecKeychainItemRef* itemRef) const {
+    AppleSecKeychainItemRef* itemRef) const {
   IncrementKeychainAccessHistogram();
 
   // When simulating |noErr|, return canned |passwordData| and
@@ -50,22 +49,20 @@ OSStatus MockAppleKeychain::FindGenericPassword(
   return find_generic_result_;
 }
 
-OSStatus MockAppleKeychain::ItemFreeContent(SecKeychainAttributeList* attrList,
-                                            void* data) const {
+OSStatus MockAppleKeychain::ItemFreeContent(void* data) const {
   // No-op.
   password_data_count_--;
   return noErr;
 }
 
 OSStatus MockAppleKeychain::AddGenericPassword(
-    SecKeychainRef keychain,
     UInt32 serviceNameLength,
     const char* serviceName,
     UInt32 accountNameLength,
     const char* accountName,
     UInt32 passwordLength,
     const void* passwordData,
-    SecKeychainItemRef* itemRef) const {
+    AppleSecKeychainItemRef* itemRef) const {
   IncrementKeychainAccessHistogram();
 
   called_add_generic_ = true;

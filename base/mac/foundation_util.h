@@ -52,9 +52,6 @@ typedef CR_FORWARD_ENUM(unsigned int, NSSearchPathDirectory);
 typedef unsigned int NSSearchPathDomainMask;
 #endif
 
-typedef struct OpaqueSecTrustRef* SecACLRef;
-typedef struct OpaqueSecTrustedApplicationRef* SecTrustedApplicationRef;
-
 #if defined(OS_IOS)
 typedef struct CF_BRIDGED_TYPE(id) __SecKey* SecKeyRef;
 typedef struct CF_BRIDGED_TYPE(id) __SecPolicy* SecPolicyRef;
@@ -311,10 +308,8 @@ CF_CAST_DECL(CTFont);
 CF_CAST_DECL(CTFontDescriptor);
 CF_CAST_DECL(CTRun);
 
-CF_CAST_DECL(SecACL);
 CF_CAST_DECL(SecKey);
 CF_CAST_DECL(SecPolicy);
-CF_CAST_DECL(SecTrustedApplication);
 
 #undef CF_CAST_DECL
 

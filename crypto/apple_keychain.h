@@ -11,13 +11,13 @@
 #include "build/build_config.h"
 #include "crypto/crypto_export.h"
 
-#if defined (OS_IOS)
-typedef void* SecKeychainRef;
-typedef void* SecKeychainItemRef;
-typedef void SecKeychainAttributeList;
-#endif
-
 namespace crypto {
+
+#if defined(OS_IOS)
+using AppleSecKeychainItemRef = void*;
+#else
+using AppleSecKeychainItemRef = SecKeychainItemRef;
+#endif
 
 // Wraps the KeychainServices API in a very thin layer, to allow it to be
 // mocked out for testing.
@@ -32,29 +32,26 @@ class CRYPTO_EXPORT AppleKeychain {
   AppleKeychain();
   virtual ~AppleKeychain();
 
-  virtual OSStatus FindGenericPassword(CFTypeRef keychainOrArray,
-                                       UInt32 serviceNameLength,
+  virtual OSStatus FindGenericPassword(UInt32 serviceNameLength,
                                        const char* serviceName,
                                        UInt32 accountNameLength,
                                        const char* accountName,
                                        UInt32* passwordLength,
                                        void** passwordData,
-                                       SecKeychainItemRef* itemRef) const;
+                                       AppleSecKeychainItemRef* itemRef) const;
 
-  virtual OSStatus ItemFreeContent(SecKeychainAttributeList* attrList,
-                                   void* data) const;
+  virtual OSStatus ItemFreeContent(void* data) const;
 
-  virtual OSStatus AddGenericPassword(SecKeychainRef keychain,
-                                      UInt32 serviceNameLength,
+  virtual OSStatus AddGenericPassword(UInt32 serviceNameLength,
                                       const char* serviceName,
                                       UInt32 accountNameLength,
                                       const char* accountName,
                                       UInt32 passwordLength,
                                       const void* passwordData,
-                                      SecKeychainItemRef* itemRef) const;
+                                      AppleSecKeychainItemRef* itemRef) const;
 
 #if !defined(OS_IOS)
-  virtual OSStatus ItemDelete(SecKeychainItemRef itemRef) const;
+  virtual OSStatus ItemDelete(AppleSecKeychainItemRef itemRef) const;
 #endif  // !defined(OS_IOS)
 
  private:
