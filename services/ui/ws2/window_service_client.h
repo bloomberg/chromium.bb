@@ -235,6 +235,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
                          mojom::OrderDirection direction);
   std::vector<aura::Window*> GetWindowTreeImpl(const ClientWindowId& window_id);
   bool SetFocusImpl(const ClientWindowId& window_id);
+  bool StackAboveImpl(const ClientWindowId& above_window_id,
+                      const ClientWindowId& below_window_id);
   bool StackAtTopImpl(const ClientWindowId& window_id);
 
   void GetWindowTreeRecursive(aura::Window* window,

@@ -1069,6 +1069,57 @@ TEST(WindowServiceClientTest, ReorderWindow) {
       top_level, window2, mojom::OrderDirection::ABOVE));
 }
 
+TEST(WindowServiceClientTest, StackAbove) {
+  // Create two top-levels.
+  WindowServiceTestSetup setup;
+  aura::Window* top_level1 = setup.client_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level1);
+  aura::Window* top_level2 = setup.client_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level2);
+  ASSERT_TRUE(top_level1->parent());
+  ASSERT_EQ(top_level1->parent(), top_level2->parent());
+  ASSERT_EQ(2u, top_level2->parent()->children().size());
+
+  // 1 on top of 2.
+  EXPECT_TRUE(setup.client_test_helper()->StackAbove(top_level1, top_level2));
+  EXPECT_EQ(top_level2, top_level2->parent()->children()[0]);
+  EXPECT_EQ(top_level1, top_level2->parent()->children()[1]);
+
+  // Repeat, should still succeed and nothing should change.
+  EXPECT_TRUE(setup.client_test_helper()->StackAbove(top_level1, top_level2));
+  EXPECT_EQ(top_level2, top_level2->parent()->children()[0]);
+  EXPECT_EQ(top_level1, top_level2->parent()->children()[1]);
+
+  // 2 on top of 1.
+  EXPECT_TRUE(setup.client_test_helper()->StackAbove(top_level2, top_level1));
+  EXPECT_EQ(top_level1, top_level2->parent()->children()[0]);
+  EXPECT_EQ(top_level2, top_level2->parent()->children()[1]);
+
+  // 1 on top of 2, using WindowTree interface, which should result in an ack.
+  setup.changes()->clear();
+  uint32_t change_id = 102;
+  setup.client_test_helper()->window_tree()->StackAbove(
+      change_id, setup.client_test_helper()->TransportIdForWindow(top_level1),
+      setup.client_test_helper()->TransportIdForWindow(top_level2));
+  EXPECT_EQ("ChangeCompleted id=102 success=true",
+            SingleChangeToDescription(*setup.changes()));
+  setup.changes()->clear();
+  EXPECT_EQ(top_level2, top_level2->parent()->children()[0]);
+  EXPECT_EQ(top_level1, top_level2->parent()->children()[1]);
+
+  // Using invalid id should fail.
+  setup.client_test_helper()->window_tree()->StackAbove(
+      change_id, setup.client_test_helper()->TransportIdForWindow(top_level1),
+      kInvalidTransportId);
+  EXPECT_EQ("ChangeCompleted id=102 success=false",
+            SingleChangeToDescription(*setup.changes()));
+
+  // Using non-top-level should fail.
+  aura::Window* non_top_level_window = setup.client_test_helper()->NewWindow();
+  EXPECT_FALSE(
+      setup.client_test_helper()->StackAbove(top_level1, non_top_level_window));
+}
+
 }  // namespace
 }  // namespace ws2
 }  // namespace ui
