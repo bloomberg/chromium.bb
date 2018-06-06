@@ -1294,6 +1294,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchSecondTapName,
      flag_descriptions::kContextualSearchSecondTapDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchSecondTap)},
+    {"explore-sites", flag_descriptions::kExploreSitesName,
+     flag_descriptions::kExploreSitesDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kExploreSites)},
 #endif  // OS_ANDROID
     {"show-autofill-type-predictions",
      flag_descriptions::kShowAutofillTypePredictionsName,
