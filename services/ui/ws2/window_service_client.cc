@@ -4,6 +4,8 @@
 
 #include "services/ui/ws2/window_service_client.h"
 
+#include <algorithm>
+
 #include "base/auto_reset.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_info.h"
@@ -69,22 +71,6 @@ WindowServiceClient::WindowServiceClient(WindowService* window_service,
   wm::CaptureController::Get()->AddObserver(this);
 }
 
-void WindowServiceClient::InitForEmbed(aura::Window* root,
-                                       mojom::WindowTreePtr window_tree_ptr) {
-  // Force ClientWindow to be created for |root|.
-  ClientWindow* client_window =
-      window_service_->GetClientWindowForWindowCreateIfNecessary(root);
-  const ClientWindowId client_window_id = client_window->frame_sink_id();
-  AddWindowToKnownWindows(root, client_window_id);
-
-  const bool is_top_level = false;
-  CreateClientRoot(root, is_top_level, std::move(window_tree_ptr));
-}
-
-void WindowServiceClient::InitFromFactory() {
-  connection_type_ = ConnectionType::kOther;
-}
-
 WindowServiceClient::~WindowServiceClient() {
   wm::CaptureController::Get()->RemoveObserver(this);
 
@@ -102,6 +88,22 @@ WindowServiceClient::~WindowServiceClient() {
     RemoveWindowFromKnownWindows(client_created_windows_.begin()->first,
                                  delete_if_owned);
   }
+}
+
+void WindowServiceClient::InitForEmbed(aura::Window* root,
+                                       mojom::WindowTreePtr window_tree_ptr) {
+  // Force ClientWindow to be created for |root|.
+  ClientWindow* client_window =
+      window_service_->GetClientWindowForWindowCreateIfNecessary(root);
+  const ClientWindowId client_window_id = client_window->frame_sink_id();
+  AddWindowToKnownWindows(root, client_window_id);
+
+  const bool is_top_level = false;
+  CreateClientRoot(root, is_top_level, std::move(window_tree_ptr));
+}
+
+void WindowServiceClient::InitFromFactory() {
+  connection_type_ = ConnectionType::kOther;
 }
 
 void WindowServiceClient::SendEventToClient(aura::Window* window,
@@ -346,6 +348,26 @@ void WindowServiceClient::RemoveWindowFromKnownWindows(aura::Window* window,
   window_to_client_window_id_map_.erase(iter);
 }
 
+void WindowServiceClient::RemoveWindowFromKnownWindowsRecursive(
+    aura::Window* window,
+    std::vector<aura::Window*>* created_windows) {
+  if (IsClientCreatedWindow(window)) {
+    // Stop iterating at windows created by this client. We assume the client
+    // will keep seeing any descendants.
+    if (created_windows)
+      created_windows->push_back(window);
+    return;
+  }
+
+  if (IsWindowKnown(window)) {
+    const bool delete_if_owned = true;
+    RemoveWindowFromKnownWindows(window, delete_if_owned);
+  }
+
+  for (aura::Window* child : window->children())
+    RemoveWindowFromKnownWindowsRecursive(child, created_windows);
+}
+
 bool WindowServiceClient::IsValidIdForNewWindow(
     const ClientWindowId& id) const {
   return client_window_id_to_window_map_.count(id) == 0u &&
@@ -375,24 +397,9 @@ ClientWindowId WindowServiceClient::MakeClientWindowId(
                         ClientWindowIdFromTransportId(transport_window_id));
 }
 
-void WindowServiceClient::RemoveWindowFromKnownWindowsRecursive(
-    aura::Window* window,
-    std::vector<aura::Window*>* created_windows) {
-  if (IsClientCreatedWindow(window)) {
-    // Stop iterating at windows created by this client. We assume the client
-    // will keep seeing any descendants.
-    if (created_windows)
-      created_windows->push_back(window);
-    return;
-  }
-
-  if (IsWindowKnown(window)) {
-    const bool delete_if_owned = true;
-    RemoveWindowFromKnownWindows(window, delete_if_owned);
-  }
-
-  for (aura::Window* child : window->children())
-    RemoveWindowFromKnownWindowsRecursive(child, created_windows);
+bool WindowServiceClient::IsLocalSurfaceIdAssignedByClient(
+    aura::Window* window) {
+  return !IsTopLevel(window) && IsClientCreatedWindow(window);
 }
 
 std::vector<mojom::WindowDataPtr> WindowServiceClient::WindowsToWindowDatas(
@@ -686,6 +693,37 @@ bool WindowServiceClient::SetWindowPropertyImpl(
   return true;
 }
 
+bool WindowServiceClient::EmbedImpl(
+    const ClientWindowId& window_id,
+    mojom::WindowTreeClientPtr window_tree_client_ptr,
+    mojom::WindowTreeClient* window_tree_client,
+    uint32_t flags) {
+  DVLOG(3) << "Embed window_id=" << window_id;
+
+  aura::Window* window = GetWindowByClientId(window_id);
+  if (!window) {
+    DVLOG(1) << "Embed failed (no window)";
+    return false;
+  }
+  if (!IsClientCreatedWindow(window) || IsTopLevel(window)) {
+    DVLOG(1) << "Embed failed (access denied)";
+    return false;
+  }
+
+  const bool owner_intercept_events =
+      (flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0;
+  std::unique_ptr<Embedding> embedding =
+      std::make_unique<Embedding>(this, window, owner_intercept_events);
+  embedding->Init(
+      window_service_, std::move(window_tree_client_ptr), window_tree_client,
+      base::BindOnce(&WindowServiceClient::OnEmbeddedClientConnectionLost,
+                     base::Unretained(this), embedding.get()));
+  if (flags & mojom::kEmbedFlagEmbedderControlsVisibility)
+    embedding->embedded_client()->can_change_root_window_visibility_ = false;
+  ClientWindow::GetMayBeNull(window)->SetEmbedding(std::move(embedding));
+  return true;
+}
+
 bool WindowServiceClient::SetWindowOpacityImpl(const ClientWindowId& window_id,
                                                float opacity) {
   aura::Window* window = GetWindowByClientId(window_id);
@@ -700,11 +738,6 @@ bool WindowServiceClient::SetWindowOpacityImpl(const ClientWindowId& window_id,
   }
   DVLOG(1) << "SetWindowOpacity failed (invalid window or access denied)";
   return false;
-}
-
-bool WindowServiceClient::IsLocalSurfaceIdAssignedByClient(
-    aura::Window* window) {
-  return !IsTopLevel(window) && IsClientCreatedWindow(window);
 }
 
 bool WindowServiceClient::SetWindowBoundsImpl(
@@ -772,34 +805,27 @@ bool WindowServiceClient::SetWindowBoundsImpl(
   return false;
 }
 
-bool WindowServiceClient::EmbedImpl(
+bool WindowServiceClient::ReorderWindowImpl(
     const ClientWindowId& window_id,
-    mojom::WindowTreeClientPtr window_tree_client_ptr,
-    mojom::WindowTreeClient* window_tree_client,
-    uint32_t flags) {
-  DVLOG(3) << "Embed window_id=" << window_id;
-
+    const ClientWindowId& relative_window_id,
+    mojom::OrderDirection direction) {
+  DVLOG(3) << "ReorderWindow window_id=" << window_id
+           << " relative_window_id=" << relative_window_id;
   aura::Window* window = GetWindowByClientId(window_id);
-  if (!window) {
-    DVLOG(1) << "Embed failed (no window)";
+  aura::Window* relative_window = GetWindowByClientId(relative_window_id);
+  // Only allow reordering of windows the client created, and windows that are
+  // siblings.
+  if (!IsClientCreatedWindow(window) ||
+      !IsClientCreatedWindow(relative_window) ||
+      window->parent() != relative_window->parent() || !window->parent() ||
+      !IsClientCreatedWindow(window->parent())) {
+    DVLOG(1) << "ReorderWindow failed (invalid windows)";
     return false;
   }
-  if (!IsClientCreatedWindow(window) || IsTopLevel(window)) {
-    DVLOG(1) << "Embed failed (access denied)";
-    return false;
-  }
-
-  const bool owner_intercept_events =
-      (flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0;
-  std::unique_ptr<Embedding> embedding =
-      std::make_unique<Embedding>(this, window, owner_intercept_events);
-  embedding->Init(
-      window_service_, std::move(window_tree_client_ptr), window_tree_client,
-      base::BindOnce(&WindowServiceClient::OnEmbeddedClientConnectionLost,
-                     base::Unretained(this), embedding.get()));
-  if (flags & mojom::kEmbedFlagEmbedderControlsVisibility)
-    embedding->embedded_client()->can_change_root_window_visibility_ = false;
-  ClientWindow::GetMayBeNull(window)->SetEmbedding(std::move(embedding));
+  if (direction == mojom::OrderDirection::ABOVE)
+    window->parent()->StackChildAbove(window, relative_window);
+  else
+    window->parent()->StackChildBelow(window, relative_window);
   return true;
 }
 
@@ -1136,10 +1162,13 @@ void WindowServiceClient::SetChildModalParent(uint32_t change_id,
 }
 
 void WindowServiceClient::ReorderWindow(uint32_t change_id,
-                                        Id window_id,
-                                        Id relative_window_id,
-                                        ::ui::mojom::OrderDirection direction) {
-  NOTIMPLEMENTED_LOG_ONCE();
+                                        Id transport_window_id,
+                                        Id transport_relative_window_id,
+                                        mojom::OrderDirection direction) {
+  const bool result = ReorderWindowImpl(
+      MakeClientWindowId(transport_window_id),
+      MakeClientWindowId(transport_relative_window_id), direction);
+  window_tree_client_->OnChangeCompleted(change_id, result);
 }
 
 void WindowServiceClient::GetWindowTree(Id window_id,

@@ -59,6 +59,9 @@ class WindowServiceClientTestHelper {
       const base::flat_map<std::string, std::vector<uint8_t>>& properties);
   bool SetCapture(aura::Window* window);
   bool ReleaseCapture(aura::Window* window);
+  bool ReorderWindow(aura::Window* window,
+                     aura::Window* relative_window,
+                     mojom::OrderDirection direction);
   bool SetWindowBounds(
       aura::Window* window,
       const gfx::Rect& bounds,

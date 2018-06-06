@@ -230,6 +230,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
       const ClientWindowId& window_id,
       const gfx::Rect& bounds,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id);
+  bool ReorderWindowImpl(const ClientWindowId& window_id,
+                         const ClientWindowId& relative_window_id,
+                         mojom::OrderDirection direction);
   std::vector<aura::Window*> GetWindowTreeImpl(const ClientWindowId& window_id);
   bool SetFocusImpl(const ClientWindowId& window_id);
   bool StackAtTopImpl(const ClientWindowId& window_id);
@@ -308,9 +311,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
                            Id window_id,
                            Id parent_window_id) override;
   void ReorderWindow(uint32_t change_id,
-                     Id window_id,
-                     Id relative_window_id,
-                     ::ui::mojom::OrderDirection direction) override;
+                     Id transport_window_id,
+                     Id transport_relative_window_id,
+                     mojom::OrderDirection direction) override;
   void GetWindowTree(Id window_id, GetWindowTreeCallback callback) override;
   void Embed(Id transport_window_id,
              mojom::WindowTreeClientPtr client_ptr,
