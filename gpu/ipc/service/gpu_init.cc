@@ -41,7 +41,6 @@
 namespace gpu {
 
 namespace {
-#if !defined(OS_MACOSX)
 bool CollectGraphicsInfo(GPUInfo* gpu_info, GpuPreferences* gpu_preferences) {
   DCHECK(gpu_info);
   TRACE_EVENT0("gpu,startup", "Collect Graphics Info");
@@ -69,7 +68,6 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info, GpuPreferences* gpu_preferences) {
   }
   return success;
 }
-#endif  // defined(OS_MACOSX)
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(IS_CHROMECAST)
 bool CanAccessNvidiaDeviceFile() {
@@ -218,12 +216,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   bool gl_disabled = gl::GetGLImplementation() == gl::kGLImplementationDisabled;
 
   // We need to collect GL strings (VENDOR, RENDERER) for blacklisting purposes.
-  // However, on Mac we don't actually use them. As documented in
-  // crbug.com/222934, due to some driver issues, glGetString could take
-  // multiple seconds to finish, which in turn cause the GPU process to crash.
-  // By skipping the following code on Mac, we don't really lose anything,
-  // because the basic GPU information is passed down from the host process.
-#if !defined(OS_MACOSX)
   if (!gl_disabled && !use_swiftshader) {
     if (!CollectGraphicsInfo(&gpu_info_, &gpu_preferences_))
       return false;
@@ -242,7 +234,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       }
     }
   }
-#endif
   if (use_swiftshader) {
     AdjustInfoToSwiftShader();
   } else if (gl_disabled) {
