@@ -4,11 +4,15 @@
 
 #include "content/browser/renderer_host/media/service_video_capture_provider.h"
 
+#include "content/browser/gpu/gpu_client_impl.h"
 #include "content/browser/renderer_host/media/service_video_capture_device_launcher.h"
+#include "content/browser/renderer_host/media/video_capture_dependencies.h"
 #include "content/browser/renderer_host/media/video_capture_factory_delegate.h"
+#include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
@@ -19,7 +23,7 @@ class ServiceConnectorImpl
     : public content::ServiceVideoCaptureProvider::ServiceConnector {
  public:
   ServiceConnectorImpl() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // In unit test environments, there may not be any connector.
     auto* connection = content::ServiceManagerConnection::GetForProcess();
     if (!connection)
@@ -44,34 +48,66 @@ class ServiceConnectorImpl
   std::unique_ptr<service_manager::Connector> connector_;
 };
 
+class DelegateToBrowserGpuServiceAcceleratorFactory
+    : public video_capture::mojom::AcceleratorFactory {
+ public:
+  void CreateJpegDecodeAccelerator(
+      media::mojom::JpegDecodeAcceleratorRequest jda_request) override {
+    content::VideoCaptureDependencies::CreateJpegDecodeAccelerator(
+        std::move(jda_request));
+  }
+  void CreateJpegEncodeAccelerator(
+      media::mojom::JpegEncodeAcceleratorRequest jea_request) override {
+    content::VideoCaptureDependencies::CreateJpegEncodeAccelerator(
+        std::move(jea_request));
+  }
+};
+
+std::unique_ptr<ui::mojom::GpuMemoryBufferFactory> CreateGpuClient() {
+  const auto gpu_client_id =
+      content::ChildProcessHostImpl::GenerateChildProcessUniqueId();
+  return std::make_unique<content::GpuClientImpl>(gpu_client_id);
+}
+
+std::unique_ptr<video_capture::mojom::AcceleratorFactory>
+CreateAcceleratorFactory() {
+  return std::make_unique<DelegateToBrowserGpuServiceAcceleratorFactory>();
+}
+
 }  // anonymous namespace
 
 namespace content {
 
 ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
     base::RepeatingCallback<void(const std::string&)> emit_log_message_cb)
-    : ServiceVideoCaptureProvider(std::make_unique<ServiceConnectorImpl>(),
-                                  std::move(emit_log_message_cb)) {}
+    : ServiceVideoCaptureProvider(
+          std::make_unique<ServiceConnectorImpl>(),
+          base::BindRepeating(&CreateGpuClient),
+          base::BindRepeating(&CreateAcceleratorFactory),
+          std::move(emit_log_message_cb)) {}
 
 ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
     std::unique_ptr<ServiceConnector> service_connector,
+    CreateMemoryBufferFactoryCallback create_memory_buffer_factory_cb,
+    CreateAcceleratorFactoryCallback create_accelerator_factory_cb,
     base::RepeatingCallback<void(const std::string&)> emit_log_message_cb)
     : service_connector_(std::move(service_connector)),
+      create_memory_buffer_factory_cb_(
+          std::move(create_memory_buffer_factory_cb)),
+      create_accelerator_factory_cb_(std::move(create_accelerator_factory_cb)),
       emit_log_message_cb_(std::move(emit_log_message_cb)),
       usage_count_(0),
       launcher_has_connected_to_device_factory_(false),
-      weak_ptr_factory_(this) {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
+      weak_ptr_factory_(this) {}
 
 ServiceVideoCaptureProvider::~ServiceVideoCaptureProvider() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   UninitializeInternal(ReasonForUninitialize::kShutdown);
 }
 
 void ServiceVideoCaptureProvider::GetDeviceInfosAsync(
     GetDeviceInfosCallback result_callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   emit_log_message_cb_.Run("ServiceVideoCaptureProvider::GetDeviceInfosAsync");
   IncreaseUsageCount();
   LazyConnectToService();
@@ -86,7 +122,7 @@ void ServiceVideoCaptureProvider::GetDeviceInfosAsync(
 
 std::unique_ptr<VideoCaptureDeviceLauncher>
 ServiceVideoCaptureProvider::CreateDeviceLauncher() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   return std::make_unique<ServiceVideoCaptureDeviceLauncher>(
       base::BindRepeating(&ServiceVideoCaptureProvider::ConnectToDeviceFactory,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -94,7 +130,7 @@ ServiceVideoCaptureProvider::CreateDeviceLauncher() {
 
 void ServiceVideoCaptureProvider::ConnectToDeviceFactory(
     std::unique_ptr<VideoCaptureFactoryDelegate>* out_factory) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   IncreaseUsageCount();
   LazyConnectToService();
   launcher_has_connected_to_device_factory_ = true;
@@ -105,6 +141,7 @@ void ServiceVideoCaptureProvider::ConnectToDeviceFactory(
 }
 
 void ServiceVideoCaptureProvider::LazyConnectToService() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (device_factory_provider_.is_bound())
     return;
 
@@ -123,7 +160,15 @@ void ServiceVideoCaptureProvider::LazyConnectToService() {
   launcher_has_connected_to_device_factory_ = false;
   time_of_last_connect_ = base::TimeTicks::Now();
 
+  video_capture::mojom::AcceleratorFactoryPtr accelerator_factory;
+  ui::mojom::GpuMemoryBufferFactoryPtr memory_buffer_factory;
+  mojo::MakeStrongBinding(create_accelerator_factory_cb_.Run(),
+                          mojo::MakeRequest(&accelerator_factory));
+  mojo::MakeStrongBinding(create_memory_buffer_factory_cb_.Run(),
+                          mojo::MakeRequest(&memory_buffer_factory));
   service_connector_->BindFactoryProvider(&device_factory_provider_);
+  device_factory_provider_->InjectGpuDependencies(
+      std::move(memory_buffer_factory), std::move(accelerator_factory));
   device_factory_provider_->ConnectToDeviceFactory(
       mojo::MakeRequest(&device_factory_));
   // Unretained |this| is safe, because |this| owns |device_factory_|.
@@ -135,13 +180,13 @@ void ServiceVideoCaptureProvider::LazyConnectToService() {
 void ServiceVideoCaptureProvider::OnDeviceInfosReceived(
     GetDeviceInfosCallback result_callback,
     const std::vector<media::VideoCaptureDeviceInfo>& infos) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::ResetAndReturn(&result_callback).Run(infos);
   DecreaseUsageCount();
 }
 
 void ServiceVideoCaptureProvider::OnLostConnectionToDeviceFactory() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   emit_log_message_cb_.Run(
       "ServiceVideoCaptureProvider::OnLostConnectionToDeviceFactory");
   // This may indicate that the video capture service has crashed. Uninitialize
@@ -151,12 +196,12 @@ void ServiceVideoCaptureProvider::OnLostConnectionToDeviceFactory() {
 }
 
 void ServiceVideoCaptureProvider::IncreaseUsageCount() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   usage_count_++;
 }
 
 void ServiceVideoCaptureProvider::DecreaseUsageCount() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   usage_count_--;
   DCHECK_GE(usage_count_, 0);
   if (usage_count_ == 0)
@@ -165,7 +210,7 @@ void ServiceVideoCaptureProvider::DecreaseUsageCount() {
 
 void ServiceVideoCaptureProvider::UninitializeInternal(
     ReasonForUninitialize reason) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!device_factory_.is_bound()) {
     return;
   }
