@@ -36,9 +36,7 @@
 namespace blink {
 
 TextTrackList::TextTrackList(HTMLMediaElement* owner)
-    : owner_(owner),
-      async_event_queue_(
-          MediaElementEventQueue::Create(this, &owner_->GetDocument())) {}
+    : owner_(owner), async_event_queue_(MediaElementEventQueue::Create(this)) {}
 
 TextTrackList::~TextTrackList() = default;
 
