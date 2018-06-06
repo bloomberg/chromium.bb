@@ -486,10 +486,8 @@ bool NativeStackSamplerWin::GetModuleForHandle(
   if (result_length == 0)
     return false;
 
-  module->filename = base::FilePath(module_name);
-
+  module->filename = FilePath(module_name);
   module->base_address = reinterpret_cast<uintptr_t>(module_handle);
-
   module->id = GetBuildIDForModule(module_handle);
   return !module->id.empty();
 }
