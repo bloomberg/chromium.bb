@@ -154,9 +154,9 @@ void OfflinePageMHTMLArchiver::OnComputeDigestDone(
     return;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback_), this,
-                                ArchiverResult::SUCCESSFULLY_CREATED, url,
-                                file_path, title, file_size, digest));
+      FROM_HERE,
+      base::BindOnce(std::move(callback_), ArchiverResult::SUCCESSFULLY_CREATED,
+                     url, file_path, title, file_size, digest));
 }
 
 bool OfflinePageMHTMLArchiver::HasConnectionSecurityError(
@@ -188,8 +188,8 @@ void OfflinePageMHTMLArchiver::ReportFailure(ArchiverResult result) {
   DCHECK(result != ArchiverResult::SUCCESSFULLY_CREATED);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(callback_), this, result, GURL(),
-                     base::FilePath(), base::string16(), 0, std::string()));
+      base::BindOnce(std::move(callback_), result, GURL(), base::FilePath(),
+                     base::string16(), 0, std::string()));
 }
 
 }  // namespace offline_pages

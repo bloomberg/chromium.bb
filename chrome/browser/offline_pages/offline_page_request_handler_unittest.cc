@@ -281,6 +281,8 @@ class TestPreviewsDecider : public previews::PreviewsDecider {
   DISALLOW_COPY_AND_ASSIGN(TestPreviewsDecider);
 };
 
+// TODO(jianli, carlosk): This should be removed in favor of using with
+// OfflinePageTestArchiver.
 class TestOfflinePageArchiver : public OfflinePageArchiver {
  public:
   TestOfflinePageArchiver(const GURL& url,
@@ -298,7 +300,7 @@ class TestOfflinePageArchiver : public OfflinePageArchiver {
                      content::WebContents* web_contents,
                      CreateArchiveCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), this,
+        FROM_HERE, base::BindOnce(std::move(callback),
                                   ArchiverResult::SUCCESSFULLY_CREATED, url_,
                                   archive_file_path_, base::string16(),
                                   archive_file_size_, digest_));
@@ -313,8 +315,7 @@ class TestOfflinePageArchiver : public OfflinePageArchiver {
     publish_archive_result_.move_result = SavePageResult::SUCCESS;
     publish_archive_result_.new_file_path = offline_page.file_path;
     publish_archive_result_.download_id = 0;
-    std::move(publish_done_callback)
-        .Run(offline_page, &publish_archive_result_);
+    std::move(publish_done_callback).Run(offline_page, publish_archive_result_);
   }
 
  private:

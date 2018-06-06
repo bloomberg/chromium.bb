@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_MODEL_OFFLINE_PAGE_MODEL_TASKIFIED_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_MODEL_OFFLINE_PAGE_MODEL_TASKIFIED_H_
 
-#include <stdint.h>
-
-#include <utility>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -171,14 +172,14 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   void OnCreateArchiveDone(const SavePageParams& save_page_params,
                            int64_t offline_id,
                            const base::Time& start_time,
+                           std::unique_ptr<OfflinePageArchiver> archiver,
                            SavePageCallback callback,
-                           OfflinePageArchiver* archiver,
                            OfflinePageArchiver::ArchiverResult archiver_result,
                            const GURL& saved_url,
                            const base::FilePath& file_path,
                            const base::string16& title,
                            int64_t file_size,
-                           const std::string& digest);
+                           const std::string& file_hash);
 
   // Callback for adding pages.
   void OnAddPageDone(const OfflinePageItem& page,
@@ -210,20 +211,17 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   void OnSelectItemsMarkedForUpgradeDone(
       const MultipleOfflinePageItemResult& pages_for_upgrade);
 
-  // Methods for publishing the page to the public directory.
-  void PublishArchive(const OfflinePageItem& offline_page,
-                      SavePageCallback callback,
-                      OfflinePageArchiver* archiver);
-
   // Callback for when PublishArchive has completd.
-  void PublishArchiveDone(SavePageCallback save_page_callback,
+  void PublishArchiveDone(std::unique_ptr<OfflinePageArchiver> archiver,
+                          SavePageCallback save_page_callback,
                           const OfflinePageItem& offline_page,
-                          PublishArchiveResult* archive_result);
+                          PublishArchiveResult publish_results);
 
   // Callback for when publishing an internal archive has completed.
-  void PublishInternalArchiveDone(PublishPageCallback publish_done_callback,
+  void PublishInternalArchiveDone(std::unique_ptr<OfflinePageArchiver> archiver,
+                                  PublishPageCallback publish_done_callback,
                                   const OfflinePageItem& offline_page,
-                                  PublishArchiveResult* publish_results);
+                                  PublishArchiveResult publish_results);
 
   // Method for unpublishing the page from the system download manager.
   static void RemoveFromDownloadManager(
@@ -232,7 +230,6 @@ class OfflinePageModelTaskified : public OfflinePageModel,
 
   // Other utility methods.
   void RemovePagesMatchingUrlAndNamespace(const OfflinePageItem& page);
-  void ErasePendingArchiver(OfflinePageArchiver* archiver);
   void CreateArchivesDirectoryIfNeeded();
   base::Time GetCurrentTime();
 
@@ -250,12 +247,6 @@ class OfflinePageModelTaskified : public OfflinePageModel,
 
   // The observers.
   base::ObserverList<Observer> observers_;
-
-  // Pending archivers owned by this model.
-  // This is above the definition of |task_queue_|. Since the queue may hold raw
-  // pointers to the pending archivers, and the pending archivers are better
-  // destructed after the |task_queue_|.
-  std::vector<std::unique_ptr<OfflinePageArchiver>> pending_archivers_;
 
   // Clock for testing only.
   base::Clock* clock_ = nullptr;

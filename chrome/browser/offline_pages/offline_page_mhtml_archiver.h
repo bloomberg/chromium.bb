@@ -41,6 +41,8 @@ namespace offline_pages {
 //     // Callback is of type OfflinePageModel::SavePageCallback.
 //     model->SavePage(url, std::move(archiver), callback);
 //   }
+//
+// TODO(https://crbug.com/849424): turn this into a singleton.
 class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
  public:
   OfflinePageMHTMLArchiver();
