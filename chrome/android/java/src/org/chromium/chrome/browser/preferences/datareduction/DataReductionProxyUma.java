@@ -100,7 +100,7 @@ public class DataReductionProxyUma {
 
     /**
      * Record the Previews.ContextMenuAction.LoFi histogram.
-     * @param action LoFi user action on the context menu
+     * @param action Lo-Fi user action on the context menu
      */
     public static void previewsLoFiContextMenuAction(int action) {
         assert action >= 0 && action < ACTION_LOFI_CONTEXT_MENU_INDEX_BOUNDARY;

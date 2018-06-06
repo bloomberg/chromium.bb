@@ -696,7 +696,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
     /**
      * Record the UMA related to save image context menu option.
-     * @param wasFetchedLoFi The image was fectched LoFi.
+     * @param wasFetchedLoFi The image was fetched Lo-Fi.
      * @param isDownloadableScheme The image is downloadable.
      */
     private void recordSaveImageContextMenuResult(
