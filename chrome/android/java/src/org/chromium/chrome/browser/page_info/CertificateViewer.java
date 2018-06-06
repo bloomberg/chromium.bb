@@ -44,36 +44,39 @@ class CertificateViewer implements OnItemSelectedListener {
     private static final int SUBJECTALTERNATIVENAME_IPADDRESS_ID = 7;
 
     private final Context mContext;
-    private final ArrayList<LinearLayout> mViews;
-    private final ArrayList<String> mTitles;
     private final int mPadding;
+    private ArrayList<String> mTitles;
+    private ArrayList<LinearLayout> mViews;
     private CertificateFactory mCertificateFactory;
+    private Dialog mDialog;
+    private ScrollView mScrollView;
+    private Spinner mSpinner;
+
+    public CertificateViewer(Context context) {
+        mContext = context;
+        mPadding =
+                (int) context.getResources().getDimension(R.dimen.connection_info_padding_wide) / 2;
+        mDialog = null;
+    }
 
     /**
      * Show a dialog with the provided certificate information.
+     * Dialog will contain spinner allowing the user to select
+     * which certificate to display.
      *
-     * @param context The context this view should display in.
      * @param derData DER-encoded data representing a X509 certificate chain.
      */
-    public static void showCertificateChain(Context context, byte[][] derData) {
-        CertificateViewer viewer = new CertificateViewer(context);
-        viewer.showCertificateChain(derData);
-    }
+    public void showCertificateChain(byte[][] derData) {
+        if (mDialog != null && mDialog.isShowing()) {
+            return;
+        }
 
-    private CertificateViewer(Context context) {
-        mContext = context;
-        mViews = new ArrayList<LinearLayout>();
         mTitles = new ArrayList<String>();
-        mPadding = (int) context.getResources().getDimension(
-                R.dimen.connection_info_padding_wide) / 2;
-    }
-
-    // Show information about an array of DER-encoded data representing a X509 certificate chain.
-    // A spinner will be displayed allowing the user to select which certificate to display.
-    private void showCertificateChain(byte[][] derData) {
+        mViews = new ArrayList<LinearLayout>();
         for (int i = 0; i < derData.length; i++) {
             addCertificate(derData[i]);
         }
+
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(mContext,
                 android.R.layout.simple_spinner_item,
                 mTitles) {
@@ -99,14 +102,14 @@ class CertificateViewer implements OnItemSelectedListener {
         title.setPadding(mPadding, mPadding, mPadding, mPadding / 2);
         dialogContainer.addView(title);
 
-        Spinner spinner = new Spinner(mContext);
-        ApiCompatibilityUtils.setTextAlignment(spinner, View.TEXT_ALIGNMENT_VIEW_START);
-        spinner.setAdapter(arrayAdapter);
-        spinner.setOnItemSelectedListener(this);
-        spinner.setDropDownWidth(ViewGroup.LayoutParams.MATCH_PARENT);
+        mSpinner = new Spinner(mContext);
+        ApiCompatibilityUtils.setTextAlignment(mSpinner, View.TEXT_ALIGNMENT_VIEW_START);
+        mSpinner.setAdapter(arrayAdapter);
+        mSpinner.setOnItemSelectedListener(this);
+        mSpinner.setDropDownWidth(ViewGroup.LayoutParams.MATCH_PARENT);
         // Remove padding so that dropdown has same width as the spinner.
-        spinner.setPadding(0, 0, 0, 0);
-        dialogContainer.addView(spinner);
+        mSpinner.setPadding(0, 0, 0, 0);
+        dialogContainer.addView(mSpinner);
 
         LinearLayout certContainer = new LinearLayout(mContext);
         certContainer.setOrientation(LinearLayout.VERTICAL);
@@ -117,21 +120,16 @@ class CertificateViewer implements OnItemSelectedListener {
             }
             certContainer.addView(certificateView);
         }
-        ScrollView scrollView = new ScrollView(mContext);
-        scrollView.addView(certContainer);
-        dialogContainer.addView(scrollView);
+        mScrollView = new ScrollView(mContext);
+        mScrollView.addView(certContainer);
+        dialogContainer.addView(mScrollView);
 
-        showDialogForView(dialogContainer);
-    }
-
-    // Displays a dialog with scrolling for the given view.
-    private void showDialogForView(View view) {
-        Dialog dialog = new Dialog(mContext);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.addContentView(view,
+        mDialog = new Dialog(mContext);
+        mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        mDialog.addContentView(dialogContainer,
                 new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                         LinearLayout.LayoutParams.MATCH_PARENT));
-        dialog.show();
+        mDialog.show();
     }
 
     private void addCertificate(byte[] derData) {
