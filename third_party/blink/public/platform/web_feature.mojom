@@ -1627,7 +1627,6 @@ enum WebFeature {
 
   kFeaturePolicyAllowAttributeDeprecatedSyntax = 2145,
   kSuppressHistoryEntryWithoutUserGesture = 2146,
-  kImageInputTypeFormDataWithNonEmptyValue = 2147,
   kPerformanceServerTiming = 2157,
   kFileReaderResultBeforeCompletion = 2158,
   kSyncXhrInPageDismissal = 2159,
