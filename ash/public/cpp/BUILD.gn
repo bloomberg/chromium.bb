@@ -61,6 +61,8 @@ component("cpp") {
     "menu_utils.h",
     "mus_property_mirror_ash.cc",
     "mus_property_mirror_ash.h",
+    "network_icon_image_source.cc",
+    "network_icon_image_source.h",
     "power_utils.cc",
     "power_utils.h",
     "remote_shelf_item_delegate.cc",

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/network/tether_notification_presenter.h"
 
+#include "ash/public/cpp/network_icon_image_source.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"

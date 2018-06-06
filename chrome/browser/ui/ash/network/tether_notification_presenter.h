@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/system/network/network_icon.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

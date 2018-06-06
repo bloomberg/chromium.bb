@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/auto_connect_notifier.h"
 
-#include "ash/system/network/network_icon.h"
+#include "ash/public/cpp/network_icon_image_source.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
