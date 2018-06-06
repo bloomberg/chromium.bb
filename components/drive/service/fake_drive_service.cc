@@ -408,7 +408,7 @@ bool FakeDriveService::HasAccessToken() const {
 
 void FakeDriveService::RequestAccessToken(const AuthStatusCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
   callback.Run(google_apis::HTTP_NOT_MODIFIED, "fake_access_token");
 }
 
@@ -465,7 +465,7 @@ void FakeDriveService::GetTeamDriveListInternal(
 CancelCallback FakeDriveService::GetAllTeamDriveList(
     const TeamDriveListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   GetTeamDriveListInternal(0, default_max_results_,
                            &team_drive_list_load_count_, callback);
@@ -477,7 +477,7 @@ CancelCallback FakeDriveService::GetAllFileList(
     const std::string& team_drive_id,
     const FileListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (never_return_all_file_list_) {
     ++blocked_file_list_load_count_;
@@ -499,7 +499,7 @@ CancelCallback FakeDriveService::GetFileListInDirectory(
     const FileListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!directory_resource_id.empty());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   GetChangeListInternal(0,              // start changestamp
                         std::string(),  // empty search query
@@ -516,7 +516,7 @@ CancelCallback FakeDriveService::Search(
     const FileListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!search_query.empty());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   GetChangeListInternal(0,  // start changestamp
                         search_query,
@@ -534,7 +534,7 @@ CancelCallback FakeDriveService::SearchByTitle(
     const FileListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!title.empty());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   // Note: the search implementation here doesn't support quotation unescape,
   // so don't escape here.
@@ -552,7 +552,7 @@ CancelCallback FakeDriveService::GetChangeList(
     int64_t start_changestamp,
     const ChangeListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   GetChangeListInternal(start_changestamp,
                         std::string(),  // empty search query
@@ -569,7 +569,7 @@ CancelCallback FakeDriveService::GetChangeListByToken(
     const std::string& start_page_token,
     const ChangeListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   int64_t changestamp = 0;
   CHECK(base::StringToInt64(start_page_token, &changestamp));
@@ -590,7 +590,7 @@ CancelCallback FakeDriveService::GetRemainingChangeList(
     const ChangeListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!next_link.is_empty());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   // "changestamp", "q", "parent" and "start-offset" are parameters to
   // implement "paging" of the result on FakeDriveService.
@@ -646,7 +646,7 @@ CancelCallback FakeDriveService::GetRemainingTeamDriveList(
     const TeamDriveListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!page_token.empty());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   // Next offset index to page token is embedded in the token.
   size_t start_offset;
@@ -662,7 +662,7 @@ CancelCallback FakeDriveService::GetRemainingFileList(
     const FileListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!next_link.is_empty());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   return GetRemainingChangeList(
       next_link, base::Bind(&FileListCallbackAdapter, callback));
@@ -672,7 +672,7 @@ CancelCallback FakeDriveService::GetFileResource(
     const std::string& resource_id,
     const FileResourceCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -701,7 +701,7 @@ CancelCallback FakeDriveService::GetShareUrl(
     const GURL& /* embed_origin */,
     const GetShareUrlCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -729,7 +729,7 @@ CancelCallback FakeDriveService::GetShareUrl(
 CancelCallback FakeDriveService::GetAboutResource(
     const AboutResourceCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (offline_) {
     std::unique_ptr<AboutResource> null;
@@ -752,7 +752,7 @@ CancelCallback FakeDriveService::GetStartPageToken(
     const std::string& team_drive_id,
     const google_apis::StartPageTokenCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (offline_) {
     std::unique_ptr<StartPageToken> null;
@@ -779,7 +779,7 @@ CancelCallback FakeDriveService::GetStartPageToken(
 
 CancelCallback FakeDriveService::GetAppList(const AppListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
   DCHECK(app_info_value_);
 
   if (offline_) {
@@ -802,7 +802,7 @@ CancelCallback FakeDriveService::DeleteResource(
     const std::string& etag,
     const EntryActionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -853,7 +853,7 @@ CancelCallback FakeDriveService::TrashResource(
     const std::string& resource_id,
     const EntryActionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -972,7 +972,7 @@ CancelCallback FakeDriveService::CopyResource(
     const base::Time& last_modified,
     const FileResourceCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1050,7 +1050,7 @@ CancelCallback FakeDriveService::UpdateResource(
     const google_apis::drive::Properties& properties,
     const google_apis::FileResourceCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1116,7 +1116,7 @@ CancelCallback FakeDriveService::AddResourceToDirectory(
     const std::string& resource_id,
     const EntryActionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1155,7 +1155,7 @@ CancelCallback FakeDriveService::RemoveResourceFromDirectory(
     const std::string& resource_id,
     const EntryActionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1213,7 +1213,7 @@ CancelCallback FakeDriveService::InitiateUploadNewFile(
     const UploadNewFileOptions& options,
     const InitiateUploadCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1251,7 +1251,7 @@ CancelCallback FakeDriveService::InitiateUploadExistingFile(
     const UploadExistingFileOptions& options,
     const InitiateUploadCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1303,7 +1303,7 @@ CancelCallback FakeDriveService::GetUploadStatus(
     int64_t content_length,
     const UploadRangeCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
   return CancelCallback();
 }
 
@@ -1317,7 +1317,7 @@ CancelCallback FakeDriveService::ResumeUpload(
     const UploadRangeCallback& callback,
     const ProgressCallback& progress_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   FileResourceCallback completion_callback
       = base::Bind(&ScheduleUploadRangeCallback,
@@ -1480,7 +1480,7 @@ CancelCallback FakeDriveService::AuthorizeApp(
     const std::string& app_id,
     const AuthorizeAppCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (entries_.count(resource_id) == 0) {
     callback.Run(google_apis::HTTP_NOT_FOUND, GURL());
@@ -1498,7 +1498,7 @@ CancelCallback FakeDriveService::UninstallApp(
     const std::string& app_id,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1554,7 +1554,7 @@ void FakeDriveService::AddNewFileWithResourceId(
     bool shared_with_me,
     const FileResourceCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1593,7 +1593,7 @@ CancelCallback FakeDriveService::AddNewDirectoryWithResourceId(
     const AddNewDirectoryOptions& options,
     const FileResourceCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1636,7 +1636,7 @@ void FakeDriveService::SetLastModifiedTime(
     const base::Time& last_modified_time,
     const FileResourceCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (offline_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -2042,7 +2042,7 @@ google_apis::CancelCallback FakeDriveService::AddPermission(
     google_apis::drive::PermissionRole role,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   NOTREACHED();
   return CancelCallback();
