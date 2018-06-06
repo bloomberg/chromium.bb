@@ -1800,6 +1800,10 @@ class BasicAuthProxyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
           other = sock
         else:
           other = self.request
+        # This will lose data if the kernel write buffer fills up.
+        # TODO(ricea): Correctly use the return value to track how much was
+        # written and buffer the rest. Use select to determine when the socket
+        # becomes writable again.
         other.send(received)
 
   def _do_common_method(self):
@@ -1834,8 +1838,13 @@ class BasicAuthProxyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
           continue
         sock.send('%s\r\n' % header)
       sock.send('\r\n')
+      # This is wrong: it will pass through connection-level headers and
+      # misbehave on connection reuse. The only reason it works at all is that
+      # our test servers have never supported connection reuse.
+      # TODO(ricea): Use a proper HTTP client library instead.
       self._start_read_write(sock)
     except Exception:
+      logging.exception('failure in common method: %s %s', self.command, path)
       self.send_response(500)
       self.end_headers()
     finally:
@@ -1854,16 +1863,19 @@ class BasicAuthProxyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if BasicAuthProxyRequestHandler.redirect_connect_to_localhost:
       host = "127.0.0.1"
 
+    sock = None
     try:
       sock = socket.create_connection((host, port))
       self.send_response(200, 'Connection established')
       self.end_headers()
       self._start_read_write(sock)
     except Exception:
+      logging.exception('failure in CONNECT: %s', path)
       self.send_response(500)
       self.end_headers()
     finally:
-      sock.close()
+      if sock is not None:
+        sock.close()
 
   def do_GET(self):
     self._do_common_method()
@@ -1965,9 +1977,12 @@ class ServerRunner(testserver_base.TestServerRunner):
     port = self.options.port
     host = self.options.host
 
+    logging.basicConfig()
+
     # Work around a bug in Mac OS 10.6. Spawning a WebSockets server
     # will result in a call to |getaddrinfo|, which fails with "nodename
     # nor servname provided" for localhost:0 on 10.6.
+    # TODO(ricea): Remove this if no longer needed.
     if self.options.server_type == SERVER_WEBSOCKET and \
        host == "localhost" and \
        port == 0:
@@ -2109,9 +2124,6 @@ class ServerRunner(testserver_base.TestServerRunner):
       server.file_root_url = self.options.file_root_url
       server_data['port'] = server.server_port
     elif self.options.server_type == SERVER_WEBSOCKET:
-      # Launch pywebsocket via WebSocketServer.
-      logger = logging.getLogger()
-      logger.addHandler(logging.StreamHandler())
       # TODO(toyoshim): Remove following os.chdir. Currently this operation
       # is required to work correctly. It should be fixed from pywebsocket side.
       os.chdir(self.__make_data_dir())
