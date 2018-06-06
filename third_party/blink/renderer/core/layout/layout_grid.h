@@ -57,32 +57,32 @@ class LayoutGrid final : public LayoutBlock {
   Vector<LayoutUnit> TrackSizesForComputedStyle(GridTrackSizingDirection) const;
 
   const Vector<LayoutUnit>& ColumnPositions() const {
-    DCHECK(!grid_.NeedsItemsPlacement());
+    DCHECK(!grid_->NeedsItemsPlacement());
     return column_positions_;
   }
 
   const Vector<LayoutUnit>& RowPositions() const {
-    DCHECK(!grid_.NeedsItemsPlacement());
+    DCHECK(!grid_->NeedsItemsPlacement());
     return row_positions_;
   }
 
   const GridCell& GetGridCell(int row, int column) const {
-    SECURITY_DCHECK(!grid_.NeedsItemsPlacement());
-    return grid_.Cell(row, column);
+    SECURITY_DCHECK(!grid_->NeedsItemsPlacement());
+    return grid_->Cell(row, column);
   }
 
   const Vector<LayoutBox*>& ItemsOverflowingGridArea() const {
-    SECURITY_DCHECK(!grid_.NeedsItemsPlacement());
+    SECURITY_DCHECK(!grid_->NeedsItemsPlacement());
     return grid_items_overflowing_grid_area_;
   }
 
   int PaintIndexForGridItem(const LayoutBox* layout_box) const {
-    SECURITY_DCHECK(!grid_.NeedsItemsPlacement());
-    return grid_.GridItemPaintOrder(*layout_box);
+    SECURITY_DCHECK(!grid_->NeedsItemsPlacement());
+    return grid_->GridItemPaintOrder(*layout_box);
   }
 
   size_t AutoRepeatCountForDirection(GridTrackSizingDirection direction) const {
-    return grid_.AutoRepeatTracks(direction);
+    return grid_->AutoRepeatTracks(direction);
   }
 
   LayoutUnit TranslateOutOfFlowRTLCoordinate(const LayoutBox&,
@@ -310,7 +310,7 @@ class LayoutGrid final : public LayoutBlock {
                                                      LineDirectionMode);
   static const StyleContentAlignmentData& ContentAlignmentNormalBehavior();
 
-  Grid grid_;
+  std::unique_ptr<Grid> grid_;
   GridTrackSizingAlgorithm track_sizing_algorithm_;
 
   Vector<LayoutUnit> row_positions_;
