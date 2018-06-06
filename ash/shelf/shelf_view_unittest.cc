@@ -264,7 +264,7 @@ class ShelfViewTest : public AshTestBase {
     NotificationTray::DisableAnimationsForTest(true);
 
     // The bounds should be big enough for 4 buttons + overflow chevron.
-    shelf_view_->SetBounds(0, 0, 500, kShelfSize);
+    ASSERT_GE(shelf_view_->width(), 500);
 
     test_api_.reset(new ShelfViewTestAPI(shelf_view_));
     test_api_->SetAnimationDuration(1);  // Speeds up animation for test.
