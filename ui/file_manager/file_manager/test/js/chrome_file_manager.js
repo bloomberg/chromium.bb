@@ -54,7 +54,7 @@ chrome.fileManagerPrivate = {
     setTimeout(callback, 0, mockVolumeManager.getDriveConnectionState());
   },
   getEntryProperties: (entries, names, callback) => {
-    // Returns EntryProperties[].
+    // Returns chrome.fileManagerPrivate.EntryProperties[].
     var results = [];
     entries.forEach(entry => {
       var props = {};
@@ -66,7 +66,7 @@ chrome.fileManagerPrivate = {
     setTimeout(callback, 0, results);
   },
   getFileTasks: (entries, callback) => {
-    // Returns FileTask[].
+    // Returns chrome.fileManagerPrivate.FileTask[].
     var results = [];
     // Support for view-in-browser on single text file used by QuickView.
     if (entries.length == 1 &&
@@ -90,7 +90,7 @@ chrome.fileManagerPrivate = {
         chrome.fileManagerPrivate.displayedId_);
   },
   getProviders: (callback) => {
-    // Returns Provider[].
+    // Returns chrome.fileManagerPrivate.Provider[].
     setTimeout(callback, 0, []);
   },
   getRecentFiles: (restriction, callback) => {
@@ -98,7 +98,8 @@ chrome.fileManagerPrivate = {
     setTimeout(callback, 0, []);
   },
   getSizeStats: (volumeId, callback) => {
-    // MountPointSizeStats { totalSize: double,  remainingSize: double }
+    // chrome.fileManagerPrivate.MountPointSizeStats { totalSize: double,
+    // remainingSize: double }
     setTimeout(callback, 0, {totalSize: 16e9, remainingSize: 8e9});
   },
   getStrings: (callback) => {
@@ -189,8 +190,9 @@ chrome.fileManagerPrivate = {
     setTimeout(callback, 0, entries);
   },
   searchDriveMetadata: (searchParams, callback) => {
-    // Returns SearchResult[].
-    // SearchResult { entry: Entry, highlightedBaseName: string }
+    // Returns chrome.fileManagerPrivate.SearchResult[].
+    // chrome.fileManagerPrivate.SearchResult { entry: Entry,
+    // highlightedBaseName: string }
     setTimeout(callback, 0, []);
   },
   nextCopyId_: 0,

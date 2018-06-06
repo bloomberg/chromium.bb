@@ -61,7 +61,8 @@ ProvidersMenu.prototype.addMenuItem_ = function() {
 
 /**
  * @param {string} providerId ID of the provider.
- * @param {!IconSet} iconSet Set of icons for the provider.
+ * @param {!chrome.fileManagerPrivate.IconSet} iconSet Set of icons for the
+ * provider.
  * @param {string} name Already localized name of the provider.
  * @private
  */

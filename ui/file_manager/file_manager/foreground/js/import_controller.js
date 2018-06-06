@@ -1243,7 +1243,7 @@ importer.RuntimeControllerEnvironment.prototype.addVolumeUnmountListener =
   // TODO(smckay): remove listeners when the page is torn down.
   chrome.fileManagerPrivate.onMountCompleted.addListener(
       /**
-       * @param {!MountCompletedEvent} event
+       * @param {!chrome.fileManagerPrivate.MountCompletedEvent} event
        * @this {importer.RuntimeControllerEnvironment}
        */
       function(event) {

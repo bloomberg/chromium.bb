@@ -32,7 +32,7 @@ chrome.fileManagerPrivate.SourceRestriction = {
  *   isDefault: boolean
  * }}
  */
-var FileTask;
+chrome.fileManagerPrivate.FileTask;
 
 /**
  * @typedef {{
@@ -59,7 +59,7 @@ var FileTask;
  *   shareUrl: (string|undefined)
  * }}
  */
-var EntryProperties;
+chrome.fileManagerPrivate.EntryProperties;
 
 /**
  * @typedef {{
@@ -67,7 +67,7 @@ var EntryProperties;
  *   remainingSize: number
  * }}
  */
-var MountPointSizeStats;
+chrome.fileManagerPrivate.MountPointSizeStats;
 
 /**
  * @typedef {{
@@ -76,7 +76,7 @@ var MountPointSizeStats;
  *   isCurrentProfile: boolean
  * }}
  */
-var ProfileInfo;
+chrome.fileManagerPrivate.ProfileInfo;
 
 /**
  * @typedef {{
@@ -84,7 +84,7 @@ var ProfileInfo;
  *   icon32x32Url: (string|undefined)
  * }}
  */
-var IconSet;
+chrome.fileManagerPrivate.IconSet;
 
 /**
  * @typedef {{
@@ -92,7 +92,7 @@ var IconSet;
  *   fileSystemId: (string|undefined),
  *   source: string,
  *   volumeLabel: (string|undefined),
- *   profile: ProfileInfo,
+ *   profile: chrome.fileManagerPrivate.ProfileInfo,
  *   sourcePath: (string|undefined),
  *   volumeType: string,
  *   deviceType: (string|undefined),
@@ -106,20 +106,20 @@ var IconSet;
  *   mountCondition: (string|undefined),
  *   mountContext: (string|undefined),
  *   diskFileSystemType: (string|undefined),
- *   iconSet: IconSet
+ *   iconSet: chrome.fileManagerPrivate.IconSet
  * }}
  */
-var VolumeMetadata;
+chrome.fileManagerPrivate.VolumeMetadata;
 
 /**
  * @typedef {{
  *   eventType: string,
  *   status: string,
- *   volumeMetadata: VolumeMetadata,
+ *   volumeMetadata: chrome.fileManagerPrivate.VolumeMetadata,
  *   shouldNotify: boolean
  * }}
  */
-var MountCompletedEvent;
+chrome.fileManagerPrivate.MountCompletedEvent;
 
 /**
  * @typedef {{
@@ -131,7 +131,7 @@ var MountCompletedEvent;
  *   hideWhenZeroJobs: boolean
  * }}
  */
-var FileTransferStatus;
+chrome.fileManagerPrivate.FileTransferStatus;
 
 /**
  * @typedef {{
@@ -139,7 +139,7 @@ var FileTransferStatus;
  *   fileUrl: string
  * }}
  */
-var DriveSyncErrorEvent;
+chrome.fileManagerPrivate.DriveSyncErrorEvent;
 
 /**
  * @typedef {{
@@ -150,7 +150,7 @@ var DriveSyncErrorEvent;
  *   error: (string|undefined)
  * }}
  */
-var CopyProgressStatus;
+chrome.fileManagerPrivate.CopyProgressStatus;
 
 /**
  * @typedef {{
@@ -158,7 +158,7 @@ var CopyProgressStatus;
  *   changes: Array
  * }}
  */
-var FileChange;
+chrome.fileManagerPrivate.FileChange;
 
 /**
  * @typedef {{
@@ -167,7 +167,7 @@ var FileChange;
  *   changedFiles: (Array|undefined)
  * }}
  */
-var FileWatchEvent;
+chrome.fileManagerPrivate.FileWatchEvent;
 
 /**
  * @typedef {{
@@ -180,7 +180,7 @@ var FileWatchEvent;
  *   timezone: string
  * }}
  */
-var Preferences;
+chrome.fileManagerPrivate.Preferences;
 
 /**
  * @typedef {{
@@ -188,7 +188,7 @@ var Preferences;
  *   hostedFilesDisabled: (boolean|undefined)
  * }}
  */
-var PreferencesChange;
+chrome.fileManagerPrivate.PreferencesChange;
 
 /**
  * @typedef {{
@@ -196,7 +196,7 @@ var PreferencesChange;
  *   nextFeed: string
  * }}
  */
-var SearchParams;
+chrome.fileManagerPrivate.SearchParams;
 
 /**
  * @typedef {{
@@ -205,7 +205,7 @@ var SearchParams;
  *   maxResults: number
  * }}
  */
-var SearchMetadataParams;
+chrome.fileManagerPrivate.SearchMetadataParams;
 
 /**
  * @typedef {{
@@ -213,7 +213,7 @@ var SearchMetadataParams;
  *   highlightedBaseName: string
  * }}
  */
-var SearchResult;
+chrome.fileManagerPrivate.SearchResult;
 
 /**
  * @typedef {{
@@ -221,7 +221,7 @@ var SearchResult;
  *   reason: (string|undefined)
  * }}
  */
-var DriveConnectionState;
+chrome.fileManagerPrivate.DriveConnectionState;
 
 /**
  * @typedef {{
@@ -229,12 +229,12 @@ var DriveConnectionState;
  *   devicePath: string
  * }}
  */
-var DeviceEvent;
+chrome.fileManagerPrivate.DeviceEvent;
 
 /**
  * @typedef {{
  *   providerId: string,
- *   iconSet: IconSet,
+ *   iconSet: chrome.fileManagerPrivate.IconSet,
  *   name: string,
  *   configurable: boolean,
  *   watchable: boolean,
@@ -242,7 +242,7 @@ var DeviceEvent;
  *   source: string
  * }}
  */
-var Provider;
+chrome.fileManagerPrivate.Provider;
 
 /**
  * Logout the current user for navigating to the re-authentication screen for
@@ -283,7 +283,7 @@ chrome.fileManagerPrivate.setDefaultTask = function(taskId, entries, mimeTypes,
  * Gets the list of tasks that can be performed over selected files. |entries|
  * Array of selected entries |callback|
  * @param {!Array<!Entry>} entries
- * @param {function((!Array<!FileTask>|undefined))} callback |tasks| The list of
+ * @param {function((!Array<!chrome.fileManagerPrivate.FileTask>|undefined))} callback |tasks| The list of
  *     matched file entries for this task.
  */
 chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {};
@@ -364,7 +364,7 @@ chrome.fileManagerPrivate.selectFile = function(selectedPath, index, forOpening,
  * |callback|
  * @param {!Array<!Entry>} entries
  * @param {!Array<string>} names
- * @param {function((!Array<!EntryProperties>|undefined))} callback
+ * @param {function((!Array<!chrome.fileManagerPrivate.EntryProperties>|undefined))} callback
  *     |entryProperties| A dictionary containing properties of the requested
  *     entries.
  */
@@ -437,8 +437,9 @@ chrome.fileManagerPrivate.markCacheAsMounted = function(
 
 /**
  * Get the list of mounted volumes. |callback|
- * @param {function((!Array<!VolumeMetadata>|undefined))} callback Callback with
- *     the list of VolumeMetadata representing mounted volumes.
+ * @param {function((!Array<!chrome.fileManagerPrivate.VolumeMetadata>|undefined))} callback Callback with
+ *     the list of chrome.fileManagerPrivate.VolumeMetadata representing mounted
+ * volumes.
  */
 chrome.fileManagerPrivate.getVolumeMetadataList = function(callback) {};
 
@@ -482,7 +483,7 @@ chrome.fileManagerPrivate.cancelCopy = function(copyId, callback) {};
  * Retrieves total and remaining size of a mount point. |volumeId| ID of the
  * volume to be checked. |callback|
  * @param {string} volumeId
- * @param {function((!MountPointSizeStats|undefined))} callback Name/value pairs
+ * @param {function((!chrome.fileManagerPrivate.MountPointSizeStats|undefined))} callback Name/value pairs
  *     of size stats. Will be undefined if stats could not be determined.
  */
 chrome.fileManagerPrivate.getSizeStats = function(volumeId, callback) {};
@@ -503,19 +504,19 @@ chrome.fileManagerPrivate.renameVolume = function(volumeId, newName) {};
 
 /**
  * Retrieves file manager preferences. |callback|
- * @param {function((!Preferences|undefined))} callback
+ * @param {function((!chrome.fileManagerPrivate.Preferences|undefined))} callback
  */
 chrome.fileManagerPrivate.getPreferences = function(callback) {};
 
 /**
  * Sets file manager preferences. |changeInfo|
- * @param {PreferencesChange} changeInfo
+ * @param {chrome.fileManagerPrivate.PreferencesChange} changeInfo
  */
 chrome.fileManagerPrivate.setPreferences = function(changeInfo) {};
 
 /**
  * Performs drive content search. |searchParams| |callback|
- * @param {SearchParams} searchParams
+ * @param {chrome.fileManagerPrivate.SearchParams} searchParams
  * @param {function((!Array<Entry>|undefined), (string|undefined))} callback
  * Entries and ID of the feed that contains next chunk of the search result.
  * Should be sent to the next searchDrive request to perform incremental search.
@@ -524,8 +525,8 @@ chrome.fileManagerPrivate.searchDrive = function(searchParams, callback) {};
 
 /**
  * Performs drive metadata search. |searchParams| |callback|
- * @param {SearchMetadataParams} searchParams
- * @param {function((!Array<!SearchResult>|undefined))} callback
+ * @param {chrome.fileManagerPrivate.SearchMetadataParams} searchParams
+ * @param {function((!Array<!chrome.fileManagerPrivate.SearchResult>|undefined))} callback
  */
 chrome.fileManagerPrivate.searchDriveMetadata = function(searchParams,
     callback) {};
@@ -556,7 +557,7 @@ chrome.fileManagerPrivate.zipSelection = function(entries, parentEntry,
 
 /**
  * Retrieves the state of the current drive connection. |callback|
- * @param {function((!DriveConnectionState|undefined))} callback
+ * @param {function((!chrome.fileManagerPrivate.DriveConnectionState|undefined))} callback
  */
 chrome.fileManagerPrivate.getDriveConnectionState = function(callback) {};
 
@@ -619,7 +620,7 @@ chrome.fileManagerPrivate.requestDriveShare = function(entry, shareType,
 
 /**
  * Obtains a list of profiles that are logged-in.
- * @param {function((!Array<!ProfileInfo>|undefined), (string|undefined),
+ * @param {function((!Array<!chrome.fileManagerPrivate.ProfileInfo>|undefined), (string|undefined),
  *     (string|undefined))} callback Callback with list of profile information,
  *     |runningProfile| ID of the profile that runs the application instance.
  *     |showingProfile| ID of the profile that shows the application window.
@@ -671,7 +672,7 @@ chrome.fileManagerPrivate.isPiexLoaderEnabled = function(callback) {};
 
 /**
  * Returns list of available providers.
- * @param {function((!Array<!Provider>|undefined))} callback
+ * @param {function((!Array<!chrome.fileManagerPrivate.Provider>|undefined))} callback
  */
 chrome.fileManagerPrivate.getProviders = function(callback) {};
 

@@ -1586,7 +1586,7 @@ DirectoryTree.prototype.onFilterChanged_ = function() {
 
 /**
  * Invoked when a directory is changed.
- * @param {!FileWatchEvent} event Event.
+ * @param {!chrome.fileManagerPrivate.FileWatchEvent} event Event.
  * @private
  */
 DirectoryTree.prototype.onDirectoryContentChanged_ = function(event) {

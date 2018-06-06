@@ -34,7 +34,8 @@
  * @param {VolumeManagerCommon.Source} source Source of the volume's data.
  * @param {VolumeManagerCommon.FileSystemType} diskFileSystemType File system
  *     type indentifier.
- * @param {!IconSet} iconSet Set of icons for this volume.
+ * @param {!chrome.fileManagerPrivate.IconSet} iconSet Set of icons for this
+ *     volume.
  */
 function VolumeInfoImpl(
     volumeType, volumeId, fileSystem, error, deviceType, devicePath, isReadOnly,
@@ -211,7 +212,7 @@ VolumeInfoImpl.prototype = /** @struct */ {
     return this.diskFileSystemType_;
   },
   /**
-   * @return {IconSet} Set of icons for this volume.
+   * @return {chrome.fileManagerPrivate.IconSet} Set of icons for this volume.
    */
   get iconSet() {
     return this.iconSet_;

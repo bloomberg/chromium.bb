@@ -34,7 +34,7 @@ FileWatcher.prototype.dispose = function() {
 
 /**
  * Called when a file in the watched directory is changed.
- * @param {FileWatchEvent} event Change event.
+ * @param {chrome.fileManagerPrivate.FileWatchEvent} event Change event.
  * @private
  */
 FileWatcher.prototype.onDirectoryChanged_ = function(event) {

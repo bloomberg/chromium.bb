@@ -102,7 +102,7 @@ EntryListWatcher.prototype.onSplice_ = function(event) {
 };
 
 /**
- * @param {!FileWatchEvent} event
+ * @param {!chrome.fileManagerPrivate.FileWatchEvent} event
  * @private
  */
 EntryListWatcher.prototype.onDirectoryChanged_ = function(event) {

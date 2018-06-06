@@ -81,7 +81,7 @@ VolumeInfo.prototype.providerId;
 
 /**
  * Set of icons for this volume.
- * @type {!IconSet}
+ * @type {!chrome.fileManagerPrivate.IconSet}
  */
 VolumeInfo.prototype.iconSet;
 
