@@ -27,7 +27,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/events/event_queue.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
@@ -90,7 +90,9 @@ IDBTransaction::IDBTransaction(ExecutionContext* execution_context,
       database_(db),
       mode_(kWebIDBTransactionModeReadOnly),
       scope_(scope),
-      state_(kActive) {
+      state_(kActive),
+      event_queue_(EventQueueImpl::Create(execution_context,
+                                          TaskType::kInternalIndexedDB)) {
   DCHECK(database_);
   DCHECK(!scope_.IsEmpty()) << "Observer transactions must operate "
                                "on a well-defined set of stores";
@@ -106,7 +108,9 @@ IDBTransaction::IDBTransaction(ScriptState* script_state,
       id_(id),
       database_(db),
       mode_(mode),
-      scope_(scope) {
+      scope_(scope),
+      event_queue_(EventQueueImpl::Create(ExecutionContext::From(script_state),
+                                          TaskType::kInternalIndexedDB)) {
   DCHECK(database_);
   DCHECK(!scope_.IsEmpty()) << "Non-versionchange transactions must operate "
                                "on a well-defined set of stores";
@@ -133,7 +137,9 @@ IDBTransaction::IDBTransaction(ExecutionContext* execution_context,
       open_db_request_(open_db_request),
       mode_(kWebIDBTransactionModeVersionChange),
       state_(kInactive),
-      old_database_metadata_(old_metadata) {
+      old_database_metadata_(old_metadata),
+      event_queue_(EventQueueImpl::Create(execution_context,
+                                          TaskType::kInternalIndexedDB)) {
   DCHECK(database_);
   DCHECK(open_db_request_);
   DCHECK(scope_.IsEmpty());
@@ -157,6 +163,7 @@ void IDBTransaction::Trace(blink::Visitor* visitor) {
   visitor->Trace(object_store_map_);
   visitor->Trace(old_store_metadata_);
   visitor->Trace(deleted_indexes_);
+  visitor->Trace(event_queue_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }
@@ -546,9 +553,8 @@ void IDBTransaction::EnqueueEvent(Event* event) {
   if (!GetExecutionContext())
     return;
 
-  EventQueue* event_queue = GetExecutionContext()->GetEventQueue();
   event->SetTarget(this);
-  event_queue->EnqueueEvent(FROM_HERE, event);
+  event_queue_->EnqueueEvent(FROM_HERE, event);
 }
 
 void IDBTransaction::AbortOutstandingRequests() {

@@ -7,7 +7,7 @@
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
-#include "third_party/blink/renderer/core/dom/events/event_queue.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
@@ -91,6 +91,7 @@ void BroadcastChannel::ContextDestroyed(ExecutionContext*) {
 }
 
 void BroadcastChannel::Trace(blink::Visitor* visitor) {
+  visitor->Trace(event_queue_);
   ContextLifecycleObserver::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }
@@ -101,8 +102,7 @@ void BroadcastChannel::OnMessage(BlinkCloneableMessage message) {
       nullptr, std::move(message.message),
       GetExecutionContext()->GetSecurityOrigin()->ToString());
   event->SetTarget(this);
-  bool success =
-      GetExecutionContext()->GetEventQueue()->EnqueueEvent(FROM_HERE, event);
+  bool success = event_queue_->EnqueueEvent(FROM_HERE, event);
   DCHECK(success);
   ALLOW_UNUSED_LOCAL(success);
 }
@@ -115,6 +115,8 @@ BroadcastChannel::BroadcastChannel(ExecutionContext* execution_context,
                                    const String& name)
     : ContextLifecycleObserver(execution_context),
       origin_(execution_context->GetSecurityOrigin()),
+      event_queue_(
+          EventQueueImpl::Create(execution_context, TaskType::kInternalMedia)),
       name_(name),
       binding_(this) {
   mojom::blink::BroadcastChannelProviderPtr& provider =
