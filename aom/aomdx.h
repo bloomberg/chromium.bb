@@ -68,7 +68,7 @@ typedef struct aom_tile_data {
   /*! Tile data size. */
   size_t coded_tile_data_size;
   /*! Tile's start address. */
-  void *coded_tile_data;
+  const void *coded_tile_data;
 } aom_tile_data;
 
 /*!\enum aom_dec_control_id

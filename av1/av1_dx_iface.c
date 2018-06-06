@@ -883,7 +883,7 @@ static aom_codec_err_t ctrl_get_tile_data(aom_codec_alg_priv_t *ctx,
       tile_data->coded_tile_data_size =
           pbi->tile_buffers[pbi->dec_tile_row][pbi->dec_tile_col].size;
       tile_data->coded_tile_data =
-          (void *)pbi->tile_buffers[pbi->dec_tile_row][pbi->dec_tile_col].data;
+          pbi->tile_buffers[pbi->dec_tile_row][pbi->dec_tile_col].data;
       return AOM_CODEC_OK;
     } else {
       return AOM_CODEC_ERROR;
