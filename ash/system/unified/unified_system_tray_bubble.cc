@@ -88,6 +88,15 @@ void UnifiedSystemTrayBubble::ActivateBubble() {
   bubble_widget_->Activate();
 }
 
+void UnifiedSystemTrayBubble::CloseNow() {
+  if (!bubble_widget_)
+    return;
+
+  bubble_widget_->RemoveObserver(this);
+  bubble_widget_->CloseNow();
+  bubble_widget_ = nullptr;
+}
+
 TrayBackgroundView* UnifiedSystemTrayBubble::GetTray() const {
   return tray_;
 }

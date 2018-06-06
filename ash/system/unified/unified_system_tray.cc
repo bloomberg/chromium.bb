@@ -166,7 +166,12 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   SetVisible(true);
 }
 
-UnifiedSystemTray::~UnifiedSystemTray() = default;
+UnifiedSystemTray::~UnifiedSystemTray() {
+  // Close bubble immediately when the bubble is closed on dtor.
+  if (bubble_)
+    bubble_->CloseNow();
+  bubble_.reset();
+}
 
 bool UnifiedSystemTray::IsBubbleShown() const {
   return !!bubble_;
