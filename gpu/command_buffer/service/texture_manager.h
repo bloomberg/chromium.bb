@@ -18,6 +18,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -45,8 +46,10 @@ class TextureRef;
 
 // A ref-counted version of the TextureBase class that deletes the texture after
 // all references have been released.
-class TexturePassthrough final : public TextureBase,
-                                 public base::RefCounted<TexturePassthrough> {
+class TexturePassthrough final
+    : public TextureBase,
+      public base::RefCounted<TexturePassthrough>,
+      public base::SupportsWeakPtr<TexturePassthrough> {
  public:
   TexturePassthrough(GLuint service_id, GLenum target);
 
@@ -57,6 +60,13 @@ class TexturePassthrough final : public TextureBase,
   void SetLevelImage(GLenum target, GLint level, gl::GLImage* image);
   gl::GLImage* GetLevelImage(GLenum target, GLint level) const;
 
+  // Return true if and only if the decoder should BindTexImage / CopyTexImage
+  // us before sampling.
+  bool is_bind_pending() const { return is_bind_pending_; }
+  void set_is_bind_pending(bool is_bind_pending) {
+    is_bind_pending_ = is_bind_pending;
+  }
+
  protected:
   ~TexturePassthrough() override;
 
@@ -64,6 +74,7 @@ class TexturePassthrough final : public TextureBase,
   friend class base::RefCounted<TexturePassthrough>;
 
   bool have_context_;
+  bool is_bind_pending_ = false;
 
   // Bound images divided into faces and then levels
   std::vector<std::vector<scoped_refptr<gl::GLImage>>> level_images_;
