@@ -28,20 +28,10 @@ class CORE_EXPORT WorkerBackingThread final {
  public:
   static std::unique_ptr<WorkerBackingThread> Create(
       const WebThreadCreationParams& params) {
-    return base::WrapUnique(new WorkerBackingThread(params, false));
+    return base::WrapUnique(new WorkerBackingThread(params));
   }
   static std::unique_ptr<WorkerBackingThread> Create(WebThread* thread) {
-    return base::WrapUnique(new WorkerBackingThread(thread, false));
-  }
-
-  // These are needed to suppress leak reports. See
-  // https://crbug.com/590802 and https://crbug.com/v8/1428.
-  static std::unique_ptr<WorkerBackingThread> CreateForTest(
-      const WebThreadCreationParams& params) {
-    return base::WrapUnique(new WorkerBackingThread(params, true));
-  }
-  static std::unique_ptr<WorkerBackingThread> CreateForTest(WebThread* thread) {
-    return base::WrapUnique(new WorkerBackingThread(thread, true));
+    return base::WrapUnique(new WorkerBackingThread(thread));
   }
 
   ~WorkerBackingThread();
@@ -66,14 +56,12 @@ class CORE_EXPORT WorkerBackingThread final {
   static void SetRAILModeOnWorkerThreadIsolates(v8::RAILMode);
 
  private:
-  WorkerBackingThread(const WebThreadCreationParams&,
-                      bool should_call_gc_on_shutdown);
-  WorkerBackingThread(WebThread*, bool should_call_gc_on_s_hutdown);
+  explicit WorkerBackingThread(const WebThreadCreationParams&);
+  explicit WorkerBackingThread(WebThread*);
 
   std::unique_ptr<WebThreadSupportingGC> backing_thread_;
   v8::Isolate* isolate_ = nullptr;
   bool is_owning_thread_;
-  bool should_call_gc_on_shutdown_;
 };
 
 }  // namespace blink
