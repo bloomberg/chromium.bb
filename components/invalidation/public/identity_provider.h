@@ -34,18 +34,17 @@ class IdentityProvider : public OAuth2TokenService::Observer {
     // information if called from within OnLogout().
     virtual void OnActiveAccountLogout() {}
 
+    // Called when the active GAIA account's refresh token is updated.
+    virtual void OnActiveAccountRefreshTokenUpdated() {}
+
+    // Called when the active GAIA account's refresh token is removed.
+    virtual void OnActiveAccountRefreshTokenRemoved() {}
+
    protected:
     virtual ~Observer();
   };
 
   ~IdentityProvider() override;
-
-  // Adds and removes observers that will be notified of changes to the refresh
-  // token availability for the active account.
-  void AddActiveAccountRefreshTokenObserver(
-      OAuth2TokenService::Observer* observer);
-  void RemoveActiveAccountRefreshTokenObserver(
-      OAuth2TokenService::Observer* observer);
 
   // Gets the active account's account ID.
   virtual std::string GetActiveAccountId() = 0;
@@ -65,7 +64,6 @@ class IdentityProvider : public OAuth2TokenService::Observer {
   // OAuth2TokenService::Observer:
   void OnRefreshTokenAvailable(const std::string& account_id) override;
   void OnRefreshTokenRevoked(const std::string& account_id) override;
-  void OnRefreshTokensLoaded() override;
 
  protected:
   IdentityProvider();
@@ -78,9 +76,14 @@ class IdentityProvider : public OAuth2TokenService::Observer {
 
  private:
   base::ObserverList<Observer, true> observers_;
-  base::ObserverList<OAuth2TokenService::Observer, true>
-      token_service_observers_;
-  int token_service_observer_count_;
+
+  // Tracks the number of observers in order to allow for adding/removing this
+  // object as an observer of GetTokenService() when the observer count flips
+  // from/to 0. This is necessary because GetTokenService() is a pure virtual
+  // method and cannot be called in the destructor of this object.
+  // TODO(809452): Push observing of the token service into the subclasses of
+  // this class.
+  int num_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityProvider);
 };
