@@ -64,13 +64,13 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   double lineDashOffset() const;
   void setLineDashOffset(double);
 
-  double shadowOffsetX() const;
-  void setShadowOffsetX(double);
+  virtual double shadowOffsetX() const;
+  virtual void setShadowOffsetX(double);
 
-  double shadowOffsetY() const;
-  void setShadowOffsetY(double);
+  virtual double shadowOffsetY() const;
+  virtual void setShadowOffsetY(double);
 
-  double shadowBlur() const;
+  virtual double shadowBlur() const;
   virtual void setShadowBlur(double);
 
   String shadowColor() const;
