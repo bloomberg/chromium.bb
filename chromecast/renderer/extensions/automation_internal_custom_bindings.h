@@ -17,8 +17,12 @@
 #include "ui/accessibility/ax_tree.h"
 #include "v8/include/v8.h"
 
-struct ExtensionMsg_AccessibilityEventParams;
+struct ExtensionMsg_AccessibilityEventBundleParams;
 struct ExtensionMsg_AccessibilityLocationChangeParams;
+
+namespace ui {
+struct AXEvent;
+}
 
 namespace extensions {
 class ExtensionBindingsSystem;
@@ -67,8 +71,9 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   void SendTreeChangeEvent(api::automation::TreeChangeType change_type,
                            ui::AXTree* tree,
                            ui::AXNode* node);
-  void SendAutomationEvent(const ExtensionMsg_AccessibilityEventParams& params,
-                           int target_id,
+  void SendAutomationEvent(int tree_id,
+                           const gfx::Point& mouse_location,
+                           ui::AXEvent& event,
                            api::automation::EventType event_type);
 
  private:
@@ -160,7 +165,7 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
 
   // Handle accessibility events from the browser process.
   void OnAccessibilityEvents(
-      const std::vector<ExtensionMsg_AccessibilityEventParams>& events,
+      const ExtensionMsg_AccessibilityEventBundleParams& events,
       bool is_active_profile);
   void OnAccessibilityLocationChange(
       const ExtensionMsg_AccessibilityLocationChangeParams& params);

@@ -159,9 +159,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
 
   // Construct a bad accessibility message that BrowserAccessibilityManager
   // will reject.
-  std::vector<AXEventNotificationDetails> bad_accessibility_event_list;
-  bad_accessibility_event_list.push_back(AXEventNotificationDetails());
-  bad_accessibility_event_list[0].update.node_id_to_clear = -2;
+  AXEventNotificationDetails bad_accessibility_event;
+  bad_accessibility_event.updates.resize(1);
+  bad_accessibility_event.updates[0].node_id_to_clear = -2;
 
   // We should be able to reset accessibility |max_iterations-1| times
   // (see render_frame_host_impl.cc - kMaxAccessibilityResets),
@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
     // Send the browser accessibility the bad message.
     BrowserAccessibilityManager* manager =
         frame->GetOrCreateBrowserAccessibilityManager();
-    manager->OnAccessibilityEvents(bad_accessibility_event_list);
+    manager->OnAccessibilityEvents(bad_accessibility_event);
 
     // Now the frame should have deleted the BrowserAccessibilityManager.
     ASSERT_EQ(nullptr, frame->browser_accessibility_manager());

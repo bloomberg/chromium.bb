@@ -34,6 +34,8 @@ component("accessibility") {
     "ax_action_data.h",
     "ax_enum_util.cc",
     "ax_enum_util.h",
+    "ax_event.cc",
+    "ax_event.h",
     "ax_event_generator.cc",
     "ax_event_generator.h",
     "ax_export.h",

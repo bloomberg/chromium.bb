@@ -67,28 +67,26 @@ class RenderAccessibilityImplTest : public RenderViewTest {
 
   void SetMode(ui::AXMode mode) { frame()->OnSetAccessibilityMode(mode); }
 
-  void GetAllAccEvents(
-      std::vector<AccessibilityHostMsg_EventParams>* param_list) {
+  void GetLastAccessibilityEventBundle(
+      AccessibilityHostMsg_EventBundleParams* event_bundle) {
     const IPC::Message* message =
-        sink_->GetUniqueMessageMatching(AccessibilityHostMsg_Events::ID);
+        sink_->GetUniqueMessageMatching(AccessibilityHostMsg_EventBundle::ID);
     ASSERT_TRUE(message);
-    std::tuple<std::vector<AccessibilityHostMsg_EventParams>, int, int> param;
-    AccessibilityHostMsg_Events::Read(message, &param);
-    *param_list = std::get<0>(param);
+    std::tuple<AccessibilityHostMsg_EventBundleParams, int, int> param;
+    AccessibilityHostMsg_EventBundle::Read(message, &param);
+    *event_bundle = std::get<0>(param);
   }
 
-  void GetLastAccEvent(
-      AccessibilityHostMsg_EventParams* params) {
-    std::vector<AccessibilityHostMsg_EventParams> param_list;
-    GetAllAccEvents(&param_list);
-    ASSERT_GE(param_list.size(), 1U);
-    *params = param_list[0];
+  AXContentTreeUpdate GetLastAccUpdate() {
+    AccessibilityHostMsg_EventBundleParams event_bundle;
+    GetLastAccessibilityEventBundle(&event_bundle);
+    CHECK_GE(event_bundle.updates.size(), 1U);
+    return event_bundle.updates[event_bundle.updates.size() - 1];
   }
 
   int CountAccessibilityNodesSentToBrowser() {
-    AccessibilityHostMsg_EventParams event;
-    GetLastAccEvent(&event);
-    return event.update.nodes.size();
+    AXContentTreeUpdate update = GetLastAccUpdate();
+    return update.nodes.size();
   }
 
  protected:
@@ -130,9 +128,8 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
   EXPECT_EQ(1, CountAccessibilityNodesSentToBrowser());
   {
     // Make sure it's the root object that was updated.
-    AccessibilityHostMsg_EventParams event;
-    GetLastAccEvent(&event);
-    EXPECT_EQ(root_obj.AxID(), event.update.nodes[0].id);
+    AXContentTreeUpdate update = GetLastAccUpdate();
+    EXPECT_EQ(root_obj.AxID(), update.nodes[0].id);
   }
 
   // If we reload the page and send a event, we should send
@@ -197,15 +194,14 @@ TEST_F(RenderAccessibilityImplTest, HideAccessibilityObject) {
   accessibility->HandleAXEvent(node_a, ax::mojom::Event::kChildrenChanged);
 
   accessibility->SendPendingAccessibilityEvents();
-  AccessibilityHostMsg_EventParams event;
-  GetLastAccEvent(&event);
-  ASSERT_EQ(2U, event.update.nodes.size());
+  AXContentTreeUpdate update = GetLastAccUpdate();
+  ASSERT_EQ(2U, update.nodes.size());
 
   // RenderAccessibilityImpl notices that 'C' is being reparented,
   // so it clears the subtree rooted at 'A', then updates 'A' and then 'C'.
-  EXPECT_EQ(node_a.AxID(), event.update.node_id_to_clear);
-  EXPECT_EQ(node_a.AxID(), event.update.nodes[0].id);
-  EXPECT_EQ(node_c.AxID(), event.update.nodes[1].id);
+  EXPECT_EQ(node_a.AxID(), update.node_id_to_clear);
+  EXPECT_EQ(node_a.AxID(), update.nodes[0].id);
+  EXPECT_EQ(node_c.AxID(), update.nodes[1].id);
   EXPECT_EQ(2, CountAccessibilityNodesSentToBrowser());
 }
 
@@ -245,14 +241,13 @@ TEST_F(RenderAccessibilityImplTest, ShowAccessibilityObject) {
   accessibility->HandleAXEvent(node_a, ax::mojom::Event::kChildrenChanged);
 
   accessibility->SendPendingAccessibilityEvents();
-  AccessibilityHostMsg_EventParams event;
-  GetLastAccEvent(&event);
+  AXContentTreeUpdate update = GetLastAccUpdate();
 
-  ASSERT_EQ(3U, event.update.nodes.size());
-  EXPECT_EQ(node_a.AxID(), event.update.node_id_to_clear);
-  EXPECT_EQ(node_a.AxID(), event.update.nodes[0].id);
-  EXPECT_EQ(node_b.AxID(), event.update.nodes[1].id);
-  EXPECT_EQ(node_c.AxID(), event.update.nodes[2].id);
+  ASSERT_EQ(3U, update.nodes.size());
+  EXPECT_EQ(node_a.AxID(), update.node_id_to_clear);
+  EXPECT_EQ(node_a.AxID(), update.nodes[0].id);
+  EXPECT_EQ(node_b.AxID(), update.nodes[1].id);
+  EXPECT_EQ(node_c.AxID(), update.nodes[2].id);
   EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
 }
 

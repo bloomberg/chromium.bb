@@ -17,6 +17,7 @@ bool StructTraits<ax::mojom::AXTreeUpdateDataView, ui::AXTreeUpdate>::Read(
   out->root_id = data.root_id();
   if (!data.ReadNodes(&out->nodes))
     return false;
+  out->event_from = data.event_from();
   return true;
 }
 

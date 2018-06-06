@@ -195,22 +195,25 @@ AutomationAXTreeWrapper::~AutomationAXTreeWrapper() {
 }
 
 bool AutomationAXTreeWrapper::OnAccessibilityEvents(
-    const std::vector<ExtensionMsg_AccessibilityEventParams>& events,
+    const ExtensionMsg_AccessibilityEventBundleParams& event_bundle,
     bool is_active_profile) {
-  for (const auto& params : events) {
-    set_event_from(params.event_from);
+  for (const auto& update : event_bundle.updates) {
+    set_event_from(update.event_from);
     deleted_node_ids_.clear();
 
-    if (!tree_.Unserialize(params.update))
+    if (!tree_.Unserialize(update))
       return false;
 
     if (is_active_profile) {
       owner_->SendNodesRemovedEvent(&tree_, deleted_node_ids_);
 
-      ui::AXNode* target = tree_.GetFromId(params.id);
-      if (target) {
-        owner_->SendTreeChangeEvent(
-            api::automation::TREE_CHANGE_TYPE_SUBTREEUPDATEEND, &tree_, target);
+      if (is_active_profile) {
+        ui::AXNode* target = tree_.GetFromId(update.nodes[0].id);
+        if (target) {
+          owner_->SendTreeChangeEvent(
+              api::automation::TREE_CHANGE_TYPE_SUBTREEUPDATEEND, &tree_,
+              target);
+        }
       }
     }
   }
@@ -224,23 +227,27 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     api::automation::EventType event_type =
         ToAutomationEvent(targeted_event.event_params.event);
     if (IsEventTypeHandledByAXEventGenerator(event_type)) {
-      ExtensionMsg_AccessibilityEventParams generated_params;
-      generated_params.tree_id = tree_id_;
-      generated_params.event_from = targeted_event.event_params.event_from;
-      owner_->SendAutomationEvent(generated_params, targeted_event.node->id(),
+      ui::AXEvent generated_event;
+      generated_event.id = targeted_event.node->id();
+      generated_event.event_from = targeted_event.event_params.event_from;
+      owner_->SendAutomationEvent(event_bundle.tree_id,
+                                  event_bundle.mouse_location, generated_event,
                                   event_type);
     }
   }
   ClearEvents();
 
-  for (auto params : events) {
+  for (auto event : event_bundle.events) {
     api::automation::EventType automation_event_type =
-        ToAutomationEvent(params.event_type);
+        ToAutomationEvent(event.event_type);
 
     // Send some events directly from the event message, if they're not
     // handled by AXEventGenerator yet.
-    if (!IsEventTypeHandledByAXEventGenerator(automation_event_type))
-      owner_->SendAutomationEvent(params, params.id, automation_event_type);
+    if (!IsEventTypeHandledByAXEventGenerator(automation_event_type)) {
+      owner_->SendAutomationEvent(event_bundle.tree_id,
+                                  event_bundle.mouse_location, event,
+                                  automation_event_type);
+    }
   }
 
   return true;

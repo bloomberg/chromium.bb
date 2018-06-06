@@ -8,7 +8,7 @@
 #include "ui/accessibility/ax_event_generator.h"
 #include "ui/accessibility/ax_tree.h"
 
-struct ExtensionMsg_AccessibilityEventParams;
+struct ExtensionMsg_AccessibilityEventBundleParams;
 
 namespace extensions {
 
@@ -36,7 +36,7 @@ class AutomationAXTreeWrapper : public ui::AXEventGenerator {
   // to this event. Unserializes the tree update and calls back to
   // AutomationInternalCustomBindings to fire any automation events needed.
   bool OnAccessibilityEvents(
-      const std::vector<ExtensionMsg_AccessibilityEventParams>& events,
+      const ExtensionMsg_AccessibilityEventBundleParams& events,
       bool is_active_profile);
 
  private:

@@ -386,7 +386,7 @@ void BrowserAccessibilityManagerMac::FireNativeMacNotification(
 }
 
 void BrowserAccessibilityManagerMac::OnAccessibilityEvents(
-    const std::vector<AXEventNotificationDetails>& details) {
+    const AXEventNotificationDetails& details) {
   text_edits_.clear();
   // Call the base method last as it might delete the tree if it receives an
   // invalid message.

@@ -20,8 +20,6 @@
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-struct AccessibilityHostMsg_EventParams;
-
 namespace blink {
 class WebDocument;
 class WebNode;
@@ -29,6 +27,7 @@ class WebNode;
 
 namespace ui {
 struct AXActionData;
+struct AXEvent;
 }
 
 namespace content {
@@ -137,7 +136,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
 
   // Events from Blink are collected until they are ready to be
   // sent to the browser.
-  std::vector<AccessibilityHostMsg_EventParams> pending_events_;
+  std::vector<ui::AXEvent> pending_events_;
 
   // The adapter that exposes Blink's accessibility tree to AXTreeSerializer.
   BlinkAXTreeSource tree_source_;

@@ -999,7 +999,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnForwardResourceTimingToParent)
     IPC_MESSAGE_HANDLER(FrameHostMsg_TextSurroundingSelectionResponse,
                         OnTextSurroundingSelectionResponse)
-    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Events, OnAccessibilityEvents)
+    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_EventBundle, OnAccessibilityEvents)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_LocationChanges,
                         OnAccessibilityLocationChanges)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_FindInPageResult,
@@ -2501,13 +2501,14 @@ RenderWidgetHostViewBase* RenderFrameHostImpl::GetViewForAccessibility() {
 }
 
 void RenderFrameHostImpl::OnAccessibilityEvents(
-    const std::vector<AccessibilityHostMsg_EventParams>& params,
-    int reset_token, int ack_token) {
+    const AccessibilityHostMsg_EventBundleParams& bundle,
+    int reset_token,
+    int ack_token) {
   // Don't process this IPC if either we're waiting on a reset and this
   // IPC doesn't have the matching token ID, or if we're not waiting on a
   // reset but this message includes a reset token.
   if (accessibility_reset_token_ != reset_token) {
-    Send(new AccessibilityMsg_Events_ACK(routing_id_, ack_token));
+    Send(new AccessibilityMsg_EventBundle_ACK(routing_id_, ack_token));
     return;
   }
   accessibility_reset_token_ = 0;
@@ -2518,29 +2519,27 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
     if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs))
       GetOrCreateBrowserAccessibilityManager();
 
-    std::vector<AXEventNotificationDetails> details;
-    details.reserve(params.size());
-    for (size_t i = 0; i < params.size(); ++i) {
-      const AccessibilityHostMsg_EventParams& param = params[i];
-      AXEventNotificationDetails detail;
-      detail.event_type = param.event_type;
-      detail.id = param.id;
-      detail.ax_tree_id = GetAXTreeID();
-      detail.event_from = param.event_from;
-      detail.action_request_id = param.action_request_id;
-      if (param.update.has_tree_data) {
-        detail.update.has_tree_data = true;
-        ax_content_tree_data_ = param.update.tree_data;
-        AXContentTreeDataToAXTreeData(&detail.update.tree_data);
+    AXEventNotificationDetails details;
+    details.ax_tree_id = GetAXTreeID();
+    details.events = bundle.events;
+
+    details.updates.resize(bundle.updates.size());
+    for (size_t i = 0; i < bundle.updates.size(); ++i) {
+      const AXContentTreeUpdate& src_update = bundle.updates[i];
+      ui::AXTreeUpdate* dst_update = &details.updates[i];
+      if (src_update.has_tree_data) {
+        dst_update->has_tree_data = true;
+        ax_content_tree_data_ = src_update.tree_data;
+        AXContentTreeDataToAXTreeData(&dst_update->tree_data);
       }
-      detail.update.root_id = param.update.root_id;
-      detail.update.node_id_to_clear = param.update.node_id_to_clear;
-      detail.update.nodes.resize(param.update.nodes.size());
-      for (size_t j = 0; j < param.update.nodes.size(); ++j) {
-        AXContentNodeDataToAXNodeData(param.update.nodes[j],
-                                      &detail.update.nodes[j]);
+      dst_update->root_id = src_update.root_id;
+      dst_update->node_id_to_clear = src_update.node_id_to_clear;
+      dst_update->event_from = src_update.event_from;
+      dst_update->nodes.resize(src_update.nodes.size());
+      for (size_t j = 0; j < src_update.nodes.size(); ++j) {
+        AXContentNodeDataToAXNodeData(src_update.nodes[j],
+                                      &dst_update->nodes[j]);
       }
-      details.push_back(detail);
     }
 
     if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
@@ -2552,31 +2551,36 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
 
     // For testing only.
     if (!accessibility_testing_callback_.is_null()) {
-      for (size_t i = 0; i < details.size(); i++) {
-        const AXEventNotificationDetails& detail = details[i];
-        if (static_cast<int>(detail.event_type) < 0)
-          continue;
-
+      // Apply tree updates to test tree.
+      for (size_t i = 0; i < details.updates.size(); i++) {
         if (!ax_tree_for_testing_) {
           if (browser_accessibility_manager_) {
             ax_tree_for_testing_.reset(new ui::AXTree(
                 browser_accessibility_manager_->SnapshotAXTreeForTesting()));
           } else {
             ax_tree_for_testing_.reset(new ui::AXTree());
-            CHECK(ax_tree_for_testing_->Unserialize(detail.update))
+            CHECK(ax_tree_for_testing_->Unserialize(details.updates[i]))
                 << ax_tree_for_testing_->error();
           }
         } else {
-          CHECK(ax_tree_for_testing_->Unserialize(detail.update))
+          CHECK(ax_tree_for_testing_->Unserialize(details.updates[i]))
               << ax_tree_for_testing_->error();
         }
-        accessibility_testing_callback_.Run(this, detail.event_type, detail.id);
+      }
+
+      // Call testing callback functions for each event to fire.
+      for (size_t i = 0; i < details.events.size(); i++) {
+        if (static_cast<int>(details.events[i].event_type) < 0)
+          continue;
+
+        accessibility_testing_callback_.Run(this, details.events[i].event_type,
+                                            details.events[i].id);
       }
     }
   }
 
   // Always send an ACK or the renderer can be in a bad state.
-  Send(new AccessibilityMsg_Events_ACK(routing_id_, ack_token));
+  Send(new AccessibilityMsg_EventBundle_ACK(routing_id_, ack_token));
 }
 
 void RenderFrameHostImpl::OnAccessibilityLocationChanges(
@@ -4112,18 +4116,16 @@ void RenderFrameHostImpl::UpdateAXTreeData() {
     return;
   }
 
-  std::vector<AXEventNotificationDetails> details;
-  details.reserve(1U);
   AXEventNotificationDetails detail;
   detail.ax_tree_id = GetAXTreeID();
-  detail.update.has_tree_data = true;
-  AXContentTreeDataToAXTreeData(&detail.update.tree_data);
-  details.push_back(detail);
+  detail.updates.resize(1);
+  detail.updates[0].has_tree_data = true;
+  AXContentTreeDataToAXTreeData(&detail.updates[0].tree_data);
 
   if (browser_accessibility_manager_)
-    browser_accessibility_manager_->OnAccessibilityEvents(details);
+    browser_accessibility_manager_->OnAccessibilityEvents(detail);
 
-  delegate_->AccessibilityEventReceived(details);
+  delegate_->AccessibilityEventReceived(detail);
 }
 
 void RenderFrameHostImpl::SetTextTrackSettings(

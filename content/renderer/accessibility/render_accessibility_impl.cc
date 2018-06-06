@@ -29,6 +29,7 @@
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/accessibility/ax_enum_util.h"
+#include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_node.h"
 
 using blink::WebAXObject;
@@ -183,7 +184,7 @@ bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(RenderAccessibilityImpl, message)
 
     IPC_MESSAGE_HANDLER(AccessibilityMsg_PerformAction, OnPerformAction)
-    IPC_MESSAGE_HANDLER(AccessibilityMsg_Events_ACK, OnEventsAck)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_EventBundle_ACK, OnEventsAck)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_HitTest, OnHitTest)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_Reset, OnReset)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_FatalError, OnFatalError)
@@ -298,7 +299,7 @@ void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,
   }
 
   // Add the accessibility object to our cache and ensure it's valid.
-  AccessibilityHostMsg_EventParams acc_event;
+  ui::AXEvent acc_event;
   acc_event.id = obj.AxID();
   acc_event.event_type = event;
 
@@ -410,18 +411,18 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   // Make a copy of the events, because it's possible that
   // actions inside this loop will cause more events to be
   // queued up.
-  std::vector<AccessibilityHostMsg_EventParams> src_events = pending_events_;
+  std::vector<ui::AXEvent> src_events = pending_events_;
   pending_events_.clear();
 
-  // Generate an event message from each Blink event.
-  std::vector<AccessibilityHostMsg_EventParams> event_msgs;
+  // The serialized event bundle to send to the browser.
+  AccessibilityHostMsg_EventBundleParams bundle;
 
   // If there's a layout complete message, we need to send location changes.
   bool had_layout_complete_messages = false;
 
   // Loop over each event and generate an updated event message.
   for (size_t i = 0; i < src_events.size(); ++i) {
-    AccessibilityHostMsg_EventParams& event = src_events[i];
+    ui::AXEvent& event = src_events[i];
     if (event.event_type == ax::mojom::Event::kLayoutComplete)
       had_layout_complete_messages = true;
 
@@ -443,46 +444,44 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     if (!tree_source_.IsInTree(obj))
       continue;
 
-    AccessibilityHostMsg_EventParams event_msg;
-    event_msg.event_type = event.event_type;
-    event_msg.id = event.id;
-    event_msg.event_from = event.event_from;
-    event_msg.action_request_id = event.action_request_id;
+    bundle.events.push_back(event);
 
+    VLOG(1) << "Accessibility event: " << ui::ToString(event.event_type)
+            << " on node id " << event.id;
+
+    AXContentTreeUpdate update;
+    update.event_from = event.event_from;
     // If there's a plugin, force the tree data to be generated in every
     // message so the plugin can merge its own tree data changes.
     if (plugin_tree_source_)
-      event_msg.update.has_tree_data = true;
+      update.has_tree_data = true;
 
-    if (!serializer_.SerializeChanges(obj, &event_msg.update)) {
+    if (!serializer_.SerializeChanges(obj, &update)) {
       VLOG(1) << "Failed to serialize one accessibility event.";
       continue;
     }
 
     if (plugin_tree_source_)
-      AddPluginTreeToUpdate(&event_msg.update);
-
-    event_msgs.push_back(event_msg);
+      AddPluginTreeToUpdate(&update);
 
     // For each node in the update, set the location in our map from
     // ids to locations.
-    for (size_t j = 0; j < event_msg.update.nodes.size(); ++j) {
-      ui::AXNodeData& src = event_msg.update.nodes[j];
-      ui::AXRelativeBounds& dst = locations_[event_msg.update.nodes[j].id];
+    for (size_t j = 0; j < update.nodes.size(); ++j) {
+      ui::AXNodeData& src = update.nodes[j];
+      ui::AXRelativeBounds& dst = locations_[update.nodes[j].id];
       dst.offset_container_id = src.offset_container_id;
       dst.bounds = src.location;
       dst.transform.reset(nullptr);
       if (src.transform)
         dst.transform.reset(new gfx::Transform(*src.transform));
     }
+    bundle.updates.push_back(update);
 
-    VLOG(1) << "Accessibility event: " << ui::ToString(event.event_type)
-            << " on node id " << event_msg.id
-            << "\n" << event_msg.update.ToString();
+    VLOG(1) << "Accessibility tree update:\n" << update.ToString();
   }
 
-  Send(new AccessibilityHostMsg_Events(routing_id(), event_msgs, reset_token_,
-                                       ack_token_));
+  Send(new AccessibilityHostMsg_EventBundle(routing_id(), bundle, reset_token_,
+                                            ack_token_));
   reset_token_ = 0;
 
   if (had_layout_complete_messages)

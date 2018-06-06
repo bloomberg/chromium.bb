@@ -351,7 +351,7 @@ bool BrowserAccessibilityManager::UseRootScrollOffsetsWhenComputingBounds() {
 }
 
 void BrowserAccessibilityManager::OnAccessibilityEvents(
-    const std::vector<AXEventNotificationDetails>& details) {
+    const AXEventNotificationDetails& details) {
   TRACE_EVENT0("accessibility",
                "BrowserAccessibilityManager::OnAccessibilityEvents");
 
@@ -360,9 +360,8 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
     device_scale_factor_ = delegate_->AccessibilityGetDeviceScaleFactor();
 
   // Process all changes to the accessibility tree first.
-  for (uint32_t index = 0; index < details.size(); ++index) {
-    const AXEventNotificationDetails& detail = details[index];
-    if (!tree_->Unserialize(detail.update)) {
+  for (uint32_t index = 0; index < details.updates.size(); ++index) {
+    if (!tree_->Unserialize(details.updates[index])) {
       if (delegate_) {
         LOG(ERROR) << tree_->error();
         delegate_->AccessibilityFatalError();
@@ -410,18 +409,18 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   ClearEvents();
 
   // Fire events from Blink.
-  for (uint32_t index = 0; index < details.size(); index++) {
-    const AXEventNotificationDetails& detail = details[index];
+  for (uint32_t index = 0; index < details.events.size(); index++) {
+    const ui::AXEvent& event = details.events[index];
 
     // Fire the native event.
-    BrowserAccessibility* event_target = GetFromID(detail.id);
+    BrowserAccessibility* event_target = GetFromID(event.id);
     if (!event_target)
       return;
 
-    if (detail.event_type == ax::mojom::Event::kHover)
+    if (event.event_type == ax::mojom::Event::kHover)
       GetRootManager()->CacheHitTestResult(event_target);
 
-    FireBlinkEvent(detail.event_type, event_target);
+    FireBlinkEvent(event.event_type, event_target);
   }
 }
 

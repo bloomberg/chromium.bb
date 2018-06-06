@@ -161,25 +161,18 @@ class AutomationWebContentsObserver
   ~AutomationWebContentsObserver() override {}
 
   // content::WebContentsObserver overrides.
-  void AccessibilityEventReceived(
-      const std::vector<content::AXEventNotificationDetails>& details)
-      override {
-    std::vector<ExtensionMsg_AccessibilityEventParams> events;
-    for (const auto& event : details) {
-      events.emplace_back();
-      ExtensionMsg_AccessibilityEventParams& params = events.back();
-      params.tree_id = event.ax_tree_id;
-      params.id = event.id;
-      params.event_type = event.event_type;
-      params.update = event.update;
-      params.event_from = event.event_from;
-      params.action_request_id = event.action_request_id;
+  void AccessibilityEventReceived(const content::AXEventNotificationDetails&
+                                      content_event_bundle) override {
+    ExtensionMsg_AccessibilityEventBundleParams extension_event_bundle;
+    extension_event_bundle.updates = content_event_bundle.updates;
+    extension_event_bundle.events = content_event_bundle.events;
+    extension_event_bundle.tree_id = content_event_bundle.ax_tree_id;
 #if defined(USE_AURA)
-      params.mouse_location = aura::Env::GetInstance()->last_mouse_location();
+    extension_event_bundle.mouse_location =
+        aura::Env::GetInstance()->last_mouse_location();
 #endif
-    }
     AutomationEventRouter* router = AutomationEventRouter::GetInstance();
-    router->DispatchAccessibilityEvents(events);
+    router->DispatchAccessibilityEvents(extension_event_bundle);
   }
 
   void AccessibilityLocationChangesReceived(
@@ -205,24 +198,24 @@ class AutomationWebContentsObserver
 
   void MediaStartedPlaying(const MediaPlayerInfo& video_type,
                            const MediaPlayerId& id) override {
-    std::vector<content::AXEventNotificationDetails> details;
-    content::AXEventNotificationDetails detail;
-    detail.ax_tree_id = id.first->GetAXTreeID();
-    detail.event_type = ax::mojom::Event::kMediaStartedPlaying;
-    details.push_back(detail);
-    AccessibilityEventReceived(details);
+    content::AXEventNotificationDetails content_event_bundle;
+    content_event_bundle.ax_tree_id = id.first->GetAXTreeID();
+    content_event_bundle.events.resize(1);
+    content_event_bundle.events[0].event_type =
+        ax::mojom::Event::kMediaStartedPlaying;
+    AccessibilityEventReceived(content_event_bundle);
   }
 
   void MediaStoppedPlaying(
       const MediaPlayerInfo& video_type,
       const MediaPlayerId& id,
       WebContentsObserver::MediaStoppedReason reason) override {
-    std::vector<content::AXEventNotificationDetails> details;
-    content::AXEventNotificationDetails detail;
-    detail.ax_tree_id = id.first->GetAXTreeID();
-    detail.event_type = ax::mojom::Event::kMediaStoppedPlaying;
-    details.push_back(detail);
-    AccessibilityEventReceived(details);
+    content::AXEventNotificationDetails content_event_bundle;
+    content_event_bundle.ax_tree_id = id.first->GetAXTreeID();
+    content_event_bundle.events.resize(1);
+    content_event_bundle.events[0].event_type =
+        ax::mojom::Event::kMediaStoppedPlaying;
+    AccessibilityEventReceived(content_event_bundle);
   }
 
  private:
@@ -232,16 +225,16 @@ class AutomationWebContentsObserver
       : content::WebContentsObserver(web_contents),
         browser_context_(web_contents->GetBrowserContext()) {
     if (web_contents->IsCurrentlyAudible()) {
-      std::vector<content::AXEventNotificationDetails> details;
       content::RenderFrameHost* rfh = web_contents->GetMainFrame();
       if (!rfh)
         return;
 
-      content::AXEventNotificationDetails detail;
-      detail.ax_tree_id = rfh->GetAXTreeID();
-      detail.event_type = ax::mojom::Event::kMediaStartedPlaying;
-      details.push_back(detail);
-      AccessibilityEventReceived(details);
+      content::AXEventNotificationDetails content_event_bundle;
+      content_event_bundle.ax_tree_id = rfh->GetAXTreeID();
+      content_event_bundle.events.resize(1);
+      content_event_bundle.events[0].event_type =
+          ax::mojom::Event::kMediaStartedPlaying;
+      AccessibilityEventReceived(content_event_bundle);
     }
   }
 

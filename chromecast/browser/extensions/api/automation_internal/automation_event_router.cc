@@ -59,20 +59,17 @@ void AutomationEventRouter::RegisterListenerWithDesktopPermission(
 }
 
 void AutomationEventRouter::DispatchAccessibilityEvents(
-    const std::vector<ExtensionMsg_AccessibilityEventParams>& events) {
-  if (events.empty())
-    return;
-
+    const ExtensionMsg_AccessibilityEventBundleParams& event_bundle) {
   for (const auto& listener : listeners_) {
     // Skip listeners that don't want to listen to this tree.
-    if (!listener.desktop &&
-        listener.tree_ids.find(events[0].tree_id) == listener.tree_ids.end()) {
+    if (!listener.desktop && listener.tree_ids.find(event_bundle.tree_id) ==
+                                 listener.tree_ids.end()) {
       continue;
     }
 
     content::RenderProcessHost* rph =
         content::RenderProcessHost::FromID(listener.process_id);
-    rph->Send(new ExtensionMsg_AccessibilityEvents(events, true));
+    rph->Send(new ExtensionMsg_AccessibilityEventBundle(event_bundle, true));
   }
 }
 
