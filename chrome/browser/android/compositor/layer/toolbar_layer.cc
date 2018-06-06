@@ -116,7 +116,7 @@ void ToolbarLayer::PushResource(
         anonymize && layer_->children().back() != url_bar_background_layer_;
     bool needs_move_to_back =
         !anonymize &&
-        layer_->child_at(background_layer_index) != url_bar_background_layer_;
+        layer_->children()[background_layer_index] != url_bar_background_layer_;
 
     // If the layer needs to move, remove and re-add it.
     if (needs_move_to_front) {
@@ -138,7 +138,7 @@ void ToolbarLayer::PushResource(
 
 int ToolbarLayer::GetIndexOfLayer(scoped_refptr<cc::Layer> layer) {
   for (unsigned int i = 0; i < layer_->children().size(); ++i) {
-    if (layer_->child_at(i) == layer)
+    if (layer_->children()[i] == layer)
       return i;
   }
   return -1;

@@ -688,37 +688,6 @@ TEST_F(LayerTest, RemoveAllChildren) {
   EXPECT_FALSE(child3_->parent());
 }
 
-TEST_F(LayerTest, SetChildren) {
-  scoped_refptr<Layer> old_parent = Layer::Create();
-  scoped_refptr<Layer> new_parent = Layer::Create();
-
-  scoped_refptr<Layer> child1 = Layer::Create();
-  scoped_refptr<Layer> child2 = Layer::Create();
-
-  LayerList new_children;
-  new_children.push_back(child1);
-  new_children.push_back(child2);
-
-  // Set up and verify initial test conditions: child1 has a parent, child2 has
-  // no parent.
-  old_parent->AddChild(child1);
-  ASSERT_EQ(0U, new_parent->children().size());
-  EXPECT_EQ(old_parent.get(), child1->parent());
-  EXPECT_FALSE(child2->parent());
-
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
-                                  layer_tree_host_->SetRootLayer(new_parent));
-
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(
-      AtLeast(1), new_parent->SetChildren(new_children));
-
-  ASSERT_EQ(2U, new_parent->children().size());
-  EXPECT_EQ(new_parent.get(), child1->parent());
-  EXPECT_EQ(new_parent.get(), child2->parent());
-
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(nullptr));
-}
-
 TEST_F(LayerTest, HasAncestor) {
   scoped_refptr<Layer> parent = Layer::Create();
   EXPECT_FALSE(parent->HasAncestor(parent.get()));

@@ -25,7 +25,8 @@ class PaintAndRasterInvalidationTest : public PaintControllerPaintTest {
           .View()
           ->GetPaintArtifactCompositorForTesting()
           ->RootLayer()
-          ->child_at(index);
+          ->children()[index]
+          .get();
     }
     return GetLayoutView().Layer()->GraphicsLayerBacking()->ContentLayer();
   }
