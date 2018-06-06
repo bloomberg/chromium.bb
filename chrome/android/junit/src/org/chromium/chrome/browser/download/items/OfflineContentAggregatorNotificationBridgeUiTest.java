@@ -105,6 +105,8 @@ public class OfflineContentAggregatorNotificationBridgeUiTest {
         InOrder order = inOrder(mProvider);
         order.verify(mProvider, times(1))
                 .getVisualsForItem(items.get(0).id /* OfflineItemState.IN_PROGRESS */, bridge);
+        order.verify(mProvider, times(1))
+                .getVisualsForItem(items.get(1).id /* OfflineItemState.PENDING*/, bridge);
         order.verify(mProvider, never())
                 .getVisualsForItem(ArgumentMatchers.any(), ArgumentMatchers.any());
 

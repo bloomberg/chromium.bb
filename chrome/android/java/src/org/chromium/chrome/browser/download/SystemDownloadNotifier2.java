@@ -66,7 +66,7 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
     public void notifyDownloadPaused(DownloadInfo info) {
         mDownloadNotificationService.notifyDownloadPaused(info.getContentId(), info.getFileName(),
                 true, false, info.isOffTheRecord(), info.getIsTransient(), info.getIcon(), false,
-                false, PendingState.NOT_PENDING);
+                false, info.getPendingState());
     }
 
     @Override

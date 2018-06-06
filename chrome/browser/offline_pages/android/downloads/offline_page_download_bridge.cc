@@ -16,7 +16,6 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/offline_pages/android/downloads/offline_page_infobar_delegate.h"
-#include "chrome/browser/offline_pages/android/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
@@ -67,9 +66,10 @@ class DownloadUIAdapterDelegate : public DownloadUIAdapter::Delegate {
 
   // DownloadUIAdapter::Delegate
   bool IsVisibleInUI(const ClientId& client_id) override;
-  bool IsTemporarilyHiddenInUI(const ClientId& client_id) override;
   void SetUIAdapter(DownloadUIAdapter* ui_adapter) override;
   void OpenItem(const OfflineItem& item, int64_t offline_id) override;
+  bool MaybeSuppressNotification(const std::string& origin,
+                                 const ClientId& id) override;
 
  private:
   // Not owned, cached service pointer.
@@ -85,11 +85,6 @@ bool DownloadUIAdapterDelegate::IsVisibleInUI(const ClientId& client_id) {
          base::IsValidGUID(client_id.id);
 }
 
-bool DownloadUIAdapterDelegate::IsTemporarilyHiddenInUI(
-    const ClientId& client_id) {
-  return false;
-}
-
 void DownloadUIAdapterDelegate::SetUIAdapter(DownloadUIAdapter* ui_adapter) {}
 
 void DownloadUIAdapterDelegate::OpenItem(const OfflineItem& item,
@@ -98,6 +93,18 @@ void DownloadUIAdapterDelegate::OpenItem(const OfflineItem& item,
   Java_OfflinePageDownloadBridge_openItem(
       env, ConvertUTF8ToJavaString(env, item.page_url.spec()), offline_id,
       offline_pages::ShouldOfflinePagesInDownloadHomeOpenInCct());
+}
+
+bool DownloadUIAdapterDelegate::MaybeSuppressNotification(
+    const std::string& origin,
+    const ClientId& id) {
+  // Do not suppress notification if chrome.
+  if (origin == "" || !IsOfflinePagesSuppressNotificationsEnabled())
+    return false;
+  JNIEnv* env = AttachCurrentThread();
+  return Java_OfflinePageDownloadBridge_maybeSuppressNotification(
+      env, ConvertUTF8ToJavaString(env, origin),
+      ConvertUTF8ToJavaString(env, id.id));
 }
 
 // TODO(dewittj): Move to Download UI Adapter.
@@ -174,8 +181,7 @@ void SavePageIfNotNavigatedAway(const GURL& url,
   }
   tab_helper->ObserveAndDownloadCurrentPage(client_id, request_id, origin);
 
-  OfflinePageNotificationBridge notification_bridge;
-  notification_bridge.ShowDownloadingToast();
+  OfflinePageDownloadBridge::ShowDownloadingToast();
 }
 
 void DuplicateCheckDone(const GURL& url,
@@ -355,6 +361,12 @@ static jlong JNI_OfflinePageDownloadBridge_Init(
   }
 
   return reinterpret_cast<jlong>(new OfflinePageDownloadBridge(env, obj));
+}
+
+// static
+void OfflinePageDownloadBridge::ShowDownloadingToast() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_OfflinePageDownloadBridge_showDownloadingToast(env);
 }
 
 }  // namespace android

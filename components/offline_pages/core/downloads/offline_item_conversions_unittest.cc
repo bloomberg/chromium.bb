@@ -55,6 +55,8 @@ TEST(OfflineItemConversionsTest, OfflinePageItemConversion) {
   EXPECT_EQ(100, offline_item.progress.max.value());
   EXPECT_EQ(OfflineItemProgressUnit::PERCENTAGE, offline_item.progress.unit);
   EXPECT_TRUE(offline_item.is_suggested);
+  EXPECT_TRUE(offline_item.is_openable);
+  EXPECT_FALSE(offline_item.externally_removed);
 
   // Enabled P2P sharing and flag the item as suggested when creating the
   // OfflineItem. Then check that only the mime type is and is_suggested
