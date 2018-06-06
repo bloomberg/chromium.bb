@@ -48,7 +48,6 @@ class ContentHashFetcher : public net::URLFetcherDelegate {
   // The response contents is passed through std::unique_ptr<std::string>.
   using HashFetcherCallback =
       base::OnceCallback<void(const ContentHash::ExtensionKey&,
-                              const ContentHash::FetchParams&,
                               std::unique_ptr<std::string>)>;
 
   ContentHashFetcher(const ContentHash::ExtensionKey& extension_key,
