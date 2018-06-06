@@ -1379,14 +1379,16 @@ bool SelectorChecker::MatchesFocusVisiblePseudoClass(const Element& element) {
   if (force_pseudo_state)
     return true;
 
+  const Document& document = element.GetDocument();
   bool always_show_focus_ring = element.MayTriggerVirtualKeyboard();
   bool last_focus_from_mouse =
-      element.GetDocument().GetFrame() &&
-      element.GetDocument().GetFrame()->Selection().FrameIsFocusedAndActive() &&
-      element.GetDocument().LastFocusType() == kWebFocusTypeMouse;
+      document.GetFrame() &&
+      document.GetFrame()->Selection().FrameIsFocusedAndActive() &&
+      document.LastFocusType() == kWebFocusTypeMouse;
+  bool had_keyboard_event = document.HadKeyboardEvent();
 
-  return element.IsFocused() &&
-         (!last_focus_from_mouse || always_show_focus_ring);
+  return element.IsFocused() && (!last_focus_from_mouse || had_keyboard_event ||
+                                 always_show_focus_ring);
 }
 
 }  // namespace blink

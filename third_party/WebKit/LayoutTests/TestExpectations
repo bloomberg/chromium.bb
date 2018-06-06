@@ -4791,3 +4791,6 @@ crbug.com/849284 [ Mac ] http/tests/devtools/editor/text-editor-ctrl-d-2.js [ Ti
 
 # Sheriff 2018-06-06
 crbug.com/849975 external/wpt/css/css-animations/Element-getAnimations.tentative.html [ Pass Failure ]
+
+# This won't pass as a layout test until the linked bug is fixed.
+crbug.com/828858 external/wpt/css/selectors/focus-visible-007.html [ Failure ]

@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/node_or_string.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
@@ -2468,26 +2469,26 @@ void Node::DefaultEventHandler(Event* event) {
 }
 
 void Node::WillCallDefaultEventHandler(const Event& event) {
-  if (!IsFocused() || GetDocument().LastFocusType() != kWebFocusTypeMouse ||
-      GetDocument().HadKeyboardEvent()) {
+  if (!event.IsKeyboardEvent())
     return;
-  }
-  if (!event.IsKeyboardEvent() || event.type() != EventTypeNames::keydown) {
-    if (event.IsUIEvent())
-      GetDocument().SetHadKeyboardEvent(false);
-    return;
-  }
 
-  bool old_should_have_focus_appearance = ShouldHaveFocusAppearance();
+  if (!IsFocused() || GetDocument().LastFocusType() != kWebFocusTypeMouse)
+    return;
+
+  if (event.type() != EventTypeNames::keydown ||
+      GetDocument().HadKeyboardEvent())
+    return;
 
   GetDocument().SetHadKeyboardEvent(true);
 
-  // Changes to HadKeyboardEvent may affect ShouldHaveFocusAppearance() and
-  // LayoutTheme::IsFocused().
-  // Inform LayoutTheme if ShouldHaveFocusAppearance() changes.
-  if (old_should_have_focus_appearance != ShouldHaveFocusAppearance() &&
-      GetLayoutObject()) {
+  // Changes to HadKeyboardEvent may affect :focus-visible matching,
+  // ShouldHaveFocusAppearance and LayoutTheme::IsFocused().
+  // Inform LayoutTheme if HadKeyboardEvent changes.
+  if (GetLayoutObject()) {
     GetLayoutObject()->InvalidateIfControlStateChanged(kFocusControlState);
+
+    if (RuntimeEnabledFeatures::CSSFocusVisibleEnabled() && IsContainerNode())
+      ToContainerNode(*this).FocusVisibleStateChanged();
   }
 }
 
@@ -2579,6 +2580,8 @@ HTMLSlotElement* Node::assignedSlotForBinding() {
 }
 
 void Node::SetFocused(bool flag, WebFocusType focus_type) {
+  if (!flag || focus_type == kWebFocusTypeMouse)
+    GetDocument().SetHadKeyboardEvent(false);
   GetDocument().UserActionElements().SetFocused(this, flag);
 }
 
