@@ -349,6 +349,15 @@ unsigned long long PerformanceTiming::FirstMeaningfulPaint() const {
   return MonotonicTimeToIntegerMilliseconds(timing->FirstMeaningfulPaint());
 }
 
+unsigned long long PerformanceTiming::FirstMeaningfulPaintCandidate() const {
+  const PaintTiming* timing = GetPaintTiming();
+  if (!timing)
+    return 0;
+
+  return MonotonicTimeToIntegerMilliseconds(
+      timing->FirstMeaningfulPaintCandidate());
+}
+
 unsigned long long PerformanceTiming::PageInteractive() const {
   InteractiveDetector* interactive_detector = GetInteractiveDetector();
   if (!interactive_detector)
