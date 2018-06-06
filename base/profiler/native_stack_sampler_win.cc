@@ -519,9 +519,9 @@ void NativeStackSamplerWin::CopyToSample(
   sample->frames.reserve(stack.size());
 
   for (const auto& frame : stack) {
-    sample->frames.push_back(StackSamplingProfiler::Frame(
+    sample->frames.emplace_back(
         reinterpret_cast<uintptr_t>(frame.instruction_pointer),
-        GetModuleIndex(frame.module.Get(), modules)));
+        GetModuleIndex(frame.module.Get(), modules));
   }
 }
 
