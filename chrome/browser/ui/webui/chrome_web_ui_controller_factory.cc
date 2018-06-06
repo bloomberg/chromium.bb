@@ -404,13 +404,15 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if !defined(OS_CHROMEOS)
   // AppLauncherPage is not needed on Android or ChromeOS.
   if (url.host_piece() == chrome::kChromeUIAppLauncherPageHost && profile &&
-      extensions::ExtensionSystem::Get(profile)->extension_service()) {
+      extensions::ExtensionSystem::Get(profile)->extension_service() &&
+      !profile->IsGuestSession()) {
     return &NewWebUI<AppLauncherPageUI>;
   }
 #endif  // defined(OS_CHROMEOS)
 
   if (profile->IsGuestSession() &&
-      (url.host_piece() == chrome::kChromeUIBookmarksHost ||
+      (url.host_piece() == chrome::kChromeUIAppLauncherPageHost ||
+       url.host_piece() == chrome::kChromeUIBookmarksHost ||
        url.host_piece() == chrome::kChromeUIHistoryHost ||
        url.host_piece() == chrome::kChromeUIExtensionsHost)) {
     return &NewWebUI<PageNotAvailableForGuestUI>;
