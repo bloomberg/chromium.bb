@@ -12,6 +12,7 @@ blink_platform_sources("scheduler") {
     "base/graceful_queue_shutdown_helper.cc",
     "base/graceful_queue_shutdown_helper.h",
     "base/intrusive_heap.h",
+    "base/lazily_deallocated_deque.h",
     "base/moveable_auto_lock.h",
     "base/real_time_domain.cc",
     "base/real_time_domain.h",
@@ -190,6 +191,7 @@ jumbo_source_set("unit_tests") {
 
   sources = [
     "base/intrusive_heap_unittest.cc",
+    "base/lazily_deallocated_deque_unittest.cc",
     "base/task_queue_manager_impl_unittest.cc",
     "base/task_queue_selector_unittest.cc",
     "base/time_domain_unittest.cc",
