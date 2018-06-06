@@ -33,13 +33,13 @@ bool SetUpTeamDriveTestEntries(FakeDriveService* drive_service,
 }
 
 bool SetUpTestEntries(FakeDriveService* drive_service,
-                      const std::string& root_id) {
+                      const std::string& parent_resource_id) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   std::unique_ptr<FileResource> entry;
 
   drive_service->AddNewFileWithResourceId(
-      "2_file_resource_id", "audio/mpeg", "This is some test content.", root_id,
-      "File 1.txt",
+      "2_file_resource_id", "audio/mpeg", "This is some test content.",
+      parent_resource_id, "File 1.txt",
       false,  // shared_with_me
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
@@ -48,7 +48,7 @@ bool SetUpTestEntries(FakeDriveService* drive_service,
 
   drive_service->AddNewFileWithResourceId(
       "slash_file_resource_id", "audio/mpeg", "This is some test content.",
-      root_id, "Slash / in file 1.txt",
+      parent_resource_id, "Slash / in file 1.txt",
       false,  // shared_with_me
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
@@ -56,8 +56,8 @@ bool SetUpTestEntries(FakeDriveService* drive_service,
     return false;
 
   drive_service->AddNewFileWithResourceId(
-      "3_file_resource_id", "audio/mpeg", "This is some test content.", root_id,
-      "Duplicate Name.txt",
+      "3_file_resource_id", "audio/mpeg", "This is some test content.",
+      parent_resource_id, "Duplicate Name.txt",
       false,  // shared_with_me
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
@@ -65,8 +65,8 @@ bool SetUpTestEntries(FakeDriveService* drive_service,
     return false;
 
   drive_service->AddNewFileWithResourceId(
-      "4_file_resource_id", "audio/mpeg", "This is some test content.", root_id,
-      "Duplicate Name.txt",
+      "4_file_resource_id", "audio/mpeg", "This is some test content.",
+      parent_resource_id, "Duplicate Name.txt",
       false,  // shared_with_me
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
@@ -75,7 +75,7 @@ bool SetUpTestEntries(FakeDriveService* drive_service,
 
   drive_service->AddNewFileWithResourceId(
       "5_document_resource_id", util::kGoogleDocumentMimeType, std::string(),
-      root_id, "Document 1 excludeDir-test",
+      parent_resource_id, "Document 1 excludeDir-test",
       false,  // shared_with_me
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
@@ -84,7 +84,7 @@ bool SetUpTestEntries(FakeDriveService* drive_service,
 
   drive_service->AddNewFileWithResourceId(
       "1_folder_resource_id", util::kDriveFolderMimeType, std::string(),
-      root_id, "Directory 1",
+      parent_resource_id, "Directory 1",
       false,  // shared_with_me
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
@@ -132,8 +132,8 @@ bool SetUpTestEntries(FakeDriveService* drive_service,
     return false;
 
   drive_service->AddNewDirectoryWithResourceId(
-      "slash_dir_folder_resource_id", root_id, "Slash / in directory",
-      AddNewDirectoryOptions(),
+      "slash_dir_folder_resource_id", parent_resource_id,
+      "Slash / in directory", AddNewDirectoryOptions(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
   if (error != HTTP_CREATED)
@@ -152,8 +152,8 @@ bool SetUpTestEntries(FakeDriveService* drive_service,
     return false;
 
   drive_service->AddNewDirectoryWithResourceId(
-      "sub_dir_folder_2_self_link", root_id, "Directory 2 excludeDir-test",
-      AddNewDirectoryOptions(),
+      "sub_dir_folder_2_self_link", parent_resource_id,
+      "Directory 2 excludeDir-test", AddNewDirectoryOptions(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
   if (error != HTTP_CREATED)

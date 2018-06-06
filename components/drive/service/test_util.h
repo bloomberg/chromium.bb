@@ -20,7 +20,7 @@ bool SetUpTeamDriveTestEntries(FakeDriveService* drive_service,
                                const std::string& team_drive_name);
 
 bool SetUpTestEntries(FakeDriveService* drive_service,
-                      const std::string& root_id);
+                      const std::string& parent_resource_id);
 
 }  // namespace test_util
 }  // namespace drive
