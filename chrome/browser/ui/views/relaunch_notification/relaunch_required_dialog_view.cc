@@ -31,6 +31,12 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
+namespace {
+
+constexpr int kTitleIconSize = 20;
+
+}  // namespace
+
 // static
 views::Widget* RelaunchRequiredDialogView::Show(
     Browser* browser,
@@ -122,8 +128,8 @@ bool RelaunchRequiredDialogView::ShouldShowCloseButton() const {
 
 gfx::ImageSkia RelaunchRequiredDialogView::GetWindowIcon() {
   return gfx::CreateVectorIcon(gfx::IconDescription(
-      vector_icons::kBusinessIcon, 20, gfx::kChromeIconGrey, base::TimeDelta(),
-      gfx::kNoneIcon));
+      vector_icons::kBusinessIcon, kTitleIconSize, gfx::kChromeIconGrey,
+      base::TimeDelta(), gfx::kNoneIcon));
 }
 
 bool RelaunchRequiredDialogView::ShouldShowWindowIcon() const {
@@ -137,15 +143,7 @@ int RelaunchRequiredDialogView::GetHeightForWidth(int width) const {
 }
 
 void RelaunchRequiredDialogView::Layout() {
-  // Align the body label with the left edge of the dialog's title.
-  // TODO(bsep): Remove this when fixing https://crbug.com/810970.
-  gfx::Point origin;
-  views::View::ConvertPointToWidget(GetBubbleFrameView()->title(), &origin);
-  views::View::ConvertPointFromWidget(this, &origin);
-
-  gfx::Rect bounds = GetContentsBounds();
-  bounds.Inset(origin.x(), 0, 0, 0);
-  body_label_->SetBoundsRect(bounds);
+  body_label_->SetBoundsRect(GetContentsBounds());
 }
 
 // static
@@ -243,6 +241,16 @@ RelaunchRequiredDialogView::RelaunchRequiredDialogView(
                        views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
   body_label_->SetMultiLine(true);
   body_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+  // Align the body label with the left edge of the dialog's title.
+  // TODO(bsep): Remove this when fixing https://crbug.com/810970.
+  int title_offset = 2 * views::LayoutProvider::Get()
+                             ->GetInsetsMetric(views::INSETS_DIALOG_TITLE)
+                             .left() +
+                     kTitleIconSize;
+  body_label_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(0, title_offset - margins().left(), 0, 0)));
+
   AddChildView(body_label_);
 
   base::RecordAction(base::UserMetricsAction("RelaunchRequiredShown"));
