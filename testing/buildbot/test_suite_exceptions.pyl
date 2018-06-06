@@ -2883,7 +2883,6 @@
       },
 
       'Win7 Tests (1)': {
-        'experiment_percentage': 100,
       },
 
       # chromium.win
