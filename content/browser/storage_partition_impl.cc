@@ -1260,9 +1260,11 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal() {
   params->process_id = network::mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
   if (g_url_loader_factory_callback_for_test.Get().is_null()) {
-    GetNetworkContext()->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_for_browser_process_),
-        std::move(params));
+    auto request = mojo::MakeRequest(&url_loader_factory_for_browser_process_);
+    GetContentClient()->browser()->WillCreateURLLoaderFactory(
+        browser_context(), nullptr, false /* is_navigation */, &request);
+    GetNetworkContext()->CreateURLLoaderFactory(std::move(request),
+                                                std::move(params));
     return url_loader_factory_for_browser_process_.get();
   }
 
