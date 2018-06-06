@@ -491,6 +491,25 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
   const uint8_t *data_end = data + data_sz;
   aom_codec_err_t res = AOM_CODEC_OK;
 
+  // Release any pending output frames from the previous decoder call.
+  // We need to do this even if the decoder is being flushed
+  if (ctx->frame_workers) {
+    BufferPool *const pool = ctx->buffer_pool;
+    RefCntBuffer *const frame_bufs = pool->frame_bufs;
+    lock_buffer_pool(pool);
+    for (int i = 0; i < ctx->num_frame_workers; ++i) {
+      AVxWorker *const worker = &ctx->frame_workers[i];
+      FrameWorkerData *const frame_worker_data =
+          (FrameWorkerData *)worker->data1;
+      struct AV1Decoder *pbi = frame_worker_data->pbi;
+      for (size_t j = 0; j < pbi->num_output_frames; j++) {
+        decrease_ref_count((int)pbi->output_frame_index[j], frame_bufs, pool);
+      }
+      pbi->num_output_frames = 0;
+    }
+    unlock_buffer_pool(ctx->buffer_pool);
+  }
+
   if (data == NULL && data_sz == 0) {
     ctx->flushed = 1;
     return AOM_CODEC_OK;
@@ -576,11 +595,20 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
                                       aom_codec_iter_t *iter) {
   aom_image_t *img = NULL;
 
-  // iter acts as a flip flop, so an image is only returned on the first
-  // call to get_frame.
-  if (*iter == NULL && ctx->frame_workers != NULL) {
+  if (!iter) {
+    return NULL;
+  }
+
+  // To avoid having to allocate any extra storage, treat 'iter' as
+  // simply a pointer to an integer index
+  uintptr_t *index = (uintptr_t *)iter;
+
+  if (ctx->frame_workers != NULL) {
     do {
-      YV12_BUFFER_CONFIG sd;
+      YV12_BUFFER_CONFIG *sd;
+      // NOTE(david.barker): This code does not support multiple worker threads
+      // yet. We should probably move the iteration over threads into *iter
+      // instead of using ctx->next_output_worker_id.
       const AVxWorkerInterface *const winterface = aom_get_worker_interface();
       AVxWorker *const worker = &ctx->frame_workers[ctx->next_output_worker_id];
       FrameWorkerData *const frame_worker_data =
@@ -595,12 +623,16 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
           frame_worker_data->received_frame = 0;
           check_resync(ctx, frame_worker_data->pbi);
         }
-        if (av1_get_raw_frame(frame_worker_data->pbi, &sd) == 0) {
+        aom_film_grain_t *grain_params;
+        if (av1_get_raw_frame(frame_worker_data->pbi, *index, &sd,
+                              &grain_params) == 0) {
+          *index += 1;  // Advance the iterator to point to the next image
+
           AV1_COMMON *const cm = &frame_worker_data->pbi->common;
           RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
           ctx->last_show_frame = frame_worker_data->pbi->common.new_fb_idx;
           if (ctx->need_resync) return NULL;
-          yuvconfig2image(&ctx->img, &sd, frame_worker_data->user_priv);
+          yuvconfig2image(&ctx->img, sd, frame_worker_data->user_priv);
 
           const int num_planes = av1_num_planes(cm);
           if (cm->single_tile_decoding &&
@@ -642,9 +674,7 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
           img = &ctx->img;
           img->temporal_id = cm->temporal_layer_id;
           img->spatial_id = cm->spatial_layer_id;
-          return add_grain_if_needed(
-              img, ctx->image_with_grain,
-              &frame_worker_data->pbi->common.film_grain_params);
+          return add_grain_if_needed(img, ctx->image_with_grain, grain_params);
         }
       } else {
         // Decoding failed. Release the worker thread.
@@ -815,7 +845,7 @@ static aom_codec_err_t ctrl_get_frame_corrupted(aom_codec_alg_priv_t *ctx,
           (FrameWorkerData *)worker->data1;
       AV1Decoder *const pbi = frame_worker_data->pbi;
       RefCntBuffer *const frame_bufs = pbi->common.buffer_pool->frame_bufs;
-      if (pbi->seen_frame_header && pbi->output_frame == NULL)
+      if (pbi->seen_frame_header && pbi->num_output_frames == 0)
         return AOM_CODEC_ERROR;
       if (ctx->last_show_frame >= 0)
         *corrupted = frame_bufs[ctx->last_show_frame].buf.corrupted;

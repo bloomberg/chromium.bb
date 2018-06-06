@@ -105,7 +105,6 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
   memset(&cm->next_ref_frame_map, -1, sizeof(cm->next_ref_frame_map));
 
   cm->current_video_frame = 0;
-  pbi->ready_for_new_data = 1;
   pbi->common.buffer_pool = pool;
 
   cm->bit_depth = AOM_BITS_8;
@@ -303,11 +302,28 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
     YV12_BUFFER_CONFIG *cur_frame = get_frame_new_buffer(cm);
 
     if (cm->show_existing_frame || cm->show_frame) {
-      if (pbi->output_frame) {
-        decrease_ref_count(pbi->output_frame_index, frame_bufs, pool);
+      if (pbi->output_all_layers) {
+        // Append this frame to the output queue
+        if (pbi->num_output_frames >= MAX_NUM_SPATIAL_LAYERS) {
+          // We can't store the new frame anywhere, so drop it and return an
+          // error
+          decrease_ref_count(cm->new_fb_idx, frame_bufs, pool);
+          cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
+        } else {
+          pbi->output_frames[pbi->num_output_frames] = cur_frame;
+          pbi->output_frame_index[pbi->num_output_frames] = cm->new_fb_idx;
+          pbi->num_output_frames++;
+        }
+      } else {
+        // Replace any existing output frame
+        assert(pbi->num_output_frames == 0 || pbi->num_output_frames == 1);
+        if (pbi->num_output_frames > 0) {
+          decrease_ref_count((int)pbi->output_frame_index[0], frame_bufs, pool);
+        }
+        pbi->output_frames[0] = cur_frame;
+        pbi->output_frame_index[0] = cm->new_fb_idx;
+        pbi->num_output_frames = 1;
       }
-      pbi->output_frame = cur_frame;
-      pbi->output_frame_index = cm->new_fb_idx;
     } else {
       decrease_ref_count(cm->new_fb_idx, frame_bufs, pool);
     }
@@ -373,7 +389,6 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
     int i;
 
     cm->error.setjmp = 0;
-    pbi->ready_for_new_data = 1;
 
     // Synchronize all threads immediately as a subsequent decode call may
     // cause a resize invalidating some allocations.
@@ -435,6 +450,8 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   // in the buffer pool. This reference is consumed by swap_frame_buffers().
   swap_frame_buffers(pbi, frame_decoded);
 
+  if (cm->error.error_code != AOM_CODEC_OK) return 1;
+
   aom_clear_system_state();
 
   if (!cm->show_existing_frame) {
@@ -457,29 +474,26 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   cm->last_tile_rows = cm->tile_rows;
   cm->error.setjmp = 0;
 
-  if (frame_decoded) pbi->ready_for_new_data = 0;
   return 0;
 }
 
-int av1_get_raw_frame(AV1Decoder *pbi, YV12_BUFFER_CONFIG *sd) {
-  AV1_COMMON *const cm = &pbi->common;
-  if (pbi->ready_for_new_data == 1) return -1;
+// Get the frame at a particular index in the output queue
+int av1_get_raw_frame(AV1Decoder *pbi, size_t index, YV12_BUFFER_CONFIG **sd,
+                      aom_film_grain_t **grain_params) {
+  RefCntBuffer *const frame_bufs = pbi->common.buffer_pool->frame_bufs;
 
-  pbi->ready_for_new_data = 1;
-
-  /* no raw frame to show!!! */
-  if (!cm->show_frame) return -1;
-
-  *sd = *pbi->output_frame;
+  if (index >= pbi->num_output_frames) return -1;
+  *sd = pbi->output_frames[index];
+  *grain_params = &frame_bufs[pbi->output_frame_index[index]].film_grain_params;
   aom_clear_system_state();
   return 0;
 }
 
+// Get the highest-spatial-layer output
+// TODO(david.barker): What should this do?
 int av1_get_frame_to_show(AV1Decoder *pbi, YV12_BUFFER_CONFIG *frame) {
-  AV1_COMMON *const cm = &pbi->common;
+  if (pbi->num_output_frames == 0) return -1;
 
-  if (!cm->show_frame || !pbi->output_frame) return -1;
-
-  *frame = *pbi->output_frame;
+  *frame = *pbi->output_frames[pbi->num_output_frames - 1];
   return 0;
 }

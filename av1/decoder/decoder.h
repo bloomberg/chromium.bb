@@ -69,8 +69,6 @@ typedef struct AV1Decoder {
 
   DECLARE_ALIGNED(32, AV1_COMMON, common);
 
-  int ready_for_new_data;
-
   int refresh_frame_flags;
 
   // TODO(hkuang): Combine this with cur_buf in macroblockd as they are
@@ -91,9 +89,20 @@ typedef struct AV1Decoder {
 
   TileBufferDec tile_buffers[MAX_TILE_ROWS][MAX_TILE_COLS];
 
+  // Each time the decoder is called, we expect to receive a full temporal unit.
+  // This can contain up to one shown frame per spatial layer in the current
+  // operating point (note that some layers may be entirely omitted).
+  // If the 'output_all_layers' option is true, we save all of these shown
+  // frames so that they can be returned to the application. If the
+  // 'output_all_layers' option is false, then we only output one image per
+  // temporal unit.
+  //
+  // Note: The saved buffers are released at the start of the next time the
+  // application calls aom_codec_decode().
   int output_all_layers;
-  YV12_BUFFER_CONFIG *output_frame;
-  int output_frame_index;  // Buffer pool index
+  YV12_BUFFER_CONFIG *output_frames[MAX_NUM_SPATIAL_LAYERS];
+  size_t output_frame_index[MAX_NUM_SPATIAL_LAYERS];  // Buffer pool indices
+  size_t num_output_frames;  // How many frames are queued up so far?
 
   int allow_lowbitdepth;
   int max_threads;
@@ -137,7 +146,9 @@ typedef struct AV1Decoder {
 int av1_receive_compressed_data(struct AV1Decoder *pbi, size_t size,
                                 const uint8_t **dest);
 
-int av1_get_raw_frame(struct AV1Decoder *pbi, YV12_BUFFER_CONFIG *sd);
+// Get the frame at a particular index in the output queue
+int av1_get_raw_frame(AV1Decoder *pbi, size_t index, YV12_BUFFER_CONFIG **sd,
+                      aom_film_grain_t **grain_params);
 
 int av1_get_frame_to_show(struct AV1Decoder *pbi, YV12_BUFFER_CONFIG *frame);
 
