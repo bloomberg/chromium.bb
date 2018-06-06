@@ -46,6 +46,7 @@ void NtpBackgroundService::Shutdown() {
   for (auto& observer : observers_) {
     observer.OnNtpBackgroundServiceShuttingDown();
   }
+  DCHECK(!observers_.might_have_observers());
 }
 
 void NtpBackgroundService::FetchCollectionInfo() {
