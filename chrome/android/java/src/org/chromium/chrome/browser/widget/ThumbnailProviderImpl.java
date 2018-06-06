@@ -167,6 +167,8 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
             String key = getKey(contentId, mCurrentRequest.getIconSize());
             mBitmapCache.putBitmap(key, bitmap);
             mCurrentRequest.onThumbnailRetrieved(contentId, bitmap);
+        } else {
+            mCurrentRequest.onThumbnailRetrieved(contentId, null);
         }
 
         mCurrentRequest = null;

@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.download.home.list;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemVisuals;
+import org.chromium.components.offline_items_collection.VisualsCallback;
 
 /**
  * A {@link PropertyObservable} that contains two types of properties for the download manager:
@@ -14,6 +16,19 @@ import org.chromium.components.offline_items_collection.OfflineItem;
  * (2) A set of properties that are effectively shared across all list items like callbacks.
  */
 class ListPropertyModel extends PropertyObservable<ListPropertyModel.PropertyKey> {
+    @FunctionalInterface
+    public interface VisualsProvider {
+        /**
+         * @param item         The {@link OfflineItem} to get the {@link OfflineItemVisuals} for.
+         * @param iconWidthPx  The desired width of the icon in pixels (not guaranteed).
+         * @param iconHeightPx The desired height of the icon in pixels (not guaranteed).
+         * @param callback     A {@link Callback} that will be notified on completion.
+         * @return             A {@link Runnable} that can be used to cancel the request.
+         */
+        Runnable getVisuals(
+                OfflineItem item, int iconWidthPx, int iconHeightPx, VisualsCallback callback);
+    }
+
     static class PropertyKey {
         // RecyclerView general properties.
         static final PropertyKey ENABLE_ITEM_ANIMATIONS = new PropertyKey();
@@ -26,6 +41,9 @@ class ListPropertyModel extends PropertyObservable<ListPropertyModel.PropertyKey
         static final PropertyKey CALLBACK_SHARE = new PropertyKey();
         static final PropertyKey CALLBACK_REMOVE = new PropertyKey();
 
+        // Utility properties.
+        static final PropertyKey PROVIDER_VISUALS = new PropertyKey();
+
         private PropertyKey() {}
     }
 
@@ -36,6 +54,7 @@ class ListPropertyModel extends PropertyObservable<ListPropertyModel.PropertyKey
     private Callback<OfflineItem> mCancelCallback;
     private Callback<OfflineItem> mShareCallback;
     private Callback<OfflineItem> mRemoveCallback;
+    private VisualsProvider mVisualsProvider;
 
     /** Sets whether or not item animations should be enabled. */
     public void setEnableItemAnimations(boolean enableItemAnimations) {
@@ -119,5 +138,17 @@ class ListPropertyModel extends PropertyObservable<ListPropertyModel.PropertyKey
     /** @return The callback to trigger when a UI action removes a {@link OfflineItem}. */
     public Callback<OfflineItem> getRemoveCallback() {
         return mRemoveCallback;
+    }
+
+    /** Sets the provider for when the UI needs expensive assets for a {@link OfflineItem}. */
+    public void setVisualsProvider(VisualsProvider callback) {
+        if (mVisualsProvider == callback) return;
+        mVisualsProvider = callback;
+        notifyPropertyChanged(PropertyKey.PROVIDER_VISUALS);
+    }
+
+    /** @return The provider to retrieve expensive assets for a {@link OfflineItem}. */
+    public VisualsProvider getVisualsProvider() {
+        return mVisualsProvider;
     }
 }

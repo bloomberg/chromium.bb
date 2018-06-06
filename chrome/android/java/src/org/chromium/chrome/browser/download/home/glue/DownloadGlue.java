@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download.home.glue;
 
 import android.os.Handler;
+import android.text.TextUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
@@ -52,12 +53,14 @@ public class DownloadGlue implements DownloadObserver {
     /** @see OfflineContentProvider.Observer#onItemsAdded(ArrayList) */
     @Override
     public void onDownloadItemCreated(DownloadItem item) {
+        if (!canShowDownloadItem(item)) return;
         mDelegate.onItemsAdded(CollectionUtil.newArrayList(DownloadItem.createOfflineItem(item)));
     }
 
     /** @see OfflineContentProvider.Observer#onItemUpdated(OfflineItem) */
     @Override
     public void onDownloadItemUpdated(DownloadItem item) {
+        if (!canShowDownloadItem(item)) return;
         mDelegate.onItemUpdated(DownloadItem.createOfflineItem(item));
     }
 
@@ -75,6 +78,7 @@ public class DownloadGlue implements DownloadObserver {
 
         ArrayList<OfflineItem> offlineItems = new ArrayList<>();
         for (DownloadItem item : items) {
+            if (!canShowDownloadItem(item)) continue;
             offlineItems.add(DownloadItem.createOfflineItem(item));
         }
 
@@ -138,5 +142,16 @@ public class DownloadGlue implements DownloadObserver {
     /** @see OfflineContentProvider#getVisualsForItem(ContentId, VisualsCallback) */
     public void getVisualsForItem(ContentId id, VisualsCallback callback) {
         new Handler().post(() -> callback.onVisualsAvailable(id, null));
+    }
+
+    /**
+     * There could be some situations where we can't visually represent this download in the UI.
+     * This should be handled in native/be more generic, but it's here in the glue for now.
+     * @return Whether or not {@code item} should be shown in the UI.
+     */
+    private static boolean canShowDownloadItem(DownloadItem item) {
+        if (TextUtils.isEmpty(item.getDownloadInfo().getFilePath())) return false;
+        if (TextUtils.isEmpty(item.getDownloadInfo().getFileName())) return false;
+        return true;
     }
 }

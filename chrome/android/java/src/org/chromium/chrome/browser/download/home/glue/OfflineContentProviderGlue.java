@@ -5,7 +5,11 @@
 package org.chromium.chrome.browser.download.home.glue;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
+import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.widget.ThumbnailProvider;
+import org.chromium.chrome.browser.widget.ThumbnailProviderImpl;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
@@ -27,6 +31,7 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
     private final boolean mIncludeOffTheRecord;
 
     private final DownloadGlue mDownloadProvider;
+    private final ThumbnailProvider mThumbnailProvider;
 
     private Query mOutstandingQuery;
 
@@ -36,6 +41,8 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
         mProvider = provider;
         mIncludeOffTheRecord = includeOffTheRecord;
         mDownloadProvider = new DownloadGlue(this);
+        mThumbnailProvider = new ThumbnailProviderImpl(
+                ((ChromeApplication) ContextUtils.getApplicationContext()).getReferencePool());
 
         mProvider.addObserver(this);
     }
@@ -112,13 +119,14 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
         mOutstandingQuery.add(callback);
     }
 
-    /** @see OfflineContentProvider#getVisualsForItem(ContentId, VisualsCallback) */
-    public void getVisualsForItem(ContentId id, VisualsCallback callback) {
-        if (LegacyHelpers.isLegacyDownload(id)) {
-            mDownloadProvider.getVisualsForItem(id, callback);
-        } else {
-            mProvider.getVisualsForItem(id, callback);
-        }
+    /**
+     * @return Whether or not querying for a thumbail for this {@code id} is supported.
+     * @see OfflineContentProvider#getVisualsForItem(ContentId, VisualsCallback)
+     */
+    public boolean getVisualsForItem(ContentId id, VisualsCallback callback) {
+        if (LegacyHelpers.isLegacyDownload(id)) return false;
+        mProvider.getVisualsForItem(id, callback);
+        return true;
     }
 
     /** @see OfflineContentProvider#addObserver(OfflineContentProvider.Observer) */

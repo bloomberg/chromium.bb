@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.download.home.list;
 
 import android.os.Handler;
 
+import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.download.home.OfflineItemSource;
 import org.chromium.chrome.browser.download.home.filter.DeleteUndoOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
@@ -14,7 +16,13 @@ import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
 import org.chromium.chrome.browser.download.home.filter.SearchOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.TypeOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.glue.OfflineContentProviderGlue;
+import org.chromium.chrome.browser.download.home.glue.ThumbnailRequestGlue;
+import org.chromium.chrome.browser.widget.ThumbnailProvider;
+import org.chromium.chrome.browser.widget.ThumbnailProvider.ThumbnailRequest;
+import org.chromium.chrome.browser.widget.ThumbnailProviderImpl;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
+import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.VisualsCallback;
 
 import java.io.Closeable;
 
@@ -23,11 +31,14 @@ import java.io.Closeable;
  * home.  This includes support for filtering, deleting, etc..
  */
 class DateOrderedListMediator {
+    private final Handler mHandler = new Handler();
+
     private final OfflineContentProviderGlue mProvider;
     private final ListItemModel mModel;
 
     private final OfflineItemSource mSource;
     private final DateOrderedListMutator mListMutator;
+    private final ThumbnailProvider mThumbnailProvider;
 
     private final OffTheRecordOfflineItemFilter mOffTheRecordFilter;
     private final DeleteUndoOfflineItemFilter mDeleteUndoFilter;
@@ -63,6 +74,9 @@ class DateOrderedListMediator {
         mSearchFilter = new SearchOfflineItemFilter(mTypeFilter);
         mListMutator = new DateOrderedListMutator(mSearchFilter, mModel);
 
+        mThumbnailProvider = new ThumbnailProviderImpl(
+                ((ChromeApplication) ContextUtils.getApplicationContext()).getReferencePool());
+
         mModel.getProperties().setEnableItemAnimations(true);
         mModel.getProperties().setOpenCallback(item -> mProvider.openItem(item));
         mModel.getProperties().setPauseCallback(item -> mProvider.pauseDownload(item));
@@ -71,12 +85,15 @@ class DateOrderedListMediator {
         mModel.getProperties().setShareCallback(item -> {});
         // TODO(dtrainor): Pipe into the undo snackbar and the DeleteUndoOfflineItemFilter.
         mModel.getProperties().setRemoveCallback(item -> mProvider.removeItem(item));
+        mModel.getProperties().setVisualsProvider(
+                (item, w, h, callback) -> { return getVisuals(item, w, h, callback); });
     }
 
     /** Tears down this mediator. */
     public void destroy() {
         mSource.destroy();
         mProvider.destroy();
+        mThumbnailProvider.destroy();
     }
 
     /**
@@ -107,6 +124,19 @@ class DateOrderedListMediator {
         return mDeleteUndoFilter;
     }
 
+    private Runnable getVisuals(
+            OfflineItem item, int iconWidthPx, int iconHeightPx, VisualsCallback callback) {
+        if (!UiUtils.canHaveThumbnails(item)) {
+            mHandler.post(() -> callback.onVisualsAvailable(item.id, null));
+            return () -> {};
+        }
+
+        ThumbnailRequest request =
+                new ThumbnailRequestGlue(mProvider, item, iconWidthPx, iconHeightPx, callback);
+        mThumbnailProvider.getThumbnail(request);
+        return () -> mThumbnailProvider.cancelRetrieval(request);
+    }
+
     /** Helper class to disable animations for certain list changes. */
     private class AnimationDisableClosable implements Closeable {
         AnimationDisableClosable() {
@@ -116,7 +146,7 @@ class DateOrderedListMediator {
         // Closeable implementation.
         @Override
         public void close() {
-            new Handler().post(() -> mModel.getProperties().setEnableItemAnimations(true));
+            mHandler.post(() -> mModel.getProperties().setEnableItemAnimations(true));
         }
     }
 }
