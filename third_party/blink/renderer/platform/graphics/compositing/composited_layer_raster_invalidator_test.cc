@@ -665,4 +665,52 @@ TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyTinyChange) {
   EXPECT_TRUE(invalidated);
 }
 
+TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyTinyChangeScale) {
+  CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
+
+  auto layer_transform = CreateTransform(t0(), TransformationMatrix().Scale(5));
+  auto chunk_transform =
+      CreateTransform(*layer_transform, TransformationMatrix().Scale(1e-6));
+  FloatRect chunk_bounds(0, 0, 10000000, 10000000);
+
+  PropertyTreeState layer_state(layer_transform.get(), &c0(), &e0());
+  auto artifact = Chunk(0)
+                      .Bounds(chunk_bounds)
+                      .Properties(*chunk_transform, c0(), e0())
+                      .Build();
+
+  GeometryMapperTransformCache::ClearCache();
+  invalidator.Generate(artifact, kDefaultLayerBounds, layer_state);
+
+  // Scale change from 1e-6 to 2e-6 should be treated as significant.
+  invalidator.SetTracksRasterInvalidations(true);
+  chunk_transform->Update(
+      *layer_state.Transform(),
+      TransformPaintPropertyNode::State{TransformationMatrix().Scale(2e-6)});
+  auto new_artifact = Chunk(0)
+                          .Bounds(chunk_bounds)
+                          .Properties(*chunk_transform, c0(), e0())
+                          .Build();
+
+  GeometryMapperTransformCache::ClearCache();
+  invalidator.Generate(new_artifact, kDefaultLayerBounds, layer_state);
+  EXPECT_FALSE(TrackedRasterInvalidations(invalidator).IsEmpty());
+  invalidator.SetTracksRasterInvalidations(false);
+
+  // Scale change from 2e-6 to 2e-6 + 1e-15 should be ignored.
+  invalidator.SetTracksRasterInvalidations(true);
+  chunk_transform->Update(*layer_state.Transform(),
+                          TransformPaintPropertyNode::State{
+                              TransformationMatrix().Scale(2e-6 + 1e-15)});
+  auto new_artifact1 = Chunk(0)
+                           .Bounds(chunk_bounds)
+                           .Properties(*chunk_transform, c0(), e0())
+                           .Build();
+
+  GeometryMapperTransformCache::ClearCache();
+  invalidator.Generate(new_artifact, kDefaultLayerBounds, layer_state);
+  EXPECT_TRUE(TrackedRasterInvalidations(invalidator).IsEmpty());
+  invalidator.SetTracksRasterInvalidations(false);
+}
+
 }  // namespace blink
