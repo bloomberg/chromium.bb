@@ -139,7 +139,7 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
 
 SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  recorder_ = nullptr;
+  recorder_.reset();
   // Use GPU scheduler to release impl_on_gpu_ on the GPU thread, so all
   // scheduled tasks for the impl_on_gpu_ will be executed, before releasing
   // it. The GPU thread is the main thread of the viz process. It outlives the
@@ -197,7 +197,7 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
                                     bool use_stencil) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  recorder_ = nullptr;
+  recorder_.reset();
   SkSurfaceCharacterization* characterization = nullptr;
   std::unique_ptr<base::WaitableEvent> event;
   if (characterization_.isValid()) {
@@ -304,7 +304,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
   resource_sync_tokens_.push_back(metadata.sync_token);
 
   return PromiseTextureHelper<ResourceMetadata>::MakePromiseSkImage(
-      this, recorder_.get(), metadata.backend_format, metadata.size,
+      this, &recorder_.value(), metadata.backend_format, metadata.size,
       metadata.mip_mapped, metadata.origin, metadata.color_type,
       metadata.alpha_type, metadata.color_space, std::move(metadata));
 }
@@ -327,7 +327,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
       gl::GetInternalFormat(version_info, GL_BGRA8_EXT), GL_TEXTURE_2D);
 
   return PromiseTextureHelper<YUVResourceMetadata>::MakePromiseSkImage(
-      this, recorder_.get(), backend_format, yuv_metadata.size(),
+      this, &recorder_.value(), backend_format, yuv_metadata.size(),
       GrMipMapped::kNo, kTopLeft_GrSurfaceOrigin, kBGRA_8888_SkColorType,
       kPremul_SkAlphaType, nullptr /* color_space */, std::move(yuv_metadata));
 }
@@ -392,8 +392,7 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
       kCacheMaxResourceBytes, image_info, backend_format, msaa_sample_count,
       kTopLeft_GrSurfaceOrigin, surface_props, mipmap);
   DCHECK(characterization.isValid());
-  offscreen_surface_recorder_ =
-      std::make_unique<SkDeferredDisplayListRecorder>(characterization);
+  offscreen_surface_recorder_.emplace(characterization);
   return offscreen_surface_recorder_->getCanvas();
 }
 
@@ -409,7 +408,7 @@ gpu::SyncToken SkiaOutputSurfaceImpl::FinishPaintRenderPass() {
   sync_token.SetVerifyFlush();
 
   auto ddl = offscreen_surface_recorder_->detach();
-  offscreen_surface_recorder_ = nullptr;
+  offscreen_surface_recorder_.reset();
   DCHECK(ddl);
 
   auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
@@ -442,7 +441,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
   SkColorType color_type =
       ResourceFormatToClosestSkColorType(true /*gpu_compositing */, format);
   return PromiseTextureHelper<RenderPassId>::MakePromiseSkImage(
-      this, recorder_.get(), backend_format, size,
+      this, &recorder_.value(), backend_format, size,
       mipmap ? GrMipMapped::kYes : GrMipMapped::kNo, kTopLeft_GrSurfaceOrigin,
       color_type, kPremul_SkAlphaType, nullptr /* color_space */, id);
 }
@@ -479,8 +478,7 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
 void SkiaOutputSurfaceImpl::RecreateRecorder() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(characterization_.isValid());
-  recorder_ =
-      std::make_unique<SkDeferredDisplayListRecorder>(characterization_);
+  recorder_.emplace(characterization_);
   // TODO(penghuang): remove the unnecessary getCanvas() call, when the
   // recorder crash is fixed in skia.
   recorder_->getCanvas();

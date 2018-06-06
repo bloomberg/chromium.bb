@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_SURFACE_IMPL_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -103,7 +104,7 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   OutputSurfaceClient* client_ = nullptr;
 
   SkSurfaceCharacterization characterization_;
-  std::unique_ptr<SkDeferredDisplayListRecorder> recorder_;
+  base::Optional<SkDeferredDisplayListRecorder> recorder_;
 
   // The current render pass id set by BeginPaintRenderPass.
   RenderPassId current_render_pass_id_ = 0;
@@ -111,7 +112,7 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   // The SkDDL recorder created by BeginPaintRenderPass, and
   // FinishPaintRenderPass will turn it into a SkDDL and play the SkDDL back on
   // the GPU thread.
-  std::unique_ptr<SkDeferredDisplayListRecorder> offscreen_surface_recorder_;
+  base::Optional<SkDeferredDisplayListRecorder> offscreen_surface_recorder_;
 
   // Sync tokens for resources which are used for the current frame.
   std::vector<gpu::SyncToken> resource_sync_tokens_;
