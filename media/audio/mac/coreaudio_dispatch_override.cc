@@ -22,6 +22,9 @@ struct dyld_interpose_tuple {
   const void* replacement;
   const void* replacee;
 };
+
+using DispatchGetGlobalQueueFunc = dispatch_queue_t (*)(long id,
+                                                        unsigned long flags);
 }  // namespace
 
 // This method, and the tuple above, is defined in dyld_priv.h; see:
@@ -175,8 +178,13 @@ bool InitializeCoreAudioDispatchOverride() {
   const auto* header = reinterpret_cast<const mach_header*>(info.dli_fbase);
   g_pause_resume_queue =
       dispatch_queue_create("org.chromium.CoreAudioPauseResumeQueue", nullptr);
-  dyld_interpose_tuple interposition(&GetGlobalQueueOverride,
-                                     &dispatch_get_global_queue);
+  // The reinterpret_cast<> is needed because in the macOS 10.14 SDK, the return
+  // type of dispatch_get_global_queue changed to return a subtype of
+  // dispatch_queue_t* instead of dispatch_queue_t* itself, and T(*)(...) isn't
+  // automatically converted to U(*)(...) even if U is a superclass of T.
+  dyld_interpose_tuple interposition(
+      &GetGlobalQueueOverride,
+      reinterpret_cast<DispatchGetGlobalQueueFunc>(&dispatch_get_global_queue));
   dyld_dynamic_interpose(header, &interposition, 1);
   g_dispatch_override_installed = true;
   LogInitResult(RESULT_INITIALIZED);
