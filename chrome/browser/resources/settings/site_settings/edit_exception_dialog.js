@@ -66,7 +66,7 @@ Polymer({
 
   /** @private */
   validate_: function() {
-    if (this.$$('paper-input').value.trim() == '') {
+    if (this.$$('cr-input').value.trim() == '') {
       this.invalid_ = true;
       return;
     }

@@ -288,7 +288,7 @@ Polymer({
     if (this.syncPrefs.passphraseRequired) {
       // Wait for the dom-if templates to render and subpage to become visible.
       listenOnce(document, 'show-container', () => {
-        const input = /** @type {!PaperInputElement} */ (
+        const input = /** @type {!CrInputElement} */ (
             this.$$('#existingPassphraseInput'));
         input.focus();
       });

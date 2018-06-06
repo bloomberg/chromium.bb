@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="cups_add_printer_dialog_util.html">
 <link rel="import" href="cups_printer_shared_css.html">
 <link rel="import" href="cups_printers_browser_proxy.html">
@@ -10,33 +10,28 @@
 <dom-module id="settings-cups-edit-printer-dialog">
   <template>
     <style include="cups-printer-shared">
-      #existingUserPPD {
-        padding-top: 10px;
+      /* This is needed to line up the existing PDD text with cr-input.
+         TODO(scottchen): move away from using .settings-box just for margin,
+         and then remove this hacky alignment. */
+      .last {
+        align-items: start;
+        flex-direction: column;
       }
     </style>
     <add-printer-dialog>
       <div slot="dialog-title">$i18n{editPrinterDialogTitle}</div>
       <div slot="dialog-body">
         <div class="settings-box first two-line">
-          <div class="start">
-            <div class="label">$i18n{printerName}</div>
-            <div class="secondary">
-              <paper-input class="printer-name-input" no-label-float autofocus
-                  value="{{activePrinter.printerName}}">
-              </paper-input>
-            </div>
-          </div>
+          <cr-input class="printer-name-input" autofocus
+              value="{{activePrinter.printerName}}"
+              label="$i18n{printerName}">
+          </cr-input>
         </div>
         <div class="settings-box two-line">
-          <div class="start">
-            <div class="label">$i18n{printerAddress}</div>
-            <div class="secondary">
-              <paper-input no-label-float
-                  value="{{activePrinter.printerAddress}}"
-                  disabled="[[!networkProtocolActive_]]">
-              </paper-input>
-            </div>
-          </div>
+          <cr-input label="$i18n{printerAddress}"
+              value="{{activePrinter.printerAddress}}"
+              disabled="[[!networkProtocolActive_]]">
+          </cr-input>
         </div>
         <div class="settings-box two-line">
           <div class="start">
@@ -75,25 +70,15 @@
           </div>
         </div>
         <div class="settings-box two-line">
-          <div class="start">
-            <div class="label">$i18n{printerQueue}</div>
-            <div class="secondary">
-              <paper-input no-label-float
-                  value="{{activePrinter.printerQueue}}"
-                  disabled="[[!networkProtocolActive_]]">
-              </paper-input>
-            </div>
-          </div>
+          <cr-input label="$i18n{printerQueue}"
+              value="{{activePrinter.printerQueue}}"
+              disabled="[[!networkProtocolActive_]]">
+          </cr-input>
         </div>
         <div class="settings-box two-line">
-          <div class="start">
-            <div class="label">$i18n{printerURI}</div>
-            <div class="secondary">
-              <paper-input no-label-float disabled
-                  value="[[getPrinterURI_(activePrinter)]]">
-              </paper-input>
-            </div>
-          </div>
+          <cr-input label="$i18n{printerURI}" readonly
+              value="[[getPrinterURI_(activePrinter)]]">
+          </cr-input>
         </div>
         <div class="settings-box two-line">
           <div class="start">
@@ -116,25 +101,20 @@
           </div>
         </div>
         <div class="settings-box two-line last">
-          <div class="start">
-            <div class="label">$i18n{selectDriver}</div>
-            <div class="secondary">
-              <paper-input class="browse-file-input" no-label-float readonly
-                  value="[[newUserPPD_]]"
-                  error-message="$i18n{selectDriverErrorMessage}"
-                  invalid="[[invalidPPD_]]">
-                <paper-button class="browse-button" slot="suffix"
-                    on-click="onBrowseFile_">
-                  $i18n{selectDriverButtonText}
-                </paper-button>
-              </paper-input>
+          <cr-input class="browse-file-input" readonly
+              value="[[newUserPPD_]]" label="$i18n{selectDriver}"
+              error-message="$i18n{selectDriverErrorMessage}"
+              invalid="[[invalidPPD_]]">
+            <paper-button class="browse-button" on-click="onBrowseFile_"
+                slot="suffix">
+              $i18n{selectDriverButtonText}
+            </paper-button>
+          </cr-input>
+          <template is="dom-if" if="[[existingUserPPDMessage_]]">
+            <div class="secondary" id="existingUserPPD">
+              [[existingUserPPDMessage_]]
             </div>
-            <template is="dom-if" if="[[existingUserPPDMessage_]]">
-              <div class="secondary" id="existingUserPPD">
-                [[existingUserPPDMessage_]]
-              </div>
-            </template>
-          </div>
+          </template>
         </div>
       </div>
       <div slot="dialog-buttons">
