@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL WebUSB IDL test promise_test: Unhandled rejection with value: object "USBPermissionDescriptor inherits PermissionDescriptor, but PermissionDescriptor is undefined."
+Harness: the test ran to completion.
+
