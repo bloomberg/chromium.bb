@@ -1,6 +1,6 @@
 {
   "comments": [
-    "Runs tests on 64-bit iOS 10 and 11 and 12 tests",
+    "Runs tests on 64-bit iOS 10.3 and 11.2 and 12.0 tests",
     "on iPad, iPhone, @3x, and @2x on main and CQ ios12-beta-simulator.",
     "Note: Xcode 10.3 requires Mac OS 10.13.X or higher, hence 'host os'."
   ],
@@ -27,7 +27,11 @@
       "os": "12.0",
       "dimensions": [
         {
-          "os": "Mac-10.13",
+          "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
           "pool": "Chrome"
         }
       ]
@@ -38,7 +42,11 @@
       "os": "12.0",
       "dimensions": [
         {
-          "os": "Mac-10.13",
+          "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
           "pool": "Chrome"
         }
       ]
@@ -49,7 +57,11 @@
       "os": "12.0",
       "dimensions": [
         {
-          "os": "Mac-10.13",
+          "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
           "pool": "Chrome"
         }
       ]
@@ -60,7 +72,11 @@
       "os": "12.0",
       "dimensions": [
         {
-          "os": "Mac-10.13",
+          "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
           "pool": "Chrome"
         }
       ]
@@ -183,7 +199,11 @@
       "os": "12.0",
       "dimensions": [
         {
-          "os": "Mac-10.13",
+          "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
           "pool": "Chrome"
         }
       ]
@@ -194,7 +214,11 @@
       "os": "12.0",
       "dimensions": [
         {
-          "os": "Mac-10.13",
+          "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
           "pool": "Chrome"
         }
       ]
@@ -205,7 +229,11 @@
       "os": "12.0",
       "dimensions": [
         {
-          "os": "Mac-10.13",
+          "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
           "pool": "Chrome"
         }
       ]
@@ -248,7 +276,11 @@
       "os": "12.0",
       "dimensions": [
         {
-          "os": "Mac-10.13",
+          "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
           "pool": "Chrome"
         }
       ]
@@ -291,7 +323,11 @@
       "os": "12.0",
       "dimensions": [
         {
-          "os": "Mac-10.13",
+          "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
           "pool": "Chrome"
         }
       ]
