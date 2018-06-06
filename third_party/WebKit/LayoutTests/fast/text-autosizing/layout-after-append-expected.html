@@ -2,32 +2,16 @@
 <html>
 <head>
 <meta name="viewport" content="width=800">
-<script src="resources/autosizingTest.js"></script>
 </head>
 <body style="overflow-y: hidden;">
-<div style="margin-left: 320px;">
-<b id="showRepaintBug">
+<div style="margin-left: 320px; font-size:2.5rem;">
+<b id="showRepaintBug" style="color:blue;">
 This test passes if no text is overlapping.<br>
 Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize
 </b><b>Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize Autosize 
-<i id="causeClusterRootToChange2"></i>
+<i id="causeClusterRootToChange2">test2</i>
 </b>
 </div>
-<div id="causeClusterRootToChange1"><b></b></div>
-<script>
-if (window.testRunner)
-  testRunner.waitUntilDone();
-window.requestAnimationFrame(function() {
-  document.getElementById('causeClusterRootToChange1').firstChild.innerHTML += "test1";
-  window.requestAnimationFrame(function() {
-    document.getElementById('causeClusterRootToChange2').innerHTML = "test2";
-    window.requestAnimationFrame(function() {
-      document.getElementById('showRepaintBug').style.color = "blue";
-      if (window.testRunner)
-        testRunner.notifyDone();
-    });
-  });
-});
-</script>
+<div id="causeClusterRootToChange1"><b>test1</b></div>
 </body>
 </html>
