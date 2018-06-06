@@ -80,6 +80,11 @@
             on-settings-boolean-control-change="onDoNotTrackChange_"
             no-set-pref>
         </settings-toggle-button>
+        <settings-toggle-button id="canMakePaymentToggle"
+            aria-label="$i18n{canMakePaymentToggleLabel}"
+            label="$i18n{canMakePaymentToggleLabel}"
+            pref="{{prefs.payments.can_make_payment_enabled}}">
+        </settings-toggle-button>
 <if expr="chromeos">
         <settings-toggle-button
             pref="{{prefs.cros.device.attestation_for_content_protection_enabled}}"

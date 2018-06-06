@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/test_sync_service.h"
 #include "components/payments/content/payment_request.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -246,6 +247,9 @@ class PaymentRequestBrowserTestBase
     delegate_->SetRegionDataLoader(region_data_loader);
   }
 
+  // Sets the value of the payments.can_make_payment_enabled pref.
+  void SetCanMakePaymentEnabledPref(bool can_make_payment_enabled);
+
   // Resets the event waiter for a given |event| or |event_sequence|.
   void ResetEventWaiter(DialogEvent event);
   void ResetEventWaiterForSequence(std::list<DialogEvent> event_sequence);
@@ -258,6 +262,7 @@ class PaymentRequestBrowserTestBase
   // Weak, owned by the PaymentRequest object.
   TestChromePaymentRequestDelegate* delegate_;
   autofill::TestSyncService sync_service_;
+  sync_preferences::TestingPrefServiceSyncable prefs_;
   bool is_incognito_;
   bool is_valid_ssl_;
   bool is_browser_window_active_;
