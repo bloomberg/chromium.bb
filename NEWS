@@ -6,6 +6,8 @@ issues]].
 
 ** New features
 ** Bug fixes
+- Fix another stack-based buffer overflow in input parsing reported by
+  Henri Salo thanks to Christian Egli.
 ** Braille table improvements
 ** Other changes
 ** Deprecation notice

@@ -1127,11 +1127,11 @@ parseChars(FileInfo *nested, CharsString *result, CharsString *token) {
 				}
 				in++;
 			}
-			result->chars[out++] = (widechar)ch;
 			if (out >= MAXSTRING) {
 				result->length = out;
 				return 1;
 			}
+			result->chars[out++] = (widechar)ch;
 			continue;
 		}
 		lastOutSize = out;
