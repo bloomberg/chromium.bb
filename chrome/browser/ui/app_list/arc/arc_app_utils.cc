@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -24,11 +25,13 @@
 #include "chrome/browser/ui/ash/launcher/arc_shelf_spinner_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
+#include "chrome/common/pref_names.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/prefs/pref_service.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -525,6 +528,26 @@ bool ParseIntent(const std::string& intent_as_string, Intent* intent) {
   }
 
   return true;
+}
+
+void GetLocaleAndPreferredLanguages(const Profile* profile,
+                                    std::string* out_locale,
+                                    std::string* out_preferred_languages) {
+  const PrefService::Preference* locale_pref =
+      profile->GetPrefs()->FindPreference(::prefs::kApplicationLocale);
+  DCHECK(locale_pref);
+  const bool value_exists = locale_pref->GetValue()->GetAsString(out_locale);
+  DCHECK(value_exists);
+  if (out_locale->empty())
+    *out_locale = g_browser_process->GetApplicationLocale();
+
+  // |preferredLanguages| consists of comma separated locale strings. It may be
+  // empty or contain empty items, but those are ignored on ARC.  If an item
+  // has no country code, it is derived in ARC.  In such a case, it may
+  // conflict with another item in the list, then these will be dedupped (the
+  // first one is taken) in ARC.
+  *out_preferred_languages =
+      profile->GetPrefs()->GetString(::prefs::kLanguagePreferredLanguages);
 }
 
 Intent::Intent() = default;

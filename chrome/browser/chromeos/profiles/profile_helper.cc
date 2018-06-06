@@ -241,7 +241,7 @@ bool ProfileHelper::IsEphemeralUserProfile(const Profile* profile) {
   return ChromeUserManager::Get()->AreEphemeralUsersEnabled();
 }
 
-void ProfileHelper::ProfileStartup(Profile* profile, bool process_startup) {
+void ProfileHelper::ProfileStartup(Profile* profile) {
   // Initialize Chrome OS preferences like touch pad sensitivity. For the
   // preferences to work in the guest mode, the initialization has to be
   // done after |profile| is switched to the incognito profile (which

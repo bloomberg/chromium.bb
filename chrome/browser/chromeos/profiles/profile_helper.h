@@ -136,7 +136,7 @@ class ProfileHelper
 
   // Initialize a bunch of services that are tied to a browser profile.
   // TODO(dzhioev): Investigate whether or not this method is needed.
-  void ProfileStartup(Profile* profile, bool process_startup);
+  void ProfileStartup(Profile* profile);
 
   // Returns active user profile dir in a format [u-$hash].
   base::FilePath GetActiveUserProfileDir();

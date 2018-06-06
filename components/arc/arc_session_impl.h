@@ -8,6 +8,7 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/scoped_file.h"
@@ -140,7 +141,9 @@ class ArcSessionImpl : public ArcSession,
 
   // ArcSession overrides:
   void StartMiniInstance() override;
-  void RequestUpgrade() override;
+  void RequestUpgrade(
+      const std::string& locale,
+      const std::vector<std::string>& preferred_languages) override;
   void Stop() override;
   bool IsStopRequested() override;
   void OnShutdown() override;
@@ -199,6 +202,10 @@ class ArcSessionImpl : public ArcSession,
   // In CONNECTING_MOJO state, this is set to the write side of the pipe
   // to notify cancelling of the procedure.
   base::ScopedFD accept_cancel_pipe_;
+
+  // Locale and preferred languages to set in Android container during the boot.
+  std::string locale_;
+  std::vector<std::string> preferred_languages_;
 
   // Mojo endpoint.
   std::unique_ptr<mojom::ArcBridgeHost> arc_bridge_host_;

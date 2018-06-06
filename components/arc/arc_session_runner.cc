@@ -137,6 +137,19 @@ void ArcSessionRunner::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void ArcSessionRunner::RequestStartMiniInstance() {
+  RequestStart(ArcInstanceMode::MINI_INSTANCE);
+}
+
+void ArcSessionRunner::RequestUpgrade(
+    const std::string& locale,
+    const std::vector<std::string>& preferred_languages) {
+  locale_ = locale;
+  preferred_languages_ = preferred_languages;
+
+  RequestStart(ArcInstanceMode::FULL_INSTANCE);
+}
+
 void ArcSessionRunner::RequestStart(ArcInstanceMode request_mode) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -233,7 +246,7 @@ void ArcSessionRunner::StartArcSession() {
       RecordInstanceCrashUma(ArcContainerLifetimeEvent::CONTAINER_STARTING);
   }
   if (target_mode_ == ArcInstanceMode::FULL_INSTANCE)
-    arc_session_->RequestUpgrade();
+    arc_session_->RequestUpgrade(locale_, preferred_languages_);
 }
 
 void ArcSessionRunner::RestartArcSession() {
