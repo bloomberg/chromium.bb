@@ -51,10 +51,9 @@ issues]].
 - Fix a memory leak in default table resolver thanks to Timothy Lee.
 - Fix an array out of bounds error which caused a crash on i386 thanks
   to Samuel Thibault.
-- Fix numerous stack-based buffer overflow in table parsing thanks
-  that were reported by Henri Salo and Edward-L thanks to Christian
-  Egli (CVE-2018-11577, CVE-2018-11683, CVE-2018-11684 and
-  CVE-2018-11685).
+- Fix numerous stack-based buffer overflow in table parsing reported
+  by Henri Salo and Edward-L thanks to Christian Egli (CVE-2018-11577,
+  CVE-2018-11683, CVE-2018-11684 and CVE-2018-11685).
 
 ** Braille table improvements
 - Fix some forward- and back-translation errors in Unified French Grade
