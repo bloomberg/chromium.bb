@@ -2333,6 +2333,12 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_MANAGER_PREFETCH_TAB" desc="Tab text for showing downloaded popular content.">
         Popular Content
       </message>
+      <message name="IDS_DOWNLOAD_MANAGER_PREFETCH_CAPTION" desc="Text containing the prefetched article description.">
+        <ph name="DESCRIPTION">%1$s<ex>www.example.com</ex></ph> - <ph name="FILE_SIZE">%2$s<ex>1.56 MB</ex></ph>
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_N_HOURS" desc="How many hours ago an item was downloaded (if downloaded on the same day). [ICU Syntax]">
+        {HOURS, plural, =1 {# hr} other {# hrs}}
+      </message>
 
       <!-- Browsing History UI -->
       <message name="IDS_HISTORY_MANAGER_EMPTY" desc="Indicates that there are no browsing history items.">
