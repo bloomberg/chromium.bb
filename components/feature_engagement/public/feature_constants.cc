@@ -70,7 +70,7 @@ const base::Feature kIPHNewTabTipFeature{"IPH_NewTabTip",
 const base::Feature kIPHNewIncognitoTabTipFeature{
     "IPH_NewIncognitoTabTip", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHBadgedReadingListFeature{
-    "IPH_BadgedReadingList", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_BadgedReadingList", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_IOS)
 
 }  // namespace feature_engagement
