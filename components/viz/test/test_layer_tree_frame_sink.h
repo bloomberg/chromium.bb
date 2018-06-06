@@ -99,10 +99,9 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   // mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<ReturnedResource>& resources) override;
-  void DidPresentCompositorFrame(uint32_t presentation_token,
-                                 base::TimeTicks time,
-                                 base::TimeDelta refresh,
-                                 uint32_t flags) override;
+  void DidPresentCompositorFrame(
+      uint32_t presentation_token,
+      const gfx::PresentationFeedback& feedback) override;
   void DidDiscardCompositorFrame(uint32_t presentation_token) override;
   void OnBeginFrame(const BeginFrameArgs& args) override;
   void ReclaimResources(

@@ -235,10 +235,8 @@ void TestLayerTreeFrameSink::DidReceiveCompositorFrameAck(
 
 void TestLayerTreeFrameSink::DidPresentCompositorFrame(
     uint32_t presentation_token,
-    base::TimeTicks time,
-    base::TimeDelta refresh,
-    uint32_t flags) {
-  client_->DidPresentCompositorFrame(presentation_token, time, refresh, flags);
+    const gfx::PresentationFeedback& feedback) {
+  client_->DidPresentCompositorFrame(presentation_token, feedback);
 }
 
 void TestLayerTreeFrameSink::DidDiscardCompositorFrame(

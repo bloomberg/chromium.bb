@@ -187,11 +187,9 @@ void AsyncLayerTreeFrameSink::DidReceiveCompositorFrameAck(
 
 void AsyncLayerTreeFrameSink::DidPresentCompositorFrame(
     uint32_t presentation_token,
-    base::TimeTicks time,
-    base::TimeDelta refresh,
-    uint32_t flags) {
+    const gfx::PresentationFeedback& feedback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_->DidPresentCompositorFrame(presentation_token, time, refresh, flags);
+  client_->DidPresentCompositorFrame(presentation_token, feedback);
 }
 
 void AsyncLayerTreeFrameSink::DidDiscardCompositorFrame(

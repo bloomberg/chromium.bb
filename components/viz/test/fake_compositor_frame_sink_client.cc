@@ -16,9 +16,7 @@ void FakeCompositorFrameSinkClient::DidReceiveCompositorFrameAck(
 
 void FakeCompositorFrameSinkClient::DidPresentCompositorFrame(
     uint32_t presentation_token,
-    base::TimeTicks time,
-    base::TimeDelta refresh,
-    uint32_t flags) {}
+    const gfx::PresentationFeedback& feedback) {}
 
 void FakeCompositorFrameSinkClient::DidDiscardCompositorFrame(
     uint32_t presentation_token) {}

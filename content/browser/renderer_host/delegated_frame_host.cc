@@ -309,12 +309,11 @@ void DelegatedFrameHost::DidReceiveCompositorFrameAck(
   renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
 }
 
-void DelegatedFrameHost::DidPresentCompositorFrame(uint32_t presentation_token,
-                                                   base::TimeTicks time,
-                                                   base::TimeDelta refresh,
-                                                   uint32_t flags) {
-  renderer_compositor_frame_sink_->DidPresentCompositorFrame(
-      presentation_token, time, refresh, flags);
+void DelegatedFrameHost::DidPresentCompositorFrame(
+    uint32_t presentation_token,
+    const gfx::PresentationFeedback& feedback) {
+  renderer_compositor_frame_sink_->DidPresentCompositorFrame(presentation_token,
+                                                             feedback);
 }
 
 void DelegatedFrameHost::DidDiscardCompositorFrame(

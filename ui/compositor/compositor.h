@@ -52,6 +52,7 @@ class TaskGraphRunner;
 }
 
 namespace gfx {
+struct PresentationFeedback;
 class Rect;
 class ScrollOffset;
 class Size;
@@ -380,7 +381,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // See ui/gfx/presentation_feedback.h for details on the args (TimeTicks is
   // always non-zero).
   using PresentationTimeCallback =
-      base::OnceCallback<void(base::TimeTicks, base::TimeDelta, uint32_t)>;
+      base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   void RequestPresentationTimeForNextFrame(PresentationTimeCallback callback);
 
   // LayerTreeHostClient implementation.

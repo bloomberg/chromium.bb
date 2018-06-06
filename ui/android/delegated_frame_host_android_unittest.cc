@@ -32,8 +32,8 @@ class MockDelegatedFrameHostAndroidClient
  public:
   MOCK_METHOD1(SetBeginFrameSource, void(viz::BeginFrameSource*));
   MOCK_METHOD0(DidReceiveCompositorFrameAck, void());
-  MOCK_METHOD4(DidPresentCompositorFrame,
-               void(uint32_t, base::TimeTicks, base::TimeDelta, uint32_t));
+  MOCK_METHOD2(DidPresentCompositorFrame,
+               void(uint32_t, const gfx::PresentationFeedback&));
   MOCK_METHOD1(DidDiscardCompositorFrame, void(uint32_t));
   MOCK_METHOD1(ReclaimResources,
                void(const std::vector<viz::ReturnedResource>&));

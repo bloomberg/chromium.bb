@@ -398,9 +398,7 @@ void OffscreenCanvasFrameDispatcher::DidReceiveCompositorFrameAck(
 
 void OffscreenCanvasFrameDispatcher::DidPresentCompositorFrame(
     uint32_t presentation_token,
-    mojo_base::mojom::blink::TimeTicksPtr time,
-    WTF::TimeDelta refresh,
-    uint32_t flags) {
+    ::gfx::mojom::blink::PresentationFeedbackPtr feedback) {
   NOTIMPLEMENTED();
 }
 

@@ -44,10 +44,9 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     virtual void SetBeginFrameSource(
         viz::BeginFrameSource* begin_frame_source) = 0;
     virtual void DidReceiveCompositorFrameAck() = 0;
-    virtual void DidPresentCompositorFrame(uint32_t presentation_token,
-                                           base::TimeTicks time,
-                                           base::TimeDelta refresh,
-                                           uint32_t flags) = 0;
+    virtual void DidPresentCompositorFrame(
+        uint32_t presentation_token,
+        const gfx::PresentationFeedback& feedback) = 0;
     virtual void DidDiscardCompositorFrame(uint32_t presentation_token) = 0;
     virtual void ReclaimResources(
         const std::vector<viz::ReturnedResource>&) = 0;
@@ -116,10 +115,9 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
-  void DidPresentCompositorFrame(uint32_t presentation_token,
-                                 base::TimeTicks time,
-                                 base::TimeDelta refresh,
-                                 uint32_t flags) override;
+  void DidPresentCompositorFrame(
+      uint32_t presentation_token,
+      const gfx::PresentationFeedback& feedback) override;
   void DidDiscardCompositorFrame(uint32_t presentation_token) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   void ReclaimResources(

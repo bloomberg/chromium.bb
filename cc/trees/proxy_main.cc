@@ -334,11 +334,9 @@ void ProxyMain::BeginMainFrame(
 void ProxyMain::DidPresentCompositorFrame(
     uint32_t frame_token,
     std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
-    base::TimeTicks time,
-    base::TimeDelta refresh,
-    uint32_t flags) {
+    const gfx::PresentationFeedback& feedback) {
   layer_tree_host_->DidPresentCompositorFrame(frame_token, std::move(callbacks),
-                                              time, refresh, flags);
+                                              feedback);
 }
 
 bool ProxyMain::IsStarted() const {

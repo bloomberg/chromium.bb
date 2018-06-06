@@ -150,9 +150,7 @@ class LayerTreeHostImplClient {
   virtual void DidPresentCompositorFrameOnImplThread(
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
-      base::TimeTicks time,
-      base::TimeDelta refresh,
-      uint32_t flags) = 0;
+      const gfx::PresentationFeedback& feedback) = 0;
 
  protected:
   virtual ~LayerTreeHostImplClient() {}
@@ -432,10 +430,9 @@ class CC_EXPORT LayerTreeHostImpl
   base::Optional<viz::HitTestRegionList> BuildHitTestData() override;
   void DidLoseLayerTreeFrameSink() override;
   void DidReceiveCompositorFrameAck() override;
-  void DidPresentCompositorFrame(uint32_t frame_token,
-                                 base::TimeTicks time,
-                                 base::TimeDelta refresh,
-                                 uint32_t flags) override;
+  void DidPresentCompositorFrame(
+      uint32_t frame_token,
+      const gfx::PresentationFeedback& feedback) override;
   void DidDiscardCompositorFrame(uint32_t frame_token) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;

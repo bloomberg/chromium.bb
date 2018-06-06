@@ -684,12 +684,10 @@ bool LayerTreeHost::UpdateLayers() {
 void LayerTreeHost::DidPresentCompositorFrame(
     uint32_t frame_token,
     std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
-    base::TimeTicks time,
-    base::TimeDelta refresh,
-    uint32_t flags) {
+    const gfx::PresentationFeedback& feedback) {
   for (auto& callback : callbacks)
-    std::move(callback).Run(time, refresh, flags);
-  client_->DidPresentCompositorFrame(frame_token, {time, refresh, flags});
+    std::move(callback).Run(feedback);
+  client_->DidPresentCompositorFrame(frame_token, feedback);
 }
 
 void LayerTreeHost::DidCompletePageScaleAnimation() {

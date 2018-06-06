@@ -8,9 +8,13 @@
 #include "base/callback_forward.h"
 #include "base/time/time.h"
 
+namespace gfx {
+struct PresentationFeedback;
+}
+
 namespace content {
 
-base::OnceCallback<void(base::TimeTicks, base::TimeDelta, uint32_t)>
+base::OnceCallback<void(const gfx::PresentationFeedback&)>
 CreateTabSwitchingTimeRecorder(base::TimeTicks request_time);
 
 }  // namespace content

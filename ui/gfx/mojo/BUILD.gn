@@ -14,11 +14,13 @@ mojom("mojo") {
     "gpu_fence_handle.mojom",
     "icc_profile.mojom",
     "overlay_transform.mojom",
+    "presentation_feedback.mojom",
     "selection_bound.mojom",
     "transform.mojom",
   ]
 
   public_deps = [
+    "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojo",
   ]
 }

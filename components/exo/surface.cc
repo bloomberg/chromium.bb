@@ -42,6 +42,7 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 
@@ -215,7 +216,7 @@ Surface::~Surface() {
   presentation_callbacks_.splice(presentation_callbacks_.end(),
                                  pending_presentation_callbacks_);
   for (const auto& presentation_callback : presentation_callbacks_)
-    presentation_callback.Run(base::TimeTicks(), base::TimeDelta(), 0);
+    presentation_callback.Run(gfx::PresentationFeedback());
 
   WMHelper::GetInstance()->ResetDragDropDelegate(window_.get());
 }

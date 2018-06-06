@@ -21,6 +21,7 @@ class Window;
 
 namespace gfx {
 class GpuMemoryBuffer;
+struct PresentationFeedback;
 }
 
 namespace views {
@@ -36,9 +37,7 @@ namespace fast_ink {
 class FastInkView : public views::View {
  public:
   using PresentationCallback =
-      base::RepeatingCallback<void(base::TimeTicks presentation_time,
-                                   base::TimeDelta refresh,
-                                   uint32_t flags)>;
+      base::RepeatingCallback<void(const gfx::PresentationFeedback&)>;
 
   // Creates a FastInkView filling the bounds of |root_window|.
   // If |root_window| is resized (e.g. due to a screen size change),
@@ -86,9 +85,7 @@ class FastInkView : public views::View {
   void SubmitPendingCompositorFrame();
   void ReclaimResource(std::unique_ptr<Resource> resource);
   void DidReceiveCompositorFrameAck();
-  void DidPresentCompositorFrame(base::TimeTicks time,
-                                 base::TimeDelta refresh,
-                                 uint32_t flags);
+  void DidPresentCompositorFrame(const gfx::PresentationFeedback& feedback);
 
   std::unique_ptr<views::Widget> widget_;
   gfx::Rect content_rect_;

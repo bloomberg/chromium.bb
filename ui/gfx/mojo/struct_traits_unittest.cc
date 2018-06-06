@@ -9,6 +9,8 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/mojo/buffer_types_struct_traits.h"
+#include "ui/gfx/mojo/presentation_feedback.mojom.h"
+#include "ui/gfx/mojo/presentation_feedback_struct_traits.h"
 #include "ui/gfx/mojo/traits_test_service.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/selection_bound.h"
@@ -24,6 +26,15 @@ gfx::AcceleratedWidget castToAcceleratedWidget(int i) {
 #else
   return reinterpret_cast<gfx::AcceleratedWidget>(i);
 #endif
+}
+
+// Test StructTrait serialization and deserialization for copyable type. |input|
+// will be serialized and then deserialized into |output|.
+template <class MojomType, class Type>
+void SerializeAndDeserialize(const Type& input, Type* output) {
+  MojomType::DeserializeFromMessage(
+      mojo::Message(MojomType::SerializeAsMessage(&input).TakeMojoMessage()),
+      output);
 }
 
 class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
@@ -216,6 +227,20 @@ TEST_F(StructTraitsTest, BufferUsage) {
     BufferUsageTraits::FromMojom(BufferUsageTraits::ToMojom(input), &output);
     EXPECT_EQ(output, input);
   }
+}
+
+TEST_F(StructTraitsTest, PresentationFeedback) {
+  base::TimeTicks timestamp =
+      base::TimeTicks() + base::TimeDelta::FromSeconds(12);
+  base::TimeDelta interval = base::TimeDelta::FromMilliseconds(23);
+  uint32_t flags =
+      PresentationFeedback::kVSync | PresentationFeedback::kZeroCopy;
+  PresentationFeedback input{timestamp, interval, flags};
+  PresentationFeedback output;
+  SerializeAndDeserialize<gfx::mojom::PresentationFeedback>(input, &output);
+  EXPECT_EQ(timestamp, output.timestamp);
+  EXPECT_EQ(interval, output.interval);
+  EXPECT_EQ(flags, output.flags);
 }
 
 }  // namespace gfx

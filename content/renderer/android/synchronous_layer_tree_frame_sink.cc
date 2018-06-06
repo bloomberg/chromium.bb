@@ -503,9 +503,7 @@ void SynchronousLayerTreeFrameSink::DidReceiveCompositorFrameAck(
 
 void SynchronousLayerTreeFrameSink::DidPresentCompositorFrame(
     uint32_t presentation_token,
-    base::TimeTicks time,
-    base::TimeDelta refresh,
-    uint32_t flags) {}
+    const gfx::PresentationFeedback& feedback) {}
 
 void SynchronousLayerTreeFrameSink::DidDiscardCompositorFrame(
     uint32_t presentation_token) {}

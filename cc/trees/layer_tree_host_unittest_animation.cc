@@ -1073,11 +1073,7 @@ class LayerTreeHostPresentationDuringAnimation
   }
 
  private:
-  void OnPresentation(base::TimeTicks timestamp,
-                      base::TimeDelta refresh,
-                      uint32_t flags) {
-    EndTest();
-  }
+  void OnPresentation(const gfx::PresentationFeedback& feedback) { EndTest(); }
 
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> scroll_layer_;

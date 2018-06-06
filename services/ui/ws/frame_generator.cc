@@ -88,10 +88,9 @@ void FrameGenerator::ReclaimResources(
 void FrameGenerator::DidReceiveCompositorFrameAck(
     const std::vector<viz::ReturnedResource>& resources) {}
 
-void FrameGenerator::DidPresentCompositorFrame(uint32_t presentation_token,
-                                               base::TimeTicks time,
-                                               base::TimeDelta refresh,
-                                               uint32_t flags) {
+void FrameGenerator::DidPresentCompositorFrame(
+    uint32_t presentation_token,
+    const gfx::PresentationFeedback& feedback) {
   NOTIMPLEMENTED();
 }
 

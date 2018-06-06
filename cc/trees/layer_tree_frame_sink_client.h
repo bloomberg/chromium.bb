@@ -15,6 +15,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
+struct PresentationFeedback;
 class Transform;
 }
 
@@ -58,10 +59,9 @@ class CC_EXPORT LayerTreeFrameSinkClient {
 
   // See ui/gfx/presentation_feedback.h for details on args. |time| is always
   // non-zero.
-  virtual void DidPresentCompositorFrame(uint32_t presentation_token,
-                                         base::TimeTicks time,
-                                         base::TimeDelta refresh,
-                                         uint32_t flags) = 0;
+  virtual void DidPresentCompositorFrame(
+      uint32_t presentation_token,
+      const gfx::PresentationFeedback& feedback) = 0;
 
   virtual void DidDiscardCompositorFrame(uint32_t presentation_token) = 0;
 

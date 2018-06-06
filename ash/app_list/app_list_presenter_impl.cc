@@ -27,6 +27,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/views/widget/widget.h"
 
 namespace app_list {
@@ -53,9 +54,8 @@ class StateAnimationMetricsReporter : public ui::AnimationMetricsReporter {
 // record UMA of input latency.
 void DidPresentCompositorFrame(base::TimeTicks event_time_stamp,
                                bool is_showing,
-                               base::TimeTicks present_time,
-                               base::TimeDelta refresh,
-                               uint32_t flags) {
+                               const gfx::PresentationFeedback& feedback) {
+  const base::TimeTicks present_time = feedback.timestamp;
   if (present_time.is_null() || event_time_stamp.is_null() ||
       present_time < event_time_stamp) {
     return;

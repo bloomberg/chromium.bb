@@ -41,10 +41,9 @@ class PLATFORM_EXPORT BeginFrameProvider
       const WTF::Vector<viz::ReturnedResource>& resources) final {
     NOTIMPLEMENTED();
   }
-  void DidPresentCompositorFrame(uint32_t presentation_token,
-                                 mojo_base::mojom::blink::TimeTicksPtr,
-                                 WTF::TimeDelta refresh,
-                                 uint32_t flags) final {
+  void DidPresentCompositorFrame(
+      uint32_t presentation_token,
+      ::gfx::mojom::blink::PresentationFeedbackPtr feedback) final {
     NOTIMPLEMENTED();
   }
   void DidDiscardCompositorFrame(uint32_t presentation_token) final {

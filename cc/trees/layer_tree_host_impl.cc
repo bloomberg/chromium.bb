@@ -106,6 +106,7 @@
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -1736,11 +1737,11 @@ void LayerTreeHostImpl::DidReceiveCompositorFrameAck() {
   client_->DidReceiveCompositorFrameAckOnImplThread();
 }
 
-void LayerTreeHostImpl::DidPresentCompositorFrame(uint32_t frame_token,
-                                                  base::TimeTicks time,
-                                                  base::TimeDelta refresh,
-                                                  uint32_t flags) {
-  TRACE_EVENT_MARK_WITH_TIMESTAMP0("cc,benchmark", "FramePresented", time);
+void LayerTreeHostImpl::DidPresentCompositorFrame(
+    uint32_t frame_token,
+    const gfx::PresentationFeedback& feedback) {
+  TRACE_EVENT_MARK_WITH_TIMESTAMP0("cc,benchmark", "FramePresented",
+                                   feedback.timestamp);
   std::vector<LayerTreeHost::PresentationTimeCallback> all_callbacks;
   while (!presentation_callbacks_.empty()) {
     auto iter = presentation_callbacks_.begin();
@@ -1753,7 +1754,7 @@ void LayerTreeHostImpl::DidPresentCompositorFrame(uint32_t frame_token,
     presentation_callbacks_.erase(iter);
   }
   client_->DidPresentCompositorFrameOnImplThread(
-      frame_token, std::move(all_callbacks), time, refresh, flags);
+      frame_token, std::move(all_callbacks), feedback);
 }
 
 void LayerTreeHostImpl::DidDiscardCompositorFrame(uint32_t frame_token) {}

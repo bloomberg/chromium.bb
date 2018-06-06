@@ -475,11 +475,9 @@ void SingleThreadProxy::NotifyImageDecodeRequestFinished() {
 void SingleThreadProxy::DidPresentCompositorFrameOnImplThread(
     uint32_t frame_token,
     std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
-    base::TimeTicks time,
-    base::TimeDelta refresh,
-    uint32_t flags) {
+    const gfx::PresentationFeedback& feedback) {
   layer_tree_host_->DidPresentCompositorFrame(frame_token, std::move(callbacks),
-                                              time, refresh, flags);
+                                              feedback);
 }
 
 void SingleThreadProxy::RequestBeginMainFrameNotExpected(bool new_state) {

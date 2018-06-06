@@ -17,6 +17,10 @@ namespace aura {
 class Window;
 }
 
+namespace gfx {
+struct PresentationFeedback;
+}
+
 namespace ash {
 
 class TimeToFirstPresentRecorderTestApi;
@@ -40,9 +44,7 @@ class TimeToFirstPresentRecorder : public mojom::ProcessCreationTimeRecorder {
   void LogTime();
 
   // Callback from the compositor when it presented a valid frame.
-  void DidPresentCompositorFrame(base::TimeTicks time,
-                                 base::TimeDelta refresh,
-                                 uint32_t flags);
+  void DidPresentCompositorFrame(const gfx::PresentationFeedback& feedback);
 
   base::TimeDelta time_to_first_present() const {
     return present_time_ - process_creation_time_;

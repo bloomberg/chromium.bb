@@ -381,14 +381,12 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->DidReceiveCompositorFrameAckOnThread(this);
   }
 
-  void DidPresentCompositorFrame(uint32_t presentation_token,
-                                 base::TimeTicks time,
-                                 base::TimeDelta refresh,
-                                 uint32_t flags) override {
-    LayerTreeHostImpl::DidPresentCompositorFrame(presentation_token, time,
-                                                 refresh, flags);
+  void DidPresentCompositorFrame(
+      uint32_t presentation_token,
+      const gfx::PresentationFeedback& feedback) override {
+    LayerTreeHostImpl::DidPresentCompositorFrame(presentation_token, feedback);
     test_hooks_->DidReceivePresentationTimeOnThread(this, presentation_token,
-                                                    {time, refresh, flags});
+                                                    feedback);
   }
   AnimationHost* animation_host() const {
     return static_cast<AnimationHost*>(mutator_host());
