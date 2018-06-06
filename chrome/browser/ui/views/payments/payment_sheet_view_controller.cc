@@ -634,19 +634,24 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
   std::unique_ptr<views::Label> total_label = CreateBoldLabel(total_label_text);
   layout->AddView(total_label.release());
 
-  layout->AddView(
-      CreateInlineCurrencyAmountItem(
-          base::UTF8ToUTF16(spec()->GetFormattedCurrencyCode(
-              spec()->GetTotal(state()->selected_instrument())->amount)),
-          spec()->GetFormattedCurrencyAmount(
-              spec()->GetTotal(state()->selected_instrument())->amount),
-          false, true)
-          .release());
+  base::string16 total_currency_code =
+      base::UTF8ToUTF16(spec()->GetFormattedCurrencyCode(
+          spec()->GetTotal(state()->selected_instrument())->amount));
+  base::string16 total_amount = spec()->GetFormattedCurrencyAmount(
+      spec()->GetTotal(state()->selected_instrument())->amount);
+  layout->AddView(CreateInlineCurrencyAmountItem(total_currency_code,
+                                                 total_amount, false, true)
+                      .release());
 
   PaymentSheetRowBuilder builder(
       this, l10n_util::GetStringUTF16(IDS_PAYMENTS_ORDER_SUMMARY_LABEL));
   builder.Tag(PaymentSheetViewControllerTags::SHOW_ORDER_SUMMARY_BUTTON)
-      .Id(DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION);
+      .Id(DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION)
+      .AccessibleContent(l10n_util::GetStringFUTF16(
+          IDS_PAYMENTS_ORDER_SUMMARY_ACCESSIBLE_LABEL,
+          l10n_util::GetStringFUTF16(
+              IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_TOTAL_FORMAT,
+              total_label_text, total_currency_code, total_amount)));
 
   return builder.CreateWithChevron(std::move(inline_summary), nullptr);
 }

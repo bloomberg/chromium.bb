@@ -631,4 +631,7 @@
   <message name="IDS_PAYMENTS_ACCESSIBLE_LABEL_WITH_ERROR" desc="The format to append an error message to a screen reader string describing a profile or payment method">
     <ph name="LABEL">$1<ex>Homer Simpson 123 Fake Street</ex></ph> <ph name="ERROR">$2<ex>Phone number required</ex></ph>
   </message>
+  <message name="IDS_PAYMENTS_ORDER_SUMMARY_ACCESSIBLE_LABEL" desc="The string used to format what the screenreader reads out for the order summary section of the Payment Sheet.">
+    Order Summary, <ph name="TOTAL_LABEL">$1<ex>Total, USD $10.00</ex></ph>, More Details
+  </message>
 </grit-part>
