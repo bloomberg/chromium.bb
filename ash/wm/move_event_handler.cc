@@ -116,7 +116,6 @@ WorkspaceEventHandlerMash* MoveEventHandler::GetWorkspaceEventHandlerMash() {
 
 void MoveEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   toplevel_window_event_handler_.OnMouseEvent(event, window_);
-  // TODO(crbug.com/842295): Add support for window-service as a library.
   if (!toplevel_window_event_handler_.is_drag_in_progress() &&
       window_manager_client_ &&
       (event->type() == ui::ET_POINTER_MOVED ||

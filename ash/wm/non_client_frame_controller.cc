@@ -191,8 +191,10 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
 
   // views::NativeWidgetAura:
   views::NonClientFrameView* CreateNonClientFrameView() override {
-    move_event_handler_ = std::make_unique<MoveEventHandler>(
-        window_manager_client_, GetNativeView());
+    if (window_manager_client_) {
+      move_event_handler_ = std::make_unique<MoveEventHandler>(
+          window_manager_client_, GetNativeView());
+    }
     // TODO(sky): investigate why we have this. Seems this should be the same
     // as not specifying client area insets.
     if (remove_standard_frame_)
@@ -225,6 +227,8 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
   const bool enable_immersive_;
   const mojom::WindowStyle window_style_;
 
+  // TODO: this is no longer necessary once --mash is removed,
+  // https://crbug.com/842365.
   std::unique_ptr<MoveEventHandler> move_event_handler_;
 
   aura::WindowManagerClient* window_manager_client_;
