@@ -6,13 +6,14 @@
 
 namespace blink {
 
-Manifest::Icon::Icon() = default;
+Manifest::ImageResource::ImageResource() = default;
 
-Manifest::Icon::Icon(const Icon& other) = default;
+Manifest::ImageResource::ImageResource(const ImageResource& other) = default;
 
-Manifest::Icon::~Icon() = default;
+Manifest::ImageResource::~ImageResource() = default;
 
-bool Manifest::Icon::operator==(const Manifest::Icon& other) const {
+bool Manifest::ImageResource::operator==(
+    const Manifest::ImageResource& other) const {
   return src == other.src && type == other.type && sizes == other.sizes;
 }
 

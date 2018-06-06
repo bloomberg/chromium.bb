@@ -106,7 +106,7 @@ struct StructTraits<blink::mojom::ManifestDataView, content::Manifest> {
 };
 
 template <>
-struct StructTraits<blink::mojom::ManifestIconDataView,
+struct StructTraits<blink::mojom::ManifestImageResourceDataView,
                     content::Manifest::Icon> {
   static const GURL& src(const content::Manifest::Icon& m) { return m.src; }
 
@@ -122,7 +122,7 @@ struct StructTraits<blink::mojom::ManifestIconDataView,
     return m.purpose;
   }
 
-  static bool Read(blink::mojom::ManifestIconDataView data,
+  static bool Read(blink::mojom::ManifestImageResourceDataView data,
                    content::Manifest::Icon* out);
 };
 
@@ -158,26 +158,26 @@ struct StructTraits<blink::mojom::ManifestShareTargetDataView,
 };
 
 template <>
-struct EnumTraits<blink::mojom::ManifestIcon_Purpose,
+struct EnumTraits<blink::mojom::ManifestImageResource_Purpose,
                   content::Manifest::Icon::IconPurpose> {
-  static blink::mojom::ManifestIcon_Purpose ToMojom(
+  static blink::mojom::ManifestImageResource_Purpose ToMojom(
       content::Manifest::Icon::IconPurpose purpose) {
     switch (purpose) {
       case content::Manifest::Icon::ANY:
-        return blink::mojom::ManifestIcon_Purpose::ANY;
+        return blink::mojom::ManifestImageResource_Purpose::ANY;
       case content::Manifest::Icon::BADGE:
-        return blink::mojom::ManifestIcon_Purpose::BADGE;
+        return blink::mojom::ManifestImageResource_Purpose::BADGE;
     }
     NOTREACHED();
-    return blink::mojom::ManifestIcon_Purpose::ANY;
+    return blink::mojom::ManifestImageResource_Purpose::ANY;
   }
-  static bool FromMojom(blink::mojom::ManifestIcon_Purpose input,
+  static bool FromMojom(blink::mojom::ManifestImageResource_Purpose input,
                         content::Manifest::Icon::IconPurpose* out) {
     switch (input) {
-      case blink::mojom::ManifestIcon_Purpose::ANY:
+      case blink::mojom::ManifestImageResource_Purpose::ANY:
         *out = content::Manifest::Icon::ANY;
         return true;
-      case blink::mojom::ManifestIcon_Purpose::BADGE:
+      case blink::mojom::ManifestImageResource_Purpose::BADGE:
         *out = content::Manifest::Icon::BADGE;
         return true;
     }

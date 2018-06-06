@@ -18,7 +18,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
-using IconPurpose = blink::Manifest::Icon::IconPurpose;
+using IconPurpose = blink::Manifest::ImageResource::Purpose;
 
 namespace {
 

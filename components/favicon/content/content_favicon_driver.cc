@@ -30,7 +30,7 @@ void ExtractManifestIcons(
     const GURL& manifest_url,
     const blink::Manifest& manifest) {
   std::vector<FaviconURL> candidates;
-  for (const blink::Manifest::Icon& icon : manifest.icons) {
+  for (const auto& icon : manifest.icons) {
     candidates.emplace_back(icon.src, favicon_base::IconType::kWebManifestIcon,
                             icon.sizes);
   }

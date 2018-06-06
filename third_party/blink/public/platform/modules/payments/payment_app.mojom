@@ -24,7 +24,7 @@ enum PaymentHandlerStatus {
 // side (PaymentInstrument.idl).
 struct PaymentInstrument {
   string name;
-  array<blink.mojom.ManifestIcon> icons;
+  array<blink.mojom.ManifestImageResource> icons;
   string method;
   string stringified_capabilities;
 

@@ -277,13 +277,13 @@ std::vector<gfx::Size> ManifestParser::ParseIconSizes(
   return sizes;
 }
 
-std::vector<blink::Manifest::Icon::IconPurpose>
+std::vector<blink::Manifest::ImageResource::Purpose>
 ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
   base::NullableString16 purpose_str = ParseString(icon, "purpose", NoTrim);
-  std::vector<blink::Manifest::Icon::IconPurpose> purposes;
+  std::vector<blink::Manifest::ImageResource::Purpose> purposes;
 
   if (purpose_str.is_null()) {
-    purposes.push_back(blink::Manifest::Icon::IconPurpose::ANY);
+    purposes.push_back(blink::Manifest::ImageResource::Purpose::ANY);
     return purposes;
   }
 
@@ -292,9 +292,9 @@ ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
       base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   for (const base::string16& keyword : keywords) {
     if (base::LowerCaseEqualsASCII(keyword, "any")) {
-      purposes.push_back(blink::Manifest::Icon::IconPurpose::ANY);
+      purposes.push_back(blink::Manifest::ImageResource::Purpose::ANY);
     } else if (base::LowerCaseEqualsASCII(keyword, "badge")) {
-      purposes.push_back(blink::Manifest::Icon::IconPurpose::BADGE);
+      purposes.push_back(blink::Manifest::ImageResource::Purpose::BADGE);
     } else {
       AddErrorInfo(
           "found icon with invalid purpose. "
@@ -303,15 +303,15 @@ ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
   }
 
   if (purposes.empty()) {
-    purposes.push_back(blink::Manifest::Icon::IconPurpose::ANY);
+    purposes.push_back(blink::Manifest::ImageResource::Purpose::ANY);
   }
 
   return purposes;
 }
 
-std::vector<blink::Manifest::Icon> ManifestParser::ParseIcons(
+std::vector<blink::Manifest::ImageResource> ManifestParser::ParseIcons(
     const base::DictionaryValue& dictionary) {
-  std::vector<blink::Manifest::Icon> icons;
+  std::vector<blink::Manifest::ImageResource> icons;
   if (!dictionary.HasKey("icons"))
     return icons;
 
@@ -326,7 +326,7 @@ std::vector<blink::Manifest::Icon> ManifestParser::ParseIcons(
     if (!icons_list->GetDictionary(i, &icon_dictionary))
       continue;
 
-    blink::Manifest::Icon icon;
+    blink::Manifest::ImageResource icon;
     icon.src = ParseIconSrc(*icon_dictionary);
     // An icon MUST have a valid src. If it does not, it MUST be ignored.
     if (!icon.src.is_valid())

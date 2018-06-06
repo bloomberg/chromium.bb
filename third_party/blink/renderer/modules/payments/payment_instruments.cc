@@ -272,10 +272,11 @@ void PaymentInstruments::OnRequestPermission(
         return;
       }
 
-      mojom::blink::ManifestIconPtr icon = mojom::blink::ManifestIcon::New();
+      mojom::blink::ManifestImageResourcePtr icon =
+          mojom::blink::ManifestImageResource::New();
       icon->src = parsed_url;
       icon->type = image_object.type();
-      icon->purpose.push_back(blink::mojom::ManifestIcon_Purpose::ANY);
+      icon->purpose.push_back(blink::mojom::ManifestImageResource_Purpose::ANY);
       WebVector<WebSize> web_sizes =
           WebIconSizesParser::ParseIconSizes(image_object.sizes());
       for (const auto& web_size : web_sizes) {

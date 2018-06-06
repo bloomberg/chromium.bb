@@ -20,7 +20,7 @@ bool IsUrlWebApkCompatible(const GURL& url) {
 }  // anonymous namespace
 
 bool AreWebManifestUrlsWebApkCompatible(const blink::Manifest& manifest) {
-  for (const blink::Manifest::Icon& icon : manifest.icons) {
+  for (const auto& icon : manifest.icons) {
     if (!IsUrlWebApkCompatible(icon.src))
       return false;
   }

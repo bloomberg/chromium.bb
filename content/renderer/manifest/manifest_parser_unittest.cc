@@ -931,7 +931,7 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
         ParseManifest("{ \"icons\": [ {\"src\": \"\" } ] }");
     EXPECT_EQ(manifest.icons[0].purpose.size(), 1u);
     EXPECT_EQ(manifest.icons[0].purpose[0],
-              blink::Manifest::Icon::IconPurpose::ANY);
+              blink::Manifest::ImageResource::Purpose::ANY);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -943,7 +943,7 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
         "\"purpose\": 42 } ] }");
     EXPECT_EQ(manifest.icons[0].purpose.size(), 1u);
     EXPECT_EQ(manifest.icons[0].purpose[0],
-              blink::Manifest::Icon::IconPurpose::ANY);
+              blink::Manifest::ImageResource::Purpose::ANY);
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ(kPurposeParseStringError, errors()[0]);
   }
@@ -956,7 +956,7 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
         "\"purpose\": {} } ] }");
     EXPECT_EQ(manifest.icons[0].purpose.size(), 1u);
     EXPECT_EQ(manifest.icons[0].purpose[0],
-              blink::Manifest::Icon::IconPurpose::ANY);
+              blink::Manifest::ImageResource::Purpose::ANY);
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ(kPurposeParseStringError, errors()[0]);
   }
@@ -968,9 +968,9 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
         "\"purpose\": \"Any Badge\" } ] }");
     ASSERT_EQ(manifest.icons[0].purpose.size(), 2u);
     EXPECT_EQ(manifest.icons[0].purpose[0],
-              blink::Manifest::Icon::IconPurpose::ANY);
+              blink::Manifest::ImageResource::Purpose::ANY);
     EXPECT_EQ(manifest.icons[0].purpose[1],
-              blink::Manifest::Icon::IconPurpose::BADGE);
+              blink::Manifest::ImageResource::Purpose::BADGE);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -981,9 +981,9 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
         "\"purpose\": \"  Any   Badge  \" } ] }");
     ASSERT_EQ(manifest.icons[0].purpose.size(), 2u);
     EXPECT_EQ(manifest.icons[0].purpose[0],
-              blink::Manifest::Icon::IconPurpose::ANY);
+              blink::Manifest::ImageResource::Purpose::ANY);
     EXPECT_EQ(manifest.icons[0].purpose[1],
-              blink::Manifest::Icon::IconPurpose::BADGE);
+              blink::Manifest::ImageResource::Purpose::BADGE);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -994,9 +994,9 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
         "\"purpose\": \"badge badge\" } ] }");
     ASSERT_EQ(manifest.icons[0].purpose.size(), 2u);
     EXPECT_EQ(manifest.icons[0].purpose[0],
-              blink::Manifest::Icon::IconPurpose::BADGE);
+              blink::Manifest::ImageResource::Purpose::BADGE);
     EXPECT_EQ(manifest.icons[0].purpose[1],
-              blink::Manifest::Icon::IconPurpose::BADGE);
+              blink::Manifest::ImageResource::Purpose::BADGE);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -1007,7 +1007,7 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
         "\"purpose\": \"badge notification\" } ] }");
     ASSERT_EQ(manifest.icons[0].purpose.size(), 1u);
     EXPECT_EQ(manifest.icons[0].purpose[0],
-              blink::Manifest::Icon::IconPurpose::BADGE);
+              blink::Manifest::ImageResource::Purpose::BADGE);
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ(kPurposeInvalidValueError, errors()[0]);
   }
@@ -1019,7 +1019,7 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
         "\"purpose\": \"notification\" } ] }");
     ASSERT_EQ(manifest.icons[0].purpose.size(), 1u);
     EXPECT_EQ(manifest.icons[0].purpose[0],
-              blink::Manifest::Icon::IconPurpose::ANY);
+              blink::Manifest::ImageResource::Purpose::ANY);
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ(kPurposeInvalidValueError, errors()[0]);
   }

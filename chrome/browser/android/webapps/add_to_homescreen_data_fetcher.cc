@@ -241,7 +241,7 @@ void AddToHomescreenDataFetcher::OnDidGetManifestAndIcons(
       content::ManifestIconSelector::FindBestMatchingIcon(
           data.manifest->icons, shortcut_info_.ideal_splash_image_size_in_px,
           shortcut_info_.minimum_splash_image_size_in_px,
-          blink::Manifest::Icon::IconPurpose::ANY);
+          blink::Manifest::ImageResource::Purpose::ANY);
   if (data.badge_icon) {
     shortcut_info_.best_badge_icon_url = data.badge_icon_url;
     badge_icon_ = *data.badge_icon;

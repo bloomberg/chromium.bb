@@ -27,19 +27,19 @@ namespace blink {
 // http://w3c.github.io/manifest/
 struct BLINK_COMMON_EXPORT Manifest {
   // Structure representing an icon as per the Manifest specification, see:
-  // http://w3c.github.io/manifest/#dfn-icon-object
-  struct BLINK_COMMON_EXPORT Icon {
-    enum IconPurpose {
+  // https://w3c.github.io/manifest/#dom-imageresource
+  struct BLINK_COMMON_EXPORT ImageResource {
+    enum class Purpose {
       ANY = 0,
       BADGE,
-      ICON_PURPOSE_LAST = BADGE,
+      IMAGE_RESOURCE_PURPOSE_LAST = BADGE,
     };
 
-    Icon();
-    Icon(const Icon& other);
-    ~Icon();
+    ImageResource();
+    ImageResource(const ImageResource& other);
+    ~ImageResource();
 
-    bool operator==(const Icon& other) const;
+    bool operator==(const ImageResource& other) const;
 
     // MUST be a valid url. If an icon doesn't have a valid URL, it will not be
     // successfully parsed, thus will not be represented in the Manifest.
@@ -58,7 +58,7 @@ struct BLINK_COMMON_EXPORT Manifest {
     // Empty if the field was not present or not of type "string". Defaults to
     // a vector with a single value, IconPurpose::ANY, for all other parsing
     // exceptions.
-    std::vector<IconPurpose> purpose;
+    std::vector<Purpose> purpose;
   };
 
   // Structure representing how a Web Share target handles an incoming share.
@@ -116,9 +116,9 @@ struct BLINK_COMMON_EXPORT Manifest {
   // field was not present.
   blink::WebScreenOrientationLockType orientation;
 
-  // Empty if the parsing failed, the field was not present, empty or all the
+  // Empty if the parsing failed, the field was not present, or all the
   // icons inside the JSON array were invalid.
-  std::vector<Icon> icons;
+  std::vector<ImageResource> icons;
 
   // Null if parsing failed or the field was not present.
   // TODO(constantina): This field is non-standard and part of a Chrome

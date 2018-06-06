@@ -68,7 +68,7 @@ void ShortcutInfo::UpdateFromManifest(const blink::Manifest& manifest) {
 
   // Set the icon urls based on the icons in the manifest, if any.
   icon_urls.clear();
-  for (const blink::Manifest::Icon& icon : manifest.icons)
+  for (const auto& icon : manifest.icons)
     icon_urls.push_back(icon.src.spec());
 
   if (manifest.share_target)

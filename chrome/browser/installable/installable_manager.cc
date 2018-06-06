@@ -92,7 +92,7 @@ bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest) {
       continue;
 
     if (!base::ContainsValue(icon.purpose,
-                             blink::Manifest::Icon::IconPurpose::ANY)) {
+                             blink::Manifest::ImageResource::Purpose::ANY)) {
       continue;
     }
 

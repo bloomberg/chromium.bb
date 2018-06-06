@@ -50,7 +50,7 @@ TEST_F(ShortcutInfoTest, AllAttributesUpdate) {
   manifest_.splash_screen_url = GURL("https://new.com/splash.html");
 
   info_.icon_urls.push_back("https://old.com/icon.png");
-  blink::Manifest::Icon icon;
+  blink::Manifest::ImageResource icon;
   icon.src = GURL("https://new.com/icon.png");
   manifest_.icons.push_back(icon);
 
