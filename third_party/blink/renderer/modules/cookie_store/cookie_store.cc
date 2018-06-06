@@ -135,10 +135,12 @@ network::mojom::blink::CanonicalCookiePtr ToCanonicalCookie(
       return nullptr;
     }
 
-    if (options.hasExpires())
+    if (options.hasExpires()) {
       canonical_cookie->expiry = WTF::Time::FromJavaTime(options.expires());
-    // The expires option is not set in CookieStoreSetOptions for session
-    // cookies. This is represented by a null expiry field in CanonicalCookie.
+    } else {
+      // Session cookie.
+      canonical_cookie->expiry = WTF::Time();
+    }
   }
 
   if (options.hasDomain()) {
@@ -176,6 +178,10 @@ network::mojom::blink::CanonicalCookiePtr ToCanonicalCookie(
   }
 
   canonical_cookie->httponly = options.httpOnly();
+
+  // The backend does not trust these fields.
+  canonical_cookie->creation = WTF::Time();
+  canonical_cookie->last_access = WTF::Time();
   return canonical_cookie;
 }
 

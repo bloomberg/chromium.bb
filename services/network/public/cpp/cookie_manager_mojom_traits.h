@@ -75,20 +75,14 @@ struct StructTraits<network::mojom::CanonicalCookieDataView,
   static const std::string& path(const net::CanonicalCookie& c) {
     return c.Path();
   }
-  static base::Optional<base::Time> creation(const net::CanonicalCookie& c) {
-    return c.CreationDate().is_null()
-               ? base::Optional<base::Time>()
-               : base::Optional<base::Time>(c.CreationDate());
+  static base::Time creation(const net::CanonicalCookie& c) {
+    return c.CreationDate();
   }
-  static base::Optional<base::Time> expiry(const net::CanonicalCookie& c) {
-    return c.ExpiryDate().is_null()
-               ? base::Optional<base::Time>()
-               : base::Optional<base::Time>(c.ExpiryDate());
+  static base::Time expiry(const net::CanonicalCookie& c) {
+    return c.ExpiryDate();
   }
-  static base::Optional<base::Time> last_access(const net::CanonicalCookie& c) {
-    return c.LastAccessDate().is_null()
-               ? base::Optional<base::Time>()
-               : base::Optional<base::Time>(c.LastAccessDate());
+  static base::Time last_access(const net::CanonicalCookie& c) {
+    return c.LastAccessDate();
   }
   static bool secure(const net::CanonicalCookie& c) { return c.IsSecure(); }
   static bool httponly(const net::CanonicalCookie& c) { return c.IsHttpOnly(); }

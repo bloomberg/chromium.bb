@@ -153,9 +153,9 @@ bool StructTraits<
   if (!cookie.ReadPath(&path))
     return false;
 
-  base::Optional<base::Time> creation_time;
-  base::Optional<base::Time> expiry_time;
-  base::Optional<base::Time> last_access_time;
+  base::Time creation_time;
+  base::Time expiry_time;
+  base::Time last_access_time;
   if (!cookie.ReadCreation(&creation_time))
     return false;
 
@@ -173,11 +173,9 @@ bool StructTraits<
   if (!cookie.ReadPriority(&priority))
     return false;
 
-  *out = net::CanonicalCookie(
-      name, value, domain, path, creation_time ? *creation_time : base::Time(),
-      expiry_time ? *expiry_time : base::Time(),
-      last_access_time ? *last_access_time : base::Time(), cookie.secure(),
-      cookie.httponly(), site_restrictions, priority);
+  *out = net::CanonicalCookie(name, value, domain, path, creation_time,
+                              expiry_time, last_access_time, cookie.secure(),
+                              cookie.httponly(), site_restrictions, priority);
   return out->IsCanonical();
 }
 
