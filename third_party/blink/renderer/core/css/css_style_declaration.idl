@@ -38,7 +38,7 @@
     // The camel-cased and dashed attribute getters have custom bindings.
     // https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-camel-cased-attribute
     // https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-dashed-attribute
-    [Affects=Nothing] getter (DOMString or float) (DOMString name);
+    [Affects=Nothing] getter DOMString (DOMString name);
     // TODO(crbug.com/831544): [TreatNullAs=EmptyString] should be used instead
     // of [TreatNullAs=NullString].
     [CEReactions, CallWith=ScriptState] setter void (DOMString property, [TreatNullAs=NullString] DOMString propertyValue);

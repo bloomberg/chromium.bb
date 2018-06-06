@@ -36,7 +36,6 @@ class CSSRule;
 class CSSStyleSheet;
 class CSSValue;
 class ExceptionState;
-class StringOrFloat;
 enum class SecureContextMode;
 
 class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable {
@@ -91,7 +90,7 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable {
   virtual bool CssPropertyMatches(CSSPropertyID, const CSSValue&) const = 0;
   virtual CSSStyleSheet* ParentStyleSheet() const { return nullptr; }
 
-  void AnonymousNamedGetter(const AtomicString& name, StringOrFloat&);
+  String AnonymousNamedGetter(const AtomicString& name);
   // Note: AnonymousNamedSetter() can end up throwing an exception via
   // SetPropertyInternal() even though it does not take an |ExceptionState| as
   // an argument (see bug 829408).
