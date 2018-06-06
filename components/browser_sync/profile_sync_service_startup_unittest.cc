@@ -32,7 +32,6 @@ namespace browser_sync {
 
 namespace {
 
-const char kGaiaId[] = "12345";
 const char kEmail[] = "test_user@gmail.com";
 
 void SetError(DataTypeManager::ConfigureResult* result) {
@@ -95,28 +94,20 @@ class ProfileSyncServiceStartupTest : public testing::Test {
         profile_sync_service_bundle_.identity_manager(), kEmail);
   }
 
-  // TODO(treib): This doesn't notify observers of
-  // SigninManager/IdentityManager, so it really only works before creating
-  // anything.
   void SimulateTestUserSigninWithoutRefreshToken() {
     // Set the primary account *without* providing an OAuth token.
-    // TODO(https://crbug.com/814787): Change this flow to go through a
-    // mainstream Identity Service API once that API exists. Note that this
-    // might require supplying a valid refresh token here as opposed to an
-    // empty string.
-    profile_sync_service_bundle_.identity_manager()
-        ->SetPrimaryAccountSynchronously(kGaiaId, kEmail,
-                                         /*refresh_token=*/std::string());
-    EXPECT_TRUE(
-        profile_sync_service_bundle_.signin_manager()->IsAuthenticated());
+    identity::SetPrimaryAccount(profile_sync_service_bundle_.signin_manager(),
+                                profile_sync_service_bundle_.identity_manager(),
+                                kEmail);
   }
 
   void UpdateCredentials() {
-    profile_sync_service_bundle_.auth_service()->UpdateCredentials(
+    identity::SetRefreshTokenForAccount(
+        profile_sync_service_bundle_.auth_service(),
+        profile_sync_service_bundle_.identity_manager(),
         profile_sync_service_bundle_.identity_manager()
             ->GetPrimaryAccountInfo()
-            .account_id,
-        "oauth2_login_token");
+            .account_id);
   }
 
   DataTypeManagerMock* SetUpDataTypeManagerMock() {
