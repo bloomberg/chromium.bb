@@ -1165,6 +1165,72 @@ pre-cq-configs: link-pre-cq
     for c in changes[1:2]:
       self.assertEqual(self._GetPreCQStatus(c), None)
 
+  def testPreCQEarlyCrashes(self):
+    self.mockLaunchTrybots(
+        configs=['apple-pre-cq', 'banana-pre-cq', 'cinnamon-pre-cq'])
+
+    mock_buildbucket_client = mock.Mock()
+    self.sync_stage.buildbucket_client = mock_buildbucket_client
+
+    changes = self._PrepareChangesWithPendingVerifications(
+        [['apple-pre-cq', 'banana-pre-cq'], ['cinnamon-pre-cq']])
+
+    # Turn our changes into speculatifve PreCQ candidates.
+    for change in changes:
+      change.flags.pop('COMR')
+      change.IsMergeable = lambda: False
+      change.HasReadyFlag = lambda: False
+
+    # Launch three Pre-CQs for two changes.
+    # At this point, buildbucket does not have any data.
+    mock_buildbucket_client.GetBuildRequest.return_value = None
+    self.PerformSync(pre_cq_status=None, changes=changes, runs=2)
+    self.assertAllStatuses(changes, constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
+
+    # Make sure buildbucket IDs are assigned as we expect.
+    action_history = self.fake_db.GetActionsForChanges(changes)
+    progress_map = clactions.GetPreCQProgressMap(changes, action_history)
+    self.assertEqual(
+        progress_map[changes[0]]['apple-pre-cq'].buildbucket_id, 'bb_id_0')
+    self.assertEqual(
+        progress_map[changes[0]]['banana-pre-cq'].buildbucket_id, 'bb_id_1')
+    self.assertEqual(
+        progress_map[changes[1]]['cinnamon-pre-cq'].buildbucket_id, 'bb_id_2')
+
+    # Set all buildbucket statuses to STARTED. Changes statuses are still
+    # LAUNCHED.
+    mock_buildbucket_client.GetBuildRequest.return_value = {
+        'build': {
+            'status': constants.BUILDBUCKET_BUILDER_STATUS_STARTED,
+        },
+    }
+    self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
+    self.assertAllStatuses(changes, constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
+
+    # Set banana-pre-cq buildbucket status to COMPLETED. Since we did not insert
+    # any CL actions for banana-pre-cq, it is considered as an early crash.
+    def FakeGetBuildRequest(buildbucket_id, dryrun):
+      del dryrun  # unused
+      status = (constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED
+                if buildbucket_id == 'bb_id_1'
+                else constants.BUILDBUCKET_BUILDER_STATUS_STARTED)
+      return {'build': {'status': status}}
+
+    mock_buildbucket_client.GetBuildRequest.side_effect = FakeGetBuildRequest
+    self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
+
+    action_history = self.fake_db.GetActionsForChanges(changes)
+    progress_map = clactions.GetPreCQProgressMap(changes, action_history)
+    self.assertEqual(
+        progress_map[changes[0]]['apple-pre-cq'].status,
+        constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
+    self.assertEqual(
+        progress_map[changes[0]]['banana-pre-cq'].status,
+        constants.CL_PRECQ_CONFIG_STATUS_FAILED)
+    self.assertEqual(
+        progress_map[changes[1]]['cinnamon-pre-cq'].status,
+        constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
+
   def testSpeculativePreCQ(self):
     changes = self._PrepareChangesWithPendingVerifications(
         [constants.PRE_CQ_DEFAULT_CONFIGS] * 2)

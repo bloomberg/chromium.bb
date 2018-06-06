@@ -77,6 +77,14 @@ PRECQ_EXPIRY_MSG = (
     'In order to protect the CQ from picking up stale changes, the pre-cq '
     'status for changes are cleared after a generous timeout. This change '
     'will be re-tested by the pre-cq before the CQ picks it up.')
+PRECQ_EARLY_CRASH_MSG = (
+    'The %s trybot for your change crashed after %s minutes.'
+    '\n\n'
+    'This problem can happen if your change causes the builder '
+    'to crash, or if there is some infrastructure issue. If your '
+    'change is not at fault you may mark your change as ready '
+    'again. If this problem occurs multiple times please notify '
+    'the sheriff and file a bug.')
 
 
 # Default limit for the size of Pre-CQ configs to test for unioned options
@@ -1720,6 +1728,42 @@ class PreCQLauncherStage(SyncStage):
                       ' change: %s buildbucket_id: %s error: %r',
                       change, old_build_action.buildbucket_id, e)
 
+  def _ProcessPreCQEarlyCrashes(self, progress_map, pool):
+    """Processes Pre-CQ builders crashed in early stages.
+
+    If a Pre-CQ builder crashes in early stages, it does not insert any
+    CL actions to CIDB. This function will detect such crashes by querying
+    Buildbucket and insert necessary CL actions on behalf of the crashed
+    builder.
+
+    Args:
+      progress_map: See return type of clactions.GetPreCQProgressMap.
+      pool: The current validation pool.
+    """
+    if not self.buildbucket_client:
+      return
+
+    for change, config_map in progress_map.iteritems():
+      for config, progress in config_map.iteritems():
+        if progress.status != constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED:
+          continue
+        if progress.buildbucket_id is None:
+          continue
+
+        build_info = self.buildbucket_client.GetBuildRequest(
+            progress.buildbucket_id, dryrun=False)
+        if not build_info:
+          continue
+
+        status = buildbucket_lib.GetBuildStatus(build_info)
+        if status != constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED:
+          continue
+
+        pool.SendNotification(
+            change, '%(details)s', details=PRECQ_EARLY_CRASH_MSG)
+        pool.RemoveReady(change, reason=config)
+        pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_FAILED)
+
   def _GetFailedPreCQConfigs(self, action_history):
     """Get failed Pre-CQ build configs from action history.
 
@@ -2047,6 +2091,9 @@ class PreCQLauncherStage(SyncStage):
         continue
 
       self._ProcessTimeouts(change, progress_map, pool, current_db_time)
+
+    # Process trybots crashed in early stages.
+    self._ProcessPreCQEarlyCrashes(progress_map, pool)
 
     # Mark passed changes as passed
     self.UpdateChangeStatuses(will_pass, constants.CL_STATUS_PASSED)
