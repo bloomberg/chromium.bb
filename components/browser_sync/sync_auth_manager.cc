@@ -202,11 +202,6 @@ void SyncAuthManager::OnPrimaryAccountSet(
   is_auth_in_progress_ = true;
 
   account_state_changed_callback_.Run();
-
-  if (token_service_->RefreshTokenIsAvailable(
-          primary_account_info.account_id)) {
-    OnRefreshTokenAvailable(primary_account_info.account_id);
-  }
 }
 
 void SyncAuthManager::OnPrimaryAccountCleared(
