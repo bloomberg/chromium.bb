@@ -18,27 +18,29 @@ namespace device {
 
 class OculusRenderLoop;
 
-class OculusDevice : public VRDeviceBase {
+class OculusDevice : public VRDeviceBase, public XrSessionController {
  public:
   explicit OculusDevice(ovrSession session, ovrGraphicsLuid luid);
   ~OculusDevice() override;
 
   // VRDeviceBase
-  void RequestPresent(
-      mojom::VRSubmitFrameClientPtr submit_client,
-      mojom::VRPresentationProviderRequest request,
-      mojom::VRRequestPresentOptionsPtr present_options,
-      mojom::VRDisplayHost::RequestPresentCallback callback) override;
-  void ExitPresent() override;
+  void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
+                      mojom::VRPresentationProviderRequest request,
+                      mojom::VRRequestPresentOptionsPtr present_options,
+                      RequestExclusiveSessionCallback callback) override;
   void OnMagicWindowPoseRequest(
       mojom::VRMagicWindowProvider::GetPoseCallback callback) override;
 
   void OnRequestPresentResult(
-      mojom::VRDisplayHost::RequestPresentCallback callback,
+      RequestExclusiveSessionCallback callback,
       bool result,
       mojom::VRDisplayFrameTransportOptionsPtr transport_options);
 
  private:
+  // XrSessionController
+  void SetFrameDataRestricted(bool restricted) override;
+  void StopSession() override;
+
   std::unique_ptr<OculusRenderLoop> render_loop_;
   mojom::VRSubmitFrameClientPtr submit_client_;
   mojom::VRDisplayInfoPtr display_info_;

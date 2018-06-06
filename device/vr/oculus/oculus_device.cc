@@ -99,12 +99,12 @@ void OculusDevice::RequestPresent(
     mojom::VRSubmitFrameClientPtr submit_client,
     mojom::VRPresentationProviderRequest request,
     mojom::VRRequestPresentOptionsPtr present_options,
-    mojom::VRDisplayHost::RequestPresentCallback callback) {
+    RequestExclusiveSessionCallback callback) {
   if (!render_loop_->IsRunning())
     render_loop_->Start();
 
   if (!render_loop_->IsRunning()) {
-    std::move(callback).Run(false, nullptr);
+    std::move(callback).Run(false, nullptr, nullptr);
     return;
   }
 
@@ -120,14 +120,20 @@ void OculusDevice::RequestPresent(
 }
 
 void OculusDevice::OnRequestPresentResult(
-    mojom::VRDisplayHost::RequestPresentCallback callback,
+    RequestExclusiveSessionCallback callback,
     bool result,
     mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
   OnStartPresenting();
-  std::move(callback).Run(result, std::move(transport_options));
+  std::move(callback).Run(result, std::move(transport_options), this);
 }
 
-void OculusDevice::ExitPresent() {
+// XrSessionController
+void OculusDevice::SetFrameDataRestricted(bool restricted) {
+  // Presentation sessions can not currently be restricted.
+  DCHECK(false);
+}
+
+void OculusDevice::StopSession() {
   render_loop_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&OculusRenderLoop::ExitPresent,
                                 render_loop_->GetWeakPtr()));

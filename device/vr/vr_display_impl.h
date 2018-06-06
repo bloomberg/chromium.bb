@@ -10,23 +10,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/vr_device.h"
 #include "device/vr/vr_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/display/display.h"
 
 namespace device {
 
-class VRDevice;
 class VRDeviceBase;
-
-class XrSessionController {
- public:
-  // Give out null frame data and hittest results when restricted.
-  virtual void SetFrameDataRestricted(bool restricted) = 0;
-
-  // Break binding connection.
-  virtual void StopSession() = 0;
-};
 
 // Browser process representation of a VRDevice within a WebVR site session
 // (see VRServiceImpl). VRDisplayImpl receives/sends VR device events

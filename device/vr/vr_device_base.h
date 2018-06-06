@@ -32,12 +32,10 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
   void RequestSession(
       VRDisplayImpl* display,
       mojom::VRDisplayHost::RequestSessionCallback callback) override;
-  void RequestPresent(
-      mojom::VRSubmitFrameClientPtr submit_client,
-      mojom::VRPresentationProviderRequest request,
-      mojom::VRRequestPresentOptionsPtr present_options,
-      mojom::VRDisplayHost::RequestPresentCallback callback) override;
-  void ExitPresent() override;
+  void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
+                      mojom::VRPresentationProviderRequest request,
+                      mojom::VRRequestPresentOptionsPtr present_options,
+                      RequestExclusiveSessionCallback callback) override;
   void SetListeningForActivate(bool is_listening) override;
 
   void GetMagicWindowPose(

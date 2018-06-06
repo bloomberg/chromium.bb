@@ -171,10 +171,10 @@ void GvrDevice::RequestPresent(
     mojom::VRSubmitFrameClientPtr submit_client,
     mojom::VRPresentationProviderRequest request,
     mojom::VRRequestPresentOptionsPtr present_options,
-    mojom::VRDisplayHost::RequestPresentCallback callback) {
+    RequestExclusiveSessionCallback callback) {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider) {
-    std::move(callback).Run(false, nullptr);
+    std::move(callback).Run(false, nullptr, nullptr);
     return;
   }
 
@@ -188,15 +188,21 @@ void GvrDevice::RequestPresent(
 }
 
 void GvrDevice::OnRequestPresentResult(
-    mojom::VRDisplayHost::RequestPresentCallback callback,
+    RequestExclusiveSessionCallback callback,
     bool result,
     mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
   if (result)
     OnStartPresenting();
-  std::move(callback).Run(result, std::move(transport_options));
+  std::move(callback).Run(result, std::move(transport_options), this);
 }
 
-void GvrDevice::ExitPresent() {
+// XrSessionController
+void GvrDevice::SetFrameDataRestricted(bool restricted) {
+  // Presentation sessions can not currently be restricted.
+  DCHECK(false);
+}
+
+void GvrDevice::StopSession() {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (delegate_provider)
     delegate_provider->ExitWebVRPresent();

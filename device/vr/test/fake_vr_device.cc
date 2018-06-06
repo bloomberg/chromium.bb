@@ -54,12 +54,13 @@ void FakeVRDevice::RequestPresent(
     mojom::VRSubmitFrameClientPtr submit_client,
     mojom::VRPresentationProviderRequest request,
     mojom::VRRequestPresentOptionsPtr present_options,
-    mojom::VRDisplayHost::RequestPresentCallback callback) {
+    RequestExclusiveSessionCallback callback) {
   OnStartPresenting();
-  std::move(callback).Run(true, mojom::VRDisplayFrameTransportOptions::New());
+  std::move(callback).Run(true, mojom::VRDisplayFrameTransportOptions::New(),
+                          this);
 }
 
-void FakeVRDevice::ExitPresent() {
+void FakeVRDevice::StopSession() {
   OnExitPresent();
 }
 

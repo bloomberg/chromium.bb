@@ -49,15 +49,18 @@ class BrowserXrDevice : public device::VRDeviceEventListener {
   bool IsFallbackDevice() { return is_fallback_; }
 
  private:
+  void StopExclusiveSession();
   void OnListeningForActivate(bool is_listening);
   void OnRequestPresentResult(
       VRDisplayHost* display,
       device::mojom::VRDisplayHost::RequestPresentCallback callback,
       bool result,
-      device::mojom::VRDisplayFrameTransportOptionsPtr transport_options);
+      device::mojom::VRDisplayFrameTransportOptionsPtr transport_options,
+      device::XrSessionController* exclusive_session_controller);
 
   // Not owned by this class, but valid while BrowserXrDevice is alive.
   device::VRDevice* device_;
+  device::XrSessionController* exclusive_session_controller_ = nullptr;
 
   std::set<VRDisplayHost*> displays_;
   device::mojom::VRDisplayInfoPtr display_info_;

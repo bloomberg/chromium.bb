@@ -21,7 +21,7 @@ namespace device {
 
 class OpenVRRenderLoop;
 
-class OpenVRDevice : public VRDeviceBase {
+class OpenVRDevice : public VRDeviceBase, public XrSessionController {
  public:
   OpenVRDevice(vr::IVRSystem* vr);
   ~OpenVRDevice() override;
@@ -29,17 +29,15 @@ class OpenVRDevice : public VRDeviceBase {
   void Shutdown();
 
   // VRDeviceBase
-  void RequestPresent(
-      mojom::VRSubmitFrameClientPtr submit_client,
-      mojom::VRPresentationProviderRequest request,
-      mojom::VRRequestPresentOptionsPtr present_options,
-      mojom::VRDisplayHost::RequestPresentCallback callback) override;
-  void ExitPresent() override;
+  void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
+                      mojom::VRPresentationProviderRequest request,
+                      mojom::VRRequestPresentOptionsPtr present_options,
+                      RequestExclusiveSessionCallback callback) override;
 
   void OnPollingEvents();
 
   void OnRequestPresentResult(
-      mojom::VRDisplayHost::RequestPresentCallback callback,
+      RequestExclusiveSessionCallback callback,
       bool result,
       mojom::VRDisplayFrameTransportOptionsPtr transport_options);
 
@@ -47,6 +45,10 @@ class OpenVRDevice : public VRDeviceBase {
   // VRDeviceBase
   void OnMagicWindowPoseRequest(
       mojom::VRMagicWindowProvider::GetPoseCallback callback) override;
+
+  // XrSessionController
+  void SetFrameDataRestricted(bool restricted) override;
+  void StopSession() override;
 
   // TODO (BillOrr): This should not be a unique_ptr because the render_loop_
   // binds to VRVSyncProvider requests, so its lifetime should be tied to the

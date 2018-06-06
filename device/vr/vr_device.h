@@ -59,31 +59,43 @@ class VRDeviceEventListener {
   virtual void OnDeactivate(mojom::VRDisplayEventReason reason) = 0;
 };
 
+class XrSessionController {
+ public:
+  // Give out null frame data and hittest results when restricted.
+  virtual void SetFrameDataRestricted(bool restricted) = 0;
+
+  // Break binding connection.
+  virtual void StopSession() = 0;
+};
+
 // Represents one of the platform's VR devices. Owned by the respective
 // VRDeviceProvider.
 // TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
 class DEVICE_VR_EXPORT VRDevice {
  public:
+  using RequestExclusiveSessionCallback =
+      base::OnceCallback<void(bool,
+                              mojom::VRDisplayFrameTransportOptionsPtr,
+                              XrSessionController*)>;
+
   virtual ~VRDevice() {}
 
   virtual void PauseTracking() = 0;
   virtual void ResumeTracking() = 0;
   virtual mojom::VRDisplayInfoPtr GetVRDisplayInfo() = 0;
   virtual void SetMagicWindowEnabled(bool enabled) = 0;
-  virtual void ExitPresent() = 0;
   virtual void RequestSession(
       VRDisplayImpl* display,
       mojom::VRDisplayHost::RequestSessionCallback callback) = 0;
-  virtual void RequestPresent(
-      mojom::VRSubmitFrameClientPtr submit_client,
-      mojom::VRPresentationProviderRequest request,
-      mojom::VRRequestPresentOptionsPtr present_options,
-      mojom::VRDisplayHost::RequestPresentCallback callback) = 0;
+  virtual void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
+                              mojom::VRPresentationProviderRequest request,
+                              mojom::VRRequestPresentOptionsPtr present_options,
+                              RequestExclusiveSessionCallback callback) = 0;
   virtual void SetListeningForActivate(bool is_listening) = 0;
 
   // TODO(mthiesse): The browser should handle browser-side exiting of
   // presentation before device/ is even aware presentation is being exited.
-  // Then the browser should call ExitPresent() on Device, which does device/
+  // Then the browser should call StopSession() on Device, which does device/
   // exiting of presentation before notifying displays. This is currently messy
   // because browser-side notions of presentation are mostly Android-specific.
   virtual void OnExitPresent() = 0;

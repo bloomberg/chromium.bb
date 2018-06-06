@@ -52,12 +52,8 @@ void VRDeviceBase::RequestPresent(
     mojom::VRSubmitFrameClientPtr submit_client,
     mojom::VRPresentationProviderRequest request,
     mojom::VRRequestPresentOptionsPtr present_options,
-    mojom::VRDisplayHost::RequestPresentCallback callback) {
-  std::move(callback).Run(false, nullptr);
-}
-
-void VRDeviceBase::ExitPresent() {
-  NOTREACHED();
+    RequestExclusiveSessionCallback callback) {
+  std::move(callback).Run(false, nullptr, nullptr);
 }
 
 void VRDeviceBase::SetMagicWindowEnabled(bool enabled) {

@@ -173,12 +173,12 @@ void OpenVRDevice::RequestPresent(
     mojom::VRSubmitFrameClientPtr submit_client,
     mojom::VRPresentationProviderRequest request,
     mojom::VRRequestPresentOptionsPtr present_options,
-    mojom::VRDisplayHost::RequestPresentCallback callback) {
+    RequestExclusiveSessionCallback callback) {
   if (!render_loop_->IsRunning())
     render_loop_->Start();
 
   if (!render_loop_->IsRunning()) {
-    std::move(callback).Run(false, nullptr);
+    std::move(callback).Run(false, nullptr, nullptr);
     return;
   }
 
@@ -194,11 +194,11 @@ void OpenVRDevice::RequestPresent(
 }
 
 void OpenVRDevice::OnRequestPresentResult(
-    mojom::VRDisplayHost::RequestPresentCallback callback,
+    RequestExclusiveSessionCallback callback,
     bool result,
     mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
   OnStartPresenting();
-  std::move(callback).Run(result, std::move(transport_options));
+  std::move(callback).Run(result, std::move(transport_options), this);
 
   if (result) {
     using ViewerMap = std::map<std::string, VrViewerType>;
@@ -220,7 +220,13 @@ void OpenVRDevice::OnRequestPresentResult(
   }
 }
 
-void OpenVRDevice::ExitPresent() {
+// XrSessionController
+void OpenVRDevice::SetFrameDataRestricted(bool restricted) {
+  // Presentation sessions can not currently be restricted.
+  DCHECK(false);
+}
+
+void OpenVRDevice::StopSession() {
   render_loop_->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&OpenVRRenderLoop::ExitPresent, render_loop_->GetWeakPtr()));
