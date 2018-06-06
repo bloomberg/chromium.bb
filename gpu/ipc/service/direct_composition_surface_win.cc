@@ -1502,10 +1502,8 @@ gfx::SwapResult DirectCompositionSurfaceWin::SwapBuffers(
   if (!layer_tree_->CommitAndClearPendingOverlays())
     scoped_swap_buffers.set_result(gfx::SwapResult::SWAP_FAILED);
 
-  if (scoped_swap_buffers.result() == gfx::SwapResult::SWAP_FAILED) {
-    base::UmaHistogramSparse("GPU.DirectComposition.SwapBuffersLastError",
-                             ::GetLastError());
-  }
+  if (scoped_swap_buffers.result() == gfx::SwapResult::SWAP_FAILED)
+    UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.SwapBuffersFailed", true);
 
   return scoped_swap_buffers.result();
 }
