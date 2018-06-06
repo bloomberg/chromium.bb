@@ -113,32 +113,32 @@ static const char kTestShippingFormString[] =
 
 static const char kTestBillingFormString[] =
     "<form action=\"http://www.example.com/\" method=\"POST\">"
-    "<label for=\"firstname_2\">First name:</label>"
-    " <input type=\"text\" id=\"firstname_2\"><br>"
-    "<label for=\"lastname_2\">Last name:</label>"
-    " <input type=\"text\" id=\"lastname_2\"><br>"
-    "<label for=\"address1_2\">Address line 1:</label>"
-    " <input type=\"text\" id=\"address1_2\"><br>"
-    "<label for=\"address2_2\">Address line 2:</label>"
-    " <input type=\"text\" id=\"address2_2\"><br>"
-    "<label for=\"city_2\">City:</label>"
-    " <input type=\"text\" id=\"city_2\"><br>"
-    "<label for=\"state_2\">State:</label>"
-    " <select id=\"state_2\">"
+    "<label for=\"firstname_billing\">First name:</label>"
+    " <input type=\"text\" id=\"firstname_billing\"><br>"
+    "<label for=\"lastname_billing\">Last name:</label>"
+    " <input type=\"text\" id=\"lastname_billing\"><br>"
+    "<label for=\"address1_billing\">Address line 1:</label>"
+    " <input type=\"text\" id=\"address1_billing\"><br>"
+    "<label for=\"address2_billing\">Address line 2:</label>"
+    " <input type=\"text\" id=\"address2_billing\"><br>"
+    "<label for=\"city_billing\">City:</label>"
+    " <input type=\"text\" id=\"city_billing\"><br>"
+    "<label for=\"state_billing\">State:</label>"
+    " <select id=\"state_billing\">"
     " <option value=\"\" selected=\"yes\">--</option>"
     " <option value=\"CA\">California</option>"
     " <option value=\"TX\">Texas</option>"
     " </select><br>"
-    "<label for=\"zip_2\">ZIP code:</label>"
-    " <input type=\"text\" id=\"zip_2\"><br>"
-    "<label for=\"country_2\">Country:</label>"
-    " <select id=\"country_2\">"
+    "<label for=\"zip_billing\">ZIP code:</label>"
+    " <input type=\"text\" id=\"zip_billing\"><br>"
+    "<label for=\"country_billing\">Country:</label>"
+    " <select id=\"country_billing\">"
     " <option value=\"\" selected=\"yes\">--</option>"
     " <option value=\"CA\">Canada</option>"
     " <option value=\"US\">United States</option>"
     " </select><br>"
-    "<label for=\"phone_2\">Phone number:</label>"
-    " <input type=\"text\" id=\"phone_2\"><br>"
+    "<label for=\"phone_billing\">Phone number:</label>"
+    " <input type=\"text\" id=\"phone_billing\"><br>"
     "</form>";
 
 // TODO(crbug.com/609861): Remove the autocomplete attribute from the textarea
@@ -280,7 +280,8 @@ content::RenderFrameHost* RenderFrameHostForName(
 class AutofillInteractiveTestBase : public InProcessBrowserTest {
  protected:
   explicit AutofillInteractiveTestBase(bool popup_views_enabled)
-      : key_press_event_sink_(base::BindRepeating(
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
+        key_press_event_sink_(base::BindRepeating(
             &AutofillInteractiveTestBase::HandleKeyPressEvent,
             base::Unretained(this))),
         popup_views_enabled_(popup_views_enabled) {
@@ -292,6 +293,11 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
+    https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+    https_server_.ServeFilesFromSourceDirectory("chrome/test/data");
+    ASSERT_TRUE(https_server_.InitializeAndListen());
+    https_server_.StartAcceptingConnections();
+
     InProcessBrowserTest::SetUpOnMainThread();
     // Don't want Keychain coming up on Mac.
     test::DisableSystemServices(browser()->profile()->GetPrefs());
@@ -349,6 +355,13 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
                          "Rooftop", "Liliput", "CA", "10003", "US",
                          "15166900292");
     AddTestProfile(browser(), profile);
+  }
+
+  void CreateTestCreditCart() {
+    CreditCard card;
+    test::SetCreditCardInfo(&card, "Milton Waddams", "4111111111111111", "09",
+                            "2999", "");
+    AddTestCreditCard(browser(), card);
   }
 
   // Populates a webpage form using autofill data and keypress events.
@@ -678,10 +691,11 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
   }
 
   AutofillManagerTestDelegateImpl* test_delegate() { return &test_delegate_; }
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
 
  private:
+  net::EmbeddedTestServer https_server_;
   AutofillManagerTestDelegateImpl test_delegate_;
-
   net::TestURLFetcherFactory url_fetcher_factory_;
 
   // KeyPressEventCallback that serves as a sink to ensure that every key press
@@ -748,7 +762,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, ClearTwoSection) {
   TryBasicFormFill();
 
   // Fill second section.
-  FocusFieldByName("firstname_2");
+  FocusFieldByName("firstname_billing");
   SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
   SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
   SendKeyToPopupAndWait(ui::DomKey::ENTER);
@@ -759,15 +773,15 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, ClearTwoSection) {
   SendKeyToDataListPopup(ui::DomKey::ARROW_DOWN);  // clear
   SendKeyToDataListPopup(ui::DomKey::ENTER);
 
-  ExpectFieldValue("firstname_2", "");
-  ExpectFieldValue("lastname_2", "");
-  ExpectFieldValue("address1_2", "");
-  ExpectFieldValue("address2_2", "");
-  ExpectFieldValue("city_2", "");
-  ExpectFieldValue("state_2", "");
-  ExpectFieldValue("zip_2", "");
-  ExpectFieldValue("country_2", "");
-  ExpectFieldValue("phone_2", "");
+  ExpectFieldValue("firstname_billing", "");
+  ExpectFieldValue("lastname_billing", "");
+  ExpectFieldValue("address1_billing", "");
+  ExpectFieldValue("address2_billing", "");
+  ExpectFieldValue("city_billing", "");
+  ExpectFieldValue("state_billing", "");
+  ExpectFieldValue("zip_billing", "");
+  ExpectFieldValue("country_billing", "");
+  ExpectFieldValue("phone_billing", "");
 
   // First section should still be filled.
   ExpectFilledTestForm();
@@ -2151,6 +2165,58 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, FieldsChangeName) {
   ExpectFieldValue("phone", "15125551234");
 }
 
+class AutofillCreditCardInteractiveTest
+    : public AutofillInteractiveTestBase,
+      public testing::WithParamInterface<bool> {
+ protected:
+  AutofillCreditCardInteractiveTest()
+      : AutofillInteractiveTestBase(GetParam()) {}
+  ~AutofillCreditCardInteractiveTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {}, {features::kAutofillRequireSecureCreditCardContext});
+    AutofillInteractiveTestBase::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // HTTPS server only serves a valid cert for localhost, so this is needed to
+    // load pages from "a.com" without an interstitial.
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+
+  // After autofilling the credit card, there is a delayed task of recording its
+  // use on the db. If we reenable the services, the config would be deleted and
+  // we won't be able to encrypt the cc number. There will be a crash while
+  // encrypting the cc number.
+  void TearDownOnMainThread() override {}
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(AutofillCreditCardInteractiveTest);
+};
+
+// Test that credit card autofill works.
+IN_PROC_BROWSER_TEST_P(AutofillCreditCardInteractiveTest, FillLocalCreditCard) {
+  CreateTestCreditCart();
+
+  // Navigate to the page.
+  GURL url = https_server()->GetURL("a.com",
+                                    "/autofill/autofill_creditcard_form.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  // Trigger the autofill.
+  FocusFieldByName("CREDIT_CARD_NAME_FULL");
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+
+  ExpectFieldValue("CREDIT_CARD_NAME_FULL", "Milton Waddams");
+  ExpectFieldValue("CREDIT_CARD_NUMBER", "4111111111111111");
+  ExpectFieldValue("CREDIT_CARD_EXP_MONTH", "09");
+  ExpectFieldValue("CREDIT_CARD_EXP_4_DIGIT_YEAR", "2999");
+}
+
 // Test params:
 //  - bool popup_views_enabled_: whether feature AutofillExpandedPopupViews
 //        is enabled.
@@ -2431,11 +2497,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveIsolationTest, SimpleCrossSiteFill) {
 #define MAYBE_CrossSitePaymentForms CrossSitePaymentForms
 #endif
 IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_CrossSitePaymentForms) {
-  CreditCard card;
-  test::SetCreditCardInfo(&card, "Milton Waddams", "4111111111111111", "09",
-                          "2999", "");
-  AddTestCreditCard(browser(), card);
-
+  CreateTestCreditCart();
   // Main frame is on a.com, iframe is on b.com.
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/cross_origin_iframe.html");
@@ -2512,16 +2574,16 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveIsolationTest,
 // Test params:
 //  - bool popup_views_enabled: whether feature AutofillExpandedPopupViews
 //        is enabled for testing.
-class DynamicFormInteractiveTest : public AutofillInteractiveTestBase,
-                                   public testing::WithParamInterface<bool> {
+class AutofillDynamicFormInteractiveTest
+    : public AutofillInteractiveTestBase,
+      public testing::WithParamInterface<bool> {
  protected:
-  DynamicFormInteractiveTest()
-      : AutofillInteractiveTestBase(GetParam()),
-        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+  AutofillDynamicFormInteractiveTest()
+      : AutofillInteractiveTestBase(GetParam()) {
     // Setup that the test expects a re-fill to happen.
     test_delegate()->SetIsExpectingDynamicRefill(true);
   }
-  ~DynamicFormInteractiveTest() override = default;
+  ~AutofillDynamicFormInteractiveTest() override = default;
 
   // AutofillInteractiveTestBase:
   void SetUp() override {
@@ -2531,31 +2593,25 @@ class DynamicFormInteractiveTest : public AutofillInteractiveTestBase,
         {features::kAutofillDynamicForms},
         {features::kAutofillRequireSecureCreditCardContext,
          features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
-    https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
-    https_server_.ServeFilesFromSourceDirectory("chrome/test/data");
-    ASSERT_TRUE(https_server_.InitializeAndListen());
-    https_server_.StartAcceptingConnections();
+
     AutofillInteractiveTestBase::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    AutofillInteractiveTestBase::SetUpCommandLine(command_line);
     // HTTPS server only serves a valid cert for localhost, so this is needed to
     // load pages from "a.com" without an interstitial.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 
-  net::EmbeddedTestServer* https_server() { return &https_server_; }
-
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  net::EmbeddedTestServer https_server_;
 
-  DISALLOW_COPY_AND_ASSIGN(DynamicFormInteractiveTest);
+  DISALLOW_COPY_AND_ASSIGN(AutofillDynamicFormInteractiveTest);
 };
 
 // Test that we can Autofill dynamically generated forms.
-IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest, DynamicChangingFormFill) {
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+                       DynamicChangingFormFill) {
   CreateTestProfile();
 
   GURL url =
@@ -2580,7 +2636,7 @@ IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest, DynamicChangingFormFill) {
   ExpectFieldValue("phone_form1", "15125551234");
 }
 
-IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        TwoDynamicChangingFormsFill) {
   // Setup that the test expects a re-fill to happen.
   test_delegate()->SetIsExpectingDynamicRefill(true);
@@ -2627,7 +2683,7 @@ IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
 }
 
 // Test that forms that dynamically change a second time do not get filled.
-IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SecondChange) {
   CreateTestProfile();
 
@@ -2654,7 +2710,7 @@ IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
 }
 
 // Test that forms that dynamically change after a second do not get filled.
-IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_AfterDelay) {
   CreateTestProfile();
 
@@ -2681,7 +2737,7 @@ IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
 }
 
 // Test that only field of a type group that was filled initially get refilled.
-IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_AddsNewFieldTypeGroups) {
   CreateTestProfile();
 
@@ -2714,13 +2770,9 @@ IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
 }
 
 // Test that credit card fields are never re-filled.
-IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_NotForCreditCard) {
-  // Add a credit card.
-  CreditCard card;
-  test::SetCreditCardInfo(&card, "Milton Waddams", "4111111111111111", "09",
-                          "2999", "");
-  AddTestCreditCard(browser(), card);
+  CreateTestCreditCart();
 
   // Navigate to the page.
   GURL url = https_server()->GetURL("a.com",
@@ -2750,7 +2802,7 @@ IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
 
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed.
-IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SelectUpdated) {
   CreateTestProfile();
 
@@ -2778,7 +2830,7 @@ IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
 
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed only once.
-IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_DoubleSelectUpdated) {
   CreateTestProfile();
 
@@ -2806,7 +2858,7 @@ IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
 
 // Test that we can Autofill dynamically generated forms with no name if the
 // NameForAutofill of the first field matches.
-IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_FormWithoutName) {
   CreateTestProfile();
 
@@ -2835,7 +2887,7 @@ IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed for forms with no names if the NameForAutofill of the first
 // field matches.
-IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SelectUpdated_FormWithoutName) {
   CreateTestProfile();
 
@@ -2864,7 +2916,7 @@ IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
 
 // Test that we can Autofill dynamically generated synthetic forms if the
 // NameForAutofill of the first field matches.
-IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SyntheticForm) {
   CreateTestProfile();
 
@@ -2892,7 +2944,7 @@ IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
 
 // Test that we can Autofill dynamically synthetic forms when the select options
 // change if the NameForAutofill of the first field matches
-IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SelectUpdated_SyntheticForm) {
   CreateTestProfile();
 
@@ -2919,6 +2971,9 @@ IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
 }
 
 INSTANTIATE_TEST_CASE_P(All, AutofillInteractiveTest, testing::Bool());
+INSTANTIATE_TEST_CASE_P(All,
+                        AutofillCreditCardInteractiveTest,
+                        testing::Bool());
 
 INSTANTIATE_TEST_CASE_P(All,
                         AutofillSingleClickTest,
@@ -2926,7 +2981,9 @@ INSTANTIATE_TEST_CASE_P(All,
 
 INSTANTIATE_TEST_CASE_P(All, AutofillInteractiveIsolationTest, testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(All, DynamicFormInteractiveTest, testing::Bool());
+INSTANTIATE_TEST_CASE_P(All,
+                        AutofillDynamicFormInteractiveTest,
+                        testing::Bool());
 
 INSTANTIATE_TEST_CASE_P(All,
                         AutofillRestrictUnownedFieldsTest,
