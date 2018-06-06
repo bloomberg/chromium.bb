@@ -10,56 +10,47 @@ IdentityProvider::Observer::~Observer() {}
 
 IdentityProvider::~IdentityProvider() {}
 
-void IdentityProvider::AddActiveAccountRefreshTokenObserver(
-    OAuth2TokenService::Observer* observer) {
-  OAuth2TokenService* token_service = GetTokenService();
-  if (!token_service || token_service_observers_.HasObserver(observer))
-    return;
-
-  token_service_observers_.AddObserver(observer);
-  if (++token_service_observer_count_ == 1)
-    token_service->AddObserver(this);
-}
-
-void IdentityProvider::RemoveActiveAccountRefreshTokenObserver(
-    OAuth2TokenService::Observer* observer) {
-  OAuth2TokenService* token_service = GetTokenService();
-  if (!token_service || !token_service_observers_.HasObserver(observer))
-    return;
-
-  token_service_observers_.RemoveObserver(observer);
-  if (--token_service_observer_count_ == 0)
-    token_service->RemoveObserver(this);
-}
-
 void IdentityProvider::AddObserver(Observer* observer) {
+  // See the comment on |num_observers_| in the .h file for why this addition
+  // must happen here.
+  if (num_observers_ == 0) {
+    OAuth2TokenService* token_service = GetTokenService();
+    if (token_service)
+      token_service->AddObserver(this);
+  }
+
+  num_observers_++;
   observers_.AddObserver(observer);
 }
 
 void IdentityProvider::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+  num_observers_--;
+
+  // See the comment on |num_observers_| in the .h file for why this removal
+  // must happen here.
+  if (num_observers_ == 0) {
+    OAuth2TokenService* token_service = GetTokenService();
+    if (token_service)
+      token_service->RemoveObserver(this);
+  }
 }
 
 void IdentityProvider::OnRefreshTokenAvailable(const std::string& account_id) {
   if (account_id != GetActiveAccountId())
     return;
-  for (auto& observer : token_service_observers_)
-    observer.OnRefreshTokenAvailable(account_id);
+  for (auto& observer : observers_)
+    observer.OnActiveAccountRefreshTokenUpdated();
 }
 
 void IdentityProvider::OnRefreshTokenRevoked(const std::string& account_id) {
   if (account_id != GetActiveAccountId())
     return;
-  for (auto& observer : token_service_observers_)
-    observer.OnRefreshTokenRevoked(account_id);
+  for (auto& observer : observers_)
+    observer.OnActiveAccountRefreshTokenRemoved();
 }
 
-void IdentityProvider::OnRefreshTokensLoaded() {
-  for (auto& observer : token_service_observers_)
-    observer.OnRefreshTokensLoaded();
-}
-
-IdentityProvider::IdentityProvider() : token_service_observer_count_(0) {}
+IdentityProvider::IdentityProvider() : num_observers_(0) {}
 
 void IdentityProvider::FireOnActiveAccountLogin() {
   for (auto& observer : observers_)
