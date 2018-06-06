@@ -58,6 +58,10 @@ void VPNFeaturePodController::OnIconPressed() {
 }
 
 void VPNFeaturePodController::Update() {
+  // NetworkHandler can be uninitialized in unit tests.
+  if (!chromeos::NetworkHandler::IsInitialized())
+    return;
+
   button_->SetVisible(tray::IsVPNVisibleInSystemTray());
   if (!button_->visible())
     return;
