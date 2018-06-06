@@ -1,5 +1,6 @@
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = The user aborted a request.
+PASS Canceling an animation should cause its start time and hold time to be unresolved
 PASS A play-pending ready promise should be rejected when the animation is canceled
 PASS A pause-pending ready promise should be rejected when the animation is canceled
 PASS When an animation is canceled, it should create a resolved Promise

@@ -13,6 +13,7 @@ FAIL When reversing throws an exception, the playback rate remains unchanged ass
 PASS Reversing animation when playbackRate = 0 and currentTime < 0 and the target effect end is positive infinity should NOT throw an exception
 PASS Reversing an animation when playbackRate < 0 and currentTime < 0 and the target effect end is positive infinity should make it play from the start
 PASS Reversing when when playbackRate == 0 should preserve the current time and playback rate
+PASS Reversing an idle animation from starts playing the animation
 FAIL Reversing an animation without an active timeline throws an InvalidStateError assert_throws: function "() => { animation.reverse(); }" did not throw
 FAIL Reversing should use the negative pending playback rate promise_test: Unhandled rejection with value: object "TypeError: animation.updatePlaybackRate is not a function"
 FAIL When reversing fails, it should restore any previous pending playback rate promise_test: Unhandled rejection with value: object "TypeError: animation.updatePlaybackRate is not a function"

@@ -2841,6 +2841,10 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-animations/CSSAnimation-effect.tentative.html [ Timeout ]
+crbug.com/626703 external/wpt/console/console-string-format-specifier-symbol-manual.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-animations/event-dispatch.tentative.html [ Timeout ]
+crbug.com/626703 external/wpt/console/console-number-format-specifiers-symbol-manual.html [ Skip ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/accelerometer/Accelerometer.https.html [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=x-cp1251 [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=utf8 [ Timeout ]
@@ -3208,7 +3212,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-006v.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-06.xht [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-001v.html [ Failure ]
-crbug.com/626703 external/wpt/console/console-format-specifier-symbol-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-002v.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-005v.html [ Failure ]
 crbug.com/626703 external/wpt/css/mediaqueries/viewport-script-dynamic.html [ Failure ]
@@ -3756,7 +3759,6 @@ crbug.com/826419 external/wpt/html/semantics/embedded-content/media-elements/tra
 
 crbug.com/825798 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-webvtt-non-snap-to-lines.html [ Failure ]
 
-crbug.com/803951 external/wpt/html/browsers/history/the-location-interface/reload_post_1.html [ Failure Timeout ]
 
 crbug.com/651778 external/wpt/workers/Worker_cross_origin_security_err.htm [ Timeout ]
 
