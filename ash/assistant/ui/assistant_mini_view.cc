@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,15 +25,23 @@ constexpr int kMaxWidthDip = 512;
 constexpr int kPreferredHeightDip = 48;
 
 // TODO(b/77638210): Replace with localized resource strings.
-constexpr char kPrompt[] = "Draw with your stylus to select";
+constexpr char kDefaultPrompt[] = "How can I help you?";
+constexpr char kStylusPrompt[] = "Draw with your stylus to select";
 
 }  // namespace
 
-AssistantMiniView::AssistantMiniView() {
+AssistantMiniView::AssistantMiniView(AssistantController* assistant_controller)
+    : assistant_controller_(assistant_controller), label_(new views::Label()) {
   InitLayout();
+
+  // AssistantController indirectly owns the view hierarchy to which
+  // AssistantMiniView belongs so is guaranteed to outlive it.
+  assistant_controller_->AddInteractionModelObserver(this);
 }
 
-AssistantMiniView::~AssistantMiniView() = default;
+AssistantMiniView::~AssistantMiniView() {
+  assistant_controller_->RemoveInteractionModelObserver(this);
+}
 
 gfx::Size AssistantMiniView::CalculatePreferredSize() const {
   const int preferred_width =
@@ -65,11 +74,27 @@ void AssistantMiniView::InitLayout() {
   AddChildView(icon);
 
   // Label.
-  views::Label* label = new views::Label(base::UTF8ToUTF16(kPrompt));
-  label->SetAutoColorReadabilityEnabled(false);
-  label->SetFontList(views::Label::GetDefaultFontList().DeriveWithSizeDelta(4));
-  label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  AddChildView(label);
+  label_->SetAutoColorReadabilityEnabled(false);
+  label_->SetFontList(
+      views::Label::GetDefaultFontList().DeriveWithSizeDelta(4));
+  label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  AddChildView(label_);
+
+  // Trigger input modality changed event to initialize view state.
+  OnInputModalityChanged(
+      assistant_controller_->interaction_model()->input_modality());
+}
+
+void AssistantMiniView::OnInputModalityChanged(InputModality input_modality) {
+  switch (input_modality) {
+    case InputModality::kStylus:
+      label_->SetText(base::UTF8ToUTF16(kStylusPrompt));
+      break;
+    case InputModality::kKeyboard:
+    case InputModality::kVoice:
+      label_->SetText(base::UTF8ToUTF16(kDefaultPrompt));
+      break;
+  }
 }
 
 }  // namespace ash

@@ -6,6 +6,7 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/ui/assistant_bubble_view.h"
+#include "base/optional.h"
 
 namespace ash {
 
@@ -38,6 +39,11 @@ void AssistantBubbleController::OnWidgetActivationChanged(views::Widget* widget,
     bubble_view_->RequestFocus();
 }
 
+void AssistantBubbleController::OnWidgetVisibilityChanged(views::Widget* widget,
+                                                          bool visible) {
+  UpdateUiMode();
+}
+
 void AssistantBubbleController::OnWidgetDestroying(views::Widget* widget) {
   // We need to be sure that the Assistant interaction is stopped when the
   // widget is closed. Special cases, such as closing the widget via the |ESC|
@@ -51,10 +57,7 @@ void AssistantBubbleController::OnWidgetDestroying(views::Widget* widget) {
 
 void AssistantBubbleController::OnInputModalityChanged(
     InputModality input_modality) {
-  // TODO(dmblack): Handle Settings.
-  assistant_bubble_model_.SetUiMode(input_modality == InputModality::kStylus
-                                        ? AssistantUiMode::kMiniUi
-                                        : AssistantUiMode::kMainUi);
+  UpdateUiMode();
 }
 
 void AssistantBubbleController::OnInteractionStateChanged(
@@ -67,6 +70,18 @@ void AssistantBubbleController::OnInteractionStateChanged(
       Dismiss();
       break;
   }
+}
+
+void AssistantBubbleController::OnMicStateChanged(MicState mic_state) {
+  UpdateUiMode();
+}
+
+bool AssistantBubbleController::OnCaptionButtonPressed(CaptionButtonId id) {
+  if (id == CaptionButtonId::kMinimize) {
+    UpdateUiMode(AssistantUiMode::kMiniUi);
+    return true;
+  }
+  return false;
 }
 
 bool AssistantBubbleController::IsVisible() const {
@@ -84,6 +99,39 @@ void AssistantBubbleController::Show() {
 void AssistantBubbleController::Dismiss() {
   if (bubble_view_)
     bubble_view_->GetWidget()->Hide();
+}
+
+void AssistantBubbleController::UpdateUiMode(
+    base::Optional<AssistantUiMode> ui_mode) {
+  // If a UI mode is provided, we will use it in lieu of updating UI mode on the
+  // basis of interaction/widget visibility state.
+  if (ui_mode.has_value()) {
+    assistant_bubble_model_.SetUiMode(ui_mode.value());
+    return;
+  }
+
+  // When Assistant UI is not visible, we should reset to main UI mode.
+  if (!IsVisible()) {
+    assistant_bubble_model_.SetUiMode(AssistantUiMode::kMainUi);
+    return;
+  }
+
+  // When the mic is open, we should be in main UI mode.
+  if (assistant_controller_->interaction_model()->mic_state() ==
+      MicState::kOpen) {
+    assistant_bubble_model_.SetUiMode(AssistantUiMode::kMainUi);
+    return;
+  }
+
+  // When stylus input modality is selected, we should be in mini UI mode.
+  if (assistant_controller_->interaction_model()->input_modality() ==
+      InputModality::kStylus) {
+    assistant_bubble_model_.SetUiMode(AssistantUiMode::kMiniUi);
+    return;
+  }
+
+  // By default, we will fall back to main UI mode.
+  assistant_bubble_model_.SetUiMode(AssistantUiMode::kMainUi);
 }
 
 }  // namespace ash
