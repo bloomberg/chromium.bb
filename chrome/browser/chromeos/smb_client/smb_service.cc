@@ -36,6 +36,11 @@ void RecordMountResult(SmbMountResult result) {
   UMA_HISTOGRAM_ENUMERATION("NativeSmbFileShare.MountResult", result);
 }
 
+void RecordRemountResult(SmbMountResult result) {
+  DCHECK_LE(result, SmbMountResult::kMaxValue);
+  UMA_HISTOGRAM_ENUMERATION("NativeSmbFileShare.RemountResult", result);
+}
+
 }  // namespace
 
 SmbService::SmbService(Profile* profile)
@@ -189,6 +194,8 @@ void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
 
 void SmbService::OnRemountResponse(const std::string& file_system_id,
                                    smbprovider::ErrorType error) {
+  RecordRemountResult(TranslateErrorToMountResult(error));
+
   if (error != smbprovider::ERROR_OK) {
     LOG(ERROR) << "SmbService: failed to restore filesystem: "
                << file_system_id;
