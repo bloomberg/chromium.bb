@@ -101,10 +101,14 @@ void SubresourceFilterSafeBrowsingActivationThrottle::OnCheckUrlResultOnUI(
 }
 
 SubresourceFilterSafeBrowsingActivationThrottle::ConfigResult::ConfigResult(
-    base::Optional<Configuration> config,
+    Configuration config,
     bool warning,
+    bool matched_valid_configuration,
     ActivationList matched_list)
-    : config(config), warning(warning), matched_list(matched_list) {}
+    : config(config),
+      warning(warning),
+      matched_valid_configuration(matched_valid_configuration),
+      matched_list(matched_list) {}
 
 SubresourceFilterSafeBrowsingActivationThrottle::ConfigResult::ConfigResult() =
     default;
@@ -130,36 +134,36 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult");
   DCHECK(!check_results_.empty());
+  const auto last_result_array = {check_results_.back()};
+  const bool consider_redirects = base::FeatureList::IsEnabled(
+      kSafeBrowsingSubresourceFilterConsiderRedirects);
+  const auto& check_results_to_consider =
+      consider_redirects ? check_results_ : last_result_array;
 
+  // Find the ConfigResult for each safe browsing check.
   std::vector<ConfigResult> matched_configurations;
-  for (const auto& current_result : check_results_) {
+  for (const auto& current_result : check_results_to_consider) {
     matched_configurations.push_back(
         GetHighestPriorityConfiguration(current_result));
   }
 
-  // Get the activation decision and the matched configuration and warning.
+  // Get the activation decision with the associated ConfigResult.
   ConfigResult selection;
   ActivationDecision activation_decision =
       GetActivationDecision(matched_configurations, &selection);
   DCHECK_NE(activation_decision, ActivationDecision::UNKNOWN);
-  Configuration matched_configuration =
-      selection.config.has_value() ? selection.config.value() : Configuration();
-  bool warning = selection.warning;
 
-  // Compute the matched list and notify observers of the check result.
-  // TODO(ericrobinson): Send the vector of check results to observers.
-  const auto& check_result = check_results_.back();
-  DCHECK(check_result.finished);
+  // Notify the observers of the check results.
   SubresourceFilterObserverManager::FromWebContents(
       navigation_handle()->GetWebContents())
-      ->NotifySafeBrowsingCheckComplete(navigation_handle(),
-                                        check_result.threat_type,
-                                        check_result.threat_metadata);
+      ->NotifySafeBrowsingChecksComplete(navigation_handle(),
+                                         check_results_to_consider);
 
+  // Compute the activation level.
   ActivationLevel activation_level =
-      matched_configuration.activation_options.activation_level;
+      selection.config.activation_options.activation_level;
 
-  if (warning && activation_level == ActivationLevel::ENABLED) {
+  if (selection.warning && activation_level == ActivationLevel::ENABLED) {
     NavigationConsoleLogger::LogMessageOnCommit(
         navigation_handle(), content::CONSOLE_MESSAGE_LEVEL_WARNING,
         kActivationWarningConsoleMessage);
@@ -178,7 +182,7 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
       navigation_handle()->GetWebContents())
       ->NotifyPageActivationComputed(
           navigation_handle(),
-          matched_configuration.GetActivationState(activation_level));
+          selection.config.GetActivationState(activation_level));
 }
 
 void SubresourceFilterSafeBrowsingActivationThrottle::
@@ -225,11 +229,12 @@ SubresourceFilterSafeBrowsingActivationThrottle::
     GetHighestPriorityConfiguration(
         const SubresourceFilterSafeBrowsingClient::CheckResult& result) {
   DCHECK(result.finished);
+  Configuration selected_config;
   bool warning = false;
+  bool matched = false;
   ActivationList matched_list = GetListForThreatTypeAndMetadata(
       result.threat_type, result.threat_metadata, &warning);
   // If it's http or https, find the best config.
-  base::Optional<Configuration> selected_config;
   if (navigation_handle()->GetURL().SchemeIsHTTPOrHTTPS()) {
     const auto& decreasing_configs =
         GetEnabledConfigurations()->configs_by_decreasing_priority();
@@ -241,45 +246,49 @@ SubresourceFilterSafeBrowsingActivationThrottle::
                      });
     if (selected_config_itr != decreasing_configs.end()) {
       selected_config = *selected_config_itr;
+      matched = true;
     }
   }
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SubresourceFilterSafeBrowsingActivationThrottle::"
                "GetHighestPriorityConfiguration",
                "selected_config",
-               selected_config.has_value()
-                   ? selected_config->ToTracedValue()
-                   : std::make_unique<base::trace_event::TracedValue>());
-  return ConfigResult(selected_config, warning, matched_list);
+               !matched ? selected_config.ToTracedValue()
+                        : std::make_unique<base::trace_event::TracedValue>());
+  return ConfigResult(selected_config, warning, matched, matched_list);
 }
 
 ActivationDecision
 SubresourceFilterSafeBrowsingActivationThrottle::GetActivationDecision(
     const std::vector<ConfigResult>& configurations,
     ConfigResult* selected_config) {
-  auto selected_itr = configurations.end();
-  bool consider_redirects = base::FeatureList::IsEnabled(
-      kSafeBrowsingSubresourceFilterConsiderRedirects);
-  for (auto itr = configurations.begin(); itr != configurations.end(); itr++) {
+  auto selected_itr = configurations.begin();
+  for (auto current_itr = configurations.begin();
+       current_itr != configurations.end(); current_itr++) {
     // Prefer later configs when there's a tie.
     // Rank no matching config slightly below priority zero.
-    if (!consider_redirects || selected_itr == configurations.end() ||
-        !selected_itr->config.has_value() ||
-        (itr->config.has_value() &&
-         itr->config->activation_conditions.priority >=
-             selected_itr->config->activation_conditions.priority)) {
-      selected_itr = itr;
+    const auto selected_priority =
+        selected_itr->matched_valid_configuration
+            ? selected_itr->config.activation_conditions.priority
+            : -1;
+    const auto current_priority =
+        current_itr->matched_valid_configuration
+            ? current_itr->config.activation_conditions.priority
+            : -1;
+    if (current_priority >= selected_priority) {
+      selected_itr = current_itr;
     }
   }
+  // Ensure that the list was not empty, and assign the configuration.
   DCHECK(selected_itr != configurations.end());
   *selected_config = *selected_itr;
 
-  if (!selected_config->config.has_value()) {
+  if (!selected_itr->matched_valid_configuration) {
     return ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET;
   }
 
   auto activation_level =
-      selected_config->config->activation_options.activation_level;
+      selected_config->config.activation_options.activation_level;
   return activation_level == ActivationLevel::DISABLED
              ? ActivationDecision::ACTIVATION_DISABLED
              : ActivationDecision::ACTIVATED;

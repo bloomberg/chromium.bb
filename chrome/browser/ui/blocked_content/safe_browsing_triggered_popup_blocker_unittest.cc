@@ -19,6 +19,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/url_request/url_request_test_util.h"
@@ -168,6 +169,71 @@ TEST_F(IgnoreSublistSafeBrowsingTriggeredPopupBlockerTest,
   MarkUrlAsAbusiveEnforce(url);
   NavigateAndCommit(url);
   EXPECT_TRUE(popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
+}
+
+struct RedirectSamplesAndResults {
+  GURL initial_url;
+  GURL redirect_url;
+  bool expect_strong_blocker;
+};
+
+TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
+       MatchOnSafeBrowsingWithRedirectDetection) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      subresource_filter::kSafeBrowsingSubresourceFilterConsiderRedirects);
+
+  GURL enforce_url("https://example.enforce");
+  GURL warning_url("https://example.warning");
+  GURL regular_url("https://example.regular");
+  MarkUrlAsAbusiveEnforce(enforce_url);
+  MarkUrlAsAbusiveWarning(warning_url);
+
+  const RedirectSamplesAndResults kTestCases[] = {
+      {enforce_url, regular_url, true},  {regular_url, enforce_url, true},
+      {warning_url, enforce_url, true},  {enforce_url, warning_url, true},
+      {regular_url, warning_url, false}, {warning_url, regular_url, false}};
+
+  for (const auto& test_case : kTestCases) {
+    std::unique_ptr<content::NavigationSimulator> simulator =
+        content::NavigationSimulator::CreateRendererInitiated(
+            test_case.initial_url, web_contents()->GetMainFrame());
+    simulator->Start();
+    simulator->Redirect(test_case.redirect_url);
+    simulator->Commit();
+    EXPECT_EQ(test_case.expect_strong_blocker,
+              popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
+  }
+}
+
+TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
+       MatchOnSafeBrowsingWithoutRedirectDetection) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      subresource_filter::kSafeBrowsingSubresourceFilterConsiderRedirects);
+
+  GURL enforce_url("https://example.enforce");
+  GURL warning_url("https://example.warning");
+  GURL regular_url("https://example.regular");
+  MarkUrlAsAbusiveEnforce(enforce_url);
+  MarkUrlAsAbusiveWarning(warning_url);
+
+  const RedirectSamplesAndResults kTestCases[] = {
+      {enforce_url, regular_url, false},
+      {regular_url, enforce_url, true},
+      {warning_url, enforce_url, true},
+      {enforce_url, warning_url, false}};
+
+  for (const auto& test_case : kTestCases) {
+    std::unique_ptr<content::NavigationSimulator> simulator =
+        content::NavigationSimulator::CreateRendererInitiated(
+            test_case.initial_url, web_contents()->GetMainFrame());
+    simulator->Start();
+    simulator->Redirect(test_case.redirect_url);
+    simulator->Commit();
+    EXPECT_EQ(test_case.expect_strong_blocker,
+              popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
+  }
 }
 
 TEST_F(SafeBrowsingTriggeredPopupBlockerTest, MatchingURL_BlocksPopupAndLogs) {

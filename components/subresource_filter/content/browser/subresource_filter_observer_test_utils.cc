@@ -26,15 +26,6 @@ void TestSubresourceFilterObserver::OnSubresourceFilterGoingAway() {
   scoped_observer_.RemoveAll();
 }
 
-void TestSubresourceFilterObserver::OnSafeBrowsingCheckComplete(
-    content::NavigationHandle* navigation_handle,
-    safe_browsing::SBThreatType threat_type,
-    const safe_browsing::ThreatMetadata& threat_metadata) {
-  DCHECK(navigation_handle->IsInMainFrame());
-  safe_browsing_checks_[navigation_handle->GetURL()] =
-      std::make_pair(threat_type, threat_metadata);
-}
-
 void TestSubresourceFilterObserver::OnPageActivationComputed(
     content::NavigationHandle* navigation_handle,
     const ActivationState& activation_state) {

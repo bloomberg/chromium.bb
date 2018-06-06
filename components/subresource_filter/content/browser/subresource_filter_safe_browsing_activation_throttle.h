@@ -57,12 +57,14 @@ class SubresourceFilterSafeBrowsingActivationThrottle
  private:
   // Highest priority config for a check result.
   struct ConfigResult {
-    base::Optional<Configuration> config;
+    Configuration config;
     bool warning;
+    bool matched_valid_configuration;
     ActivationList matched_list;
 
-    ConfigResult(base::Optional<Configuration> config,
+    ConfigResult(Configuration config,
                  bool warning,
+                 bool matched_valid_configuration,
                  ActivationList matched_list);
     ~ConfigResult();
     ConfigResult();
