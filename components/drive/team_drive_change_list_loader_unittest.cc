@@ -112,7 +112,7 @@ class TeamDriveChangeListLoaderTest : public testing::Test {
 
     change_list_loader_observer_ =
         std::make_unique<TestChangeListLoaderObserver>();
-    team_drive_change_list_loader_->AddObserver(
+    team_drive_change_list_loader_->AddChangeListLoaderObserver(
         change_list_loader_observer_.get());
   }
 

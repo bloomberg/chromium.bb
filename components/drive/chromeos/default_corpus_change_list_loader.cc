@@ -49,16 +49,26 @@ DefaultCorpusChangeListLoader::DefaultCorpusChangeListLoader(
 
 DefaultCorpusChangeListLoader::~DefaultCorpusChangeListLoader() = default;
 
-void DefaultCorpusChangeListLoader::AddObserver(
+void DefaultCorpusChangeListLoader::AddChangeListLoaderObserver(
     ChangeListLoaderObserver* observer) {
   change_list_loader_->AddObserver(observer);
   directory_loader_->AddObserver(observer);
 }
 
-void DefaultCorpusChangeListLoader::RemoveObserver(
+void DefaultCorpusChangeListLoader::RemoveChangeListLoaderObserver(
     ChangeListLoaderObserver* observer) {
   change_list_loader_->RemoveObserver(observer);
   directory_loader_->RemoveObserver(observer);
+}
+
+void DefaultCorpusChangeListLoader::AddTeamDriveListObserver(
+    TeamDriveListObserver* observer) {
+  team_drive_list_loader_->AddObserver(observer);
+}
+
+void DefaultCorpusChangeListLoader::RemoveTeamDriveListObserver(
+    TeamDriveListObserver* observer) {
+  team_drive_list_loader_->RemoveObserver(observer);
 }
 
 bool DefaultCorpusChangeListLoader::IsRefreshing() {

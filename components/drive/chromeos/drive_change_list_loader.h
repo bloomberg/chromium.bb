@@ -12,6 +12,7 @@ namespace drive {
 namespace internal {
 
 class ChangeListLoaderObserver;
+class TeamDriveListObserver;
 
 // DriveChangeListLoader provides an abstraction for loading change lists, the
 // full resource list amd directory contents, from Google Drive API.
@@ -23,8 +24,14 @@ class DriveChangeListLoader {
   virtual ~DriveChangeListLoader() = default;
 
   // Adds and removes an observer for change list loading events.
-  virtual void AddObserver(ChangeListLoaderObserver* observer) = 0;
-  virtual void RemoveObserver(ChangeListLoaderObserver* observer) = 0;
+  virtual void AddChangeListLoaderObserver(
+      ChangeListLoaderObserver* observer) = 0;
+  virtual void RemoveChangeListLoaderObserver(
+      ChangeListLoaderObserver* observer) = 0;
+
+  // Adds and removes an observer for team drive loading events.
+  virtual void AddTeamDriveListObserver(TeamDriveListObserver* observer) = 0;
+  virtual void RemoveTeamDriveListObserver(TeamDriveListObserver* observer) = 0;
 
   // Indicates whether there is a request for full resource list or change
   // list fetching is in flight (i.e. directory contents fetching does not
