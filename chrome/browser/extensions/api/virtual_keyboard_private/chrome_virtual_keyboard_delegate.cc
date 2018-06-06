@@ -39,9 +39,8 @@ namespace keyboard_api = extensions::api::virtual_keyboard_private;
 namespace {
 
 aura::Window* GetKeyboardContainer() {
-  keyboard::KeyboardController* controller =
-      keyboard::KeyboardController::GetInstance();
-  return controller ? controller->GetContainerWindow() : nullptr;
+  auto* controller = keyboard::KeyboardController::Get();
+  return controller->enabled() ? controller->GetContainerWindow() : nullptr;
 }
 
 std::string GenerateFeatureFlag(const std::string& feature, bool enabled) {
@@ -95,9 +94,8 @@ void ChromeVirtualKeyboardDelegate::OnKeyboardConfigChanged() {
 
 bool ChromeVirtualKeyboardDelegate::HideKeyboard() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  keyboard::KeyboardController* controller =
-      keyboard::KeyboardController::GetInstance();
-  if (!controller)
+  auto* controller = keyboard::KeyboardController::Get();
+  if (!controller->enabled())
     return false;
 
   // Pass HIDE_REASON_MANUAL since calls to HideKeyboard as part of this API
@@ -126,17 +124,16 @@ void ChromeVirtualKeyboardDelegate::SetHotrodKeyboard(bool enable) {
   // keyboard gets the correct state of the hotrod keyboard through
   // chrome.virtualKeyboardPrivate.getKeyboardConfig.
   if (keyboard::IsKeyboardEnabled())
-    ash::Shell::Get()->CreateKeyboard();
+    ash::Shell::Get()->EnableKeyboard();
 }
 
 bool ChromeVirtualKeyboardDelegate::LockKeyboard(bool state) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  keyboard::KeyboardController* controller =
-      keyboard::KeyboardController::GetInstance();
-  if (!controller)
+  auto* controller = keyboard::KeyboardController::Get();
+  if (!controller->enabled())
     return false;
 
-  keyboard::KeyboardController::GetInstance()->set_keyboard_locked(state);
+  controller->set_keyboard_locked(state);
   return true;
 }
 
@@ -153,11 +150,10 @@ bool ChromeVirtualKeyboardDelegate::SendKeyEvent(const std::string& type,
 
 bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  keyboard::KeyboardController* controller =
-      keyboard::KeyboardController::GetInstance();
-  if (controller) {
+  auto* controller = keyboard::KeyboardController::Get();
+  if (controller->enabled())
     controller->DismissVirtualKeyboard();
-  }
+
   base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
   chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
                                         chrome::kLanguageOptionsSubPage);
@@ -168,9 +164,8 @@ bool ChromeVirtualKeyboardDelegate::SetVirtualKeyboardMode(
     int mode_enum,
     base::Optional<gfx::Rect> target_bounds,
     OnSetModeCallback on_set_mode_callback) {
-  keyboard::KeyboardController* controller =
-      keyboard::KeyboardController::GetInstance();
-  if (!controller)
+  auto* controller = keyboard::KeyboardController::Get();
+  if (!controller->enabled())
     return false;
 
   controller->SetContainerType(ConvertKeyboardModeToContainerType(mode_enum),
@@ -197,11 +192,10 @@ ChromeVirtualKeyboardDelegate::ConvertKeyboardModeToContainerType(
 
 bool ChromeVirtualKeyboardDelegate::SetDraggableArea(
     const api::virtual_keyboard_private::Bounds& rect) {
-  keyboard::KeyboardController* controller =
-      keyboard::KeyboardController::GetInstance();
+  auto* controller = keyboard::KeyboardController::Get();
   // Since controller will be destroyed when system switch from VK to
   // physical keyboard, return true to avoid unneccessary exception.
-  if (!controller)
+  if (!controller->enabled())
     return true;
   return controller->SetDraggableArea(
       gfx::Rect(rect.top, rect.left, rect.width, rect.height));
@@ -216,9 +210,9 @@ bool ChromeVirtualKeyboardDelegate::SetRequestedKeyboardState(int state_enum) {
   if (was_enabled == is_enabled)
     return true;
   if (is_enabled)
-    ash::Shell::Get()->CreateKeyboard();
+    ash::Shell::Get()->EnableKeyboard();
   else
-    ash::Shell::Get()->DestroyKeyboard();
+    ash::Shell::Get()->DisableKeyboard();
   return true;
 }
 
@@ -343,7 +337,7 @@ ChromeVirtualKeyboardDelegate::RestrictFeatures(
     // chrome.virtualKeyboardPrivate.getKeyboardConfig.
     // TODO(oka): Extension should reload on it's own by receiving event
     if (keyboard::IsKeyboardEnabled())
-      ash::Shell::Get()->CreateKeyboard();
+      ash::Shell::Get()->EnableKeyboard();
   }
   return update;
 }

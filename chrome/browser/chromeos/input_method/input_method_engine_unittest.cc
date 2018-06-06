@@ -24,6 +24,7 @@
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/keyboard/keyboard_controller.h"
 
 using input_method::InputMethodEngineBase;
 
@@ -183,6 +184,9 @@ class InputMethodEngineTest : public testing::Test {
 
   std::unique_ptr<ui::MockIMEInputContextHandler>
       mock_ime_input_context_handler_;
+
+  // Used by InputMethodEngine::EnableInputView().
+  keyboard::KeyboardController keyboard_controller_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodEngineTest);

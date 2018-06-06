@@ -125,12 +125,10 @@ void SearchBoxView::UpdateKeyboardVisibility() {
   if (!is_tablet_mode())
     return;
 
-  keyboard::KeyboardController* const keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
-  if (!keyboard_controller ||
-      is_search_box_active() == keyboard::IsKeyboardVisible()) {
+  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  if (!keyboard_controller->enabled() ||
+      is_search_box_active() == keyboard::IsKeyboardVisible())
     return;
-  }
 
   if (is_search_box_active()) {
     keyboard_controller->ShowKeyboard(false);

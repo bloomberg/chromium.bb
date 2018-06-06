@@ -314,6 +314,7 @@ source_set("unit_tests") {
     "//ui/base/ime",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
+    "//ui/keyboard:keyboard",
     "//url:url",
   ]
 }

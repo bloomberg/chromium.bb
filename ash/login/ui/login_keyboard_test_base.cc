@@ -31,7 +31,7 @@ void LoginKeyboardTestBase::SetUp() {
   login_controller_ = Shell::Get()->login_screen_controller();
   ASSERT_NE(nullptr, login_controller_);
 
-  keyboard_controller_ = keyboard::KeyboardController::GetInstance();
+  keyboard_controller_ = keyboard::KeyboardController::Get();
   ASSERT_NE(nullptr, keyboard_controller_);
   Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
       keyboard_controller_);

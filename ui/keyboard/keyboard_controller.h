@@ -136,12 +136,13 @@ class KEYBOARD_EXPORT KeyboardController
   // lock the keyboard
   void ShowKeyboardInDisplay(const display::Display& display);
 
-  // Retrieves the active keyboard controller. Returns nullptr if the keyboard
-  // is disabled.
-  // TODO(https://crbug.com/731537): Change callers to this function from
-  // checking for null to checking for |enabled|. Then make this always return
-  // a non-null pointer.
-  static KeyboardController* GetInstance();
+  // Retrieves the active keyboard controller. Guaranteed to not be null while
+  // there is an ash::Shell.
+  static KeyboardController* Get();
+
+  // Returns true if there is a valid KeyboardController instance (e.g. while
+  // there is an ash::Shell).
+  static bool HasInstance();
 
   // Returns true if keyboard is in SHOWN or SHOWING state.
   bool keyboard_visible() const;

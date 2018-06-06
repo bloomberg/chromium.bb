@@ -508,12 +508,15 @@ void CoreOobeHandler::UpdateDeviceRequisition() {
 }
 
 void CoreOobeHandler::UpdateKeyboardState() {
-  keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
-  if (keyboard_controller) {
-    const bool is_keyboard_shown = keyboard_controller->keyboard_visible();
-    ShowControlBar(!is_keyboard_shown);
-    SetVirtualKeyboardShown(is_keyboard_shown);
+  // TODO(mash): Support virtual keyboard under MASH. There is no
+  // KeyboardController in the browser process under MASH.
+  if (!ash_util::IsRunningInMash()) {
+    auto* keyboard_controller = keyboard::KeyboardController::Get();
+    if (keyboard_controller->enabled()) {
+      const bool is_keyboard_shown = keyboard_controller->keyboard_visible();
+      ShowControlBar(!is_keyboard_shown);
+      SetVirtualKeyboardShown(is_keyboard_shown);
+    }
   }
 }
 

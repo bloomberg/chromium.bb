@@ -45,6 +45,7 @@
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_utils.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/test/views_test_base.h"
 
@@ -307,6 +308,9 @@ class AppsGridViewTest : public views::ViewsTestBase,
  private:
   // Restores the locale to default when destructor is called.
   base::test::ScopedRestoreICUDefaultLocale restore_locale_;
+
+  // Used by AppListFolderView::UpdatePreferredBounds.
+  keyboard::KeyboardController keyboard_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridViewTest);
 };

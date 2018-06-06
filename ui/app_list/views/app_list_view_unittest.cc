@@ -48,6 +48,7 @@
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/events/event_utils.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_model.h"
@@ -167,6 +168,9 @@ class AppListViewTest : public views::ViewsTestBase {
 
   AppListView* view_ = nullptr;  // Owned by native widget.
   std::unique_ptr<AppListTestViewDelegate> delegate_;
+
+  // Used by AppListFolderView::UpdatePreferredBounds.
+  keyboard::KeyboardController keyboard_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewTest);
 };
@@ -477,6 +481,9 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   std::unique_ptr<AnswerCardContentsRegistry> answer_card_contents_registry_;
   std::unique_ptr<views::View> fake_answer_card_view_;
   base::UnguessableToken fake_answer_card_token_;
+
+  // Used by AppListFolderView::UpdatePreferredBounds.
+  keyboard::KeyboardController keyboard_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewFocusTest);
 };
