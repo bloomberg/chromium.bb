@@ -330,9 +330,7 @@ MediaKeySession::MediaKeySession(ScriptState* script_state,
                                  MediaKeys* media_keys,
                                  WebEncryptedMediaSessionType session_type)
     : ContextLifecycleObserver(ExecutionContext::From(script_state)),
-      async_event_queue_(
-          MediaElementEventQueue::Create(this,
-                                         ExecutionContext::From(script_state))),
+      async_event_queue_(MediaElementEventQueue::Create(this)),
       media_keys_(media_keys),
       session_type_(session_type),
       expiration_(std::numeric_limits<double>::quiet_NaN()),

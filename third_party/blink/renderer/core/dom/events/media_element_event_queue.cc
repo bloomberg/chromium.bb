@@ -32,15 +32,17 @@
 
 namespace blink {
 
-MediaElementEventQueue* MediaElementEventQueue::Create(
-    EventTarget* owner,
-    ExecutionContext* context) {
-  return new MediaElementEventQueue(owner, context);
+MediaElementEventQueue* MediaElementEventQueue::Create(EventTarget* owner) {
+  return new MediaElementEventQueue(owner);
 }
 
-MediaElementEventQueue::MediaElementEventQueue(EventTarget* owner,
-                                               ExecutionContext* context)
-    : ContextLifecycleObserver(context), owner_(owner), is_closed_(false) {}
+MediaElementEventQueue::MediaElementEventQueue(EventTarget* owner)
+    : ContextLifecycleObserver(owner->GetExecutionContext()),
+      owner_(owner),
+      is_closed_(false) {
+  if (!GetExecutionContext())
+    DoClose(nullptr);
+}
 
 MediaElementEventQueue::~MediaElementEventQueue() = default;
 
@@ -126,6 +128,7 @@ void MediaElementEventQueue::DoClose(ExecutionContext* context) {
 }
 
 void MediaElementEventQueue::DoCancelAllEvents(ExecutionContext* context) {
+  DCHECK(!pending_events_.size() || context);
   for (auto& event : pending_events_) {
     TRACE_EVENT_ASYNC_END2("event", "MediaElementEventQueue:enqueueEvent",
                            event, "type", event->type().Ascii(), "status",

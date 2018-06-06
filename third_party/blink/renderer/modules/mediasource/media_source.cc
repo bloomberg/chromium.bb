@@ -113,7 +113,7 @@ MediaSource* MediaSource::Create(ExecutionContext* context) {
 MediaSource::MediaSource(ExecutionContext* context)
     : ContextLifecycleObserver(context),
       ready_state_(ClosedKeyword()),
-      async_event_queue_(MediaElementEventQueue::Create(this, context)),
+      async_event_queue_(MediaElementEventQueue::Create(this)),
       attached_element_(nullptr),
       source_buffers_(SourceBufferList::Create(GetExecutionContext(),
                                                async_event_queue_.Get())),
