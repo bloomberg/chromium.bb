@@ -2322,7 +2322,6 @@ split_static_library("ui") {
         "input_method/input_method_engine.h",
         "views/confirm_quit_bubble.cc",
         "views/confirm_quit_bubble.h",
-        "views/confirm_quit_bubble.h",
         "views/confirm_quit_bubble_controller.cc",
         "views/confirm_quit_bubble_controller.h",
       ]
