@@ -4,6 +4,7 @@
 
 from contrib.oilpan import oilpan_gc_times
 
+from telemetry import decorators
 from telemetry.internal.results import page_test_results
 from telemetry.page import page as page_module
 from telemetry.testing import options_for_unittests
@@ -155,6 +156,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(2, len(getMetric(results,
                                        'oilpan_idle_complete_sweep')))
 
+  @decorators.Disabled('all')
   def testForSmoothness(self):
     ps = self.CreateStorySetFromFileInUnittestDataDir(
         'create_many_objects.html')
@@ -168,6 +170,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
       gc_events.extend(results.FindAllPageSpecificValuesNamed(label))
     self.assertLess(0, len(gc_events))
 
+  @decorators.Disabled('all')
   def testForBlinkPerf(self):
     ps = self.CreateStorySetFromFileInUnittestDataDir(
         'create_many_objects.html')
