@@ -85,14 +85,10 @@ void LayoutSVGRect::UpdateShapeFromElement() {
 }
 
 bool LayoutSVGRect::ShapeDependentStrokeContains(const FloatPoint& point) {
-  // The optimized code below does not support non-simple strokes so we need
-  // to fall back to LayoutSVGShape::shapeDependentStrokeContains in these
-  // cases.
-  if (use_path_fallback_ || !DefinitelyHasSimpleStroke()) {
-    if (!HasPath())
-      CreatePath();
+  // The optimized code below does not support the cases that we set
+  // use_path_fallback_ in UpdateShapeFromElement().
+  if (use_path_fallback_)
     return LayoutSVGShape::ShapeDependentStrokeContains(point);
-  }
 
   const float half_stroke_width = StrokeWidth() / 2;
   const float half_width = fill_bounding_box_.Width() / 2;
