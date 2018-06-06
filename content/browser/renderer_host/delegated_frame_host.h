@@ -122,7 +122,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // TODO(ccameron): Include device scale factor here.
   void WasShown(const viz::LocalSurfaceId& local_surface_id,
                 const gfx::Size& dip_size,
-                const ui::LatencyInfo& latency_info);
+                bool record_presentation_time);
   void EmbedSurface(const viz::LocalSurfaceId& local_surface_id,
                     const gfx::Size& dip_size,
                     cc::DeadlinePolicy deadline_policy);
@@ -255,6 +255,8 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   std::vector<std::unique_ptr<viz::CopyOutputRequest>>
       pending_first_frame_requests_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelegatedFrameHost);
 };
 
 }  // namespace content

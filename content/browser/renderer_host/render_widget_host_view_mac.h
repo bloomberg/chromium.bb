@@ -530,8 +530,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // AcceleratedWidgetCALayerParamsUpdated).
   SkColor last_frame_root_background_color_ = SK_ColorTRANSPARENT;
 
-  int tab_show_sequence_ = 0;
-
   std::unique_ptr<CursorManager> cursor_manager_;
 
   // Used to track active password input sessions.

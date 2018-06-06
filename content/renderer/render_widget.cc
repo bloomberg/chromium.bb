@@ -33,6 +33,7 @@
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/swapped_out_messages.h"
+#include "content/common/tab_switching_time_callback.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_client.h"
@@ -825,7 +826,7 @@ void RenderWidget::OnWasHidden() {
 }
 
 void RenderWidget::OnWasShown(bool needs_repainting,
-                              const ui::LatencyInfo& latency_info) {
+                              base::TimeTicks show_request_timestamp) {
   TRACE_EVENT0("renderer", "RenderWidget::OnWasShown");
   // During shutdown we can just ignore this message.
   if (!GetWebWidget())
@@ -840,12 +841,9 @@ void RenderWidget::OnWasShown(bool needs_repainting,
   if (!needs_repainting)
     return;
 
-  if (compositor_) {
-    ui::LatencyInfo swap_latency_info(latency_info);
-    std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor =
-        compositor_->CreateLatencyInfoSwapPromiseMonitor(&swap_latency_info);
-    // Force this SwapPromiseMonitor to trigger and insert a SwapPromise.
-    compositor_->SetNeedsBeginFrame();
+  if (compositor_ && !show_request_timestamp.is_null()) {
+    compositor_->layer_tree_host()->RequestPresentationTimeForNextFrame(
+        CreateTabSwitchingTimeRecorder(show_request_timestamp));
   }
 }
 

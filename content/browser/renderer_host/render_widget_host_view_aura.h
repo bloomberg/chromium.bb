@@ -660,7 +660,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   const viz::FrameSinkId frame_sink_id_;
 
   std::unique_ptr<CursorManager> cursor_manager_;
-  int tab_show_sequence_ = 0;
 
   // Latest capture sequence number which is incremented when the caller
   // requests surfaces be synchronized via

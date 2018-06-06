@@ -1200,14 +1200,14 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
 
   // Now unhide.
   process_->sink().ClearMessages();
-  host_->WasShown(ui::LatencyInfo());
+  host_->WasShown(false /* record_presentation_time */);
   EXPECT_FALSE(host_->is_hidden_);
 
   // It should have sent out a restored message with a request to paint.
   const IPC::Message* restored = process_->sink().GetUniqueMessageMatching(
       ViewMsg_WasShown::ID);
   ASSERT_TRUE(restored);
-  std::tuple<bool, ui::LatencyInfo> needs_repaint;
+  std::tuple<bool, base::TimeTicks> needs_repaint;
   ViewMsg_WasShown::Read(restored, &needs_repaint);
   EXPECT_TRUE(std::get<0>(needs_repaint));
 }
@@ -1523,7 +1523,7 @@ TEST_F(RenderWidgetHostTest, HangMonitorTimeoutDisabledForInputWhenHidden) {
 
   // Showing the widget should restore the timeout, as the events have
   // not yet been ack'ed.
-  host_->WasShown(ui::LatencyInfo());
+  host_->WasShown(false /* record_presentation_time */);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TimeDelta::FromMicroseconds(2));
@@ -2159,7 +2159,7 @@ TEST_F(RenderWidgetHostTest, RendererExitedResetsInputRouter) {
 TEST_F(RenderWidgetHostTest, RendererExitedResetsIsHidden) {
   // RendererExited will delete the view.
   host_->SetView(new TestView(host_.get()));
-  host_->WasShown(ui::LatencyInfo());
+  host_->WasShown(false /* record_presentation_time */);
 
   ASSERT_FALSE(host_->is_hidden());
   host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
@@ -2599,20 +2599,20 @@ TEST_F(RenderWidgetHostTest, RenderWidgetSurfaceProperties) {
 TEST_F(RenderWidgetHostTest, NavigateInBackgroundShowsBlank) {
   // When visible, navigation does not immediately call into
   // ClearDisplayedGraphics.
-  host_->WasShown(ui::LatencyInfo());
+  host_->WasShown(false /* record_presentation_time */);
   host_->DidNavigate(5);
   EXPECT_FALSE(host_->new_content_rendering_timeout_fired());
 
   // Hide then show. ClearDisplayedGraphics must be called.
   host_->WasHidden();
-  host_->WasShown(ui::LatencyInfo());
+  host_->WasShown(false /* record_presentation_time */);
   EXPECT_TRUE(host_->new_content_rendering_timeout_fired());
   host_->reset_new_content_rendering_timeout_fired();
 
   // Hide, navigate, then show. ClearDisplayedGraphics must be called.
   host_->WasHidden();
   host_->DidNavigate(6);
-  host_->WasShown(ui::LatencyInfo());
+  host_->WasShown(false /* record_presentation_time */);
   EXPECT_TRUE(host_->new_content_rendering_timeout_fired());
 }
 

@@ -338,7 +338,7 @@ IPC_MESSAGE_ROUTED0(ViewMsg_WasHidden)
 // message in response.
 IPC_MESSAGE_ROUTED2(ViewMsg_WasShown,
                     bool /* needs_repainting */,
-                    ui::LatencyInfo /* latency_info */)
+                    base::TimeTicks /* show_request_timestamp */)
 
 // Tells the renderer to focus the first (last if reverse is true) focusable
 // node.

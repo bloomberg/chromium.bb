@@ -11,6 +11,8 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -23,6 +25,7 @@
 #include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/common/tab_switching_time_callback.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -68,11 +71,12 @@ DelegatedFrameHost::~DelegatedFrameHost() {
 void DelegatedFrameHost::WasShown(
     const viz::LocalSurfaceId& new_pending_local_surface_id,
     const gfx::Size& new_pending_dip_size,
-    const ui::LatencyInfo& latency_info) {
+    bool record_presentation_time) {
   frame_evictor_->SetVisible(true);
-
-  if (compositor_)
-    compositor_->SetLatencyInfo(latency_info);
+  if (record_presentation_time && compositor_) {
+    compositor_->RequestPresentationTimeForNextFrame(
+        CreateTabSwitchingTimeRecorder(base::TimeTicks::Now()));
+  }
 
   // Use the default deadline to synchronize web content with browser UI.
   // TODO(fsamuel): Investigate if there is a better deadline to use here.

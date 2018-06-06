@@ -156,7 +156,7 @@ void RenderWidgetHostViewGuest::Show() {
     if (last_received_local_surface_id_.is_valid())
       SendSurfaceInfoToEmbedder();
   }
-  host()->WasShown(ui::LatencyInfo());
+  host()->WasShown(false /* record_presentation_time */);
 }
 
 void RenderWidgetHostViewGuest::Hide() {
