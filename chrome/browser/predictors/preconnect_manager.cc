@@ -55,7 +55,7 @@ PreresolveJob::PreresolveJob(const GURL& url,
   DCHECK_GE(num_sockets, 0);
 }
 
-PreresolveJob::PreresolveJob(const PreresolveJob& other) = default;
+PreresolveJob::PreresolveJob(PreresolveJob&& other) = default;
 PreresolveJob::~PreresolveJob() = default;
 
 PreconnectManager::PreconnectManager(
@@ -86,8 +86,10 @@ void PreconnectManager::Start(const GURL& url,
 
   for (const auto& request : requests) {
     DCHECK(request.origin.GetOrigin() == request.origin);
-    queued_jobs_.emplace_back(request.origin, request.num_sockets,
-                              request.allow_credentials, info);
+    PreresolveJobId job_id = preresolve_jobs_.Add(
+        std::make_unique<PreresolveJob>(request.origin, request.num_sockets,
+                                        request.allow_credentials, info));
+    queued_jobs_.push_back(job_id);
   }
 
   TryToLaunchPreresolveJobs();
@@ -97,8 +99,9 @@ void PreconnectManager::StartPreresolveHost(const GURL& url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
-  queued_jobs_.emplace_front(url.GetOrigin(), 0,
-                             kAllowCredentialsOnPreconnectByDefault, nullptr);
+  PreresolveJobId job_id = preresolve_jobs_.Add(std::make_unique<PreresolveJob>(
+      url.GetOrigin(), 0, kAllowCredentialsOnPreconnectByDefault, nullptr));
+  queued_jobs_.push_front(job_id);
 
   TryToLaunchPreresolveJobs();
 }
@@ -108,8 +111,11 @@ void PreconnectManager::StartPreresolveHosts(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // Push jobs in front of the queue due to higher priority.
   for (auto it = hostnames.rbegin(); it != hostnames.rend(); ++it) {
-    queued_jobs_.emplace_front(GURL("http://" + *it), 0,
-                               kAllowCredentialsOnPreconnectByDefault, nullptr);
+    PreresolveJobId job_id =
+        preresolve_jobs_.Add(std::make_unique<PreresolveJob>(
+            GURL("http://" + *it), 0, kAllowCredentialsOnPreconnectByDefault,
+            nullptr));
+    queued_jobs_.push_front(job_id);
   }
 
   TryToLaunchPreresolveJobs();
@@ -120,7 +126,9 @@ void PreconnectManager::StartPreconnectUrl(const GURL& url,
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
-  queued_jobs_.emplace_front(url.GetOrigin(), 1, allow_credentials, nullptr);
+  PreresolveJobId job_id = preresolve_jobs_.Add(std::make_unique<PreresolveJob>(
+      url.GetOrigin(), 1, allow_credentials, nullptr));
+  queued_jobs_.push_front(job_id);
 
   TryToLaunchPreresolveJobs();
 }
@@ -145,12 +153,16 @@ void PreconnectManager::PreconnectUrl(const GURL& url,
                          num_sockets, allow_credentials);
 }
 
-int PreconnectManager::PreresolveUrl(
+std::pair<int, std::unique_ptr<net::HostResolver::Request>>
+PreconnectManager::PreresolveUrl(
     const GURL& url,
     const net::CompletionCallback& callback) const {
   DCHECK(url.GetOrigin() == url);
   DCHECK(url.SchemeIsHTTPOrHTTPS());
-  return content::PreresolveUrl(context_getter_.get(), url, callback);
+  std::unique_ptr<net::HostResolver::Request> request;
+  int status =
+      content::PreresolveUrl(context_getter_.get(), url, callback, &request);
+  return {status, std::move(request)};
 }
 
 void PreconnectManager::TryToLaunchPreresolveJobs() {
@@ -158,18 +170,21 @@ void PreconnectManager::TryToLaunchPreresolveJobs() {
 
   while (!queued_jobs_.empty() &&
          inflight_preresolves_count_ < kMaxInflightPreresolves) {
-    auto& job = queued_jobs_.front();
-    PreresolveInfo* info = job.info;
+    auto job_id = queued_jobs_.front();
+    queued_jobs_.pop_front();
+    PreresolveJob* job = preresolve_jobs_.Lookup(job_id);
+    DCHECK(job);
+    PreresolveInfo* info = job->info;
 
     if (!info || !info->was_canceled) {
       int status;
-      if (WouldLikelyProxyURL(job.url)) {
+      if (WouldLikelyProxyURL(job->url)) {
         // Skip preresolve and go straight to preconnect if a proxy is enabled.
         status = net::OK;
       } else {
-        status = PreresolveUrl(
-            job.url, base::Bind(&PreconnectManager::OnPreresolveFinished,
-                                weak_factory_.GetWeakPtr(), job));
+        std::tie(status, job->request) = PreresolveUrl(
+            job->url, base::Bind(&PreconnectManager::OnPreresolveFinished,
+                                 weak_factory_.GetWeakPtr(), job_id));
       }
 
       if (status == net::ERR_IO_PENDING) {
@@ -181,11 +196,12 @@ void PreconnectManager::TryToLaunchPreresolveJobs() {
         // Completed synchronously (was already cached by HostResolver), or else
         // there was (equivalently) some network error that prevents us from
         // finding the name. Status net::OK means it was "found."
-        FinishPreresolve(job, status == net::OK, true);
+        FinishPreresolve(job_id, status == net::OK, true);
       }
+    } else {
+      preresolve_jobs_.Remove(job_id);
     }
 
-    queued_jobs_.pop_front();
     if (info)
       --info->queued_count;
     if (info && info->is_done())
@@ -193,11 +209,14 @@ void PreconnectManager::TryToLaunchPreresolveJobs() {
   }
 }
 
-void PreconnectManager::OnPreresolveFinished(const PreresolveJob& job,
+void PreconnectManager::OnPreresolveFinished(PreresolveJobId job_id,
                                              int result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  FinishPreresolve(job, result == net::OK, false);
-  PreresolveInfo* info = job.info;
+  PreresolveJob* job = preresolve_jobs_.Lookup(job_id);
+  DCHECK(job);
+  PreresolveInfo* info = job->info;
+
+  FinishPreresolve(job_id, result == net::OK, false);
   --inflight_preresolves_count_;
   if (info)
     --info->inflight_count;
@@ -206,19 +225,23 @@ void PreconnectManager::OnPreresolveFinished(const PreresolveJob& job,
   TryToLaunchPreresolveJobs();
 }
 
-void PreconnectManager::FinishPreresolve(const PreresolveJob& job,
+void PreconnectManager::FinishPreresolve(PreresolveJobId job_id,
                                          bool found,
                                          bool cached) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  PreresolveInfo* info = job.info;
+  PreresolveJob* job = preresolve_jobs_.Lookup(job_id);
+  DCHECK(job);
+  PreresolveInfo* info = job->info;
+
   bool need_preconnect =
-      found && job.need_preconnect() && (!info || !info->was_canceled);
+      found && job->need_preconnect() && (!info || !info->was_canceled);
   if (need_preconnect) {
-    PreconnectUrl(GetHSTSRedirect(job.url), info ? info->url : GURL(),
-                  job.num_sockets, job.allow_credentials);
+    PreconnectUrl(GetHSTSRedirect(job->url), info ? info->url : GURL(),
+                  job->num_sockets, job->allow_credentials);
   }
   if (info && found)
-    info->stats->requests_stats.emplace_back(job.url, cached, need_preconnect);
+    info->stats->requests_stats.emplace_back(job->url, cached, need_preconnect);
+  preresolve_jobs_.Remove(job_id);
 }
 
 void PreconnectManager::AllPreresolvesForUrlFinished(PreresolveInfo* info) {
