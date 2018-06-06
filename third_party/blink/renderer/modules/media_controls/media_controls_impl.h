@@ -315,7 +315,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void OnLoadedMetadata();
   void OnEnteredFullscreen();
   void OnExitedFullscreen();
-  void OnPictureInPictureChanged();
   void OnPanelKeypress();
   void OnMediaKeyboardEvent(Event* event) { DefaultEventHandler(event); }
   void OnWaiting();

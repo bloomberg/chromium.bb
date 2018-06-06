@@ -19,7 +19,6 @@ class MediaControlPictureInPictureButtonElement final
 
   // MediaControlInputElement:
   bool WillRespondToMouseClickEvents() override;
-  void UpdateDisplayType() override;
   WebLocalizedString::Name GetOverflowStringName() const override;
   bool HasOverflowButton() const override;
 

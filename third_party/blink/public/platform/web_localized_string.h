@@ -76,10 +76,6 @@ struct WebLocalizedString {
     kAXMediaVideoElement,
     kAXMediaVideoElementHelp,
     kAXMediaVideoSliderHelp,
-    kAXMediaEnterPictureInPictureButton,
-    kAXMediaEnterPictureInPictureButtonHelp,
-    kAXMediaExitPictureInPictureButton,
-    kAXMediaExitPictureInPictureButtonHelp,
     kAXMillisecondFieldText,
     kAXMinuteFieldText,
     kAXMonthFieldText,
@@ -117,8 +113,7 @@ struct WebLocalizedString {
     kOverflowMenuPlay,
     kOverflowMenuPause,
     kOverflowMenuDownload,
-    kOverflowMenuEnterPictureInPicture,
-    kOverflowMenuExitPictureInPicture,
+    kOverflowMenuPictureInPicture,
     kPictureInPictureInterstitialText,
     // kPlaceholderForDayOfMonthField is for day placeholder text, e.g.
     // "dd", for date field used in multiple fields "date", "datetime", and
