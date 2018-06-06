@@ -17,16 +17,23 @@ if (is_ios) {
 }
 
 static_library("dom_keycode_converter") {
-  sources = [
+  public = [
     "keycodes/dom/dom_code.h",
     "keycodes/dom/dom_key.h",
+    "keycodes/dom/dom_keyboard_layout.h",
+    "keycodes/dom/dom_keyboard_layout_manager.h",
+    "keycodes/dom/dom_keyboard_layout_map.h",
+    "keycodes/dom/keycode_converter.h",
+  ]
+
+  sources = [
     "keycodes/dom/dom_key_data.inc",
     "keycodes/dom/dom_keyboard_layout.cc",
-    "keycodes/dom/dom_keyboard_layout.h",
     "keycodes/dom/dom_keyboard_layout_manager.cc",
-    "keycodes/dom/dom_keyboard_layout_manager.h",
+    "keycodes/dom/dom_keyboard_layout_map_base.cc",
+    "keycodes/dom/dom_keyboard_layout_map_base.h",
+    "keycodes/dom/dom_keyboard_layout_map_win.cc",
     "keycodes/dom/keycode_converter.cc",
-    "keycodes/dom/keycode_converter.h",
     "keycodes/dom/keycode_converter_data.inc",
   ]
 
@@ -37,6 +44,18 @@ static_library("dom_keycode_converter") {
   if (!is_ios) {
     deps += [ "//ipc:param_traits" ]
   }
+
+  # Expose the internals of this target to other packages in this BUILD file
+  # so the unit tests can access the private header files.
+  # Note: Only 'events_unittests' needs access in this file, however it uses a
+  # template which generates different target names on different platforms.
+  # TODO(joedow): Remove the ash friend.  There is a cc file in that directory
+  # which includes the private inc file, we should expose the funcitonality they
+  # need in the KeycodeConverter and then clean this up.
+  friend = [
+    ":*",
+    "//ash/components/shortcut_viewer:lib",
+  ]
 }
 
 source_set("event_constants") {
@@ -429,6 +448,7 @@ if (!is_ios) {
       "gesture_detection/velocity_tracker_unittest.cc",
       "gestures/blink/web_gesture_curve_impl_unittest.cc",
       "gestures/fling_curve_unittest.cc",
+      "keycodes/dom/dom_keyboard_layout_map_unittest.cc",
       "keycodes/dom/keycode_converter_unittest.cc",
       "keycodes/keyboard_code_conversion_unittest.cc",
       "keycodes/platform_key_map_win_unittest.cc",
