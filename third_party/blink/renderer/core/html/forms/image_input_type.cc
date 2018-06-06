@@ -25,8 +25,6 @@
 
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -73,13 +71,6 @@ void ImageInputType::AppendToFormData(FormData& form_data) const {
   DEFINE_STATIC_LOCAL(String, dot_y_string, (".y"));
   form_data.append(name + dot_x_string, click_location_.X());
   form_data.append(name + dot_y_string, click_location_.Y());
-
-  if (!GetElement().value().IsEmpty()) {
-    Deprecation::CountDeprecation(
-        GetElement().GetDocument(),
-        WebFeature::kImageInputTypeFormDataWithNonEmptyValue);
-    form_data.append(name, GetElement().value());
-  }
 }
 
 String ImageInputType::ResultForDialogSubmit() const {

@@ -556,13 +556,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                   "Using unescaped '#' characters in a data URI body", "'%23'",
                   kM71, "5656049583390720")};
 
-    case WebFeature::kImageInputTypeFormDataWithNonEmptyValue:
-      return {"ImageInputTypeFormDataWithNonEmptyValue", kM68,
-              WillBeRemoved("Extra form data if value attribute "
-                            "is present with non-empty "
-                            "value for <input type='image'>",
-                            kM68, "5672688152477696")};
-
     case WebFeature::kDocumentOrigin:
       return {"DocumentOrigin", kM70,
               ReplacedWillBeRemoved("document.origin",
