@@ -231,4 +231,38 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
                  name));
 }
 
+// MacOS 10.14 SDK methods, not yet implemented (https://crbug.com/849689)
+- (void)cameraDevice:(ICCameraDevice*)camera
+      didRenameItems:(NSArray<ICCameraItem*>*)items {
+  NOTIMPLEMENTED();
+}
+
+- (void)cameraDevice:(ICCameraDevice*)camera didRemoveItem:(ICCameraItem*)item {
+  NOTIMPLEMENTED();
+}
+
+- (void)cameraDevice:(ICCameraDevice*)camera
+    didCompleteDeleteFilesWithError:(NSError*)error {
+  NOTIMPLEMENTED();
+}
+
+- (void)cameraDeviceDidChangeCapability:(ICCameraDevice*)camera {
+  NOTIMPLEMENTED();
+}
+
+- (void)cameraDevice:(ICCameraDevice*)camera
+    didReceiveThumbnailForItem:(ICCameraItem*)item {
+  NOTIMPLEMENTED();
+}
+
+- (void)cameraDevice:(ICCameraDevice*)camera
+    didReceiveMetadataForItem:(ICCameraItem*)item {
+  NOTIMPLEMENTED();
+}
+
+- (void)cameraDevice:(ICCameraDevice*)camera
+    didReceivePTPEvent:(NSData*)eventData {
+  NOTIMPLEMENTED();
+}
+
 @end  // ImageCaptureDevice
