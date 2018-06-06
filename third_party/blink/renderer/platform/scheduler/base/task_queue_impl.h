@@ -11,7 +11,6 @@
 #include <set>
 
 #include "base/callback.h"
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -23,6 +22,7 @@
 #include "third_party/blink/renderer/platform/scheduler/base/enqueue_order.h"
 #include "third_party/blink/renderer/platform/scheduler/base/graceful_queue_shutdown_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/base/intrusive_heap.h"
+#include "third_party/blink/renderer/platform/scheduler/base/lazily_deallocated_deque.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 
 namespace base {
@@ -391,7 +391,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
 
   // We reserve an inline capacity of 8 tasks to try and reduce the load on
   // PartitionAlloc.
-  using TaskDeque = circular_deque<Task>;
+  using TaskDeque = sequence_manager::LazilyDeallocatedDeque<Task>;
 
   // Extracts all the tasks from the immediate incoming queue and swaps it with
   // |queue| which must be empty.
