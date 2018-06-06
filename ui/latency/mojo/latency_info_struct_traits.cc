@@ -63,8 +63,6 @@ ui::mojom::LatencyComponentType UILatencyComponentTypeToMojo(
     case ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT;
-    case ui::TAB_SHOW_COMPONENT:
-      return ui::mojom::LatencyComponentType::TAB_SHOW_COMPONENT;
     case ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
@@ -133,8 +131,6 @@ ui::LatencyComponentType MojoLatencyComponentTypeToUI(
       return ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT;
     case ui::mojom::LatencyComponentType::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT:
       return ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT;
-    case ui::mojom::LatencyComponentType::TAB_SHOW_COMPONENT:
-      return ui::TAB_SHOW_COMPONENT;
     case ui::mojom::LatencyComponentType::
         INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT:
       return ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;

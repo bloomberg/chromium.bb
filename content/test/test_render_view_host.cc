@@ -283,7 +283,7 @@ void TestRenderViewHost::SimulateWasHidden() {
 }
 
 void TestRenderViewHost::SimulateWasShown() {
-  GetWidget()->WasShown(ui::LatencyInfo());
+  GetWidget()->WasShown(false /* record_presentation_time */);
 }
 
 WebPreferences TestRenderViewHost::TestComputeWebkitPrefs() {

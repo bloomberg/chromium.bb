@@ -229,13 +229,13 @@ class CONTENT_EXPORT RenderWidgetCompositor
       mojom::RenderFrameMetadataObserverRequest request,
       mojom::RenderFrameMetadataObserverClientPtrInfo client_info);
 
+  cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
+
  protected:
   friend class RenderViewImplScaleFactorTest;
 
   RenderWidgetCompositor(RenderWidgetCompositorDelegate* delegate,
                          CompositorDependencies* compositor_deps);
-
-  cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
 
  private:
   void SetLayerTreeFrameSink(

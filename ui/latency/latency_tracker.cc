@@ -79,17 +79,6 @@ void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {
       ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, &gpu_swap_begin_component);
   DCHECK_AND_RETURN_ON_FAIL(found_component);
 
-  LatencyInfo::LatencyComponent tab_switch_component;
-  if (latency.FindLatency(ui::TAB_SHOW_COMPONENT, &tab_switch_component)) {
-    base::TimeDelta delta =
-        gpu_swap_end_component.event_time - tab_switch_component.event_time;
-    for (size_t i = 0; i < tab_switch_component.event_count; i++) {
-      UMA_HISTOGRAM_TIMES("MPArch.RWH_TabSwitchPaintDuration", delta);
-      TRACE_EVENT_ASYNC_END0("latency", "TabSwitching::Latency",
-                             latency.trace_id());
-    }
-  }
-
   if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                            nullptr)) {
     return;

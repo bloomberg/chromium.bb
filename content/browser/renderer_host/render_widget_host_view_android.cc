@@ -1367,7 +1367,7 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
     SynchronizeVisualProperties();
   }
 
-  host()->WasShown(ui::LatencyInfo());
+  host()->WasShown(false /* record_presentation_time */);
 
   if (delegated_frame_host_) {
     delegated_frame_host_->WasShown(

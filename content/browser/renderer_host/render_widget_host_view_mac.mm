@@ -362,13 +362,7 @@ void RenderWidgetHostViewMac::Show() {
   ns_view_bridge_->SetVisible(is_visible_);
   browser_compositor_->SetRenderWidgetHostIsHidden(false);
 
-  ui::LatencyInfo renderer_latency_info;
-  renderer_latency_info.AddLatencyNumber(ui::TAB_SHOW_COMPONENT,
-                                         host()->GetLatencyComponentId());
-  renderer_latency_info.set_trace_id(++tab_show_sequence_);
-  host()->WasShown(renderer_latency_info);
-  TRACE_EVENT_ASYNC_BEGIN0("latency", "TabSwitching::Latency",
-                           tab_show_sequence_);
+  host()->WasShown(true /* record_presentation_time */);
 
   // If there is not a frame being currently drawn, kick one, so that the below
   // pause will have a frame to wait on.
@@ -385,7 +379,7 @@ void RenderWidgetHostViewMac::Hide() {
 
 void RenderWidgetHostViewMac::WasUnOccluded() {
   browser_compositor_->SetRenderWidgetHostIsHidden(false);
-  host()->WasShown(ui::LatencyInfo());
+  host()->WasShown(false /* record_presentation_time */);
 }
 
 void RenderWidgetHostViewMac::WasOccluded() {

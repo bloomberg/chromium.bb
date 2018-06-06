@@ -436,7 +436,7 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
   if (state_ == HasDetachedCompositor && new_state < HasDetachedCompositor) {
     delegated_frame_host_->SetCompositor(recyclable_compositor_->compositor());
     delegated_frame_host_->WasShown(GetRendererLocalSurfaceId(), dfh_size_dip_,
-                                    ui::LatencyInfo());
+                                    false /* record_presentation_time */);
 
     // If there exists a saved frame ready to display, unsuspend the compositor
     // now (if one is not ready, the compositor will unsuspend on first surface
@@ -475,7 +475,7 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
     DCHECK(!root_layer_->parent());
     delegated_frame_host_->SetCompositor(parent_ui_layer_->GetCompositor());
     delegated_frame_host_->WasShown(GetRendererLocalSurfaceId(), dfh_size_dip_,
-                                    ui::LatencyInfo());
+                                    false /* record_presentation_time */);
     parent_ui_layer_->Add(root_layer_.get());
     parent_ui_layer_->AddObserver(this);
     state_ = UseParentLayerCompositor;

@@ -655,16 +655,6 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
 
   bool has_saved_frame =
       delegated_frame_host_ ? delegated_frame_host_->HasSavedFrame() : false;
-  ui::LatencyInfo renderer_latency_info, browser_latency_info;
-  if (has_saved_frame) {
-    browser_latency_info.AddLatencyNumber(ui::TAB_SHOW_COMPONENT,
-                                          host()->GetLatencyComponentId());
-    browser_latency_info.set_trace_id(++tab_show_sequence_);
-  } else {
-    renderer_latency_info.AddLatencyNumber(ui::TAB_SHOW_COMPONENT,
-                                           host()->GetLatencyComponentId());
-    renderer_latency_info.set_trace_id(++tab_show_sequence_);
-  }
 
   // If the primary surface was evicted, we should create a new primary.
   if (delegated_frame_host_ &&
@@ -673,9 +663,8 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
                                 base::nullopt);
   }
 
-  TRACE_EVENT_ASYNC_BEGIN0("latency", "TabSwitching::Latency",
-                           tab_show_sequence_);
-  host()->WasShown(renderer_latency_info);
+  const bool renderer_should_record_presentation_time = !has_saved_frame;
+  host()->WasShown(renderer_should_record_presentation_time);
 
   aura::Window* root = window_->GetRootWindow();
   if (root) {
@@ -686,9 +675,12 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
   }
 
   if (delegated_frame_host_) {
+    // If the frame for the renderer is already available, then the
+    // tab-switching time is the presentation time for the browser-compositor.
+    const bool record_presentation_time = has_saved_frame;
     delegated_frame_host_->WasShown(window_->GetLocalSurfaceId(),
                                     window_->bounds().size(),
-                                    browser_latency_info);
+                                    record_presentation_time);
   }
 
 #if defined(OS_WIN)

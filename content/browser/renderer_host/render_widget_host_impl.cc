@@ -708,7 +708,7 @@ void RenderWidgetHostImpl::WasHidden() {
     observer.RenderWidgetHostVisibilityChanged(this, false);
 }
 
-void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
+void RenderWidgetHostImpl::WasShown(bool record_presentation_time) {
   if (!is_hidden_)
     return;
 
@@ -725,7 +725,9 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
   // Always repaint on restore.
   bool needs_repainting = true;
   needs_repainting_on_restore_ = false;
-  Send(new ViewMsg_WasShown(routing_id_, needs_repainting, latency_info));
+  Send(new ViewMsg_WasShown(
+      routing_id_, needs_repainting,
+      record_presentation_time ? base::TimeTicks::Now() : base::TimeTicks()));
 
   process_->UpdateClientPriority(this);
 
@@ -2752,10 +2754,10 @@ void RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(
   for (size_t i = 0; i < latency_info.size(); i++) {
     std::set<RenderWidgetHostImpl*> rwhi_set;
     for (const auto& lc : latency_info[i].latency_components()) {
-      if (lc.first.first == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT ||
-          lc.first.first == ui::TAB_SHOW_COMPONENT)
+      if (lc.first.first == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT) {
         NotifyCorrespondingRenderWidgetHost(lc.first.second, rwhi_set,
                                             latency_info[i]);
+      }
     }
     for (const auto& snapshot : latency_info[i].Snapshots())
       NotifyCorrespondingRenderWidgetHost(snapshot.first, rwhi_set,

@@ -873,7 +873,8 @@ TEST_F(SurfaceSynchronizationTest, LimitLatencyInfo) {
   const ui::LatencyComponentType latency_type1 =
       ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT;
   const int64_t latency_id1 = 234;
-  const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
+  const ui::LatencyComponentType latency_type2 =
+      ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
   const int64_t latency_id2 = 31434351;
 
   // Submit a frame with latency info
@@ -930,7 +931,8 @@ TEST_F(SurfaceSynchronizationTest,
   const ui::LatencyComponentType latency_type1 =
       ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
   const int64_t latency_id1 = 234;
-  const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
+  const ui::LatencyComponentType latency_type2 =
+      ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
   const int64_t latency_id2 = 31434351;
 
   // Submit a frame with latency info
@@ -1004,7 +1006,8 @@ TEST_F(SurfaceSynchronizationTest,
   const ui::LatencyComponentType latency_type1 =
       ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
   const int64_t latency_id1 = 234;
-  const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
+  const ui::LatencyComponentType latency_type2 =
+      ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
   const int64_t latency_id2 = 31434351;
 
   // Submit a frame with no unresolved dependecy.
@@ -1079,7 +1082,8 @@ TEST_F(SurfaceSynchronizationTest,
   const ui::LatencyComponentType latency_type1 =
       ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
   const int64_t latency_id1 = 234;
-  const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
+  const ui::LatencyComponentType latency_type2 =
+      ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
   const int64_t latency_id2 = 31434351;
 
   // Submit a frame with no unresolved dependencies.

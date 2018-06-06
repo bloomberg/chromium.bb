@@ -77,8 +77,6 @@ enum LatencyComponentType {
   INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT,
   // Timestamp when the event's ack is received by the RWH.
   INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT,
-  // Timestamp when a tab is requested to be shown.
-  TAB_SHOW_COMPONENT,
   // Timestamp when the frame is swapped in renderer.
   INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT,
   // Timestamp of when the display compositor receives a compositor frame from

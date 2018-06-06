@@ -258,7 +258,7 @@ void RenderWidgetHostViewChildFrame::Show() {
   if (!CanBecomeVisible())
     return;
 
-  host()->WasShown(ui::LatencyInfo());
+  host()->WasShown(false /* record_presentation_time */);
 
   if (frame_connector_)
     frame_connector_->SetVisibilityForChildViews(true);
