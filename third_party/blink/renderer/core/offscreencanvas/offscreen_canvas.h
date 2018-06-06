@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
-#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_frame_dispatcher.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -35,7 +35,7 @@ class CORE_EXPORT OffscreenCanvas final
       public CanvasImageSource,
       public ImageBitmapSource,
       public CanvasRenderingContextHost,
-      public OffscreenCanvasFrameDispatcherClient {
+      public CanvasResourceDispatcherClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(OffscreenCanvas);
   USING_PRE_FINALIZER(OffscreenCanvas, Dispose);
@@ -52,7 +52,7 @@ class CORE_EXPORT OffscreenCanvas final
   void setWidth(unsigned);
   void setHeight(unsigned);
 
-  // OffscreenCanvasFrameDispatcherClient
+  // CanvasResourceDispatcherClient
   void BeginFrame() override;
 
   // API Methods
@@ -165,7 +165,7 @@ class CORE_EXPORT OffscreenCanvas final
  private:
   friend class OffscreenCanvasTest;
   explicit OffscreenCanvas(const IntSize&);
-  OffscreenCanvasFrameDispatcher* GetOrCreateFrameDispatcher();
+  CanvasResourceDispatcher* GetOrCreateFrameDispatcher();
   using ContextFactoryVector =
       Vector<std::unique_ptr<CanvasRenderingContextFactory>>;
   static ContextFactoryVector& RenderingContextFactories();
@@ -182,7 +182,7 @@ class CORE_EXPORT OffscreenCanvas final
   bool origin_clean_ = true;
   bool disable_reading_from_canvas_ = false;
 
-  std::unique_ptr<OffscreenCanvasFrameDispatcher> frame_dispatcher_;
+  std::unique_ptr<CanvasResourceDispatcher> frame_dispatcher_;
 
   SkIRect current_frame_damage_rect_;
 

@@ -24,8 +24,8 @@ class CompositorFrameSink;
 
 namespace blink {
 
-class OffscreenCanvasFrameDispatcher;
 class CanvasResource;
+class CanvasResourceDispatcher;
 
 class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
  public:
@@ -34,7 +34,7 @@ class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
   // display compositor.
   OffscreenCanvasResourceProvider(int width,
                                   int height,
-                                  OffscreenCanvasFrameDispatcher*);
+                                  CanvasResourceDispatcher*);
 
   ~OffscreenCanvasResourceProvider();
 
@@ -83,7 +83,7 @@ class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
   std::unique_ptr<FrameResource> CreateOrRecycleFrameResource();
   void ReclaimResourceInternal(const ResourceMap::iterator&);
 
-  OffscreenCanvasFrameDispatcher* frame_dispatcher_;
+  CanvasResourceDispatcher* frame_dispatcher_;
   int width_;
   int height_;
   unsigned next_resource_id_ = 0;

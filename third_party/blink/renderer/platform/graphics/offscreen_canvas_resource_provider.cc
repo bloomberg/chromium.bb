@@ -15,8 +15,8 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
-#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_frame_dispatcher.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/uint8_array.h"
@@ -47,7 +47,7 @@ namespace blink {
 OffscreenCanvasResourceProvider::OffscreenCanvasResourceProvider(
     int width,
     int height,
-    OffscreenCanvasFrameDispatcher* frame_dispatcher)
+    CanvasResourceDispatcher* frame_dispatcher)
     : frame_dispatcher_(frame_dispatcher), width_(width), height_(height) {}
 
 OffscreenCanvasResourceProvider::~OffscreenCanvasResourceProvider() = default;

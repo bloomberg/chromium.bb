@@ -30,7 +30,7 @@ class OffscreenCanvasTest : public PageTestBase {
 
   HTMLCanvasElement& CanvasElement() const { return *canvas_element_; }
   OffscreenCanvas& OSCanvas() const { return *offscreen_canvas_; }
-  OffscreenCanvasFrameDispatcher* Dispatcher() const {
+  CanvasResourceDispatcher* Dispatcher() const {
     return offscreen_canvas_->GetOrCreateFrameDispatcher();
   }
   OffscreenCanvasRenderingContext2D& Context() const { return *context_; }

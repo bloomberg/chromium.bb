@@ -216,7 +216,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   // OffscreenCanvasPlaceholder implementation.
   void SetPlaceholderFrame(scoped_refptr<CanvasResource>,
-                           base::WeakPtr<OffscreenCanvasFrameDispatcher>,
+                           base::WeakPtr<CanvasResourceDispatcher>,
                            scoped_refptr<base::SingleThreadTaskRunner>,
                            unsigned resource_id) override;
   void Trace(blink::Visitor*) override;
@@ -362,7 +362,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   // Used for low latency mode.
   // TODO: rename to CanvasFrameDispatcher.
-  std::unique_ptr<OffscreenCanvasFrameDispatcher> frame_dispatcher_;
+  std::unique_ptr<CanvasResourceDispatcher> frame_dispatcher_;
 
   bool did_notify_listeners_for_current_frame_ = false;
 
