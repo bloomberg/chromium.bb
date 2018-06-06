@@ -43,10 +43,10 @@ void WebViewWebMainParts::PreCreateThreads() {
 void WebViewWebMainParts::PreMainMessageLoopRun() {
   WebViewTranslateService::GetInstance()->Initialize();
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
       /*schemes=*/nullptr, 0);
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 }
 
 void WebViewWebMainParts::PostMainMessageLoopRun() {

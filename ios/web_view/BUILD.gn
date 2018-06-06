@@ -19,7 +19,7 @@ buildflag_header("web_view_features") {
   header = "cwv_web_view_features.h"
 
   flags = [
-    "IOS_WEB_VIEW_ENABLE_SIGNIN=$ios_web_view_enable_signin",
+    "IOS_WEB_VIEW_ENABLE_SYNC=$ios_web_view_enable_sync",
     "IOS_WEB_VIEW_ENABLE_AUTOFILL=$ios_web_view_enable_autofill",
   ]
 }
@@ -64,13 +64,8 @@ ios_web_view_public_headers = [
   "public/cwv_web_view.h",
   "public/cwv_web_view_configuration.h",
 ]
-if (ios_web_view_enable_signin) {
-  ios_web_view_public_headers += [
-    "public/cwv_authentication_controller.h",
-    "public/cwv_authentication_controller_delegate.h",
-    "public/cwv_identity.h",
-    "public/cwv_web_view_configuration_signin.h",
-  ]
+if (ios_web_view_enable_sync) {
+  ios_web_view_public_headers += [ "public/cwv_identity.h" ]
 }
 if (ios_web_view_enable_autofill) {
   ios_web_view_public_headers += [
@@ -186,12 +181,8 @@ ios_web_view_sources = [
   "internal/webdata_services/web_view_web_data_service_wrapper_factory.h",
 ]
 ios_web_view_sources += ios_web_view_public_headers
-if (ios_web_view_enable_signin) {
-  ios_web_view_sources += [
-    "internal/signin/cwv_authentication_controller.mm",
-    "internal/signin/cwv_authentication_controller_internal.h",
-    "internal/signin/cwv_identity.mm",
-  ]
+if (ios_web_view_enable_sync) {
+  ios_web_view_sources += [ "internal/signin/cwv_identity.mm" ]
 }
 if (ios_web_view_enable_autofill) {
   ios_web_view_sources += [

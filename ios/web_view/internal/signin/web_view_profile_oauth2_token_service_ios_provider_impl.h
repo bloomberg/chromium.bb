@@ -11,14 +11,11 @@
 #include "base/macros.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
 
-class IOSWebViewSigninClient;
-
 // Implementation of ProfileOAuth2TokenServiceIOSProvider.
 class WebViewProfileOAuth2TokenServiceIOSProviderImpl
     : public ProfileOAuth2TokenServiceIOSProvider {
  public:
-  WebViewProfileOAuth2TokenServiceIOSProviderImpl(
-      IOSWebViewSigninClient* signin_client);
+  WebViewProfileOAuth2TokenServiceIOSProviderImpl();
   ~WebViewProfileOAuth2TokenServiceIOSProviderImpl() override;
 
   // ios::ProfileOAuth2TokenServiceIOSProvider
@@ -32,8 +29,6 @@ class WebViewProfileOAuth2TokenServiceIOSProviderImpl
       NSError* error) const override;
 
  private:
-  IOSWebViewSigninClient* signin_client_;
-
   DISALLOW_COPY_AND_ASSIGN(WebViewProfileOAuth2TokenServiceIOSProviderImpl);
 };
 

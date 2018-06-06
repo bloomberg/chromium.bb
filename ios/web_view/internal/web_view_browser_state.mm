@@ -96,9 +96,9 @@ WebViewBrowserState::WebViewBrowserState(
 
   base::ThreadRestrictions::SetIOAllowed(wasIOAllowed);
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   ActiveStateManager::FromBrowserState(this)->SetActive(true);
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
   BrowserStateDependencyManager::GetInstance()->CreateBrowserStateServices(
       this);
@@ -108,9 +108,9 @@ WebViewBrowserState::~WebViewBrowserState() {
   BrowserStateDependencyManager::GetInstance()->DestroyBrowserStateServices(
       this);
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   ActiveStateManager::FromBrowserState(this)->SetActive(false);
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 }
 
 PrefService* WebViewBrowserState::GetPrefs() {
@@ -171,7 +171,7 @@ void WebViewBrowserState::RegisterPrefs(
   WebViewWebDataServiceWrapperFactory::GetInstance();
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
-#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   WebViewCookieSettingsFactory::GetInstance();
   WebViewHostContentSettingsMapFactory::GetInstance();
   WebViewAccountFetcherServiceFactory::GetInstance();
@@ -182,7 +182,7 @@ void WebViewBrowserState::RegisterPrefs(
   WebViewSigninErrorControllerFactory::GetInstance();
   WebViewSigninManagerFactory::GetInstance();
   WebViewIdentityManagerFactory::GetInstance();
-#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
   BrowserStateDependencyManager::GetInstance()
       ->RegisterBrowserStatePrefsForServices(this, pref_registry);

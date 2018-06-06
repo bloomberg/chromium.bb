@@ -6,8 +6,8 @@ declare_args() {
   # Controls if cronet is included.
   ios_web_view_include_cronet = true
 
-  # Controls if signin APIs are exposed.
-  ios_web_view_enable_signin = true
+  # Controls if sync APIs are exposed.
+  ios_web_view_enable_sync = true
 
   # Controls if autofill APIs are exposed.
   ios_web_view_enable_autofill = true

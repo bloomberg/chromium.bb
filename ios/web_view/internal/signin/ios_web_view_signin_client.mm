@@ -125,14 +125,3 @@ std::unique_ptr<GaiaAuthFetcher> IOSWebViewSigninClient::CreateGaiaAuthFetcher(
 }
 
 void IOSWebViewSigninClient::OnErrorChanged() {}
-
-void IOSWebViewSigninClient::SetAuthenticationController(
-    CWVAuthenticationController* authentication_controller) {
-  DCHECK(!authentication_controller || !authentication_controller_);
-  authentication_controller_ = authentication_controller;
-}
-
-CWVAuthenticationController*
-IOSWebViewSigninClient::GetAuthenticationController() {
-  return authentication_controller_;
-}

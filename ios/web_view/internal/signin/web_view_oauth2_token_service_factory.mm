@@ -56,8 +56,7 @@ WebViewOAuth2TokenServiceFactory::BuildServiceInstanceFor(
   IOSWebViewSigninClient* signin_client =
       WebViewSigninClientFactory::GetForBrowserState(browser_state);
   auto token_service_provider =
-      std::make_unique<WebViewProfileOAuth2TokenServiceIOSProviderImpl>(
-          signin_client);
+      std::make_unique<WebViewProfileOAuth2TokenServiceIOSProviderImpl>();
   auto delegate = std::make_unique<ProfileOAuth2TokenServiceIOSDelegate>(
       signin_client, std::move(token_service_provider),
       WebViewAccountTrackerServiceFactory::GetForBrowserState(browser_state),
