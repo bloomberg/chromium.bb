@@ -111,6 +111,10 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   const base::Optional<uint64_t>& page_id() const { return page_id_; }
   void set_page_id(uint64_t page_id) { page_id_ = page_id; }
 
+  // Whether the blacklist prevented a preview.
+  bool black_listed() const { return black_listed_; }
+  void set_black_listed(bool black_listed) { black_listed_ = black_listed; }
+
   // Removes |this| from |request|.
   static void ClearData(net::URLRequest* request);
 
@@ -152,6 +156,9 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
 
   // Whether a lite page response was seen for the request or navigation.
   bool lofi_received_;
+
+  // Whether the blacklist prevented a preview.
+  bool black_listed_;
 
   // The session key used for this request or navigation.
   std::string session_key_;

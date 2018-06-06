@@ -56,6 +56,12 @@ TEST_F(DataReductionProxyDataTest, BasicSettersAndGetters) {
   data->set_lofi_received(false);
   EXPECT_FALSE(data->lofi_received());
 
+  EXPECT_FALSE(data->black_listed());
+  data->set_black_listed(true);
+  EXPECT_TRUE(data->black_listed());
+  data->set_black_listed(false);
+  EXPECT_FALSE(data->black_listed());
+
   EXPECT_EQ(std::string(), data->session_key());
   std::string session_key = "test-key";
   data->set_session_key(session_key);
@@ -122,6 +128,7 @@ TEST_F(DataReductionProxyDataTest, DeepCopy) {
     data->set_lofi_requested(tests[i].lofi_test_value);
     data->set_lite_page_received(tests[i].lofi_test_value);
     data->set_lofi_received(tests[i].lofi_test_value);
+    data->set_black_listed(tests[i].lofi_test_value);
     data->set_session_key(kSessionKey);
     data->set_request_url(kTestURL);
     data->set_effective_connection_type(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
@@ -130,6 +137,7 @@ TEST_F(DataReductionProxyDataTest, DeepCopy) {
     EXPECT_EQ(tests[i].lofi_test_value, copy->lofi_requested());
     EXPECT_EQ(tests[i].lofi_test_value, copy->lite_page_received());
     EXPECT_EQ(tests[i].lofi_test_value, copy->lofi_received());
+    EXPECT_EQ(tests[i].lofi_test_value, copy->black_listed());
     EXPECT_EQ(tests[i].data_reduction_used, copy->used_data_reduction_proxy());
     EXPECT_EQ(kSessionKey, copy->session_key());
     EXPECT_EQ(kTestURL, copy->request_url());

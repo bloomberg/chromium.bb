@@ -19,6 +19,7 @@ DataReductionProxyData::DataReductionProxyData()
       lite_page_received_(false),
       lofi_policy_received_(false),
       lofi_received_(false),
+      black_listed_(false),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       connection_type_(net::NetworkChangeNotifier::CONNECTION_UNKNOWN) {}
 

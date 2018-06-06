@@ -69,12 +69,17 @@ message PageloadMetrics {
 
   // The various server previews that can be shown.
   enum PreviewsType {
-    // No server preview was applied.
+    // No server preview was applied, but the URL/navigation was not
+    // blacklisted.
     NONE = 0;
     // Image placeholders were used on the page.
     LOFI = 1;
     // The main resource was a lite page.
     LITE_PAGE = 2;
+    // Blacklisting rules caused no server preview to be requested. It's
+    // possible in the future that client previews might be shown when server
+    // previews are blacklisted, currently this is not possible.
+    CLIENT_BLACKLIST_PREVENTED_PREVIEW = 3;
   }
 
   // What type of crash occured on the page.
