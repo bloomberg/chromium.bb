@@ -77,6 +77,7 @@ class PolicyBase final : public TargetPolicy {
   ResultCode AddAppContainerProfile(const wchar_t* package_name,
                                     bool create_profile) override;
   scoped_refptr<AppContainerProfile> GetAppContainerProfile() override;
+  void SetEffectiveToken(HANDLE token) override;
 
   // Get the AppContainer profile as its internal type.
   scoped_refptr<AppContainerProfileBase> GetAppContainerProfileBase();
@@ -179,6 +180,8 @@ class PolicyBase final : public TargetPolicy {
   bool enable_opm_redirection_;
 
   scoped_refptr<AppContainerProfileBase> app_container_profile_;
+
+  HANDLE effective_token_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyBase);
 };

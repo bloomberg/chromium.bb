@@ -106,7 +106,8 @@ PolicyBase::PolicyBase()
       policy_(nullptr),
       lowbox_sid_(nullptr),
       lockdown_default_dacl_(false),
-      enable_opm_redirection_(false) {
+      enable_opm_redirection_(false),
+      effective_token_(nullptr) {
   ::InitializeCriticalSection(&lock_);
   dispatcher_.reset(new TopLevelDispatcher(this));
 }
@@ -399,8 +400,8 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
   // Create the 'naked' token. This will be the permanent token associated
   // with the process and therefore with any thread that is not impersonating.
   DWORD result =
-      CreateRestrictedToken(lockdown_level_, integrity_level_, PRIMARY,
-                            lockdown_default_dacl_, lockdown);
+      CreateRestrictedToken(effective_token_, lockdown_level_, integrity_level_,
+                            PRIMARY, lockdown_default_dacl_, lockdown);
   if (ERROR_SUCCESS != result)
     return SBOX_ERROR_GENERIC;
 
@@ -463,8 +464,8 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
   // thread uses when booting up the process. It should contain most of
   // what we need (before reaching main( ))
   result =
-      CreateRestrictedToken(initial_level_, integrity_level_, IMPERSONATION,
-                            lockdown_default_dacl_, initial);
+      CreateRestrictedToken(effective_token_, initial_level_, integrity_level_,
+                            IMPERSONATION, lockdown_default_dacl_, initial);
   if (ERROR_SUCCESS != result)
     return SBOX_ERROR_GENERIC;
 
@@ -628,6 +629,11 @@ ResultCode PolicyBase::AddAppContainerProfile(const wchar_t* package_name,
 
 scoped_refptr<AppContainerProfile> PolicyBase::GetAppContainerProfile() {
   return GetAppContainerProfileBase();
+}
+
+void PolicyBase::SetEffectiveToken(HANDLE token) {
+  CHECK(token);
+  effective_token_ = token;
 }
 
 scoped_refptr<AppContainerProfileBase>

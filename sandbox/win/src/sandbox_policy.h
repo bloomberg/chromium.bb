@@ -264,6 +264,11 @@ class TargetPolicy {
   // Get the configured AppContainerProfile.
   virtual scoped_refptr<AppContainerProfile> GetAppContainerProfile() = 0;
 
+  // Set effective token that will be used for creating the initial and
+  // lockdown tokens. The token the caller passes must remain valid for the
+  // lifetime of the policy object.
+  virtual void SetEffectiveToken(HANDLE token) = 0;
+
  protected:
   ~TargetPolicy() {}
 };
