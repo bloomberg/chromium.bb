@@ -238,10 +238,6 @@ class EnterpriseManagedView : public ManagedStateView,
   // EnterpriseDomainObserver:
   void OnEnterpriseDomainChanged() override;
 
-  // views::View:
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
-
  private:
   void Update();
 
@@ -262,23 +258,6 @@ EnterpriseManagedView::~EnterpriseManagedView() {
   Shell::Get()->system_tray_model()->enterprise_domain()->RemoveObserver(this);
 }
 
-bool EnterpriseManagedView::GetTooltipText(const gfx::Point& p,
-                                           base::string16* tooltip) const {
-  EnterpriseDomainModel* model =
-      Shell::Get()->system_tray_model()->enterprise_domain();
-  if (model->active_directory_managed()) {
-    *tooltip = l10n_util::GetStringUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED);
-    return true;
-  } else if (!model->enterprise_display_domain().empty()) {
-    *tooltip = l10n_util::GetStringFUTF16(
-        IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
-        base::UTF8ToUTF16(model->enterprise_display_domain()));
-    return true;
-  } else {
-    return false;
-  }
-}
-
 void EnterpriseManagedView::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
   Shell::Get()->system_tray_controller()->ShowEnterpriseInfo();
@@ -293,6 +272,15 @@ void EnterpriseManagedView::Update() {
       Shell::Get()->system_tray_model()->enterprise_domain();
   SetVisible(model->active_directory_managed() ||
              !model->enterprise_display_domain().empty());
+
+  if (model->active_directory_managed()) {
+    SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED));
+  } else if (!model->enterprise_display_domain().empty()) {
+    SetTooltipText(l10n_util::GetStringFUTF16(
+        IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
+        base::UTF8ToUTF16(model->enterprise_display_domain())));
+  }
 }
 
 // A view that shows whether the user is supervised or a child.
@@ -300,10 +288,6 @@ class SupervisedUserView : public ManagedStateView {
  public:
   SupervisedUserView();
   ~SupervisedUserView() override = default;
-
-  // views::View:
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserView);
@@ -314,14 +298,8 @@ SupervisedUserView::SupervisedUserView()
                        IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL,
                        GetSupervisedUserIcon()) {
   SetVisible(Shell::Get()->session_controller()->IsUserSupervised());
-}
-
-bool SupervisedUserView::GetTooltipText(const gfx::Point& p,
-                                        base::string16* tooltip) const {
   if (Shell::Get()->session_controller()->IsUserSupervised())
-    return false;
-  *tooltip = GetSupervisedUserMessage();
-  return true;
+    SetTooltipText(GetSupervisedUserMessage());
 }
 
 }  // namespace
