@@ -255,37 +255,30 @@ LayoutRect PaintInvalidator::ComputeVisualRectInBacking(
       object, local_rect, context);
 }
 
-// We need update |fragment| visual rect considering selection.
-static LayoutRect ComputeLocalVisualRect(const NGPaintFragment& fragment) {
-  const NGPhysicalFragment& physical_fragment = fragment.PhysicalFragment();
-  LayoutRect rect = physical_fragment.InkOverflow().ToLayoutRect();
-  if (!physical_fragment.IsText())
-    return rect;
+static LayoutRect ComputeFragmentLocalSelectionRect(
+    const NGPaintFragment& fragment) {
+  if (!fragment.PhysicalFragment().IsText())
+    return LayoutRect();
   const FrameSelection& frame_selection =
       fragment.GetLayoutObject()->GetFrame()->Selection();
   const LayoutSelectionStatus status =
       frame_selection.ComputeLayoutSelectionStatus(fragment);
   if (status.start == status.end)
-    return rect;
-  NGPhysicalOffsetRect fragment_rect =
-      fragment.ComputeLocalSelectionRect(status);
-  fragment_rect.offset += fragment.InlineOffsetToContainerBox();
-  rect.Unite(fragment_rect.ToLayoutRect());
-  return rect;
+    return LayoutRect();
+  return fragment.ComputeLocalSelectionRect(status).ToLayoutRect();
 }
 
-LayoutRect PaintInvalidator::ComputeVisualRectInBacking(
-    const NGPaintFragment& fragment,
+LayoutRect PaintInvalidator::MapFragmentLocalRectToVisualRect(
+    const LayoutRect& local_rect,
     const LayoutObject& object,
+    const NGPaintFragment& fragment,
     const PaintInvalidatorContext& context) {
-  LayoutRect local_rect = ComputeLocalVisualRect(fragment);
-  bool disable_flip = true;
-  LayoutRect backing_rect =
-      MapLocalRectToVisualRectInBacking<LayoutRect, LayoutPoint>(
-          object, local_rect, context, disable_flip);
+  LayoutRect rect = local_rect;
   if (!object.IsBox())
-    backing_rect.Move(fragment.InlineOffsetToContainerBox().ToLayoutSize());
-  return backing_rect;
+    rect.Move(fragment.InlineOffsetToContainerBox().ToLayoutSize());
+  bool disable_flip = true;
+  return MapLocalRectToVisualRectInBacking<LayoutRect, LayoutPoint>(
+      object, rect, context, disable_flip);
 }
 
 LayoutPoint PaintInvalidator::ComputeLocationInBacking(
@@ -485,9 +478,21 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
     auto fragments = NGPaintFragment::InlineFragmentsFor(&object);
     if (fragments.IsInLayoutNGInlineFormattingContext()) {
       for (NGPaintFragment* fragment : fragments) {
-        LayoutRect fragment_visual_rect =
-            ComputeVisualRectInBacking(*fragment, object, context);
-        fragment->SetVisualRect(fragment_visual_rect);
+        LayoutRect local_selection_rect =
+            ComputeFragmentLocalSelectionRect(*fragment);
+        LayoutRect local_visual_rect =
+            UnionRect(fragment->SelfInkOverflow(), local_selection_rect);
+        fragment->SetVisualRect(MapFragmentLocalRectToVisualRect(
+            local_visual_rect, object, *fragment, context));
+
+        LayoutRect selection_visual_rect = MapFragmentLocalRectToVisualRect(
+            local_selection_rect, object, *fragment, context);
+        if (selection_visual_rect != fragment->SelectionVisualRect()) {
+          context.painting_layer->SetNeedsRepaint();
+          ObjectPaintInvalidator(object).InvalidateDisplayItemClient(
+              *fragment, PaintInvalidationReason::kSelection);
+          fragment->SetSelectionVisualRect(selection_visual_rect);
+        }
       }
     }
   }

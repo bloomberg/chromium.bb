@@ -334,14 +334,6 @@ void NGPaintFragment::PaintInlineBoxForDescendants(
   }
 }
 
-LayoutRect NGPaintFragment::PartialInvalidationVisualRect() const {
-  // TODO(crbug.com/849112): Fix selection raster invalidation for LayoutNG.
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
-  const NGPaintFragment* block_fragment =
-      GetLayoutObject()->EnclosingNGBlockFlow()->PaintFragment();
-  return block_fragment->VisualRect();
-}
-
 const NGPaintFragment* NGPaintFragment::ContainerLineBox() const {
   DCHECK(PhysicalFragment().IsInline());
   for (const NGPaintFragment* runner = this; runner;

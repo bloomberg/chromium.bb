@@ -1792,8 +1792,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void InvalidateClipPathCache();
 
-  // Call |SetShouldInvalidateSelection| on all selected children.
-  void InvalidateSelectionOfSelectedChildren();
+  // Call |SetShouldDoFullPaintInvalidation| for LayoutNG or
+  // |SetShouldInvalidateSelection| on all selected children.
+  void InvalidateSelectedChildrenOnStyleChange();
 
   // Painters can use const methods only, except for these explicitly declared
   // methods.

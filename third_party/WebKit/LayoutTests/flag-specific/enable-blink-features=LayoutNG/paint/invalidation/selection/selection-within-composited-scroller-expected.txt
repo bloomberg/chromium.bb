@@ -38,7 +38,7 @@
       "paintInvalidations": [
         {
           "object": "NGPaintFragment",
-          "rect": [0, 610, 200, 1000],
+          "rect": [0, 610, 22, 20],
           "reason": "selection"
         }
       ],

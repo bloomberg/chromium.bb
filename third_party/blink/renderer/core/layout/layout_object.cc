@@ -91,6 +91,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
@@ -1539,6 +1540,16 @@ void LayoutObject::ClearPreviousVisualRects() {
     fragment->SetSelectionVisualRect(LayoutRect());
   }
 
+  if (IsInline()) {
+    auto fragments = NGPaintFragment::InlineFragmentsFor(this);
+    if (fragments.IsInLayoutNGInlineFormattingContext()) {
+      for (auto* fragment : fragments) {
+        fragment->SetVisualRect(LayoutRect());
+        fragment->SetSelectionVisualRect(LayoutRect());
+      }
+    }
+  }
+
   // Ensure check paint invalidation of subtree that would be triggered by
   // location change if we had valid previous location.
   SetMayNeedPaintInvalidationSubtree();
@@ -2269,7 +2280,7 @@ void LayoutObject::ApplyPseudoStyleChanges(const ComputedStyle& old_style) {
 
   if (old_style.HasPseudoStyle(kPseudoIdSelection) ||
       StyleRef().HasPseudoStyle(kPseudoIdSelection))
-    InvalidateSelectionOfSelectedChildren();
+    InvalidateSelectedChildrenOnStyleChange();
 }
 
 void LayoutObject::ApplyFirstLineChanges(const ComputedStyle& old_style) {
@@ -3884,7 +3895,7 @@ LayoutRect LayoutObject::DebugRect() const {
   return rect;
 }
 
-void LayoutObject::InvalidateSelectionOfSelectedChildren() {
+void LayoutObject::InvalidateSelectedChildrenOnStyleChange() {
   // setSelectionState() propagates the state up the containing block chain to
   // tell if a block contains selected nodes or not. If this layout object is
   // not a block, we need to get the selection state from the containing block
@@ -3905,7 +3916,12 @@ void LayoutObject::InvalidateSelectionOfSelectedChildren() {
       continue;
     if (child->GetSelectionState() == SelectionState::kNone)
       continue;
-    child->SetShouldInvalidateSelection();
+    if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+      child->SetShouldDoFullPaintInvalidation(
+          PaintInvalidationReason::kSelection);
+    } else {
+      child->SetShouldInvalidateSelection();
+    }
   }
 }
 
