@@ -2461,7 +2461,7 @@ bool RasterDecoderImpl::TexImage2D(TextureRef* texture_ref,
   // context preemption and GPU watchdog checks.
   ExitCommandProcessingEarly();
 
-  return LOCAL_PEEK_GL_ERROR("glTexImage2D") == GL_NO_ERROR;
+  return !texture_state_.tex_image_failed;
 }
 
 void RasterDecoderImpl::DoTexStorage2D(GLuint client_id,

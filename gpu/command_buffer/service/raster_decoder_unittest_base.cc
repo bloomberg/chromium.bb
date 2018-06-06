@@ -433,7 +433,6 @@ void RasterDecoderTestBase::DoTexStorage2D(GLuint client_id,
     EXPECT_CALL(*gl_, GetError())
         .WillOnce(Return(GL_NO_ERROR))
         .WillOnce(Return(GL_NO_ERROR))
-        .WillOnce(Return(GL_NO_ERROR))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_,
                 TexImage2D(GL_TEXTURE_2D, _, _, width, height, _, _, _, _))
