@@ -917,14 +917,15 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
       (bsize != cm->seq_params.sb_size || !mbmi->skip) &&
       super_block_upper_left) {
 #if CONFIG_ENTROPY_STATS
-    const int dq = (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
+    const int dq =
+        (mbmi->current_qindex - xd->current_qindex) / cm->delta_q_res;
     const int absdq = abs(dq);
     for (int i = 0; i < AOMMIN(absdq, DELTA_Q_SMALL); ++i) {
       td->counts->delta_q[i][1]++;
     }
     if (absdq < DELTA_Q_SMALL) td->counts->delta_q[absdq][0]++;
 #endif
-    xd->prev_qindex = mbmi->current_q_index;
+    xd->current_qindex = mbmi->current_qindex;
     if (cm->delta_lf_present_flag) {
       if (cm->delta_lf_multi) {
         const int frame_lf_count =
@@ -932,8 +933,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
         for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
 #if CONFIG_ENTROPY_STATS
           const int delta_lf =
-              (mbmi->curr_delta_lf[lf_id] - xd->prev_delta_lf[lf_id]) /
-              cm->delta_lf_res;
+              (mbmi->delta_lf[lf_id] - xd->delta_lf[lf_id]) / cm->delta_lf_res;
           const int abs_delta_lf = abs(delta_lf);
           for (int i = 0; i < AOMMIN(abs_delta_lf, DELTA_LF_SMALL); ++i) {
             td->counts->delta_lf_multi[lf_id][i][1]++;
@@ -941,12 +941,12 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           if (abs_delta_lf < DELTA_LF_SMALL)
             td->counts->delta_lf_multi[lf_id][abs_delta_lf][0]++;
 #endif
-          xd->prev_delta_lf[lf_id] = mbmi->curr_delta_lf[lf_id];
+          xd->delta_lf[lf_id] = mbmi->delta_lf[lf_id];
         }
       } else {
 #if CONFIG_ENTROPY_STATS
         const int delta_lf =
-            (mbmi->current_delta_lf_from_base - xd->prev_delta_lf_from_base) /
+            (mbmi->delta_lf_from_base - xd->delta_lf_from_base) /
             cm->delta_lf_res;
         const int abs_delta_lf = abs(delta_lf);
         for (int i = 0; i < AOMMIN(abs_delta_lf, DELTA_LF_SMALL); ++i) {
@@ -955,7 +955,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
         if (abs_delta_lf < DELTA_LF_SMALL)
           td->counts->delta_lf[abs_delta_lf][0]++;
 #endif
-        xd->prev_delta_lf_from_base = mbmi->current_delta_lf_from_base;
+        xd->delta_lf_from_base = mbmi->delta_lf_from_base;
       }
     }
   }
@@ -1461,8 +1461,8 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                                      ? FRAME_LF_COUNT
                                      : FRAME_LF_COUNT - 2;
       for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
-        mbmi->curr_delta_lf[lf_id] = xd->prev_delta_lf[lf_id];
-      mbmi->current_delta_lf_from_base = xd->prev_delta_lf_from_base;
+        mbmi->delta_lf[lf_id] = xd->delta_lf[lf_id];
+      mbmi->delta_lf_from_base = xd->delta_lf_from_base;
     }
     if (has_second_ref(mbmi)) {
       if (mbmi->compound_idx == 0 ||
@@ -3657,15 +3657,15 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 
   // Reset delta for every tile
   if (cm->delta_q_present_flag)
-    if (mi_row == tile_info->mi_row_start) xd->prev_qindex = cm->base_qindex;
+    if (mi_row == tile_info->mi_row_start) xd->current_qindex = cm->base_qindex;
   if (cm->delta_lf_present_flag) {
     if (mi_row == tile_info->mi_row_start) {
       const int frame_lf_count =
           av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
       for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
-        xd->prev_delta_lf[lf_id] = 0;
+        xd->delta_lf[lf_id] = 0;
     }
-    if (mi_row == tile_info->mi_row_start) xd->prev_delta_lf_from_base = 0;
+    if (mi_row == tile_info->mi_row_start) xd->delta_lf_from_base = 0;
   }
 
   // Code each SB in the row
@@ -3736,14 +3736,14 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 
       xd->delta_qindex = current_qindex - cm->base_qindex;
       set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->seq_params.sb_size);
-      xd->mi[0]->current_q_index = current_qindex;
+      xd->mi[0]->current_qindex = current_qindex;
       av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id);
       if (cpi->oxcf.deltaq_mode == DELTA_Q_LF) {
         int j, k;
         int lfmask = ~(cm->delta_lf_res - 1);
-        int current_delta_lf_from_base = offset_qindex / 2;
-        current_delta_lf_from_base =
-            ((current_delta_lf_from_base + cm->delta_lf_res / 2) & lfmask);
+        int delta_lf_from_base = offset_qindex / 2;
+        delta_lf_from_base =
+            ((delta_lf_from_base + cm->delta_lf_res / 2) & lfmask);
 
         // pre-set the delta lf for loop filter. Note that this value is set
         // before mi is assigned for each block in current superblock
@@ -3752,15 +3752,14 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
           for (k = 0; k < AOMMIN(cm->seq_params.mib_size, cm->mi_cols - mi_col);
                k++) {
             cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)]
-                .current_delta_lf_from_base = clamp(
-                current_delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
+                .delta_lf_from_base =
+                clamp(delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
             const int frame_lf_count =
                 av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
             for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
               cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)]
-                  .curr_delta_lf[lf_id] =
-                  clamp(current_delta_lf_from_base, -MAX_LOOP_FILTER,
-                        MAX_LOOP_FILTER);
+                  .delta_lf[lf_id] =
+                  clamp(delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
             }
           }
         }

@@ -255,9 +255,9 @@ static uint8_t get_filter_level(const AV1_COMMON *cm,
     int delta_lf;
     if (cm->delta_lf_multi) {
       const int delta_lf_idx = delta_lf_id_lut[plane][dir_idx];
-      delta_lf = mbmi->curr_delta_lf[delta_lf_idx];
+      delta_lf = mbmi->delta_lf[delta_lf_idx];
     } else {
-      delta_lf = mbmi->current_delta_lf_from_base;
+      delta_lf = mbmi->delta_lf_from_base;
     }
     int base_level;
     if (plane == 0)

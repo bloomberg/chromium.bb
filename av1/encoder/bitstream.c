@@ -970,28 +970,28 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         ((mi_col & (cm->seq_params.mib_size - 1)) == 0);
     if ((bsize != cm->seq_params.sb_size || skip == 0) &&
         super_block_upper_left) {
-      assert(mbmi->current_q_index > 0);
+      assert(mbmi->current_qindex > 0);
       int reduced_delta_qindex =
-          (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
+          (mbmi->current_qindex - xd->current_qindex) / cm->delta_q_res;
       write_delta_qindex(xd, reduced_delta_qindex, w);
-      xd->prev_qindex = mbmi->current_q_index;
+      xd->current_qindex = mbmi->current_qindex;
       if (cm->delta_lf_present_flag) {
         if (cm->delta_lf_multi) {
           const int frame_lf_count =
               av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
           for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
             int reduced_delta_lflevel =
-                (mbmi->curr_delta_lf[lf_id] - xd->prev_delta_lf[lf_id]) /
+                (mbmi->delta_lf[lf_id] - xd->delta_lf[lf_id]) /
                 cm->delta_lf_res;
             write_delta_lflevel(cm, xd, lf_id, reduced_delta_lflevel, w);
-            xd->prev_delta_lf[lf_id] = mbmi->curr_delta_lf[lf_id];
+            xd->delta_lf[lf_id] = mbmi->delta_lf[lf_id];
           }
         } else {
           int reduced_delta_lflevel =
-              (mbmi->current_delta_lf_from_base - xd->prev_delta_lf_from_base) /
+              (mbmi->delta_lf_from_base - xd->delta_lf_from_base) /
               cm->delta_lf_res;
           write_delta_lflevel(cm, xd, -1, reduced_delta_lflevel, w);
-          xd->prev_delta_lf_from_base = mbmi->current_delta_lf_from_base;
+          xd->delta_lf_from_base = mbmi->delta_lf_from_base;
         }
       }
     }
@@ -1196,28 +1196,28 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
         ((mi_col & (cm->seq_params.mib_size - 1)) == 0);
     if ((bsize != cm->seq_params.sb_size || skip == 0) &&
         super_block_upper_left) {
-      assert(mbmi->current_q_index > 0);
+      assert(mbmi->current_qindex > 0);
       int reduced_delta_qindex =
-          (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
+          (mbmi->current_qindex - xd->current_qindex) / cm->delta_q_res;
       write_delta_qindex(xd, reduced_delta_qindex, w);
-      xd->prev_qindex = mbmi->current_q_index;
+      xd->current_qindex = mbmi->current_qindex;
       if (cm->delta_lf_present_flag) {
         if (cm->delta_lf_multi) {
           const int frame_lf_count =
               av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
           for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
             int reduced_delta_lflevel =
-                (mbmi->curr_delta_lf[lf_id] - xd->prev_delta_lf[lf_id]) /
+                (mbmi->delta_lf[lf_id] - xd->delta_lf[lf_id]) /
                 cm->delta_lf_res;
             write_delta_lflevel(cm, xd, lf_id, reduced_delta_lflevel, w);
-            xd->prev_delta_lf[lf_id] = mbmi->curr_delta_lf[lf_id];
+            xd->delta_lf[lf_id] = mbmi->delta_lf[lf_id];
           }
         } else {
           int reduced_delta_lflevel =
-              (mbmi->current_delta_lf_from_base - xd->prev_delta_lf_from_base) /
+              (mbmi->delta_lf_from_base - xd->delta_lf_from_base) /
               cm->delta_lf_res;
           write_delta_lflevel(cm, xd, -1, reduced_delta_lflevel, w);
-          xd->prev_delta_lf_from_base = mbmi->current_delta_lf_from_base;
+          xd->delta_lf_from_base = mbmi->delta_lf_from_base;
         }
       }
     }
@@ -1711,13 +1711,13 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
   av1_init_above_context(cm, xd, tile->tile_row);
 
   if (cpi->common.delta_q_present_flag) {
-    xd->prev_qindex = cpi->common.base_qindex;
+    xd->current_qindex = cpi->common.base_qindex;
     if (cpi->common.delta_lf_present_flag) {
       const int frame_lf_count =
           av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
       for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
-        xd->prev_delta_lf[lf_id] = 0;
-      xd->prev_delta_lf_from_base = 0;
+        xd->delta_lf[lf_id] = 0;
+      xd->delta_lf_from_base = 0;
     }
   }
 
@@ -3268,19 +3268,19 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     aom_wb_write_bit(wb, cm->delta_q_present_flag);
     if (cm->delta_q_present_flag) {
       aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_q_res) - 1, 2);
-      xd->prev_qindex = cm->base_qindex;
+      xd->current_qindex = cm->base_qindex;
       if (cm->allow_intrabc)
         assert(cm->delta_lf_present_flag == 0);
       else
         aom_wb_write_bit(wb, cm->delta_lf_present_flag);
       if (cm->delta_lf_present_flag) {
         aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_lf_res) - 1, 2);
-        xd->prev_delta_lf_from_base = 0;
+        xd->delta_lf_from_base = 0;
         aom_wb_write_bit(wb, cm->delta_lf_multi);
         const int frame_lf_count =
             av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
         for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
-          xd->prev_delta_lf[lf_id] = 0;
+          xd->delta_lf[lf_id] = 0;
       }
     }
   }

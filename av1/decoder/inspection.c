@@ -110,7 +110,7 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
         mi->cfl_alpha_sign = 0;
       }
       // delta_q
-      mi->current_qindex = mbmi->current_q_index;
+      mi->current_qindex = mbmi->current_qindex;
     }
   }
   return 1;

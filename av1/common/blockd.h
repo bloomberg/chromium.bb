@@ -262,9 +262,9 @@ typedef struct MB_MODE_INFO {
   PARTITION_TYPE partition;
   /* deringing gain *per-superblock* */
   int8_t cdef_strength;
-  int current_q_index;
-  int current_delta_lf_from_base;
-  int curr_delta_lf[FRAME_LF_COUNT];
+  int current_qindex;
+  int delta_lf_from_base;
+  int delta_lf[FRAME_LF_COUNT];
 #if CONFIG_RD_DEBUG
   RD_STATS rd_stats;
   int mi_row;
@@ -554,7 +554,6 @@ typedef struct macroblockd {
   // same with that in AV1_COMMON
   struct aom_internal_error_info *error_info;
   const WarpedMotionParams *global_motion;
-  int prev_qindex;
   int delta_qindex;
   int current_qindex;
   // Since actual frame level loop filtering level value is not available
@@ -563,8 +562,7 @@ typedef struct macroblockd {
   // filtering level) and code the delta between previous superblock's delta
   // lf and current delta lf. It is equivalent to the delta between previous
   // superblock's actual lf and current lf.
-  int prev_delta_lf_from_base;
-  int current_delta_lf_from_base;
+  int delta_lf_from_base;
   // For this experiment, we have four frame filter levels for different plane
   // and direction. So, to support the per superblock update, we need to add
   // a few more params as below.
@@ -578,8 +576,7 @@ typedef struct macroblockd {
   // SEG_LVL_ALT_LF_Y_H = 2;
   // SEG_LVL_ALT_LF_U   = 3;
   // SEG_LVL_ALT_LF_V   = 4;
-  int prev_delta_lf[FRAME_LF_COUNT];
-  int curr_delta_lf[FRAME_LF_COUNT];
+  int delta_lf[FRAME_LF_COUNT];
   int cdef_preset[4];
 
   DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
