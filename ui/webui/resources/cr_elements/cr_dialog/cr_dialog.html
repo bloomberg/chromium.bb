@@ -52,7 +52,7 @@
       /**
        * When using mixins, avoid using padding shorthand. Using both the
        * shorthand and top/bottom/start/end can lead to style override issues.
-       * This is only noticable when the |optimize_webui=true| build arguement
+       * This is only noticable when the |optimize_webui=true| build argument
        * is used.
        *
        * See https://crbug.com/846254 and associated CL for more information.
@@ -65,6 +65,14 @@
         @apply --cr-dialog-body;
       }
 
+      /**
+       * When using mixins, avoid using padding shorthand. Using both the
+       * shorthand and top/bottom/start/end can lead to style override issues.
+       * This is only noticable when the |optimize_webui=true| build argument
+       * is used.
+       *
+       * See https://crbug.com/846254 and associated CL for more information.
+       */
       :host ::slotted([slot=title]) {
         -webkit-padding-end: 20px;
         -webkit-padding-start: 20px;
@@ -72,14 +80,25 @@
         font-size: calc(15 / 13 * 100%);
         line-height: 1;
         padding-bottom: 16px;
-        padding-top: 16px;
+        padding-top: 20px;
         @apply --cr-dialog-title;
       }
 
+      /**
+       * When using mixins, avoid using padding shorthand. Using both the
+       * shorthand and top/bottom/start/end can lead to style override issues.
+       * This is only noticable when the |optimize_webui=true| build argument
+       * is used.
+       *
+       * See https://crbug.com/846254 and associated CL for more information.
+       */
       :host ::slotted([slot=button-container]) {
+        -webkit-padding-end: 16px;
+        -webkit-padding-start: 16px;
         display: flex;
         justify-content: flex-end;
-        padding: 16px;
+        padding-bottom: 16px;
+        padding-top: 24px;
         @apply --cr-dialog-button-container;
       }
 
