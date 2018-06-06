@@ -78,6 +78,7 @@ test("device_unittests") {
     "fido/fido_request_handler_unittest.cc",
     "fido/get_assertion_handler_unittest.cc",
     "fido/get_assertion_task_unittest.cc",
+    "fido/mac/credential_metadata_unittest.cc",
     "fido/mac/get_assertion_operation_unittest_mac.mm",
     "fido/mac/make_credential_operation_unittest_mac.mm",
     "fido/make_credential_handler_unittest.cc",
