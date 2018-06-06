@@ -30,7 +30,7 @@ const char kDataURL[] =
     "<!DOCTYPE html>"
     "<html>"
     "<head>"
-    "<title>Mouse wheel latency histograms reported.</title>"
+    "<title>Scroll latency histograms browsertests.</title>"
     "<script src=\"../../resources/testharness.js\"></script>"
     "<script src=\"../../resources/testharnessreport.js\"></script>"
     "<style>"
@@ -40,7 +40,20 @@ const char kDataURL[] =
     "</style>"
     "</head>"
     "<body>"
+    "<div id='spinner'>Spinning</div>"
     "</body>"
+    "<script>"
+    "var degree = 0;"
+    "function spin() {"
+    "degree = degree + 3;"
+    "if (degree >= 360)"
+    "degree -= 360;"
+    "document.getElementById('spinner').style['transform'] = "
+    "'rotate(' + degree + 'deg)';"
+    "requestAnimationFrame(spin);"
+    "}"
+    "spin();"
+    "</script>"
     "</html>";
 
 }  // namespace
@@ -71,6 +84,11 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
     while (!GetWidgetHost()->RequestRepaintForTesting())
       GiveItSomeTime();
     frame_observer_->Wait();
+  }
+
+  void OnSyntheticGestureCompleted(SyntheticGesture::Result result) {
+    EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
+    run_loop_->Quit();
   }
 
  protected:
@@ -109,9 +127,20 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
     GetWidgetHost()->ForwardGestureEvent(event2);
   }
 
+  // Returns true if the given histogram has recorded the expected number of
+  // samples.
+  bool VerifyRecordedSamplesForHistogram(
+      const size_t num_samples,
+      const std::string& histogram_name) const {
+    return num_samples ==
+           histogram_tester_.GetAllSamples(histogram_name).size();
+  }
+
+  std::unique_ptr<base::RunLoop> run_loop_;
+
  private:
+  base::HistogramTester histogram_tester_;
   base::MessageLoop loop_;
-  base::RunLoop runner_;
   std::unique_ptr<MainThreadFrameObserver> frame_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollLatencyBrowserTest);
@@ -122,20 +151,63 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest, SmoothWheelScroll) {
   LoadURL();
 
-  base::HistogramTester histogram_tester;
   DoSmoothWheelScroll(gfx::Vector2d(0, 100));
-
-  size_t num_samples = 0;
-
-  while (num_samples == 0) {
-    FetchHistogramsFromChildProcesses();
-    num_samples =
-        histogram_tester
-            .GetAllSamples(
-                "Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin2")
-            .size();
+  while (!VerifyRecordedSamplesForHistogram(
+      1, "Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin2")) {
     GiveItSomeTime();
+    FetchHistogramsFromChildProcesses();
   }
+}
+
+// Do an upward wheel scroll, and verify that no scroll metrics is recorded when
+// the scroll event is ignored.
+IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest,
+                       ScrollLatencyNotRecordedIfGSUIgnored) {
+  LoadURL();
+  auto scroll_update_watcher = std::make_unique<InputMsgWatcher>(
+      GetWidgetHost(), blink::WebInputEvent::kGestureScrollUpdate);
+
+  // Try to scroll upward, the GSU(s) will get ignored since the scroller is at
+  // its extent.
+  SyntheticSmoothScrollGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.anchor = gfx::PointF(10, 10);
+  params.distances.push_back(gfx::Vector2d(0, 60));
+
+  run_loop_ = std::make_unique<base::RunLoop>();
+
+  std::unique_ptr<SyntheticSmoothScrollGesture> gesture(
+      new SyntheticSmoothScrollGesture(params));
+  GetWidgetHost()->QueueSyntheticGesture(
+      std::move(gesture),
+      base::BindOnce(&ScrollLatencyBrowserTest::OnSyntheticGestureCompleted,
+                     base::Unretained(this)));
+
+  // Runs until we get the OnSyntheticGestureCompleted callback and verify that
+  // the first GSU event is ignored.
+  run_loop_->Run();
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
+            scroll_update_watcher->GetAckStateWaitIfNecessary());
+
+  // Wait for one frame and then verify that the scroll metrics are not
+  // recorded.
+  std::unique_ptr<RenderFrameSubmissionObserver> frame_observer =
+      std::make_unique<RenderFrameSubmissionObserver>(
+          GetWidgetHost()->render_frame_metadata_provider());
+  frame_observer->WaitForAnyFrameSubmission();
+  FetchHistogramsFromChildProcesses();
+  EXPECT_TRUE(VerifyRecordedSamplesForHistogram(
+      0, "Event.Latency.ScrollBegin.Touch.BrowserNotifiedToBeforeGpuSwap2"));
+  EXPECT_TRUE(VerifyRecordedSamplesForHistogram(
+      0, "Event.Latency.ScrollBegin.Touch.GpuSwap2"));
+  EXPECT_TRUE(VerifyRecordedSamplesForHistogram(
+      0, "Event.Latency.ScrollBegin.Touch.HandledToRendererSwap2_Impl"));
+  EXPECT_TRUE(VerifyRecordedSamplesForHistogram(
+      0, "Event.Latency.ScrollBegin.Touch.RendererSwapToBrowserNotified2"));
+  EXPECT_TRUE(VerifyRecordedSamplesForHistogram(
+      0, "Event.Latency.ScrollBegin.Touch.TimeToHandled2_Impl"));
+  EXPECT_TRUE(VerifyRecordedSamplesForHistogram(
+      0, "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin2"));
 }
 
 }  // namespace content

@@ -226,8 +226,11 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
   latency->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0);
   // If this event couldn't have caused a gesture event, and it didn't trigger
   // rendering, we're done processing it. If the event got coalesced then
-  // terminate it as well.
-  if (!rendering_scheduled || latency->coalesced()) {
+  // terminate it as well. We also exclude cases where we're against the scroll
+  // extent from scrolling metrics.
+  if (!rendering_scheduled || latency->coalesced() ||
+      (event.GetType() == WebInputEvent::kGestureScrollUpdate &&
+       ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS)) {
     latency->Terminate();
   }
 

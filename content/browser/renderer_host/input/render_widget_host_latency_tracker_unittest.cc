@@ -802,6 +802,33 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
   EXPECT_TRUE(HistogramSizeEq("Event.Latency.ScrollUpdate.GpuSwap", 0));
 }
 
+TEST_F(RenderWidgetHostLatencyTrackerTest, LatencyTerminatedOnAckIfGSUIgnored) {
+  for (blink::WebGestureDevice source_device :
+       {blink::kWebGestureDeviceTouchscreen,
+        blink::kWebGestureDeviceTouchpad}) {
+    for (bool rendering_on_main : {false, true}) {
+      auto scroll = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+          5.f, -5.f, 0, source_device);
+      base::TimeTicks now = base::TimeTicks::Now();
+      scroll.SetTimeStamp(now);
+      ui::LatencyInfo scroll_latency;
+      scroll_latency.set_source_event_type(
+          source_device == blink::kWebGestureDeviceTouchscreen
+              ? ui::SourceEventType::TOUCH
+              : ui::SourceEventType::WHEEL);
+      scroll_latency.AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+          tracker()->latency_component_id(), now, 1);
+      AddFakeComponentsWithTimeStamp(*tracker(), &scroll_latency, now);
+      AddRenderingScheduledComponent(&scroll_latency, rendering_on_main, now);
+      tracker()->OnInputEvent(scroll, &scroll_latency);
+      tracker()->OnInputEventAck(scroll, &scroll_latency,
+                                 INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+      EXPECT_TRUE(scroll_latency.terminated());
+    }
+  }
+}
+
 TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {
   auto scroll_begin = SyntheticWebGestureEventBuilder::BuildScrollBegin(
       5, -5, blink::kWebGestureDeviceTouchscreen);
