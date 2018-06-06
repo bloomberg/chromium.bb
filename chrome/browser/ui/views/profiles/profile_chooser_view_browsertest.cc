@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -41,6 +42,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/webview/webview.h"
@@ -199,7 +201,7 @@ class ProfileChooserViewExtensionsTest
 #endif
 
     base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(ProfileChooserView::IsShowing());
+    ASSERT_TRUE(ProfileChooserView::IsShowing());
 
     // Create this observer before lock is pressed to avoid a race condition.
     window_close_observer_.reset(new content::WindowedNotificationObserver(
@@ -221,9 +223,13 @@ class ProfileChooserViewExtensionsTest
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
   void OpenProfileChooserViews(Browser* browser) {
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-    views::View* button = browser_view->frame()->GetNewAvatarMenuButton();
+    views::View* button;
+    if (ui::MaterialDesignController::IsRefreshUi())
+      button = browser_view->toolbar()->avatar_button();
+    else
+      button = browser_view->frame()->GetNewAvatarMenuButton();
     if (!button)
-      NOTREACHED() << "NewAvatarButton not found.";
+      NOTREACHED() << "Avatar button not found.";
 
     ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
