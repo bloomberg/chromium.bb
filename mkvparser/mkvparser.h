@@ -22,7 +22,7 @@ class IMkvReader {
   virtual int Length(long long* total, long long* available) = 0;
 
  protected:
-  virtual ~IMkvReader();
+  virtual ~IMkvReader() {}
 };
 
 template <typename Type>

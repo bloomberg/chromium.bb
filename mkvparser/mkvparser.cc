@@ -36,8 +36,6 @@ inline bool isnan(double val) { return std::isnan(val); }
 inline bool isinf(double val) { return std::isinf(val); }
 #endif  // MSC_COMPAT
 
-IMkvReader::~IMkvReader() {}
-
 template <typename Type>
 Type* SafeArrayAlloc(unsigned long long num_elements,
                      unsigned long long element_size) {
