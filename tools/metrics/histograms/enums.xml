@@ -27749,6 +27749,7 @@ from previous Chrome versions.
   <int value="143725809" label="DownloadProgressInfoBar:enabled"/>
   <int value="147342055" label="ChromeHomeClearUrlOnOpen:disabled"/>
   <int value="147373243" label="enable-deferred-image-decoding"/>
+  <int value="151022756" label="ArcAvailableForChildAccount:disabled"/>
   <int value="151101719" label="HtmlBaseUsernameDetector:enabled"/>
   <int value="157217034" label="enable-tab-for-desktop-share"/>
   <int value="157318016" label="AutomaticTabDiscarding:enabled"/>
@@ -28429,6 +28430,7 @@ from previous Chrome versions.
   <int value="1670161209" label="ClickToOpenPDFPlaceholder:enabled"/>
   <int value="1670799163" label="ChromeHomeShowGoogleGWhenUrlCleared:enabled"/>
   <int value="1673427566" label="ChromeHomeExpandButton:disabled"/>
+  <int value="1679558835" label="ArcAvailableForChildAccount:enabled"/>
   <int value="1689123607" label="enable-app-link"/>
   <int value="1689183477" label="enable-merge-key-char-events"/>
   <int value="1690837904" label="save-previous-document-resources"/>
