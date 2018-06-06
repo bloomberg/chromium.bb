@@ -637,8 +637,8 @@ const base::Feature kTPMFirmwareUpdate{"TPMFirmwareUpdate",
 
 // Enables or disables "usm" service in the list of user services returned by
 // userInfo Gaia message.
-const base::Feature kCrOSEnableUSMUserService{
-    "CrOSEnableUSMUserService", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kCrOSEnableUSMUserService{"CrOSEnableUSMUserService",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 #endif  // defined(OS_CHROMEOS)
 
