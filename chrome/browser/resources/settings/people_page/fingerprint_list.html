@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
@@ -9,7 +10,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
 <link rel="import" href="fingerprint_browser_proxy.html">
 <link rel="import" href="setup_fingerprint_dialog.html">
@@ -37,8 +37,8 @@
         background-color: white;
       }
 
-      paper-input {
-        --paper-input-container-color: transparent;
+      cr-input {
+        --cr-input-error-display: none;
       }
 
       paper-ripple {
@@ -52,9 +52,8 @@
         <template>
           <div class="list-item">
             <paper-ripple noink></paper-ripple>
-            <paper-input value="{{item}}"
-                on-change="onFingerprintLabelChanged_">
-            </paper-input>
+            <cr-input value="{{item}}" on-change="onFingerprintLabelChanged_">
+            </cr-input>
             <paper-icon-button-light class="icon-delete-gray">
               <button on-click="onFingerprintDeleteTapped_"></button>
             </paper-icon-button-light>
