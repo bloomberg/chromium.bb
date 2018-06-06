@@ -101,6 +101,7 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   Node* three = shadow_root->getElementById("three")->firstChild();
   Node* four = shadow_root->getElementById("four")->firstChild();
   Node* five = shadow_root->getElementById("five")->firstChild();
+  Node* space = shadow_root->getElementById("space")->firstChild();
 
   VisibleSelection selection;
   VisibleSelectionInFlatTree selection_in_flat_tree;
@@ -118,8 +119,8 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
 
   EXPECT_EQ(selection.Start(), selection.Base());
   EXPECT_EQ(selection.End(), selection.Extent());
-  EXPECT_EQ(Position(one, 0), selection.Start());
-  EXPECT_EQ(Position(two, 2), selection.End());
+  EXPECT_EQ(Position(five, 5), selection.Start());
+  EXPECT_EQ(Position(five, 5), selection.End());
 
   EXPECT_EQ(selection_in_flat_tree.Start(), selection_in_flat_tree.Base());
   EXPECT_EQ(selection_in_flat_tree.End(), selection_in_flat_tree.Extent());
@@ -139,8 +140,8 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
 
   EXPECT_EQ(selection.Start(), selection.Base());
   EXPECT_EQ(selection.End(), selection.Extent());
-  EXPECT_EQ(Position(one, 0), selection.Start());
-  EXPECT_EQ(Position(two, 2), selection.End());
+  EXPECT_EQ(Position(space, 0), selection.Start());
+  EXPECT_EQ(Position(five, 5), selection.End());
 
   EXPECT_EQ(selection_in_flat_tree.Start(), selection_in_flat_tree.Base());
   EXPECT_EQ(selection_in_flat_tree.End(), selection_in_flat_tree.Extent());

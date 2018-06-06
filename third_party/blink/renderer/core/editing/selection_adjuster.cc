@@ -299,8 +299,9 @@ class GranularityAdjuster final {
     const PositionTemplate<Strategy> expanded_end =
         new_end.IsNotNull() ? new_end : end;
 
-    const EphemeralRangeTemplate<Strategy> expanded_range(expanded_start,
-                                                          expanded_end);
+    const EphemeralRangeTemplate<Strategy> expanded_range =
+        AdjustStartAndEnd(expanded_start, expanded_end);
+
     return ComputeAdjustedSelection(canonicalized_selection, expanded_range);
   }
 
@@ -313,6 +314,21 @@ class GranularityAdjuster final {
                     !IsEndOfParagraph(position))
                ? kPreviousWordIfOnBoundary
                : kNextWordIfOnBoundary;
+  }
+
+  // Because of expansion is done in flat tree, in case of |start| and |end| are
+  // distributed, |start| can be after |end|.
+  static EphemeralRange AdjustStartAndEnd(const Position& start,
+                                          const Position& end) {
+    if (start <= end)
+      return EphemeralRange(start, end);
+    return EphemeralRange(end, start);
+  }
+
+  static EphemeralRangeInFlatTree AdjustStartAndEnd(
+      const PositionInFlatTree& start,
+      const PositionInFlatTree& end) {
+    return EphemeralRangeInFlatTree(start, end);
   }
 };
 

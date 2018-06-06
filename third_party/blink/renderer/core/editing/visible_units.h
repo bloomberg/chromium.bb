@@ -126,10 +126,6 @@ StartOfWordPosition(const VisiblePositionInFlatTree&,
 CORE_EXPORT VisiblePositionInFlatTree
 StartOfWord(const VisiblePositionInFlatTree&,
             EWordSide = kNextWordIfOnBoundary);
-// TODO(yoichio): Replace |endOfWord| to |endOfWordPosition| because returned
-// Position should be canonicalized with |nextBoundary()| by TextItetator.
-CORE_EXPORT Position EndOfWordPosition(const VisiblePosition&,
-                                       EWordSide = kNextWordIfOnBoundary);
 CORE_EXPORT VisiblePosition EndOfWord(const VisiblePosition&,
                                       EWordSide = kNextWordIfOnBoundary);
 CORE_EXPORT PositionInFlatTree
