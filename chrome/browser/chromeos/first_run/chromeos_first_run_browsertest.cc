@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/system_tray_test_api.mojom.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
@@ -188,10 +189,12 @@ IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, FirstRunFlow) {
   FlushForTesting();
   EXPECT_TRUE(IsTrayBubbleOpen());
 
-  AdvanceStep();
-  WaitForStep(first_run::kHelpStep);
-  FlushForTesting();
-  EXPECT_TRUE(IsTrayBubbleOpen());
+  if (!ash::features::IsSystemTrayUnifiedEnabled()) {
+    AdvanceStep();
+    WaitForStep(first_run::kHelpStep);
+    FlushForTesting();
+    EXPECT_TRUE(IsTrayBubbleOpen());
+  }
 
   AdvanceStep();
   WaitForFinalization();
