@@ -49,8 +49,6 @@ class CertificateViewer implements OnItemSelectedListener {
     private ArrayList<LinearLayout> mViews;
     private CertificateFactory mCertificateFactory;
     private Dialog mDialog;
-    private ScrollView mScrollView;
-    private Spinner mSpinner;
 
     public CertificateViewer(Context context) {
         mContext = context;
@@ -102,14 +100,14 @@ class CertificateViewer implements OnItemSelectedListener {
         title.setPadding(mPadding, mPadding, mPadding, mPadding / 2);
         dialogContainer.addView(title);
 
-        mSpinner = new Spinner(mContext);
-        ApiCompatibilityUtils.setTextAlignment(mSpinner, View.TEXT_ALIGNMENT_VIEW_START);
-        mSpinner.setAdapter(arrayAdapter);
-        mSpinner.setOnItemSelectedListener(this);
-        mSpinner.setDropDownWidth(ViewGroup.LayoutParams.MATCH_PARENT);
+        Spinner spinner = new Spinner(mContext);
+        ApiCompatibilityUtils.setTextAlignment(spinner, View.TEXT_ALIGNMENT_VIEW_START);
+        spinner.setAdapter(arrayAdapter);
+        spinner.setOnItemSelectedListener(this);
+        spinner.setDropDownWidth(ViewGroup.LayoutParams.MATCH_PARENT);
         // Remove padding so that dropdown has same width as the spinner.
-        mSpinner.setPadding(0, 0, 0, 0);
-        dialogContainer.addView(mSpinner);
+        spinner.setPadding(0, 0, 0, 0);
+        dialogContainer.addView(spinner);
 
         LinearLayout certContainer = new LinearLayout(mContext);
         certContainer.setOrientation(LinearLayout.VERTICAL);
@@ -120,9 +118,9 @@ class CertificateViewer implements OnItemSelectedListener {
             }
             certContainer.addView(certificateView);
         }
-        mScrollView = new ScrollView(mContext);
-        mScrollView.addView(certContainer);
-        dialogContainer.addView(mScrollView);
+        ScrollView scrollView = new ScrollView(mContext);
+        scrollView.addView(certContainer);
+        dialogContainer.addView(scrollView);
 
         mDialog = new Dialog(mContext);
         mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
