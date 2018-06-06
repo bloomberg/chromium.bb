@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
@@ -64,6 +65,10 @@ bool RequestedModificationTime(
 bool RequestedThumbnail(ProvidedFileSystemInterface::MetadataFieldMask fields) {
   return fields &
          ProvidedFileSystemInterface::MetadataField::METADATA_FIELD_THUMBNAIL;
+}
+
+void RecordReadDirectoryCount(int count) {
+  UMA_HISTOGRAM_COUNTS_100000("NativeSmbFileShare.ReadDirectoryCount", count);
 }
 
 }  // namespace
@@ -464,6 +469,8 @@ void SmbFileSystem::HandleRequestReadDirectoryCallback(
   task_queue_.TaskFinished();
   uint32_t batch_size = kReadDirectoryInitialBatchSize;
   storage::AsyncFileUtil::EntryList entry_list;
+
+  RecordReadDirectoryCount(entries.entries_size());
 
   // Loop through the entries and send when the desired batch size is hit.
   for (const smbprovider::DirectoryEntryProto& entry : entries.entries()) {
