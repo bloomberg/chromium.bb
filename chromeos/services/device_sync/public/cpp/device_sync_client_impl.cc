@@ -153,6 +153,11 @@ void DeviceSyncClientImpl::OnGetSyncedDevicesCompleted(
     return;
   }
 
+  if (waiting_for_local_device_metadata_) {
+    waiting_for_local_device_metadata_ = false;
+    LoadLocalDeviceMetadata();
+  }
+
   expiring_device_cache_->SetRemoteDevicesAndInvalidateOldEntries(
       *remote_devices);
 
@@ -165,6 +170,7 @@ void DeviceSyncClientImpl::OnGetLocalDeviceMetadataCompleted(
     PA_LOG(INFO) << "Tried to get local device metadata before service was "
                     "fully initialized; waiting for enrollment to complete "
                     "before continuing.";
+    waiting_for_local_device_metadata_ = true;
     return;
   }
 
