@@ -11,8 +11,8 @@
 
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/session_types.h"
 #include "ash/root_window_controller.h"
@@ -28,6 +28,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/pattern.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/manager/display_change_observer.h"
@@ -160,8 +161,7 @@ class NightLightTest : public NoSessionAshTestBase {
   // AshTestBase:
   void SetUp() override {
     // Explicitly enable the NightLight feature for the tests.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshEnableNightLight);
+    scoped_feature_list_.InitAndEnableFeature(features::kNightLight);
 
     NoSessionAshTestBase::SetUp();
     CreateTestUserSessions();
@@ -190,6 +190,8 @@ class NightLightTest : public NoSessionAshTestBase {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   TestDelegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(NightLightTest);

@@ -4,7 +4,7 @@
 
 #include "ash/system/night_light/night_light_toggle_button.h"
 
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/night_light/night_light_controller.h"
@@ -56,7 +56,7 @@ NightLightToggleButton::NightLightToggleButton(views::ButtonListener* listener)
 }
 
 void NightLightToggleButton::Toggle() {
-  DCHECK(switches::IsNightLightEnabled());
+  DCHECK(features::IsNightLightEnabled());
   Shell::Get()->night_light_controller()->Toggle();
   Update();
   NotifyAccessibilityEvent(ax::mojom::Event::kAriaAttributeChanged, true);

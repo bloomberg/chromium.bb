@@ -4,7 +4,7 @@
 
 #include "ash/system/tiles/tray_tiles.h"
 
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/system/night_light/night_light_controller.h"
 #include "ash/system/night_light/night_light_toggle_button.h"
@@ -12,6 +12,7 @@
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/user_manager/user_type.h"
 #include "ui/views/view.h"
 
@@ -27,8 +28,7 @@ class TrayTilesTest : public NoSessionAshTestBase {
 
   void SetUp() override {
     // Explicitly enable the NightLight feature for the tests.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshEnableNightLight);
+    scoped_feature_list_.InitAndEnableFeature(features::kNightLight);
 
     NoSessionAshTestBase::SetUp();
     tray_tiles_.reset(new TrayTiles(GetPrimarySystemTray()));
@@ -62,6 +62,8 @@ class TrayTilesTest : public NoSessionAshTestBase {
   TrayTiles* tray_tiles() { return tray_tiles_.get(); }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   std::unique_ptr<TrayTiles> tray_tiles_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayTilesTest);

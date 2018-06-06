@@ -266,7 +266,7 @@ void RegisterInterfaces(
   registry->AddInterface(
       base::Bind(&BindNewWindowControllerRequestOnMainThread),
       main_thread_task_runner);
-  if (switches::IsNightLightEnabled()) {
+  if (features::IsNightLightEnabled()) {
     registry->AddInterface(
         base::Bind(&BindNightLightControllerRequestOnMainThread),
         main_thread_task_runner);

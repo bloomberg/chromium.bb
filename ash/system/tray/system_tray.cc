@@ -241,7 +241,7 @@ void SystemTray::CreateItems() {
   AddTrayItem(std::make_unique<TrayKeyboardBrightness>(this));
   tray_caps_lock_ = new TrayCapsLock(this);
   AddTrayItem(base::WrapUnique(tray_caps_lock_));
-  if (switches::IsNightLightEnabled()) {
+  if (features::IsNightLightEnabled()) {
     tray_night_light_ = new TrayNightLight(this);
     AddTrayItem(base::WrapUnique(tray_night_light_));
   }

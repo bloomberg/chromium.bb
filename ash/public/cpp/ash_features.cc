@@ -28,6 +28,8 @@ const base::Feature kLockScreenNotifications{"LockScreenNotifications",
 const base::Feature kNewOverviewAnimations{"NewOverviewAnimations",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kNightLight{"NightLight", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kOverviewSwipeToClose{"OverviewSwipeToClose",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -59,6 +61,10 @@ bool IsKeyboardShortcutViewerEnabled() {
 
 bool IsLockScreenNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kLockScreenNotifications);
+}
+
+bool IsNightLightEnabled() {
+  return base::FeatureList::IsEnabled(kNightLight);
 }
 
 bool IsPersistentWindowBoundsEnabled() {

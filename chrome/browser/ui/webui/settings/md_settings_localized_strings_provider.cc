@@ -746,7 +746,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
                           display::HasExternalTouchscreenDevice());
 
   html_source->AddBoolean("nightLightFeatureEnabled",
-                          ash::switches::IsNightLightEnabled());
+                          ash::features::IsNightLightEnabled());
 
   LocalizedString storage_strings[] = {
       {"storageTitle", IDS_SETTINGS_STORAGE_TITLE},

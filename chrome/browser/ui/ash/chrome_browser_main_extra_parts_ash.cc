@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/mus_property_mirror_ash.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
@@ -272,7 +272,7 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
   data_promo_notification_ = std::make_unique<DataPromoNotification>();
 
-  if (ash::switches::IsNightLightEnabled()) {
+  if (ash::features::IsNightLightEnabled()) {
     night_light_client_ = std::make_unique<NightLightClient>(
         g_browser_process->system_request_context());
     night_light_client_->Start();

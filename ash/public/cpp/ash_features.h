@@ -39,6 +39,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
 // https://crbug.com/801465.
 ASH_PUBLIC_EXPORT extern const base::Feature kNewOverviewAnimations;
 
+// Enables the Night Light feature.
+ASH_PUBLIC_EXPORT extern const base::Feature kNightLight;
+
 // Enables swipe to close in overview mode.
 // TODO(sammiequon): Remove this after the feature is fully launched.
 // https://crbug.com/828646.
@@ -68,6 +71,8 @@ ASH_PUBLIC_EXPORT bool IsDockedMagnifierEnabled();
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
+
+ASH_PUBLIC_EXPORT bool IsNightLightEnabled();
 
 ASH_PUBLIC_EXPORT bool IsPersistentWindowBoundsEnabled();
 
