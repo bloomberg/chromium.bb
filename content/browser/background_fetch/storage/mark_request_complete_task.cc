@@ -37,14 +37,16 @@ void MarkRequestCompleteTask::Start() {
 
 void MarkRequestCompleteTask::StoreResponse() {
   auto response = std::make_unique<ServiceWorkerResponse>();
-  bool is_response_valid = data_manager()->FillServiceWorkerResponse(
+
+  is_response_successful_ = data_manager()->FillServiceWorkerResponse(
       *request_info_, registration_id_.origin(), response.get());
 
-  if (!is_response_valid) {
-    // No point in caching the response, just do the request state transition.
-    CreateAndStoreCompletedRequest(/* succeeded = */ false);
+  // A valid non-empty url is needed if we want to write to the cache.
+  if (!request_info_->fetch_request().url.is_valid()) {
+    CreateAndStoreCompletedRequest();
     return;
   }
+
   cache_manager_->OpenCache(
       registration_id_.origin(), CacheStorageOwner::kBackgroundFetch,
       registration_id_.unique_id() /* cache_name */,
@@ -58,7 +60,7 @@ void MarkRequestCompleteTask::DidOpenCache(
     blink::mojom::CacheStorageError error) {
   if (error != blink::mojom::CacheStorageError::kSuccess) {
     // TODO(crbug.com/780025): Log failures to UMA.
-    CreateAndStoreCompletedRequest(false);
+    CreateAndStoreCompletedRequest();
     return;
   }
   DCHECK(handle.value());
@@ -78,17 +80,16 @@ void MarkRequestCompleteTask::DidWriteToCache(
     CacheStorageCacheHandle handle,
     blink::mojom::CacheStorageError error) {
   // TODO(crbug.com/780025): Log failures to UMA.
-  CreateAndStoreCompletedRequest(
-      /* succeeded = */ error == blink::mojom::CacheStorageError::kSuccess);
+  CreateAndStoreCompletedRequest();
 }
 
-void MarkRequestCompleteTask::CreateAndStoreCompletedRequest(bool succeeded) {
+void MarkRequestCompleteTask::CreateAndStoreCompletedRequest() {
   completed_request_.set_unique_id(registration_id_.unique_id());
   completed_request_.set_request_index(request_info_->request_index());
   completed_request_.set_serialized_request(
       request_info_->fetch_request().Serialize());
   completed_request_.set_download_guid(request_info_->download_guid());
-  completed_request_.set_succeeded(succeeded);
+  completed_request_.set_succeeded(is_response_successful_);
 
   service_worker_context()->StoreRegistrationUserData(
       registration_id_.service_worker_registration_id(),
