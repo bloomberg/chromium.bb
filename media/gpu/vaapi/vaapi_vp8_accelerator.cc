@@ -216,9 +216,8 @@ bool VaapiVP8Accelerator::SubmitDecode(
                                     &slice_param))
     return false;
 
-  void* non_const_ptr = const_cast<uint8_t*>(frame_hdr->data);
   if (!vaapi_wrapper_->SubmitBuffer(VASliceDataBufferType,
-                                    frame_hdr->frame_size, non_const_ptr))
+                                    frame_hdr->frame_size, frame_hdr->data))
     return false;
 
   return vaapi_dec_->DecodeVASurface(pic->AsVaapiVP8Picture()->va_surface());

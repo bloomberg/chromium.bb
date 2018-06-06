@@ -282,10 +282,7 @@ bool VaapiH264Accelerator::SubmitSlice(const H264PPS* pps,
                                     sizeof(slice_param), &slice_param))
     return false;
 
-  // Can't help it, blame libva...
-  void* non_const_ptr = const_cast<uint8_t*>(data);
-  return vaapi_wrapper_->SubmitBuffer(VASliceDataBufferType, size,
-                                      non_const_ptr);
+  return vaapi_wrapper_->SubmitBuffer(VASliceDataBufferType, size, data);
 }
 
 bool VaapiH264Accelerator::SubmitDecode(const scoped_refptr<H264Picture>& pic) {

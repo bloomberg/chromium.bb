@@ -382,11 +382,8 @@ void VaapiVideoEncodeAccelerator::SubmitVAEncMiscParamBuffer(
 void VaapiVideoEncodeAccelerator::SubmitH264BitstreamBuffer(
     scoped_refptr<H264BitstreamBuffer> buffer) {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
-  // TODO(crbug.com/844303): use vaMapBuffer in VaapiWrapper::SubmitBuffer()
-  // instead to avoid this.
-  void* non_const_ptr = const_cast<uint8_t*>(buffer->data());
   if (!vaapi_wrapper_->SubmitBuffer(VAEncPackedHeaderDataBufferType,
-                                    buffer->BytesInBuffer(), non_const_ptr)) {
+                                    buffer->BytesInBuffer(), buffer->data())) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed submitting a bitstream buffer");
   }
 }
