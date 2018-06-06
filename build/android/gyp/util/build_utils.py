@@ -5,6 +5,7 @@
 import ast
 import collections
 import contextlib
+import filecmp
 import fnmatch
 import json
 import os
@@ -141,6 +142,24 @@ def WriteJson(obj, path, only_if_changed=False):
   if not only_if_changed or old_dump != new_dump:
     with open(path, 'w') as outfile:
       outfile.write(new_dump)
+
+
+@contextlib.contextmanager
+def AtomicOutput(path, only_if_changed=True):
+  """Helper to prevent half-written outputs.
+
+  Example:
+    with build_utils.AtomicOutput(output_path) as tmp_file:
+      subprocess.check_call(['prog', '--output', tmp_file.name])
+  """
+  # Create in same directory to ensure same filesystem when moving.
+  with tempfile.NamedTemporaryFile(suffix=os.path.basename(path),
+                                   dir=os.path.dirname(path)) as f:
+    yield f
+    if not (
+        only_if_changed and os.path.exists(path) and filecmp.cmp(f.name, path)):
+      shutil.move(f.name, path)
+      f.delete = False
 
 
 def ReadJson(path):

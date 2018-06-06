@@ -256,8 +256,8 @@ def _CreateInfoFile(java_files, options, srcjar_files):
         'Chromium java files must only have one class: {}'.format(source))
     if options.chromium_code:
       _CheckPathMatchesClassName(java_file, package_name, class_names[0])
-  jar_info_utils.WriteJarInfoFile(options.jar_path + '.info', info_data,
-                                  srcjar_files)
+  with build_utils.AtomicOutput(options.jar_path + '.info') as f:
+    jar_info_utils.WriteJarInfoFile(f.name, info_data, srcjar_files)
 
 
 def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
@@ -378,10 +378,11 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
       # Make sure output exists.
       build_utils.Touch(pdb_path)
 
-    jar.JarDirectory(classes_dir,
-                     options.jar_path,
-                     provider_configurations=options.provider_configurations,
-                     additional_files=options.additional_jar_files)
+    with build_utils.AtomicOutput(options.jar_path) as f:
+      jar.JarDirectory(classes_dir,
+                       f.name,
+                       provider_configurations=options.provider_configurations,
+                       additional_files=options.additional_jar_files)
 
 
 def _ParseAndFlattenGnLists(gn_lists):
