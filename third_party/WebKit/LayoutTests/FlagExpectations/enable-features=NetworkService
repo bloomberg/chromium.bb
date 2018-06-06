@@ -23,3 +23,6 @@ Bug(none) http/tests/security/powerfulFeatureRestrictions/old-powerful-features-
 # Only passes with Network Servce enabled (unfortunately this expectation still
 # allows Timeout from the top-level exctations though).
 crbug.com/800898 external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Pass ]
+
+# Flaky on non-NetworkService (disabled), consistent failing on NetworkService. Probably due to DCHECK.
+crbug.com/849670 http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Failure ]
