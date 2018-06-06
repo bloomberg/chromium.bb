@@ -14,7 +14,6 @@
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/browser/offline_pages/android/background_scheduler_bridge.h"
-#include "chrome/browser/offline_pages/android/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/offline_pages/android/evaluation/evaluation_test_scheduler.h"
 #include "chrome/browser/offline_pages/background_loader_offliner.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
@@ -163,10 +162,6 @@ std::unique_ptr<KeyedService> GetTestingRequestCoordinator(
   request_coordinator->SetInternalStartProcessingCallbackForTest(
       base::Bind(&android::EvaluationTestScheduler::ImmediateScheduleCallback,
                  base::Unretained(scheduler.get())));
-
-  DownloadNotifyingObserver::CreateAndStartObserving(
-      request_coordinator.get(),
-      std::make_unique<android::OfflinePageNotificationBridge>());
 
   return std::move(request_coordinator);
 }

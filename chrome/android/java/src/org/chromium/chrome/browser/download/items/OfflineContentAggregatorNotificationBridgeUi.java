@@ -9,7 +9,6 @@ import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadNotifier;
 import org.chromium.chrome.browser.download.DownloadServiceDelegate;
 import org.chromium.components.offline_items_collection.ContentId;
-import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
@@ -148,15 +147,13 @@ public class OfflineContentAggregatorNotificationBridgeUi
     }
 
     private void pushItemToUi(OfflineItem item, OfflineItemVisuals visuals) {
-        if (!shouldShowNotification(item)) return;
-
         DownloadInfo info = DownloadInfo.fromOfflineItem(item, visuals);
         switch (item.state) {
             case OfflineItemState.IN_PROGRESS:
                 mUi.notifyDownloadProgress(info, item.creationTimeMs, item.allowMetered);
                 break;
             case OfflineItemState.COMPLETE:
-                mUi.notifyDownloadSuccessful(info, -1L, false, false);
+                mUi.notifyDownloadSuccessful(info, -1L, false, item.isOpenable);
                 break;
             case OfflineItemState.CANCELLED:
                 mUi.notifyDownloadCanceled(item.id);
@@ -172,7 +169,7 @@ public class OfflineContentAggregatorNotificationBridgeUi
                 mUi.notifyDownloadFailed(info, item.failState);
                 break;
             case OfflineItemState.PENDING:
-                // Not Implemented.
+                mUi.notifyDownloadPaused(info);
                 break;
             default:
                 assert false : "Unexpected OfflineItem state.";
@@ -197,8 +194,8 @@ public class OfflineContentAggregatorNotificationBridgeUi
     private boolean shouldPushNewItemToUi(OfflineItem item) {
         switch (item.state) {
             case OfflineItemState.IN_PROGRESS:
-                return true;
             case OfflineItemState.PENDING:
+                return true;
             case OfflineItemState.COMPLETE:
             case OfflineItemState.INTERRUPTED:
             case OfflineItemState.FAILED:
@@ -222,11 +219,5 @@ public class OfflineContentAggregatorNotificationBridgeUi
             default:
                 return false;
         }
-    }
-
-    private boolean shouldShowNotification(OfflineItem item) {
-        // Temporarily return immediately to prevent unnecessary notifications for offline pages
-        // until https://crbug.com/831083 and https://crbug.com/832282 are fixed.
-        return !LegacyHelpers.isLegacyOfflinePage(item.id);
     }
 }

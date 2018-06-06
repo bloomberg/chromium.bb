@@ -54,9 +54,10 @@ static const char kTestBadGuid[] = "ccccccc-cccc-0ccc-0ccc-ccccccccccc0";
 static const ClientId kTestClientIdOtherNamespace(kLastNNamespace, kTestGuid1);
 static const ClientId kTestClientIdOtherGuid(kLastNNamespace, kTestBadGuid);
 static const ClientId kTestClientId1(kAsyncNamespace, kTestGuid1);
-static const ClientId kTestClientId2(kAsyncNamespace, kTestGuid2);
 static const ClientId kTestClientIdPrefetch(kSuggestedArticlesNamespace,
                                             kTestGuid1);
+static const ClientId kTestClientIdPrefetch2(kSuggestedArticlesNamespace,
+                                             kTestGuid2);
 static const ContentId kTestContentId1(kOfflinePageNamespace, kTestGuid1);
 static const base::FilePath kTestFilePath =
     base::FilePath(FILE_PATH_LITERAL("foo/bar.mhtml"));
@@ -74,11 +75,6 @@ void GetItemAndVerify(const base::Optional<OfflineItem>& expected,
   EXPECT_EQ(expected.value().state, actual.value().state);
 }
 
-void GetAllItemsAndVerify(size_t expected_size,
-                          const std::vector<OfflineItem>& actual) {
-  EXPECT_EQ(expected_size, actual.size());
-}
-
 // Mock DownloadUIAdapter::Delegate
 class DownloadUIAdapterDelegate : public DownloadUIAdapter::Delegate {
  public:
@@ -87,14 +83,15 @@ class DownloadUIAdapterDelegate : public DownloadUIAdapter::Delegate {
 
   // DownloadUIAdapter::Delegate
   bool IsVisibleInUI(const ClientId& client_id) override { return is_visible; }
-  bool IsTemporarilyHiddenInUI(const ClientId& client_id) override {
-    return is_temporarily_hidden;
-  }
   void SetUIAdapter(DownloadUIAdapter* ui_adapter) override {}
   void OpenItem(const OfflineItem& item, int64_t offline_id) override {}
+  bool MaybeSuppressNotification(const std::string& origin,
+                                 const ClientId& item) override {
+    return maybe_suppress_notification_;
+  }
 
   bool is_visible = true;
-  bool is_temporarily_hidden = false;
+  bool maybe_suppress_notification_ = false;
 };
 
 class MockThumbnailDecoder : public ThumbnailDecoder {
@@ -137,7 +134,7 @@ class MockOfflinePageModel : public StubOfflinePageModel {
     observer_ = nullptr;
   }
 
-  // PostTask instead of just running callback to simpulate the real class.
+  // PostTask instead of just running callback to simulate the real class.
   void GetAllPages(MultipleOfflinePageItemCallback callback) override {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&MockOfflinePageModel::GetAllPagesImpl,
@@ -179,6 +176,28 @@ class MockOfflinePageModel : public StubOfflinePageModel {
         FROM_HERE, base::BindOnce(std::move(callback), std::move(copy)));
   }
 
+  void GetPageByOfflineId(int64_t offline_id,
+                          SingleOfflinePageItemCallback callback) override {
+    for (const auto& page : pages) {
+      if (page.second.offline_id == offline_id) {
+        std::move(callback).Run(&(page.second));
+        return;
+      }
+    }
+    std::move(callback).Run(nullptr);
+  }
+
+  void GetPageByGuid(const std::string& guid,
+                     SingleOfflinePageItemCallback callback) override {
+    for (const auto& page : pages) {
+      if (page.second.client_id.id == guid) {
+        std::move(callback).Run(&(page.second));
+        return;
+      }
+    }
+    std::move(callback).Run(nullptr);
+  }
+
   void AddPageAndNotifyAdapter(const OfflinePageItem& page) {
     EXPECT_EQ(pages.end(), pages.find(page.offline_id));
     pages[page.offline_id] = page;
@@ -203,7 +222,7 @@ class MockOfflinePageModel : public StubOfflinePageModel {
 
 // Creates mock versions for OfflinePageModel, RequestCoordinator and their
 // dependencies, then passes them to DownloadUIAdapter for testing.
-// Note that initially the OfflienPageModel is not "loaded". PumpLoop() will
+// Note that initially the OfflinePageModel is not "loaded". PumpLoop() will
 // load it, firing ItemsLoaded callback to the Adapter. Hence some tests
 // start from PumpLoop() right away if they don't need to test this.
 class DownloadUIAdapterTest : public testing::Test,
@@ -233,7 +252,6 @@ class DownloadUIAdapterTest : public testing::Test,
   RequestCoordinator* request_coordinator() {
     return request_coordinator_taco_->request_coordinator();
   }
-  bool items_loaded() { return adapter->IsCacheLoadedForTest(); }
   void AddInitialPage(const ClientId client_id);
   int64_t AddInitialRequest(const GURL& url, const ClientId& client_id);
 
@@ -314,29 +332,14 @@ int64_t DownloadUIAdapterTest::AddRequest(const GURL& url,
 void DownloadUIAdapterTest::AddInitialPage(
     const ClientId client_id = kTestClientId1) {
   model->AddInitialPage(client_id);
-  // Trigger cache load in the adapter.
-  adapter->GetAllItems(base::DoNothing());
   PumpLoop();
 }
 
 int64_t DownloadUIAdapterTest::AddInitialRequest(const GURL& url,
                                                  const ClientId& client_id) {
   int64_t id = AddRequest(url, client_id);
-  // Trigger cache load in the adapter.
-  adapter->GetAllItems(base::DoNothing());
   PumpLoop();
   return id;
-}
-
-TEST_F(DownloadUIAdapterTest, InitialLoad) {
-  EXPECT_NE(nullptr, adapter.get());
-  EXPECT_FALSE(items_loaded());
-  AddInitialPage();
-  EXPECT_TRUE(items_loaded());
-  OfflineItem item(kTestContentId1);
-  adapter->GetItemById(kTestContentId1,
-                       base::BindOnce(&GetItemAndVerify, item));
-  PumpLoop();
 }
 
 TEST_F(DownloadUIAdapterTest, InitialItemConversion) {
@@ -362,7 +365,7 @@ TEST_F(DownloadUIAdapterTest, InitialItemConversion) {
 TEST_F(DownloadUIAdapterTest, ItemDeletedAdded) {
   AddInitialPage();
   // Add page, notify adapter.
-  OfflinePageItem page(GURL(kTestUrl), kTestOfflineId2, kTestClientId2,
+  OfflinePageItem page(GURL(kTestUrl), kTestOfflineId2, kTestClientIdPrefetch2,
                        base::FilePath(kTestFilePath), kFileSize,
                        kTestCreationTime);
   model->AddPageAndNotifyAdapter(page);
@@ -390,58 +393,30 @@ TEST_F(DownloadUIAdapterTest, NotVisibleItem) {
   EXPECT_EQ(0UL, added_guids.size());
 }
 
-TEST_F(DownloadUIAdapterTest, TemporarilyNotVisibleItem) {
-  adapter_delegate->is_temporarily_hidden = true;
-  AddInitialPage();
-  // Initial Item should be invisible in the collection now.
-  adapter->GetItemById(kTestContentId1,
-                       base::BindOnce(&GetItemAndVerify, base::nullopt));
-  adapter->GetAllItems(base::BindOnce(&GetAllItemsAndVerify, 0UL));
+TEST_F(DownloadUIAdapterTest, PageInvisibleOnUIAdded) {
+  // Add a new page which should not be shown in UI.
+  adapter_delegate->is_visible = false;
+  OfflinePageItem page(
+      GURL(kTestUrl), kTestOfflineId1, kTestClientIdOtherNamespace,
+      base::FilePath(kTestFilePath), kFileSize, kTestCreationTime);
+  model->AddPageAndNotifyAdapter(page);
   PumpLoop();
-
   EXPECT_EQ(0UL, added_guids.size());
-  EXPECT_EQ(0UL, deleted_guids.size());
-
-  adapter_delegate->is_temporarily_hidden = false;
-  // Notify adapter about visibility change for the clientId of initial page.
-  adapter->TemporaryHiddenStatusChanged(kTestClientId1);
-  PumpLoop();
-
-  // There should be OnAdded simulated.
-  EXPECT_EQ(1UL, added_guids.size());
-  EXPECT_EQ(0UL, deleted_guids.size());
-  // Also the item should be visible in the collection of items now.
-  OfflineItem item(kTestContentId1);
-  adapter->GetItemById(kTestContentId1,
-                       base::BindOnce(&GetItemAndVerify, item));
-  adapter->GetAllItems(base::BindOnce(&GetAllItemsAndVerify, 1UL));
-  PumpLoop();
-
-  // Switch visibility back to hidden
-  adapter_delegate->is_temporarily_hidden = true;
-  adapter->TemporaryHiddenStatusChanged(kTestClientId1);
-  // There should be OnDeleted fired.
-  EXPECT_EQ(1UL, added_guids.size());
-  EXPECT_EQ(1UL, deleted_guids.size());
-  // Also the item should be visible in the collection of items now.
-  adapter->GetItemById(kTestContentId1,
-                       base::BindOnce(&GetItemAndVerify, base::nullopt));
-  adapter->GetAllItems(base::BindOnce(&GetAllItemsAndVerify, 0UL));
-  PumpLoop();
+  // TODO(dimich): we currently don't report updated items since OPM doesn't
+  // have support for that. Add as needed, this will have to be updated when
+  // support is added.
+  EXPECT_EQ(0UL, updated_guids.size());
 }
 
-TEST_F(DownloadUIAdapterTest, ItemAdded) {
-  AddInitialPage();
-  // Clear the initial page and replace it with updated one.
-  model->pages.clear();
-  // Add a new page which did not exist before.
-  OfflinePageItem page2(GURL(kTestUrl), kTestOfflineId2, kTestClientId2,
-                        base::FilePath(kTestFilePath), kFileSize,
-                        kTestCreationTime);
-  model->AddPageAndNotifyAdapter(page2);
+TEST_F(DownloadUIAdapterTest, PageVisibleOnUIAdded) {
+  // Add a new page which should be shown in UI.
+  OfflinePageItem page(GURL(kTestUrl), kTestOfflineId1, kTestClientIdPrefetch,
+                       base::FilePath(kTestFilePath), kFileSize,
+                       kTestCreationTime);
+  model->AddPageAndNotifyAdapter(page);
   PumpLoop();
   EXPECT_EQ(1UL, added_guids.size());
-  EXPECT_EQ(kTestGuid2, added_guids[0]);
+  EXPECT_EQ(kTestGuid1, added_guids[0]);
   // TODO(dimich): we currently don't report updated items since OPM doesn't
   // have support for that. Add as needed, this will have to be updated when
   // support is added.
@@ -450,7 +425,6 @@ TEST_F(DownloadUIAdapterTest, ItemAdded) {
 
 TEST_F(DownloadUIAdapterTest, LoadExistingRequest) {
   AddInitialRequest(GURL(kTestUrl), kTestClientId1);
-  EXPECT_TRUE(items_loaded());
   OfflineItem item(kTestContentId1);
   item.state = OfflineItemState::IN_PROGRESS;
   adapter->GetItemById(kTestContentId1,
@@ -459,10 +433,8 @@ TEST_F(DownloadUIAdapterTest, LoadExistingRequest) {
 }
 
 TEST_F(DownloadUIAdapterTest, AddRequest) {
-  AddInitialPage();
-  EXPECT_TRUE(items_loaded());
-  EXPECT_EQ(0UL, added_guids.size());
   AddRequest(GURL(kTestUrl), kTestClientId1);
+  EXPECT_EQ(0UL, added_guids.size());
   PumpLoop();
   EXPECT_EQ(1UL, added_guids.size());
   EXPECT_EQ(kTestClientId1.id, added_guids[0]);
@@ -475,8 +447,7 @@ TEST_F(DownloadUIAdapterTest, AddRequest) {
 
 TEST_F(DownloadUIAdapterTest, RemoveRequest) {
   int64_t id = AddInitialRequest(GURL(kTestUrl), kTestClientId1);
-  // No added requests, the initial one is loaded.
-  EXPECT_EQ(0UL, added_guids.size());
+  EXPECT_EQ(1UL, added_guids.size());
   OfflineItem item(kTestContentId1);
   item.state = OfflineItemState::IN_PROGRESS;
   adapter->GetItemById(kTestContentId1,
@@ -495,7 +466,7 @@ TEST_F(DownloadUIAdapterTest, RemoveRequest) {
           id));
   PumpLoop();
 
-  EXPECT_EQ(0UL, added_guids.size());
+  EXPECT_EQ(1UL, added_guids.size());
   EXPECT_EQ(1UL, deleted_guids.size());
   EXPECT_EQ(kTestClientId1.id, deleted_guids[0]);
   adapter->GetItemById(kTestContentId1,
@@ -504,9 +475,6 @@ TEST_F(DownloadUIAdapterTest, RemoveRequest) {
 }
 
 TEST_F(DownloadUIAdapterTest, PauseAndResume) {
-  AddInitialPage();
-  EXPECT_TRUE(items_loaded());
-
   AddRequest(GURL(kTestUrl), kTestClientId1);
   PumpLoop();
 
@@ -575,35 +543,23 @@ TEST_F(DownloadUIAdapterTest, RequestBecomesPage) {
   offliner_stub->enable_callback(true);
   AddInitialRequest(GURL(kTestUrl), kTestClientId1);
 
-  OfflineItem item(kTestContentId1);
-
-  // The item is still IN_PROGRESS, since we did not delete it when
-  // request is competed successfully, waiting for the page with the
-  // same client_id to come in.
-  item.state = OfflineItemState::IN_PROGRESS;
-  {
-    SCOPED_TRACE("IN_PROGRESS");
-    adapter->GetItemById(kTestContentId1,
-                         base::BindOnce(&GetItemAndVerify, item));
-    PumpLoop();
-  }
+  EXPECT_EQ(1UL, added_guids.size());
 
   // Add a new saved page with the same client id.
-  // This simulates what happens when the request is completed.
-  // It should not fire and OnAdded or OnDeleted, just OnUpdated.
+  // This simulates what happens when the page is added after the request is
+  // completed.
   OfflinePageItem page(GURL(kTestUrl), kTestOfflineId1, kTestClientId1,
                        base::FilePath(kTestFilePath), kFileSize,
                        kTestCreationTime);
   model->AddPageAndNotifyAdapter(page);
   PumpLoop();
 
-  // No added or deleted items, the one existing item should be 'updated'.
-  EXPECT_EQ(0UL, added_guids.size());
-  EXPECT_EQ(0UL, deleted_guids.size());
+  EXPECT_EQ(1UL, added_guids.size());
+  // 3 updates: OnChanged for starting request, OnNetworkProgress and
+  // OnComplete.
+  EXPECT_EQ(3UL, updated_guids.size());
 
-  EXPECT_GE(updated_guids.size(), 1UL);
-  std::string last_updated_guid = updated_guids[updated_guids.size() - 1];
-  item.id = ContentId(kOfflinePageNamespace, last_updated_guid);
+  OfflineItem item(kTestContentId1);
   item.state = OfflineItemState::COMPLETE;
   {
     SCOPED_TRACE("COMPLETE");
@@ -611,23 +567,6 @@ TEST_F(DownloadUIAdapterTest, RequestBecomesPage) {
                          base::BindOnce(&GetItemAndVerify, item));
     PumpLoop();
   }
-}
-
-TEST_F(DownloadUIAdapterTest, UpdateProgress) {
-  offliner_stub->enable_callback(true);
-  AddInitialRequest(GURL(kTestUrl), kTestClientId1);
-
-  auto callback = [](const base::Optional<OfflineItem>& item) {
-    ASSERT_TRUE(item.has_value());
-    EXPECT_GT(item.value().received_bytes, 0LL);
-  };
-  adapter->GetItemById(kTestContentId1, base::BindOnce(callback));
-
-  // Updated 2 times - with progress and to 'completed'.
-  EXPECT_EQ(2UL, updated_guids.size());
-  EXPECT_EQ(kTestGuid1, updated_guids[0]);
-  EXPECT_EQ(kTestGuid1, updated_guids[1]);
-  PumpLoop();
 }
 
 TEST_F(DownloadUIAdapterTest, GetVisualsForItem) {
@@ -650,9 +589,8 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItem) {
         EXPECT_EQ(kImageWidth, visuals->icon.Width());
         called = true;
       });
-  adapter->GetAllItems(base::DoNothing());
-  base::HistogramTester histogram_tester;
 
+  base::HistogramTester histogram_tester;
   adapter->GetVisualsForItem(kTestContentId1, callback);
   PumpLoop();
 
@@ -675,7 +613,6 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItemInvalidItem) {
         EXPECT_FALSE(visuals);
         called = true;
       });
-  adapter->GetAllItems(base::DoNothing());
   base::HistogramTester histogram_tester;
 
   adapter->GetVisualsForItem(kContentID, callback);
@@ -728,7 +665,6 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItemBadDecode) {
         EXPECT_FALSE(visuals);
         called = true;
       });
-  adapter->GetAllItems(base::DoNothing());
   base::HistogramTester histogram_tester;
 
   adapter->GetVisualsForItem(kTestContentId1, callback);
@@ -743,13 +679,12 @@ TEST_F(DownloadUIAdapterTest, ThumbnailAddedUpdatesItem) {
   // Add an item without a thumbnail. Then notify the adapter about the added
   // thumbnail. It should notify the delegate about the updated item.
   AddInitialPage();
-  adapter->GetAllItems(base::DoNothing());
   PumpLoop();
   updated_guids.clear();
 
   OfflinePageThumbnail thumb;
   thumb.offline_id = kTestOfflineId1;
-  adapter->ThumbnailAdded(nullptr, thumb);
+  adapter->ThumbnailAdded(model.get(), thumb);
 
   EXPECT_EQ(std::vector<std::string>{kTestGuid1}, updated_guids);
 }
@@ -763,9 +698,10 @@ TEST_F(DownloadUIAdapterTest, ThumbnailAddedItemNotFound) {
 
   OfflinePageThumbnail thumb;
   thumb.offline_id = 958120;
-  adapter->ThumbnailAdded(nullptr, thumb);
+  adapter->ThumbnailAdded(model.get(), thumb);
 
   EXPECT_EQ(std::vector<std::string>{}, updated_guids);
 }
+
 }  // namespace
 }  // namespace offline_pages

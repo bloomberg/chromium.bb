@@ -8,13 +8,10 @@ if (is_android) {
 
 static_library("offline_pages_ui_adapter") {
   sources = [
-    "download_notifying_observer.cc",
-    "download_notifying_observer.h",
     "download_ui_adapter.cc",
     "download_ui_adapter.h",
     "offline_item_conversions.cc",
     "offline_item_conversions.h",
-    "offline_page_download_notifier.h",
   ]
 
   deps = [
@@ -31,7 +28,6 @@ static_library("offline_pages_ui_adapter") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "download_notifying_observer_unittest.cc",
     "download_ui_adapter_unittest.cc",
     "offline_item_conversions_unittest.cc",
   ]

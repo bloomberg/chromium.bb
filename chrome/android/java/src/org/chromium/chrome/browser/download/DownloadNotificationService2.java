@@ -296,7 +296,7 @@ public class DownloadNotificationService2 {
         if (entry != null && !entry.isAutoResumable && !forceRebuild) return;
         boolean canDownloadWhileMetered = entry == null ? false : entry.canDownloadWhileMetered;
         // If download is interrupted due to network disconnection, show download pending state.
-        if (isAutoResumable) {
+        if (isAutoResumable || pendingState != PendingState.NOT_PENDING) {
             notifyDownloadPending(id, fileName, isOffTheRecord, canDownloadWhileMetered,
                     isTransient, icon, hasUserGesture, pendingState);
             stopTrackingInProgressDownload(id);

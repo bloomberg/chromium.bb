@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/offline_pages/android/downloads/offline_page_download_bridge.h"
 #include "chrome/browser/offline_pages/android/downloads/offline_page_infobar_delegate.h"
-#include "chrome/browser/offline_pages/android/downloads/offline_page_notification_bridge.h"
 #include "content/public/browser/web_contents.h"
 
 // Android-specific part of OfflinePageUtils.
@@ -45,8 +45,7 @@ void OfflinePageUtils::ShowDuplicatePrompt(
 
 // static
 void OfflinePageUtils::ShowDownloadingToast() {
-    android::OfflinePageNotificationBridge notification_bridge;
-    notification_bridge.ShowDownloadingToast();
+  android::OfflinePageDownloadBridge::ShowDownloadingToast();
 }
 
 }  // namespace offline_pages

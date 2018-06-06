@@ -60,6 +60,8 @@ OfflineItem OfflineItemConversions::CreateOfflineItem(
   item.progress.max = 100;
   item.progress.unit = OfflineItemProgressUnit::PERCENTAGE;
   item.is_suggested = is_suggested;
+  item.is_openable = true;
+  item.externally_removed = page.file_missing_time != base::Time();
 
   return item;
 }

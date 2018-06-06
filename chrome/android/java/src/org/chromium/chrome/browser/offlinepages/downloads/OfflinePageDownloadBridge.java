@@ -17,11 +17,18 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.download.DownloadActivity;
+import org.chromium.chrome.browser.download.DownloadInfo;
+import org.chromium.chrome.browser.download.DownloadManagerService;
+import org.chromium.chrome.browser.download.DownloadNotifier;
+import org.chromium.chrome.browser.download.DownloadSharedPreferenceEntry;
+import org.chromium.chrome.browser.download.DownloadSharedPreferenceHelper;
 import org.chromium.chrome.browser.offlinepages.OfflinePageOrigin;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -29,7 +36,11 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.ui.widget.Toast;
 
 import java.util.Map;
 
@@ -151,6 +162,71 @@ public class OfflinePageDownloadBridge {
      */
     public static void startDownload(Tab tab, OfflinePageOrigin origin) {
         nativeStartDownload(tab, origin.encodeAsJsonString());
+    }
+
+    /**
+     * Aborts the notification.
+     *
+     * @param guid GUID of a request to download a page related to the notification.
+     */
+    private static void suppressNotification(String guid) {
+        DownloadNotifier notifier =
+                DownloadManagerService.getDownloadManagerService().getDownloadNotifier();
+        if (notifier == null) return;
+
+        ContentId id = LegacyHelpers.buildLegacyContentId(true, guid);
+
+        DownloadSharedPreferenceEntry entry =
+                DownloadSharedPreferenceHelper.getInstance().getDownloadSharedPreferenceEntry(id);
+
+        if (entry == null) return;
+
+        DownloadInfo downloadInfo = new DownloadInfo.Builder().setContentId(id).build();
+
+        notifier.removeDownloadNotification(entry.notificationId, downloadInfo);
+    }
+
+    /**
+     * Returns whether we should suppress download complete notification based
+     * on the origin app of the download.
+     * @param originString the qualified string form of an OfflinePageOrigin
+     */
+    private static boolean shouldSuppressCompletedNotification(String originString) {
+        OfflinePageOrigin origin = new OfflinePageOrigin(originString);
+        return AppHooks.get().getOfflinePagesSuppressNotificationPackages().contains(
+                origin.getAppName());
+    }
+
+    /**
+     * Returns whether the notification is suppressed. Suppression is determined
+     * based on the origin app of the download.
+     *
+     * @param originString the qualified string form of an OfflinePageOrigin
+     * @param guid GUID of a request to download a page related to the notification.
+     */
+    @CalledByNative
+    private static boolean maybeSuppressNotification(String originString, String guid) {
+        if (shouldSuppressCompletedNotification(originString)) {
+            suppressNotification(guid);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Shows a "Downloading ..." toast for the requested items already scheduled for download.
+     */
+    @CalledByNative
+    public static void showDownloadingToast() {
+        if (FeatureUtilities.isDownloadProgressInfoBarEnabled()) {
+            DownloadManagerService.getDownloadManagerService()
+                    .getInfoBarController(false)
+                    .onDownloadStarted();
+        } else {
+            Toast.makeText(ContextUtils.getApplicationContext(), R.string.download_started,
+                         Toast.LENGTH_SHORT)
+                    .show();
+        }
     }
 
     /**
