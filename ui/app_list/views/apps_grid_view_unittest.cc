@@ -298,7 +298,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
       nullptr;                                    // Owned by |apps_grid_view_|.
   ExpandArrowView* expand_arrow_view_ = nullptr;  // Owned by |apps_grid_view_|.
   std::unique_ptr<AppListTestViewDelegate> delegate_;
-  AppListTestModel* model_ = nullptr;  // Owned by |delegate_|.
+  AppListTestModel* model_ = nullptr;    // Owned by |delegate_|.
   SearchModel* search_model_ = nullptr;  // Owned by |delegate_|.
   std::unique_ptr<AppsGridViewTestApi> test_api_;
   bool is_rtl_ = false;
@@ -1191,6 +1191,7 @@ TEST_P(AppsGridGapTest, MoveAnItemToNewEmptyPage) {
   EXPECT_EQ(view_model->view_at(1),
             test_api_->GetViewAtVisualIndex(0 /* page */, 1 /* slot */));
   EXPECT_EQ("Item 1", view_model->view_at(1)->item()->id());
+  EXPECT_EQ(std::string("Item 0,Item 1"), model_->GetModelContent());
 
   // Drag the first item to the page bottom.
   gfx::Point from = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
@@ -1210,6 +1211,8 @@ TEST_P(AppsGridGapTest, MoveAnItemToNewEmptyPage) {
   EXPECT_EQ(view_model->view_at(1),
             test_api_->GetViewAtVisualIndex(1 /* page */, 0 /* slot */));
   EXPECT_EQ("Item 0", view_model->view_at(1)->item()->id());
+  EXPECT_EQ(std::string("Item 1,PageBreakItem,Item 0"),
+            model_->GetModelContent());
 }
 
 TEST_P(AppsGridGapTest, MoveLastItemToCreateFolderInNextPage) {
@@ -1229,6 +1232,7 @@ TEST_P(AppsGridGapTest, MoveLastItemToCreateFolderInNextPage) {
   EXPECT_EQ(view_model->view_at(1),
             test_api_->GetViewAtVisualIndex(0 /* page */, 1 /* slot */));
   EXPECT_EQ("Item 1", view_model->view_at(1)->item()->id());
+  EXPECT_EQ(std::string("Item 0,Item 1"), model_->GetModelContent());
 
   // Drag the first item to next page and drag the second item to overlap with
   // the first item.
@@ -1247,7 +1251,13 @@ TEST_P(AppsGridGapTest, MoveLastItemToCreateFolderInNextPage) {
   EXPECT_EQ(1, view_model->view_size());
   EXPECT_EQ(view_model->view_at(0),
             test_api_->GetViewAtVisualIndex(0 /* page */, 0 /* slot */));
-  EXPECT_TRUE(view_model->view_at(0)->item()->is_folder());
+  const AppListItem* folder_item = view_model->view_at(0)->item();
+  EXPECT_TRUE(folder_item->is_folder());
+
+  // The "page break" item remains, but it will be removed later in
+  // AppListSyncableService.
+  EXPECT_EQ(std::string("PageBreakItem," + folder_item->id()),
+            model_->GetModelContent());
 }
 
 TEST_P(AppsGridGapTest, MoveLastItemForReorderInNextPage) {
@@ -1267,6 +1277,7 @@ TEST_P(AppsGridGapTest, MoveLastItemForReorderInNextPage) {
   EXPECT_EQ(view_model->view_at(1),
             test_api_->GetViewAtVisualIndex(0 /* page */, 1 /* slot */));
   EXPECT_EQ("Item 1", view_model->view_at(1)->item()->id());
+  EXPECT_EQ(std::string("Item 0,Item 1"), model_->GetModelContent());
 
   // Drag the first item to next page and drag the second item to the left of
   // the first item.
@@ -1290,6 +1301,11 @@ TEST_P(AppsGridGapTest, MoveLastItemForReorderInNextPage) {
   EXPECT_EQ(view_model->view_at(1),
             test_api_->GetViewAtVisualIndex(0 /* page */, 1 /* slot */));
   EXPECT_EQ("Item 0", view_model->view_at(1)->item()->id());
+
+  // The "page break" item remains, but it will be removed later in
+  // AppListSyncableService.
+  EXPECT_EQ(std::string("PageBreakItem,Item 1,Item 0"),
+            model_->GetModelContent());
 }
 
 TEST_P(AppsGridGapTest, MoveLastItemToNewEmptyPage) {
@@ -1306,6 +1322,7 @@ TEST_P(AppsGridGapTest, MoveLastItemToNewEmptyPage) {
   EXPECT_EQ(view_model->view_at(0),
             test_api_->GetViewAtVisualIndex(0 /* page */, 0 /* slot */));
   EXPECT_EQ("Item 0", view_model->view_at(0)->item()->id());
+  EXPECT_EQ(std::string("Item 0"), model_->GetModelContent());
 
   // Drag the item to next page.
   gfx::Point from = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
@@ -1324,6 +1341,7 @@ TEST_P(AppsGridGapTest, MoveLastItemToNewEmptyPage) {
   EXPECT_EQ(view_model->view_at(0),
             test_api_->GetViewAtVisualIndex(0 /* page */, 0 /* slot */));
   EXPECT_EQ("Item 0", view_model->view_at(0)->item()->id());
+  EXPECT_EQ(std::string("Item 0"), model_->GetModelContent());
 }
 
 TEST_P(AppsGridGapTest, MoveItemToPreviousFullPage) {
@@ -1347,6 +1365,13 @@ TEST_P(AppsGridGapTest, MoveItemToPreviousFullPage) {
             test_api_->GetViewAtVisualIndex(1 /* page */, 0 /* slot */));
   EXPECT_EQ("Item " + std::to_string(kApps - 1),
             view_model->view_at(kApps - 1)->item()->id());
+
+  // There's no "page break" item between Item 19 and 20, although there are two
+  // pages. It will only be added after user operations.
+  EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3,Item 4,Item 5,Item 6,Item "
+                        "7,Item 8,Item 9,Item 10,Item 11,Item 12,Item 13,Item "
+                        "14,Item 15,Item 16,Item 17,Item 18,Item 19,Item 20"),
+            model_->GetModelContent());
 
   // Drag the last item to the first item's left position in previous page.
   gfx::Point from = test_api_->GetItemTileRectAtVisualIndex(1, 0).CenterPoint();
@@ -1376,6 +1401,13 @@ TEST_P(AppsGridGapTest, MoveItemToPreviousFullPage) {
             test_api_->GetViewAtVisualIndex(1 /* page */, 0 /* slot */));
   EXPECT_EQ("Item " + std::to_string(kApps - 2),
             view_model->view_at(kApps - 1)->item()->id());
+
+  // A "page break" item is added to split the pages.
+  EXPECT_EQ(
+      std::string("Item 20,Item 0,Item 1,Item 2,Item 3,Item 4,Item 5,Item "
+                  "6,Item 7,Item 8,Item 9,Item 10,Item 11,Item 12,Item 13,Item "
+                  "14,Item 15,Item 16,Item 17,Item 18,PageBreakItem,Item 19"),
+      model_->GetModelContent());
 }
 
 }  // namespace test

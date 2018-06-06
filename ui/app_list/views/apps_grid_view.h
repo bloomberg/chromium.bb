@@ -556,6 +556,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   int GetTargetModelIndexForMove(AppListItemView* moved_view,
                                  const GridIndex& index) const;
 
+  // Returns the target item index if moving the item view to specified target
+  // visual index.
+  size_t GetTargetItemIndexForMove(AppListItemView* moved_view,
+                                   const GridIndex& index) const;
+
   // Returns true if an item view exists in the visual index.
   bool IsValidIndex(const GridIndex& index) const;
 
@@ -568,6 +573,14 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Calculates the item views' bounds when apps grid gap is enabled.
   void CalculateIdealBoundsWithGridGap();
+
+  // Returns model index of the item view of the specified item.
+  int GetModelIndexOfItem(const AppListItem* item);
+
+  // Returns the target model index based on item index. (Item index is the
+  // index of an item in item list.) This should be used when the item is
+  // updated in item list but its item view has not been updated in view model.
+  int GetTargetModelIndexFromItemIndex(size_t item_index);
 
   AppListModel* model_ = nullptr;         // Owned by AppListView.
   AppListItemList* item_list_ = nullptr;  // Not owned.

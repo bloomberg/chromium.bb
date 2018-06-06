@@ -65,6 +65,11 @@ class APP_LIST_EXPORT PagedViewStructure {
   int GetTargetModelIndexForMove(AppListItemView* moved_view,
                                  const GridIndex& index) const;
 
+  // Returns the target item index if moving the item view to specified target
+  // visual index.
+  int GetTargetItemIndexForMove(AppListItemView* moved_view,
+                                const GridIndex& index) const;
+
   // Returns true if the visual index is valid position to which an item view
   // can be moved.
   bool IsValidReorderTargetIndex(const GridIndex& index) const;

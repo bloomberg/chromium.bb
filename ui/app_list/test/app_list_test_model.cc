@@ -33,16 +33,13 @@ const char AppListTestModel::kItemType[] = "TestItem";
 
 // AppListTestModel::AppListTestItem
 
-AppListTestModel::AppListTestItem::AppListTestItem(
-    const std::string& id,
-    AppListTestModel* model)
-    : AppListItem(id),
-      model_(model) {
+AppListTestModel::AppListTestItem::AppListTestItem(const std::string& id,
+                                                   AppListTestModel* model)
+    : AppListItem(id), model_(model) {
   SetIcon(CreateImageSkia(kGridIconDimension, kGridIconDimension));
 }
 
-AppListTestModel::AppListTestItem::~AppListTestItem() {
-}
+AppListTestModel::AppListTestItem::~AppListTestItem() = default;
 
 void AppListTestModel::AppListTestItem::Activate(int event_flags) {
   model_->ItemActivated(this);
@@ -71,9 +68,7 @@ void AppListTestModel::AppListTestItem::SetPosition(
 // AppListTestModel
 
 AppListTestModel::AppListTestModel()
-    : activate_count_(0),
-      last_activated_(NULL) {
-}
+    : activate_count_(0), last_activated_(nullptr) {}
 
 AppListItem* AppListTestModel::AddItem(AppListItem* item) {
   return AppListModel::AddItem(base::WrapUnique(item));
@@ -88,7 +83,6 @@ void AppListTestModel::MoveItemToFolder(AppListItem* item,
                                         const std::string& folder_id) {
   AppListModel::MoveItemToFolder(item, folder_id);
 }
-
 
 std::string AppListTestModel::GetItemName(int id) {
   return base::StringPrintf("Item %d", id);
@@ -138,7 +132,8 @@ std::string AppListTestModel::GetModelContent() {
   for (size_t i = 0; i < top_level_item_list()->item_count(); ++i) {
     if (i > 0)
       content += ',';
-    content += top_level_item_list()->item_at(i)->id();
+    AppListItem* item = top_level_item_list()->item_at(i);
+    content += item->is_page_break() ? "PageBreakItem" : item->id();
   }
   return content;
 }

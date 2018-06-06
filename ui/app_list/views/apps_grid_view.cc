@@ -394,8 +394,14 @@ void AppsGridView::ResetForShowApps() {
   for (int i = 0; i < view_model_.view_size(); ++i) {
     view_model_.view_at(i)->SetVisible(true);
   }
-  CHECK_EQ(item_list_->item_count(),
-           static_cast<size_t>(view_model_.view_size()));
+
+  // The number of non-page-break-items should be the same as item views.
+  int item_count = 0;
+  for (size_t i = 0; i < item_list_->item_count(); ++i) {
+    if (!item_list_->item_at(i)->is_page_break())
+      ++item_count;
+  }
+  CHECK_EQ(item_count, view_model_.view_size());
 }
 
 void AppsGridView::DisableFocusForShowingActiveFolder(bool disabled) {
@@ -638,7 +644,7 @@ void AppsGridView::EndDrag(bool cancel) {
   ClearDragState();
   UpdatePaging();
   AnimateToIdealBounds();
-  if (IsAppsGridGapEnabled())
+  if (!cancel && IsAppsGridGapEnabled())
     view_structure_.SaveToMetadata();
 
   StopPageFlipTimer();
@@ -934,8 +940,11 @@ void AppsGridView::Update() {
   if (!item_list_ || !item_list_->item_count())
     return;
   for (size_t i = 0; i < item_list_->item_count(); ++i) {
+    // Skip "page break" items.
+    if (item_list_->item_at(i)->is_page_break())
+      continue;
     AppListItemView* view = CreateViewForItemAtIndex(i);
-    view_model_.Add(view, i);
+    view_model_.Add(view, view_model_.view_size());
     AddChildView(view);
   }
   if (IsAppsGridGapEnabled())
@@ -1909,11 +1918,14 @@ void AppsGridView::OnPageFlipTimer() {
 void AppsGridView::MoveItemInModel(AppListItemView* item_view,
                                    const GridIndex& target) {
   int current_model_index = view_model_.GetIndexOfView(item_view);
+  size_t current_item_index;
+  item_list_->FindItemIndex(item_view->item()->id(), &current_item_index);
   DCHECK_GE(current_model_index, 0);
 
   int target_model_index = GetTargetModelIndexForMove(item_view, target);
+  size_t target_item_index = GetTargetItemIndexForMove(item_view, target);
 
-  // The same model index does not guarantee the same visual index, so move the
+  // The same item index does not guarantee the same visual index, so move the
   // item visual index here.
   if (IsAppsGridGapEnabled())
     view_structure_.Move(item_view, target);
@@ -1922,11 +1934,11 @@ void AppsGridView::MoveItemInModel(AppListItemView* item_view,
   ReorderChildView(item_view,
                    GetAppListItemViewIndexOffset() + target_model_index);
 
-  if (target_model_index == current_model_index)
+  if (target_item_index == current_item_index)
     return;
 
   item_list_->RemoveObserver(this);
-  item_list_->MoveItem(current_model_index, target_model_index);
+  item_list_->MoveItem(current_item_index, target_item_index);
   view_model_.Move(current_model_index, target_model_index);
   item_list_->AddObserver(this);
 
@@ -1961,31 +1973,33 @@ void AppsGridView::MoveItemToFolder(AppListItemView* item_view,
     // view with the new folder item view.
     size_t folder_item_index;
     if (item_list_->FindItemIndex(folder_item_id, &folder_item_index)) {
-      int target_view_index = view_model_.GetIndexOfView(target_view);
+      int target_model_index = view_model_.GetIndexOfView(target_view);
       GridIndex target_index = GetIndexOfView(target_view);
       gfx::Rect target_view_bounds = target_view->bounds();
-      DeleteItemViewAtIndex(target_view_index, false /* sanitize */);
+      DeleteItemViewAtIndex(target_model_index, false /* sanitize */);
       AppListItemView* target_folder_view =
           CreateViewForItemAtIndex(folder_item_index);
       target_folder_view->SetBoundsRect(target_view_bounds);
-      view_model_.Add(target_folder_view, target_view_index);
+      view_model_.Add(target_folder_view, target_model_index);
       if (IsAppsGridGapEnabled())
         view_structure_.Add(target_folder_view, target_index);
 
-      // use |folder_item_index| instead of |target_view_index| because the
-      // dragged item has not yet been removed from |view_model_| and
-      // |target_view_index| is 1 greater than |folder_item_index| if target
-      // item is behind the dragged item.
-      AddChildViewAt(target_folder_view,
-                     GetAppListItemViewIndexOffset() + folder_item_index);
+      // If drag view is in front of the position where it will be moved to, we
+      // should skip it.
+      int offset = (drag_view_ &&
+                    view_model_.GetIndexOfView(drag_view_) < target_model_index)
+                       ? 1
+                       : 0;
+      AddChildViewAt(target_folder_view, GetAppListItemViewIndexOffset() +
+                                             target_model_index - offset);
     } else {
       LOG(ERROR) << "Folder no longer in item_list: " << folder_item_id;
     }
   }
 
   // Fade out the drag_view_ and delete it when animation ends.
-  int drag_view_index = view_model_.GetIndexOfView(drag_view_);
-  view_model_.Remove(drag_view_index);
+  int drag_model_index = view_model_.GetIndexOfView(drag_view_);
+  view_model_.Remove(drag_model_index);
   if (IsAppsGridGapEnabled())
     view_structure_.Remove(drag_view_);
   bounds_animator_.AnimateViewTo(drag_view_, drag_view_->bounds());
@@ -2006,6 +2020,7 @@ void AppsGridView::ReparentItemForReorder(AppListItemView* item_view,
       static_cast<AppListFolderItem*>(item_list_->FindItem(source_folder_id));
 
   int target_model_index = GetTargetModelIndexForMove(item_view, target);
+  int target_item_index = GetTargetItemIndexForMove(item_view, target);
 
   // Remove the source folder view if there is only 1 item in it, since the
   // source folder will be deleted after its only child item removed from it.
@@ -2015,8 +2030,10 @@ void AppsGridView::ReparentItemForReorder(AppListItemView* item_view,
     DeleteItemViewAtIndex(deleted_folder_index, false /* sanitize */);
 
     // Adjust |target_model_index| if it is beyond the deleted folder index.
-    if (target_model_index > deleted_folder_index)
+    if (target_model_index > deleted_folder_index) {
       --target_model_index;
+      --target_item_index;
+    }
   }
 
   // Move the item from its parent folder to top level item list.
@@ -2024,8 +2041,8 @@ void AppsGridView::ReparentItemForReorder(AppListItemView* item_view,
   // to be, not the item location we want to insert before.
   int current_model_index = view_model_.GetIndexOfView(item_view);
   syncer::StringOrdinal target_position;
-  if (target_model_index < static_cast<int>(item_list_->item_count()))
-    target_position = item_list_->item_at(target_model_index)->position();
+  if (target_item_index < static_cast<int>(item_list_->item_count()))
+    target_position = item_list_->item_at(target_item_index)->position();
   model_->MoveItemToFolderAt(reparent_item, "", target_position);
   view_model_.Move(current_model_index, target_model_index);
   if (IsAppsGridGapEnabled())
@@ -2068,10 +2085,11 @@ bool AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
   // Remove the source folder view if there is only 1 item in it, since the
   // source folder will be deleted after its only child item merged into the
   // target item.
-  if (source_folder->ChildItemCount() == 1u)
+  if (source_folder->ChildItemCount() == 1u) {
     DeleteItemViewAtIndex(
         view_model_.GetIndexOfView(activated_folder_item_view()),
         false /* sanitize */);
+  }
 
   // Move item to the target folder.
   std::string target_id_after_merge =
@@ -2091,17 +2109,17 @@ bool AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
       // Save the target view's bounds before deletion, which will be used as
       // new folder view's bounds.
       gfx::Rect target_rect = target_view->bounds();
-      int target_view_index = view_model_.GetIndexOfView(target_view);
+      int target_model_index = view_model_.GetIndexOfView(target_view);
       GridIndex target_index = GetIndexOfView(target_view);
-      DeleteItemViewAtIndex(target_view_index, false /* sanitize */);
+      DeleteItemViewAtIndex(target_model_index, false /* sanitize */);
       AppListItemView* new_folder_view =
           CreateViewForItemAtIndex(new_folder_index);
       new_folder_view->SetBoundsRect(target_rect);
-      view_model_.Add(new_folder_view, target_view_index);
+      view_model_.Add(new_folder_view, target_model_index);
       if (IsAppsGridGapEnabled())
         view_structure_.Add(new_folder_view, target_index);
       AddChildViewAt(new_folder_view,
-                     GetAppListItemViewIndexOffset() + new_folder_index);
+                     GetAppListItemViewIndexOffset() + target_model_index);
     } else {
       LOG(ERROR) << "Folder no longer in item_list: " << new_folder_id;
     }
@@ -2112,8 +2130,8 @@ bool AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
   item_list_->AddObserver(this);
 
   // Fade out the drag_view_ and delete it when animation ends.
-  int drag_view_index = view_model_.GetIndexOfView(drag_view_);
-  view_model_.Remove(drag_view_index);
+  int drag_model_index = view_model_.GetIndexOfView(drag_view_);
+  view_model_.Remove(drag_model_index);
   if (IsAppsGridGapEnabled())
     view_structure_.Remove(drag_view_);
   bounds_animator_.AnimateViewTo(drag_view_, drag_view_->bounds());
@@ -2140,6 +2158,8 @@ void AppsGridView::RemoveLastItemFromReparentItemFolderIfNecessary(
   // last item view's bounds.
   gfx::Rect folder_rect = activated_folder_item_view()->bounds();
   GridIndex target_index = GetIndexOfView(activated_folder_item_view());
+  int target_model_index =
+      view_model_.GetIndexOfView(activated_folder_item_view());
 
   // Delete view associated with the folder item to be removed.
   DeleteItemViewAtIndex(
@@ -2153,17 +2173,17 @@ void AppsGridView::RemoveLastItemFromReparentItemFolderIfNecessary(
   // Create a new item view for the last item in folder.
   size_t last_item_index;
   if (!item_list_->FindItemIndex(last_item->id(), &last_item_index) ||
-      last_item_index > static_cast<size_t>(view_model_.view_size())) {
+      last_item_index > item_list_->item_count()) {
     NOTREACHED();
     return;
   }
   AppListItemView* last_item_view = CreateViewForItemAtIndex(last_item_index);
   last_item_view->SetBoundsRect(folder_rect);
-  view_model_.Add(last_item_view, last_item_index);
+  view_model_.Add(last_item_view, target_model_index);
   if (IsAppsGridGapEnabled())
     view_structure_.Add(last_item_view, target_index);
   AddChildViewAt(last_item_view,
-                 GetAppListItemViewIndexOffset() + last_item_index);
+                 GetAppListItemViewIndexOffset() + target_model_index);
 }
 
 void AppsGridView::CancelFolderItemReparent(AppListItemView* drag_item_view) {
@@ -2269,8 +2289,9 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
   EndDrag(true);
 
   AppListItemView* view = CreateViewForItemAtIndex(index);
-  view_model_.Add(view, index);
-  AddChildViewAt(view, GetAppListItemViewIndexOffset() + index);
+  int model_index = GetTargetModelIndexFromItemIndex(index);
+  view_model_.Add(view, model_index);
+  AddChildViewAt(view, GetAppListItemViewIndexOffset() + model_index);
 
   // Ensure that AppListItems that are added to the AppListItemList are not
   // shown while in PEEKING. The visibility of the app icons will be updated
@@ -2289,7 +2310,7 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
 void AppsGridView::OnListItemRemoved(size_t index, AppListItem* item) {
   EndDrag(true);
 
-  DeleteItemViewAtIndex(index, true /* sanitize */);
+  DeleteItemViewAtIndex(GetModelIndexOfItem(item), true /* sanitize */);
 
   if (IsAppsGridGapEnabled())
     view_structure_.LoadFromMetadata();
@@ -2304,9 +2325,15 @@ void AppsGridView::OnListItemMoved(size_t from_index,
                                    size_t to_index,
                                    AppListItem* item) {
   EndDrag(true);
-  view_model_.Move(from_index, to_index);
-  ReorderChildView(view_model_.view_at(to_index),
-                   GetAppListItemViewIndexOffset() + to_index);
+
+  // The item is updated in the item list but the view_model is not updated, so
+  // get current model index by looking up view_model and predict the target
+  // model index based on its current item index.
+  int from_model_index = GetModelIndexOfItem(item);
+  int to_model_index = GetTargetModelIndexFromItemIndex(to_index);
+  view_model_.Move(from_model_index, to_model_index);
+  ReorderChildView(view_model_.view_at(to_model_index),
+                   GetAppListItemViewIndexOffset() + to_model_index);
 
   if (IsAppsGridGapEnabled())
     view_structure_.LoadFromMetadata();
@@ -2316,10 +2343,11 @@ void AppsGridView::OnListItemMoved(size_t from_index,
 }
 
 void AppsGridView::OnAppListItemHighlight(size_t index, bool highlight) {
-  AppListItemView* view = GetItemViewAt(index);
+  int model_index = GetModelIndexOfItem(item_list_->item_at(index));
+  AppListItemView* view = GetItemViewAt(model_index);
   view->SetItemIsHighlighted(highlight);
   if (highlight)
-    EnsureViewVisible(GetIndexFromModelIndex(index));
+    EnsureViewVisible(GetIndexFromModelIndex(model_index));
 }
 
 void AppsGridView::TotalPagesChanged() {}
@@ -2535,6 +2563,15 @@ int AppsGridView::GetTargetModelIndexForMove(AppListItemView* moved_view,
   return GetModelIndexFromIndex(index);
 }
 
+size_t AppsGridView::GetTargetItemIndexForMove(AppListItemView* moved_view,
+                                               const GridIndex& index) const {
+  if (IsAppsGridGapEnabled())
+    return view_structure_.GetTargetItemIndexForMove(moved_view, index);
+
+  // Model index is the same as item index when apps grid gap is disabled.
+  return GetModelIndexFromIndex(index);
+}
+
 bool AppsGridView::IsValidIndex(const GridIndex& index) const {
   return index.page >= 0 && index.page < pagination_model_.total_pages() &&
          index.slot >= 0 && index.slot < TilesPerPage(index.page) &&
@@ -2607,6 +2644,28 @@ void AppsGridView::CalculateIdealBoundsWithGridGap() {
     pulsing_blocks_model_.set_ideal_bounds(i, tile_slot);
     ++pulsing_block_index.slot;
   }
+}
+
+int AppsGridView::GetModelIndexOfItem(const AppListItem* item) {
+  for (int i = 0; i < view_model_.view_size(); ++i) {
+    if (view_model_.view_at(i)->item() == item) {
+      return i;
+    }
+  }
+  return view_model_.view_size();
+}
+
+int AppsGridView::GetTargetModelIndexFromItemIndex(size_t item_index) {
+  if (!IsAppsGridGapEnabled())
+    return item_index;
+
+  CHECK(item_index <= item_list_->item_count());
+  int target_model_index = 0;
+  for (size_t i = 0; i < item_index; ++i) {
+    if (!item_list_->item_at(i)->is_page_break())
+      ++target_model_index;
+  }
+  return target_model_index;
 }
 
 }  // namespace app_list
