@@ -628,6 +628,12 @@ static int loop_restoration_row_worker(AV1LrSync *const lr_sync,
   const int tile_col = LR_TILE_COL;
   const int tile_cols = LR_TILE_COLS;
   const int tile_idx = tile_col + tile_row * tile_cols;
+  typedef void (*copy_fun)(const YV12_BUFFER_CONFIG *src_ybc,
+                           YV12_BUFFER_CONFIG *dst_ybc, int hstart, int hend,
+                           int vstart, int vend);
+  static const copy_fun copy_funs[3] = {
+    aom_yv12_partial_copy_y, aom_yv12_partial_copy_u, aom_yv12_partial_copy_v
+  };
 
   while (1) {
     AV1LrMTInfo *cur_job_info = get_lr_job_info(lr_sync);
@@ -638,6 +644,11 @@ static int loop_restoration_row_worker(AV1LrSync *const lr_sync,
       lr_unit_row = cur_job_info->lr_unit_row;
       plane = cur_job_info->plane;
       const int unit_idx0 = tile_idx * ctxt[plane].rsi->units_per_tile;
+      int copy_v_start = AOMMAX(limits.v_start - RESTORATION_BORDER, 0);
+      int copy_v_end = AOMMAX(limits.v_end - RESTORATION_BORDER, 0);
+      if (cur_job_info->lr_unit_row ==
+          (ctxt[plane].rsi->vert_units_per_tile - 1))
+        copy_v_end = limits.v_end;
 
       av1_foreach_rest_unit_in_row(
           &limits, &(ctxt[plane].tile_rect), lr_ctxt->on_rest_unit, lr_unit_row,
@@ -645,6 +656,9 @@ static int loop_restoration_row_worker(AV1LrSync *const lr_sync,
           ctxt[plane].rsi->horz_units_per_tile, plane, &ctxt[plane],
           lrworkerdata->rst_tmpbuf, lrworkerdata->rlbs, lr_sync_read,
           lr_sync_write, lr_sync);
+
+      copy_funs[plane](lr_ctxt->dst, lr_ctxt->frame, ctxt[plane].tile_rect.left,
+                       ctxt[plane].tile_rect.right, copy_v_start, copy_v_end);
     } else {
       break;
     }
@@ -728,6 +742,4 @@ void av1_loop_restoration_filter_frame_mt(YV12_BUFFER_CONFIG *frame,
 
   foreach_rest_unit_in_planes_mt(loop_rest_ctxt, workers, num_workers, lr_sync,
                                  cm);
-
-  av1_loop_restoration_copy_planes(loop_rest_ctxt, cm, num_planes);
 }
