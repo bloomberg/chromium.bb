@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_helper_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,62 +37,50 @@ class BrowsingDataDatabaseHelperTest : public InProcessBrowserTest {
     storage::DatabaseTracker* db_tracker =
         BrowserContext::GetDefaultStoragePartition(browser()->profile())
             ->GetDatabaseTracker();
-    base::string16 db_name = base::ASCIIToUTF16("db");
-    base::string16 description = base::ASCIIToUTF16("db_description");
-    int64_t size;
-    db_tracker->DatabaseOpened(kTestIdentifier1, db_name, description,
-                               1, &size);
-    db_tracker->DatabaseClosed(kTestIdentifier1, db_name);
-    base::FilePath db_path1 =
-        db_tracker->GetFullDBFilePath(kTestIdentifier1, db_name);
-    base::CreateDirectory(db_path1.DirName());
-    ASSERT_EQ(0, base::WriteFile(db_path1, nullptr, 0));
-    db_tracker->DatabaseOpened(kTestIdentifierExtension, db_name, description,
-                               1, &size);
-    db_tracker->DatabaseClosed(kTestIdentifierExtension, db_name);
-    base::FilePath db_path2 =
-        db_tracker->GetFullDBFilePath(kTestIdentifierExtension, db_name);
-    base::CreateDirectory(db_path2.DirName());
-    ASSERT_EQ(0, base::WriteFile(db_path2, nullptr, 0));
-    std::vector<storage::OriginInfo> origins;
-    db_tracker->GetAllOriginsInfo(&origins);
-    ASSERT_EQ(2U, origins.size());
+    base::RunLoop run_loop;
+    db_tracker->task_runner()->PostTaskAndReply(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          base::string16 db_name = base::ASCIIToUTF16("db");
+          base::string16 description = base::ASCIIToUTF16("db_description");
+          int64_t size;
+          db_tracker->DatabaseOpened(kTestIdentifier1, db_name, description, 1,
+                                     &size);
+          db_tracker->DatabaseClosed(kTestIdentifier1, db_name);
+          base::FilePath db_path1 =
+              db_tracker->GetFullDBFilePath(kTestIdentifier1, db_name);
+          base::CreateDirectory(db_path1.DirName());
+          ASSERT_EQ(0, base::WriteFile(db_path1, nullptr, 0));
+          db_tracker->DatabaseOpened(kTestIdentifierExtension, db_name,
+                                     description, 1, &size);
+          db_tracker->DatabaseClosed(kTestIdentifierExtension, db_name);
+          base::FilePath db_path2 =
+              db_tracker->GetFullDBFilePath(kTestIdentifierExtension, db_name);
+          base::CreateDirectory(db_path2.DirName());
+          ASSERT_EQ(0, base::WriteFile(db_path2, nullptr, 0));
+          std::vector<storage::OriginInfo> origins;
+          db_tracker->GetAllOriginsInfo(&origins);
+          ASSERT_EQ(2U, origins.size());
+        }),
+        run_loop.QuitClosure());
+    run_loop.Run();
   }
 };
 
-// Called back by BrowsingDataDatabaseHelper on the UI thread once the database
-// information has been retrieved.
-class StopTestOnCallback {
- public:
-  explicit StopTestOnCallback(
-      BrowsingDataDatabaseHelper* database_helper)
-      : database_helper_(database_helper) {
-    DCHECK(database_helper_);
-  }
-
-  void Callback(const std::list<BrowsingDataDatabaseHelper::DatabaseInfo>&
-                database_info_list) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    ASSERT_EQ(1UL, database_info_list.size());
-    EXPECT_EQ(std::string(kTestIdentifier1),
-              database_info_list.begin()->identifier.ToString());
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-  }
-
- private:
-  BrowsingDataDatabaseHelper* database_helper_;
-};
-
-// Flaky on Win/Mac/Linux: http://crbug.com/92460
-IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, DISABLED_FetchData) {
+IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, FetchData) {
   CreateDatabases();
   scoped_refptr<BrowsingDataDatabaseHelper> database_helper(
       new BrowsingDataDatabaseHelper(browser()->profile()));
-  StopTestOnCallback stop_test_on_callback(database_helper.get());
-  database_helper->StartFetching(base::Bind(
-      &StopTestOnCallback::Callback, base::Unretained(&stop_test_on_callback)));
-  // Blocks until StopTestOnCallback::Callback is notified.
-  content::RunMessageLoop();
+  std::list<BrowsingDataDatabaseHelper::DatabaseInfo> database_info_list;
+  base::RunLoop run_loop;
+  database_helper->StartFetching(base::BindLambdaForTesting(
+      [&](const std::list<BrowsingDataDatabaseHelper::DatabaseInfo>& list) {
+        database_info_list = list;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  ASSERT_EQ(1UL, database_info_list.size());
+  EXPECT_EQ(std::string(kTestIdentifier1),
+            database_info_list.begin()->identifier.ToString());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedAddDatabase) {
