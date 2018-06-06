@@ -23,6 +23,9 @@ class ChromeUserManager : public user_manager::UserManagerBase,
   explicit ChromeUserManager(scoped_refptr<base::TaskRunner> task_runner);
   ~ChromeUserManager() override;
 
+  // user_manager::UserManagerBase:
+  bool IsCurrentUserNew() const override;
+
   // Returns current ChromeUserManager or NULL if instance hasn't been
   // yet initialized.
   static ChromeUserManager* Get();

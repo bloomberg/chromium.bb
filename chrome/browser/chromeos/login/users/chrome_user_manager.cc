@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+
+#include "base/command_line.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 
@@ -13,6 +16,14 @@ ChromeUserManager::ChromeUserManager(
     : UserManagerBase(task_runner) {}
 
 ChromeUserManager::~ChromeUserManager() {}
+
+bool ChromeUserManager::IsCurrentUserNew() const {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kForceFirstRunUI))
+    return true;
+
+  return UserManagerBase::IsCurrentUserNew();
+}
 
 // static
 ChromeUserManager* ChromeUserManager::Get() {
