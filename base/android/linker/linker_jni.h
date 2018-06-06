@@ -21,6 +21,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "build/build_config.h"
+
 // Set this to 1 to enable debug traces to the Android log.
 // Note that LOG() from "base/logging.h" cannot be used, since it is
 // in base/ which hasn't been loaded yet.
@@ -47,6 +49,16 @@
 // For more, see:
 //   https://crbug.com/504410
 #define RESERVE_BREAKPAD_GUARD_REGION 1
+
+#if defined(ARCH_CPU_X86)
+// Dalvik JIT generated code doesn't guarantee 16-byte stack alignment on
+// x86 - use force_align_arg_pointer to realign the stack at the JNI
+// boundary. https://crbug.com/655248
+#define JNI_GENERATOR_EXPORT \
+  extern "C" __attribute__((visibility("default"), force_align_arg_pointer))
+#else
+#define JNI_GENERATOR_EXPORT extern "C" __attribute__((visibility("default")))
+#endif
 
 namespace chromium_android_linker {
 
