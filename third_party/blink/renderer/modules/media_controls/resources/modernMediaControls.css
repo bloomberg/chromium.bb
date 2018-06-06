@@ -756,6 +756,7 @@ label[pseudo="-internal-media-controls-overflow-menu-list-item"] input {
 label[pseudo="-internal-media-controls-overflow-menu-list-item"] div {
   display: inline-grid;
   margin: 16px 0 16px 0;
+  overflow: hidden;
 }
 
 label[pseudo="-internal-media-controls-overflow-menu-list-item"] div.with-subtitle {
@@ -764,6 +765,8 @@ label[pseudo="-internal-media-controls-overflow-menu-list-item"] div.with-subtit
 
 label[pseudo="-internal-media-controls-overflow-menu-list-item"] div span {
   line-height: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 label[pseudo="-internal-media-controls-overflow-menu-list-item"] div span.subtitle {
