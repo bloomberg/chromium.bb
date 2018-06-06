@@ -106,8 +106,8 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
   EXPECT_CALL(gl_, GenMailboxCHROMIUM(_))
       .WillOnce(SetArrayArgument<0>(
           test_mailbox.name, test_mailbox.name + GL_MAILBOX_SIZE_CHROMIUM));
-  EXPECT_CALL(gl_, BindTexture(GL_TEXTURE_2D, _)).Times(2);
   EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, _));
+  EXPECT_CALL(gl_, BindTexture(GL_TEXTURE_2D, _)).Times(2);
   EXPECT_CALL(gl_, GenUnverifiedSyncTokenCHROMIUM(_));
   resource->GetOrCreateGpuMailbox(kUnverifiedSyncToken);
 
