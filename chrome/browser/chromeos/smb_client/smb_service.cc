@@ -147,6 +147,9 @@ void SmbService::OnMountResponse(
       GetProviderService()->MountFileSystem(provider_id_, mount_options);
 
   FireMountCallback(std::move(callback), TranslateErrorToMountResult(result));
+
+  // Record Mount count after callback to include the new mount.
+  RecordMountCount();
 }
 
 base::File::Error SmbService::Unmount(
@@ -280,6 +283,13 @@ void SmbService::FireMountCallback(MountResponse callback,
   RecordMountResult(result);
 
   std::move(callback).Run(result);
+}
+
+void SmbService::RecordMountCount() const {
+  const std::vector<ProvidedFileSystemInfo> file_systems =
+      GetProviderService()->GetProvidedFileSystemInfoList(provider_id_);
+  UMA_HISTOGRAM_COUNTS_100("NativeSmbFileShare.MountCount",
+                           file_systems.size());
 }
 
 }  // namespace smb_client
