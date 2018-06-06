@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_parser.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/events/before_unload_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -68,6 +69,21 @@ V8AbstractEventListener::~V8AbstractEventListener() {
   if (IsMainThread())
     InstanceCounters::DecrementCounter(
         InstanceCounters::kJSEventListenerCounter);
+}
+
+// static
+v8::Local<v8::Value> V8AbstractEventListener::GetListenerOrNull(
+    v8::Isolate* isolate,
+    EventTarget* event_target,
+    EventListener* listener) {
+  if (listener && listener->GetType() == kJSEventListenerType) {
+    v8::Local<v8::Object> v8_listener =
+        static_cast<V8AbstractEventListener*>(listener)->GetListenerObject(
+            event_target->GetExecutionContext());
+    if (!v8_listener.IsEmpty())
+      return v8_listener;
+  }
+  return v8::Null(isolate);
 }
 
 void V8AbstractEventListener::handleEvent(ExecutionContext* execution_context,

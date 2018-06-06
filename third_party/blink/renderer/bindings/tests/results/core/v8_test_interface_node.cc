@@ -132,7 +132,7 @@ static void eventHandlerAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 
   EventListener* cppValue(WTF::GetPtr(impl->eventHandlerAttribute()));
 
-  V8SetReturnValue(info, cppValue ? V8AbstractEventListener::Cast(cppValue)->GetListenerOrNull(info.GetIsolate(), impl->GetExecutionContext()) : v8::Null(info.GetIsolate()).As<v8::Value>());
+  V8SetReturnValue(info, V8AbstractEventListener::GetListenerOrNull(info.GetIsolate(), impl, cppValue));
 }
 
 static void eventHandlerAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
