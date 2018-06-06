@@ -165,8 +165,10 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   // observation and control on behalf of the WebRequest API.
   //
   // Only used when the Network Service is enabled.
-  void MaybeProxyWebSocket(content::RenderFrameHost* frame,
-                           network::mojom::WebSocketRequest* request);
+  void MaybeProxyWebSocket(
+      content::RenderFrameHost* frame,
+      network::mojom::WebSocketRequest* request,
+      network::mojom::AuthenticationHandlerPtr* auth_handler);
 
  private:
   friend class BrowserContextKeyedAPIFactory<WebRequestAPI>;

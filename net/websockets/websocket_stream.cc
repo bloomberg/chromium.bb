@@ -96,6 +96,9 @@ class Delegate : public URLRequest::Delegate {
   void OnReadCompleted(URLRequest* request, int bytes_read) override;
 
  private:
+  void OnAuthRequiredComplete(URLRequest* request,
+                              const AuthCredentials* auth_credentials);
+
   WebSocketStreamRequestImpl* owner_;
 };
 
@@ -418,8 +421,34 @@ void Delegate::OnResponseStarted(URLRequest* request, int net_error) {
 
 void Delegate::OnAuthRequired(URLRequest* request,
                               AuthChallengeInfo* auth_info) {
-  // This should only be called if credentials are not already stored.
-  request->CancelAuth();
+  base::Optional<AuthCredentials> credentials;
+  // This base::Unretained(this) relies on an assumption that |callback| can
+  // be called called during the opening handshake.
+  int rv = owner_->connect_delegate()->OnAuthRequired(
+      scoped_refptr<AuthChallengeInfo>(auth_info), request->response_headers(),
+      request->GetSocketAddress(),
+      base::BindOnce(&Delegate::OnAuthRequiredComplete, base::Unretained(this),
+                     request),
+      &credentials);
+  request->LogBlockedBy("WebSocketStream::Delegate::OnAuthRequired");
+  if (rv == ERR_IO_PENDING)
+    return;
+  if (rv != OK) {
+    request->LogUnblocked();
+    owner_->ReportFailure(rv);
+    return;
+  }
+  OnAuthRequiredComplete(request, nullptr);
+}
+
+void Delegate::OnAuthRequiredComplete(URLRequest* request,
+                                      const AuthCredentials* credentials) {
+  request->LogUnblocked();
+  if (!credentials) {
+    request->CancelAuth();
+    return;
+  }
+  request->SetAuth(*credentials);
 }
 
 void Delegate::OnCertificateRequested(URLRequest* request,

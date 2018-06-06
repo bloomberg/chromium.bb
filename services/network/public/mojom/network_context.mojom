@@ -434,7 +434,8 @@ interface NetworkContext {
   CreateWebSocket(WebSocket& request,
                   int32 process_id,
                   int32 render_frame_id,
-                  url.mojom.Origin origin);
+                  url.mojom.Origin origin,
+                  AuthenticationHandler? auth_handler);
 
   // Create a NetLogExporter, which helps export NetLog to an existing file.
   // Note that the log is generally global, including all NetworkContexts

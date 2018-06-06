@@ -23,6 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "net/base/auth.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -202,6 +203,16 @@ class WebSocketChannel::ConnectDelegate
       bool fatal) override {
     creator_->OnSSLCertificateError(std::move(ssl_error_callbacks), ssl_info,
                                     fatal);
+  }
+
+  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+                     scoped_refptr<HttpResponseHeaders> headers,
+                     const HostPortPair& host_port_pair,
+                     base::OnceCallback<void(const AuthCredentials*)> callback,
+                     base::Optional<AuthCredentials>* credentials) override {
+    return creator_->OnAuthRequired(std::move(auth_info), std::move(headers),
+                                    host_port_pair, std::move(callback),
+                                    credentials);
   }
 
  private:
@@ -590,6 +601,17 @@ void WebSocketChannel::OnSSLCertificateError(
     bool fatal) {
   event_interface_->OnSSLCertificateError(std::move(ssl_error_callbacks),
                                           socket_url_, ssl_info, fatal);
+}
+
+int WebSocketChannel::OnAuthRequired(
+    scoped_refptr<AuthChallengeInfo> auth_info,
+    scoped_refptr<HttpResponseHeaders> response_headers,
+    const HostPortPair& host_port_pair,
+    base::OnceCallback<void(const AuthCredentials*)> callback,
+    base::Optional<AuthCredentials>* credentials) {
+  return event_interface_->OnAuthRequired(
+      std::move(auth_info), std::move(response_headers), host_port_pair,
+      std::move(callback), credentials);
 }
 
 void WebSocketChannel::OnStartOpeningHandshake(

@@ -27,6 +27,7 @@ class WebSocketFactory final {
   ~WebSocketFactory();
 
   void CreateWebSocket(mojom::WebSocketRequest request,
+                       mojom::AuthenticationHandlerPtr auth_handler,
                        int32_t process_id,
                        int32_t render_frame_id,
                        const url::Origin& origin);

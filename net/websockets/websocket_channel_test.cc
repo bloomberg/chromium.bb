@@ -200,12 +200,26 @@ class MockWebSocketEventInterface : public WebSocketEventInterface {
     OnSSLCertificateErrorCalled(
         ssl_error_callbacks.get(), url, ssl_info, fatal);
   }
+  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+                     scoped_refptr<HttpResponseHeaders> response_headers,
+                     const HostPortPair& host_port_pair,
+                     base::OnceCallback<void(const AuthCredentials*)> callback,
+                     base::Optional<AuthCredentials>* credentials) override {
+    return OnAuthRequiredCalled(std::move(auth_info),
+                                std::move(response_headers), host_port_pair,
+                                credentials);
+  }
 
   MOCK_METHOD0(OnStartOpeningHandshakeCalled, void());  // NOLINT
   MOCK_METHOD0(OnFinishOpeningHandshakeCalled, void());  // NOLINT
   MOCK_METHOD4(
       OnSSLCertificateErrorCalled,
       void(SSLErrorCallbacks*, const GURL&, const SSLInfo&, bool));  // NOLINT
+  MOCK_METHOD4(OnAuthRequiredCalled,
+               int(scoped_refptr<AuthChallengeInfo>,
+                   scoped_refptr<HttpResponseHeaders>,
+                   const HostPortPair&,
+                   base::Optional<AuthCredentials>*));
 };
 
 // This fake EventInterface is for tests which need a WebSocketEventInterface
@@ -233,6 +247,14 @@ class FakeWebSocketEventInterface : public WebSocketEventInterface {
       const GURL& url,
       const SSLInfo& ssl_info,
       bool fatal) override {}
+  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+                     scoped_refptr<HttpResponseHeaders> response_headers,
+                     const HostPortPair& host_port_pair,
+                     base::OnceCallback<void(const AuthCredentials*)> callback,
+                     base::Optional<AuthCredentials>* credentials) override {
+    *credentials = base::nullopt;
+    return OK;
+  }
 };
 
 // This fake WebSocketStream is for tests that require a WebSocketStream but are
@@ -2915,6 +2937,27 @@ TEST_F(WebSocketChannelEventInterfaceTest, OnSSLCertificateErrorCalled) {
   CreateChannelAndConnect();
   connect_data_.argument_saver.connect_delegate->OnSSLCertificateError(
       std::move(fake_callbacks), ssl_info, fatal);
+}
+
+// Calls to OnAuthRequired() must be passed through to the event interface.
+TEST_F(WebSocketChannelEventInterfaceTest, OnAuthRequiredCalled) {
+  const GURL wss_url("wss://example.com/on_auth_required");
+  connect_data_.socket_url = wss_url;
+  scoped_refptr<AuthChallengeInfo> auth_info =
+      base::MakeRefCounted<AuthChallengeInfo>();
+  base::Optional<AuthCredentials> credentials;
+  scoped_refptr<HttpResponseHeaders> response_headers =
+      base::MakeRefCounted<HttpResponseHeaders>("HTTP/1.1 200 OK");
+  HostPortPair socket_address("127.0.0.1", 80);
+
+  EXPECT_CALL(
+      *event_interface_,
+      OnAuthRequiredCalled(auth_info, response_headers, _, &credentials))
+      .WillOnce(Return(OK));
+
+  CreateChannelAndConnect();
+  connect_data_.argument_saver.connect_delegate->OnAuthRequired(
+      auth_info, response_headers, socket_address, {}, &credentials);
 }
 
 // If we receive another frame after Close, it is not valid. It is not

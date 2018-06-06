@@ -105,6 +105,12 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
       const SSLInfo& ssl_info,
       bool fatal) override;
 
+  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+                     scoped_refptr<HttpResponseHeaders> response_headers,
+                     const HostPortPair& host_port_pair,
+                     base::OnceCallback<void(const AuthCredentials*)> callback,
+                     base::Optional<AuthCredentials>* credentials) override;
+
  private:
   void QuitNestedEventLoop();
 
@@ -179,6 +185,16 @@ void ConnectTestingEventInterface::OnSSLCertificateError(
       FROM_HERE, base::Bind(&SSLErrorCallbacks::CancelSSLRequest,
                             base::Owned(ssl_error_callbacks.release()),
                             ERR_SSL_PROTOCOL_ERROR, &ssl_info));
+}
+
+int ConnectTestingEventInterface::OnAuthRequired(
+    scoped_refptr<AuthChallengeInfo> auth_info,
+    scoped_refptr<HttpResponseHeaders> response_headers,
+    const HostPortPair& host_port_pair,
+    base::OnceCallback<void(const AuthCredentials*)> callback,
+    base::Optional<AuthCredentials>* credentials) {
+  *credentials = base::nullopt;
+  return OK;
 }
 
 void ConnectTestingEventInterface::QuitNestedEventLoop() {

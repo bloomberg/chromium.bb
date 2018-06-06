@@ -182,7 +182,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void CreateWebSocket(mojom::WebSocketRequest request,
                        int32_t process_id,
                        int32_t render_frame_id,
-                       const url::Origin& origin) override;
+                       const url::Origin& origin,
+                       mojom::AuthenticationHandlerPtr auth_handler) override;
   void CreateNetLogExporter(mojom::NetLogExporterRequest request) override;
   void BlockThirdPartyCookies(bool block) override;
   void AddHSTSForTesting(const std::string& host,

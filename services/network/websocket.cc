@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "net/base/auth.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -99,6 +100,12 @@ class WebSocket::WebSocketEventHandler final
       const GURL& url,
       const net::SSLInfo& ssl_info,
       bool fatal) override;
+  int OnAuthRequired(
+      scoped_refptr<net::AuthChallengeInfo> auth_info,
+      scoped_refptr<net::HttpResponseHeaders> response_headers,
+      const net::HostPortPair& host_port_pair,
+      base::OnceCallback<void(const net::AuthCredentials*)> callback,
+      base::Optional<net::AuthCredentials>* credentials) override;
 
  private:
   WebSocket* const impl_;
@@ -266,9 +273,31 @@ void WebSocket::WebSocketEventHandler::OnSSLCertificateError(
                                           ssl_info, fatal);
 }
 
+int WebSocket::WebSocketEventHandler::OnAuthRequired(
+    scoped_refptr<net::AuthChallengeInfo> auth_info,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    const net::HostPortPair& host_port_pair,
+    base::OnceCallback<void(const net::AuthCredentials*)> callback,
+    base::Optional<net::AuthCredentials>* credentials) {
+  DVLOG(3) << "WebSocketEventHandler::OnAuthRequired"
+           << reinterpret_cast<void*>(this);
+  if (!impl_->auth_handler_) {
+    *credentials = base::nullopt;
+    return net::OK;
+  }
+
+  impl_->auth_handler_->OnAuthRequired(
+      std::move(auth_info), std::move(response_headers), host_port_pair,
+      base::BindOnce(&WebSocket::OnAuthRequiredComplete,
+                     impl_->weak_ptr_factory_.GetWeakPtr(),
+                     std::move(callback)));
+  return net::ERR_IO_PENDING;
+}
+
 WebSocket::WebSocket(
     std::unique_ptr<Delegate> delegate,
     mojom::WebSocketRequest request,
+    mojom::AuthenticationHandlerPtr auth_handler,
     WebSocketThrottler::PendingConnection pending_connection_tracker,
     int child_id,
     int frame_id,
@@ -276,6 +305,7 @@ WebSocket::WebSocket(
     base::TimeDelta delay)
     : delegate_(std::move(delegate)),
       binding_(this, std::move(request)),
+      auth_handler_(std::move(auth_handler)),
       pending_connection_tracker_(std::move(pending_connection_tracker)),
       delay_(delay),
       pending_flow_control_quota_(0),
@@ -436,6 +466,18 @@ void WebSocket::AddChannel(
                                   site_for_cookies, headers_to_pass);
   if (quota > 0)
     SendFlowControl(quota);
+}
+
+void WebSocket::OnAuthRequiredComplete(
+    base::OnceCallback<void(const net::AuthCredentials*)> callback,
+    const base::Optional<net::AuthCredentials>& credentials) {
+  DCHECK(!handshake_succeeded_);
+  if (!channel_) {
+    // Something happened before the authentication response arrives.
+    return;
+  }
+
+  std::move(callback).Run(credentials ? &*credentials : nullptr);
 }
 
 }  // namespace network

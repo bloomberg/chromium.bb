@@ -17,6 +17,7 @@
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "net/base/network_delegate.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/websocket.mojom.h"
@@ -27,9 +28,11 @@ namespace extensions {
 
 // A WebRequestProxyingWebSocket proxies a WebSocket connection and dispatches
 // WebRequest API events. This is used only when the network service is enabled.
-class WebRequestProxyingWebSocket : public WebRequestAPI::Proxy,
-                                    public network::mojom::WebSocket,
-                                    public network::mojom::WebSocketClient {
+class WebRequestProxyingWebSocket
+    : public WebRequestAPI::Proxy,
+      public network::mojom::WebSocket,
+      public network::mojom::WebSocketClient,
+      public network::mojom::AuthenticationHandler {
  public:
   WebRequestProxyingWebSocket(
       int process_id,
@@ -41,6 +44,7 @@ class WebRequestProxyingWebSocket : public WebRequestAPI::Proxy,
       scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
       network::mojom::WebSocketPtr proxied_socket,
       network::mojom::WebSocketRequest proxied_request,
+      network::mojom::AuthenticationHandlerRequest auth_request,
       WebRequestAPI::ProxySet* proxies);
   ~WebRequestProxyingWebSocket() override;
 
@@ -74,6 +78,12 @@ class WebRequestProxyingWebSocket : public WebRequestAPI::Proxy,
                      const std::string& reason) override;
   void OnClosingHandshake() override;
 
+  // mojom::AuthenticationHandler method:
+  void OnAuthRequired(const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+                      const scoped_refptr<net::HttpResponseHeaders>& headers,
+                      const net::HostPortPair& socket_address,
+                      OnAuthRequiredCallback callback) override;
+
   static void StartProxying(
       int process_id,
       int render_frame_id,
@@ -84,13 +94,20 @@ class WebRequestProxyingWebSocket : public WebRequestAPI::Proxy,
       InfoMap* info_map,
       network::mojom::WebSocketPtrInfo proxied_socket_ptr_info,
       network::mojom::WebSocketRequest proxied_request,
+      network::mojom::AuthenticationHandlerRequest auth_request,
       scoped_refptr<WebRequestAPI::ProxySet> proxies);
 
  private:
   void OnBeforeRequestComplete(int error_code);
   void OnBeforeSendHeadersComplete(int error_code);
   void OnHeadersReceivedComplete(int error_code);
+  void OnAuthRequiredComplete(net::NetworkDelegate::AuthRequiredResponse rv);
+  void OnHeadersReceivedCompleteForAuth(
+      scoped_refptr<net::AuthChallengeInfo> auth_info,
+      int rv);
 
+  void PauseIncomingMethodCallProcessing();
+  void ResumeIncomingMethodCallProcessing();
   void OnError(int result);
 
   const int process_id_;
@@ -104,9 +121,12 @@ class WebRequestProxyingWebSocket : public WebRequestAPI::Proxy,
   network::mojom::WebSocketClientPtr forwarding_client_;
   mojo::Binding<network::mojom::WebSocket> binding_as_websocket_;
   mojo::Binding<network::mojom::WebSocketClient> binding_as_client_;
+  mojo::Binding<network::mojom::AuthenticationHandler> binding_as_auth_handler_;
 
   network::ResourceRequest request_;
   network::ResourceResponseHead response_;
+  net::AuthCredentials auth_credentials_;
+  OnAuthRequiredCallback auth_required_callback_;
   scoped_refptr<net::HttpResponseHeaders> override_headers_;
   std::vector<std::string> websocket_protocols_;
 

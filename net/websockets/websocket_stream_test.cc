@@ -469,12 +469,19 @@ class CommonAuthTestHelper {
 // Data and methods for BasicAuth tests.
 class WebSocketStreamCreateBasicAuthTest : public WebSocketStreamCreateTest {
  protected:
-  void CreateAndConnectAuthHandshake(const std::string& url,
-                                     const std::string& base64_user_pass,
-                                     const std::string& response2) {
+  void CreateAndConnectAuthHandshake(base::StringPiece url,
+                                     base::StringPiece base64_user_pass,
+                                     base::StringPiece response2) {
     AddRawExpectations(helper_.BuildSocketData1(kUnauthorizedResponse));
 
-    static constexpr char request2format[] =
+    CreateAndConnectRawExpectations(
+        url, NoSubProtocols(), HttpRequestHeaders(),
+        helper_.BuildSocketData2(RequestExpectation(base64_user_pass),
+                                 response2.as_string()));
+  }
+
+  static std::string RequestExpectation(base::StringPiece base64_user_pass) {
+    static const char request2format[] =
         "GET / HTTP/1.1\r\n"
         "Host: www.example.org\r\n"
         "Connection: Upgrade\r\n"
@@ -491,11 +498,7 @@ class WebSocketStreamCreateBasicAuthTest : public WebSocketStreamCreateTest {
         "Sec-WebSocket-Extensions: permessage-deflate; "
         "client_max_window_bits\r\n"
         "\r\n";
-    const std::string request =
-        base::StringPrintf(request2format, base64_user_pass.c_str());
-    CreateAndConnectRawExpectations(
-        url, NoSubProtocols(), HttpRequestHeaders(),
-        helper_.BuildSocketData2(request, response2));
+    return base::StringPrintf(request2format, base64_user_pass.data());
   }
 
   static const char kUnauthorizedResponse[];
@@ -1533,6 +1536,51 @@ TEST_P(WebSocketStreamCreateBasicAuthTest, SuccessfulConnectionReuse) {
   EXPECT_TRUE(stream_);
   ASSERT_TRUE(response_info_);
   EXPECT_EQ(101, response_info_->headers->response_code());
+}
+
+TEST_P(WebSocketStreamCreateBasicAuthTest, OnAuthRequiredCancelAuth) {
+  CreateAndConnectCustomResponse("ws://www.example.org/", NoSubProtocols(), {},
+                                 {}, kUnauthorizedResponse);
+
+  EXPECT_FALSE(request_info_);
+  EXPECT_FALSE(response_info_);
+  on_auth_required_rv_ = ERR_IO_PENDING;
+  WaitUntilOnAuthRequired();
+
+  EXPECT_FALSE(stream_);
+  EXPECT_FALSE(has_failed());
+
+  std::move(on_auth_required_callback_).Run(nullptr);
+  WaitUntilConnectDone();
+  EXPECT_FALSE(stream_);
+  EXPECT_TRUE(has_failed());
+}
+
+TEST_P(WebSocketStreamCreateBasicAuthTest, OnAuthRequiredSetAuth) {
+  CreateAndConnectCustomResponse("ws://www.example.org/", NoSubProtocols(), {},
+                                 {}, kUnauthorizedResponse);
+
+  EXPECT_FALSE(request_info_);
+  EXPECT_FALSE(response_info_);
+  on_auth_required_rv_ = ERR_IO_PENDING;
+  WaitUntilOnAuthRequired();
+
+  EXPECT_FALSE(stream_);
+  EXPECT_FALSE(has_failed());
+
+  AuthCredentials credentials(base::ASCIIToUTF16("foo"),
+                              base::ASCIIToUTF16("baz"));
+  std::move(on_auth_required_callback_).Run(&credentials);
+
+  // As we are re-establishing the connection with additional credentials,
+  // add new expectations.
+  AddRawExpectations(
+      helper_.BuildSocketData2(RequestExpectation("Zm9vOmJheg=="),
+                               WebSocketStandardResponse(std::string())));
+
+  WaitUntilConnectDone();
+  EXPECT_TRUE(stream_);
+  EXPECT_FALSE(has_failed());
 }
 
 // Digest auth has the same connection semantics as Basic auth, so we can

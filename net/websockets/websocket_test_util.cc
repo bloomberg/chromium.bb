@@ -242,6 +242,15 @@ void WebSocketTestURLRequestContextHost::SetProxyConfig(
       proxy_resolution_service_.get());
 }
 
+int DummyConnectDelegate::OnAuthRequired(
+    scoped_refptr<AuthChallengeInfo> auth_info,
+    scoped_refptr<HttpResponseHeaders> response_headers,
+    const HostPortPair& host_port_pair,
+    base::OnceCallback<void(const AuthCredentials*)> callback,
+    base::Optional<AuthCredentials>* credentials) {
+  return OK;
+}
+
 TestURLRequestContext*
 WebSocketTestURLRequestContextHost::GetURLRequestContext() {
   if (!url_request_context_initialized_) {

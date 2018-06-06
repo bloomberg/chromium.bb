@@ -64,6 +64,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
 
   WebSocket(std::unique_ptr<Delegate> delegate,
             mojom::WebSocketRequest request,
+            mojom::AuthenticationHandlerPtr auth_handler,
             WebSocketThrottler::PendingConnection pending_connection_tracker,
             int child_id,
             int frame_id,
@@ -97,11 +98,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
                   const std::vector<std::string>& requested_protocols,
                   const GURL& site_for_cookies,
                   std::vector<mojom::HttpHeaderPtr> additional_headers);
+  void OnAuthRequiredComplete(
+      base::OnceCallback<void(const net::AuthCredentials*)> callback,
+      const base::Optional<net::AuthCredentials>& credential);
 
   std::unique_ptr<Delegate> delegate_;
   mojo::Binding<mojom::WebSocket> binding_;
 
   mojom::WebSocketClientPtr client_;
+  mojom::AuthenticationHandlerPtr auth_handler_;
 
   WebSocketThrottler::PendingConnection pending_connection_tracker_;
 

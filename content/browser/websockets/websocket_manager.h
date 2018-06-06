@@ -34,10 +34,12 @@ class CONTENT_EXPORT WebSocketManager
   // - For dedicated workers, |frame_id| should be its parent frame's id.
   // - For shared workers and service workers, |frame_id| should be
   //   MSG_ROUTING_NONE because they do not have a frame.
-  static void CreateWebSocket(int process_id,
-                              int frame_id,
-                              url::Origin origin,
-                              network::mojom::WebSocketRequest request);
+  static void CreateWebSocket(
+      int process_id,
+      int frame_id,
+      url::Origin origin,
+      network::mojom::AuthenticationHandlerPtr auth_handler,
+      network::mojom::WebSocketRequest request);
 
   // net::URLRequestContextGetterObserver implementation.
   void OnContextShuttingDown() override;

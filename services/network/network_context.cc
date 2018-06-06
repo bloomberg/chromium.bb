@@ -603,14 +603,17 @@ void NetworkContext::CreateTCPConnectedSocket(
       std::move(request), std::move(observer), std::move(callback));
 }
 
-void NetworkContext::CreateWebSocket(mojom::WebSocketRequest request,
-                                     int32_t process_id,
-                                     int32_t render_frame_id,
-                                     const url::Origin& origin) {
+void NetworkContext::CreateWebSocket(
+    mojom::WebSocketRequest request,
+    int32_t process_id,
+    int32_t render_frame_id,
+    const url::Origin& origin,
+    mojom::AuthenticationHandlerPtr auth_handler) {
 #if !defined(OS_IOS)
   if (!websocket_factory_)
     websocket_factory_ = std::make_unique<WebSocketFactory>(this);
-  websocket_factory_->CreateWebSocket(std::move(request), process_id,
+  websocket_factory_->CreateWebSocket(std::move(request),
+                                      std::move(auth_handler), process_id,
                                       render_frame_id, origin);
 #endif  // !defined(OS_IOS)
 }
