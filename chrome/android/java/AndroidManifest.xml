@@ -495,6 +495,9 @@ by a child template that "extends" this file.
             <meta-data android:name="android.app.shortcuts"
                 android:resource="@xml/launchershortcuts" />
             {{ self.supports_vr() }}
+            {% if min_sdk_version|int >= 21 %}
+            {{ self.extra_web_rendering_activity_definitions() }}
+            {% endif %}
         </activity-alias>
         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity2"
             android:theme="@style/TabbedModeTheme"
