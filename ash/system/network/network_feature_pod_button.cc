@@ -26,6 +26,9 @@ bool IsActive() {
 NetworkFeaturePodButton::NetworkFeaturePodButton(
     FeaturePodControllerBase* controller)
     : FeaturePodButton(controller) {
+  // NetworkHandler can be uninitialized in unit tests.
+  if (!chromeos::NetworkHandler::IsInitialized())
+    return;
   network_state_observer_ = std::make_unique<TrayNetworkStateObserver>(this);
   Update();
 }

@@ -4,9 +4,12 @@
 
 #include "ash/system/tray/tray_event_filter.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,7 +26,7 @@ class TrayEventFilterTest : public AshTestBase {
   ~TrayEventFilterTest() override = default;
 
   gfx::Point outside_point() {
-    gfx::Rect tray_bounds = GetPrimarySystemTray()->GetBoundsInScreen();
+    gfx::Rect tray_bounds = GetSystemTrayBoundsInScreen();
     return tray_bounds.bottom_right() + gfx::Vector2d(1, 1);
   }
   ui::PointerEvent outside_event() {
@@ -33,7 +36,7 @@ class TrayEventFilterTest : public AshTestBase {
   }
 
   gfx::Point inside_point() {
-    gfx::Rect tray_bounds = GetPrimarySystemTray()->GetBoundsInScreen();
+    gfx::Rect tray_bounds = GetSystemTrayBoundsInScreen();
     return tray_bounds.origin();
   }
   ui::PointerEvent inside_event() {
@@ -42,32 +45,67 @@ class TrayEventFilterTest : public AshTestBase {
                                            inside_point(), time, 0, 0));
   }
 
+ protected:
+  void ShowSystemTrayMainView() {
+    if (features::IsSystemTrayUnifiedEnabled()) {
+      GetPrimaryUnifiedSystemTray()->ShowBubble(false /* show_by_click */);
+    } else {
+      GetPrimarySystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW,
+                                              false /* show_by_click */);
+    }
+  }
+
+  bool IsBubbleShown() {
+    if (features::IsSystemTrayUnifiedEnabled()) {
+      return GetPrimaryUnifiedSystemTray()->IsBubbleShown();
+    } else {
+      return GetPrimarySystemTray()->HasSystemBubble() &&
+             GetPrimarySystemTray()->IsSystemBubbleVisible();
+    }
+  }
+
+  gfx::Rect GetSystemTrayBoundsInScreen() {
+    if (features::IsSystemTrayUnifiedEnabled()) {
+      return GetPrimaryUnifiedSystemTray()->GetBubbleBoundsInScreen();
+    } else {
+      return GetPrimarySystemTray()->GetBoundsInScreen();
+    }
+  }
+
+  TrayEventFilter* GetTrayEventFilter() {
+    if (features::IsSystemTrayUnifiedEnabled()) {
+      return GetPrimaryUnifiedSystemTray()->tray_event_filter();
+    } else {
+      return GetPrimarySystemTray()->tray_event_filter();
+    }
+  }
+
+  UnifiedSystemTray* GetPrimaryUnifiedSystemTray() {
+    return GetPrimaryShelf()->GetStatusAreaWidget()->unified_system_tray();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TrayEventFilterTest);
 };
 
 TEST_F(TrayEventFilterTest, ClickingOutsideCloseBubble) {
-  SystemTray* tray = GetPrimarySystemTray();
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
-  EXPECT_TRUE(tray->HasSystemBubble());
-  EXPECT_TRUE(tray->IsSystemBubbleVisible());
+  ShowSystemTrayMainView();
+  EXPECT_TRUE(IsBubbleShown());
 
   // Clicking outside should close the bubble.
-  TrayEventFilter* filter = tray->tray_event_filter();
+  TrayEventFilter* filter = GetTrayEventFilter();
   filter->OnPointerEventObserved(outside_event(), outside_point(), nullptr);
-  EXPECT_FALSE(tray->IsSystemBubbleVisible());
+  EXPECT_FALSE(IsBubbleShown());
 }
 
 TEST_F(TrayEventFilterTest, ClickingInsideDoesNotCloseBubble) {
-  SystemTray* tray = GetPrimarySystemTray();
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
-  EXPECT_TRUE(tray->HasSystemBubble());
-  EXPECT_TRUE(tray->IsSystemBubbleVisible());
+  ShowSystemTrayMainView();
+  EXPECT_TRUE(IsBubbleShown());
 
   // Clicking inside should not close the bubble
-  TrayEventFilter* filter = tray->tray_event_filter();
+  TrayEventFilter* filter = GetTrayEventFilter();
   filter->OnPointerEventObserved(inside_event(), inside_point(), nullptr);
-  EXPECT_TRUE(tray->IsSystemBubbleVisible());
+  EXPECT_TRUE(IsBubbleShown());
 }
 
 TEST_F(TrayEventFilterTest, ClickingOnMenuContainerDoesNotCloseBubble) {
@@ -78,16 +116,14 @@ TEST_F(TrayEventFilterTest, ClickingOnMenuContainerDoesNotCloseBubble) {
       ->GetContainer(kShellWindowId_MenuContainer)
       ->AddChild(menu_window.get());
 
-  SystemTray* tray = GetPrimarySystemTray();
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
-  EXPECT_TRUE(tray->HasSystemBubble());
-  EXPECT_TRUE(tray->IsSystemBubbleVisible());
+  ShowSystemTrayMainView();
+  EXPECT_TRUE(IsBubbleShown());
 
   // Clicking on MenuContainer should not close the bubble.
-  TrayEventFilter* filter = tray->tray_event_filter();
+  TrayEventFilter* filter = GetTrayEventFilter();
   filter->OnPointerEventObserved(outside_event(), outside_point(),
                                  menu_window.get());
-  EXPECT_TRUE(tray->IsSystemBubbleVisible());
+  EXPECT_TRUE(IsBubbleShown());
 }
 
 TEST_F(TrayEventFilterTest, ClickingOnPopupDoesNotCloseBubble) {
@@ -101,16 +137,14 @@ TEST_F(TrayEventFilterTest, ClickingOnPopupDoesNotCloseBubble) {
   popup_widget->GetNativeView()->SetProperty(aura::client::kAlwaysOnTopKey,
                                              true);
 
-  SystemTray* tray = GetPrimarySystemTray();
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
-  EXPECT_TRUE(tray->HasSystemBubble());
-  EXPECT_TRUE(tray->IsSystemBubbleVisible());
+  ShowSystemTrayMainView();
+  EXPECT_TRUE(IsBubbleShown());
 
   // Clicking on StatusContainer should not close the bubble.
-  TrayEventFilter* filter = tray->tray_event_filter();
+  TrayEventFilter* filter = GetTrayEventFilter();
   filter->OnPointerEventObserved(outside_event(), outside_point(),
                                  popup_window.get());
-  EXPECT_TRUE(tray->IsSystemBubbleVisible());
+  EXPECT_TRUE(IsBubbleShown());
 }
 
 TEST_F(TrayEventFilterTest, ClickingOnKeyboardContainerDoesNotCloseBubble) {
@@ -123,16 +157,14 @@ TEST_F(TrayEventFilterTest, ClickingOnKeyboardContainerDoesNotCloseBubble) {
   keyboard_window->set_owned_by_parent(false);
   keyboard_container->AddChild(keyboard_window.get());
 
-  SystemTray* tray = GetPrimarySystemTray();
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
-  EXPECT_TRUE(tray->HasSystemBubble());
-  EXPECT_TRUE(tray->IsSystemBubbleVisible());
+  ShowSystemTrayMainView();
+  EXPECT_TRUE(IsBubbleShown());
 
   // Clicking on KeyboardContainer should not close the bubble.
-  TrayEventFilter* filter = tray->tray_event_filter();
+  TrayEventFilter* filter = GetTrayEventFilter();
   filter->OnPointerEventObserved(outside_event(), outside_point(),
                                  keyboard_window.get());
-  EXPECT_TRUE(tray->IsSystemBubbleVisible());
+  EXPECT_TRUE(IsBubbleShown());
 }
 
 }  // namespace
