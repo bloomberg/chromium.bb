@@ -40,8 +40,10 @@ def main(argv):
   build_utils.CheckOutput(cmd)
 
   if args.depfile:
-    inputs = [args.script, args.input_jar] + extra_classpath_jars
-    build_utils.WriteDepfile(args.depfile, args.output_jar, inputs)
+    # Do not write classpath jars to depfile under the assumption that if
+    # the input jar has not changed, then bytecode rewriting will not have to
+    # be re-run.
+    build_utils.WriteDepfile(args.depfile, args.output_jar)
 
 
 if __name__ == '__main__':

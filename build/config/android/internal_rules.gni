@@ -768,7 +768,6 @@ template("stack_script") {
 
 if (enable_java_templates) {
   import("//build/config/zip.gni")
-  import("//third_party/ijar/ijar.gni")
   import("//third_party/android_platform/config.gni")
 
   android_sdk_jar = "$android_sdk/android.jar"
@@ -1286,10 +1285,7 @@ if (enable_java_templates) {
         depfile = "$target_gen_dir/$target_name.d"
         _bytecode_rewriter_script =
             "$root_build_dir/bin/helper/java_bytecode_rewriter"
-        deps = [
-          "//build/android/bytecode:java_bytecode_rewriter($default_toolchain)",
-        ]
-        deps += _deps
+        deps = _deps + [ "//build/android/bytecode:java_bytecode_rewriter($default_toolchain)" ]
         if (defined(invoker.deps)) {
           deps += invoker.deps
         }
@@ -1299,6 +1295,7 @@ if (enable_java_templates) {
         }
         inputs = [
           _android_sdk_jar,
+          _bytecode_rewriter_script,
           _java_bytecode_rewriter_input_jar,
           _build_config,
         ]
@@ -2639,6 +2636,49 @@ if (enable_java_templates) {
     }
   }
 
+  # Create an interface jar from a normal jar.
+  #
+  # Variables
+  #   input_jar: Path to input .jar.
+  #   output_jar: Path to output .ijar.
+  #
+  template("generate_interface_jar") {
+    action(target_name) {
+      _ijar_target = "//third_party/ijar:ijar($host_toolchain)"
+      _ijar_executable = get_label_info(_ijar_target, "root_out_dir") + "/ijar"
+      forward_variables_from(invoker,
+                             [
+                               "data",
+                               "data_deps",
+                               "public_deps",
+                               "testonly",
+                               "visibility",
+                             ])
+      script = "//build/android/gyp/ijar.py"
+      deps = [
+        _ijar_target,
+      ]
+      if (defined(invoker.deps)) {
+        deps += invoker.deps
+      }
+      inputs = [
+        invoker.input_jar,
+        _ijar_executable,
+      ]
+      if (defined(invoker.inputs)) {
+        inputs += invoker.inputs
+      }
+      outputs = [
+        invoker.output_jar,
+      ]
+      args = [
+        rebase_path(_ijar_executable, root_build_dir),
+        rebase_path(invoker.input_jar, root_build_dir),
+        rebase_path(invoker.output_jar, root_build_dir),
+      ]
+    }
+  }
+
   # A rule that will handle multiple Java-related targets.
   #
   # The caller can provide a list of source files with 'java_files'
@@ -2849,6 +2889,7 @@ if (enable_java_templates) {
       }
     }
 
+    _accumulated_public_deps = []
     _accumulated_deps = []
     if (defined(invoker.deps)) {
       _accumulated_deps = invoker.deps
@@ -2986,7 +3027,7 @@ if (enable_java_templates) {
         java_resources_jar = invoker.jar_path
       }
     }
-    _accumulated_deps += [ ":$_build_config_target_name" ]
+    _accumulated_public_deps += [ ":$_build_config_target_name" ]
 
     # Don't need to depend on the apk-under-test to be packaged.
     if (defined(invoker.apk_under_test)) {
@@ -3027,7 +3068,7 @@ if (enable_java_templates) {
         srcjar_deps = _srcjar_deps
         chromium_code = _chromium_code
         requires_android = _requires_android
-        deps = _accumulated_deps
+        deps = _accumulated_deps + _accumulated_public_deps
         javac_jar_path = _javac_jar_path
 
         # android_apk and junit_binary pass R.java srcjars via srcjar_deps.
@@ -3036,7 +3077,7 @@ if (enable_java_templates) {
           srcjar_filearg = "@FileArg($_rebased_build_config:deps_info:owned_resource_srcjars)"
         }
       }
-      _accumulated_deps += [ ":$_compile_java_target" ]
+      _accumulated_public_deps += [ ":$_compile_java_target" ]
 
       if (_has_lint_target) {
         android_lint("${_main_target_name}__lint") {
@@ -3048,7 +3089,7 @@ if (enable_java_templates) {
           build_config = _build_config
           requires_android = _requires_android
           jar_path = _javac_jar_path
-          deps = _accumulated_deps
+          deps = _accumulated_deps + _accumulated_public_deps
           java_files = _java_files
           if (_java_files != []) {
             java_sources_file = _java_sources_file
@@ -3091,17 +3132,13 @@ if (enable_java_templates) {
           java_sources_file = _java_sources_file
         }
         output_jar_path = _final_jar_path
-        deps = _accumulated_deps
-
-        # Although these will be listed as deps in the depfile, they must also
-        # appear here so that "gn analyze" knows about them.
-        # https://crbug.com/827197
-        if (defined(invoker.proguard_configs)) {
-          inputs = invoker.proguard_configs
-          deps += _srcjar_deps  # For the aapt-generated proguard rules.
+        if (_has_sources) {
+          deps = _accumulated_public_deps  # compile & build_config
+        } else {
+          deps = _accumulated_deps + _accumulated_public_deps
         }
       }
-      _accumulated_deps += [ ":$_process_prebuilt_target_name" ]
+      _accumulated_public_deps += [ ":$_process_prebuilt_target_name" ]
 
       if (defined(_dex_path)) {
         dex("${target_name}__dex") {
@@ -3111,25 +3148,54 @@ if (enable_java_templates) {
             ":$_process_prebuilt_target_name",
           ]
         }
-        _accumulated_deps += [ ":${target_name}__dex" ]
+        _accumulated_public_deps += [ ":${target_name}__dex" ]
       }
 
-      _ijar_target_name = "${target_name}__ijar"
-      generate_interface_jar(_ijar_target_name) {
-        # Always used the unfiltered .jar to create the interface jar so that
-        # other targets will resolve filtered classes when depending on
-        # BuildConfig, NativeLibraries, etc.
-        input_jar = _unprocessed_jar_path
-        if (_is_prebuilt) {
-          forward_variables_from(invoker, [ "deps" ])
-        } else {
-          deps = [
-            ":$_compile_java_target",
-          ]
+      if (!_is_java_binary) {
+        # Export the interface jar as the main target (rather than a group)
+        # so that ninja will notice when the output is unchanged and not rebuild
+        # reverse-dependencies. Targets that should be rebuilt when the
+        # non-interface .jar changes use a depfile to indicate that they should
+        # be rebuilt even when the interface jar does not change.
+        generate_interface_jar(target_name) {
+          forward_variables_from(invoker,
+                                 [
+                                   "data",
+                                   "data_deps",
+                                   "deps",
+                                   "visibility",
+                                 ])
+
+          # Export all of our steps as "public", so that all outputs can be used
+          # as inputs to other targets.
+          public_deps = _accumulated_public_deps
+
+          # Always used the unfiltered .jar to create the interface jar so that
+          # other targets will resolve filtered classes when depending on
+          # BuildConfig, NativeLibraries, etc.
+          input_jar = _unprocessed_jar_path
+          output_jar = _final_ijar_path
+          if (_has_lint_target) {
+            if (!defined(data_deps)) {
+              data_deps = []
+            }
+            data_deps += [ ":${_main_target_name}__analysis" ]
+          }
+
+          # proguard_configs listed on java_library targets need to be marked
+          # as inputs to at least one action so that "gn analyze" will know
+          # about them. Although ijar doesn't use them, it's a convenient spot
+          # to list them.
+          # https://crbug.com/827197
+          if (defined(invoker.proguard_configs)) {
+            inputs = invoker.proguard_configs
+            if (!defined(deps)) {
+              deps = []
+            }
+            deps += _srcjar_deps  # For the aapt-generated proguard rules.
+          }
         }
-        output_jar = _final_ijar_path
       }
-      _accumulated_deps += [ ":$_ijar_target_name" ]
     }
 
     if (_is_java_binary) {
@@ -3150,24 +3216,24 @@ if (enable_java_templates) {
         if (defined(invoker.wrapper_script_name)) {
           script_name = invoker.wrapper_script_name
         }
-        deps = _accumulated_deps
+        deps = _accumulated_public_deps
       }
-      _accumulated_deps += [ ":${target_name}__java_binary_script" ]
-    }
+      _accumulated_public_deps += [ ":${target_name}__java_binary_script" ]
 
-    group(target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "data",
-                               "data_deps",
-                               "visibility",
-                             ])
-      public_deps = _accumulated_deps
-      if (_has_lint_target) {
-        if (!defined(data_deps)) {
-          data_deps = []
+      group(target_name) {
+        forward_variables_from(invoker,
+                               [
+                                 "data",
+                                 "data_deps",
+                                 "visibility",
+                               ])
+        public_deps = _accumulated_public_deps
+        if (_has_lint_target) {
+          if (!defined(data_deps)) {
+            data_deps = []
+          }
+          data_deps += [ ":${_main_target_name}__analysis" ]
         }
-        data_deps += [ ":${_main_target_name}__analysis" ]
       }
     }
   }
