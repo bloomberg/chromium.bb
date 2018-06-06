@@ -157,6 +157,15 @@ class PLATFORM_EXPORT FontCache {
   sk_sp<SkFontMgr> FontManager() { return font_manager_; }
   static void SetFontManager(sk_sp<SkFontMgr>);
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  // These are needed for calling QueryRenderStyleForStrike, since
+  // gfx::GetFontRenderParams makes distinctions based on DSF.
+  static float DeviceScaleFactor() { return device_scale_factor_; }
+  static void SetDeviceScaleFactor(float device_scale_factor) {
+    device_scale_factor_ = device_scale_factor;
+  }
+#endif
+
 #if !defined(OS_MACOSX)
   static const AtomicString& SystemFontFamily();
 #else
@@ -318,6 +327,10 @@ class PLATFORM_EXPORT FontCache {
   // to ensure it's not happening in the production from the crash log.
   bool is_test_font_mgr_ = false;
 #endif  // defined(OS_WIN)
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  static float device_scale_factor_;
+#endif
 
   unsigned short generation_ = 0;
   bool platform_init_ = false;

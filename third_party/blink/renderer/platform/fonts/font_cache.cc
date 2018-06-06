@@ -65,6 +65,10 @@ namespace blink {
 
 SkFontMgr* FontCache::static_font_manager_ = nullptr;
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+float FontCache::device_scale_factor_ = 1.0;
+#endif
+
 #if defined(OS_WIN)
 bool FontCache::antialiased_text_enabled_ = false;
 bool FontCache::lcd_text_enabled_ = false;
