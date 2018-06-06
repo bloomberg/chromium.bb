@@ -84,7 +84,7 @@ def CreateStorySetFromPath(path, skipped_file,
 
   all_urls = [p.rstrip('/') for p in page_urls]
   common_prefix = os.path.dirname(os.path.commonprefix(all_urls))
-  for url in page_urls:
+  for url in sorted(page_urls):
     name = url[len(common_prefix):].strip('/')
     ps.AddStory(_BlinkPerfPage(
         url, ps, ps.base_dir,
