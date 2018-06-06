@@ -5388,7 +5388,7 @@ LayoutRect LayoutBox::LayoutOverflowRectForPropagation(
                     ? LayoutSize(LayoutUnit(), MarginAfter())
                     : LayoutSize(MarginAfter(), LayoutUnit()));
 
-  if (!HasOverflowClip())
+  if (!HasOverflowClip() && !ShouldApplyLayoutContainment())
     rect.Unite(LayoutOverflowRect());
 
   bool has_transform = HasLayer() && Layer()->Transform();
