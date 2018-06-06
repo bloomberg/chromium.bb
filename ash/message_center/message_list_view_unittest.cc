@@ -102,6 +102,7 @@ class MessageListViewTest : public AshTestBase,
     AshTestBase::SetUp();
 
     message_list_view_.reset(new MessageListView());
+    message_list_view_->SetBorderPadding();
     message_list_view_->AddObserver(this);
     message_list_view_->set_owned_by_client();
 

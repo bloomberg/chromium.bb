@@ -68,6 +68,8 @@ class ASH_EXPORT MessageListView : public views::View,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  void SetBorderPadding();
+
   void set_use_fixed_height(bool use_fixed_height) {
     use_fixed_height_ = use_fixed_height;
   }
@@ -89,6 +91,7 @@ class ASH_EXPORT MessageListView : public views::View,
   friend class MessageCenterViewTest;
   friend class MessageListViewTest;
 
+  int GetMarginBetweenItems() const;
   bool IsValidChild(const views::View* child) const;
   void DoUpdateIfPossible();
 
@@ -132,6 +135,7 @@ class ASH_EXPORT MessageListView : public views::View,
   bool has_deferred_task_;
   bool clear_all_started_;
   bool use_fixed_height_;
+  bool has_border_padding_;
   std::set<views::View*> adding_views_;
   std::set<views::View*> deleting_views_;
   std::set<views::View*> deleted_when_done_;

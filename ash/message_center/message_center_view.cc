@@ -216,6 +216,7 @@ MessageCenterView::MessageCenterView(
   scroller_->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
 
   message_list_view_.reset(new MessageListView());
+  message_list_view_->SetBorderPadding();
   message_list_view_->set_scroller(scroller_);
   message_list_view_->set_owned_by_client();
   message_list_view_->AddObserver(this);
