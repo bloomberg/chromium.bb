@@ -9,13 +9,108 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_USAGE_TIME_LIMIT_PROCESSOR_H_
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_USAGE_TIME_LIMIT_PROCESSOR_H_
 
-#include <vector>
-
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/values.h"
 
 namespace chromeos {
+namespace internal {
+
+enum class Weekday {
+  kSunday = 0,
+  kMonday,
+  kTuesday,
+  kWednesday,
+  kThursday,
+  kFriday,
+  kSaturday,
+  kCount,
+};
+
+class TimeWindowLimitEntry {
+ public:
+  TimeWindowLimitEntry();
+  TimeWindowLimitEntry(TimeWindowLimitEntry&&);
+  TimeWindowLimitEntry& operator=(TimeWindowLimitEntry&&);
+
+  bool IsOvernight() const;
+
+  // Start time of time window limit. This is the distance from midnight.
+  base::TimeDelta starts_at;
+  // End time of time window limit. This is the distance from midnight.
+  base::TimeDelta ends_at;
+  // Last time this entry was updated.
+  base::Time last_updated;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TimeWindowLimitEntry);
+};
+
+class TimeWindowLimit {
+ public:
+  TimeWindowLimit(const base::Value& window_limit_dict);
+  ~TimeWindowLimit();
+  TimeWindowLimit(TimeWindowLimit&&);
+  TimeWindowLimit& operator=(TimeWindowLimit&&);
+
+  std::unordered_map<Weekday, base::Optional<TimeWindowLimitEntry>> entries;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TimeWindowLimit);
+};
+
+class TimeUsageLimitEntry {
+ public:
+  TimeUsageLimitEntry();
+  TimeUsageLimitEntry(TimeUsageLimitEntry&&);
+  TimeUsageLimitEntry& operator=(TimeUsageLimitEntry&&);
+
+  base::TimeDelta usage_quota;
+  base::Time last_updated;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TimeUsageLimitEntry);
+};
+
+class TimeUsageLimit {
+ public:
+  TimeUsageLimit(const base::Value& usage_limit_dict);
+  ~TimeUsageLimit();
+  TimeUsageLimit(TimeUsageLimit&&);
+  TimeUsageLimit& operator=(TimeUsageLimit&&);
+
+  std::unordered_map<Weekday, base::Optional<TimeUsageLimitEntry>> entries;
+  base::TimeDelta reset_at;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TimeUsageLimit);
+};
+
+class Override {
+ public:
+  enum class Action { kLock, kUnlock };
+
+  Override(const base::Value& override_dict);
+  ~Override();
+  Override(Override&&);
+  Override& operator=(Override&&);
+
+  Action action;
+  base::Time created_at;
+  base::Optional<base::TimeDelta> duration;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Override);
+};
+
+// Retrieves the weekday from a time.
+Weekday GetWeekday(base::Time time);
+
+// Shifts the current weekday, if the value is po
+Weekday WeekdayShift(Weekday current_day, int shift);
+
+}  // namespace internal
+
 namespace usage_time_limit {
 
 enum class ActivePolicies {
