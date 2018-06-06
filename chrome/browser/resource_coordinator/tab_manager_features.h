@@ -13,6 +13,7 @@
 namespace features {
 
 extern const base::Feature kCustomizedTabLoadTimeout;
+extern const base::Feature kInfiniteSessionRestore;
 extern const base::Feature kProactiveTabFreezeAndDiscard;
 extern const base::Feature kSiteCharacteristicsDatabase;
 extern const base::Feature kStaggeredBackgroundTabOpening;
@@ -42,6 +43,17 @@ extern const char kSiteCharacteristicsDb_TitleUpdateObservationWindow[];
 extern const char kSiteCharacteristicsDb_AudioUsageObservationWindow[];
 extern const char kSiteCharacteristicsDb_NotificationsUsageObservationWindow[];
 
+// Variation parameter names related to infinite session restore.
+extern const char kInfiniteSessionRestore_MinSimultaneousTabLoads[];
+extern const char kInfiniteSessionRestore_MaxSimultaneousTabLoads[];
+extern const char kInfiniteSessionRestore_CoresPerSimultaneousTabLoad[];
+extern const char kInfiniteSessionRestore_MinTabsToRestore[];
+extern const char kInfiniteSessionRestore_MaxTabsToRestore[];
+extern const char kInfiniteSessionRestore_MbFreeMemoryPerTabToRestore[];
+// This is expressed in seconds.
+extern const char kInfiniteSessionRestore_MaxTimeSinceLastUseToRestore[];
+extern const char kInfiniteSessionRestore_MinSiteEngagementToRestore[];
+
 // Default values of parameters related to the site characteristics database.
 // See ProactiveTabFreezeAndDiscardsParams for details.
 extern const bool kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardDefault;
@@ -68,6 +80,19 @@ extern const base::TimeDelta
     kSiteCharacteristicsDb_AudioUsageObservationWindow_Default;
 extern const base::TimeDelta
     kSiteCharacteristicsDb_NotificationsUsageObservationWindow_Default;
+
+// Default values for infinite session restore feature.
+extern const uint32_t kInfiniteSessionRestore_MinSimultaneousTabLoadsDefault;
+extern const uint32_t kInfiniteSessionRestore_MaxSimultaneousTabLoadsDefault;
+extern const uint32_t
+    kInfiniteSessionRestore_CoresPerSimultaneousTabLoadDefault;
+extern const uint32_t kInfiniteSessionRestore_MinTabsToRestoreDefault;
+extern const uint32_t kInfiniteSessionRestore_MaxTabsToRestoreDefault;
+extern const uint32_t
+    kInfiniteSessionRestore_MbFreeMemoryPerTabToRestoreDefault;
+extern const base::TimeDelta
+    kInfiniteSessionRestore_MaxTimeSinceLastUseToRestoreDefault;
+extern const uint32_t kInfiniteSessionRestore_MinSiteEngagementToRestoreDefault;
 
 // Parameters used by the proactive tab discarding feature.
 //
@@ -169,6 +194,42 @@ struct SiteCharacteristicsDatabaseParams {
   base::TimeDelta notifications_usage_observation_window;
 };
 
+// Parameters used by the infinite session restore feature.
+struct InfiniteSessionRestoreParams {
+  InfiniteSessionRestoreParams();
+  InfiniteSessionRestoreParams(const InfiniteSessionRestoreParams& rhs);
+
+  // Parameters directly retrieved from the experiment configuration.
+
+  // The maximum number of tabs to ever load simultaneously. This can be
+  // exceeded by user actions or load timeouts. See TabLoader for details.
+  uint32_t min_simultaneous_tab_loads;
+  // The minimum number of simultaneous tab loads that should be permitted.
+  // Setting to zero means no maximum is applied.
+  uint32_t max_simultaneous_tab_loads;
+  // The number of CPU cores required before per permitted simultaneous tab
+  // load. Setting to zero means no CPU core limit applies.
+  uint32_t cores_per_simultaneous_tab_load;
+  // The minimum total number of tabs to restore (if there are even that many).
+  uint32_t min_tabs_to_restore;
+  // The maximum total number of tabs to restore in a session restore. Setting
+  // to zero means no maximum is applied.
+  uint32_t max_tabs_to_restore;
+  // The required amount of system free memory per tab to restore. Setting to
+  // zero means no memory limit will be applied.
+  uint32_t mb_free_memory_per_tab_to_restore;
+  // The maximum time since last use of a tab in order for it to be restored.
+  // Setting to zero means this logic does not apply.
+  base::TimeDelta max_time_since_last_use_to_restore;
+  // The minimum site engagement score in order for a tab to be restored.
+  // Setting this to zero means all tabs will be restored regardless of the
+  // site engagement score.
+  uint32_t min_site_engagement_to_restore;
+
+  // Calculated parameters.
+  uint32_t simultaneous_tab_loads;
+};
+
 // Gets parameters for the proactive tab discarding feature. This does no
 // parameter validation, and sets the default values if the feature is not
 // enabled.
@@ -192,6 +253,25 @@ SiteCharacteristicsDatabaseParams GetSiteCharacteristicsDatabaseParams();
 // all the classes that need one.
 const SiteCharacteristicsDatabaseParams&
 GetStaticSiteCharacteristicsDatabaseParams();
+
+// Gets parameters for the infinite session restore feature.
+InfiniteSessionRestoreParams GetInfiniteSessionRestoreParams();
+
+// Returns a static InfiniteSessionRestoreParams object that can be used by all
+// instances of TabLoader.
+const InfiniteSessionRestoreParams& GetStaticInfiniteSessionRestoreParams();
+
+// Returns the number of simultaneous tab loads to use given the provided
+// parameters. If |num_cores| is zero it will be automatically determined.
+size_t CalculateSimultaneousTabLoads(size_t min_loads,
+                                     size_t max_loads,
+                                     size_t cores_per_load,
+                                     size_t num_cores);
+
+// Testing seam. This allows setting the number of system cores used in the
+// calculation of the InfiniteSessionRestore params. Setting this to zero means
+// the actual system values will be used.
+void SetCoresForTesting(size_t num_cores);
 
 }  // namespace resource_coordinator
 
