@@ -15,6 +15,10 @@ namespace payments {
 // request transaction.
 extern const char kPaymentsFirstTransactionCompleted[];
 
+// True if the user has allowed canMakePayment to return a truthful value, false
+// if canMakePayment should always return false regardless.
+extern const char kCanMakePaymentEnabled[];
+
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 }  // namespace payments

@@ -266,11 +266,16 @@ void PaymentRequest::Complete(mojom::PaymentComplete result) {
 }
 
 void PaymentRequest::CanMakePayment() {
-  state()->CanMakePayment(base::BindOnce(
-      &PaymentRequest::CanMakePaymentCallback, weak_ptr_factory_.GetWeakPtr()));
-
   if (observer_for_testing_)
     observer_for_testing_->OnCanMakePaymentCalled();
+
+  if (!delegate_->GetPrefService()->GetBoolean(kCanMakePaymentEnabled)) {
+    CanMakePaymentCallback(/*can_make_payment=*/false);
+  } else {
+    state()->CanMakePayment(
+        base::BindOnce(&PaymentRequest::CanMakePaymentCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void PaymentRequest::OnPaymentResponseAvailable(

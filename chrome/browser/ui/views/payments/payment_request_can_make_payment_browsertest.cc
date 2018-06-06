@@ -22,6 +22,14 @@ class PaymentRequestCanMakePaymentQueryTest
  protected:
   PaymentRequestCanMakePaymentQueryTest() {}
 
+  void SetUpOnMainThread() override {
+    PaymentRequestBrowserTestBase::SetUpOnMainThread();
+
+    // By default for these tests, can make payment is enabled. Individual tests
+    // may override to false.
+    SetCanMakePaymentEnabledPref(true);
+  }
+
   void CallCanMakePayment() {
     ResetEventWaiterForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
                                  DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
@@ -43,6 +51,20 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
   CallCanMakePayment();
 
   ExpectBodyContains({"true"});
+}
+
+// Visa is required, and user has a visa instrument, but canMakePayment is
+// disabled by user preference.
+IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
+                       CanMakePayment_SupportedButDisabled) {
+  SetCanMakePaymentEnabledPref(false);
+  NavigateTo("/payment_request_can_make_payment_query_test.html");
+  const autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
+  AddCreditCard(card);
+
+  CallCanMakePayment();
+
+  ExpectBodyContains({"false"});
 }
 
 // Pages without a valid SSL certificate always get "false" from
@@ -254,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
   ExpectBodyContains({"NotAllowedError"});
 }
 
-// canMakePayment() should return result as in normal mode to aviod incognito
+// canMakePayment() should return result as in normal mode to avoid incognito
 // mode detection.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        QueryQuotaForBasicCardsInIncognito) {
