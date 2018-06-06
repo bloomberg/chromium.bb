@@ -17,7 +17,8 @@ void UpdateKeyboardObserverFromStateChanged(
   if (keyboard_root_window != observer_root_window)
     return;
 
-  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* const keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
   if (keyboard_activated &&
       !keyboard_observer->IsObserving(keyboard_controller)) {
     keyboard_observer->Add(keyboard_controller);

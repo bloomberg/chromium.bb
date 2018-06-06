@@ -104,14 +104,16 @@ void VirtualKeyboardTray::OnKeyboardControllerCreated() {
 }
 
 void VirtualKeyboardTray::ObserveKeyboardController() {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled() && !keyboard_controller->HasObserver(this))
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller && !keyboard_controller->HasObserver(this))
     keyboard_controller->AddObserver(this);
 }
 
 void VirtualKeyboardTray::UnobserveKeyboardController() {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled())
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller)
     keyboard_controller->RemoveObserver(this);
 }
 

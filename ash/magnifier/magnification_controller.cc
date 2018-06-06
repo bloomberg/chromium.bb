@@ -725,9 +725,9 @@ void MagnificationController::OnMouseMove(const gfx::Point& location) {
 
   // Reduce the bottom margin if the keyboard is visible.
   bool reduce_bottom_margin = false;
-  if (keyboard::KeyboardController::Get()->enabled()) {
+  if (keyboard::KeyboardController::GetInstance()) {
     reduce_bottom_margin =
-        keyboard::KeyboardController::Get()->keyboard_visible();
+        keyboard::KeyboardController::GetInstance()->keyboard_visible();
   }
 
   MoveMagnifierWindowFollowPoint(mouse, margin, margin, margin, margin,
@@ -926,9 +926,10 @@ void MagnificationController::MoveMagnifierWindowCenterPoint(
   gfx::Rect window_rect = GetViewportRect();
 
   // Reduce the viewport bounds if the keyboard is up.
-  if (keyboard::KeyboardController::Get()->enabled()) {
-    gfx::Rect keyboard_rect =
-        keyboard::KeyboardController::Get()->GetContainerWindow()->bounds();
+  if (keyboard::KeyboardController::GetInstance()) {
+    gfx::Rect keyboard_rect = keyboard::KeyboardController::GetInstance()
+                                  ->GetContainerWindow()
+                                  ->bounds();
     window_rect.set_height(window_rect.height() -
                            keyboard_rect.height() / scale_);
   }

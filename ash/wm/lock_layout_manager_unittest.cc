@@ -58,12 +58,12 @@ class LockLayoutManagerTest : public AshTestBase {
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
     Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
-        keyboard::KeyboardController::Get());
+        keyboard::KeyboardController::GetInstance());
   }
 
   void TearDown() override {
     Shell::GetPrimaryRootWindowController()->DeactivateKeyboard(
-        keyboard::KeyboardController::Get());
+        keyboard::KeyboardController::GetInstance());
     AshTestBase::TearDown();
   }
 
@@ -84,8 +84,9 @@ class LockLayoutManagerTest : public AshTestBase {
 
   // Show or hide the keyboard.
   void ShowKeyboard(bool show) {
-    auto* keyboard = keyboard::KeyboardController::Get();
-    ASSERT_TRUE(keyboard->enabled());
+    keyboard::KeyboardController* keyboard =
+        keyboard::KeyboardController::GetInstance();
+    ASSERT_TRUE(keyboard);
     if (show == keyboard->keyboard_visible())
       return;
 
@@ -236,7 +237,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   ShowKeyboard(true);
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
   gfx::Rect keyboard_bounds =
-      keyboard::KeyboardController::Get()->visual_bounds_in_screen();
+      keyboard::KeyboardController::GetInstance()->visual_bounds_in_screen();
   EXPECT_NE(keyboard_bounds, gfx::Rect());
   ShowKeyboard(false);
 
@@ -264,7 +265,8 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   keyboard::SetKeyboardOverscrollOverride(
       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED);
   ShowKeyboard(true);
-  keyboard::KeyboardController* keyboard = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* keyboard =
+      keyboard::KeyboardController::GetInstance();
   primary_display = display::Screen::GetScreen()->GetPrimaryDisplay();
   screen_bounds = primary_display.bounds();
   gfx::Rect target_bounds(screen_bounds);

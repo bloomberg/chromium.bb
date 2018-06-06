@@ -50,9 +50,8 @@ SystemModalContainerLayoutManager::SystemModalContainerLayoutManager(
     : container_(container) {}
 
 SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled())
-    keyboard_controller->RemoveObserver(this);
+  if (keyboard::KeyboardController::GetInstance())
+    keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -161,9 +160,9 @@ void SystemModalContainerLayoutManager::CreateModalBackground() {
     window_dimmer_ = std::make_unique<WindowDimmer>(container_);
     window_dimmer_->window()->SetName(
         "SystemModalContainerLayoutManager.ModalBackground");
-    // The keyboard isn't always enabled.
-    if (keyboard::KeyboardController::Get()->enabled())
-      keyboard::KeyboardController::Get()->AddObserver(this);
+    // There isn't always a keyboard controller.
+    if (keyboard::KeyboardController::GetInstance())
+      keyboard::KeyboardController::GetInstance()->AddObserver(this);
   }
   window_dimmer_->window()->Show();
 }
@@ -172,9 +171,8 @@ void SystemModalContainerLayoutManager::DestroyModalBackground() {
   if (!window_dimmer_)
     return;
 
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled())
-    keyboard_controller->RemoveObserver(this);
+  if (keyboard::KeyboardController::GetInstance())
+    keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
   window_dimmer_.reset();
 }
 
@@ -258,9 +256,9 @@ gfx::Rect SystemModalContainerLayoutManager::GetUsableDialogArea() const {
   // keyboard will not fill left to right, the background is still covered.
   gfx::Rect valid_bounds = container_->bounds();
   keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled()) {
-    gfx::Rect bounds = keyboard_controller->GetWorkspaceOccludedBounds();
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller) {
+    const gfx::Rect bounds = keyboard_controller->GetWorkspaceOccludedBounds();
     valid_bounds.set_height(
         std::max(0, valid_bounds.height() - bounds.height()));
   }

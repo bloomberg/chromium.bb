@@ -17,6 +17,7 @@
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace aura {
@@ -169,6 +170,8 @@ class ArcImeService : public KeyedService,
   gfx::Range selection_range_;
 
   aura::Window* focused_arc_window_ = nullptr;
+
+  keyboard::KeyboardController* keyboard_controller_;
 
   bool is_focus_observer_installed_;
 

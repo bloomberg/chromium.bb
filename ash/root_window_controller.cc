@@ -483,7 +483,7 @@ void RootWindowController::CloseChildWindows() {
 
   // Deactivate keyboard container before closing child windows and shutting
   // down associated layout managers.
-  DeactivateKeyboard(keyboard::KeyboardController::Get());
+  DeactivateKeyboard(keyboard::KeyboardController::GetInstance());
 
   // |panel_layout_manager_| needs to be shut down before windows are destroyed.
   panel_layout_manager_->Shutdown();
@@ -558,8 +558,7 @@ aura::Window* RootWindowController::GetWindowForFullscreenMode() {
 
 void RootWindowController::ActivateKeyboard(
     keyboard::KeyboardController* keyboard_controller) {
-  DCHECK(keyboard_controller);
-  if (!keyboard::IsKeyboardEnabled() || !keyboard_controller->enabled())
+  if (!keyboard::IsKeyboardEnabled() || !keyboard_controller)
     return;
 
   // If the keyboard is already activated, ensure that it is activated in this
@@ -581,8 +580,7 @@ void RootWindowController::ActivateKeyboard(
 
 void RootWindowController::DeactivateKeyboard(
     keyboard::KeyboardController* keyboard_controller) {
-  DCHECK(keyboard_controller);
-  if (!keyboard_controller->enabled())
+  if (!keyboard_controller)
     return;
 
   aura::Window* keyboard_window = keyboard_controller->GetContainerWindow();
@@ -712,7 +710,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   root_window_layout_manager_->OnWindowResized();
   if (root_window_type == RootWindowType::PRIMARY) {
     if (Shell::GetAshConfig() != Config::MASH)
-      shell->EnableKeyboard();
+      shell->CreateKeyboard();
   } else {
     window_tree_host_->Show();
 

@@ -179,9 +179,10 @@ gfx::Rect LockWindowState::GetWindowBounds(aura::Window* window) {
   if (exclude_shelf_)
     return screen_util::GetDisplayWorkAreaBoundsInParentForLockScreen(window);
 
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
   const int keyboard_height =
-      keyboard_controller->enabled()
+      keyboard_controller
           ? keyboard_controller->GetKeyboardLockScreenOffsetBounds().height()
           : 0;
   gfx::Rect bounds = screen_util::GetDisplayBoundsWithShelf(window);

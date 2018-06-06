@@ -19,7 +19,6 @@
 #include "ui/base/ime/dummy_input_method.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/keyboard/keyboard_controller.h"
 
 namespace arc {
 
@@ -165,9 +164,6 @@ class ArcImeServiceTest : public testing::Test {
 
   FakeArcWindowDelegate* fake_window_delegate_;  // Owned by |instance_|
   std::unique_ptr<aura::Window> arc_win_;
-
-  // Needed by ArcImeService.
-  keyboard::KeyboardController keyboard_controller_;
 
  private:
   void SetUp() override {

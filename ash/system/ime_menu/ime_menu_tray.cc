@@ -309,8 +309,9 @@ ImeMenuTray::~ImeMenuTray() {
   SystemTrayNotifier* tray_notifier = Shell::Get()->system_tray_notifier();
   tray_notifier->RemoveIMEObserver(this);
   tray_notifier->RemoveVirtualKeyboardObserver(this);
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled())
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller)
     keyboard_controller->RemoveObserver(this);
 }
 
@@ -416,9 +417,9 @@ void ImeMenuTray::CloseBubble() {
 }
 
 void ImeMenuTray::ShowBubble(bool show_by_click) {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled() &&
-      keyboard_controller->keyboard_visible()) {
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller && keyboard_controller->keyboard_visible()) {
     show_bubble_after_keyboard_hidden_ = true;
     keyboard_controller->AddObserver(this);
     keyboard_controller->HideKeyboard(
@@ -473,7 +474,9 @@ void ImeMenuTray::HideBubble(const views::TrayBubbleView* bubble_view) {
 void ImeMenuTray::OnKeyboardHidden() {
   if (show_bubble_after_keyboard_hidden_) {
     show_bubble_after_keyboard_hidden_ = false;
-    auto* keyboard_controller = keyboard::KeyboardController::Get();
+    keyboard::KeyboardController* keyboard_controller =
+        keyboard::KeyboardController::GetInstance();
+    DCHECK(keyboard_controller);
     keyboard_controller->RemoveObserver(this);
 
     ShowImeMenuBubbleInternal(false /* show_by_click */);

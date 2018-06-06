@@ -2134,7 +2134,7 @@ class ShelfLayoutManagerKeyboardTest : public AshTestBase {
     UpdateDisplay("800x600");
     keyboard::SetTouchKeyboardEnabled(true);
     keyboard::SetAccessibilityKeyboardEnabled(true);
-    Shell::Get()->EnableKeyboard();
+    Shell::Get()->CreateKeyboard();
   }
 
   // AshTestBase:
@@ -2178,7 +2178,8 @@ TEST_F(ShelfLayoutManagerKeyboardTest, ShelfNotMoveOnKeyboardOpen) {
 
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   InitKeyboardBounds();
-  auto* kb_controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* kb_controller =
+      keyboard::KeyboardController::GetInstance();
   // Open keyboard in non-sticky mode.
   kb_controller->ShowKeyboard(false);
   NotifyKeyboardChanging(layout_manager, false, keyboard_bounds());
@@ -2194,7 +2195,8 @@ TEST_F(ShelfLayoutManagerKeyboardTest,
        ShelfIgnoreWorkAreaChangeInNonStickyMode) {
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   InitKeyboardBounds();
-  auto* kb_controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* kb_controller =
+      keyboard::KeyboardController::GetInstance();
   gfx::Rect orig_work_area(
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
 
@@ -2219,7 +2221,8 @@ TEST_F(ShelfLayoutManagerKeyboardTest,
 TEST_F(ShelfLayoutManagerKeyboardTest, ShelfShouldChangeWorkAreaInStickyMode) {
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   InitKeyboardBounds();
-  auto* kb_controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* kb_controller =
+      keyboard::KeyboardController::GetInstance();
   gfx::Rect orig_work_area(
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
 
