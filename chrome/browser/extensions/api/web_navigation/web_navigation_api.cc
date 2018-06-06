@@ -477,8 +477,8 @@ ExtensionFunction::ResponseAction WebNavigationGetFrameFunction::Run() {
 
   content::WebContents* web_contents;
   if (!ExtensionTabUtil::GetTabById(tab_id, browser_context(),
-                                    include_incognito(), nullptr, nullptr,
-                                    &web_contents, nullptr) ||
+                                    include_incognito_information(), nullptr,
+                                    nullptr, &web_contents, nullptr) ||
       !web_contents) {
     return RespondNow(OneArgument(std::make_unique<base::Value>()));
   }
@@ -517,8 +517,8 @@ ExtensionFunction::ResponseAction WebNavigationGetAllFramesFunction::Run() {
 
   content::WebContents* web_contents;
   if (!ExtensionTabUtil::GetTabById(tab_id, browser_context(),
-                                    include_incognito(), nullptr, nullptr,
-                                    &web_contents, nullptr) ||
+                                    include_incognito_information(), nullptr,
+                                    nullptr, &web_contents, nullptr) ||
       !web_contents) {
     return RespondNow(OneArgument(std::make_unique<base::Value>()));
   }

@@ -336,8 +336,8 @@ ExtensionFunction::ResponseAction ExtensionActionFunction::Run() {
   // Find the WebContents that contains this tab id if one is required.
   if (tab_id_ != ExtensionAction::kDefaultTabId) {
     ExtensionTabUtil::GetTabById(tab_id_, browser_context(),
-                                 include_incognito(), nullptr, nullptr,
-                                 &contents_, nullptr);
+                                 include_incognito_information(), nullptr,
+                                 nullptr, &contents_, nullptr);
     if (!contents_)
       return RespondNow(Error(kNoTabError, base::IntToString(tab_id_)));
   } else {

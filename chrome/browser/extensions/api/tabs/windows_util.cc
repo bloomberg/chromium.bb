@@ -85,7 +85,7 @@ bool CanOperateOnWindow(const UIThreadExtensionFunction* function,
   if (function->browser_context() == controller->profile())
     return true;
 
-  if (!function->include_incognito())
+  if (!function->include_incognito_information())
     return false;
 
   Profile* profile = Profile::FromBrowserContext(function->browser_context());

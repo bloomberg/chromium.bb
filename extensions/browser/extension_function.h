@@ -276,8 +276,12 @@ class ExtensionFunction
   void set_has_callback(bool has_callback) { has_callback_ = has_callback; }
   bool has_callback() { return has_callback_; }
 
-  void set_include_incognito(bool include) { include_incognito_ = include; }
-  bool include_incognito() const { return include_incognito_; }
+  void set_include_incognito_information(bool include) {
+    include_incognito_information_ = include;
+  }
+  bool include_incognito_information() const {
+    return include_incognito_information_;
+  }
 
   // Note: consider using ScopedUserGestureForTests instead of calling
   // set_user_gesture directly.
@@ -469,7 +473,7 @@ class ExtensionFunction
   // even if our profile_ is non-incognito. Note that in the case of a "split"
   // mode extension, this will always be false, and we will limit access to
   // data from within the same profile_ (either incognito or not).
-  bool include_incognito_;
+  bool include_incognito_information_;
 
   // True if the call was made in response of user gesture.
   bool user_gesture_;

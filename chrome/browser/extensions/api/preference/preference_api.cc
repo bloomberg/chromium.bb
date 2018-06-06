@@ -633,7 +633,10 @@ ExtensionFunction::ResponseAction GetPreferenceFunction::Run() {
                                                     &incognito));
 
   // Check incognito access.
-  if (incognito && !include_incognito())
+  // TODO(https://crbug.com/845845): Update to allowing the function to read
+  // from incognito preferences iff:
+  // enabled_incognito && (!split_mode || browser_context()->IsOffTheRecord())
+  if (incognito && !include_incognito_information())
     return RespondNow(Error(keys::kIncognitoErrorMessage));
 
   // Obtain pref.
@@ -708,12 +711,17 @@ ExtensionFunction::ResponseAction SetPreferenceFunction::Run() {
       (scope == kExtensionPrefsScopeIncognitoPersistent ||
        scope == kExtensionPrefsScopeIncognitoSessionOnly);
   if (incognito) {
-    // Regular profiles can't access incognito unless include_incognito is true.
-    if (!browser_context()->IsOffTheRecord() && !include_incognito())
+    // Regular profiles can't access incognito unless
+    // include_incognito_information is true.
+    if (!browser_context()->IsOffTheRecord() &&
+        !include_incognito_information())
       return RespondNow(Error(keys::kIncognitoErrorMessage));
   } else if (browser_context()->IsOffTheRecord()) {
-    // Incognito profiles can't access regular mode ever, they only exist in
-    // split mode.
+    // If the browser_context associated with this ExtensionFunction is off the
+    // record, it must have come from the incognito process for a split-mode
+    // extension (spanning mode extensions only run in the on-the-record
+    // process). The incognito profile of a split-mode extension should never be
+    // able to modify the on-the-record profile, so error out.
     return RespondNow(
         Error("Can't modify regular settings from an incognito context."));
   }

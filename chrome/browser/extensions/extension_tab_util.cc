@@ -64,10 +64,10 @@ namespace keys = tabs_constants;
 // appropriate message if the window cannot be found by id.
 Browser* GetBrowserInProfileWithId(Profile* profile,
                                    const int window_id,
-                                   bool include_incognito,
+                                   bool match_incognito_profile,
                                    std::string* error_message) {
   Profile* incognito_profile =
-      include_incognito && profile->HasOffTheRecordProfile()
+      match_incognito_profile && profile->HasOffTheRecordProfile()
           ? profile->GetOffTheRecordProfile()
           : nullptr;
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -143,7 +143,8 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
 
   // Ensure the selected browser is tabbed.
   if (!browser->is_type_tabbed() && browser->IsAttemptingToCloseBrowser())
-    browser = chrome::FindTabbedBrowser(profile, function->include_incognito());
+    browser = chrome::FindTabbedBrowser(
+        profile, function->include_incognito_information());
   if (!browser || !browser->window()) {
     if (error)
       *error = keys::kNoCurrentWindowError;
@@ -158,8 +159,8 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
     int opener_id = *params.opener_tab_id;
 
     if (!ExtensionTabUtil::GetTabById(
-            opener_id, profile, function->include_incognito(), &opener_browser,
-            nullptr, &opener, nullptr)) {
+            opener_id, profile, function->include_incognito_information(),
+            &opener_browser, nullptr, &opener, nullptr)) {
       if (error) {
         *error = ErrorUtils::FormatErrorMessage(keys::kTabNotFoundError,
                                                 base::IntToString(opener_id));
@@ -286,10 +287,9 @@ Browser* ExtensionTabUtil::GetBrowserFromWindowID(
     }
     return result;
   } else {
-    return GetBrowserInProfileWithId(details.GetProfile(),
-                                     window_id,
-                                     details.function()->include_incognito(),
-                                     error);
+    return GetBrowserInProfileWithId(
+        details.GetProfile(), window_id,
+        details.function()->include_incognito_information(), error);
   }
 }
 

@@ -1004,7 +1004,11 @@ bool DownloadsDownloadFunction::RunAsync() {
     return false;
 
   Profile* current_profile = GetProfile();
-  if (include_incognito() && GetProfile()->HasOffTheRecordProfile())
+  // TODO(https://crbug.com/845845): Remove changing current_profile. If a
+  // download request comes from a regular profile, and the incognito profile
+  // exists and extension is running in spanning mode, then we will use
+  // incognito download manager, which is not a correct decision.
+  if (include_incognito_information() && GetProfile()->HasOffTheRecordProfile())
     current_profile = GetProfile()->GetOffTheRecordProfile();
 
   content::StoragePartition* storage_partition =
@@ -1154,7 +1158,7 @@ ExtensionFunction::ResponseAction DownloadsSearchFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
-  GetManagers(browser_context(), include_incognito(), &manager,
+  GetManagers(browser_context(), include_incognito_information(), &manager,
               &incognito_manager);
   ExtensionDownloadsEventRouter* router =
       DownloadCoreServiceFactory::GetForBrowserContext(
@@ -1199,8 +1203,8 @@ ExtensionFunction::ResponseAction DownloadsPauseFunction::Run() {
   std::unique_ptr<downloads::Pause::Params> params(
       downloads::Pause::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  DownloadItem* download_item =
-      GetDownload(browser_context(), include_incognito(), params->download_id);
+  DownloadItem* download_item = GetDownload(
+      browser_context(), include_incognito_information(), params->download_id);
   std::string error;
   if (InvalidId(download_item, &error) ||
       Fault(download_item->GetState() != DownloadItem::IN_PROGRESS,
@@ -1222,8 +1226,8 @@ ExtensionFunction::ResponseAction DownloadsResumeFunction::Run() {
   std::unique_ptr<downloads::Resume::Params> params(
       downloads::Resume::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  DownloadItem* download_item =
-      GetDownload(browser_context(), include_incognito(), params->download_id);
+  DownloadItem* download_item = GetDownload(
+      browser_context(), include_incognito_information(), params->download_id);
   std::string error;
   if (InvalidId(download_item, &error) ||
       Fault(download_item->IsPaused() && !download_item->CanResume(),
@@ -1245,8 +1249,8 @@ ExtensionFunction::ResponseAction DownloadsCancelFunction::Run() {
   std::unique_ptr<downloads::Resume::Params> params(
       downloads::Resume::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  DownloadItem* download_item =
-      GetDownload(browser_context(), include_incognito(), params->download_id);
+  DownloadItem* download_item = GetDownload(
+      browser_context(), include_incognito_information(), params->download_id);
   if (download_item &&
       (download_item->GetState() == DownloadItem::IN_PROGRESS))
     download_item->Cancel(true);
@@ -1266,7 +1270,7 @@ ExtensionFunction::ResponseAction DownloadsEraseFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
-  GetManagers(browser_context(), include_incognito(), &manager,
+  GetManagers(browser_context(), include_incognito_information(), &manager,
               &incognito_manager);
   DownloadQuery::DownloadVector results;
   std::string error;
@@ -1293,8 +1297,8 @@ bool DownloadsRemoveFileFunction::RunAsync() {
   std::unique_ptr<downloads::RemoveFile::Params> params(
       downloads::RemoveFile::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  DownloadItem* download_item =
-      GetDownload(browser_context(), include_incognito(), params->download_id);
+  DownloadItem* download_item = GetDownload(
+      browser_context(), include_incognito_information(), params->download_id);
   if (InvalidId(download_item, &error_) ||
       Fault((download_item->GetState() != DownloadItem::COMPLETE),
             errors::kNotComplete, &error_) ||
@@ -1331,8 +1335,8 @@ bool DownloadsAcceptDangerFunction::RunAsync() {
 }
 
 void DownloadsAcceptDangerFunction::PromptOrWait(int download_id, int retries) {
-  DownloadItem* download_item =
-      GetDownload(browser_context(), include_incognito(), download_id);
+  DownloadItem* download_item = GetDownload(
+      browser_context(), include_incognito_information(), download_id);
   content::WebContents* web_contents = dispatcher()->GetVisibleWebContents();
   if (InvalidId(download_item, &error_) ||
       Fault(download_item->GetState() != DownloadItem::IN_PROGRESS,
@@ -1374,8 +1378,8 @@ void DownloadsAcceptDangerFunction::PromptOrWait(int download_id, int retries) {
 void DownloadsAcceptDangerFunction::DangerPromptCallback(
     int download_id, DownloadDangerPrompt::Action action) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DownloadItem* download_item =
-      GetDownload(browser_context(), include_incognito(), download_id);
+  DownloadItem* download_item = GetDownload(
+      browser_context(), include_incognito_information(), download_id);
   if (InvalidId(download_item, &error_) ||
       Fault(download_item->GetState() != DownloadItem::IN_PROGRESS,
             errors::kNotInProgress, &error_))
@@ -1401,8 +1405,8 @@ ExtensionFunction::ResponseAction DownloadsShowFunction::Run() {
   std::unique_ptr<downloads::Show::Params> params(
       downloads::Show::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  DownloadItem* download_item =
-      GetDownload(browser_context(), include_incognito(), params->download_id);
+  DownloadItem* download_item = GetDownload(
+      browser_context(), include_incognito_information(), params->download_id);
   std::string error;
   if (InvalidId(download_item, &error))
     return RespondNow(Error(error));
@@ -1418,7 +1422,7 @@ DownloadsShowDefaultFolderFunction::~DownloadsShowDefaultFolderFunction() {}
 ExtensionFunction::ResponseAction DownloadsShowDefaultFolderFunction::Run() {
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
-  GetManagers(browser_context(), include_incognito(), &manager,
+  GetManagers(browser_context(), include_incognito_information(), &manager,
               &incognito_manager);
   platform_util::OpenItem(
       Profile::FromBrowserContext(browser_context()),
@@ -1439,8 +1443,8 @@ ExtensionFunction::ResponseAction DownloadsOpenFunction::Run() {
   std::unique_ptr<downloads::Open::Params> params(
       downloads::Open::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  DownloadItem* download_item =
-      GetDownload(browser_context(), include_incognito(), params->download_id);
+  DownloadItem* download_item = GetDownload(
+      browser_context(), include_incognito_information(), params->download_id);
   std::string error;
   if (InvalidId(download_item, &error) ||
       Fault(!user_gesture(), errors::kUserGesture, &error) ||
@@ -1485,8 +1489,8 @@ void DownloadsOpenFunction::OpenPromptDone(int download_id, bool accept) {
     Respond(Error(error));
     return;
   }
-  DownloadItem* download_item =
-      GetDownload(browser_context(), include_incognito(), download_id);
+  DownloadItem* download_item = GetDownload(
+      browser_context(), include_incognito_information(), download_id);
   if (Fault(!download_item, errors::kFileAlreadyDeleted, &error)) {
     Respond(Error(error));
     return;
@@ -1503,8 +1507,8 @@ ExtensionFunction::ResponseAction DownloadsDragFunction::Run() {
   std::unique_ptr<downloads::Drag::Params> params(
       downloads::Drag::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  DownloadItem* download_item =
-      GetDownload(browser_context(), include_incognito(), params->download_id);
+  DownloadItem* download_item = GetDownload(
+      browser_context(), include_incognito_information(), params->download_id);
   content::WebContents* web_contents =
       dispatcher()->GetVisibleWebContents();
   std::string error;
@@ -1541,7 +1545,7 @@ ExtensionFunction::ResponseAction DownloadsSetShelfEnabledFunction::Run() {
   RecordApiFunctions(DOWNLOADS_FUNCTION_SET_SHELF_ENABLED);
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
-  GetManagers(browser_context(), include_incognito(), &manager,
+  GetManagers(browser_context(), include_incognito_information(), &manager,
               &incognito_manager);
   DownloadCoreService* service = NULL;
   DownloadCoreService* incognito_service = NULL;
@@ -1603,8 +1607,8 @@ bool DownloadsGetFileIconFunction::RunAsync() {
   int icon_size = kDefaultIconSize;
   if (options && options->size.get())
     icon_size = *options->size;
-  DownloadItem* download_item =
-      GetDownload(browser_context(), include_incognito(), params->download_id);
+  DownloadItem* download_item = GetDownload(
+      browser_context(), include_incognito_information(), params->download_id);
   if (InvalidId(download_item, &error_) ||
       Fault(download_item->GetTargetFilePath().empty(),
             errors::kEmptyFile, &error_))

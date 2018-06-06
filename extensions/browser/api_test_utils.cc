@@ -233,7 +233,7 @@ bool RunFunction(
   function->set_dispatcher(dispatcher->AsWeakPtr());
 
   function->set_browser_context(context);
-  function->set_include_incognito(flags & INCLUDE_INCOGNITO);
+  function->set_include_incognito_information(flags & INCLUDE_INCOGNITO);
   function->RunWithValidation()->Execute();
   response_helper.WaitForResponse();
 

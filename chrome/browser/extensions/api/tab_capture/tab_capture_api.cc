@@ -189,8 +189,9 @@ ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // Figure out the active WebContents and retrieve the needed ids.
-  Browser* target_browser = chrome::FindAnyBrowser(
-      Profile::FromBrowserContext(browser_context()), include_incognito());
+  Browser* target_browser =
+      chrome::FindAnyBrowser(Profile::FromBrowserContext(browser_context()),
+                             include_incognito_information());
   if (!target_browser)
     return RespondNow(Error(kFindingTabError));
 
