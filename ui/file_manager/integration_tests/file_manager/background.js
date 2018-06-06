@@ -292,7 +292,8 @@ function openAndWaitForClosingDialog(
  * Opens a Files app's main window and waits until it is initialized. Fills
  * the window with initial files. Should be called for the first window only.
  *
- * TODO(hirono): Add parameters to specify the entry set to be prepared.
+ * TODO(sashab): Convert optional entries arguments to map, or separate method
+ * without arguments (e.g. setupWithBasicEntriesAndWaitUntilReady).
  * TODO(mtomasz): Pass a volumeId or an enum value instead of full paths.
  *
  * @param {Object} appState App state to be passed with on opening the Files
@@ -301,13 +302,26 @@ function openAndWaitForClosingDialog(
  *     directory during initialization. Can be null, for no default path.
  * @param {function(string, Array<Array<string>>)=} opt_callback Callback with
  *     the window ID and with the file list.
+ * @param {!Array<TestEntryInfo>>} opt_initialLocalEntries List of initial
+ *     entries to load in Google Drive (defaults to a basic entry set).
+ * @param {!Array<TestEntryInfo>>} opt_initialDriveEntries List of initial
+ *     entries to load in Google Drive (defaults to a basic entry set).
  * @return {Promise} Promise to be fulfilled with the result object, which
  *     contains the window ID and the file list.
  */
-function setupAndWaitUntilReady(appState, initialRoot, opt_callback) {
+function setupAndWaitUntilReady(
+    appState, initialRoot, opt_callback, opt_initialLocalEntries,
+    opt_initialDriveEntries) {
+  var allPromises = [];
   var windowPromise = openNewWindow(appState, initialRoot);
-  var localEntriesPromise = addEntries(['local'], BASIC_LOCAL_ENTRY_SET);
-  var driveEntriesPromise = addEntries(['drive'], BASIC_DRIVE_ENTRY_SET);
+  var localEntriesPromise = addEntries(
+      ['local'],
+      opt_initialLocalEntries ? opt_initialLocalEntries :
+                                BASIC_LOCAL_ENTRY_SET);
+  var driveEntriesPromise = addEntries(
+      ['drive'],
+      opt_initialDriveEntries ? opt_initialDriveEntries :
+                                BASIC_DRIVE_ENTRY_SET);
   var detailedTablePromise = windowPromise.then(function(windowId) {
     return remoteCall.waitForElement(windowId, '#detail-table').
       then(function() {
