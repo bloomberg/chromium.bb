@@ -19,7 +19,6 @@ Polymer({
       type: Boolean,
       computed: 'shouldShowSelectionOverlay_(selectedItems_, globalCanEdit_)',
       readOnly: true,
-      reflectToAttribute: true,
     },
 
     /** @private */
@@ -112,9 +111,14 @@ Polymer({
     return this.selectedItems_.size > 1 && this.globalCanEdit_;
   },
 
+  /**
+   * @return {boolean}
+   * @private
+   */
   canDeleteSelection_: function() {
-    return bookmarks.CommandManager.getInstance().canExecute(
-        Command.DELETE, this.selectedItems_);
+    return this.showSelectionOverlay &&
+        bookmarks.CommandManager.getInstance().canExecute(
+            Command.DELETE, this.selectedItems_);
   },
 
   /**

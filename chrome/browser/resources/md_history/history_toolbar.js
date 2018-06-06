@@ -19,7 +19,6 @@ Polymer({
     itemsSelected_: {
       type: Boolean,
       value: false,
-      reflectToAttribute: true,
     },
 
     // The most recent term entered in the search field. Updated incrementally

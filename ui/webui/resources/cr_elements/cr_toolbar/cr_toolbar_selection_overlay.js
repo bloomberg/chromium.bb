@@ -6,12 +6,21 @@
  * @fileoverview Element which displays the number of selected items with
  * Cancel/Delete buttons, designed to be used as an overlay on top of
  * <cr-toolbar>. See <history-toolbar> for an example usage.
+ *
+ * Note that the embedder is expected to set position: relative to make the
+ * absolute positioning of this element work.
  */
 
 Polymer({
   is: 'cr-toolbar-selection-overlay',
 
   properties: {
+    show: {
+      type: Boolean,
+      observer: 'onShowChanged_',
+      reflectToAttribute: true,
+    },
+
     deleteLabel: String,
 
     cancelLabel: String,
@@ -19,11 +28,21 @@ Polymer({
     selectionLabel: String,
 
     deleteDisabled: Boolean,
+
+    /** @private */
+    hasShown_: Boolean,
+
+    /** @private */
+    selectionLabel_: String,
   },
+
+  observers: [
+    'updateSelectionLabel_(show, selectionLabel)',
+  ],
 
   /** @return {PaperButtonElement} */
   get deleteButton() {
-    return this.$.delete;
+    return /** @type {PaperButtonElement} */ (this.$$('#delete'));
   },
 
   /** @private */
@@ -34,5 +53,21 @@ Polymer({
   /** @private */
   onDeleteTap_: function() {
     this.fire('delete-selected-items');
+  },
+
+  /** @private */
+  updateSelectionLabel_: function() {
+    // Do this update in a microtask to ensure |show| and |selectionLabel|
+    // are both updated.
+    this.debounce('updateSelectionLabel_', () => {
+      this.selectionLabel_ =
+          this.show ? this.selectionLabel : this.selectionLabel_;
+    });
+  },
+
+  /** @private */
+  onShowChanged_: function() {
+    if (this.show)
+      this.hasShown_ = true;
   },
 });

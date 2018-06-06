@@ -10,11 +10,7 @@
     <style include="shared-style">
       :host {
         background: var(--md-toolbar-color);
-        transition: background-color 150ms;
-      }
-
-      :host([show-selection-overlay]) {
-        background: white;
+        position: relative;
       }
 
       paper-icon-button-light.more-actions {
@@ -25,13 +21,9 @@
         border-color: white;
       }
 
-      cr-toolbar,
-      cr-toolbar-selection-overlay {
-        flex: 1;
-      }
-
       cr-toolbar {
         color: #fff;
+        flex: 1;
         --cr-toolbar-field-margin:
             calc(var(--sidebar-width) + var(--splitter-width));
       }
@@ -45,7 +37,6 @@
     <cr-toolbar page-name="$i18n{title}"
         clear-label="$i18n{clearSearch}"
         search-prompt="$i18n{searchPrompt}"
-        hidden$="[[showSelectionOverlay]]"
         narrow="{{narrow_}}"
         on-search-changed="onSearchChanged_">
       <paper-icon-button-light class="more-actions more-vert-button">
@@ -59,15 +50,14 @@
         </button>
       </paper-icon-button-light>
     </cr-toolbar>
-    <template is="dom-if" if="[[showSelectionOverlay]]">
-      <cr-toolbar-selection-overlay delete-label="$i18n{delete}"
-          cancel-label="$i18n{cancel}"
-          selection-label="[[getItemsSelectedString_(selectedItems_.size)]]"
-          delete-disabled="[[!canDeleteSelection_(selectedItems_)]]"
-          on-delete-selected-items="onDeleteSelectionTap_"
-          on-clear-selected-items="onClearSelectionTap_">
-      </cr-toolbar-selection-overlay>
-    </template>
+    <cr-toolbar-selection-overlay show="[[showSelectionOverlay]]"
+        delete-label="$i18n{delete}"
+        cancel-label="$i18n{cancel}"
+        selection-label="[[getItemsSelectedString_(selectedItems_.size)]]"
+        delete-disabled="[[!canDeleteSelection_(selectedItems_)]]"
+        on-delete-selected-items="onDeleteSelectionTap_"
+        on-clear-selected-items="onClearSelectionTap_">
+    </cr-toolbar-selection-overlay>
   </template>
   <script src="chrome://bookmarks/toolbar.js"></script>
 </dom-module>
