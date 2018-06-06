@@ -1652,8 +1652,8 @@ TEST_P(VisualViewportTest, visualViewportIsInert) {
                                         ->GetVisualViewport();
   visual_viewport.SetScale(2);
 
-  ASSERT_EQ(100, visual_viewport.VisibleSize().Width());
-  ASSERT_EQ(150, visual_viewport.VisibleSize().Height());
+  ASSERT_EQ(100, visual_viewport.VisibleRect().Width());
+  ASSERT_EQ(150, visual_viewport.VisibleRect().Height());
 
   EXPECT_EQ(200, window->innerWidth());
   EXPECT_EQ(300, window->innerHeight());

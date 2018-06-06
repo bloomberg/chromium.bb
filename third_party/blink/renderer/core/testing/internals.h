@@ -521,11 +521,6 @@ class Internals final : public ScriptWrappable {
   String selectedTextForClipboard();
 
   void setVisualViewportOffset(int x, int y);
-  int visualViewportHeight();
-  int visualViewportWidth();
-  // The scroll position of the visual viewport relative to the document origin.
-  float visualViewportScrollX();
-  float visualViewportScrollY();
 
   // Return true if the given use counter exists for the given document.
   // |feature| must be one of the values from the WebFeature enum.

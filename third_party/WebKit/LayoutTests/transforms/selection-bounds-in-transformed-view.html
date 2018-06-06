@@ -33,8 +33,8 @@
             internals.settings.setPreferCompositingToLCDTextEnabled(
                 true);
             document.execCommand("FindString", false, "target");
-            assert_equals(internals.visualViewportScrollX(), 167);
-            assert_equals(internals.visualViewportScrollY(), 2867);
+            assert_equals(window.visualViewport.pageLeft, 167);
+            assert_equals(window.visualViewport.pageTop, 2867);
         }, "Test scrolled into view with prefer compositing enabled");
 
 
@@ -43,8 +43,8 @@
             internals.settings.setPreferCompositingToLCDTextEnabled(
                 false);
             document.execCommand("FindString", false, "target");
-            assert_equals(internals.visualViewportScrollX(), 167);
-            assert_equals(internals.visualViewportScrollY(), 2867);
+            assert_equals(window.visualViewport.pageLeft, 167);
+            assert_equals(window.visualViewport.pageTop, 2867);
         }, "Test scrolled into view with prefer compositing disabled");
     }
 </script>
