@@ -311,7 +311,7 @@ AutofillPopupView* AutofillPopupView::Create(
     return nullptr;
 #endif
 
-  if (base::FeatureList::IsEnabled(autofill::kAutofillExpandedPopupViews))
+  if (autofill::ShouldUseNativeViews())
     return new AutofillPopupViewNativeViews(controller, observing_widget);
 
   return new AutofillPopupViewViews(controller, observing_widget);
