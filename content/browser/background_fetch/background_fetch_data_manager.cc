@@ -199,7 +199,8 @@ BackgroundFetchDataManager::BackgroundFetchDataManager(
 void BackgroundFetchDataManager::Cleanup() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBackgroundFetchPersistence)) {
-    AddDatabaseTask(std::make_unique<background_fetch::CleanupTask>(this));
+    AddDatabaseTask(std::make_unique<background_fetch::CleanupTask>(
+        this, GetCacheStorageManager()));
   }
 }
 
@@ -571,7 +572,8 @@ void BackgroundFetchDataManager::DeleteRegistration(
           switches::kEnableBackgroundFetchPersistence)) {
     AddDatabaseTask(std::make_unique<background_fetch::DeleteRegistrationTask>(
         this, registration_id.service_worker_registration_id(),
-        registration_id.unique_id(), std::move(callback)));
+        registration_id.origin(), registration_id.unique_id(),
+        GetCacheStorageManager(), std::move(callback)));
     return;
   }
 
