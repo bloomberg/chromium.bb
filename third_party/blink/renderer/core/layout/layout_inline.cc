@@ -908,7 +908,7 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
           fragment->Parent()->InlineOffsetToContainerBox().ToLayoutPoint();
       if (NGBoxFragmentPainter(*fragment).NodeAtPoint(
               result, location_in_container, adjusted_location,
-              accumulated_offset, hit_test_action))
+              hit_test_action))
         return true;
     }
     return false;

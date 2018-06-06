@@ -55,6 +55,25 @@ bool ShouldPaintBoxFragmentBorders(const LayoutObject& object) {
   return !ToLayoutTableCell(object).Table()->ShouldCollapseBorders();
 }
 
+// In hit testing, legacy and NG assumes different semantics for the
+// |accumulated_offset| parameter:
+// - Legacy: offset of the containing block of |child| (excluding |child| when
+// it is block by itslef) in the paint layer.
+// - NG: offset of the parent fragment in the paint layer
+// This function converts the NG offset to legacy so that hit testing can fall
+// back to legacy with the correct |accumulated_offset|.
+LayoutPoint FallbackAccumulatedOffset(const NGPaintFragment& child,
+                                      const LayoutPoint& accumulated_offset) {
+  DCHECK(child.Parent());
+  const NGPaintFragment& parent = *child.Parent();
+  if (parent.PhysicalFragment().IsBlockFlow())
+    return accumulated_offset;
+  LayoutPoint parent_inline_offset =
+      parent.InlineOffsetToContainerBox().ToLayoutPoint();
+  return accumulated_offset -
+         LayoutSize(parent_inline_offset.X(), parent_inline_offset.Y());
+}
+
 }  // anonymous namespace
 
 NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
@@ -817,7 +836,6 @@ bool NGBoxFragmentPainter::NodeAtPoint(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
     const LayoutPoint& accumulated_offset,
-    const LayoutPoint& accumulated_offset_for_legacy,
     HitTestAction action) {
   // TODO(eae): Switch to using NG geometry types.
   LayoutSize offset;
@@ -859,13 +877,9 @@ bool NGBoxFragmentPainter::NodeAtPoint(
     }
   }
 
-  // TODO(layout-dev): Accumulate |accumulated_offset_for_legacy| properly.
-  LayoutPoint adjusted_location_for_legacy =
-      accumulated_offset_for_legacy + offset;
   if (!skip_children &&
       HitTestChildren(result, box_fragment_.Children(), location_in_container,
-                      adjusted_location, adjusted_location_for_legacy,
-                      action)) {
+                      adjusted_location, action)) {
     return true;
   }
 
@@ -950,7 +964,6 @@ bool NGBoxFragmentPainter::HitTestChildren(
     const Vector<std::unique_ptr<NGPaintFragment>>& children,
     const HitTestLocation& location_in_container,
     const LayoutPoint& accumulated_offset,
-    const LayoutPoint& accumulated_offset_for_legacy,
     HitTestAction action) {
   for (auto iter = children.rbegin(); iter != children.rend(); iter++) {
     const std::unique_ptr<NGPaintFragment>& child = *iter;
@@ -961,25 +974,22 @@ bool NGBoxFragmentPainter::HitTestChildren(
     bool stop_hit_testing = false;
     if (fragment.Type() == NGPhysicalFragment::kFragmentBox) {
       if (FragmentRequiresLegacyFallback(fragment)) {
+        LayoutPoint fallback_accumulated_offset =
+            FallbackAccumulatedOffset(*child, accumulated_offset);
         stop_hit_testing = fragment.GetLayoutObject()->NodeAtPoint(
-            result, location_in_container, accumulated_offset_for_legacy,
-            action);
+            result, location_in_container, fallback_accumulated_offset, action);
       } else {
-        // TODO(layout-dev): Accumulate |accumulated_offset_for_legacy|
-        // properly.
         stop_hit_testing = NGBoxFragmentPainter(*child).NodeAtPoint(
-            result, location_in_container, accumulated_offset,
-            accumulated_offset_for_legacy, action);
+            result, location_in_container, accumulated_offset, action);
       }
 
     } else if (fragment.Type() == NGPhysicalFragment::kFragmentLineBox) {
       const LayoutSize line_box_offset(fragment.Offset().left,
                                        fragment.Offset().top);
       const LayoutPoint adjusted_offset = accumulated_offset + line_box_offset;
-      // TODO(layout-dev): Accumulate |accumulated_offset_for_legacy| properly.
-      stop_hit_testing = HitTestChildren(result, child->Children(),
-                                         location_in_container, adjusted_offset,
-                                         accumulated_offset_for_legacy, action);
+      stop_hit_testing =
+          HitTestChildren(result, child->Children(), location_in_container,
+                          adjusted_offset, action);
 
     } else if (fragment.Type() == NGPhysicalFragment::kFragmentText) {
       // TODO(eae): Should this hit test on the text itself or the containing

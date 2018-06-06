@@ -32,7 +32,6 @@ class NGBlockFlowPainter {
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,
                    const LayoutPoint& accumulated_offset,
-                   const LayoutPoint& accumulated_offset_for_legacy,
                    HitTestAction);
 
  private:

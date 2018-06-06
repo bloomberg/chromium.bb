@@ -40,7 +40,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,
                    const LayoutPoint& accumulated_offset,
-                   const LayoutPoint& accumulated_offset_for_legacy,
                    HitTestAction);
 
  protected:
@@ -118,7 +117,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                        const Vector<std::unique_ptr<NGPaintFragment>>&,
                        const HitTestLocation& location_in_container,
                        const LayoutPoint& accumulated_offset,
-                       const LayoutPoint& accumulated_offset_for_legacy,
                        HitTestAction);
   bool HitTestTextFragment(HitTestResult&,
                            const NGPaintFragment&,

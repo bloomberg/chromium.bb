@@ -1004,7 +1004,6 @@ crbug.com/591099 svg/custom/inline-svg-use-available-width-in-stf.html [ Failure
 crbug.com/591099 svg/custom/object-sizing-no-width-height.xhtml [ Failure ]
 crbug.com/591099 svg/custom/stf-container-with-intrinsic-ratio-svg.html [ Failure ]
 crbug.com/591099 svg/custom/text-match-highlight.html [ Failure ]
-crbug.com/591099 svg/custom/use-event-retargeting.html [ Failure ]
 crbug.com/591099 svg/filters/feTurbulence-bad-seeds.html [ Failure ]
 crbug.com/591099 svg/in-html/sizing/svg-inline.html [ Failure ]
 crbug.com/714962 svg/text/tspan-multiple-outline.svg [ Failure ]
