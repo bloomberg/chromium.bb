@@ -1046,8 +1046,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   //
   // Always called on the UI thread and only when the Network Service is
   // enabled.
-  virtual void WillCreateWebSocket(RenderFrameHost* frame,
-                                   network::mojom::WebSocketRequest* request);
+  virtual void WillCreateWebSocket(
+      RenderFrameHost* frame,
+      network::mojom::WebSocketRequest* request,
+      network::mojom::AuthenticationHandlerPtr* authentication_handler);
 
   // Allows the embedder to returns a list of request interceptors that can
   // intercept a navigation request.

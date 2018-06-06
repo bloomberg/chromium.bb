@@ -139,10 +139,6 @@
 -BackgroundXhrTest.HttpAuth
 -BackgroundXhrTest.TlsClientAuth
 
-# https://crbug.com/841827
-# WebRequest API + WebSocket + OnAuthRequired
--ExtensionWebRequestApiTest.WebSocketRequestAuthRequired
-
 # http://crbug.com/705114
 # Remove streams concept from code and replace with data pipe passing.
 -MimeHandlerViewTests/MimeHandlerViewTest.Abort/0

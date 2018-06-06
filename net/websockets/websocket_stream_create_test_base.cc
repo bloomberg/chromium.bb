@@ -69,6 +69,18 @@ class WebSocketStreamCreateTestBase::TestConnectDelegate
     owner_->ssl_fatal_ = fatal;
   }
 
+  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+                     scoped_refptr<HttpResponseHeaders> response_headers,
+                     const HostPortPair& host_port_pair,
+                     base::OnceCallback<void(const AuthCredentials*)> callback,
+                     base::Optional<AuthCredentials>* credentials) override {
+    owner_->run_loop_waiting_for_on_auth_required_.Quit();
+    owner_->auth_challenge_info_ = std::move(auth_info);
+    *credentials = owner_->auth_credentials_;
+    owner_->on_auth_required_callback_ = std::move(callback);
+    return owner_->on_auth_required_rv_;
+  }
+
  private:
   WebSocketStreamCreateTestBase* owner_;
   base::Closure done_callback_;
@@ -123,6 +135,10 @@ WebSocketStreamCreateTestBase::ResponseHeadersToVector(
 
 void WebSocketStreamCreateTestBase::WaitUntilConnectDone() {
   connect_run_loop_.Run();
+}
+
+void WebSocketStreamCreateTestBase::WaitUntilOnAuthRequired() {
+  run_loop_waiting_for_on_auth_required_.Run();
 }
 
 std::vector<std::string> WebSocketStreamCreateTestBase::NoSubProtocols() {

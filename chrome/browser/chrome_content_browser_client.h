@@ -399,8 +399,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   WillCreateURLLoaderRequestInterceptors(
       content::NavigationUIData* navigation_ui_data,
       int frame_tree_node_id) override;
-  void WillCreateWebSocket(content::RenderFrameHost* frame,
-                           network::mojom::WebSocketRequest* request) override;
+  void WillCreateWebSocket(
+      content::RenderFrameHost* frame,
+      network::mojom::WebSocketRequest* request,
+      network::mojom::AuthenticationHandlerPtr* auth_handler) override;
   void OnNetworkServiceCreated(
       network::mojom::NetworkService* network_service) override;
   network::mojom::NetworkContextPtr CreateNetworkContext(

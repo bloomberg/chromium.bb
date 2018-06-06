@@ -55,7 +55,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   void RegisterMojoInterfaces() {
     registry_.AddInterface(
         base::BindRepeating(&WebSocketManager::CreateWebSocket, process_id_,
-                            parent_render_frame_id_, origin_));
+                            parent_render_frame_id_, origin_, nullptr));
     registry_.AddInterface(base::BindRepeating(
         &DedicatedWorkerHost::CreateUsbDeviceManager, base::Unretained(this)));
   }

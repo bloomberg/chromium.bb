@@ -4215,7 +4215,8 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
 
 void ChromeContentBrowserClient::WillCreateWebSocket(
     content::RenderFrameHost* frame,
-    network::mojom::WebSocketRequest* request) {
+    network::mojom::WebSocketRequest* request,
+    network::mojom::AuthenticationHandlerPtr* auth_handler) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   auto* web_request_api =
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
@@ -4226,7 +4227,7 @@ void ChromeContentBrowserClient::WillCreateWebSocket(
   if (!web_request_api)
     return;
 
-  web_request_api->MaybeProxyWebSocket(frame, request);
+  web_request_api->MaybeProxyWebSocket(frame, request, auth_handler);
 #endif
 }
 

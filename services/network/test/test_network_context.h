@@ -87,10 +87,12 @@ class TestNetworkContext : public mojom::NetworkContext {
       mojom::TCPConnectedSocketRequest socket,
       mojom::SocketObserverPtr observer,
       CreateTCPConnectedSocketCallback callback) override {}
-  void CreateWebSocket(mojom::WebSocketRequest request,
-                       int32_t process_id,
-                       int32_t render_frame_id,
-                       const url::Origin& origin) override {}
+  void CreateWebSocket(
+      mojom::WebSocketRequest request,
+      int32_t process_id,
+      int32_t render_frame_id,
+      const url::Origin& origin,
+      network::mojom::AuthenticationHandlerPtr auth_handler) override {}
   void CreateNetLogExporter(mojom::NetLogExporterRequest exporter) override {}
   void BlockThirdPartyCookies(bool block) override {}
   void AddHSTSForTesting(const std::string& host,

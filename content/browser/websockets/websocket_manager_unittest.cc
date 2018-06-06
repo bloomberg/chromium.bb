@@ -32,6 +32,7 @@ class TestWebSocketImpl : public network::WebSocket {
       base::TimeDelta delay)
       : network::WebSocket(std::move(delegate),
                            std::move(request),
+                           nullptr,
                            std::move(pending_connection_tracker),
                            process_id,
                            frame_id,

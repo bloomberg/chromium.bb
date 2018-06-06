@@ -94,10 +94,12 @@ WebSocketFactory::WebSocketFactory(NetworkContext* context)
 
 WebSocketFactory::~WebSocketFactory() {}
 
-void WebSocketFactory::CreateWebSocket(mojom::WebSocketRequest request,
-                                       int32_t process_id,
-                                       int32_t render_frame_id,
-                                       const url::Origin& origin) {
+void WebSocketFactory::CreateWebSocket(
+    mojom::WebSocketRequest request,
+    mojom::AuthenticationHandlerPtr auth_handler,
+    int32_t process_id,
+    int32_t render_frame_id,
+    const url::Origin& origin) {
   if (throttler_.HasTooManyPendingConnections(process_id)) {
     // Too many websockets!
     request.ResetWithReason(
@@ -107,6 +109,7 @@ void WebSocketFactory::CreateWebSocket(mojom::WebSocketRequest request,
   }
   connections_.insert(std::make_unique<WebSocket>(
       std::make_unique<Delegate>(this, process_id), std::move(request),
+      std::move(auth_handler),
       throttler_.IssuePendingConnectionTracker(process_id), process_id,
       render_frame_id, origin, throttler_.CalculateDelay(process_id)));
 }

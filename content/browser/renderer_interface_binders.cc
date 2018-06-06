@@ -195,7 +195,7 @@ void RendererInterfaceBinders::CreateWebSocket(
     RenderProcessHost* host,
     const url::Origin& origin) {
   WebSocketManager::CreateWebSocket(host->GetID(), MSG_ROUTING_NONE, origin,
-                                    std::move(request));
+                                    nullptr, std::move(request));
 }
 
 }  // namespace

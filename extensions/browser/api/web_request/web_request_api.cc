@@ -505,7 +505,8 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
 
 void WebRequestAPI::MaybeProxyWebSocket(
     content::RenderFrameHost* frame,
-    network::mojom::WebSocketRequest* request) {
+    network::mojom::WebSocketRequest* request,
+    network::mojom::AuthenticationHandlerPtr* auth_handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const auto* rules_registry_service =
       BrowserContextKeyedAPIFactory<RulesRegistryService>::Get(
@@ -522,6 +523,7 @@ void WebRequestAPI::MaybeProxyWebSocket(
   network::mojom::WebSocketPtrInfo proxied_socket_ptr_info;
   auto proxied_request = std::move(*request);
   *request = mojo::MakeRequest(&proxied_socket_ptr_info);
+  auto authentication_request = mojo::MakeRequest(auth_handler);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -532,7 +534,8 @@ void WebRequestAPI::MaybeProxyWebSocket(
           frame->GetProcess()->GetBrowserContext(),
           frame->GetProcess()->GetBrowserContext()->GetResourceContext(),
           base::Unretained(info_map_), std::move(proxied_socket_ptr_info),
-          std::move(proxied_request), proxies_));
+          std::move(proxied_request), std::move(authentication_request),
+          proxies_));
 }
 
 // Represents a single unique listener to an event, along with whatever filter

@@ -11,15 +11,21 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"  // for WARN_UNUSED_RESULT
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "net/base/net_export.h"
 
 class GURL;
 
 namespace net {
 
+class AuthChallengeInfo;
+class AuthCredentials;
+class HostPortPair;
+class HttpResponseHeaders;
 class IOBuffer;
 class SSLInfo;
 class URLRequest;
@@ -119,6 +125,22 @@ class NET_EXPORT WebSocketEventInterface {
       const GURL& url,
       const SSLInfo& ssl_info,
       bool fatal) = 0;
+
+  // Called when authentication is required. Returns a net error. The opening
+  // handshake is blocked when this function returns ERR_IO_PENDING.
+  // In that case calling |callback| resumes the handshake. |callback| can be
+  // called during the opening handshake. An implementation can rewrite
+  // |*credentials| (in the sync case) or provide new credentials (in the
+  // async case).
+  // Providing null credentials (nullopt in the sync case and nullptr in the
+  // async case) cancels authentication. Otherwise the new credentials are set
+  // and the opening handshake will be retried with the credentials.
+  virtual int OnAuthRequired(
+      scoped_refptr<AuthChallengeInfo> auth_info,
+      scoped_refptr<HttpResponseHeaders> response_headers,
+      const HostPortPair& host_port_pair,
+      base::OnceCallback<void(const AuthCredentials*)> callback,
+      base::Optional<AuthCredentials>* credentials) = 0;
 
  protected:
   WebSocketEventInterface() {}

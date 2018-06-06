@@ -38,6 +38,16 @@ struct WebSocketHandshakeResponse {
   string headers_text;
 };
 
+// This interface is for HTTP Authentication.
+interface AuthenticationHandler {
+  // Returns null credentials when it wants to cancel authentication, and
+  // returns a non-null credentials when it wants to use the credentials for
+  // authentication.
+  OnAuthRequired(AuthChallengeInfo info,
+                 HttpResponseHeaders headers,
+                 HostPortPair socket_address) => (AuthCredentials? credentials);
+};
+
 interface WebSocketClient {
   OnFailChannel(string reason);
 
