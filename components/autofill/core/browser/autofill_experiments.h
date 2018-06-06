@@ -108,6 +108,11 @@ bool IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled();
 bool IsMacViewsAutofillPopupExperimentEnabled();
 #endif  // defined(OS_MACOSX)
 
+// Returns true if the native Views implementation of the Desktop dropdown
+// should be used. This will also be true if the kExperimentalUi flag is true,
+// which forces a bunch of forthcoming UI changes on.
+bool ShouldUseNativeViews();
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_EXPERIMENTS_H_
