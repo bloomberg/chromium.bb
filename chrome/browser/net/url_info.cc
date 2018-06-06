@@ -79,7 +79,8 @@ UrlInfo::UrlInfo()
       was_linked_(false) {
 }
 
-UrlInfo::UrlInfo(const UrlInfo& other) = default;
+UrlInfo::UrlInfo(UrlInfo&& other) = default;
+UrlInfo& UrlInfo::operator=(UrlInfo&& other) = default;
 
 UrlInfo::~UrlInfo() {}
 

@@ -416,21 +416,21 @@ void Predictor::DiscardAllResults() {
   // Step through result_, recording names of all hosts that can't be erased.
   // We can't erase anything being worked on.
   Results assignees;
-  for (Results::iterator it = results_.begin(); results_.end() != it; ++it) {
-    GURL url(it->first);
-    UrlInfo* info = &it->second;
-    DCHECK(info->HasUrl(url));
-    if (info->is_assigned()) {
-      info->SetPendingDeleteState();
-      assignees[url] = *info;
+  for (auto& result : results_) {
+    const GURL& url = result.first;
+    UrlInfo& info = result.second;
+    DCHECK(info.HasUrl(url));
+    if (info.is_assigned()) {
+      info.SetPendingDeleteState();
+      assignees[url] = std::move(info);
     }
   }
   DCHECK_LE(assignees.size(), max_concurrent_dns_lookups_);
   results_.clear();
   // Put back in the names being worked on.
-  for (Results::iterator it = assignees.begin(); assignees.end() != it; ++it) {
-    DCHECK(it->second.is_marked_to_delete());
-    results_[it->first] = it->second;
+  for (auto& assignee : assignees) {
+    DCHECK(assignee.second.is_marked_to_delete());
+    results_[assignee.first] = std::move(assignee.second);
   }
 }
 
@@ -920,10 +920,13 @@ void Predictor::StartSomeQueuedResolutions() {
     }
 
     info->SetPendingDeleteState();
+    std::unique_ptr<net::HostResolver::Request> request;
     int status =
         content::PreresolveUrl(url_request_context_getter_.get(), url,
                                base::Bind(&Predictor::OnLookupFinished,
-                                          io_weak_factory_->GetWeakPtr(), url));
+                                          io_weak_factory_->GetWeakPtr(), url),
+                               &request);
+    info->set_request(std::move(request));
     if (status == net::ERR_IO_PENDING) {
       // Will complete asynchronously.
       num_pending_lookups_++;

@@ -48,12 +48,18 @@ class MockPreconnectManager : public PreconnectManager {
       base::WeakPtr<Delegate> delegate,
       scoped_refptr<net::URLRequestContextGetter> context_getter);
 
+  std::pair<int, std::unique_ptr<net::HostResolver::Request>> PreresolveUrl(
+      const GURL& url,
+      const net::CompletionCallback& callback) const override {
+    return {PreresolveUrlProxy(url, callback), nullptr};
+  }
+
   MOCK_CONST_METHOD4(PreconnectUrl,
                      void(const GURL& url,
                           const GURL& site_for_cookies,
                           int num_sockets,
                           bool allow_credentials));
-  MOCK_CONST_METHOD2(PreresolveUrl,
+  MOCK_CONST_METHOD2(PreresolveUrlProxy,
                      int(const GURL& url,
                          const net::CompletionCallback& callback));
 };
@@ -93,7 +99,7 @@ TEST_F(PreconnectManagerTest, TestStartOneUrlPreresolve) {
   GURL main_frame_url("http://google.com");
   GURL url_to_preresolve("http://cdn.google.com");
 
-  EXPECT_CALL(*preconnect_manager_, PreresolveUrl(url_to_preresolve, _))
+  EXPECT_CALL(*preconnect_manager_, PreresolveUrlProxy(url_to_preresolve, _))
       .WillOnce(Return(net::OK));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   preconnect_manager_->Start(main_frame_url,
@@ -106,7 +112,7 @@ TEST_F(PreconnectManagerTest, TestStartOneUrlPreconnect) {
   GURL main_frame_url("http://google.com");
   GURL url_to_preconnect("http://cdn.google.com");
 
-  EXPECT_CALL(*preconnect_manager_, PreresolveUrl(url_to_preconnect, _))
+  EXPECT_CALL(*preconnect_manager_, PreresolveUrlProxy(url_to_preconnect, _))
       .WillOnce(Return(net::OK));
   EXPECT_CALL(*preconnect_manager_,
               PreconnectUrl(url_to_preconnect, main_frame_url, 1, true));
@@ -122,7 +128,7 @@ TEST_F(PreconnectManagerTest, TestStopOneUrlBeforePreconnect) {
   net::CompletionCallback callback;
 
   // Preconnect job isn't started before preresolve is completed asynchronously.
-  EXPECT_CALL(*preconnect_manager_, PreresolveUrl(url_to_preconnect, _))
+  EXPECT_CALL(*preconnect_manager_, PreresolveUrlProxy(url_to_preconnect, _))
       .WillOnce(DoAll(SaveArg<1>(&callback), Return(net::ERR_IO_PENDING)));
   preconnect_manager_->Start(main_frame_url,
                              {PreconnectRequest(url_to_preconnect, 1)});
@@ -138,7 +144,7 @@ TEST_F(PreconnectManagerTest, TestGetCallbackAfterDestruction) {
   GURL main_frame_url("http://google.com");
   GURL url_to_preconnect("http://cdn.google.com");
   net::CompletionCallback callback;
-  EXPECT_CALL(*preconnect_manager_, PreresolveUrl(url_to_preconnect, _))
+  EXPECT_CALL(*preconnect_manager_, PreresolveUrlProxy(url_to_preconnect, _))
       .WillOnce(DoAll(SaveArg<1>(&callback), Return(net::ERR_IO_PENDING)));
   preconnect_manager_->Start(main_frame_url,
                              {PreconnectRequest(url_to_preconnect, 1)});
@@ -159,7 +165,8 @@ TEST_F(PreconnectManagerTest, TestUnqueuedPreresolvesCanceled) {
     // Exactly PreconnectManager::kMaxInflightPreresolves should be preresolved.
     requests.emplace_back(
         GURL(base::StringPrintf("http://cdn%" PRIuS ".google.com", i)), 1);
-    EXPECT_CALL(*preconnect_manager_, PreresolveUrl(requests.back().origin, _))
+    EXPECT_CALL(*preconnect_manager_,
+                PreresolveUrlProxy(requests.back().origin, _))
         .WillOnce(
             DoAll(SaveArg<1>(&callbacks[i]), Return(net::ERR_IO_PENDING)));
   }
@@ -182,9 +189,9 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentMainFrameUrls) {
   GURL url_to_preconnect2("http://cdn.facebook.com");
   net::CompletionCallback callback2;
 
-  EXPECT_CALL(*preconnect_manager_, PreresolveUrl(url_to_preconnect1, _))
+  EXPECT_CALL(*preconnect_manager_, PreresolveUrlProxy(url_to_preconnect1, _))
       .WillOnce(DoAll(SaveArg<1>(&callback1), Return(net::ERR_IO_PENDING)));
-  EXPECT_CALL(*preconnect_manager_, PreresolveUrl(url_to_preconnect2, _))
+  EXPECT_CALL(*preconnect_manager_, PreresolveUrlProxy(url_to_preconnect2, _))
       .WillOnce(DoAll(SaveArg<1>(&callback2), Return(net::ERR_IO_PENDING)));
   preconnect_manager_->Start(main_frame_url1,
                              {PreconnectRequest(url_to_preconnect1, 1)});
@@ -214,7 +221,7 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentSameHostMainFrameUrls) {
   GURL main_frame_url2("http://google.com/search?query=dogs");
   GURL url_to_preconnect2("http://dogs.google.com");
 
-  EXPECT_CALL(*preconnect_manager_, PreresolveUrl(url_to_preconnect1, _))
+  EXPECT_CALL(*preconnect_manager_, PreresolveUrlProxy(url_to_preconnect1, _))
       .WillOnce(DoAll(SaveArg<1>(&callback1), Return(net::ERR_IO_PENDING)));
   preconnect_manager_->Start(main_frame_url1,
                              {PreconnectRequest(url_to_preconnect1, 1)});
@@ -234,7 +241,7 @@ TEST_F(PreconnectManagerTest, TestStartPreresolveHost) {
   GURL url("http://cdn.google.com/script.js");
   GURL origin("http://cdn.google.com");
 
-  EXPECT_CALL(*preconnect_manager_, PreresolveUrl(origin, _))
+  EXPECT_CALL(*preconnect_manager_, PreresolveUrlProxy(origin, _))
       .WillOnce(Return(net::OK));
   preconnect_manager_->StartPreresolveHost(url);
   // PreconnectFinished shouldn't be called.
@@ -250,9 +257,9 @@ TEST_F(PreconnectManagerTest, TestStartPreresolveHosts) {
   GURL cdn("http://cdn.google.com");
   GURL fonts("http://fonts.google.com");
 
-  EXPECT_CALL(*preconnect_manager_, PreresolveUrl(cdn, _))
+  EXPECT_CALL(*preconnect_manager_, PreresolveUrlProxy(cdn, _))
       .WillOnce(Return(net::OK));
-  EXPECT_CALL(*preconnect_manager_, PreresolveUrl(fonts, _))
+  EXPECT_CALL(*preconnect_manager_, PreresolveUrlProxy(fonts, _))
       .WillOnce(Return(net::OK));
   preconnect_manager_->StartPreresolveHosts({cdn.host(), fonts.host()});
   base::RunLoop().RunUntilIdle();
@@ -263,7 +270,7 @@ TEST_F(PreconnectManagerTest, TestStartPreconnectUrl) {
   GURL origin("http://cdn.google.com");
   bool allow_credentials = false;
 
-  EXPECT_CALL(*preconnect_manager_, PreresolveUrl(origin, _))
+  EXPECT_CALL(*preconnect_manager_, PreresolveUrlProxy(origin, _))
       .WillOnce(Return(net::OK));
   EXPECT_CALL(*preconnect_manager_,
               PreconnectUrl(origin, GURL(), 1, allow_credentials));
@@ -285,7 +292,8 @@ TEST_F(PreconnectManagerTest, TestDetachedRequestHasHigherPriority) {
   for (size_t i = 0; i < count; ++i) {
     requests.emplace_back(
         GURL(base::StringPrintf("http://cdn%" PRIuS ".google.com", i)), 0);
-    EXPECT_CALL(*preconnect_manager_, PreresolveUrl(requests.back().origin, _))
+    EXPECT_CALL(*preconnect_manager_,
+                PreresolveUrlProxy(requests.back().origin, _))
         .WillOnce(
             DoAll(SaveArg<1>(&callbacks[i]), Return(net::ERR_IO_PENDING)));
   }
@@ -300,13 +308,13 @@ TEST_F(PreconnectManagerTest, TestDetachedRequestHasHigherPriority) {
   Mock::VerifyAndClearExpectations(preconnect_manager_.get());
 
   net::CompletionCallback detached_callback;
-  EXPECT_CALL(*preconnect_manager_, PreresolveUrl(detached_preresolve, _))
+  EXPECT_CALL(*preconnect_manager_, PreresolveUrlProxy(detached_preresolve, _))
       .WillOnce(
           DoAll(SaveArg<1>(&detached_callback), Return(net::ERR_IO_PENDING)));
   callbacks[0].Run(net::OK);
 
   Mock::VerifyAndClearExpectations(preconnect_manager_.get());
-  EXPECT_CALL(*preconnect_manager_, PreresolveUrl(queued_url, _))
+  EXPECT_CALL(*preconnect_manager_, PreresolveUrlProxy(queued_url, _))
       .WillOnce(Return(net::OK));
   detached_callback.Run(net::OK);
 
@@ -326,7 +334,8 @@ TEST_F(PreconnectManagerTest, TestHSTSRedirectRespectedForPreconnect) {
   GURL url("http://google.com/search");
   bool allow_credentials = false;
 
-  EXPECT_CALL(*preconnect_manager_, PreresolveUrl(GURL("http://google.com"), _))
+  EXPECT_CALL(*preconnect_manager_,
+              PreresolveUrlProxy(GURL("http://google.com"), _))
       .WillOnce(Return(net::OK));
   EXPECT_CALL(
       *preconnect_manager_,

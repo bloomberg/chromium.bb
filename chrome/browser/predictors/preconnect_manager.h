@@ -11,9 +11,11 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
+#include "net/dns/host_resolver.h"
 #include "net/http/http_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
@@ -69,7 +71,7 @@ struct PreresolveJob {
                 int num_sockets,
                 bool allow_credentials,
                 PreresolveInfo* info);
-  PreresolveJob(const PreresolveJob& other);
+  PreresolveJob(PreresolveJob&& other);
   ~PreresolveJob();
   bool need_preconnect() const { return num_sockets > 0; }
 
@@ -81,6 +83,9 @@ struct PreresolveJob {
   // context and PreresolveInfo lifetime is tied to PreconnectManager.
   // May be equal to nullptr in case of detached job.
   PreresolveInfo* info;
+  std::unique_ptr<net::HostResolver::Request> request;
+
+  DISALLOW_COPY_AND_ASSIGN(PreresolveJob);
 };
 
 // PreconnectManager is responsible for preresolving and preconnecting to
@@ -132,20 +137,25 @@ class PreconnectManager {
                              const GURL& site_for_cookies,
                              int num_sockets,
                              bool allow_credentials) const;
-  virtual int PreresolveUrl(const GURL& url,
-                            const net::CompletionCallback& callback) const;
+  virtual std::pair<int, std::unique_ptr<net::HostResolver::Request>>
+  PreresolveUrl(const GURL& url, const net::CompletionCallback& callback) const;
 
  private:
+  using PreresolveJobMap = base::IDMap<std::unique_ptr<PreresolveJob>>;
+  using PreresolveJobId = PreresolveJobMap::KeyType;
+  friend class PreconnectManagerTest;
+
   void TryToLaunchPreresolveJobs();
-  void OnPreresolveFinished(const PreresolveJob& job, int result);
-  void FinishPreresolve(const PreresolveJob& job, bool found, bool cached);
+  void OnPreresolveFinished(PreresolveJobId job_id, int result);
+  void FinishPreresolve(PreresolveJobId job_id, bool found, bool cached);
   void AllPreresolvesForUrlFinished(PreresolveInfo* info);
   GURL GetHSTSRedirect(const GURL& url) const;
   bool WouldLikelyProxyURL(const GURL& url) const;
 
   base::WeakPtr<Delegate> delegate_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
-  std::list<PreresolveJob> queued_jobs_;
+  std::list<PreresolveJobId> queued_jobs_;
+  PreresolveJobMap preresolve_jobs_;
   std::map<std::string, std::unique_ptr<PreresolveInfo>> preresolve_info_;
   size_t inflight_preresolves_count_ = 0;
 
