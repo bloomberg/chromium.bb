@@ -22,7 +22,9 @@
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
@@ -446,13 +448,13 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessMixMachAndFdsClient,
 // TODO(fuchsia): Implement NamedPlatformHandles (crbug.com/754038).
 
 NamedPlatformHandle GenerateChannelName() {
+  std::string token = base::NumberToString(base::RandUint64());
 #if defined(OS_POSIX)
   base::FilePath temp_dir;
   CHECK(base::PathService::Get(base::DIR_TEMP, &temp_dir));
-  return NamedPlatformHandle(
-      temp_dir.AppendASCII(GenerateRandomToken()).value());
+  return NamedPlatformHandle(temp_dir.AppendASCII(token).value());
 #else
-  return NamedPlatformHandle(GenerateRandomToken());
+  return NamedPlatformHandle(token);
 #endif
 }
 
@@ -463,7 +465,7 @@ void CreateClientHandleOnIoThread(const NamedPlatformHandle& named_handle,
 
 TEST_F(EmbedderTest, ClosePendingPeerConnection) {
   NamedPlatformHandle named_handle = GenerateChannelName();
-  std::string peer_token = GenerateRandomToken();
+  std::string peer_token = base::NumberToString(base::RandUint64());
 
   auto peer_connection = std::make_unique<PeerConnection>();
   ScopedMessagePipeHandle server_pipe =

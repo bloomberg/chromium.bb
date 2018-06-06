@@ -44,10 +44,6 @@ MOJO_SYSTEM_IMPL_EXPORT void Init();
 MOJO_SYSTEM_IMPL_EXPORT void SetDefaultProcessErrorCallback(
     const ProcessErrorCallback& callback);
 
-// Generates a random ASCII token string for use with various APIs that expect
-// a globally unique token string. May be called at any time on any thread.
-MOJO_SYSTEM_IMPL_EXPORT std::string GenerateRandomToken();
-
 // Basic functions -------------------------------------------------------------
 //
 // The functions in this section are available once |Init()| has been called and

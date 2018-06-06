@@ -22,11 +22,6 @@ component("edk") {
 
   defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
 
-  deps = []
-  if (!is_nacl) {
-    deps += [ "//crypto" ]
-  }
-
   public_deps = [
     ":impl_for_edk",
     "//mojo/public/cpp/platform",
