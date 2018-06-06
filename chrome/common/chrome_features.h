@@ -92,6 +92,7 @@ extern const base::Feature kContentFullscreen;
 
 #if defined(OS_CHROMEOS)
 extern const base::Feature kCrostini;
+extern const base::Feature kUsageTimeLimitPolicy;
 #endif
 
 #if defined(OS_WIN)
