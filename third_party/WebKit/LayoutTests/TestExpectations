@@ -4830,3 +4830,6 @@ crbug.com/847697 virtual/video-surface-layer/media/controls/overflow-menu-always
 crbug.com/849256 [ Mac ] virtual/gpu-rasterization/images/color-profile-iframe.html [ Pass Failure ]
 crbug.com/849258 [ Mac ] virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color.html [ Pass Failure ]
 crbug.com/849284 [ Mac ] http/tests/devtools/editor/text-editor-ctrl-d-2.js [ Timeout Pass ]
+
+# Sheriff 2018-06-06
+crbug.com/849975 external/wpt/css/css-animations/Element-getAnimations.tentative.html [ Pass Failure ]
