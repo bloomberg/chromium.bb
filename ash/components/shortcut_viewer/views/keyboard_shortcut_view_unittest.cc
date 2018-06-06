@@ -10,6 +10,7 @@
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_item_view.h"
 #include "ash/components/shortcut_viewer/views/ksv_search_box_view.h"
 #include "ash/test/ash_test_base.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
@@ -64,6 +65,8 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
     }
   }
 
+  base::HistogramTester histograms_;
+
  private:
   KeyboardShortcutView* GetView() const {
     return KeyboardShortcutView::GetInstanceForTesting();
@@ -75,17 +78,23 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
 // Shows and closes the widget for KeyboardShortcutViewer.
 TEST_F(KeyboardShortcutViewTest, ShowAndClose) {
   // Show the widget.
-  views::Widget* widget = KeyboardShortcutView::Toggle();
+  views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
   EXPECT_TRUE(widget);
 
   // Cleaning up.
   widget->CloseNow();
 }
 
+TEST_F(KeyboardShortcutViewTest, StartupTimeHistogram) {
+  views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
+  histograms_.ExpectTotalCount("Keyboard.ShortcutViewer.StartupTime", 1);
+  widget->CloseNow();
+}
+
 // KeyboardShortcutViewer window should be centered in screen.
 TEST_F(KeyboardShortcutViewTest, CenterWindowInScreen) {
   // Show the widget.
-  views::Widget* widget = KeyboardShortcutView::Toggle();
+  views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
   EXPECT_TRUE(widget);
 
   gfx::Rect root_window_bounds =
@@ -106,7 +115,7 @@ TEST_F(KeyboardShortcutViewTest, CenterWindowInScreen) {
 // Test that the number of side tabs equals to the number of categories.
 TEST_F(KeyboardShortcutViewTest, SideTabsCount) {
   // Show the widget.
-  views::Widget* widget = KeyboardShortcutView::Toggle();
+  views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
 
   int category_number = 0;
   ShortcutCategory current_category = ShortcutCategory::kUnknown;
@@ -127,7 +136,7 @@ TEST_F(KeyboardShortcutViewTest, SideTabsCount) {
 // Test that the top line in two views should be center aligned.
 TEST_F(KeyboardShortcutViewTest, TopLineCenterAlignedInItemView) {
   // Show the widget.
-  views::Widget* widget = KeyboardShortcutView::Toggle();
+  views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
 
   for (const auto& item_view : GetShortcutViews()) {
     DCHECK(item_view->child_count() == 2);
@@ -152,7 +161,7 @@ TEST_F(KeyboardShortcutViewTest, TopLineCenterAlignedInItemView) {
 // Test that the focus is on search box when window inits and exits search mode.
 TEST_F(KeyboardShortcutViewTest, FocusOnSearchBox) {
   // Show the widget.
-  views::Widget* widget = KeyboardShortcutView::Toggle();
+  views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
 
   // Case 1: when window creates. The focus should be on search box.
   EXPECT_TRUE(GetSearchBoxView()->search_box()->HasFocus());
@@ -189,7 +198,7 @@ TEST_F(KeyboardShortcutViewTest, FocusOnSearchBox) {
 // Test that the window can be closed by accelerator.
 TEST_F(KeyboardShortcutViewTest, CloseWindowByAccelerator) {
   // Show the widget.
-  views::Widget* widget = KeyboardShortcutView::Toggle();
+  views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
   EXPECT_FALSE(widget->IsClosed());
 
   ui::test::EventGenerator& event_generator = GetEventGenerator();
@@ -200,18 +209,18 @@ TEST_F(KeyboardShortcutViewTest, CloseWindowByAccelerator) {
 // Test that the window can be activated or closed by toggling.
 TEST_F(KeyboardShortcutViewTest, ToggleWindow) {
   // Show the widget.
-  views::Widget* widget = KeyboardShortcutView::Toggle();
+  views::Widget* widget = KeyboardShortcutView::Toggle(base::TimeTicks());
   EXPECT_FALSE(widget->IsClosed());
 
   // Call |Toggle()| to activate the inactive widget.
   EXPECT_TRUE(widget->IsActive());
   widget->Deactivate();
   EXPECT_FALSE(widget->IsActive());
-  KeyboardShortcutView::Toggle();
+  KeyboardShortcutView::Toggle(base::TimeTicks());
   EXPECT_TRUE(widget->IsActive());
 
   // Call |Toggle()| to close the active widget.
-  KeyboardShortcutView::Toggle();
+  KeyboardShortcutView::Toggle(base::TimeTicks());
   EXPECT_TRUE(widget->IsClosed());
 }
 

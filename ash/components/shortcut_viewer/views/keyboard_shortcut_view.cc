@@ -18,9 +18,11 @@
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
 #include "base/i18n/string_search.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -96,7 +98,7 @@ KeyboardShortcutView::~KeyboardShortcutView() {
 }
 
 // static
-views::Widget* KeyboardShortcutView::Toggle() {
+views::Widget* KeyboardShortcutView::Toggle(base::TimeTicks start_time) {
   if (g_ksv_view) {
     if (g_ksv_view->GetWidget()->IsActive())
       g_ksv_view->GetWidget()->Close();
@@ -144,6 +146,9 @@ views::Widget* KeyboardShortcutView::Toggle() {
 
     g_ksv_view->GetWidget()->Show();
     g_ksv_view->search_box_view_->search_box()->RequestFocus();
+
+    UMA_HISTOGRAM_TIMES("Keyboard.ShortcutViewer.StartupTime",
+                        base::TimeTicks::Now() - start_time);
   }
   return g_ksv_view->GetWidget();
 }

@@ -6,6 +6,7 @@
 
 #include "ash/components/shortcut_viewer/last_window_closed_observer.h"
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_view.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -23,6 +24,11 @@ void ShortcutViewerApplication::RegisterForTraceEvents() {
 }
 
 void ShortcutViewerApplication::OnStart() {
+  // TODO(jamescook): Pass the time of the accelerator keypress via a mojo
+  // Show() method so this time can be used to measure end-to-end startup time.
+  // https://crbug.com/847615
+  user_gesture_time_ = base::TimeTicks::Now();
+
   aura_init_ = views::AuraInit::Create(
       context()->connector(), context()->identity(), "views_mus_resources.pak",
       std::string(), nullptr, views::AuraInit::Mode::AURA_MUS2,
@@ -40,7 +46,7 @@ void ShortcutViewerApplication::OnStart() {
   // InputDeviceClient. If the device list is incomplete, wait for it to load.
   DCHECK(ui::InputDeviceManager::HasInstance());
   if (ui::InputDeviceManager::GetInstance()->AreDeviceListsComplete()) {
-    KeyboardShortcutView::Toggle();
+    KeyboardShortcutView::Toggle(user_gesture_time_);
   } else {
     ui::InputDeviceManager::GetInstance()->AddObserver(this);
   }
@@ -48,7 +54,7 @@ void ShortcutViewerApplication::OnStart() {
 
 void ShortcutViewerApplication::OnDeviceListsComplete() {
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
-  KeyboardShortcutView::Toggle();
+  KeyboardShortcutView::Toggle(user_gesture_time_);
 }
 
 }  // namespace keyboard_shortcut_viewer

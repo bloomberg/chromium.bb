@@ -8,19 +8,22 @@
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_view.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
+#include "base/time/time.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace keyboard_shortcut_viewer_util {
 
 void ShowKeyboardShortcutViewer() {
+  base::TimeTicks user_gesture_time = base::TimeTicks::Now();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kKeyboardShortcutViewerApp)) {
     service_manager::Connector* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
+    // TODO(jamescook): Pass |user_gesture_time| via a mojo Show() method.
     connector->StartService(shortcut_viewer::mojom::kServiceName);
   } else {
-    keyboard_shortcut_viewer::KeyboardShortcutView::Toggle();
+    keyboard_shortcut_viewer::KeyboardShortcutView::Toggle(user_gesture_time);
   }
 }
 

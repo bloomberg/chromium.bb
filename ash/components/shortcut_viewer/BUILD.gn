@@ -63,6 +63,7 @@ source_set("unit_tests") {
   deps = [
     ":lib",
     "//ash:test_support_without_content",
+    "//base/test:test_support",
     "//services/ui/public/cpp/input_devices:test_support",
     "//testing/gtest",
     "//ui/events:test_support",
