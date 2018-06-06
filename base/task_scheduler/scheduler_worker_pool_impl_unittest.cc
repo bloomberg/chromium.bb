@@ -78,15 +78,15 @@ class TaskSchedulerWorkerPoolImplTestBase {
   TaskSchedulerWorkerPoolImplTestBase()
       : service_thread_("TaskSchedulerServiceThread"){};
 
-  void CommonSetUp() { CreateAndStartWorkerPool(TimeDelta::Max(), kMaxTasks); }
+  void CommonSetUp(TimeDelta suggested_reclaim_time = TimeDelta::Max()) {
+    CreateAndStartWorkerPool(suggested_reclaim_time, kMaxTasks);
+  }
 
   void CommonTearDown() {
     service_thread_.Stop();
     task_tracker_.FlushForTesting();
-    if (worker_pool_) {
-      worker_pool_->WaitForAllWorkersIdleForTesting();
+    if (worker_pool_)
       worker_pool_->JoinForTesting();
-    }
   }
 
   void CreateWorkerPool() {
@@ -779,78 +779,65 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeCleanup) {
   EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
 }
 
-TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitOne) {
-  constexpr int kLocalMaxTasks = 8;
-  TaskTracker task_tracker("Test");
-  DelayedTaskManager delayed_task_manager;
-  scoped_refptr<TaskRunner> service_thread_task_runner =
-      MakeRefCounted<TestSimpleTaskRunner>();
-  delayed_task_manager.Start(service_thread_task_runner);
-  auto worker_pool = std::make_unique<SchedulerWorkerPoolImpl>(
-      "OnePolicyWorkerPool", "A", ThreadPriority::NORMAL,
-      task_tracker.GetTrackedRef(), &delayed_task_manager);
-  worker_pool->Start(
-      SchedulerWorkerPoolParams(kLocalMaxTasks, TimeDelta::Max()),
-      kLocalMaxTasks, service_thread_task_runner, nullptr,
-      SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
-  ASSERT_TRUE(worker_pool);
-  EXPECT_EQ(1U, worker_pool->NumberOfWorkersForTesting());
-  worker_pool->JoinForTesting();
+namespace {
+
+class TaskSchedulerWorkerPoolStandbyPolicyTest
+    : public TaskSchedulerWorkerPoolImplTestBase,
+      public testing::Test {
+ public:
+  TaskSchedulerWorkerPoolStandbyPolicyTest() = default;
+
+  void SetUp() override {
+    TaskSchedulerWorkerPoolImplTestBase::CommonSetUp(
+        kReclaimTimeForCleanupTests);
+  }
+
+  void TearDown() override {
+    TaskSchedulerWorkerPoolImplTestBase::CommonTearDown();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolStandbyPolicyTest);
+};
+
+}  // namespace
+
+TEST_F(TaskSchedulerWorkerPoolStandbyPolicyTest, InitOne) {
+  EXPECT_EQ(1U, worker_pool_->NumberOfWorkersForTesting());
 }
 
-// Verify the SchedulerWorkerPoolImpl keeps at least one idle standby thread,
-// capacity permitting.
-TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, VerifyStandbyThread) {
-  constexpr size_t kLocalMaxTasks = 3;
-
-  TaskTracker task_tracker("Test");
-  DelayedTaskManager delayed_task_manager;
-  scoped_refptr<TaskRunner> service_thread_task_runner =
-      MakeRefCounted<TestSimpleTaskRunner>();
-  delayed_task_manager.Start(service_thread_task_runner);
-  auto worker_pool = std::make_unique<SchedulerWorkerPoolImpl>(
-      "StandbyThreadWorkerPool", "A", ThreadPriority::NORMAL,
-      task_tracker.GetTrackedRef(), &delayed_task_manager);
-  worker_pool->Start(
-      SchedulerWorkerPoolParams(kLocalMaxTasks, kReclaimTimeForCleanupTests),
-      kLocalMaxTasks, service_thread_task_runner, nullptr,
-      SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
-  ASSERT_TRUE(worker_pool);
-  EXPECT_EQ(1U, worker_pool->NumberOfWorkersForTesting());
-
+// Verify that the SchedulerWorkerPoolImpl keeps at least one idle standby
+// thread, capacity permitting.
+TEST_F(TaskSchedulerWorkerPoolStandbyPolicyTest, VerifyStandbyThread) {
   auto task_runner =
-      worker_pool->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
+      worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
 
   WaitableEvent thread_running(WaitableEvent::ResetPolicy::AUTOMATIC);
   WaitableEvent threads_continue;
 
-  RepeatingClosure closure = BindRepeating(
-      [](WaitableEvent* thread_running, WaitableEvent* threads_continue) {
-        thread_running->Signal();
-        WaitWithoutBlockingObserver(threads_continue);
-      },
-      Unretained(&thread_running), Unretained(&threads_continue));
+  RepeatingClosure thread_blocker = BindLambdaForTesting([&]() {
+    thread_running.Signal();
+    WaitWithoutBlockingObserver(&threads_continue);
+  });
 
   // There should be one idle thread until we reach capacity
-  for (size_t i = 0; i < kLocalMaxTasks; ++i) {
-    EXPECT_EQ(i + 1, worker_pool->NumberOfWorkersForTesting());
-    task_runner->PostTask(FROM_HERE, closure);
+  for (size_t i = 0; i < kMaxTasks; ++i) {
+    EXPECT_EQ(i + 1, worker_pool_->NumberOfWorkersForTesting());
+    task_runner->PostTask(FROM_HERE, thread_blocker);
     thread_running.Wait();
   }
 
   // There should not be an extra idle thread if it means going above capacity
-  EXPECT_EQ(kLocalMaxTasks, worker_pool->NumberOfWorkersForTesting());
+  EXPECT_EQ(kMaxTasks, worker_pool_->NumberOfWorkersForTesting());
 
   threads_continue.Signal();
   // Wait long enough for all but one worker to clean up.
-  worker_pool->WaitForWorkersCleanedUpForTesting(kLocalMaxTasks - 1);
-  EXPECT_EQ(1U, worker_pool->NumberOfWorkersForTesting());
+  worker_pool_->WaitForWorkersCleanedUpForTesting(kMaxTasks - 1);
+  EXPECT_EQ(1U, worker_pool_->NumberOfWorkersForTesting());
   // Give extra time for a worker to cleanup : none should as the pool is
   // expected to keep a worker ready regardless of how long it was idle for.
   PlatformThread::Sleep(kReclaimTimeForCleanupTests);
-  EXPECT_EQ(1U, worker_pool->NumberOfWorkersForTesting());
-
-  worker_pool->JoinForTesting();
+  EXPECT_EQ(1U, worker_pool_->NumberOfWorkersForTesting());
 }
 
 namespace {
