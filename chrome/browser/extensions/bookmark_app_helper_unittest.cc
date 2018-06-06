@@ -445,7 +445,7 @@ TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
   manifest.start_url = GURL(kAppUrl);
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
   manifest.scope = GURL(kAppScope);
-  blink::Manifest::Icon icon;
+  blink::Manifest::ImageResource icon;
   icon.src = GURL(kAppIconURL1);
   manifest.icons.push_back(icon);
   icon.src = GURL(kAppIconURL2);
@@ -765,7 +765,7 @@ TEST_F(BookmarkAppHelperTest, UpdateWebAppInfoFromManifest) {
   // that icons provided by the manifest replace icons in |web_app_info|.
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
 
-  blink::Manifest::Icon icon;
+  blink::Manifest::ImageResource icon;
   icon.src = GURL(kAppIcon2);
   manifest.icons.push_back(icon);
   icon.src = GURL(kAppIcon3);

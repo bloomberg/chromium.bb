@@ -25,7 +25,7 @@ class PaymentInstrumentIconFetcher {
   static void Start(
       const GURL& scope,
       std::unique_ptr<std::vector<std::pair<int, int>>> provider_hosts,
-      const std::vector<blink::Manifest::Icon>& icons,
+      const std::vector<blink::Manifest::ImageResource>& icons,
       PaymentInstrumentIconFetcherCallback callback);
 
  private:

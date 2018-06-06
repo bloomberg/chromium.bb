@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 
-using IconPurpose = blink::Manifest::Icon::IconPurpose;
+using IconPurpose = blink::Manifest::ImageResource::Purpose;
 
 class InstallableManagerUnitTest : public testing::Test {
  public:
@@ -27,7 +27,7 @@ class InstallableManagerUnitTest : public testing::Test {
     manifest.start_url = GURL("http://example.com");
     manifest.display = blink::kWebDisplayModeStandalone;
 
-    blink::Manifest::Icon primary_icon;
+    blink::Manifest::ImageResource primary_icon;
     primary_icon.type = base::ASCIIToUTF16("image/png");
     primary_icon.sizes.push_back(gfx::Size(144, 144));
     primary_icon.purpose.push_back(IconPurpose::ANY);

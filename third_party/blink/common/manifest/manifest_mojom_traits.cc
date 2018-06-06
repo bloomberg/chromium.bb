@@ -93,9 +93,10 @@ bool StructTraits<blink::mojom::ManifestDataView, ::blink::Manifest>::Read(
   return true;
 }
 
-bool StructTraits<blink::mojom::ManifestIconDataView, ::blink::Manifest::Icon>::
-    Read(blink::mojom::ManifestIconDataView data,
-         ::blink::Manifest::Icon* out) {
+bool StructTraits<blink::mojom::ManifestImageResourceDataView,
+                  ::blink::Manifest::ImageResource>::
+    Read(blink::mojom::ManifestImageResourceDataView data,
+         ::blink::Manifest::ImageResource* out) {
   if (!data.ReadSrc(&out->src))
     return false;
 

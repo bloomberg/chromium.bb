@@ -23,7 +23,7 @@ blink::Manifest GetValidManifest() {
   manifest.start_url = GURL("http://example.com");
   manifest.display = blink::kWebDisplayModeStandalone;
 
-  blink::Manifest::Icon icon;
+  blink::Manifest::ImageResource icon;
   icon.type = base::ASCIIToUTF16("image/png");
   icon.sizes.push_back(gfx::Size(144, 144));
   manifest.icons.push_back(icon);

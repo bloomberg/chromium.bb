@@ -94,7 +94,7 @@ struct BLINK_COMMON_EXPORT
     return manifest.splash_screen_url;
   }
 
-  static const std::vector<::blink::Manifest::Icon>& icons(
+  static const std::vector<::blink::Manifest::ImageResource>& icons(
       const ::blink::Manifest& manifest) {
     return manifest.icons;
   }
@@ -118,26 +118,28 @@ struct BLINK_COMMON_EXPORT
 
 template <>
 struct BLINK_COMMON_EXPORT
-    StructTraits<blink::mojom::ManifestIconDataView, ::blink::Manifest::Icon> {
-  static const GURL& src(const ::blink::Manifest::Icon& icon) {
+    StructTraits<blink::mojom::ManifestImageResourceDataView,
+                 ::blink::Manifest::ImageResource> {
+  static const GURL& src(const ::blink::Manifest::ImageResource& icon) {
     return icon.src;
   }
 
-  static base::StringPiece16 type(const ::blink::Manifest::Icon& icon) {
+  static base::StringPiece16 type(
+      const ::blink::Manifest::ImageResource& icon) {
     return internal::TruncateString16(icon.type);
   }
   static const std::vector<gfx::Size>& sizes(
-      const ::blink::Manifest::Icon& icon) {
+      const ::blink::Manifest::ImageResource& icon) {
     return icon.sizes;
   }
 
-  static const std::vector<::blink::Manifest::Icon::IconPurpose>& purpose(
-      const ::blink::Manifest::Icon& icon) {
+  static const std::vector<::blink::Manifest::ImageResource::Purpose>& purpose(
+      const ::blink::Manifest::ImageResource& icon) {
     return icon.purpose;
   }
 
-  static bool Read(blink::mojom::ManifestIconDataView data,
-                   ::blink::Manifest::Icon* out);
+  static bool Read(blink::mojom::ManifestImageResourceDataView data,
+                   ::blink::Manifest::ImageResource* out);
 };
 
 template <>
@@ -176,27 +178,28 @@ struct BLINK_COMMON_EXPORT
 };
 
 template <>
-struct BLINK_COMMON_EXPORT EnumTraits<blink::mojom::ManifestIcon_Purpose,
-                                      ::blink::Manifest::Icon::IconPurpose> {
-  static blink::mojom::ManifestIcon_Purpose ToMojom(
-      ::blink::Manifest::Icon::IconPurpose purpose) {
+struct BLINK_COMMON_EXPORT
+    EnumTraits<blink::mojom::ManifestImageResource_Purpose,
+               ::blink::Manifest::ImageResource::Purpose> {
+  static blink::mojom::ManifestImageResource_Purpose ToMojom(
+      ::blink::Manifest::ImageResource::Purpose purpose) {
     switch (purpose) {
-      case ::blink::Manifest::Icon::ANY:
-        return blink::mojom::ManifestIcon_Purpose::ANY;
-      case ::blink::Manifest::Icon::BADGE:
-        return blink::mojom::ManifestIcon_Purpose::BADGE;
+      case ::blink::Manifest::ImageResource::Purpose::ANY:
+        return blink::mojom::ManifestImageResource_Purpose::ANY;
+      case ::blink::Manifest::ImageResource::Purpose::BADGE:
+        return blink::mojom::ManifestImageResource_Purpose::BADGE;
     }
     NOTREACHED();
-    return blink::mojom::ManifestIcon_Purpose::ANY;
+    return blink::mojom::ManifestImageResource_Purpose::ANY;
   }
-  static bool FromMojom(blink::mojom::ManifestIcon_Purpose input,
-                        ::blink::Manifest::Icon::IconPurpose* out) {
+  static bool FromMojom(blink::mojom::ManifestImageResource_Purpose input,
+                        ::blink::Manifest::ImageResource::Purpose* out) {
     switch (input) {
-      case blink::mojom::ManifestIcon_Purpose::ANY:
-        *out = ::blink::Manifest::Icon::ANY;
+      case blink::mojom::ManifestImageResource_Purpose::ANY:
+        *out = ::blink::Manifest::ImageResource::Purpose::ANY;
         return true;
-      case blink::mojom::ManifestIcon_Purpose::BADGE:
-        *out = ::blink::Manifest::Icon::BADGE;
+      case blink::mojom::ManifestImageResource_Purpose::BADGE:
+        *out = ::blink::Manifest::ImageResource::Purpose::BADGE;
         return true;
     }
 

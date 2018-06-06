@@ -13,18 +13,19 @@
 
 namespace content {
 
-using IconPurpose = blink::Manifest::Icon::IconPurpose;
+using Purpose = blink::Manifest::ImageResource::Purpose;
 
 namespace {
 
 const int kIdealIconSize = 144;
 const int kMinimumIconSize = 0;
 
-static blink::Manifest::Icon CreateIcon(const std::string& url,
-                                        const std::string& type,
-                                        const std::vector<gfx::Size> sizes,
-                                        IconPurpose purpose) {
-  blink::Manifest::Icon icon;
+static blink::Manifest::ImageResource CreateIcon(
+    const std::string& url,
+    const std::string& type,
+    const std::vector<gfx::Size> sizes,
+    Purpose purpose) {
+  blink::Manifest::ImageResource icon;
   icon.src = GURL(url);
   icon.type = base::UTF8ToUTF16(type);
   icon.sizes = sizes;
@@ -37,20 +38,20 @@ static blink::Manifest::Icon CreateIcon(const std::string& url,
 
 TEST(ManifestIconSelector, NoIcons) {
   // No icons should return the empty URL.
-  std::vector<blink::Manifest::Icon> icons;
+  std::vector<blink::Manifest::ImageResource> icons;
   GURL url = ManifestIconSelector::FindBestMatchingIcon(
-      icons, kIdealIconSize, kMinimumIconSize, IconPurpose::ANY);
+      icons, kIdealIconSize, kMinimumIconSize, Purpose::ANY);
   EXPECT_TRUE(url.is_empty());
 }
 
 TEST(ManifestIconSelector, NoSizes) {
   // Icon with no sizes are ignored.
-  std::vector<blink::Manifest::Icon> icons;
+  std::vector<blink::Manifest::ImageResource> icons;
   icons.push_back(CreateIcon("http://foo.com/icon.png", "",
-                             std::vector<gfx::Size>(), IconPurpose::ANY));
+                             std::vector<gfx::Size>(), Purpose::ANY));
 
   GURL url = ManifestIconSelector::FindBestMatchingIcon(
-      icons, kIdealIconSize, kMinimumIconSize, IconPurpose::ANY);
+      icons, kIdealIconSize, kMinimumIconSize, Purpose::ANY);
   EXPECT_TRUE(url.is_empty());
 }
 
@@ -60,39 +61,39 @@ TEST(ManifestIconSelector, MIMETypeFiltering) {
   std::vector<gfx::Size> sizes;
   sizes.push_back(gfx::Size(1024, 1024));
 
-  std::vector<blink::Manifest::Icon> icons;
+  std::vector<blink::Manifest::ImageResource> icons;
   icons.push_back(CreateIcon("http://foo.com/icon.png", "image/foo_bar", sizes,
-                             IconPurpose::ANY));
+                             Purpose::ANY));
   icons.push_back(
-      CreateIcon("http://foo.com/icon.png", "image/", sizes, IconPurpose::ANY));
+      CreateIcon("http://foo.com/icon.png", "image/", sizes, Purpose::ANY));
   icons.push_back(
-      CreateIcon("http://foo.com/icon.png", "image/", sizes, IconPurpose::ANY));
-  icons.push_back(CreateIcon("http://foo.com/icon.png", "video/mp4", sizes,
-                             IconPurpose::ANY));
+      CreateIcon("http://foo.com/icon.png", "image/", sizes, Purpose::ANY));
+  icons.push_back(
+      CreateIcon("http://foo.com/icon.png", "video/mp4", sizes, Purpose::ANY));
 
   GURL url = ManifestIconSelector::FindBestMatchingIcon(
-      icons, kIdealIconSize, kMinimumIconSize, IconPurpose::ANY);
+      icons, kIdealIconSize, kMinimumIconSize, Purpose::ANY);
   EXPECT_TRUE(url.is_empty());
 
   icons.clear();
-  icons.push_back(CreateIcon("http://foo.com/icon.png", "image/png", sizes,
-                             IconPurpose::ANY));
+  icons.push_back(
+      CreateIcon("http://foo.com/icon.png", "image/png", sizes, Purpose::ANY));
   url = ManifestIconSelector::FindBestMatchingIcon(
-      icons, kIdealIconSize, kMinimumIconSize, IconPurpose::ANY);
+      icons, kIdealIconSize, kMinimumIconSize, Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon.png", url.spec());
 
   icons.clear();
-  icons.push_back(CreateIcon("http://foo.com/icon.png", "image/gif", sizes,
-                             IconPurpose::ANY));
+  icons.push_back(
+      CreateIcon("http://foo.com/icon.png", "image/gif", sizes, Purpose::ANY));
   url = ManifestIconSelector::FindBestMatchingIcon(
-      icons, kIdealIconSize, kMinimumIconSize, IconPurpose::ANY);
+      icons, kIdealIconSize, kMinimumIconSize, Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon.png", url.spec());
 
   icons.clear();
-  icons.push_back(CreateIcon("http://foo.com/icon.png", "image/jpeg", sizes,
-                             IconPurpose::ANY));
+  icons.push_back(
+      CreateIcon("http://foo.com/icon.png", "image/jpeg", sizes, Purpose::ANY));
   url = ManifestIconSelector::FindBestMatchingIcon(
-      icons, kIdealIconSize, kMinimumIconSize, IconPurpose::ANY);
+      icons, kIdealIconSize, kMinimumIconSize, Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon.png", url.spec());
 }
 
@@ -107,32 +108,32 @@ TEST(ManifestIconSelector, PurposeFiltering) {
   std::vector<gfx::Size> sizes_144;
   sizes_144.push_back(gfx::Size(144, 144));
 
-  std::vector<blink::Manifest::Icon> icons;
-  icons.push_back(CreateIcon("http://foo.com/icon_48.png", "", sizes_48,
-                             IconPurpose::BADGE));
+  std::vector<blink::Manifest::ImageResource> icons;
   icons.push_back(
-      CreateIcon("http://foo.com/icon_96.png", "", sizes_96, IconPurpose::ANY));
-  icons.push_back(CreateIcon("http://foo.com/icon_144.png", "", sizes_144,
-                             IconPurpose::ANY));
+      CreateIcon("http://foo.com/icon_48.png", "", sizes_48, Purpose::BADGE));
+  icons.push_back(
+      CreateIcon("http://foo.com/icon_96.png", "", sizes_96, Purpose::ANY));
+  icons.push_back(
+      CreateIcon("http://foo.com/icon_144.png", "", sizes_144, Purpose::ANY));
 
   GURL url = ManifestIconSelector::FindBestMatchingIcon(
-      icons, 48, kMinimumIconSize, IconPurpose::BADGE);
+      icons, 48, kMinimumIconSize, Purpose::BADGE);
   EXPECT_EQ("http://foo.com/icon_48.png", url.spec());
 
   url = ManifestIconSelector::FindBestMatchingIcon(icons, 48, kMinimumIconSize,
-                                                   IconPurpose::ANY);
+                                                   Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon_96.png", url.spec());
 
   url = ManifestIconSelector::FindBestMatchingIcon(icons, 96, kMinimumIconSize,
-                                                   IconPurpose::BADGE);
+                                                   Purpose::BADGE);
   EXPECT_EQ("http://foo.com/icon_48.png", url.spec());
 
-  url = ManifestIconSelector::FindBestMatchingIcon(icons, 96, 96,
-                                                   IconPurpose::BADGE);
+  url =
+      ManifestIconSelector::FindBestMatchingIcon(icons, 96, 96, Purpose::BADGE);
   EXPECT_TRUE(url.is_empty());
 
   url = ManifestIconSelector::FindBestMatchingIcon(icons, 144, kMinimumIconSize,
-                                                   IconPurpose::ANY);
+                                                   Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon_144.png", url.spec());
 }
 
@@ -147,24 +148,24 @@ TEST(ManifestIconSelector, IdealSizeIsUsedFirst) {
   std::vector<gfx::Size> sizes_144;
   sizes_144.push_back(gfx::Size(144, 144));
 
-  std::vector<blink::Manifest::Icon> icons;
+  std::vector<blink::Manifest::ImageResource> icons;
   icons.push_back(
-      CreateIcon("http://foo.com/icon_48.png", "", sizes_48, IconPurpose::ANY));
+      CreateIcon("http://foo.com/icon_48.png", "", sizes_48, Purpose::ANY));
   icons.push_back(
-      CreateIcon("http://foo.com/icon_96.png", "", sizes_96, IconPurpose::ANY));
-  icons.push_back(CreateIcon("http://foo.com/icon_144.png", "", sizes_144,
-                             IconPurpose::ANY));
+      CreateIcon("http://foo.com/icon_96.png", "", sizes_96, Purpose::ANY));
+  icons.push_back(
+      CreateIcon("http://foo.com/icon_144.png", "", sizes_144, Purpose::ANY));
 
   GURL url = ManifestIconSelector::FindBestMatchingIcon(
-      icons, 48, kMinimumIconSize, IconPurpose::ANY);
+      icons, 48, kMinimumIconSize, Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon_48.png", url.spec());
 
   url = ManifestIconSelector::FindBestMatchingIcon(icons, 96, kMinimumIconSize,
-                                                   IconPurpose::ANY);
+                                                   Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon_96.png", url.spec());
 
   url = ManifestIconSelector::FindBestMatchingIcon(icons, 144, kMinimumIconSize,
-                                                   IconPurpose::ANY);
+                                                   Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon_144.png", url.spec());
 }
 
@@ -182,24 +183,24 @@ TEST(ManifestIconSelector, FirstIconWithIdealSizeIsUsedFirst) {
   std::vector<gfx::Size> sizes_3;
   sizes_3.push_back(gfx::Size(1024, 1024));
 
-  std::vector<blink::Manifest::Icon> icons;
+  std::vector<blink::Manifest::ImageResource> icons;
   icons.push_back(
-      CreateIcon("http://foo.com/icon_x1.png", "", sizes_1, IconPurpose::ANY));
+      CreateIcon("http://foo.com/icon_x1.png", "", sizes_1, Purpose::ANY));
   icons.push_back(
-      CreateIcon("http://foo.com/icon_x2.png", "", sizes_2, IconPurpose::ANY));
+      CreateIcon("http://foo.com/icon_x2.png", "", sizes_2, Purpose::ANY));
   icons.push_back(
-      CreateIcon("http://foo.com/icon_x3.png", "", sizes_3, IconPurpose::ANY));
+      CreateIcon("http://foo.com/icon_x3.png", "", sizes_3, Purpose::ANY));
 
   GURL url = ManifestIconSelector::FindBestMatchingIcon(
-      icons, kIdealIconSize, kMinimumIconSize, IconPurpose::ANY);
+      icons, kIdealIconSize, kMinimumIconSize, Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon_x1.png", url.spec());
 
   url = ManifestIconSelector::FindBestMatchingIcon(
-      icons, kIdealIconSize * 2, kMinimumIconSize, IconPurpose::ANY);
+      icons, kIdealIconSize * 2, kMinimumIconSize, Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon_x1.png", url.spec());
 
   url = ManifestIconSelector::FindBestMatchingIcon(
-      icons, kIdealIconSize * 3, kMinimumIconSize, IconPurpose::ANY);
+      icons, kIdealIconSize * 3, kMinimumIconSize, Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon_x1.png", url.spec());
 }
 
@@ -214,24 +215,24 @@ TEST(ManifestIconSelector, FallbackToSmallestLargerIcon) {
   std::vector<gfx::Size> sizes_3;
   sizes_3.push_back(gfx::Size(192, 192));
 
-  std::vector<blink::Manifest::Icon> icons;
+  std::vector<blink::Manifest::ImageResource> icons;
   icons.push_back(
-      CreateIcon("http://foo.com/icon_x1.png", "", sizes_1, IconPurpose::ANY));
+      CreateIcon("http://foo.com/icon_x1.png", "", sizes_1, Purpose::ANY));
   icons.push_back(
-      CreateIcon("http://foo.com/icon_x2.png", "", sizes_2, IconPurpose::ANY));
+      CreateIcon("http://foo.com/icon_x2.png", "", sizes_2, Purpose::ANY));
   icons.push_back(
-      CreateIcon("http://foo.com/icon_x3.png", "", sizes_3, IconPurpose::ANY));
+      CreateIcon("http://foo.com/icon_x3.png", "", sizes_3, Purpose::ANY));
 
   GURL url = ManifestIconSelector::FindBestMatchingIcon(
-      icons, 48, kMinimumIconSize, IconPurpose::ANY);
+      icons, 48, kMinimumIconSize, Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon_x1.png", url.spec());
 
   url = ManifestIconSelector::FindBestMatchingIcon(icons, 96, kMinimumIconSize,
-                                                   IconPurpose::ANY);
+                                                   Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon_x2.png", url.spec());
 
   url = ManifestIconSelector::FindBestMatchingIcon(icons, 144, kMinimumIconSize,
-                                                   IconPurpose::ANY);
+                                                   Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon_x3.png", url.spec());
 }
 
@@ -244,22 +245,22 @@ TEST(ManifestIconSelector, FallbackToLargestIconLargerThanMinimum) {
   sizes_1_2.push_back(gfx::Size(47, 47));
   sizes_3.push_back(gfx::Size(95, 95));
 
-  std::vector<blink::Manifest::Icon> icons;
-  icons.push_back(CreateIcon("http://foo.com/icon_x1.png", "", sizes_1_2,
-                             IconPurpose::ANY));
-  icons.push_back(CreateIcon("http://foo.com/icon_x2.png", "", sizes_1_2,
-                             IconPurpose::ANY));
+  std::vector<blink::Manifest::ImageResource> icons;
   icons.push_back(
-      CreateIcon("http://foo.com/icon_x3.png", "", sizes_3, IconPurpose::ANY));
+      CreateIcon("http://foo.com/icon_x1.png", "", sizes_1_2, Purpose::ANY));
+  icons.push_back(
+      CreateIcon("http://foo.com/icon_x2.png", "", sizes_1_2, Purpose::ANY));
+  icons.push_back(
+      CreateIcon("http://foo.com/icon_x3.png", "", sizes_3, Purpose::ANY));
 
   // Icon 3 should match.
-  GURL url = ManifestIconSelector::FindBestMatchingIcon(icons, 1024, 48,
-                                                        IconPurpose::ANY);
+  GURL url =
+      ManifestIconSelector::FindBestMatchingIcon(icons, 1024, 48, Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon_x3.png", url.spec());
 
   // Nothing matches here as the minimum is 96.
-  url = ManifestIconSelector::FindBestMatchingIcon(icons, 1024, 96,
-                                                   IconPurpose::ANY);
+  url =
+      ManifestIconSelector::FindBestMatchingIcon(icons, 1024, 96, Purpose::ANY);
   EXPECT_TRUE(url.is_empty());
 }
 
@@ -267,12 +268,12 @@ TEST(ManifestIconSelector, IdealVeryCloseToMinimumMatches) {
   std::vector<gfx::Size> sizes;
   sizes.push_back(gfx::Size(2, 2));
 
-  std::vector<blink::Manifest::Icon> icons;
+  std::vector<blink::Manifest::ImageResource> icons;
   icons.push_back(
-      CreateIcon("http://foo.com/icon_x1.png", "", sizes, IconPurpose::ANY));
+      CreateIcon("http://foo.com/icon_x1.png", "", sizes, Purpose::ANY));
 
   GURL url =
-      ManifestIconSelector::FindBestMatchingIcon(icons, 2, 1, IconPurpose::ANY);
+      ManifestIconSelector::FindBestMatchingIcon(icons, 2, 1, Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon_x1.png", url.spec());
 }
 
@@ -280,12 +281,12 @@ TEST(ManifestIconSelector, SizeVeryCloseToMinimumMatches) {
   std::vector<gfx::Size> sizes;
   sizes.push_back(gfx::Size(2, 2));
 
-  std::vector<blink::Manifest::Icon> icons;
+  std::vector<blink::Manifest::ImageResource> icons;
   icons.push_back(
-      CreateIcon("http://foo.com/icon_x1.png", "", sizes, IconPurpose::ANY));
+      CreateIcon("http://foo.com/icon_x1.png", "", sizes, Purpose::ANY));
 
-  GURL url = ManifestIconSelector::FindBestMatchingIcon(icons, 200, 1,
-                                                        IconPurpose::ANY);
+  GURL url =
+      ManifestIconSelector::FindBestMatchingIcon(icons, 200, 1, Purpose::ANY);
   EXPECT_EQ("http://foo.com/icon_x1.png", url.spec());
 }
 
@@ -293,12 +294,12 @@ TEST(ManifestIconSelector, NotSquareIconsAreIgnored) {
   std::vector<gfx::Size> sizes;
   sizes.push_back(gfx::Size(1024, 1023));
 
-  std::vector<blink::Manifest::Icon> icons;
+  std::vector<blink::Manifest::ImageResource> icons;
   icons.push_back(
-      CreateIcon("http://foo.com/icon.png", "", sizes, IconPurpose::ANY));
+      CreateIcon("http://foo.com/icon.png", "", sizes, Purpose::ANY));
 
   GURL url = ManifestIconSelector::FindBestMatchingIcon(
-      icons, kIdealIconSize, kMinimumIconSize, IconPurpose::ANY);
+      icons, kIdealIconSize, kMinimumIconSize, Purpose::ANY);
   EXPECT_TRUE(url.is_empty());
 }
 
@@ -320,14 +321,14 @@ TEST(ManifestIconSelector, ClosestIconToIdeal) {
     std::vector<gfx::Size> sizes_2;
     sizes_2.push_back(gfx::Size(bit_small, bit_small));
 
-    std::vector<blink::Manifest::Icon> icons;
-    icons.push_back(CreateIcon("http://foo.com/icon_no.png", "", sizes_1,
-                               IconPurpose::ANY));
+    std::vector<blink::Manifest::ImageResource> icons;
     icons.push_back(
-        CreateIcon("http://foo.com/icon.png", "", sizes_2, IconPurpose::ANY));
+        CreateIcon("http://foo.com/icon_no.png", "", sizes_1, Purpose::ANY));
+    icons.push_back(
+        CreateIcon("http://foo.com/icon.png", "", sizes_2, Purpose::ANY));
 
     GURL url = ManifestIconSelector::FindBestMatchingIcon(
-        icons, kIdealIconSize, kMinimumIconSize, IconPurpose::ANY);
+        icons, kIdealIconSize, kMinimumIconSize, Purpose::ANY);
     EXPECT_EQ("http://foo.com/icon.png", url.spec());
   }
 
@@ -342,16 +343,16 @@ TEST(ManifestIconSelector, ClosestIconToIdeal) {
     std::vector<gfx::Size> sizes_3;
     sizes_3.push_back(gfx::Size(small_size, small_size));
 
-    std::vector<blink::Manifest::Icon> icons;
-    icons.push_back(CreateIcon("http://foo.com/icon_no_1.png", "", sizes_1,
-                               IconPurpose::ANY));
+    std::vector<blink::Manifest::ImageResource> icons;
     icons.push_back(
-        CreateIcon("http://foo.com/icon.png", "", sizes_2, IconPurpose::ANY));
-    icons.push_back(CreateIcon("http://foo.com/icon_no_2.png", "", sizes_3,
-                               IconPurpose::ANY));
+        CreateIcon("http://foo.com/icon_no_1.png", "", sizes_1, Purpose::ANY));
+    icons.push_back(
+        CreateIcon("http://foo.com/icon.png", "", sizes_2, Purpose::ANY));
+    icons.push_back(
+        CreateIcon("http://foo.com/icon_no_2.png", "", sizes_3, Purpose::ANY));
 
     GURL url = ManifestIconSelector::FindBestMatchingIcon(
-        icons, kIdealIconSize, kMinimumIconSize, IconPurpose::ANY);
+        icons, kIdealIconSize, kMinimumIconSize, Purpose::ANY);
     EXPECT_EQ("http://foo.com/icon.png", url.spec());
   }
 
@@ -363,14 +364,14 @@ TEST(ManifestIconSelector, ClosestIconToIdeal) {
     std::vector<gfx::Size> sizes_2;
     sizes_2.push_back(gfx::Size(big, big));
 
-    std::vector<blink::Manifest::Icon> icons;
-    icons.push_back(CreateIcon("http://foo.com/icon_no.png", "", sizes_1,
-                               IconPurpose::ANY));
+    std::vector<blink::Manifest::ImageResource> icons;
     icons.push_back(
-        CreateIcon("http://foo.com/icon.png", "", sizes_2, IconPurpose::ANY));
+        CreateIcon("http://foo.com/icon_no.png", "", sizes_1, Purpose::ANY));
+    icons.push_back(
+        CreateIcon("http://foo.com/icon.png", "", sizes_2, Purpose::ANY));
 
     GURL url = ManifestIconSelector::FindBestMatchingIcon(
-        icons, kIdealIconSize, kMinimumIconSize, IconPurpose::ANY);
+        icons, kIdealIconSize, kMinimumIconSize, Purpose::ANY);
     EXPECT_EQ("http://foo.com/icon.png", url.spec());
   }
 
@@ -385,16 +386,16 @@ TEST(ManifestIconSelector, ClosestIconToIdeal) {
     std::vector<gfx::Size> sizes_3;
     sizes_3.push_back(gfx::Size(bit_big, bit_big));
 
-    std::vector<blink::Manifest::Icon> icons;
-    icons.push_back(CreateIcon("http://foo.com/icon_no.png", "", sizes_1,
-                               IconPurpose::ANY));
-    icons.push_back(CreateIcon("http://foo.com/icon_no.png", "", sizes_2,
-                               IconPurpose::ANY));
+    std::vector<blink::Manifest::ImageResource> icons;
     icons.push_back(
-        CreateIcon("http://foo.com/icon.png", "", sizes_3, IconPurpose::ANY));
+        CreateIcon("http://foo.com/icon_no.png", "", sizes_1, Purpose::ANY));
+    icons.push_back(
+        CreateIcon("http://foo.com/icon_no.png", "", sizes_2, Purpose::ANY));
+    icons.push_back(
+        CreateIcon("http://foo.com/icon.png", "", sizes_3, Purpose::ANY));
 
     GURL url = ManifestIconSelector::FindBestMatchingIcon(
-        icons, kIdealIconSize, kMinimumIconSize, IconPurpose::ANY);
+        icons, kIdealIconSize, kMinimumIconSize, Purpose::ANY);
     EXPECT_EQ("http://foo.com/icon.png", url.spec());
   }
 
@@ -406,14 +407,14 @@ TEST(ManifestIconSelector, ClosestIconToIdeal) {
     std::vector<gfx::Size> sizes_2;
     sizes_2.push_back(gfx::Size(very_big, very_big));
 
-    std::vector<blink::Manifest::Icon> icons;
-    icons.push_back(CreateIcon("http://foo.com/icon_no.png", "", sizes_1,
-                               IconPurpose::ANY));
+    std::vector<blink::Manifest::ImageResource> icons;
     icons.push_back(
-        CreateIcon("http://foo.com/icon.png", "", sizes_2, IconPurpose::ANY));
+        CreateIcon("http://foo.com/icon_no.png", "", sizes_1, Purpose::ANY));
+    icons.push_back(
+        CreateIcon("http://foo.com/icon.png", "", sizes_2, Purpose::ANY));
 
     GURL url = ManifestIconSelector::FindBestMatchingIcon(
-        icons, kIdealIconSize, kMinimumIconSize, IconPurpose::ANY);
+        icons, kIdealIconSize, kMinimumIconSize, Purpose::ANY);
     EXPECT_EQ("http://foo.com/icon.png", url.spec());
   }
 
@@ -425,14 +426,14 @@ TEST(ManifestIconSelector, ClosestIconToIdeal) {
     std::vector<gfx::Size> sizes_2;
     sizes_2.push_back(gfx::Size(bit_big, bit_big));
 
-    std::vector<blink::Manifest::Icon> icons;
-    icons.push_back(CreateIcon("http://foo.com/icon_no.png", "", sizes_1,
-                               IconPurpose::ANY));
+    std::vector<blink::Manifest::ImageResource> icons;
     icons.push_back(
-        CreateIcon("http://foo.com/icon.png", "", sizes_2, IconPurpose::ANY));
+        CreateIcon("http://foo.com/icon_no.png", "", sizes_1, Purpose::ANY));
+    icons.push_back(
+        CreateIcon("http://foo.com/icon.png", "", sizes_2, Purpose::ANY));
 
     GURL url = ManifestIconSelector::FindBestMatchingIcon(
-        icons, kIdealIconSize, kMinimumIconSize, IconPurpose::ANY);
+        icons, kIdealIconSize, kMinimumIconSize, Purpose::ANY);
     EXPECT_EQ("http://foo.com/icon.png", url.spec());
   }
 }
@@ -448,14 +449,14 @@ TEST(ManifestIconSelector, UseAnyIfNoIdealSize) {
     std::vector<gfx::Size> sizes_2;
     sizes_2.push_back(gfx::Size(0, 0));
 
-    std::vector<blink::Manifest::Icon> icons;
+    std::vector<blink::Manifest::ImageResource> icons;
     icons.push_back(
-        CreateIcon("http://foo.com/icon.png", "", sizes_1, IconPurpose::ANY));
-    icons.push_back(CreateIcon("http://foo.com/icon_no.png", "", sizes_2,
-                               IconPurpose::ANY));
+        CreateIcon("http://foo.com/icon.png", "", sizes_1, Purpose::ANY));
+    icons.push_back(
+        CreateIcon("http://foo.com/icon_no.png", "", sizes_2, Purpose::ANY));
 
     GURL url = ManifestIconSelector::FindBestMatchingIcon(
-        icons, kIdealIconSize, kMinimumIconSize, IconPurpose::ANY);
+        icons, kIdealIconSize, kMinimumIconSize, Purpose::ANY);
     EXPECT_EQ("http://foo.com/icon.png", url.spec());
   }
 
@@ -466,14 +467,14 @@ TEST(ManifestIconSelector, UseAnyIfNoIdealSize) {
     std::vector<gfx::Size> sizes_2;
     sizes_2.push_back(gfx::Size(0, 0));
 
-    std::vector<blink::Manifest::Icon> icons;
-    icons.push_back(CreateIcon("http://foo.com/icon_no.png", "", sizes_1,
-                               IconPurpose::ANY));
+    std::vector<blink::Manifest::ImageResource> icons;
     icons.push_back(
-        CreateIcon("http://foo.com/icon.png", "", sizes_2, IconPurpose::ANY));
+        CreateIcon("http://foo.com/icon_no.png", "", sizes_1, Purpose::ANY));
+    icons.push_back(
+        CreateIcon("http://foo.com/icon.png", "", sizes_2, Purpose::ANY));
 
     GURL url = ManifestIconSelector::FindBestMatchingIcon(
-        icons, kIdealIconSize, kMinimumIconSize, IconPurpose::ANY);
+        icons, kIdealIconSize, kMinimumIconSize, Purpose::ANY);
     EXPECT_EQ("http://foo.com/icon.png", url.spec());
   }
 
@@ -482,16 +483,16 @@ TEST(ManifestIconSelector, UseAnyIfNoIdealSize) {
     std::vector<gfx::Size> sizes;
     sizes.push_back(gfx::Size(0, 0));
 
-    std::vector<blink::Manifest::Icon> icons;
+    std::vector<blink::Manifest::ImageResource> icons;
     icons.push_back(
-        CreateIcon("http://foo.com/icon_no1.png", "", sizes, IconPurpose::ANY));
+        CreateIcon("http://foo.com/icon_no1.png", "", sizes, Purpose::ANY));
     icons.push_back(
-        CreateIcon("http://foo.com/icon_no2.png", "", sizes, IconPurpose::ANY));
+        CreateIcon("http://foo.com/icon_no2.png", "", sizes, Purpose::ANY));
     icons.push_back(
-        CreateIcon("http://foo.com/icon.png", "", sizes, IconPurpose::ANY));
+        CreateIcon("http://foo.com/icon.png", "", sizes, Purpose::ANY));
 
     GURL url = ManifestIconSelector::FindBestMatchingIcon(
-        icons, kIdealIconSize * 3, kMinimumIconSize, IconPurpose::ANY);
+        icons, kIdealIconSize * 3, kMinimumIconSize, Purpose::ANY);
     EXPECT_EQ("http://foo.com/icon.png", url.spec());
   }
 }

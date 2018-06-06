@@ -17,7 +17,7 @@ deps = [
 ]
 type_mappings = [
   "blink.mojom.Manifest=::blink::Manifest[nullable_is_same_type]",
-  "blink.mojom.ManifestIcon=::blink::Manifest::Icon",
+  "blink.mojom.ManifestImageResource=::blink::Manifest::ImageResource",
   "blink.mojom.ManifestRelatedApplication=::blink::Manifest::RelatedApplication",
   "blink.mojom.ManifestShareTarget=::blink::Manifest::ShareTarget",
 ]

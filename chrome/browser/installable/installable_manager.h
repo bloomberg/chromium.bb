@@ -87,7 +87,7 @@ class InstallableManager
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
                            ManifestUrlChangeFlushesState);
 
-  using IconPurpose = blink::Manifest::Icon::IconPurpose;
+  using IconPurpose = blink::Manifest::ImageResource::Purpose;
 
   struct EligiblityProperty {
     InstallableStatusCode error = NO_ERROR_DETECTED;

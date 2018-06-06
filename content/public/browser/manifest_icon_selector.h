@@ -27,10 +27,10 @@ class CONTENT_EXPORT ManifestIconSelector {
   //
   // Returns the icon url if a suitable icon is found. An empty URL otherwise.
   static GURL FindBestMatchingIcon(
-      const std::vector<blink::Manifest::Icon>& icons,
+      const std::vector<blink::Manifest::ImageResource>& icons,
       int ideal_icon_size_in_px,
       int minimum_icon_size_in_px,
-      blink::Manifest::Icon::IconPurpose purpose);
+      blink::Manifest::ImageResource::Purpose purpose);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ManifestIconSelector);

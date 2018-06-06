@@ -71,7 +71,7 @@ PaymentInstrumentPtr ToPaymentInstrumentForMojo(const std::string& input) {
   PaymentInstrumentPtr instrument = PaymentInstrument::New();
   instrument->name = instrument_proto.name();
   for (const auto& icon_proto : instrument_proto.icons()) {
-    blink::Manifest::Icon icon;
+    blink::Manifest::ImageResource icon;
     icon.src = GURL(icon_proto.src());
     icon.type = base::UTF8ToUTF16(icon_proto.type());
     for (const auto& size_proto : icon_proto.sizes()) {
@@ -197,7 +197,7 @@ void PaymentAppDatabase::WritePaymentInstrument(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (instrument->icons.size() > 0) {
-    std::vector<blink::Manifest::Icon> icons(instrument->icons);
+    std::vector<blink::Manifest::ImageResource> icons(instrument->icons);
     PaymentInstrumentIconFetcher::Start(
         scope, service_worker_context_->GetProviderHostIds(scope.GetOrigin()),
         icons,

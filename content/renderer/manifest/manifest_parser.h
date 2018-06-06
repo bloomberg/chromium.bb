@@ -146,14 +146,14 @@ class CONTENT_EXPORT ManifestParser {
   // Returns a vector of Manifest::Icon::IconPurpose with the successfully
   // parsed icon purposes, and a vector with Manifest::Icon::IconPurpose::Any if
   // the parsing failed.
-  std::vector<blink::Manifest::Icon::IconPurpose> ParseIconPurpose(
+  std::vector<blink::Manifest::ImageResource::Purpose> ParseIconPurpose(
       const base::DictionaryValue& icon);
 
   // Parses the 'icons' field of a Manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-an-array-of-images
   // Returns a vector of Manifest::Icon with the successfully parsed icons, if
   // any. An empty vector if the field was not present or empty.
-  std::vector<blink::Manifest::Icon> ParseIcons(
+  std::vector<blink::Manifest::ImageResource> ParseIcons(
       const base::DictionaryValue& dictionary);
 
   // Parses the 'url_template' field of a Share Target, as defined in:

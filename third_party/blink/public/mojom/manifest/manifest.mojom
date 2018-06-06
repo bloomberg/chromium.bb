@@ -26,7 +26,7 @@ struct Manifest {
 
   device.mojom.ScreenOrientationLockType orientation;
 
-  array<ManifestIcon>? icons;
+  array<ManifestImageResource>? icons;
 
   // TODO(constantina): This field is non-standard and part of a Chrome
   // experiment. See:
@@ -58,8 +58,8 @@ struct Manifest {
 };
 
 // Structure representing an icon as per the Manifest specification, see:
-// http://w3c.github.io/manifest/#dfn-icon-object
-struct ManifestIcon {
+// https://w3c.github.io/manifest/#dom-imageresource
+struct ManifestImageResource {
   enum Purpose {
     ANY = 0,
     BADGE,
@@ -77,7 +77,7 @@ struct ManifestIcon {
   // The special value "any" is represented by gfx::Size(0, 0).
   array<gfx.mojom.Size> sizes;
 
-  // Defaults to a vector with a single value, IconPurpose::ANY, for all other
+  // Defaults to a vector with a single value, Purpose::ANY, for all other
   // parsing exceptions.
   array<Purpose> purpose;
 };
