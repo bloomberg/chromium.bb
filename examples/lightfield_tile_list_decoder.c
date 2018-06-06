@@ -97,7 +97,6 @@ int main(int argc, char **argv) {
   v_blocks = (lf_height + lf_blocksize - 1) / lf_blocksize;
 
   int num_references = v_blocks * u_blocks;
-  int frame_count = 0;
 
   // Allocate memory to store decoded references.
   aom_img_fmt_t ref_fmt = AOM_IMG_FMT_I420;
@@ -109,13 +108,6 @@ int main(int argc, char **argv) {
                                    32, 8, border)) {
       die("Failed to allocate references.");
     }
-
-    //    aom_image_t *img = &reference_images[i];
-    //    const uint64_t alloc_size =
-    //        (img->fmt & AOM_IMG_FMT_PLANAR)
-    //            ? (uint64_t)(img->h + 2 * border) * img->stride[AOM_PLANE_Y] *
-    //            img->bps / 8 : (uint64_t)(img->h + 2 * border) *
-    //            img->stride[AOM_PLANE_Y];
   }
 
   // Decode anchor frames.
@@ -127,9 +119,9 @@ int main(int argc, char **argv) {
     if (aom_codec_decode(&codec, frame, frame_size, NULL))
       die_codec(&codec, "Failed to decode frame.");
 
-    if (aom_codec_control(&codec, AV1_GET_NEW_FRAME_IMAGE,
-                          &reference_images[frame_count]))
-      die_codec(&codec, "Failed to get decoded reference frame");
+    if (aom_codec_control(&codec, AV1_COPY_NEW_FRAME_IMAGE,
+                          &reference_images[i]))
+      die_codec(&codec, "Failed to copy decoded reference frame");
 
     aom_codec_iter_t iter = NULL;
     aom_image_t *img = NULL;
@@ -140,7 +132,6 @@ int main(int argc, char **argv) {
       FILE *ref_file = fopen(name, "wb");
       aom_img_write(img, ref_file);
       fclose(ref_file);
-      ++frame_count;
     }
   }
 
@@ -152,6 +143,8 @@ int main(int argc, char **argv) {
   frame = aom_video_reader_get_frame(reader, &frame_size);
   if (aom_codec_decode(&codec, frame, frame_size, NULL))
     die_codec(&codec, "Failed to decode the frame.");
+
+  printf("\nCamera frame header is decoded.\n");
 
   // Decode tile lists one by one.
   for (n = 0; n < num_tile_lists; n++) {

@@ -322,9 +322,9 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
                        AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_ENTROPY,
                    writer);
 
-      if (aom_codec_control(&codec, AV1_GET_NEW_FRAME_IMAGE,
+      if (aom_codec_control(&codec, AV1_COPY_NEW_FRAME_IMAGE,
                             &reference_images[frame_count - 1]))
-        die_codec(&codec, "Failed to get decoder reference frame");
+        die_codec(&codec, "Failed to copy decoder reference frame");
     }
   }
 
