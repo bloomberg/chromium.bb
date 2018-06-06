@@ -2267,9 +2267,7 @@
     }
   },
 
-  # TODO(kbr): rename this back to vr_platform_specific_chromium_gtests and
-  # run it on Win/Clang.
-  'vr_platform_specific_non_clang_win_chromium_gtests': {
+  'vr_platform_specific_chromium_gtests': {
     # Only run on platforms that intend to support WebVR in the near
     # future.
     'vr_common_unittests': {},
@@ -2376,7 +2374,7 @@
     'chromium_gtests_for_devices_with_graphical_output',
     'linux_flavor_specific_chromium_gtests',
     'non_mac_chromium_gtests',
-    'vr_platform_specific_non_clang_win_chromium_gtests',
+    'vr_platform_specific_chromium_gtests',
   ],
 
   'chromium_dbg_isolated_scripts': [
@@ -2416,6 +2414,7 @@
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
     'non_mac_chromium_gtests',
+    'vr_platform_specific_chromium_gtests',
   ],
 
   'chromium_linux_clang_and_gl_gtests': [
@@ -2430,6 +2429,7 @@
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
     'non_mac_chromium_gtests',
+    'vr_platform_specific_chromium_gtests',
   ],
 
   'chromium_linux_gtests': [
@@ -2449,7 +2449,7 @@
     'site_isolation_chromium_gtests',
     'site_isolation_chromium_linux_gtests',
     'viz_gtests',
-    'vr_platform_specific_non_clang_win_chromium_gtests',
+    'vr_platform_specific_chromium_gtests',
   ],
 
   'linux_chromeos_dbg_gtests': [
@@ -2556,7 +2556,7 @@
     'non_android_and_cast_and_chromeos_chromium_gtests',
     'non_android_chromium_gtests',
     'non_mac_chromium_gtests',
-    'vr_platform_specific_non_clang_win_chromium_gtests',
+    'vr_platform_specific_chromium_gtests',
   ],
 
   'chromium_memory_mac_gtests': [
@@ -2588,6 +2588,7 @@
     'non_android_and_cast_and_chromeos_chromium_gtests',
     'non_linux_chromium_gtests',
     'non_mac_chromium_gtests',
+    'vr_platform_specific_chromium_gtests',
     'win_specific_chromium_gtests',
   ],
 
@@ -2601,7 +2602,7 @@
     'non_android_and_cast_and_chromeos_and_clang_and_mac_fyi_chromium_gtests',
     'non_linux_chromium_gtests',
     'non_mac_chromium_gtests',
-    'vr_platform_specific_non_clang_win_chromium_gtests',
+    'vr_platform_specific_chromium_gtests',
     'win_specific_chromium_gtests',
   ],
 
@@ -2615,7 +2616,7 @@
     'non_linux_chromium_gtests',
     'non_mac_chromium_gtests',
     'viz_gtests',
-    'vr_platform_specific_non_clang_win_chromium_gtests',
+    'vr_platform_specific_chromium_gtests',
     'win_specific_chromium_gtests',
   ],
 
