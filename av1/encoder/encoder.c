@@ -6013,6 +6013,28 @@ int av1_get_last_show_frame(AV1_COMP *cpi, YV12_BUFFER_CONFIG *frame) {
   return 0;
 }
 
+static int equal_dimensions_and_border(const YV12_BUFFER_CONFIG *a,
+                                       const YV12_BUFFER_CONFIG *b) {
+  return a->y_height == b->y_height && a->y_width == b->y_width &&
+         a->uv_height == b->uv_height && a->uv_width == b->uv_width &&
+         a->y_stride == b->y_stride && a->uv_stride == b->uv_stride &&
+         a->border == b->border &&
+         (a->flags & YV12_FLAG_HIGHBITDEPTH) ==
+             (b->flags & YV12_FLAG_HIGHBITDEPTH);
+}
+
+int av1_copy_new_frame_enc(AV1_COMMON *cm, YV12_BUFFER_CONFIG *new_frame,
+                           YV12_BUFFER_CONFIG *sd) {
+  const int num_planes = av1_num_planes(cm);
+  if (!equal_dimensions_and_border(new_frame, sd))
+    aom_internal_error(&cm->error, AOM_CODEC_ERROR,
+                       "Incorrect buffer dimensions");
+  else
+    aom_yv12_copy_frame(new_frame, sd, num_planes);
+
+  return cm->error.error_code;
+}
+
 int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
                           AOM_SCALING vert_mode) {
   int hr = 0, hs = 0, vr = 0, vs = 0;

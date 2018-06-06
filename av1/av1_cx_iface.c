@@ -1476,6 +1476,25 @@ static aom_codec_err_t ctrl_get_new_frame_image(aom_codec_alg_priv_t *ctx,
   }
 }
 
+static aom_codec_err_t ctrl_copy_new_frame_image(aom_codec_alg_priv_t *ctx,
+                                                 va_list args) {
+  aom_image_t *const new_img = va_arg(args, aom_image_t *);
+
+  if (new_img != NULL) {
+    YV12_BUFFER_CONFIG new_frame;
+
+    if (av1_get_last_show_frame(ctx->cpi, &new_frame) == 0) {
+      YV12_BUFFER_CONFIG sd;
+      image2yuvconfig(new_img, &sd);
+      return av1_copy_new_frame_enc(&ctx->cpi->common, &new_frame, &sd);
+    } else {
+      return AOM_CODEC_ERROR;
+    }
+  } else {
+    return AOM_CODEC_INVALID_PARAM;
+  }
+}
+
 static aom_codec_err_t ctrl_set_previewpp(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   (void)ctx;
@@ -1720,6 +1739,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1_GET_REFERENCE, ctrl_get_reference },
   { AV1E_GET_ACTIVEMAP, ctrl_get_active_map },
   { AV1_GET_NEW_FRAME_IMAGE, ctrl_get_new_frame_image },
+  { AV1_COPY_NEW_FRAME_IMAGE, ctrl_copy_new_frame_image },
 
   { -1, NULL },
 };
