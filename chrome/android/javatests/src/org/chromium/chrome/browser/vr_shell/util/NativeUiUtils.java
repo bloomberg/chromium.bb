@@ -49,13 +49,22 @@ public class NativeUiUtils {
      * @param elementName The UserFriendlyElementName that will be clicked on.
      * @param position The position within the element to click on.
      */
-    public static void clickElementAndWaitForUiQuiescence(int elementName, PointF position)
+    public static void clickElementAndWaitForUiQuiescence(
+            final int elementName, final PointF position) throws InterruptedException {
+        performActionAndWaitForUiQuiescence(() -> { clickElement(elementName, position); });
+    }
+
+    /**
+     * Runs the given Runnable and waits until the native UI reports that it is quiescent.
+     * @param action A Runnable containing the action to perform.
+     */
+    public static void performActionAndWaitForUiQuiescence(Runnable action)
             throws InterruptedException {
         final TestVrShellDelegate instance = TestVrShellDelegate.getInstance();
         final CountDownLatch resultLatch = new CountDownLatch(1);
         instance.setUiExpectingActivityForTesting(
                 DEFAULT_UI_QUIESCENCE_TIMEOUT_MS, () -> { resultLatch.countDown(); });
-        clickElement(elementName, position);
+        action.run();
 
         // Wait for any outstanding animations to finish.
         resultLatch.await();

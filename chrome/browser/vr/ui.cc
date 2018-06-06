@@ -554,7 +554,7 @@ void Ui::AcceptDoffPromptForTesting() {
   DCHECK(model_->active_modal_prompt_type != kModalPromptTypeNone);
   auto* prompt = scene_->GetUiElementByName(kExitPrompt);
   DCHECK(prompt);
-  auto* button = prompt->GetDescendantByType(kTypePromptSecondaryButton);
+  auto* button = prompt->GetDescendantByType(kTypePromptPrimaryButton);
   DCHECK(button);
   button->OnHoverEnter({0.5f, 0.5f});
   button->OnButtonDown({0.5f, 0.5f});

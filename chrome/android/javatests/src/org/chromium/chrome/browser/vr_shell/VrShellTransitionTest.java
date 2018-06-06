@@ -29,7 +29,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -40,6 +39,7 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.vr_shell.mock.MockVrDaydreamApi;
 import org.chromium.chrome.browser.vr_shell.rules.ChromeTabbedActivityVrTestRule;
+import org.chromium.chrome.browser.vr_shell.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr_shell.util.NfcSimUtils;
 import org.chromium.chrome.browser.vr_shell.util.TransitionUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrShellDelegateUtils;
@@ -370,7 +370,6 @@ public class VrShellTransitionTest {
      * Tests that attempting to start an Activity through the Activity context in VR triggers DOFF.
      */
     @Test
-    @DisabledTest(message = "https://crbug.com/831589")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @MediumTest
     public void testStartActivityTriggersDoffChromeActivity()
@@ -383,7 +382,6 @@ public class VrShellTransitionTest {
      * DOFF.
      */
     @Test
-    @DisabledTest(message = "https://crbug.com/831589")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @MediumTest
     public void testStartActivityTriggersDoffAppContext()
@@ -400,10 +398,15 @@ public class VrShellTransitionTest {
         MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
         mockApi.setExitFromVrReturnValue(false);
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
+
+        NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
+            ThreadUtils.runOnUiThreadBlocking(() -> {
+                Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
+                        context, SingleWebsitePreferences.class.getName());
+                context.startActivity(preferencesIntent);
+            });
+        });
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
-                    context, SingleWebsitePreferences.class.getName());
-            context.startActivity(preferencesIntent);
             VrShellDelegateUtils.getDelegateInstance().acceptDoffPromptForTesting();
         });
 
