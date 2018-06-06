@@ -4669,6 +4669,10 @@ crbug.com/818650 [ Linux ] fast/speech/scripted/speechrecognition-restart-onend.
 crbug.com/803774 http/tests/devtools/htxg/ [ Skip ]
 crbug.com/803774 http/tests/loading/htxg/ [ Skip ]
 
+# Signed Exchange is temporarily disabled when Network Service is enabled.
+crbug.com/849935 virtual/htxg-with-network-service/ [ Skip ]
+crbug.com/849935 virtual/htxg-origin-trial-with-network-service/ [ Skip ]
+
 # Sheriff 2018-03-22
 crbug.com/824775 [ Win Mac ] media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
 crbug.com/824775 [ Win Mac ] virtual/new-remote-playback-pipeline/media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
