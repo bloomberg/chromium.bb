@@ -431,4 +431,35 @@ TEST_F(JSONTraceExporterTest, TestEventWithPointerArgs) {
   EXPECT_EQ("0x2", trace_event->GetKnownArgAsString("foo2"));
 }
 
+TEST_F(JSONTraceExporterTest, TestEventWithConvertableArgs) {
+  CreateJSONTraceExporter("foo");
+  service()->WaitForTracingEnabled();
+  StopAndFlush();
+
+  perfetto::protos::TracePacket trace_packet_proto;
+  auto* new_trace_event =
+      trace_packet_proto.mutable_chrome_events()->add_trace_events();
+  SetTestPacketBasicData(new_trace_event);
+
+  {
+    auto* new_arg = new_trace_event->add_args();
+    new_arg->set_name("foo1");
+    new_arg->set_json_value("\"conv_value1\"");
+  }
+
+  {
+    auto* new_arg = new_trace_event->add_args();
+    new_arg->set_name("foo2");
+    new_arg->set_json_value("\"conv_value2\"");
+  }
+
+  FinalizePacket(trace_packet_proto);
+
+  service()->WaitForTracingDisabled();
+  auto* trace_event = ValidateAndGetBasicTestPacket();
+
+  EXPECT_EQ("conv_value1", trace_event->GetKnownArgAsString("foo1"));
+  EXPECT_EQ("conv_value2", trace_event->GetKnownArgAsString("foo2"));
+}
+
 }  // namespace tracing

@@ -146,6 +146,10 @@ class BASE_EXPORT TraceEvent {
   const char* arg_name(size_t index) const { return arg_names_[index]; }
   const TraceValue& arg_value(size_t index) const { return arg_values_[index]; }
 
+  const ConvertableToTraceFormat* arg_convertible_value(size_t index) const {
+    return convertable_values_[index].get();
+  }
+
 #if defined(OS_ANDROID)
   void SendToATrace();
 #endif

@@ -339,6 +339,49 @@ TEST_F(TraceEventDataSourceTest, EventWithPointerArgs) {
   EXPECT_EQ(static_cast<uintptr_t>(0xF00D), trace_args[1].pointer_value());
 }
 
+TEST_F(TraceEventDataSourceTest, EventWithConvertableArgs) {
+  static const char kArgValue1[] = "\"conv_value1\"";
+  static const char kArgValue2[] = "\"conv_value2\"";
+
+  CreateTraceEventDataSource();
+
+  int num_calls = 0;
+
+  class Convertable : public base::trace_event::ConvertableToTraceFormat {
+   public:
+    explicit Convertable(int* num_calls, const char* arg_value)
+        : num_calls_(num_calls), arg_value_(arg_value) {}
+    ~Convertable() override = default;
+
+    void AppendAsTraceFormat(std::string* out) const override {
+      (*num_calls_)++;
+      out->append(arg_value_);
+    }
+
+   private:
+    int* num_calls_;
+    const char* arg_value_;
+  };
+
+  std::unique_ptr<Convertable> conv1(new Convertable(&num_calls, kArgValue1));
+  std::unique_ptr<Convertable> conv2(new Convertable(&num_calls, kArgValue2));
+
+  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD,
+                       "foo_arg1", std::move(conv1), "foo_arg2",
+                       std::move(conv2));
+
+  EXPECT_EQ(2, num_calls);
+
+  auto trace_events = producer_client()->GetChromeTraceEvents();
+  EXPECT_EQ(trace_events.size(), 1);
+
+  auto trace_args = trace_events[0].args();
+  EXPECT_EQ(trace_args.size(), 2);
+
+  EXPECT_EQ(kArgValue1, trace_args[0].json_value());
+  EXPECT_EQ(kArgValue2, trace_args[1].json_value());
+}
+
 TEST_F(TraceEventDataSourceTest, CompleteTraceEventsIntoSeparateBeginAndEnd) {
   static const char kEventName[] = "bar";
 
