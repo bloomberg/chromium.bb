@@ -137,7 +137,7 @@ class PLATFORM_EXPORT ResourceFetcher
                           TimeTicks finish_time,
                           LoaderFinishType,
                           uint32_t inflight_keepalive_bytes,
-                          bool blocked_cross_site_document);
+                          bool should_report_corb_blocking);
   void HandleLoaderError(Resource*,
                          const ResourceError&,
                          uint32_t inflight_keepalive_bytes);

@@ -178,10 +178,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // for this response.
   bool did_service_worker_navigation_preload;
 
-  // Is used to report that cross-site document request response was blocked
-  // from entering renderer. Corresponding message will be generated in devtools
-  // console if this flag is set to true.
-  bool blocked_cross_site_document;
+  // Is used to report that a cross-origin response was blocked by Cross-Origin
+  // Read Blocking (CORB) from entering renderer. Corresponding message will be
+  // generated in devtools console if this flag is set to true.
+  bool should_report_corb_blocking;
 
   // NOTE: When adding or changing fields here, also update
   // ResourceResponse::DeepCopy in resource_response.cc.

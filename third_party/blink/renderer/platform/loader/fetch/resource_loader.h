@@ -124,7 +124,7 @@ class PLATFORM_EXPORT ResourceLoader final
                         int64_t encoded_data_length,
                         int64_t encoded_body_length,
                         int64_t decoded_body_length,
-                        bool blocked_cross_site_document) override;
+                        bool should_report_corb_blocking) override;
   void DidFail(const WebURLError&,
                int64_t encoded_data_length,
                int64_t encoded_body_length,
@@ -194,7 +194,7 @@ class PLATFORM_EXPORT ResourceLoader final
   // when the blob is finished too.
   struct DeferedFinishLoadingInfo {
     TimeTicks finish_time;
-    bool blocked_cross_site_document;
+    bool should_report_corb_blocking;
   };
   base::Optional<DeferedFinishLoadingInfo> load_did_finish_before_blob_;
 

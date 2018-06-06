@@ -212,8 +212,6 @@ void CrossSiteDocumentResourceHandler::OnResponseStarted(
     network::ResourceResponse* response,
     std::unique_ptr<ResourceController> controller) {
   has_response_started_ = true;
-  http_response_code_ =
-      response->head.headers ? response->head.headers->response_code() : 0;
 
   network::CrossOriginReadBlocking::LogAction(
       network::CrossOriginReadBlocking::Action::kResponseStarted);
@@ -388,8 +386,8 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
     // If we have some new data, ask the |analyzer_| to sniff it.
     analyzer_->SniffResponseBody(data, new_data_offset);
 
-    const bool confirmed_allowed = analyzer_->should_allow();
-    confirmed_blockable = analyzer_->should_block();
+    const bool confirmed_allowed = analyzer_->ShouldAllow();
+    confirmed_blockable = analyzer_->ShouldBlock();
     DCHECK(!(confirmed_blockable && confirmed_allowed));
 
     // If sniffing didn't yield a conclusive response, and we haven't read too
@@ -425,11 +423,12 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
                      : "null",
                  "url", request()->url().spec());
 
-    LogBlockedResponse(info, http_response_code_);
+    LogBlockedResponse(info, analyzer_->http_response_code());
 
     // Block the response and throw away the data.  Report zero bytes read.
     blocked_read_completed_ = true;
-    info->set_blocked_cross_site_document(true);
+    if (analyzer_->ShouldReportBlockedResponse())
+      info->set_should_report_corb_blocking(true);
     network::CrossOriginReadBlocking::SanitizeBlockedResponse(
         pending_response_start_);
 
@@ -545,7 +544,7 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   analyzer_ =
       std::make_unique<network::CrossOriginReadBlocking::ResponseAnalyzer>(
           *request(), response, initiator_scheme_exception);
-  if (analyzer_->should_allow())
+  if (analyzer_->ShouldAllow())
     return false;
 
   // Check if the response's site needs to have its documents protected.  By

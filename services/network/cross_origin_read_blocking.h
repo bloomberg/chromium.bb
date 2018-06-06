@@ -66,13 +66,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // the response body and SniffResponseBody decided to allow the response
     // (e.g. because none of sniffers found blockable content).  false
     // otherwise.
-    bool should_allow() const;
+    bool ShouldAllow() const;
 
     // true if either 1) ShouldBlockBasedOnHeaders decided to block the response
     // based on headers alone or 2) ShouldBlockBasedOnHeaders decided to sniff
     // the response body and SniffResponseBody confirmed that the response
     // contains blockable content.  false otherwise.
-    bool should_block() const;
+    bool ShouldBlock() const;
+
+    // true if the analyzed response should report Cross-Origin Read Blocking in
+    // a warning message written to the DevTools console.
+    bool ShouldReportBlockedResponse() const;
 
     // Whether ShouldBlockBasedOnHeaders asked to sniff the body.
     bool needs_sniffing() const {
@@ -87,6 +91,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // Value of the content-length response header if available. -1 if not
     // available.
     int64_t content_length() const { return content_length_; }
+
+    // The HTTP response code (e.g. 200 or 404) received in response to this
+    // resource request.
+    int http_response_code() const { return http_response_code_; }
 
     // Allows ResponseAnalyzer to sniff the response body.
     void SniffResponseBody(base::StringPiece data, size_t new_data_offset);
@@ -133,6 +141,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
 
     // Content length if available. -1 if not available.
     int64_t content_length_ = -1;
+
+    // The HTTP response code (e.g. 200 or 404) received in response to this
+    // resource request.
+    int http_response_code_ = 0;
 
     // The sniffers to be used.
     std::vector<std::unique_ptr<ConfirmationSniffer>> sniffers_;

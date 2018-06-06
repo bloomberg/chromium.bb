@@ -597,11 +597,11 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
             *url_request_, *response_,
             factory_params_->corb_excluded_initiator_scheme);
     is_more_corb_sniffing_needed_ = corb_analyzer_->needs_sniffing();
-    if (corb_analyzer_->should_block()) {
+    if (corb_analyzer_->ShouldBlock()) {
       DCHECK(!is_more_corb_sniffing_needed_);
       corb_analyzer_->LogBlockedResponse();
       BlockResponseForCorb();
-    } else if (corb_analyzer_->should_allow()) {
+    } else if (corb_analyzer_->ShouldAllow()) {
       DCHECK(!is_more_corb_sniffing_needed_);
       corb_analyzer_->LogAllowedResponse();
     }
@@ -709,11 +709,11 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
 
     if (is_more_corb_sniffing_needed_) {
       corb_analyzer_->SniffResponseBody(data, new_data_offset);
-      if (corb_analyzer_->should_block()) {
+      if (corb_analyzer_->ShouldBlock()) {
         corb_analyzer_->LogBlockedResponse();
         is_more_corb_sniffing_needed_ = false;
         BlockResponseForCorb();
-      } else if (corb_analyzer_->should_allow()) {
+      } else if (corb_analyzer_->ShouldAllow()) {
         corb_analyzer_->LogAllowedResponse();
         is_more_corb_sniffing_needed_ = false;
       }
@@ -802,7 +802,8 @@ void URLLoader::NotifyCompleted(int error_code) {
     status.encoded_data_length = 0;
     status.encoded_body_length = 0;
     status.decoded_body_length = 0;
-    status.blocked_cross_site_document = true;
+    status.should_report_corb_blocking =
+        corb_analyzer_->ShouldReportBlockedResponse();
   } else {
     status.error_code = error_code;
     if (error_code == net::ERR_QUIC_PROTOCOL_ERROR) {

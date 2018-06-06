@@ -29,7 +29,7 @@ ResourceResponseInfo::ResourceResponseInfo()
       effective_connection_type(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       cert_status(0),
       did_service_worker_navigation_preload(false),
-      blocked_cross_site_document(false) {}
+      should_report_corb_blocking(false) {}
 
 ResourceResponseInfo::ResourceResponseInfo(const ResourceResponseInfo& other) =
     default;

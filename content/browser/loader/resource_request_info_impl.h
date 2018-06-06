@@ -189,11 +189,11 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   void SetBlobHandles(BlobHandles blob_handles);
 
-  bool blocked_cross_site_document() const {
-    return blocked_cross_site_document_;
+  bool should_report_corb_blocking() const {
+    return should_report_corb_blocking_;
   }
-  void set_blocked_cross_site_document(bool value) {
-    blocked_cross_site_document_ = value;
+  void set_should_report_corb_blocking(bool value) {
+    should_report_corb_blocking_ = value;
   }
 
   void set_custom_cancel_reason(base::StringPiece reason) {
@@ -245,7 +245,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   scoped_refptr<network::ResourceRequestBody> body_;
   bool initiated_in_secure_context_;
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
-  bool blocked_cross_site_document_;
+  bool should_report_corb_blocking_;
   bool first_auth_attempt_;
 
   // Keeps upload body blobs alive for the duration of the request.

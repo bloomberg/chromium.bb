@@ -607,7 +607,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockHeaders) {
 
   // Verify that the response completed successfully and was blocked.
   ASSERT_EQ(net::OK, interceptor.completion_status().error_code);
-  ASSERT_TRUE(interceptor.completion_status().blocked_cross_site_document);
+  ASSERT_TRUE(interceptor.completion_status().should_report_corb_blocking);
 
   // Verify that safelisted headers have not been removed by XSDB.
   // See https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.

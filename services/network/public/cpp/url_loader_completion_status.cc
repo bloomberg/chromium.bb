@@ -33,7 +33,7 @@ bool URLLoaderCompletionStatus::operator==(
          encoded_body_length == rhs.encoded_body_length &&
          decoded_body_length == rhs.decoded_body_length &&
          cors_error_status == rhs.cors_error_status &&
-         blocked_cross_site_document == rhs.blocked_cross_site_document;
+         should_report_corb_blocking == rhs.should_report_corb_blocking;
 }
 
 }  // namespace network
