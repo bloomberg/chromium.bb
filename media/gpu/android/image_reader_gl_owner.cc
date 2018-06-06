@@ -97,9 +97,11 @@ ImageReaderGLOwner::~ImageReaderGLOwner() {
   // Now we can stop listening to new images.
   loader_.AImageReader_setImageListener(image_reader_, NULL);
 
-  // Delete the image reader. This method will return all AImage objects
-  // acquired by this reader to the system. Hence there is no need to delete
-  // the image seperately.
+  // Delete the image before closing the associated image reader.
+  if (current_image_)
+    loader_.AImage_delete(current_image_);
+
+  // Delete the image reader.
   loader_.AImageReader_delete(image_reader_);
 
   // Delete texture
