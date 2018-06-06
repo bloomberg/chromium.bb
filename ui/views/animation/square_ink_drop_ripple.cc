@@ -17,6 +17,7 @@
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -129,8 +130,10 @@ int kAnimationDurationInMs[] = {
 
 // Returns the InkDropState sub animation duration for the given |state|.
 base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
-  if (!gfx::Animation::ShouldRenderRichAnimation())
+  if (!PlatformStyle::kUseRipples ||
+      !gfx::Animation::ShouldRenderRichAnimation()) {
     return base::TimeDelta();
+  }
 
   return base::TimeDelta::FromMilliseconds(
       (InkDropRipple::UseFastAnimations()

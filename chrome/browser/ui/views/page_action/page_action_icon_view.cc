@@ -211,7 +211,7 @@ std::unique_ptr<views::InkDropRipple> PageActionIconView::CreateInkDropRipple()
     const {
   return std::make_unique<views::FloodFillInkDropRipple>(
       size(), GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
-      views::PlatformStyle::kUseRipples ? ink_drop_visible_opacity() : 0);
+      ink_drop_visible_opacity());
 }
 
 std::unique_ptr<views::InkDropHighlight>
