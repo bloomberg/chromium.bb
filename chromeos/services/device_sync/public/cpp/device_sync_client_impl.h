@@ -100,6 +100,8 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
   mojom::DeviceSyncPtr device_sync_ptr_;
   mojo::Binding<mojom::DeviceSyncObserver> binding_;
   std::unique_ptr<cryptauth::ExpiringRemoteDeviceCache> expiring_device_cache_;
+
+  bool waiting_for_local_device_metadata_ = false;
   base::Optional<std::string> local_device_id_;
 
   base::WeakPtrFactory<DeviceSyncClientImpl> weak_ptr_factory_;
