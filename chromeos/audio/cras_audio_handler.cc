@@ -1247,7 +1247,7 @@ void CrasAudioHandler::HandleHotPlugDevice(
   // device.
   if (hotplug_device.type == AUDIO_TYPE_HEADPHONE ||
       hotplug_device.type == AUDIO_TYPE_MIC) {
-    SwitchToDevice(hotplug_device, true, ACTIVATE_BY_USER);
+    SwitchToDevice(hotplug_device, true, ACTIVATE_BY_PRIORITY);
     return;
   }
 
