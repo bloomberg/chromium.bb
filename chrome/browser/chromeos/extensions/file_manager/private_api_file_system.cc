@@ -641,8 +641,7 @@ void GetFileMetadataOnIOThread(
 }
 
 // Checks if the available space of the |path| is enough for required |bytes|.
-bool CheckLocalDiskSpaceOnIOThread(const base::FilePath& path, int64_t bytes) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+bool CheckLocalDiskSpace(const base::FilePath& path, int64_t bytes) {
   return bytes <= base::SysInfo::AmountOfFreeDiskSpace(path) -
                       cryptohome::kMinFreeSpaceInBytes;
 }
@@ -722,17 +721,15 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterGetFileMetadata(
             &FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace,
             this));
   } else {
-    const bool result = BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &CheckLocalDiskSpaceOnIOThread,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(
+            &CheckLocalDiskSpace,
             file_manager::util::GetDownloadsFolderForProfile(GetProfile()),
             file_info.size),
-        base::Bind(
+        base::BindOnce(
             &FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace,
             this));
-    if (!result)
-      SendResponse(false);
   }
 }
 
