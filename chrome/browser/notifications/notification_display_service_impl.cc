@@ -71,7 +71,10 @@ NotificationPlatformBridge* GetNativeNotificationPlatformBridge() {
   if (NotificationPlatformBridgeWin::NativeNotificationEnabled())
     return g_browser_process->notification_platform_bridge();
 #elif defined(OS_CHROMEOS)
-  return g_browser_process->notification_platform_bridge();
+  if (base::FeatureList::IsEnabled(features::kNativeNotifications) ||
+      base::FeatureList::IsEnabled(features::kMash)) {
+    return g_browser_process->notification_platform_bridge();
+  }
 #else
   if (base::FeatureList::IsEnabled(features::kNativeNotifications) &&
       g_browser_process->notification_platform_bridge()) {
@@ -284,7 +287,7 @@ void NotificationDisplayServiceImpl::ProfileLoadedCallback(
 void NotificationDisplayServiceImpl::OnNotificationPlatformBridgeReady(
     bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS) && !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
   if (base::FeatureList::IsEnabled(features::kNativeNotifications)) {
     UMA_HISTOGRAM_BOOLEAN("Notifications.UsingNativeNotificationCenter",
                           success);
