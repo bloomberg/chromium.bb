@@ -45,7 +45,8 @@ public class ConnectionInfoPopup implements OnClickListener {
     private final WebContents mWebContents;
     private final int mPaddingWide, mPaddingThin;
     private final long mNativeConnectionInfoPopup;
-    private TextView mCertificateViewer, mMoreInfoLink;
+    private final CertificateViewer mCertificateViewer;
+    private TextView mCertificateViewerTextView, mMoreInfoLink;
     private ViewGroup mCertificateLayout, mDescriptionLayout;
     private Button mResetCertDecisionsButton;
     private String mLinkUrl;
@@ -53,6 +54,8 @@ public class ConnectionInfoPopup implements OnClickListener {
     private ConnectionInfoPopup(Context context, WebContents webContents) {
         mContext = context;
         mWebContents = webContents;
+
+        mCertificateViewer = new CertificateViewer(mContext);
 
         mContainer = new LinearLayout(mContext);
         mContainer.setOrientation(LinearLayout.VERTICAL);
@@ -141,15 +144,15 @@ public class ConnectionInfoPopup implements OnClickListener {
     }
 
     private void setCertificateViewer(String label) {
-        assert mCertificateViewer == null;
-        mCertificateViewer = new TextView(mContext);
-        mCertificateViewer.setText(label);
-        mCertificateViewer.setTextColor(
+        assert mCertificateViewerTextView == null;
+        mCertificateViewerTextView = new TextView(mContext);
+        mCertificateViewerTextView.setText(label);
+        mCertificateViewerTextView.setTextColor(
                 ApiCompatibilityUtils.getColor(mContext.getResources(), R.color.google_blue_700));
-        mCertificateViewer.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
-        mCertificateViewer.setOnClickListener(this);
-        mCertificateViewer.setPadding(0, mPaddingThin, 0, 0);
-        mCertificateLayout.addView(mCertificateViewer);
+        mCertificateViewerTextView.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
+        mCertificateViewerTextView.setOnClickListener(this);
+        mCertificateViewerTextView.setPadding(0, mPaddingThin, 0, 0);
+        mCertificateLayout.addView(mCertificateViewerTextView);
     }
 
     @CalledByNative
@@ -205,14 +208,14 @@ public class ConnectionInfoPopup implements OnClickListener {
         if (mResetCertDecisionsButton == v) {
             nativeResetCertDecisions(mNativeConnectionInfoPopup, mWebContents);
             mDialog.dismiss();
-        } else if (mCertificateViewer == v) {
+        } else if (mCertificateViewerTextView == v) {
             byte[][] certChain = CertificateChainHelper.getCertificateChain(mWebContents);
             if (certChain == null) {
                 // The WebContents may have been destroyed/invalidated. If so,
                 // ignore this request.
                 return;
             }
-            CertificateViewer.showCertificateChain(mContext, certChain);
+            mCertificateViewer.showCertificateChain(certChain);
         } else if (mMoreInfoLink == v) {
             mDialog.dismiss();
             try {
