@@ -10,12 +10,16 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "components/feedback/feedback_uploader.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+
+namespace identity {
+class PrimaryAccountAccessTokenFetcher;
+}  // namespace identity
+
+class GoogleServiceAuthError;
 
 namespace feedback {
 
-class FeedbackUploaderChrome : public OAuth2TokenService::Consumer,
-                               public FeedbackUploader {
+class FeedbackUploaderChrome : public FeedbackUploader {
  public:
   FeedbackUploaderChrome(
       content::BrowserContext* context,
@@ -23,18 +27,14 @@ class FeedbackUploaderChrome : public OAuth2TokenService::Consumer,
   ~FeedbackUploaderChrome() override;
 
  private:
-  // OAuth2TokenService::Consumer:
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
-
   // feedback::FeedbackUploader:
   void StartDispatchingReport() override;
   void AppendExtraHeadersToUploadRequest(net::URLFetcher* fetcher) override;
 
-  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
+  void AccessTokenAvailable(const GoogleServiceAuthError& error,
+                            const std::string& access_token);
+
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
   std::string access_token_;
 
