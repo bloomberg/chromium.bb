@@ -198,6 +198,8 @@ bool QuotaDatabase::SetHostQuota(const std::string& host,
   DCHECK_GE(quota, 0);
   if (!LazyOpen(true))
     return false;
+  if (quota == 0)
+    return DeleteHostQuota(host, type);
   if (!InsertOrReplaceHostQuota(host, type, quota))
     return false;
   ScheduleCommit();

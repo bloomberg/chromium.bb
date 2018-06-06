@@ -112,6 +112,10 @@ class QuotaDatabaseTest : public testing::Test {
     // Delete temporary storage quota.
     EXPECT_TRUE(db.DeleteHostQuota(kHost, kTemporary));
     EXPECT_FALSE(db.GetHostQuota(kHost, kTemporary, &quota));
+
+    // Delete persistent quota by setting it to zero.
+    EXPECT_TRUE(db.SetHostQuota(kHost, kPersistent, 0));
+    EXPECT_FALSE(db.GetHostQuota(kHost, kPersistent, &quota));
   }
 
   void GlobalQuota(const base::FilePath& kDbFile) {
