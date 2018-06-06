@@ -179,6 +179,7 @@ source_set("unit_tests") {
     ":secure_channel",
     ":test_support",
     "//base/test:test_support",
+    "//chromeos/services/secure_channel/public/cpp/client:unit_tests",
     "//chromeos/services/secure_channel/public/cpp/shared",
     "//chromeos/services/secure_channel/public/cpp/shared:connection_priority",
     "//chromeos/services/secure_channel/public/cpp/shared:test_support",

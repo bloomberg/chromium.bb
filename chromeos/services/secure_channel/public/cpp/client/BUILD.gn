@@ -1,0 +1,60 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("client") {
+  sources = [
+    "connection_attempt.cc",
+    "connection_attempt.h",
+    "secure_channel_client.h",
+    "secure_channel_client_impl.cc",
+    "secure_channel_client_impl.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromeos/components/proximity_auth/logging",
+    "//chromeos/services/secure_channel/public/cpp/shared",
+    "//chromeos/services/secure_channel/public/mojom",
+    "//mojo/public/cpp/bindings",
+    "//services/service_manager/public/cpp",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    ":shared",
+    "fake_secure_channel_client.cc",
+    "fake_secure_channel_client.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromeos/services/secure_channel/public/cpp/client",
+    "//chromeos/services/secure_channel/public/cpp/shared",
+    "//chromeos/services/secure_channel/public/mojom",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "secure_channel_client_impl_unittest.cc",
+  ]
+
+  deps = [
+    ":client",
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//chromeos/services/secure_channel/public/cpp/shared",
+    "//components/cryptauth",
+    "//components/cryptauth:test_support",
+    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp/test:test_support",
+    "//testing/gtest",
+  ]
+}
