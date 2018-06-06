@@ -567,11 +567,11 @@ static void build_masked_compound_no_round(
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     aom_highbd_blend_a64_d16_mask(dst, dst_stride, src0, src0_stride, src1,
                                   src1_stride, mask, block_size_wide[sb_type],
-                                  h, w, subh, subw, conv_params, xd->bd);
+                                  w, h, subw, subh, conv_params, xd->bd);
   else
     aom_lowbd_blend_a64_d16_mask(dst, dst_stride, src0, src0_stride, src1,
-                                 src1_stride, mask, block_size_wide[sb_type], h,
-                                 w, subh, subw, conv_params);
+                                 src1_stride, mask, block_size_wide[sb_type], w,
+                                 h, subw, subh, conv_params);
 }
 
 static void build_masked_compound(
@@ -585,7 +585,7 @@ static void build_masked_compound(
   const int subw = (2 << mi_size_wide_log2[sb_type]) == w;
   const uint8_t *mask = av1_get_compound_type_mask(comp_data, sb_type);
   aom_blend_a64_mask(dst, dst_stride, src0, src0_stride, src1, src1_stride,
-                     mask, block_size_wide[sb_type], h, w, subh, subw);
+                     mask, block_size_wide[sb_type], w, h, subw, subh);
 }
 
 static void build_masked_compound_highbd(
@@ -601,8 +601,8 @@ static void build_masked_compound_highbd(
   // const uint8_t *mask =
   //     av1_get_contiguous_soft_mask(wedge_index, wedge_sign, sb_type);
   aom_highbd_blend_a64_mask(dst_8, dst_stride, src0_8, src0_stride, src1_8,
-                            src1_stride, mask, block_size_wide[sb_type], h, w,
-                            subh, subw, bd);
+                            src1_stride, mask, block_size_wide[sb_type], w, h,
+                            subw, subh, bd);
 }
 
 void av1_make_masked_inter_predictor(
@@ -1196,10 +1196,10 @@ static INLINE void build_obmc_inter_pred_above(MACROBLOCKD *xd, int rel_mi_col,
 
     if (is_hbd)
       aom_highbd_blend_a64_vmask(dst, dst_stride, dst, dst_stride, tmp,
-                                 tmp_stride, mask, bh, bw, xd->bd);
+                                 tmp_stride, mask, bw, bh, xd->bd);
     else
       aom_blend_a64_vmask(dst, dst_stride, dst, dst_stride, tmp, tmp_stride,
-                          mask, bh, bw);
+                          mask, bw, bh);
   }
 }
 
@@ -1231,10 +1231,10 @@ static INLINE void build_obmc_inter_pred_left(MACROBLOCKD *xd, int rel_mi_row,
 
     if (is_hbd)
       aom_highbd_blend_a64_hmask(dst, dst_stride, dst, dst_stride, tmp,
-                                 tmp_stride, mask, bh, bw, xd->bd);
+                                 tmp_stride, mask, bw, bh, xd->bd);
     else
       aom_blend_a64_hmask(dst, dst_stride, dst, dst_stride, tmp, tmp_stride,
-                          mask, bh, bw);
+                          mask, bw, bh);
   }
 }
 
@@ -1562,7 +1562,7 @@ static void combine_interintra(INTERINTRA_MODE mode, int use_wedge_interintra,
       const int subh = 2 * mi_size_high[bsize] == bh;
       aom_blend_a64_mask(comppred, compstride, intrapred, intrastride,
                          interpred, interstride, mask, block_size_wide[bsize],
-                         bh, bw, subh, subw);
+                         bw, bh, subw, subh);
     }
     return;
   }
@@ -1570,7 +1570,7 @@ static void combine_interintra(INTERINTRA_MODE mode, int use_wedge_interintra,
   uint8_t mask[MAX_SB_SQUARE];
   build_smooth_interintra_mask(mask, bw, plane_bsize, mode);
   aom_blend_a64_mask(comppred, compstride, intrapred, intrastride, interpred,
-                     interstride, mask, bw, bh, bw, 0, 0);
+                     interstride, mask, bw, bw, bh, 0, 0);
 }
 
 static void combine_interintra_highbd(
@@ -1589,7 +1589,7 @@ static void combine_interintra_highbd(
       const int subw = 2 * mi_size_wide[bsize] == bw;
       aom_highbd_blend_a64_mask(comppred8, compstride, intrapred8, intrastride,
                                 interpred8, interstride, mask,
-                                block_size_wide[bsize], bh, bw, subh, subw, bd);
+                                block_size_wide[bsize], bw, bh, subw, subh, bd);
     }
     return;
   }
@@ -1597,7 +1597,7 @@ static void combine_interintra_highbd(
   uint8_t mask[MAX_SB_SQUARE];
   build_smooth_interintra_mask(mask, bw, plane_bsize, mode);
   aom_highbd_blend_a64_mask(comppred8, compstride, intrapred8, intrastride,
-                            interpred8, interstride, mask, bw, bh, bw, 0, 0,
+                            interpred8, interstride, mask, bw, bw, bh, 0, 0,
                             bd);
 }
 

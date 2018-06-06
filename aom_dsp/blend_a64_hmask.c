@@ -21,7 +21,7 @@
 void aom_blend_a64_hmask_c(uint8_t *dst, uint32_t dst_stride,
                            const uint8_t *src0, uint32_t src0_stride,
                            const uint8_t *src1, uint32_t src1_stride,
-                           const uint8_t *mask, int h, int w) {
+                           const uint8_t *mask, int w, int h) {
   int i, j;
 
   assert(IMPLIES(src0 == dst, src0_stride == dst_stride));
@@ -43,7 +43,7 @@ void aom_blend_a64_hmask_c(uint8_t *dst, uint32_t dst_stride,
 void aom_highbd_blend_a64_hmask_c(uint8_t *dst_8, uint32_t dst_stride,
                                   const uint8_t *src0_8, uint32_t src0_stride,
                                   const uint8_t *src1_8, uint32_t src1_stride,
-                                  const uint8_t *mask, int h, int w, int bd) {
+                                  const uint8_t *mask, int w, int h, int bd) {
   int i, j;
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst_8);
   const uint16_t *src0 = CONVERT_TO_SHORTPTR(src0_8);

@@ -36,7 +36,7 @@
 void aom_lowbd_blend_a64_d16_mask_c(
     uint8_t *dst, uint32_t dst_stride, const CONV_BUF_TYPE *src0,
     uint32_t src0_stride, const CONV_BUF_TYPE *src1, uint32_t src1_stride,
-    const uint8_t *mask, uint32_t mask_stride, int h, int w, int subh, int subw,
+    const uint8_t *mask, uint32_t mask_stride, int w, int h, int subw, int subh,
     ConvolveParams *conv_params) {
   int i, j;
   const int bd = 8;
@@ -123,7 +123,7 @@ void aom_lowbd_blend_a64_d16_mask_c(
 void aom_highbd_blend_a64_d16_mask_c(
     uint8_t *dst_8, uint32_t dst_stride, const CONV_BUF_TYPE *src0,
     uint32_t src0_stride, const CONV_BUF_TYPE *src1, uint32_t src1_stride,
-    const uint8_t *mask, uint32_t mask_stride, int h, int w, int subh, int subw,
+    const uint8_t *mask, uint32_t mask_stride, int w, int h, int subw, int subh,
     ConvolveParams *conv_params, const int bd) {
   const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
   const int round_offset = (1 << (offset_bits - conv_params->round_1)) +
@@ -227,8 +227,8 @@ void aom_highbd_blend_a64_d16_mask_c(
 void aom_blend_a64_mask_c(uint8_t *dst, uint32_t dst_stride,
                           const uint8_t *src0, uint32_t src0_stride,
                           const uint8_t *src1, uint32_t src1_stride,
-                          const uint8_t *mask, uint32_t mask_stride, int h,
-                          int w, int subh, int subw) {
+                          const uint8_t *mask, uint32_t mask_stride, int w,
+                          int h, int subw, int subh) {
   int i, j;
 
   assert(IMPLIES(src0 == dst, src0_stride == dst_stride));
@@ -285,7 +285,7 @@ void aom_highbd_blend_a64_mask_c(uint8_t *dst_8, uint32_t dst_stride,
                                  const uint8_t *src0_8, uint32_t src0_stride,
                                  const uint8_t *src1_8, uint32_t src1_stride,
                                  const uint8_t *mask, uint32_t mask_stride,
-                                 int h, int w, int subh, int subw, int bd) {
+                                 int w, int h, int subw, int subh, int bd) {
   int i, j;
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst_8);
   const uint16_t *src0 = CONVERT_TO_SHORTPTR(src0_8);

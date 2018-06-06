@@ -143,7 +143,7 @@ class BlendA64MaskTest : public FunctionEquivalenceTest<BlendA64Func> {
 typedef void (*F8B)(uint8_t *dst, uint32_t dst_stride, const uint8_t *src0,
                     uint32_t src0_stride, const uint8_t *src1,
                     uint32_t src1_stride, const uint8_t *mask,
-                    uint32_t mask_stride, int h, int w, int suby, int subx);
+                    uint32_t mask_stride, int w, int h, int subx, int suby);
 typedef libaom_test::FuncParam<F8B> TestFuncs;
 
 class BlendA64MaskTest8B : public BlendA64MaskTest<F8B, uint8_t, uint8_t> {
@@ -151,11 +151,11 @@ class BlendA64MaskTest8B : public BlendA64MaskTest<F8B, uint8_t, uint8_t> {
   void Execute(const uint8_t *p_src0, const uint8_t *p_src1) {
     params_.ref_func(dst_ref_ + dst_offset_, dst_stride_, p_src0 + src0_offset_,
                      src0_stride_, p_src1 + src1_offset_, src1_stride_, mask_,
-                     kMaxMaskWidth, h_, w_, suby_, subx_);
+                     kMaxMaskWidth, w_, h_, subx_, suby_);
     ASM_REGISTER_STATE_CHECK(params_.tst_func(
         dst_tst_ + dst_offset_, dst_stride_, p_src0 + src0_offset_,
         src0_stride_, p_src1 + src1_offset_, src1_stride_, mask_, kMaxMaskWidth,
-        h_, w_, suby_, subx_));
+        w_, h_, subx_, suby_));
   }
 };
 
@@ -205,7 +205,7 @@ INSTANTIATE_TEST_CASE_P(SSE4_1, BlendA64MaskTest8B,
 typedef void (*F8B_D16)(uint8_t *dst, uint32_t dst_stride, const uint16_t *src0,
                         uint32_t src0_stride, const uint16_t *src1,
                         uint32_t src1_stride, const uint8_t *mask,
-                        uint32_t mask_stride, int h, int w, int suby, int subx,
+                        uint32_t mask_stride, int w, int h, int subx, int suby,
                         ConvolveParams *conv_params);
 typedef libaom_test::FuncParam<F8B_D16> TestFuncs_d16;
 
@@ -221,11 +221,11 @@ class BlendA64MaskTest8B_d16
     conv_params.round_1 = COMPOUND_ROUND1_BITS;
     params_.ref_func(dst_ref_ + dst_offset_, dst_stride_, p_src0 + src0_offset_,
                      src0_stride_, p_src1 + src1_offset_, src1_stride_, mask_,
-                     kMaxMaskWidth, h_, w_, suby_, subx_, &conv_params);
+                     kMaxMaskWidth, w_, h_, subx_, suby_, &conv_params);
     ASM_REGISTER_STATE_CHECK(params_.tst_func(
         dst_tst_ + dst_offset_, dst_stride_, p_src0 + src0_offset_,
         src0_stride_, p_src1 + src1_offset_, src1_stride_, mask_, kMaxMaskWidth,
-        h_, w_, suby_, subx_, &conv_params));
+        w_, h_, subx_, suby_, &conv_params));
   }
 };
 
@@ -277,7 +277,7 @@ INSTANTIATE_TEST_CASE_P(
 typedef void (*FHBD)(uint8_t *dst, uint32_t dst_stride, const uint8_t *src0,
                      uint32_t src0_stride, const uint8_t *src1,
                      uint32_t src1_stride, const uint8_t *mask,
-                     uint32_t mask_stride, int h, int w, int suby, int subx,
+                     uint32_t mask_stride, int w, int h, int subx, int suby,
                      int bd);
 typedef libaom_test::FuncParam<FHBD> TestFuncsHBD;
 
@@ -287,12 +287,12 @@ class BlendA64MaskTestHBD : public BlendA64MaskTest<FHBD, uint16_t, uint16_t> {
     params_.ref_func(CONVERT_TO_BYTEPTR(dst_ref_ + dst_offset_), dst_stride_,
                      CONVERT_TO_BYTEPTR(p_src0 + src0_offset_), src0_stride_,
                      CONVERT_TO_BYTEPTR(p_src1 + src1_offset_), src1_stride_,
-                     mask_, kMaxMaskWidth, h_, w_, suby_, subx_, bit_depth_);
+                     mask_, kMaxMaskWidth, w_, h_, subx_, suby_, bit_depth_);
     ASM_REGISTER_STATE_CHECK(params_.tst_func(
         CONVERT_TO_BYTEPTR(dst_tst_ + dst_offset_), dst_stride_,
         CONVERT_TO_BYTEPTR(p_src0 + src0_offset_), src0_stride_,
         CONVERT_TO_BYTEPTR(p_src1 + src1_offset_), src1_stride_, mask_,
-        kMaxMaskWidth, h_, w_, suby_, subx_, bit_depth_));
+        kMaxMaskWidth, w_, h_, subx_, suby_, bit_depth_));
   }
 
   int bit_depth_;
@@ -361,8 +361,8 @@ INSTANTIATE_TEST_CASE_P(
 typedef void (*FHBD_D16)(uint8_t *dst, uint32_t dst_stride,
                          const CONV_BUF_TYPE *src0, uint32_t src0_stride,
                          const CONV_BUF_TYPE *src1, uint32_t src1_stride,
-                         const uint8_t *mask, uint32_t mask_stride, int h,
-                         int w, int suby, int subx, ConvolveParams *conv_params,
+                         const uint8_t *mask, uint32_t mask_stride, int w,
+                         int h, int subx, int suby, ConvolveParams *conv_params,
                          const int bd);
 typedef libaom_test::FuncParam<FHBD_D16> TestFuncsHBD_d16;
 
@@ -380,13 +380,13 @@ class BlendA64MaskTestHBD_d16
 
     params_.ref_func(CONVERT_TO_BYTEPTR(dst_ref_ + dst_offset_), dst_stride_,
                      p_src0 + src0_offset_, src0_stride_, p_src1 + src1_offset_,
-                     src1_stride_, mask_, kMaxMaskWidth, h_, w_, suby_, subx_,
+                     src1_stride_, mask_, kMaxMaskWidth, w_, h_, subx_, suby_,
                      &conv_params, bit_depth_);
     if (params_.tst_func) {
       ASM_REGISTER_STATE_CHECK(params_.tst_func(
           CONVERT_TO_BYTEPTR(dst_tst_ + dst_offset_), dst_stride_,
           p_src0 + src0_offset_, src0_stride_, p_src1 + src1_offset_,
-          src1_stride_, mask_, kMaxMaskWidth, h_, w_, suby_, subx_,
+          src1_stride_, mask_, kMaxMaskWidth, w_, h_, subx_, suby_,
           &conv_params, bit_depth_));
     }
   }
