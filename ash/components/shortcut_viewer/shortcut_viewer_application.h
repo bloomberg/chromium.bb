@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
@@ -37,6 +38,10 @@ class ShortcutViewerApplication : public service_manager::Service,
 
   // ui::InputDeviceEventObserver:
   void OnDeviceListsComplete() override;
+
+  // Timestamp of the user gesture (e.g. Ctrl-Shift-/ keystroke) that triggered
+  // showing the window. Used for metrics.
+  base::TimeTicks user_gesture_time_;
 
   std::unique_ptr<views::AuraInit> aura_init_;
   std::unique_ptr<LastWindowClosedObserver> last_window_closed_observer_;
