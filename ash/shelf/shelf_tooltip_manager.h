@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_observer.h"
+#include "ash/shelf/shelf_tooltip_bubble_base.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -14,7 +15,6 @@
 #include "ui/views/pointer_watcher.h"
 
 namespace views {
-class BubbleDialogDelegateView;
 class View;
 }
 
@@ -72,7 +72,7 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
   base::OneShotTimer timer_;
 
   ShelfView* shelf_view_;
-  views::BubbleDialogDelegateView* bubble_;
+  ShelfTooltipBubbleBase* bubble_;
 
   base::WeakPtrFactory<ShelfTooltipManager> weak_factory_;
 

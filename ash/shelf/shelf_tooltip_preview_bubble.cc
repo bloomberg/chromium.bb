@@ -23,7 +23,7 @@ ShelfTooltipPreviewBubble::ShelfTooltipPreviewBubble(
     views::View* anchor,
     views::BubbleBorder::Arrow arrow,
     const std::vector<aura::Window*>& windows)
-    : views::BubbleDialogDelegateView(anchor, arrow) {
+    : ShelfTooltipBubbleBase(anchor, arrow) {
   // The window previews and titles.
   for (auto* window : windows) {
     wm::WindowMirrorView* preview = new wm::WindowMirrorView(
@@ -39,10 +39,6 @@ ShelfTooltipPreviewBubble::ShelfTooltipPreviewBubble(
   SetStyling();
   PerformLayout();
 
-  // Place the bubble in the same display as the anchor.
-  set_parent_window(
-      anchor_widget()->GetNativeWindow()->GetRootWindow()->GetChildById(
-          kShellWindowId_SettingBubbleContainer));
   set_margins(gfx::Insets(kTooltipPadding, kTooltipPadding));
   views::BubbleDialogDelegateView::CreateBubble(this);
   // This must be done after creating the bubble (a segmentation fault happens
@@ -56,8 +52,6 @@ void ShelfTooltipPreviewBubble::SetStyling() {
   const ui::NativeTheme* theme = anchor_widget()->GetNativeTheme();
   SkColor background_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipBackground);
-  set_color(background_color);
-
   for (auto* title : titles_) {
     title->SetEnabledColor(
         theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipText));
@@ -110,10 +104,6 @@ gfx::Size ShelfTooltipPreviewBubble::CalculatePreferredSize() const {
     return BubbleDialogDelegateView::CalculatePreferredSize();
   }
   return gfx::Size(width_, height_);
-}
-
-int ShelfTooltipPreviewBubble::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 }  // namespace ash

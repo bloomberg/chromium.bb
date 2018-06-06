@@ -7,17 +7,15 @@
 
 #include <vector>
 
-#include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shelf/shelf_tooltip_bubble_base.h"
 #include "ash/wm/window_mirror_view.h"
 #include "ui/aura/window.h"
-#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/label.h"
 
 namespace ash {
 
 // The implementation of tooltip bubbles for the shelf item.
-class ASH_EXPORT ShelfTooltipPreviewBubble
-    : public views::BubbleDialogDelegateView {
+class ASH_EXPORT ShelfTooltipPreviewBubble : public ShelfTooltipBubbleBase {
  public:
   ShelfTooltipPreviewBubble(views::View* anchor,
                             views::BubbleBorder::Arrow arrow,
@@ -30,7 +28,6 @@ class ASH_EXPORT ShelfTooltipPreviewBubble
 
   // BubbleDialogDelegateView overrides:
   gfx::Size CalculatePreferredSize() const override;
-  int GetDialogButtons() const override;
 
   // The window previews that this tooltip is meant to display.
   std::vector<wm::WindowMirrorView*> previews_;
