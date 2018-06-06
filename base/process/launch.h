@@ -24,7 +24,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #elif defined(OS_FUCHSIA)
-#include <launchpad/launchpad.h>
+#include <fdio/spawn.h>
 #include <zircon/types.h>
 #endif
 
@@ -187,28 +187,23 @@ struct BASE_EXPORT LaunchOptions {
   zx_handle_t job_handle = ZX_HANDLE_INVALID;
 
   // Specifies additional handles to transfer (not duplicate) to the child
-  // process. The handles remain valid in this process if launch fails.
-  // Each entry is an <id,handle> pair, with an |id| created using the PA_HND()
-  // macro. The child retrieves the handle |zx_get_startup_handle(id)|.
+  // process. Each entry is an <id,handle> pair, with an |id| created using the
+  // PA_HND() macro. The child retrieves the handle |zx_get_startup_handle(id)|.
+  // The supplied handles are consumed by LaunchProcess() even on failure.
   HandlesToTransferVector handles_to_transfer;
 
-  // If set, specifies which capabilities should be granted (cloned) to the
-  // child process.
-  // A zero value indicates that the child process will receive
-  // no capabilities.
-  // By default the child will inherit the same capabilities, job, and CWD
-  // from the parent process.
-  uint32_t clone_flags =
-      LP_CLONE_FDIO_NAMESPACE | LP_CLONE_DEFAULT_JOB | LP_CLONE_FDIO_STDIO;
+  // Specifies which basic capabilities to grant to the child process.
+  // By default the child process will receive the caller's complete namespace,
+  // access to the current base::fuchsia::DefaultJob(), handles for stdio and
+  // access to the dynamic library loader.
+  // Note that the child is always provided access to the loader service.
+  uint32_t spawn_flags = FDIO_SPAWN_CLONE_NAMESPACE | FDIO_SPAWN_CLONE_STDIO |
+                         FDIO_SPAWN_CLONE_JOB;
 
-  // Specifies the namespace paths which are to be cloned in the child process'
-  // namespace. If left unset, the child process will be launched with an empty
-  // namespace.
-  // This flag allows the parent to pass only the bare minimum OS capabilities
-  // to the child process, so that the potential attack surface is reduced in
-  // case child process is compromised.
-  // Cannot be combined with the clone flag LP_CLONE_FDIO_NAMESPACE, which is
-  // equivalent to cloning every path.
+  // Specifies paths to clone from the calling process' namespace into that of
+  // the child process. If |paths_to_map| is empty then the process will receive
+  // either a full copy of the parent's namespace, or an empty one, depending on
+  // whether FDIO_SPAWN_CLONE_NAMESPACE is set.
   std::vector<FilePath> paths_to_map;
 #endif  // defined(OS_FUCHSIA)
 

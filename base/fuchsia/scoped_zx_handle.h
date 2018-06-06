@@ -24,7 +24,7 @@ struct ScopedZxHandleTraits {
   static zx_handle_t InvalidValue() { return ZX_HANDLE_INVALID; }
   static void Free(zx_handle_t object) {
     zx_status_t status = zx_handle_close(object);
-    ZX_CHECK(status == ZX_OK, status) << "zx_handle_close";
+    ZX_CHECK(status == ZX_OK, status) << "zx_handle_close: " << object;
   }
 };
 

@@ -44,6 +44,7 @@ fuchsia_sdk_pkg("fdio") {
     "include/fdio/private.h",
     "include/fdio/remoteio.h",
     "include/fdio/socket.h",
+    "include/fdio/spawn.h",
     "include/fdio/util.h",
     "include/fdio/vfs.h",
     "include/fdio/watcher.h",
@@ -192,6 +193,7 @@ fuchsia_sdk_fidl_pkg("input") {
   ]
 }
 
+# TODO(https://crbug.com/848028): Remove this once no dependencies need it.
 fuchsia_sdk_pkg("launchpad") {
   sources = [
     "include/launchpad/launchpad.h",

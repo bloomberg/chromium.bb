@@ -1400,12 +1400,11 @@ jumbo_component("base") {
     # TODO(https://crbug.com/841171): Move these back to |deps|.
     public_deps += [
       "//third_party/fuchsia-sdk:async",
-      "//third_party/fuchsia-sdk:launchpad",
+      "//third_party/fuchsia-sdk:fdio",
     ]
 
     deps += [
       "//third_party/fuchsia-sdk:async_default",
-      "//third_party/fuchsia-sdk:fdio",
       "//third_party/fuchsia-sdk:fidl",
       "//third_party/fuchsia-sdk:svc",
       "//third_party/fuchsia-sdk:zx",

@@ -248,7 +248,7 @@ TEST_F(ProcessUtilTest, SelectivelyClonedDir) {
 
   LaunchOptions options;
   options.paths_to_map.push_back(base::FilePath("/tmp"));
-  options.clone_flags = LP_CLONE_FDIO_STDIO;
+  options.spawn_flags = FDIO_SPAWN_CLONE_STDIO;
 
   Process process(SpawnChildWithOptions("CheckTmpFileExists", options));
   ASSERT_TRUE(process.IsValid());
@@ -271,7 +271,7 @@ TEST_F(ProcessUtilTest, CloneAlternateDir) {
   LaunchOptions options;
   options.paths_to_map.push_back(base::FilePath("/tmp"));
   options.paths_to_map.push_back(base::FilePath("/data"));
-  options.clone_flags = LP_CLONE_FDIO_STDIO;
+  options.spawn_flags = FDIO_SPAWN_CLONE_STDIO;
 
   Process process(SpawnChildWithOptions("CheckTmpFileExists", options));
   ASSERT_TRUE(process.IsValid());
@@ -283,6 +283,54 @@ TEST_F(ProcessUtilTest, CloneAlternateDir) {
   EXPECT_EQ(1, exit_code);
 }
 
+TEST_F(ProcessUtilTest, HandlesToTransferClosedOnSpawnFailure) {
+  ScopedZxHandle handles[2];
+  zx_status_t result =
+      zx_channel_create(0, handles[0].receive(), handles[1].receive());
+  ZX_CHECK(ZX_OK == result, result) << "zx_channel_create";
+
+  LaunchOptions options;
+  options.handles_to_transfer.push_back({0, handles[0].get()});
+
+  // Launch a non-existent binary, causing fdio_spawn() to fail.
+  CommandLine command_line(FilePath(
+      FILE_PATH_LITERAL("💩magical_filename_that_will_never_exist_ever")));
+  Process process(LaunchProcess(command_line, options));
+  ASSERT_FALSE(process.IsValid());
+
+  // If LaunchProcess did its job then handles[0] is no longer valid, and
+  // handles[1] should observe a channel-closed signal.
+  EXPECT_EQ(
+      zx_object_wait_one(handles[1].get(), ZX_CHANNEL_PEER_CLOSED, 0, nullptr),
+      ZX_OK);
+  EXPECT_EQ(ZX_ERR_BAD_HANDLE, zx_handle_close(handles[0].get()));
+  ignore_result(handles[0].release());
+}
+
+TEST_F(ProcessUtilTest, HandlesToTransferClosedOnBadPathToMapFailure) {
+  ScopedZxHandle handles[2];
+  zx_status_t result =
+      zx_channel_create(0, handles[0].receive(), handles[1].receive());
+  ZX_CHECK(ZX_OK == result, result) << "zx_channel_create";
+
+  LaunchOptions options;
+  options.handles_to_transfer.push_back({0, handles[0].get()});
+  options.spawn_flags = options.spawn_flags & ~FDIO_SPAWN_CLONE_NAMESPACE;
+  options.paths_to_map.emplace_back("💩magical_path_that_will_never_exist_ever");
+
+  // LaunchProces should fail to open() the path_to_map, and fail before
+  // fdio_spawn().
+  Process process(LaunchProcess(CommandLine(FilePath()), options));
+  ASSERT_FALSE(process.IsValid());
+
+  // If LaunchProcess did its job then handles[0] is no longer valid, and
+  // handles[1] should observe a channel-closed signal.
+  EXPECT_EQ(
+      zx_object_wait_one(handles[1].get(), ZX_CHANNEL_PEER_CLOSED, 0, nullptr),
+      ZX_OK);
+  EXPECT_EQ(ZX_ERR_BAD_HANDLE, zx_handle_close(handles[0].get()));
+  ignore_result(handles[0].release());
+}
 #endif  // defined(OS_FUCHSIA)
 
 // On Android SpawnProcess() doesn't use LaunchProcess() and doesn't support
