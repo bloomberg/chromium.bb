@@ -525,21 +525,13 @@ IN_PROC_BROWSER_TEST_F(IsolateOriginsPrintBrowserTest, PrintIsolatedSubframe) {
 }
 
 // Printing preview a webpage.
-// Test that we won't use oopif printing by default, unless the
-// test is run with site-per-process flag enabled.
+// Test that we use oopif printing by default.
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, RegularPrinting) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess) ||
-      base::FeatureList::IsEnabled(
-          printing::features::kUsePdfCompositorServiceForPrint)) {
-    EXPECT_TRUE(IsOopifEnabled());
-  } else {
-    EXPECT_FALSE(IsOopifEnabled());
-  }
+  EXPECT_TRUE(IsOopifEnabled());
 }
 
 // Printing preview a webpage with isolate-origins enabled.

@@ -8,7 +8,7 @@ namespace printing {
 namespace features {
 
 const base::Feature kUsePdfCompositorServiceForPrint{
-    "UsePdfCompositorServiceForPrint", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UsePdfCompositorServiceForPrint", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace printing
