@@ -91,6 +91,7 @@
 <translation id="2761704814324807722">Vrstica stanja, čas: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Vnovično vzpostavljanje povezave z omrežjem <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + iskanje</translation>
+<translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2819276065543622893">Zdaj boste odjavljeni.</translation>
 <translation id="2825619548187458965">Polica</translation>
 <translation id="2844169650293029770">Naprava USB-C (vrata levo spredaj)</translation>
@@ -118,6 +119,7 @@
 <translation id="3236488194889173876">Mobilno omrežje ni na voljo</translation>
 <translation id="3294437725009624529">Gost</translation>
 <translation id="332587331255250389">Zamenjajte baterijo</translation>
+<translation id="3351879221545518001">Trenutno predvajate vsebino zaslona.</translation>
 <translation id="3364721542077212959">Orodja pisala</translation>
 <translation id="3368922792935385530">Povezano</translation>
 <translation id="3371140690572404006">Naprava USB-C (vrata desno spredaj)</translation>
@@ -172,6 +174,7 @@
 <translation id="4527045527269911712">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi dovoljenje za seznanjanje.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> do napolnjenosti</translation>
 <translation id="4544944664594876241">Bližnjica za zaklepanje zaslona je spremenjena. Uporabite <ph name="NEW_SHORTCUT" /> namesto <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4564869809620998694">Storitev za pisave</translation>
 <translation id="4570957409596482333">Gumb za »Izberite in poslušajte«</translation>
 <translation id="4659419629803378708">Omogočen je ChromeVox</translation>
 <translation id="4776917500594043016">Geslo za <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -208,11 +211,13 @@
 <translation id="5744083938413354016">Vlečenje z dotikom</translation>
 <translation id="5777841717266010279">Želite ustaviti skupno rabo zaslona?</translation>
 <translation id="57838592816432529">Izklopi zvok</translation>
+<translation id="5805697420284793859">Upravitelj oken</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">Dodaj osebo</translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
 <translation id="5895138241574237353">Znova zaženi</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
+<translation id="5911533659001334206">Pregledovalnik bližnjic</translation>
 <translation id="5916664084637901428">Vklopljeno</translation>
 <translation id="5927132638760172455">Predvajanje na neznanem sprejemniku</translation>
 <translation id="5947494881799873997">Razveljavi</translation>
@@ -251,6 +256,7 @@
 <translation id="6521655319214113338">Vnos z rokopisom</translation>
 <translation id="6528179044667508675">Ne moti</translation>
 <translation id="6537270692134705506">Zajem zaslona</translation>
+<translation id="6542521951477560771">Predvajanje v napravi <ph name="RECEIVER_NAME" /></translation>
 <translation id="6585808820553845416">Seja se konča čez <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tipka za iskanje + Shift + K</translation>
 <translation id="6650933572246256093">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi vaše dovoljenje za seznanjanje. V napravi vnesite to geslo: <ph name="PASSKEY" /></translation>
@@ -262,6 +268,8 @@
 <translation id="6715542151869432661">Ni mobilnih naprav.</translation>
 <translation id="671928215901716392">Zakleni zaslon</translation>
 <translation id="6723839937902243910">Napajanje</translation>
+<translation id="6725073593266469338">Storitev za uporabniški vmesnik</translation>
+<translation id="6751826523481687655">Sledenje učinkovitosti delovanja je vklopljeno</translation>
 <translation id="6785414152754474415">Napolnjenost akumulatorja: <ph name="PERCENTAGE" /> % – polnjenje še poteka.</translation>
 <translation id="6803622936009808957">Zaslonov ni bilo mogoče zrcaliti, ker ni bilo najdene nobene podprte ločljivosti. Uporabljeno je razširjeno namizje.</translation>
 <translation id="6820676911989879663">Čas za odmor!</translation>
@@ -326,6 +334,7 @@
 <translation id="8351131234907093545">Ustvarjanje zapiska</translation>
 <translation id="8392451568018454956">Meni z možnostmi za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Nastavitve</translation>
+<translation id="8431190899827883166">Prikaz dotikov</translation>
 <translation id="8433186206711564395">Omrežne nastavitve</translation>
 <translation id="8433977262951327081">Bližnjica za prikaz oblačka menija z možnostmi vnosa na polici se je spremenila. Namesto <ph name="OLD_SHORTCUT" /> uporabite <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="8452135315243592079">Ni kartice SIM</translation>
@@ -339,6 +348,7 @@
 <translation id="8652175077544655965">Zapiranje nastavitev</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Priključen je nizkoenergijski polnilnik</translation>
+<translation id="8683506306463609433">Sledenje učinkovitosti delovanja je aktivno</translation>
 <translation id="8734991477317290293">Morda poskuša beležiti vse, kar natipkate</translation>
 <translation id="8809737090443522491">Vnesite ime aplikacije ali dokumenta</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
@@ -351,7 +361,9 @@
 <translation id="8921624153894383499">Pomočnik Google ne podpira tega jezika.</translation>
 <translation id="8938800817013097409">Naprava USB-C (vrata desno zadaj)</translation>
 <translation id="8940956008527784070">Akumulator je skoraj prazen (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8984179138335769204">Hitri zagon</translation>
 <translation id="8995603266996330174">Upravljavec: <ph name="DOMAIN" /></translation>
+<translation id="9033907480196064950">Trenutno predvajate <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon je v uporabi.</translation>
@@ -367,4 +379,5 @@
 <translation id="923686485342484400">Dvakrat pritisnite Control Shift Q, če se želite odjaviti.</translation>
 <translation id="945522503751344254">Pošlji povratne informacije</translation>
 <translation id="98515147261107953">Ležeče</translation>
+<translation id="995927048686010764">Samodejni klik</translation>
 </translationbundle>

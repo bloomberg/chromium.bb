@@ -146,6 +146,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="2416512023405990736">Märkimata ruut</translation>
 <translation id="2417569100218200841">Sisu teave</translation>
 <translation id="2417948780551741035">Järelmärkused</translation>
+<translation id="2421113964388408478">Kustutamine</translation>
 <translation id="2422937916923936891">Menüü-üksuse märkeruut</translation>
 <translation id="2428534162001909979">Käsumenüüd</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -179,6 +180,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">heli</translation>
 <translation id="2732718972699418926">AM</translation>
+<translation id="2737520612859577214">Ülaindeksi lõpp</translation>
 <translation id="2749275490991666823">Märgitud</translation>
 <translation id="27527859628328957">Liigu järgmise fookustatud üksuse juurde</translation>
 <translation id="276402504937943375">sisukord</translation>
@@ -203,6 +205,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="288178314850623291">Teatud elementide vahelejätmiseks kasutage hüppekäske. Päiste hulgas edasihüppamiseks vajutage otsinguklahvi ja klahvi H, tagasihüppamiseks otsinguklahvi, tõstuklahvi ja klahvi H.</translation>
 <translation id="2894654529758326923">Teave</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{vasak loogeline sulg}other{# vasakut loogelist sulgu}}</translation>
+<translation id="2909478709401302630">Ülaindeksi algus</translation>
 <translation id="2911433807131383493">ChromeVoxi õpetuse avamine</translation>
 <translation id="2932083475399492303">Vahetab struktuurse ja paigutuse joone vahel</translation>
 <translation id="2944762337049891859">Lehte loetakse pärast laadimise lõpetamist automaatselt.</translation>
@@ -384,6 +387,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="4148180433151187540">{COUNT,plural, =1{parem loogeline sulg}other{# paremat loogelist sulgu}}</translation>
 <translation id="4158704014418536539">Tõstutundlik.</translation>
 <translation id="4161663686871496107">ChromeVoxi kõnena esitatav tagasiside on valmis</translation>
+<translation id="4166192625054637755">Alaindeksi lõpp</translation>
 <translation id="4173994908659439270">Järgmist muudetavat tekstivälja ei ole.</translation>
 <translation id="4176463684765177261">Keelatud</translation>
 <translation id="4188530942454211480">Eelmine lause</translation>
@@ -423,6 +427,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="4476183483923481720">uus rida</translation>
 <translation id="4482330759234983253">Eelmine tabel</translation>
 <translation id="4491109536499578614">Image</translation>
+<translation id="4505167975768625962">Lisamine</translation>
 <translation id="4517854969512651305">Väärtuse suurendamine</translation>
 <translation id="4529987814483543472">Klassikaline klahvitabel</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{kaldkriips}other{# kaldkriipsu}}</translation>
@@ -527,6 +532,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Tagasilink</translation>
+<translation id="5350654862897073517">Alaindeksi algus</translation>
 <translation id="536031132345979795">Liigub pideva lugemise ajal tagasi</translation>
 <translation id="5368000168321181111">Helisignaalid on väljas</translation>
 <translation id="5374320867641260420">Järgmist nuppu ei ole.</translation>

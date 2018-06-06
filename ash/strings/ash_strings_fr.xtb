@@ -91,6 +91,7 @@
 <translation id="2761704814324807722">Barre d'état – Heure : <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Reconnexion à <ph name="NAME" />…</translation>
 <translation id="2792498699870441125">Alt + Recherche</translation>
+<translation id="2805756323405976993">Applications</translation>
 <translation id="2819276065543622893">Vous allez être déconnecté maintenant.</translation>
 <translation id="2825619548187458965">Étagère</translation>
 <translation id="2844169650293029770">Appareil USB de type C (port situé sur la gauche de l'appareil, à l'avant)</translation>
@@ -118,6 +119,7 @@
 <translation id="3236488194889173876">Aucun réseau mobile disponible</translation>
 <translation id="3294437725009624529">Invité</translation>
 <translation id="332587331255250389">Veuillez remplacer la batterie</translation>
+<translation id="3351879221545518001">Vous êtes actuellement en train de caster l'écran.</translation>
 <translation id="3364721542077212959">Outils de stylet</translation>
 <translation id="3368922792935385530">Connecté</translation>
 <translation id="3371140690572404006">Appareil USB de type C (port situé sur la droite de l'appareil, à l'avant)</translation>
@@ -173,6 +175,7 @@
 <translation id="4527045527269911712">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> avant charge complète</translation>
 <translation id="4544944664594876241">Le raccourci permettant de verrouiller l'écran a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
+<translation id="4564869809620998694">Service de gestion des polices</translation>
 <translation id="4570957409596482333">Bouton "Sélectionner pour prononcer"</translation>
 <translation id="4659419629803378708">ChromeVox activé</translation>
 <translation id="4776917500594043016">Mot de passe de <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -209,11 +212,13 @@
 <translation id="5744083938413354016">Déplacement tactile</translation>
 <translation id="5777841717266010279">Arrêter le partage d'écran ?</translation>
 <translation id="57838592816432529">Couper le son</translation>
+<translation id="5805697420284793859">Gestionnaire de fenêtres</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">Ajouter une personne</translation>
 <translation id="5860033963881614850">Désactivé</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
 <translation id="5901316534475909376">Maj+Échap</translation>
+<translation id="5911533659001334206">Visionneuse de raccourcis</translation>
 <translation id="5916664084637901428">Activé</translation>
 <translation id="5927132638760172455">Destinataire de la diffusion inconnu</translation>
 <translation id="5947494881799873997">Rétablir</translation>
@@ -252,6 +257,7 @@
 <translation id="6521655319214113338">Écriture manuscrite</translation>
 <translation id="6528179044667508675">Ne pas déranger</translation>
 <translation id="6537270692134705506">Capturer l'écran</translation>
+<translation id="6542521951477560771">Diffusion vers <ph name="RECEIVER_NAME" />…</translation>
 <translation id="6585808820553845416">Fin de la session dans <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="6627638273713273709">Rechercher+Maj+K</translation>
 <translation id="6650933572246256093">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Veuillez saisir le code d'authentification suivant sur l'appareil : <ph name="PASSKEY" />.</translation>
@@ -263,6 +269,8 @@
 <translation id="6715542151869432661">Aucun appareil mobile détecté.</translation>
 <translation id="671928215901716392">Verrouillage d'écran</translation>
 <translation id="6723839937902243910">Alimentation</translation>
+<translation id="6725073593266469338">Service de gestion de l'interface utilisateur</translation>
+<translation id="6751826523481687655">Le suivi des performances et activé</translation>
 <translation id="6785414152754474415">La batterie est chargée à <ph name="PERCENTAGE" /> % et en charge.</translation>
 <translation id="6803622936009808957">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé à la place.</translation>
 <translation id="6820676911989879663">Faites une pause !</translation>
@@ -327,6 +335,7 @@
 <translation id="8351131234907093545">Créer une note</translation>
 <translation id="8392451568018454956">Menu "Options" de l'adresse e-mail <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Paramètres</translation>
+<translation id="8431190899827883166">Afficher les éléments sélectionnés</translation>
 <translation id="8433186206711564395">Paramètres réseau</translation>
 <translation id="8433977262951327081">Le raccourci pour afficher l'info-bulle du menu des options de saisie dans l'étagère a changé. Veuillez utiliser <ph name="NEW_SHORTCUT" /> au lieu de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8452135315243592079">Carte SIM manquante</translation>
@@ -340,6 +349,7 @@
 <translation id="8652175077544655965">Fermer les paramètres</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Chargeur de faible puissance connecté</translation>
+<translation id="8683506306463609433">Suivi des performances actif</translation>
 <translation id="8734991477317290293">Il est possible que cet autre clavier tente d'enregistrer les touches sur lesquelles vous appuyez afin de vous soutirer des informations</translation>
 <translation id="8809737090443522491">Saisissez le nom d'une application ou d'un document</translation>
 <translation id="8814190375133053267">Wi-Fi </translation>
@@ -352,7 +362,9 @@
 <translation id="8921624153894383499">L'Assistant Google ne parle pas cette langue.</translation>
 <translation id="8938800817013097409">Appareil USB de type C (port situé sur l'arrière de l'appareil, à droite)</translation>
 <translation id="8940956008527784070">Batterie faible (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8984179138335769204">Lancement rapide</translation>
 <translation id="8995603266996330174">Géré par <ph name="DOMAIN" /></translation>
+<translation id="9033907480196064950">Vous êtes actuellement en train de caster <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi : <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Le micro est en cours d'utilisation.</translation>
@@ -368,4 +380,5 @@
 <translation id="923686485342484400">Appuyez deux fois sur Contrôle + Maj + Q pour vous déconnecter.</translation>
 <translation id="945522503751344254">Envoyer le commentaire</translation>
 <translation id="98515147261107953">Paysage</translation>
+<translation id="995927048686010764">Autoclick</translation>
 </translationbundle>

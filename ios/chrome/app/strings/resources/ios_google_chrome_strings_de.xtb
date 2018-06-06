@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="114721135501989771">Chrome intelligent nutzen mit Google</translation>
 <translation id="1326317727527857210">Melden Sie sich in Chrome an, um Tabs von Ihren anderen Geräten abzurufen.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Chrome-Datenschutzhinweise</translation>
@@ -12,6 +13,7 @@
 <translation id="2441696206556358796">Speichern Sie Bilder, indem Sie auf "Einstellungen" tippen und zulassen, dass Ihre Fotos in Chrome verwendet werden.</translation>
 <translation id="2576431527583832481">Chrome ist jetzt noch besser! Es ist eine neue Version verfügbar.</translation>
 <translation id="257708665678654955">Soll Google Chrome beim nächsten Mal eine Übersetzung von Seiten dieser Website anbieten, die auf <ph name="LANGUAGE_NAME" /> sind?</translation>
+<translation id="2943166482989655199">Verbessern Sie Chrome und die Sicherheit, indem Sie System- und Nutzungsdaten an Google senden</translation>
 <translation id="3148434565183091099">Melden Sie sich in Chrome an, um Ihre Lesezeichen auf allen Ihren Geräten zu haben.</translation>
 <translation id="3148688391461398285">Profitieren Sie von einer besseren Nutzererfahrung in Chrome auf Grundlage Ihres Standorts.</translation>
 <translation id="3167189358072330585">Dieses Konto funktioniert in Google Chrome nicht. Wenden Sie sich an Ihren Domainadministrator oder melden Sie sich mit einem Google-Standardkonto an.</translation>
@@ -29,6 +31,7 @@
 <translation id="4523886039239821078">Einige Add-ons führen zum Ausfall von Chrome. Bitte deinstallieren Sie:</translation>
 <translation id="4615174829807303908">Sie melden sich von einem Konto ab, das von <ph name="SIGNOUT_MANAGED_DOMAIN" /> verwaltet wird. Dadurch werden Ihre Chrome-Daten von diesem Gerät gelöscht, bleiben jedoch in Ihrem Google-Konto erhalten.</translation>
 <translation id="5389212809648216794">Google Chrome kann nicht auf die Kamera zugreifen, da diese gerade von einer anderen App verwendet wird</translation>
+<translation id="5489543008378040943">Die <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> können jederzeit angepasst werden. Google kann die Inhalte der von Ihnen besuchten Websites, Browserinteraktionen und Browseraktivitäten nutzen, um Chrome und andere Google-Dienste wie Übersetzer, die Google-Suche und Anzeigen zu personalisieren.</translation>
 <translation id="5639704535586432836">Öffnen Sie "Einstellungen" &gt; "Datenschutz" &gt; "Kamera" &gt; "Google Chrome" und aktivieren Sie die Kamera.</translation>
 <translation id="5642200033778930880">Google Chrome kann die Kamera nicht im Modus "Geteilte Ansicht" nutzen</translation>
 <translation id="5703130498371792817">Gefällt Ihnen Chrome? <ph name="BEGIN_LINK" />Bewerten Sie diese App!<ph name="END_LINK" /></translation>

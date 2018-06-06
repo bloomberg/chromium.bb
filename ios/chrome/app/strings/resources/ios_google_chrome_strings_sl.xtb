@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
+<translation id="114721135501989771">Prejmite Googlove pametne rešitve v Chromu</translation>
 <translation id="1326317727527857210">Če želite dostopati do zavihkov v drugih napravah, se prijavite v Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Obvestilo o zasebnosti za Google Chrome</translation>
@@ -12,6 +13,7 @@
 <translation id="2441696206556358796">Če želite shraniti slike, se dotaknite aplikacije Settings in dovolite Chromu dostop do fotografij</translation>
 <translation id="2576431527583832481">Chrome je izboljšan! Na voljo je nova različica.</translation>
 <translation id="257708665678654955">Želite, da Google Chrome naslednjič ponudi prevod strani v jeziku <ph name="LANGUAGE_NAME" /> s tega spletnega mesta?</translation>
+<translation id="2943166482989655199">Izboljšajte Chrome in njegovo varnost tako, da pošiljate podatke o sistemu in uporabi Googlu</translation>
 <translation id="3148434565183091099">Če želite dostopati do zaznamkov v vseh napravah, se prijavite v Chrome.</translation>
 <translation id="3148688391461398285">Zagotovite si boljšo izkušnjo uporabe Chroma na podlagi lokacije</translation>
 <translation id="3167189358072330585">Vaš račun ne deluje v Google Chromu. Obrnite se na skrbnika domene ali za prijavo uporabite običajen Google Račun.</translation>
@@ -29,6 +31,7 @@
 <translation id="4523886039239821078">Nekateri dodatki povzročajo zrušitve Chroma. Odstranite jih:</translation>
 <translation id="4615174829807303908">Odjavili se boste iz računa, ki ga upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />. S tem boste iz te naprave izbrisali podatke v Chromu, vendar bodo vaši podatki še vedno na voljo v Google Računu.</translation>
 <translation id="5389212809648216794">Google Chrome ne more uporabljati fotoaparata, ker ga uporablja druga aplikacija</translation>
+<translation id="5489543008378040943"><ph name="BEGIN_LINK" />Nastavitve<ph name="END_LINK" /> je mogoče kadar koli prilagoditi. Google lahko vsebino na spletnih mestih, ki jih obiščete, interakcije z brskalnikom in dejavnost v brskalniku uporabi za prilagajanje Chroma in Googlovih storitev, kot so Prevajalnik, Iskanje Google in oglasi.</translation>
 <translation id="5639704535586432836">Odprite Settings &gt; Privacy &gt; Camera &gt; Google Chrome in vklopite fotoaparat.</translation>
 <translation id="5642200033778930880">Google Chrome ne more uporabljati fotoaparata v načinu razdeljenega pogleda</translation>
 <translation id="5703130498371792817">Enjoying Chrome? <ph name="BEGIN_LINK" />Rate this app<ph name="END_LINK" /></translation>

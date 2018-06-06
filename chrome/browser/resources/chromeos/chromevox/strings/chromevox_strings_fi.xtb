@@ -146,6 +146,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="2416512023405990736">Valitsematon valintaruutu</translation>
 <translation id="2417569100218200841">Sisällön tiedot</translation>
 <translation id="2417948780551741035">Loppuhuomautukset</translation>
+<translation id="2421113964388408478">Poisto</translation>
 <translation id="2422937916923936891">Valikkokohteen valintaruutu</translation>
 <translation id="2428534162001909979">Komentovalikot</translation>
 <translation id="2429669115401274487">ip</translation>
@@ -179,6 +180,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">ääni</translation>
 <translation id="2732718972699418926">ap</translation>
+<translation id="2737520612859577214">Yläindeksin loppu</translation>
 <translation id="2749275490991666823">Valittu</translation>
 <translation id="27527859628328957">Siirry seuraavaan aktivoitavaan kohteeseen</translation>
 <translation id="276402504937943375">sisällysluettelo</translation>
@@ -203,6 +205,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="288178314850623291">Siirtymiskomennoilla voit siirtyä tietyn tyyppisten elementtien välillä. Siirry seuraavaan otsikkoon painamalla haku + H tai edelliseen painamalla haku + vaihto + H.</translation>
 <translation id="2894654529758326923">Tiedot</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{vasen aaltosulje}other{# vasenta aaltosuljetta}}</translation>
+<translation id="2909478709401302630">Yläindeksin alku</translation>
 <translation id="2911433807131383493">Avaa ChromeVox-opetusohjelma</translation>
 <translation id="2932083475399492303">Vaihda linjatyyppiä rakenteellisen ja asettelun välillä</translation>
 <translation id="2944762337049891859">Lue sivu automaattisesti, kun se on latautunut.</translation>
@@ -384,6 +387,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="4148180433151187540">{COUNT,plural, =1{oikea aaltosulje}other{# oikeaa aaltosuljetta}}</translation>
 <translation id="4158704014418536539">Kirjainkoolla on väliä.</translation>
 <translation id="4161663686871496107">ChromeVox-puhepalaute on valmis</translation>
+<translation id="4166192625054637755">Alaindeksin loppu</translation>
 <translation id="4173994908659439270">Ei seuraavia muokattavia tekstikenttiä.</translation>
 <translation id="4176463684765177261">Pois käytöstä</translation>
 <translation id="4188530942454211480">Edellinen lause</translation>
@@ -423,6 +427,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="4476183483923481720">uusi rivi</translation>
 <translation id="4482330759234983253">Edellinen taulukko</translation>
 <translation id="4491109536499578614">Kuva</translation>
+<translation id="4505167975768625962">Lisäys</translation>
 <translation id="4517854969512651305">Suurenna arvoa</translation>
 <translation id="4529987814483543472">Perinteinen näppäinasettelu</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{kauttaviiva}other{# kauttaviivaa}}</translation>
@@ -527,6 +532,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="5330443287809544590"><ph name="NAME" />, linkki</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Viittaajan linkki</translation>
+<translation id="5350654862897073517">Alaindeksin alku</translation>
 <translation id="536031132345979795">Siirry taaksepäin jatkuvan lukemisen aikana</translation>
 <translation id="5368000168321181111">Earcon-äänimerkit pois käytöstä</translation>
 <translation id="5374320867641260420">Ei seuraavia painikkeita.</translation>

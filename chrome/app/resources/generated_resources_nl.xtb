@@ -209,6 +209,7 @@
 <translation id="1296497012903089238">Type certificaat</translation>
 <translation id="1297175357211070620">Bestemming</translation>
 <translation id="1297922636971898492">Google Drive is momenteel niet beschikbaar. Het uploaden wordt automatisch gestart zodra Google Drive weer beschikbaar is.</translation>
+<translation id="1300415640239881824"><ph name="DOMAIN" /> wil dat de identiteit van je apparaat wordt geverifieerd door Google om de geschiktheid voor geoptimaliseerd afspelen van beveiligde content vast te stellen.</translation>
 <translation id="1300806585489372370">Als je deze instelling wilt wijzigen, moet je eerst <ph name="BEGIN_LINK" />ID's inschakelen<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">JavaScript vanuit Apple Events toestaan</translation>
 <translation id="1303101771013849280">HTML-bestand met bladwijzers</translation>
@@ -310,7 +311,7 @@
 <translation id="1451917004835509682">Persoon met beperkte rechten toevoegen</translation>
 <translation id="1454223536435069390">&amp;Screenshot maken</translation>
 <translation id="1459967076783105826">Zoekmachines toegevoegd door extensies</translation>
-<translation id="146000042969587795">Dit frame is geblokkeerd omdat het onveilige content bevat.</translation>
+<translation id="146000042969587795">Dit frame is geblokkeerd omdat het onbeveiligde content bevat.</translation>
 <translation id="146219525117638703">ONC-status</translation>
 <translation id="146220085323579959">Verbinding met internet verbroken. Controleer je internetverbinding en probeer het opnieuw.</translation>
 <translation id="1464258312790801189">Je accounts</translation>
@@ -427,7 +428,6 @@
 <translation id="1624026626836496796">Dit gebeurt slechts een keer en je inloggegevens worden hierbij niet opgeslagen.</translation>
 <translation id="1627276047960621195">Bestandsdescriptors</translation>
 <translation id="1627408615528139100">Al gedownload</translation>
-<translation id="1632551555529177478">FOUT: Kan de Concierge-client niet starten.</translation>
 <translation id="1632803087685957583">Hiermee kun je de herhaalsnelheid van het toetsenbord, woordvoorspelling en meer aanpassen</translation>
 <translation id="1635033183663317347">Geïnstalleerd door je ouder/verzorger.</translation>
 <translation id="1637224376458524414">Deze bladwijzer gebruiken op je iPhone</translation>
@@ -1119,7 +1119,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2686759344028411998">Kan geen modules vinden die zijn geladen.</translation>
 <translation id="2688196195245426394">Fout bij het registreren van het apparaat bij de server: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Taalopties weergeven</translation>
-<translation id="2690824726518456119">Concierge-service wordt gestart.</translation>
 <translation id="2691385045260836588">Model</translation>
 <translation id="2693176596243495071">Er is een onbekende fout opgetreden. Probeer het later opnieuw of neem contact op met je beheerder als het probleem blijft optreden.</translation>
 <translation id="2694026874607847549">1 cookie</translation>
@@ -1308,7 +1307,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2986010903908656993">Deze pagina is geblokkeerd voor volledig beheer van MIDI-apparaten.</translation>
 <translation id="2989474696604907455">niet aangesloten</translation>
 <translation id="2989786307324390836">DER Encoded Binary, één certificaat</translation>
-<translation id="2993165626813508977">FOUT: Kan container niet binnen VM starten.</translation>
 <translation id="2993517869960930405">App-informatie</translation>
 <translation id="2994669386200004489">Kan geen back-up maken van <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Geïnstalleerd door je ouder.</translation>
@@ -1441,7 +1439,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="3190558889382726167">Wachtwoord opgeslagen</translation>
 <translation id="3192947282887913208">Audiobestanden</translation>
 <translation id="3194737229810486521"><ph name="URL" /> vraagt toestemming om gegevens permanent op je apparaat op te slaan</translation>
-<translation id="3197054279257119376">Termina-component wordt geladen.</translation>
 <translation id="3199127022143353223">Servers</translation>
 <translation id="3202131003361292969">Pad</translation>
 <translation id="3202173864863109533">De audio van dit tabblad wordt gedempt.</translation>
@@ -1567,7 +1564,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="3407837288045706722">Zie <ph name="BEGIN_LINK" />Synchronisatie en personalisatie<ph name="END_LINK" /> voor meer instellingen die zijn gerelateerd aan privacy, beveiliging en gegevensverzameling</translation>
 <translation id="3412265149091626468">Ga naar selectie</translation>
 <translation id="3413122095806433232">CA-uitgevers: <ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">Markeer wat je wilt horen en druk vervolgens op Zoeken + S. Je kunt de optie Zoeken ook ingedrukt houden of op het pictogram 'Selecteer om uitgesproken te worden' in de buurt van je profielfoto tikken. Selecteer vervolgens een regio om voor te lezen.</translation>
 <translation id="3414856743105198592">Als je het verwisselbare medium formatteert, worden alle gegevens gewist. Wil je doorgaan?</translation>
 <translation id="3414952576877147120">Grootte:</translation>
 <translation id="3420980393175304359">Van persoon wisselen</translation>
@@ -1690,7 +1686,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="3584169441612580296">Foto's, muziek en andere media van je computer lezen en wijzigen</translation>
 <translation id="3587482841069643663">Alles</translation>
 <translation id="358796204584394954">Typ deze code op '<ph name="DEVICE_NAME" />' om te koppelen:</translation>
-<translation id="3589766037099229847">Onveilige content geblokkeerd</translation>
+<translation id="3589766037099229847">Onbeveiligde content geblokkeerd</translation>
 <translation id="3590194807845837023">Profiel ontgrendelen en opnieuw starten</translation>
 <translation id="3592260987370335752">&amp;Meer informatie</translation>
 <translation id="359283478042092570">Invoeren</translation>
@@ -2102,7 +2098,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="4235200303672858594">Volledig scherm</translation>
 <translation id="4235813040357936597">Account toevoegen voor <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Inloggen annuleren</translation>
-<translation id="4239107879884489787">FOUT: Kan Termina-component niet laden.</translation>
 <translation id="4242533952199664413">Instellingen openen</translation>
 <translation id="4242577469625748426">Kan geen beleidsinstellingen op het apparaat installeren: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Meer stylus-apps zoeken</translation>
@@ -2212,7 +2207,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4430369329743628066">Bladwijzer toegevoegd</translation>
 <translation id="4434045419905280838">Pop-ups en omleidingen</translation>
-<translation id="443454694385851356">Verouderd (onveilig)</translation>
+<translation id="443454694385851356">Verouderd (onbeveiligd)</translation>
 <translation id="443464694732789311">Doorgaan</translation>
 <translation id="443475966875174318">Ongeschikte apps updaten en verwijderen</translation>
 <translation id="4439318412377770121">Wil je de <ph name="DEVICE_NAME" /> registreren voor Google Cloud Devices?</translation>
@@ -2256,7 +2251,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="4514610446763173167">Video schakelen tussen afspelen en pauzeren</translation>
 <translation id="451515744433878153">Verwijderen</translation>
 <translation id="4518677423782794009">Heb je bijvoorbeeld last van crashes in Chrome, vreemde opstartpagina's, werkbalken of ongewenste advertenties waar je niet vanaf komt of andere wijzigingen in je browser? Je kunt het probleem mogelijk oplossen door de Chrome Cleanup Tool uit te voeren.</translation>
-<translation id="4518928191942891293">Container in Termina VM wordt gestart.</translation>
 <translation id="4520385623207007473">Gebruikte cookies</translation>
 <translation id="452039078290142656">onbekende apparaten van <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">Details</translation>
@@ -2928,7 +2922,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="5524517123096967210">Het bestand kan niet worden gelezen.</translation>
 <translation id="5525677322972469346">Een nieuwe gebruiker met beperkte rechten maken</translation>
 <translation id="5525695896049981561">Ja, ik zie het</translation>
-<translation id="5526701598901867718">Alle (onveilig)</translation>
+<translation id="5526701598901867718">Alle (onbeveiligd)</translation>
 <translation id="5526745900034778153">Log opnieuw in om de synchronisatie te hervatten</translation>
 <translation id="5527463195266282916">Je probeert een oudere versie van de extensie te installeren.</translation>
 <translation id="5527474464531963247">Je kunt ook een ander netwerk selecteren.</translation>
@@ -2959,15 +2953,14 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="5557991081552967863">Wifi ingeschakeld houden tijdens slaapstand</translation>
 <translation id="5558129378926964177">&amp;Inzoomen</translation>
 <translation id="5558446705802335921">Hiermee worden de sites die je bezoekt en de bestanden die je downloadt, gecontroleerd op schadelijk gedrag en schadelijke content, zoals phishing of malware</translation>
-<translation id="5559719557406102971">Termina VM wordt gestart.</translation>
 <translation id="55601339223879446">De grenzen van je bureaublad aanpassen binnen de weergave</translation>
 <translation id="5562781907504170924">Dit tabblad is gekoppeld aan een Bluetooth-apparaat.</translation>
+<translation id="5563234215388768762">Zoek op Google of typ een URL</translation>
 <translation id="5565871407246142825">Creditcards</translation>
 <translation id="5567989639534621706">Applicatiecaches</translation>
 <translation id="5568069709869097550">Kan niet aanmelden</translation>
 <translation id="5568144734023334204">Android-opslag</translation>
 <translation id="5569544776448152862">Inschrijven in <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
-<translation id="5572572070321843880">FOUT: Kan VM niet starten.</translation>
 <translation id="5575473780076478375">Incognito-extensie: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Als je je apparaat opnieuw instelt, heeft dit geen effect op je Google-accounts of gegevens die zijn gesynchroniseerd met deze accounts. Alle bestanden die lokaal op je apparaat zijn opgeslagen, worden wel verwijderd.</translation>
 <translation id="5578059481725149024">Automatisch inloggen</translation>
@@ -3509,7 +3502,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="6410668567036790476">Zoekmachine toevoegen</translation>
 <translation id="641081527798843608">Overeenkomst van onderwerp</translation>
 <translation id="641105183165925463">$1 MB</translation>
-<translation id="6411517327772365857">Zoek op Google of typ een webadres</translation>
 <translation id="6412931879992742813">Nieuw incognitovenster</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
 <translation id="6418160186546245112">Terugzetten naar de vorige geïnstalleerde versie van <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
@@ -4078,7 +4070,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="7290594223351252791">Registratie bevestigen</translation>
 <translation id="729459249680637905">Resterende pogingen: $1</translation>
 <translation id="7295662345261934369">Delen met anderen</translation>
-<translation id="729583233778673644">AES- en RC4-versleuteling toestaan. Als je deze optie gebruikt, loop je meer risico, aangezien RC4-codering onveilig is.</translation>
+<translation id="729583233778673644">AES- en RC4-versleuteling toestaan. Als je deze optie gebruikt, loop je meer risico, aangezien RC4-codering onbeveiligd is.</translation>
 <translation id="7296774163727375165">Voorwaarden voor <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">Gebruikersnaam/wachtwoord onjuist of EAP-verificatie mislukt</translation>
 <translation id="729761647156315797">Kies je taal en toetsenbord</translation>
@@ -5226,7 +5218,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="9052208328806230490">Je hebt met het account <ph name="EMAIL" /> je printers geregistreerd bij <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9052404922357793350">Doorgaan met blokkeren</translation>
 <translation id="9053893665344928494">Mijn keuze onthouden</translation>
-<translation id="9055636786322918818">RC4-versleuteling afdwingen. Als je deze optie gebruikt, loop je meer risico, aangezien RC4-codering onveilig is.</translation>
+<translation id="9055636786322918818">RC4-versleuteling afdwingen. Als je deze optie gebruikt, loop je meer risico, aangezien RC4-codering onbeveiligd is.</translation>
 <translation id="9056034633062863292">Chromebox bijwerken</translation>
 <translation id="9056810968620647706">Geen overeenkomsten gevonden.</translation>
 <translation id="9057119625587205566">Geen printers in de buurt</translation>

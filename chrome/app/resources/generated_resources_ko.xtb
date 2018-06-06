@@ -424,7 +424,6 @@
 <translation id="1624026626836496796">이 작업은 한 번만 수행하면 되며 사용자 인증 정보는 저장되지 않습니다.</translation>
 <translation id="1627276047960621195">파일 설명자</translation>
 <translation id="1627408615528139100">이미 다운로드됨</translation>
-<translation id="1632551555529177478">오류: Concierge 클라이언트를 시작하지 못했습니다.</translation>
 <translation id="1632803087685957583">키보드 반복 속도, 단어 예측 등을 조정할 수 있습니다.</translation>
 <translation id="1635033183663317347">관리자가 설치함</translation>
 <translation id="1637224376458524414">iPhone에서 이 북마크 이용하기</translation>
@@ -1112,7 +1111,6 @@
 <translation id="2686759344028411998">로드된 모듈을 감지할 수 없습니다.</translation>
 <translation id="2688196195245426394">기기를 서버에 등록하는 중에 오류 발생: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">언어 옵션 표시</translation>
-<translation id="2690824726518456119">Concierge 서비스를 시작합니다.</translation>
 <translation id="2691385045260836588">모델</translation>
 <translation id="2693176596243495071">죄송합니다. 알 수 없는 오류가 발생했습니다. 나중에 다시 시도하거나 문제가 계속되는 경우 관리자에게 문의하세요.</translation>
 <translation id="2694026874607847549">쿠키 1개</translation>
@@ -1301,7 +1299,6 @@
 <translation id="2986010903908656993">이 페이지는 MIDI 기기를 완전히 제어할 수 없도록 차단되었습니다.</translation>
 <translation id="2989474696604907455">첨부되지 않음</translation>
 <translation id="2989786307324390836">DER-인코딩 바이너리, 단일 인증서</translation>
-<translation id="2993165626813508977">오류: Termina VM 내에서 컨테이너를 시작하지 못했습니다.</translation>
 <translation id="2993517869960930405">앱 정보</translation>
 <translation id="2994669386200004489"><ph name="FILE_NAME" />을(를) 백업할 수 없음</translation>
 <translation id="299483336428448530">부모님이 설치함</translation>
@@ -1434,7 +1431,6 @@
 <translation id="3190558889382726167">비밀번호 저장됨</translation>
 <translation id="3192947282887913208">오디오 파일</translation>
 <translation id="3194737229810486521"><ph name="URL" />에서 내 기기에 데이터를 영구 저장하려고 합니다</translation>
-<translation id="3197054279257119376">Termina 구성요소를 로드 중입니다.</translation>
 <translation id="3199127022143353223">서버</translation>
 <translation id="3202131003361292969">경로</translation>
 <translation id="3202173864863109533">이 탭의 오디오가 음소거됩니다.</translation>
@@ -1560,7 +1556,6 @@
 <translation id="3407837288045706722">개인정보 보호, 보안, 데이터 수집에 관한 설정을 더 보려면 <ph name="BEGIN_LINK" />동기화 및 맞춤설정<ph name="END_LINK" />을 참조하세요.</translation>
 <translation id="3412265149091626468">선택 부분으로 이동</translation>
 <translation id="3413122095806433232">CA 발행기관: <ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">듣고 싶은 항목을 강조표시한 다음 검색 + S를 누릅니다. 또는 검색을 길게 누르거나 프로필 이미지 근처의 텍스트 읽어주기 아이콘을 탭한 다음 소리 내어 읽을 부분을 선택합니다.</translation>
 <translation id="3414856743105198592">이동식 미디어를 포맷하면 데이터가 모두 삭제됩니다. 계속하시겠습니까?</translation>
 <translation id="3414952576877147120">크기:</translation>
 <translation id="3420980393175304359">사용자 전환</translation>
@@ -2094,7 +2089,6 @@
 <translation id="4235200303672858594">전체 화면</translation>
 <translation id="4235813040357936597"><ph name="PROFILE_NAME" />에 계정 추가</translation>
 <translation id="4235965441080806197">로그인 취소</translation>
-<translation id="4239107879884489787">오류: Termina 구성요소를 로드하지 못했습니다.</translation>
 <translation id="4242533952199664413">설정 열기</translation>
 <translation id="4242577469625748426">기기에 정책 설정을 설치하지 못함: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">스타일러스 앱 더보기</translation>
@@ -2246,7 +2240,6 @@
 <translation id="4514542542275172126">새로운 관리 대상 사용자 설정</translation>
 <translation id="451515744433878153">제거</translation>
 <translation id="4518677423782794009">Chrome 작동이 중단되거나 낯선 시작 페이지나 툴바가 표시되거나 예기치 않은 광고가 삭제되지 않거나 기타 인터넷 사용 환경이 변경되는 경우, Chrome 정리도구를 실행하여 문제를 해결할 수 있습니다.</translation>
-<translation id="4518928191942891293">Termina VM 내의 컨테이너를 시작합니다.</translation>
 <translation id="4520385623207007473">사용 중인 쿠키</translation>
 <translation id="452039078290142656"><ph name="VENDOR_NAME" />의 알 수 없는 기기</translation>
 <translation id="4522570452068850558">세부정보</translation>
@@ -2946,15 +2939,14 @@
 <translation id="5557991081552967863">절전 모드 중에 Wi-Fi 계속 사용</translation>
 <translation id="5558129378926964177">확대(&amp;I)</translation>
 <translation id="5558446705802335921">방문한 사이트와 다운로드한 파일에서 피싱 또는 멀웨어와 같은 위험한 동작이나 콘텐츠 확인</translation>
-<translation id="5559719557406102971">Termina VM을 시작합니다.</translation>
 <translation id="55601339223879446">디스플레이에서 바탕화면 경계를 조정합니다.</translation>
 <translation id="5562781907504170924">이 탭이 블루투스 기기에 연결되었습니다.</translation>
+<translation id="5563234215388768762">Google 검색 또는 URL 입력</translation>
 <translation id="5565871407246142825">신용카드</translation>
 <translation id="5567989639534621706">애플리케이션 캐시</translation>
 <translation id="5568069709869097550">로그인할 수 없음</translation>
 <translation id="5568144734023334204">Android 저장용량</translation>
 <translation id="5569544776448152862"><ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />에 등록 중...</translation>
-<translation id="5572572070321843880">오류: Termina VM을 시작하지 못했습니다.</translation>
 <translation id="5575473780076478375">시크릿 모드 확장 프로그램: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">기기를 재설정해도 Google 계정 또는 계정에 동기화된 데이터에 영향을 주지 않습니다. 하지만 기기에 로컬로 저장된 파일은 모두 삭제됩니다.</translation>
 <translation id="5578059481725149024">자동 로그인</translation>
@@ -3495,7 +3487,6 @@
 <translation id="6410668567036790476">검색 엔진 추가</translation>
 <translation id="641081527798843608">주제 일치</translation>
 <translation id="641105183165925463">$1MB</translation>
-<translation id="6411517327772365857">Google 검색 또는 웹 주소 입력</translation>
 <translation id="6412931879992742813">새 시크릿 창</translation>
 <translation id="6417265370957905582">Google 어시스턴트</translation>
 <translation id="6418160186546245112"><ph name="IDS_SHORT_PRODUCT_NAME" />의 이전 설치 버전으로 되돌리는 중</translation>

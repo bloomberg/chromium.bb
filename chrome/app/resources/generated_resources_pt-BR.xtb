@@ -88,6 +88,7 @@
 <translation id="1123187597739372905">Mostrar configurações de sincronização</translation>
 <translation id="1123316951456119629">Ao desconectar sua Conta do Google do <ph name="PRODUCT_NAME" />, seus dados permanecerão neste computador, mas as alterações não serão mais sincronizadas com sua conta. Os dados já armazenados em sua Conta do Google permanecerão lá até você removê-los usando o <ph name="BEGIN_LINK" />Painel de Controle do Google<ph name="END_LINK" />.</translation>
 <translation id="1124772482545689468">Usuário</translation>
+<translation id="1125550662859510761">Resolução: <ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativa)</translation>
 <translation id="1128109161498068552">Não permitir que nenhum site use mensagens exclusivas do sistema para acessar dispositivos MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Editar mecanismo de pesquisa</translation>
@@ -100,6 +101,7 @@
 <translation id="1145292499998999162">Plug-in bloqueado</translation>
 <translation id="1145532888383813076">Pesquisar seu dispositivo, apps e Web.</translation>
 <translation id="1146204723345436916">Importar favoritos de arquivo HTML...</translation>
+<translation id="114721135501989771">Use a tecnologia do Google no Chrome</translation>
 <translation id="1148097584170732637">Arquivos encontrados: <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
     Não há espaço suficiente disponível no armazenamento local. Você precisa de espaço adicional: <ph name="FILE_SIZE" />.
@@ -207,6 +209,7 @@
 <translation id="1296497012903089238">Tipo de certificado</translation>
 <translation id="1297175357211070620">Destino</translation>
 <translation id="1297922636971898492">O Google Drive não está disponível no momento. O upload será reiniciado automaticamente assim que o Google Drive estiver de volta.</translation>
+<translation id="1300415640239881824">O domínio <ph name="DOMAIN" /> quer que a identidade do seu dispositivo seja verificada pelo Google para determinar se ele está qualificado para reprodução aprimorada de conteúdo protegido.</translation>
 <translation id="1300806585489372370">Para alterar essa configuração, primeiro <ph name="BEGIN_LINK" />ative os identificadores<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">Permitir o JavaScript do Eventos da Apple</translation>
 <translation id="1303101771013849280">Arquivo HTML com favoritos</translation>
@@ -270,6 +273,7 @@
 <translation id="1396963298126346194">O nome de usuário e a senha inseridos não correspondem</translation>
 <translation id="1397854323885047133">Sincronização e personalização</translation>
 <translation id="1398853756734560583">Maximizar</translation>
+<translation id="1399511500114202393">Nenhum certificado do usuário</translation>
 <translation id="140250605646987970">Seu smartphone foi localizado. No entanto, o Smart Lock funciona apenas em dispositivos com Android 5.0 e posterior. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisionado)</translation>
 <translation id="1405476660552109915">Quer que <ph name="PASSWORD_MANAGER_BRAND" /> salve sua conta para este site?</translation>
@@ -356,6 +360,7 @@
 <translation id="1511388193702657997">Oferecer para salvar suas senhas da Web</translation>
 <translation id="1512210426710821809">A única maneira de desfazer essa ação é reinstalando o <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Importados do Safari</translation>
+<translation id="1520605251886806589">O Google pode usar o conteúdo dos sites que você visita e as atividades de navegação e interações para personalizar o Chrome e outros serviços do Google, como o Tradutor, a Pesquisa e os anúncios. Personalize isso em "Configurações".</translation>
 <translation id="1521442365706402292">Gerenciar certificados</translation>
 <translation id="152234381334907219">Nunca salvas</translation>
 <translation id="1524430321211440688">Teclado</translation>
@@ -423,12 +428,12 @@
 <translation id="1624026626836496796">Isso só acontecerá uma vez e suas credenciais não serão armazenadas.</translation>
 <translation id="1627276047960621195">Descritores de arquivos</translation>
 <translation id="1627408615528139100">Download já concluído</translation>
-<translation id="1632551555529177478">ERRO: falha ao iniciar o cliente do Concierge.</translation>
 <translation id="1632803087685957583">Permite ajustar a taxa de repetição, a previsão de palavras e outras configurações do teclado</translation>
 <translation id="1635033183663317347">Instalada pelo custodiante.</translation>
 <translation id="1637224376458524414">Receber esse favorito no seu iPhone</translation>
 <translation id="1637765355341780467">Ocorreu um erro ao abrir seu perfil. É possível que alguns recursos estejam indisponíveis.</translation>
 <translation id="1639239467298939599">Carregando</translation>
+<translation id="163993578339087550"><ph name="SERVICE_NAME" /> quer verificar se você está usando um dispositivo Chrome OS qualificado.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 com criptografia RSA</translation>
 <translation id="1642494467033190216">É necessário remover a proteção roofts e reiniciar antes de ativar outros recursos de depuração.</translation>
 <translation id="1643050526526937107">Apenas sincronização</translation>
@@ -762,6 +767,7 @@
 <translation id="2151576029659734873">Índice de guias inválido inserido.</translation>
 <translation id="2154484045852737596">Editar cartão</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
+<translation id="2155772377859296191">Resolução: <ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="215753907730220065">Sair do modo tela cheia</translation>
 <translation id="2157875535253991059">Esta página está no modo de tela inteira.</translation>
 <translation id="216169395504480358">Adicionar Wi-Fi...</translation>
@@ -920,6 +926,7 @@
 <translation id="2408955596600435184">Informe seu PIN</translation>
 <translation id="241082044617551207">Plug-in desconhecido</translation>
 <translation id="2413749388954403953">Alterar a interface de favoritos do usuário</translation>
+<translation id="2419706071571366386">Por segurança, saia da sua conta quando seu computador não estiver sendo usado.</translation>
 <translation id="2422426094670600218">&lt;sem nome&gt;</translation>
 <translation id="2423578206845792524">&amp;Salvar imagem como...</translation>
 <translation id="2425665904502185219">Tamanho total do arquivo</translation>
@@ -1001,6 +1008,7 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="253434972992662860">&amp;Pausar</translation>
 <translation id="2534460670861217804">Proxy HTTP seguro</translation>
 <translation id="253557089021624350">Contagem de manutenção de atividade</translation>
+<translation id="2538361623464451692">Sincronização desativada</translation>
 <translation id="2541423446708352368">Mostrar todos os downloads</translation>
 <translation id="2542049655219295786">Tabela do Google</translation>
 <translation id="2544853746127077729">Certificado de autenticação rejeitado pela rede</translation>
@@ -1111,7 +1119,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="2686759344028411998">Não foi possível detectar o carregamento de qualquer módulo.</translation>
 <translation id="2688196195245426394">Erro ao registrar o dispositivo no cliente: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Mostrar opções de idioma</translation>
-<translation id="2690824726518456119">Iniciando serviço do Concierge.</translation>
 <translation id="2691385045260836588">Modelo</translation>
 <translation id="2693176596243495071">Ops! Ocorreu um erro desconhecido. Tente novamente mais tarde ou entre em contato com seu administrador se o problema persistir.</translation>
 <translation id="2694026874607847549">Um cookie</translation>
@@ -1300,7 +1307,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="2986010903908656993">O controle total de dispositivos MIDI foi bloqueado nesta página.</translation>
 <translation id="2989474696604907455">não conectado</translation>
 <translation id="2989786307324390836">binário codificado por DER, certificado único</translation>
-<translation id="2993165626813508977">ERRO: falha ao iniciar contêiner dentro da Termina VM.</translation>
 <translation id="2993517869960930405">Informações sobre o aplicativo</translation>
 <translation id="2994669386200004489">Não foi possível fazer backup do arquivo <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Instalada pelo seu pai/mãe.</translation>
@@ -1433,7 +1439,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="3190558889382726167">Senha salva</translation>
 <translation id="3192947282887913208">Arquivos de áudio</translation>
 <translation id="3194737229810486521">O URL <ph name="URL" /> quer armazenar permanentemente os dados no seu dispositivo</translation>
-<translation id="3197054279257119376">Carregando componente Termina.</translation>
 <translation id="3199127022143353223">Servidores</translation>
 <translation id="3202131003361292969">Caminho</translation>
 <translation id="3202173864863109533">O áudio desta guia está sendo desativado.</translation>
@@ -1559,7 +1564,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="3407837288045706722">Para ver mais configurações relacionadas à privacidade, segurança e coleta de dados, acesse <ph name="BEGIN_LINK" />Sincronização e personalização<ph name="END_LINK" /></translation>
 <translation id="3412265149091626468">Ir para a seleção</translation>
 <translation id="3413122095806433232">Emissores de autoridades de certificação: <ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">Destaque o que você quer ouvir e pressione Pesquisar + S. Você também pode tocar na tecla de pesquisa e mantê-la pressionada ou tocar no ícone "Selecionar para ouvir", ao lado da sua imagem de perfil, e depois selecionar uma região a ser lida em voz alta.</translation>
 <translation id="3414856743105198592">A formatação da mídia removível apagará todos os dados. Quer continuar?</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
 <translation id="3420980393175304359">Alterar pessoa</translation>
@@ -2094,7 +2098,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="4235200303672858594">Tela cheia</translation>
 <translation id="4235813040357936597">Adicionar conta para <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Cancelar login</translation>
-<translation id="4239107879884489787">ERRO: falha ao carregar o componente Termina.</translation>
 <translation id="4242533952199664413">Abrir configurações.</translation>
 <translation id="4242577469625748426">Falha ao instalar configurações da política no dispositivo: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Encontrar mais apps para usar com a stylus</translation>
@@ -2134,6 +2137,7 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="4296575653627536209">Adicionar usuário supervisionado</translation>
 <translation id="4297322094678649474">Alterar idiomas</translation>
 <translation id="4300305918532693141">Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" />.</translation>
+<translation id="4301561945776138921">Nenhuma senha salva para este site.</translation>
 <translation id="4305227814872083840">longo (2 seg)</translation>
 <translation id="4306119971288449206">Os apps precisam ser veiculados com o tipo de conteúdo "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K ativos)</translation>
@@ -2244,9 +2248,9 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="4508765956121923607">Exibir &amp;código fonte</translation>
 <translation id="451407183922382411">Tecnologia da <ph name="COMPANY_NAME" /></translation>
 <translation id="4514542542275172126">Configurar um novo usuário supervisionado</translation>
+<translation id="4514610446763173167">Alternar vídeo entre reproduzir e pausar</translation>
 <translation id="451515744433878153">Remover</translation>
 <translation id="4518677423782794009">O Chrome apresenta falhas, mostrando páginas de inicialização ou barras de ferramentas incomuns ou anúncios indesejados dos quais você não consegue se livrar ou fazendo alguma outra alteração na sua experiência de navegação? Talvez seja possível corrigir o problema executando a Ferramenta de varredura do Chrome.</translation>
-<translation id="4518928191942891293">Iniciando contêiner na VM Termina.</translation>
 <translation id="4520385623207007473">Cookies em uso</translation>
 <translation id="452039078290142656">dispositivos desconhecidos do <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">Detalhes</translation>
@@ -2376,6 +2380,7 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="4716483597559580346">Executar Powerwash para maior segurança</translation>
 <translation id="4720113199587244118">Adicionar dispositivos</translation>
 <translation id="4720185134442950733">Rede de dados móveis</translation>
+<translation id="4722735765955348426">Senha para <ph name="USERNAME" /></translation>
 <translation id="4722920479021006856">O <ph name="APP_NAME" /> está compartilhando sua tela.</translation>
 <translation id="4724450788351008910">Afiliação alterada</translation>
 <translation id="4724850507808590449">Foi realizado o backup de <ph name="FILE_COUNT" /> fotos</translation>
@@ -2461,6 +2466,7 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="4858913220355269194">Pelé</translation>
 <translation id="4862050643946421924">Adicionando um dispositivo...</translation>
 <translation id="4862642413395066333">Respostas OCSP de assinatura</translation>
+<translation id="4863769717153320198">Resolução: <ph name="WIDTH" /> x <ph name="HEIGHT" /> (padrão)</translation>
 <translation id="4864369630010738180">Fazendo login...</translation>
 <translation id="486635084936119914">Abrir alguns tipos de arquivo automaticamente depois do download</translation>
 <translation id="4869142322204669043">O Google pode usar o conteúdo de sites que você visita, sua atividade de navegação e outras interações para personalizar o <ph name="IDS_SHORT_PRODUCT_NAME" /> e outros serviços do Google, como o Tradutor, a Pesquisa e os anúncios. Você pode personalizar essas opções a qualquer momento nas configurações.</translation>
@@ -2946,15 +2952,14 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="5557991081552967863">Manter Wi-Fi ativado durante a suspensão.</translation>
 <translation id="5558129378926964177">Aumentar z&amp;oom</translation>
 <translation id="5558446705802335921">Verifica os sites que você acessa e os arquivos transferidos por download quanto a comportamentos ou conteúdos prejudiciais, como phishing ou malware</translation>
-<translation id="5559719557406102971">Iniciando a VM Termina.</translation>
 <translation id="55601339223879446">Ajustar as fronteiras da sua área de trabalho dentro da tela</translation>
 <translation id="5562781907504170924">Esta guia está conectada a um dispositivo Bluetooth.</translation>
+<translation id="5563234215388768762">Pesquise no Google ou digite um URL</translation>
 <translation id="5565871407246142825">Cartões de crédito</translation>
 <translation id="5567989639534621706">Caches de aplicativos</translation>
 <translation id="5568069709869097550">Não consigo acessar</translation>
 <translation id="5568144734023334204">Armazenamento do Android</translation>
 <translation id="5569544776448152862">Fazendo registro no domínio <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
-<translation id="5572572070321843880">ERRO: falha ao iniciar a Termina VM.</translation>
 <translation id="5575473780076478375">Extensão anônima: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Redefinir o dispositivo não afetará suas Contas do Google ou quaisquer dados sincronizados com essas contas. No entanto, todos os arquivos salvos localmente em seu dispositivo serão excluídos.</translation>
 <translation id="5578059481725149024">Login automático</translation>
@@ -3055,6 +3060,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="572392919096807438">Lembrar minha decisão</translation>
 <translation id="5727728807527375859">Extensões, aplicativos e temas podem danificar o seu computador. Tem certeza que quer continuar?</translation>
 <translation id="5729712731028706266">&amp;Visualizar</translation>
+<translation id="5731185123186077399">Serviços do Google personalizados, como o Google Pay</translation>
 <translation id="5731247495086897348">&amp;Colar e ir</translation>
 <translation id="5731409020711461763">Uma nova foto</translation>
 <translation id="5734362860645681824">Comunicações</translation>
@@ -3497,7 +3503,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6410668567036790476">Adicionar mecanismo de pesquisa</translation>
 <translation id="641081527798843608">Correspondência de assunto</translation>
 <translation id="641105183165925463">$1 MB</translation>
-<translation id="6411517327772365857">Pesquise no Google ou digite um endereço da Web</translation>
 <translation id="6412931879992742813">Nova janela anônima</translation>
 <translation id="6417265370957905582">Google Assistente</translation>
 <translation id="6418160186546245112">Revertendo para a versão anteriormente instalada de <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
@@ -4108,6 +4113,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7366415735885268578">Adicionar um site</translation>
 <translation id="7366909168761621528">Dados de navegação</translation>
 <translation id="7371006317849674875">Horário de início</translation>
+<translation id="737439367876257440">Aprimore o Chrome e a segurança dele enviando informações de uso e do sistema para o Google</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Destacar o cursor do mouse quando ele estiver se movendo</translation>
 <translation id="7377169924702866686">O Caps Lock está ativado.</translation>
@@ -4537,6 +4543,7 @@ A instalação do <ph name="APP_NAME" /> faz o download de <ph name="DOWNLOAD_SI
 <translation id="7984068253310542383">Espelhar <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">Para maior segurança, <ph name="PRODUCT_NAME" /> criptografará seus dados.</translation>
 <translation id="7986295104073916105">Ler e alterar as configurações de senhas salvas</translation>
+<translation id="7987764905897278458">Aproveite mais a tecnologia do Google</translation>
 <translation id="7988355189918024273">Permitir recursos de acessibilidade</translation>
 <translation id="7994702968232966508">Método EAP</translation>
 <translation id="799547531016638432">Remover atalho</translation>
@@ -4807,6 +4814,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8427292751741042100">incorporado em qualquer host</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8428634594422941299">Entendi</translation>
+<translation id="84297032718407999">Você será desconectado em <ph name="LOGOUT_TIME_LEFT" /></translation>
 <translation id="8431909052837336408">Alterar PIN do SIM</translation>
 <translation id="8434480141477525001">Porta de depuração de Cliente nativo</translation>
 <translation id="843760761634048214">Salvar cartão de crédito</translation>
@@ -5263,6 +5271,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="912419004897138677">Codec</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> rest.)</translation>
 <translation id="9128870381267983090">Conectar-se à rede</translation>
+<translation id="9129010913019873477"><ph name="PERCENTAGE" /> (padrão)</translation>
 <translation id="9130015405878219958">Modo inválido inserido.</translation>
 <translation id="9130775360844693113">Membros de '<ph name="DESTINATION_NAME" />' terão acesso a esses itens.</translation>
 <translation id="9131487537093447019">Enviar mensagens para e receber mensagens de dispositivos Bluetooth.</translation>
@@ -5339,6 +5348,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="960719561871045870">Código da operadora</translation>
 <translation id="960987915827980018">Cerca de 1 hora restante</translation>
 <translation id="962802172452141067">Árvore de pastas de favoritos</translation>
+<translation id="964286338916298286">Seu administrador de TI desativou os Goodies do Chrome para seu dispositivo.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Aplicativo}one{Aplicativo}other{Aplicativos}}</translation>
 <translation id="968000525894980488">Ative o Google Play Services.</translation>
 <translation id="968174221497644223">Cache de aplicativo</translation>

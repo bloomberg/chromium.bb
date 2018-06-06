@@ -25,6 +25,7 @@
 <translation id="1821985195704844674">ट्री ग्रिड</translation>
 <translation id="1822429046913737220">पूर्वाह्न/अपराह्न</translation>
 <translation id="1832974991323546415">दूरस्थ डिवाइस पर चलाएं</translation>
+<translation id="190587075670221089">मिटाना</translation>
 <translation id="1907737156431278478">उदाहरण</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">स्थिति</translation>
@@ -71,7 +72,7 @@
 <translation id="3639613635497528239">फ़िल्म के शेष सेकंड</translation>
 <translation id="3706100364254443312">स्विच करें</translation>
 <translation id="3732799496749320381">mm</translation>
-<translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY" /> जीबी</translation>
 <translation id="3785482301506746191">फ़िल्म समय स्क्रबर</translation>
 <translation id="3808586225841795776">शब्द</translation>
 <translation id="3822383571486410024">कृपया इस लेख को <ph name="MIN_CHARACTERS" /> वर्णों या अधिक तक बढ़ाएं (वर्तमान में आप <ph name="CURRENT_LENGTH" /> वर्णों का उपयोग कर रहे हैं).</translation>
@@ -165,6 +166,7 @@
 <translation id="689129560213475294">कॉलफ़न</translation>
 <translation id="6934078000481955284">ब्लॉककोट</translation>
 <translation id="6941933287844615239">मीडिया डाउनलोड करें</translation>
+<translation id="6981594929165378967">डालना</translation>
 <translation id="6989848892321993519">कृपया इस लेख को <ph name="MIN_CHARACTERS" /> या उससे ज़्यादा वर्णों तक बढ़ाएं (आप इस समय 1 वर्ण का उपयोग कर रहे हैं).</translation>
 <translation id="709897737746224366">कृपया अनुरोधित प्रारूप का मिलान करें.</translation>
 <translation id="7139483182332611405">आमुख</translation>

@@ -209,6 +209,7 @@
 <translation id="1296497012903089238">Jenis Sijil</translation>
 <translation id="1297175357211070620">Destinasi</translation>
 <translation id="1297922636971898492">Google Drive tidak tersedia pada masa ini. Memuat naik akan dimulakan semula secara automatik sebaik sahaja Google Drive kembali.</translation>
+<translation id="1300415640239881824"><ph name="DOMAIN" /> mahukan identiti peranti anda disahkan, oleh Google, untuk menentukan kelayakan bagi main balik yang dipertingkatkan untuk kandungan yang dilindungi.</translation>
 <translation id="1300806585489372370">Untuk menukar tetapan ini, mula-mula <ph name="BEGIN_LINK" />hidupkan pengecam<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">Benarkan JavaScript daripada Apple Events</translation>
 <translation id="1303101771013849280">Menandakan Fail HTML</translation>
@@ -427,7 +428,6 @@
 <translation id="1624026626836496796">Ini hanya akan berlaku sekali dan bukti kelayakan anda tidak akan disimpan.</translation>
 <translation id="1627276047960621195">Pemerihal Fail</translation>
 <translation id="1627408615528139100">Telah pun dimuat turun</translation>
-<translation id="1632551555529177478">RALAT: Gagal memulakan klien Concierge.</translation>
 <translation id="1632803087685957583">Membolehkan anda melaraskan kadar ulangan papan kekunci anda, ramalan perkataan dan pelbagai lagi</translation>
 <translation id="1635033183663317347">Dipasang oleh penjaga anda.</translation>
 <translation id="1637224376458524414">Dapatkan penanda halaman ini pada iPhone anda</translation>
@@ -1120,7 +1120,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2686759344028411998">Tidak dapat mengesan sebarang modul yang dimuatkan.</translation>
 <translation id="2688196195245426394">Ralat semasa mendaftarkan peranti dengan pelayan: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Tunjukkan pilihan bahasa</translation>
-<translation id="2690824726518456119">Memulakan perkhidmatan Concierge.</translation>
 <translation id="2691385045260836588">Model</translation>
 <translation id="2693176596243495071">Op! Ralat yang tidak diketahui telah berlaku. Sila cuba lagi nanti atau hubungi pentadbir anda jika isu ini berterusan.</translation>
 <translation id="2694026874607847549">1 kuki</translation>
@@ -1309,7 +1308,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2986010903908656993">Halaman ini telah disekat daripada mengawal sepenuhnya peranti MIDI.</translation>
 <translation id="2989474696604907455">tidak dipasang</translation>
 <translation id="2989786307324390836">Binari terkod DER, sijil tunggal</translation>
-<translation id="2993165626813508977">RALAT: Gagal memulakan bekas dalam Termina VM.</translation>
 <translation id="2993517869960930405">Maklumat Apl</translation>
 <translation id="2994669386200004489">Tidak dapat menyandarkan <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Dipasang oleh ibu bapa anda.</translation>
@@ -1442,7 +1440,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="3190558889382726167">Kata laluan yang disimpan</translation>
 <translation id="3192947282887913208">Fail Audio</translation>
 <translation id="3194737229810486521"><ph name="URL" /> mahu menyimpan data pada peranti anda secara kekal</translation>
-<translation id="3197054279257119376">Memuatkan komponen Termina.</translation>
 <translation id="3199127022143353223">Pelayan</translation>
 <translation id="3202131003361292969">Laluan</translation>
 <translation id="3202173864863109533">Audio bagi tab ini sedang diredam.</translation>
@@ -1568,7 +1565,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="3407837288045706722">Untuk mendapatkan lebih banyak tetapan yang berkaitan dengan privasi, keselamatan dan pengumpulan data, lihat <ph name="BEGIN_LINK" />Penyegerakan dan pemperibadian<ph name="END_LINK" /></translation>
 <translation id="3412265149091626468">Lompat ke Pemilihan</translation>
 <translation id="3413122095806433232">Pengeluar CA: <ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">Serlahkan perkara yang ingin anda dengar, kemudian tekan Cari + S. Atau tekan dan tahan Cari atau ketik ikon Pilih untuk Bercakap berdekatan imej profil anda, kemudian pilih rantau untuk dibaca dengan lantang.</translation>
 <translation id="3414856743105198592">Memformat media mudah alih akan memadamkan semua data. Adakah anda ingin teruskan?</translation>
 <translation id="3414952576877147120">Saiz:</translation>
 <translation id="3420980393175304359">Tukar Orang</translation>
@@ -2103,7 +2099,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="4235200303672858594">Keseluruhan skrin</translation>
 <translation id="4235813040357936597">Tambah akaun untuk <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Batalkan log masuk</translation>
-<translation id="4239107879884489787">RALAT: Gagal memuatkan komponen Termina.</translation>
 <translation id="4242533952199664413">Buka tetapan</translation>
 <translation id="4242577469625748426">Gagal memasang tetapan dasar pada peranti: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Dapatkan lagi apl stilus</translation>
@@ -2257,7 +2252,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="4514610446763173167">Togol video kepada main atau jeda</translation>
 <translation id="451515744433878153">Alih keluar</translation>
 <translation id="4518677423782794009">Adakah Chrome mengalami ranap, memaparkan halaman permulaan dan bar alat yang asing serta iklan tidak diduga yang tidak dapat disingkirkan atau mengubah pengalaman penyemakan imbas anda? Anda mungkin dapat membetulkan masalah itu dengan menjalankan Pembersih Chrome.</translation>
-<translation id="4518928191942891293">Memulakan bekas dalam Termina VM.</translation>
 <translation id="4520385623207007473">Kuki yang digunakan</translation>
 <translation id="452039078290142656">peranti yang tidak diketahui daripada <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">Butiran</translation>
@@ -2959,15 +2953,14 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="5557991081552967863">Pastikan Wi-Fi hidup semasa tidur</translation>
 <translation id="5558129378926964177">Zum &amp;Masuk</translation>
 <translation id="5558446705802335921">Menyemak tapak yang anda lawati dan fail yang dimuat turun untuk mengesan gelagat atau kandungan yang berbahaya, seperti pancingan data atau perisian hasad</translation>
-<translation id="5559719557406102971">Memulakan Termina VM.</translation>
 <translation id="55601339223879446">Laraskan sempadan desktop anda dalam lingkungan paparan</translation>
 <translation id="5562781907504170924">Tab ini disambungkan ke Peranti Bluetooth.</translation>
+<translation id="5563234215388768762">Cari di Google atau taip URL</translation>
 <translation id="5565871407246142825">Kad kredit</translation>
 <translation id="5567989639534621706">Cache aplikasi</translation>
 <translation id="5568069709869097550">Tidak boleh log masuk</translation>
 <translation id="5568144734023334204">Storan Android</translation>
 <translation id="5569544776448152862">Mendaftar dalam <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
-<translation id="5572572070321843880">RALAT: Gagal memulakan Termina VM.</translation>
 <translation id="5575473780076478375">Sambungan Inkognito: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Penetapan semula peranti anda tidak akan menjejaskan akaun Google anda atau sebarang data yang disegerakkan ke akaun ini. Walau bagaimanapun, semua fail yang disimpan secara setempat pada peranti anda akan dipadamkan.</translation>
 <translation id="5578059481725149024">Auto log masuk</translation>
@@ -3509,7 +3502,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="6410668567036790476">Tambah enjin carian</translation>
 <translation id="641081527798843608">Padanan subjek</translation>
 <translation id="641105183165925463">$1 MB</translation>
-<translation id="6411517327772365857">Cari di Google atau taipkan alamat web</translation>
 <translation id="6412931879992742813">Tetingkap incognito baharu</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6418160186546245112">Berbalik kepada versi <ph name="IDS_SHORT_PRODUCT_NAME" /> yang dipasang sebelum ini</translation>

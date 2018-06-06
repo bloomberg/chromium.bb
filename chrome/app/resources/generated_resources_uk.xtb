@@ -209,6 +209,7 @@
 <translation id="1296497012903089238">Тип сертифіката</translation>
 <translation id="1297175357211070620">Місце призначення</translation>
 <translation id="1297922636971898492">Диск Google зараз недоступний. Завантаження автоматично відновиться після повторного під’єднання до Google Диска.</translation>
+<translation id="1300415640239881824">Сайт <ph name="DOMAIN" /> хоче, щоб система Google підтвердила ідентифікаційні дані вашого пристрою. Це допоможе визначити, чи він підтримує розширені можливості відтворення захищеного вмісту.</translation>
 <translation id="1300806585489372370">Щоб змінити це налаштування, спершу <ph name="BEGIN_LINK" />ввімкніть ідентифікатори<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">Дозволити JavaScript від подій Apple</translation>
 <translation id="1303101771013849280">HTML-файл із закладками</translation>
@@ -427,7 +428,6 @@
 <translation id="1624026626836496796">Це потрібно зробити лише раз. Ваші облікові дані не буде збережено.</translation>
 <translation id="1627276047960621195">Опис файлу</translation>
 <translation id="1627408615528139100">Уже завантажено</translation>
-<translation id="1632551555529177478">ПОМИЛКА. Не вдалося запустити клієнта Concierge.</translation>
 <translation id="1632803087685957583">Дає змогу налаштувати швидкість повтору клавіатури, передбачення слів тощо</translation>
 <translation id="1635033183663317347">Установив опікун.</translation>
 <translation id="1637224376458524414">Додайте цю закладку на iPhone</translation>
@@ -1119,7 +1119,6 @@
 <translation id="2686759344028411998">Неможливо знайти завантажені модулі.</translation>
 <translation id="2688196195245426394">Помилка під час реєстрації пристрою на сервері: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Показати опції мови</translation>
-<translation id="2690824726518456119">Запускається сервіс Concierge</translation>
 <translation id="2691385045260836588">Модель</translation>
 <translation id="2693176596243495071">На жаль, сталася невідома помилка. Спробуйте пізніше або зв’яжіться з адміністратором, якщо проблема не зникне.</translation>
 <translation id="2694026874607847549">1 файл cookie</translation>
@@ -1308,7 +1307,6 @@
 <translation id="2986010903908656993">Цій сторінці заборонено повністю контролювати пристрої MIDI.</translation>
 <translation id="2989474696604907455">не підключено</translation>
 <translation id="2989786307324390836">DER-кодування у двійковій формі, єдиний сертифікат</translation>
-<translation id="2993165626813508977">ПОМИЛКА. Не вдалося запустити контейнер у Termina VM.</translation>
 <translation id="2993517869960930405">Про додаток</translation>
 <translation id="2994669386200004489">Не вдалося створити резервну копію файлу "<ph name="FILE_NAME" />"</translation>
 <translation id="299483336428448530">Установили батьки.</translation>
@@ -1441,7 +1439,6 @@
 <translation id="3190558889382726167">Пароль збережено</translation>
 <translation id="3192947282887913208">Аудіофайли</translation>
 <translation id="3194737229810486521">Сайт <ph name="URL" /> хоче постійно зберігати дані на вашому пристрої</translation>
-<translation id="3197054279257119376">Завантажується компонент Termina.</translation>
 <translation id="3199127022143353223">Сервери</translation>
 <translation id="3202131003361292969">Шлях</translation>
 <translation id="3202173864863109533">Звук на цій вкладці вимкнено.</translation>
@@ -1567,7 +1564,6 @@
 <translation id="3407837288045706722">Інші налаштування конфіденційності, безпеки та збору данних доступні в розділі <ph name="BEGIN_LINK" />Синхронізація та персоналізація<ph name="END_LINK" /></translation>
 <translation id="3412265149091626468">Перейти до виділення</translation>
 <translation id="3413122095806433232">Видавці ЦС: <ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">Щоб озвучити текст, виділіть потрібний фрагмент і натисніть клавішу пошуку + S. Також можна утримувати клавішу пошуку чи торкнутися значка "Читання з екрана" біля зображення профілю, а тоді вибрати уривок, який потрібно зачитати.</translation>
 <translation id="3414856743105198592">Форматування знімного носія призведе до стирання всіх даних. Продовжити?</translation>
 <translation id="3414952576877147120">Розмір:</translation>
 <translation id="3420980393175304359">Змінити користувача</translation>
@@ -2102,7 +2098,6 @@
 <translation id="4235200303672858594">Увесь екран</translation>
 <translation id="4235813040357936597">Додати обліковий запис у профіль <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Скасувати вхід</translation>
-<translation id="4239107879884489787">ПОМИЛКА. Не вдалося завантажити компонент Termina.</translation>
 <translation id="4242533952199664413">Відкрити налаштування</translation>
 <translation id="4242577469625748426">Помилка встановлення налаштувань правил на пристрої: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Більше додатків із використанням стилуса</translation>
@@ -2256,7 +2251,6 @@
 <translation id="4514610446763173167">Відтворити або призупинити відео</translation>
 <translation id="451515744433878153">Видалити</translation>
 <translation id="4518677423782794009">Chrome припиняє роботу, показує незвичні початкові сторінки, панелі інструментів або неочікувані оголошення, яких ви не можете позбутися, тощо? Можливо, вам удасться вирішити цю проблему за допомогою Майстра очищення Chrome.</translation>
-<translation id="4518928191942891293">Запускається контейнер у Termina VM.</translation>
 <translation id="4520385623207007473">Активні файли cookie</translation>
 <translation id="452039078290142656">невідомі пристрої від постачальника <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">Деталі</translation>
@@ -2958,15 +2952,14 @@
 <translation id="5557991081552967863">Не від’єднуватися від мережі Wi-Fi у режимі сну</translation>
 <translation id="5558129378926964177">Збільшити &amp;масштаб</translation>
 <translation id="5558446705802335921">Перевіряє відвідані сайти та завантажені файли на наявність шкідливої поведінки або вмісту, як-от фішингу чи зловмисного програмного забезпечення</translation>
-<translation id="5559719557406102971">Запускається Termina VM.</translation>
 <translation id="55601339223879446">Налаштуйте межі робочого столу на дисплеї</translation>
 <translation id="5562781907504170924">Цю вкладку під’єднано до пристрою Bluetooth.</translation>
+<translation id="5563234215388768762">Шукайте в Google або введіть URL-адресу</translation>
 <translation id="5565871407246142825">Кредитні картки</translation>
 <translation id="5567989639534621706">Кеші програми</translation>
 <translation id="5568069709869097550">Не вдалося ввійти</translation>
 <translation id="5568144734023334204">Пам’ять Android</translation>
 <translation id="5569544776448152862">Реєстрація в <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />…</translation>
-<translation id="5572572070321843880">ПОМИЛКА. Не вдалося запустити Termina VM.</translation>
 <translation id="5575473780076478375">Розширення в режимі анонімного перегляду: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Скидання пристрою не вплине на ваші облікові записи Google чи дані, синхронізовані з цими обліковими записами. Проте, усі збережені на вашому пристрої файли буде видалено.</translation>
 <translation id="5578059481725149024">Автоматичний вхід</translation>
@@ -3508,7 +3501,6 @@
 <translation id="6410668567036790476">Додати пошукову систему</translation>
 <translation id="641081527798843608">Збіг суб’єкта</translation>
 <translation id="641105183165925463">$1 МБ</translation>
-<translation id="6411517327772365857">Шукайте в Google або введіть веб-адресу</translation>
 <translation id="6412931879992742813">Нове анонімне вікно</translation>
 <translation id="6417265370957905582">Google Асистент</translation>
 <translation id="6418160186546245112">Повернення до попередньої встановленої версії <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

@@ -76,6 +76,7 @@
 <translation id="4730374152663651037">USEIN KÄYTETYT</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 kuukausi jäljellä}other{# kuukautta jäljellä}}</translation>
 <translation id="4820616160060340806">Command + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="4841881773802181781">Lisäys</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunti}other{# sekuntia}}</translation>
 <translation id="4971687151119236543">Media: edellinen kappale</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
@@ -118,6 +119,7 @@
 <translation id="6612467943526193239">Poistu kalibroinnista painamalla Esc.</translation>
 <translation id="6620110761915583480">Tallenna tiedosto</translation>
 <translation id="6699343763173986273">Media: seuraava kappale</translation>
+<translation id="673773751041746814">Poisto</translation>
 <translation id="6786750046913594791">Sulje kansio</translation>
 <translation id="6808150112686056157">Media: pysäytä</translation>
 <translation id="6845383723252244143">Valitse kansio</translation>

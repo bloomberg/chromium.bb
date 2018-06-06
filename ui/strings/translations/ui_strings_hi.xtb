@@ -58,8 +58,8 @@
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” को खोजें</translation>
 <translation id="364720409959344976">अपलोड करने के लिए फ़ोल्‍डर चुनें</translation>
 <translation id="3660179305079774227">ऊपर तीर</translation>
-<translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
-<translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3740362395218339114"><ph name="QUANTITY" /> जीबी/सेकंड</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY" /> जीबी</translation>
 <translation id="385051799172605136">वापस</translation>
 <translation id="3889424535448813030">दायां तीर</translation>
 <translation id="3892641579809465218">आंतरिक डिस्प्ले</translation>
@@ -76,6 +76,7 @@
 <translation id="4730374152663651037">अक्सर उपयोग किए गए</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 माह शेष}one{# माह शेष}other{# माह शेष}}</translation>
 <translation id="4820616160060340806">आदेश+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="4841881773802181781">डालना</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 सेकंड}one{# सेकंड}other{# सेकंड}}</translation>
 <translation id="4971687151119236543">मीडिया पिछला ट्रैक</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
@@ -118,6 +119,7 @@
 <translation id="6612467943526193239">कैलिब्रेशन से बाहर निकलने के लिए Esc दबाएं.</translation>
 <translation id="6620110761915583480">फ़ाइल सहेजें</translation>
 <translation id="6699343763173986273">मीडिया अगला ट्रैक</translation>
+<translation id="673773751041746814">मिटाना</translation>
 <translation id="6786750046913594791">फ़ोल्डर बंद करें</translation>
 <translation id="6808150112686056157">मीडिया रोकें</translation>
 <translation id="6845383723252244143">फ़ोल्डर को चुनें</translation>
@@ -174,5 +176,5 @@
 <translation id="9150735707954472829">टैब</translation>
 <translation id="9161053988251441839">सुझाए गए ऐप्लिकेशन</translation>
 <translation id="9170848237812810038">&amp;पूर्ववत् करें</translation>
-<translation id="932327136139879170">मुख्यपृष्ठ</translation>
+<translation id="932327136139879170">होम</translation>
 </translationbundle>

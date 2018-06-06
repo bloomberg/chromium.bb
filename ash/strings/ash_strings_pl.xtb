@@ -91,6 +91,7 @@
 <translation id="2761704814324807722">Pasek stanu, godzina <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Ponownie łączę z: <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt+Szukaj</translation>
+<translation id="2805756323405976993">Aplikacje</translation>
 <translation id="2819276065543622893">Zostaniesz teraz wylogowany.</translation>
 <translation id="2825619548187458965">Półka</translation>
 <translation id="2844169650293029770">Urządzenie USB-C (przedni port na lewym boku)</translation>
@@ -118,6 +119,7 @@
 <translation id="3236488194889173876">Brak dostępnych sieci komórkowych</translation>
 <translation id="3294437725009624529">Gość</translation>
 <translation id="332587331255250389">Wymień baterię</translation>
+<translation id="3351879221545518001">Obecnie przesyłasz ekran.</translation>
 <translation id="3364721542077212959">Narzędzia rysika</translation>
 <translation id="3368922792935385530">Połączone</translation>
 <translation id="3371140690572404006">Urządzenie USB-C (przedni port na prawym boku)</translation>
@@ -173,6 +175,7 @@
 <translation id="4527045527269911712">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> do pełnego naładowania</translation>
 <translation id="4544944664594876241">Zmieniliśmy skrót, który blokuje ekran. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
+<translation id="4564869809620998694">Usługa czcionek</translation>
 <translation id="4570957409596482333">Przycisk Przeczytaj na głos</translation>
 <translation id="4659419629803378708">Włączono ChromeVox</translation>
 <translation id="4776917500594043016">Hasło dla <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -209,11 +212,13 @@
 <translation id="5744083938413354016">Przeciąganie dotykiem</translation>
 <translation id="5777841717266010279">Zakończyć udostępnianie ekranu?</translation>
 <translation id="57838592816432529">Wycisz</translation>
+<translation id="5805697420284793859">Menedżer okien</translation>
 <translation id="5820394555380036790">System operacyjny Chromium</translation>
 <translation id="5832805196449965646">Dodaj osobę</translation>
 <translation id="5860033963881614850">Wyłączone</translation>
 <translation id="5895138241574237353">Uruchom ponownie</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5911533659001334206">Przeglądarka skrótów</translation>
 <translation id="5916664084637901428">Włączone</translation>
 <translation id="5927132638760172455">Przesyłam do nieznanego odbiornika</translation>
 <translation id="5947494881799873997">Przywróć</translation>
@@ -252,6 +257,7 @@
 <translation id="6521655319214113338">Pismo odręczne</translation>
 <translation id="6528179044667508675">Nie przeszkadzać</translation>
 <translation id="6537270692134705506">Zrzut całego ekranu</translation>
+<translation id="6542521951477560771">Przesyłam do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="6585808820553845416">Sesja kończy się za <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Szukaj + Shift + K</translation>
 <translation id="6650933572246256093">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Wpisz na nim ten klucz: <ph name="PASSKEY" /></translation>
@@ -263,6 +269,8 @@
 <translation id="6715542151869432661">Nie znaleziono urządzeń mobilnych.</translation>
 <translation id="671928215901716392">Zablokuj ekran</translation>
 <translation id="6723839937902243910">Zasilanie</translation>
+<translation id="6725073593266469338">Usługa UI</translation>
+<translation id="6751826523481687655">Śledzenie wydajności jest włączone</translation>
 <translation id="6785414152754474415">Naładowanie baterii: <ph name="PERCENTAGE" />%. Trwa ładowanie.</translation>
 <translation id="6803622936009808957">Nie można wyświetlić odbicia lustrzanego, ponieważ nie znaleziono obsługiwanych rozdzielczości. Zamiast tego został włączony pulpit rozszerzony.</translation>
 <translation id="6820676911989879663">Zrób sobie przerwę</translation>
@@ -327,6 +335,7 @@
 <translation id="8351131234907093545">Utwórz notatkę</translation>
 <translation id="8392451568018454956">Menu opcji dla <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Ustawienia</translation>
+<translation id="8431190899827883166">Pokaż kliknięcia</translation>
 <translation id="8433186206711564395">Ustawienia sieci</translation>
 <translation id="8433977262951327081">Zmieniliśmy skrót, który pokazuje dymek menu opcji wejścia na półce. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="8452135315243592079">Brak karty SIM</translation>
@@ -340,6 +349,7 @@
 <translation id="8652175077544655965">Zamknij ustawienia</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Podłączono ładowarkę o małej mocy</translation>
+<translation id="8683506306463609433">Śledzenie wydajności jest aktywne</translation>
 <translation id="8734991477317290293">Klawiatura może próbować przechwycić naciskane klawisze</translation>
 <translation id="8809737090443522491">Wpisz nazwę aplikacji lub dokumentu</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
@@ -352,7 +362,9 @@
 <translation id="8921624153894383499">Asystent Google nie mówi w tym języku.</translation>
 <translation id="8938800817013097409">Urządzenie USB-C (prawy port z tyłu)</translation>
 <translation id="8940956008527784070">Niski stan baterii (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8984179138335769204">Szybkie uruchamianie</translation>
 <translation id="8995603266996330174">Zarządzane przez <ph name="DOMAIN" /></translation>
+<translation id="9033907480196064950">Aktualnie przesyłasz kartę <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon jest używany.</translation>
@@ -368,4 +380,5 @@
 <translation id="923686485342484400">Naciśnij dwukrotnie Control Shift Q, by się wylogować.</translation>
 <translation id="945522503751344254">Wyślij zgłoszenie</translation>
 <translation id="98515147261107953">Poziomo</translation>
+<translation id="995927048686010764">Usługa automatycznego klikania</translation>
 </translationbundle>

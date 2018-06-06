@@ -88,6 +88,7 @@
 <translation id="1123187597739372905">Tampilkan setelan sinkronisasi</translation>
 <translation id="1123316951456119629">Dengan memutuskan kaitan Akun Google Anda dari <ph name="PRODUCT_NAME" />, data Anda akan tetap di komputer ini, namun perubahan tidak lagi disinkronkan ke Google Akun Anda. Data yang sudah disimpan di Akun Google akan tetap disimpan di sana hingga Anda menghapusnya menggunakan <ph name="BEGIN_LINK" />Google Dasbor<ph name="END_LINK" />.</translation>
 <translation id="1124772482545689468">Pengguna</translation>
+<translation id="1125550662859510761">Sepertinya <ph name="WIDTH" /> x <ph name="HEIGHT" /> (Asli)</translation>
 <translation id="1128109161498068552">Jangan izinkan situs apa pun untuk menggunakan pesan eksklusif sistem untuk mengakses perangkat MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Edit mesin telusur</translation>
@@ -100,6 +101,7 @@
 <translation id="1145292499998999162">Plugin diblokir</translation>
 <translation id="1145532888383813076">Telusuri perangkat, aplikasi, dan web.</translation>
 <translation id="1146204723345436916">Impor bookmark dari file HTML...</translation>
+<translation id="114721135501989771">Dapatkan perangkat smart Google di Chrome</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> ditemukan.
     <ph name="LINE_BREAK1" />
     Tidak cukup ruang yang tersedia di penyimpanan lokal. Perlu tambahan <ph name="FILE_SIZE" />.
@@ -207,6 +209,7 @@
 <translation id="1296497012903089238">Jenis Sertifikat</translation>
 <translation id="1297175357211070620">Tujuan</translation>
 <translation id="1297922636971898492">Saat ini Google Drive tidak tersedia. Upload akan dimulai ulang secara otomatis setelah Google Drive aktif kembali.</translation>
+<translation id="1300415640239881824"><ph name="DOMAIN" /> ingin agar identitas perangkat Anda diverifikasi oleh Google, guna menentukan kelayakan untuk pemutaran konten terlindungi yang ditingkatkan.</translation>
 <translation id="1300806585489372370">Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />aktifkan pengenal<ph name="END_LINK" /> terlebih dahulu</translation>
 <translation id="1302227299132585524">Izinkan JavaScript dari Apple Events</translation>
 <translation id="1303101771013849280">File HTML Bookmark</translation>
@@ -270,6 +273,7 @@
 <translation id="1396963298126346194">Nama pengguna dan sandi yang Anda masukkan tidak cocok</translation>
 <translation id="1397854323885047133">Sinkronisasi dan personalisasi</translation>
 <translation id="1398853756734560583">Perbesar</translation>
+<translation id="1399511500114202393">Tidak ada sertifikat pengguna</translation>
 <translation id="140250605646987970">Ponsel Anda telah ditemukan. Namun Smart Lock hanya bekerja di perangkat dengan Android 5.0 dan yang lebih baru. &lt;a&gt;Pelajari lebih lanjut&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Dilindungi)</translation>
 <translation id="1405476660552109915">Ingin <ph name="PASSWORD_MANAGER_BRAND" /> menyimpan akun untuk situs ini?</translation>
@@ -356,6 +360,7 @@
 <translation id="1511388193702657997">Tawarkan untuk menyimpan sandi web Anda</translation>
 <translation id="1512210426710821809">Satu-satunya cara untuk mengurungkan tindakan ini adalah dengan menginstal ulang <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Diimpor Dari Safari</translation>
+<translation id="1520605251886806589">Google dapat menggunakan konten di situs yang Anda buka, aktivitas dan interaksi browsing untuk mempersonalisasi Chrome dan layanan Google lainnya seperti Terjemahan, Penelusuran, dan iklan. Anda dapat menyesuaikannya di Setelan.</translation>
 <translation id="1521442365706402292">Kelola sertifikat</translation>
 <translation id="152234381334907219">Jangan Pernah Disimpan</translation>
 <translation id="1524430321211440688">Keyboard</translation>
@@ -423,12 +428,12 @@
 <translation id="1624026626836496796">Hal ini hanya akan terjadi sekali, dan kredensial Anda tidak akan disimpan.</translation>
 <translation id="1627276047960621195">Deskriptor File</translation>
 <translation id="1627408615528139100">Sudah didownload</translation>
-<translation id="1632551555529177478">ERROR: Gagal memulai klien Concierge.</translation>
 <translation id="1632803087685957583">Memungkinkan Anda menyesuaikan tingkat pengulangan keyboard, prediksi kata, dan lainnya</translation>
 <translation id="1635033183663317347">Dipasang oleh wali Anda.</translation>
 <translation id="1637224376458524414">Akses bookmark di iPhone</translation>
 <translation id="1637765355341780467">Terjadi kesalahan saat membuka profil Anda. Beberapa fitur mungkin tidak tersedia.</translation>
 <translation id="1639239467298939599">Memuat</translation>
+<translation id="163993578339087550"><ph name="SERVICE_NAME" /> ingin memeriksa apakah Anda menggunakan perangkat Chrome OS yang memenuhi syarat.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 Dengan Enkripsi RSA</translation>
 <translation id="1642494467033190216">Anda perlu menghapus perlindungan rootfs dan memulai ulang perangkat sebelum mengaktifkan fitur debug lainnya.</translation>
 <translation id="1643050526526937107">Cukup sinkronkan</translation>
@@ -762,6 +767,7 @@
 <translation id="2151576029659734873">Indeks tab yang dimasukkan tidak valid.</translation>
 <translation id="2154484045852737596">Edit kartu</translation>
 <translation id="2154710561487035718">Salin URL</translation>
+<translation id="2155772377859296191">Sepertinya <ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="215753907730220065">Keluar dari Tampilan Layar Penuh</translation>
 <translation id="2157875535253991059">Sekarang halaman ini dalam mode layar penuh.</translation>
 <translation id="216169395504480358">Tambahkan Wi-Fi...</translation>
@@ -920,6 +926,7 @@
 <translation id="2408955596600435184">Masukkan PIN</translation>
 <translation id="241082044617551207">Plugin tidak dikenal</translation>
 <translation id="2413749388954403953">Mengubah antarmuka pengguna bookmark</translation>
+<translation id="2419706071571366386">Untuk keamanan, logout jika komputer tidak digunakan.</translation>
 <translation id="2422426094670600218">&lt;tanpanama&gt;</translation>
 <translation id="2423578206845792524">Sim&amp;pan gambar sebagai...</translation>
 <translation id="2425665904502185219">Ukuran file total</translation>
@@ -1001,6 +1008,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="253434972992662860">&amp;Jeda</translation>
 <translation id="2534460670861217804">Proxy HTTP Aman</translation>
 <translation id="253557089021624350">Jumlah aktivitas yang tetap aktif</translation>
+<translation id="2538361623464451692">Sinkronisasi dinonaktifkan</translation>
 <translation id="2541423446708352368">Tampilkan semua download</translation>
 <translation id="2542049655219295786">Tabel Google</translation>
 <translation id="2544853746127077729">Sertifikat autentikasi ditolak oleh jaringan</translation>
@@ -1111,7 +1119,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="2686759344028411998">Tidak dapat mendeteksi modul apa pun yang dimuat.</translation>
 <translation id="2688196195245426394">Terjadi kesalahan saat mendaftarkan perangkat dengan server: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Tampilkan opsi bahasa</translation>
-<translation id="2690824726518456119">Memulai layanan Concierge.</translation>
 <translation id="2691385045260836588">Model</translation>
 <translation id="2693176596243495071">Maaf, terjadi error yang tidak diketahui. Harap coba lagi nanti atau hubungi administrator jika masalah masih berlanjut.</translation>
 <translation id="2694026874607847549">1 cookie</translation>
@@ -1300,7 +1307,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="2986010903908656993">Halaman ini diblokir karena memiliki kontrol penuh atas perangkat MIDI.</translation>
 <translation id="2989474696604907455">tidak terlampir</translation>
 <translation id="2989786307324390836">Biner bersandiaksara DER, satu sertifikat</translation>
-<translation id="2993165626813508977">ERROR: Gagal memulai penampung di dalam VM Termina.</translation>
 <translation id="2993517869960930405">Info Aplikasi</translation>
 <translation id="2994669386200004489">Tidak dapat mem-backup <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Dipasang oleh orang tua kami.</translation>
@@ -1433,7 +1439,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="3190558889382726167">Sandi tersimpan</translation>
 <translation id="3192947282887913208">File Audio</translation>
 <translation id="3194737229810486521"><ph name="URL" /> ingin menyimpan data di perangkat Anda secara permanen</translation>
-<translation id="3197054279257119376">Memuat komponen Termina.</translation>
 <translation id="3199127022143353223">Server</translation>
 <translation id="3202131003361292969">Jalur</translation>
 <translation id="3202173864863109533">Audio tab ini dinonaktifkan.</translation>
@@ -1559,7 +1564,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="3407837288045706722">Untuk setelan lainnya yang berkaitan dengan privasi, setelan, dan pengumpulan data, lihat <ph name="BEGIN_LINK" />Sinkronisasi dan personalisasi<ph name="END_LINK" /></translation>
 <translation id="3412265149091626468">Lompat ke Pilihan</translation>
 <translation id="3413122095806433232">Penerbit CA: <ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">Menandai teks yang ingin Anda dengar, lalu tekan tombol Penelusuran + S. Atau tekan dan tahan tombol penelusuran, atau tap ikon Klik untuk Diucapkan dekat gambar profil, lalu pilih area teks untuk dibacakan dengan keras.</translation>
 <translation id="3414856743105198592">Memformat media yang dapat dilepas akan menghapus semua data. Apakah Anda ingin melanjutkan?</translation>
 <translation id="3414952576877147120">Ukuran:</translation>
 <translation id="3420980393175304359">Ganti Orang</translation>
@@ -2094,7 +2098,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="4235200303672858594">Seluruh layar</translation>
 <translation id="4235813040357936597">Tambahkan Akun untuk <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Batalkan proses masuk</translation>
-<translation id="4239107879884489787">ERROR: Gagal memuat komponen Termina.</translation>
 <translation id="4242533952199664413">Buka setelan</translation>
 <translation id="4242577469625748426">Gagal memasang setelan kebijakan di perangkat: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Temukan aplikasi stilus lainnya</translation>
@@ -2134,6 +2137,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="4296575653627536209">Tambahkan Pengguna yang Dilindungi</translation>
 <translation id="4297322094678649474">Ubah Bahasa</translation>
 <translation id="4300305918532693141">Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph name="END_LINK" />.</translation>
+<translation id="4301561945776138921">Tidak ada sandi yang tersimpan untuk situs ini.</translation>
 <translation id="4305227814872083840">lama (2 dtk)</translation>
 <translation id="4306119971288449206">Aplikasi harus disediakan dengan jenis konten "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K langsung)</translation>
@@ -2244,9 +2248,9 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="4508765956121923607">Lihat S&amp;umber</translation>
 <translation id="451407183922382411">Diberdayakan oleh <ph name="COMPANY_NAME" /></translation>
 <translation id="4514542542275172126">Menyiapkan pengguna yang dilindungi yang baru</translation>
+<translation id="4514610446763173167">Alihkan video untuk diputar atau dijeda</translation>
 <translation id="451515744433878153">Hapus</translation>
 <translation id="4518677423782794009">Apakah Chrome tidak bekerja, menampilkan halaman mulai, toolbar yang tidak biasanya, iklan pop-up yang tidak dapat ditutup, atau mengubah pengalaman penjelajahan web Anda? Anda dapat memperbaiki masalah ini dengan menjalankan Alat Pembersih Chrome.</translation>
-<translation id="4518928191942891293">Memulai container di dalam Termina VM.</translation>
 <translation id="4520385623207007473">Cookie yang sedang digunakan</translation>
 <translation id="452039078290142656">perangkat tak dikenal dari <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">Detail</translation>
@@ -2376,6 +2380,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="4716483597559580346">Powerwash untuk keamanan tambahan</translation>
 <translation id="4720113199587244118">Tambahkan Perangkat</translation>
 <translation id="4720185134442950733">Jaringan data seluler</translation>
+<translation id="4722735765955348426">Sandi untuk <ph name="USERNAME" /></translation>
 <translation id="4722920479021006856"><ph name="APP_NAME" /> berbagi layar Anda.</translation>
 <translation id="4724450788351008910">Afiliasi Diubah</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> foto dicadangkan</translation>
@@ -2461,6 +2466,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="4858913220355269194">Ronaldo</translation>
 <translation id="4862050643946421924">Menambahkan perangkat...</translation>
 <translation id="4862642413395066333">Tanggapan OCSP Penandatanganan</translation>
+<translation id="4863769717153320198">Sepertinya <ph name="WIDTH" /> x <ph name="HEIGHT" /> (Default)</translation>
 <translation id="4864369630010738180">Login...</translation>
 <translation id="486635084936119914">Buka jenis file tertentu secara otomatis setelah didownload</translation>
 <translation id="4869142322204669043">Google dapat menggunakan konten di situs yang Anda buka, aktivitas browsing, dan interaksi untuk mempersonalisasi <ph name="IDS_SHORT_PRODUCT_NAME" /> dan layanan Google lainnya seperti Terjemahan, Penelusuran, dan iklan. Anda dapat menyesuaikannya kapan saja di Setelan.</translation>
@@ -2946,15 +2952,14 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="5557991081552967863">Tetap aktifkan Wi-Fi saat dalam mode tidur</translation>
 <translation id="5558129378926964177">Per&amp;besar</translation>
 <translation id="5558446705802335921">Memeriksa situs yang Anda buka dan file yang Anda download untuk mencari perilaku atau konten berbahaya, seperti phishing atau malware</translation>
-<translation id="5559719557406102971">Memulai Termina VM.</translation>
 <translation id="55601339223879446">Menyesuaikan batas desktop Anda dalam tampilan</translation>
 <translation id="5562781907504170924">Tab ini terhubung ke Perangkat Bluetooth.</translation>
+<translation id="5563234215388768762">Telusuri Google atau ketik URL</translation>
 <translation id="5565871407246142825">Kartu kredit</translation>
 <translation id="5567989639534621706">Cache aplikasi</translation>
 <translation id="5568069709869097550">Tidak dapat sign in</translation>
 <translation id="5568144734023334204">Penyimpanan Android</translation>
 <translation id="5569544776448152862">Mendaftarkan di <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
-<translation id="5572572070321843880">ERROR: Gagal memulai VM Termina.</translation>
 <translation id="5575473780076478375">Ekstensi Penyamaran: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Penyetelan ulang perangkat Anda tidak akan memengaruhi akun Google Anda atau data yang disinkronkan ke akun ini. Namun, semua file yang disimpan secara lokal pada perangkat Anda akan terhapus.</translation>
 <translation id="5578059481725149024">Login otomatis</translation>
@@ -3054,6 +3059,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="572392919096807438">Ingat keputusan saya</translation>
 <translation id="5727728807527375859">Ekstensi, aplikasi, dan tema dapat membahayakan komputer. Yakin ingin lanjut?</translation>
 <translation id="5729712731028706266">&amp;Lihat</translation>
+<translation id="5731185123186077399">Layanan Google yang dipersonalisasi seperti Google Pay</translation>
 <translation id="5731247495086897348">Tem&amp;pel dan Buka</translation>
 <translation id="5731409020711461763">1 foto baru</translation>
 <translation id="5734362860645681824">Komunikasi</translation>
@@ -3495,7 +3501,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="6410668567036790476">Tambahkan mesin telusur</translation>
 <translation id="641081527798843608">Kecocokan subjek</translation>
 <translation id="641105183165925463">$1 MB</translation>
-<translation id="6411517327772365857">Telusuri Google atau ketik alamat web</translation>
 <translation id="6412931879992742813">Jendela samaran baru</translation>
 <translation id="6417265370957905582">Asisten Google</translation>
 <translation id="6418160186546245112">Mengembalikan ke versi <ph name="IDS_SHORT_PRODUCT_NAME" /> yang terpasang sebelumnya</translation>
@@ -4106,6 +4111,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="7366415735885268578">Tambahkan situs</translation>
 <translation id="7366909168761621528">Data browsing</translation>
 <translation id="7371006317849674875">Waktu mulai</translation>
+<translation id="737439367876257440">Sempurnakan Chrome dan keamanannya dengan mengirimkan informasi penggunaan dan sistem ke Google</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Sorot kursor mouse saat kursor berpindah</translation>
 <translation id="7377169924702866686">Caps Lock aktif.</translation>
@@ -4534,6 +4540,7 @@ Menginstal <ph name="APP_NAME" /> akan mendownload <ph name="DOWNLOAD_SIZE" /> d
 <translation id="7984068253310542383">Cerminkan <ph name="DISPLAY_NAME" /></translation>
 <translation id="7984180109798553540">Agar lebih aman, <ph name="PRODUCT_NAME" /> akan mengenkripsi data Anda.</translation>
 <translation id="7986295104073916105">Membaca dan mengubah setelan sandi yang tersimpan</translation>
+<translation id="7987764905897278458">Dapatkan perangkat smart Google lainnya</translation>
 <translation id="7988355189918024273">Aktifkan fitur aksesibilitas</translation>
 <translation id="7994702968232966508">Metode EAP</translation>
 <translation id="799547531016638432">Hapus pintasan</translation>
@@ -4803,6 +4810,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8427292751741042100">disematkan di host mana saja</translation>
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8428634594422941299">Mengerti</translation>
+<translation id="84297032718407999">Anda akan logout dalam <ph name="LOGOUT_TIME_LEFT" /></translation>
 <translation id="8431909052837336408">Ubah PIN SIM</translation>
 <translation id="8434480141477525001">Port Debug NaCl</translation>
 <translation id="843760761634048214">Simpan kartu kredit</translation>
@@ -5259,6 +5267,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="912419004897138677">Codec</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> tersisa)</translation>
 <translation id="9128870381267983090">Sambungkan ke jaringan</translation>
+<translation id="9129010913019873477"><ph name="PERCENTAGE" /> (default)</translation>
 <translation id="9130015405878219958">Mode yang dimasukkan tidak valid.</translation>
 <translation id="9130775360844693113">Anggota '<ph name="DESTINATION_NAME" />' akan mendapatkan akses ke item berikut.</translation>
 <translation id="9131487537093447019">Kirim pesan ke dan terima pesan dari perangkat Bluetooth.</translation>
@@ -5335,6 +5344,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="960719561871045870">Kode operator</translation>
 <translation id="960987915827980018">Sekitar 1 jam lagi</translation>
 <translation id="962802172452141067">Cabang folder bookmark</translation>
+<translation id="964286338916298286">Administrator IT telah menonaktifkan Chrome Goodies untuk perangkat Anda.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Aplikasi}other{Aplikasi}}</translation>
 <translation id="968000525894980488">Aktifkan layanan Google Play.</translation>
 <translation id="968174221497644223">Cache aplikasi</translation>

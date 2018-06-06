@@ -76,6 +76,7 @@
 <translation id="4730374152663651037">DAŽNAI NAUDOJAMOS PROGRAMOS</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Liko 1 mėnuo}one{Liko # mėnuo}few{Liko # mėnesiai}many{Liko # mėnesio}other{Liko # mėnesių}}</translation>
 <translation id="4820616160060340806">„Command“ + „<ph name="KEY_COMBO_NAME" />“</translation>
+<translation id="4841881773802181781">Įterpimas</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekundė}one{# sekundė}few{# sekundės}many{# sekundės}other{# sekundžių}}</translation>
 <translation id="4971687151119236543">Ankstesnis medijos takelis</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
@@ -118,6 +119,7 @@
 <translation id="6612467943526193239">Jei norite išeiti iš kalibravimo, paspauskite „Esc“.</translation>
 <translation id="6620110761915583480">Išsaugoti failą</translation>
 <translation id="6699343763173986273">Kitas medijos takelis</translation>
+<translation id="673773751041746814">Trynimas</translation>
 <translation id="6786750046913594791">Uždaryti aplanką</translation>
 <translation id="6808150112686056157">Sustabdyti mediją</translation>
 <translation id="6845383723252244143">Pasirinkti aplanką</translation>

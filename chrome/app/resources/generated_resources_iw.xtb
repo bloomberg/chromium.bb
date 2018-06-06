@@ -207,6 +207,7 @@
 <translation id="1296497012903089238">סוג אישור</translation>
 <translation id="1297175357211070620">יעד</translation>
 <translation id="1297922636971898492">‏Google Drive אינו זמין כעת. ההעלאה תופעל מחדש באופן אוטומטי לאחר ש-Google Drive יחזור לפעול.</translation>
+<translation id="1300415640239881824">‏הדומיין <ph name="DOMAIN" /> ‏רוצה לאמת את זהות המכשיר שלך בעזרת Google, כדי להחליט אם הוא כשיר להפעלה משופרת של תוכן מוגן.</translation>
 <translation id="1300806585489372370">כדי לשנות את ההגדרה הזו, ראשית יש <ph name="BEGIN_LINK" />להפעיל מזהים<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">‏התרת JavaScript מאירועי Apple</translation>
 <translation id="1303101771013849280">‏קובץ HTML לסימניות</translation>
@@ -420,7 +421,6 @@
 <translation id="1624026626836496796">זה יקרה רק פעם אחת, והאישורים שלך לא יישמרו.</translation>
 <translation id="1627276047960621195">מתארי קבצים</translation>
 <translation id="1627408615528139100">כבר הורד</translation>
-<translation id="1632551555529177478">‏שגיאה: הפעלת הלקוח של Concierge נכשלה.</translation>
 <translation id="1632803087685957583">הגדרה זו מאפשרת לך להתאים את קצב החזרה של המקלדת, חיזוי מילים ועוד</translation>
 <translation id="1635033183663317347">הותקן על ידי האפוטרופוס שלך.</translation>
 <translation id="1637224376458524414">‏שליחה של סימניה זו למכשיר ה-iPhone</translation>
@@ -1108,7 +1108,6 @@
 <translation id="2686759344028411998">לא ניתן לזהות מודולים שנטענו.</translation>
 <translation id="2688196195245426394">אירעה שגיאה בעת רישום המכשיר בשרת: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">הצג אפשרויות שפה</translation>
-<translation id="2690824726518456119">‏הפעלת שירות Concierge.</translation>
 <translation id="2691385045260836588">דגם</translation>
 <translation id="2693176596243495071">אופס. אירעה שגיאה לא ידועה. כדאי לנסות שוב מאוחר יותר, או לפנות אל מנהל המערכת אם הבעיה ממשיכה.</translation>
 <translation id="2694026874607847549">‏קובץ Cookie אחד</translation>
@@ -1297,7 +1296,6 @@
 <translation id="2986010903908656993">‏האפשרות לשליטה מלאה על מכשירי MIDI נחסמה עבור דף זה.</translation>
 <translation id="2989474696604907455">לא מחובר</translation>
 <translation id="2989786307324390836">‏בינארי בקידוד DER, אישור יחיד</translation>
-<translation id="2993165626813508977">‏שגיאה: הפעלת המאגר בתוך Termina VM נכשלה.</translation>
 <translation id="2993517869960930405">מידע על היישום</translation>
 <translation id="2994669386200004489">לא ניתן היה לגבות את <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">הותקן על ידי ההורה שלך.</translation>
@@ -1430,7 +1428,6 @@
 <translation id="3190558889382726167">הסיסמה נשמרה</translation>
 <translation id="3192947282887913208">קובצי אודיו</translation>
 <translation id="3194737229810486521"><ph name="URL" /> רוצה לאחסן נתונים במכשיר שלך באופן קבוע</translation>
-<translation id="3197054279257119376">‏טעינת רכיב Termina.</translation>
 <translation id="3199127022143353223">שרתים</translation>
 <translation id="3202131003361292969">נתיב</translation>
 <translation id="3202173864863109533">האודיו בכרטיסייה זו מושתק.</translation>
@@ -1556,7 +1553,6 @@
 <translation id="3407837288045706722">בדף <ph name="BEGIN_LINK" />סינכרון והתאמה אישית<ph name="END_LINK" /> אפשר למצוא הגדרות נוספות בנושא פרטיות, אבטחה ואיסוף נתונים</translation>
 <translation id="3412265149091626468">עבור אל בחירה</translation>
 <translation id="3413122095806433232">מנפיקי רשות אישורים: <ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">‏יש להדגיש את הטקסט להשמעה ולהקיש על מקש החיפוש יחד עם מקש S. לחלופין, אפשר ללחוץ לחיצה ארוכה על מקש החיפוש או להקיש על סמל ההקראה ליד תמונת הפרופיל ואז לבחור אזור להקראה.</translation>
 <translation id="3414856743105198592">פרמוט המדיה הנשלפת יגרום למחיקת כל הנתונים. האם ברצונך להמשיך?</translation>
 <translation id="3414952576877147120">גודל:</translation>
 <translation id="3420980393175304359">החלף משתמש</translation>
@@ -2091,7 +2087,6 @@
 <translation id="4235200303672858594">כל המסך</translation>
 <translation id="4235813040357936597">הוסף חשבון עבור <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">בטל כניסה</translation>
-<translation id="4239107879884489787">‏שגיאה: הטעינה של רכיב Termina נכשלה.</translation>
 <translation id="4242533952199664413">פתח את 'הגדרות'</translation>
 <translation id="4242577469625748426">התקנת הגדרות המדיניות במכשיר: <ph name="VALIDATION_ERROR" /> נכשלה.</translation>
 <translation id="4244238649050961491">חפש עוד אפליקציות לשימוש בסטיילוס</translation>
@@ -2243,7 +2238,6 @@
 <translation id="4514542542275172126">הגדר משתמש חדש בפיקוח</translation>
 <translation id="451515744433878153">הסר</translation>
 <translation id="4518677423782794009">‏האם Chrome קורס, מציג דפי פתיחה חריגים, מודעות לא צפויות או סרגלי כלים שאי אפשר להיפטר מהם או שמשנים באופן כלשהו את חוויית הגלישה? ייתכן שתוכל לפתור את הבעיה באמצעות הפעלה של Chrome Cleanup Tool.</translation>
-<translation id="4518928191942891293">‏הפעלת מאגר בתוך Termina VM.</translation>
 <translation id="4520385623207007473">‏קובצי Cookie בשימוש</translation>
 <translation id="452039078290142656">מכשירים בלתי ידועים של <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">פרטים</translation>
@@ -2944,15 +2938,14 @@
 <translation id="5557991081552967863">‏ה-Wi-Fi ימשיך לפעול בזמן שינה</translation>
 <translation id="5558129378926964177">הת&amp;קרב</translation>
 <translation id="5558446705802335921">בדיקת אתרים שאליהם נכנסת וקבצים שהורדת כדי לחפש התנהגות או תוכן בעייתיים, כמו דיוג או תוכנות זדוניות</translation>
-<translation id="5559719557406102971">‏הפעלת Termina VM.</translation>
 <translation id="55601339223879446">שנה את גבולות שולחן העבודה שלך בצג</translation>
 <translation id="5562781907504170924">‏הכרטיסייה הזו מחוברת להתקן Bluetooth.</translation>
+<translation id="5563234215388768762">‏אפשר לחפש ב-Google או להקליד כתובת אתר</translation>
 <translation id="5565871407246142825">כרטיסי אשראי</translation>
 <translation id="5567989639534621706">קובצי מטמון של יישום</translation>
 <translation id="5568069709869097550">אי אפשר להיכנס</translation>
 <translation id="5568144734023334204">‏אחסון ב-Android</translation>
 <translation id="5569544776448152862">נרשם ל-<ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
-<translation id="5572572070321843880">‏שגיאה: הפעלת Termina VM נכשלה.</translation>
 <translation id="5575473780076478375">תוסף של גלישה פרטית: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">‏איפוס של המכשיר לא ישפיע על חשבונות Google שלך או על נתונים המסונכרנים לחשבונות אלה. אך כל הקבצים המאוחסנים במכשיר באופן מקומי יימחקו.</translation>
 <translation id="5578059481725149024">כניסה אוטומטית</translation>
@@ -3493,7 +3486,6 @@
 <translation id="6410668567036790476">הוספת מנוע חיפוש</translation>
 <translation id="641081527798843608">התאמת נושא</translation>
 <translation id="641105183165925463">$1 MB</translation>
-<translation id="6411517327772365857">‏אפשר לחפש ב-Google או להקליד כתובת אינטרנט</translation>
 <translation id="6412931879992742813">חלון חדש של גלישה בסתר</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6418160186546245112">חוזר לגרסה המותקנת הקודמת של <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

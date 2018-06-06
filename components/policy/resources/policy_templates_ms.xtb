@@ -508,38 +508,6 @@
       Jika tetapan ini didayakan, sejarah penyemakan imbas tidak disimpan. Tetapan ini turut melumpuhkan penyegerakan tab.
 
       Jika tetapan ini dilumpuhkan atau tidak ditetapkan, sejarah penyemakan imbas akan disimpan.</translation>
-<translation id="2424023834246613232">Membatalkan peraturan pilihan pencetak lalai <ph name="PRODUCT_NAME" />.
-
-      Dasar ini menetapkan peraturan untuk memilih pencetak lalai dalam <ph name="PRODUCT_NAME" /> yang berlaku pada kali pertama fungsi cetak digunakan dengan profil.
-
-      Apabila dasar ini ditetapkan, <ph name="PRODUCT_NAME" /> akan cuba mencari pencetak yang sepadan dengan semua atribut yang dinyatakan dan memilih pencetak itu sebagai pencetak lalai. Pencetak pertama yang didapati sepadan dengan dasar ini akan dipilih, sekiranya padanan tidak unik berlaku, mana-mana pencetak yang sepadan akan dipilih, bergantung pada urutan pencetak itu ditemui.
-
-      Jika dasar ini tidak ditetapkan atau pencetak yang sepadan tidak ditemui dalam tempoh tamat masa, pencetak akan menggunakan pencetak PDF terbina dalam lalai atau tiada pencetak akan dipilih, apabila pencetak PDF tidak tersedia.
-
-      Nilai ini dihuraikan sebagai objek JSON yang mematuhi skema berikut:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regular expression to match printer id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regular expression to match printer display name.",
-            "type": "string"
-          }
-        }
-      }
-
-      Pencetak yang disambungkan pada <ph name="CLOUD_PRINT_NAME" /> dianggap sebagai <ph name="PRINTER_TYPE_CLOUD" />, manakala pencetak yang lain diklasifikasikan sebagai <ph name="PRINTER_TYPE_LOCAL" />.
-      Tindakan meninggalkan suatu medan bermakna semua nilai adalah sepadan, contohnya, tidak menetapkan sambungan akan menyebabkan Pratonton Cetakan memulakan penemuan semua jenis pencetak, setempat dan awan.
-      Pola ungkapan biasa mesti mengikuti sintaks JavaScript RegExp dan padanan bersifat sensitif huruf.</translation>
 <translation id="2426782419955104525">Mendayakan ciri Semerta <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
 
       Jika anda mendayakan tetapan ini, Semerta <ph name="PRODUCT_NAME" /> didayakan.

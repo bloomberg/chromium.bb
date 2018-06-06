@@ -497,6 +497,7 @@
 <translation id="4275830172053184480">Starta om enheten</translation>
 <translation id="4277028893293644418">Återställ lösenord</translation>
 <translation id="4280429058323657511">, utgångsdatum <ph name="EXPIRATION_DATE_ABBR" /></translation>
+<translation id="4305817255990598646">Byt</translation>
 <translation id="4312866146174492540">Blockera (standard)</translation>
 <translation id="4325863107915753736">Det gick inte att hitta artikeln</translation>
 <translation id="4326324639298822553">Kontrollera utgångsdatum och försök igen</translation>
@@ -809,6 +810,7 @@
 <translation id="6825578344716086703">Du försökte besöka <ph name="DOMAIN" />, men servern skickade ett certifikat som signerats med en svag signaturalgoritm (t.ex. SHA-1). Det innebär att säkerhetsuppgifterna som servern uppgav kan vara förfalskade och att servern kanske inte är den server du tror (du kanske kommunicerar med en skadlig server).</translation>
 <translation id="6831043979455480757">Översätt</translation>
 <translation id="6839929833149231406">Huvudområde</translation>
+<translation id="6852204201400771460">Vill du läsa in appen igen?</translation>
 <translation id="6874604403660855544">&amp;Gör om Lägg till</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" />, <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Policynivån stöds inte.</translation>
@@ -1116,6 +1118,7 @@
 <translation id="9157595877708044936">Konfigurerar...</translation>
 <translation id="9169664750068251925">Blockera alltid den här webbplatsen</translation>
 <translation id="9170848237812810038">&amp;Ångra</translation>
+<translation id="9171296965991013597">Vill du lämna appen?</translation>
 <translation id="917450738466192189">Servercertifikatet är ogiltigt.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> använder ett protokoll som inte stöds.</translation>
 <translation id="9205078245616868884">Din data har krypterats med din lösenfras för synkronisering. Ange den om du vill starta synkroniseringen.</translation>

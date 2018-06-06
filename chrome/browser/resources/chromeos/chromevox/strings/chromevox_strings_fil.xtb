@@ -146,6 +146,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="2416512023405990736">Isang checkbox na walang check</translation>
 <translation id="2417569100218200841">Impormasyon ng nilalaman</translation>
 <translation id="2417948780551741035">Mga Endnote</translation>
+<translation id="2421113964388408478">Pag-delete</translation>
 <translation id="2422937916923936891">Check box ng item sa menu</translation>
 <translation id="2428534162001909979">Mga Menu ng Command</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -179,6 +180,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2732718972699418926">AM</translation>
+<translation id="2737520612859577214">Dulo ng superscript</translation>
 <translation id="2749275490991666823">Nilagyan ng check</translation>
 <translation id="27527859628328957">Lumaktaw sa susunod na napo-focus na item</translation>
 <translation id="276402504937943375">toc</translation>
@@ -203,6 +205,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="288178314850623291">Gamitin ang mga command sa paglipat upang pumunta sa mga partikular na uri ng element. Upang pumunta sa mga susunod na heading, pindutin ang Paghahanap + H, o upang bumalik, pindutin ang Paghahanap + Shift + H.</translation>
 <translation id="2894654529758326923">Impormasyon</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{kaliwang brace}one{# kaliwang brace}other{# na kaliwang brace}}</translation>
+<translation id="2909478709401302630">Simula ng superscript</translation>
 <translation id="2911433807131383493">Buksan ang tutorial ng ChromeVox</translation>
 <translation id="2932083475399492303">I-toggle ang uri ng linya sa pagitan ng structural o layout</translation>
 <translation id="2944762337049891859">Awtomatikong basahin ang page pagkatapos nitong mag-load.</translation>
@@ -384,6 +387,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="4148180433151187540">{COUNT,plural, =1{kanang brace}one{# kanang brace}other{# na kanang brace}}</translation>
 <translation id="4158704014418536539">Case sensitive.</translation>
 <translation id="4161663686871496107">Handa na ang sinasalitang feedback ng ChromeVox</translation>
+<translation id="4166192625054637755">Dulo ng subscript</translation>
 <translation id="4173994908659439270">Walang susunod na na-e-edit na field ng text.</translation>
 <translation id="4176463684765177261">Hindi Pinagana</translation>
 <translation id="4188530942454211480">Nakaraang Pangungusap</translation>
@@ -423,6 +427,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="4476183483923481720">bagong linya</translation>
 <translation id="4482330759234983253">Nakaraang talahanayan</translation>
 <translation id="4491109536499578614">Larawan</translation>
+<translation id="4505167975768625962">Paglagay</translation>
 <translation id="4517854969512651305">Dagdagan ang value</translation>
 <translation id="4529987814483543472">Classic na keymap</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{slash}one{# slash}other{# na slash}}</translation>
@@ -527,6 +532,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Back link</translation>
+<translation id="5350654862897073517">Simula ng subscript</translation>
 <translation id="536031132345979795">Lumaktaw pabalik habang patuloy na nagbabasa</translation>
 <translation id="5368000168321181111">Naka-off ang mga earcon</translation>
 <translation id="5374320867641260420">Walang susunod na button.</translation>

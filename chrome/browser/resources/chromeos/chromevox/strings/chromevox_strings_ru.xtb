@@ -146,6 +146,7 @@
 <translation id="2416512023405990736">Снятый флажок</translation>
 <translation id="2417569100218200841">Сведения о контенте</translation>
 <translation id="2417948780551741035">Концевые сноски</translation>
+<translation id="2421113964388408478">Удаление</translation>
 <translation id="2422937916923936891">Элемент меню: флажок</translation>
 <translation id="2428534162001909979">Меню</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -179,6 +180,7 @@
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">аудио</translation>
 <translation id="2732718972699418926">AM</translation>
+<translation id="2737520612859577214">Конец надстрочного текста</translation>
 <translation id="2749275490991666823">Выбрано</translation>
 <translation id="27527859628328957">Перейти к следующему активируемому элементу</translation>
 <translation id="276402504937943375">оглавление</translation>
@@ -203,6 +205,7 @@
 <translation id="288178314850623291">Вы можете перемещаться между определенными элементами страницы. Например, чтобы перейти к следующему заголовку, нажмите SEARCH + H, а к предыдущему – SEARCH + SHIFT + H.</translation>
 <translation id="2894654529758326923">Подробные сведения</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{открывающая фигурная скобка}one{# открывающая фигурная скобка}few{# открывающие фигурные скобки}many{# открывающих фигурных скобок}other{# left braces}}</translation>
+<translation id="2909478709401302630">Начало надстрочного текста</translation>
 <translation id="2911433807131383493">Открыть руководство ChromeVox</translation>
 <translation id="2932083475399492303">Переключиться между структурной и контурной линией</translation>
 <translation id="2944762337049891859">Автоматически читать страницу после загрузки</translation>
@@ -384,6 +387,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{закрывающая фигурная скобка}one{# закрывающая фигурная скобка}few{# закрывающие фигурные скобки}many{# закрывающих фигурных скобок}other{# right braces}}</translation>
 <translation id="4158704014418536539">С учетом регистра.</translation>
 <translation id="4161663686871496107">Расширение ChromeVox включено.</translation>
+<translation id="4166192625054637755">Конец подстрочного текста</translation>
 <translation id="4173994908659439270">Следующего редактируемого текстового поля нет.</translation>
 <translation id="4176463684765177261">Отключено</translation>
 <translation id="4188530942454211480">Перейти к предыдущему предложению</translation>
@@ -423,6 +427,7 @@
 <translation id="4476183483923481720">Новая строка.</translation>
 <translation id="4482330759234983253">Перейти к предыдущей таблице</translation>
 <translation id="4491109536499578614">Изображение</translation>
+<translation id="4505167975768625962">Вставка</translation>
 <translation id="4517854969512651305">Увеличить значение.</translation>
 <translation id="4529987814483543472">Классическая раскладка</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{косая черта}one{# косая черта}few{# косые черты}many{# косых черт}other{# slashes}}</translation>
@@ -527,6 +532,7 @@
 <translation id="5330443287809544590">Ссылка "<ph name="NAME" />"</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Обратная ссылка</translation>
+<translation id="5350654862897073517">Начало подстрочного текста</translation>
 <translation id="536031132345979795">Вернуться назад во время непрерывного чтения</translation>
 <translation id="5368000168321181111">Звуковые сигналы отключены.</translation>
 <translation id="5374320867641260420">Следующей кнопки нет.</translation>

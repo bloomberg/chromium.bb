@@ -209,6 +209,7 @@
 <translation id="1296497012903089238">Certificate Type</translation>
 <translation id="1297175357211070620">Destination</translation>
 <translation id="1297922636971898492">Google Drive is not available right now. Uploading will automatically restart once Google Drive is back.</translation>
+<translation id="1300415640239881824"><ph name="DOMAIN" /> wants your device's identity to be verified, by Google, to determine eligibility for enhanced playback of protected content.</translation>
 <translation id="1300806585489372370">To change this setting, first <ph name="BEGIN_LINK" />turn on identifiers<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">Allow JavaScript from Apple Events</translation>
 <translation id="1303101771013849280">Bookmarks HTML File</translation>
@@ -428,7 +429,6 @@
 <translation id="1624026626836496796">This will only happen once, and your credentials will not be stored.</translation>
 <translation id="1627276047960621195">File Descriptors</translation>
 <translation id="1627408615528139100">Already downloaded</translation>
-<translation id="1632551555529177478">ERROR: Failed to start Concierge client.</translation>
 <translation id="1632803087685957583">Allows you to adjust your keyboard repeat rate, word prediction and more</translation>
 <translation id="1635033183663317347">Installed by your custodian.</translation>
 <translation id="1637224376458524414">Get this bookmark on your iPhone</translation>
@@ -1119,7 +1119,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2686759344028411998">Unable to detect any modules loaded.</translation>
 <translation id="2688196195245426394">Error when registering the device with the server: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Show language options</translation>
-<translation id="2690824726518456119">Starting Concierge service.</translation>
 <translation id="2691385045260836588">Model</translation>
 <translation id="2693176596243495071">Oops!  An unknown error occurred. Please try again later or contact your administrator if the issue persists.</translation>
 <translation id="2694026874607847549">1 cookie</translation>
@@ -1308,7 +1307,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2986010903908656993">This page has been blocked from having full control of MIDI devices.</translation>
 <translation id="2989474696604907455">not attached</translation>
 <translation id="2989786307324390836">DER-encoded binary, single certificate</translation>
-<translation id="2993165626813508977">ERROR: Failed to start container inside Termina VM.</translation>
 <translation id="2993517869960930405">App Info</translation>
 <translation id="2994669386200004489">Couldn't back up <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Installed by your parent.</translation>
@@ -1441,7 +1439,6 @@ I don't think this site should be blocked!</translation>
 <translation id="3190558889382726167">Password saved</translation>
 <translation id="3192947282887913208">Audio Files</translation>
 <translation id="3194737229810486521"><ph name="URL" /> wants to permanently store data on your device</translation>
-<translation id="3197054279257119376">Loading Termina component.</translation>
 <translation id="3199127022143353223">Servers</translation>
 <translation id="3202131003361292969">Path</translation>
 <translation id="3202173864863109533">This tab's audio is being muted.</translation>
@@ -1567,7 +1564,6 @@ I don't think this site should be blocked!</translation>
 <translation id="3407837288045706722">For more settings that relate to privacy, security and data collection, see <ph name="BEGIN_LINK" />Sync and personalisation<ph name="END_LINK" /></translation>
 <translation id="3412265149091626468">Jump to Selection</translation>
 <translation id="3413122095806433232">CA Issuers: <ph name="LOCATION" /></translation>
-<translation id="3414791204526549759">Highlight what you want to hear, then press Search + S. Or, press and hold search, or tap the Select-to-Speak icon near your profile image, then select a region to be read aloud.</translation>
 <translation id="3414856743105198592">Formatting the removable media is going to erase all data. Do you wish to continue?</translation>
 <translation id="3414952576877147120">Size:</translation>
 <translation id="3420980393175304359">Switch Person</translation>
@@ -2102,7 +2098,6 @@ I don't think this site should be blocked!</translation>
 <translation id="4235200303672858594">Entire screen</translation>
 <translation id="4235813040357936597">Add Account for <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Cancel sign in</translation>
-<translation id="4239107879884489787">ERROR: Failed to load Termina component.</translation>
 <translation id="4242533952199664413">Open settings</translation>
 <translation id="4242577469625748426">Failed to install policy settings on the device: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Find more stylus apps</translation>
@@ -2256,7 +2251,6 @@ I don't think this site should be blocked!</translation>
 <translation id="4514610446763173167">Toggle video to play or pause</translation>
 <translation id="451515744433878153">Remove</translation>
 <translation id="4518677423782794009">Is Chrome crashing, showing unusual start-up pages, toolbars or unexpected ads you can't get rid of, or otherwise changing your browsing experience? You may be able to fix the problem by running the Chrome Clean-Up Tool.</translation>
-<translation id="4518928191942891293">Starting container inside Termina VM.</translation>
 <translation id="4520385623207007473">Cookies in use</translation>
 <translation id="452039078290142656">unknown devices from <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">Details</translation>
@@ -2958,15 +2952,14 @@ I don't think this site should be blocked!</translation>
 <translation id="5557991081552967863">Keep Wi-Fi on during sleep</translation>
 <translation id="5558129378926964177">Zoom &amp;In</translation>
 <translation id="5558446705802335921">Checks sites that you visit and files that you download for harmful behaviour or content, such as phishing or malware</translation>
-<translation id="5559719557406102971">Starting Termina VM.</translation>
 <translation id="55601339223879446">Adjust the boundaries of your desktop within the display</translation>
 <translation id="5562781907504170924">This tab is connected to a Bluetooth device.</translation>
+<translation id="5563234215388768762">Search Google or type a URL</translation>
 <translation id="5565871407246142825">Credit cards</translation>
 <translation id="5567989639534621706">Application Caches</translation>
 <translation id="5568069709869097550">Can't sign in</translation>
 <translation id="5568144734023334204">Android storage</translation>
 <translation id="5569544776448152862">Enrolling in <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
-<translation id="5572572070321843880">ERROR: Failed to start Termina VM.</translation>
 <translation id="5575473780076478375">Incognito Extension: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Resetting your device will not affect your Google accounts or any data synced to these accounts. However, all files saved locally on your device will be deleted.</translation>
 <translation id="5578059481725149024">Auto sign-in</translation>
@@ -3508,7 +3501,6 @@ I don't think this site should be blocked!</translation>
 <translation id="6410668567036790476">Add search engine</translation>
 <translation id="641081527798843608">Subject match</translation>
 <translation id="641105183165925463">$1 MB</translation>
-<translation id="6411517327772365857">Search Google or type a web address</translation>
 <translation id="6412931879992742813">New incognito window</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6418160186546245112">Reverting to the previously installed version of <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>

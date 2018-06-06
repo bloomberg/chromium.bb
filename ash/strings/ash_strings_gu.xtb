@@ -91,6 +91,7 @@
 <translation id="2761704814324807722">સ્થિતિ ટ્રે, સમય <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" /> થી ફરીથી કનેક્ટ કરી રહ્યાં છે</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
+<translation id="2805756323405976993">એપ્સ</translation>
 <translation id="2819276065543622893">તમે હવે સાઇન આઉટ થશો.</translation>
 <translation id="2825619548187458965">શેલ્ફ</translation>
 <translation id="2844169650293029770">USB-C ઉપકરણ (ડાબી બાજુનું આગળનું પોર્ટ)</translation>
@@ -260,11 +261,13 @@
 <translation id="6723839937902243910">પાવર</translation>
 <translation id="6785414152754474415">બેટરી <ph name="PERCENTAGE" /> % પૂર્ણ અને ચાર્જ થઈ રહી છે.</translation>
 <translation id="6803622936009808957">કોઈ સમર્થિત રિઝોલ્યૂશન મળ્યું ન હોવાથી, પ્રદર્શનોને પ્રતિબિંબિત કરી શકાયા નથી. તેને બદલે વિસ્તૃત ડેસ્કટૉપ દાખલ કર્યું.</translation>
+<translation id="6820676911989879663">વિરામ લો!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">સક્રિય કરો <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">અન્યથી જોડાઓ...</translation>
 <translation id="6981982820502123353">ઍક્સેસિબિલિટી</translation>
 <translation id="698231206551913481">આ વપરાશકર્તા દૂર કરી દેવામાં આવે તે પછી આ વપરાશકર્તા સાથે સંકળાયેલ તમામ ફાઇલો અને સ્થાનિક ડેટા કાયમીરૂપે કાઢી નાખવામાં આવશે.</translation>
+<translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> વાગ્યે પાછા આવો.</translation>
 <translation id="7029814467594812963">સત્રમાંથી બહાર નીકળો</translation>
 <translation id="7034339000180558234"><ph name="RECEIVER_NAME" /> પર <ph name="TAB_NAME" /> ને કાસ્ટ કરી રહ્યાં છીએ</translation>
 <translation id="7066646422045619941">આ નેટવર્ક તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરેલ છે.</translation>

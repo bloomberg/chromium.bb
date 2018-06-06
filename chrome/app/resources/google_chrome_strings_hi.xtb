@@ -48,7 +48,7 @@
 <translation id="2246246234298806438">अंतर्निहित PDF दिखाने का साधन गुम होने पर Google Chrome प्रिंट पूर्वावलोकन नहीं दिखा सकता.</translation>
 <translation id="2252923619938421629">वर्तमान सेटिंग की रिपोर्ट करके Google Chrome को बेहतर बनाने में सहायता करें</translation>
 <translation id="2286950485307333924">अब आपने Chrome में प्रवेश कर लिया है</translation>
-<translation id="2290014774651636340">Google API कुंजियां अनुपलब्ध हैं. Google Chrome की कुछ कार्यक्षमता अक्षम कर दी जाएगी.</translation>
+<translation id="2290014774651636340">Google API (एपीआई) कुंजियां मौजूद नहीं हैं. Google Chrome के कुछ फ़ंक्शन बंद कर दिए जाएंगे.</translation>
 <translation id="2290095356545025170">क्या आप वाकई Google Chrome को विस्थापित करना चाहते हैं?</translation>
 <translation id="2309047409763057870">यह Google Chrome का द्वितीयक इंस्टॉलेशन है और इसे आपका डिफ़ॉल्ट ब्राउज़र नहीं बनाया जा सकता.</translation>
 <translation id="2334084861041072223">कॉपीराइट <ph name="YEAR" /> Google Inc. सर्वाधिकार सुरक्षित.</translation>
@@ -67,7 +67,6 @@
 <translation id="2586406160782125153">ऐसा करने से इस डिवाइस से आपका ब्राउज़िंग डेटा हट जाएगा. बाद में अपना डेटा पाने के लिए, Chrome में <ph name="USER_EMAIL" /> के रूप में प्रवेश करें.</translation>
 <translation id="2588322182880276190">Chrome लोगो</translation>
 <translation id="2652691236519827073">नए Chrome &amp;टैब में लिंक खोलें</translation>
-<translation id="2664962310688259219">Chrome OS ओपन सोर्स लाइसेंस</translation>
 <translation id="2665296953892887393">Google को क्रैश रिपोर्ट और <ph name="UMA_LINK" /> भेजकर Google Chrome को बेहतर बनाने में सहायता करें</translation>
 <translation id="2689103672227170538">इस एक्सटेंशन ने यह बदल दिया है कि जब आप Chrome प्रारंभ करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
 <translation id="2765403129283291972">Chrome को इस साइट के लिए आपका माइक्रोफ़ोन एक्सेस करने की अनुमति चाहिए</translation>
@@ -135,7 +134,7 @@
 <translation id="4631713731678262610">Chrome मेनू में छिपाएं</translation>
 <translation id="4633000520311261472">Chrome को अधिक सुरक्षित बनाने के लिए, हमने ऐसे कुछ एक्सटेंशन अक्षम कर दिए हैं जो <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> में सूचीबद्ध नहीं हैं और आपकी जानकारी के बिना जोड़े गए हो सकते हैं.</translation>
 <translation id="4664415150087723341">Google Chrome के लिए एक विशेष सुरक्षा अपडेट अभी-अभी लागू किया गया था; उसके प्रभावी होने के लिए आपको अभी पुन: प्रारंभ करना चाहिए (हम आपके टैब पुनर्स्‍थापित कर देंगे).</translation>
-<translation id="4700157086864140907">Google Chrome आपके द्वारा ब्राउज़र में लिखे गए टेक्स्ट को Google सर्वर को भेजकर शानदार वर्तनी-जाँच प्रदान करता है, जो आपको Google खोज द्वारा उपयोग की जाने वाली वर्तनी-जाँच के समान वर्तनी जाँच तकनीक का उपयोग करने की अनुमति देता है.</translation>
+<translation id="4700157086864140907">आप ब्राउज़र में जो लिखते हैं, क्रोमियम उसे Google सर्वर पर भेजकर शानदार वर्तनी-जाँच की सुविधा देता है. आपको मिलने वाली वर्तनी जाँच तकनीक की यह सुविधा बिल्कुल वैसी ही होती है जिसका इस्तेमाल 'गूगल सर्च' करता है.</translation>
 <translation id="4728575227883772061">अनिर्दिष्ट कारण से स्थापना विफल हुई. यदि Google Chrome अभी खुला हुआ है, तो कृपया उसे बंद करें और फिर से प्रयास करें.</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> सक्षम करने के लिए Chrome फिर से चालू करें</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -220,7 +219,6 @@
 <translation id="7437998757836447326">Chrome से प्रस्थान करें</translation>
 <translation id="7459554271817304652">वेब पर अपनी व्यक्तिगत ब्राउज़र सुविधाएं सहेजने के लिए समन्‍वयन सेट करें और उन तक किसी भी कंप्‍यूटर पर Google Chrome से पहुंचें.</translation>
 <translation id="7473136999113284234">Chrome अपने आप अपडेट हो जाता है इसलिए आपके पास हमेशा नवीनतम वर्शन रहता है.</translation>
-<translation id="7494905215383356681">Chrome ओपन सोर्स लाइसेंस</translation>
 <translation id="7535429826459677826">Google Chrome डेवलपर</translation>
 <translation id="7552219221109926349">Chrome OS इस भाषा में दिखाएं</translation>
 <translation id="7589360514048265910">इस कंप्यूटर पर अब Google Chrome के अपडेट नहीं मिलेंगे क्योंकि अब इस पर Mac OS X 10.9 की सुविधा नहीं है.</translation>

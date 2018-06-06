@@ -146,6 +146,7 @@
 <translation id="2416512023405990736">チェックボックスがオフ</translation>
 <translation id="2417569100218200841">コンテンツ情報</translation>
 <translation id="2417948780551741035">巻末注</translation>
+<translation id="2421113964388408478">削除</translation>
 <translation id="2422937916923936891">メニュー項目のチェックボックス</translation>
 <translation id="2428534162001909979">コマンド メニュー</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -179,6 +180,7 @@
 <translation id="2717271541250958000">タブパネル</translation>
 <translation id="2723001399770238859">音声</translation>
 <translation id="2732718972699418926">AM</translation>
+<translation id="2737520612859577214">上付き文字の末尾</translation>
 <translation id="2749275490991666823">オン</translation>
 <translation id="27527859628328957">次のフォーカス可能項目にジャンプ</translation>
 <translation id="276402504937943375">目次</translation>
@@ -203,6 +205,7 @@
 <translation id="288178314850623291">特定タイプの要素に移動するには、ジャンプ コマンドを使用します。見出し間を移動するには、順方向の場合は検索+H キー、逆方向の場合は検索+Shift+H キーを押します。</translation>
 <translation id="2894654529758326923">情報</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{左中かっこ}other{# 個の左中かっこ}}</translation>
+<translation id="2909478709401302630">上付き文字の先頭</translation>
 <translation id="2911433807131383493">ChromeVox チュートリアルを開く</translation>
 <translation id="2932083475399492303">構造化された行とレイアウト行の切り替え</translation>
 <translation id="2944762337049891859">ページの読み込み後、自動的に読み上げを開始する。</translation>
@@ -384,6 +387,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{右中かっこ}other{# 個の右中かっこ}}</translation>
 <translation id="4158704014418536539">大文字と小文字を区別します。</translation>
 <translation id="4161663686871496107">ChromeVox 音声フィードバックをご利用いただけます</translation>
+<translation id="4166192625054637755">下付き文字の末尾</translation>
 <translation id="4173994908659439270">次の編集可能テキスト フィールドはありません。</translation>
 <translation id="4176463684765177261">無効</translation>
 <translation id="4188530942454211480">前の文</translation>
@@ -423,6 +427,7 @@
 <translation id="4476183483923481720">新しい行</translation>
 <translation id="4482330759234983253">前の表</translation>
 <translation id="4491109536499578614">画像</translation>
+<translation id="4505167975768625962">挿入</translation>
 <translation id="4517854969512651305">値を大きくします</translation>
 <translation id="4529987814483543472">クラシック キーマップ</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{スラッシュ}other{# 個のスラッシュ}}</translation>
@@ -527,6 +532,7 @@
 <translation id="5330443287809544590"><ph name="NAME" />、リンク</translation>
 <translation id="5336381510091010269">リストのインライン オートコンプリート</translation>
 <translation id="5349770431644471053">言及リンク</translation>
+<translation id="5350654862897073517">下付き文字の先頭</translation>
 <translation id="536031132345979795">連続読み上げ時に後方へスキップします</translation>
 <translation id="5368000168321181111">イアコン オフ</translation>
 <translation id="5374320867641260420">次のボタンはありません。</translation>

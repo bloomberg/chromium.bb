@@ -76,6 +76,7 @@
 <translation id="4730374152663651037">அடிக்கடிப் பயன்படுத்தியவை</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 மாதம் உள்ளது}other{# மாதங்கள் உள்ளன}}</translation>
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="4841881773802181781">செருகும்</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 நொடி}other{# நொடிகள்}}</translation>
 <translation id="4971687151119236543">ஊடகத்தின் முந்தைய டிராக்</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
@@ -118,6 +119,7 @@
 <translation id="6612467943526193239">அளவுத்திருத்தத்திலிருந்து வெளியேற, Esc எனும் விசையை அழுத்தவும்.</translation>
 <translation id="6620110761915583480">கோப்பைச் சேமி</translation>
 <translation id="6699343763173986273">ஊடகத்தின் அடுத்த டிராக்</translation>
+<translation id="673773751041746814">நீக்கும்</translation>
 <translation id="6786750046913594791">கோப்புறையை மூடு</translation>
 <translation id="6808150112686056157">ஊடகத்தை நிறுத்து</translation>
 <translation id="6845383723252244143">கோப்புறையைத் தேர்ந்தெடு</translation>

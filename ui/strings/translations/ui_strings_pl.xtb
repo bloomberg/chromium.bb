@@ -76,6 +76,7 @@
 <translation id="4730374152663651037">CZĘSTO UŻYWANE</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Pozostał miesiąc}few{Pozostały # miesiące}many{Pozostało # miesięcy}other{Pozostało # miesiąca}}</translation>
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="4841881773802181781">Wstawienie</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunda}few{# sekundy}many{# sekund}other{# sekundy}}</translation>
 <translation id="4971687151119236543">Poprzedni utwór multimedialny</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
@@ -118,6 +119,7 @@
 <translation id="6612467943526193239">Aby zakończyć kalibrację, naciśnij Esc.</translation>
 <translation id="6620110761915583480">Zapisz plik</translation>
 <translation id="6699343763173986273">Następny utwór multimedialny</translation>
+<translation id="673773751041746814">Usunięcie</translation>
 <translation id="6786750046913594791">Zamknij folder</translation>
 <translation id="6808150112686056157">Zatrzymaj multimedia</translation>
 <translation id="6845383723252244143">Wybierz folder</translation>

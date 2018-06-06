@@ -146,6 +146,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="2416512023405990736">Uma caixa de verificação desselecionada</translation>
 <translation id="2417569100218200841">Informações do conteúdo</translation>
 <translation id="2417948780551741035">Notas finais</translation>
+<translation id="2421113964388408478">Eliminação</translation>
 <translation id="2422937916923936891">Caixa de verificação do item de menu</translation>
 <translation id="2428534162001909979">Menus de comandos</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -179,6 +180,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">áudio</translation>
 <translation id="2732718972699418926">AM</translation>
+<translation id="2737520612859577214">Fim de superior à linha</translation>
 <translation id="2749275490991666823">Marcado</translation>
 <translation id="27527859628328957">Ir para o item a focar seguinte</translation>
 <translation id="276402504937943375">índice</translation>
@@ -203,6 +205,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="288178314850623291">Utilize os comandos de avanço para ir para tipos de elemento específicos. Para avançar entre cabeçalhos, prima Pesquisar + H. Para recuar, prima Pesquisar + Shift + H.</translation>
 <translation id="2894654529758326923">Informações</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{chaveta esquerda}other{# chavetas esquerdas}}</translation>
+<translation id="2909478709401302630">Início de superior à linha</translation>
 <translation id="2911433807131383493">Abrir tutorial do ChromeVox</translation>
 <translation id="2932083475399492303">Tipo de linha de alternância entre estrutural ou esquema</translation>
 <translation id="2944762337049891859">Ler automaticamente a página depois de ser carregada.</translation>
@@ -384,6 +387,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4148180433151187540">{COUNT,plural, =1{chaveta direita}other{# chavetas direitas}}</translation>
 <translation id="4158704014418536539">Sensível a maiúsculas e minúsculas.</translation>
 <translation id="4161663686871496107">As respostas faladas do ChromeVox estão prontas</translation>
+<translation id="4166192625054637755">Fim de inferior à linha</translation>
 <translation id="4173994908659439270">Não existe nenhum campo de texto editável seguinte.</translation>
 <translation id="4176463684765177261">Desativado</translation>
 <translation id="4188530942454211480">Frase anterior</translation>
@@ -423,6 +427,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4476183483923481720">nova linha</translation>
 <translation id="4482330759234983253">Tabela anterior</translation>
 <translation id="4491109536499578614">Imagem</translation>
+<translation id="4505167975768625962">Inserção</translation>
 <translation id="4517854969512651305">Aumentar valor</translation>
 <translation id="4529987814483543472">Mapa de teclas clássico</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra}other{# barras}}</translation>
@@ -527,6 +532,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Backlink</translation>
+<translation id="5350654862897073517">Início de inferior à linha</translation>
 <translation id="536031132345979795">Retroceder durante a leitura contínua</translation>
 <translation id="5368000168321181111">Ícones sonoros desativados</translation>
 <translation id="5374320867641260420">Não existe nenhum botão seguinte.</translation>

@@ -146,6 +146,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="2416512023405990736">Hộp kiểm được bỏ chọn</translation>
 <translation id="2417569100218200841">Thông tin nội dung</translation>
 <translation id="2417948780551741035">Chú thích</translation>
+<translation id="2421113964388408478">Xóa</translation>
 <translation id="2422937916923936891">Hộp kiểm mục menu</translation>
 <translation id="2428534162001909979">Menu lệnh</translation>
 <translation id="2429669115401274487">CH</translation>
@@ -179,6 +180,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">âm thanh</translation>
 <translation id="2732718972699418926">SA</translation>
+<translation id="2737520612859577214">Phần kết thúc chỉ số trên</translation>
 <translation id="2749275490991666823">Đã chọn</translation>
 <translation id="27527859628328957">Nhảy tới mục có thể đặt tiêu điểm tiếp theo</translation>
 <translation id="276402504937943375">mục lục</translation>
@@ -203,6 +205,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="288178314850623291">Sử dụng các lệnh chuyển để bỏ qua các loại thành phần cụ thể. Để chuyển tiếp giữa các tiêu đề, nhấn phím Tìm kiếm + H hoặc để quay lại, nhấn phím Tìm kiếm + Shift + H.</translation>
 <translation id="2894654529758326923">Thông tin</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{dấu mở ngoặc nhọn}other{# dấu mở ngoặc nhọn}}</translation>
+<translation id="2909478709401302630">Phần bắt đầu chỉ số trên</translation>
 <translation id="2911433807131383493">Mở hướng dẫn ChromeVox</translation>
 <translation id="2932083475399492303">Chuyển đổi loại dòng giữa cấu trúc hoặc bố cục</translation>
 <translation id="2944762337049891859">Tự động đọc trang sau khi tải xong.</translation>
@@ -384,6 +387,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="4148180433151187540">{COUNT,plural, =1{dấu đóng ngoặc nhọn}other{# dấu đóng ngoặc nhọn}}</translation>
 <translation id="4158704014418536539">Phân biệt chữ hoa / chữ thường.</translation>
 <translation id="4161663686871496107">Tính năng phản hồi bằng giọng nói ChromeVox đã sẵn sàng</translation>
+<translation id="4166192625054637755">Phần kết thúc chỉ số dưới</translation>
 <translation id="4173994908659439270">Không có trường văn bản có thể chỉnh sửa tiếp theo nào.</translation>
 <translation id="4176463684765177261">Đã bị vô hiệu</translation>
 <translation id="4188530942454211480">Câu trước</translation>
@@ -423,6 +427,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="4476183483923481720">dòng mới</translation>
 <translation id="4482330759234983253">Bảng trước</translation>
 <translation id="4491109536499578614">Hình ảnh</translation>
+<translation id="4505167975768625962">Chèn</translation>
 <translation id="4517854969512651305">Tăng giá trị</translation>
 <translation id="4529987814483543472">Sơ đồ bàn phím cổ điển</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{dấu gạch chéo}other{# dấu gạch chéo}}</translation>
@@ -527,6 +532,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5330443287809544590"><ph name="NAME" />, liên kết</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Liên kết ngược</translation>
+<translation id="5350654862897073517">Phần bắt đầu chỉ số dưới</translation>
 <translation id="536031132345979795">Lùi lại đoạn trước đó trong khi tiếp tục đọc</translation>
 <translation id="5368000168321181111">Tắt kết nối tai nghe</translation>
 <translation id="5374320867641260420">Không có nút tiếp theo nào.</translation>

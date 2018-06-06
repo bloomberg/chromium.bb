@@ -146,6 +146,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="2416512023405990736">Neatzīmēta izvēles rūtiņa</translation>
 <translation id="2417569100218200841">Satura informācija</translation>
 <translation id="2417948780551741035">Beigu vēres</translation>
+<translation id="2421113964388408478">Dzēšana</translation>
 <translation id="2422937916923936891">Izvēlnes vienuma izvēles rūtiņa</translation>
 <translation id="2428534162001909979">Komandu izvēlnes</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -179,6 +180,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="2717271541250958000">ciļņu panelis</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2732718972699418926">AM</translation>
+<translation id="2737520612859577214">Augšraksta teksta beigas</translation>
 <translation id="2749275490991666823">Atzīmēts</translation>
 <translation id="27527859628328957">Pāriet uz nākamo fokusējamo vienumu</translation>
 <translation id="276402504937943375">satura rādītājs</translation>
@@ -203,6 +205,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="288178314850623291">Izmantojiet pārejas komandas, lai izlaistu konkrētu veidu elementus. Lai pārietu uz priekšu pa virsrakstiem, vienlaikus nospiediet meklēšanas taustiņu un taustiņu H; lai pārietu atpakaļ — meklēšanas taustiņu, pārslēgšanas taustiņu un taustiņu H.</translation>
 <translation id="2894654529758326923">Informācija</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{atverošā figūriekava}zero{# atverošo figūriekavu}one{# atverošā figūriekava}other{# atverošās figūriekavas}}</translation>
+<translation id="2909478709401302630">Augšraksta teksta sākums</translation>
 <translation id="2911433807131383493">Atvērt ChromeVox mācības</translation>
 <translation id="2932083475399492303">Mainīt līniju veidu uz struktūras līnijām vai izkārtojuma līnijām</translation>
 <translation id="2944762337049891859">Automātiski lasīt lapu, kad ir pabeigta tās ielāde.</translation>
@@ -384,6 +387,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="4148180433151187540">{COUNT,plural, =1{aizverošā figūriekava}zero{# aizverošo figūriekavu}one{# aizverošā figūriekava}other{# aizverošās figūriekavas}}</translation>
 <translation id="4158704014418536539">Reģistrjutīgs.</translation>
 <translation id="4161663686871496107">ChromeVox izrunas funkcija ir gatava</translation>
+<translation id="4166192625054637755">Apakšraksta teksta beigas</translation>
 <translation id="4173994908659439270">Tālāk nav neviena rediģējama teksta lauka.</translation>
 <translation id="4176463684765177261">Atspējots</translation>
 <translation id="4188530942454211480">Iepriekšējais teikums</translation>
@@ -423,6 +427,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="4476183483923481720">jauna rindiņa</translation>
 <translation id="4482330759234983253">Iepriekšējā tabula</translation>
 <translation id="4491109536499578614">Attēls</translation>
+<translation id="4505167975768625962">Ievietošana</translation>
 <translation id="4517854969512651305">Palielināt vērtību</translation>
 <translation id="4529987814483543472">Klasiskā taustiņu piesaiste</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{slīpsvītra}zero{# slīpsvītru}one{# slīpsvītra}other{# slīpsvītras}}</translation>
@@ -527,6 +532,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="5330443287809544590"><ph name="NAME" />, saite</translation>
 <translation id="5336381510091010269">iekļautā automātiskā pabeigšana un saraksts</translation>
 <translation id="5349770431644471053">Atpakaļsaite</translation>
+<translation id="5350654862897073517">Apakšraksta teksta sākums</translation>
 <translation id="536031132345979795">Pāriet atpakaļ nepārtraukta lasījuma laikā</translation>
 <translation id="5368000168321181111">Signāli izslēgti</translation>
 <translation id="5374320867641260420">Tālāk nav nevienas pogas.</translation>
