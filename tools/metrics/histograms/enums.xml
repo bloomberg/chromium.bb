@@ -12954,6 +12954,35 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Reused lock"/>
 </enum>
 
+<enum name="EnterpriseInitialEnrollmentRequirement">
+  <int value="0" label="Required">Initial Enrollment is required.</int>
+  <int value="1" label="NotRequiredSerialNumberMissing">
+    Initial Enrollment is skipped because the serial number is missing from VPD.
+  </int>
+  <int value="2" label="NotRequiredBrandCodeMissing">
+    Initial Enrollment is skipped because the brand code is missing from VPD.
+  </int>
+  <int value="3" label="NotRequiredEmbargoEndDateInvalid">
+    Initial Enrollment is skipped because the embargo end date is invalid. This
+    was detected after the system clock has been synchronized with the network.
+  </int>
+  <int value="4" label="NotRequiredEmbargoEndDateInvalidWithoutSystemClockSync">
+    Initial Enrollment is skipped because the embargo end date is invalid. This
+    was detected when the system clock could not be synchronized with the
+    network.
+  </int>
+  <int value="5" label="NotRequiredInEmbargoPeriod">
+    Initial Enrollment is skipped because the device is within the embargo
+    period. This was detected after the system clock has been synchronized with
+    the network.
+  </int>
+  <int value="6" label="NotRequiredInEmbargoPeriodWithoutSystemClockSync">
+    Initial Enrollment is skipped because the device is within the embargo
+    period. This was detected when the system clock could not be synchronized
+    with the network.
+  </int>
+</enum>
+
 <enum name="EnterprisePolicies">
 <!-- Generated from components/policy/resources/policy_templates.json -->
 

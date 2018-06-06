@@ -8,8 +8,10 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -18,6 +20,7 @@
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/system/factory_ping_embargo_check.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -29,7 +32,7 @@ namespace {
 
 // Maximum number of bits of the identifer hash to send during initial
 // enrollment check.
-const int kInitialEnrollmentModulusPowerLimit = 6;
+constexpr int kInitialEnrollmentModulusPowerLimit = 6;
 
 // If the modulus requested by the server is higher or equal to
 // |1<<kInitialEnrollmentModulusPowerOutdatedServer|, assume that the server
@@ -41,9 +44,42 @@ const int kInitialEnrollmentModulusPowerLimit = 6;
 // (https://crbug.com/846645).
 const int kInitialEnrollmentModulusPowerOutdatedServer = 14;
 
-// Maximum time to wait before forcing a decision.  Note that download time for
-// state key buckets can be non-negligible, especially on 2G connections.
-const int kSafeguardTimeoutSeconds = 90;
+// Maximum time to wait for the auto-enrollment check to reach a decision.
+// Note that this encompasses all steps |AutoEnrollmentController| performs in
+// order to determine if the device should be auto-enrolled.
+// If |kSafeguardTimeout| after |Start()| has been called,
+// |AutoEnrollmentController::state()| is still AUTO_ENROLLMENT_STATE_PENDING,
+// the AutoEnrollmentController will switch to
+// AUTO_ENROLLMENT_STATE_NO_ENROLLMENT or AUTO_ENROLLMENT_STATE_CONNECTION_ERROR
+// (see |AutoEnrollmentController::Timeout|). Note that this timeout should not
+// be too short, because one of the steps |AutoEnrollmentController| performs -
+// downloading identifier hash buckets - can be non-negligible, especially on 2G
+// connections.
+constexpr base::TimeDelta kSafeguardTimeout = base::TimeDelta::FromSeconds(90);
+
+// Maximum time to wait for time sync before forcing a decision on whether
+// Initial Enrollment should be performed.
+constexpr base::TimeDelta kSystemClockSyncWaitTimeout =
+    base::TimeDelta::FromSeconds(15);
+
+// A callback that will be invoked when the system clock has been synchronized,
+// or if system clock synchronization has failed.
+using SystemClockSyncCallback = base::OnceCallback<void(
+    AutoEnrollmentController::SystemClockSyncState system_clock_sync_state)>;
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// These values must match the corresponding enum defined in enums.xml.
+enum class InitialEnrollmentRequirementHistogramValue {
+  kRequired = 0,
+  kNotRequiredSerialNumberMissing = 1,
+  kNotRequiredBrandCodeMissing = 2,
+  kNotRequiredEmbargoEndDateInvalid = 3,
+  kNotRequiredEmbargoEndDateInvalidWithoutSystemClockSync = 4,
+  kNotRequiredInEmbargoPeriod = 5,
+  kNotRequiredInEmbargoPeriodWithoutSystemClockSync = 6,
+  kMaxValue = kNotRequiredInEmbargoPeriodWithoutSystemClockSync
+};
 
 // Returns the int value of the |switch_name| argument, clamped to the [0, 62]
 // interval. Returns 0 if the argument doesn't exist or isn't an int value.
@@ -112,6 +148,143 @@ policy::DeviceManagementService* InitializeAndGetDeviceManagementService() {
       connector->device_management_service();
   service->ScheduleInitialization(0);
   return service;
+}
+
+}  // namespace
+
+// Supports waiting for the system clock to become synchronized.
+class AutoEnrollmentController::SystemClockSyncWaiter
+    : public chromeos::SystemClockClient::Observer {
+ public:
+  SystemClockSyncWaiter() : weak_ptr_factory_(this) {
+    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->AddObserver(
+        this);
+  }
+
+  ~SystemClockSyncWaiter() override {
+    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->RemoveObserver(
+        this);
+  }
+
+  // Waits for the system clock to be synchronized. If it already is
+  // synchronized, |callback| will be called immediately. Otherwise, |callback|
+  // will be called when the system clock has been synchronized, or after
+  // |kSystemClockSyncWaitTimeout|.
+  void WaitForSystemClockSync(SystemClockSyncCallback callback) {
+    if (state_ == SystemClockSyncState::kSyncFailed ||
+        state_ == SystemClockSyncState::kSynchronized) {
+      std::move(callback).Run(state_);
+      return;
+    }
+
+    system_clock_sync_callbacks_.push_back(std::move(callback));
+
+    if (state_ == SystemClockSyncState::kWaitingForSync)
+      return;
+    state_ = SystemClockSyncState::kWaitingForSync;
+
+    timeout_timer_.Start(FROM_HERE, kSystemClockSyncWaitTimeout,
+                         base::BindRepeating(&SystemClockSyncWaiter::OnTimeout,
+                                             weak_ptr_factory_.GetWeakPtr()));
+
+    chromeos::DBusThreadManager::Get()
+        ->GetSystemClockClient()
+        ->WaitForServiceToBeAvailable(base::BindOnce(
+            &SystemClockSyncWaiter::OnGotSystemClockServiceAvailable,
+            weak_ptr_factory_.GetWeakPtr()));
+  }
+
+ private:
+  // Called when the system clock D-Bus service is available, or when it is
+  // known that the system clock D-Bus service is not available.
+  void OnGotSystemClockServiceAvailable(bool service_is_available) {
+    if (!service_is_available) {
+      SetStateAndRunCallbacks(SystemClockSyncState::kSyncFailed);
+      return;
+    }
+
+    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->GetLastSyncInfo(
+        base::BindOnce(&SystemClockSyncWaiter::OnGotLastSyncInfo,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  // Called on initial fetch of the system clock sync state, and when the system
+  // clock sync state has changed.
+  void OnGotLastSyncInfo(bool network_synchronized) {
+    if (!network_synchronized)
+      return;
+
+    SetStateAndRunCallbacks(SystemClockSyncState::kSynchronized);
+  }
+
+  // Called when the time out has been reached.
+  void OnTimeout() {
+    SetStateAndRunCallbacks(SystemClockSyncState::kSyncFailed);
+  }
+
+  // Runs all callbacks in |system_clock_sync_callbacks_| and clears the vector.
+  void SetStateAndRunCallbacks(SystemClockSyncState state) {
+    state_ = state;
+    timeout_timer_.AbandonAndStop();
+
+    std::vector<SystemClockSyncCallback> callbacks;
+    callbacks.swap(system_clock_sync_callbacks_);
+    for (auto& callback : callbacks) {
+      std::move(callback).Run(state_);
+    }
+  }
+
+  // chromeos::SystemClockClient::Observer:
+  void SystemClockUpdated() override {
+    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->GetLastSyncInfo(
+        base::BindOnce(&SystemClockSyncWaiter::OnGotLastSyncInfo,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  // Current state of the system clock.
+  SystemClockSyncState state_ = SystemClockSyncState::kCanWaitForSync;
+
+  // Pending callbacks to be called when the system clock has been synchronized
+  // or a timeout has been reached.
+  std::vector<SystemClockSyncCallback> system_clock_sync_callbacks_;
+
+  base::Timer timeout_timer_{false /* retain_user_task */,
+                             false /* is_repeating */};
+
+  base::WeakPtrFactory<SystemClockSyncWaiter> weak_ptr_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(SystemClockSyncWaiter);
+};
+
+namespace {
+
+// Records the "Enterprise.InitialEnrollmentRequirement" histogram value.
+// Do not pass |*WithoutSystemClockSync| enum values as |value|.
+// If |value| is one of the values that are only generated at specific system
+// clock values (that is, related to the factory ping embargo period),
+// |system_clock_sync_state| is used to determine if the reported value should
+// be |value| or the corresponding |*WithoutSystemClockSync| value.
+void RecordInitialEnrollmentRequirement(
+    InitialEnrollmentRequirementHistogramValue value,
+    AutoEnrollmentController::SystemClockSyncState system_clock_sync_state) {
+  DCHECK_NE(value, InitialEnrollmentRequirementHistogramValue::
+                       kNotRequiredEmbargoEndDateInvalidWithoutSystemClockSync);
+  DCHECK_NE(value, InitialEnrollmentRequirementHistogramValue::
+                       kNotRequiredInEmbargoPeriodWithoutSystemClockSync);
+  if (system_clock_sync_state !=
+      AutoEnrollmentController::SystemClockSyncState::kSynchronized) {
+    if (value == InitialEnrollmentRequirementHistogramValue::
+                     kNotRequiredEmbargoEndDateInvalid) {
+      value = InitialEnrollmentRequirementHistogramValue::
+          kNotRequiredEmbargoEndDateInvalidWithoutSystemClockSync;
+    }
+    if (value == InitialEnrollmentRequirementHistogramValue::
+                     kNotRequiredInEmbargoPeriod) {
+      value = InitialEnrollmentRequirementHistogramValue::
+          kNotRequiredInEmbargoPeriodWithoutSystemClockSync;
+    }
+  }
+  UMA_HISTOGRAM_ENUMERATION("Enterprise.InitialEnrollmentRequirement", value);
 }
 
 }  // namespace
@@ -199,42 +372,8 @@ AutoEnrollmentController::GetFRERequirement() {
   return FRERequirement::kRequired;
 }
 
-// static
-AutoEnrollmentController::InitialEnrollmentRequirement
-AutoEnrollmentController::GetInitialEnrollmentRequirement() {
-  system::StatisticsProvider* provider =
-      system::StatisticsProvider::GetInstance();
-  system::FactoryPingEmbargoState embargo_state =
-      system::GetFactoryPingEmbargoState(provider);
-  if (embargo_state == system::FactoryPingEmbargoState::kInvalid) {
-    LOG(WARNING)
-        << "Skip Initial Enrollment Check due to invalid embargo date.";
-    // TODO(pmarko): UMA Stat.
-    return InitialEnrollmentRequirement::kNotRequired;
-  }
-  if (embargo_state == system::FactoryPingEmbargoState::kNotPassed) {
-    VLOG(1) << "Skip Initial Enrollment Check due to not-passed embargo date.";
-    return InitialEnrollmentRequirement::kNotRequired;
-  }
-
-  if (provider->GetEnterpriseMachineID().empty()) {
-    LOG(WARNING)
-        << "Skip Initial Enrollment Check due to missing serial number.";
-    return InitialEnrollmentRequirement::kNotRequired;
-  }
-
-  std::string rlz_brand_code;
-  const bool rlz_brand_code_found =
-      provider->GetMachineStatistic(system::kRlzBrandCodeKey, &rlz_brand_code);
-  if (!rlz_brand_code_found || rlz_brand_code.empty()) {
-    LOG(WARNING) << "Skip Initial Enrollment Check due to missing brand code.";
-    return InitialEnrollmentRequirement::kNotRequired;
-  }
-
-  return InitialEnrollmentRequirement::kRequired;
-}
-
-AutoEnrollmentController::AutoEnrollmentController() {}
+AutoEnrollmentController::AutoEnrollmentController()
+    : system_clock_sync_waiter_(std::make_unique<SystemClockSyncWaiter>()) {}
 
 AutoEnrollmentController::~AutoEnrollmentController() {}
 
@@ -262,17 +401,38 @@ void AutoEnrollmentController::Start() {
     return;
   }
 
+  // Arm the belts-and-suspenders timer to avoid hangs.
+  safeguard_timer_.Start(FROM_HERE, kSafeguardTimeout,
+                         base::BindRepeating(&AutoEnrollmentController::Timeout,
+                                             weak_ptr_factory_.GetWeakPtr()));
+
+  // The system clock sync state is not known yet, and this
+  // |AutoEnrollmentController| could wait for it if requested.
+  system_clock_sync_state_ = SystemClockSyncState::kCanWaitForSync;
+  StartWithSystemClockSyncState();
+}
+
+void AutoEnrollmentController::StartWithSystemClockSyncState() {
+  bool may_request_system_clock_sync = !system_clock_sync_wait_requested_;
+
   DetermineAutoEnrollmentCheckType();
   if (auto_enrollment_check_type_ == AutoEnrollmentCheckType::kNone) {
+    if (may_request_system_clock_sync && system_clock_sync_wait_requested_) {
+      // Set state before waiting for the system clock sync, because
+      // |WaitForSystemClockSync| may invoke its callback synchronously if the
+      // system clock sync status is already known.
+      UpdateState(policy::AUTO_ENROLLMENT_STATE_PENDING);
+
+      // Use |client_start_weak_factory_| so the callback is not invoked if
+      // |Timeout| has been called in the meantime (after |kSafeguardTimeout|).
+      system_clock_sync_waiter_->WaitForSystemClockSync(
+          base::BindOnce(&AutoEnrollmentController::OnSystemClockSyncResult,
+                         client_start_weak_factory_.GetWeakPtr()));
+      return;
+    }
     UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
     return;
   }
-
-  // Arm the belts-and-suspenders timer to avoid hangs.
-  safeguard_timer_.Start(FROM_HERE,
-                         base::TimeDelta::FromSeconds(kSafeguardTimeoutSeconds),
-                         base::Bind(&AutoEnrollmentController::Timeout,
-                                    weak_ptr_factory_.GetWeakPtr()));
 
   // Start by checking if the device has already been owned.
   UpdateState(policy::AUTO_ENROLLMENT_STATE_PENDING);
@@ -297,6 +457,72 @@ AutoEnrollmentController::RegisterProgressCallback(
 void AutoEnrollmentController::SetAutoEnrollmentClientFactoryForTesting(
     policy::AutoEnrollmentClient::Factory* auto_enrollment_client_factory) {
   testing_auto_enrollment_client_factory_ = auto_enrollment_client_factory;
+}
+
+AutoEnrollmentController::InitialEnrollmentRequirement
+AutoEnrollmentController::GetInitialEnrollmentRequirement() {
+  system::StatisticsProvider* provider =
+      system::StatisticsProvider::GetInstance();
+  system::FactoryPingEmbargoState embargo_state =
+      system::GetFactoryPingEmbargoState(provider);
+  if (provider->GetEnterpriseMachineID().empty()) {
+    LOG(WARNING)
+        << "Skip Initial Enrollment Check due to missing serial number.";
+    RecordInitialEnrollmentRequirement(
+        InitialEnrollmentRequirementHistogramValue::
+            kNotRequiredSerialNumberMissing,
+        system_clock_sync_state_);
+    return InitialEnrollmentRequirement::kNotRequired;
+  }
+
+  std::string rlz_brand_code;
+  const bool rlz_brand_code_found =
+      provider->GetMachineStatistic(system::kRlzBrandCodeKey, &rlz_brand_code);
+  if (!rlz_brand_code_found || rlz_brand_code.empty()) {
+    LOG(WARNING) << "Skip Initial Enrollment Check due to missing brand code.";
+    RecordInitialEnrollmentRequirement(
+        InitialEnrollmentRequirementHistogramValue::
+            kNotRequiredBrandCodeMissing,
+        system_clock_sync_state_);
+    return InitialEnrollmentRequirement::kNotRequired;
+  }
+
+  if (system_clock_sync_state_ == SystemClockSyncState::kCanWaitForSync &&
+      (embargo_state == system::FactoryPingEmbargoState::kInvalid ||
+       embargo_state == system::FactoryPingEmbargoState::kNotPassed)) {
+    // Wait for the system clock to become synchronized and check again.
+    system_clock_sync_wait_requested_ = true;
+    return InitialEnrollmentRequirement::kNotRequired;
+  }
+
+  const char* system_clock_log_info =
+      system_clock_sync_state_ == SystemClockSyncState::kSynchronized
+          ? "system clock in sync"
+          : "system clock sync failed";
+  if (embargo_state == system::FactoryPingEmbargoState::kInvalid) {
+    LOG(WARNING)
+        << "Skip Initial Enrollment Check due to invalid embargo date ("
+        << system_clock_log_info << ").";
+    RecordInitialEnrollmentRequirement(
+        InitialEnrollmentRequirementHistogramValue::
+            kNotRequiredEmbargoEndDateInvalid,
+        system_clock_sync_state_);
+    return InitialEnrollmentRequirement::kNotRequired;
+  }
+  if (embargo_state == system::FactoryPingEmbargoState::kNotPassed) {
+    LOG(WARNING) << "Skip Initial Enrollment Check because the device is in "
+                    "the embargo period  ("
+                 << system_clock_log_info << ").";
+    RecordInitialEnrollmentRequirement(
+        InitialEnrollmentRequirementHistogramValue::kNotRequiredInEmbargoPeriod,
+        system_clock_sync_state_);
+    return InitialEnrollmentRequirement::kNotRequired;
+  }
+
+  RecordInitialEnrollmentRequirement(
+      InitialEnrollmentRequirementHistogramValue::kRequired,
+      system_clock_sync_state_);
+  return InitialEnrollmentRequirement::kRequired;
 }
 
 void AutoEnrollmentController::DetermineAutoEnrollmentCheckType() {
@@ -457,6 +683,12 @@ void AutoEnrollmentController::StartClientForFRE(
 
   VLOG(1) << "Starting auto-enrollment client for FRE.";
   client_->Start();
+}
+
+void AutoEnrollmentController::OnSystemClockSyncResult(
+    SystemClockSyncState system_clock_sync_state) {
+  system_clock_sync_state_ = system_clock_sync_state;
+  StartWithSystemClockSyncState();
 }
 
 void AutoEnrollmentController::StartClientForInitialEnrollment() {
