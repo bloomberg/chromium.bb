@@ -34,7 +34,12 @@ class ARCore {
       const base::span<const float> uvs) = 0;
   virtual gfx::Transform GetProjectionMatrix(float near, float far) = 0;
 
-  virtual mojom::VRPosePtr Update() = 0;
+  // Update ARCore state. This call blocks for up to 1/30s while waiting for a
+  // new camera image. The output parameter |camera_updated| must be non-null,
+  // the stored value indicates if the camera image was updated successfully.
+  // The returned pose is nullptr if tracking was lost, this can happen even
+  // when the camera image was updated successfully.
+  virtual mojom::VRPosePtr Update(bool* camera_updated) = 0;
 
   virtual bool RequestHitTest(
       const mojom::XRRayPtr& ray,

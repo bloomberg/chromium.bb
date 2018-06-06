@@ -245,6 +245,7 @@ void XRWebGLLayer::OverwriteColorBufferFromMailboxTexture(
     const gpu::MailboxHolder& mailbox_holder,
     const IntSize& size) {
   drawing_buffer_->OverwriteColorBufferFromMailboxTexture(mailbox_holder, size);
+  framebuffer_->SetContentsChanged(true);
 }
 
 void XRWebGLLayer::OnFrameStart(

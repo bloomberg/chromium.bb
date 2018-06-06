@@ -394,23 +394,6 @@ void XRFrameProvider::OnNonExclusiveFrameData(
                 WrapWeakPersistent(this), std::move(frame_data), timestamp));
 }
 
-// TODO(836349): revisit sending this data to blink at all.
-void XRFrameProvider::RenderBackgroundImage(
-    const device::mojom::blink::VRMagicWindowFrameDataPtr& frame_data,
-    XRSession* session) {
-  DCHECK(frame_data);
-  TRACE_EVENT0("gpu", __FUNCTION__);
-
-  XRLayer* layer = session->baseLayer();
-  if (!layer)
-    return;
-
-  // TODO(https://crbug.com/837509): Remove this static_cast.
-  XRWebGLLayer* webgl_layer = static_cast<XRWebGLLayer*>(layer);
-  webgl_layer->OverwriteColorBufferFromMailboxTexture(
-      frame_data->buffer_holder, IntSize(frame_data->buffer_size));
-}
-
 void XRFrameProvider::ProcessScheduledFrame(
     device::mojom::blink::VRMagicWindowFrameDataPtr frame_data,
     double timestamp) {
@@ -447,7 +430,8 @@ void XRFrameProvider::ProcessScheduledFrame(
     // holder must be present.
     DCHECK(!frame_transport_->DrawingIntoSharedBuffer() ||
            buffer_mailbox_holder_);
-    exclusive_session_->OnFrame(std::move(pose_matrix), buffer_mailbox_holder_);
+    exclusive_session_->OnFrame(std::move(pose_matrix), buffer_mailbox_holder_,
+                                base::nullopt, base::nullopt);
   } else {
     // In the process of fulfilling the frame requests for each session they are
     // extremely likely to request another frame. Work off of a separate list
@@ -464,11 +448,6 @@ void XRFrameProvider::ProcessScheduledFrame(
     // Inform sessions with a pending request of the new frame
     for (unsigned i = 0; i < processing_sessions.size(); ++i) {
       XRSession* session = processing_sessions.at(i).Get();
-      if (frame_data) {
-        // TODO(https://crbug.com/837883): only render background for
-        // sessions that are using AR.
-        RenderBackgroundImage(frame_data, session);
-      }
 
       if (frame_pose_ && frame_pose_->input_state.has_value()) {
         session->OnInputStateChange(frame_id_,
@@ -485,7 +464,19 @@ void XRFrameProvider::ProcessScheduledFrame(
 
       std::unique_ptr<TransformationMatrix> pose_matrix =
           getPoseMatrix(frame_pose_);
-      session->OnFrame(std::move(pose_matrix), base::nullopt);
+      // TODO(https://crbug.com/837883): only render background for
+      // sessions that are using AR.
+      if (frame_data) {
+        // buffer_holder and buffer_size are non-optional members of
+        // the mojo frame_data struct. We pass them to OnFrame as
+        // optional arguments.
+        session->OnFrame(std::move(pose_matrix), base::nullopt,
+                         frame_data->buffer_holder,
+                         IntSize(frame_data->buffer_size));
+      } else {
+        session->OnFrame(std::move(pose_matrix), base::nullopt, base::nullopt,
+                         base::nullopt);
+      }
     }
   }
 }

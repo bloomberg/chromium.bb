@@ -165,10 +165,11 @@ void ARCoreGl::ProduceFrame(
   arcore_->SetDisplayGeometry(transfer_size, display_rotation);
 
   TRACE_EVENT_BEGIN0("gpu", "ARCore Update");
-  mojom::VRPosePtr ar_pose = arcore_->Update();
+  bool camera_updated = false;
+  mojom::VRPosePtr pose = arcore_->Update(&camera_updated);
   TRACE_EVENT_END0("gpu", "ARCore Update");
-  if (!ar_pose) {
-    DLOG(ERROR) << "Failed get pose from arcore_->Update()!";
+  if (!camera_updated) {
+    DVLOG(1) << "arcore_->Update() failed";
     std::move(callback).Run(nullptr);
     return;
   }
@@ -187,7 +188,7 @@ void ARCoreGl::ProduceFrame(
   // Create the frame data to return to the renderer.
   mojom::VRMagicWindowFrameDataPtr frame_data =
       mojom::VRMagicWindowFrameData::New();
-  frame_data->pose = std::move(ar_pose);
+  frame_data->pose = std::move(pose);
   frame_data->buffer_holder = buffer_holder;
   frame_data->buffer_size = transfer_size;
   frame_data->time_delta = base::TimeTicks::Now() - base::TimeTicks();

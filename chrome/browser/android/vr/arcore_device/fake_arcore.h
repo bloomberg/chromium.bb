@@ -33,7 +33,7 @@ class FakeARCore : public ARCore {
   std::vector<float> TransformDisplayUvCoords(
       const base::span<const float> uvs) override;
   gfx::Transform GetProjectionMatrix(float near, float far) override;
-  mojom::VRPosePtr Update() override;
+  mojom::VRPosePtr Update(bool* camera_updated) override;
   void Pause() override;
   void Resume() override;
 
