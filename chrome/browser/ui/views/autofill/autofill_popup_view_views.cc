@@ -18,6 +18,7 @@
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -105,13 +106,18 @@ AutofillPopupViewViews::~AutofillPopupViewViews() {}
 
 void AutofillPopupViewViews::Show() {
   DoShow();
-  GetViewAccessibility().OnAutofillShown();
+  ui::AXPlatformNode::OnInputSuggestionsAvailable();
+  // Fire these the first time a menu is visible. By firing these and the
+  // matching end events, we are telling screen readers that the focus
+  // is only changing temporarily, and the screen reader will restore the
+  // focus back to the appropriate textfield when the menu closes.
+  NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
 }
 
 void AutofillPopupViewViews::Hide() {
   // The controller is no longer valid after it hides us.
   controller_ = NULL;
-  GetViewAccessibility().OnAutofillHidden();
+  ui::AXPlatformNode::OnInputSuggestionsUnavailable();
   DoHide();
   NotifyAccessibilityEvent(ax::mojom::Event::kMenuEnd, true);
 }
@@ -163,15 +169,6 @@ void AutofillPopupViewViews::OnSelectedRowChanged(
 
   if (previous_row_selection) {
     GetChildRow(*previous_row_selection)->OnUnselected();
-  } else {
-    // Fire this the first time a row is selected. By firing this and the
-    // matching kMenuEnd event, we are telling screen readers that the focus
-    // is only changing temporarily, and the screen reader will restore the
-    // focus back to the appropriate textfield when the menu closes.
-    // This is deferred until the first focus so that the screen reader doesn't
-    // treat the textfield as unfocused while the user edits, just because
-    // autofill options are visible.
-    NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
   }
   if (current_row_selection) {
     AutofillPopupChildView* current_row = GetChildRow(*current_row_selection);

@@ -151,8 +151,11 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   bool IsTextOnlyObject() const;
   bool IsPlainTextField() const;
-  // Is in a focused textfield with a related autofill popup currently visible.
-  bool IsAutofillField();
+  // Is in a focused textfield with a related suggestion popup available,
+  // such as for the Autofill feature. The suggestion popup can be either hidden
+  // and available or already visible. This indicates next down arrow key will
+  // navigate within the suggestion popup.
+  bool IsFocusedInputWithSuggestions();
   bool IsRichTextField() const;
   bool IsRangeValueSupported() const;
 

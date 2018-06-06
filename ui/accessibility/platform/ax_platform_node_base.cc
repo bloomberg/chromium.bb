@@ -265,8 +265,8 @@ bool AXPlatformNodeBase::IsTextOnlyObject() const {
          GetData().role == ax::mojom::Role::kInlineTextBox;
 }
 
-bool AXPlatformNodeBase::IsAutofillField() {
-  return IsAutofillShown() && IsPlainTextField() &&
+bool AXPlatformNodeBase::IsFocusedInputWithSuggestions() {
+  return HasInputSuggestions() && IsPlainTextField() &&
          delegate_->GetFocus() == GetNativeViewAccessible();
 }
 
