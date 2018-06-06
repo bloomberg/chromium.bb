@@ -26,9 +26,10 @@ class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
   }
 
   void ShowInDisplay(const display::Display& display) override {
-    auto* controller = keyboard::KeyboardController::Get();
-    // Keyboard may not always be enabled. https://crbug.com/749989
-    if (!controller->enabled())
+    keyboard::KeyboardController* controller =
+        keyboard::KeyboardController::GetInstance();
+    // Controller may not exist if keyboard has been disabled. crbug.com/749989
+    if (!controller)
       return;
     controller->ShowKeyboardInDisplay(display);
   }

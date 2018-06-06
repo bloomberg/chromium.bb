@@ -72,8 +72,8 @@ bool UpdateKeyboardConfig(const KeyboardConfig& keyboard_config) {
   if (g_keyboard_config == keyboard_config)
     return false;
   g_keyboard_config = keyboard_config;
-  auto* controller = KeyboardController::Get();
-  if (controller->enabled())
+  keyboard::KeyboardController* controller = KeyboardController::GetInstance();
+  if (controller)
     controller->NotifyKeyboardConfigChanged();
   return true;
 }
@@ -143,9 +143,8 @@ bool IsKeyboardEnabled() {
 }
 
 bool IsKeyboardVisible() {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  return keyboard_controller->enabled() &&
-         keyboard_controller->keyboard_visible();
+  auto* keyboard_controller = keyboard::KeyboardController::GetInstance();
+  return keyboard_controller && keyboard_controller->keyboard_visible();
 }
 
 bool IsKeyboardOverscrollEnabled() {
@@ -154,9 +153,10 @@ bool IsKeyboardOverscrollEnabled() {
 
   // Users of the sticky accessibility on-screen keyboard are likely to be using
   // mouse input, which may interfere with overscrolling.
-  if (keyboard::KeyboardController::Get()->enabled() &&
-      !keyboard::KeyboardController::Get()->IsOverscrollAllowed())
+  if (keyboard::KeyboardController::GetInstance() &&
+      !keyboard::KeyboardController::GetInstance()->IsOverscrollAllowed()) {
     return false;
+  }
 
   // If overscroll enabled override is set, use it instead. Currently
   // login / out-of-box disable keyboard overscroll. http://crbug.com/363635
@@ -214,8 +214,8 @@ bool IsGestureEditingEnabled() {
 }
 
 bool InsertText(const base::string16& text) {
-  auto* controller = KeyboardController::Get();
-  if (!controller->enabled())
+  KeyboardController* controller = KeyboardController::GetInstance();
+  if (!controller)
     return false;
 
   ui::InputMethod* input_method = controller->ui()->GetInputMethod();

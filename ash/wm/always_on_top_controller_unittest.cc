@@ -56,7 +56,8 @@ class TestLayoutManager : public WorkspaceLayoutManager {
 // Verifies that the always on top controller is notified of keyboard bounds
 // changing events.
 TEST_F(VirtualKeyboardAlwaysOnTopControllerTest, NotifyKeyboardBoundsChanged) {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   aura::Window* always_on_top_container =
       Shell::GetContainer(root_window, kShellWindowId_AlwaysOnTopContainer);

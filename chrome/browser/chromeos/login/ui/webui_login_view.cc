@@ -124,17 +124,13 @@ const char WebUILoginView::kViewClassName[] =
 
 WebUILoginView::WebUILoginView(const WebViewSettings& settings)
     : settings_(settings) {
-  // TODO(mash): Support virtual keyboard under MASH. There is no
-  // KeyboardController in the browser process under MASH.
-  if (!ash_util::IsRunningInMash()) {
-    if (keyboard::KeyboardController::Get()->enabled())
-      keyboard::KeyboardController::Get()->AddObserver(this);
-    // TODO(crbug.com/648733): OnVirtualKeyboardStateChanged not supported in
-    // mash
+  if (keyboard::KeyboardController::GetInstance())
+    keyboard::KeyboardController::GetInstance()->AddObserver(this);
+  // TODO(crbug.com/648733): OnVirtualKeyboardStateChanged not supported in mash
+  if (!ash_util::IsRunningInMash())
     ash::Shell::Get()->AddShellObserver(this);
-  } else {
+  else
     NOTIMPLEMENTED();
-  }
 
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                  content::NotificationService::AllSources());
@@ -210,11 +206,10 @@ WebUILoginView::~WebUILoginView() {
     observer.OnHostDestroying();
 
   // TODO(crbug.com/648733): OnVirtualKeyboardStateChanged not supported in mash
-  if (!ash_util::IsRunningInMash()) {
+  if (!ash_util::IsRunningInMash())
     ash::Shell::Get()->RemoveShellObserver(this);
-    if (keyboard::KeyboardController::Get()->enabled())
-      keyboard::KeyboardController::Get()->RemoveObserver(this);
-  }
+  if (keyboard::KeyboardController::GetInstance())
+    keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
 
   if (!ash_util::IsRunningInMash()) {
     ash::Shell::Get()->system_tray_notifier()->RemoveSystemTrayFocusObserver(
@@ -457,9 +452,8 @@ void WebUILoginView::ClearLockScreenAppFocusCyclerDelegate() {
 
 void WebUILoginView::OnVirtualKeyboardStateChanged(bool activated,
                                                    aura::Window* root_window) {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  DCHECK(keyboard_controller);
-  if (keyboard_controller->enabled()) {
+  auto* keyboard_controller = keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller) {
     if (activated) {
       if (!keyboard_controller->HasObserver(this))
         keyboard_controller->AddObserver(this);

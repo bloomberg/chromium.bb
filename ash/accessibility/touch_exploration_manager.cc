@@ -219,8 +219,9 @@ void TouchExplorationManager::UpdateTouchExplorationState() {
     }
 
     // Virtual keyboard.
-    auto* keyboard_controller = keyboard::KeyboardController::Get();
-    if (keyboard_controller->enabled()) {
+    keyboard::KeyboardController* keyboard_controller =
+        keyboard::KeyboardController::GetInstance();
+    if (keyboard_controller) {
       touch_exploration_controller_->SetLiftActivationBounds(
           keyboard_controller->visual_bounds_in_screen());
     }

@@ -24,9 +24,8 @@ LockLayoutManager::LockLayoutManager(aura::Window* window, Shelf* shelf)
       keyboard_observer_(this) {
   Shell::Get()->AddShellObserver(this);
   root_window_->AddObserver(this);
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled())
-    keyboard_observer_.Add(keyboard_controller);
+  if (keyboard::KeyboardController::GetInstance())
+    keyboard_observer_.Add(keyboard::KeyboardController::GetInstance());
   shelf_observer_.Add(shelf);
 }
 

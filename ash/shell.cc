@@ -475,17 +475,15 @@ void Shell::OnDictationEnded() {
     observer.OnDictationEnded();
 }
 
-void Shell::EnableKeyboard() {
+void Shell::CreateKeyboard() {
   if (!keyboard::IsKeyboardEnabled())
     return;
 
-  if (keyboard_controller_->enabled()) {
-    // Disable and re-enable the keyboard, as some callers expect the keyboard
-    // to be reloaded.
-    // TODO(https://crbug.com/731537): Add a separate function for reloading the
-    // keyboard.
-    for (auto* const controller : GetAllRootWindowControllers())
-      controller->DeactivateKeyboard(keyboard_controller_.get());
+  if (keyboard::KeyboardController::GetInstance()) {
+    for (auto* const controller : GetAllRootWindowControllers()) {
+      controller->DeactivateKeyboard(
+          keyboard::KeyboardController::GetInstance());
+    }
   }
   keyboard_controller_->EnableKeyboard(shell_delegate_->CreateKeyboardUI(),
                                        virtual_keyboard_controller_.get());
@@ -493,17 +491,18 @@ void Shell::EnableKeyboard() {
     observer.OnKeyboardControllerCreated();
 
   GetPrimaryRootWindowController()->ActivateKeyboard(
-      keyboard_controller_.get());
+      keyboard::KeyboardController::GetInstance());
 }
 
-void Shell::DisableKeyboard() {
+void Shell::DestroyKeyboard() {
   // TODO(jamescook): Move keyboard create and hide into ShellPort.
   keyboard_ui_->Hide();
-  if (keyboard_controller_->enabled()) {
-    for (auto* const controller : GetAllRootWindowControllers())
-      controller->DeactivateKeyboard(keyboard_controller_.get());
+  if (keyboard::KeyboardController::GetInstance()) {
+    for (auto* const controller : GetAllRootWindowControllers()) {
+      controller->DeactivateKeyboard(
+          keyboard::KeyboardController::GetInstance());
+    }
   }
-
   keyboard_controller_->DisableKeyboard();
 }
 
@@ -784,7 +783,7 @@ Shell::~Shell() {
 
   // Destroy the keyboard before closing the shelf, since it will invoke a shelf
   // layout.
-  DisableKeyboard();
+  DestroyKeyboard();
 
   toast_manager_.reset();
 
@@ -1493,7 +1492,7 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
         // Ensure that the keyboard controller is activated for the primary
         // window.
         GetPrimaryRootWindowController()->ActivateKeyboard(
-            keyboard_controller_.get());
+            keyboard::KeyboardController::GetInstance());
         break;
       case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
       case session_manager::SessionState::ACTIVE:
@@ -1502,7 +1501,7 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
         // proper IME. |LOGGED_IN_NOT_ACTIVE| is needed so that the virtual
         // keyboard works on supervised user creation, http://crbug.com/712873.
         // |ACTIVE| is also needed for guest user workflow.
-        EnableKeyboard();
+        CreateKeyboard();
         break;
       default:
         break;

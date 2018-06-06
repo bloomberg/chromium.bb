@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardEndToEndTest, OpenIfFocusedOnClick) {
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardEndToEndTest, OpenOnlyOnSyncFocus) {
-  auto* controller = keyboard::KeyboardController::Get();
+  auto* controller = keyboard::KeyboardController::GetInstance();
   EXPECT_FALSE(IsKeyboardVisible());
 
   chromeos::TextInputTestHelper helper;

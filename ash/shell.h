@@ -330,10 +330,12 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // Enables the keyboard and associate it with the primary root window
   // controller.
-  void EnableKeyboard();
+  // TODO(https://crbug.com/731537): Rename this to EnableKeyboard.
+  void CreateKeyboard();
 
   // Hides and disables the virtual keyboard.
-  void DisableKeyboard();
+  // TODO(https://crbug.com/731537): Rename this to DisableKeyboard.
+  void DestroyKeyboard();
 
   // Test if TabletModeWindowManager is not enabled, and if
   // TabletModeController is not currently setting a display rotation. Or if

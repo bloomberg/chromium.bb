@@ -700,7 +700,8 @@ TEST_P(AppListPresenterDelegateTest,
       app_list::AppListViewState::FULLSCREEN_SEARCH);
 
   // Manually show the virtual keyboard.
-  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* const keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
   keyboard_controller->ShowKeyboard(true);
   keyboard_controller->ui()->GetContentsWindow()->SetBounds(
       keyboard::KeyboardBoundsFromRootBounds(

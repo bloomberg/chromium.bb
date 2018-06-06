@@ -686,7 +686,7 @@ class VirtualKeyboardRootWindowControllerTest
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
     keyboard::SetTouchKeyboardEnabled(true);
-    Shell::Get()->EnableKeyboard();
+    Shell::Get()->CreateKeyboard();
   }
 
   void TearDown() override {
@@ -741,7 +741,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
                                             ? root_windows[1]
                                             : root_windows[0];
 
-  auto* controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::GetInstance();
   ASSERT_TRUE(controller);
   aura::Window* vk_container_in_primary = Shell::GetContainer(
       primary_root_window, kShellWindowId_VirtualKeyboardContainer);
@@ -780,7 +781,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
       primary_root_window, kShellWindowId_VirtualKeyboardContainer);
   aura::Window* vk_container_in_secondary = Shell::GetContainer(
       secondary_root_window, kShellWindowId_VirtualKeyboardContainer);
-  auto* controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::GetInstance();
 
   controller->ShowKeyboard(false);
   aura::Window* vk_window = controller->GetContainerWindow();
@@ -834,7 +836,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, FollowInputFocus) {
       primary_root_window, kShellWindowId_VirtualKeyboardContainer);
   aura::Window* vk_container_in_secondary = Shell::GetContainer(
       secondary_root_window, kShellWindowId_VirtualKeyboardContainer);
-  auto* controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::GetInstance();
   aura::Window* focusable_window_in_primary_display =
       CreateTestWindowInShellWithBounds(
           primary_root_window->GetBoundsInScreen());
@@ -884,7 +887,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
       primary_root_window, kShellWindowId_VirtualKeyboardContainer);
   aura::Window* vk_container_in_secondary = Shell::GetContainer(
       secondary_root_window, kShellWindowId_VirtualKeyboardContainer);
-  auto* controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::GetInstance();
   aura::Window* vk_window = controller->GetContainerWindow();
 
   ASSERT_TRUE(vk_container_in_primary->Contains(vk_window));
@@ -907,7 +911,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   keyboard_container->Show();
 
   aura::Window* contents_window =
-      keyboard::KeyboardController::Get()->ui()->GetContentsWindow();
+      keyboard::KeyboardController::GetInstance()->ui()->GetContentsWindow();
   contents_window->SetBounds(gfx::Rect());
   contents_window->Show();
 
@@ -938,13 +942,14 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 // GetWindowContainer().
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        DeleteOldContainerOnVirtualKeyboardInit) {
-  auto* controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::GetInstance();
   aura::Window* keyboard_container = controller->GetContainerWindow();
   // Track the keyboard container window.
   aura::WindowTracker tracker;
   tracker.Add(keyboard_container);
   // Reinitialize the keyboard.
-  Shell::Get()->EnableKeyboard();
+  Shell::Get()->CreateKeyboard();
   // keyboard_container should no longer be present.
   EXPECT_FALSE(tracker.Contains(keyboard_container));
 }
@@ -956,7 +961,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
   aura::Window* keyboard_container =
       Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
   keyboard_container->Show();
-  auto* controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::GetInstance();
   aura::Window* contents_window = controller->ui()->GetContentsWindow();
   contents_window->SetBounds(
       keyboard::KeyboardBoundsFromRootBounds(root_window->bounds(), 100));
@@ -985,7 +991,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
 // Ensure that system modal dialogs do not block events targeted at the virtual
 // keyboard.
 TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
-  auto* controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::GetInstance();
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   aura::Window* container_window = controller->GetContainerWindow();
   ASSERT_TRUE(container_window);
@@ -1025,7 +1032,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
 // Ensure that the visible area for scrolling the text caret excludes the
 // region occluded by the on-screen keyboard.
 TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
   keyboard::KeyboardUI* ui = keyboard_controller->ui();
 
   MockTextInputClient text_input_client;
@@ -1064,7 +1072,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   aura::Window* primary_root_window = root_windows[0];
   aura::Window* secondary_root_window = root_windows[1];
 
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
   keyboard::KeyboardUI* ui = keyboard_controller->ui();
 
   MockTextInputClient text_input_client;
@@ -1113,7 +1122,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 // crbug/377180.
 TEST_F(VirtualKeyboardRootWindowControllerTest, ZOrderTest) {
   UpdateDisplay("800x600");
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
   keyboard::KeyboardUI* ui = keyboard_controller->ui();
 
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
@@ -1192,7 +1202,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ZOrderTest) {
 // orientation. See crbug/417612.
 TEST_F(VirtualKeyboardRootWindowControllerTest, DisplayRotation) {
   UpdateDisplay("800x600");
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
   aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
   keyboard_controller->ShowKeyboard(false);
   keyboard_controller->ui()->GetContentsWindow()->SetBounds(
