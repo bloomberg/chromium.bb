@@ -5,6 +5,7 @@
 #include "ash/system/tray/tray_detailed_view.h"
 
 #include "ash/ash_view_ids.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_bubble.h"
@@ -127,6 +128,11 @@ class TrayDetailedViewTest : public AshTestBase {
 };
 
 TEST_F(TrayDetailedViewTest, TransitionToDefaultViewTest) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -177,6 +183,11 @@ TEST_F(TrayDetailedViewTest, TransitionToDefaultViewTest) {
 }
 
 TEST_F(TrayDetailedViewTest, ScrollContentsTest) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   TestItem* test_item = new TestItem;
   tray->AddTrayItem(base::WrapUnique(test_item));
