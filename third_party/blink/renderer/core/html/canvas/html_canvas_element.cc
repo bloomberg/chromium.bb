@@ -76,10 +76,10 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_metrics.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
-#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_frame_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
@@ -313,10 +313,10 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
     CreateLayer();
     SetNeedsUnbufferedInputEvents(true);
     // TODO(fserb): rename to CanvasFrameDispatcher
-    frame_dispatcher_ = std::make_unique<OffscreenCanvasFrameDispatcher>(
+    frame_dispatcher_ = std::make_unique<CanvasResourceDispatcher>(
         nullptr, surface_layer_bridge_->GetFrameSinkId().client_id(),
         surface_layer_bridge_->GetFrameSinkId().sink_id(),
-        OffscreenCanvasFrameDispatcher::kInvalidPlaceholderCanvasId, size_);
+        CanvasResourceDispatcher::kInvalidPlaceholderCanvasId, size_);
   }
 
   SetNeedsCompositingUpdate();
@@ -1314,7 +1314,7 @@ ScriptPromise HTMLCanvasElement::CreateImageBitmap(
 
 void HTMLCanvasElement::SetPlaceholderFrame(
     scoped_refptr<CanvasResource> image,
-    base::WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
+    base::WeakPtr<CanvasResourceDispatcher> dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     unsigned resource_id) {
   OffscreenCanvasPlaceholder::SetPlaceholderFrame(

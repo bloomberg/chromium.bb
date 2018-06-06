@@ -14,18 +14,17 @@
 
 namespace blink {
 
-class OffscreenCanvasFrameDispatcher;
 class CanvasResource;
+class CanvasResourceDispatcher;
 
 class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
  public:
   ~OffscreenCanvasPlaceholder();
 
-  virtual void SetPlaceholderFrame(
-      scoped_refptr<CanvasResource>,
-      base::WeakPtr<OffscreenCanvasFrameDispatcher>,
-      scoped_refptr<base::SingleThreadTaskRunner>,
-      viz::ResourceId resource_id);
+  virtual void SetPlaceholderFrame(scoped_refptr<CanvasResource>,
+                                   base::WeakPtr<CanvasResourceDispatcher>,
+                                   scoped_refptr<base::SingleThreadTaskRunner>,
+                                   viz::ResourceId resource_id);
   void ReleasePlaceholderFrame();
 
   void SetSuspendOffscreenCanvasAnimation(bool);
@@ -47,7 +46,7 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
   bool PostSetSuspendAnimationToOffscreenCanvasThread(bool suspend);
 
   scoped_refptr<CanvasResource> placeholder_frame_;
-  base::WeakPtr<OffscreenCanvasFrameDispatcher> frame_dispatcher_;
+  base::WeakPtr<CanvasResourceDispatcher> frame_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> frame_dispatcher_task_runner_;
   viz::ResourceId placeholder_frame_resource_id_ = 0;
 

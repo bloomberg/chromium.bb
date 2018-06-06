@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_OFFSCREEN_CANVAS_FRAME_DISPATCHER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_OFFSCREEN_CANVAS_FRAME_DISPATCHER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_RESOURCE_DISPATCHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_RESOURCE_DISPATCHER_H_
 
 #include <memory>
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -18,31 +18,31 @@ namespace blink {
 
 class CanvasResource;
 
-class OffscreenCanvasFrameDispatcherClient {
+class CanvasResourceDispatcherClient {
  public:
   virtual void BeginFrame() = 0;
 };
 
-class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
+class PLATFORM_EXPORT CanvasResourceDispatcher
     : public viz::mojom::blink::CompositorFrameSinkClient {
  public:
-  base::WeakPtr<OffscreenCanvasFrameDispatcher> GetWeakPtr() {
+  base::WeakPtr<CanvasResourceDispatcher> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
-  OffscreenCanvasFrameDispatcherClient* Client() { return client_; }
+  CanvasResourceDispatcherClient* Client() { return client_; }
 
   enum {
     kInvalidPlaceholderCanvasId = -1,
   };
 
-  OffscreenCanvasFrameDispatcher(OffscreenCanvasFrameDispatcherClient*,
-                                 uint32_t client_id,
-                                 uint32_t sink_id,
-                                 int placeholder_canvas_id,
-                                 const IntSize&);
+  CanvasResourceDispatcher(CanvasResourceDispatcherClient*,
+                           uint32_t client_id,
+                           uint32_t sink_id,
+                           int placeholder_canvas_id,
+                           const IntSize&);
 
-  ~OffscreenCanvasFrameDispatcher() override;
+  ~CanvasResourceDispatcher() override;
   void SetNeedsBeginFrame(bool);
   void SetSuspendAnimation(bool);
   bool NeedsBeginFrame() const { return needs_begin_frame_; }
@@ -84,7 +84,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
   };
 
  private:
-  friend class OffscreenCanvasFrameDispatcherTest;
+  friend class CanvasResourceDispatcherTest;
 
   bool PrepareFrame(scoped_refptr<CanvasResource>,
                     double commit_start_time,
@@ -124,12 +124,12 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
 
   viz::BeginFrameAck current_begin_frame_ack_;
 
-  OffscreenCanvasFrameDispatcherClient* client_;
+  CanvasResourceDispatcherClient* client_;
 
   std::unique_ptr<OffscreenCanvasResourceProvider>
       offscreen_canvas_resource_provider_;
 
-  base::WeakPtrFactory<OffscreenCanvasFrameDispatcher> weak_ptr_factory_;
+  base::WeakPtrFactory<CanvasResourceDispatcher> weak_ptr_factory_;
 };
 
 }  // namespace blink
