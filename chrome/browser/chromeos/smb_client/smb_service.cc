@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -28,6 +29,11 @@ namespace {
 
 bool ContainsAt(const std::string& username) {
   return username.find('@') != std::string::npos;
+}
+
+void RecordMountResult(SmbMountResult result) {
+  DCHECK_LE(result, SmbMountResult::kMaxValue);
+  UMA_HISTOGRAM_ENUMERATION("NativeSmbFileShare.MountResult", result);
 }
 
 }  // namespace
@@ -128,7 +134,7 @@ void SmbService::OnMountResponse(
     smbprovider::ErrorType error,
     int32_t mount_id) {
   if (error != smbprovider::ERROR_OK) {
-    std::move(callback).Run(TranslateErrorToMountResult(error));
+    FireMountCallback(std::move(callback), TranslateErrorToMountResult(error));
     return;
   }
 
@@ -140,7 +146,7 @@ void SmbService::OnMountResponse(
   base::File::Error result =
       GetProviderService()->MountFileSystem(provider_id_, mount_options);
 
-  std::move(callback).Run(TranslateErrorToMountResult(result));
+  FireMountCallback(std::move(callback), TranslateErrorToMountResult(result));
 }
 
 base::File::Error SmbService::Unmount(
@@ -267,6 +273,13 @@ SmbMountResult SmbService::TranslateErrorToMountResult(
 SmbMountResult SmbService::TranslateErrorToMountResult(
     base::File::Error error) const {
   return TranslateErrorToMountResult(TranslateToErrorType(error));
+}
+
+void SmbService::FireMountCallback(MountResponse callback,
+                                   SmbMountResult result) {
+  RecordMountResult(result);
+
+  std::move(callback).Run(result);
 }
 
 }  // namespace smb_client

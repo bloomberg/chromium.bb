@@ -37,7 +37,8 @@ enum SmbMountResult {
   AUTHENTICATION_FAILED = 2,  // Authentication to the share failed
   NOT_FOUND = 3,              // The specified share was not found
   UNSUPPORTED_DEVICE = 4,     // The specified share is not supported
-  MOUNT_EXISTS = 5            // The specified share is already mounted
+  MOUNT_EXISTS = 5,           // The specified share is already mounted
+  kMaxValue = MOUNT_EXISTS    // Max enum value for use in metrics
 };
 
 using file_system_provider::Capabilities;
@@ -126,6 +127,9 @@ class SmbService : public KeyedService,
 
   // Handles the response from attempting to setup Kerberos.
   void OnSetupKerberosResponse(bool success);
+
+  // Fires |callback| with |result|.
+  void FireMountCallback(MountResponse callback, SmbMountResult result);
 
   // Translates an error |error| into an SmbMountResult.
   SmbMountResult TranslateErrorToMountResult(

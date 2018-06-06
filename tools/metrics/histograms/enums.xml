@@ -31034,6 +31034,15 @@ Called by update_use_counter_css.py.-->
   <int value="10" label="FAILED_TO_FIND_NAMESPACE"/>
 </enum>
 
+<enum name="NativeSmbFileShare_MountResult">
+  <int value="0" label="Succeeded"/>
+  <int value="1" label="Unknown failure"/>
+  <int value="2" label="Authentication failed"/>
+  <int value="3" label="Not found"/>
+  <int value="4" label="Unsupported device"/>
+  <int value="5" label="Mount exists"/>
+</enum>
+
 <enum name="NatTypeCounters">
   <int value="0" label="Not behind a NAT."/>
   <int value="1" label="Behind a NAT of unknown type."/>
