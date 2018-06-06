@@ -17,7 +17,7 @@
 #include "components/prefs/pref_service.h"
 
 #if defined(USE_AURA)
-#include "chromecast/browser/accessibility/accessibility_manager.h"
+#include "chromecast/graphics/accessibility/accessibility_manager.h"
 #include "chromecast/graphics/cast_screen.h"
 #endif  // defined(USE_AURA)
 

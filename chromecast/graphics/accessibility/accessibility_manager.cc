@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/accessibility/accessibility_manager.h"
+#include "chromecast/graphics/accessibility/accessibility_manager.h"
 
 #include "chromecast/graphics/accessibility/focus_ring_controller.h"
 #include "ui/aura/window.h"
@@ -10,7 +10,6 @@
 #include "ui/wm/public/activation_client.h"
 
 namespace chromecast {
-namespace shell {
 
 AccessibilityManager::AccessibilityManager(
     aura::WindowTreeHost* window_tree_host) {
@@ -66,5 +65,4 @@ void AccessibilityManager::SetTouchAccessibilityAnchorPoint(
   // TODO(rdaum): Implement
 }
 
-}  // namespace shell
 }  // namespace chromecast

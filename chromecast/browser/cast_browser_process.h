@@ -19,6 +19,9 @@ class NetLog;
 }  // namespace net
 
 namespace chromecast {
+#if defined(USE_AURA)
+class AccessibilityManager;
+#endif  // defined(USE_AURA)
 class CastService;
 class CastScreen;
 class ConnectivityChecker;
@@ -28,9 +31,6 @@ class CastMetricsServiceClient;
 }  // namespace metrics
 
 namespace shell {
-#if defined(USE_AURA)
-class AccessibilityManager;
-#endif  // defined(USE_AURA)
 class CastBrowserContext;
 class CastContentBrowserClient;
 class RemoteDebuggingServer;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_BROWSER_ACCESSIBILITY_ACCESSIBILITY_MANAGER_H_
-#define CHROMECAST_BROWSER_ACCESSIBILITY_ACCESSIBILITY_MANAGER_H_
+#ifndef CHROMECAST_GRAPHICS_ACCESSIBILITY_ACCESSIBILITY_MANAGER_H_
+#define CHROMECAST_GRAPHICS_ACCESSIBILITY_ACCESSIBILITY_MANAGER_H_
 
 #include <memory>
 #include <vector>
@@ -17,8 +17,6 @@ class WindowTreeHost;
 namespace chromecast {
 
 class FocusRingController;
-
-namespace shell {
 
 // Responsible for delegating chromecast browser process accessibility functions
 // to the responsible party.
@@ -62,7 +60,6 @@ class AccessibilityManager {
       accessibility_focus_ring_controller_;
 };
 
-}  // namespace shell
 }  // namespace chromecast
 
-#endif  // CHROMECAST_BROWSER_ACCESSIBILITY_ACCESSIBILITY_MANAGER_H_
+#endif  // CHROMECAST_GRAPHICS_ACCESSIBILITY_ACCESSIBILITY_MANAGER_H_
