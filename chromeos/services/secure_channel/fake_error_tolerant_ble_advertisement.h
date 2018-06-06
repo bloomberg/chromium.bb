@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/error_tolerant_ble_advertisement.h"
 
 namespace chromeos {
@@ -16,9 +17,9 @@ namespace secure_channel {
 // Test double for ErrorTolerantBleAdvertisement.
 class FakeErrorTolerantBleAdvertisement : public ErrorTolerantBleAdvertisement {
  public:
-  FakeErrorTolerantBleAdvertisement(const std::string& device_id);
+  FakeErrorTolerantBleAdvertisement(const DeviceIdPair& device_id_pair);
   FakeErrorTolerantBleAdvertisement(
-      const std::string& device_id,
+      const DeviceIdPair& device_id_pair,
       const base::Callback<void(FakeErrorTolerantBleAdvertisement*)>&
           deletion_callback);
   ~FakeErrorTolerantBleAdvertisement() override;

@@ -11,6 +11,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
+#include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/error_tolerant_ble_advertisement_impl.h"
 #include "chromeos/services/secure_channel/fake_ble_synchronizer.h"
 #include "chromeos/services/secure_channel/fake_error_tolerant_ble_advertisement.h"
@@ -54,14 +55,15 @@ class FakeErrorTolerantBleAdvertisementFactory
 
   // secure_channel::ErrorTolerantBleAdvertisementImpl::Factory:
   std::unique_ptr<secure_channel::ErrorTolerantBleAdvertisement> BuildInstance(
-      const std::string& device_id,
+      const secure_channel::DeviceIdPair& device_id_pair,
       std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
       secure_channel::BleSynchronizerBase* ble_synchronizer) override {
     secure_channel::FakeErrorTolerantBleAdvertisement* fake_advertisement =
         new secure_channel::FakeErrorTolerantBleAdvertisement(
-            device_id, base::Bind(&FakeErrorTolerantBleAdvertisementFactory::
-                                      OnFakeAdvertisementDeleted,
-                                  base::Unretained(this)));
+            device_id_pair,
+            base::Bind(&FakeErrorTolerantBleAdvertisementFactory::
+                           OnFakeAdvertisementDeleted,
+                       base::Unretained(this)));
     active_advertisements_.push_back(fake_advertisement);
     ++num_created_;
     return base::WrapUnique(fake_advertisement);
@@ -168,7 +170,8 @@ class BleAdvertiserImplTest : public testing::Test {
       const std::string& expected_device_id) {
     secure_channel::FakeErrorTolerantBleAdvertisement* advertisement =
         fake_advertisement_factory_->active_advertisements()[index];
-    EXPECT_EQ(expected_device_id, advertisement->device_id());
+    EXPECT_EQ(expected_device_id,
+              advertisement->device_id_pair().remote_device_id());
     EXPECT_TRUE(advertisement->HasBeenStopped());
   }
 
@@ -177,7 +180,8 @@ class BleAdvertiserImplTest : public testing::Test {
       const std::string& expected_device_id) {
     secure_channel::FakeErrorTolerantBleAdvertisement* advertisement =
         fake_advertisement_factory_->active_advertisements()[index];
-    EXPECT_EQ(expected_device_id, advertisement->device_id());
+    EXPECT_EQ(expected_device_id,
+              advertisement->device_id_pair().remote_device_id());
     advertisement->InvokeStopCallback();
   }
 
@@ -338,12 +342,14 @@ TEST_F(BleAdvertiserImplTest, TooManyDevicesRegistered) {
 
   // Verify that the remaining active advertisements correspond to the correct
   // devices.
-  EXPECT_EQ(
-      fake_devices_[0].GetDeviceId(),
-      fake_advertisement_factory_->active_advertisements()[0]->device_id());
-  EXPECT_EQ(
-      fake_devices_[2].GetDeviceId(),
-      fake_advertisement_factory_->active_advertisements()[1]->device_id());
+  EXPECT_EQ(fake_devices_[0].GetDeviceId(),
+            fake_advertisement_factory_->active_advertisements()[0]
+                ->device_id_pair()
+                .remote_device_id());
+  EXPECT_EQ(fake_devices_[2].GetDeviceId(),
+            fake_advertisement_factory_->active_advertisements()[1]
+                ->device_id_pair()
+                .remote_device_id());
 }
 
 // Regression test for crbug.com/739883. This issue arises when the following

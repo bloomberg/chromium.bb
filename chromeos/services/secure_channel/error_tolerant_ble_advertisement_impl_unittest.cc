@@ -23,6 +23,7 @@ namespace {
 
 const uint8_t kInvertedConnectionFlag = 0x01;
 const char kDeviceId[] = "deviceId";
+const char kLocalDeviceId[] = "localDeviceId";
 
 std::unique_ptr<cryptauth::DataWithTimestamp> GenerateAdvertisementData() {
   return std::make_unique<cryptauth::DataWithTimestamp>("advertisement1", 1000L,
@@ -43,11 +44,12 @@ class SecureChannelErrorTolerantBleAdvertisementImplTest
 
     fake_synchronizer_ = std::make_unique<FakeBleSynchronizer>();
 
-    advertisement_ = base::WrapUnique(new ErrorTolerantBleAdvertisementImpl(
-        kDeviceId,
-        std::make_unique<cryptauth::DataWithTimestamp>(
-            *fake_advertisement_data_),
-        fake_synchronizer_.get()));
+    advertisement_ =
+        ErrorTolerantBleAdvertisementImpl::Factory::Get()->BuildInstance(
+            DeviceIdPair(kDeviceId, kLocalDeviceId),
+            std::make_unique<cryptauth::DataWithTimestamp>(
+                *fake_advertisement_data_),
+            fake_synchronizer_.get());
 
     VerifyServiceDataMatches(0u /* command_index */);
   }
@@ -66,11 +68,14 @@ class SecureChannelErrorTolerantBleAdvertisementImplTest
     std::unique_ptr<device::BluetoothAdvertisement::ServiceData> service_data =
         data.service_data();
     EXPECT_EQ(1u, service_data->size());
+
+    ErrorTolerantBleAdvertisementImpl* derived_type =
+        static_cast<ErrorTolerantBleAdvertisementImpl*>(advertisement_.get());
     std::vector<uint8_t> service_data_from_args =
         service_data->at(kAdvertisingServiceUuid);
     EXPECT_EQ(service_data_from_args.size(),
-              advertisement_->advertisement_data().data.size() + 1);
-    EXPECT_FALSE(memcmp(advertisement_->advertisement_data().data.data(),
+              derived_type->advertisement_data().data.size() + 1);
+    EXPECT_FALSE(memcmp(derived_type->advertisement_data().data.data(),
                         service_data_from_args.data(), service_data->size()));
     EXPECT_EQ(kInvertedConnectionFlag, service_data_from_args.back());
   }
@@ -89,7 +94,9 @@ class SecureChannelErrorTolerantBleAdvertisementImplTest
   }
 
   void ReleaseAdvertisement() {
-    advertisement_->AdvertisementReleased(fake_advertisement_);
+    ErrorTolerantBleAdvertisementImpl* derived_type =
+        static_cast<ErrorTolerantBleAdvertisementImpl*>(advertisement_.get());
+    derived_type->AdvertisementReleased(fake_advertisement_);
   }
 
   void CallStop() {
@@ -119,7 +126,7 @@ class SecureChannelErrorTolerantBleAdvertisementImplTest
 
   bool stopped_callback_called_;
 
-  std::unique_ptr<ErrorTolerantBleAdvertisementImpl> advertisement_;
+  std::unique_ptr<ErrorTolerantBleAdvertisement> advertisement_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SecureChannelErrorTolerantBleAdvertisementImplTest);

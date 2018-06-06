@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/error_tolerant_ble_advertisement_impl.h"
 #include "components/cryptauth/ble/ble_advertisement_generator.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
@@ -17,6 +18,20 @@
 namespace chromeos {
 
 namespace tether {
+
+namespace {
+
+const char kStubLocalDeviceId[] = "N/A";
+
+// Instant Tethering does not make use of the "local device ID" argument, since
+// all connections are from the same device.
+// TODO(hansberry): Remove when SecureChannelClient migration is complete.
+secure_channel::DeviceIdPair StubDeviceIdPair(
+    const std::string& remote_device_id) {
+  return secure_channel::DeviceIdPair(remote_device_id, kStubLocalDeviceId);
+}
+
+}  // namespace
 
 // static
 BleAdvertiserImpl::Factory* BleAdvertiserImpl::Factory::factory_instance_ =
@@ -141,8 +156,8 @@ void BleAdvertiserImpl::UpdateAdvertisements() {
               *metadata->service_data);
       advertisements_[i] =
           secure_channel::ErrorTolerantBleAdvertisementImpl::Factory::Get()
-              ->BuildInstance(metadata->device_id, std::move(service_data_copy),
-                              ble_synchronizer_);
+              ->BuildInstance(StubDeviceIdPair(metadata->device_id),
+                              std::move(service_data_copy), ble_synchronizer_);
       continue;
     }
 
