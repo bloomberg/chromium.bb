@@ -131,6 +131,8 @@ class SmbService : public KeyedService,
   // Fires |callback| with |result|.
   void FireMountCallback(MountResponse callback, SmbMountResult result);
 
+  void RecordMountCount() const;
+
   // Translates an error |error| into an SmbMountResult.
   SmbMountResult TranslateErrorToMountResult(
       smbprovider::ErrorType error) const;
