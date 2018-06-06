@@ -301,9 +301,11 @@ void SandboxIPCHandler::HandleGetStyleForStrike(
   bool bold;
   bool italic;
   uint16_t pixel_size;
+  float device_scale_factor;
 
   if (!iter.ReadString(&family) || !iter.ReadBool(&bold) ||
-      !iter.ReadBool(&italic) || !iter.ReadUInt16(&pixel_size)) {
+      !iter.ReadBool(&italic) || !iter.ReadUInt16(&pixel_size) ||
+      !iter.ReadFloat(&device_scale_factor)) {
     return;
   }
 
@@ -312,6 +314,7 @@ void SandboxIPCHandler::HandleGetStyleForStrike(
   query.pixel_size = pixel_size;
   query.style = italic ? gfx::Font::ITALIC : 0;
   query.weight = bold ? gfx::Font::Weight::BOLD : gfx::Font::Weight::NORMAL;
+  query.device_scale_factor = device_scale_factor;
   const gfx::FontRenderParams params = gfx::GetFontRenderParams(query, nullptr);
 
   // These are passed as ints since they're interpreted as tri-state chars in

@@ -59,19 +59,15 @@ class WebSandboxSupport {
                                            WebFallbackFont*) = 0;
 
   // Fill out the given WebFontRenderStyle with the user's preferences for
-  // rendering the given font at the given size (in pixels).
-  //   family: i.e. "Times New Roman"
-  //   sizeAndStyle:
-  //      3322222222221111111111
-  //      10987654321098765432109876543210
-  //     +--------------------------------+
-  //     |..............Size............IB|
-  //     +--------------------------------+
-  //     I: italic flag
-  //     B: bold flag
-  // TODO(derat): Use separate parameters for the size and the style.
+  // rendering the given font at the given size (in pixels), given weight and
+  // given slant and given device scale factor. The device scale factor is
+  // needed in gfx::GetFontRenderParams for determining subpixel and hinting
+  // settings.
   virtual void GetWebFontRenderStyleForStrike(const char* family,
-                                              int size_and_style,
+                                              int size,
+                                              bool is_bold,
+                                              bool is_italic,
+                                              float device_scale_factor,
                                               WebFontRenderStyle*) = 0;
 };
 

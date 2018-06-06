@@ -301,16 +301,15 @@ WebFontRenderStyle FontPlatformData::QuerySystemRenderStyle(
     SkFontStyle font_style) {
   WebFontRenderStyle result;
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   // If the font name is missing (i.e. probably a web font) or the sandbox is
   // disabled, use the system defaults.
   if (family.length() && Platform::Current()->GetSandboxSupport()) {
     bool is_bold = font_style.weight() >= SkFontStyle::kSemiBold_Weight;
     bool is_italic = font_style.slant() != SkFontStyle::kUpright_Slant;
-    const int size_and_style = (((int)text_size) << 2) | (((int)is_bold) << 1) |
-                               (((int)is_italic) << 0);
     Platform::Current()->GetSandboxSupport()->GetWebFontRenderStyleForStrike(
-        family.data(), size_and_style, &result);
+        family.data(), text_size, is_bold, is_italic,
+        FontCache::DeviceScaleFactor(), &result);
   }
 #endif
 
