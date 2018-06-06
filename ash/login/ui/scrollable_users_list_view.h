@@ -11,6 +11,9 @@
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/public/interfaces/login_user_info.mojom.h"
+#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_observer.h"
+#include "base/scoped_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/scroll_view.h"
 
@@ -27,7 +30,8 @@ class ScrollBar;
 // Scrollable list of the users. Stores the list of login user views. Can be
 // styled with GradientParams that define gradient tinting at the top and at the
 // bottom. Can be styled with LayoutParams that define spacing and sizing.
-class ASH_EXPORT ScrollableUsersListView : public views::ScrollView {
+class ASH_EXPORT ScrollableUsersListView : public views::ScrollView,
+                                           public WallpaperControllerObserver {
  public:
   // TestApi is used for tests to get internal implementation details.
   class ASH_EXPORT TestApi {
@@ -66,6 +70,9 @@ class ASH_EXPORT ScrollableUsersListView : public views::ScrollView {
   // views::View:
   void Layout() override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
+
+  // ash::WallpaperControllerObserver:
+  void OnWallpaperColorsChanged() override;
 
  private:
   struct GradientParams {
@@ -107,6 +114,8 @@ class ASH_EXPORT ScrollableUsersListView : public views::ScrollView {
 
   GradientParams gradient_params_;
   LayoutParams layout_params_;
+
+  ScopedObserver<WallpaperController, WallpaperControllerObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollableUsersListView);
 };

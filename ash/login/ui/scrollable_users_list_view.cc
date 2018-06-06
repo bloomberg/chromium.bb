@@ -119,7 +119,7 @@ ScrollableUsersListView::ScrollableUsersListView(
     const std::vector<mojom::LoginUserInfoPtr>& users,
     const ActionWithUser& on_tap_user,
     LoginDisplayStyle display_style)
-    : views::ScrollView() {
+    : views::ScrollView(), observer_(this) {
   layout_params_ = GetLayoutParams(display_style);
   gradient_params_ = GetGradientParams(display_style);
 
@@ -154,6 +154,8 @@ ScrollableUsersListView::ScrollableUsersListView(
   hover_notifier_ = std::make_unique<HoverNotifier>(
       this, base::BindRepeating(&ScrollableUsersListView::OnHover,
                                 base::Unretained(this)));
+
+  observer_.Add(Shell::Get()->wallpaper_controller());
 }
 
 ScrollableUsersListView::~ScrollableUsersListView() = default;
@@ -214,6 +216,13 @@ void ScrollableUsersListView::OnPaintBackground(gfx::Canvas* canvas) {
       SkShader::kClamp_TileMode));
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawRect(GetLocalBounds(), flags);
+}
+
+// When the active user is updated, the wallpaper changes. The gradient color
+// should be updated in response to the new primary wallpaper color.
+void ScrollableUsersListView::OnWallpaperColorsChanged() {
+  gradient_params_ = GetGradientParams(layout_params_.display_style);
+  SchedulePaint();
 }
 
 void ScrollableUsersListView::OnHover(bool has_hover) {
