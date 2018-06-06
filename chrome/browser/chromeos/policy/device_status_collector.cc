@@ -1047,6 +1047,13 @@ std::string DeviceStatusCollector::GetUserForActivityReporting() const {
   return primary_user_email;
 }
 
+bool DeviceStatusCollector::IncludeEmailsInActivityReports() const {
+  // In enterprise reporting including users' emails depends on
+  // kReportDeviceUsers preference. In consumer reporting only current user is
+  // reported and email address is always included.
+  return !is_enterprise_reporting_ || report_users_;
+}
+
 void DeviceStatusCollector::OnPrefServiceInitialized(bool succeeded) {
   if (!succeeded) {
     LOG(ERROR) << "Pref service was not initialized successfully - activity "
@@ -1069,8 +1076,8 @@ bool DeviceStatusCollector::GetActivityTimes(
   // If user reporting is off, data should be aggregated per day.
   // Signed-in user is reported in non-enterprise reporting.
   std::vector<ActivityStorage::ActivityPeriod> activity_times =
-      activity_storage_->GetFilteredActivityPeriods(is_enterprise_reporting_ &&
-                                                    !report_users_);
+      activity_storage_->GetFilteredActivityPeriods(
+          !IncludeEmailsInActivityReports());
 
   bool anything_reported = false;
   for (const auto& activity_period : activity_times) {

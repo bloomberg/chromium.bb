@@ -217,6 +217,10 @@ class DeviceStatusCollector {
   // single session, even for multi-user sessions.
   std::string GetUserForActivityReporting() const;
 
+  // Returns whether users' email addresses should be included in activity
+  // reports.
+  bool IncludeEmailsInActivityReports() const;
+
   // Called when |pref_service_| is initialized.
   void OnPrefServiceInitialized(bool succeeded);
 
