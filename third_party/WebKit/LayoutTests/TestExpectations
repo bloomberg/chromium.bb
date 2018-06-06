@@ -105,6 +105,7 @@ crbug.com/726075 [ Linux ] shapedetection/detection-HTMLVideoElement.html [ Time
 
 # SwiftShader MacOS specific flaky tests
 crbug.com/726075 [ Mac ] css3/filters/effect-combined-hw.html [ Pass Timeout ]
+crbug.com/726075 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Pass Timeout ]
 crbug.com/726075 [ Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-filter-in-worker.html [ Pass Timeout ]
 crbug.com/845266 [ Mac ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Pass Timeout ]
 
@@ -4009,14 +4010,6 @@ crbug.com/732103 [ Mac ] http/tests/shapedetection/shapedetection-cross-origin.h
 crbug.com/737959 http/tests/misc/object-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
 
 crbug.com/737959 http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
-
-# TODO(qyearsley): Triage these failures and associate them with other bugs.
-crbug.com/736177 [ Mac ] fast/forms/input-appearance-height.html [ Failure Pass ]
-crbug.com/736177 [ Mac ] fast/forms/radio/radio-appearance-basic.html [ Failure Pass ]
-crbug.com/736177 [ Mac ] svg/as-border-image/svg-as-border-image.html [ Failure Pass ]
-crbug.com/736177 [ Mac ] fast/forms/checkbox/checkbox-appearance-basic.html [ Failure Pass ]
-crbug.com/736177 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Failure Pass ]
-crbug.com/736177 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Failure Pass Timeout ]
 
 crbug.com/734762 inspector-protocol/timeline/page-frames.js [ Failure ]
 
