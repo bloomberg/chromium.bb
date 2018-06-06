@@ -147,6 +147,14 @@ const char* GetWarmupCallbackParamName();
 // Returns the experiment parameter name to disable missing via header bypasses.
 const char* GetMissingViaBypassParamName();
 
+// Returns the experiment parameter name to discard the cached result for canary
+// check probe.
+const char* GetDiscardCanaryCheckResultParam();
+
+// Returns true if canary check result should not be cached or reused across
+// network changes.
+bool ShouldDiscardCanaryCheckResult();
+
 }  // namespace params
 
 // Provides initialization parameters. Proxy origins, and the secure proxy
