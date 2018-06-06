@@ -7,7 +7,22 @@
 (function() {
 
 /**
- * Returns the title and artist text associated with the given track.
+ * Returns an array of file entry row content, where the rows are the basic
+ * file entry set for the given path, plus the given file |entries|.
+ *
+ * @param {string} path Directory path (Downloads or Drive).
+ * @pram {Array<!TestEntryInfo>} entries Array of file TestEntryInfo.
+ * @return {Array} File entry row content.
+ */
+function getExpectedFileEntryRows(path, entries) {
+  const basicFileEntrySetForPath =
+      (path == RootPath.DRIVE) ? BASIC_DRIVE_ENTRY_SET : BASIC_LOCAL_ENTRY_SET;
+  return TestEntryInfo.getExpectedRows(basicFileEntrySetForPath)
+      .concat(TestEntryInfo.getExpectedRows(entries));
+}
+
+/**
+ * Returns the title and artist text associated with the given audio track.
  *
  * @param {string} audioAppId The Audio Player window ID.
  * @param {query} track Query for the Audio Player track.
@@ -63,7 +78,7 @@ function audioTimeLeapForward(audioAppId) {
 /**
  * Tests opening then closing the Audio Player from Files app.
  *
- * @param {string} path Directory path to be tested: Downloads or Drive.
+ * @param {string} path Directory path to be tested.
  */
 function audioOpenClose(path) {
   let appId;
@@ -116,12 +131,6 @@ function audioOpen(path) {
   let appId;
   let audioAppId;
 
-  var expectedFilesBefore =
-      TestEntryInfo.getExpectedRows(path == RootPath.DRIVE ?
-          BASIC_DRIVE_ENTRY_SET : BASIC_LOCAL_ENTRY_SET).sort();
-  var expectedFilesAfter =
-      expectedFilesBefore.concat([ENTRIES.newlyAdded.getExpectedRow()]).sort();
-
   StepsRunner.run([
     // Open Files.App on the given (volume) path.
     function() {
@@ -135,7 +144,8 @@ function audioOpen(path) {
     // Wait for the file list to change.
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForFiles(appId, expectedFilesAfter).then(this.next);
+      const expected = getExpectedFileEntryRows(path, [ENTRIES.newlyAdded]);
+      remoteCall.waitForFiles(appId, expected).then(this.next);
     },
     // Open an audio file.
     function() {
@@ -211,12 +221,6 @@ function audioAutoAdvance(path) {
   let appId;
   let audioAppId;
 
-  var expectedFilesBefore =
-      TestEntryInfo.getExpectedRows(path == RootPath.DRIVE ?
-          BASIC_DRIVE_ENTRY_SET : BASIC_LOCAL_ENTRY_SET).sort();
-  var expectedFilesAfter =
-      expectedFilesBefore.concat([ENTRIES.newlyAdded.getExpectedRow()]).sort();
-
   StepsRunner.run([
     // Open Files.App on the given (volume) path.
     function() {
@@ -230,7 +234,8 @@ function audioAutoAdvance(path) {
     // Wait for the file list to change.
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForFiles(appId, expectedFilesAfter).then(this.next);
+      const expected = getExpectedFileEntryRows(path, [ENTRIES.newlyAdded]);
+      remoteCall.waitForFiles(appId, expected).then(this.next);
     },
     // Open an audio file.
     function() {
@@ -456,12 +461,6 @@ function audioRepeatAllModeMultipleFile(path) {
   let appId;
   let audioAppId;
 
-  var expectedFilesBefore =
-      TestEntryInfo.getExpectedRows(path == RootPath.DRIVE ?
-          BASIC_DRIVE_ENTRY_SET : BASIC_LOCAL_ENTRY_SET);
-  var expectedFilesAfter =
-      expectedFilesBefore.concat([ENTRIES.newlyAdded.getExpectedRow()]);
-
   StepsRunner.run([
     // Open Files.App on the given (volume) path.
     function() {
@@ -475,7 +474,8 @@ function audioRepeatAllModeMultipleFile(path) {
     // Wait for the file list to change.
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForFiles(appId, expectedFilesAfter).then(this.next);
+      const expected = getExpectedFileEntryRows(path, [ENTRIES.newlyAdded]);
+      remoteCall.waitForFiles(appId, expected).then(this.next);
     },
     // Open an audio file.
     function() {
@@ -541,12 +541,6 @@ function audioNoRepeatModeMultipleFile(path) {
   let appId;
   let audioAppId;
 
-  var expectedFilesBefore =
-      TestEntryInfo.getExpectedRows(path == RootPath.DRIVE ?
-          BASIC_DRIVE_ENTRY_SET : BASIC_LOCAL_ENTRY_SET);
-  var expectedFilesAfter =
-      expectedFilesBefore.concat([ENTRIES.newlyAdded.getExpectedRow()]);
-
   StepsRunner.run([
     // Open Files.App on the given (volume) path.
     function() {
@@ -560,7 +554,8 @@ function audioNoRepeatModeMultipleFile(path) {
     // Wait for the file list to change.
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForFiles(appId, expectedFilesAfter).then(this.next);
+      const expected = getExpectedFileEntryRows(path, [ENTRIES.newlyAdded]);
+      remoteCall.waitForFiles(appId, expected).then(this.next);
     },
     // Open an audio file.
     function() {
@@ -609,12 +604,6 @@ function audioRepeatOneModeMultipleFile(path) {
   let appId;
   let audioAppId;
 
-  var expectedFilesBefore =
-      TestEntryInfo.getExpectedRows(path == RootPath.DRIVE ?
-          BASIC_DRIVE_ENTRY_SET : BASIC_LOCAL_ENTRY_SET);
-  var expectedFilesAfter =
-      expectedFilesBefore.concat([ENTRIES.newlyAdded.getExpectedRow()]);
-
   StepsRunner.run([
     // Open Files.App on the given (volume) path.
     function() {
@@ -627,8 +616,8 @@ function audioRepeatOneModeMultipleFile(path) {
     },
     // Wait for the file list to change.
     function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForFiles(appId, expectedFilesAfter).then(this.next);
+      const expected = getExpectedFileEntryRows(path, [ENTRIES.newlyAdded]);
+      remoteCall.waitForFiles(appId, expected).then(this.next);
     },
     // Open an audio file.
     function() {
