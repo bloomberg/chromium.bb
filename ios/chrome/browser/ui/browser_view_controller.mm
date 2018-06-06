@@ -3585,7 +3585,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   DCHECK(url.is_valid());
   __weak BrowserViewController* weakSelf = self;
   const GURL image_source_url = url;
-  image_fetcher::IOSImageDataFetcherCallback callback =
+  image_fetcher::ImageDataFetcherBlock callback =
       ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
         DCHECK(data);
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -3647,7 +3647,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
               referrer:(const web::Referrer&)referrer {
   DCHECK(url.is_valid());
 
-  image_fetcher::IOSImageDataFetcherCallback callback =
+  image_fetcher::ImageDataFetcherBlock callback =
       ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
         [self.imageSaver saveImageData:data withMetadata:metadata];
       };

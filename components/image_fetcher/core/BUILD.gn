@@ -10,6 +10,7 @@ static_library("core") {
     "image_fetcher.h",
     "image_fetcher_impl.cc",
     "image_fetcher_impl.h",
+    "image_fetcher_types.h",
     "request_metadata.cc",
     "request_metadata.h",
   ]

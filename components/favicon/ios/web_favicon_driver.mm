@@ -76,7 +76,7 @@ int WebFaviconDriver::DownloadImage(const GURL& url,
   GURL local_url(url);
   __block ImageDownloadCallback local_callback = std::move(callback);
 
-  image_fetcher::IOSImageDataFetcherCallback ios_callback =
+  image_fetcher::ImageDataFetcherBlock ios_callback =
       ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
         if (metadata.http_response_code ==
             image_fetcher::RequestMetadata::RESPONSE_CODE_INVALID)

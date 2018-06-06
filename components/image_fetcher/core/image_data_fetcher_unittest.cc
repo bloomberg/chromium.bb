@@ -66,8 +66,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
 
   image_data_fetcher_.FetchImageData(
       GURL(kImageURL),
-      base::Bind(&ImageDataFetcherTest::OnImageDataFetched,
-                 base::Unretained(this)),
+      base::BindOnce(&ImageDataFetcherTest::OnImageDataFetched,
+                     base::Unretained(this)),
       TRAFFIC_ANNOTATION_FOR_TESTS);
 
   RequestMetadata expected_metadata;
@@ -102,8 +102,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData_NotFound) {
 
   image_data_fetcher_.FetchImageData(
       GURL(kImageURL),
-      base::Bind(&ImageDataFetcherTest::OnImageDataFetched,
-                 base::Unretained(this)),
+      base::BindOnce(&ImageDataFetcherTest::OnImageDataFetched,
+                     base::Unretained(this)),
       TRAFFIC_ANNOTATION_FOR_TESTS);
 
   RequestMetadata expected_metadata;
@@ -133,8 +133,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData_WithContentLocation) {
 
   image_data_fetcher_.FetchImageData(
       GURL(kImageURL),
-      base::Bind(&ImageDataFetcherTest::OnImageDataFetched,
-                 base::Unretained(this)),
+      base::BindOnce(&ImageDataFetcherTest::OnImageDataFetched,
+                     base::Unretained(this)),
       TRAFFIC_ANNOTATION_FOR_TESTS);
 
   RequestMetadata expected_metadata;
@@ -164,8 +164,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData_WithContentLocation) {
 TEST_F(ImageDataFetcherTest, FetchImageData_FailedRequest) {
   image_data_fetcher_.FetchImageData(
       GURL(kImageURL),
-      base::Bind(&ImageDataFetcherTest::OnImageDataFetchedFailedRequest,
-                 base::Unretained(this)),
+      base::BindOnce(&ImageDataFetcherTest::OnImageDataFetchedFailedRequest,
+                     base::Unretained(this)),
       TRAFFIC_ANNOTATION_FOR_TESTS);
 
   RequestMetadata expected_metadata;
@@ -185,16 +185,19 @@ TEST_F(ImageDataFetcherTest, FetchImageData_FailedRequest) {
 }
 
 TEST_F(ImageDataFetcherTest, FetchImageData_MultipleRequests) {
-  ImageDataFetcher::ImageDataFetcherCallback callback =
-      base::Bind(&ImageDataFetcherTest::OnImageDataFetchedMultipleRequests,
-                 base::Unretained(this));
   EXPECT_CALL(*this, OnImageDataFetchedMultipleRequests(testing::_, testing::_))
       .Times(2);
 
-  image_data_fetcher_.FetchImageData(GURL(kImageURL), callback,
-                                     TRAFFIC_ANNOTATION_FOR_TESTS);
-  image_data_fetcher_.FetchImageData(GURL(kImageURL), callback,
-                                     TRAFFIC_ANNOTATION_FOR_TESTS);
+  image_data_fetcher_.FetchImageData(
+      GURL(kImageURL),
+      base::BindOnce(&ImageDataFetcherTest::OnImageDataFetchedMultipleRequests,
+                     base::Unretained(this)),
+      TRAFFIC_ANNOTATION_FOR_TESTS);
+  image_data_fetcher_.FetchImageData(
+      GURL(kImageURL),
+      base::BindOnce(&ImageDataFetcherTest::OnImageDataFetchedMultipleRequests,
+                     base::Unretained(this)),
+      TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // Multiple calls to FetchImageData for the same URL will result in
   // multiple URLFetchers being created.
@@ -210,8 +213,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData_CancelFetchIfImageExceedsMaxSize) {
   image_data_fetcher_.SetImageDownloadLimit(kMaxDownloadBytes);
   image_data_fetcher_.FetchImageData(
       GURL(kImageURL),
-      base::Bind(&ImageDataFetcherTest::OnImageDataFetched,
-                 base::Unretained(this)),
+      base::BindOnce(&ImageDataFetcherTest::OnImageDataFetched,
+                     base::Unretained(this)),
       TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // Fetching an oversized image will behave like any other failed request.

@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/image_fetcher/core/image_data_fetcher.h"
+#include "components/image_fetcher/core/image_fetcher_types.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -19,16 +20,8 @@ class GURL;
 
 namespace image_fetcher {
 
-// Callback that informs of the download of an image encoded in |data| and the
-// associated metadata. If an error prevented a http response,
-// |metadata.http_response_code| will be RESPONSE_CODE_INVALID.
-using IOSImageDataFetcherCallback = void (^)(NSData* data,
-                                             const RequestMetadata& metadata);
-
 class IOSImageDataFetcherWrapper {
  public:
-  using DataUseServiceName = data_use_measurement::DataUseUserData::ServiceName;
-
   // The TaskRunner is used to decode the image if it is WebP-encoded.
   explicit IOSImageDataFetcherWrapper(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
@@ -37,7 +30,7 @@ class IOSImageDataFetcherWrapper {
   // Helper to start downloading and possibly decoding the image without a
   // referrer.
   virtual void FetchImageDataWebpDecoded(const GURL& image_url,
-                                         IOSImageDataFetcherCallback callback);
+                                         ImageDataFetcherBlock callback);
 
   // Start downloading the image at the given |image_url|. The |callback| will
   // be called with the downloaded image, or nil if any error happened. If the
@@ -47,7 +40,7 @@ class IOSImageDataFetcherWrapper {
   // |callback| cannot be nil.
   void FetchImageDataWebpDecoded(
       const GURL& image_url,
-      IOSImageDataFetcherCallback callback,
+      ImageDataFetcherBlock callback,
       const std::string& referrer,
       net::URLRequest::ReferrerPolicy referrer_policy);
 
@@ -60,8 +53,8 @@ class IOSImageDataFetcherWrapper {
   }
 
  private:
-  ImageDataFetcher::ImageDataFetcherCallback CallbackForImageDataFetcher(
-      IOSImageDataFetcherCallback callback);
+  ImageDataFetcherCallback CallbackForImageDataFetcher(
+      ImageDataFetcherBlock callback);
 
   ImageDataFetcher image_data_fetcher_;
 

@@ -29,7 +29,7 @@ IOSImageDataFetcherWrapper::~IOSImageDataFetcherWrapper() {}
 
 void IOSImageDataFetcherWrapper::FetchImageDataWebpDecoded(
     const GURL& image_url,
-    IOSImageDataFetcherCallback callback) {
+    ImageDataFetcherBlock callback) {
   image_data_fetcher_.FetchImageData(image_url,
                                      CallbackForImageDataFetcher(callback),
                                      NO_TRAFFIC_ANNOTATION_YET);
@@ -37,7 +37,7 @@ void IOSImageDataFetcherWrapper::FetchImageDataWebpDecoded(
 
 void IOSImageDataFetcherWrapper::FetchImageDataWebpDecoded(
     const GURL& image_url,
-    IOSImageDataFetcherCallback callback,
+    ImageDataFetcherBlock callback,
     const std::string& referrer,
     net::URLRequest::ReferrerPolicy referrer_policy) {
   DCHECK(callback);
@@ -52,11 +52,11 @@ void IOSImageDataFetcherWrapper::SetDataUseServiceName(
   image_data_fetcher_.SetDataUseServiceName(data_use_service_name);
 }
 
-ImageDataFetcher::ImageDataFetcherCallback
+ImageDataFetcherCallback
 IOSImageDataFetcherWrapper::CallbackForImageDataFetcher(
-    IOSImageDataFetcherCallback callback) {
-  return base::BindRepeating(^(const std::string& image_data,
-                               const RequestMetadata& metadata) {
+    ImageDataFetcherBlock callback) {
+  return base::BindOnce(^(const std::string& image_data,
+                          const RequestMetadata& metadata) {
     // Create a NSData from the returned data and notify the callback.
     NSData* data =
         [NSData dataWithBytes:image_data.data() length:image_data.size()];

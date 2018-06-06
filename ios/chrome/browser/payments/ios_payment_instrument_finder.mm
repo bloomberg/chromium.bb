@@ -337,7 +337,7 @@ void IOSPaymentInstrumentFinder::CreateIOSPaymentInstrument(
   std::string local_app_name(app_name);
   GURL local_universal_link(universal_link);
 
-  image_fetcher::IOSImageDataFetcherCallback callback =
+  image_fetcher::ImageDataFetcherBlock callback =
       ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
         if (data) {
           UIImage* icon =

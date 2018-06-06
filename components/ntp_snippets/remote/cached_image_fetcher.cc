@@ -142,7 +142,7 @@ void CachedImageFetcher::FetchImageFromNetwork(
     return;
   }
   // Image decoding callback only set when requested.
-  image_fetcher::ImageFetcher::ImageFetcherCallback decode_callback;
+  image_fetcher::ImageFetcherCallback decode_callback;
   if (image_callback) {
     decode_callback = base::BindOnce(&CachedImageFetcher::OnImageDecodingDone,
                                      base::Unretained(this),

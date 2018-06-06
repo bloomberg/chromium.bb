@@ -145,7 +145,7 @@
 #pragma mark - ImageFetcher
 
 - (void)fetchImage:(GURL)imageURL completion:(void (^)(UIImage*))completion {
-  image_fetcher::IOSImageDataFetcherCallback callback =
+  image_fetcher::ImageDataFetcherBlock callback =
       ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
         if (data) {
           UIImage* image =
