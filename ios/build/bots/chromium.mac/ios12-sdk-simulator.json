@@ -2,7 +2,7 @@
   "comments": [
     "Runs tests on 64-bit iOS 10 and 11 and 12 tests",
     "on iPad, iPhone, @3x, and @2x on main and CQ ios12-beta-simulator.",
-    "Note: Xcode 10.0 requires Mac OS 10.13.X or higher, hence 'host os'."
+    "Note: Xcode 10.3 requires Mac OS 10.13.X or higher, hence 'host os'."
   ],
   "xcode build version": "10l176w",
   "gn_args": [
@@ -68,7 +68,8 @@
     {
       "include": "eg_tests.json",
       "device type": "iPhone 6s Plus",
-      "os": "10.0",
+      "os": "10.3",
+      "xcode build version": "8E3004b",
       "dimensions": [
         {
           "os": "Mac-10.12",
@@ -115,7 +116,8 @@
     {
       "include": "eg_tests.json",
       "device type": "iPad Air 2",
-      "os": "10.0",
+      "os": "10.3",
+      "xcode build version": "8E3004b",
       "dimensions": [
         {
           "os": "Mac-10.12",
@@ -146,7 +148,8 @@
     {
       "include": "eg_cq_tests.json",
       "device type": "iPad Air 2",
-      "os": "10.0",
+      "os": "10.3",
+      "xcode build version": "8E3004b",
       "dimensions": [
         {
           "os": "Mac-10.12",
@@ -226,7 +229,8 @@
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPad Air 2",
-      "os": "10.0",
+      "os": "10.3",
+      "xcode build version": "8E3004b",
       "dimensions": [
         {
           "os": "Mac-10.12",
@@ -268,7 +272,8 @@
     {
       "include": "common_tests.json",
       "device type": "iPad Air 2",
-      "os": "10.0",
+      "os": "10.3",
+      "xcode build version": "8E3004b",
       "dimensions": [
         {
           "os": "Mac-10.12",
