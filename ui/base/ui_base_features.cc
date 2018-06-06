@@ -29,6 +29,10 @@ const base::Feature kEnableFullscreenHandwritingVirtualKeyboard = {
 const base::Feature kEnableStylusVirtualKeyboard = {
     "enable-stylus-virtual-keyboard", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables all upcoming UI features.
+const base::Feature kExperimentalUi{"ExperimentalUi",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Applies the material design mode to elements throughout Chrome (not just top
 // Chrome).
 const base::Feature kSecondaryUiMd = {"SecondaryUiMd",
@@ -84,12 +88,6 @@ const base::Feature kUiCompositorScrollWithLayers = {
     base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-// Enables all upcoming UI features.
-const base::Feature kExperimentalUi{"ExperimentalUi",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 #if defined(OS_WIN)
 // Enables stylus appearing as touch when in contact with digitizer.

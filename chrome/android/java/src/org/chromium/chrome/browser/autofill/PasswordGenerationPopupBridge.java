@@ -130,7 +130,7 @@ public class PasswordGenerationPopupBridge
             int explanationTextLinkRangeEnd) {
         if (mPopup != null) {
             // If an action can be shown in the popup, provide the same in the accessory or sheet.
-            if (providesGenerationAction()) {
+            if (providesGenerationAction() && mKeyboardAccessoryAction == null) {
                 // TODO(ioanap): Move these lines to a new native call or even a separate bridge.
                 createGeneratePasswordAction(suggestionTitle, this);
                 mActionProvider.notifyObservers(new Action[] {mKeyboardAccessoryAction});
@@ -176,7 +176,8 @@ public class PasswordGenerationPopupBridge
 
     private boolean providesGenerationAction() {
         return mKeyboardAccessory != null && ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY);
+                && (ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY)
+                           || ChromeFeatureList.isEnabled(ChromeFeatureList.EXPERIMENTAL_UI));
     }
 
     private void createGeneratePasswordAction(String caption, Action.Delegate delegate) {
