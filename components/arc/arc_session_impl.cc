@@ -26,7 +26,6 @@
 #include "components/arc/arc_bridge_host_impl.h"
 #include "components/arc/arc_features.h"
 #include "components/user_manager/user_manager.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -47,6 +46,12 @@ chromeos::SessionManagerClient* GetSessionManagerClient() {
     return nullptr;
   }
   return chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
+}
+
+std::string GenerateRandomToken() {
+  char random_bytes[16];
+  base::RandBytes(random_bytes, 16);
+  return base::HexEncode(random_bytes, 16);
 }
 
 // Creates a pipe. Returns true on success, otherwise false.
@@ -182,7 +187,7 @@ mojo::ScopedMessagePipeHandle ArcSessionDelegateImpl::ConnectMojoInternal(
   mojo::OutgoingInvitation invitation;
   // Generate an arbitrary 32-byte string. ARC uses this length as a protocol
   // version identifier.
-  std::string token = mojo::edk::GenerateRandomToken();
+  std::string token = GenerateRandomToken();
   mojo::ScopedMessagePipeHandle pipe = invitation.AttachMessagePipe(token);
   mojo::OutgoingInvitation::Send(std::move(invitation),
                                  base::kNullProcessHandle,

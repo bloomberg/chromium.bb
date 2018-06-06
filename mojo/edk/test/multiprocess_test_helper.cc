@@ -148,7 +148,8 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
 #elif defined(OS_POSIX)
     base::FilePath temp_dir;
     CHECK(base::PathService::Get(base::DIR_TEMP, &temp_dir));
-    server_name = temp_dir.AppendASCII(GenerateRandomToken()).value();
+    server_name =
+        temp_dir.AppendASCII(base::NumberToString(base::RandUint64())).value();
 #elif defined(OS_WIN)
     server_name = base::NumberToString16(base::RandUint64());
 #else

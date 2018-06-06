@@ -10,18 +10,12 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/rand_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/entrypoints.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/node_controller.h"
 #include "mojo/public/c/system/thunks.h"
-
-#if !defined(OS_NACL)
-#include "crypto/random.h"
-#endif
 
 namespace mojo {
 namespace edk {
@@ -38,17 +32,6 @@ void Init() {
 
 void SetDefaultProcessErrorCallback(const ProcessErrorCallback& callback) {
   Core::Get()->SetDefaultProcessErrorCallback(callback);
-}
-
-std::string GenerateRandomToken() {
-  char random_bytes[16];
-#if defined(OS_NACL)
-  // Not secure. For NaCl only!
-  base::RandBytes(random_bytes, 16);
-#else
-  crypto::RandBytes(random_bytes, 16);
-#endif
-  return base::HexEncode(random_bytes, 16);
 }
 
 MojoResult CreateInternalPlatformHandleWrapper(

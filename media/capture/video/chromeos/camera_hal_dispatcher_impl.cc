@@ -18,7 +18,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
@@ -32,6 +31,12 @@ namespace {
 const base::FilePath::CharType kArcCamera3SocketPath[] =
     "/var/run/camera/camera3.sock";
 const char kArcCameraGroup[] = "arc-camera";
+
+std::string GenerateRandomToken() {
+  char random_bytes[16];
+  base::RandBytes(random_bytes, 16);
+  return base::HexEncode(random_bytes, 16);
+}
 
 // Creates a pipe. Returns true on success, otherwise false.
 // On success, |read_fd| will be set to the fd of the read side, and
@@ -293,7 +298,7 @@ void CameraHalDispatcherImpl::StartServiceLoop(base::ScopedFD socket_fd,
 
       // Generate an arbitrary 32-byte string, as we use this length as a
       // protocol version identifier.
-      std::string token = mojo::edk::GenerateRandomToken();
+      std::string token = GenerateRandomToken();
       mojo::ScopedMessagePipeHandle pipe = invitation.AttachMessagePipe(token);
       mojo::OutgoingInvitation::Send(std::move(invitation),
                                      kUnusedChildProcessHandle,
