@@ -95,7 +95,7 @@ bool IsArcOptInVerificationDisabled();
 
 // Returns true if the |window|'s aura::client::kAppType is ARC_APP. When
 // |window| is nullptr, returns false.
-bool IsArcAppWindow(aura::Window* window);
+bool IsArcAppWindow(const aura::Window* window);
 
 // Returns true if data clean up is requested for each ARC start.
 bool IsArcDataCleanupOnStartRequested();

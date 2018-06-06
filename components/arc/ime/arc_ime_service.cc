@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/ime/arc_ime_bridge_impl.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
@@ -28,7 +29,8 @@ namespace arc {
 
 namespace {
 
-constexpr char kArcAppIdPrefix[] = "org.chromium.arc";
+constexpr char kArcNotificationAppId[] =
+    "org.chromium.arc.ArcNotificationService";
 
 base::Optional<double> g_override_default_device_scale_factor;
 
@@ -59,15 +61,19 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
     aura::Window* active = exo::WMHelper::GetInstance()->GetActiveWindow();
     if (!active || !active->Contains(window))
       return false;
-
-    if (IsArcNotificationWindow(window, active))
+    // If the ARC app is focused, the active window should be ARC app window.
+    if (IsArcAppWindow(active))
       return true;
 
-    // Need to get an application id from the active window because only
-    // ShellSurface window has the application id.
-    const std::string* app_id = exo::ShellSurface::GetApplicationId(active);
-    return app_id && base::StartsWith(*app_id, kArcAppIdPrefix,
-                                      base::CompareCase::SENSITIVE);
+    // If the ARC notification is focused, the active window is not ARC app
+    // window. Find an app id set to the window and check if it is the ARC
+    // notification app id.
+    for (; window && window != active; window = window->parent()) {
+      const std::string* app_id = exo::ShellSurface::GetApplicationId(window);
+      if (app_id)
+        return *app_id == kArcNotificationAppId;
+    }
+    return false;
   }
 
   void RegisterFocusObserver() override {
@@ -91,20 +97,6 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
   }
 
  private:
-  bool IsArcNotificationWindow(const aura::Window* window,
-                               const aura::Window* active) const {
-    DCHECK(IsExoWindow(window));
-    // TODO(yhanada): Should set an application id for NotificationSurface
-    //                to kArcAppIdPrefix, then we can eliminate this method.
-    //                https://crbug.com/834027
-    for (const aura::Window* parent = window; parent != active;
-         parent = parent->parent()) {
-      if (parent->GetName() == "ExoNotificationSurface")
-        return true;
-    }
-    return false;
-  }
-
   ArcImeService* const ime_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcWindowDelegateImpl);

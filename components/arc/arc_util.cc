@@ -180,7 +180,7 @@ bool IsArcOptInVerificationDisabled() {
       chromeos::switches::kDisableArcOptInVerification);
 }
 
-bool IsArcAppWindow(aura::Window* window) {
+bool IsArcAppWindow(const aura::Window* window) {
   if (!window)
     return false;
   return window->GetProperty(aura::client::kAppType) ==
