@@ -81,9 +81,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
       localizedLabel = str('LINUX_FILES_ROOT_LABEL');
       break;
     case VolumeManagerCommon.VolumeType.ANDROID_FILES:
-      // TODO(fukino): This volume label is temporary. Internationalize the
-      // label after we have a UI spec for it.
-      localizedLabel = 'Android Files';
+      localizedLabel = str('ANDROID_FILES_ROOT_LABEL');
       break;
     default:
       // TODO(mtomasz): Calculate volumeLabel for all types of volumes in the
