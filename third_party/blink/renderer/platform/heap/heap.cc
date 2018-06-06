@@ -62,10 +62,6 @@ HeapAllocHooks::FreeHook* HeapAllocHooks::free_hook_ = nullptr;
 
 ThreadHeapStats::ThreadHeapStats()
     : allocated_space_(0),
-      allocated_object_size_(0),
-      object_size_at_last_gc_(0),
-      marked_object_size_(0),
-      marked_object_size_at_last_complete_sweep_(0),
       wrapper_count_(0),
       wrapper_count_at_last_gc_(0),
       collected_wrapper_count_(0),
@@ -73,42 +69,11 @@ ThreadHeapStats::ThreadHeapStats()
           WTF::Partitions::TotalSizeOfCommittedPages()),
       estimated_marking_time_per_byte_(0.0) {}
 
-double ThreadHeapStats::EstimatedMarkingTime() {
-  // Use 8 ms as initial estimated marking time.
-  // 8 ms is long enough for low-end mobile devices to mark common
-  // real-world object graphs.
-  if (estimated_marking_time_per_byte_ == 0)
-    return 0.008;
-
-  // Assuming that the collection rate of this GC will be mostly equal to
-  // the collection rate of the last GC, estimate the marking time of this GC.
-  return estimated_marking_time_per_byte_ *
-         (AllocatedObjectSize() + MarkedObjectSize());
-}
-
 void ThreadHeapStats::Reset() {
-  object_size_at_last_gc_ = allocated_object_size_ + marked_object_size_;
   partition_alloc_size_at_last_gc_ =
       WTF::Partitions::TotalSizeOfCommittedPages();
-  allocated_object_size_ = 0;
-  marked_object_size_ = 0;
   wrapper_count_at_last_gc_ = wrapper_count_;
   collected_wrapper_count_ = 0;
-}
-
-void ThreadHeapStats::IncreaseAllocatedObjectSize(size_t delta) {
-  allocated_object_size_ += delta;
-  ProcessHeap::IncreaseTotalAllocatedObjectSize(delta);
-}
-
-void ThreadHeapStats::DecreaseAllocatedObjectSize(size_t delta) {
-  allocated_object_size_ -= delta;
-  ProcessHeap::DecreaseTotalAllocatedObjectSize(delta);
-}
-
-void ThreadHeapStats::IncreaseMarkedObjectSize(size_t delta) {
-  marked_object_size_ += delta;
-  ProcessHeap::IncreaseTotalMarkedObjectSize(delta);
 }
 
 void ThreadHeapStats::IncreaseAllocatedSpace(size_t delta) {
@@ -119,12 +84,6 @@ void ThreadHeapStats::IncreaseAllocatedSpace(size_t delta) {
 void ThreadHeapStats::DecreaseAllocatedSpace(size_t delta) {
   allocated_space_ -= delta;
   ProcessHeap::DecreaseTotalAllocatedSpace(delta);
-}
-
-double ThreadHeapStats::LiveObjectRateSinceLastGC() const {
-  if (ObjectSizeAtLastGC() > 0)
-    return static_cast<double>(MarkedObjectSize()) / ObjectSizeAtLastGC();
-  return 0.0;
 }
 
 ThreadHeap::ThreadHeap(ThreadState* thread_state)
@@ -155,6 +114,21 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
 ThreadHeap::~ThreadHeap() {
   for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
     delete arenas_[i];
+}
+
+void ThreadHeap::IncreaseAllocatedObjectSize(size_t bytes) {
+  stats_collector()->IncreaseAllocatedObjectSize(bytes);
+  ProcessHeap::IncreaseTotalAllocatedObjectSize(bytes);
+}
+
+void ThreadHeap::DecreaseAllocatedObjectSize(size_t bytes) {
+  stats_collector()->DecreaseAllocatedObjectSize(bytes);
+  ProcessHeap::DecreaseTotalAllocatedObjectSize(bytes);
+}
+
+void ThreadHeap::IncreaseMarkedObjectSize(size_t bytes) {
+  stats_collector()->IncreaseMarkedObjectSize(bytes);
+  ProcessHeap::IncreaseTotalMarkedObjectSize(bytes);
 }
 
 Address ThreadHeap::CheckAndMarkPointer(MarkingVisitor* visitor,
@@ -378,6 +352,15 @@ void ThreadHeap::ReportMemoryUsageHistogram() {
   }
 }
 
+namespace {
+
+size_t CappedSizeInKB(size_t size) {
+  return std::min(size / 1024,
+                  static_cast<size_t>(std::numeric_limits<int>::max()));
+}
+
+}  // namespace
+
 void ThreadHeap::ReportMemoryUsageForTracing() {
   bool gc_tracing_enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
@@ -389,27 +372,23 @@ void ThreadHeap::ReportMemoryUsageForTracing() {
   // These values are divided by 1024 to avoid overflow in practical cases
   // (TRACE_COUNTER values are 32-bit ints).
   // They are capped to INT_MAX just in case.
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "ThreadHeap::allocatedObjectSizeKB",
-                 std::min(heap.HeapStats().AllocatedObjectSize() / 1024,
-                          static_cast<size_t>(INT_MAX)));
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "ThreadHeap::markedObjectSizeKB",
-                 std::min(heap.HeapStats().MarkedObjectSize() / 1024,
-                          static_cast<size_t>(INT_MAX)));
+  TRACE_COUNTER1(
+      TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+      "ThreadHeap::allocatedObjectSizeKB",
+      CappedSizeInKB(heap.stats_collector()->allocated_bytes_since_prev_gc()));
   TRACE_COUNTER1(
       TRACE_DISABLED_BY_DEFAULT("blink_gc"),
       "ThreadHeap::markedObjectSizeAtLastCompleteSweepKB",
-      std::min(heap.HeapStats().MarkedObjectSizeAtLastCompleteSweep() / 1024,
-               static_cast<size_t>(INT_MAX)));
+      CappedSizeInKB(heap.stats_collector()->previous().marked_bytes));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadHeap::allocatedSpaceKB",
-                 std::min(heap.HeapStats().AllocatedSpace() / 1024,
-                          static_cast<size_t>(INT_MAX)));
+                 CappedSizeInKB(heap.HeapStats().AllocatedSpace()));
+
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadHeap::objectSizeAtLastGCKB",
-                 std::min(heap.HeapStats().ObjectSizeAtLastGC() / 1024,
-                          static_cast<size_t>(INT_MAX)));
+                 CappedSizeInKB(heap.stats_collector()
+                                    ->previous()
+                                    .object_size_in_bytes_before_sweeping));
   TRACE_COUNTER1(
       TRACE_DISABLED_BY_DEFAULT("blink_gc"), "ThreadHeap::wrapperCount",
       std::min(heap.HeapStats().WrapperCount(), static_cast<size_t>(INT_MAX)));
@@ -423,12 +402,10 @@ void ThreadHeap::ReportMemoryUsageForTracing() {
                           static_cast<size_t>(INT_MAX)));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadHeap::partitionAllocSizeAtLastGCKB",
-                 std::min(heap.HeapStats().PartitionAllocSizeAtLastGC() / 1024,
-                          static_cast<size_t>(INT_MAX)));
+                 CappedSizeInKB(heap.HeapStats().PartitionAllocSizeAtLastGC()));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "Partitions::totalSizeOfCommittedPagesKB",
-                 std::min(WTF::Partitions::TotalSizeOfCommittedPages() / 1024,
-                          static_cast<size_t>(INT_MAX)));
+                 CappedSizeInKB(WTF::Partitions::TotalSizeOfCommittedPages()));
 }
 
 size_t ThreadHeap::ObjectPayloadSizeForTesting() {
@@ -474,9 +451,6 @@ void ThreadHeap::ResetHeapCounters() {
   DCHECK(thread_state_->InAtomicMarkingPause());
 
   ThreadHeap::ReportMemoryUsageForTracing();
-
-  ProcessHeap::DecreaseTotalAllocatedObjectSize(stats_.AllocatedObjectSize());
-  ProcessHeap::DecreaseTotalMarkedObjectSize(stats_.MarkedObjectSize());
 
   stats_.Reset();
 }

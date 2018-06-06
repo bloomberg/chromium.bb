@@ -377,8 +377,7 @@ ThreadState::GCSnapshotInfo::GCSnapshotInfo(size_t num_object_types)
       dead_size(Vector<size_t>(num_object_types)) {}
 
 size_t ThreadState::TotalMemorySize() {
-  return heap_->HeapStats().AllocatedObjectSize() +
-         heap_->HeapStats().MarkedObjectSize() +
+  return heap_->stats_collector()->object_size_in_bytes() +
          WTF::Partitions::TotalSizeOfCommittedPages();
 }
 
@@ -399,11 +398,11 @@ size_t ThreadState::EstimatedLiveSize(size_t estimation_base_size,
 }
 
 double ThreadState::HeapGrowingRate() {
-  size_t current_size = heap_->HeapStats().AllocatedObjectSize() +
-                        heap_->HeapStats().MarkedObjectSize();
-  size_t estimated_size = EstimatedLiveSize(
-      heap_->HeapStats().MarkedObjectSizeAtLastCompleteSweep(),
-      heap_->HeapStats().MarkedObjectSizeAtLastCompleteSweep());
+  const size_t current_size = heap_->stats_collector()->object_size_in_bytes();
+  // TODO(mlippautz): Clarify those two parameters below.
+  const size_t estimated_size =
+      EstimatedLiveSize(heap_->stats_collector()->previous().marked_bytes,
+                        heap_->stats_collector()->previous().marked_bytes);
 
   // If the estimatedSize is 0, we set a high growing rate to trigger a GC.
   double growing_rate =
@@ -441,7 +440,7 @@ bool ThreadState::JudgeGCThreshold(size_t allocated_object_size_threshold,
                                    double heap_growing_rate_threshold) {
   // If the allocated object size or the total memory size is small, don't
   // trigger a GC.
-  if (heap_->HeapStats().AllocatedObjectSize() <
+  if (heap_->stats_collector()->allocated_bytes_since_prev_gc() <
           allocated_object_size_threshold ||
       TotalMemorySize() < total_memory_size_threshold)
     return false;
@@ -645,8 +644,10 @@ void ThreadState::PerformIdleGC(double deadline_seconds) {
     return;
   }
 
+  double estimated_marking_time_in_seconds =
+      heap_->stats_collector()->estimated_marking_time_in_seconds();
   double idle_delta_in_seconds = deadline_seconds - CurrentTimeTicksInSeconds();
-  if (idle_delta_in_seconds <= heap_->HeapStats().EstimatedMarkingTime() &&
+  if (idle_delta_in_seconds <= estimated_marking_time_in_seconds &&
       !Platform::Current()
            ->CurrentThread()
            ->Scheduler()
@@ -902,7 +903,7 @@ void ThreadState::FinishSnapshot() {
   gc_state_ = kNoGCScheduled;
   SetGCPhase(GCPhase::kSweeping);
   SetGCPhase(GCPhase::kNone);
-  Heap().stats_collector()->Stop();
+  Heap().stats_collector()->NotifySweepingCompleted();
 }
 
 void ThreadState::AtomicPauseEpilogue(BlinkGC::MarkingType marking_type,
@@ -1048,18 +1049,38 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   weak_processing_time_histogram.Count(
       event.scope_data[ThreadHeapStatsCollector::kMarkWeakProcessing]);
 
-// Per GCReason metrics.
-#define COUNT_BY_GC_REASON(GCReason)                                      \
-  case BlinkGC::k##GCReason: {                                            \
-    DEFINE_STATIC_LOCAL(                                                  \
-        CustomCountHistogram, histogram,                                  \
-        ("BlinkGC.AtomicPhaseMarking_" #GCReason, 0, 10000, 50));         \
-    histogram.Count(                                                      \
-        event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]); \
-    break;                                                                \
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, object_size_before_gc_histogram,
+                      ("BlinkGC.ObjectSizeBeforeGC", 1, 4 * 1024 * 1024, 50));
+  object_size_before_gc_histogram.Count(
+      event.object_size_in_bytes_before_sweeping / 1024);
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, object_size_after_gc_histogram,
+                      ("BlinkGC.ObjectSizeAfterGC", 1, 4 * 1024 * 1024, 50));
+  object_size_after_gc_histogram.Count(event.marked_bytes / 1024);
+
+  const double collection_rate = 1.0 - event.live_object_rate;
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+                 "ThreadState::collectionRate",
+                 static_cast<int>(100 * collection_rate));
+
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, collection_rate_histogram,
+                      ("BlinkGC.CollectionRate", 1, 100, 20));
+  collection_rate_histogram.Count(static_cast<int>(100 * collection_rate));
+
+  // Per GCReason metrics.
+  switch (event.reason) {
+#define COUNT_BY_GC_REASON(GCReason)                                          \
+  case BlinkGC::k##GCReason: {                                                \
+    DEFINE_STATIC_LOCAL(                                                      \
+        CustomCountHistogram, atomic_marking_phase_histogram,                 \
+        ("BlinkGC.AtomicPhaseMarking_" #GCReason, 0, 10000, 50));             \
+    atomic_marking_phase_histogram.Count(                                     \
+        event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]);     \
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, collection_rate_histogram,      \
+                        ("BlinkGC.CollectionRate_" #GCReason, 1, 100, 20));   \
+    collection_rate_histogram.Count(static_cast<int>(100 * collection_rate)); \
+    break;                                                                    \
   }
 
-  switch (event.reason) {
     COUNT_BY_GC_REASON(IdleGC)
     COUNT_BY_GC_REASON(PreciseGC)
     COUNT_BY_GC_REASON(ConservativeGC)
@@ -1069,8 +1090,9 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
     COUNT_BY_GC_REASON(ThreadTerminationGC)
     COUNT_BY_GC_REASON(Testing)
     COUNT_BY_GC_REASON(IncrementalIdleGC)
-  }
+
 #undef COUNT_BY_GC_REASON
+  }
 }
 
 }  // namespace
@@ -1078,56 +1100,6 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
 void ThreadState::PostSweep() {
   DCHECK(CheckThread());
   ThreadHeap::ReportMemoryUsageForTracing();
-
-  if (IsMainThread()) {
-    ThreadHeapStats& stats = heap_->HeapStats();
-    double collection_rate = 1.0 - stats.LiveObjectRateSinceLastGC();
-    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                   "ThreadState::collectionRate",
-                   static_cast<int>(100 * collection_rate));
-
-    VLOG(1) << "[state:" << this << "]"
-            << " PostSweep: collection_rate: " << std::setprecision(2)
-            << (100 * collection_rate) << "%";
-
-    stats.SetMarkedObjectSizeAtLastCompleteSweep(stats.MarkedObjectSize());
-
-    stats.SetEstimatedMarkingTimePerByte(
-        stats.MarkedObjectSize()
-            ? (current_gc_data_.marking_time_in_milliseconds / 1000 /
-               stats.MarkedObjectSize())
-            : 0);
-
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, object_size_before_gc_histogram,
-                        ("BlinkGC.ObjectSizeBeforeGC", 1, 4 * 1024 * 1024, 50));
-    object_size_before_gc_histogram.Count(stats.ObjectSizeAtLastGC() / 1024);
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, object_size_after_gc_histogram,
-                        ("BlinkGC.ObjectSizeAfterGC", 1, 4 * 1024 * 1024, 50));
-    object_size_after_gc_histogram.Count(stats.MarkedObjectSize() / 1024);
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, collection_rate_histogram,
-                        ("BlinkGC.CollectionRate", 1, 100, 20));
-    collection_rate_histogram.Count(static_cast<int>(100 * collection_rate));
-
-#define COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(GCReason)              \
-  case BlinkGC::k##GCReason: {                                              \
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, histogram,                    \
-                        ("BlinkGC.CollectionRate_" #GCReason, 1, 100, 20)); \
-    histogram.Count(static_cast<int>(100 * collection_rate));               \
-    break;                                                                  \
-  }
-
-    switch (current_gc_data_.reason) {
-      COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(IdleGC)
-      COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(PreciseGC)
-      COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(ConservativeGC)
-      COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(ForcedGC)
-      COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(MemoryPressureGC)
-      COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(PageNavigationGC)
-      COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(ThreadTerminationGC)
-      COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(Testing)
-      COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(IncrementalIdleGC)
-    }
-  }
 
   SetGCPhase(GCPhase::kNone);
   if (GcState() == kIdleGCScheduled)
@@ -1138,7 +1110,7 @@ void ThreadState::PostSweep() {
   for (auto* const observer : observers_)
     observer->OnCompleteSweepDone();
 
-  Heap().stats_collector()->Stop();
+  Heap().stats_collector()->NotifySweepingCompleted();
   if (IsMainThread())
     UpdateHistograms(Heap().stats_collector()->previous());
 }
@@ -1223,8 +1195,8 @@ void ThreadState::ReportMemoryToV8() {
   if (!isolate_)
     return;
 
-  size_t current_heap_size = heap_->HeapStats().AllocatedObjectSize() +
-                             heap_->HeapStats().MarkedObjectSize();
+  const size_t current_heap_size =
+      heap_->stats_collector()->object_size_in_bytes();
   int64_t diff = static_cast<int64_t>(current_heap_size) -
                  static_cast<int64_t>(reported_memory_to_v8_);
   isolate_->AdjustAmountOfExternalAllocatedMemory(diff);
@@ -1379,7 +1351,7 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
           << "IncrementalMarking: Start";
   DCHECK(!IsMarkingInProgress());
   CompleteSweep();
-  Heap().stats_collector()->Start(reason);
+  Heap().stats_collector()->NotifyMarkingStarted(reason);
   {
     ThreadHeapStatsCollector::Scope stats_scope(
         Heap().stats_collector(),
@@ -1458,7 +1430,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   if (should_do_full_gc) {
     CompleteSweep();
     SetGCState(kNoGCScheduled);
-    Heap().stats_collector()->Start(reason);
+    Heap().stats_collector()->NotifyMarkingStarted(reason);
     RunAtomicPause(stack_state, marking_type, sweeping_type, reason);
   }
 
@@ -1663,6 +1635,11 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
   if (ShouldVerifyMarking())
     VerifyMarking(marking_type);
 
+  ProcessHeap::DecreaseTotalAllocatedObjectSize(
+      Heap().stats_collector()->allocated_bytes_since_prev_gc());
+  ProcessHeap::DecreaseTotalMarkedObjectSize(
+      Heap().stats_collector()->previous().marked_bytes);
+  Heap().stats_collector()->NotifyMarkingCompleted();
   ThreadHeap::ReportMemoryUsageHistogram();
   WTF::Partitions::ReportMemoryUsageHistogram();
 
@@ -1696,7 +1673,8 @@ void ThreadState::CollectAllGarbage() {
   for (int i = 0; i < 5; ++i) {
     CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
                    BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
-    size_t live_objects = Heap().HeapStats().MarkedObjectSize();
+    const size_t live_objects =
+        Heap().stats_collector()->previous().marked_bytes;
     if (live_objects == previous_live_objects)
       break;
     previous_live_objects = live_objects;

@@ -153,22 +153,10 @@ class ThreadHeapStats {
 
  public:
   ThreadHeapStats();
-  void SetMarkedObjectSizeAtLastCompleteSweep(size_t size) {
-    marked_object_size_at_last_complete_sweep_ = size;
-  }
-  size_t MarkedObjectSizeAtLastCompleteSweep() {
-    return marked_object_size_at_last_complete_sweep_;
-  }
-  void IncreaseAllocatedObjectSize(size_t delta);
-  void DecreaseAllocatedObjectSize(size_t delta);
-  size_t AllocatedObjectSize() { return allocated_object_size_; }
-  void IncreaseMarkedObjectSize(size_t delta);
-  size_t MarkedObjectSize() const { return marked_object_size_; }
+
   void IncreaseAllocatedSpace(size_t delta);
   void DecreaseAllocatedSpace(size_t delta);
   size_t AllocatedSpace() { return allocated_space_; }
-  size_t ObjectSizeAtLastGC() const { return object_size_at_last_gc_; }
-  double LiveObjectRateSinceLastGC() const;
   void IncreaseWrapperCount(size_t delta) { wrapper_count_ += delta; }
   void DecreaseWrapperCount(size_t delta) { wrapper_count_ -= delta; }
   size_t WrapperCount() { return AcquireLoad(&wrapper_count_); }
@@ -180,21 +168,11 @@ class ThreadHeapStats {
   size_t PartitionAllocSizeAtLastGC() {
     return partition_alloc_size_at_last_gc_;
   }
-  void SetEstimatedMarkingTimePerByte(double estimated_marking_time_per_byte) {
-    estimated_marking_time_per_byte_ = estimated_marking_time_per_byte;
-  }
-  double EstimatedMarkingTimePerByte() const {
-    return estimated_marking_time_per_byte_;
-  }
-  double EstimatedMarkingTime();
+
   void Reset();
 
  private:
   size_t allocated_space_;
-  size_t allocated_object_size_;
-  size_t object_size_at_last_gc_;
-  size_t marked_object_size_;
-  size_t marked_object_size_at_last_complete_sweep_;
   size_t wrapper_count_;
   size_t wrapper_count_at_last_gc_;
   size_t collected_wrapper_count_;
@@ -458,6 +436,10 @@ class PLATFORM_EXPORT ThreadHeap {
   ThreadHeapStatsCollector* stats_collector() const {
     return heap_stats_collector_.get();
   }
+
+  void IncreaseAllocatedObjectSize(size_t);
+  void DecreaseAllocatedObjectSize(size_t);
+  void IncreaseMarkedObjectSize(size_t);
 
 #if defined(ADDRESS_SANITIZER)
   void PoisonEagerArena();
