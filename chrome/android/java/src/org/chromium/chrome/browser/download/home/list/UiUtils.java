@@ -9,11 +9,15 @@ import android.text.format.DateUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
+import org.chromium.components.url_formatter.UrlFormatter;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /** A set of helper utility methods for the UI. */
 public final class UiUtils {
@@ -48,6 +52,45 @@ public final class UiUtils {
                         | DateUtils.FORMAT_SHOW_YEAR));
 
         return builder;
+    }
+
+    /**
+     * Converts {@code date} to a string meant to be used as a prefetched item timestamp.
+     * @param date The {@link Date} to convert.
+     * @return     The {@link CharSequence} representing the timestamp.
+     */
+    public static CharSequence generatePrefetchTimestamp(Date date) {
+        Context context = ContextUtils.getApplicationContext();
+
+        Calendar calendar1 = CalendarFactory.get();
+        Calendar calendar2 = CalendarFactory.get();
+
+        calendar1.setTimeInMillis(System.currentTimeMillis());
+        calendar2.setTime(date);
+
+        if (CalendarUtils.isSameDay(calendar1, calendar2)) {
+            int hours =
+                    (int) MathUtils.clamp(TimeUnit.MILLISECONDS.toHours(calendar1.getTimeInMillis()
+                                                  - calendar2.getTimeInMillis()),
+                            1, 23);
+            return context.getResources().getQuantityString(
+                    R.plurals.download_manager_n_hours, hours, hours);
+        } else {
+            return DateUtils.formatDateTime(context, date.getTime(), DateUtils.FORMAT_SHOW_YEAR);
+        }
+    }
+
+    /**
+     * Generates a caption for a prefetched item.
+     * @param item The {@link OfflineItem} to generate a caption for.
+     * @return     The {@link CharSequence} representing the caption.
+     */
+    public static CharSequence generatePrefetchCaption(OfflineItem item) {
+        Context context = ContextUtils.getApplicationContext();
+        String displaySize = DownloadUtils.getStringForBytes(context, item.totalSizeBytes);
+        String displayUrl = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(item.pageUrl);
+        return context.getString(
+                R.string.download_manager_prefetch_caption, displayUrl, displaySize);
     }
 
     /** @return Whether or not {@code item} can show a thumbnail in the UI. */

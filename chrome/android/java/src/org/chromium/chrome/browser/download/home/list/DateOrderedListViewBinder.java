@@ -23,13 +23,15 @@ class DateOrderedListViewBinder implements ViewBinder<DecoratedListItemModel, Li
             case ListUtils.IN_PROGRESS:
                 return new ListItemViewHolder.InProgressViewHolder(parent);
             case ListUtils.GENERIC:
-                return new ListItemViewHolder.GenericViewHolder(parent);
+                return ListItemViewHolder.GenericViewHolder.create(parent);
             case ListUtils.VIDEO:
                 return new ListItemViewHolder.VideoViewHolder(parent);
             case ListUtils.IMAGE:
                 return new ListItemViewHolder.ImageViewHolder(parent);
             case ListUtils.CUSTOM_VIEW:
                 return new ListItemViewHolder.CustomViewHolder(parent);
+            case ListUtils.PREFETCH:
+                return ListItemViewHolder.PrefetchViewHolder.create(parent);
         }
 
         assert false;

@@ -27,6 +27,8 @@ class DateOrderedListView {
 
     private final int mImageWidthPx;
     private final int mImagePaddingPx;
+    private final int mPrefetchVerticalPaddingPx;
+    private final int mPrefetchHorizontalPaddingPx;
 
     private final RecyclerView mView;
 
@@ -38,6 +40,10 @@ class DateOrderedListView {
                 context.getResources().getDimensionPixelSize(R.dimen.download_manager_image_width);
         mImagePaddingPx = context.getResources().getDimensionPixelOffset(
                 R.dimen.download_manager_image_padding);
+        mPrefetchHorizontalPaddingPx = context.getResources().getDimensionPixelSize(
+                R.dimen.download_manager_prefetch_horizontal_margin);
+        mPrefetchVerticalPaddingPx = context.getResources().getDimensionPixelSize(
+                R.dimen.download_manager_prefetch_vertical_margin);
 
         DateOrderedListViewBinder listViewBinder = new DateOrderedListViewBinder();
         DateOrderedListViewAdapter adapter = new DateOrderedListViewAdapter(mModel, listViewBinder);
@@ -106,6 +112,12 @@ class DateOrderedListView {
                     outRect.right = mImagePaddingPx;
                     outRect.top = mImagePaddingPx;
                     outRect.bottom = mImagePaddingPx;
+                    break;
+                case ListUtils.PREFETCH:
+                    outRect.left = mPrefetchHorizontalPaddingPx;
+                    outRect.right = mPrefetchHorizontalPaddingPx;
+                    outRect.top = mPrefetchVerticalPaddingPx / 2;
+                    outRect.bottom = mPrefetchVerticalPaddingPx / 2;
                     break;
             }
         }

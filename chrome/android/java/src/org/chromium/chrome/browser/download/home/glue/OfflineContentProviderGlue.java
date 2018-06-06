@@ -73,7 +73,7 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
         if (LegacyHelpers.isLegacyDownload(item.id)) {
             mDownloadProvider.removeItem(item);
         } else {
-            mProvider.openItem(item.id);
+            mProvider.removeItem(item.id);
         }
     }
 

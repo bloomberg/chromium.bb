@@ -4,21 +4,24 @@
 
 package org.chromium.chrome.browser.download.home.list;
 
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+import android.graphics.Bitmap;
 import android.support.annotation.CallSuper;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem.DateListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
+import org.chromium.chrome.browser.widget.ListMenuButton;
+import org.chromium.chrome.browser.widget.ListMenuButton.Item;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 import org.chromium.components.offline_items_collection.VisualsCallback;
@@ -93,8 +96,15 @@ abstract class ListItemViewHolder extends ViewHolder {
 
     /** A {@link ViewHolder} specifically meant to display a generic {@code OfflineItem}. */
     public static class GenericViewHolder extends ThumbnailAwareViewHolder {
-        public GenericViewHolder(ViewGroup parent) {
-            super(new AppCompatTextView(parent.getContext()));
+        public static GenericViewHolder create(ViewGroup parent) {
+            View view = new AppCompatTextView(parent.getContext());
+            int imageSize = parent.getContext().getResources().getDimensionPixelSize(
+                    R.dimen.download_manager_generic_thumbnail_size);
+            return new GenericViewHolder(view, imageSize);
+        }
+
+        private GenericViewHolder(View view, int thumbnailSizePx) {
+            super(view, thumbnailSizePx, thumbnailSizePx);
         }
 
         // ListItemViewHolder implementation.
@@ -103,17 +113,6 @@ abstract class ListItemViewHolder extends ViewHolder {
             super.bind(properties, item);
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;
             ((TextView) itemView).setText(offlineItem.item.title);
-        }
-
-        @Override
-        void onVisualsChanged(OfflineItemVisuals visuals) {
-            Drawable drawable = null;
-            if (visuals != null && visuals.icon != null) {
-                drawable = new BitmapDrawable(itemView.getResources(), visuals.icon);
-            }
-
-            ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                    (TextView) itemView, drawable, null, null, null);
         }
     }
 
@@ -132,9 +131,39 @@ abstract class ListItemViewHolder extends ViewHolder {
     }
 
     /** A {@link ViewHolder} specifically meant to display an image {@code OfflineItem}. */
-    public static class ImageViewHolder extends ThumbnailAwareViewHolder {
+    public static class ImageViewHolder extends ListItemViewHolder {
         public ImageViewHolder(ViewGroup parent) {
             super(new AppCompatTextView(parent.getContext()));
+        }
+
+        // ListItemViewHolder implementation.
+        @Override
+        public void bind(ListPropertyModel properties, ListItem item) {
+            OfflineItemListItem offlineItem = (OfflineItemListItem) item;
+            ((TextView) itemView).setText(offlineItem.item.title);
+        }
+    }
+
+    /** A {@link ViewHolder} specifically meant to display a prefetch item. */
+    public static class PrefetchViewHolder extends ThumbnailAwareViewHolder {
+        private final TextView mTitle;
+        private final TextView mCaption;
+        private final TextView mTimestamp;
+
+        /** Creates a new instance of a {@link PrefetchViewHolder}. */
+        public static PrefetchViewHolder create(ViewGroup parent) {
+            View view = LayoutInflater.from(parent.getContext())
+                                .inflate(R.layout.download_manager_prefetch_item, null);
+            int imageSize = parent.getContext().getResources().getDimensionPixelSize(
+                    R.dimen.download_manager_prefetch_thumbnail_size);
+            return new PrefetchViewHolder(view, imageSize);
+        }
+
+        private PrefetchViewHolder(View view, int thumbnailSizePx) {
+            super(view, thumbnailSizePx, thumbnailSizePx);
+            mTitle = (TextView) itemView.findViewById(R.id.title);
+            mCaption = (TextView) itemView.findViewById(R.id.caption);
+            mTimestamp = (TextView) itemView.findViewById(R.id.timestamp);
         }
 
         // ThumbnailAwareViewHolder implementation.
@@ -142,41 +171,91 @@ abstract class ListItemViewHolder extends ViewHolder {
         public void bind(ListPropertyModel properties, ListItem item) {
             super.bind(properties, item);
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;
-            ((TextView) itemView).setText(offlineItem.item.title);
+
+            mTitle.setText(offlineItem.item.title);
+            mCaption.setText(UiUtils.generatePrefetchCaption(offlineItem.item));
+            mTimestamp.setText(UiUtils.generatePrefetchTimestamp(offlineItem.date));
+
+            itemView.setOnClickListener(
+                    v -> properties.getOpenCallback().onResult(offlineItem.item));
+        }
+    }
+
+    /** Helper {@link ViewHolder} that handles showing a 3-dot menu with preset actions. */
+    private static class MoreButtonViewHolder
+            extends ListItemViewHolder implements ListMenuButton.Delegate {
+        private final ListMenuButton mMore;
+
+        private Runnable mShareCallback;
+        private Runnable mDeleteCallback;
+
+        /** Creates a new instance of a {@link MoreButtonViewHolder}. */
+        public MoreButtonViewHolder(View view) {
+            super(view);
+            mMore = (ListMenuButton) view.findViewById(R.id.more);
+            if (mMore != null) mMore.setDelegate(this);
+        }
+
+        // ListItemViewHolder implementation.
+        @CallSuper
+        @Override
+        public void bind(ListPropertyModel properties, ListItem item) {
+            OfflineItemListItem offlineItem = (OfflineItemListItem) item;
+            mShareCallback = () -> properties.getShareCallback().onResult(offlineItem.item);
+            mDeleteCallback = () -> properties.getRemoveCallback().onResult(offlineItem.item);
+        }
+
+        // ListMenuButton.Delegate implementation.
+        @Override
+        public Item[] getItems() {
+            return new Item[] {new Item(itemView.getContext(), R.string.share, true),
+                    new Item(itemView.getContext(), R.string.delete, true)};
         }
 
         @Override
-        void onVisualsChanged(OfflineItemVisuals visuals) {
-            Drawable drawable = null;
-            if (visuals != null && visuals.icon != null) {
-                drawable = new BitmapDrawable(itemView.getResources(), visuals.icon);
+        public void onItemSelected(Item item) {
+            if (item.getTextId() == R.string.share) {
+                if (mShareCallback != null) mShareCallback.run();
+            } else if (item.getTextId() == R.string.delete) {
+                if (mDeleteCallback != null) mDeleteCallback.run();
             }
-
-            ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                    (TextView) itemView, drawable, null, null, null);
         }
     }
 
     /** Helper {@link ViewHolder} that handles querying for thumbnails if necessary. */
     private abstract static class ThumbnailAwareViewHolder
-            extends ListItemViewHolder implements VisualsCallback {
-        private static final int TEST_IMAGE_SIZE_PX = 100;
+            extends MoreButtonViewHolder implements VisualsCallback {
+        private final int mThumbnailWidthPx;
+        private final int mThumbnailHeightPx;
+        private final ImageView mThumbnail;
+
         /** Track whether or not the result of a query came back while we were making it. */
         private boolean mQueryFinished;
         private ContentId mQueryId;
         private Runnable mQueryCancelRunnable;
 
-        public ThumbnailAwareViewHolder(View view) {
+        /**
+         * Creates a new instance of a {@link ThumbnailAwareViewHolder}.
+         * @param view              The root {@link View} for this holder.
+         * @param thumbnailWidthPx  The desired width of the thumbnail that will be retrieved.
+         * @param thumbnailHeightPx The desired height of the thumbnail that will be retrieved.
+         */
+        public ThumbnailAwareViewHolder(View view, int thumbnailWidthPx, int thumbnailHeightPx) {
             super(view);
+
+            mThumbnailWidthPx = thumbnailWidthPx;
+            mThumbnailHeightPx = thumbnailHeightPx;
+            mThumbnail = (ImageView) view.findViewById(R.id.thumbnail);
         }
 
-        abstract void onVisualsChanged(OfflineItemVisuals visuals);
-
-        // ListItemViewHolder implementation.
+        // MoreButtonViewHolder implementation.
         @Override
         @CallSuper
         public void bind(ListPropertyModel properties, ListItem item) {
+            super.bind(properties, item);
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;
+
+            if (mThumbnail == null) return;
             if (offlineItem.item.id.equals(mQueryId)) return;
 
             if (mQueryId != null) onVisualsChanged(null);
@@ -185,7 +264,7 @@ abstract class ListItemViewHolder extends ViewHolder {
             mQueryId = offlineItem.item.id;
             mQueryFinished = false;
             mQueryCancelRunnable = properties.getVisualsProvider().getVisuals(
-                    offlineItem.item, TEST_IMAGE_SIZE_PX, TEST_IMAGE_SIZE_PX, this);
+                    offlineItem.item, mThumbnailWidthPx, mThumbnailHeightPx, this);
 
             // Handle reentrancy case.
             if (mQueryFinished) mQueryCancelRunnable = null;
@@ -198,6 +277,12 @@ abstract class ListItemViewHolder extends ViewHolder {
             mQueryCancelRunnable = null;
             mQueryFinished = true;
             onVisualsChanged(visuals);
+        }
+
+        private void onVisualsChanged(OfflineItemVisuals visuals) {
+            Bitmap bitmap = null;
+            if (visuals != null && visuals.icon != null) bitmap = visuals.icon;
+            mThumbnail.setImageBitmap(bitmap);
         }
     }
 }

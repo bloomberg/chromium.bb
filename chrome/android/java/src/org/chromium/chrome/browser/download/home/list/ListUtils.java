@@ -19,7 +19,7 @@ import java.lang.annotation.RetentionPolicy;
 class ListUtils {
     /** The potential types of list items that could be displayed. */
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({DATE, IN_PROGRESS, GENERIC, VIDEO, IMAGE, CUSTOM_VIEW})
+    @IntDef({DATE, IN_PROGRESS, GENERIC, VIDEO, IMAGE, CUSTOM_VIEW, PREFETCH})
     public @interface ViewType {}
     public static final int DATE = 0;
     public static final int IN_PROGRESS = 1;
@@ -27,6 +27,7 @@ class ListUtils {
     public static final int VIDEO = 3;
     public static final int IMAGE = 4;
     public static final int CUSTOM_VIEW = 5;
+    public static final int PREFETCH = 6;
 
     private ListUtils() {}
 
@@ -43,6 +44,7 @@ class ListUtils {
             if (item instanceof OfflineItemListItem) {
                 OfflineItemListItem offlineItem = (OfflineItemListItem) item;
 
+                if (offlineItem.item.isSuggested) return ListUtils.PREFETCH;
                 if (offlineItem.item.state == OfflineItemState.IN_PROGRESS) {
                     return ListUtils.IN_PROGRESS;
                 }
