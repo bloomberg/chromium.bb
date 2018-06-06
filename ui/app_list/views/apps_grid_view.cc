@@ -1759,9 +1759,11 @@ void AppsGridView::UpdateOpacity() {
 }
 
 bool AppsGridView::HandleScrollFromAppListView(int offset, ui::EventType type) {
-  // Scroll up at first page should close the launcher.
-  if (offset > 0 && !pagination_model()->IsValidPageRelative(-1))
+  // Scroll up at first page in top level apps grid should close the launcher.
+  if (!folder_delegate_ && offset > 0 &&
+      !pagination_model()->IsValidPageRelative(-1)) {
     return false;
+  }
 
   HandleScroll(offset, type);
   return true;
