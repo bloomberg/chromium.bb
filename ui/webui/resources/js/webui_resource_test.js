@@ -205,6 +205,7 @@ function continueTesting(opt_asyncTestFailure) {
     testName = testCases.pop();
     console.log('TEST ' + testName + ' starting...');
     var isAsyncTest = window[testName].length;
+    var testError = false;
     try {
       if (window.setUp)
         window.setUp();
@@ -214,9 +215,11 @@ function continueTesting(opt_asyncTestFailure) {
       console.error('Failure in test ' + testName + '\n' + err);
       console.log(err.stack);
       cleanTestRun = false;
+      testError = true;
     }
-    // Asynchronous tests must manually call continueTesting when complete.
-    if (!isAsyncTest)
+    // Asynchronous tests must manually call continueTesting when complete
+    // unless they throw an exception.
+    if (!isAsyncTest || testError)
       continueTesting();
   } else {
     done = true;
