@@ -32,6 +32,8 @@
 -AppListPresenterDelegateTest.TabletModeTextStateTransitions
 -AppListPresenterDelegateTest.TapAndClickOutsideClosesHalfAppList/0
 -AppListPresenterDelegateTest.TapAndClickOutsideClosesHalfAppList/1
+-AppListPresenterDelegateTest.TapAppListWithVirtualKeyboardDismissesVirtualKeyboard/0
+-AppListPresenterDelegateTest.TapAppListWithVirtualKeyboardDismissesVirtualKeyboard/1
 -AppListPresenterDelegateTest.WhitespaceQuery
 
 # TODO: CursorManagerTestApi. http://crbug.com/780637
