@@ -66,7 +66,6 @@ class WebRequestPermissions {
       int tab_id,
       bool crosses_incognito);
 
- private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebRequestPermissions);
 };
 
