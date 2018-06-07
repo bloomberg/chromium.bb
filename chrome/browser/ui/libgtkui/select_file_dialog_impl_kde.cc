@@ -274,7 +274,7 @@ void SelectFileDialogImplKDE::SelectFileImpl(
     case SELECT_SAVEAS_FILE:
       CreateSaveAsDialog(title_string, default_path, window_xid, params);
       return;
-    default:
+    case SELECT_NONE:
       NOTREACHED();
       return;
   }

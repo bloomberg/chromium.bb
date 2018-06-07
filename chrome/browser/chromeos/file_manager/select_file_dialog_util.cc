@@ -19,6 +19,7 @@ base::string16 GetSelectFileDialogTitle(
       break;
 
     case ui::SelectFileDialog::SELECT_FOLDER:
+    case ui::SelectFileDialog::SELECT_EXISTING_FOLDER:
       title = l10n_util::GetStringUTF16(
           IDS_FILE_BROWSER_SELECT_FOLDER_TITLE);
       break;
@@ -42,9 +43,6 @@ base::string16 GetSelectFileDialogTitle(
       title = l10n_util::GetStringUTF16(
           IDS_FILE_BROWSER_SELECT_OPEN_MULTI_FILE_TITLE);
       break;
-
-    default:
-      NOTREACHED();
   }
 
   return title;
