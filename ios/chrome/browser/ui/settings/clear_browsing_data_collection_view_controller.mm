@@ -363,11 +363,11 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
     __weak ClearBrowsingDataCollectionViewController* weakSelf = self;
     counter = BrowsingDataCounterWrapper::CreateCounterWrapper(
         prefName, _browserState, prefs,
-        base::BindRepeating(^(
-            const browsing_data::BrowsingDataCounter::Result& result) {
-          [weakSelf updateCounter:itemType
-                       detailText:[weakSelf getCounterTextFromResult:result]];
-        }));
+        base::BindRepeating(
+            ^(const browsing_data::BrowsingDataCounter::Result& result) {
+              [weakSelf updateCounter:itemType
+                           detailText:[weakSelf counterTextFromResult:result]];
+            }));
   }
 
   ClearBrowsingDataItem* clearDataItem =
@@ -541,8 +541,6 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
     }
     case ItemTypeClearBrowsingDataButton:
       [self alertAndClearData];
-      break;
-    default:
       break;
   }
 }
@@ -762,7 +760,7 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
     [autofillItem restartCounter];
   }
 }
-- (NSString*)getCounterTextFromResult:
+- (NSString*)counterTextFromResult:
     (const browsing_data::BrowsingDataCounter::Result&)result {
   if (!result.Finished()) {
     // The counter is still counting.
