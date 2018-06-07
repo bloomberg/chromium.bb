@@ -487,6 +487,7 @@
     },
     'crypto_unittests': {},
     'gcm_unit_tests': {},
+    'gin_unittests': {},
     'google_apis_unittests': {},
     'gpu_unittests': {
       'android_swarming': {
@@ -1903,7 +1904,6 @@
     'chromedriver_unittests': {},
     'extensions_browsertests': {},
     'extensions_unittests': {},
-    'gin_unittests': {}, # crbug.com/843124
     'interactive_ui_tests': {
       'swarming': {
         'shards': 2,
