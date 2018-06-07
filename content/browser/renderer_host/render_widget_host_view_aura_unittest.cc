@@ -1058,6 +1058,22 @@ class RenderWidgetHostViewAuraOverscrollTest
     touch_event_.ReleasePoint(index);
   }
 
+  void PressAndSetTouchActionAuto() {
+    PressTouchPoint(0, 1);
+    SendTouchEvent();
+    widget_host_->input_router()->OnSetTouchAction(cc::kTouchActionAuto);
+    MockWidgetInputHandler::MessageVector events =
+        GetAndResetDispatchedMessages();
+    EXPECT_EQ("TouchStart", GetMessageNames(events));
+  }
+
+  void ReleaseAndResetDispatchedMessages() {
+    ReleaseTouchPoint(0);
+    SendTouchEvent();
+    MockWidgetInputHandler::MessageVector events =
+        GetAndResetDispatchedMessages();
+  }
+
   MockWidgetInputHandler::MessageVector ExpectGestureScrollEndForWheelScrolling(
       bool is_last) {
     MockWidgetInputHandler::MessageVector events =
@@ -2664,6 +2680,16 @@ void RenderWidgetHostViewAuraTest::
   EXPECT_EQ(5U, gesture_event->data.scroll_update.delta_y);
   events[1]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
 
+  ui::GestureEventDetails gesture_tap_down_details(ui::ET_GESTURE_TAP_DOWN);
+  gesture_tap_down_details.set_is_source_touch_event_set_non_blocking(true);
+  gesture_tap_down_details.set_device_type(
+      ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+  ui::GestureEvent gesture_tap_down(2, 2, 0, ui::EventTimeForNow(),
+                                    gesture_tap_down_details);
+  view_->OnGestureEvent(&gesture_tap_down);
+  base::RunLoop().RunUntilIdle();
+  events = GetAndResetDispatchedMessages();
+
   ui::GestureEventDetails event_details(ui::ET_GESTURE_SCROLL_BEGIN);
   event_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
   ui::GestureEvent scroll_begin(2, 2, 0, ui::EventTimeForNow(), event_details);
@@ -2714,6 +2740,8 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
 
   view_->OnTouchEvent(&press0);
+  view_->GetFocusedWidget()->input_router()->OnSetTouchAction(
+      cc::kTouchActionAuto);
   base::RunLoop().RunUntilIdle();
 
   MockWidgetInputHandler::MessageVector events =
@@ -4787,6 +4815,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   SetUpOverscrollEnvironment();
 
   {
+    PressAndSetTouchActionAuto();
     // Start and end a gesture in the same direction without processing the
     // gesture events in the renderer. This should initiate and complete an
     // overscroll.
@@ -4809,9 +4838,11 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
     EXPECT_EQ("GestureScrollEnd", GetMessageNames(events));
     EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->completed_mode());
     EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
+    ReleaseAndResetDispatchedMessages();
   }
 
   {
+    PressAndSetTouchActionAuto();
     // Start over, except instead of ending the gesture with ScrollEnd, end it
     // with a FlingStart, with velocity in the reverse direction. This should
     // initiate an overscroll, the overscroll mode should get reset after the
@@ -4844,6 +4875,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
         base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(17);
     widget_host_->ProgressFlingIfNeeded(progress_time);
     EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
+    ReleaseAndResetDispatchedMessages();
   }
 }
 
@@ -4853,6 +4885,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 TEST_F(RenderWidgetHostViewAuraOverscrollTest, GestureScrollOverscrolls) {
   SetUpOverscrollEnvironment();
 
+  PressAndSetTouchActionAuto();
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
   MockWidgetInputHandler::MessageVector events =
@@ -4901,6 +4934,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, GestureScrollOverscrolls) {
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
+  ReleaseAndResetDispatchedMessages();
 }
 
 // Tests that when a cap is set for overscroll delta, extra overscroll delta is
@@ -4908,6 +4942,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, GestureScrollOverscrolls) {
 TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollDeltaCap) {
   SetUpOverscrollEnvironment();
 
+  PressAndSetTouchActionAuto();
   // Set overscroll cap and start scrolling.
   overscroll_delegate()->set_delta_cap(50);
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
@@ -4966,6 +5001,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollDeltaCap) {
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
+  ReleaseAndResetDispatchedMessages();
 }
 
 // Tests that if the page is scrolled because of a scroll-gesture, then that
@@ -4973,6 +5009,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollDeltaCap) {
 TEST_F(RenderWidgetHostViewAuraOverscrollTest, GestureScrollConsumed) {
   SetUpOverscrollEnvironment();
 
+  PressAndSetTouchActionAuto();
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
   SimulateGestureScrollUpdateEvent(10, 0, 0);
@@ -4998,6 +5035,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, GestureScrollConsumed) {
   SendNotConsumedAcks(events);
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
+  ReleaseAndResetDispatchedMessages();
 }
 
 // Tests that the overscroll controller plays nice with touch-scrolls and the
@@ -5006,6 +5044,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
        GestureScrollDebounceOverscrolls) {
   SetUpOverscrollEnvironmentWithDebounce(100);
 
+  PressAndSetTouchActionAuto();
   // Start scrolling. Receive ACK as it being processed.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
@@ -5026,7 +5065,9 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   MockWidgetInputHandler::MessageVector second_scroll_update_events =
       GetAndResetDispatchedMessages();
   EXPECT_EQ(0U, second_scroll_update_events.size());
+  ReleaseAndResetDispatchedMessages();
 
+  PressAndSetTouchActionAuto();
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
   second_scroll_update_events = GetAndResetDispatchedMessages();
@@ -5075,6 +5116,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   EXPECT_EQ(65.f, overscroll_delta_x());
   EXPECT_EQ(15.f, overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, overscroll_delegate()->delta_y());
+  ReleaseAndResetDispatchedMessages();
 }
 
 // Tests that the gesture debounce timer plays nice with the overscroll
@@ -5083,6 +5125,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
        GestureScrollDebounceTimerOverscroll) {
   SetUpOverscrollEnvironmentWithDebounce(10);
 
+  PressAndSetTouchActionAuto();
   // Start scrolling. Receive ACK as it being processed.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
@@ -5100,6 +5143,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
                        blink::kWebGestureDeviceTouchscreen);
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
+  ReleaseAndResetDispatchedMessages();
 
   // Receive ACK for the scroll-update event.
   SendNotConsumedAcks(events);
@@ -5134,6 +5178,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
   // The test sends an intermingled sequence of touch and gesture events.
   PressTouchPoint(0, 1);
   SendTouchEvent();
+  widget_host_->input_router()->OnSetTouchAction(cc::kTouchActionAuto);
   MockWidgetInputHandler::MessageVector events =
       GetAndResetDispatchedMessages();
   EXPECT_EQ("TouchStart", GetMessageNames(events));
@@ -5254,6 +5299,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   SetUpOverscrollEnvironmentWithDebounce(10);
   widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
 
+  PressAndSetTouchActionAuto();
   // Start scrolling. Receive ACK as it being processed.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
@@ -5297,7 +5343,9 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->completed_mode());
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollEnd", GetMessageNames(events));
+  ReleaseAndResetDispatchedMessages();
 
+  PressAndSetTouchActionAuto();
   // Start scrolling. Receive ACK as it being processed.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
@@ -5338,6 +5386,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->completed_mode());
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollEnd", GetMessageNames(events));
+  ReleaseAndResetDispatchedMessages();
 }
 
 // Tests that after touchscreen overscroll is initiated, scrolling in the
@@ -5347,6 +5396,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollDirectionChange) {
   SetUpOverscrollEnvironmentWithDebounce(100);
 
+  PressAndSetTouchActionAuto();
   // Start scrolling. Receive ACK as it being processed.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
@@ -5382,12 +5432,14 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollDirectionChange) {
   EXPECT_EQ(0U, events.size());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
+  ReleaseAndResetDispatchedMessages();
 }
 
 TEST_F(RenderWidgetHostViewAuraOverscrollTest,
        CompleteOverscrollOnGestureScrollEndAck) {
   SetUpOverscrollEnvironment();
 
+  PressAndSetTouchActionAuto();
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
   MockWidgetInputHandler::MessageVector events =
@@ -5414,12 +5466,14 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->completed_mode());
+  ReleaseAndResetDispatchedMessages();
 }
 
 TEST_F(RenderWidgetHostViewAuraOverscrollTest,
        InterleavedScrollUpdateAckAndScrollEnd) {
   SetUpOverscrollEnvironment();
 
+  PressAndSetTouchActionAuto();
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
   SimulateGestureScrollUpdateEvent(30, -5, 0);
@@ -5450,6 +5504,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   EXPECT_EQ(2U, overscroll_delegate()->historical_modes().size());
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->historical_modes().at(0));
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->historical_modes().at(1));
+  ReleaseAndResetDispatchedMessages();
 }
 
 // Tests that after touchpad overscroll is initiated, scrolling in the opposite
@@ -5596,6 +5651,7 @@ void RenderWidgetHostViewAuraOverscrollTest::OverscrollMouseMoveCompletion() {
   SendNotConsumedAcks(events);
 
   // Now try with gestures.
+  PressAndSetTouchActionAuto();
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
   SendScrollBeginAckIfNeeded(INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -5624,6 +5680,7 @@ void RenderWidgetHostViewAuraOverscrollTest::OverscrollMouseMoveCompletion() {
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
   EXPECT_EQ("GestureScrollEnd", GetMessageNames(events));
+  ReleaseAndResetDispatchedMessages();
 
   // Move mouse some more. The mouse-move events should reach the renderer.
   SimulateMouseMove(5, 10, 0);
@@ -5774,6 +5831,7 @@ TEST_F(RenderWidgetHostViewAuraOverScrollAsyncWheelEventsEnabledTest,
 TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollResetsOnBlur) {
   SetUpOverscrollEnvironment();
 
+  PressAndSetTouchActionAuto();
   // Start an overscroll with gesture scroll. In the middle of the scroll, blur
   // the host.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
@@ -5801,7 +5859,9 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollResetsOnBlur) {
                        blink::kWebGestureDeviceTouchscreen);
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("SetFocus GestureScrollEnd", GetMessageNames(events));
+  ReleaseAndResetDispatchedMessages();
 
+  PressAndSetTouchActionAuto();
   // Start a scroll gesture again. This should correctly start the overscroll
   // after the threshold.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
@@ -5824,6 +5884,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollResetsOnBlur) {
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->completed_mode());
   EXPECT_EQ("GestureScrollEnd", GetMessageNames(events));
+  ReleaseAndResetDispatchedMessages();
 }
 
 #if defined(OS_CHROMEOS)
@@ -6039,6 +6100,8 @@ TEST_F(RenderWidgetHostViewAuraTest, CorrectNumberOfAcksAreDispatched) {
 // isn't surpassed and the overscroll mode stays OVERSCROLL_NONE.
 void RenderWidgetHostViewAuraOverscrollTest::ScrollDeltasResetOnEnd() {
   SetUpOverscrollEnvironment();
+
+  PressAndSetTouchActionAuto();
   // Wheel event scroll ending with mouse move.
   SimulateWheelEventPossiblyIncludingPhase(
       -30, -10, 0, true, WebMouseWheelEvent::kPhaseBegan);  // sent directly
@@ -6081,6 +6144,7 @@ void RenderWidgetHostViewAuraOverscrollTest::ScrollDeltasResetOnEnd() {
   EXPECT_EQ(0.f, overscroll_delta_y());
   events = GetAndResetDispatchedMessages();
   SendNotConsumedAcks(events);
+  ReleaseAndResetDispatchedMessages();
 
   // Wheel event scroll ending with a fling. This is the first wheel event after
   // touchscreen scrolling ends so it will have phase = kPhaseBegan.
@@ -6190,6 +6254,7 @@ TEST_F(RenderWidgetHostViewAuraTest, GestureTapFromStylusHasPointerType) {
   // Simulate touch press and release to generate a GestureTap.
   generator.EnterPenPointerMode();
   generator.PressTouch();
+  widget_host_->input_router()->OnSetTouchAction(cc::kTouchActionAuto);
   generator.ReleaseTouch();
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =

@@ -919,14 +919,25 @@ void SimulateGestureEvent(WebContents* web_contents,
   view->ProcessGestureEvent(gesture_event, latency);
 }
 
-void SimulateTapAt(WebContents* web_contents, const gfx::Point& point) {
-  blink::WebGestureEvent tap(blink::WebGestureEvent::kGestureTap, 0,
-                             ui::EventTimeForNow(),
-                             blink::kWebGestureDeviceTouchscreen);
-  tap.SetPositionInWidget(gfx::PointF(point));
+void SimulateTouchGestureAt(WebContents* web_contents,
+                            const gfx::Point& point,
+                            blink::WebInputEvent::Type type) {
+  blink::WebGestureEvent gesture(type, 0, ui::EventTimeForNow(),
+                                 blink::kWebGestureDeviceTouchscreen);
+  gesture.SetPositionInWidget(gfx::PointF(point));
   RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
       web_contents->GetRenderViewHost()->GetWidget());
-  widget_host->ForwardGestureEvent(tap);
+  widget_host->ForwardGestureEvent(gesture);
+}
+
+void SimulateTapDownAt(WebContents* web_contents, const gfx::Point& point) {
+  SimulateTouchGestureAt(web_contents, point,
+                         blink::WebGestureEvent::kGestureTapDown);
+}
+
+void SimulateTapAt(WebContents* web_contents, const gfx::Point& point) {
+  SimulateTouchGestureAt(web_contents, point,
+                         blink::WebGestureEvent::kGestureTap);
 }
 
 void SimulateTapWithModifiersAt(WebContents* web_contents,
@@ -1564,6 +1575,7 @@ void SendRoutedGestureTapSequence(content::WebContents* web_contents,
   RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
       web_contents->GetRenderWidgetHostView());
   ui::GestureEventDetails gesture_tap_down_details(ui::ET_GESTURE_TAP_DOWN);
+  gesture_tap_down_details.set_is_source_touch_event_set_non_blocking(true);
   gesture_tap_down_details.set_device_type(
       ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
   ui::GestureEvent gesture_tap_down(point.x(), point.y(), 0,
@@ -1571,6 +1583,7 @@ void SendRoutedGestureTapSequence(content::WebContents* web_contents,
                                     gesture_tap_down_details);
   rwhva->OnGestureEvent(&gesture_tap_down);
   ui::GestureEventDetails gesture_tap_details(ui::ET_GESTURE_TAP);
+  gesture_tap_details.set_is_source_touch_event_set_non_blocking(true);
   gesture_tap_details.set_device_type(
       ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
   gesture_tap_details.set_tap_count(1);
