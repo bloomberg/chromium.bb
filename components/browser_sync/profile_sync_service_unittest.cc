@@ -222,7 +222,6 @@ class ProfileSyncServiceTest : public ::testing::Test {
             ProfileSyncService::AUTO_START, builder.Build());
 
     prefs()->SetBoolean(syncer::prefs::kEnableLocalSyncBackend, true);
-    init_params.oauth2_token_service = nullptr;
     init_params.gaia_cookie_manager_service = nullptr;
     init_params.signin_wrapper.reset();
 

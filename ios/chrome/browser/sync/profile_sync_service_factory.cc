@@ -30,7 +30,6 @@
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #include "ios/chrome/browser/signin/about_signin_internals_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
@@ -108,7 +107,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(IOSChromeGCMProfileServiceFactory::GetInstance());
   DependsOn(IOSChromePasswordStoreFactory::GetInstance());
   DependsOn(IOSChromeProfileInvalidationProviderFactory::GetInstance());
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(ReadingListModelFactory::GetInstance());
   DependsOn(SigninClientFactory::GetInstance());
 }
@@ -137,8 +135,6 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.signin_scoped_device_id_callback = base::BindRepeating(
       &SigninClient::GetSigninScopedDeviceId,
       base::Unretained(SigninClientFactory::GetForBrowserState(browser_state)));
-  init_params.oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state);
   init_params.start_behavior = ProfileSyncService::MANUAL_START;
   init_params.sync_client =
       std::make_unique<IOSChromeSyncClient>(browser_state);

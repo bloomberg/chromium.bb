@@ -12,7 +12,6 @@
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/common/channel_info.h"
@@ -51,8 +50,6 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
       SigninManagerFactory::GetForProfile(profile));
   init_params.signin_scoped_device_id_callback =
       base::BindRepeating([]() { return std::string(); });
-  init_params.oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   init_params.start_behavior = ProfileSyncService::MANUAL_START;
   init_params.sync_client = std::move(sync_client);
   init_params.network_time_update_callback = base::DoNothing();

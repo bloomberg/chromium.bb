@@ -46,7 +46,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "url/gurl.h"
 
-class ProfileOAuth2TokenService;
 class SigninManagerWrapper;
 
 namespace base {
@@ -212,7 +211,6 @@ class ProfileSyncService : public syncer::SyncService,
     std::unique_ptr<syncer::SyncClient> sync_client;
     std::unique_ptr<SigninManagerWrapper> signin_wrapper;
     SigninScopedDeviceIdCallback signin_scoped_device_id_callback;
-    ProfileOAuth2TokenService* oauth2_token_service = nullptr;
     GaiaCookieManagerService* gaia_cookie_manager_service = nullptr;
     StartBehavior start_behavior = MANUAL_START;
     syncer::NetworkTimeUpdateCallback network_time_update_callback;

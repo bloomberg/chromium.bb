@@ -26,7 +26,6 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
@@ -40,7 +39,6 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/driver/startup_controller.h"
@@ -138,7 +136,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(SpellcheckServiceFactory::GetInstance());
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -231,8 +228,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     init_params.signin_scoped_device_id_callback = base::BindRepeating(
         &SigninClient::GetSigninScopedDeviceId,
         base::Unretained(ChromeSigninClientFactory::GetForProfile(profile)));
-    init_params.oauth2_token_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
     init_params.gaia_cookie_manager_service =
         GaiaCookieManagerServiceFactory::GetForProfile(profile);
 
