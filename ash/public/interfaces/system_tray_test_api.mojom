@@ -29,6 +29,9 @@ interface SystemTrayTestApi {
   // Shows the system tray bubble menu.
   ShowBubble() => ();
 
+  // Closes the system tray bubble menu.
+  CloseBubble() => ();
+
   // Shows the submenu view for |item| in the system tray bubble menu.
   ShowDetailedView(TrayItem item) => ();
 

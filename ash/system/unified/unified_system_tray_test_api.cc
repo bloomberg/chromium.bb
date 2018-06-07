@@ -55,6 +55,11 @@ void UnifiedSystemTrayTestApi::ShowBubble(ShowBubbleCallback cb) {
   std::move(cb).Run();
 }
 
+void UnifiedSystemTrayTestApi::CloseBubble(CloseBubbleCallback cb) {
+  tray_->CloseBubble();
+  std::move(cb).Run();
+}
+
 void UnifiedSystemTrayTestApi::ShowDetailedView(mojom::TrayItem item,
                                                 ShowDetailedViewCallback cb) {
   switch (item) {

@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/top_shortcuts_view.h"
 
+#include "ash/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -166,6 +167,7 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
   power_button_ = new TopShortcutButton(
       this, kSystemMenuPowerIcon,
       reboot ? IDS_ASH_STATUS_TRAY_REBOOT : IDS_ASH_STATUS_TRAY_SHUTDOWN);
+  power_button_->set_id(VIEW_ID_POWER_BUTTON);
   container_->AddChildView(power_button_);
 
   // |collapse_button_| should be right-aligned, so we make the buttons

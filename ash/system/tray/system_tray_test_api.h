@@ -46,6 +46,7 @@ class SystemTrayTestApi : public mojom::SystemTrayTestApi {
   void IsTrayBubbleOpen(IsTrayBubbleOpenCallback cb) override;
   void IsTrayViewVisible(int view_id, IsTrayViewVisibleCallback cb) override;
   void ShowBubble(ShowBubbleCallback cb) override;
+  void CloseBubble(CloseBubbleCallback cb) override;
   void ShowDetailedView(mojom::TrayItem item,
                         ShowDetailedViewCallback cb) override;
   void IsBubbleViewVisible(int view_id,

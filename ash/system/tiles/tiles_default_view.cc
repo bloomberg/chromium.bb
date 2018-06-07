@@ -4,6 +4,7 @@
 
 #include "ash/system/tiles/tiles_default_view.h"
 
+#include "ash/ash_view_ids.h"
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_features.h"
@@ -110,6 +111,7 @@ void TilesDefaultView::Init() {
   bool reboot = Shell::Get()->shutdown_controller()->reboot_on_shutdown();
   power_button_->SetTooltipText(l10n_util::GetStringUTF16(
       reboot ? IDS_ASH_STATUS_TRAY_REBOOT : IDS_ASH_STATUS_TRAY_SHUTDOWN));
+  power_button_->set_id(VIEW_ID_POWER_BUTTON);
 }
 
 void TilesDefaultView::ButtonPressed(views::Button* sender,
