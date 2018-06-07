@@ -11,7 +11,8 @@ Polymer({
   is: 'site-details',
 
   behaviors: [
-    SiteSettingsBehavior, settings.RouteObserverBehavior, WebUIListenerBehavior
+    I18nBehavior, SiteSettingsBehavior, settings.RouteObserverBehavior,
+    WebUIListenerBehavior
   ],
 
   properties: {
@@ -210,56 +211,67 @@ Polymer({
   },
 
   /** @private */
-  onCloseDialog_: function() {
-    this.$.confirmDeleteDialog.close();
+  onCloseDialog_: function(e) {
+    e.target.closest('cr-dialog').close();
   },
 
   /**
-   * Confirms the deletion of storage for a site.
+   * Confirms the resetting of all content settings for an origin.
    * @param {!Event} e
    * @private
    */
   onConfirmClearSettings_: function(e) {
     e.preventDefault();
-    this.$.confirmDeleteDialog.showModal();
+    this.$.confirmResetSettings.showModal();
   },
 
   /**
-   * Clears all data stored for the current origin.
+   * Confirms the clearing of storage for an origin.
+   * @param {!Event} e
+   * @private
+   */
+  onConfirmClearStorage_: function(e) {
+    e.preventDefault();
+    this.$.confirmClearStorage.showModal();
+  },
+
+  /**
+   * Resets all permissions for the current origin.
+   * @private
+   */
+  onResetSettings_: function() {
+    this.browserProxy.setOriginPermissions(
+        this.origin, this.getCategoryList_(), settings.ContentSetting.DEFAULT);
+    if (this.getCategoryList_().includes(settings.ContentSettingsTypes.PLUGINS))
+      this.browserProxy.clearFlashPref(this.origin);
+
+    this.$.confirmResetSettings.close();
+  },
+
+  /**
+   * Clears all data stored, except cookies, for the current origin.
    * @private
    */
   onClearStorage_: function() {
     // Since usage is only shown when "Site Settings" is enabled, don't clear it
     // when it's not shown.
-    if (this.enableSiteSettings_)
+    if (this.enableSiteSettings_ && this.storedData_ != '') {
       this.$.usageApi.clearUsage(
           this.toUrl(this.origin).href, this.storageType_);
+    }
+
+    this.$.confirmClearStorage.close();
   },
 
   /**
-   * Called when usage has been deleted for an origin.
+   * Called when usage has been deleted for an origin via a non-Site Details
+   * source, e.g. clear browsing data.
    * @param {!{detail: !{origin: string}}} event
    * @private
    */
   onUsageDeleted_: function(event) {
     if (event.detail.origin == this.toUrl(this.origin).href)
       this.storedData_ = '';
-  },
-
-  /**
-   * Resets all permissions and clears all data stored for the current origin.
-   * @private
-   */
-  onClearAndReset_: function() {
-    this.browserProxy.setOriginPermissions(
-        this.origin, this.getCategoryList_(), settings.ContentSetting.DEFAULT);
-    if (this.getCategoryList_().includes(settings.ContentSettingsTypes.PLUGINS))
-      this.browserProxy.clearFlashPref(this.origin);
-
-    if (this.storedData_ != '')
-      this.onClearStorage_();
-
-    this.onCloseDialog_();
   },
 
   /**
