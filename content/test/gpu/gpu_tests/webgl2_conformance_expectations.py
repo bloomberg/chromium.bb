@@ -66,6 +66,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/array-length-side-effects.html',
         bug=2142) # angle bug ID
 
+    # Need to implement new error semantics
+    # https://github.com/KhronosGroup/WebGL/pull/2607
+    self.Fail('conformance/rendering/draw-elements-out-of-bounds.html',
+        bug=849572)
+
     # All non-ANGLE platforms.
     self.Fail('conformance2/attribs/' +
         'gl-bindAttribLocation-aliasing-inactive.html',
