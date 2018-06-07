@@ -5,31 +5,15 @@
 #include "chrome/browser/notifications/chrome_ash_message_center_client.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
 namespace {
 
-class ChromeAshMessageCenterClientBrowserTest : public InProcessBrowserTest {
- public:
-  ChromeAshMessageCenterClientBrowserTest() = default;
-  ~ChromeAshMessageCenterClientBrowserTest() override = default;
-
-  // InProcessBrowserTest overrides.
-  void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list_.InitWithFeatures({features::kNativeNotifications}, {});
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeAshMessageCenterClientBrowserTest);
-};
+using ChromeAshMessageCenterClientBrowserTest = InProcessBrowserTest;
 
 class TestNotificationDelegate : public message_center::NotificationDelegate {
  public:

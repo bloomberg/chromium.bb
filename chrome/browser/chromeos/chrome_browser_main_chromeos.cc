@@ -98,7 +98,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
@@ -676,11 +675,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   chromeos::ResourceReporter::GetInstance()->StartMonitoring(
       task_manager::TaskManagerInterface::GetTaskManager());
 
-  if (!base::FeatureList::IsEnabled(features::kNativeNotifications) &&
-      !base::FeatureList::IsEnabled(features::kMash)) {
-    notification_client_.reset(NotificationPlatformBridge::Create());
-  }
-
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
 
@@ -1115,9 +1109,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   g_browser_process->platform_part()
       ->browser_policy_connector_chromeos()
       ->PreShutdown();
-
-  // Close the notification client before destroying the profile manager.
-  notification_client_.reset();
 
   // NOTE: Closes ash and destroys ash::Shell.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();

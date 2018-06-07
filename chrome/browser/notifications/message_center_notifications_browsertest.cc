@@ -31,37 +31,6 @@
 
 using message_center::Notification;
 
-class TestAddObserver : public message_center::MessageCenterObserver {
- public:
-  explicit TestAddObserver(message_center::MessageCenter* message_center)
-      : message_center_(message_center) {
-    message_center_->AddObserver(this);
-  }
-
-  ~TestAddObserver() override { message_center_->RemoveObserver(this); }
-
-  void OnNotificationAdded(const std::string& id) override {
-    std::string log = logs_[id];
-    if (!log.empty())
-      log += "_";
-    logs_[id] = log + "add-" + id;
-  }
-
-  void OnNotificationUpdated(const std::string& id) override {
-    std::string log = logs_[id];
-    if (!log.empty())
-      log += "_";
-    logs_[id] = log + "update-" + id;
-  }
-
-  const std::string log(const std::string& id) { return logs_[id]; }
-  void reset_logs() { logs_.clear(); }
-
- private:
-  std::map<std::string, std::string> logs_;
-  message_center::MessageCenter* message_center_;
-};
-
 class MessageCenterNotificationsTest : public InProcessBrowserTest {
  public:
   MessageCenterNotificationsTest() {
@@ -199,125 +168,6 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   delegate2->Release();
 }
 
-// Notification center is only used on ChromeOS.
-#if defined(OS_CHROMEOS)
-
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, QueueWhenCenterVisible) {
-  TestAddObserver observer(message_center());
-
-  TestDelegate* delegate;
-  TestDelegate* delegate2;
-
-  manager()->Add(CreateTestNotification("n", &delegate), profile());
-  const std::string id_n =
-      manager()->GetMessageCenterNotificationIdForTest("n", profile());
-  message_center()->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
-  manager()->Add(CreateTestNotification("n2", &delegate2), profile());
-  const std::string id_n2 =
-      manager()->GetMessageCenterNotificationIdForTest("n2", profile());
-
-  // 'update-n' should happen since SetVisibility updates is_read status of n.
-  // TODO(mukai): fix event handling to happen update-n just once.
-  EXPECT_EQ(base::StringPrintf("add-%s_update-%s_update-%s",
-                               id_n.c_str(),
-                               id_n.c_str(),
-                               id_n.c_str()),
-            observer.log(id_n));
-
-  message_center()->SetVisibility(message_center::VISIBILITY_TRANSIENT);
-
-  EXPECT_EQ(base::StringPrintf("add-%s", id_n2.c_str()), observer.log(id_n2));
-
-  delegate->Release();
-  delegate2->Release();
-}
-
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
-                       UpdateProgressNotificationWhenCenterVisible) {
-  TestAddObserver observer(message_center());
-
-  TestDelegate* delegate;
-
-  // Add a progress notification and update it while the message center
-  // is visible.
-  Notification notification = CreateTestNotification("n", &delegate);
-  notification.set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
-  manager()->Add(notification, profile());
-  const std::string notification_id =
-      manager()->GetMessageCenterNotificationIdForTest("n", profile());
-  message_center()->ClickOnNotification(notification_id);
-  message_center()->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
-  observer.reset_logs();
-  notification.set_progress(50);
-  manager()->Update(notification, profile());
-
-  // Expect that the progress notification update is performed.
-  EXPECT_EQ(base::StringPrintf("update-%s", notification_id.c_str()),
-            observer.log(notification_id));
-
-  delegate->Release();
-}
-
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
-                       UpdateNonProgressNotificationWhenCenterVisible) {
-  TestAddObserver observer(message_center());
-
-  TestDelegate* delegate;
-
-  // Add a non-progress notification and update it while the message center
-  // is visible.
-  Notification notification = CreateTestNotification("n", &delegate);
-  manager()->Add(notification, profile());
-  const std::string notification_id =
-      manager()->GetMessageCenterNotificationIdForTest("n", profile());
-  message_center()->ClickOnNotification(notification_id);
-  message_center()->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
-  observer.reset_logs();
-  notification.set_title(base::ASCIIToUTF16("title2"));
-  manager()->Update(notification, profile());
-
-  // Expect that the notification update is done.
-  EXPECT_NE("", observer.log(notification_id));
-
-  message_center()->SetVisibility(message_center::VISIBILITY_TRANSIENT);
-  EXPECT_EQ(base::StringPrintf("update-%s", notification_id.c_str()),
-            observer.log(notification_id));
-
-  delegate->Release();
-}
-
-IN_PROC_BROWSER_TEST_F(
-    MessageCenterNotificationsTest,
-    UpdateNonProgressToProgressNotificationWhenCenterVisible) {
-  TestAddObserver observer(message_center());
-
-  TestDelegate* delegate;
-
-  // Add a non-progress notification and change the type to progress while the
-  // message center is visible.
-  Notification notification = CreateTestNotification("n", &delegate);
-  manager()->Add(notification, profile());
-  const std::string notification_id =
-      manager()->GetMessageCenterNotificationIdForTest("n", profile());
-  message_center()->ClickOnNotification(notification_id);
-  message_center()->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
-  observer.reset_logs();
-  notification.set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
-  manager()->Update(notification, profile());
-
-  // Expect that the notification update is done.
-  EXPECT_NE("", observer.log(notification_id));
-
-  message_center()->SetVisibility(message_center::VISIBILITY_TRANSIENT);
-  EXPECT_EQ(base::StringPrintf("update-%s", notification_id.c_str()),
-            observer.log(notification_id));
-
-  delegate->Release();
-}
-
-#else  // !defined(OS_CHROMEOS)
-
-// ScopedKeepAlives are not used on Chrome OS notifications.
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, VerifyKeepAlives) {
   EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
       KeepAliveOrigin::NOTIFICATION));
@@ -347,5 +197,3 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, VerifyKeepAlives) {
   delegate->Release();
   delegate2->Release();
 }
-
-#endif  // !defined(OS_CHROMEOS)
