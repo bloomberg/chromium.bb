@@ -58,7 +58,7 @@ views::BubbleDialogDelegateView* ManagePasswordsIconViews::GetBubble() const {
   return PasswordBubbleViewBase::manage_password_bubble();
 }
 
-bool ManagePasswordsIconViews::Refresh() {
+bool ManagePasswordsIconViews::Update() {
   if (!GetWebContents())
     return false;
 

@@ -856,7 +856,7 @@ bool LocationBarView::RefreshPageActionIconViews() {
 
   bool visibility_changed = false;
   for (auto* v : page_action_icons_) {
-    visibility_changed |= v->Refresh();
+    visibility_changed |= v->Update();
   }
   return visibility_changed;
 }
@@ -867,7 +867,8 @@ bool LocationBarView::RefreshZoomView() {
   if (!web_contents)
     return false;
   const bool was_visible = zoom_view_->visible();
-  zoom_view_->Update(zoom::ZoomController::FromWebContents(web_contents));
+  zoom_view_->UpdateWithController(
+      zoom::ZoomController::FromWebContents(web_contents));
   return was_visible != zoom_view_->visible();
 }
 
@@ -1029,14 +1030,14 @@ void LocationBarView::UpdateContentSettingsIcons() {
 }
 
 void LocationBarView::UpdateManagePasswordsIconAndBubble() {
-  if (manage_passwords_icon_view_->Refresh()) {
+  if (manage_passwords_icon_view_->Update()) {
     Layout();
     SchedulePaint();
   }
 }
 
 void LocationBarView::UpdateSaveCreditCardIcon() {
-  if (save_credit_card_icon_view_->Refresh()) {
+  if (save_credit_card_icon_view_->Update()) {
     Layout();
     SchedulePaint();
   }

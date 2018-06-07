@@ -52,7 +52,7 @@ class PageActionIconView : public views::InkDropHostView {
 
   // Updates the icon state and associated bubble when the WebContents changes.
   // Returns true if there was a change.
-  virtual bool Refresh();
+  virtual bool Update();
 
  protected:
   enum ExecuteSource {

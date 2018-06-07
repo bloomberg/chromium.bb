@@ -27,7 +27,7 @@ class SaveCardIconView : public PageActionIconView {
 
   // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
-  bool Refresh() override;
+  bool Update() override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 
  protected:
