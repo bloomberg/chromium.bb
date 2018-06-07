@@ -32,11 +32,10 @@ class NetMetricsLogUploaderTest : public testing::Test {
                          reporting_info);
   }
 
-  void CreateUploaderAndUploadToSecureURL() {
+  void CreateUploaderAndUploadToSecureURL(const std::string& url) {
     ReportingInfo dummy_reporting_info;
     uploader_.reset(new NetMetricsLogUploader(
-        nullptr, "https://dummy_secure_server", "dummy_mime",
-        MetricsLogUploader::UMA,
+        nullptr, url, "dummy_mime", MetricsLogUploader::UMA,
         base::Bind(&NetMetricsLogUploaderTest::DummyOnUploadComplete,
                    base::Unretained(this))));
     uploader_->UploadLog("dummy_data", "dummy_hash", dummy_reporting_info);
@@ -128,7 +127,16 @@ TEST_F(NetMetricsLogUploaderTest, MessageOverHTTPIsEncrypted) {
 // message.
 TEST_F(NetMetricsLogUploaderTest, MessageOverHTTPSIsNotEncrypted) {
   net::TestURLFetcherFactory factory;
-  CreateUploaderAndUploadToSecureURL();
+  CreateUploaderAndUploadToSecureURL("https://dummy_secure_server");
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  EXPECT_EQ(fetcher->upload_data(), "dummy_data");
+}
+
+// Test that attempting to upload to localhost over http results in an
+// unencrypted message.
+TEST_F(NetMetricsLogUploaderTest, MessageOverHTTPLocalhostIsNotEncrypted) {
+  net::TestURLFetcherFactory factory;
+  CreateUploaderAndUploadToSecureURL("http://localhost");
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   EXPECT_EQ(fetcher->upload_data(), "dummy_data");
 }
