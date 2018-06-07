@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/allocator.gni")
 import("//testing/test.gni")
+import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//v8/gni/v8.gni")
 
 component("gin") {
@@ -135,7 +136,6 @@ test("gin_unittests") {
     "data_object_builder_unittest.cc",
     "interceptor_unittest.cc",
     "per_context_data_unittest.cc",
-    "shell/gin_shell_unittest.cc",
     "shell_runner_unittest.cc",
     "test/run_all_unittests.cc",
     "v8_isolate_memory_dump_provider_unittest.cc",
@@ -144,11 +144,11 @@ test("gin_unittests") {
   ]
 
   deps = [
-    ":gin_shell",
     ":gin_test",
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//tools/v8_context_snapshot:v8_context_snapshot",
     "//v8",
   ]
 
@@ -157,12 +157,23 @@ test("gin_unittests") {
     "//v8:external_startup_data",
   ]
 
-  data = [
-    "shell/hello_world.js",
-    "../OWNERS",
-  ]
+  data_deps = []
+  data = []
 
-  data_deps = [
-    ":gin_shell",
-  ]
+  # gin_shell is not an Android app.
+  if (!is_android) {
+    sources += [ "shell/gin_shell_unittest.cc" ]
+    deps += [ ":gin_shell" ]
+    data_deps += [ ":gin_shell" ]
+    data += [ "shell/hello_world.js" ]
+  }
+
+  # On Android, the APK must bundle the startup data.
+  if (is_android) {
+    if (use_v8_context_snapshot) {
+      deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
+    } else {
+      deps += [ "//v8:v8_external_startup_data_assets" ]
+    }
+  }
 }
