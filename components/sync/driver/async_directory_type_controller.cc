@@ -171,7 +171,7 @@ void AsyncDirectoryTypeController::StartDone(
   if (IsSuccessfulResult(start_result)) {
     new_state = RUNNING;
   } else {
-    new_state = (start_result == ASSOCIATION_FAILED ? DISABLED : NOT_RUNNING);
+    new_state = (start_result == ASSOCIATION_FAILED ? FAILED : NOT_RUNNING);
   }
 
   // If we failed to start up, and we haven't been stopped yet, we need to
@@ -241,7 +241,7 @@ ChangeProcessor* AsyncDirectoryTypeController::GetChangeProcessor() const {
 void AsyncDirectoryTypeController::DisconnectSharedChangeProcessor() {
   DCHECK(CalledOnValidThread());
   // |shared_change_processor_| can already be null if Stop() is
-  // called after StartDone(_, DISABLED, _).
+  // called after StartDone(_, FAILED, _).
   if (shared_change_processor_) {
     shared_change_processor_->Disconnect();
   }

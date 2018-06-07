@@ -42,8 +42,7 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
                      // in sync with the cloud.
     STOPPING,        // The controller is in the process of stopping
                      // and is waiting for dependent services to stop.
-    DISABLED         // The controller was started but encountered an error
-                     // so it is disabled waiting for it to be stopped.
+    FAILED           // The controller was started but encountered an error.
   };
 
   // This enum is used for "Sync.*ConfigureFailre" histograms so the order

@@ -42,7 +42,7 @@ void FakeDataTypeController::LoadModels(
 
   if (model_load_delayed_ == false) {
     if (load_error_.IsSet())
-      state_ = DISABLED;
+      state_ = FAILED;
     else
       state_ = MODEL_LOADED;
     model_load_callback.Run(type(), load_error_);
@@ -65,7 +65,7 @@ void FakeDataTypeController::StartAssociating(
   state_ = ASSOCIATING;
 }
 
-// MODEL_STARTING | ASSOCIATING -> RUNNING | DISABLED | NOT_RUNNING
+// MODEL_STARTING | ASSOCIATING -> RUNNING | FAILED | NOT_RUNNING
 // (depending on |result|)
 void FakeDataTypeController::FinishStart(ConfigureResult result) {
   DCHECK(CalledOnValidThread());
@@ -81,7 +81,7 @@ void FakeDataTypeController::FinishStart(ConfigureResult result) {
   if (result <= OK_FIRST_RUN) {
     state_ = RUNNING;
   } else if (result == ASSOCIATION_FAILED) {
-    state_ = DISABLED;
+    state_ = FAILED;
     local_merge_result.set_error(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
                                            "Association failed", type()));
   } else if (result == UNRECOVERABLE_ERROR) {
@@ -133,7 +133,7 @@ void FakeDataTypeController::SetModelLoadError(SyncError error) {
 
 void FakeDataTypeController::SimulateModelLoadFinishing() {
   if (load_error_.IsSet())
-    state_ = DISABLED;
+    state_ = FAILED;
   else
     state_ = MODEL_LOADED;
   model_load_callback_.Run(type(), load_error_);

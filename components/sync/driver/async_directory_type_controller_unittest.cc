@@ -327,7 +327,7 @@ TEST_F(SyncAsyncDirectoryTypeControllerTest, StartAssociationFailed) {
       FROM_HERE, SyncError::DATATYPE_ERROR, "Sync Error", non_ui_dtc_->type()));
   Start();
   WaitForDTC();
-  EXPECT_EQ(DataTypeController::DISABLED, non_ui_dtc_->state());
+  EXPECT_EQ(DataTypeController::FAILED, non_ui_dtc_->state());
   non_ui_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
 }
