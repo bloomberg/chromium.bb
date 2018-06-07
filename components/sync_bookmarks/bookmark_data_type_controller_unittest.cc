@@ -265,7 +265,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::ASSOCIATION_FAILED, _, _));
   Start();
-  EXPECT_EQ(DataTypeController::DISABLED, bookmark_dtc_->state());
+  EXPECT_EQ(DataTypeController::FAILED, bookmark_dtc_->state());
 }
 
 TEST_F(SyncBookmarkDataTypeControllerTest,

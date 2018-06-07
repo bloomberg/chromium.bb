@@ -38,8 +38,8 @@ std::string DataTypeController::StateToString(State state) {
       return "Running";
     case STOPPING:
       return "Stopping";
-    case DISABLED:
-      return "Disabled";
+    case FAILED:
+      return "Failed";
   }
   NOTREACHED();
   return "Invalid";

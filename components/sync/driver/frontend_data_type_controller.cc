@@ -198,7 +198,7 @@ void FrontendDataTypeController::StartDone(
   if (!IsSuccessfulResult(start_result)) {
     CleanUp();
     if (start_result == ASSOCIATION_FAILED) {
-      state_ = DISABLED;
+      state_ = FAILED;
     } else {
       state_ = NOT_RUNNING;
     }

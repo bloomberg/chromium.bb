@@ -208,7 +208,7 @@ TEST_F(SyncFrontendDataTypeControllerTest, StartAssociationFailed) {
   // Set up association to fail with an association failed error.
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
   Start();
-  EXPECT_EQ(DataTypeController::DISABLED, frontend_dtc_->state());
+  EXPECT_EQ(DataTypeController::FAILED, frontend_dtc_->state());
 }
 
 TEST_F(SyncFrontendDataTypeControllerTest,
