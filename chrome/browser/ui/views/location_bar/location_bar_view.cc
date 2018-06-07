@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
@@ -92,6 +93,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -976,6 +978,10 @@ bool LocationBarView::ShouldShowLocationIconText() const {
       (GetToolbarModel()->GetURL().SchemeIs(content::kChromeUIScheme) ||
        GetToolbarModel()->GetURL().SchemeIs(extensions::kExtensionScheme)))
     return true;
+
+  if (GetToolbarModel()->GetSecurityLevel(false) == security_state::SECURE &&
+      base::FeatureList::IsEnabled(features::kExperimentalUi))
+    return false;
 
   return !GetToolbarModel()->GetSecureVerboseText().empty();
 }
