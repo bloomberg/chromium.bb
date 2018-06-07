@@ -531,7 +531,7 @@
       },
       'CrWinAsan': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
         'swarming': {
           'dimension_sets': [
@@ -543,7 +543,7 @@
       },
       'CrWinAsan(dll)': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
         'swarming': {
           'dimension_sets': [
@@ -555,7 +555,7 @@
       },
       'CrWinAsanCov': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
         'swarming': {
           'dimension_sets': [
@@ -567,22 +567,22 @@
       },
       'CrWinClangLLD': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'CrWinClangLLD64': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'CrWinClngLLD64dbg': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'CrWinClngLLDdbg': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTAndroid': {
@@ -698,52 +698,52 @@
       },
       'ToTWin': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWin(dbg)': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWin(dll)': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWin64': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWin64(dbg)': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWin64(dll)': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWinCFI': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWinCFI64': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWinLibcxx64': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWinThinLTO64': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'linux-win_cross-rel': {
@@ -755,7 +755,7 @@
           ],
         },
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'UBSanVptr Linux': {
@@ -2377,9 +2377,7 @@
       },
       'Out of Process Profiling Windows': {
         'test_suites': {
-          # TODO(kbr): it's weird that this has the most in common with the
-          # clang testers' test suites.
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'Site Isolation Android': {

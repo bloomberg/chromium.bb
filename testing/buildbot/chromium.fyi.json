@@ -6372,6 +6372,18 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "headless_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "headless_unittests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
