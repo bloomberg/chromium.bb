@@ -193,6 +193,28 @@ void AccountManager::GetAccountsInternal(AccountListCallback callback) {
   std::move(callback).Run(std::move(accounts));
 }
 
+void AccountManager::RemoveAccount(const AccountKey& account_key) {
+  DCHECK_NE(init_state_, InitializationState::kNotStarted);
+
+  base::OnceClosure closure =
+      base::BindOnce(&AccountManager::RemoveAccountInternal,
+                     weak_factory_.GetWeakPtr(), account_key);
+  RunOnInitialization(std::move(closure));
+}
+
+void AccountManager::RemoveAccountInternal(const AccountKey& account_key) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(init_state_, InitializationState::kInitialized);
+
+  auto it = tokens_.find(account_key);
+  if (it == tokens_.end()) {
+    return;
+  }
+
+  tokens_.erase(it);
+  PersistTokensAsync();
+}
+
 void AccountManager::UpsertToken(const AccountKey& account_key,
                                  const std::string& token) {
   DCHECK_NE(init_state_, InitializationState::kNotStarted);

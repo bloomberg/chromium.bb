@@ -88,6 +88,10 @@ class CHROMEOS_EXPORT AccountManager {
   // Gets (async) a list of account keys known to |AccountManager|.
   void GetAccounts(AccountListCallback callback);
 
+  // Removes an account. Does not do anything if |account_key| is not known by
+  // |AccountManager|.
+  void RemoveAccount(const AccountKey& account_key);
+
   // Updates or inserts a token, for the account corresponding to the given
   // |account_key|. |account_key| must be valid (|AccountKey::IsValid|).
   void UpsertToken(const AccountKey& account_key, const std::string& token);
@@ -124,6 +128,7 @@ class CHROMEOS_EXPORT AccountManager {
   friend class AccountManagerTest;
   FRIEND_TEST_ALL_PREFIXES(AccountManagerTest, TestInitialization);
   FRIEND_TEST_ALL_PREFIXES(AccountManagerTest, TestPersistence);
+  FRIEND_TEST_ALL_PREFIXES(AccountManagerTest, AccountRemovalIsPersistedToDisk);
 
   // Initializes |AccountManager| with the provided |task_runner| and location
   // of the user's home directory.
@@ -142,6 +147,10 @@ class CHROMEOS_EXPORT AccountManager {
   // Does the actual work of getting a list of accounts. Assumes that
   // |AccountManager| initialization (|init_state_|) is complete.
   void GetAccountsInternal(AccountListCallback callback);
+
+  // Does the actual work of removing an account. Assumes that
+  // |AccountManager| initialization (|init_state_|) is complete.
+  void RemoveAccountInternal(const AccountKey& account_key);
 
   // Does the actual work of updating or inserting tokens. Assumes that
   // |AccountManager| initialization (|init_state_|) is complete.
