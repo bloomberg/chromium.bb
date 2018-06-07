@@ -208,7 +208,7 @@ class LocalSafeBrowsingDatabaseManager
 
   // Should only be called on db thread as SafeBrowsingDatabase is not
   // threadsafe.
-  SafeBrowsingDatabase* GetDatabase();
+  SafeBrowsingDatabase* GetDatabase(bool reset_opening_database = false);
 
   // Called on the IO thread with the check result.
   void OnCheckDone(SafeBrowsingCheck* info);
@@ -330,6 +330,7 @@ class LocalSafeBrowsingDatabaseManager
   SafeBrowsingDatabase* database_;
 
   // Lock used to prevent possible data races due to compiler optimizations.
+  // Protects |database_|, |closing_database_|, and |opening_database_|.
   mutable base::Lock database_lock_;
 
   // Indicate if download_protection is enabled by command switch
@@ -365,6 +366,10 @@ class LocalSafeBrowsingDatabaseManager
   // Indicates if we're in the midst of trying to close the database.  If this
   // is true, nothing on the IO thread should access the database.
   bool closing_database_;
+
+  // Indicates if there's a task in |safe_browsing_task_runner_| to create
+  // |database_|.
+  bool opening_database_;
 
   base::circular_deque<QueuedCheck> queued_checks_;
 

@@ -275,6 +275,7 @@ LocalSafeBrowsingDatabaseManager::LocalSafeBrowsingDatabaseManager(
       update_in_progress_(false),
       database_update_in_progress_(false),
       closing_database_(false),
+      opening_database_(false),
       check_timeout_(base::TimeDelta::FromMilliseconds(kCheckTimeoutMs)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(sb_service_.get() != NULL);
@@ -736,9 +737,20 @@ void LocalSafeBrowsingDatabaseManager::DoStopOnIOThread() {
   //    case the database will be recreated before our deletion request is
   //    handled, and could be used on the IO thread in that time period, leading
   //    to the same problem as above.
-  // Checking DatabaseAvailable() avoids both of these.
-  if (DatabaseAvailable()) {
-    closing_database_ = true;
+  //
+  // If the database is not currently available, but a GetDatabase() task is
+  // posted to |safe_browsing_task_runner_|, then it will be available in the
+  // future.  In this case, post the OnCloseDatabase() task so that resources
+  // will not be leaked.
+  bool post_task = false;
+  {
+    base::AutoLock lock(database_lock_);
+    if (!closing_database_ && (database_ || opening_database_)) {
+      closing_database_ = true;
+      post_task = true;
+    }
+  }
+  if (post_task) {
     safe_browsing_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&LocalSafeBrowsingDatabaseManager::OnCloseDatabase,
@@ -766,17 +778,24 @@ bool LocalSafeBrowsingDatabaseManager::DatabaseAvailable() const {
 bool LocalSafeBrowsingDatabaseManager::MakeDatabaseAvailable() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
-  if (DatabaseAvailable())
-    return true;
+  {
+    base::AutoLock lock(database_lock_);
+    if (!closing_database_ && database_)
+      return true;
+    if (opening_database_)
+      return false;
+    opening_database_ = true;
+  }
   safe_browsing_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           base::IgnoreResult(&LocalSafeBrowsingDatabaseManager::GetDatabase),
-          this));
+          this, true));
   return false;
 }
 
-SafeBrowsingDatabase* LocalSafeBrowsingDatabaseManager::GetDatabase() {
+SafeBrowsingDatabase* LocalSafeBrowsingDatabaseManager::GetDatabase(
+    bool reset_opening_database) {
   DCHECK(safe_browsing_task_runner_->RunsTasksInCurrentSequence());
 
   if (database_)
@@ -795,6 +814,8 @@ SafeBrowsingDatabase* LocalSafeBrowsingDatabaseManager::GetDatabase() {
     // the new database object above, and the setting of |database_| below.
     base::AutoLock lock(database_lock_);
     database_ = database.release();
+    if (reset_opening_database)
+      opening_database_ = false;
   }
 
   BrowserThread::PostTask(
@@ -1017,19 +1038,15 @@ void LocalSafeBrowsingDatabaseManager::DatabaseUpdateFinished(
 
 void LocalSafeBrowsingDatabaseManager::OnCloseDatabase() {
   DCHECK(safe_browsing_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(closing_database_);
 
-  // Because |closing_database_| is true, nothing on the IO thread will be
-  // accessing the database, so it's safe to delete and then NULL the pointer.
-  delete database_;
-  database_ = NULL;
-
-  // Acquiring the lock here guarantees correct ordering between the resetting
-  // of |database_| above and of |closing_database_| below, which ensures there
-  // won't be a window during which the IO thread falsely believes the database
-  // is available.
-  base::AutoLock lock(database_lock_);
-  closing_database_ = false;
+  SafeBrowsingDatabase* to_delete = database_;
+  {
+    base::AutoLock lock(database_lock_);
+    DCHECK(closing_database_);
+    database_ = nullptr;
+    closing_database_ = false;
+  }
+  delete to_delete;
 }
 
 void LocalSafeBrowsingDatabaseManager::OnResetDatabase() {
