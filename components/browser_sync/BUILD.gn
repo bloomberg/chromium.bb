@@ -46,6 +46,7 @@ static_library("browser_sync") {
     "//google_apis",
     "//net",
     "//services/identity/public/cpp",
+    "//services/network/public/cpp",
   ]
 }
 
@@ -92,6 +93,8 @@ source_set("unit_tests") {
     "//google_apis",
     "//net",
     "//services/identity/public/cpp:test_support",
+    "//services/network:test_support",
+    "//services/network/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
   ]
