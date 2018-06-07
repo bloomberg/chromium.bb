@@ -31,8 +31,7 @@
             android:paddingEnd="8dp"
             android:scaleType="fitCenter"
             android:gravity="center_vertical"
-            android:contentDescription="@null"
-            chrome:chrometint="@android:color/white" />
+            android:contentDescription="@null" />
         <TextView
             android:id="@+id/tab_title"
             android:layout_width="0dp"
