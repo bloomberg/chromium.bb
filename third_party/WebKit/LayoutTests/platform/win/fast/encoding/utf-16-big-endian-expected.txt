@@ -49,7 +49,7 @@ layer at (0,0) size 800x1140 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutInline {SPAN} at (0,0) size 578x56
           LayoutInline {SPAN} at (0,0) size 578x56
             LayoutText {#text} at (0,0) size 0x0
-            LayoutBlockFlow {IMG} at (0,4) size 78x16
+            LayoutBlockFlow {IMG} at (0,3.50) size 78x16
               LayoutInline {SPAN} at (0,0) size 62x16
                 LayoutImage (floating) {IMG} at (0,0) size 16x16
                 LayoutInline {SPAN} at (0,0) size 62x16
