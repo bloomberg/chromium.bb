@@ -12,6 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
@@ -238,6 +239,10 @@ id<GREYMatcher> OpenLinkInNewTabButton() {
 
 id<GREYMatcher> NavigationBarDoneButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+}
+
+id<GREYMatcher> BookmarksNavigationBarDoneButton() {
+  return grey_accessibilityID(kBookmarkHomeNavigationBarDoneButtonIdentifier);
 }
 
 id<GREYMatcher> AccountConsistencySetupSigninButton() {

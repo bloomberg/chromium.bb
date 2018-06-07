@@ -971,6 +971,8 @@ const CGFloat kShadowRadius = 12.0f;
              action:@selector(navigationBarCancel:)];
   doneButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  doneButton.accessibilityIdentifier =
+      kBookmarkHomeNavigationBarDoneButtonIdentifier;
   return doneButton;
 }
 

@@ -97,6 +97,9 @@ id<GREYMatcher> OpenLinkInNewTabButton();
 // Matcher for the done button on the navigation bar.
 id<GREYMatcher> NavigationBarDoneButton();
 
+// Matcher for the done button on the Bookmarks navigation bar.
+id<GREYMatcher> BookmarksNavigationBarDoneButton();
+
 // Returns matcher for the account consistency setup signin button.
 id<GREYMatcher> AccountConsistencySetupSigninButton();
 
