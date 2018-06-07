@@ -208,6 +208,11 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
     case v8::kGCTypeScavenge:
       TRACE_EVENT_END1("devtools.timeline,v8", "MinorGC", "usedHeapSizeAfter",
                        UsedHeapSize(isolate));
+      // Scavenger might have dropped nodes.
+      if (ThreadState::Current()) {
+        ThreadState::Current()->ScheduleV8FollowupGCIfNeeded(
+            BlinkGC::kV8MinorGC);
+      }
       break;
     case v8::kGCTypeMarkSweepCompact:
       TRACE_EVENT_END1("devtools.timeline,v8", "MajorGC", "usedHeapSizeAfter",
