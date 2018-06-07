@@ -60,42 +60,6 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
 
 OmniboxTabSwitchButton::~OmniboxTabSwitchButton() = default;
 
-size_t OmniboxTabSwitchButton::CalculateGoalWidth(size_t parent_width,
-                                                  base::string16* goal_text) {
-  if (full_text_width_ * 5 <= parent_width) {
-    *goal_text = l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT);
-    return full_text_width_;
-  }
-  if (short_text_width_ * 5 <= parent_width) {
-    *goal_text = l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT);
-    return short_text_width_;
-  }
-  *goal_text = base::string16();
-  if (icon_only_width_ * 5 <= parent_width)
-    return icon_only_width_;
-  return 0;
-}
-
-void OmniboxTabSwitchButton::ProvideWidthHint(size_t parent_width) {
-  size_t preferred_width = CalculateGoalWidth(parent_width, &goal_text_);
-  if (!initialized_) {
-    initialized_ = true;
-    goal_width_ = preferred_width;
-    animation_->Reset(1);
-    SetText(goal_text_);
-    return;
-  }
-  if (preferred_width != goal_width_) {
-    goal_width_ = preferred_width;
-    start_width_ = width();
-    // If growing/showing, set text-to-be and grow into it.
-    if (goal_width_ > start_width_)
-      SetText(goal_text_);
-    animation_->Reset(0);
-    animation_->Show();
-  }
-}
-
 gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
   gfx::Size size = MdTextButton::CalculatePreferredSize();
   // Bump height if odd.
@@ -109,6 +73,20 @@ gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
 void OmniboxTabSwitchButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   MdTextButton::OnBoundsChanged(previous_bounds);
   focus_ring()->SetPath(GetFocusRingPath());
+}
+
+void OmniboxTabSwitchButton::AnimationProgressed(
+    const gfx::Animation* animation) {
+  if (animation != animation_.get()) {
+    MdTextButton::AnimationProgressed(animation);
+    return;
+  }
+
+  // If done shrinking, correct text.
+  if (animation_->GetCurrentValue() == 1 && goal_width_ < start_width_)
+    SetText(goal_text_);
+  result_view_->Layout();
+  result_view_->SchedulePaint();
 }
 
 void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
@@ -134,26 +112,32 @@ void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
   MdTextButton::StateChanged(old_state);
 }
 
-void OmniboxTabSwitchButton::AnimationProgressed(
-    const gfx::Animation* animation) {
-  if (animation != animation_.get()) {
-    MdTextButton::AnimationProgressed(animation);
-    return;
-  }
-
-  // If done shrinking, correct text.
-  if (animation_->GetCurrentValue() == 1 && goal_width_ < start_width_)
-    SetText(goal_text_);
-  result_view_->Layout();
-  result_view_->SchedulePaint();
-}
-
 void OmniboxTabSwitchButton::UpdateBackground() {
   focus_ring()->SchedulePaint();
   if (model_->IsButtonSelected())
     SetPressed();
   else
     SetBgColorOverride(GetBackgroundColor());
+}
+
+void OmniboxTabSwitchButton::ProvideWidthHint(size_t parent_width) {
+  size_t preferred_width = CalculateGoalWidth(parent_width, &goal_text_);
+  if (!initialized_) {
+    initialized_ = true;
+    goal_width_ = preferred_width;
+    animation_->Reset(1);
+    SetText(goal_text_);
+    return;
+  }
+  if (preferred_width != goal_width_) {
+    goal_width_ = preferred_width;
+    start_width_ = width();
+    // If growing/showing, set text-to-be and grow into it.
+    if (goal_width_ > start_width_)
+      SetText(goal_text_);
+    animation_->Reset(0);
+    animation_->Show();
+  }
 }
 
 bool OmniboxTabSwitchButton::IsSelected() const {
@@ -178,4 +162,20 @@ void OmniboxTabSwitchButton::SetPressed() {
   SetBgColorOverride(GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND,
                                      result_view_->GetTint(),
                                      OmniboxPartState::NORMAL));
+}
+
+size_t OmniboxTabSwitchButton::CalculateGoalWidth(size_t parent_width,
+                                                  base::string16* goal_text) {
+  if (full_text_width_ * 5 <= parent_width) {
+    *goal_text = l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT);
+    return full_text_width_;
+  }
+  if (short_text_width_ * 5 <= parent_width) {
+    *goal_text = l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT);
+    return short_text_width_;
+  }
+  *goal_text = base::string16();
+  if (icon_only_width_ * 5 <= parent_width)
+    return icon_only_width_;
+  return 0;
 }
