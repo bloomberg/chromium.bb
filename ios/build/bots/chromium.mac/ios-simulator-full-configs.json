@@ -36,7 +36,8 @@
           "os": "Mac-10.13",
           "pool": "Chrome"
         }
-      ]
+      ],
+      "priority": 29
     },
     {
       "include": "eg_tests.json",
@@ -51,7 +52,8 @@
           "os": "Mac-10.13",
           "pool": "Chrome"
         }
-      ]
+      ],
+      "priority": 29
     },
     {
       "include": "eg_tests.json",
@@ -66,7 +68,8 @@
           "os": "Mac-10.13",
           "pool": "Chrome"
         }
-      ]
+      ],
+      "priority": 29
     },
     {
       "include": "eg_tests.json",
@@ -84,7 +87,8 @@
           "os": "Mac-10.13",
           "pool": "Chrome"
         }
-      ]
+      ],
+      "priority": 29
     },
     {
       "include": "eg_tests.json",
@@ -99,7 +103,8 @@
           "os": "Mac-10.13",
           "pool": "Chrome"
         }
-      ]
+      ],
+      "priority": 29
     },
     {
       "include": "eg_cq_tests.json",
@@ -117,7 +122,8 @@
           "os": "Mac-10.13",
           "pool": "Chrome"
         }
-      ]
+      ],
+      "priority": 29
     },
     {
       "include": "eg_cq_tests.json",
@@ -132,7 +138,8 @@
           "os": "Mac-10.13",
           "pool": "Chrome"
         }
-      ]
+      ],
+      "priority": 29
     }
   ]
 }
