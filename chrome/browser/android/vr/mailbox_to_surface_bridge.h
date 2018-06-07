@@ -112,15 +112,10 @@ class MailboxToSurfaceBridge {
       const gpu::SyncToken& sync_token,
       base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback);
 
-  void GenerateMailbox(gpu::Mailbox& out_mailbox);
-
-  // Creates a texture and binds it to the mailbox. Returns its
-  // texture ID in the command buffer context. (Don't use that
+  // Creates a texture and binds it to a newly created mailbox. Returns its
+  // mailbox and texture ID in the command buffer context. (Don't use that
   // in the local GL context, it's not valid there.)
-  uint32_t CreateMailboxTexture(const gpu::Mailbox& mailbox);
-
-  // Unbinds the texture from the mailbox and destroys it.
-  void DestroyMailboxTexture(const gpu::Mailbox& mailbox, uint32_t texture_id);
+  uint32_t CreateMailboxTexture(gpu::Mailbox* mailbox);
 
   // Creates a GLImage from the |buffer| and binds it to the supplied texture_id
   // in the GPU process. Returns the image ID in the command buffer context.
