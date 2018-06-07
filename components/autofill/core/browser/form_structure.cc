@@ -1257,8 +1257,57 @@ void FormStructure::RationalizePhoneNumbersInSection(std::string section) {
   phone_rationalized_[section] = true;
 }
 
+void FormStructure::RationalizeAddressFields() {
+  // TODO(crbug.com/850552): Add UKM logging.
+  // Get the number of fields predicted as being the whole street address.
+  int nb_street_address = 0;
+  for (const auto& field : fields_) {
+    ServerFieldType current_field_type =
+        field->ComputedType().GetStorableType();
+
+    if (current_field_type == ADDRESS_HOME_STREET_ADDRESS) {
+      ++nb_street_address;
+    }
+  }
+
+  // The rationalization only applies to forms that have 2 or 3 whole street
+  // address predictions.
+  if (nb_street_address != 2 && nb_street_address != 3) {
+    return;
+  }
+
+  // Rationalize the street address fields to be address lines 1 to 3 instead.
+  int nb_address_rationalized = 0;
+  for (auto it = fields_.begin(); it != fields_.end(); ++it) {
+    auto& field = *it;
+    ServerFieldType current_field_type = field->Type().GetStorableType();
+
+    if (current_field_type == ADDRESS_HOME_STREET_ADDRESS) {
+      switch (nb_address_rationalized) {
+        case 0:
+          field->SetTypeTo(AutofillType(ADDRESS_HOME_LINE1));
+          break;
+
+        case 1:
+          field->SetTypeTo(AutofillType(ADDRESS_HOME_LINE2));
+          break;
+
+        case 2:
+          field->SetTypeTo(AutofillType(ADDRESS_HOME_LINE3));
+          break;
+
+        default:
+          NOTREACHED();
+          break;
+      }
+      ++nb_address_rationalized;
+    }
+  }
+}
+
 void FormStructure::RationalizeFieldTypePredictions() {
   RationalizeCreditCardFieldPredictions();
+  RationalizeAddressFields();
   for (const auto& field : fields_) {
     field->SetTypeTo(field->Type());
   }
