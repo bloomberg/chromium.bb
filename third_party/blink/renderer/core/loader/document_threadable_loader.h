@@ -134,19 +134,6 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   void ReportResponseReceived(unsigned long identifier,
                               const ResourceResponse&);
 
-  // Methods containing code to handle resource fetch results which are common
-  // to both sync and async mode.
-  //
-  // The FetchCredentialsMode argument must be the request's credentials mode.
-  // It's used for CORS check.
-  void HandleResponse(unsigned long identifier,
-                      network::mojom::FetchRequestMode,
-                      network::mojom::FetchCredentialsMode,
-                      const ResourceResponse&,
-                      std::unique_ptr<WebDataConsumerHandle>);
-  void HandleReceivedData(const char* data, size_t data_length);
-  void HandleSuccessfulFinish(unsigned long identifier);
-
   void DidTimeout(TimerBase*);
   // Calls the appropriate loading method according to policy and data about
   // origin. Only for handling the initial load (including fallback after
@@ -165,14 +152,11 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   // m_client.
   void HandlePreflightFailure(const KURL&, const String& error_description);
   // Investigates the response for the preflight request. If successful,
-  // the actual request will be made later in handleSuccessfulFinish().
+  // the actual request will be made later in NotifyFinished().
   void HandlePreflightResponse(const ResourceResponse&);
 
   void DispatchDidFailAccessControlCheck(const ResourceError&);
   void DispatchDidFail(const ResourceError&);
-
-  void LoadRequestAsync(const ResourceRequest&, ResourceLoaderOptions);
-  void LoadRequestSync(const ResourceRequest&, ResourceLoaderOptions);
 
   void PrepareCrossOriginRequest(ResourceRequest&) const;
 
