@@ -174,6 +174,13 @@
   mainViewController.remoteTabsViewController.dispatcher =
       static_cast<id<ApplicationCommands>>(self.dispatcher);
   mainViewController.remoteTabsViewController.loader = self;
+
+  // TODO(crbug.com/850387) : Currently, consumer calls from the mediator
+  // prematurely loads the view in |RecentTabsTableViewController|. Fix this so
+  // that the view is loaded only by an explicit placement in the view
+  // hierarchy. As a workaround, the view controller hierarchy is loaded here
+  // before |RecentTabsMediator| updates are started.
+  self.window.rootViewController = self.mainViewController;
   if (self.remoteTabsMediator.browserState) {
     [self.remoteTabsMediator initObservers];
     [self.remoteTabsMediator refreshSessionsView];
@@ -183,8 +190,6 @@
   // to initialize them.
   _regularTabModel = nil;
   _incognitoTabModel = nil;
-
-  self.window.rootViewController = self.mainViewController;
 }
 
 - (void)stop {
