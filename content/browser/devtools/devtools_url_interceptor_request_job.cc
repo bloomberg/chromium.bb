@@ -18,12 +18,14 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_element_reader.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_options.h"
+#include "net/cookies/cookie_store.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
-
 namespace {
 static const int kInitialBufferSize = 4096;
 static const int kMaxBufferSize = IPC::Channel::kMaximumMessageSize / 4;
@@ -1100,6 +1102,33 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionResponse(
     std::string value;
     if (mock_response_details_->response_headers()->IsRedirect(&value)) {
       interceptor_->ExpectRequestAfterRedirect(request(), interception_id_);
+    }
+
+    // Set cookies in the network stack.
+    net::CookieOptions options;
+    options.set_include_httponly();
+    base::Time response_date;
+    if (!mock_response_details_->response_headers()->GetDateValue(
+            &response_date)) {
+      response_date = base::Time();
+    }
+    options.set_server_time(response_date);
+
+    const base::StringPiece name("Set-Cookie");
+    std::string cookie_line;
+    size_t iter = 0;
+    while (mock_response_details_->response_headers()->EnumerateHeader(
+        &iter, name, &cookie_line)) {
+      std::unique_ptr<net::CanonicalCookie> cookie =
+          net::CanonicalCookie::Create(request_details_.url, cookie_line,
+                                       base::Time::Now(), options);
+      if (!cookie)
+        continue;
+
+      auto* store = request_details_.url_request_context->cookie_store();
+      store->SetCanonicalCookieAsync(
+          std::move(cookie), request_details_.url.SchemeIsCryptographic(),
+          !options.exclude_httponly(), net::CookieStore::SetCookiesCallback());
     }
 
     if (sub_request_) {
