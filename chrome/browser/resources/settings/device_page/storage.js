@@ -74,30 +74,30 @@ Polymer({
   updateTimerId_: -1,
 
   /** @override */
-  ready: function() {
-    cr.addWebUIListener(
+  attached: function() {
+    this.addWebUIListener(
         'storage-size-stat-changed', this.handleSizeStatChanged_.bind(this));
-    cr.addWebUIListener(
+    this.addWebUIListener(
         'storage-downloads-size-changed',
         this.handleDownloadsSizeChanged_.bind(this));
-    cr.addWebUIListener(
+    this.addWebUIListener(
         'storage-drive-cache-size-changed',
         this.handleDriveCacheSizeChanged_.bind(this));
-    cr.addWebUIListener(
+    this.addWebUIListener(
         'storage-browsing-data-size-changed',
         this.handleBrowsingDataSizeChanged_.bind(this));
-    cr.addWebUIListener(
+    this.addWebUIListener(
         'storage-android-size-changed',
         this.handleAndroidSizeChanged_.bind(this));
     if (!this.isGuest_) {
-      cr.addWebUIListener(
+      this.addWebUIListener(
           'storage-other-users-size-changed',
           this.handleOtherUsersSizeChanged_.bind(this));
     }
-    cr.addWebUIListener(
+    this.addWebUIListener(
         'storage-drive-enabled-changed',
         this.handleDriveEnabledChanged_.bind(this));
-    cr.addWebUIListener(
+    this.addWebUIListener(
         'storage-android-enabled-changed',
         this.handleAndroidEnabledChanged_.bind(this));
   },
