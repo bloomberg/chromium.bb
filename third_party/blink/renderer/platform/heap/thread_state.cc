@@ -249,7 +249,7 @@ void ThreadState::RunTerminationGC() {
   // if we have it is a bug, and we have a reference cycle or a missing
   // RegisterAsStaticReference. Clearing out all the Persistents will avoid
   // stale pointers and gets them reported as nullptr dereferences.
-  if (!current_count) {
+  if (current_count) {
     for (size_t i = 0; i < kMaxTerminationGCLoops &&
                        GetPersistentRegion()->NumberOfPersistents();
          i++) {
@@ -259,7 +259,7 @@ void ThreadState::RunTerminationGC() {
     }
   }
 
-  DCHECK(!GetPersistentRegion()->NumberOfPersistents());
+  CHECK(!GetPersistentRegion()->NumberOfPersistents());
 
   // All of pre-finalizers should be consumed.
   DCHECK(ordered_pre_finalizers_.IsEmpty());
