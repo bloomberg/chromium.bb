@@ -11,17 +11,17 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
+
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
 
 namespace syncer {
 
 // Manages informing the sync server that sync has been disabled.
-// An implementation of URLFetcherDelegate was needed in order to
-// clean up the fetcher_ pointer when the request completes.
-class SyncStoppedReporter : public net::URLFetcherDelegate {
+class SyncStoppedReporter {
  public:
   enum Result { RESULT_SUCCESS, RESULT_ERROR, RESULT_TIMEOUT };
 
@@ -30,9 +30,9 @@ class SyncStoppedReporter : public net::URLFetcherDelegate {
   SyncStoppedReporter(
       const GURL& sync_service_url,
       const std::string& user_agent,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const ResultCallback& callback);
-  ~SyncStoppedReporter() override;
+  ~SyncStoppedReporter();
 
   // Inform the sync server that sync was stopped on this device.
   // |access_token|, |cache_guid|, and |birthday| must not be empty.
@@ -40,15 +40,16 @@ class SyncStoppedReporter : public net::URLFetcherDelegate {
                          const std::string& cache_guid,
                          const std::string& birthday);
 
-  // net::URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-
- private:
   // Convert the base sync URL into the sync event URL.
+  // Public so tests can use it.
   static GURL GetSyncEventURL(const GURL& sync_service_url);
 
   // Callback for a request timing out.
+  // Public so tests can use it.
   void OnTimeout();
+
+ private:
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   // Handles timing out requests.
   base::OneShotTimer timer_;
@@ -59,11 +60,11 @@ class SyncStoppedReporter : public net::URLFetcherDelegate {
   // The user agent for the browser.
   const std::string user_agent_;
 
-  // Stored to simplify the API; needed for URLFetcher::Create().
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  // The URL loader for the network request.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  // The current URLFetcher. Null unless a request is in progress.
-  std::unique_ptr<net::URLFetcher> fetcher_;
+  // The current URL loader. Null unless a request is in progress.
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 
   // A callback for request completion or timeout.
   ResultCallback callback_;
