@@ -975,21 +975,23 @@ bool LayoutInline::HitTestCulledInline(
 
 PositionWithAffinity LayoutInline::PositionForPoint(
     const LayoutPoint& point) const {
-  if (const LayoutBlockFlow* ng_block_flow = EnclosingNGBlockFlow())
-    return ng_block_flow->PositionForPoint(point);
-
-  DCHECK(CanUseInlineBox(*this));
-
   // FIXME: Does not deal with relative positioned inlines (should it?)
 
   // If there are continuations, test them first because our containing block
   // will not check them.
+  // TODO(layout-dev): Handle continuation with NG structures when NG has its
+  // own tree building.
   LayoutBoxModelObject* continuation = Continuation();
   while (continuation) {
     if (continuation->IsInline() || continuation->SlowFirstChild())
       return continuation->PositionForPoint(point);
     continuation = ToLayoutBlockFlow(continuation)->InlineElementContinuation();
   }
+
+  if (const LayoutBlockFlow* ng_block_flow = EnclosingNGBlockFlow())
+    return ng_block_flow->PositionForPoint(point);
+
+  DCHECK(CanUseInlineBox(*this));
 
   if (FirstLineBoxIncludingCulling()) {
     // This inline actually has a line box.  We must have clicked in the
