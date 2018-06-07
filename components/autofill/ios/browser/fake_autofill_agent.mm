@@ -4,7 +4,7 @@
 
 #import "components/autofill/ios/browser/fake_autofill_agent.h"
 
-#import "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "ios/web/public/web_thread.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -63,7 +63,7 @@
                          completionHandler:
                              (SuggestionsAvailableCompletion)completion {
   web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
+      web::WebThread::UI, FROM_HERE, base::BindOnce(^{
         NSString* key =
             [self keyForFormName:formName fieldIdentifier:fieldIdentifier];
         completion([_suggestionsByFormAndFieldName[key] count] ? YES : NO);
@@ -79,7 +79,7 @@
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
+      web::WebThread::UI, FROM_HERE, base::BindOnce(^{
         NSString* key =
             [self keyForFormName:formName fieldIdentifier:fieldIdentifier];
         completion(_suggestionsByFormAndFieldName[key], self);
@@ -92,7 +92,7 @@
                        form:(NSString*)formName
           completionHandler:(SuggestionHandledCompletion)completion {
   web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
+      web::WebThread::UI, FROM_HERE, base::BindOnce(^{
         NSString* key =
             [self keyForFormName:formName fieldIdentifier:fieldIdentifier];
         _selectedSuggestionByFormAndFieldName[key] = suggestion;
