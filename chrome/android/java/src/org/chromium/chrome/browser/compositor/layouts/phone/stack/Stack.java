@@ -2082,7 +2082,8 @@ public abstract class Stack {
         // Update the scroll offset to put the focused tab at the top.
         final int index = mTabList.index();
 
-        if (mCurrentMode == Orientation.PORTRAIT) {
+        if (mCurrentMode == Orientation.PORTRAIT
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)) {
             mScrollOffset = -index * mSpacing;
         } else {
             mScrollOffset = -index * mSpacing + x - LANDSCAPE_SWIPE_DRAG_TAB_OFFSET_DP;
