@@ -42,11 +42,9 @@ interface MtpManager {
   CreateDirectory(string storage_handle, uint32 parent_id,
       string directory_name) => (bool error);
 
-  // Reads directory entries from |file_id| on |storage_handle|.
-  // |max_size| is a maximum number of files to be read.
-  ReadDirectory(string storage_handle,
-      uint32 file_id, uint64 max_size) =>
-    (array<MtpFileEntry> file_entries, bool has_more, bool error);
+  // Reads the directory listing for |file_id| and returns the list of file ids.
+  ReadDirectoryEntryIds(string storage_handle,
+      uint32 file_id) => (array<uint32> file_ids, bool error);
 
   // Reads file data from |file_id| on |storage_handle|.
   // Reads |count| bytes of data starting at |offset|.

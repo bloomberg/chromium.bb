@@ -71,13 +71,11 @@ void TestMediaTransferProtocolManagerChromeOS::CreateDirectory(
   std::move(callback).Run(true /* error */);
 }
 
-void TestMediaTransferProtocolManagerChromeOS::ReadDirectory(
+void TestMediaTransferProtocolManagerChromeOS::ReadDirectoryEntryIds(
     const std::string& storage_handle,
     uint32_t file_id,
-    uint64_t max_size,
-    ReadDirectoryCallback callback) {
-  std::move(callback).Run(std::vector<device::mojom::MtpFileEntryPtr>(),
-                          false /* no more entries*/, true /* error */);
+    ReadDirectoryEntryIdsCallback callback) {
+  std::move(callback).Run(std::vector<uint32_t>(), /*error=*/true);
 }
 
 void TestMediaTransferProtocolManagerChromeOS::ReadFileChunk(
