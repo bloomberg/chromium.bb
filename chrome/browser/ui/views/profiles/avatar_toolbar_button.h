@@ -40,6 +40,7 @@ class AvatarToolbarButton : public ToolbarButton,
 
   bool IsIncognito() const;
   bool ShouldShowGenericIcon() const;
+  base::string16 GetAvatarTooltipText();
   gfx::ImageSkia GetAvatarIcon();
   gfx::Image GetIconImageFromProfile() const;
   SyncState GetSyncState();
