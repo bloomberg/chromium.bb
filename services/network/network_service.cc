@@ -66,14 +66,14 @@ CreateNetworkChangeNotifierIfNeeded() {
   return nullptr;
 }
 
-std::unique_ptr<net::HostResolver> CreateHostResolver() {
+std::unique_ptr<net::HostResolver> CreateHostResolver(net::NetLog* net_log) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(network::switches::kHostResolverRules))
-    return nullptr;
-
   std::unique_ptr<net::HostResolver> host_resolver(
-      net::HostResolver::CreateDefaultResolver(nullptr));
+      net::HostResolver::CreateDefaultResolver(net_log));
+  if (!command_line.HasSwitch(network::switches::kHostResolverRules))
+    return host_resolver;
+
   std::unique_ptr<net::MappedHostResolver> remapped_host_resolver(
       new net::MappedHostResolver(std::move(host_resolver)));
   remapped_host_resolver->SetRulesFromString(
@@ -150,7 +150,7 @@ NetworkService::NetworkService(
   network_quality_estimator_->EnableGetNetworkIdAsynchronously();
 #endif
 
-  host_resolver_ = CreateHostResolver();
+  host_resolver_ = CreateHostResolver(net_log_);
 
   network_usage_accumulator_ = std::make_unique<NetworkUsageAccumulator>();
   sth_distributor_ =

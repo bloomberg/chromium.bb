@@ -47,7 +47,9 @@
 #include "net/cookies/cookie_store.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_auth_handler_negotiate.h"
 #include "net/http/http_auth_preferences.h"
+#include "net/http/http_auth_scheme.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_manager.h"
@@ -1959,15 +1961,27 @@ TEST_F(NetworkContextTest, CreateUDPSocket) {
   }
 }
 
+// Platforms where Negotiate using GSSAPI can be used.
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_IOS)
+
+// Returns the negotiate factory, if one exists, to query its configuration.
+net::HttpAuthHandlerNegotiate::Factory* GetNegotiateFactory(
+    NetworkContext* network_context) {
+  net::HttpAuthHandlerFactory* auth_factory =
+      network_context->url_request_context()->http_auth_handler_factory();
+  return reinterpret_cast<net::HttpAuthHandlerNegotiate::Factory*>(
+      reinterpret_cast<net::HttpAuthHandlerRegistryFactory*>(auth_factory)
+          ->GetSchemeFactory(net::kNegotiateAuthScheme));
+}
+
 #if defined(OS_CHROMEOS)
 TEST_F(NetworkContextTest, GssapiLibraryLoadDisallowedByDefault) {
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
-  EXPECT_FALSE(network_context->url_request_context()
-                   ->http_auth_handler_factory()
-                   ->http_auth_preferences()
-                   ->AllowGssapiLibraryLoad());
+  ASSERT_TRUE(GetNegotiateFactory(network_context.get()));
+  EXPECT_FALSE(GetNegotiateFactory(network_context.get())
+                   ->allow_gssapi_library_load_for_testing());
 }
 
 TEST_F(NetworkContextTest, DisallowGssapiLibraryLoad) {
@@ -1975,10 +1989,9 @@ TEST_F(NetworkContextTest, DisallowGssapiLibraryLoad) {
   context_params->allow_gssapi_library_load = false;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
-  EXPECT_FALSE(network_context->url_request_context()
-                   ->http_auth_handler_factory()
-                   ->http_auth_preferences()
-                   ->AllowGssapiLibraryLoad());
+  ASSERT_TRUE(GetNegotiateFactory(network_context.get()));
+  EXPECT_FALSE(GetNegotiateFactory(network_context.get())
+                   ->allow_gssapi_library_load_for_testing());
 }
 
 TEST_F(NetworkContextTest, AllowGssapiLibraryLoad) {
@@ -1986,23 +1999,24 @@ TEST_F(NetworkContextTest, AllowGssapiLibraryLoad) {
   context_params->allow_gssapi_library_load = true;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
-  EXPECT_TRUE(network_context->url_request_context()
-                  ->http_auth_handler_factory()
-                  ->http_auth_preferences()
-                  ->AllowGssapiLibraryLoad());
+  ASSERT_TRUE(GetNegotiateFactory(network_context.get()));
+  EXPECT_TRUE(GetNegotiateFactory(network_context.get())
+                  ->allow_gssapi_library_load_for_testing());
 }
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_IOS)
 TEST_F(NetworkContextTest, GssapiLibraryName) {
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->gssapi_library_name = "gssapi_library";
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
-  EXPECT_EQ("gssapi_library", network_context->url_request_context()
-                                  ->http_auth_handler_factory()
-                                  ->http_auth_preferences()
-                                  ->GssapiLibraryName());
+  ASSERT_TRUE(GetNegotiateFactory(network_context.get()));
+  EXPECT_EQ(
+      "gssapi_library",
+      GetNegotiateFactory(network_context.get())->GetLibraryNameForTesting());
 }
 #endif
+
+#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_IOS)
 
 TEST_F(NetworkContextTest, CreateNetLogExporter) {
   // Basic flow around start/stop.

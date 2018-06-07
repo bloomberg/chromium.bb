@@ -193,9 +193,6 @@ class MCSProbeAuthPreferences : public net::HttpAuthPreferences {
   MCSProbeAuthPreferences() {}
   ~MCSProbeAuthPreferences() override {}
 
-  bool IsSupportedScheme(const std::string& scheme) const override {
-    return scheme == std::string(net::kBasicAuthScheme);
-  }
   bool NegotiateDisableCnameLookup() const override { return false; }
   bool NegotiateEnablePort() const override { return false; }
   bool CanUseDefaultCredentials(const GURL& auth_origin) const override {
@@ -385,7 +382,8 @@ void MCSProbe::InitializeNetworkState() {
   cert_transparency_verifier_ = std::make_unique<net::MultiLogCTVerifier>();
   ct_policy_enforcer_ = std::make_unique<net::DefaultCTPolicyEnforcer>();
   http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
-      &http_auth_preferences_, host_resolver_.get());
+      host_resolver_.get(), &http_auth_preferences_,
+      std::vector<std::string>{net::kBasicAuthScheme});
   http_server_properties_ = std::make_unique<net::HttpServerPropertiesImpl>();
   proxy_resolution_service_ =
       net::ProxyResolutionService::CreateDirectWithNetLog(&net_log_);

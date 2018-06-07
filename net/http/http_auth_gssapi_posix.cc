@@ -636,6 +636,10 @@ OM_uint32 GSSAPISharedLibrary::inquire_context(
                           open);
 }
 
+const std::string& GSSAPISharedLibrary::GetLibraryNameForTesting() {
+  return gssapi_library_name_;
+}
+
 ScopedSecurityContext::ScopedSecurityContext(GSSAPILibrary* gssapi_lib)
     : security_context_(GSS_C_NO_CONTEXT),
       gssapi_lib_(gssapi_lib) {

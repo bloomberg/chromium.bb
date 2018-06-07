@@ -15,50 +15,9 @@
 namespace net {
 
 HttpAuthPreferences::HttpAuthPreferences()
-    : HttpAuthPreferences(std::vector<std::string>()) {}
-
-#if (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
-HttpAuthPreferences::HttpAuthPreferences(
-    const std::vector<std::string>& auth_schemes)
-    : HttpAuthPreferences(auth_schemes,
-#if defined(OS_CHROMEOS)
-                          true
-#else
-                          std::string()
-#endif  // defined(OS_CHROMEOS)
-                          ) {
-}
-#endif  // defined(OS_POSIX) && !defined(OS_ANDROID)
-
-HttpAuthPreferences::HttpAuthPreferences(
-    const std::vector<std::string>& auth_schemes
-#if defined(OS_CHROMEOS)
-    ,
-    bool allow_gssapi_library_load
-#elif (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
-    ,
-    const std::string& gssapi_library_name
-#endif
-    )
-    : auth_schemes_(auth_schemes.begin(), auth_schemes.end()),
-      negotiate_disable_cname_lookup_(false),
-      negotiate_enable_port_(false),
-#if defined(OS_POSIX)
-      ntlm_v2_enabled_(true),
-#endif
-#if defined(OS_CHROMEOS)
-      allow_gssapi_library_load_(allow_gssapi_library_load),
-#elif (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
-      gssapi_library_name_(gssapi_library_name),
-#endif
-      security_manager_(URLSecurityManager::Create()) {
-}
+    : security_manager_(URLSecurityManager::Create()) {}
 
 HttpAuthPreferences::~HttpAuthPreferences() = default;
-
-bool HttpAuthPreferences::IsSupportedScheme(const std::string& scheme) const {
-  return base::ContainsKey(auth_schemes_, scheme);
-}
 
 bool HttpAuthPreferences::NegotiateDisableCnameLookup() const {
   return negotiate_disable_cname_lookup_;
@@ -77,14 +36,6 @@ bool HttpAuthPreferences::NtlmV2Enabled() const {
 #if defined(OS_ANDROID)
 std::string HttpAuthPreferences::AuthAndroidNegotiateAccountType() const {
   return auth_android_negotiate_account_type_;
-}
-#elif defined(OS_CHROMEOS)
-bool HttpAuthPreferences::AllowGssapiLibraryLoad() const {
-  return allow_gssapi_library_load_;
-}
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-std::string HttpAuthPreferences::GssapiLibraryName() const {
-  return gssapi_library_name_;
 }
 #endif
 
