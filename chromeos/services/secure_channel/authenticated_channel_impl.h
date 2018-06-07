@@ -47,7 +47,8 @@ class AuthenticatedChannelImpl : public AuthenticatedChannel,
       std::unique_ptr<cryptauth::SecureChannel> secure_channel);
 
   // AuthenticatedChannel:
-  const mojom::ConnectionMetadata& GetConnectionMetadata() const override;
+  void GetConnectionMetadata(
+      base::OnceCallback<void(mojom::ConnectionMetadata)> callback) override;
   void PerformSendMessage(const std::string& feature,
                           const std::string& payload,
                           base::OnceClosure on_sent_callback) final;

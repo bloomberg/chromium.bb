@@ -79,9 +79,9 @@ void SingleClientMessageProxyImpl::OnSendMessageRequested(
                              std::move(on_sent_callback));
 }
 
-const mojom::ConnectionMetadata&
-SingleClientMessageProxyImpl::GetConnectionMetadata() {
-  return GetConnectionMetadataFromDelegate();
+void SingleClientMessageProxyImpl::GetConnectionMetadata(
+    base::OnceCallback<void(mojom::ConnectionMetadata)> callback) {
+  GetConnectionMetadataFromDelegate(std::move(callback));
 }
 
 void SingleClientMessageProxyImpl::OnClientDisconnected() {

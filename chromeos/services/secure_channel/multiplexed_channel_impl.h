@@ -73,7 +73,8 @@ class MultiplexedChannelImpl : public MultiplexedChannel,
   void OnSendMessageRequested(const std::string& message_feaure,
                               const std::string& message_payload,
                               base::OnceClosure on_sent_callback) override;
-  const mojom::ConnectionMetadata& GetConnectionMetadata() override;
+  void GetConnectionMetadata(
+      base::OnceCallback<void(mojom::ConnectionMetadata)> callback) override;
   void OnClientDisconnected(const base::UnguessableToken& proxy_id) override;
 
   std::unique_ptr<AuthenticatedChannel> authenticated_channel_;

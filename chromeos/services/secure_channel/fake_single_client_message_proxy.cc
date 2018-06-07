@@ -48,9 +48,9 @@ void FakeSingleClientMessageProxyDelegate::OnSendMessageRequested(
       message_feaure, message_payload, std::move(on_sent_callback)));
 }
 
-const mojom::ConnectionMetadata&
-FakeSingleClientMessageProxyDelegate::GetConnectionMetadata() {
-  return connection_metadata_;
+void FakeSingleClientMessageProxyDelegate::GetConnectionMetadata(
+    base::OnceCallback<void(mojom::ConnectionMetadata)> callback) {
+  return std::move(callback).Run(connection_metadata_);
 }
 
 void FakeSingleClientMessageProxyDelegate::OnClientDisconnected(

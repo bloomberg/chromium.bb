@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -28,7 +29,8 @@ class ChannelImpl : public mojom::Channel {
     virtual ~Delegate() = default;
     virtual void OnSendMessageRequested(const std::string& message,
                                         base::OnceClosure on_sent_callback) = 0;
-    virtual const mojom::ConnectionMetadata& GetConnectionMetadata() = 0;
+    virtual void GetConnectionMetadata(
+        base::OnceCallback<void(mojom::ConnectionMetadata)> callback) = 0;
     virtual void OnClientDisconnected() = 0;
   };
 
@@ -49,10 +51,16 @@ class ChannelImpl : public mojom::Channel {
                    SendMessageCallback callback) override;
   void GetConnectionMetadata(GetConnectionMetadataCallback callback) override;
 
+  void OnConnectionMetadataFetchedFromDelegate(
+      GetConnectionMetadataCallback callback,
+      mojom::ConnectionMetadata connection_metadata_from_delegate);
+
   void OnBindingDisconnected();
 
   Delegate* delegate_;
   mojo::Binding<mojom::Channel> binding_;
+
+  base::WeakPtrFactory<ChannelImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelImpl);
 };
