@@ -4785,3 +4785,4 @@ crbug.com/828858 external/wpt/css/selectors/focus-visible-007.html [ Failure ]
 
 # Sheriff 2018-06-07
 crbug.com/850349 external/wpt/css/css-animations/CSSAnimation-getComputedTiming.tentative.html [ Pass Failure ]
+crbug.com/520739 virtual/off-main-thread-websocket/http/tests/websocket/close-code-and-reason.html [ Pass Failure ]
