@@ -94,8 +94,8 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
 
   // Overridden from content::WebContentsDelegate:
-  void MoveContents(content::WebContents* source,
-                    const gfx::Rect& pos) override;
+  void SetContentsBounds(content::WebContents* source,
+                         const gfx::Rect& bounds) override;
   void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;

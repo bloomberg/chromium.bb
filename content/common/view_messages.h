@@ -395,12 +395,13 @@ IPC_MESSAGE_ROUTED2(ViewMsg_UpdateScreenRects,
                     gfx::Rect /* view_screen_rect */,
                     gfx::Rect /* window_screen_rect */)
 
-// Reply to ViewHostMsg_RequestMove, ViewHostMsg_ShowWidget, and
+// Reply to ViewHostMsg_RequestSetBounds, ViewHostMsg_ShowWidget, and
 // FrameHostMsg_ShowCreatedWindow, to inform the renderer that the browser has
-// processed the move.  The browser may have ignored the move, but it finished
-// processing.  This is used because the renderer keeps a temporary cache of the
-// widget position while these asynchronous operations are in progress.
-IPC_MESSAGE_ROUTED0(ViewMsg_Move_ACK)
+// processed the bounds-setting.  The browser may have ignored the new bounds,
+// but it finished processing.  This is used because the renderer keeps a
+// temporary cache of the widget position while these asynchronous operations
+// are in progress.
+IPC_MESSAGE_ROUTED0(ViewMsg_SetBounds_ACK)
 
 // Used to instruct the RenderView to send back updates to the preferred size.
 IPC_MESSAGE_ROUTED0(ViewMsg_EnablePreferredSizeChangedMode)
@@ -525,13 +526,12 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_Close)
 // throttle these messages.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_UpdateScreenRects_ACK)
 
-// Sent by the renderer process to request that the browser move the view.
-// This corresponds to the window.resizeTo() and window.moveTo() APIs, and
-// the browser may ignore this message.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_RequestMove,
-                    gfx::Rect /* position */)
+// Sent by the renderer process to request that the browser change the bounds of
+// the view. This corresponds to the window.resizeTo() and window.moveTo() APIs,
+// and the browser may ignore this message.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_RequestSetBounds, gfx::Rect /* bounds */)
 
-// Indicates that the render view has been closed in respose to a
+// Indicates that the render view has been closed in response to a
 // Close message.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_Close_ACK,
                      int /* old_route_id */)

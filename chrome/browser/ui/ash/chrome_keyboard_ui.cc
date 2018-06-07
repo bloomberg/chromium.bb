@@ -140,12 +140,8 @@ class ChromeKeyboardContentsDelegate : public content::WebContentsDelegate,
     return false;
   }
 
-  bool IsPopupOrPanel(const content::WebContents* source) const override {
-    return true;
-  }
-
-  void MoveContents(content::WebContents* source,
-                    const gfx::Rect& pos) override {
+  void SetContentsBounds(content::WebContents* source,
+                         const gfx::Rect& bounds) override {
     aura::Window* keyboard = ui_->GetContentsWindow();
     // keyboard window must have been added to keyboard container window at this
     // point. Otherwise, wrong keyboard bounds is used and may cause problem as
@@ -154,7 +150,7 @@ class ChromeKeyboardContentsDelegate : public content::WebContentsDelegate,
     // keyboard window bounds may not set to |pos| after this call. If keyboard
     // is in FULL_WIDTH mode, only the height of keyboard window will be
     // changed.
-    keyboard->SetBounds(pos);
+    keyboard->SetBounds(bounds);
   }
 
   // content::WebContentsDelegate:

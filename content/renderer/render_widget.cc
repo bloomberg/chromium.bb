@@ -659,7 +659,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
     IPC_MESSAGE_HANDLER(ViewMsg_WasShown, OnWasShown)
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
-    IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetBounds_ACK, OnRequestSetBoundsAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
     IPC_MESSAGE_HANDLER(ViewMsg_SetViewportIntersection,
                         OnSetViewportIntersection)
@@ -847,7 +847,7 @@ void RenderWidget::OnWasShown(bool needs_repainting,
   }
 }
 
-void RenderWidget::OnRequestMoveAck() {
+void RenderWidget::OnRequestSetBoundsAck() {
   DCHECK(pending_window_rect_count_);
   pending_window_rect_count_--;
 }
@@ -1615,7 +1615,7 @@ void RenderWidget::SetWindowRect(const WebRect& rect_in_screen) {
 
   if (!resizing_mode_selector_->is_synchronous_mode()) {
     if (did_show_) {
-      Send(new ViewHostMsg_RequestMove(routing_id_, window_rect));
+      Send(new ViewHostMsg_RequestSetBounds(routing_id_, window_rect));
       SetPendingWindowRect(window_rect);
     } else {
       initial_rect_ = window_rect;

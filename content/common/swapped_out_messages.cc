@@ -55,7 +55,7 @@ bool SwappedOutMessages::CanHandleWhileSwappedOut(
     // We allow closing even if we are in the process of swapping out.
     case ViewHostMsg_Close::ID:
     // Sends an ACK.
-    case ViewHostMsg_RequestMove::ID:
+    case ViewHostMsg_RequestSetBounds::ID:
     // Sends an ACK.
     case AccessibilityHostMsg_EventBundle::ID:
       return true;

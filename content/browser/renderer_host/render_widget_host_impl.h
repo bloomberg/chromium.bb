@@ -825,7 +825,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnRenderProcessGone(int status, int error_code);
   void OnClose();
   void OnUpdateScreenRectsAck();
-  void OnRequestMove(const gfx::Rect& pos);
+  void OnRequestSetBounds(const gfx::Rect& bounds);
   void OnSetTooltipText(const base::string16& tooltip_text,
                         blink::WebTextDirection text_direction_hint);
   void OnSetCursor(const WebCursor& cursor);

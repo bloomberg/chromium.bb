@@ -249,7 +249,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void OnRenderProcessGone(int status, int error_code);
   void OnUpdateTargetURL(const GURL& url);
   void OnClose();
-  void OnRequestMove(const gfx::Rect& pos);
+  void OnRequestSetBounds(const gfx::Rect& bounds);
   void OnDocumentAvailableInMainFrame(bool uses_temporary_zoom_level);
   void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);
   void OnPasteFromSelectionClipboard();

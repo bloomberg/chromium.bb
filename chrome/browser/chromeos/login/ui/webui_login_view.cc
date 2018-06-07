@@ -514,10 +514,6 @@ void WebUILoginView::HandleKeyboardEvent(content::WebContents* source,
   }
 }
 
-bool WebUILoginView::IsPopupOrPanel(const WebContents* source) const {
-  return true;
-}
-
 bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
   // In case of blocked UI (ex.: sign in is in progress)
   // we should not process focus change events.

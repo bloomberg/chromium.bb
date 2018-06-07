@@ -569,7 +569,7 @@ class CONTENT_EXPORT RenderWidget
                           base::TimeTicks show_request_timestamp);
   void OnCreateVideoAck(int32_t video_id);
   void OnUpdateVideoAck(int32_t video_id);
-  void OnRequestMoveAck();
+  void OnRequestSetBoundsAck();
   // Request from browser to show context menu.
   virtual void OnShowContextMenu(ui::MenuSourceType source_type,
                                  const gfx::Point& location);
