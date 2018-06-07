@@ -61,6 +61,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ThemeBackgroundInfo)
   IPC_STRUCT_TRAITS_MEMBER(using_default_theme)
+  IPC_STRUCT_TRAITS_MEMBER(custom_background_url)
   IPC_STRUCT_TRAITS_MEMBER(background_color)
   IPC_STRUCT_TRAITS_MEMBER(text_color)
   IPC_STRUCT_TRAITS_MEMBER(link_color)

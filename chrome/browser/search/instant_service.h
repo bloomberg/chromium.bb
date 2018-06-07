@@ -20,6 +20,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/ntp_tile.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "url/gurl.h"
@@ -58,6 +59,9 @@ class InstantService : public KeyedService,
   void AddObserver(InstantServiceObserver* observer);
   void RemoveObserver(InstantServiceObserver* observer);
 
+  // Register prefs associated with the NTP.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
 #if defined(UNIT_TEST)
   int GetInstantProcessCount() const {
     return process_ids_.size();
@@ -81,7 +85,7 @@ class InstantService : public KeyedService,
   //
   // TODO(kmadhusu): Invoking this from InstantController shouldn't be
   // necessary. Investigate more and remove this from here.
-  void UpdateThemeInfo();
+  void UpdateThemeInfo(bool force_update);
 
   // Invoked by the InstantController to update most visited items details for
   // NTP.
@@ -89,6 +93,9 @@ class InstantService : public KeyedService,
 
   // Sends the current NTP URL to a renderer process.
   void SendNewTabPageURLToRenderer(content::RenderProcessHost* rph);
+
+  // Invoked when a custom background is selected on the NTP.
+  void SetCustomBackgroundURL(const GURL& url);
 
  private:
   friend class InstantExtendedTest;

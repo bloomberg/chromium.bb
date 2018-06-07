@@ -261,6 +261,13 @@ void SearchIPCRouter::HistorySyncCheck(int page_seq_no,
   std::move(callback).Run(result);
 }
 
+void SearchIPCRouter::SetCustomBackgroundURL(const GURL& url) {
+  if (!policy_->ShouldProcessSetCustomBackgroundURL())
+    return;
+
+  delegate_->OnSetCustomBackgroundURL(url);
+}
+
 void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;

@@ -352,6 +352,11 @@ bool SearchTabHelper::HistorySyncCheck() {
   return IsHistorySyncEnabled(profile());
 }
 
+void SearchTabHelper::OnSetCustomBackgroundURL(const GURL& url) {
+  if (instant_service_)
+    instant_service_->SetCustomBackgroundURL(url);
+}
+
 const OmniboxView* SearchTabHelper::GetOmniboxView() const {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (!browser)

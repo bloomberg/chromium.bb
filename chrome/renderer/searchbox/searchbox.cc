@@ -314,6 +314,10 @@ void SearchBox::UndoAllMostVisitedDeletions() {
   embedded_search_service_->UndoAllMostVisitedDeletions(page_seq_no_);
 }
 
+void SearchBox::SetCustomBackgroundURL(const GURL& background_url) {
+  embedded_search_service_->SetCustomBackgroundURL(background_url);
+}
+
 void SearchBox::UndoMostVisitedDeletion(
     InstantRestrictedID most_visited_item_id) {
   GURL url = GetURLForMostVisitedItem(most_visited_item_id);

@@ -13,14 +13,21 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/instant_service_observer.h"
+#include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/search/most_visited_iframe_source.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/thumbnail_source.h"
+#include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/search.mojom.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -28,10 +35,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "ui/gfx/color_utils.h"
-#include "chrome/browser/search/local_ntp_source.h"
-#include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 
 InstantService::InstantService(Profile* profile) : profile_(profile) {
   // The initialization below depends on a typical set of browser threads. Skip
@@ -125,9 +128,9 @@ void InstantService::UndoAllMostVisitedDeletions() {
   }
 }
 
-void InstantService::UpdateThemeInfo() {
+void InstantService::UpdateThemeInfo(bool force_update) {
   // Initialize |theme_info_| if necessary.
-  if (!theme_info_) {
+  if (!theme_info_ || force_update) {
     BuildThemeInfo();
   }
   NotifyAboutThemeInfo();
@@ -144,6 +147,17 @@ void InstantService::SendNewTabPageURLToRenderer(
     channel->GetRemoteAssociatedInterface(&client);
     client->SetNewTabPageURL(search::GetNewTabPageURL(profile_));
   }
+}
+
+void InstantService::SetCustomBackgroundURL(const GURL& url) {
+  PrefService* pref_service_ = profile_->GetPrefs();
+  if (url.is_empty()) {
+    pref_service_->ClearPref(prefs::kNTPCustomBackgroundURL);
+  } else {
+    pref_service_->SetString(prefs::kNTPCustomBackgroundURL, url.spec());
+  }
+
+  UpdateThemeInfo(true);
 }
 
 void InstantService::Shutdown() {
@@ -337,4 +351,15 @@ void InstantService::BuildThemeInfo() {
     theme_info_->has_attribution =
         theme_provider.HasCustomImage(IDR_THEME_NTP_ATTRIBUTION);
   }
+
+  // User has set a custom background image.
+  GURL custom_background_url(
+      profile_->GetPrefs()->GetString(prefs::kNTPCustomBackgroundURL));
+  if (custom_background_url.is_valid()) {
+    theme_info_->custom_background_url = custom_background_url;
+  }
+}
+
+void InstantService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kNTPCustomBackgroundURL, std::string());
 }

@@ -66,6 +66,9 @@ struct ThemeBackgroundInfo {
   // True if the default theme is selected.
   bool using_default_theme;
 
+  // Url of the custom background selected by the user.
+  GURL custom_background_url;
+
   // The theme background color in RGBA format always valid.
   RGBAColor background_color;
 

@@ -39,6 +39,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldSendOmniboxFocusChanged() override;
   bool ShouldSendMostVisitedItems() override;
   bool ShouldSendThemeBackgroundInfo() override;
+  bool ShouldProcessSetCustomBackgroundURL() override;
 
   // Used by unit tests.
   void set_is_incognito(bool is_incognito) {

@@ -66,6 +66,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD1(PasteIntoOmnibox, void(const base::string16&));
   MOCK_METHOD1(ChromeIdentityCheck, bool(const base::string16& identity));
   MOCK_METHOD0(HistorySyncCheck, bool());
+  MOCK_METHOD1(OnSetCustomBackgroundURL, void(const GURL& url));
 };
 
 class MockEmbeddedSearchClientFactory

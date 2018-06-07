@@ -104,6 +104,7 @@ class SearchTabHelper : public content::WebContentsObserver,
   void PasteIntoOmnibox(const base::string16& text) override;
   bool ChromeIdentityCheck(const base::string16& identity) override;
   bool HistorySyncCheck() override;
+  void OnSetCustomBackgroundURL(const GURL& url) override;
 
   // Overridden from InstantServiceObserver:
   void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;
