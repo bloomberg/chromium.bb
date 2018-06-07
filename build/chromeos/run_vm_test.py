@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 #
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -10,10 +10,12 @@ import json
 import logging
 import os
 import re
+import signal
 import stat
 import subprocess
 import sys
 
+import psutil
 
 CHROMIUM_SRC_PATH = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..'))
@@ -206,8 +208,25 @@ def vm_test(args):
   if not env_copy.get('GN_ARGS'):
     env_copy['GN_ARGS'] = 'is_chromeos = true'
   env_copy['PATH'] = env_copy['PATH'] + ':' + os.path.join(CHROMITE_PATH, 'bin')
-  rc = subprocess.call(
+  test_proc = subprocess.Popen(
       cros_run_vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr, env=env_copy)
+
+  # Traps SIGTERM and kills all child processes of cros_run_vm_test when it's
+  # caught. This will allow us to capture logs from the VM if a test hangs
+  # and gets timeout-killed by swarming. See also:
+  # https://chromium.googlesource.com/infra/luci/luci-py/+/master/appengine/swarming/doc/Bot.md#graceful-termination_aka-the-sigterm-and-sigkill-dance
+  def _kill_child_procs(trapped_signal, _):
+    logging.warning(
+        'Received signal %d. Killing child processes of test.', trapped_signal)
+    if not test_proc or not test_proc.pid:
+      # This shouldn't happen?
+      logging.error('Test process not running.')
+      return
+    for child in psutil.Process(test_proc.pid).children():
+      logging.warning('Killing process %s', child)
+      child.kill()
+  signal.signal(signal.SIGTERM, _kill_child_procs)
+  test_proc.wait()
 
   # Create a simple json results file for the sanity test if needed. The results
   # will contain only one test ('cros_vm_sanity_test'), and will either be a
@@ -222,7 +241,7 @@ def vm_test(args):
     with open(args.test_launcher_summary_output, 'w') as f:
       json.dump(json_results.GenerateResultsDict([run_results]), f)
 
-  return rc
+  return test_proc.returncode
 
 
 def main():
