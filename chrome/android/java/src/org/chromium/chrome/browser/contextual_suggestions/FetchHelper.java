@@ -29,6 +29,7 @@ import org.chromium.ui.base.PageTransition;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A helper class responsible for determining when to trigger requests for suggestions and when to
@@ -136,8 +137,9 @@ class FetchHelper {
         }
     }
 
-    // TODO(fgorski): flip this to finch controlled setting.
-    private final static long MINIMUM_FETCH_DELAY_MILLIS = 2 * 1000; // 2 seconds.
+    @VisibleForTesting
+    final static int MINIMUM_FETCH_DELAY_SECONDS = 2; // 2 seconds.
+    private final static String FETCH_TRIGGERING_DELAY_SECONDS = "fetch_triggering_delay_seconds";
     private final static String REQUIRE_CURRENT_PAGE_FROM_SRP = "require_current_page_from_SRP";
     private final static String REQUIRE_NAV_CHAIN_FROM_SRP = "require_nav_chain_from_SRP";
     private static boolean sDisableDelayForTesting;
@@ -354,9 +356,10 @@ class FetchHelper {
 
         long remainingFetchDelayMillis =
                 SystemClock.uptimeMillis() - tabFetchReadinessState.getFetchTimeBaselineMillis();
-        if (!sDisableDelayForTesting && remainingFetchDelayMillis < MINIMUM_FETCH_DELAY_MILLIS) {
-            postDelayedFetch(resolvedUrl, mCurrentTab,
-                    MINIMUM_FETCH_DELAY_MILLIS - remainingFetchDelayMillis);
+        long minimumFetchDelayMillis = getMinimumFetchDelayMillis();
+        if (!sDisableDelayForTesting && remainingFetchDelayMillis < minimumFetchDelayMillis) {
+            postDelayedFetch(
+                    resolvedUrl, mCurrentTab, minimumFetchDelayMillis - remainingFetchDelayMillis);
             return;
         }
 
@@ -535,6 +538,13 @@ class FetchHelper {
 
     static String getUrlToFetchFor(String visibleUrl, String canonicalUrl) {
         return TextUtils.isEmpty(canonicalUrl) ? visibleUrl : canonicalUrl;
+    }
+
+    @VisibleForTesting
+    static long getMinimumFetchDelayMillis() {
+        return TimeUnit.SECONDS.toMillis(ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET,
+                FETCH_TRIGGERING_DELAY_SECONDS, MINIMUM_FETCH_DELAY_SECONDS));
     }
 
     @VisibleForTesting

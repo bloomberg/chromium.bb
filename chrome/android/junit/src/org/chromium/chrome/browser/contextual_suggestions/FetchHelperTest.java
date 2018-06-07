@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -28,6 +29,7 @@ import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextual_suggestions.FetchHelper.Delegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -41,7 +43,10 @@ import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /** Unit tests for FetchHelper. */
@@ -118,6 +123,11 @@ public final class FetchHelperTest {
         tabModels.add(mTabModel);
         doReturn(tabModels).when(mTabModelSelector).getModels();
         doReturn(mTab).when(mTabModelSelector).getCurrentTab();
+
+        // Ensure Chrome feature list does not switch to native.
+        Map<String, Boolean> testFeatures = new HashMap<>();
+        testFeatures.put(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET, true);
+        ChromeFeatureList.setTestFeatures(testFeatures);
     }
 
     @Test
@@ -442,6 +452,12 @@ public final class FetchHelperTest {
         getTabObserver().onPageLoadFinished(mTab);
         runUntilFetchPossible();
         verify(mDelegate, times(0)).requestSuggestions(DIFFERENT_URL);
+    }
+
+    @Test
+    public void getMinimumFetchDelayMillis_Default() {
+        assertEquals(FetchHelper.getMinimumFetchDelayMillis(),
+                TimeUnit.SECONDS.toMillis(FetchHelper.MINIMUM_FETCH_DELAY_SECONDS));
     }
 
     private void addTab(Tab tab) {
