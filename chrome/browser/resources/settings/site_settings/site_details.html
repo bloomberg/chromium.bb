@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
@@ -31,24 +32,39 @@
         margin-top: 12px;
       }
 
-      #clearAndReset {
+      div#resetSettingsButton {
         margin-top: 24px;
       }
     </style>
-    <!-- Confirm Delete dialog -->
-    <cr-dialog id="confirmDeleteDialog" close-text="$i18n{close}">
-      <div slot="title">
-        $i18n{siteSettingsSiteResetDialogTitle}
-      </div>
+    <!-- Confirm reset settings dialog. -->
+    <cr-dialog id="confirmResetSettings" close-text="$i18n{close}">
       <div slot="body">
-        $i18n{siteSettingsSiteResetConfirmation}
+        [[i18n('siteSettingsSiteResetConfirmation', pageTitle)]]
       </div>
       <div slot="button-container">
         <paper-button class="cancel-button" on-click="onCloseDialog_">
           $i18n{cancel}
         </paper-button>
-        <paper-button class="action-button" on-click="onClearAndReset_">
+        <paper-button class="action-button" on-click="onResetSettings_">
           $i18n{siteSettingsSiteResetAll}
+        </paper-button>
+      </div>
+    </cr-dialog>
+
+    <!-- Confirm clear storage dialog. -->
+    <cr-dialog id="confirmClearStorage" close-text="$i18n{close}">
+      <div slot="title">
+        $i18n{siteSettingsSiteClearStorageDialogTitle}
+      </div>
+      <div slot="body">
+        [[i18n('siteSettingsSiteClearStorageConfirmation', pageTitle)]]
+      </div>
+      <div slot="button-container">
+        <paper-button class="cancel-button" on-click="onCloseDialog_">
+          $i18n{cancel}
+        </paper-button>
+        <paper-button class="action-button" on-click="onClearStorage_">
+          $i18n{siteSettingsSiteClearStorage}
         </paper-button>
       </div>
     </cr-dialog>
@@ -65,17 +81,23 @@
           </div>
           <div class="list-item" id="storage" hidden$="[[!storedData_]]">
             <div class="start">[[storedData_]]</div>
-            <paper-icon-button-light class="icon-delete-gray">
-              <button on-click="onConfirmClearStorage_"
-                  aria-label="$i18n{siteSettingsDelete}">
-              </button>
+            <paper-button class="secondary-button" role="button"
+                aria-disabled="false" on-click="onConfirmClearStorage_"
+                aria-label="$i18n{siteSettingsDelete}">
+              $i18n{siteSettingsDelete}
+            </paper-button>
             </paper-icon-button-light>
           </div>
         </div>
       </div>
 
       <div class="settings-box first">
-        <h2>$i18n{siteSettingsPermissions}</h2>
+        <h2 class="start">$i18n{siteSettingsPermissions}</h2>
+        <paper-button id="resetSettingsButton"
+            class="secondary-button header-aligned-button" role="button"
+            aria-disabled="false" on-click="onConfirmClearSettings_">
+          $i18n{siteSettingsReset}
+        </paper-button>
       </div>
     </template>
     <div class$="list-frame [[permissionListClass_(enableSiteSettings_)]]">
@@ -169,20 +191,22 @@
       </site-details-permission>
     </div>
 
-    <div id="clearAndReset" class="settings-box"
-        on-click="onConfirmClearSettings_" actionable>
-      <div class="start">
-        $i18n{siteSettingsReset}
+    <template is="dom-if" if="[[!enableSiteSettings_]]">
+      <div id="resetSettingsButton" class="settings-box"
+          on-click="onConfirmClearSettings_" actionable>
+        <div class="start">
+          $i18n{siteSettingsReset}
+        </div>
+        <paper-icon-button-light class="subpage-arrow">
+          <button aria-label="$i18n{siteSettingsReset}"
+                  aria-describedby="resetSettingsButton">
+          </button>
+        </paper-icon-button-light>
       </div>
-      <paper-icon-button-light class="subpage-arrow">
-        <button aria-label="$i18n{siteSettingsReset}"
-            aria-describedby="clearAndReset">
-        </button>
-      </paper-icon-button-light>
-    </div>
+    </template>
     <website-usage-private-api id="usageApi"
         website-data-usage="{{storedData_}}"
-        website-storage-type="{{storageType_}}">
+        website-storage-type="[[storageType_]]}">
     </website-usage-private-api>
   </template>
   <script src="site_details.js"></script>

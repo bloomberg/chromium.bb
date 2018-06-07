@@ -152,6 +152,7 @@ js_library("site_details") {
     "..:route",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:load_time_data",
   ]
   externs_list = [ "$externs_path/settings_private.js" ]
