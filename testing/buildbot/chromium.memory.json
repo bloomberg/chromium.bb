@@ -2807,6 +2807,16 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "filesystem_service_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=1",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "gcm_unit_tests"
       },
       {
@@ -2929,6 +2939,16 @@
           "can_use_on_swarming_builders": true
         },
         "test": "latency_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=1",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "leveldb_service_unittests"
       },
       {
         "args": [
@@ -3150,6 +3170,16 @@
           "can_use_on_swarming_builders": true
         },
         "test": "storage_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=1",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "traffic_annotation_auditor_unittests"
       },
       {
         "args": [
@@ -3528,6 +3558,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "filesystem_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "gcm_unit_tests"
       },
       {
@@ -3625,6 +3661,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "latency_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "leveldb_service_unittests"
       },
       {
         "swarming": {
@@ -3763,6 +3805,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "storage_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "traffic_annotation_auditor_unittests"
       },
       {
         "swarming": {
@@ -5016,6 +5064,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "filesystem_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "gcm_unit_tests"
       },
       {
@@ -5084,6 +5138,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "latency_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "leveldb_service_unittests"
       },
       {
         "swarming": {
@@ -5216,6 +5276,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "storage_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "traffic_annotation_auditor_unittests"
       },
       {
         "swarming": {
@@ -5489,6 +5555,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "filesystem_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "gcm_unit_tests"
       },
       {
@@ -5568,6 +5640,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "latency_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "leveldb_service_unittests"
       },
       {
         "swarming": {
@@ -5695,6 +5773,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "storage_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "traffic_annotation_auditor_unittests"
       },
       {
         "swarming": {
