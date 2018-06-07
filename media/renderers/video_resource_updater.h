@@ -97,6 +97,11 @@ class MEDIA_EXPORT VideoResourceUpdater
   //    remove imported resources from viz::ClientResourceProvider.
   void ObtainFrameResources(scoped_refptr<VideoFrame> video_frame);
   void ReleaseFrameResources();
+  // Appends a quad representing |frame| to |render_pass|.
+  // At most one quad is expected to be appended, this is enforced by the users
+  // of this class (e.g: VideoFrameSubmitter). Producing only one quad will
+  // allow viz to optimize compositing when the only content changing per-frame
+  // is the video.
   void AppendQuads(viz::RenderPass* render_pass,
                    scoped_refptr<VideoFrame> frame,
                    gfx::Transform transform,

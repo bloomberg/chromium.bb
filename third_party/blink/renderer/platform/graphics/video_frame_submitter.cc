@@ -210,8 +210,10 @@ void VideoFrameSubmitter::SubmitFrame(
   compositor_frame.metadata.may_contain_video = true;
 
   std::vector<viz::ResourceId> resources;
-  for (auto* quad : render_pass->quad_list) {
-    for (viz::ResourceId resource_id : quad->resources) {
+  DCHECK_LE(render_pass->quad_list.size(), 1u);
+  if (!render_pass->quad_list.empty()) {
+    for (viz::ResourceId resource_id :
+         render_pass->quad_list.front()->resources) {
       resources.push_back(resource_id);
     }
   }
