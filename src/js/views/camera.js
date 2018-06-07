@@ -224,12 +224,6 @@ camera.views.Camera = function(context, router) {
   // End of properties, seal the object.
   Object.seal(this);
 
-  // TODO(yuli): Disable resizing window and simplify code here.
-  this.video_.addEventListener('loadedmetadata',
-      this.updateVideoSize_.bind(this));
-  this.video_.addEventListener('resize',
-      this.updateVideoSize_.bind(this));
-
   // Handle the 'Take' button.
   document.querySelector('#take-picture').addEventListener(
       'click', this.onTakePictureClicked_.bind(this));
@@ -317,12 +311,6 @@ camera.views.Camera.prototype.initialize = function(callback) {
  */
 camera.views.Camera.prototype.onEnter = function() {
   this.onResize();
-};
-
-/**
- * @override
- */
-camera.views.Camera.prototype.onLeave = function() {
 };
 
 /**
@@ -569,7 +557,9 @@ camera.views.Camera.prototype.enableAudio_ = function(enabled) {
  * @override
  */
 camera.views.Camera.prototype.onResize = function() {
-  this.updateVideoSize_();
+  if (this.capturing) {
+    this.updateVideoSize_();
+  }
 };
 
 /**
@@ -1017,7 +1007,9 @@ camera.views.Camera.prototype.updateVideoDeviceId_ = function(constraints) {
 
       this.stream_ = stream;
       document.body.classList.add('capturing');
-      this.updateWindowSize_();
+      this.context_.onAspectRatio(
+          this.video_.videoWidth / this.video_.videoHeight);
+      this.updateVideoSize_();
       this.updateToolbar_();
       this.updateVideoDeviceId_(constraints);
       this.updateMirroring_();
@@ -1036,66 +1028,10 @@ camera.views.Camera.prototype.updateVideoDeviceId_ = function(constraints) {
 };
 
 /**
- * Sets the window size to match the video frame aspect ratio.
- * @private
- */
-camera.views.Camera.prototype.updateWindowSize_ = function() {
-  var appWindow = chrome.app.window.current();
-  if (appWindow.isMaximized() || appWindow.isFullscreen())
-    return;
-
-  // Minimize window dimension changes to avoid the jarring movement.
-  var outer = appWindow.outerBounds;
-  var inner = appWindow.innerBounds;
-  var aspectRatio = this.video_.videoWidth / this.video_.videoHeight;
-  var scaleW = inner.width / this.video_.videoWidth;
-  var scaleH = inner.height / this.video_.videoHeight;
-  var innerW = this.video_.videoWidth * scaleH;
-  var innerH = this.video_.videoHeight * scaleW;
-  if (Math.abs(innerW - inner.width) <= Math.abs(innerH - inner.height)) {
-    // Keep the original height and use the calculated new width.
-    innerH = inner.height;
-  } else {
-    // Keep the original width and use the calculated new height.
-    innerW = inner.width;
-  }
-
-  // Make the window not larger than the screen available width/height.
-  var diffW = outer.width - inner.width;
-  var diffH = outer.height - inner.height;
-  var maxInnerW = screen.availWidth - diffW;
-  var maxInnerH = screen.availHeight - diffH;
-  if (innerW > maxInnerW || innerH > maxInnerH) {
-    var scale = Math.min(maxInnerH / innerH, maxInnerW / innerW);
-    innerW = scale * innerW;
-    innerH = scale * innerH;
-  }
-
-  // Keep the window centered at its original position and inside the screen.
-  var outerW = Math.round(innerW + diffW);
-  var outerH = Math.round(innerH + diffH);
-  var outerLeft = Math.round(outer.left - (outerW - outer.width) / 2);
-  var outerTop = Math.round(outer.top - (outerH - outer.height) / 2);
-
-  outerLeft = Math.max(screen.availLeft, outerLeft);
-  outerLeft = Math.min(
-      screen.availLeft + screen.availWidth - outerW, outerLeft);
-  outerTop = Math.max(0, outerTop);
-  outerTop = Math.min(
-      screen.availTop + screen.availHeight - outerH, outerTop);
-
-  outer.setSize(outerW, outerH);
-  outer.setPosition(outerLeft, outerTop);
-};
-
-/**
  * Updates the video element's size for previewing in the window.
  * @private
  */
 camera.views.Camera.prototype.updateVideoSize_ = function() {
-  if (!this.video_.videoHeight)
-    return;
-
   // Keep the video frame aspect ratio and fill up the whole window inner width
   // and height.
   // TODO(yuli): Handle letterbox mode when the window is fullscreen/maximized.
