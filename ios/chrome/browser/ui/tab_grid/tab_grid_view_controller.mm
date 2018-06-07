@@ -119,6 +119,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  self.view.backgroundColor = UIColorFromRGB(kGridBackgroundColor);
   [self setupScrollView];
   [self setupIncognitoTabsViewController];
   [self setupRegularTabsViewController];
