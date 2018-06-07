@@ -104,7 +104,8 @@ void AppListControllerDelegateImpl::ActivateApp(
   }
 
   ChromeLauncherController::instance()->ActivateApp(
-      extension->id(), AppListSourceToLaunchSource(source), event_flags);
+      extension->id(), AppListSourceToLaunchSource(source), event_flags,
+      display::kInvalidDisplayId);
 
   if (!IsHomeLauncherEnabledInTabletMode())
     DismissView();

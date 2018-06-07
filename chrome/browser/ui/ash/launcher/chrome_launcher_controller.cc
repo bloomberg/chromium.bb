@@ -90,9 +90,9 @@ namespace {
 
 // Calls ItemSelected with |source|, default arguments, and no callback.
 void SelectItemWithSource(ash::ShelfItemDelegate* delegate,
-                          ash::ShelfLaunchSource source) {
-  delegate->ItemSelected(nullptr, display::kInvalidDisplayId, source,
-                         base::DoNothing());
+                          ash::ShelfLaunchSource source,
+                          int64_t display_id) {
+  delegate->ItemSelected(nullptr, display_id, source, base::DoNothing());
 }
 
 // Returns true if the given |item| has a pinned shelf item type.
@@ -409,12 +409,13 @@ void ChromeLauncherController::LaunchApp(const ash::ShelfID& id,
 
 void ChromeLauncherController::ActivateApp(const std::string& app_id,
                                            ash::ShelfLaunchSource source,
-                                           int event_flags) {
+                                           int event_flags,
+                                           int64_t display_id) {
   // If there is an existing delegate for this app, select it.
   const ash::ShelfID shelf_id(app_id);
   ash::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(shelf_id);
   if (delegate) {
-    SelectItemWithSource(delegate, source);
+    SelectItemWithSource(delegate, source, display_id);
     return;
   }
 
@@ -422,9 +423,9 @@ void ChromeLauncherController::ActivateApp(const std::string& app_id,
   std::unique_ptr<AppShortcutLauncherItemController> item_delegate =
       AppShortcutLauncherItemController::Create(shelf_id);
   if (!item_delegate->GetRunningApplications().empty())
-    SelectItemWithSource(item_delegate.get(), source);
+    SelectItemWithSource(item_delegate.get(), source, display_id);
   else
-    LaunchApp(shelf_id, source, event_flags, display::kInvalidDisplayId);
+    LaunchApp(shelf_id, source, event_flags, display_id);
 }
 
 void ChromeLauncherController::SetLauncherItemImage(
