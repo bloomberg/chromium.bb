@@ -1516,7 +1516,7 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(viz::BeginFrameArgs args) {
 
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
   bool needs_animate = false;
-  if (overscroll_controller_ && !is_in_vr_) {
+  if (overscroll_controller_) {
     needs_animate |=
         overscroll_controller_->Animate(frame_time, view_.parent()->GetLayer());
   }
