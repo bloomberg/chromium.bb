@@ -563,6 +563,16 @@ INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test9Param_hbd,
 
 #endif  // HAVE_SSE2
 
+#if HAVE_NEON
+const loop_param_t kLoop8Test6[] = {
+  make_tuple(&aom_lpf_vertical_14_neon, &aom_lpf_vertical_14_c, 8),
+  make_tuple(&aom_lpf_horizontal_8_neon, &aom_lpf_horizontal_8_c, 8)
+};
+
+INSTANTIATE_TEST_CASE_P(NEON, Loop8Test6Param_lbd,
+                        ::testing::ValuesIn(kLoop8Test6));
+#endif  // HAVE_NEON
+
 #if HAVE_AVX2
 const hbddual_loop_param_t kHbdLoop8Test9Avx2[] = {
   make_tuple(&aom_highbd_lpf_horizontal_4_dual_avx2,

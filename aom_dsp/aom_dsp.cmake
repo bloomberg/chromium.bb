@@ -87,6 +87,7 @@ list(APPEND AOM_DSP_COMMON_INTRIN_AVX2
 
 list(APPEND AOM_DSP_COMMON_INTRIN_NEON
             "${AOM_ROOT}/aom_dsp/arm/fwd_txfm_neon.c"
+            "${AOM_ROOT}/aom_dsp/arm/loopfilter_neon.c"
             "${AOM_ROOT}/aom_dsp/arm/intrapred_neon.c"
             "${AOM_ROOT}/aom_dsp/arm/subtract_neon.c")
 
