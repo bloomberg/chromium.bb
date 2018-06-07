@@ -239,9 +239,9 @@ class VMTest(object):
     if cwd:
       # Run the remote command with cwd.
       cmd = '"cd %s && %s"' % (cwd, ' '.join(self.args))
-      result = self._vm.RemoteCommand(cmd, stream_output=True, shell=True)
+      result = self._vm.RemoteCommand(cmd, stream_log=True, shell=True)
     else:
-      result = self._vm.RemoteCommand(self.args, stream_output=True)
+      result = self._vm.RemoteCommand(self.args, stream_log=True)
 
     # Cleanup.
     if files:
