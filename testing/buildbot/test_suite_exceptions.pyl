@@ -1741,6 +1741,12 @@
       },
     },
   },
+  'nacl_helper_nonsfi_unittests': {
+    'remove_from': [
+      # chromium.memory
+      'Linux TSan Tests',  # Sets enable_nacl=false.
+    ],
+  },
   'nacl_loader_unittests': {
     'remove_from': [
       # chromium.fyi

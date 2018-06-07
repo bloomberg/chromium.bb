@@ -554,6 +554,7 @@
   'chromium_gtests_for_linux_and_chromeos_only': {
     'dbus_unittests': {},
     'mojo_core_unittests': {},
+    'nacl_helper_nonsfi_unittests': {},
   },
 
   'chromium_junit_tests': {
@@ -1800,13 +1801,7 @@
     'aura_unittests': {},
     'chromeos_components_unittests': {},
     'chromeos_unittests': {},
-    'nacl_helper_nonsfi_unittests': {},
     'ui_chromeos_unittests': {},
-  },
-
-  'linux_clang_and_fyi_specific_chromium_gtests': {
-    # TODO(kbr): needs to be merged with linux_chromeos_specific_gtests.
-    'nacl_helper_nonsfi_unittests': {},
   },
 
   'linux_flavor_specific_chromium_gtests': {
@@ -2408,7 +2403,6 @@
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_linux_and_chromeos_only',
-    'linux_clang_and_fyi_specific_chromium_gtests',
     'linux_flavor_specific_chromium_gtests',
     'linux_specific_chromium_gtests',
     'non_android_chromium_gtests',
@@ -2424,7 +2418,6 @@
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_linux_and_chromeos_only',
     'clang_gl_gtests',
-    'linux_clang_and_fyi_specific_chromium_gtests',
     'linux_flavor_specific_chromium_gtests',
     'linux_specific_chromium_gtests',
     'non_android_chromium_gtests',
