@@ -284,19 +284,21 @@ void DocumentLoader::MarkAsCommitted() {
   state_ = kCommitted;
 }
 
-static HistoryCommitType LoadTypeToCommitType(FrameLoadType type) {
+static WebHistoryCommitType LoadTypeToCommitType(FrameLoadType type) {
   switch (type) {
     case kFrameLoadTypeStandard:
-      return kStandardCommit;
+      return kWebStandardCommit;
+    case kFrameLoadTypeBackForward:
+      return kWebBackForwardCommit;
+    case kFrameLoadTypeReload:
+    case kFrameLoadTypeReplaceCurrentItem:
     case kFrameLoadTypeInitialInChildFrame:
     case kFrameLoadTypeInitialHistoryLoad:
-      return kInitialCommitInChildFrame;
-    case kFrameLoadTypeBackForward:
-      return kBackForwardCommit;
-    default:
-      break;
+    case kFrameLoadTypeReloadBypassingCache:
+      return kWebHistoryInertCommit;
   }
-  return kHistoryInertCommit;
+  NOTREACHED();
+  return kWebHistoryInertCommit;
 }
 
 void DocumentLoader::UpdateForSameDocumentNavigation(
@@ -334,9 +336,9 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     history_item_->SetStateObject(std::move(data));
     history_item_->SetScrollRestorationType(scroll_restoration_type);
   }
-  HistoryCommitType commit_type = LoadTypeToCommitType(type);
+  WebHistoryCommitType commit_type = LoadTypeToCommitType(type);
   frame_->GetFrameScheduler()->DidCommitProvisionalLoad(
-      commit_type == kHistoryInertCommit, type == kFrameLoadTypeReload,
+      commit_type == kWebHistoryInertCommit, type == kFrameLoadTypeReload,
       frame_->IsLocalRoot());
   GetLocalFrameClient().DidFinishSameDocumentNavigation(
       history_item_.Get(), commit_type, initiating_document);
@@ -369,9 +371,9 @@ void DocumentLoader::SetHistoryItemStateForCommit(
   // navigation, unless the before and after pages are logically related. This
   // means they have the same url (ignoring fragment) and the new item was
   // loaded via reload or client redirect.
-  HistoryCommitType history_commit_type = LoadTypeToCommitType(load_type);
+  WebHistoryCommitType history_commit_type = LoadTypeToCommitType(load_type);
   if (navigation_type == HistoryNavigationType::kDifferentDocument &&
-      (history_commit_type != kHistoryInertCommit ||
+      (history_commit_type != kWebHistoryInertCommit ||
        !EqualIgnoringFragmentIdentifier(old_item->Url(), history_item_->Url())))
     return;
   history_item_->SetDocumentSequenceNumber(old_item->DocumentSequenceNumber());
@@ -384,7 +386,7 @@ void DocumentLoader::SetHistoryItemStateForCommit(
   // a no-op. Only treat this as identical if the navigation did not create a
   // back/forward entry and the url is identical or it was loaded via
   // history.replaceState().
-  if (history_commit_type == kHistoryInertCommit &&
+  if (history_commit_type == kWebHistoryInertCommit &&
       (navigation_type == HistoryNavigationType::kHistoryApi ||
        old_item->Url() == history_item_->Url())) {
     history_item_->SetStateObject(old_item->StateObject());
@@ -419,7 +421,7 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
     frame_->Owner()->RenderFallbackContent();
   fetcher_->ClearResourcesFromPreviousFetcher();
 
-  HistoryCommitType history_commit_type = LoadTypeToCommitType(load_type_);
+  WebHistoryCommitType history_commit_type = LoadTypeToCommitType(load_type_);
   switch (state_) {
     case kNotStarted:
       probe::frameClearedScheduledClientNavigation(frame_);
@@ -961,9 +963,9 @@ void DocumentLoader::DidCommitNavigation(
         FrameLoaderStateMachine::kCommittedMultipleRealLoads);
   }
 
-  HistoryCommitType commit_type = LoadTypeToCommitType(load_type_);
+  WebHistoryCommitType commit_type = LoadTypeToCommitType(load_type_);
   frame_->GetFrameScheduler()->DidCommitProvisionalLoad(
-      commit_type == kHistoryInertCommit, load_type_ == kFrameLoadTypeReload,
+      commit_type == kWebHistoryInertCommit, load_type_ == kFrameLoadTypeReload,
       frame_->IsLocalRoot());
   // When a new navigation commits in the frame, subresource loading should be
   // resumed.
@@ -1200,10 +1202,5 @@ void DocumentLoader::ResumeParser() {
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader);
-
-STATIC_ASSERT_ENUM(kWebStandardCommit, kStandardCommit);
-STATIC_ASSERT_ENUM(kWebBackForwardCommit, kBackForwardCommit);
-STATIC_ASSERT_ENUM(kWebInitialCommitInChildFrame, kInitialCommitInChildFrame);
-STATIC_ASSERT_ENUM(kWebHistoryInertCommit, kHistoryInertCommit);
 
 }  // namespace blink

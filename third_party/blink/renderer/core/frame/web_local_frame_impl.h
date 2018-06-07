@@ -34,6 +34,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_file_system_type.h"
 #include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
+#include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
@@ -382,7 +383,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   // allows us to navigate by pressing Enter after closing the Find box.
   void SetFindEndstateFocusAndSelection();
 
-  void DidFail(const ResourceError&, bool was_provisional, HistoryCommitType);
+  void DidFail(const ResourceError&,
+               bool was_provisional,
+               WebHistoryCommitType);
   void DidFinish();
 
   // Sets whether the WebLocalFrameImpl allows its document to be scrolled.

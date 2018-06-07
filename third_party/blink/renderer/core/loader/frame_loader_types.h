@@ -70,13 +70,6 @@ enum SameDocumentNavigationSource {
   kSameDocumentNavigationHistoryApi,
 };
 
-enum HistoryCommitType {
-  kStandardCommit,
-  kBackForwardCommit,
-  kInitialCommitInChildFrame,
-  kHistoryInertCommit
-};
-
 enum HistoryScrollRestorationType {
   kScrollRestorationAuto,
   kScrollRestorationManual

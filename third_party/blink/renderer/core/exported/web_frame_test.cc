@@ -9905,7 +9905,7 @@ TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterNewRemoteToLocalSwap) {
   WebLocalFrame* local_frame =
       FrameTestHelpers::CreateProvisional(*remote_frame, &client);
   FrameTestHelpers::LoadFrame(local_frame, base_url_ + "subframe-hello.html");
-  EXPECT_EQ(kWebInitialCommitInChildFrame, client.HistoryCommitType());
+  EXPECT_EQ(kWebHistoryInertCommit, client.HistoryCommitType());
 
   // Manually reset to break WebViewHelper's dependency on the stack allocated
   // TestWebFrameClient.
@@ -10109,15 +10109,14 @@ TEST_F(WebFrameTest, RemoteFrameInitialCommitType) {
                                        WebString::FromUTF8(base_url_)));
 
   // If an iframe has a remote main frame, ensure the inital commit is correctly
-  // identified as WebInitialCommitInChildFrame.
+  // identified as kWebHistoryInertCommit.
   CommitTypeWebFrameClient child_frame_client;
   WebLocalFrame* child_frame = FrameTestHelpers::CreateLocalChild(
       *helper.RemoteMainFrame(), "frameName", WebFrameOwnerProperties(),
       nullptr, &child_frame_client);
   RegisterMockedHttpURLLoad("foo.html");
   FrameTestHelpers::LoadFrame(child_frame, base_url_ + "foo.html");
-  EXPECT_EQ(kWebInitialCommitInChildFrame,
-            child_frame_client.HistoryCommitType());
+  EXPECT_EQ(kWebHistoryInertCommit, child_frame_client.HistoryCommitType());
 
   helper.Reset();
 }

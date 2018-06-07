@@ -257,11 +257,12 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DispatchDidReceiveTitle(const String&) override {}
   void DispatchDidChangeIcons(IconType) override {}
   void DispatchDidCommitLoad(HistoryItem*,
-                             HistoryCommitType,
+                             WebHistoryCommitType,
                              WebGlobalObjectReusePolicy) override {}
   void DispatchDidFailProvisionalLoad(const ResourceError&,
-                                      HistoryCommitType) override {}
-  void DispatchDidFailLoad(const ResourceError&, HistoryCommitType) override {}
+                                      WebHistoryCommitType) override {}
+  void DispatchDidFailLoad(const ResourceError&,
+                           WebHistoryCommitType) override {}
   void DispatchDidFinishDocumentLoad() override {}
   void DispatchDidFinishLoad() override {}
   void DispatchDidChangeThemeColor() override {}

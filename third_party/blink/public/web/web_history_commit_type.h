@@ -15,12 +15,8 @@ enum WebHistoryCommitType {
   // back/forward list or session restore. The back/forward list is
   // not modified, but our position in the list is.
   kWebBackForwardCommit,
-  // Each history entry is represented by a tree, where each node
-  // contains the history state of a single frame in the page. Initial
-  // loads in a new subframe append a new node to that tree.
-  kWebInitialCommitInChildFrame,
-  // Reloads, client redirects, etc. Loads that neither originate from
-  // nor add entries to the back/forward list.
+  // Reloads, client redirects, initial commits in frames, etc. Loads that
+  // neither originate from nor add entries to the back/forward list.
   kWebHistoryInertCommit
 };
 
