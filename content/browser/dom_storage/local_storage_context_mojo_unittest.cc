@@ -63,7 +63,7 @@ void GetStorageUsageCallback(const base::RepeatingClosure& callback,
   callback.Run();
 }
 
-class TestLevelDBObserver : public mojom::LevelDBObserver {
+class TestLevelDBObserver : public blink::mojom::StorageAreaObserver {
  public:
   struct Observation {
     enum { kAdd, kChange, kDelete, kDeleteAll } type;
@@ -75,8 +75,8 @@ class TestLevelDBObserver : public mojom::LevelDBObserver {
 
   TestLevelDBObserver() : binding_(this) {}
 
-  mojom::LevelDBObserverAssociatedPtrInfo Bind() {
-    mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
+  blink::mojom::StorageAreaObserverAssociatedPtrInfo Bind() {
+    blink::mojom::StorageAreaObserverAssociatedPtrInfo ptr_info;
     binding_.Bind(mojo::MakeRequest(&ptr_info));
     return ptr_info;
   }
@@ -110,7 +110,7 @@ class TestLevelDBObserver : public mojom::LevelDBObserver {
   void ShouldSendOldValueOnMutations(bool value) override {}
 
   std::vector<Observation> observations_;
-  mojo::AssociatedBinding<mojom::LevelDBObserver> binding_;
+  mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> binding_;
 };
 
 }  // namespace
@@ -186,8 +186,9 @@ class LocalStorageContextMojoTest : public testing::Test {
   base::Optional<std::vector<uint8_t>> DoTestGet(
       const std::vector<uint8_t>& key) {
     const url::Origin kOrigin = url::Origin::Create(GURL("http://foobar.com"));
-    mojom::LevelDBWrapperPtr wrapper;
-    mojom::LevelDBWrapperPtr dummy_wrapper;  // To make sure values are cached.
+    blink::mojom::StorageAreaPtr wrapper;
+    blink::mojom::StorageAreaPtr
+        dummy_wrapper;  // To make sure values are cached.
     context()->OpenLocalStorage(kOrigin, MakeRequest(&wrapper));
     context()->OpenLocalStorage(kOrigin, MakeRequest(&dummy_wrapper));
     std::vector<uint8_t> result;
@@ -219,7 +220,7 @@ TEST_F(LocalStorageContextMojoTest, Basic) {
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
-  mojom::LevelDBWrapperPtr wrapper;
+  blink::mojom::StorageAreaPtr wrapper;
   context()->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
                               MakeRequest(&wrapper));
   wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
@@ -239,7 +240,7 @@ TEST_F(LocalStorageContextMojoTest, OriginsAreIndependent) {
   auto key2 = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
-  mojom::LevelDBWrapperPtr wrapper;
+  blink::mojom::StorageAreaPtr wrapper;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
   wrapper->Put(key1, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
@@ -257,8 +258,9 @@ TEST_F(LocalStorageContextMojoTest, WrapperOutlivesMojoConnection) {
   auto value = StdStringToUint8Vector("value");
 
   // Write some data to the DB.
-  mojom::LevelDBWrapperPtr wrapper;
-  mojom::LevelDBWrapperPtr dummy_wrapper;  // To make sure values are cached.
+  blink::mojom::StorageAreaPtr wrapper;
+  blink::mojom::StorageAreaPtr
+      dummy_wrapper;  // To make sure values are cached.
   const url::Origin kOrigin(url::Origin::Create(GURL("http://foobar.com")));
   context()->OpenLocalStorage(kOrigin, MakeRequest(&wrapper));
   context()->OpenLocalStorage(kOrigin, MakeRequest(&dummy_wrapper));
@@ -287,7 +289,7 @@ TEST_F(LocalStorageContextMojoTest, OpeningWrappersPurgesInactiveWrappers) {
   auto value = StdStringToUint8Vector("value");
 
   // Write some data to the DB.
-  mojom::LevelDBWrapperPtr wrapper;
+  blink::mojom::StorageAreaPtr wrapper;
   context()->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
                               MakeRequest(&wrapper));
   wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
@@ -346,7 +348,7 @@ TEST_F(LocalStorageContextMojoTest, GetStorageUsage_Data) {
 
   base::Time before_write = base::Time::Now();
 
-  mojom::LevelDBWrapperPtr wrapper;
+  blink::mojom::StorageAreaPtr wrapper;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
   wrapper->Put(key1, value, base::nullopt, "source", base::DoNothing());
   wrapper->Put(key2, value, base::nullopt, "source", base::DoNothing());
@@ -393,7 +395,7 @@ TEST_F(LocalStorageContextMojoTest, MetaDataClearedOnDelete) {
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
-  mojom::LevelDBWrapperPtr wrapper;
+  blink::mojom::StorageAreaPtr wrapper;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
   wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
@@ -426,7 +428,7 @@ TEST_F(LocalStorageContextMojoTest, MetaDataClearedOnDeleteAll) {
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
-  mojom::LevelDBWrapperPtr wrapper;
+  blink::mojom::StorageAreaPtr wrapper;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
   wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
@@ -471,7 +473,7 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageWithoutConnection) {
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
-  mojom::LevelDBWrapperPtr wrapper;
+  blink::mojom::StorageAreaPtr wrapper;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
   wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
@@ -506,7 +508,7 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageNotifiesWrapper) {
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
-  mojom::LevelDBWrapperPtr wrapper;
+  blink::mojom::StorageAreaPtr wrapper;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
   wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
@@ -550,7 +552,7 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageWithPendingWrites) {
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
-  mojom::LevelDBWrapperPtr wrapper;
+  blink::mojom::StorageAreaPtr wrapper;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
   wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
@@ -613,9 +615,10 @@ TEST_F(LocalStorageContextMojoTest, Migration) {
   EXPECT_TRUE(base::PathExists(old_db_path));
 
   // Opening origin2 and accessing its data should not migrate anything.
-  mojom::LevelDBWrapperPtr wrapper;
+  blink::mojom::StorageAreaPtr wrapper;
   context()->OpenLocalStorage(origin2, MakeRequest(&wrapper));
-  mojom::LevelDBWrapperPtr dummy_wrapper;  // To make sure values are cached.
+  blink::mojom::StorageAreaPtr
+      dummy_wrapper;  // To make sure values are cached.
   context()->OpenLocalStorage(origin2, MakeRequest(&dummy_wrapper));
   wrapper->Get(std::vector<uint8_t>(), base::DoNothing());
   wrapper.reset();
@@ -677,8 +680,9 @@ TEST_F(LocalStorageContextMojoTest, FixUp) {
       EncodeKeyAsUTF16("http://foobar.com", base::ASCIIToUTF16("foo")),
       "value3");
 
-  mojom::LevelDBWrapperPtr wrapper;
-  mojom::LevelDBWrapperPtr dummy_wrapper;  // To make sure values are cached.
+  blink::mojom::StorageAreaPtr wrapper;
+  blink::mojom::StorageAreaPtr
+      dummy_wrapper;  // To make sure values are cached.
   context()->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
                               MakeRequest(&wrapper));
   context()->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
@@ -717,7 +721,7 @@ TEST_F(LocalStorageContextMojoTest, ShutdownClearsData) {
   auto key2 = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
-  mojom::LevelDBWrapperPtr wrapper;
+  blink::mojom::StorageAreaPtr wrapper;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
   wrapper->Put(key1, value, base::nullopt, "source", base::DoNothing());
   wrapper->Put(key2, value, base::nullopt, "source", base::DoNothing());
@@ -756,7 +760,7 @@ class LocalStorageContextMojoTestWithService
   void DoTestPut(LocalStorageContextMojo* context,
                  const std::vector<uint8_t>& key,
                  const std::vector<uint8_t>& value) {
-    mojom::LevelDBWrapperPtr wrapper;
+    blink::mojom::StorageAreaPtr wrapper;
     bool success = false;
     base::RunLoop run_loop;
     context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
@@ -772,20 +776,20 @@ class LocalStorageContextMojoTestWithService
   bool DoTestGet(LocalStorageContextMojo* context,
                  const std::vector<uint8_t>& key,
                  std::vector<uint8_t>* result) {
-    mojom::LevelDBWrapperPtr wrapper;
+    blink::mojom::StorageAreaPtr wrapper;
     context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
                               MakeRequest(&wrapper));
 
     base::RunLoop run_loop;
-    std::vector<content::mojom::KeyValuePtr> data;
-    leveldb::mojom::DatabaseError status;
+    std::vector<blink::mojom::KeyValuePtr> data;
+    bool success = false;
     bool done = false;
     wrapper->GetAll(
         test::GetAllCallback::CreateAndBind(&done, run_loop.QuitClosure()),
-        test::MakeGetAllCallback(&status, &data));
+        test::MakeGetAllCallback(&success, &data));
     run_loop.Run();
     EXPECT_TRUE(done);
-    EXPECT_EQ(status, leveldb::mojom::DatabaseError::OK);
+    EXPECT_TRUE(success);
 
     for (auto& entry : data) {
       if (key == entry->key) {
@@ -815,7 +819,7 @@ TEST_F(LocalStorageContextMojoTestWithService, InMemory) {
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
-  mojom::LevelDBWrapperPtr wrapper;
+  blink::mojom::StorageAreaPtr wrapper;
   context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
                             MakeRequest(&wrapper));
   DoTestPut(context, key, value);
@@ -845,7 +849,7 @@ TEST_F(LocalStorageContextMojoTestWithService, InMemoryInvalidPath) {
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
-  mojom::LevelDBWrapperPtr wrapper;
+  blink::mojom::StorageAreaPtr wrapper;
   context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
                             MakeRequest(&wrapper));
 
@@ -1019,9 +1023,9 @@ TEST_F(LocalStorageContextMojoTestWithService, RecreateOnCommitFailure) {
 
   // Open three connections to the database. Two to the same origin, and a third
   // to a different origin.
-  mojom::LevelDBWrapperPtr wrapper1;
-  mojom::LevelDBWrapperPtr wrapper2;
-  mojom::LevelDBWrapperPtr wrapper3;
+  blink::mojom::StorageAreaPtr wrapper1;
+  blink::mojom::StorageAreaPtr wrapper2;
+  blink::mojom::StorageAreaPtr wrapper3;
   {
     base::RunLoop loop;
     mock_leveldb_service.SetOnOpenCallback(loop.QuitClosure());
@@ -1168,7 +1172,7 @@ TEST_F(LocalStorageContextMojoTestWithService,
   auto value = StdStringToUint8Vector("value");
 
   // Open a connection to the database.
-  mojom::LevelDBWrapperPtr wrapper;
+  blink::mojom::StorageAreaPtr wrapper;
   {
     base::RunLoop loop;
     mock_leveldb_service.SetOnOpenCallback(loop.QuitClosure());

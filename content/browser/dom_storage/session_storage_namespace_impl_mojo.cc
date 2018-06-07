@@ -133,7 +133,7 @@ void SessionStorageNamespaceImplMojo::RemoveOriginData(
 
 void SessionStorageNamespaceImplMojo::OpenArea(
     const url::Origin& origin,
-    mojom::LevelDBWrapperAssociatedRequest database) {
+    blink::mojom::StorageAreaAssociatedRequest database) {
   DCHECK(IsPopulated());
   DCHECK(!bindings_.empty());
   DCHECK_NE(process_id_, ChildProcessHost::kInvalidUniqueID);

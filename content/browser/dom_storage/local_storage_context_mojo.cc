@@ -346,7 +346,7 @@ class LocalStorageContextMojo::LevelDBWrapperHolder final
                                 leveldb_env::LEVELDB_STATUS_MAX);
   }
 
-  void Bind(mojom::LevelDBWrapperRequest request) {
+  void Bind(blink::mojom::StorageAreaRequest request) {
     has_bindings_ = true;
     level_db_wrapper()->Bind(std::move(request));
   }
@@ -396,7 +396,7 @@ LocalStorageContextMojo::LocalStorageContextMojo(
 
 void LocalStorageContextMojo::OpenLocalStorage(
     const url::Origin& origin,
-    mojom::LevelDBWrapperRequest request) {
+    blink::mojom::StorageAreaRequest request) {
   RunWhenConnected(base::BindOnce(&LocalStorageContextMojo::BindLocalStorage,
                                   weak_ptr_factory_.GetWeakPtr(), origin,
                                   std::move(request)));
@@ -875,7 +875,7 @@ void LocalStorageContextMojo::OnDBDestroyed(
 // directly from that function, or through |on_database_open_callbacks_|.
 void LocalStorageContextMojo::BindLocalStorage(
     const url::Origin& origin,
-    mojom::LevelDBWrapperRequest request) {
+    blink::mojom::StorageAreaRequest request) {
   GetOrCreateDBWrapper(origin)->Bind(std::move(request));
 }
 

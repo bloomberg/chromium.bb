@@ -4,14 +4,14 @@
 
 module content.mojom;
 
-import "content/common/leveldb_wrapper.mojom";
+import "third_party/blink/public/mojom/dom_storage/storage_area.mojom";
 import "url/mojom/origin.mojom";
 
 // Represents a namespace for Session Storage and allows data access and
 // cloning. This is implemented by the browser process.
 interface SessionStorageNamespace {
   OpenArea(url.mojom.Origin origin,
-           associated LevelDBWrapper& database);
+           associated blink.mojom.StorageArea& area);
   // Clones this namespace the new given namespace. Used before navigating to
   // a new frame which would be given this session storage namespace.
   Clone(string clone_to_namespace);
@@ -21,7 +21,7 @@ interface SessionStorageNamespace {
 // implemented by the browser process.
 interface StoragePartitionService {
   OpenLocalStorage(url.mojom.Origin origin,
-                   LevelDBWrapper& database);
+                   blink.mojom.StorageArea& area);
   OpenSessionStorage(string namespace_id,
                      SessionStorageNamespace& session_namespace);
 };

@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/common/leveldb_wrapper.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
 #include "content/renderer/dom_storage/mock_leveldb_wrapper.h"
@@ -190,7 +189,7 @@ TEST_F(LocalStorageCachedAreaTest, Setters) {
 TEST_F(LocalStorageCachedAreaTest, MutationsAreIgnoredUntilLoadCompletion) {
   scoped_refptr<LocalStorageCachedArea> cached_area =
       cached_areas_.GetCachedArea(kOrigin);
-  mojom::LevelDBObserver* observer = cached_area.get();
+  blink::mojom::StorageAreaObserver* observer = cached_area.get();
 
   EXPECT_TRUE(cached_area->GetItem(kKey).is_null());
   EXPECT_TRUE(IsCacheLoaded(cached_area.get()));
@@ -243,7 +242,7 @@ TEST_F(LocalStorageCachedAreaTest, MutationsAreIgnoredUntilClearCompletion) {
 TEST_F(LocalStorageCachedAreaTest, KeyMutationsAreIgnoredUntilCompletion) {
   scoped_refptr<LocalStorageCachedArea> cached_area =
       cached_areas_.GetCachedArea(kOrigin);
-  mojom::LevelDBObserver* observer = cached_area.get();
+  blink::mojom::StorageAreaObserver* observer = cached_area.get();
 
   // SetItem
   EXPECT_TRUE(cached_area->SetItem(kKey, kValue, kPageUrl, kStorageAreaId));

@@ -29,7 +29,7 @@ SessionStorageLevelDBWrapper::~SessionStorageLevelDBWrapper() {
 }
 
 void SessionStorageLevelDBWrapper::Bind(
-    mojom::LevelDBWrapperAssociatedRequest request) {
+    blink::mojom::StorageAreaAssociatedRequest request) {
   DCHECK(!IsBound());
   shared_data_map_->AddBindingReference();
   binding_.Bind(std::move(request));
@@ -46,10 +46,10 @@ SessionStorageLevelDBWrapper::Clone(
       namespace_entry, origin_, shared_data_map_, register_new_map_callback_));
 }
 
-// LevelDBWrapper:
+// blink::mojom::StorageArea:
 void SessionStorageLevelDBWrapper::AddObserver(
-    mojom::LevelDBObserverAssociatedPtrInfo observer) {
-  mojom::LevelDBObserverAssociatedPtr observer_ptr;
+    blink::mojom::StorageAreaObserverAssociatedPtrInfo observer) {
+  blink::mojom::StorageAreaObserverAssociatedPtr observer_ptr;
   observer_ptr.Bind(std::move(observer));
   mojo::InterfacePtrSetElementId ptr_id =
       shared_data_map_->level_db_wrapper()->AddObserver(
@@ -104,7 +104,7 @@ void SessionStorageLevelDBWrapper::Get(const std::vector<uint8_t>& key,
 }
 
 void SessionStorageLevelDBWrapper::GetAll(
-    mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo complete_callback,
+    blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo complete_callback,
     GetAllCallback callback) {
   DCHECK(IsBound());
   DCHECK_NE(0, shared_data_map_->map_data()->ReferenceCount());
@@ -125,7 +125,7 @@ void SessionStorageLevelDBWrapper::OnConnectionError() {
 void SessionStorageLevelDBWrapper::CreateNewMap(
     NewMapType map_type,
     const base::Optional<std::string>& delete_all_source) {
-  std::vector<mojom::LevelDBObserverAssociatedPtr> ptrs_to_move;
+  std::vector<blink::mojom::StorageAreaObserverAssociatedPtr> ptrs_to_move;
   for (const mojo::InterfacePtrSetElementId& ptr_id : observer_ptrs_) {
     DCHECK(shared_data_map_->level_db_wrapper()->HasObserver(ptr_id));
     ptrs_to_move.push_back(

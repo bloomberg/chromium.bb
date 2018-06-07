@@ -14,7 +14,6 @@
 #include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/browser/leveldb_wrapper_impl.h"
 #include "content/common/content_export.h"
-#include "content/common/leveldb_wrapper.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace content {

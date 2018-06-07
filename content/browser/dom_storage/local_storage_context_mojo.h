@@ -16,10 +16,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "content/common/content_export.h"
-#include "content/common/leveldb_wrapper.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/file/public/mojom/file_system.mojom.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 #include "url/origin.h"
 
 namespace service_manager {
@@ -56,7 +57,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
 
   void OpenLocalStorage(const url::Origin& origin,
-                        mojom::LevelDBWrapperRequest request);
+                        blink::mojom::StorageAreaRequest request);
   void GetStorageUsage(GetStorageUsageCallback callback);
   // |callback| is called when the deletion is sent to the database and
   // GetStorageUsage() will not return entries for |origin| anymore.
@@ -119,7 +120,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
   // The (possibly delayed) implementation of OpenLocalStorage(). Can be called
   // directly from that function, or through |on_database_open_callbacks_|.
   void BindLocalStorage(const url::Origin& origin,
-                        mojom::LevelDBWrapperRequest request);
+                        blink::mojom::StorageAreaRequest request);
   LevelDBWrapperHolder* GetOrCreateDBWrapper(const url::Origin& origin);
 
   // The (possibly delayed) implementation of GetStorageUsage(). Can be called

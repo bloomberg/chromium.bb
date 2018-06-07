@@ -18,7 +18,7 @@ class MockLevelDBWrapper::MockSessionStorageNamespace
       : namespace_id_(std::move(namespace_id)), wrapper_(wrapper) {}
 
   void OpenArea(const url::Origin& origin,
-                mojom::LevelDBWrapperAssociatedRequest database) override {
+                blink::mojom::StorageAreaAssociatedRequest database) override {
     bindings_.AddBinding(wrapper_, std::move(database));
   }
 
@@ -31,7 +31,7 @@ class MockLevelDBWrapper::MockSessionStorageNamespace
  private:
   std::string namespace_id_;
   MockLevelDBWrapper* wrapper_;
-  mojo::AssociatedBindingSet<mojom::LevelDBWrapper> bindings_;
+  mojo::AssociatedBindingSet<blink::mojom::StorageArea> bindings_;
 };
 
 MockLevelDBWrapper::MockLevelDBWrapper() {}
@@ -39,7 +39,7 @@ MockLevelDBWrapper::~MockLevelDBWrapper() {}
 
 void MockLevelDBWrapper::OpenLocalStorage(
     const url::Origin& origin,
-    mojom::LevelDBWrapperRequest database) {
+    blink::mojom::StorageAreaRequest database) {
   bindings_.AddBinding(this, std::move(database));
 }
 
@@ -52,7 +52,7 @@ void MockLevelDBWrapper::OpenSessionStorage(
 }
 
 void MockLevelDBWrapper::AddObserver(
-    mojom::LevelDBObserverAssociatedPtrInfo observer) {}
+    blink::mojom::StorageAreaObserverAssociatedPtrInfo observer) {}
 
 void MockLevelDBWrapper::Put(
     const std::vector<uint8_t>& key,
@@ -89,22 +89,23 @@ void MockLevelDBWrapper::Get(const std::vector<uint8_t>& key,
                              GetCallback callback) {}
 
 void MockLevelDBWrapper::GetAll(
-    mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo complete_callback,
+    blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo complete_callback,
     GetAllCallback callback) {
-  mojom::LevelDBWrapperGetAllCallbackAssociatedPtr complete_ptr;
+  blink::mojom::StorageAreaGetAllCallbackAssociatedPtr complete_ptr;
   complete_ptr.Bind(std::move(complete_callback));
-  pending_callbacks_.push_back(base::BindOnce(
-      &mojom::LevelDBWrapperGetAllCallback::Complete, std::move(complete_ptr)));
+  pending_callbacks_.push_back(
+      base::BindOnce(&blink::mojom::StorageAreaGetAllCallback::Complete,
+                     std::move(complete_ptr)));
 
   observed_get_all_ = true;
-  std::vector<mojom::KeyValuePtr> all;
+  std::vector<blink::mojom::KeyValuePtr> all;
   for (const auto& it : get_all_return_values_) {
-    mojom::KeyValuePtr kv = mojom::KeyValue::New();
+    auto kv = blink::mojom::KeyValue::New();
     kv->key = it.first;
     kv->value = it.second;
     all.push_back(std::move(kv));
   }
-  std::move(callback).Run(leveldb::mojom::DatabaseError::OK, std::move(all));
+  std::move(callback).Run(true, std::move(all));
 }
 
 }  // namespace content

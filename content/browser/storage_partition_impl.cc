@@ -846,7 +846,7 @@ CookieStoreContext* StoragePartitionImpl::GetCookieStoreContext() {
 
 void StoragePartitionImpl::OpenLocalStorage(
     const url::Origin& origin,
-    mojom::LevelDBWrapperRequest request) {
+    blink::mojom::StorageAreaRequest request) {
   int process_id = bindings_.dispatch_context();
   if (!ChildProcessSecurityPolicy::GetInstance()->CanAccessDataForOrigin(
           process_id, origin.GetURL())) {

@@ -12,7 +12,6 @@
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_leveldb_wrapper.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
-#include "content/common/leveldb_wrapper.mojom.h"
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -23,7 +22,7 @@
 namespace content {
 
 // Implements the mojo interface SessionStorageNamespace. Stores data maps per
-// origin, which are accessible using the LevelDBWrapper interface with the
+// origin, which are accessible using the StorageArea interface with the
 // |OpenArea| call. Supports cloning (shallow cloning with copy-on-write
 // behavior) from another SessionStorageNamespaceImplMojo.
 //
@@ -126,7 +125,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // origin. Before connection, it checks to make sure the |process_id| given to
   // the |Bind| method can access the given origin.
   void OpenArea(const url::Origin& origin,
-                mojom::LevelDBWrapperAssociatedRequest database) override;
+                blink::mojom::StorageAreaAssociatedRequest database) override;
 
   // Simply calls the |add_namespace_callback_| callback with this namespace's
   // data.

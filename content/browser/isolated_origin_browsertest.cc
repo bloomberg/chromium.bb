@@ -1038,7 +1038,7 @@ class StoragePartitonInterceptor
   // renderer process sending incorrect data to the browser process, so
   // security checks can be tested.
   void OpenLocalStorage(const url::Origin& origin,
-                        mojom::LevelDBWrapperRequest request) override {
+                        blink::mojom::StorageAreaRequest request) override {
     url::Origin mismatched_origin =
         url::Origin::Create(GURL("http://abc.foo.com"));
     GetForwardingInterface()->OpenLocalStorage(mismatched_origin,

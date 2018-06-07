@@ -12,9 +12,9 @@
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
 #include "content/common/dom_storage/dom_storage_map.h"
-#include "content/common/leveldb_wrapper.mojom.h"
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -44,7 +44,7 @@ class SessionStorageNamespace;
 // objects.
 // TODO(dmurph): Rename to remove LocalStorage.
 class CONTENT_EXPORT LocalStorageCachedArea
-    : public mojom::LevelDBObserver,
+    : public blink::mojom::StorageAreaObserver,
       public base::RefCounted<LocalStorageCachedArea> {
  public:
   LocalStorageCachedArea(
@@ -146,8 +146,8 @@ class CONTENT_EXPORT LocalStorageCachedArea
   bool ignore_all_mutations_ = false;
   // See ShouldSendOldValueOnMutations().
   bool should_send_old_value_on_mutations_ = true;
-  content::PossiblyAssociatedInterfacePtr<mojom::LevelDBWrapper> leveldb_;
-  mojo::AssociatedBinding<mojom::LevelDBObserver> binding_;
+  content::PossiblyAssociatedInterfacePtr<blink::mojom::StorageArea> leveldb_;
+  mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> binding_;
   LocalStorageCachedAreas* cached_areas_;
   std::map<std::string, LocalStorageArea*> areas_;
 

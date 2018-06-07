@@ -157,7 +157,7 @@ LevelDBWrapperImpl::Options GetDefaultTestingOptions(CacheMode cache_mode) {
 }  // namespace
 
 class LevelDBWrapperImplTest : public testing::Test,
-                               public mojom::LevelDBObserver {
+                               public blink::mojom::StorageAreaObserver {
  public:
   struct Observation {
     enum { kAdd, kChange, kDelete, kDeleteAll, kSendOldValue } type;
@@ -182,7 +182,7 @@ class LevelDBWrapperImplTest : public testing::Test,
     set_mock_data("123", "baddata");
 
     level_db_wrapper_->Bind(mojo::MakeRequest(&level_db_wrapper_ptr_));
-    mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
+    blink::mojom::StorageAreaObserverAssociatedPtrInfo ptr_info;
     observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
     level_db_wrapper_ptr_->AddObserver(std::move(ptr_info));
   }
@@ -208,12 +208,12 @@ class LevelDBWrapperImplTest : public testing::Test,
 
   void clear_mock_data() { mock_data_.clear(); }
 
-  mojom::LevelDBWrapper* wrapper() { return level_db_wrapper_ptr_.get(); }
+  blink::mojom::StorageArea* wrapper() { return level_db_wrapper_ptr_.get(); }
   LevelDBWrapperImpl* wrapper_impl() { return level_db_wrapper_.get(); }
 
   void FlushWrapperBinding() { level_db_wrapper_ptr_.FlushForTesting(); }
 
-  bool GetSync(mojom::LevelDBWrapper* wrapper,
+  bool GetSync(blink::mojom::StorageArea* wrapper,
                const std::vector<uint8_t>& key,
                std::vector<uint8_t>* result) {
     bool success = false;
@@ -224,13 +224,13 @@ class LevelDBWrapperImplTest : public testing::Test,
   }
 
   bool DeleteSync(
-      mojom::LevelDBWrapper* wrapper,
+      blink::mojom::StorageArea* wrapper,
       const std::vector<uint8_t>& key,
       const base::Optional<std::vector<uint8_t>>& client_old_value) {
     return test::DeleteSync(wrapper, key, client_old_value, test_source_);
   }
 
-  bool DeleteAllSync(mojom::LevelDBWrapper* wrapper) {
+  bool DeleteAllSync(blink::mojom::StorageArea* wrapper) {
     return test::DeleteAllSync(wrapper, test_source_);
   }
 
@@ -255,11 +255,10 @@ class LevelDBWrapperImplTest : public testing::Test,
 
   std::string GetSyncStrUsingGetAll(LevelDBWrapperImpl* wrapper_impl,
                                     const std::string& key) {
-    std::vector<mojom::KeyValuePtr> data;
-    leveldb::mojom::DatabaseError status =
-        test::GetAllSyncOnDedicatedPipe(wrapper_impl, &data);
+    std::vector<blink::mojom::KeyValuePtr> data;
+    bool success = test::GetAllSyncOnDedicatedPipe(wrapper_impl, &data);
 
-    if (status != leveldb::mojom::DatabaseError::OK)
+    if (!success)
       return "";
 
     for (const auto& key_value : data) {
@@ -345,8 +344,8 @@ class LevelDBWrapperImplTest : public testing::Test,
   leveldb::mojom::LevelDBDatabasePtr level_db_database_ptr_;
   MockDelegate delegate_;
   std::unique_ptr<LevelDBWrapperImpl> level_db_wrapper_;
-  mojom::LevelDBWrapperPtr level_db_wrapper_ptr_;
-  mojo::AssociatedBinding<mojom::LevelDBObserver> observer_binding_;
+  blink::mojom::StorageAreaPtr level_db_wrapper_ptr_;
+  mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> observer_binding_;
   std::vector<Observation> observations_;
   bool should_record_send_old_value_observations_ = false;
 };
@@ -436,10 +435,8 @@ TEST_F(LevelDBWrapperImplTest, PutLoadsValuesAfterCacheModeUpgrade) {
 TEST_P(LevelDBWrapperImplParamTest, GetAll) {
   wrapper_impl()->SetCacheModeForTesting(GetParam());
 
-  std::vector<mojom::KeyValuePtr> data;
-  leveldb::mojom::DatabaseError status = test::GetAllSync(wrapper(), &data);
-
-  EXPECT_EQ(leveldb::mojom::DatabaseError::OK, status);
+  std::vector<blink::mojom::KeyValuePtr> data;
+  EXPECT_TRUE(test::GetAllSync(wrapper(), &data));
   EXPECT_EQ(2u, data.size());
 }
 
@@ -740,10 +737,9 @@ TEST_P(LevelDBWrapperImplParamTest, FixUpData) {
   changes.push_back(std::make_pair(test_prefix_bytes_, ToBytes("bla")));
   delegate()->set_mock_changes(std::move(changes));
 
-  std::vector<mojom::KeyValuePtr> data;
-  leveldb::mojom::DatabaseError status = test::GetAllSync(wrapper(), &data);
+  std::vector<blink::mojom::KeyValuePtr> data;
+  EXPECT_TRUE(test::GetAllSync(wrapper(), &data));
 
-  EXPECT_EQ(leveldb::mojom::DatabaseError::OK, status);
   ASSERT_EQ(2u, data.size());
   EXPECT_EQ(test_prefix_, ToString(data[0]->key));
   EXPECT_EQ("bla", ToString(data[0]->value));
@@ -762,7 +758,7 @@ TEST_F(LevelDBWrapperImplTest, SetOnlyKeysWithoutDatabase) {
   LevelDBWrapperImpl level_db_wrapper(
       nullptr, test_prefix_, &delegate,
       GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE));
-  mojom::LevelDBWrapperPtr level_db_wrapper_ptr;
+  blink::mojom::StorageAreaPtr level_db_wrapper_ptr;
   level_db_wrapper.Bind(mojo::MakeRequest(&level_db_wrapper_ptr));
   // Setting only keys mode is noop.
   level_db_wrapper.SetCacheModeForTesting(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
@@ -874,8 +870,8 @@ TEST_F(LevelDBWrapperImplTest, GetAllWhenCacheOnlyKeys) {
   ASSERT_TRUE(PutSync(key, value2, value));
   EXPECT_TRUE(wrapper_impl()->has_changes_to_commit());
 
-  leveldb::mojom::DatabaseError status;
-  std::vector<mojom::KeyValuePtr> data;
+  bool get_all_success = false;
+  std::vector<blink::mojom::KeyValuePtr> data;
   bool result = false;
 
   base::RunLoop loop;
@@ -889,7 +885,7 @@ TEST_F(LevelDBWrapperImplTest, GetAllWhenCacheOnlyKeys) {
                    MakeSuccessCallback(barrier.Get(), &put_result1));
 
     wrapper()->GetAll(GetAllCallback::CreateAndBind(&result, barrier.Get()),
-                      MakeGetAllCallback(&status, &data));
+                      MakeGetAllCallback(&get_all_success, &data));
     wrapper()->Put(key, value2, value, test_source_,
                    MakeSuccessCallback(barrier.Get(), &put_result2));
     FlushWrapperBinding();
@@ -907,13 +903,13 @@ TEST_F(LevelDBWrapperImplTest, GetAllWhenCacheOnlyKeys) {
   EXPECT_TRUE(put_result1);
 
   EXPECT_EQ(2u, data.size());
-  EXPECT_TRUE(
-      data[1]->Equals(mojom::KeyValue(test_key1_bytes_, test_value1_bytes_)))
+  EXPECT_TRUE(data[1]->Equals(
+      blink::mojom::KeyValue(test_key1_bytes_, test_value1_bytes_)))
       << ToString(data[1]->value) << " vs expected " << test_value1_;
-  EXPECT_TRUE(data[0]->Equals(mojom::KeyValue(key, value)))
+  EXPECT_TRUE(data[0]->Equals(blink::mojom::KeyValue(key, value)))
       << ToString(data[0]->value) << " vs expected " << ToString(value);
 
-  EXPECT_EQ(leveldb::mojom::DatabaseError::OK, status);
+  EXPECT_TRUE(get_all_success);
 
   // The last "put" isn't committed yet.
   EXPECT_EQ("foo", get_mock_data(test_prefix_ + test_key2_));
@@ -946,9 +942,9 @@ TEST_F(LevelDBWrapperImplTest, GetAllAfterSetCacheMode) {
   base::RunLoop loop;
 
   bool put_success = false;
-  leveldb::mojom::DatabaseError status;
-  std::vector<mojom::KeyValuePtr> data;
+  std::vector<blink::mojom::KeyValuePtr> data;
   bool get_all_success = false;
+  bool get_all_callback_success = false;
   bool delete_success = false;
   {
     IncrementalBarrier barrier(loop.QuitClosure());
@@ -964,7 +960,7 @@ TEST_F(LevelDBWrapperImplTest, GetAllAfterSetCacheMode) {
 
     wrapper()->GetAll(
         GetAllCallback::CreateAndBind(&get_all_success, barrier.Get()),
-        MakeGetAllCallback(&status, &data));
+        MakeGetAllCallback(&get_all_callback_success, &data));
 
     // This Delete() should not affect the value returned by GetAll().
     wrapper()->Delete(key, value, test_source_,
@@ -973,14 +969,13 @@ TEST_F(LevelDBWrapperImplTest, GetAllAfterSetCacheMode) {
   loop.Run();
 
   EXPECT_EQ(2u, data.size());
-  EXPECT_TRUE(
-      data[1]->Equals(mojom::KeyValue(test_key1_bytes_, test_value1_bytes_)))
+  EXPECT_TRUE(data[1]->Equals(
+      blink::mojom::KeyValue(test_key1_bytes_, test_value1_bytes_)))
       << ToString(data[1]->value) << " vs expected " << test_value1_;
-  EXPECT_TRUE(data[0]->Equals(mojom::KeyValue(key, value)))
+  EXPECT_TRUE(data[0]->Equals(blink::mojom::KeyValue(key, value)))
       << ToString(data[0]->value) << " vs expected " << ToString(value2);
 
-  EXPECT_EQ(leveldb::mojom::DatabaseError::OK, status);
-
+  EXPECT_TRUE(get_all_callback_success);
   EXPECT_TRUE(put_success);
   EXPECT_TRUE(get_all_success);
   EXPECT_TRUE(delete_success);
