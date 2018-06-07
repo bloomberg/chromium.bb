@@ -49,4 +49,12 @@ void NGLineHeightMetrics::Unite(const NGLineHeightMetrics& other) {
   descent = std::max(descent, other.descent);
 }
 
+void NGLineHeightMetrics::operator+=(const NGLineHeightMetrics& other) {
+  DCHECK(ascent != LayoutUnit::Min() && descent != LayoutUnit::Min());
+  DCHECK(other.ascent != LayoutUnit::Min() &&
+         other.descent != LayoutUnit::Min());
+  ascent += other.ascent;
+  descent += other.descent;
+}
+
 }  // namespace blink
