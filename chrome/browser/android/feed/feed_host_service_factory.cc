@@ -70,10 +70,11 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
       identity_manager, api_key,
       storage_partition->GetURLLoaderFactoryForBrowserProcess());
 
+  scoped_refptr<net::URLRequestContextGetter> request_context =
+      profile->GetRequestContext();
+
   auto image_fetcher = std::make_unique<image_fetcher::ImageFetcherImpl>(
-      std::make_unique<suggestions::ImageDecoderImpl>(),
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess());
+      std::make_unique<suggestions::ImageDecoderImpl>(), request_context.get());
 
   base::FilePath feed_dir(profile->GetPath().Append(kFeedFolder));
   auto image_database = std::make_unique<FeedImageDatabase>(feed_dir);

@@ -17,26 +17,33 @@
 #include "components/image_fetcher/core/image_fetcher_types.h"
 #include "components/image_fetcher/core/request_metadata.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
-namespace network {
-class SharedURLLoaderFactory;
-class SimpleURLLoader;
-}  // namespace network
+namespace net {
+class URLFetcher;
+class URLRequestContextGetter;
+}  // namespace net
 
 namespace image_fetcher {
 
-class ImageDataFetcher {
+class ImageDataFetcher : public net::URLFetcherDelegate {
  public:
+  // Fetchers created by this class will be assigned an incremental id starting
+  // from |kFirstUrlFetcherId|, so unit tests can differentiate the URLFetchers
+  // used by this class from other fetchers.
+  const static int kFirstUrlFetcherId;
+
   explicit ImageDataFetcher(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
-  ~ImageDataFetcher();
+      net::URLRequestContextGetter* url_request_context_getter);
+  ~ImageDataFetcher() override;
 
   // Sets a service name against which to track data usage.
   void SetDataUseServiceName(DataUseServiceName data_use_service_name);
 
   // Sets an upper limit for image downloads.
-  // Already running downloads are not affected.
+  // Already running downloads are affected.
   void SetImageDownloadLimit(base::Optional<int64_t> max_download_bytes);
 
   // Fetches the raw image bytes from the given |image_url| and calls the given
@@ -55,30 +62,34 @@ class ImageDataFetcher {
       net::URLRequest::ReferrerPolicy referrer_policy,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
-  // Test-only method to inject a fetch result directly, w/o regard for how the
-  // underlying loading is doing. This requires there to be a single pending
-  // fetch only.
-  void InjectResultForTesting(const RequestMetadata& metadata,
-                              const std::string& image_data);
-
  private:
   struct ImageDataFetcherRequest;
 
-  void OnURLLoaderComplete(const network::SimpleURLLoader* source,
-                           std::unique_ptr<std::string> response_body);
+  // Methods inherited from URLFetcherDelegate
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchDownloadProgress(const net::URLFetcher* source,
+                                  int64_t current,
+                                  int64_t total,
+                                  int64_t current_network_bytes) override;
 
-  void FinishRequest(const network::SimpleURLLoader* source,
+  void FinishRequest(const net::URLFetcher* source,
                      const RequestMetadata& metadata,
                      const std::string& image_data);
 
   // All active image url requests.
-  std::map<const network::SimpleURLLoader*,
-           std::unique_ptr<ImageDataFetcherRequest>>
+  std::map<const net::URLFetcher*, std::unique_ptr<ImageDataFetcherRequest>>
       pending_requests_;
 
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   DataUseServiceName data_use_service_name_;
+
+  // The next ID to use for a newly created URLFetcher. Each URLFetcher gets an
+  // id when it is created. The |url_fetcher_id_| is incremented by one for each
+  // newly created URLFetcher. The URLFetcher ID can be used during testing to
+  // get individual URLFetchers and modify their state. Outside of tests this ID
+  // is not used.
+  int next_url_fetcher_id_;
 
   // Upper limit for the number of bytes to download per image.
   base::Optional<int64_t> max_download_bytes_;

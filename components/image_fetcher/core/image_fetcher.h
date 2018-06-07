@@ -35,7 +35,7 @@ class ImageFetcher {
 
   // Sets an upper limit for image downloads that is by default disabled.
   // Setting |max_download_bytes| to a negative value will disable the limit.
-  // Already running downloads are not affected.
+  // Already running downloads are immediately affected.
   virtual void SetImageDownloadLimit(
       base::Optional<int64_t> max_download_bytes) = 0;
 

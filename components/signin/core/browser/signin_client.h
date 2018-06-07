@@ -30,10 +30,6 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace network {
-class SharedURLLoaderFactory;
-}
-
 // An interface that needs to be supplied to the Signin component by its
 // embedder.
 class SigninClient : public KeyedService {
@@ -74,13 +70,7 @@ class SigninClient : public KeyedService {
   virtual std::string GetSigninScopedDeviceId() = 0;
 
   // Returns the URL request context information associated with the client.
-  // DEPRECATED, new code should be using GetURLLoaderFactory instead.
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
-
-  // Returns the SharedURLLoaderFactory that should be used to fetch resources
-  // associated with the client.
-  virtual scoped_refptr<network::SharedURLLoaderFactory>
-  GetURLLoaderFactory() = 0;
 
   // Returns whether the user's credentials should be merged into the cookie
   // jar on signin completion.

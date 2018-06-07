@@ -15,7 +15,6 @@
 IOSWebViewSigninClient::IOSWebViewSigninClient(
     PrefService* pref_service,
     net::URLRequestContextGetter* url_request_context,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     SigninErrorController* signin_error_controller,
     scoped_refptr<content_settings::CookieSettings> cookie_settings,
     scoped_refptr<HostContentSettingsMap> host_content_settings_map,
@@ -24,7 +23,6 @@ IOSWebViewSigninClient::IOSWebViewSigninClient(
           std::make_unique<WaitForNetworkCallbackHelper>()),
       pref_service_(pref_service),
       url_request_context_(url_request_context),
-      url_loader_factory_(url_loader_factory),
       signin_error_controller_(signin_error_controller),
       cookie_settings_(cookie_settings),
       host_content_settings_map_(host_content_settings_map),
@@ -62,11 +60,6 @@ PrefService* IOSWebViewSigninClient::GetPrefs() {
 
 net::URLRequestContextGetter* IOSWebViewSigninClient::GetURLRequestContext() {
   return url_request_context_;
-}
-
-scoped_refptr<network::SharedURLLoaderFactory>
-IOSWebViewSigninClient::GetURLLoaderFactory() {
-  return url_loader_factory_;
 }
 
 void IOSWebViewSigninClient::DoFinalInit() {}

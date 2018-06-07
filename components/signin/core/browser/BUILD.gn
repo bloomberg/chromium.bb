@@ -134,7 +134,6 @@ static_library("browser") {
     "//components/prefs",
     "//google_apis",
     "//net",
-    "//services/network/public/cpp",
     "//ui/gfx",
     "//url",
   ]
@@ -214,8 +213,6 @@ static_library("test_support") {
     "//components/webdata/common",
     "//google_apis:test_support",
     "//net:test_support",
-    "//services/network:test_support",
-    "//services/network/public/cpp",
     "//testing/gtest",
   ]
 }
