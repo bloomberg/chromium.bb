@@ -376,19 +376,9 @@ void ThreadHeap::ReportMemoryUsageForTracing() {
       TRACE_DISABLED_BY_DEFAULT("blink_gc"),
       "ThreadHeap::allocatedObjectSizeKB",
       CappedSizeInKB(heap.stats_collector()->allocated_bytes_since_prev_gc()));
-  TRACE_COUNTER1(
-      TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-      "ThreadHeap::markedObjectSizeAtLastCompleteSweepKB",
-      CappedSizeInKB(heap.stats_collector()->previous().marked_bytes));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadHeap::allocatedSpaceKB",
                  CappedSizeInKB(heap.HeapStats().AllocatedSpace()));
-
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "ThreadHeap::objectSizeAtLastGCKB",
-                 CappedSizeInKB(heap.stats_collector()
-                                    ->previous()
-                                    .object_size_in_bytes_before_sweeping));
   TRACE_COUNTER1(
       TRACE_DISABLED_BY_DEFAULT("blink_gc"), "ThreadHeap::wrapperCount",
       std::min(heap.HeapStats().WrapperCount(), static_cast<size_t>(INT_MAX)));
