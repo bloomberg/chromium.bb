@@ -227,19 +227,20 @@ TEST_F(TaskSchedulerWorkerStackTest, Remove) {
 TEST_F(TaskSchedulerWorkerStackTest, PushAfterRemove) {
   SchedulerWorkerStack stack;
   EXPECT_EQ(0U, stack.Size());
-  EXPECT_TRUE(stack.IsEmpty());
 
   stack.Push(worker_a_.get());
   EXPECT_EQ(1U, stack.Size());
-  EXPECT_FALSE(stack.IsEmpty());
+
+  // Need to also push worker B for this test as it's illegal to Remove() the
+  // top of the stack.
+  stack.Push(worker_b_.get());
+  EXPECT_EQ(2U, stack.Size());
 
   stack.Remove(worker_a_.get());
-  EXPECT_EQ(0U, stack.Size());
-  EXPECT_TRUE(stack.IsEmpty());
+  EXPECT_EQ(1U, stack.Size());
 
   stack.Push(worker_a_.get());
-  EXPECT_EQ(1U, stack.Size());
-  EXPECT_FALSE(stack.IsEmpty());
+  EXPECT_EQ(2U, stack.Size());
 }
 
 // Verify that Push() DCHECKs when a value is inserted twice.

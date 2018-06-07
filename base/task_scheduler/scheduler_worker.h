@@ -160,6 +160,14 @@ class BASE_EXPORT SchedulerWorker
   //   worker_ = nullptr;
   void Cleanup();
 
+  // Informs this SchedulerWorker about periods during which it is not being
+  // used. Thread-safe.
+  void BeginUnusedPeriod();
+  void EndUnusedPeriod();
+  // Returns the last time this SchedulerWorker was used. Returns a null time if
+  // this SchedulerWorker is currently in-use. Thread-safe.
+  TimeTicks GetLastUsedTime() const;
+
  private:
   friend class RefCountedThreadSafe<SchedulerWorker>;
   class Thread;
@@ -206,11 +214,15 @@ class BASE_EXPORT SchedulerWorker
   // thread is created and the second access occurs on the thread.
   scoped_refptr<SchedulerWorker> self_;
 
-  // Synchronizes access to |thread_handle_|.
+  // Synchronizes access to |thread_handle_| and |last_used_time_|.
   mutable SchedulerLock thread_lock_;
 
   // Handle for the thread managed by |this|.
   PlatformThreadHandle thread_handle_;
+
+  // The last time this worker was used by its owner (e.g. to process work or
+  // stand as a required idle thread).
+  TimeTicks last_used_time_;
 
   // Event to wake up the thread managed by |this|.
   WaitableEvent wake_up_event_{WaitableEvent::ResetPolicy::AUTOMATIC,
