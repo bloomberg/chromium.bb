@@ -7,6 +7,7 @@
 #include <sync/sync.h>
 #include <memory>
 
+#include "base/posix/safe_strerror.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
@@ -357,7 +358,7 @@ void StreamBufferManager::OnRegisteredBuffer(StreamType stream_type,
   if (result) {
     device_context_->SetErrorState(FROM_HERE,
                                    std::string("Failed to register buffer: ") +
-                                       std::string(strerror(result)));
+                                       base::safe_strerror(-result));
     return;
   }
   stream_context_[stream_type]->registered_buffers.push(buffer_id);
@@ -429,8 +430,8 @@ void StreamBufferManager::OnProcessedCaptureRequest(int32_t result) {
   }
   if (result) {
     device_context_->SetErrorState(
-        FROM_HERE, std::string("Process capture request failed") +
-                       std::string(strerror(result)));
+        FROM_HERE, std::string("Process capture request failed: ") +
+                       base::safe_strerror(-result));
     return;
   }
   // Keeps the preview stream going.

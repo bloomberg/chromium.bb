@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/posix/safe_strerror.h"
 #include "base/strings/string_piece.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
@@ -303,7 +304,8 @@ void CameraHalDelegate::OnSetCallbacksOnIpcThread(int32_t result) {
   if (result) {
     num_builtin_cameras_ = 0;
     builtin_camera_info_updated_.Signal();
-    LOG(ERROR) << "Failed to set camera module callbacks: " << strerror(result);
+    LOG(ERROR) << "Failed to set camera module callbacks: "
+               << base::safe_strerror(-result);
     return;
   }
   for (size_t camera_id = 0; camera_id < num_builtin_cameras_; ++camera_id) {

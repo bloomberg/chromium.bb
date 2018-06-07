@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/posix/safe_strerror.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/image_capture_types.h"
 #include "media/capture/video/blob_utils.h"
@@ -286,7 +287,7 @@ void CameraDeviceDelegate::OnClosed(int32_t result) {
   device_context_->SetState(CameraDeviceContext::State::kStopped);
   if (result) {
     device_context_->LogToClient(std::string("Failed to close device: ") +
-                                 std::string(strerror(result)));
+                                 base::safe_strerror(-result));
   }
   ResetMojoInterface();
   device_context_ = nullptr;
@@ -395,8 +396,8 @@ void CameraDeviceDelegate::OnInitialized(int32_t result) {
   }
   if (result) {
     device_context_->SetErrorState(
-        FROM_HERE, std::string("Failed to initialize camera device") +
-                       std::string(strerror(result)));
+        FROM_HERE, std::string("Failed to initialize camera device: ") +
+                       base::safe_strerror(-result));
     return;
   }
   device_context_->SetState(CameraDeviceContext::State::kInitialized);
@@ -469,7 +470,7 @@ void CameraDeviceDelegate::OnConfiguredStreams(
   if (result) {
     device_context_->SetErrorState(
         FROM_HERE, std::string("Failed to configure streams: ") +
-                       std::string(strerror(result)));
+                       base::safe_strerror(-result));
     return;
   }
   if (!updated_config ||
