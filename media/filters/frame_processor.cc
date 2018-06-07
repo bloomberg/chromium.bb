@@ -653,8 +653,9 @@ bool FrameProcessor::ProcessFrame(scoped_refptr<StreamParserBuffer> frame,
   //     index.html#sourcebuffer-coded-frame-processing
   while (true) {
     // 1. Loop Top:
-    // Otherwise case: (See SourceBufferState's |auto_update_timestamp_offset_|,
-    // too).
+    // Otherwise case: (See also SourceBufferState::OnNewBuffer's conditional
+    // modification of timestamp_offset after frame processing returns, when
+    // generate_timestamps_flag is true).
     // 1.1. Let presentation timestamp be a double precision floating point
     //      representation of the coded frame's presentation timestamp in
     //      seconds.
@@ -1020,8 +1021,10 @@ bool FrameProcessor::ProcessFrame(scoped_refptr<StreamParserBuffer> frame,
       group_end_timestamp_ = frame_end_timestamp;
     DCHECK(group_end_timestamp_ >= base::TimeDelta());
 
-    // Step 21 is currently handled differently. See SourceBufferState's
-    // |auto_update_timestamp_offset_|.
+    // TODO(wolenetz): Step 21 is currently approximated by predicted
+    // frame_end_time by SourceBufferState::OnNewBuffers(). See
+    // https://crbug.com/850316.
+
     return true;
   }
 

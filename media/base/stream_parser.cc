@@ -10,7 +10,6 @@ namespace media {
 
 StreamParser::InitParameters::InitParameters(base::TimeDelta duration)
     : duration(duration),
-      auto_update_timestamp_offset(false),
       liveness(DemuxerStream::LIVENESS_UNKNOWN),
       detected_audio_track_count(0),
       detected_video_track_count(0),

@@ -137,8 +137,7 @@ SourceBufferState::SourceBufferState(
       frame_processor_(frame_processor.release()),
       create_demuxer_stream_cb_(create_demuxer_stream_cb),
       media_log_(media_log),
-      state_(UNINITIALIZED),
-      auto_update_timestamp_offset_(false) {
+      state_(UNINITIALIZED) {
   DCHECK(!create_demuxer_stream_cb_.is_null());
   DCHECK(frame_processor_);
 }
@@ -889,9 +888,10 @@ bool SourceBufferState::OnNewBuffers(
       *timestamp_offset_during_append_;
 
   // Calculate the new timestamp offset for audio/video tracks if the stream
-  // parser has requested automatic updates.
-  TimeDelta new_timestamp_offset = timestamp_offset_before_processing;
-  if (auto_update_timestamp_offset_) {
+  // parser corresponds to MSE MIME type with 'Generate Timestamps Flag' set
+  // true.
+  TimeDelta predicted_timestamp_offset = timestamp_offset_before_processing;
+  if (generate_timestamps_flag()) {
     TimeDelta min_end_timestamp = kNoTimestamp;
     for (const auto& it : buffer_queue_map) {
       const StreamParser::BufferQueue& bufq = it.second;
@@ -903,7 +903,7 @@ bool SourceBufferState::OnNewBuffers(
       }
     }
     if (min_end_timestamp != kNoTimestamp)
-      new_timestamp_offset += min_end_timestamp;
+      predicted_timestamp_offset += min_end_timestamp;
   }
 
   if (!frame_processor_->ProcessFrames(
@@ -913,9 +913,11 @@ bool SourceBufferState::OnNewBuffers(
   }
 
   // Only update the timestamp offset if the frame processor hasn't already.
-  if (auto_update_timestamp_offset_ &&
+  if (generate_timestamps_flag() &&
       timestamp_offset_before_processing == *timestamp_offset_during_append_) {
-    *timestamp_offset_during_append_ = new_timestamp_offset;
+    // TODO(wolenetz): This prediction assumes the last frame in each track
+    // isn't dropped by append window trimming. See https://crbug.com/850316.
+    *timestamp_offset_during_append_ = predicted_timestamp_offset;
   }
 
   return true;
@@ -932,8 +934,6 @@ void SourceBufferState::OnSourceInitDone(
     const StreamParser::InitParameters& params) {
   DCHECK_EQ(state_, PENDING_PARSER_INIT);
   state_ = PARSER_INITIALIZED;
-  auto_update_timestamp_offset_ = params.auto_update_timestamp_offset;
-  DCHECK_EQ(auto_update_timestamp_offset_, generate_timestamps_flag());
   base::ResetAndReturn(&init_cb_).Run(params);
 }
 
