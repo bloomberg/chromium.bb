@@ -16,10 +16,11 @@ MockPasswordProtectionService::MockPasswordProtectionService()
 MockPasswordProtectionService::MockPasswordProtectionService(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    history::HistoryService* history_service,
     scoped_refptr<HostContentSettingsMap> content_setting_map)
     : PasswordProtectionService(database_manager,
                                 url_loader_factory,
-                                nullptr,
+                                history_service,
                                 content_setting_map.get()) {}
 
 MockPasswordProtectionService::~MockPasswordProtectionService() {}
