@@ -194,8 +194,7 @@ crazy_status_t crazy_library_open(crazy_library_t** library,
   ScopedDelayedCallbackPoster poster(context, globals->rdebug());
 
   LibraryView* wrap = globals->libraries()->LoadLibrary(
-      lib_name, RTLD_NOW, context->load_address, 0, &context->search_paths,
-      false, &context->error);
+      lib_name, context->load_address, &context->search_paths, &context->error);
 
   if (!wrap)
     return CRAZY_STATUS_FAILURE;
@@ -221,8 +220,8 @@ crazy_status_t crazy_library_open_in_zip_file(crazy_library_t** library,
   ScopedDelayedCallbackPoster poster(context, globals->rdebug());
 
   LibraryView* wrap = globals->libraries()->LoadLibraryInZipFile(
-      zipfile_name, lib_name, RTLD_NOW, context->load_address,
-      &context->search_paths, false, &context->error);
+      zipfile_name, lib_name, context->load_address, &context->search_paths,
+      &context->error);
 
   if (!wrap)
     return CRAZY_STATUS_FAILURE;
