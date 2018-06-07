@@ -257,6 +257,21 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
   [self.folderTitleTextField endEditing:YES];
 }
 
+#pragma mark UITextFieldDelegate
+
+// This method hides the keyboard when the return key is pressed.
+- (BOOL)textFieldShouldReturn:(UITextField*)textField {
+  [self stopEdit];
+  return YES;
+}
+
+// This method is called when titleText resigns its first responder status.
+// (when return/dimiss key is pressed, or when navigating away.)
+- (void)textFieldDidEndEditing:(UITextField*)textField
+                        reason:(UITextFieldDidEndEditingReason)reason {
+  [self stopEdit];
+}
+
 #pragma mark Accessibility
 
 - (NSString*)accessibilityLabel {

@@ -279,7 +279,22 @@ using bookmarks::BookmarkNode;
       break;
 
     case SectionIdentifierBookmarkFolders: {
-      const BookmarkNode* folder = self.folders[indexPath.row];
+      int folderIndex = indexPath.row;
+      // On UIRefresh if |shouldShowDefaultSection| is YES, the first cell on
+      // this Section should call |pushFolderAddViewController|.
+      if (experimental_flags::IsBookmarksUIRebootEnabled() &&
+          [self shouldShowDefaultSection]) {
+        NSInteger itemType =
+            [self.tableViewModel itemTypeForIndexPath:indexPath];
+        if (itemType == BookmarkFolderStyleNewFolder) {
+          [self pushFolderAddViewController];
+          break;
+        }
+        // If |shouldShowDefaultSection| is YES we need to offset by 1 to get
+        // the right BookmarkNode from |self.folders|.
+        folderIndex--;
+      }
+      const BookmarkNode* folder = self.folders[folderIndex];
       [self changeSelectedFolder:folder];
       [self delayedNotifyDelegateOfSelection];
       break;
