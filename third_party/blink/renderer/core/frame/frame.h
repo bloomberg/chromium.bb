@@ -34,6 +34,7 @@
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
+#include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/frame_lifecycle.h"
@@ -212,8 +213,11 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   //
   // The |checkIfMainThread| parameter determines if the token based gestures
   // (legacy code) must be used in a thread-safe manner.
-  static bool ConsumeTransientUserActivation(LocalFrame*,
-                                             bool checkIfMainThread = false);
+  static bool ConsumeTransientUserActivation(
+      LocalFrame*,
+      bool checkIfMainThread = false,
+      UserActivationUpdateSource update_source =
+          UserActivationUpdateSource::kRenderer);
 
   bool IsAttached() const {
     return lifecycle_.GetState() == FrameLifecycle::kAttached;
@@ -285,7 +289,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   // Consumes and returns the transient user activation of current Frame, after
   // updating all ancestor/descendant frames.
-  bool ConsumeTransientUserActivation();
+  bool ConsumeTransientUserActivation(UserActivationUpdateSource update_source);
 
   Member<FrameClient> client_;
   const Member<WindowProxyManager> window_proxy_manager_;

@@ -41,6 +41,7 @@ source_set("headers") {
     "frame/frame_policy.h",
     "frame/sandbox_flags.h",
     "frame/user_activation_state.h",
+    "frame/user_activation_update_source.h",
     "frame/user_activation_update_type.h",
     "manifest/manifest.h",
     "manifest/manifest_share_target_util.h",

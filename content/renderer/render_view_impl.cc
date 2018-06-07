@@ -109,6 +109,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/url_conversion.h"
@@ -1312,14 +1313,10 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   DCHECK_NE(MSG_ROUTING_NONE, reply->main_frame_route_id);
   DCHECK_NE(MSG_ROUTING_NONE, reply->main_frame_widget_route_id);
 
-  // This consumption call also propagates to browser and other renderer
-  // processes.  With UAv2, only the part of the call for the current renderer
-  // process is needed; and the rest (IPCs to the browser then to all other
-  // renderers) are redundant and should be removed.
-  //
-  // TODO(mustaq): Clean this up after considering nuking all renderer-side
-  // consumptions.
-  WebUserGestureIndicator::ConsumeUserGesture(creator);
+  // The browser allowed creation of a new window and consumed the user
+  // activation (UAv2 only).
+  WebUserGestureIndicator::ConsumeUserGesture(
+      creator, blink::UserActivationUpdateSource::kBrowser);
 
   // While this view may be a background extension page, it can spawn a visible
   // render view. So we just assume that the new one is not another background

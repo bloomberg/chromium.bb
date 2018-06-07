@@ -197,8 +197,10 @@ bool Frame::ConsumeTransientUserActivationInLocalTree() {
   return was_active;
 }
 
-bool Frame::ConsumeTransientUserActivation() {
-  ToLocalFrame(this)->Client()->ConsumeUserActivation();
+bool Frame::ConsumeTransientUserActivation(
+    UserActivationUpdateSource update_source) {
+  if (update_source == UserActivationUpdateSource::kRenderer)
+    ToLocalFrame(this)->Client()->ConsumeUserActivation();
   return ConsumeTransientUserActivationInLocalTree();
 }
 
@@ -233,10 +235,12 @@ bool Frame::HasTransientUserActivation(LocalFrame* frame,
 }
 
 // static
-bool Frame::ConsumeTransientUserActivation(LocalFrame* frame,
-                                           bool checkIfMainThread) {
+bool Frame::ConsumeTransientUserActivation(
+    LocalFrame* frame,
+    bool checkIfMainThread,
+    UserActivationUpdateSource update_source) {
   if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
-    return frame ? frame->ConsumeTransientUserActivation() : false;
+    return frame ? frame->ConsumeTransientUserActivation(update_source) : false;
   }
 
   return checkIfMainThread

@@ -7,8 +7,8 @@
 
 namespace blink {
 
-// Types of UserActivationV2 state updates sent between a RenderFrame and a
-// RenderFrameProxy
+// Types of UserActivationV2 state updates sent between the browser and the
+// renderer processes.
 enum class UserActivationUpdateType {
   kNotifyActivation,
   kConsumeTransientActivation,
