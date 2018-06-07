@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_element.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
@@ -130,7 +129,7 @@ void V8HTMLConstructor::HtmlConstructor(
       // During upgrade an element has invoked the same constructor
       // before calling 'super' and that invocation has poached the
       // element.
-      exception_state.ThrowDOMException(kInvalidStateError,
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                         "this instance is already constructed");
       return;
     }

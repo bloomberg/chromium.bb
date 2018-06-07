@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_message_port.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_offscreen_canvas.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_shared_array_buffer.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -309,9 +308,10 @@ SerializedScriptValue::TransferImageBitmapContents(
 
   for (size_t i = 0; i < image_bitmaps.size(); ++i) {
     if (image_bitmaps[i]->IsNeutered()) {
-      exception_state.ThrowDOMException(
-          kDataCloneError, "ImageBitmap at index " + String::Number(i) +
-                               " is already detached.");
+      exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
+                                        "ImageBitmap at index " +
+                                            String::Number(i) +
+                                            " is already detached.");
       return contents;
     }
   }
@@ -346,15 +346,17 @@ void SerializedScriptValue::TransferOffscreenCanvas(
     if (visited.Contains(offscreen_canvases[i].Get()))
       continue;
     if (offscreen_canvases[i]->IsNeutered()) {
-      exception_state.ThrowDOMException(
-          kDataCloneError, "OffscreenCanvas at index " + String::Number(i) +
-                               " is already detached.");
+      exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
+                                        "OffscreenCanvas at index " +
+                                            String::Number(i) +
+                                            " is already detached.");
       return;
     }
     if (offscreen_canvases[i]->RenderingContext()) {
-      exception_state.ThrowDOMException(
-          kDataCloneError, "OffscreenCanvas at index " + String::Number(i) +
-                               " has an associated context.");
+      exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
+                                        "OffscreenCanvas at index " +
+                                            String::Number(i) +
+                                            " has an associated context.");
       return;
     }
     visited.insert(offscreen_canvases[i].Get());
@@ -447,8 +449,9 @@ bool SerializedScriptValue::ExtractTransferables(
       // Check for duplicate MessagePorts.
       if (transferables.message_ports.Contains(port)) {
         exception_state.ThrowDOMException(
-            kDataCloneError, "Message port at index " + String::Number(i) +
-                                 " is a duplicate of an earlier port.");
+            DOMExceptionCode::kDataCloneError,
+            "Message port at index " + String::Number(i) +
+                " is a duplicate of an earlier port.");
         return false;
       }
       transferables.message_ports.push_back(port);
@@ -457,8 +460,9 @@ bool SerializedScriptValue::ExtractTransferables(
           v8::Local<v8::Object>::Cast(transferable_object));
       if (transferables.array_buffers.Contains(array_buffer)) {
         exception_state.ThrowDOMException(
-            kDataCloneError, "ArrayBuffer at index " + String::Number(i) +
-                                 " is a duplicate of an earlier ArrayBuffer.");
+            DOMExceptionCode::kDataCloneError,
+            "ArrayBuffer at index " + String::Number(i) +
+                " is a duplicate of an earlier ArrayBuffer.");
         return false;
       }
       transferables.array_buffers.push_back(array_buffer);
@@ -467,7 +471,7 @@ bool SerializedScriptValue::ExtractTransferables(
           v8::Local<v8::Object>::Cast(transferable_object));
       if (transferables.array_buffers.Contains(shared_array_buffer)) {
         exception_state.ThrowDOMException(
-            kDataCloneError,
+            DOMExceptionCode::kDataCloneError,
             "SharedArrayBuffer at index " + String::Number(i) +
                 " is a duplicate of an earlier SharedArrayBuffer.");
         return false;
@@ -478,8 +482,9 @@ bool SerializedScriptValue::ExtractTransferables(
           v8::Local<v8::Object>::Cast(transferable_object));
       if (transferables.image_bitmaps.Contains(image_bitmap)) {
         exception_state.ThrowDOMException(
-            kDataCloneError, "ImageBitmap at index " + String::Number(i) +
-                                 " is a duplicate of an earlier ImageBitmap.");
+            DOMExceptionCode::kDataCloneError,
+            "ImageBitmap at index " + String::Number(i) +
+                " is a duplicate of an earlier ImageBitmap.");
         return false;
       }
       transferables.image_bitmaps.push_back(image_bitmap);
@@ -488,7 +493,7 @@ bool SerializedScriptValue::ExtractTransferables(
           v8::Local<v8::Object>::Cast(transferable_object));
       if (transferables.offscreen_canvases.Contains(offscreen_canvas)) {
         exception_state.ThrowDOMException(
-            kDataCloneError,
+            DOMExceptionCode::kDataCloneError,
             "OffscreenCanvas at index " + String::Number(i) +
                 " is a duplicate of an earlier OffscreenCanvas.");
         return false;
@@ -537,9 +542,10 @@ SerializedScriptValue::TransferArrayBufferContents(
     DOMArrayBufferBase* array_buffer = *it;
     if (array_buffer->IsNeutered()) {
       size_t index = std::distance(array_buffers.begin(), it);
-      exception_state.ThrowDOMException(
-          kDataCloneError, "ArrayBuffer at index " + String::Number(index) +
-                               " is already neutered.");
+      exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
+                                        "ArrayBuffer at index " +
+                                            String::Number(index) +
+                                            " is already neutered.");
       return ArrayBufferContentsArray();
     }
   }
@@ -554,18 +560,20 @@ SerializedScriptValue::TransferArrayBufferContents(
 
     size_t index = std::distance(array_buffers.begin(), it);
     if (array_buffer_base->IsShared()) {
-      exception_state.ThrowDOMException(
-          kDataCloneError, "SharedArrayBuffer at index " +
-                               String::Number(index) + " is not transferable.");
+      exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
+                                        "SharedArrayBuffer at index " +
+                                            String::Number(index) +
+                                            " is not transferable.");
       return ArrayBufferContentsArray();
     } else {
       DOMArrayBuffer* array_buffer =
           static_cast<DOMArrayBuffer*>(array_buffer_base);
 
       if (!array_buffer->Transfer(isolate, contents.at(index))) {
-        exception_state.ThrowDOMException(
-            kDataCloneError, "ArrayBuffer at index " + String::Number(index) +
-                                 " could not be transferred.");
+        exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
+                                          "ArrayBuffer at index " +
+                                              String::Number(index) +
+                                              " could not be transferred.");
         return ArrayBufferContentsArray();
       }
     }

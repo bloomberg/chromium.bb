@@ -196,7 +196,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
-            kInvalidStateError,
+            DOMExceptionCode::kInvalidStateError,
             String::Format("The source image %s is 0.",
                            bitmap_source->BitmapSourceSize().Width()
                                ? "height"
@@ -265,12 +265,14 @@ void ImageBitmapFactories::ImageBitmapLoader::RejectPromise(
     ImageBitmapRejectionReason reason) {
   switch (reason) {
     case kUndecodableImageBitmapRejectionReason:
-      resolver_->Reject(DOMException::Create(
-          kInvalidStateError, "The source image could not be decoded."));
+      resolver_->Reject(
+          DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                               "The source image could not be decoded."));
       break;
     case kAllocationFailureImageBitmapRejectionReason:
-      resolver_->Reject(DOMException::Create(
-          kInvalidStateError, "The ImageBitmap could not be allocated."));
+      resolver_->Reject(
+          DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                               "The ImageBitmap could not be allocated."));
       break;
     default:
       NOTREACHED();

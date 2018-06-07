@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/request_or_usv_string_or_request_or_usv_string_sequence.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -296,13 +295,14 @@ void BackgroundFetchManager::DidFetch(
     case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
       DCHECK(!registration);
       resolver->Reject(DOMException::Create(
-          kInvalidStateError,
+          DOMExceptionCode::kInvalidStateError,
           "There already is a registration for the given id."));
       return;
     case mojom::blink::BackgroundFetchError::STORAGE_ERROR:
       DCHECK(!registration);
       resolver->Reject(DOMException::Create(
-          kAbortError, "Failed to store registration due to I/O error."));
+          DOMExceptionCode::kAbortError,
+          "Failed to store registration due to I/O error."));
       return;
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
     case mojom::blink::BackgroundFetchError::INVALID_ID:
@@ -403,8 +403,9 @@ void BackgroundFetchManager::DidGetRegistration(
       return;
     case mojom::blink::BackgroundFetchError::STORAGE_ERROR:
       DCHECK(!registration);
-      resolver->Reject(DOMException::Create(
-          kAbortError, "Failed to get registration due to I/O error."));
+      resolver->Reject(
+          DOMException::Create(DOMExceptionCode::kAbortError,
+                               "Failed to get registration due to I/O error."));
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
@@ -445,7 +446,8 @@ void BackgroundFetchManager::DidGetDeveloperIds(
     case mojom::blink::BackgroundFetchError::STORAGE_ERROR:
       DCHECK(developer_ids.IsEmpty());
       resolver->Reject(DOMException::Create(
-          kAbortError, "Failed to get registration IDs due to I/O error."));
+          DOMExceptionCode::kAbortError,
+          "Failed to get registration IDs due to I/O error."));
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:

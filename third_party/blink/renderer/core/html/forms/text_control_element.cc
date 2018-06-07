@@ -280,9 +280,10 @@ void TextControlElement::setRangeText(const String& replacement,
                                       ExceptionState& exception_state) {
   if (start > end) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, "The provided start value (" + String::Number(start) +
-                             ") is larger than the provided end value (" +
-                             String::Number(end) + ").");
+        DOMExceptionCode::kIndexSizeError,
+        "The provided start value (" + String::Number(start) +
+            ") is larger than the provided end value (" + String::Number(end) +
+            ").");
     return;
   }
   if (OpenShadowRoot())
@@ -675,13 +676,15 @@ void TextControlElement::setMaxLength(int new_value,
                                       ExceptionState& exception_state) {
   int min = minLength();
   if (new_value < 0) {
-    exception_state.ThrowDOMException(
-        kIndexSizeError, "The value provided (" + String::Number(new_value) +
-                             ") is not positive or 0.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kIndexSizeError,
+                                      "The value provided (" +
+                                          String::Number(new_value) +
+                                          ") is not positive or 0.");
   } else if (min >= 0 && new_value < min) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexExceedsMinimumBound(
-                             "maxLength", new_value, min));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMinimumBound("maxLength", new_value,
+                                                    min));
   } else {
     SetIntegralAttribute(maxlengthAttr, new_value);
   }
@@ -691,13 +694,15 @@ void TextControlElement::setMinLength(int new_value,
                                       ExceptionState& exception_state) {
   int max = maxLength();
   if (new_value < 0) {
-    exception_state.ThrowDOMException(
-        kIndexSizeError, "The value provided (" + String::Number(new_value) +
-                             ") is not positive or 0.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kIndexSizeError,
+                                      "The value provided (" +
+                                          String::Number(new_value) +
+                                          ") is not positive or 0.");
   } else if (max >= 0 && new_value > max) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
-                             "minLength", new_value, max));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMaximumBound("minLength", new_value,
+                                                    max));
   } else {
     SetIntegralAttribute(minlengthAttr, new_value);
   }

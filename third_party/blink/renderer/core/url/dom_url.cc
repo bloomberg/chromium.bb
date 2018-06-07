@@ -29,7 +29,6 @@
 #include "base/auto_reset.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/url/url_search_params.h"

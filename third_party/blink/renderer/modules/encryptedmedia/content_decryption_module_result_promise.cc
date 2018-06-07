@@ -21,17 +21,17 @@ ExceptionCode WebCdmExceptionToExceptionCode(
     case kWebContentDecryptionModuleExceptionTypeError:
       return ESErrorType::kTypeError;
     case kWebContentDecryptionModuleExceptionNotSupportedError:
-      return kNotSupportedError;
+      return DOMExceptionCode::kNotSupportedError;
     case kWebContentDecryptionModuleExceptionInvalidStateError:
-      return kInvalidStateError;
+      return DOMExceptionCode::kInvalidStateError;
     case kWebContentDecryptionModuleExceptionQuotaExceededError:
-      return kQuotaExceededError;
+      return DOMExceptionCode::kQuotaExceededError;
     case kWebContentDecryptionModuleExceptionUnknownError:
-      return kUnknownError;
+      return DOMExceptionCode::kUnknownError;
   }
 
   NOTREACHED();
-  return kUnknownError;
+  return DOMExceptionCode::kUnknownError;
 }
 
 ContentDecryptionModuleResultPromise::ContentDecryptionModuleResultPromise(
@@ -45,7 +45,7 @@ void ContentDecryptionModuleResultPromise::Complete() {
   NOTREACHED();
   if (!IsValidToFulfillPromise())
     return;
-  Reject(kInvalidStateError, "Unexpected completion.");
+  Reject(DOMExceptionCode::kInvalidStateError, "Unexpected completion.");
 }
 
 void ContentDecryptionModuleResultPromise::CompleteWithContentDecryptionModule(
@@ -53,7 +53,7 @@ void ContentDecryptionModuleResultPromise::CompleteWithContentDecryptionModule(
   NOTREACHED();
   if (!IsValidToFulfillPromise())
     return;
-  Reject(kInvalidStateError, "Unexpected completion.");
+  Reject(DOMExceptionCode::kInvalidStateError, "Unexpected completion.");
 }
 
 void ContentDecryptionModuleResultPromise::CompleteWithSession(
@@ -61,14 +61,14 @@ void ContentDecryptionModuleResultPromise::CompleteWithSession(
   NOTREACHED();
   if (!IsValidToFulfillPromise())
     return;
-  Reject(kInvalidStateError, "Unexpected completion.");
+  Reject(DOMExceptionCode::kInvalidStateError, "Unexpected completion.");
 }
 
 void ContentDecryptionModuleResultPromise::CompleteWithKeyStatus(
     WebEncryptedMediaKeyInformation::KeyStatus) {
   if (!IsValidToFulfillPromise())
     return;
-  Reject(kInvalidStateError, "Unexpected completion.");
+  Reject(DOMExceptionCode::kInvalidStateError, "Unexpected completion.");
 }
 
 void ContentDecryptionModuleResultPromise::CompleteWithError(

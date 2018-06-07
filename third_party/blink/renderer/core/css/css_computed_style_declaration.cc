@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -233,7 +232,7 @@ void CSSComputedStyleDeclaration::setCSSText(const ExecutionContext*,
                                              const String&,
                                              ExceptionState& exception_state) {
   exception_state.ThrowDOMException(
-      kNoModificationAllowedError,
+      DOMExceptionCode::kNoModificationAllowedError,
       "These styles are computed, and therefore read-only.");
 }
 
@@ -479,7 +478,7 @@ void CSSComputedStyleDeclaration::setProperty(const ExecutionContext*,
                                               const String&,
                                               ExceptionState& exception_state) {
   exception_state.ThrowDOMException(
-      kNoModificationAllowedError,
+      DOMExceptionCode::kNoModificationAllowedError,
       "These styles are computed, and therefore the '" + name +
           "' property is read-only.");
 }
@@ -488,7 +487,7 @@ String CSSComputedStyleDeclaration::removeProperty(
     const String& name,
     ExceptionState& exception_state) {
   exception_state.ThrowDOMException(
-      kNoModificationAllowedError,
+      DOMExceptionCode::kNoModificationAllowedError,
       "These styles are computed, and therefore the '" + name +
           "' property is read-only.");
   return String();
@@ -521,7 +520,7 @@ void CSSComputedStyleDeclaration::SetPropertyInternal(
     SecureContextMode,
     ExceptionState& exception_state) {
   exception_state.ThrowDOMException(
-      kNoModificationAllowedError,
+      DOMExceptionCode::kNoModificationAllowedError,
       "These styles are computed, and therefore the '" +
           CSSUnresolvedProperty::Get(id).GetPropertyNameString() +
           "' property is read-only.");

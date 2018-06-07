@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_parser.h"
@@ -75,7 +74,7 @@ bool IsNonPercentage(double value,
                      ExceptionState& exception_state) {
   if (value < 0 || value > 100) {
     exception_state.ThrowDOMException(
-        kIndexSizeError,
+        DOMExceptionCode::kIndexSizeError,
         ExceptionMessages::IndexOutsideRange(
             "value", value, 0.0, ExceptionMessages::kInclusiveBound, 100.0,
             ExceptionMessages::kInclusiveBound));

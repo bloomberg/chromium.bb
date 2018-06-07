@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_lock_granted_callback.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/locks/lock.h"
 #include "third_party/blink/renderer/modules/locks/lock_info.h"
@@ -96,7 +95,8 @@ class LockManager::LockRequestImpl final
     if (!resolver_->GetScriptState()->ContextIsValid())
       return;
 
-    resolver_->Reject(DOMException::Create(kAbortError, reason));
+    resolver_->Reject(
+        DOMException::Create(DOMExceptionCode::kAbortError, reason));
   }
 
   void Failed() override {
@@ -211,40 +211,41 @@ ScriptPromise LockManager::request(ScriptState* script_state,
 
   if (options.steal() && options.ifAvailable()) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "The 'steal' and 'ifAvailable' options cannot be used together.");
     return ScriptPromise();
   }
 
   if (name.StartsWith("-")) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Names cannot start with '-'.");
     return ScriptPromise();
   }
 
   if (options.steal() && mode != mojom::blink::LockMode::EXCLUSIVE) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "The 'steal' option may only be used with 'exclusive' locks.");
     return ScriptPromise();
   }
 
   if (options.hasSignal() && options.ifAvailable()) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "The 'signal' and 'ifAvailable' options cannot be used together.");
     return ScriptPromise();
   }
 
   if (options.hasSignal() && options.steal()) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "The 'signal' and 'steal' options cannot be used together.");
     return ScriptPromise();
   }
 
   if (options.hasSignal() && options.signal()->aborted()) {
-    exception_state.ThrowDOMException(kAbortError, kRequestAbortedMessage);
+    exception_state.ThrowDOMException(DOMExceptionCode::kAbortError,
+                                      kRequestAbortedMessage);
     return ScriptPromise();
   }
 

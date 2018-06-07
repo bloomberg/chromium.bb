@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_param_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_worklet_processor.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -65,7 +64,7 @@ void AudioWorkletGlobalScope::registerProcessor(
 
   if (processor_definition_map_.Contains(name)) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "A class with name:'" + name + "' is already registered.");
     return;
   }

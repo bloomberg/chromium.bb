@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -59,7 +58,7 @@ DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
   DCHECK(context->IsContextThread());
   UseCounter::Count(context, WebFeature::kWorkerStart);
   if (context->IsContextDestroyed()) {
-    exception_state.ThrowDOMException(kInvalidAccessError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
                                       "The context provided is invalid.");
     return nullptr;
   }

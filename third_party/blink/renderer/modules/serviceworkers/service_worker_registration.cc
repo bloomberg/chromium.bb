@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/serviceworkers/service_worker_container_client.h"
@@ -109,7 +108,7 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
   if (!client || !client->Provider())
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(kInvalidStateError,
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "Failed to update a ServiceWorkerRegistration: No "
                              "associated provider is available."));
 
@@ -127,7 +126,7 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* script_state) {
   if (!client || !client->Provider())
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(kInvalidStateError,
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "Failed to unregister a "
                              "ServiceWorkerRegistration: No "
                              "associated provider is available."));

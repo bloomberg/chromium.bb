@@ -7,7 +7,6 @@
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options_init.h"
 #include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
@@ -54,7 +53,8 @@ String BufferSourceToString(
     return WebString::FromLatin1(input, length);
 
   exception_state.ThrowDOMException(
-      kInvalidAccessError, "The provided applicationServerKey is not valid.");
+      DOMExceptionCode::kInvalidAccessError,
+      "The provided applicationServerKey is not valid.");
   return String();
 }
 

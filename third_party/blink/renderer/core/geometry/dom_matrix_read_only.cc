@@ -360,7 +360,7 @@ const String DOMMatrixReadOnly::toString(
     if (!std::isfinite(a()) || !std::isfinite(b()) || !std::isfinite(c()) ||
         !std::isfinite(d()) || !std::isfinite(e()) || !std::isfinite(f())) {
       exception_state.ThrowDOMException(
-          kInvalidStateError,
+          DOMExceptionCode::kInvalidStateError,
           "DOMMatrix cannot be serialized with NaN or Infinity values.");
       return String();
     }
@@ -388,7 +388,7 @@ const String DOMMatrixReadOnly::toString(
       !std::isfinite(m41()) || !std::isfinite(m42()) || !std::isfinite(m43()) ||
       !std::isfinite(m44())) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "DOMMatrix cannot be serialized with NaN or Infinity values.");
     return String();
   }
@@ -479,7 +479,8 @@ void DOMMatrixReadOnly::SetMatrixValueFromString(
 
   if (!value || value->IsCSSWideKeyword()) {
     exception_state.ThrowDOMException(
-        kSyntaxError, "Failed to parse '" + input_string + "'.");
+        DOMExceptionCode::kSyntaxError,
+        "Failed to parse '" + input_string + "'.");
     return;
   }
 
@@ -491,7 +492,7 @@ void DOMMatrixReadOnly::SetMatrixValueFromString(
   }
 
   if (TransformBuilder::HasRelativeLengths(ToCSSValueList(*value))) {
-    exception_state.ThrowDOMException(kSyntaxError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "Lengths must be absolute, not relative");
     return;
   }
@@ -503,7 +504,8 @@ void DOMMatrixReadOnly::SetMatrixValueFromString(
 
   if (operations.DependsOnBoxSize()) {
     exception_state.ThrowDOMException(
-        kSyntaxError, "Lengths must be absolute, not depend on the box size");
+        DOMExceptionCode::kSyntaxError,
+        "Lengths must be absolute, not depend on the box size");
     return;
   }
 

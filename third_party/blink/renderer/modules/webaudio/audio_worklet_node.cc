@@ -262,18 +262,18 @@ AudioWorkletNode* AudioWorkletNode::Create(
 
   if (options.numberOfInputs() == 0 && options.numberOfOutputs() == 0) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "AudioWorkletNode cannot be created: Number of inputs and number of "
-            "outputs cannot be both zero.");
+        "outputs cannot be both zero.");
     return nullptr;
   }
 
   if (options.hasOutputChannelCount()) {
     if (options.numberOfOutputs() != options.outputChannelCount().size()) {
       exception_state.ThrowDOMException(
-          kIndexSizeError,
+          DOMExceptionCode::kIndexSizeError,
           "AudioWorkletNode cannot be created: Length of specified "
-              "'outputChannelCount' (" +
+          "'outputChannelCount' (" +
               String::Number(options.outputChannelCount().size()) +
               ") does not match the given number of outputs (" +
               String::Number(options.numberOfOutputs()) + ").");
@@ -284,10 +284,9 @@ AudioWorkletNode* AudioWorkletNode::Create(
       if (channel_count < 1 ||
           channel_count > BaseAudioContext::MaxNumberOfChannels()) {
         exception_state.ThrowDOMException(
-            kNotSupportedError,
+            DOMExceptionCode::kNotSupportedError,
             ExceptionMessages::IndexOutsideRange<unsigned long>(
-                "channel count", channel_count,
-                1,
+                "channel count", channel_count, 1,
                 ExceptionMessages::kInclusiveBound,
                 BaseAudioContext::MaxNumberOfChannels(),
                 ExceptionMessages::kInclusiveBound));
@@ -298,16 +297,16 @@ AudioWorkletNode* AudioWorkletNode::Create(
 
   if (!context->audioWorklet()->IsReady()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "AudioWorkletNode cannot be created: AudioWorklet does not have a "
-            "valid AudioWorkletGlobalScope. Load a script via "
-            "audioWorklet.addModule() first.");
+        "valid AudioWorkletGlobalScope. Load a script via "
+        "audioWorklet.addModule() first.");
     return nullptr;
   }
 
   if (!context->audioWorklet()->IsProcessorRegistered(name)) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "AudioWorkletNode cannot be created: The node name '" + name +
             "' is not defined in AudioWorkletGlobalScope.");
     return nullptr;
@@ -323,9 +322,8 @@ AudioWorkletNode* AudioWorkletNode::Create(
           channel->port1());
 
   if (!node) {
-    exception_state.ThrowDOMException(
-        kInvalidStateError,
-        "AudioWorkletNode cannot be created.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "AudioWorkletNode cannot be created.");
     return nullptr;
   }
 

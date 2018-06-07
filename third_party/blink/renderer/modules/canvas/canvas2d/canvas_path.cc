@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_path.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -121,7 +120,7 @@ void CanvasPath::arcTo(float x1,
 
   if (r < 0) {
     exception_state.ThrowDOMException(
-        kIndexSizeError,
+        DOMExceptionCode::kIndexSizeError,
         "The radius provided (" + String::Number(r) + ") is negative.");
     return;
   }
@@ -312,7 +311,7 @@ void CanvasPath::arc(float x,
 
   if (radius < 0) {
     exception_state.ThrowDOMException(
-        kIndexSizeError,
+        DOMExceptionCode::kIndexSizeError,
         "The radius provided (" + String::Number(radius) + ") is negative.");
     return;
   }
@@ -348,15 +347,17 @@ void CanvasPath::ellipse(float x,
     return;
 
   if (radius_x < 0) {
-    exception_state.ThrowDOMException(
-        kIndexSizeError, "The major-axis radius provided (" +
-                             String::Number(radius_x) + ") is negative.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kIndexSizeError,
+                                      "The major-axis radius provided (" +
+                                          String::Number(radius_x) +
+                                          ") is negative.");
     return;
   }
   if (radius_y < 0) {
-    exception_state.ThrowDOMException(
-        kIndexSizeError, "The minor-axis radius provided (" +
-                             String::Number(radius_y) + ") is negative.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kIndexSizeError,
+                                      "The minor-axis radius provided (" +
+                                          String::Number(radius_y) +
+                                          ") is negative.");
     return;
   }
 

@@ -147,9 +147,9 @@ void SensorProxyImpl::ReportError(ExceptionCode code, const String& message) {
 void SensorProxyImpl::HandleSensorError(SensorCreationResult error) {
   if (error == SensorCreationResult::ERROR_NOT_ALLOWED) {
     String description = "Permissions to access sensor are not granted";
-    ReportError(kNotAllowedError, std::move(description));
+    ReportError(DOMExceptionCode::kNotAllowedError, std::move(description));
   } else {
-    ReportError(kNotReadableError, kDefaultErrorDescription);
+    ReportError(DOMExceptionCode::kNotReadableError, kDefaultErrorDescription);
   }
 }
 

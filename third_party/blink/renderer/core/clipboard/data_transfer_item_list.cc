@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer_item.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 
@@ -58,7 +57,7 @@ DataTransferItem* DataTransferItemList::item(unsigned long index) {
 void DataTransferItemList::deleteItem(unsigned long index,
                                       ExceptionState& exception_state) {
   if (!data_transfer_->CanWriteData()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The list is not writable.");
     return;
   }
@@ -79,7 +78,8 @@ DataTransferItem* DataTransferItemList::add(const String& data,
   DataObjectItem* item = data_object_->Add(data, type);
   if (!item) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "An item already exists for type '" + type + "'.");
+        DOMExceptionCode::kNotSupportedError,
+        "An item already exists for type '" + type + "'.");
     return nullptr;
   }
   return DataTransferItem::Create(data_transfer_, item);

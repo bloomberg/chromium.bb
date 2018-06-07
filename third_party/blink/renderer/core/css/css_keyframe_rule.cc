@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/keyframe_style_rule_css_style_declaration.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 
@@ -47,7 +46,7 @@ void CSSKeyframeRule::setKeyText(const String& key_text,
 
   if (!keyframe_->SetKeyText(key_text))
     exception_state.ThrowDOMException(
-        kSyntaxError,
+        DOMExceptionCode::kSyntaxError,
         "The key '" + key_text + "' is invalid and cannot be parsed");
 
   ToCSSKeyframesRule(parentRule())->StyleChanged();

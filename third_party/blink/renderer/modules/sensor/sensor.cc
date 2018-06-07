@@ -8,7 +8,6 @@
 #include "services/device/public/mojom/sensor.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
@@ -245,7 +244,8 @@ void Sensor::OnAddConfigurationRequestCompleted(bool result) {
     return;
 
   if (!result) {
-    HandleError(kNotReadableError, "start() call has failed.");
+    HandleError(DOMExceptionCode::kNotReadableError,
+                "start() call has failed.");
     return;
   }
 
@@ -262,7 +262,7 @@ void Sensor::Activate() {
 
   InitSensorProxyIfNeeded();
   if (!sensor_proxy_) {
-    HandleError(kInvalidStateError,
+    HandleError(DOMExceptionCode::kInvalidStateError,
                 "The Sensor is no longer associated to a frame.");
     return;
   }

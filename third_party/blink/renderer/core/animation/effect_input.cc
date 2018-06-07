@@ -48,7 +48,6 @@
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -724,7 +723,7 @@ StringKeyframeVector EffectInput::ParseKeyframesArgument(
   }
 
   if (!ValidatePartialKeyframes(parsed_keyframes)) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Partial keyframes are not supported.");
     return {};
   }

@@ -26,7 +26,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node_filter.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 
@@ -46,7 +45,7 @@ unsigned NodeIteratorBase::AcceptNode(Node* node,
   if (active_flag_) {
     // 1. If the active flag is set, then throw an "InvalidStateError"
     // DOMException.
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Filter function can't be recursive");
     return V8NodeFilter::FILTER_REJECT;
   }

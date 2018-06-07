@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
@@ -182,7 +181,8 @@ IDBObjectStore* IDBTransaction::objectStore(const String& name,
                                             ExceptionState& exception_state) {
   if (IsFinished() || IsFinishing()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError, IDBDatabase::kTransactionFinishedErrorMessage);
+        DOMExceptionCode::kInvalidStateError,
+        IDBDatabase::kTransactionFinishedErrorMessage);
     return nullptr;
   }
 
@@ -192,7 +192,8 @@ IDBObjectStore* IDBTransaction::objectStore(const String& name,
 
   if (!IsVersionChange() && !scope_.Contains(name)) {
     exception_state.ThrowDOMException(
-        kNotFoundError, IDBDatabase::kNoSuchObjectStoreErrorMessage);
+        DOMExceptionCode::kNotFoundError,
+        IDBDatabase::kNoSuchObjectStoreErrorMessage);
     return nullptr;
   }
 
@@ -200,7 +201,8 @@ IDBObjectStore* IDBTransaction::objectStore(const String& name,
   if (object_store_id == IDBObjectStoreMetadata::kInvalidId) {
     DCHECK(IsVersionChange());
     exception_state.ThrowDOMException(
-        kNotFoundError, IDBDatabase::kNoSuchObjectStoreErrorMessage);
+        DOMExceptionCode::kNotFoundError,
+        IDBDatabase::kNoSuchObjectStoreErrorMessage);
     return nullptr;
   }
 
@@ -340,7 +342,8 @@ void IDBTransaction::SetActive(bool active) {
 void IDBTransaction::abort(ExceptionState& exception_state) {
   if (state_ == kFinishing || state_ == kFinished) {
     exception_state.ThrowDOMException(
-        kInvalidStateError, IDBDatabase::kTransactionFinishedErrorMessage);
+        DOMExceptionCode::kInvalidStateError,
+        IDBDatabase::kTransactionFinishedErrorMessage);
     return;
   }
 

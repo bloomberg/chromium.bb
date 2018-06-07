@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/media_element_event_queue.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -72,13 +71,13 @@ static bool ThrowExceptionIfRemovedOrUpdating(bool is_removed,
                                               ExceptionState& exception_state) {
   if (is_removed) {
     MediaSource::LogAndThrowDOMException(
-        exception_state, kInvalidStateError,
+        exception_state, DOMExceptionCode::kInvalidStateError,
         "This SourceBuffer has been removed from the parent media source.");
     return true;
   }
   if (is_updating) {
     MediaSource::LogAndThrowDOMException(
-        exception_state, kInvalidStateError,
+        exception_state, DOMExceptionCode::kInvalidStateError,
         "This SourceBuffer is still processing an 'appendBuffer' or "
         "'remove' operation.");
     return true;
@@ -211,7 +210,8 @@ void SourceBuffer::setMode(const AtomicString& new_mode,
   if (new_mode == SequenceKeyword())
     append_mode = WebSourceBuffer::kAppendModeSequence;
   if (!web_source_buffer_->SetMode(append_mode)) {
-    MediaSource::LogAndThrowDOMException(exception_state, kInvalidStateError,
+    MediaSource::LogAndThrowDOMException(exception_state,
+                                         DOMExceptionCode::kInvalidStateError,
                                          "The mode may not be set while the "
                                          "SourceBuffer's append state is "
                                          "'PARSING_MEDIA_SEGMENT'.");
@@ -229,7 +229,7 @@ TimeRanges* SourceBuffer::buffered(ExceptionState& exception_state) const {
   //    these steps.
   if (IsRemoved()) {
     MediaSource::LogAndThrowDOMException(
-        exception_state, kInvalidStateError,
+        exception_state, DOMExceptionCode::kInvalidStateError,
         "This SourceBuffer has been removed from the parent media source.");
     return nullptr;
   }
@@ -271,7 +271,8 @@ void SourceBuffer::setTimestampOffset(double offset,
   // 6. If the mode attribute equals "sequence", then set the group start
   //    timestamp to new timestamp offset.
   if (!web_source_buffer_->SetTimestampOffset(offset)) {
-    MediaSource::LogAndThrowDOMException(exception_state, kInvalidStateError,
+    MediaSource::LogAndThrowDOMException(exception_state,
+                                         DOMExceptionCode::kInvalidStateError,
                                          "The timestamp offset may not be set "
                                          "while the SourceBuffer's append "
                                          "state is 'PARSING_MEDIA_SEGMENT'.");
@@ -402,13 +403,13 @@ void SourceBuffer::abort(ExceptionState& exception_state) {
   //    steps.
   if (IsRemoved()) {
     MediaSource::LogAndThrowDOMException(
-        exception_state, kInvalidStateError,
+        exception_state, DOMExceptionCode::kInvalidStateError,
         "This SourceBuffer has been removed from the parent media source.");
     return;
   }
   if (!source_->IsOpen()) {
     MediaSource::LogAndThrowDOMException(
-        exception_state, kInvalidStateError,
+        exception_state, DOMExceptionCode::kInvalidStateError,
         "The parent media source's readyState is not 'open'.");
     return;
   }
@@ -422,7 +423,7 @@ void SourceBuffer::abort(ExceptionState& exception_state) {
     // RuntimeEnabledFeature.
     if (RuntimeEnabledFeatures::MediaSourceNewAbortAndDurationEnabled()) {
       MediaSource::LogAndThrowDOMException(
-          exception_state, kInvalidStateError,
+          exception_state, DOMExceptionCode::kInvalidStateError,
           "Aborting asynchronous remove() operation is disallowed.");
       return;
     }
@@ -1144,7 +1145,7 @@ bool SourceBuffer::PrepareAppend(double media_time,
   DCHECK(source_->MediaElement());
   if (source_->MediaElement()->error()) {
     MediaSource::LogAndThrowDOMException(
-        exception_state, kInvalidStateError,
+        exception_state, DOMExceptionCode::kInvalidStateError,
         "The HTMLMediaElement.error attribute is not null.");
     TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::prepareAppend", this);
     return false;
@@ -1163,7 +1164,8 @@ bool SourceBuffer::PrepareAppend(double media_time,
     //    exception and abort these steps.
     BLINK_SBLOG << __func__ << " this=" << this
                 << " -> throw QuotaExceededError";
-    MediaSource::LogAndThrowDOMException(exception_state, kQuotaExceededError,
+    MediaSource::LogAndThrowDOMException(exception_state,
+                                         DOMExceptionCode::kQuotaExceededError,
                                          "The SourceBuffer is full, and cannot "
                                          "free space to append additional "
                                          "buffers.");

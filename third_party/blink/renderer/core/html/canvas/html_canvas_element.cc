@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -198,7 +197,7 @@ void HTMLCanvasElement::setHeight(unsigned value,
                                   ExceptionState& exception_state) {
   if (IsPlaceholderRegistered()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Cannot resize canvas after call to transferControlToOffscreen().");
     return;
   }
@@ -209,7 +208,7 @@ void HTMLCanvasElement::setWidth(unsigned value,
                                  ExceptionState& exception_state) {
   if (IsPlaceholderRegistered()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Cannot resize canvas after call to transferControlToOffscreen().");
     return;
   }

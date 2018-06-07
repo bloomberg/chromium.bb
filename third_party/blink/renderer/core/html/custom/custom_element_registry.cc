@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_definition_options.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -58,7 +57,8 @@ static bool ThrowIfInvalidName(const AtomicString& name,
   if (CustomElement::IsValidName(name))
     return false;
   exception_state.ThrowDOMException(
-      kSyntaxError, "\"" + name + "\" is not a valid custom element name");
+      DOMExceptionCode::kSyntaxError,
+      "\"" + name + "\" is not a valid custom element name");
   return true;
 }
 
@@ -68,7 +68,8 @@ static bool ThrowIfValidName(const AtomicString& name,
   if (!CustomElement::IsValidName(name))
     return false;
   exception_state.ThrowDOMException(
-      kNotSupportedError, "\"" + name + "\" is a valid custom element name");
+      DOMExceptionCode::kNotSupportedError,
+      "\"" + name + "\" is a valid custom element name");
   return true;
 }
 
@@ -148,7 +149,7 @@ CustomElementDefinition* CustomElementRegistry::define(
 
   if (NameIsDefined(name) || V0NameIsDefined(name)) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "this name has already been used with this registry");
     return nullptr;
   }
@@ -176,7 +177,8 @@ CustomElementDefinition* CustomElementRegistry::define(
     if (htmlElementTypeForTag(extends) ==
         HTMLElementType::kHTMLUnknownElement) {
       exception_state.ThrowDOMException(
-          kNotSupportedError, "\"" + extends + "\" is an HTMLUnknownElement");
+          DOMExceptionCode::kNotSupportedError,
+          "\"" + extends + "\" is an HTMLUnknownElement");
       return nullptr;
     }
     // 7.3. Set localName to extends
@@ -191,7 +193,8 @@ CustomElementDefinition* CustomElementRegistry::define(
   // DOMException and abort these steps.
   if (element_definition_is_running_) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "an element definition is already being processed");
+        DOMExceptionCode::kNotSupportedError,
+        "an element definition is already being processed");
     return nullptr;
   }
 

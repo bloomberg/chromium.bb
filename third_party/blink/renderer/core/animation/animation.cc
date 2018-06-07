@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/events/animation_playback_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -72,7 +71,7 @@ Animation* Animation::Create(AnimationEffect* effect,
                              ExceptionState& exception_state) {
   if (!timeline || !timeline->IsDocumentTimeline()) {
     // FIXME: Support creating animations without a timeline.
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Animations can currently only be "
                                       "created with a non-null "
                                       "DocumentTimeline");
@@ -581,7 +580,7 @@ void Animation::pause(ExceptionState& exception_state) {
     if (playback_rate_ < 0 &&
         EffectEnd() == std::numeric_limits<double>::infinity()) {
       exception_state.ThrowDOMException(
-          kInvalidStateError,
+          DOMExceptionCode::kInvalidStateError,
           "Cannot pause, Animation has infinite target effect end.");
       return;
     }
@@ -618,7 +617,7 @@ void Animation::play(ExceptionState& exception_state) {
   if (playback_rate_ < 0 && current_time <= 0 &&
       EffectEnd() == std::numeric_limits<double>::infinity()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Cannot play reversed Animation with infinite target effect end.");
     return;
   }
@@ -659,14 +658,14 @@ void Animation::finish(ExceptionState& exception_state) {
 
   if (!playback_rate_) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Cannot finish Animation with a playbackRate of 0.");
     return;
   }
   if (playback_rate_ > 0 &&
       EffectEnd() == std::numeric_limits<double>::infinity()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Cannot finish Animation with an infinite target effect end.");
     return;
   }
@@ -1307,7 +1306,7 @@ void Animation::ResolvePromiseMaybeAsync(AnimationPromise* promise) {
 }
 
 void Animation::RejectAndResetPromise(AnimationPromise* promise) {
-  promise->Reject(DOMException::Create(kAbortError));
+  promise->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
   promise->Reset();
 }
 

@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_array_buffer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
@@ -277,14 +276,16 @@ void FileReader::ReadInternal(Blob* blob,
   // InvalidStateError should be thrown when the state is kLoading.
   if (state_ == kLoading) {
     exception_state.ThrowDOMException(
-        kInvalidStateError, "The object is already busy reading Blobs.");
+        DOMExceptionCode::kInvalidStateError,
+        "The object is already busy reading Blobs.");
     return;
   }
 
   ExecutionContext* context = GetExecutionContext();
   if (!context) {
     exception_state.ThrowDOMException(
-        kAbortError, "Reading from a detached FileReader is not supported.");
+        DOMExceptionCode::kAbortError,
+        "Reading from a detached FileReader is not supported.");
     return;
   }
 
@@ -292,7 +293,7 @@ void FileReader::ReadInternal(Blob* blob,
   // detached from its frame.
   if (context->IsDocument() && !ToDocument(context)->GetFrame()) {
     exception_state.ThrowDOMException(
-        kAbortError,
+        DOMExceptionCode::kAbortError,
         "Reading from a Document-detached FileReader is not supported.");
     return;
   }

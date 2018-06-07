@@ -32,7 +32,6 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -105,7 +104,7 @@ void StorageArea::SetItem(const String& key,
   storage_area_->SetItem(key, value, frame->GetDocument()->Url(), result);
   if (result != WebStorageArea::kResultOK)
     exception_state.ThrowDOMException(
-        kQuotaExceededError,
+        DOMExceptionCode::kQuotaExceededError,
         "Setting the value of '" + key + "' exceeded the quota.");
 }
 

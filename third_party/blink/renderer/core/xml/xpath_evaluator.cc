@@ -28,7 +28,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/xml/native_xpath_ns_resolver.h"
 #include "third_party/blink/renderer/core/xml/xpath_expression.h"
@@ -59,9 +58,9 @@ XPathResult* XPathEvaluator::evaluate(const String& expression,
                                       ExceptionState& exception_state) {
   if (!IsValidContextNode(context_node)) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "The node provided is '" +
-                                context_node->nodeName() +
-                                "', which is not a valid context node type.");
+        DOMExceptionCode::kNotSupportedError,
+        "The node provided is '" + context_node->nodeName() +
+            "', which is not a valid context node type.");
     return nullptr;
   }
 

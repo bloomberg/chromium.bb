@@ -32,7 +32,6 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_database_observer.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -477,7 +476,7 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
 
   if (!sqlite_database_.Open(filename_)) {
     ReportOpenDatabaseResult(
-        1, kInvalidStateError, sqlite_database_.LastError(),
+        1, DOMExceptionCode::kInvalidStateError, sqlite_database_.LastError(),
         WTF::CurrentTimeTicksInSeconds() - call_start_time);
     error_message = FormatErrorMessage("unable to open database",
                                        sqlite_database_.LastError(),
@@ -523,7 +522,8 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
       transaction.begin();
       if (!transaction.InProgress()) {
         ReportOpenDatabaseResult(
-            2, kInvalidStateError, sqlite_database_.LastError(),
+            2, DOMExceptionCode::kInvalidStateError,
+            sqlite_database_.LastError(),
             WTF::CurrentTimeTicksInSeconds() - call_start_time);
         error_message = FormatErrorMessage(
             "unable to open database, failed to start transaction",
@@ -541,7 +541,8 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
                 " (key TEXT NOT NULL ON CONFLICT FAIL UNIQUE ON CONFLICT "
                 "REPLACE,value TEXT NOT NULL ON CONFLICT FAIL);")) {
           ReportOpenDatabaseResult(
-              3, kInvalidStateError, sqlite_database_.LastError(),
+              3, DOMExceptionCode::kInvalidStateError,
+              sqlite_database_.LastError(),
               WTF::CurrentTimeTicksInSeconds() - call_start_time);
           error_message = FormatErrorMessage(
               "unable to open database, failed to create 'info' table",
@@ -552,7 +553,8 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
         }
       } else if (!GetVersionFromDatabase(current_version, false)) {
         ReportOpenDatabaseResult(
-            4, kInvalidStateError, sqlite_database_.LastError(),
+            4, DOMExceptionCode::kInvalidStateError,
+            sqlite_database_.LastError(),
             WTF::CurrentTimeTicksInSeconds() - call_start_time);
         error_message = FormatErrorMessage(
             "unable to open database, failed to read current version",
@@ -571,7 +573,8 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
                          << " that was just created";
         if (!SetVersionInDatabase(expected_version_, false)) {
           ReportOpenDatabaseResult(
-              5, kInvalidStateError, sqlite_database_.LastError(),
+              5, DOMExceptionCode::kInvalidStateError,
+              sqlite_database_.LastError(),
               WTF::CurrentTimeTicksInSeconds() - call_start_time);
           error_message = FormatErrorMessage(
               "unable to open database, failed to write current version",
@@ -601,7 +604,7 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
   if ((!new_ || should_set_version_in_new_database) &&
       expected_version_.length() && expected_version_ != current_version) {
     ReportOpenDatabaseResult(
-        6, kInvalidStateError, 0,
+        6, DOMExceptionCode::kInvalidStateError, 0,
         WTF::CurrentTimeTicksInSeconds() - call_start_time);
     error_message =
         "unable to open database, version mismatch, '" + expected_version_ +

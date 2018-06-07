@@ -28,7 +28,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
@@ -102,7 +101,7 @@ void ChannelMergerHandler::SetChannelCount(unsigned long channel_count,
   // channelCount must be 1.
   if (channel_count != 1) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "ChannelMerger: channelCount cannot be changed from 1");
   }
 }
@@ -116,7 +115,7 @@ void ChannelMergerHandler::SetChannelCountMode(
   // channcelCountMode must be 'explicit'.
   if (mode != "explicit") {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "ChannelMerger: channelCountMode cannot be changed from 'explicit'");
   }
 }
@@ -151,11 +150,12 @@ ChannelMergerNode* ChannelMergerNode::Create(BaseAudioContext& context,
   if (!number_of_inputs ||
       number_of_inputs > BaseAudioContext::MaxNumberOfChannels()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexOutsideRange<size_t>(
-                             "number of inputs", number_of_inputs, 1,
-                             ExceptionMessages::kInclusiveBound,
-                             BaseAudioContext::MaxNumberOfChannels(),
-                             ExceptionMessages::kInclusiveBound));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexOutsideRange<size_t>(
+            "number of inputs", number_of_inputs, 1,
+            ExceptionMessages::kInclusiveBound,
+            BaseAudioContext::MaxNumberOfChannels(),
+            ExceptionMessages::kInclusiveBound));
     return nullptr;
   }
 

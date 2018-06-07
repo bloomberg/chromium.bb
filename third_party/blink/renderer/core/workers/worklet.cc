@@ -41,7 +41,7 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
   DCHECK(IsMainThread());
   if (!GetExecutionContext()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidStateError,
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            "This frame is already detached"));
   }
   UseCounter::Count(GetExecutionContext(),
@@ -61,8 +61,9 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
   // Step 4: "If moduleURLRecord is failure, then reject promise with a
   // "SyntaxError" DOMException and return promise."
   if (!module_url_record.IsValid()) {
-    resolver->Reject(DOMException::Create(
-        kSyntaxError, "'" + module_url + "' is not a valid URL."));
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kSyntaxError,
+                             "'" + module_url + "' is not a valid URL."));
     return promise;
   }
 

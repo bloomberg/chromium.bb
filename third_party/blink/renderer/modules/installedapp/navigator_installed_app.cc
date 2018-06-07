@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -77,7 +76,7 @@ ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(
   InstalledAppController* app_controller = Controller();
   if (!app_controller) {  // If the associated frame is detached
     DOMException* exception = DOMException::Create(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "The object is no longer associated to a document.");
     resolver->Reject(exception);
     return promise;
@@ -85,7 +84,7 @@ ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(
 
   if (!app_controller->GetSupplementable()->IsMainFrame()) {
     DOMException* exception =
-        DOMException::Create(kInvalidStateError,
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "getInstalledRelatedApps() is only supported in "
                              "top-level browsing contexts.");
     resolver->Reject(exception);

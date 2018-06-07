@@ -75,8 +75,8 @@ ScriptPromise XR::requestDevice(ScriptState* script_state) {
   if (!frame) {
     // Reject if the frame is inaccessible.
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kInvalidStateError, kNavigatorDetachedError));
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kNavigatorDetachedError));
   }
 
   if (!did_log_requestDevice_ && frame->GetDocument()) {
@@ -91,14 +91,14 @@ ScriptPromise XR::requestDevice(ScriptState* script_state) {
       // Only allow the call to be made if the appropraite feature policy is in
       // place.
       return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(kSecurityError, kFeaturePolicyBlocked));
+          script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+                                             kFeaturePolicyBlocked));
     }
   } else if (!frame->HasBeenActivated() && frame->IsCrossOriginSubframe()) {
     // Block calls from cross-origin iframes that have never had a user gesture.
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kSecurityError, kCrossOriginSubframeBlocked));
+        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+                                           kCrossOriginSubframeBlocked));
   }
 
   // If we're still waiting for a previous call to resolve return that promise
@@ -118,7 +118,8 @@ ScriptPromise XR::requestDevice(ScriptState* script_state) {
     // other method of getting the prefered device, insert that here. For now,
     // just get the first device out of the list, if there is one.
     if (devices_.size() == 0) {
-      resolver->Reject(DOMException::Create(kNotFoundError, kNoDevicesMessage));
+      resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
+                                            kNoDevicesMessage));
     } else {
       resolver->Resolve(devices_[0]);
     }
@@ -161,8 +162,8 @@ void XR::OnDevicesSynced() {
 void XR::ResolveRequestDevice() {
   if (pending_devices_resolver_) {
     if (devices_.size() == 0) {
-      pending_devices_resolver_->Reject(
-          DOMException::Create(kNotFoundError, kNoDevicesMessage));
+      pending_devices_resolver_->Reject(DOMException::Create(
+          DOMExceptionCode::kNotFoundError, kNoDevicesMessage));
     } else {
       if (!did_log_returned_device_ || !did_log_supports_exclusive_) {
         Document* doc = GetFrame() ? GetFrame()->GetDocument() : nullptr;

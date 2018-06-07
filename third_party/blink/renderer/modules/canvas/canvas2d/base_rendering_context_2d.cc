@@ -953,7 +953,7 @@ static inline CanvasImageSource* ToImageSourceInternal(
             ->Size()
             .IsEmpty()) {
       exception_state.ThrowDOMException(
-          kInvalidStateError,
+          DOMExceptionCode::kInvalidStateError,
           String::Format("The image argument is a canvas element with a width "
                          "or height of 0."));
       return nullptr;
@@ -963,7 +963,8 @@ static inline CanvasImageSource* ToImageSourceInternal(
   if (value.IsImageBitmap()) {
     if (static_cast<ImageBitmap*>(value.GetAsImageBitmap())->IsNeutered()) {
       exception_state.ThrowDOMException(
-          kInvalidStateError, String::Format("The image source is detached"));
+          DOMExceptionCode::kInvalidStateError,
+          String::Format("The image source is detached"));
       return nullptr;
     }
     return value.GetAsImageBitmap();
@@ -972,14 +973,15 @@ static inline CanvasImageSource* ToImageSourceInternal(
     if (static_cast<OffscreenCanvas*>(value.GetAsOffscreenCanvas())
             ->IsNeutered()) {
       exception_state.ThrowDOMException(
-          kInvalidStateError, String::Format("The image source is detached"));
+          DOMExceptionCode::kInvalidStateError,
+          String::Format("The image source is detached"));
       return nullptr;
     }
     if (static_cast<OffscreenCanvas*>(value.GetAsOffscreenCanvas())
             ->Size()
             .IsEmpty()) {
       exception_state.ThrowDOMException(
-          kInvalidStateError,
+          DOMExceptionCode::kInvalidStateError,
           String::Format("The image argument is an OffscreenCanvas element "
                          "with a width or height of 0."));
       return nullptr;
@@ -1256,7 +1258,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
                                                   default_object_size);
     if (source_image_status == kUndecodableSourceImageStatus) {
       exception_state.ThrowDOMException(
-          kInvalidStateError,
+          DOMExceptionCode::kInvalidStateError,
           "The HTMLImageElement provided is in the 'broken' state.");
     }
     if (!image || !image->width() || !image->height())
@@ -1405,8 +1407,9 @@ CanvasGradient* BaseRenderingContext2D::createRadialGradient(
     ExceptionState& exception_state) {
   if (r0 < 0 || r1 < 0) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, String::Format("The %s provided is less than 0.",
-                                        r0 < 0 ? "r0" : "r1"));
+        DOMExceptionCode::kIndexSizeError,
+        String::Format("The %s provided is less than 0.",
+                       r0 < 0 ? "r0" : "r1"));
     return nullptr;
   }
 
@@ -1468,7 +1471,7 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
       break;
     case kZeroSizeCanvasSourceImageStatus:
       exception_state.ThrowDOMException(
-          kInvalidStateError,
+          DOMExceptionCode::kInvalidStateError,
           String::Format("The canvas %s is 0.",
                          image_source->ElementSize(default_object_size).Width()
                              ? "height"
@@ -1476,7 +1479,8 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
       return nullptr;
     case kUndecodableSourceImageStatus:
       exception_state.ThrowDOMException(
-          kInvalidStateError, "Source image is in the 'broken' state.");
+          DOMExceptionCode::kInvalidStateError,
+          "Source image is in the 'broken' state.");
       return nullptr;
     case kInvalidSourceImageStatus:
       image_for_rendering = Image::NullImage();
@@ -1555,7 +1559,7 @@ ImageData* BaseRenderingContext2D::createImageData(
     ExceptionState& exception_state) const {
   if (!sw || !sh) {
     exception_state.ThrowDOMException(
-        kIndexSizeError,
+        DOMExceptionCode::kIndexSizeError,
         String::Format("The source %s is 0.", sw ? "height" : "width"));
     return nullptr;
   }
@@ -1618,7 +1622,7 @@ ImageData* BaseRenderingContext2D::getImageData(
         "The canvas has been tainted by cross-origin data.");
   } else if (!sw || !sh) {
     exception_state.ThrowDOMException(
-        kIndexSizeError,
+        DOMExceptionCode::kIndexSizeError,
         String::Format("The source %s is 0.", sw ? "height" : "width"));
   }
 
@@ -1736,7 +1740,7 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
   usage_counters_.area_put_image_data_calls += dirty_width * dirty_height;
 
   if (data->BufferBase()->IsNeutered()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The source data has been neutered.");
     return;
   }

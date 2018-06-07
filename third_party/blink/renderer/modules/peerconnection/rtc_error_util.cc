@@ -15,18 +15,23 @@ DOMException* CreateDOMExceptionFromRTCError(const webrtc::RTCError& error) {
       NOTREACHED();
       break;
     case webrtc::RTCErrorType::SYNTAX_ERROR:
-      return DOMException::Create(kSyntaxError, error.message());
+      return DOMException::Create(DOMExceptionCode::kSyntaxError,
+                                  error.message());
     case webrtc::RTCErrorType::INVALID_MODIFICATION:
-      return DOMException::Create(kInvalidModificationError, error.message());
+      return DOMException::Create(DOMExceptionCode::kInvalidModificationError,
+                                  error.message());
     case webrtc::RTCErrorType::NETWORK_ERROR:
-      return DOMException::Create(kNetworkError, error.message());
+      return DOMException::Create(DOMExceptionCode::kNetworkError,
+                                  error.message());
     case webrtc::RTCErrorType::UNSUPPORTED_PARAMETER:
     case webrtc::RTCErrorType::UNSUPPORTED_OPERATION:
     case webrtc::RTCErrorType::RESOURCE_EXHAUSTED:
     case webrtc::RTCErrorType::INTERNAL_ERROR:
-      return DOMException::Create(kOperationError, error.message());
+      return DOMException::Create(DOMExceptionCode::kOperationError,
+                                  error.message());
     case webrtc::RTCErrorType::INVALID_STATE:
-      return DOMException::Create(kInvalidStateError, error.message());
+      return DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                  error.message());
     case webrtc::RTCErrorType::INVALID_PARAMETER:
       // One use of this value is to signal invalid SDP syntax.
       // According to spec, this should return an RTCError with name
@@ -34,7 +39,8 @@ DOMException* CreateDOMExceptionFromRTCError(const webrtc::RTCError& error) {
       // "sdpLineNumber" set to indicate the line where the error
       // occured.
       // TODO(https://crbug.com/821806): Implement the RTCError object.
-      return DOMException::Create(kInvalidAccessError, error.message());
+      return DOMException::Create(DOMExceptionCode::kInvalidAccessError,
+                                  error.message());
     case webrtc::RTCErrorType::INVALID_RANGE:
       // TODO(https://crbug.com/849214): This crashes.
       return DOMException::Create(ESErrorType::kRangeError, error.message());

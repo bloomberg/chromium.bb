@@ -215,7 +215,7 @@ WorkletAnimation* WorkletAnimation::Create(
 
   if (!Platform::Current()->IsThreadedAnimationEnabled()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "AnimationWorklet requires threaded animations to be enabled");
     return nullptr;
   }
@@ -223,12 +223,14 @@ WorkletAnimation* WorkletAnimation::Create(
   HeapVector<Member<KeyframeEffect>> keyframe_effects;
   String error_string;
   if (!ConvertAnimationEffects(effects, keyframe_effects, error_string)) {
-    exception_state.ThrowDOMException(kNotSupportedError, error_string);
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      error_string);
     return nullptr;
   }
 
   if (!ValidateTimeline(timeline, error_string)) {
-    exception_state.ThrowDOMException(kNotSupportedError, error_string);
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      error_string);
     return nullptr;
   }
 

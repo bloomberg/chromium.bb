@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
@@ -58,7 +57,7 @@ void ServiceWorker::postMessage(ScriptState* script_state,
       ServiceWorkerContainerClient::From(GetExecutionContext());
   if (!client || !client->Provider()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Failed to post a message: No associated provider is available.");
     return;
   }
@@ -72,7 +71,7 @@ void ServiceWorker::postMessage(ScriptState* script_state,
 
   if (handle_->ServiceWorker()->GetState() ==
       mojom::blink::ServiceWorkerState::kRedundant) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "ServiceWorker is in redundant state.");
     return;
   }

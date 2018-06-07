@@ -182,7 +182,8 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
 
   if (!recorder_handler_) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "No MediaRecorder handler can be created.");
+        DOMExceptionCode::kNotSupportedError,
+        "No MediaRecorder handler can be created.");
     return;
   }
 
@@ -196,7 +197,7 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
           content_type.Parameter("codecs"), audio_bits_per_second_,
           video_bits_per_second_)) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "Failed to initialize native MediaRecorder the type provided (" +
             mime_type_ + ") is not supported.");
     return;
@@ -215,14 +216,14 @@ void MediaRecorder::start(ExceptionState& exception_state) {
 void MediaRecorder::start(int time_slice, ExceptionState& exception_state) {
   if (state_ != State::kInactive) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "The MediaRecorder's state is '" + StateToString(state_) + "'.");
     return;
   }
   state_ = State::kRecording;
 
   if (!recorder_handler_->Start(time_slice)) {
-    exception_state.ThrowDOMException(kUnknownError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
                                       "The MediaRecorder failed to start "
                                       "because there are no audio or video "
                                       "tracks available.");
@@ -234,7 +235,7 @@ void MediaRecorder::start(int time_slice, ExceptionState& exception_state) {
 void MediaRecorder::stop(ExceptionState& exception_state) {
   if (state_ == State::kInactive) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "The MediaRecorder's state is '" + StateToString(state_) + "'.");
     return;
   }
@@ -245,7 +246,7 @@ void MediaRecorder::stop(ExceptionState& exception_state) {
 void MediaRecorder::pause(ExceptionState& exception_state) {
   if (state_ == State::kInactive) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "The MediaRecorder's state is '" + StateToString(state_) + "'.");
     return;
   }
@@ -262,7 +263,7 @@ void MediaRecorder::pause(ExceptionState& exception_state) {
 void MediaRecorder::resume(ExceptionState& exception_state) {
   if (state_ == State::kInactive) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "The MediaRecorder's state is '" + StateToString(state_) + "'.");
     return;
   }
@@ -278,7 +279,7 @@ void MediaRecorder::resume(ExceptionState& exception_state) {
 void MediaRecorder::requestData(ExceptionState& exception_state) {
   if (state_ == State::kInactive) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "The MediaRecorder's state is '" + StateToString(state_) + "'.");
     return;
   }

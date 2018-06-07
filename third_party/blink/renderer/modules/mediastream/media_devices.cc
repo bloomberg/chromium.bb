@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/input_device_info.h"
@@ -87,8 +86,8 @@ ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
       ToDocument(ExecutionContext::From(script_state))->GetFrame();
   if (!frame) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kNotSupportedError, "Current frame is detached."));
+        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                           "Current frame is detached."));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -116,7 +115,7 @@ ScriptPromise MediaDevices::getUserMedia(ScriptState* script_state,
   if (!user_media)
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(kNotSupportedError,
+        DOMException::Create(DOMExceptionCode::kNotSupportedError,
                              "No media device controller available; is this a "
                              "detached window?"));
 
@@ -137,7 +136,8 @@ ScriptPromise MediaDevices::getUserMedia(ScriptState* script_state,
   String error_message;
   if (!request->IsSecureContextUse(error_message)) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kNotSupportedError, error_message));
+        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                           error_message));
   }
   auto promise = resolver->Promise();
   request->Start();
@@ -312,8 +312,8 @@ void MediaDevices::DevicesEnumerated(
 
 void MediaDevices::OnDispatcherHostConnectionError() {
   for (ScriptPromiseResolver* resolver : requests_) {
-    resolver->Reject(
-        DOMException::Create(kAbortError, "enumerateDevices() failed."));
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kAbortError,
+                                          "enumerateDevices() failed."));
   }
   requests_.clear();
   dispatcher_host_.reset();

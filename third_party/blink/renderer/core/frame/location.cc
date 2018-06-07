@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -145,7 +144,8 @@ void Location::setProtocol(LocalDOMWindow* current_window,
   KURL url = GetDocument()->Url();
   if (!url.SetProtocol(protocol)) {
     exception_state.ThrowDOMException(
-        kSyntaxError, "'" + protocol + "' is an invalid protocol.");
+        DOMExceptionCode::kSyntaxError,
+        "'" + protocol + "' is an invalid protocol.");
     return;
   }
   SetLocation(url.GetString(), current_window, entered_window,
@@ -283,7 +283,7 @@ void Location::SetLocation(const String& url,
     return;
   }
   if (exception_state && !completed_url.IsValid()) {
-    exception_state->ThrowDOMException(kSyntaxError,
+    exception_state->ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                        "'" + url + "' is not a valid URL.");
     return;
   }

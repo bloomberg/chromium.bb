@@ -186,9 +186,10 @@ int HTMLMarqueeElement::loop() const {
 
 void HTMLMarqueeElement::setLoop(int value, ExceptionState& exception_state) {
   if (value <= 0 && value != -1) {
-    exception_state.ThrowDOMException(
-        kIndexSizeError, "The provided value (" + String::Number(value) +
-                             ") is neither positive nor -1.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kIndexSizeError,
+                                      "The provided value (" +
+                                          String::Number(value) +
+                                          ") is neither positive nor -1.");
     return;
   }
   SetIntegralAttribute(HTMLNames::loopAttr, value);

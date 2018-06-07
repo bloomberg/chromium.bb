@@ -171,9 +171,10 @@ void DOMWindow::postMessage(scoped_refptr<SerializedScriptValue> message,
     // It doesn't make sense target a postMessage at a unique origin
     // because there's no way to represent a unique origin in a string.
     if (target->IsOpaque()) {
-      exception_state.ThrowDOMException(
-          kSyntaxError, "Invalid target origin '" + target_origin +
-                            "' in a call to 'postMessage'.");
+      exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                        "Invalid target origin '" +
+                                            target_origin +
+                                            "' in a call to 'postMessage'.");
       return;
     }
   }

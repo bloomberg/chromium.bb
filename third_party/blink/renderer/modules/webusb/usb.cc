@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/webusb/usb_connection_event.h"
@@ -80,12 +79,13 @@ void USB::Dispose() {
 ScriptPromise USB::getDevices(ScriptState* script_state) {
   if (!IsContextSupported()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kNotSupportedError));
+        script_state,
+        DOMException::Create(DOMExceptionCode::kNotSupportedError));
   }
   if (!IsFeatureEnabled()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kSecurityError, kFeaturePolicyBlocked));
+        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+                                           kFeaturePolicyBlocked));
   }
 
   EnsureDeviceManagerConnection();
@@ -102,18 +102,20 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
   LocalFrame* frame = GetFrame();
   if (!frame) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kNotSupportedError));
+        script_state,
+        DOMException::Create(DOMExceptionCode::kNotSupportedError));
   }
 
   if (IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kUsb)) {
     if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kUsb)) {
       return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(kSecurityError, kFeaturePolicyBlocked));
+          script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+                                             kFeaturePolicyBlocked));
     }
   } else if (!frame->IsMainFrame()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kSecurityError, kIframeBlocked));
+        script_state,
+        DOMException::Create(DOMExceptionCode::kSecurityError, kIframeBlocked));
   }
 
   if (!chooser_service_) {
@@ -127,7 +129,7 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
-            kSecurityError,
+            DOMExceptionCode::kSecurityError,
             "Must be handling a user gesture to show a permission request."));
   }
 
@@ -197,10 +199,12 @@ void USB::OnGetPermission(ScriptPromiseResolver* resolver,
 
   EnsureDeviceManagerConnection();
 
-  if (device_manager_ && device_info)
+  if (device_manager_ && device_info) {
     resolver->Resolve(GetOrCreateDevice(std::move(device_info)));
-  else
-    resolver->Reject(DOMException::Create(kNotFoundError, kNoDeviceSelected));
+  } else {
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
+                                          kNoDeviceSelected));
+  }
 }
 
 void USB::OnDeviceAdded(UsbDeviceInfoPtr device_info) {
@@ -232,8 +236,10 @@ void USB::OnDeviceManagerConnectionError() {
 
 void USB::OnChooserServiceConnectionError() {
   chooser_service_.reset();
-  for (ScriptPromiseResolver* resolver : chooser_service_requests_)
-    resolver->Reject(DOMException::Create(kNotFoundError, kNoDeviceSelected));
+  for (ScriptPromiseResolver* resolver : chooser_service_requests_) {
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
+                                          kNoDeviceSelected));
+  }
   chooser_service_requests_.clear();
 }
 

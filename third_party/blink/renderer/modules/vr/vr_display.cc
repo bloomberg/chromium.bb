@@ -331,8 +331,8 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
   // If the VRDisplay does not advertise the ability to present reject the
   // request.
   if (!capabilities_->canPresent()) {
-    DOMException* exception =
-        DOMException::Create(kInvalidStateError, "VRDisplay cannot present.");
+    DOMException* exception = DOMException::Create(
+        DOMExceptionCode::kInvalidStateError, "VRDisplay cannot present.");
     resolver->Reject(exception);
     ReportPresentationResult(PresentationResult::kVRDisplayCannotPresent);
     return promise;
@@ -347,8 +347,9 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
   // updated.
   if (first_present) {
     if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
-      DOMException* exception = DOMException::Create(
-          kInvalidStateError, "API can only be initiated by a user gesture.");
+      DOMException* exception =
+          DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                               "API can only be initiated by a user gesture.");
       resolver->Reject(exception);
       ReportPresentationResult(PresentationResult::kNotInitiatedByUserGesture);
       return promise;
@@ -363,8 +364,8 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
   // A valid number of layers must be provided in order to present.
   if (layers.size() == 0 || layers.size() > capabilities_->maxLayers()) {
     ForceExitPresent();
-    DOMException* exception =
-        DOMException::Create(kInvalidStateError, "Invalid number of layers.");
+    DOMException* exception = DOMException::Create(
+        DOMExceptionCode::kInvalidStateError, "Invalid number of layers.");
     resolver->Reject(exception);
     ReportPresentationResult(PresentationResult::kInvalidNumberOfLayers);
     return promise;
@@ -374,8 +375,8 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
   // previous, valid source, so delay m_layer reassignment
   if (layers[0].source().IsNull()) {
     ForceExitPresent();
-    DOMException* exception =
-        DOMException::Create(kInvalidStateError, "Invalid layer source.");
+    DOMException* exception = DOMException::Create(
+        DOMExceptionCode::kInvalidStateError, "Invalid layer source.");
     resolver->Reject(exception);
     ReportPresentationResult(PresentationResult::kInvalidLayerSource);
     return promise;
@@ -394,8 +395,9 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
 
   if (!rendering_context || !rendering_context->Is3d()) {
     ForceExitPresent();
-    DOMException* exception = DOMException::Create(
-        kInvalidStateError, "Layer source must have a WebGLRenderingContext");
+    DOMException* exception =
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                             "Layer source must have a WebGLRenderingContext");
     resolver->Reject(exception);
     ReportPresentationResult(
         PresentationResult::kLayerSourceMissingWebGLContext);
@@ -410,7 +412,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
       (layer_.rightBounds().size() != 0 && layer_.rightBounds().size() != 4)) {
     ForceExitPresent();
     DOMException* exception = DOMException::Create(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Layer bounds must either be an empty array or have 4 values");
     resolver->Reject(exception);
     ReportPresentationResult(PresentationResult::kInvalidLayerBounds);
@@ -420,8 +422,9 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
   for (float value : layer_.leftBounds()) {
     if (std::isnan(value)) {
       ForceExitPresent();
-      DOMException* exception = DOMException::Create(
-          kInvalidStateError, "Layer bounds must not contain NAN values");
+      DOMException* exception =
+          DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                               "Layer bounds must not contain NAN values");
       resolver->Reject(exception);
       ReportPresentationResult(PresentationResult::kInvalidLayerBounds);
       return promise;
@@ -431,8 +434,9 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
   for (float value : layer_.rightBounds()) {
     if (std::isnan(value)) {
       ForceExitPresent();
-      DOMException* exception = DOMException::Create(
-          kInvalidStateError, "Layer bounds must not contain NAN values");
+      DOMException* exception =
+          DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                               "Layer bounds must not contain NAN values");
       resolver->Reject(exception);
       ReportPresentationResult(PresentationResult::kInvalidLayerBounds);
       return promise;
@@ -447,8 +451,9 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
   } else if (first_present) {
     if (!display_) {
       ForceExitPresent();
-      DOMException* exception = DOMException::Create(
-          kInvalidStateError, "The service is no longer active.");
+      DOMException* exception =
+          DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                               "The service is no longer active.");
       resolver->Reject(exception);
       return promise;
     }
@@ -494,7 +499,7 @@ void VRDisplay::OnPresentComplete(
   } else {
     this->ForceExitPresent();
     DOMException* exception = DOMException::Create(
-        kNotAllowedError, "Presentation request was denied.");
+        DOMExceptionCode::kNotAllowedError, "Presentation request was denied.");
 
     while (!pending_present_resolvers_.IsEmpty()) {
       ScriptPromiseResolver* resolver = pending_present_resolvers_.TakeFirst();
@@ -511,14 +516,14 @@ ScriptPromise VRDisplay::exitPresent(ScriptState* script_state) {
   if (!is_presenting_) {
     // Can't stop presenting if we're not presenting.
     DOMException* exception = DOMException::Create(
-        kInvalidStateError, "VRDisplay is not presenting.");
+        DOMExceptionCode::kInvalidStateError, "VRDisplay is not presenting.");
     resolver->Reject(exception);
     return promise;
   }
 
   if (!display_) {
-    DOMException* exception =
-        DOMException::Create(kInvalidStateError, "VRService is not available.");
+    DOMException* exception = DOMException::Create(
+        DOMExceptionCode::kInvalidStateError, "VRService is not available.");
     resolver->Reject(exception);
     return promise;
   }
@@ -536,14 +541,16 @@ void VRDisplay::BeginPresent() {
 
   DOMException* exception = nullptr;
   if (!frame_transport_) {
-    exception = DOMException::Create(
-        kInvalidStateError, "VRDisplay presentation path not configured.");
+    exception =
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                             "VRDisplay presentation path not configured.");
   }
 
   if (layer_.source().IsOffscreenCanvas()) {
     // TODO(junov, crbug.com/695497): Implement OffscreenCanvas presentation
-    exception = DOMException::Create(
-        kInvalidStateError, "OffscreenCanvas presentation not implemented.");
+    exception =
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                             "OffscreenCanvas presentation not implemented.");
   } else {
     // A canvas must be either Offscreen or plain HTMLCanvas.
     DCHECK(layer_.source().IsHTMLCanvasElement());

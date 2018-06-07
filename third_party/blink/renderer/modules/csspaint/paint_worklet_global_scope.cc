@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_paint_rendering_context_2d_settings.h"
 #include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
@@ -136,7 +135,7 @@ void PaintWorkletGlobalScope::registerPaint(
 
   if (paint_definitions_.Contains(name)) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "A class with name:'" + name + "' is already registered.");
     return;
   }
@@ -199,7 +198,7 @@ void PaintWorkletGlobalScope::registerPaint(
             *definition)) {
       document_definition_map.Set(name, kInvalidDocumentPaintDefinition);
       exception_state.ThrowDOMException(
-          kNotSupportedError,
+          DOMExceptionCode::kNotSupportedError,
           "A class with name:'" + name +
               "' was registered with a different definition.");
       return;

@@ -614,7 +614,7 @@ void HTMLInputElement::setSelectionStartForBinding(
     bool is_null,
     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The input element's type ('" +
                                           input_type_->FormControlType() +
                                           "') does not support selection.");
@@ -628,7 +628,7 @@ void HTMLInputElement::setSelectionEndForBinding(
     bool is_null,
     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The input element's type ('" +
                                           input_type_->FormControlType() +
                                           "') does not support selection.");
@@ -641,7 +641,7 @@ void HTMLInputElement::setSelectionDirectionForBinding(
     const String& direction,
     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The input element's type ('" +
                                           input_type_->FormControlType() +
                                           "') does not support selection.");
@@ -655,7 +655,7 @@ void HTMLInputElement::setSelectionRangeForBinding(
     unsigned end,
     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The input element's type ('" +
                                           input_type_->FormControlType() +
                                           "') does not support selection.");
@@ -670,7 +670,7 @@ void HTMLInputElement::setSelectionRangeForBinding(
     const String& direction,
     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The input element's type ('" +
                                           input_type_->FormControlType() +
                                           "') does not support selection.");
@@ -1101,7 +1101,7 @@ void HTMLInputElement::setValue(const String& value,
                                 TextFieldEventBehavior event_behavior) {
   // FIXME: Remove type check.
   if (type() == InputTypeNames::file && !value.IsEmpty()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "This input element accepts a filename, "
                                       "which may only be programmatically set "
                                       "to the empty string.");
@@ -1448,7 +1448,8 @@ bool HTMLInputElement::Multiple() const {
 void HTMLInputElement::setSize(unsigned size, ExceptionState& exception_state) {
   if (size == 0) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, "The value provided is 0, which is an invalid size.");
+        DOMExceptionCode::kIndexSizeError,
+        "The value provided is 0, which is an invalid size.");
   } else {
     SetUnsignedIntegralAttribute(sizeAttr, size ? size : kDefaultSize,
                                  kDefaultSize);
@@ -1814,7 +1815,7 @@ void ListAttributeTargetObserver::IdTargetChanged() {
 void HTMLInputElement::setRangeText(const String& replacement,
                                     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The input element's type ('" +
                                           input_type_->FormControlType() +
                                           "') does not support selection.");
@@ -1830,7 +1831,7 @@ void HTMLInputElement::setRangeText(const String& replacement,
                                     const String& selection_mode,
                                     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The input element's type ('" +
                                           input_type_->FormControlType() +
                                           "') does not support selection.");

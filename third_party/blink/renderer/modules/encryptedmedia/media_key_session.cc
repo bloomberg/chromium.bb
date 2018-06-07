@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/media_element_event_queue.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/content_decryption_module_result_promise.h"
@@ -105,14 +104,14 @@ static bool IsPersistentSessionType(WebEncryptedMediaSessionType session_type) {
 static ScriptPromise CreateRejectedPromiseNotCallable(
     ScriptState* script_state) {
   return ScriptPromise::RejectWithDOMException(
-      script_state,
-      DOMException::Create(kInvalidStateError, "The session is not callable."));
+      script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                         "The session is not callable."));
 }
 
 static ScriptPromise CreateRejectedPromiseAlreadyClosed(
     ScriptState* script_state) {
   return ScriptPromise::RejectWithDOMException(
-      script_state, DOMException::Create(kInvalidStateError,
+      script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                          "The session is already closed."));
 }
 
@@ -120,7 +119,7 @@ static ScriptPromise CreateRejectedPromiseAlreadyInitialized(
     ScriptState* script_state) {
   return ScriptPromise::RejectWithDOMException(
       script_state,
-      DOMException::Create(kInvalidStateError,
+      DOMException::Create(DOMExceptionCode::kInvalidStateError,
                            "The session is already initialized."));
 }
 
@@ -463,7 +462,7 @@ ScriptPromise MediaKeySession::generateRequest(
       EncryptedMediaUtils::ConvertToInitDataType(init_data_type_string);
   if (init_data_type == WebEncryptedMediaInitDataType::kUnknown) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kNotSupportedError,
+        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                            "The initialization data type '" +
                                                init_data_type_string +
                                                "' is not supported."));

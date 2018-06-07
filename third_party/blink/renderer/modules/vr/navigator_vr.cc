@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -121,7 +120,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state,
                                          Navigator& navigator) {
   if (!navigator.GetFrame()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidStateError,
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            kNotAssociatedWithDocumentMessage));
   }
   return NavigatorVR::From(navigator).getVRDisplays(script_state);
@@ -130,7 +129,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state,
 ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
   if (!GetDocument()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidStateError,
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            kNotAssociatedWithDocumentMessage));
   }
 
@@ -145,14 +144,14 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
   LocalFrame* frame = GetDocument()->GetFrame();
   if (!frame) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidStateError,
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            kNotAssociatedWithDocumentMessage));
   }
   if (IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kWebVr)) {
     if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebVr)) {
       return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(kSecurityError, kFeaturePolicyBlockedMessage));
+          script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+                                             kFeaturePolicyBlockedMessage));
     }
   } else if (!frame->HasBeenActivated() && frame->IsCrossOriginSubframe()) {
     // Before we introduced feature policy, cross-origin iframes had access to
@@ -161,7 +160,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
     // user gesture for cross-origin iframes.
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(kSecurityError,
+        DOMException::Create(DOMExceptionCode::kSecurityError,
                              kGetVRDisplaysCrossOriginBlockedMessage));
   }
 
@@ -169,7 +168,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
   // using the legacy API if they've already made calls to the new API.
   if (xr_) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidStateError,
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            kCannotUseBothNewAndOldAPIMessage));
   }
 

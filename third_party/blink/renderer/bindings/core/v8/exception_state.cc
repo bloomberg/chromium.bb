@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 
@@ -51,7 +50,7 @@ void ExceptionState::ThrowDOMException(ExceptionCode ec,
   // SecurityError is thrown via ::throwSecurityError, and _careful_
   // consideration must be given to the data exposed to JavaScript via the
   // 'sanitizedMessage'.
-  DCHECK(ec != kSecurityError);
+  DCHECK(ec != DOMExceptionCode::kSecurityError);
 
   const String& processed_message = AddExceptionContext(message);
   SetException(
@@ -70,9 +69,9 @@ void ExceptionState::ThrowSecurityError(const String& sanitized_message,
   const String& final_sanitized = AddExceptionContext(sanitized_message);
   const String& final_unsanitized = AddExceptionContext(unsanitized_message);
   SetException(
-      kSecurityError, final_sanitized,
-      s_create_dom_exception_func_(isolate_, kSecurityError, final_sanitized,
-                                   final_unsanitized));
+      DOMExceptionCode::kSecurityError, final_sanitized,
+      s_create_dom_exception_func_(isolate_, DOMExceptionCode::kSecurityError,
+                                   final_sanitized, final_unsanitized));
 }
 
 void ExceptionState::ThrowTypeError(const String& message) {
@@ -196,7 +195,8 @@ void DummyExceptionStateForTesting::ThrowRangeError(const String& message) {
 void DummyExceptionStateForTesting::ThrowSecurityError(
     const String& sanitized_message,
     const String&) {
-  SetException(kSecurityError, sanitized_message, v8::Local<v8::Value>());
+  SetException(DOMExceptionCode::kSecurityError, sanitized_message,
+               v8::Local<v8::Value>());
 }
 
 void DummyExceptionStateForTesting::ThrowTypeError(const String& message) {

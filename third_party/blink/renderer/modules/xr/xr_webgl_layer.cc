@@ -43,7 +43,7 @@ XRWebGLLayer* XRWebGLLayer::Create(
     const XRWebGLLayerInit& initializer,
     ExceptionState& exception_state) {
   if (session->ended()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot create an XRWebGLLayer for an "
                                       "XRSession which has already ended.");
     return nullptr;
@@ -57,7 +57,7 @@ XRWebGLLayer* XRWebGLLayer::Create(
   }
 
   if (webgl_context->isContextLost()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot create an XRWebGLLayer with a "
                                       "lost WebGL context.");
     return nullptr;
@@ -65,7 +65,7 @@ XRWebGLLayer* XRWebGLLayer::Create(
 
   if (!webgl_context->IsXRDeviceCompatible(session->device())) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "The session's device is not the compatible device for this context.");
     return nullptr;
   }
@@ -102,7 +102,7 @@ XRWebGLLayer* XRWebGLLayer::Create(
           want_stencil_buffer, want_antialiasing, want_multiview);
 
   if (!drawing_buffer) {
-    exception_state.ThrowDOMException(kOperationError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
                                       "Unable to create a framebuffer.");
     return nullptr;
   }

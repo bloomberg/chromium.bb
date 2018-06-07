@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_change_event.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_list_item.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_store_get_options.h"
@@ -378,7 +377,7 @@ ScriptPromise CookieStore::subscribeToChanges(
   }
 
   if (!subscription_backend_) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "CookieStore backend went away");
     return ScriptPromise();
   }
@@ -407,7 +406,7 @@ ScriptPromise CookieStore::getChangeSubscriptions(
   DCHECK(GetExecutionContext()->IsServiceWorkerGlobalScope());
 
   if (!subscription_backend_) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "CookieStore backend went away");
     return ScriptPromise();
   }
@@ -521,7 +520,7 @@ ScriptPromise CookieStore::DoRead(
     return ScriptPromise();  // ToBackendOptions has thrown an exception.
 
   if (!backend_) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "CookieStore backend went away");
     return ScriptPromise();
   }
@@ -595,7 +594,7 @@ ScriptPromise CookieStore::DoWrite(ScriptState* script_state,
     return ScriptPromise();  // ToCanonicalCookie has thrown an exception.
 
   if (!backend_) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "CookieStore backend went away");
     return ScriptPromise();
   }
@@ -618,7 +617,8 @@ void CookieStore::OnSetCanonicalCookieResult(ScriptPromiseResolver* resolver,
 
   if (!backend_success) {
     resolver->Reject(DOMException::Create(
-        kUnknownError, "An unknown error occured while writing the cookie."));
+        DOMExceptionCode::kUnknownError,
+        "An unknown error occured while writing the cookie."));
     return;
   }
   resolver->Resolve();
@@ -634,7 +634,7 @@ void CookieStore::OnSubscribeToCookieChangesResult(
 
   if (!backend_success) {
     resolver->Reject(DOMException::Create(
-        kUnknownError,
+        DOMExceptionCode::kUnknownError,
         "An unknown error occured while subscribing to cookie changes."));
     return;
   }
@@ -652,7 +652,7 @@ void CookieStore::OnGetCookieChangeSubscriptionResult(
 
   if (!backend_success) {
     resolver->Reject(DOMException::Create(
-        kUnknownError,
+        DOMExceptionCode::kUnknownError,
         "An unknown error occured while reading cookie change subscriptions."));
     return;
   }

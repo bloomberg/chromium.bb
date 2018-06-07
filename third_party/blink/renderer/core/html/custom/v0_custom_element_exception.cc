@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_exception.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 
@@ -45,44 +44,44 @@ void V0CustomElementException::ThrowException(Reason reason,
   switch (reason) {
     case kCannotRegisterFromExtension:
       exception_state.ThrowDOMException(
-          kNotSupportedError,
+          DOMExceptionCode::kNotSupportedError,
           Preamble(type) + "Elements cannot be registered from extensions.");
       return;
 
     case kConstructorPropertyNotConfigurable:
       exception_state.ThrowDOMException(
-          kNotSupportedError,
+          DOMExceptionCode::kNotSupportedError,
           Preamble(type) +
               "Prototype constructor property is not configurable.");
       return;
 
     case kContextDestroyedCheckingPrototype:
       exception_state.ThrowDOMException(
-          kInvalidStateError,
+          DOMExceptionCode::kInvalidStateError,
           Preamble(type) + "The context is no longer valid.");
       return;
 
     case kContextDestroyedCreatingCallbacks:
       exception_state.ThrowDOMException(
-          kInvalidStateError,
+          DOMExceptionCode::kInvalidStateError,
           Preamble(type) + "The context is no longer valid.");
       return;
 
     case kContextDestroyedRegisteringDefinition:
       exception_state.ThrowDOMException(
-          kInvalidStateError,
+          DOMExceptionCode::kInvalidStateError,
           Preamble(type) + "The context is no longer valid.");
       return;
 
     case kExtendsIsInvalidName:
       exception_state.ThrowDOMException(
-          kNotSupportedError,
+          DOMExceptionCode::kNotSupportedError,
           Preamble(type) +
               "The tag name specified in 'extends' is not a valid tag name.");
       return;
 
     case kExtendsIsCustomElementName:
-      exception_state.ThrowDOMException(kNotSupportedError,
+      exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                         Preamble(type) +
                                             "The tag name specified in "
                                             "'extends' is a custom element "
@@ -91,19 +90,21 @@ void V0CustomElementException::ThrowException(Reason reason,
 
     case kInvalidName:
       exception_state.ThrowDOMException(
-          kSyntaxError, Preamble(type) + "The type name is invalid.");
+          DOMExceptionCode::kSyntaxError,
+          Preamble(type) + "The type name is invalid.");
       return;
 
     case kPrototypeInUse:
       exception_state.ThrowDOMException(
-          kNotSupportedError, Preamble(type) +
-                                  "The prototype is already in-use as "
-                                  "an interface prototype object.");
+          DOMExceptionCode::kNotSupportedError,
+          Preamble(type) +
+              "The prototype is already in-use as "
+              "an interface prototype object.");
       return;
 
     case kTypeAlreadyRegistered:
       exception_state.ThrowDOMException(
-          kNotSupportedError,
+          DOMExceptionCode::kNotSupportedError,
           Preamble(type) + "A type with that name is already registered.");
       return;
   }

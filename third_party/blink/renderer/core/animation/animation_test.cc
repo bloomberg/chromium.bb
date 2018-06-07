@@ -501,7 +501,7 @@ TEST_F(AnimationAnimationTest, FinishRaisesException) {
   animation->finish(exception_state);
   EXPECT_EQ(10, animation->CurrentTimeInternal());
   EXPECT_TRUE(exception_state.HadException());
-  EXPECT_EQ(kInvalidStateError, exception_state.Code());
+  EXPECT_EQ(DOMExceptionCode::kInvalidStateError, exception_state.Code());
 }
 
 TEST_F(AnimationAnimationTest, LimitingAtEffectEnd) {

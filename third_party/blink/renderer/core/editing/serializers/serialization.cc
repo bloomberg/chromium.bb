@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/core/dom/context_features.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/editing/editing_strategy.h"
@@ -616,7 +615,7 @@ DocumentFragment* CreateFragmentForInnerOuterHTML(
       fragment->ParseXML(markup, context_element, parser_content_policy);
   if (!was_valid) {
     exception_state.ThrowDOMException(
-        kSyntaxError,
+        DOMExceptionCode::kSyntaxError,
         "The provided markup is invalid XML, and "
         "therefore cannot be inserted into an XML "
         "document.");

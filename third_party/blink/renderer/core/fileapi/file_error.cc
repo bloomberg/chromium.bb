@@ -33,7 +33,6 @@
 #include "third_party/blink/public/platform/web_file_error.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -79,32 +78,32 @@ ExceptionCode ErrorCodeToExceptionCode(ErrorCode code) {
     case kOK:
       return 0;
     case kNotFoundErr:
-      return kNotFoundError;
+      return DOMExceptionCode::kNotFoundError;
     case kSecurityErr:
-      return kSecurityError;
+      return DOMExceptionCode::kSecurityError;
     case kAbortErr:
-      return kAbortError;
+      return DOMExceptionCode::kAbortError;
     case kNotReadableErr:
-      return kNotReadableError;
+      return DOMExceptionCode::kNotReadableError;
     case kEncodingErr:
-      return kEncodingError;
+      return DOMExceptionCode::kEncodingError;
     case kNoModificationAllowedErr:
-      return kNoModificationAllowedError;
+      return DOMExceptionCode::kNoModificationAllowedError;
     case kInvalidStateErr:
-      return kInvalidStateError;
+      return DOMExceptionCode::kInvalidStateError;
     case kSyntaxErr:
-      return kSyntaxError;
+      return DOMExceptionCode::kSyntaxError;
     case kInvalidModificationErr:
-      return kInvalidModificationError;
+      return DOMExceptionCode::kInvalidModificationError;
     case kQuotaExceededErr:
-      return kQuotaExceededError;
+      return DOMExceptionCode::kQuotaExceededError;
     case kTypeMismatchErr:
-      return kTypeMismatchError;
+      return DOMExceptionCode::kTypeMismatchError;
     case kPathExistsErr:
-      return kPathExistsError;
+      return DOMExceptionCode::kPathExistsError;
     default:
       NOTREACHED();
-      return code;
+      return DOMExceptionCode::kUnknownError;
   }
 }
 
@@ -151,7 +150,7 @@ void ThrowDOMException(ExceptionState& exception_state, ErrorCode code) {
     return;
 
   // SecurityError is special-cased, as we want to route those exceptions
-  // through ExceptionState::throwSecurityError.
+  // through ExceptionState::ThrowSecurityError.
   if (code == kSecurityErr) {
     exception_state.ThrowSecurityError(kSecurityErrorMessage);
     return;

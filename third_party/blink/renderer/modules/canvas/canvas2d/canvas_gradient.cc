@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_gradient.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_pattern.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.h"
 
@@ -47,15 +46,16 @@ void CanvasGradient::addColorStop(float value,
                                   const String& color_string,
                                   ExceptionState& exception_state) {
   if (!(value >= 0 && value <= 1.0f)) {
-    exception_state.ThrowDOMException(
-        kIndexSizeError, "The provided value (" + String::Number(value) +
-                             ") is outside the range (0.0, 1.0).");
+    exception_state.ThrowDOMException(DOMExceptionCode::kIndexSizeError,
+                                      "The provided value (" +
+                                          String::Number(value) +
+                                          ") is outside the range (0.0, 1.0).");
     return;
   }
 
   Color color = 0;
   if (!ParseColorOrCurrentColor(color, color_string, nullptr /*canvas*/)) {
-    exception_state.ThrowDOMException(kSyntaxError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "The value provided ('" + color_string +
                                           "') could not be parsed as a color.");
     return;

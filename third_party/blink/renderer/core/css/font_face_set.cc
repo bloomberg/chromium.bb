@@ -169,7 +169,8 @@ ScriptPromise FontFaceSet::load(ScriptState* script_state,
         ScriptPromiseResolver::Create(script_state);
     ScriptPromise promise = resolver->Promise();
     resolver->Reject(DOMException::Create(
-        kSyntaxError, "Could not resolve '" + font_string + "' as a font."));
+        DOMExceptionCode::kSyntaxError,
+        "Could not resolve '" + font_string + "' as a font."));
     return promise;
   }
 
@@ -200,7 +201,8 @@ bool FontFaceSet::check(const String& font_string,
   Font font;
   if (!ResolveFontStyle(font_string, font)) {
     exception_state.ThrowDOMException(
-        kSyntaxError, "Could not resolve '" + font_string + "' as a font.");
+        DOMExceptionCode::kSyntaxError,
+        "Could not resolve '" + font_string + "' as a font.");
     return false;
   }
 

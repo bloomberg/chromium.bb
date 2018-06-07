@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/modules/webdatabase/sql_result_set.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -56,7 +55,8 @@ int64_t SQLResultSet::insertId(ExceptionState& exception_state) const {
     return insert_id_;
 
   exception_state.ThrowDOMException(
-      kInvalidAccessError, "The query didn't result in any rows being added.");
+      DOMExceptionCode::kInvalidAccessError,
+      "The query didn't result in any rows being added.");
   return -1;
 }
 

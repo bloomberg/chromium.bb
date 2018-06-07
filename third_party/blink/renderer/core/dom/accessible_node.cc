@@ -990,13 +990,13 @@ void AccessibleNode::appendChild(AccessibleNode* child,
                                  ExceptionState& exception_state) {
   if (child->element()) {
     exception_state.ThrowDOMException(
-        kInvalidAccessError,
+        DOMExceptionCode::kInvalidAccessError,
         "An AccessibleNode associated with an Element cannot be a child.");
     return;
   }
 
   if (child->parent_) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Reparenting is not supported yet.");
     return;
   }
@@ -1005,7 +1005,7 @@ void AccessibleNode::appendChild(AccessibleNode* child,
   if (!GetDocument()->GetSecurityOrigin()->CanAccess(
           child->GetDocument()->GetSecurityOrigin())) {
     exception_state.ThrowDOMException(
-        kInvalidAccessError,
+        DOMExceptionCode::kInvalidAccessError,
         "Trying to access an AccessibleNode from a different origin.");
     return;
   }
@@ -1019,7 +1019,8 @@ void AccessibleNode::removeChild(AccessibleNode* old_child,
                                  ExceptionState& exception_state) {
   if (old_child->parent_ != this) {
     exception_state.ThrowDOMException(
-        kInvalidAccessError, "Node to remove is not a child of this node.");
+        DOMExceptionCode::kInvalidAccessError,
+        "Node to remove is not a child of this node.");
     return;
   }
   auto* ix = std::find_if(children_.begin(), children_.end(),
@@ -1028,7 +1029,8 @@ void AccessibleNode::removeChild(AccessibleNode* old_child,
                           });
   if (ix == children_.end()) {
     exception_state.ThrowDOMException(
-        kInvalidAccessError, "Node to remove is not a child of this node.");
+        DOMExceptionCode::kInvalidAccessError,
+        "Node to remove is not a child of this node.");
     return;
   }
   old_child->parent_ = nullptr;

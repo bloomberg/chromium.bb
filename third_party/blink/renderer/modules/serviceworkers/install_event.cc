@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/serviceworkers/install_event.h"
 
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"

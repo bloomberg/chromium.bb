@@ -588,7 +588,7 @@ v8::MaybeLocal<v8::Object> V8ScriptValueDeserializer::ReadHostObject(
   if (ReadTag(&tag))
     wrappable = ReadDOMObject(tag);
   if (!wrappable) {
-    exception_state.ThrowDOMException(kDataCloneError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
                                       "Unable to deserialize cloned data.");
     return v8::MaybeLocal<v8::Object>();
   }
@@ -628,7 +628,7 @@ V8ScriptValueDeserializer::GetSharedArrayBufferFromId(v8::Isolate* isolate,
   }
   ExceptionState exception_state(isolate, ExceptionState::kUnknownContext,
                                  nullptr, nullptr);
-  exception_state.ThrowDOMException(kDataCloneError,
+  exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
                                     "Unable to deserialize SharedArrayBuffer.");
   // If the id does not map to a valid index, it is expected that the
   // SerializedScriptValue emptied its shared ArrayBufferContents when crossing

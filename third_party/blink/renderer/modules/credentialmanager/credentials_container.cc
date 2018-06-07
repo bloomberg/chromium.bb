@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -90,7 +89,7 @@ bool CheckSecurityRequirementsBeforeRequest(
   if (required_origin_type == RequiredOriginType::kSecureAndSameWithAncestors &&
       !IsSameOriginWithAncestors(resolver->GetFrame())) {
     resolver->Reject(DOMException::Create(
-        kNotAllowedError,
+        DOMExceptionCode::kNotAllowedError,
         "The following credential operations can only occur in a document which"
         " is same-origin with all of its ancestors: "
         "storage/retrieval of 'PasswordCredential' and 'FederatedCredential', "
@@ -128,14 +127,15 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
         "The origin ' " + origin->ToRawString() +
         "' is an opaque origin and hence not allowed to access " +
         "'PublicKeyCredential' objects.";
-    resolver->Reject(DOMException::Create(kNotAllowedError, error_message));
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotAllowedError,
+                                          error_message));
     return false;
   }
 
   if (origin->Protocol() != url::kHttpScheme &&
       origin->Protocol() != url::kHttpsScheme) {
     resolver->Reject(DOMException::Create(
-        kNotAllowedError,
+        DOMExceptionCode::kNotAllowedError,
         "Public-key credentials are only available to secure HTTP or HTTPS "
         "origins. See https://crbug.com/824383"));
     return false;
@@ -155,8 +155,9 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
   OriginAccessEntry access_entry(origin->Protocol(), effective_domain,
                                  blink::OriginAccessEntry::kAllowSubdomains);
   if (effective_domain.IsEmpty() || access_entry.HostIsIPAddress()) {
-    resolver->Reject(DOMException::Create(
-        kSecurityError, "Effective domain is not a valid domain."));
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kSecurityError,
+                             "Effective domain is not a valid domain."));
     return false;
   }
 
@@ -170,7 +171,7 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
         access_entry.MatchesDomain(*origin) !=
             blink::OriginAccessEntry::kMatchesOrigin) {
       resolver->Reject(DOMException::Create(
-          kSecurityError,
+          DOMExceptionCode::kSecurityError,
           "The relying party ID '" + relying_party_id +
               "' is not a registrable domain suffix of, nor equal to '" +
               origin->ToRawString() + "'."));
@@ -206,60 +207,62 @@ DOMException* CredentialManagerErrorToDOMException(
     CredentialManagerError reason) {
   switch (reason) {
     case CredentialManagerError::PENDING_REQUEST:
-      return DOMException::Create(kInvalidStateError,
+      return DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                   "A request is already pending.");
     case CredentialManagerError::PASSWORD_STORE_UNAVAILABLE:
-      return DOMException::Create(kNotSupportedError,
+      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                   "The password store is unavailable.");
     case CredentialManagerError::NOT_ALLOWED:
       return DOMException::Create(
-          kNotAllowedError,
+          DOMExceptionCode::kNotAllowedError,
           "The operation either timed out or was not allowed. See: "
           "https://w3c.github.io/webauthn/#sec-assertion-privacy.");
     case CredentialManagerError::AUTHENTICATOR_CRITERIA_UNSUPPORTED:
-      return DOMException::Create(kNotSupportedError,
+      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                   "The specified `authenticatorSelection` "
                                   "criteria cannot be fulfilled by CTAP1/U2F "
                                   "authenticators, and CTAP2 authenticators "
                                   "are not yet supported.");
     case CredentialManagerError::ALGORITHM_UNSUPPORTED:
-      return DOMException::Create(kNotSupportedError,
+      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                   "None of the algorithms specified in "
                                   "`pubKeyCredParams` are compatible with "
                                   "CTAP1/U2F authenticators, and CTAP2 "
                                   "authenticators are not yet supported.");
     case CredentialManagerError::EMPTY_ALLOW_CREDENTIALS:
-      return DOMException::Create(kNotSupportedError,
+      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                   "The `allowCredentials` list cannot be left "
                                   "empty for CTAP1/U2F authenticators, and "
                                   "support for CTAP2 authenticators is not yet "
                                   "implemented.");
     case CredentialManagerError::USER_VERIFICATION_UNSUPPORTED:
-      return DOMException::Create(kNotSupportedError,
+      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                   "The specified `userVerification` "
                                   "requirement cannot be fulfilled by "
                                   "CTAP1/U2F authenticators, and CTAP2 "
                                   "authenticators are not yet supported.");
     case CredentialManagerError::INVALID_DOMAIN:
-      return DOMException::Create(kSecurityError, "This is an invalid domain.");
+      return DOMException::Create(DOMExceptionCode::kSecurityError,
+                                  "This is an invalid domain.");
     case CredentialManagerError::CREDENTIAL_EXCLUDED:
       return DOMException::Create(
-          kInvalidStateError,
+          DOMExceptionCode::kInvalidStateError,
           "The user attempted to register an authenticator that contains one "
           "of the credentials already registered with the relying party.");
     case CredentialManagerError::CREDENTIAL_NOT_RECOGNIZED:
-      return DOMException::Create(kInvalidStateError,
+      return DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                   "The user attempted to use an authenticator "
                                   "that recognized none of the provided "
                                   "credentials.");
     case CredentialManagerError::NOT_IMPLEMENTED:
-      return DOMException::Create(kNotSupportedError, "Not implemented");
+      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                  "Not implemented");
     case CredentialManagerError::NOT_FOCUSED:
-      return DOMException::Create(kNotAllowedError,
+      return DOMException::Create(DOMExceptionCode::kNotAllowedError,
                                   "The operation is not allowed at this time "
                                   "because the page does not have focus.");
     case CredentialManagerError::UNKNOWN:
-      return DOMException::Create(kNotReadableError,
+      return DOMException::Create(DOMExceptionCode::kNotReadableError,
                                   "An unknown error occurred while talking "
                                   "to the credential manager.");
     case CredentialManagerError::SUCCESS:
@@ -421,7 +424,7 @@ ScriptPromise CredentialsContainer::get(
           KURL appid_url(appid);
           if (!appid_url.IsValid()) {
             resolver->Reject(
-                DOMException::Create(kSyntaxError,
+                DOMException::Create(DOMExceptionCode::kSyntaxError,
                                      "The `appid` extension value is neither "
                                      "empty/null nor a valid URL"));
             return promise;
@@ -430,7 +433,7 @@ ScriptPromise CredentialsContainer::get(
       }
       if (options.publicKey().extensions().hasCableRegistration()) {
         resolver->Reject(DOMException::Create(
-            kNotSupportedError,
+            DOMExceptionCode::kNotSupportedError,
             "The 'cableRegistration' extension is only valid when creating "
             "a credential"));
         return promise;
@@ -455,7 +458,7 @@ ScriptPromise CredentialsContainer::get(
               WTF::Passed(std::make_unique<ScopedPromiseResolver>(resolver))));
     } else {
       resolver->Reject(DOMException::Create(
-          kNotSupportedError,
+          DOMExceptionCode::kNotSupportedError,
           "Required parameters missing in 'options.publicKey'."));
     }
     return promise;
@@ -512,12 +515,12 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
   if (!(credential->IsFederatedCredential() ||
         credential->IsPasswordCredential())) {
     resolver->Reject(DOMException::Create(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "Store operation not permitted for PublicKey credentials."));
   }
 
   if (!IsIconURLEmptyOrSecure(credential)) {
-    resolver->Reject(DOMException::Create(kSecurityError,
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kSecurityError,
                                           "'iconURL' should be a secure URL"));
     return promise;
   }
@@ -550,7 +553,7 @@ ScriptPromise CredentialsContainer::create(
   if ((options.hasPassword() + options.hasFederated() +
        options.hasPublicKey()) != 1) {
     resolver->Reject(DOMException::Create(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "Only exactly one of 'password', 'federated', and 'publicKey' "
         "credential types are currently supported."));
     return promise;
@@ -579,7 +582,7 @@ ScriptPromise CredentialsContainer::create(
     if (options.publicKey().hasExtensions()) {
       if (options.publicKey().extensions().hasAppid()) {
         resolver->Reject(DOMException::Create(
-            kNotSupportedError,
+            DOMExceptionCode::kNotSupportedError,
             "The 'appid' extension is only valid when requesting an assertion "
             "for a pre-existing credential that was registered using the "
             "legacy FIDO U2F API."));
@@ -587,7 +590,7 @@ ScriptPromise CredentialsContainer::create(
       }
       if (options.publicKey().extensions().hasCableAuthenticationData()) {
         resolver->Reject(DOMException::Create(
-            kNotSupportedError,
+            DOMExceptionCode::kNotSupportedError,
             "The 'cableAuthentication' extension is only valid when requesting "
             "an assertion"));
         return promise;
@@ -612,7 +615,7 @@ ScriptPromise CredentialsContainer::create(
               WTF::Passed(std::make_unique<ScopedPromiseResolver>(resolver))));
     } else {
       resolver->Reject(DOMException::Create(
-          kNotSupportedError,
+          DOMExceptionCode::kNotSupportedError,
           "Required parameters missing in `options.publicKey`."));
     }
   }

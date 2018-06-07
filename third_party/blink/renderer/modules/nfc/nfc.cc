@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_string_resource.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -391,7 +390,7 @@ ScriptPromise RejectIfInvalidTextRecord(ScriptState* script_state,
 
   if (record.hasMediaType() &&
       !record.mediaType().StartsWithIgnoringASCIICase(kPlainTextMimePrefix)) {
-    return RejectWithDOMException(script_state, kSyntaxError,
+    return RejectWithDOMException(script_state, DOMExceptionCode::kSyntaxError,
                                   "Invalid media type for 'text' record.");
   }
 
@@ -408,7 +407,7 @@ ScriptPromise RejectIfInvalidURLRecord(ScriptState* script_state,
   blink::V8StringResource<> string_resource = record.data().V8Value();
   if (!string_resource.Prepare() ||
       !KURL(NullURL(), string_resource).IsValid()) {
-    return RejectWithDOMException(script_state, kSyntaxError,
+    return RejectWithDOMException(script_state, DOMExceptionCode::kSyntaxError,
                                   "Cannot parse data for 'url' record.");
   }
 
@@ -429,7 +428,7 @@ ScriptPromise RejectIfInvalidJSONRecord(ScriptState* script_state,
       (record.mediaType() != kJsonMimeType &&
        !(record.mediaType().StartsWithIgnoringASCIICase(kJsonMimePrefix) &&
          record.mediaType().EndsWithIgnoringASCIICase(kJsonMimePostfix)))) {
-    return RejectWithDOMException(script_state, kSyntaxError,
+    return RejectWithDOMException(script_state, DOMExceptionCode::kSyntaxError,
                                   "Invalid media type for 'json' record.");
   }
 
@@ -701,19 +700,20 @@ ScriptPromise NFC::push(ScriptState* script_state,
   device::mojom::blink::NFCMessagePtr message =
       device::mojom::blink::NFCMessage::From(push_message);
   if (!message) {
-    return RejectWithDOMException(script_state, kSyntaxError,
+    return RejectWithDOMException(script_state, DOMExceptionCode::kSyntaxError,
                                   "Cannot convert NFCMessage.");
   }
 
   if (!SetURL(
           ExecutionContext::From(script_state)->GetSecurityOrigin()->ToString(),
           message)) {
-    return RejectWithDOMException(script_state, kSyntaxError,
+    return RejectWithDOMException(script_state, DOMExceptionCode::kSyntaxError,
                                   "Cannot set WebNFC Id.");
   }
 
   if (GetNFCMessageSize(message) > device::mojom::blink::NFCMessage::kMaxSize) {
-    return RejectWithDOMException(script_state, kNotSupportedError,
+    return RejectWithDOMException(script_state,
+                                  DOMExceptionCode::kNotSupportedError,
                                   "NFCMessage exceeds maximum supported size.");
   }
 
@@ -756,7 +756,8 @@ ScriptPromise NFC::watch(ScriptState* script_state,
   if (options.hasURL() && !options.url().IsEmpty()) {
     KURL pattern_url(options.url());
     if (!pattern_url.IsValid() || pattern_url.Protocol() != kProtocolHttps) {
-      return RejectWithDOMException(script_state, kSyntaxError,
+      return RejectWithDOMException(script_state,
+                                    DOMExceptionCode::kSyntaxError,
                                     "Invalid URL pattern was provided.");
     }
   }
@@ -781,7 +782,8 @@ ScriptPromise NFC::cancelWatch(ScriptState* script_state, long id) {
   if (id) {
     callbacks_.erase(id);
   } else {
-    return RejectWithDOMException(script_state, kNotFoundError,
+    return RejectWithDOMException(script_state,
+                                  DOMExceptionCode::kNotFoundError,
                                   "Provided watch id cannot be found.");
   }
 
@@ -882,11 +884,13 @@ ScriptPromise NFC::RejectIfNotSupported(ScriptState* script_state) {
   String error_message;
   if (!IsSupportedInContext(ExecutionContext::From(script_state),
                             error_message)) {
-    return RejectWithDOMException(script_state, kSecurityError, error_message);
+    return RejectWithDOMException(
+        script_state, DOMExceptionCode::kSecurityError, error_message);
   }
 
   if (!nfc_) {
-    return RejectWithDOMException(script_state, kNotSupportedError,
+    return RejectWithDOMException(script_state,
+                                  DOMExceptionCode::kNotSupportedError,
                                   "WebNFC is not supported.");
   }
 

@@ -33,7 +33,6 @@
 #include "media/midi/midi_service.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -116,7 +115,7 @@ class MessageValidator {
       if (IsSysex()) {
         if (!sysex_enabled) {
           exception_state.ThrowDOMException(
-              kInvalidAccessError,
+              DOMExceptionCode::kInvalidAccessError,
               "System exclusive message is not allowed " + GetPositionString());
           return false;
         }

@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_DEPRECATED_STORAGE_QUOTA_H_
 
 #include "third_party/blink/public/mojom/quota/quota_dispatcher_host.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 

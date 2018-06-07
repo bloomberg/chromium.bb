@@ -7,7 +7,6 @@
 #include <memory>
 #include "base/auto_reset.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/body.h"
 #include "third_party/blink/renderer/core/fetch/readable_stream_bytes_consumer.h"
@@ -328,7 +327,7 @@ bool BodyStreamBuffer::IsAborted() {
 }
 
 void BodyStreamBuffer::Abort() {
-  Controller()->GetError(DOMException::Create(kAbortError));
+  Controller()->GetError(DOMException::Create(DOMExceptionCode::kAbortError));
   CancelConsumer();
 }
 

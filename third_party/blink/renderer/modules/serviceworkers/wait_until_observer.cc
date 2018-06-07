@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
@@ -158,7 +157,7 @@ void WaitUntilObserver::WaitUntil(ScriptState* script_state,
       case EventDispatchState::kDispatched:
       case EventDispatchState::kFailed:
         exception_state.ThrowDOMException(
-            kInvalidStateError,
+            DOMExceptionCode::kInvalidStateError,
             "The event handler is already finished "
             "and no extend lifetime promises are "
             "outstanding.");

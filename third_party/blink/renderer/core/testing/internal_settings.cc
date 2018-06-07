@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/core/testing/internal_settings.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -41,11 +40,12 @@
     return returnValue;                                                 \
   }
 
-#define InternalSettingsGuardForSettings()                               \
-  if (!GetSettings()) {                                                  \
-    exception_state.ThrowDOMException(                                   \
-        kInvalidAccessError, "The settings object cannot be obtained."); \
-    return;                                                              \
+#define InternalSettingsGuardForSettings()          \
+  if (!GetSettings()) {                             \
+    exception_state.ThrowDOMException(              \
+        DOMExceptionCode::kInvalidAccessError,      \
+        "The settings object cannot be obtained."); \
+    return;                                         \
   }
 
 #define InternalSettingsGuardForPage()                                       \
@@ -188,7 +188,7 @@ void InternalSettings::setViewportStyle(const String& style,
     GetSettings()->SetViewportStyle(WebViewportStyle::kTelevision);
   else
     exception_state.ThrowDOMException(
-        kSyntaxError,
+        DOMExceptionCode::kSyntaxError,
         "The viewport style type provided ('" + style + "') is invalid.");
 }
 
@@ -295,16 +295,19 @@ void InternalSettings::setTextTrackKindUserPreference(
   String token = preference.StripWhiteSpace();
   TextTrackKindUserPreference user_preference =
       TextTrackKindUserPreference::kDefault;
-  if (token == "default")
+  if (token == "default") {
     user_preference = TextTrackKindUserPreference::kDefault;
-  else if (token == "captions")
+  } else if (token == "captions") {
     user_preference = TextTrackKindUserPreference::kCaptions;
-  else if (token == "subtitles")
+  } else if (token == "subtitles") {
     user_preference = TextTrackKindUserPreference::kSubtitles;
-  else
+  } else {
     exception_state.ThrowDOMException(
-        kSyntaxError, "The user preference for text track kind " + preference +
-                          ")' is invalid.");
+        DOMExceptionCode::kSyntaxError,
+        "The user preference for text track kind " + preference +
+            ")' is invalid.");
+    return;
+  }
 
   GetSettings()->SetTextTrackKindUserPreference(user_preference);
 }
@@ -334,7 +337,7 @@ void InternalSettings::setEditingBehavior(const String& editing_behavior,
   else if (DeprecatedEqualIgnoringCase(editing_behavior, "android"))
     GetSettings()->SetEditingBehaviorType(kEditingAndroidBehavior);
   else
-    exception_state.ThrowDOMException(kSyntaxError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "The editing behavior type provided ('" +
                                           editing_behavior + "') is invalid.");
 }
@@ -375,15 +378,18 @@ void InternalSettings::setAvailablePointerTypes(
   for (size_t i = 0; i < tokens.size(); ++i) {
     String token = tokens[i].StripWhiteSpace();
 
-    if (token == "coarse")
+    if (token == "coarse") {
       pointer_types |= kPointerTypeCoarse;
-    else if (token == "fine")
+    } else if (token == "fine") {
       pointer_types |= kPointerTypeFine;
-    else if (token == "none")
+    } else if (token == "none") {
       pointer_types |= kPointerTypeNone;
-    else
+    } else {
       exception_state.ThrowDOMException(
-          kSyntaxError, "The pointer type token ('" + token + ")' is invalid.");
+          DOMExceptionCode::kSyntaxError,
+          "The pointer type token ('" + token + ")' is invalid.");
+      return;
+    }
   }
 
   GetSettings()->SetAvailablePointerTypes(pointer_types);
@@ -395,17 +401,20 @@ void InternalSettings::setDisplayModeOverride(const String& display_mode,
   String token = display_mode.StripWhiteSpace();
 
   WebDisplayMode mode = kWebDisplayModeBrowser;
-  if (token == "browser")
+  if (token == "browser") {
     mode = kWebDisplayModeBrowser;
-  else if (token == "minimal-ui")
+  } else if (token == "minimal-ui") {
     mode = kWebDisplayModeMinimalUi;
-  else if (token == "standalone")
+  } else if (token == "standalone") {
     mode = kWebDisplayModeStandalone;
-  else if (token == "fullscreen")
+  } else if (token == "fullscreen") {
     mode = kWebDisplayModeFullscreen;
-  else
+  } else {
     exception_state.ThrowDOMException(
-        kSyntaxError, "The display-mode token ('" + token + ")' is invalid.");
+        DOMExceptionCode::kSyntaxError,
+        "The display-mode token ('" + token + ")' is invalid.");
+    return;
+  }
 
   GetSettings()->SetDisplayModeOverride(mode);
 }
@@ -416,15 +425,18 @@ void InternalSettings::setPrimaryPointerType(const String& pointer,
   String token = pointer.StripWhiteSpace();
 
   PointerType type = kPointerTypeNone;
-  if (token == "coarse")
+  if (token == "coarse") {
     type = kPointerTypeCoarse;
-  else if (token == "fine")
+  } else if (token == "fine") {
     type = kPointerTypeFine;
-  else if (token == "none")
+  } else if (token == "none") {
     type = kPointerTypeNone;
-  else
+  } else {
     exception_state.ThrowDOMException(
-        kSyntaxError, "The pointer type token ('" + token + ")' is invalid.");
+        DOMExceptionCode::kSyntaxError,
+        "The pointer type token ('" + token + ")' is invalid.");
+    return;
+  }
 
   GetSettings()->SetPrimaryPointerType(type);
 }
@@ -442,13 +454,16 @@ void InternalSettings::setAvailableHoverTypes(const String& types,
   for (size_t i = 0; i < tokens.size(); ++i) {
     String token = tokens[i].StripWhiteSpace();
 
-    if (token == "none")
+    if (token == "none") {
       hover_types |= kHoverTypeNone;
-    else if (token == "hover")
+    } else if (token == "hover") {
       hover_types |= kHoverTypeHover;
-    else
+    } else {
       exception_state.ThrowDOMException(
-          kSyntaxError, "The hover type token ('" + token + ")' is invalid.");
+          DOMExceptionCode::kSyntaxError,
+          "The hover type token ('" + token + ")' is invalid.");
+      return;
+    }
   }
 
   GetSettings()->SetAvailableHoverTypes(hover_types);
@@ -460,13 +475,16 @@ void InternalSettings::setPrimaryHoverType(const String& type,
   String token = type.StripWhiteSpace();
 
   HoverType hover_type = kHoverTypeNone;
-  if (token == "none")
+  if (token == "none") {
     hover_type = kHoverTypeNone;
-  else if (token == "hover")
+  } else if (token == "hover") {
     hover_type = kHoverTypeHover;
-  else
+  } else {
     exception_state.ThrowDOMException(
-        kSyntaxError, "The hover type token ('" + token + ")' is invalid.");
+        DOMExceptionCode::kSyntaxError,
+        "The hover type token ('" + token + ")' is invalid.");
+    return;
+  }
 
   GetSettings()->SetPrimaryHoverType(hover_type);
 }
@@ -475,16 +493,18 @@ void InternalSettings::setImageAnimationPolicy(
     const String& policy,
     ExceptionState& exception_state) {
   InternalSettingsGuardForSettings();
-  if (DeprecatedEqualIgnoringCase(policy, "allowed"))
+  if (DeprecatedEqualIgnoringCase(policy, "allowed")) {
     GetSettings()->SetImageAnimationPolicy(kImageAnimationPolicyAllowed);
-  else if (DeprecatedEqualIgnoringCase(policy, "once"))
+  } else if (DeprecatedEqualIgnoringCase(policy, "once")) {
     GetSettings()->SetImageAnimationPolicy(kImageAnimationPolicyAnimateOnce);
-  else if (DeprecatedEqualIgnoringCase(policy, "none"))
+  } else if (DeprecatedEqualIgnoringCase(policy, "none")) {
     GetSettings()->SetImageAnimationPolicy(kImageAnimationPolicyNoAnimation);
-  else
+  } else {
     exception_state.ThrowDOMException(
-        kSyntaxError,
+        DOMExceptionCode::kSyntaxError,
         "The image animation policy provided ('" + policy + "') is invalid.");
+    return;
+  }
 }
 
 void InternalSettings::setScrollTopLeftInteropEnabled(bool enabled) {
@@ -525,7 +545,8 @@ void InternalSettings::setAutoplayPolicy(const String& policy_str,
     policy = AutoplayPolicy::Type::kDocumentUserActivationRequired;
   } else {
     exception_state.ThrowDOMException(
-        kSyntaxError, "The autoplay policy ('" + policy_str + ")' is invalid.");
+        DOMExceptionCode::kSyntaxError,
+        "The autoplay policy ('" + policy_str + ")' is invalid.");
   }
 
   GetSettings()->SetAutoplayPolicy(policy);

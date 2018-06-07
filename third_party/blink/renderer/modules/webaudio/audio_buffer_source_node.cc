@@ -26,7 +26,6 @@
 #include <algorithm>
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_options.h"
@@ -383,7 +382,7 @@ void AudioBufferSourceHandler::SetBuffer(AudioBuffer* buffer,
   DCHECK(IsMainThread());
 
   if (buffer && buffer_has_been_set_) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot set buffer to non-null after it "
                                       "has been already been set to a non-null "
                                       "buffer");
@@ -407,7 +406,7 @@ void AudioBufferSourceHandler::SetBuffer(AudioBuffer* buffer,
     // many channels either.
     if (number_of_channels > BaseAudioContext::MaxNumberOfChannels()) {
       exception_state.ThrowDOMException(
-          kNotSupportedError,
+          DOMExceptionCode::kNotSupportedError,
           ExceptionMessages::IndexOutsideRange(
               "number of input channels", number_of_channels, 1u,
               ExceptionMessages::kInclusiveBound,
@@ -505,7 +504,7 @@ void AudioBufferSourceHandler::StartSource(double when,
   Context()->MaybeRecordStartAttempt();
 
   if (GetPlaybackState() != UNSCHEDULED_STATE) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "cannot call start more than once.");
     return;
   }

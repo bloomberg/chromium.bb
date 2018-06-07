@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
@@ -92,7 +91,7 @@ const AtomicString& ConnectionCloseReasonToString(
 }
 
 void ThrowPresentationDisconnectedError(ExceptionState& exception_state) {
-  exception_state.ThrowDOMException(kInvalidStateError,
+  exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                     "Presentation connection is disconnected.");
 }
 

@@ -54,7 +54,7 @@ void ExtendableEvent::waitUntil(ScriptState* script_state,
                                 ExceptionState& exception_state) {
   if (!observer_) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Can not call waitUntil on a script constructed ExtendableEvent.");
     return;
   }

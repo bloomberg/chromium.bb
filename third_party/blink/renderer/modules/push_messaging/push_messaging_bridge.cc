@@ -6,7 +6,6 @@
 
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_error.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options_init.h"
@@ -80,8 +79,8 @@ ScriptPromise PushMessagingBridge::GetPermissionState(
   //
   // TODO(peter): Would it be better to resolve DENIED rather than rejecting?
   if (!options.hasUserVisibleOnly() || !options.userVisibleOnly()) {
-    resolver->Reject(
-        DOMException::Create(kNotSupportedError, kUserVisibleOnlyRequired));
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                          kUserVisibleOnlyRequired));
     return promise;
   }
 

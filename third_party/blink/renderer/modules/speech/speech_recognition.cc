@@ -27,7 +27,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition_controller.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition_error.h"
@@ -48,7 +47,7 @@ void SpeechRecognition::start(ExceptionState& exception_state) {
     return;
 
   if (started_) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "recognition has already started.");
     return;
   }

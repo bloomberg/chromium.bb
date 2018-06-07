@@ -25,7 +25,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
@@ -106,8 +105,9 @@ Text* Text::splitText(unsigned offset, ExceptionState& exception_state) {
   // the number of 16-bit units in data.
   if (offset > length()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, "The offset " + String::Number(offset) +
-                             " is larger than the Text node's length.");
+        DOMExceptionCode::kIndexSizeError,
+        "The offset " + String::Number(offset) +
+            " is larger than the Text node's length.");
     return nullptr;
   }
 

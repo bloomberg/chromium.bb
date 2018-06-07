@@ -27,7 +27,6 @@
 #include "base/auto_reset.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 
 namespace blink {
@@ -37,7 +36,7 @@ namespace {
 bool CheckEmptyToken(const String& token, ExceptionState& exception_state) {
   if (!token.IsEmpty())
     return true;
-  exception_state.ThrowDOMException(kSyntaxError,
+  exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                     "The token provided must not be empty.");
   return false;
 }
@@ -46,7 +45,7 @@ bool CheckTokenWithWhitespace(const String& token,
                               ExceptionState& exception_state) {
   if (token.Find(IsHTMLSpace) == kNotFound)
     return true;
-  exception_state.ThrowDOMException(kInvalidCharacterError,
+  exception_state.ThrowDOMException(DOMExceptionCode::kInvalidCharacterError,
                                     "The token provided ('" + token +
                                         "') contains HTML space characters, "
                                         "which are not valid in tokens.");

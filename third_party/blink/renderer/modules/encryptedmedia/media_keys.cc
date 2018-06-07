@@ -32,7 +32,6 @@
 #include "third_party/blink/public/platform/web_encrypted_media_key_information.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -238,7 +237,7 @@ MediaKeySession* MediaKeys::createSession(ScriptState* script_state,
   WebEncryptedMediaSessionType session_type =
       EncryptedMediaUtils::ConvertToSessionType(session_type_string);
   if (!SessionTypeSupported(session_type)) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Unsupported session type.");
     return nullptr;
   }

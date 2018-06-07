@@ -26,7 +26,6 @@
 #include <algorithm>
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/modules/webaudio/oscillator_node.h"
 #include "third_party/blink/renderer/modules/webaudio/periodic_wave.h"
@@ -119,7 +118,7 @@ void OscillatorHandler::SetType(const String& type,
   } else if (type == "triangle") {
     SetType(TRIANGLE);
   } else if (type == "custom") {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "'type' cannot be set directly to "
                                       "'custom'.  Use setPeriodicWave() to "
                                       "create a custom Oscillator type.");
@@ -509,7 +508,7 @@ OscillatorNode* OscillatorNode::Create(BaseAudioContext* context,
                                        ExceptionState& exception_state) {
   if (options.type() == "custom" && !options.hasPeriodicWave()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "A PeriodicWave must be specified if the type is set to \"custom\"");
     return nullptr;
   }

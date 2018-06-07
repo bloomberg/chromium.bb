@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -58,7 +57,7 @@ unsigned CSSGroupingRule::insertRule(const ExecutionContext* execution_context,
 
   if (index > group_rule_->ChildRules().size()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError,
+        DOMExceptionCode::kIndexSizeError,
         "the index " + String::Number(index) +
             " must be less than or equal to the length of the rule list.");
     return 0;
@@ -71,14 +70,14 @@ unsigned CSSGroupingRule::insertRule(const ExecutionContext* execution_context,
       context, style_sheet ? style_sheet->Contents() : nullptr, rule_string);
   if (!new_rule) {
     exception_state.ThrowDOMException(
-        kSyntaxError,
+        DOMExceptionCode::kSyntaxError,
         "the rule '" + rule_string + "' is invalid and cannot be parsed.");
     return 0;
   }
 
   if (new_rule->IsNamespaceRule()) {
     exception_state.ThrowDOMException(
-        kHierarchyRequestError,
+        DOMExceptionCode::kHierarchyRequestError,
         "'@namespace' rules cannot be inserted inside a group rule.");
     return 0;
   }
@@ -88,7 +87,7 @@ unsigned CSSGroupingRule::insertRule(const ExecutionContext* execution_context,
     // rule. They are currently not getting parsed, resulting in a SyntaxError
     // to get raised above.
     exception_state.ThrowDOMException(
-        kHierarchyRequestError,
+        DOMExceptionCode::kHierarchyRequestError,
         "'@import' rules cannot be inserted inside a group rule.");
     return 0;
   }
@@ -107,8 +106,9 @@ void CSSGroupingRule::deleteRule(unsigned index,
 
   if (index >= group_rule_->ChildRules().size()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, "the index " + String::Number(index) +
-                             " is greated than the length of the rule list.");
+        DOMExceptionCode::kIndexSizeError,
+        "the index " + String::Number(index) +
+            " is greated than the length of the rule list.");
     return;
   }
 

@@ -94,7 +94,7 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
   std::stringstream error_msg;
 
   if (this->IsOffscreenCanvas() && this->IsNeutered()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "OffscreenCanvas object is detached.");
     return ScriptPromise();
   }
@@ -107,13 +107,14 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
 
   if (!this->IsPaintable() || Size().IsEmpty()) {
     error_msg << "The size of " << object_name << " iz zero.";
-    exception_state.ThrowDOMException(kIndexSizeError, error_msg.str().c_str());
+    exception_state.ThrowDOMException(DOMExceptionCode::kIndexSizeError,
+                                      error_msg.str().c_str());
     return ScriptPromise();
   }
 
   if (!RenderingContext()) {
     error_msg << object_name << " has no rendering context.";
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       error_msg.str().c_str());
     return ScriptPromise();
   }
@@ -136,7 +137,7 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
     async_creator->ScheduleAsyncBlobCreation(options.quality());
     return resolver->Promise();
   }
-  exception_state.ThrowDOMException(kNotReadableError,
+  exception_state.ThrowDOMException(DOMExceptionCode::kNotReadableError,
                                     "Readback of the source image has failed.");
   return ScriptPromise();
 }

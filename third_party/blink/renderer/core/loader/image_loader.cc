@@ -770,7 +770,7 @@ ScriptPromise ImageLoader::Decode(ScriptState* script_state,
   // that comes from iframe.contentDocument.createElement("img") and the iframe
   // is destroyed).
   if (!script_state->ContextIsValid()) {
-    exception_state.ThrowDOMException(kEncodingError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kEncodingError,
                                       "The source image cannot be decoded.");
     return ScriptPromise();
   }
@@ -813,7 +813,7 @@ void ImageLoader::DecodeRequest::Resolve() {
 
 void ImageLoader::DecodeRequest::Reject() {
   resolver_->Reject(DOMException::Create(
-      kEncodingError, "The source image cannot be decoded."));
+      DOMExceptionCode::kEncodingError, "The source image cannot be decoded."));
   loader_ = nullptr;
 }
 

@@ -27,7 +27,6 @@
 
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_registry.h"
@@ -253,7 +252,8 @@ void MediaStream::addTrack(MediaStreamTrack* track,
                            ExceptionState& exception_state) {
   if (!track) {
     exception_state.ThrowDOMException(
-        kTypeMismatchError, "The MediaStreamTrack provided is invalid.");
+        DOMExceptionCode::kTypeMismatchError,
+        "The MediaStreamTrack provided is invalid.");
     return;
   }
 
@@ -284,7 +284,8 @@ void MediaStream::removeTrack(MediaStreamTrack* track,
                               ExceptionState& exception_state) {
   if (!track) {
     exception_state.ThrowDOMException(
-        kTypeMismatchError, "The MediaStreamTrack provided is invalid.");
+        DOMExceptionCode::kTypeMismatchError,
+        "The MediaStreamTrack provided is invalid.");
     return;
   }
 

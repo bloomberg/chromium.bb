@@ -12,7 +12,6 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/fetch/response.h"

@@ -9,7 +9,6 @@
 #include "third_party/blink/public/platform/web_canvas_capture_handler.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/modules/mediacapturefromelement/canvas_capture_media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
@@ -34,7 +33,7 @@ MediaStream* HTMLCanvasElementCapture::captureStream(
     double frame_rate,
     ExceptionState& exception_state) {
   if (frame_rate < 0.0) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Given frame rate is not supported.");
     return nullptr;
   }
@@ -67,7 +66,8 @@ MediaStream* HTMLCanvasElementCapture::captureStream(
 
   if (!handler) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "No CanvasCapture handler can be created.");
+        DOMExceptionCode::kNotSupportedError,
+        "No CanvasCapture handler can be created.");
     return nullptr;
   }
 

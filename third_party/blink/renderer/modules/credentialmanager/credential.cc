@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/credentialmanager/credential.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 
@@ -23,7 +22,7 @@ KURL Credential::ParseStringAsURLOrThrow(const String& url,
     return KURL();
   KURL parsed_url = KURL(NullURL(), url);
   if (!parsed_url.IsValid()) {
-    exception_state.ThrowDOMException(kSyntaxError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "'" + url + "' is not a valid URL.");
   }
   return parsed_url;

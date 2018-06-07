@@ -61,7 +61,6 @@
 #include "third_party/blink/renderer/core/dom/element_rare_data.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_interest_group.h"
@@ -1430,7 +1429,7 @@ void Element::setAttribute(const AtomicString& local_name,
                            ExceptionState& exception_state) {
   if (!Document::IsValidName(local_name)) {
     exception_state.ThrowDOMException(
-        kInvalidCharacterError,
+        DOMExceptionCode::kInvalidCharacterError,
         "'" + local_name + "' is not a valid attribute name.");
     return;
   }
@@ -2595,12 +2594,12 @@ ShadowRoot* Element::createShadowRoot(const ScriptState* script_state,
   if (ShadowRoot* root = GetShadowRoot()) {
     if (root->IsUserAgent()) {
       exception_state.ThrowDOMException(
-          kInvalidStateError,
+          DOMExceptionCode::kInvalidStateError,
           "Shadow root cannot be created on a host which already hosts a "
           "user-agent shadow tree.");
     } else {
       exception_state.ThrowDOMException(
-          kInvalidStateError,
+          DOMExceptionCode::kInvalidStateError,
           "Shadow root cannot be created on a host which already hosts a "
           "shadow tree.");
     }
@@ -2608,7 +2607,7 @@ ShadowRoot* Element::createShadowRoot(const ScriptState* script_state,
   }
   if (AlwaysCreateUserAgentShadowRoot()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Shadow root cannot be created on a host which already hosts a "
         "user-agent shadow tree.");
     return nullptr;
@@ -2617,7 +2616,7 @@ ShadowRoot* Element::createShadowRoot(const ScriptState* script_state,
   // as children so we can't allow author shadows on them for now.
   if (!AreAuthorShadowsAllowed()) {
     exception_state.ThrowDOMException(
-        kHierarchyRequestError,
+        DOMExceptionCode::kHierarchyRequestError,
         "Author-created shadow roots are disabled for this element.");
     return nullptr;
   }
@@ -2653,12 +2652,13 @@ ShadowRoot* Element::attachShadow(const ScriptState* script_state,
 
   if (!CanAttachShadowRoot()) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "This element does not support attachShadow");
+        DOMExceptionCode::kNotSupportedError,
+        "This element does not support attachShadow");
     return nullptr;
   }
 
   if (GetShadowRoot()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Shadow root cannot be created on a host "
                                       "which already hosts a shadow tree.");
     return nullptr;
@@ -2837,7 +2837,7 @@ Attr* Element::setAttributeNode(Attr* attr_node,
   // to re-use them in other elements.
   if (attr_node->ownerElement()) {
     exception_state.ThrowDOMException(
-        kInUseAttributeError,
+        DOMExceptionCode::kInUseAttributeError,
         "The node provided is an attribute node that is already an attribute "
         "of another Element; attribute nodes must be explicitly cloned.");
     return nullptr;
@@ -2896,7 +2896,8 @@ Attr* Element::removeAttributeNode(Attr* attr,
                                    ExceptionState& exception_state) {
   if (attr->ownerElement() != this) {
     exception_state.ThrowDOMException(
-        kNotFoundError, "The node provided is owned by another element.");
+        DOMExceptionCode::kNotFoundError,
+        "The node provided is owned by another element.");
     return nullptr;
   }
 
@@ -2908,7 +2909,8 @@ Attr* Element::removeAttributeNode(Attr* attr,
       GetElementData()->Attributes().FindIndex(attr->GetQualifiedName());
   if (index == kNotFound) {
     exception_state.ThrowDOMException(
-        kNotFoundError, "The attribute was not found on this element.");
+        DOMExceptionCode::kNotFoundError,
+        "The attribute was not found on this element.");
     return nullptr;
   }
 
@@ -2945,7 +2947,7 @@ bool Element::ParseAttributeName(QualifiedName& out,
 
   if (!Document::HasValidNamespaceForAttributes(q_name)) {
     exception_state.ThrowDOMException(
-        kNamespaceError,
+        DOMExceptionCode::kNamespaceError,
         "'" + namespace_uri + "' is an invalid namespace for attributes.");
     return false;
   }
@@ -3351,15 +3353,16 @@ void Element::SetOuterHTMLFromString(const String& html,
                                      ExceptionState& exception_state) {
   Node* p = parentNode();
   if (!p) {
-    exception_state.ThrowDOMException(kNoModificationAllowedError,
-                                      "This element has no parent node.");
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNoModificationAllowedError,
+        "This element has no parent node.");
     return;
   }
   if (!p->IsElementNode()) {
-    exception_state.ThrowDOMException(kNoModificationAllowedError,
-                                      "This element's parent is of type '" +
-                                          p->nodeName() +
-                                          "', which is not an element node.");
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNoModificationAllowedError,
+        "This element's parent is of type '" + p->nodeName() +
+            "', which is not an element node.");
     return;
   }
 
@@ -3431,9 +3434,10 @@ Node* Element::InsertAdjacent(const String& where,
   }
 
   exception_state.ThrowDOMException(
-      kSyntaxError, "The value provided ('" + where +
-                        "') is not one of 'beforeBegin', 'afterBegin', "
-                        "'beforeEnd', or 'afterEnd'.");
+      DOMExceptionCode::kSyntaxError,
+      "The value provided ('" + where +
+          "') is not one of 'beforeBegin', 'afterBegin', "
+          "'beforeEnd', or 'afterEnd'.");
   return nullptr;
 }
 
@@ -3492,8 +3496,9 @@ static Element* ContextElementForInsertion(const String& where,
       DeprecatedEqualIgnoringCase(where, "afterEnd")) {
     Element* parent = element->parentElement();
     if (!parent) {
-      exception_state.ThrowDOMException(kNoModificationAllowedError,
-                                        "The element has no parent.");
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNoModificationAllowedError,
+          "The element has no parent.");
       return nullptr;
     }
     return parent;
@@ -3502,9 +3507,10 @@ static Element* ContextElementForInsertion(const String& where,
       DeprecatedEqualIgnoringCase(where, "beforeEnd"))
     return element;
   exception_state.ThrowDOMException(
-      kSyntaxError, "The value provided ('" + where +
-                        "') is not one of 'beforeBegin', 'afterBegin', "
-                        "'beforeEnd', or 'afterEnd'.");
+      DOMExceptionCode::kSyntaxError,
+      "The value provided ('" + where +
+          "') is not one of 'beforeBegin', 'afterBegin', "
+          "'beforeEnd', or 'afterEnd'.");
   return nullptr;
 }
 
@@ -3561,13 +3567,14 @@ void Element::setPointerCapture(int pointer_id,
   if (GetDocument().GetFrame()) {
     if (!GetDocument().GetFrame()->GetEventHandler().IsPointerEventActive(
             pointer_id)) {
-      exception_state.ThrowDOMException(kInvalidPointerId, "InvalidPointerId");
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidPointerId,
+                                        "InvalidPointerId");
     } else if (!isConnected() ||
                (GetDocument().GetPage() && GetDocument()
                                                .GetPage()
                                                ->GetPointerLockController()
                                                .GetElement())) {
-      exception_state.ThrowDOMException(kInvalidStateError,
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                         "InvalidStateError");
     } else {
       GetDocument().GetFrame()->GetEventHandler().SetPointerCapture(pointer_id,
@@ -3580,11 +3587,13 @@ void Element::releasePointerCapture(int pointer_id,
                                     ExceptionState& exception_state) {
   if (GetDocument().GetFrame()) {
     if (!GetDocument().GetFrame()->GetEventHandler().IsPointerEventActive(
-            pointer_id))
-      exception_state.ThrowDOMException(kInvalidPointerId, "InvalidPointerId");
-    else
+            pointer_id)) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidPointerId,
+                                        "InvalidPointerId");
+    } else {
       GetDocument().GetFrame()->GetEventHandler().ReleasePointerCapture(
           pointer_id, this);
+    }
   }
 }
 

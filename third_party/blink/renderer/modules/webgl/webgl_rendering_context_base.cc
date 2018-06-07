@@ -794,8 +794,8 @@ ScriptPromise WebGLRenderingContextBase::setCompatibleXRDevice(
 
   if (isContextLost()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kInvalidStateError, "Context lost."));
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           "Context lost."));
   }
 
   if (xr_device == compatible_xr_device_) {
@@ -811,7 +811,7 @@ ScriptPromise WebGLRenderingContextBase::setCompatibleXRDevice(
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
-            kNotSupportedError,
+            DOMExceptionCode::kNotSupportedError,
             "Context is not compatible. Switching not yet implemented."));
   }
 }

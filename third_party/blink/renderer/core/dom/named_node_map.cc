@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -51,7 +50,8 @@ Attr* NamedNodeMap::removeNamedItem(const AtomicString& name,
       element_->Attributes().FindIndex(element_->LowercaseIfNecessary(name));
   if (index == kNotFound) {
     exception_state.ThrowDOMException(
-        kNotFoundError, "No item with name '" + name + "' was found.");
+        DOMExceptionCode::kNotFoundError,
+        "No item with name '" + name + "' was found.");
     return nullptr;
   }
   return element_->DetachAttribute(index);
@@ -63,7 +63,7 @@ Attr* NamedNodeMap::removeNamedItemNS(const AtomicString& namespace_uri,
   size_t index = element_->Attributes().FindIndex(
       QualifiedName(g_null_atom, local_name, namespace_uri));
   if (index == kNotFound) {
-    exception_state.ThrowDOMException(kNotFoundError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotFoundError,
                                       "No item with name '" + namespace_uri +
                                           "::" + local_name + "' was found.");
     return nullptr;

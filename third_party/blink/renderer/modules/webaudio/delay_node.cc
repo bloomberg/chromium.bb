@@ -29,7 +29,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_basic_processor_handler.h"
 #include "third_party/blink/renderer/modules/webaudio/delay_options.h"
 #include "third_party/blink/renderer/modules/webaudio/delay_processor.h"
@@ -97,7 +96,7 @@ DelayNode* DelayNode::Create(BaseAudioContext& context,
 
   if (max_delay_time <= 0 || max_delay_time >= kMaximumAllowedDelayTime) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         ExceptionMessages::IndexOutsideRange(
             "max delay time", max_delay_time, 0.0,
             ExceptionMessages::kExclusiveBound, kMaximumAllowedDelayTime,

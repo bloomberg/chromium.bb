@@ -513,8 +513,9 @@ void CanvasAsyncBlobCreator::CreateNullAndReturnResult() {
                           V8BlobCallback>::InvokeAndReportException,
                       WrapPersistent(callback_.Get()), nullptr, nullptr));
   } else {
-    script_promise_resolver_->Reject(DOMException::Create(
-        kEncodingError, "Encoding of the source image has failed."));
+    script_promise_resolver_->Reject(
+        DOMException::Create(DOMExceptionCode::kEncodingError,
+                             "Encoding of the source image has failed."));
   }
   // Avoid unwanted retention, see dispose().
   Dispose();

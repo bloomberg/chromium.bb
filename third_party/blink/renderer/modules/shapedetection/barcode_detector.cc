@@ -39,8 +39,9 @@ ScriptPromise BarcodeDetector::DoDetect(ScriptPromiseResolver* resolver,
                                         SkBitmap bitmap) {
   ScriptPromise promise = resolver->Promise();
   if (!barcode_service_) {
-    resolver->Reject(DOMException::Create(
-        kNotSupportedError, "Barcode detection service unavailable."));
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                             "Barcode detection service unavailable."));
     return promise;
   }
   barcode_service_requests_.insert(resolver);
@@ -80,7 +81,7 @@ void BarcodeDetector::OnDetectBarcodes(
 
 void BarcodeDetector::OnBarcodeServiceConnectionError() {
   for (const auto& request : barcode_service_requests_) {
-    request->Reject(DOMException::Create(kNotSupportedError,
+    request->Reject(DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                          "Barcode Detection not implemented."));
   }
   barcode_service_requests_.clear();

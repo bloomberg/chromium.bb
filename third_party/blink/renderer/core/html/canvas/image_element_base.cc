@@ -141,7 +141,7 @@ ScriptPromise ImageElementBase::CreateImageBitmap(
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
-            kInvalidStateError,
+            DOMExceptionCode::kInvalidStateError,
             "No image can be retrieved from the provided element."));
   }
   Image* image = image_content->GetImage();
@@ -152,7 +152,7 @@ ScriptPromise ImageElementBase::CreateImageBitmap(
       return ScriptPromise::RejectWithDOMException(
           script_state,
           DOMException::Create(
-              kInvalidStateError,
+              DOMExceptionCode::kInvalidStateError,
               "The image element contains an SVG image without intrinsic "
               "dimensions, and no resize options or crop region are "
               "specified."));

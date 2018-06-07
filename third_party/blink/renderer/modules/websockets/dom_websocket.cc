@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_string_sequence.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
@@ -212,7 +211,7 @@ static String JoinStrings(const Vector<String>& strings,
 }
 
 static void SetInvalidStateErrorForSendMethod(ExceptionState& exception_state) {
-  exception_state.ThrowDOMException(kInvalidStateError,
+  exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                     "Still in CONNECTING state.");
 }
 
@@ -259,7 +258,7 @@ DOMWebSocket* DOMWebSocket::Create(ExecutionContext* context,
                                    ExceptionState& exception_state) {
   if (url.IsNull()) {
     exception_state.ThrowDOMException(
-        kSyntaxError,
+        DOMExceptionCode::kSyntaxError,
         "Failed to create a WebSocket: the provided URL is invalid.");
     return nullptr;
   }
@@ -305,22 +304,23 @@ void DOMWebSocket::Connect(const String& url,
 
   if (!url_.IsValid()) {
     state_ = kClosed;
-    exception_state.ThrowDOMException(kSyntaxError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "The URL '" + url + "' is invalid.");
     return;
   }
   if (!url_.ProtocolIs("ws") && !url_.ProtocolIs("wss")) {
     state_ = kClosed;
     exception_state.ThrowDOMException(
-        kSyntaxError, "The URL's scheme must be either 'ws' or 'wss'. '" +
-                          url_.Protocol() + "' is not allowed.");
+        DOMExceptionCode::kSyntaxError,
+        "The URL's scheme must be either 'ws' or 'wss'. '" + url_.Protocol() +
+            "' is not allowed.");
     return;
   }
 
   if (url_.HasFragmentIdentifier()) {
     state_ = kClosed;
     exception_state.ThrowDOMException(
-        kSyntaxError,
+        DOMExceptionCode::kSyntaxError,
         "The URL contains a fragment identifier ('" +
             url_.FragmentIdentifier() +
             "'). Fragment identifiers are not allowed in WebSocket URLs.");
@@ -353,9 +353,9 @@ void DOMWebSocket::Connect(const String& url,
     if (!IsValidSubprotocolString(protocols[i])) {
       state_ = kClosed;
       exception_state.ThrowDOMException(
-          kSyntaxError, "The subprotocol '" +
-                            EncodeSubprotocolString(protocols[i]) +
-                            "' is invalid.");
+          DOMExceptionCode::kSyntaxError,
+          "The subprotocol '" + EncodeSubprotocolString(protocols[i]) +
+              "' is invalid.");
       return;
     }
   }
@@ -366,9 +366,9 @@ void DOMWebSocket::Connect(const String& url,
     if (!visited.insert(protocols[i]).is_new_entry) {
       state_ = kClosed;
       exception_state.ThrowDOMException(
-          kSyntaxError, "The subprotocol '" +
-                            EncodeSubprotocolString(protocols[i]) +
-                            "' is duplicated.");
+          DOMExceptionCode::kSyntaxError,
+          "The subprotocol '" + EncodeSubprotocolString(protocols[i]) +
+              "' is duplicated.");
       return;
     }
   }
@@ -542,7 +542,7 @@ void DOMWebSocket::CloseInternal(int code,
           (WebSocketChannel::kCloseEventCodeMinimumUserDefined <= code &&
            code <= WebSocketChannel::kCloseEventCodeMaximumUserDefined))) {
       exception_state.ThrowDOMException(
-          kInvalidAccessError,
+          DOMExceptionCode::kInvalidAccessError,
           "The code must be either 1000, or between 3000 and 4999. " +
               String::Number(code) + " is neither.");
       return;
@@ -552,8 +552,9 @@ void DOMWebSocket::CloseInternal(int code,
     CString utf8 = reason.Utf8();
     if (utf8.length() > kMaxReasonSizeInBytes) {
       exception_state.ThrowDOMException(
-          kSyntaxError, "The message must not be greater than " +
-                            String::Number(kMaxReasonSizeInBytes) + " bytes.");
+          DOMExceptionCode::kSyntaxError,
+          "The message must not be greater than " +
+              String::Number(kMaxReasonSizeInBytes) + " bytes.");
       return;
     }
     if (!reason.IsEmpty() && !reason.Is8Bit()) {

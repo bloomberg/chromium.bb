@@ -32,7 +32,7 @@ MojoInterfaceInterceptor* MojoInterfaceInterceptor::Create(
   bool process_scope = scope == "process";
   if (process_scope && !context->IsDocument()) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "\"process\" scope interception is unavailable outside a Document.");
     return nullptr;
   }
@@ -49,7 +49,7 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
   service_manager::InterfaceProvider* interface_provider =
       GetInterfaceProvider();
   if (!interface_provider) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The interface provider is unavailable.");
     return;
   }
@@ -64,7 +64,7 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
         Platform::Current()->GetConnector());
     if (test_api.HasBinderOverride(identity, interface_name)) {
       exception_state.ThrowDOMException(
-          kInvalidModificationError,
+          DOMExceptionCode::kInvalidModificationError,
           "Interface " + interface_name_ +
               " is already intercepted by another MojoInterfaceInterceptor.");
       return;
@@ -81,7 +81,7 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
   service_manager::InterfaceProvider::TestApi test_api(interface_provider);
   if (test_api.HasBinderForName(interface_name)) {
     exception_state.ThrowDOMException(
-        kInvalidModificationError,
+        DOMExceptionCode::kInvalidModificationError,
         "Interface " + interface_name_ +
             " is already intercepted by another MojoInterfaceInterceptor.");
     return;

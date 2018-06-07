@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_cursor_with_value.h"
@@ -164,11 +163,12 @@ ScriptValue IDBRequest::result(ScriptState* script_state,
     // Must throw if returning an empty value. Message is arbitrary since it
     // will never be seen.
     exception_state.ThrowDOMException(
-        kInvalidStateError, IDBDatabase::kRequestNotFinishedErrorMessage);
+        DOMExceptionCode::kInvalidStateError,
+        IDBDatabase::kRequestNotFinishedErrorMessage);
     return ScriptValue();
   }
   if (!GetExecutionContext()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       IDBDatabase::kDatabaseClosedErrorMessage);
     return ScriptValue();
   }
@@ -180,7 +180,8 @@ ScriptValue IDBRequest::result(ScriptState* script_state,
 DOMException* IDBRequest::error(ExceptionState& exception_state) const {
   if (ready_state_ != DONE) {
     exception_state.ThrowDOMException(
-        kInvalidStateError, IDBDatabase::kRequestNotFinishedErrorMessage);
+        DOMExceptionCode::kInvalidStateError,
+        IDBDatabase::kRequestNotFinishedErrorMessage);
     return nullptr;
   }
   return error_;
@@ -232,7 +233,7 @@ void IDBRequest::Abort() {
   error_.Clear();
   result_.Clear();
   EnqueueResponse(DOMException::Create(
-      kAbortError,
+      DOMExceptionCode::kAbortError,
       "The transaction was aborted, so the request cannot be fulfilled."));
   request_aborted_ = true;
 }
@@ -703,8 +704,9 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event* event) {
     // (which might trigger commit).
     if (!request_aborted_) {
       if (did_throw_in_event_handler_) {
-        transaction_->SetError(DOMException::Create(
-            kAbortError, "Uncaught exception in event handler."));
+        transaction_->SetError(
+            DOMException::Create(DOMExceptionCode::kAbortError,
+                                 "Uncaught exception in event handler."));
         transaction_->abort(IGNORE_EXCEPTION_FOR_TESTING);
       } else if (event->type() == EventTypeNames::error &&
                  dispatch_result == DispatchEventResult::kNotCanceled) {

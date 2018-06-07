@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -60,7 +59,7 @@ AudioContext* AudioContext::Create(Document& document,
   if (!AudioUtilities::IsValidAudioBufferSampleRate(
           audio_context->sampleRate())) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         ExceptionMessages::IndexOutsideRange(
             "hardware sample rate", audio_context->sampleRate(),
             AudioUtilities::MinAudioBufferSampleRate(),
@@ -135,8 +134,9 @@ ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
 
   if (ContextState() == kClosed) {
-    resolver->Reject(DOMException::Create(
-        kInvalidStateError, "Cannot suspend a context that has been closed"));
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                             "Cannot suspend a context that has been closed"));
   } else {
     // Stop rendering now.
     if (destination())
@@ -156,7 +156,7 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state) {
   if (IsContextClosed()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(kInvalidAccessError,
+        DOMException::Create(DOMExceptionCode::kInvalidAccessError,
                              "cannot resume a closed AudioContext"));
   }
 
@@ -222,7 +222,7 @@ ScriptPromise AudioContext::closeContext(ScriptState* script_state) {
     // resolved, so just create a new promise and reject it.
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(kInvalidStateError,
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "Cannot close a context that is being closed or "
                              "has already been closed."));
   }

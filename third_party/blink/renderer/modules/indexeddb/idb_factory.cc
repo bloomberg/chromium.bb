@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
@@ -90,8 +89,8 @@ IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state,
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
            ->AllowIndexedDB(ExecutionContext::From(script_state),
                             "Database Listing")) {
-    request->HandleResponse(
-        DOMException::Create(kUnknownError, kPermissionDeniedErrorMessage));
+    request->HandleResponse(DOMException::Create(
+        DOMExceptionCode::kUnknownError, kPermissionDeniedErrorMessage));
     return request;
   }
 
@@ -146,8 +145,8 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
 
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
            ->AllowIndexedDB(ExecutionContext::From(script_state), name)) {
-    request->HandleResponse(
-        DOMException::Create(kUnknownError, kPermissionDeniedErrorMessage));
+    request->HandleResponse(DOMException::Create(
+        DOMExceptionCode::kUnknownError, kPermissionDeniedErrorMessage));
     return request;
   }
 
@@ -213,8 +212,8 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
 
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
            ->AllowIndexedDB(ExecutionContext::From(script_state), name)) {
-    request->HandleResponse(
-        DOMException::Create(kUnknownError, kPermissionDeniedErrorMessage));
+    request->HandleResponse(DOMException::Create(
+        DOMExceptionCode::kUnknownError, kPermissionDeniedErrorMessage));
     return request;
   }
 
@@ -239,7 +238,7 @@ short IDBFactory::cmp(ScriptState* script_state,
     return 0;
   DCHECK(first);
   if (!first->IsValid()) {
-    exception_state.ThrowDOMException(kDataError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       IDBDatabase::kNotValidKeyErrorMessage);
     return 0;
   }
@@ -251,7 +250,7 @@ short IDBFactory::cmp(ScriptState* script_state,
     return 0;
   DCHECK(second);
   if (!second->IsValid()) {
-    exception_state.ThrowDOMException(kDataError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       IDBDatabase::kNotValidKeyErrorMessage);
     return 0;
   }

@@ -92,8 +92,10 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
     ScriptPromiseResolver* resolver,
     const WebSize& picture_in_picture_window_size) {
   if (IsElementAllowed(*element) == Status::kDisabledByAttribute) {
-    if (resolver)
-      resolver->Reject(DOMException::Create(kInvalidStateError, ""));
+    if (resolver) {
+      resolver->Reject(
+          DOMException::Create(DOMExceptionCode::kInvalidStateError, ""));
+    }
     // TODO(crbug.com/806249): Test that WMPI sends the message.
     element->exitPictureInPicture(base::DoNothing());
     return;

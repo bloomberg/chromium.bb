@@ -62,13 +62,13 @@ bool ImageData::ValidateConstructorArguments(
 
   if ((param_flags & kParamWidth) && !width) {
     return RaiseDOMExceptionAndReturnFalse(
-        exception_state, kIndexSizeError,
+        exception_state, DOMExceptionCode::kIndexSizeError,
         "The source width is zero or not a number.");
   }
 
   if ((param_flags & kParamHeight) && !height) {
     return RaiseDOMExceptionAndReturnFalse(
-        exception_state, kIndexSizeError,
+        exception_state, DOMExceptionCode::kIndexSizeError,
         "The source height is zero or not a number.");
   }
 
@@ -82,7 +82,7 @@ bool ImageData::ValidateConstructorArguments(
     data_size *= height;
     if (!data_size.IsValid()) {
       return RaiseDOMExceptionAndReturnFalse(
-          exception_state, kIndexSizeError,
+          exception_state, DOMExceptionCode::kIndexSizeError,
           "The requested image size exceeds the supported range.");
     }
 
@@ -100,33 +100,33 @@ bool ImageData::ValidateConstructorArguments(
         data->GetType() != DOMArrayBufferView::ViewType::kTypeUint16 &&
         data->GetType() != DOMArrayBufferView::ViewType::kTypeFloat32) {
       return RaiseDOMExceptionAndReturnFalse(
-          exception_state, kNotSupportedError,
+          exception_state, DOMExceptionCode::kNotSupportedError,
           "The input data type is not supported.");
     }
 
     if (!data->byteLength()) {
       return RaiseDOMExceptionAndReturnFalse(
-          exception_state, kIndexSizeError,
+          exception_state, DOMExceptionCode::kIndexSizeError,
           "The input data has zero elements.");
     }
 
     data_length = data->byteLength() / data->TypeSize();
     if (data_length % 4) {
       return RaiseDOMExceptionAndReturnFalse(
-          exception_state, kIndexSizeError,
+          exception_state, DOMExceptionCode::kIndexSizeError,
           "The input data length is not a multiple of 4.");
     }
 
     if ((param_flags & kParamWidth) && (data_length / 4) % width) {
       return RaiseDOMExceptionAndReturnFalse(
-          exception_state, kIndexSizeError,
+          exception_state, DOMExceptionCode::kIndexSizeError,
           "The input data length is not a multiple of (4 * width).");
     }
 
     if ((param_flags & kParamWidth) && (param_flags & kParamHeight) &&
         height != data_length / (4 * width))
       return RaiseDOMExceptionAndReturnFalse(
-          exception_state, kIndexSizeError,
+          exception_state, DOMExceptionCode::kIndexSizeError,
           "The input data length is not equal to (4 * width * height).");
   }
 
@@ -570,7 +570,7 @@ ScriptPromise ImageData::CreateImageBitmap(ScriptState* script_state,
   if (BufferBase()->IsNeutered()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(kInvalidStateError,
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "The source data has been detached."));
   }
   return ImageBitmapSource::FulfillImageBitmap(

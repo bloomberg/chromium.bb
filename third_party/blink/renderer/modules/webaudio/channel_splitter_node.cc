@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
@@ -91,7 +90,7 @@ void ChannelSplitterHandler::SetChannelCount(unsigned long channel_count,
   // channelCount cannot be changed from the number of outputs.
   if (channel_count != NumberOfOutputs()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "ChannelSplitter: channelCount cannot be changed from " +
             String::Number(NumberOfOutputs()));
   }
@@ -106,7 +105,7 @@ void ChannelSplitterHandler::SetChannelCountMode(
   // channcelCountMode must be 'explicit'.
   if (mode != "explicit") {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "ChannelSplitter: channelCountMode cannot be changed from 'explicit'");
   }
 }
@@ -119,7 +118,7 @@ void ChannelSplitterHandler::SetChannelInterpretation(
 
   // channelInterpretation must be "discrete"
   if (mode != "discrete") {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "ChannelSplitter: channelInterpretation "
                                       "cannot be changed from 'discrete'");
   }
@@ -157,11 +156,12 @@ ChannelSplitterNode* ChannelSplitterNode::Create(
   if (!number_of_outputs ||
       number_of_outputs > BaseAudioContext::MaxNumberOfChannels()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexOutsideRange<size_t>(
-                             "number of outputs", number_of_outputs, 1,
-                             ExceptionMessages::kInclusiveBound,
-                             BaseAudioContext::MaxNumberOfChannels(),
-                             ExceptionMessages::kInclusiveBound));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexOutsideRange<size_t>(
+            "number of outputs", number_of_outputs, 1,
+            ExceptionMessages::kInclusiveBound,
+            BaseAudioContext::MaxNumberOfChannels(),
+            ExceptionMessages::kInclusiveBound));
     return nullptr;
   }
 

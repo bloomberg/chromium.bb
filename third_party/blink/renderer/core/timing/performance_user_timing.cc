@@ -27,7 +27,6 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
 #include "third_party/blink/renderer/core/timing/performance_measure.h"
@@ -106,9 +105,10 @@ PerformanceMark* UserTiming::Mark(ScriptState* script_state,
                                   ExceptionState& exception_state) {
   if (GetRestrictedKeyMap().Contains(mark_name)) {
     exception_state.ThrowDOMException(
-        kSyntaxError, "'" + mark_name +
-                          "' is part of the PerformanceTiming interface, and "
-                          "cannot be used as a mark name.");
+        DOMExceptionCode::kSyntaxError,
+        "'" + mark_name +
+            "' is part of the PerformanceTiming interface, and "
+            "cannot be used as a mark name.");
     return nullptr;
   }
 
@@ -137,17 +137,19 @@ double UserTiming::FindExistingMarkStartTime(const String& mark_name,
         (performance_->timing()->*(GetRestrictedKeyMap().at(mark_name)))());
     if (!value) {
       exception_state.ThrowDOMException(
-          kInvalidAccessError, "'" + mark_name +
-                                   "' is empty: either the event hasn't "
-                                   "happened yet, or it would provide "
-                                   "cross-origin timing information.");
+          DOMExceptionCode::kInvalidAccessError,
+          "'" + mark_name +
+              "' is empty: either the event hasn't "
+              "happened yet, or it would provide "
+              "cross-origin timing information.");
       return 0.0;
     }
     return value - performance_->timing()->navigationStart();
   }
 
   exception_state.ThrowDOMException(
-      kSyntaxError, "The mark '" + mark_name + "' does not exist.");
+      DOMExceptionCode::kSyntaxError,
+      "The mark '" + mark_name + "' does not exist.");
   return 0.0;
 }
 

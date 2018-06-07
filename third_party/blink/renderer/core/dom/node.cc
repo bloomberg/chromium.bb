@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/get_root_node_options.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
@@ -438,7 +437,8 @@ Node* Node::insertBefore(Node* new_child,
                                                exception_state);
 
   exception_state.ThrowDOMException(
-      kHierarchyRequestError, "This node type does not support this method.");
+      DOMExceptionCode::kHierarchyRequestError,
+      "This node type does not support this method.");
   return nullptr;
 }
 
@@ -454,7 +454,8 @@ Node* Node::replaceChild(Node* new_child,
                                                exception_state);
 
   exception_state.ThrowDOMException(
-      kHierarchyRequestError, "This node type does not support this method.");
+      DOMExceptionCode::kHierarchyRequestError,
+      "This node type does not support this method.");
   return nullptr;
 }
 
@@ -467,7 +468,8 @@ Node* Node::removeChild(Node* old_child, ExceptionState& exception_state) {
     return ToContainerNode(this)->RemoveChild(old_child, exception_state);
 
   exception_state.ThrowDOMException(
-      kNotFoundError, "This node type does not support this method.");
+      DOMExceptionCode::kNotFoundError,
+      "This node type does not support this method.");
   return nullptr;
 }
 
@@ -480,7 +482,8 @@ Node* Node::appendChild(Node* new_child, ExceptionState& exception_state) {
     return ToContainerNode(this)->AppendChild(new_child, exception_state);
 
   exception_state.ThrowDOMException(
-      kHierarchyRequestError, "This node type does not support this method.");
+      DOMExceptionCode::kHierarchyRequestError,
+      "This node type does not support this method.");
   return nullptr;
 }
 
@@ -607,7 +610,7 @@ Node* Node::cloneNode(bool deep, ExceptionState& exception_state) const {
   // 1. If context object is a shadow root, then throw a
   // "NotSupportedError" DOMException.
   if (IsShadowRoot()) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "ShadowRoot nodes are not clonable.");
     return nullptr;
   }

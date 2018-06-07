@@ -87,7 +87,7 @@ void SetSinkIdResolver::TimerFired(TimerBase* timer) {
       // check.
       DCHECK(context->IsContextDestroyed());
       Reject(DOMException::Create(
-          kSecurityError,
+          DOMExceptionCode::kSecurityError,
           "Impossible to authorize device for detached context"));
     }
   }

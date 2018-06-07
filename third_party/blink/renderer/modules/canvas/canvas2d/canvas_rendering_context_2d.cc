@@ -1012,14 +1012,14 @@ void CanvasRenderingContext2D::UpdateElementAccessibility(const Path& path,
 void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options,
                                             ExceptionState& exception_state) {
   if (options.id().IsEmpty() && !options.control()) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Both id and control are null.");
     return;
   }
 
   if (options.control() &&
       !canvas()->IsSupportedInteractiveCanvasFallback(*options.control())) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "The control is neither null nor a "
                                       "supported interactive canvas fallback "
                                       "element.");
@@ -1032,7 +1032,7 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options,
 
   if (hit_region_path.IsEmpty() || !c || !GetState().IsTransformInvertible() ||
       c->isClipEmpty()) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "The specified path has no pixels.");
     return;
   }
@@ -1042,7 +1042,7 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options,
   if (GetState().HasClip()) {
     hit_region_path.IntersectPath(GetState().GetCurrentClipPath());
     if (hit_region_path.IsEmpty()) {
-      exception_state.ThrowDOMException(kNotSupportedError,
+      exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                         "The specified path has no pixels.");
     }
   }

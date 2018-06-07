@@ -33,7 +33,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/svg/properties/svg_property_helper.h"
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -230,7 +229,7 @@ ItemProperty* SVGListPropertyHelper<Derived, ItemProperty>::ReplaceItem(
     // which means there's nothing to replace.
     // TODO(fs): This should not cause us to throw an exception.
     exception_state.ThrowDOMException(
-        kIndexSizeError,
+        DOMExceptionCode::kIndexSizeError,
         String::Format("Failed to replace the provided item at index %zu.",
                        index));
     return nullptr;
@@ -251,8 +250,9 @@ bool SVGListPropertyHelper<Derived, ItemProperty>::CheckIndexBound(
     ExceptionState& exception_state) {
   if (index >= values_.size()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
-                             "index", index, values_.size()));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMaximumBound("index", index,
+                                                    values_.size()));
     return false;
   }
   return true;

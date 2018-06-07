@@ -77,7 +77,7 @@ ScriptPromise PaymentRequestEvent::openWindow(ScriptState* script_state,
 
   if (!isTrusted()) {
     resolver->Reject(DOMException::Create(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Cannot open a window when the event is not trusted"));
     return promise;
   }
@@ -97,7 +97,7 @@ ScriptPromise PaymentRequestEvent::openWindow(ScriptState* script_state,
 
   if (!context->IsWindowInteractionAllowed()) {
     resolver->Reject(DOMException::Create(
-        kNotAllowedError,
+        DOMExceptionCode::kNotAllowedError,
         "Not allowed to open a window without user activation"));
     return promise;
   }
@@ -113,7 +113,7 @@ void PaymentRequestEvent::respondWith(ScriptState* script_state,
                                       ExceptionState& exception_state) {
   if (!isTrusted()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Cannot respond with data when the event is not trusted");
     return;
   }

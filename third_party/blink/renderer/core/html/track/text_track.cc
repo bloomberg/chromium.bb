@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/html/track/text_track.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/track/cue_timeline.h"
 #include "third_party/blink/renderer/core/html/track/text_track_cue_list.h"
@@ -253,7 +252,7 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exception_state) {
   // exception.
   if (cue->track() != this) {
     exception_state.ThrowDOMException(
-        kNotFoundError,
+        DOMExceptionCode::kNotFoundError,
         "The specified cue is not listed in the TextTrack's list of cues.");
     return;
   }
