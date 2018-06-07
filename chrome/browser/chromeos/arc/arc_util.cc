@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -99,7 +100,7 @@ FileSystemCompatibilityState GetFileSystemCompatibilityPref(
 // Stores the result of IsArcCompatibleFilesystem posted back from the blocking
 // task runner.
 void StoreCompatibilityCheckResult(const AccountId& account_id,
-                                   const base::Closure& callback,
+                                   base::OnceClosure callback,
                                    bool is_compatible) {
   if (is_compatible) {
     user_manager::known_user::SetIntegerPref(
@@ -111,7 +112,7 @@ void StoreCompatibilityCheckResult(const AccountId& account_id,
     if (GetFileSystemCompatibilityPref(account_id) != kFileSystemCompatible)
       g_known_compatible_users.Get().insert(account_id);
   }
-  callback.Run();
+  std::move(callback).Run();
 }
 
 bool IsArcMigrationAllowedInternal(const Profile* profile) {
@@ -548,8 +549,8 @@ bool IsArcStatsReportingEnabled() {
 void UpdateArcFileSystemCompatibilityPrefIfNeeded(
     const AccountId& account_id,
     const base::FilePath& profile_path,
-    const base::Closure& callback) {
-  DCHECK(!callback.is_null());
+    base::OnceClosure callback) {
+  DCHECK(callback);
 
   // If ARC is not available, skip the check.
   // This shortcut is just for merginally improving the log-in performance on
@@ -557,13 +558,13 @@ void UpdateArcFileSystemCompatibilityPrefIfNeeded(
   // without changing any functionality when, say, the code clarity becomes
   // more important in the future.
   if (!IsArcAvailable() && !IsArcKioskAvailable()) {
-    callback.Run();
+    std::move(callback).Run();
     return;
   }
 
   // If the compatibility has been already confirmed, skip the check.
   if (GetFileSystemCompatibilityPref(account_id) != kFileSystemIncompatible) {
-    callback.Run();
+    std::move(callback).Run();
     return;
   }
 
@@ -572,8 +573,9 @@ void UpdateArcFileSystemCompatibilityPrefIfNeeded(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&IsArcCompatibleFilesystem, profile_path),
-      base::Bind(&StoreCompatibilityCheckResult, account_id, callback));
+      base::BindOnce(&IsArcCompatibleFilesystem, profile_path),
+      base::BindOnce(&StoreCompatibilityCheckResult, account_id,
+                     std::move(callback)));
 }
 
 ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(

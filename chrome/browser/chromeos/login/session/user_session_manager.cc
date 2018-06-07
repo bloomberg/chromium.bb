@@ -586,7 +586,7 @@ void UserSessionManager::StartSession(const UserContext& user_context,
   arc::UpdateArcFileSystemCompatibilityPrefIfNeeded(
       user_context_.GetAccountId(),
       ProfileHelper::GetProfilePathByUserIdHash(user_context_.GetUserIDHash()),
-      base::Bind(&UserSessionManager::PrepareProfile, AsWeakPtr()));
+      base::BindOnce(&UserSessionManager::PrepareProfile, AsWeakPtr()));
 }
 
 void UserSessionManager::DelegateDeleted(UserSessionManagerDelegate* delegate) {
