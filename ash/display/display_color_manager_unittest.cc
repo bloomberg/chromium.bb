@@ -249,8 +249,8 @@ TEST_F(DisplayColorManagerTest, SetDisplayColorMatrixNoCTMSupport) {
   // this display has no CTM support.
   const std::string& actions = log_->GetActionsAndClear();
   EXPECT_TRUE(base::MatchPattern(actions, kResetGammaAction));
-  EXPECT_TRUE(base::MatchPattern(
-      actions, "*set_color_matrix(id=123,ctm[0]=1*ctm[4]=1*ctm[8]=1*)*"));
+  // Hardware doesn't support CTM, so CTM shouldn't be configured.
+  EXPECT_FALSE(base::MatchPattern(actions, "*set_color_matrix*"));
 
   // Attempt to set a color matrix.
   SkMatrix44 matrix(SkMatrix44::kIdentity_Constructor);
