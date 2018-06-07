@@ -22,9 +22,6 @@
 #include "components/sync/engine/ui_model_worker.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/test/test_url_loader_factory.h"
 
 namespace browser_sync {
 
@@ -263,9 +260,6 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
     EXPECT_TRUE(base_directory_.CreateUniqueTempDir());
   init_params.base_directory = base_directory_.GetPath();
   init_params.url_request_context = url_request_context();
-  init_params.url_loader_factory =
-      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-          &test_url_loader_factory_);
   init_params.debug_identifier = "dummyDebugName";
   init_params.channel = version_info::Channel::UNKNOWN;
   init_params.model_type_store_factory =

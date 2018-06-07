@@ -4,8 +4,6 @@
 
 #include "components/sync/driver/sync_stopped_reporter.h"
 
-#include <utility>
-
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -16,9 +14,6 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace {
 
@@ -37,15 +32,15 @@ namespace syncer {
 SyncStoppedReporter::SyncStoppedReporter(
     const GURL& sync_service_url,
     const std::string& user_agent,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context,
     const ResultCallback& callback)
     : sync_event_url_(GetSyncEventURL(sync_service_url)),
       user_agent_(user_agent),
-      url_loader_factory_(std::move(url_loader_factory)),
+      request_context_(request_context),
       callback_(callback) {
   DCHECK(!sync_service_url.is_empty());
   DCHECK(!user_agent_.empty());
-  DCHECK(url_loader_factory_);
+  DCHECK(request_context);
 }
 
 SyncStoppedReporter::~SyncStoppedReporter() {}
@@ -88,35 +83,29 @@ void SyncStoppedReporter::ReportSyncStopped(const std::string& access_token,
             }
           }
         })");
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = sync_event_url_;
-  resource_request->load_flags =
-      net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
-  resource_request->method = "POST";
-  resource_request->headers.SetHeader(
-      net::HttpRequestHeaders::kAuthorization,
-      base::StringPrintf("Bearer %s", access_token.c_str()));
-  resource_request->headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
-                                      user_agent_);
-  // TODO(https://crbug.com/808498): Re-add data use measurement once
-  // SimpleURLLoader supports it.
-  // ID=data_use_measurement::DataUseUserData::SYNC
-  simple_url_loader_ = network::SimpleURLLoader::Create(
-      std::move(resource_request), traffic_annotation);
-  simple_url_loader_->AttachStringForUpload(msg, "application/octet-stream");
-  simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      url_loader_factory_.get(),
-      base::BindOnce(&SyncStoppedReporter::OnSimpleLoaderComplete,
-                     base::Unretained(this)));
+  fetcher_ = net::URLFetcher::Create(sync_event_url_, net::URLFetcher::POST,
+                                     this, traffic_annotation);
+  fetcher_->AddExtraRequestHeader(base::StringPrintf(
+      "%s: Bearer %s", net::HttpRequestHeaders::kAuthorization,
+      access_token.c_str()));
+  fetcher_->AddExtraRequestHeader(base::StringPrintf(
+      "%s: %s", net::HttpRequestHeaders::kUserAgent, user_agent_.c_str()));
+  fetcher_->SetRequestContext(request_context_.get());
+  fetcher_->SetUploadData("application/octet-stream", msg);
+  fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
+                         net::LOAD_DO_NOT_SAVE_COOKIES |
+                         net::LOAD_DO_NOT_SEND_COOKIES);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher_.get(), data_use_measurement::DataUseUserData::SYNC);
+  fetcher_->Start();
   timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kRequestTimeoutSeconds),
                this, &SyncStoppedReporter::OnTimeout);
 }
 
-void SyncStoppedReporter::OnSimpleLoaderComplete(
-    std::unique_ptr<std::string> response_body) {
-  Result result = response_body ? RESULT_SUCCESS : RESULT_ERROR;
-  simple_url_loader_.reset();
+void SyncStoppedReporter::OnURLFetchComplete(const net::URLFetcher* source) {
+  Result result =
+      source->GetResponseCode() == net::HTTP_OK ? RESULT_SUCCESS : RESULT_ERROR;
+  fetcher_.reset();
   timer_.Stop();
   if (!callback_.is_null()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -125,7 +114,7 @@ void SyncStoppedReporter::OnSimpleLoaderComplete(
 }
 
 void SyncStoppedReporter::OnTimeout() {
-  simple_url_loader_.reset();
+  fetcher_.reset();
   if (!callback_.is_null()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback_, RESULT_TIMEOUT));

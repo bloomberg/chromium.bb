@@ -68,7 +68,6 @@
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/version_info/version_info_values.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using syncer::BackendMigrator;
 using syncer::ClientTagBasedModelTypeProcessor;
@@ -177,7 +176,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       network_time_update_callback_(
           std::move(init_params.network_time_update_callback)),
       url_request_context_(init_params.url_request_context),
-      url_loader_factory_(std::move(init_params.url_loader_factory)),
       is_first_time_sync_configure_(false),
       engine_initialized_(false),
       sync_disabled_by_admin_(false),
@@ -245,8 +243,8 @@ void ProfileSyncService::Initialize() {
                       ->CreateLocalDeviceInfoProvider();
   DCHECK(local_device_);
   sync_stopped_reporter_ = std::make_unique<syncer::SyncStoppedReporter>(
-      sync_service_url_, local_device_->GetSyncUserAgent(), url_loader_factory_,
-      syncer::SyncStoppedReporter::ResultCallback());
+      sync_service_url_, local_device_->GetSyncUserAgent(),
+      url_request_context_, syncer::SyncStoppedReporter::ResultCallback());
 
   if (base::FeatureList::IsEnabled(switches::kSyncUSSSessions)) {
     sessions_sync_manager_ = std::make_unique<sync_sessions::SessionSyncBridge>(

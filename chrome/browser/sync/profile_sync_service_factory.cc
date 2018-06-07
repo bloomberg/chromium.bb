@@ -44,12 +44,8 @@
 #include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_util.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "extensions/buildflags/buildflags.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -179,9 +175,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);
   init_params.base_directory = profile->GetPath();
   init_params.url_request_context = profile->GetRequestContext();
-  init_params.url_loader_factory =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess();
   init_params.debug_identifier = profile->GetDebugName();
   init_params.channel = chrome::GetChannel();
 

@@ -52,10 +52,6 @@ namespace base {
 class MessageLoop;
 }
 
-namespace network {
-class SharedURLLoaderFactory;
-}  // namespace network
-
 namespace sync_sessions {
 class AbstractSessionsSyncManager;
 class FaviconCache;
@@ -220,7 +216,6 @@ class ProfileSyncService : public syncer::SyncService,
     syncer::NetworkTimeUpdateCallback network_time_update_callback;
     base::FilePath base_directory;
     scoped_refptr<net::URLRequestContextGetter> url_request_context;
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
     std::string debug_identifier;
     version_info::Channel channel = version_info::Channel::UNKNOWN;
     syncer::RepeatingModelTypeStoreFactory model_type_store_factory;
@@ -739,9 +734,6 @@ class ProfileSyncService : public syncer::SyncService,
 
   // The request context in which sync should operate.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
-
-  // The URL loader factory for the sync.
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Indicates if this is the first time sync is being configured.  This value
   // is equal to !IsFirstSetupComplete() at the time of OnEngineInitialized().
