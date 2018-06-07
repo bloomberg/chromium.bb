@@ -24,6 +24,7 @@ using bookmarks::BookmarkNode;
   int exited_;
   BOOL canDragToTrash_;
   int didDragToTrashCount_;
+  int actionCounter_;
 }
 @end
 
@@ -59,6 +60,14 @@ using bookmarks::BookmarkNode;
 
 - (void)bookmarkDragDidEnd:(BookmarkButton*)button
                  operation:(NSDragOperation)operation {
+}
+
+- (void)sinkRunLoopAction:(id)sender {
+  ++actionCounter_;
+  // Interacting with the real message loop in a unit test is hard, so emulate a
+  // mouseUp: being fired via [NSApp sendEvent:].
+  [sender mouseUp:cocoa_test_event_utils::MouseEventAtPoint(
+                      NSMakePoint(10, 10), NSLeftMouseDown, 0)];
 }
 @end
 
@@ -131,6 +140,26 @@ TEST_F(BookmarkButtonTest, MouseEnterExitRedirect) {
   [button mouseExited:moveEvent];
   EXPECT_EQ(1, delegate.get()->entered_);
   EXPECT_EQ(2, delegate.get()->exited_);
+}
+
+// Tests a button whose action may process the mouseUp. Regression test for
+// https://crbug.com/849135.
+TEST_F(BookmarkButtonTest, NestedRunLoop) {
+  base::scoped_nsobject<BookmarkButton> button;
+  base::scoped_nsobject<BookmarkButtonCell> cell;
+  base::scoped_nsobject<FakeButtonDelegate> delegate(
+      [[FakeButtonDelegate alloc] init]);
+  button.reset(
+      [[BookmarkButton alloc] initWithFrame:NSMakeRect(0, 0, 500, 500)]);
+  cell.reset([[BookmarkButtonCell alloc] initTextCell:@"hi mum"]);
+  [button setCell:cell];
+  [button setDelegate:delegate];
+  [button setAction:@selector(sinkRunLoopAction:)];
+  [button setTarget:delegate];
+  [[button draggableButton] setActsOnMouseDown:YES];
+  [button mouseDown:cocoa_test_event_utils::LeftMouseDownAtPoint(
+                        NSMakePoint(10, 10))];
+  EXPECT_EQ(1, delegate.get()->actionCounter_);
 }
 
 // Tests to see if the bookmark button is properly highlighted on mouse up/down

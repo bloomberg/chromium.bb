@@ -216,6 +216,7 @@ class BookmarkNode;
   NSPoint dragEndScreenLocation_;
   BOOL dragPending_;
   BOOL acceptsTrackIn_;
+  BOOL sawMouseUp_;
   NSTrackingArea* area_;
   NSColor* backgroundColor_;
 }
