@@ -1423,7 +1423,7 @@ static AOM_FORCE_INLINE void update_coeff_eob(
     int dc_sign_ctx, int64_t rdmult, int shift, const int16_t *dequant,
     const int16_t *scan, const LV_MAP_EOB_COST *txb_eob_costs,
     const LV_MAP_COEFF_COST *txb_costs, const tran_low_t *tcoeff,
-    tran_low_t *qcoeff, tran_low_t *dqcoeff, uint8_t *levels) {
+    tran_low_t *qcoeff, tran_low_t *dqcoeff, uint8_t *levels, int sharpness) {
   const int dqv = dequant[si != 0];
   assert(si != *eob - 1);
   const int ci = scan[si];
@@ -1498,7 +1498,7 @@ static AOM_FORCE_INLINE void update_coeff_eob(
       dist = dist_low;
     }
 
-    if (rd_new_eob < rd) {
+    if (sharpness == 0 && rd_new_eob < rd) {
       for (int ni = 0; ni < *nz_num; ++ni) {
         int last_ci = nz_ci[ni];
         // levels[get_padded_idx(last_ci, bwl)] = 0;
@@ -1534,10 +1534,11 @@ static AOM_FORCE_INLINE void update_coeff_eob(
 static INLINE void update_skip(int *accu_rate, int64_t accu_dist, int *eob,
                                int nz_num, int *nz_ci, int64_t rdmult,
                                int skip_cost, int non_skip_cost,
-                               tran_low_t *qcoeff, tran_low_t *dqcoeff) {
+                               tran_low_t *qcoeff, tran_low_t *dqcoeff,
+                               int sharpness) {
   const int64_t rd = RDCOST(rdmult, *accu_rate + non_skip_cost, accu_dist);
   const int64_t rd_new_eob = RDCOST(rdmult, skip_cost, 0);
-  if (rd_new_eob < rd) {
+  if (sharpness == 0 && rd_new_eob < rd) {
     for (int i = 0; i < nz_num; ++i) {
       const int ci = nz_ci[i];
       qcoeff[ci] = 0;
@@ -1552,7 +1553,7 @@ static INLINE void update_skip(int *accu_rate, int64_t accu_dist, int *eob,
 
 int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                          int blk_row, int blk_col, int block, TX_SIZE tx_size,
-                         TXB_CTX *txb_ctx, int *rate_cost) {
+                         TXB_CTX *txb_ctx, int *rate_cost, int sharpness) {
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   const PLANE_TYPE plane_type = get_plane_type(plane);
@@ -1583,10 +1584,13 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
   const int64_t rdmult =
       ((x->rdmult * plane_rd_mult[is_inter][plane_type] << (2 * (xd->bd - 8))) +
        2) >>
-      2;
+      (sharpness + (cpi->oxcf.aq_mode == VARIANCE_AQ && mbmi->segment_id < 4
+                        ? 7 - mbmi->segment_id
+                        : 2));
 
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
+
   av1_txb_init_levels(qcoeff, width, height, levels);
 
   // TODO(angirbird): check iqmatrix
@@ -1633,7 +1637,7 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                        tx_size, tx_class_literal, bwl, height,             \
                        txb_ctx->dc_sign_ctx, rdmult, shift, dequant, scan, \
                        txb_eob_costs, txb_costs, tcoeff, qcoeff, dqcoeff,  \
-                       levels);                                            \
+                       levels, sharpness);                                 \
     }                                                                      \
     break;
   switch (tx_class) {
@@ -1646,7 +1650,7 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
   if (si == -1 && nz_num <= max_nz_num) {
     update_skip(&accu_rate, accu_dist, &eob, nz_num, nz_ci, rdmult, skip_cost,
-                non_skip_cost, qcoeff, dqcoeff);
+                non_skip_cost, qcoeff, dqcoeff, sharpness);
   }
 
 #define UPDATE_COEFF_SIMPLE_CASE(tx_class_literal)                             \
