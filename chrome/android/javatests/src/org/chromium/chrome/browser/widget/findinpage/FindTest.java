@@ -34,7 +34,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -73,7 +72,7 @@ public class FindTest {
 
     @After
     public void tearDown() throws Exception {
-        mTestServer.stopAndDestroyServer();
+        if (mTestServer != null) mTestServer.stopAndDestroyServer();
     }
 
     /**
@@ -424,7 +423,7 @@ public class FindTest {
     @Test
     @MediumTest
     @Feature({"FindInPage"})
-    @FlakyTest(message = "https://crbug.com/673930")
+    @RetryOnFailure
     public void testBackKeyDoesNotDismissFindWhenImeIsPresent() throws InterruptedException {
         mActivityTestRule.loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
@@ -461,13 +460,8 @@ public class FindTest {
 
     private void waitForIME(final boolean imePresent) {
         // Wait for IME to appear.
-        CriteriaHelper.pollUiThread(new Criteria("IME is not getting shown!") {
-            @Override
-            public boolean isSatisfied() {
-                return org.chromium.ui.UiUtils.isKeyboardShowing(
-                               mActivityTestRule.getActivity(), getFindQueryText())
-                        == imePresent;
-            }
-        });
+        CriteriaHelper.pollUiThread(Criteria.equals(imePresent,
+                () -> org.chromium.ui.UiUtils.isKeyboardShowing(
+                        mActivityTestRule.getActivity(), getFindQueryText())));
     }
 }

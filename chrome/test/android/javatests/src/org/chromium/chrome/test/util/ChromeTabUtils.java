@@ -34,8 +34,10 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -150,11 +152,13 @@ public class ChromeTabUtils {
                         "onPageLoadFinished was never called, but loading stopped "
                                 + "on the expected page. Tentatively continuing.");
             } else {
-                Assert.fail("Page did not load.  Tab information at time of failure --"
-                        + " url: " + url + ", final URL: " + tab.getUrl() + ", load progress: "
-                        + tab.getProgress() + ", is loading: " + Boolean.toString(tab.isLoading())
-                        + ", web contents loading: "
-                        + Boolean.toString(tab.getWebContents().isLoadingToDifferentDocument()));
+                WebContents webContents = tab.getWebContents();
+                Assert.fail(String.format(Locale.ENGLISH,
+                        "Page did not load.  Tab information at time of failure -- "
+                                + "expected url: '%s', actual URL: '%s', load progress: %d, is "
+                                + "loading: %b, web contents init: %b, web contents loading: %b",
+                        url, tab.getUrl(), tab.getProgress(), tab.isLoading(), webContents != null,
+                        webContents == null ? false : webContents.isLoadingToDifferentDocument()));
             }
         }
     }
