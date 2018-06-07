@@ -200,7 +200,7 @@ TEST_F(ThroughputAnalyzerTest, TestMinRequestsForThroughputSample) {
       requests_not_local.push_back(std::move(request_not_local));
     }
 
-    base::RunLoop().Run();
+    test_delegate.RunUntilComplete();
 
     EXPECT_EQ(0, throughput_analyzer.throughput_observations_received());
 
@@ -312,7 +312,7 @@ TEST_F(ThroughputAnalyzerTest, TestHangingRequests) {
       requests_not_local.push_back(std::move(request_not_local));
     }
 
-    base::RunLoop().Run();
+    test_delegate.RunUntilComplete();
 
     EXPECT_EQ(0, throughput_analyzer.throughput_observations_received());
 
@@ -413,7 +413,7 @@ TEST_F(ThroughputAnalyzerTest, TestHangingRequestsCheckedOnlyPeriodically) {
       GURL("http://example.com/echo.html"), DEFAULT_PRIORITY, &test_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS));
 
-  base::RunLoop().Run();
+  test_delegate.RunUntilComplete();
 
   // First request starts at t=1. The second request starts at t=2. The first
   // request would be marked as hanging at t=6, and the second request at t=7
@@ -478,7 +478,7 @@ TEST_F(ThroughputAnalyzerTest, TestLastReceivedTimeIsUpdated) {
       TRAFFIC_ANNOTATION_FOR_TESTS));
   request_not_local->Start();
 
-  base::RunLoop().Run();
+  test_delegate.RunUntilComplete();
 
   std::unique_ptr<URLRequest> some_other_request(context.CreateRequest(
       GURL("http://example.com/echo.html"), DEFAULT_PRIORITY, &test_delegate,
@@ -532,7 +532,7 @@ TEST_F(ThroughputAnalyzerTest, TestRequestDeletedImmediately) {
       TRAFFIC_ANNOTATION_FOR_TESTS));
   request_not_local->Start();
 
-  base::RunLoop().Run();
+  test_delegate.RunUntilComplete();
 
   // Start time for the request is t=0 second. The request will be marked as
   // hanging at t=2 seconds.
@@ -605,7 +605,7 @@ TEST_F(ThroughputAnalyzerTest, TestThroughputWithMultipleRequestsOverlap) {
       request_local->Start();
     }
 
-    base::RunLoop().Run();
+    test_delegate.RunUntilComplete();
 
     EXPECT_EQ(0, throughput_analyzer.throughput_observations_received());
 
@@ -706,7 +706,7 @@ TEST_F(ThroughputAnalyzerTest, TestThroughputWithNetworkRequestsOverlap) {
       requests_in_flight.back()->Start();
     }
 
-    base::RunLoop().Run();
+    test_delegate.RunUntilComplete();
 
     EXPECT_EQ(0, throughput_analyzer.throughput_observations_received());
 
@@ -776,7 +776,7 @@ TEST_F(ThroughputAnalyzerTest, TestThroughputWithMultipleNetworkRequests) {
   request_3->Start();
   request_4->Start();
 
-  base::RunLoop().Run();
+  test_delegate.RunUntilComplete();
 
   EXPECT_EQ(0, throughput_analyzer.throughput_observations_received());
 

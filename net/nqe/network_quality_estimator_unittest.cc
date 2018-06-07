@@ -221,7 +221,7 @@ TEST_F(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
                             &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
   request->Start();
-  base::RunLoop().Run();
+  test_delegate.RunUntilComplete();
 
   // Both RTT and downstream throughput should be updated.
   base::TimeDelta http_rtt;
@@ -276,7 +276,7 @@ TEST_F(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
                             &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   request2->SetLoadFlags(request2->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
   request2->Start();
-  base::RunLoop().Run();
+  test_delegate.RunUntilComplete();
   histogram_tester.ExpectTotalCount("NQE.MainFrame.EffectiveConnectionType", 2);
   histogram_tester.ExpectBucketCount("NQE.EstimateAvailable.MainFrame.RTT", 1,
                                      1);
@@ -317,7 +317,7 @@ TEST_F(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
                             &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   request3->SetLoadFlags(request2->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
   request3->Start();
-  base::RunLoop().Run();
+  test_delegate.RunUntilComplete();
   histogram_tester.ExpectBucketCount(
       "NQE.MainFrame.EffectiveConnectionType",
       EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN, 2);
@@ -383,7 +383,7 @@ TEST_F(NetworkQualityEstimatorTest, Caching) {
                                 &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
       request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
       request->Start();
-      base::RunLoop().Run();
+      test_delegate.RunUntilComplete();
     }
     histogram_tester.ExpectUniqueSample("NQE.RTT.ObservationSource",
                                         NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP,
@@ -509,7 +509,7 @@ TEST_F(NetworkQualityEstimatorTest, CachingDisabled) {
                               &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
     request->Start();
-    base::RunLoop().Run();
+    test_delegate.RunUntilComplete();
   }
 
   base::RunLoop().RunUntilIdle();
@@ -592,7 +592,7 @@ TEST_F(NetworkQualityEstimatorTest, StoreObservations) {
         context.CreateRequest(estimator.GetEchoURL(), DEFAULT_PRIORITY,
                               &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     request->Start();
-    base::RunLoop().Run();
+    test_delegate.RunUntilComplete();
     EXPECT_TRUE(estimator.GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_HTTP,
                                        base::TimeTicks(), &rtt, nullptr));
     EXPECT_TRUE(
@@ -635,7 +635,7 @@ TEST_F(NetworkQualityEstimatorTest, ComputedPercentiles) {
         context.CreateRequest(estimator.GetEchoURL(), DEFAULT_PRIORITY,
                               &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     request->Start();
-    base::RunLoop().Run();
+    test_delegate.RunUntilComplete();
   }
 
   // Verify the percentiles through simple tests.
@@ -1236,7 +1236,7 @@ TEST_F(NetworkQualityEstimatorTest, TestThroughputNoRequestOverlap) {
                               &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
     request->Start();
-    base::RunLoop().Run();
+    test_delegate.RunUntilComplete();
 
     EXPECT_EQ(test.allow_small_localhost_requests,
               estimator.GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_HTTP,
@@ -1289,7 +1289,7 @@ TEST_F(NetworkQualityEstimatorTest, MAYBE_TestEffectiveConnectionTypeObserver) {
                             &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
   request->Start();
-  base::RunLoop().Run();
+  test_delegate.RunUntilComplete();
   EXPECT_EQ(1U, observer.effective_connection_types().size());
   EXPECT_LE(
       1, estimator.GetEntriesCount(NetLogEventType::NETWORK_QUALITY_CHANGED));
@@ -1318,7 +1318,7 @@ TEST_F(NetworkQualityEstimatorTest, MAYBE_TestEffectiveConnectionTypeObserver) {
                             &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   request2->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
   request2->Start();
-  base::RunLoop().Run();
+  test_delegate.RunUntilComplete();
   EXPECT_EQ(1U, observer.effective_connection_types().size());
 
   // Change in connection type should send out notification to the observers.
@@ -1442,7 +1442,7 @@ TEST_F(NetworkQualityEstimatorTest, TestRTTAndThroughputEstimatesObserver) {
       context.CreateRequest(estimator.GetEchoURL(), DEFAULT_PRIORITY,
                             &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   request->Start();
-  base::RunLoop().Run();
+  test_delegate.RunUntilComplete();
   EXPECT_EQ(http_rtt, observer.http_rtt());
   EXPECT_EQ(transport_rtt, observer.transport_rtt());
   EXPECT_EQ(downstream_throughput_kbps, observer.downstream_throughput_kbps());
@@ -1455,7 +1455,7 @@ TEST_F(NetworkQualityEstimatorTest, TestRTTAndThroughputEstimatesObserver) {
       context.CreateRequest(estimator.GetEchoURL(), DEFAULT_PRIORITY,
                             &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   request2->Start();
-  base::RunLoop().Run();
+  test_delegate.RunUntilComplete();
   EXPECT_LE(1, observer.notifications_received() - notifications_received);
   notifications_received = observer.notifications_received();
 
@@ -1582,7 +1582,7 @@ TEST_F(NetworkQualityEstimatorTest,
                             &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
   request->Start();
-  base::RunLoop().Run();
+  test_delegate.RunUntilComplete();
   EXPECT_EQ(1U, observer.effective_connection_types().size());
   histogram_tester.ExpectUniqueSample("NQE.MainFrame.EffectiveConnectionType",
                                       EFFECTIVE_CONNECTION_TYPE_2G, 1);
@@ -1678,14 +1678,14 @@ TEST_F(NetworkQualityEstimatorTest, TestRttThroughputObservers) {
                             &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
   request->Start();
-  base::RunLoop().Run();
+  test_delegate.RunUntilComplete();
 
   std::unique_ptr<URLRequest> request2(
       context.CreateRequest(estimator.GetEchoURL(), DEFAULT_PRIORITY,
                             &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   request2->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
   request2->Start();
-  base::RunLoop().Run();
+  test_delegate.RunUntilComplete();
 
   // Both RTT and downstream throughput should be updated.
   base::TimeDelta rtt;
@@ -1799,7 +1799,7 @@ TEST_F(NetworkQualityEstimatorTest, TestGlobalSocketWatcherThrottle) {
                             &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
   request->Start();
-  base::RunLoop().Run();
+  test_delegate.RunUntilComplete();
   EXPECT_EQ(1U, rtt_observer.observations().size());
   EXPECT_TRUE(tcp_watcher->ShouldNotifyUpdatedRTT());
 
@@ -1890,7 +1890,7 @@ TEST_F(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
     tick_clock.Advance(
         estimator.params()->socket_watchers_min_notification_interval());
 
-    base::RunLoop().Run();
+    test_delegate.RunUntilComplete();
 
     size_t after_count_tcp_rtt_observations = 0;
     for (const auto& observation : rtt_observer.observations()) {
@@ -2045,7 +2045,7 @@ TEST_F(NetworkQualityEstimatorTest, MAYBE_RecordAccuracy) {
                                 &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
       request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
       request->Start();
-      base::RunLoop().Run();
+      test_delegate.RunUntilComplete();
 
       if (accuracy_recording_delay != base::TimeDelta()) {
         tick_clock.Advance(accuracy_recording_delay);
@@ -2284,7 +2284,7 @@ TEST_F(NetworkQualityEstimatorTest,
                               &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
     request->Start();
-    base::RunLoop().Run();
+    test_delegate.RunUntilComplete();
 
     EXPECT_EQ(i, estimator.GetEffectiveConnectionType());
 

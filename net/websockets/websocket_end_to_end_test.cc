@@ -372,9 +372,7 @@ TEST_F(WebSocketEndToEndTest, MAYBE_HttpsProxyUsed) {
     std::unique_ptr<URLRequest> request(context_.CreateRequest(
         http_page, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     request->Start();
-    // TestDelegate exits the message loop when the request completes by
-    // default.
-    base::RunLoop().Run();
+    delegate.RunUntilComplete();
     EXPECT_TRUE(delegate.auth_required_called());
   }
 
@@ -419,8 +417,7 @@ TEST_F(WebSocketEndToEndTest, HstsHttpsToWebSocket) {
   std::unique_ptr<URLRequest> request(context_.CreateRequest(
       https_page, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   request->Start();
-  // TestDelegate exits the message loop when the request completes.
-  base::RunLoop().Run();
+  delegate.RunUntilComplete();
   EXPECT_EQ(OK, delegate.request_status());
 
   // Check HSTS with ws:
@@ -453,8 +450,7 @@ TEST_F(WebSocketEndToEndTest, HstsWebSocketToHttps) {
   std::unique_ptr<URLRequest> request(context_.CreateRequest(
       http_page, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   request->Start();
-  // TestDelegate exits the message loop when the request completes.
-  base::RunLoop().Run();
+  delegate.RunUntilComplete();
   EXPECT_EQ(OK, delegate.request_status());
   EXPECT_TRUE(request->url().SchemeIs("https"));
 }

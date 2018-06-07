@@ -263,14 +263,13 @@ TEST_F(URLRequestQuicTest, TestGetRequest) {
 
   request->Start();
   ASSERT_TRUE(request->is_pending());
-  base::RunLoop().Run();
+  delegate.RunUntilComplete();
 
   EXPECT_TRUE(request->status().is_success());
   EXPECT_EQ(kHelloBodyValue, delegate.data_received());
 }
 
 TEST_F(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
-  base::RunLoop run_loop;
   Init();
 
   // Send a request to the pushed url: /kitten-1.jpg to pull the resource into
@@ -346,7 +345,6 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
 }
 
 TEST_F(URLRequestQuicTest, CancelPushIfCached_AllCached) {
-  base::RunLoop run_loop;
   Init();
 
   // Send a request to the pushed url: /kitten-1.jpg to pull the resource into
@@ -438,7 +436,6 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached_AllCached) {
 }
 
 TEST_F(URLRequestQuicTest, DoNotCancelPushIfNotFoundInCache) {
-  base::RunLoop run_loop;
   Init();
 
   // Send a request to /index2.hmtl which pushes /kitten-1.jpg and /favicon.ico
