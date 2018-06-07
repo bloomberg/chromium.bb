@@ -10,13 +10,18 @@
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
+#include "components/consent_auditor/consent_auditor.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -109,6 +114,23 @@ void ArcPlayStoreEnabledPreferenceHandler::OnPreferenceChanged() {
       auto* chrome_launcher_controller = ChromeLauncherController::instance();
       if (chrome_launcher_controller)
         chrome_launcher_controller->UnpinAppWithID(kPlayStoreAppId);
+
+      // Tell Consent Auditor that the Play Store consent was revoked.
+      SigninManagerBase* signin_manager =
+          SigninManagerFactory::GetForProfile(profile_);
+      // TODO(crbug.com/850297): Fix unrelated tests that are not properly
+      // setting up the state of signin_manager and enable the DCHECK instead of
+      // the conditional below.
+      // DCHECK(signin_manager->IsAuthenticated());
+      if (signin_manager->IsAuthenticated()) {
+        const std::string account_id =
+            signin_manager->GetAuthenticatedAccountId();
+        ConsentAuditorFactory::GetForProfile(profile_)->RecordGaiaConsent(
+            account_id, consent_auditor::Feature::PLAY_STORE,
+            {IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_MESSAGE},
+            IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_REMOVE,
+            consent_auditor::ConsentStatus::NOT_GIVEN);
+      }
     }
   }
 
