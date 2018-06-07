@@ -148,14 +148,10 @@ void ARImageTransport::SetupHardwareBuffers() {
     std::unique_ptr<SharedFrameBuffer> buffer =
         std::make_unique<SharedFrameBuffer>();
     // Remote resources
-    std::unique_ptr<gpu::MailboxHolder> holder =
-        std::make_unique<gpu::MailboxHolder>();
-    mailbox_bridge_->GenerateMailbox(holder->mailbox);
-    holder->texture_target = GL_TEXTURE_2D;
-    buffer->mailbox_holder = std::move(holder);
-
+    buffer->mailbox_holder = std::make_unique<gpu::MailboxHolder>();
+    buffer->mailbox_holder->texture_target = GL_TEXTURE_2D;
     buffer->remote_texture_id =
-        mailbox_bridge_->CreateMailboxTexture(buffer->mailbox_holder->mailbox);
+        mailbox_bridge_->CreateMailboxTexture(&buffer->mailbox_holder->mailbox);
 
     // Local resources
     glGenTextures(1, &buffer->local_texture_id);

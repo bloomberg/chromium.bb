@@ -615,13 +615,10 @@ void VrShellGl::WebVrPrepareSharedBuffer(const gfx::Size& size) {
     buffer = webxr_->GetAnimatingFrame()->shared_buffer.get();
 
     // Remote resources
-    auto holder = std::make_unique<gpu::MailboxHolder>();
-    DCHECK(holder);
-    mailbox_bridge_->GenerateMailbox(holder->mailbox);
-    holder->texture_target = GL_TEXTURE_2D;
+    buffer->mailbox_holder = std::make_unique<gpu::MailboxHolder>();
+    buffer->mailbox_holder->texture_target = GL_TEXTURE_2D;
     buffer->remote_texture =
-        mailbox_bridge_->CreateMailboxTexture(holder->mailbox);
-    buffer->mailbox_holder = std::move(holder);
+        mailbox_bridge_->CreateMailboxTexture(&buffer->mailbox_holder->mailbox);
 
     // Local resources
     glGenTextures(1, &buffer->local_texture);
