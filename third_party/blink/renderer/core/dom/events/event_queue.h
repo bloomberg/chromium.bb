@@ -43,9 +43,6 @@ class CORE_EXPORT EventQueue : public GarbageCollectedFinalized<EventQueue> {
   virtual void Trace(blink::Visitor* visitor) {}
   virtual bool EnqueueEvent(const base::Location&, Event*) = 0;
   virtual void CancelAllEvents() = 0;
-  // The accumulated and all the future events will be discarded, no events will
-  // be dispatched anymore.
-  virtual void Close() = 0;
 };
 
 }  // namespace blink

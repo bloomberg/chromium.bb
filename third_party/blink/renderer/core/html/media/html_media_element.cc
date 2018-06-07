@@ -3548,7 +3548,6 @@ void HTMLMediaElement::ContextDestroyed(ExecutionContext*) {
 
   // Close the async event queue so that no events are enqueued.
   CancelPendingEventsAndCallbacks();
-  async_event_queue_->Close();
 
   // Clear everything in the Media Element
   ClearMediaPlayer();

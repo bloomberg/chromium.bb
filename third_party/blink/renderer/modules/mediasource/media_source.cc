@@ -797,7 +797,6 @@ bool MediaSource::HasPendingActivity() const {
 }
 
 void MediaSource::ContextDestroyed(ExecutionContext*) {
-  async_event_queue_->Close();
   if (!IsClosed())
     SetReadyState(ClosedKeyword());
   web_media_source_.reset();

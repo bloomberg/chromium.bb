@@ -146,8 +146,6 @@ void WorkerOrWorkletGlobalScope::Dispose() {
   }
   RemoveAllEventListeners();
 
-  event_queue_->Close();
-
   script_controller_->Dispose();
   script_controller_.Clear();
 

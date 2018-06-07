@@ -41,7 +41,7 @@ MediaElementEventQueue::MediaElementEventQueue(EventTarget* owner)
       owner_(owner),
       is_closed_(false) {
   if (!GetExecutionContext())
-    DoClose(nullptr);
+    Close(nullptr);
 }
 
 MediaElementEventQueue::~MediaElementEventQueue() = default;
@@ -96,15 +96,6 @@ void MediaElementEventQueue::DispatchEvent(Event* event) {
                          "type", type);
 }
 
-void MediaElementEventQueue::Close() {
-  if (!GetExecutionContext()) {
-    DCHECK(is_closed_);
-    DCHECK(!pending_events_.size());
-    return;
-  }
-  DoClose(GetExecutionContext());
-}
-
 void MediaElementEventQueue::CancelAllEvents() {
   if (!GetExecutionContext()) {
     DCHECK(!pending_events_.size());
@@ -118,10 +109,10 @@ bool MediaElementEventQueue::HasPendingEvents() const {
 }
 
 void MediaElementEventQueue::ContextDestroyed(ExecutionContext* context) {
-  DoClose(context);
+  Close(context);
 }
 
-void MediaElementEventQueue::DoClose(ExecutionContext* context) {
+void MediaElementEventQueue::Close(ExecutionContext* context) {
   is_closed_ = true;
   DoCancelAllEvents(context);
   owner_.Clear();

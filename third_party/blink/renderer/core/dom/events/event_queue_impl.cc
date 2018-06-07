@@ -84,15 +84,6 @@ void EventQueueImpl::CancelAllEvents() {
   DoCancelAllEvents(GetExecutionContext());
 }
 
-void EventQueueImpl::Close() {
-  if (!GetExecutionContext()) {
-    DCHECK(is_closed_);
-    DCHECK(!queued_events_.size());
-    return;
-  }
-  DoClose(GetExecutionContext());
-}
-
 bool EventQueueImpl::RemoveEvent(Event* event) {
   auto found = queued_events_.find(event);
   if (found == queued_events_.end())
@@ -119,10 +110,10 @@ void EventQueueImpl::DispatchEvent(Event* event) {
 }
 
 void EventQueueImpl::ContextDestroyed(ExecutionContext* context) {
-  DoClose(context);
+  Close(context);
 }
 
-void EventQueueImpl::DoClose(ExecutionContext* context) {
+void EventQueueImpl::Close(ExecutionContext* context) {
   is_closed_ = true;
   DoCancelAllEvents(context);
 }
