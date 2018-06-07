@@ -27,7 +27,7 @@ class ManagePasswordsIconViews : public ManagePasswordsIconView,
 
   // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
-  bool Refresh() override;
+  bool Update() override;
   void OnExecuting(PageActionIconView::ExecuteSource source) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;

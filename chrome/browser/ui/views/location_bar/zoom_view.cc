@@ -21,13 +21,13 @@ ZoomView::ZoomView(LocationBarView::Delegate* location_bar_delegate,
     : PageActionIconView(nullptr, 0, delegate),
       location_bar_delegate_(location_bar_delegate),
       icon_(&kZoomMinusIcon) {
-  Update(nullptr);
+  UpdateWithController(nullptr);
 }
 
 ZoomView::~ZoomView() {
 }
 
-void ZoomView::Update(zoom::ZoomController* zoom_controller) {
+void ZoomView::UpdateWithController(zoom::ZoomController* zoom_controller) {
   if (!zoom_controller ||
       (!ZoomBubbleView::GetZoomBubble() &&
        zoom_controller->IsAtDefaultZoom()) ||

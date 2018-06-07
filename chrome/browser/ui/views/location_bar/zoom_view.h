@@ -26,7 +26,7 @@ class ZoomView : public PageActionIconView {
 
   // Updates the image and its tooltip appropriately, hiding or showing the icon
   // as needed.
-  void Update(zoom::ZoomController* zoom_controller);
+  void UpdateWithController(zoom::ZoomController* zoom_controller);
 
  protected:
   // PageActionIconView:

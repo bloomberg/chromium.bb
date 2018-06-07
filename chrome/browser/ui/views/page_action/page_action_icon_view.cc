@@ -87,7 +87,7 @@ void PageActionIconView::OnBubbleWidgetCreated(views::Widget* bubble_widget) {
     SetHighlighted(true);
 }
 
-bool PageActionIconView::Refresh() {
+bool PageActionIconView::Update() {
   return false;
 }
 

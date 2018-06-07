@@ -39,7 +39,7 @@ views::BubbleDialogDelegateView* SaveCardIconView::GetBubble() const {
       controller->save_card_bubble_view());
 }
 
-bool SaveCardIconView::Refresh() {
+bool SaveCardIconView::Update() {
   if (!GetWebContents())
     return false;
 
