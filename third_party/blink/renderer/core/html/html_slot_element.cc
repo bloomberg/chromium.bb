@@ -442,8 +442,30 @@ void HTMLSlotElement::RemovedFrom(ContainerNode* insertion_point) {
   // ContainingShadowRoot() is okay to use here because 1) It doesn't use
   // kIsInShadowTreeFlag flag, and 2) TreeScope has been alreay updated for the
   // slot.
-  if (insertion_point->IsInV1ShadowTree() && !ContainingShadowRoot()) {
-    // This slot was in a shadow tree and got disconnected from the shadow tree
+  if (ShadowRoot* shadow_root = ContainingShadowRoot()) {
+    // In this case, the shadow host (or it's shadow-inclusive ancestor) was
+    // removed orginally. In the above example, (this slot == s2) and
+    // (shadow_root == sr2). The shadow tree (sr2)'s structure didn't change at
+    // all.
+    if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
+      if (shadow_root->NeedsSlotAssignmentRecalc()) {
+        // Need to clear assigned_nodes here.
+        // Without that, a cyclic detach would happen, if one of the
+        // assinged_nodes_ becomes a shadow-including ancestor of this slot by a
+        // series of DOM mutations. See http://crbug.com/849599 for details.
+        ClearAssignedNodesAndFlatTreeChildren();
+      } else {
+        // We don't need to clear assigned_nodes here. That's an important
+        // optimization.
+      }
+    } else {
+      ClearDistribution();
+    }
+  } else if (insertion_point->IsInV1ShadowTree()) {
+    // This slot was in a shadow tree and got disconnected from the shadow
+    // tree.
+    // In the above examle, (this slot == s1), (insertion point == d)
+    // and (insertion_point->ContainingShadowRoot() == sr1)
     insertion_point->ContainingShadowRoot()->GetSlotAssignment().DidRemoveSlot(
         *this);
     if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
@@ -451,6 +473,8 @@ void HTMLSlotElement::RemovedFrom(ContainerNode* insertion_point) {
     } else {
       ClearDistribution();
     }
+  } else {
+    DCHECK(assigned_nodes_.IsEmpty());
   }
 
   HTMLElement::RemovedFrom(insertion_point);
