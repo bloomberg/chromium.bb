@@ -129,6 +129,15 @@ void UiInputManager::HandleInput(base::TimeTicks current_time,
   previous_button_state_ = controller_model.touchpad_button_state;
 }
 
+void UiInputManager::OnPause() {
+  if (hover_target_id_) {
+    UiElement* prev_hovered = scene_->GetUiElementById(hover_target_id_);
+    if (prev_hovered)
+      prev_hovered->OnHoverLeave();
+    hover_target_id_ = 0;
+  }
+}
+
 void UiInputManager::SendFlingCancel(GestureList* gesture_list,
                                      const gfx::PointF& target_point) {
   if (!fling_target_id_) {

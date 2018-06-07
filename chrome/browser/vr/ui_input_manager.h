@@ -57,6 +57,8 @@ class VR_EXPORT UiInputManager {
                    ReticleModel* reticle_model,
                    GestureList* gesture_list);
 
+  void OnPause();
+
   // Text input related.
   void RequestFocus(int element_id);
   void RequestUnfocus(int element_id);
