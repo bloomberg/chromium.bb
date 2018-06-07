@@ -161,7 +161,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       auth_manager_(std::make_unique<SyncAuthManager>(
           &sync_prefs_,
           signin_ ? signin_->GetIdentityManager() : nullptr,
-          init_params.oauth2_token_service,
           base::BindRepeating(&ProfileSyncService::AccountStateChanged,
                               base::Unretained(this)),
           base::BindRepeating(&ProfileSyncService::CredentialsChanged,
