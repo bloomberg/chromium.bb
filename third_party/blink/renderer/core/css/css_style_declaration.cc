@@ -155,16 +155,8 @@ String CSSStyleDeclaration::AnonymousNamedGetter(const AtomicString& name) {
   // Do not handle non-property names.
   if (!unresolved_property)
     return String();
-  CSSPropertyID resolved_property = resolveCSSPropertyID(unresolved_property);
 
-  const CSSValue* css_value = GetPropertyCSSValueInternal(resolved_property);
-  if (css_value) {
-    const String css_text = css_value->CssText();
-    if (!css_text.IsNull())
-      return css_text;
-  }
-
-  return GetPropertyValueInternal(resolved_property);
+  return GetPropertyValueInternal(resolveCSSPropertyID(unresolved_property));
 }
 
 bool CSSStyleDeclaration::AnonymousNamedSetter(ScriptState* script_state,
