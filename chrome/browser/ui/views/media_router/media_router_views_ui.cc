@@ -89,21 +89,13 @@ UIMediaSink MediaRouterViewsUI::ConvertToUISink(
     ui_sink.status_text = base::UTF8ToUTF16(route->description());
     ui_sink.route_id = route->media_route_id();
     ui_sink.state = UIMediaSinkState::CONNECTED;
-    ui_sink.allowed_actions = static_cast<int>(UICastAction::STOP);
   } else {
     ui_sink.state = current_route_request() &&
                             sink.sink.id() == current_route_request()->sink_id
                         ? UIMediaSinkState::CONNECTING
                         : UIMediaSinkState::AVAILABLE;
-    if (base::ContainsKey(sink.cast_modes, PRESENTATION) ||
-        base::ContainsKey(sink.cast_modes, TAB_MIRROR)) {
-      ui_sink.allowed_actions |= static_cast<int>(UICastAction::CAST_TAB);
-    }
-    if (base::ContainsKey(sink.cast_modes, DESKTOP_MIRROR))
-      ui_sink.allowed_actions |= static_cast<int>(UICastAction::CAST_DESKTOP);
-    // TODO(takumif): Add support for local media casting.
+    ui_sink.cast_modes = sink.cast_modes;
   }
-  DCHECK(ui_sink.allowed_actions);
   return ui_sink;
 }
 

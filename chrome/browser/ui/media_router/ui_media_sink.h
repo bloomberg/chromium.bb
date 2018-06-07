@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_MEDIA_ROUTER_UI_MEDIA_SINK_H_
 
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/media_router/media_cast_mode.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "url/gurl.h"
 
@@ -23,17 +24,6 @@ enum class UIMediaSinkState {
   UNAVAILABLE,
   // Sink is in an error state.
   ERROR_STATE
-};
-
-// A bitmask of this enum is used to indicate what actions can be performed on a
-// sink.
-enum class UICastAction {
-  // Start Casting the presentation for the current tab or the tab itself.
-  CAST_TAB = 1 << 1,
-  // Start Casting the entire desktop.
-  CAST_DESKTOP = 1 << 2,
-  // Stop Casting.
-  STOP = 1 << 3,
 };
 
 struct UIMediaSink {
@@ -77,9 +67,9 @@ struct UIMediaSink {
   // This is a nullopt if there are no issues with the sink.
   base::Optional<int> tooltip_article_id;
 
-  // Bitmask of UICastAction values that determine which actions are supported
-  // by this sink.
-  int allowed_actions = 0;
+  // Set of Cast Modes (e.g. presentation, desktop mirroring) supported by the
+  // sink.
+  CastModeSet cast_modes;
 };
 
 }  // namespace media_router

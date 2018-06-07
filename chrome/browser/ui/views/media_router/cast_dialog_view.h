@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_UI_VIEWS_MEDIA_ROUTER_CAST_DIALOG_VIEW_H_
 
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/menu/menu_runner.h"
 
 namespace media_router {
 
@@ -19,7 +21,8 @@ struct UIMediaSink;
 // CastDialogModel.
 class CastDialogView : public views::BubbleDialogDelegateView,
                        public views::ButtonListener,
-                       public CastDialogController::Observer {
+                       public CastDialogController::Observer,
+                       public ui::SimpleMenuModel::Delegate {
  public:
   // Instantiates and shows the singleton dialog. The dialog must not be
   // currently shown.
@@ -43,8 +46,10 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // ui::DialogModel:
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   int GetDialogButtons() const override;
+  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
 
   // views::DialogDelegate:
+  views::View* CreateExtraView() override;
   bool Accept() override;
   bool Close() override;
 
@@ -58,9 +63,23 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
 
+  // ui::SimpleMenuModel::Delegate:
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  void ExecuteCommand(int command_id, int event_flags) override;
+
   // Called by tests.
   const std::vector<CastDialogSinkButton*>& sink_buttons_for_test() const {
     return sink_buttons_;
+  }
+  views::Button* alternative_sources_button_for_test() {
+    return alternative_sources_button_;
+  }
+  ui::SimpleMenuModel* alternative_sources_menu_model_for_test() {
+    return alternative_sources_menu_model_.get();
+  }
+  views::MenuRunner* alternative_sources_menu_runner_for_test() {
+    return alternative_sources_menu_runner_.get();
   }
 
  private:
@@ -78,6 +97,9 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   void PopulateScrollView(const CastDialogModel& model);
 
   views::View* CreateSinkListView(const std::vector<UIMediaSink>& sinks);
+
+  // Show the pull-down options to cast sources other than tabs.
+  void ShowAlternativeSources();
 
   void SelectSinkAtIndex(size_t index);
 
@@ -103,6 +125,12 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // list is updated the scroll position gets reset, so we must manually restore
   // it to this value.
   int scroll_position_ = 0;
+
+  // The alternative sources menu shows items that start casting sources other
+  // than tabs.
+  views::Button* alternative_sources_button_ = nullptr;
+  std::unique_ptr<ui::SimpleMenuModel> alternative_sources_menu_model_;
+  std::unique_ptr<views::MenuRunner> alternative_sources_menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CastDialogView);
 };

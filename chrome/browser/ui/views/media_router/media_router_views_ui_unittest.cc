@@ -99,8 +99,8 @@ TEST_F(MediaRouterViewsUITest, NotifyObserver) {
         EXPECT_EQ(sink.id(), ui_sink.id);
         EXPECT_EQ(base::UTF8ToUTF16(sink.name()), ui_sink.friendly_name);
         EXPECT_EQ(UIMediaSinkState::AVAILABLE, ui_sink.state);
-        EXPECT_EQ(static_cast<int>(UICastAction::CAST_TAB),
-                  ui_sink.allowed_actions);
+        EXPECT_TRUE(
+            base::ContainsKey(ui_sink.cast_modes, MediaCastMode::TAB_MIRROR));
         EXPECT_EQ(sink.icon_type(), ui_sink.icon_type);
       })));
   ui_->OnResultsUpdated({sink_with_cast_modes});
@@ -113,8 +113,6 @@ TEST_F(MediaRouterViewsUITest, NotifyObserver) {
             const UIMediaSink& ui_sink = model.media_sinks[0];
             EXPECT_EQ(sink.id(), ui_sink.id);
             EXPECT_EQ(UIMediaSinkState::CONNECTED, ui_sink.state);
-            EXPECT_EQ(static_cast<int>(UICastAction::STOP),
-                      ui_sink.allowed_actions);
             EXPECT_EQ(route.media_route_id(), ui_sink.route_id);
           })));
   ui_->OnRoutesUpdated({route}, {});
