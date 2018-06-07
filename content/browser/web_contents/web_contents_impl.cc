@@ -5179,6 +5179,11 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
   if (IsFullscreenForCurrentTab())
     ExitFullscreenMode(false);
 
+  // Ensure any video in Picture-in-Picture is exited in the |delegate_| since
+  // a crashed renderer may not have made a clean exit.
+  if (HasPictureInPictureVideo())
+    ExitPictureInPicture();
+
   // Cancel any visible dialogs so they are not left dangling over the sad tab.
   CancelActiveAndPendingDialogs();
 
