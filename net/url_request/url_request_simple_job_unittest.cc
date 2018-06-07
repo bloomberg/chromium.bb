@@ -126,7 +126,7 @@ class URLRequestSimpleJobTest : public TestWithScopedTaskEnvironment {
     request_->Start();
 
     EXPECT_TRUE(request_->is_pending());
-    base::RunLoop().Run();
+    delegate_.RunUntilComplete();
     EXPECT_FALSE(request_->is_pending());
   }
 

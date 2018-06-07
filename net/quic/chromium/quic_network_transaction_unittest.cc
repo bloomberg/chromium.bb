@@ -5766,7 +5766,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullRequest) {
       &ssl_data_);
 
   request->Start();
-  base::RunLoop().Run();
+  delegate.RunUntilComplete();
 
   EXPECT_LT(0, request->GetTotalSentBytes());
   EXPECT_LT(0, request->GetTotalReceivedBytes());
@@ -5863,7 +5863,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
       &ssl_data_);
 
   request->Start();
-  base::RunLoop().Run();
+  delegate.RunUntilComplete();
 
   EXPECT_LT(0, request->GetTotalSentBytes());
   EXPECT_LT(0, request->GetTotalReceivedBytes());

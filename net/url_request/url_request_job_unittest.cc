@@ -262,7 +262,7 @@ TEST_F(URLRequestJobTest, TransactionNoFilter) {
   req->set_method("GET");
   req->Start();
 
-  base::RunLoop().Run();
+  d.RunUntilComplete();
 
   EXPECT_FALSE(d.request_failed());
   EXPECT_EQ(200, req->GetResponseCode());
@@ -286,7 +286,7 @@ TEST_F(URLRequestJobTest, TransactionNotifiedWhenDone) {
   req->set_method("GET");
   req->Start();
 
-  base::RunLoop().Run();
+  d.RunUntilComplete();
 
   EXPECT_TRUE(d.response_completed());
   EXPECT_EQ(OK, d.request_status());
@@ -313,7 +313,7 @@ TEST_F(URLRequestJobTest, SyncTransactionNotifiedWhenDone) {
   req->set_method("GET");
   req->Start();
 
-  base::RunLoop().Run();
+  d.RunUntilComplete();
 
   EXPECT_TRUE(d.response_completed());
   EXPECT_EQ(OK, d.request_status());
@@ -342,7 +342,7 @@ TEST_F(URLRequestJobTest, SyncSlowTransaction) {
   req->set_method("GET");
   req->Start();
 
-  base::RunLoop().Run();
+  d.RunUntilComplete();
 
   EXPECT_TRUE(d.response_completed());
   EXPECT_EQ(OK, d.request_status());
@@ -367,7 +367,7 @@ TEST_F(URLRequestJobTest, RedirectTransactionNotifiedWhenDone) {
   req->set_method("GET");
   req->Start();
 
-  base::RunLoop().Run();
+  d.RunUntilComplete();
 
   EXPECT_TRUE(network_layer.done_reading_called());
 
@@ -433,7 +433,7 @@ TEST_F(URLRequestJobTest, RedirectTransactionWithReferrerPolicyHeader) {
     req->set_method("GET");
     req->Start();
 
-    base::RunLoop().Run();
+    d.RunUntilComplete();
 
     EXPECT_TRUE(network_layer.done_reading_called());
 
@@ -463,7 +463,7 @@ TEST_F(URLRequestJobTest, TransactionNotCachedWhenNetworkDelegateRedirects) {
   req->set_method("GET");
   req->Start();
 
-  base::RunLoop().Run();
+  d.RunUntilComplete();
 
   EXPECT_TRUE(network_layer.stop_caching_called());
 
@@ -487,7 +487,7 @@ TEST_F(URLRequestJobTest, EmptyBodySkipFilter) {
   req->set_method("GET");
   req->Start();
 
-  base::RunLoop().Run();
+  d.RunUntilComplete();
 
   EXPECT_FALSE(d.request_failed());
   EXPECT_EQ(200, req->GetResponseCode());
@@ -512,7 +512,7 @@ TEST_F(URLRequestJobTest, InvalidContentGZipTransaction) {
   req->set_method("GET");
   req->Start();
 
-  base::RunLoop().Run();
+  d.RunUntilComplete();
 
   // Request failed indicates the request failed before headers were received,
   // so should be false.
@@ -541,7 +541,7 @@ TEST_F(URLRequestJobTest, SlowFilterRead) {
   req->set_method("GET");
   req->Start();
 
-  base::RunLoop().Run();
+  d.RunUntilComplete();
 
   EXPECT_FALSE(d.request_failed());
   EXPECT_EQ(200, req->GetResponseCode());

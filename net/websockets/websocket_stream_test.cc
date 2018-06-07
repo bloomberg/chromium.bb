@@ -288,7 +288,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
         TRAFFIC_ANNOTATION_FOR_TESTS);
     request->Start();
     EXPECT_TRUE(request->is_pending());
-    base::RunLoop().Run();
+    delegate.RunUntilComplete();
     EXPECT_FALSE(request->is_pending());
 
     CreateAndConnectStream(socket_url, sub_protocols, Origin(),
