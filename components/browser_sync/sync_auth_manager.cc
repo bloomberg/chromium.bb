@@ -287,9 +287,11 @@ void SyncAuthManager::RequestAccessToken() {
   if (!access_token_.empty()) {
     identity_manager_->RemoveAccessTokenFromCache(GetAuthenticatedAccountInfo(),
                                                   oauth2_scopes, access_token_);
+
+    access_token_.clear();
+    credentials_changed_callback_.Run();
   }
 
-  access_token_.clear();
 
   token_status_.token_request_time = base::Time::Now();
   token_status_.token_receive_time = base::Time();
