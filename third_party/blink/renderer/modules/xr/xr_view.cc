@@ -41,6 +41,8 @@ void XRView::UpdateProjectionMatrixFromRawValues(
   float inverse_near_far = 1.0f / (near_depth - far_depth);
   out[10] = (near_depth + far_depth) * inverse_near_far;
   out[14] = (2.0f * far_depth * near_depth) * inverse_near_far;
+
+  inv_projection_dirty_ = true;
 }
 
 void XRView::UpdateProjectionMatrixFromFoV(float up_rad,
