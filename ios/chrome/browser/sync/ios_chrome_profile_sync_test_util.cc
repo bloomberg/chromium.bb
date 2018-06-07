@@ -16,7 +16,6 @@
 #include "components/sync/driver/signin_manager_wrapper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
 #include "ios/chrome/common/channel_info.h"
@@ -32,8 +31,6 @@ CreateProfileSyncServiceParamsForTest(
       ios::SigninManagerFactory::GetForBrowserState(browser_state));
   init_params.signin_scoped_device_id_callback =
       base::BindRepeating([]() { return std::string(); });
-  init_params.oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state);
   init_params.start_behavior = browser_sync::ProfileSyncService::MANUAL_START;
   init_params.sync_client =
       sync_client ? std::move(sync_client)

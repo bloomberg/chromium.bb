@@ -255,7 +255,6 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
       identity_manager(), signin_manager());
   init_params.signin_scoped_device_id_callback =
       base::BindRepeating([]() { return std::string(); });
-  init_params.oauth2_token_service = auth_service();
   init_params.network_time_update_callback = base::DoNothing();
   if (!base_directory_.IsValid())
     EXPECT_TRUE(base_directory_.CreateUniqueTempDir());
