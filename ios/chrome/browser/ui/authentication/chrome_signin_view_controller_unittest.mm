@@ -100,6 +100,7 @@ class FakeConsentAuditor : public consent_auditor::ConsentAuditor {
                      const std::string& app_version,
                      const std::string& app_locale)
       : ConsentAuditor(pref_service,
+                       /*consent_sync_bridge=*/nullptr,
                        user_event_service,
                        app_version,
                        app_locale) {}

@@ -12,9 +12,10 @@ FakeConsentAuditor::FakeConsentAuditor(
     PrefService* pref_service,
     syncer::UserEventService* user_event_service)
     : ConsentAuditor(pref_service,
+                     /*consent_sync_bridge=*/nullptr,
                      user_event_service,
-                     std::string(),
-                     std::string()) {}
+                     /*app_version=*/std::string(),
+                     /*app_locale=*/std::string()) {}
 
 FakeConsentAuditor::~FakeConsentAuditor() {}
 

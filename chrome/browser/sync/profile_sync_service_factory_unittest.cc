@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
@@ -17,6 +18,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/data_type_controller.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -90,7 +92,9 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::SUPERVISED_USER_WHITELISTS);
     datatypes.push_back(syncer::TYPED_URLS);
     datatypes.push_back(syncer::USER_EVENTS);
-    // TODO(vitaliii): Add USER_CONSENTS, when the type is enabled by default.
+    if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
+      datatypes.push_back(syncer::USER_CONSENTS);
+    }
 
     return datatypes;
   }

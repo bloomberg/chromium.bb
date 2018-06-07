@@ -9,11 +9,13 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/data_type_controller.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -64,8 +66,9 @@ class ProfileSyncServiceFactoryTest : public PlatformTest {
     datatypes.push_back(syncer::PROXY_TABS);
     datatypes.push_back(syncer::TYPED_URLS);
     datatypes.push_back(syncer::USER_EVENTS);
-    // TODO(crbug.com/840357): Add USER_CONSENTS, when the type is enabled by
-    // default.
+    if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
+      datatypes.push_back(syncer::USER_CONSENTS);
+    }
 
     return datatypes;
   }
