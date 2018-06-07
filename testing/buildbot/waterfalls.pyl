@@ -2463,9 +2463,7 @@
       },
       'Win 10 Fast Ring': {
         'test_suites': {
-          # TODO(kbr): it's weird that this has the most in common with the
-          # clang testers' test suites.
-          'gtest_tests': 'chromium_win_10_fast_ring_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
         'use_swarming': False,
       },
