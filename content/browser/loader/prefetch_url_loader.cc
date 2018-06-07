@@ -29,6 +29,7 @@ PrefetchURLLoader::PrefetchURLLoader(
     : frame_tree_node_id_getter_(frame_tree_node_id_getter),
       url_(resource_request.url),
       report_raw_headers_(resource_request.report_raw_headers),
+      load_flags_(resource_request.load_flags),
       network_loader_factory_(std::move(network_loader_factory)),
       client_binding_(this),
       forwarding_client_(std::move(client)),
@@ -92,7 +93,7 @@ void PrefetchURLLoader::OnReceiveResponse(
     // Note that after this point this doesn't directly get upcalls from the
     // network. (Until |this| calls the handler's FollowRedirect.)
     web_package_prefetch_handler_ = std::make_unique<WebPackagePrefetchHandler>(
-        frame_tree_node_id_getter_, report_raw_headers_, response,
+        frame_tree_node_id_getter_, report_raw_headers_, load_flags_, response,
         std::move(loader_), client_binding_.Unbind(), network_loader_factory_,
         request_initiator_, url_, url_loader_throttles_getter_,
         resource_context_, request_context_getter_, this);

@@ -38,6 +38,7 @@ class WebPackageRequestHandler final : public NavigationLoaderInterceptor {
       int frame_tree_node_id,
       const base::UnguessableToken& devtools_navigation_token,
       bool report_raw_headers,
+      int load_flags,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
@@ -68,6 +69,7 @@ class WebPackageRequestHandler final : public NavigationLoaderInterceptor {
   const int frame_tree_node_id_;
   base::Optional<const base::UnguessableToken> devtools_navigation_token_;
   const bool report_raw_headers_;
+  const int load_flags_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;

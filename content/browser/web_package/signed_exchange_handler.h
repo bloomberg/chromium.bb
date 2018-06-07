@@ -72,6 +72,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
       std::unique_ptr<net::SourceStream> body,
       ExchangeHeadersCallback headers_callback,
       std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory,
+      int load_flags,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy);
   ~SignedExchangeHandler();
@@ -114,6 +115,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
 
   std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory_;
   std::unique_ptr<SignedExchangeCertFetcher> cert_fetcher_;
+  const int load_flags_;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 

@@ -86,6 +86,7 @@ WebPackageLoader::WebPackageLoader(
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
     url::Origin request_initiator,
     uint32_t url_loader_options,
+    int load_flags,
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
@@ -97,6 +98,7 @@ WebPackageLoader::WebPackageLoader(
       url_loader_client_binding_(this),
       request_initiator_(request_initiator),
       url_loader_options_(url_loader_options),
+      load_flags_(load_flags),
       devtools_proxy_(std::move(devtools_proxy)),
       url_loader_factory_(std::move(url_loader_factory)),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
@@ -231,8 +233,8 @@ void WebPackageLoader::OnStartLoadingResponseBody(
       content_type_, std::make_unique<DataPipeToSourceStream>(std::move(body)),
       base::BindOnce(&WebPackageLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
-      std::move(cert_fetcher_factory), std::move(request_context_getter_),
-      std::move(devtools_proxy_));
+      std::move(cert_fetcher_factory), load_flags_,
+      std::move(request_context_getter_), std::move(devtools_proxy_));
 }
 
 void WebPackageLoader::OnComplete(

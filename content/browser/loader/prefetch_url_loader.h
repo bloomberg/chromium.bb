@@ -94,6 +94,7 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   const base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
   const GURL url_;
   const bool report_raw_headers_;
+  const int load_flags_;
 
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
 

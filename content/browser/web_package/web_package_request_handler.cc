@@ -36,6 +36,7 @@ WebPackageRequestHandler::WebPackageRequestHandler(
     int frame_tree_node_id,
     const base::UnguessableToken& devtools_navigation_token,
     bool report_raw_headers,
+    int load_flags,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter)
@@ -45,6 +46,7 @@ WebPackageRequestHandler::WebPackageRequestHandler(
       frame_tree_node_id_(frame_tree_node_id),
       devtools_navigation_token_(devtools_navigation_token),
       report_raw_headers_(report_raw_headers),
+      load_flags_(load_flags),
       url_loader_factory_(url_loader_factory),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       request_context_getter_(std::move(request_context_getter)),
@@ -89,7 +91,7 @@ bool WebPackageRequestHandler::MaybeCreateLoaderForResponse(
   // to support SafeBrowsing checking of the content of the WebPackage.
   web_package_loader_ = std::make_unique<WebPackageLoader>(
       url_, response, std::move(client), url_loader->Unbind(),
-      std::move(request_initiator_), url_loader_options_,
+      std::move(request_initiator_), url_loader_options_, load_flags_,
       std::make_unique<SignedExchangeDevToolsProxy>(
           url_, response,
           base::BindRepeating([](int id) { return id; }, frame_tree_node_id_),
