@@ -98,14 +98,13 @@ void AppListControllerDelegateImpl::ActivateApp(
   // Platform apps treat activations as a launch. The app can decide whether to
   // show a new window or focus an existing window as it sees fit.
   if (extension->is_platform_app()) {
-    LaunchApp(profile, extension, source, event_flags,
-              display::kInvalidDisplayId);
+    LaunchApp(profile, extension, source, event_flags, GetAppListDisplayId());
     return;
   }
 
   ChromeLauncherController::instance()->ActivateApp(
       extension->id(), AppListSourceToLaunchSource(source), event_flags,
-      display::kInvalidDisplayId);
+      GetAppListDisplayId());
 
   if (!IsHomeLauncherEnabledInTabletMode())
     DismissView();
