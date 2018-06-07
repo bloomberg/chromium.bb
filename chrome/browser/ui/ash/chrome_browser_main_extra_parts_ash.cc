@@ -197,6 +197,12 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       chromeos::input_method::InputMethodManager::Get());
   ime_controller_client_->Init();
 
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  // Assistant has to be initialized before session_controller_client to avoid
+  // race of SessionChanged event and assistant_client initialization.
+  assistant_client_ = std::make_unique<AssistantClient>();
+#endif
+
   session_controller_client_ = std::make_unique<SessionControllerClient>();
   session_controller_client_->Init();
 
@@ -263,10 +269,6 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
         chromeos::NetworkHandler::Get()->network_state_handler(),
         chromeos::NetworkHandler::Get()->auto_connect_handler());
   }
-
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-  assistant_client_ = std::make_unique<AssistantClient>();
-#endif
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
@@ -288,9 +290,6 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 
   night_light_client_.reset();
   data_promo_notification_.reset();
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-  assistant_client_.reset();
-#endif
   chrome_launcher_controller_initializer_.reset();
 
   wallpaper_controller_client_.reset();
@@ -300,6 +299,9 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   system_tray_client_.reset();
   shell_state_client_.reset();
   session_controller_client_.reset();
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  assistant_client_.reset();
+#endif
   chrome_new_window_client_.reset();
   network_portal_notification_controller_.reset();
   media_client_.reset();
