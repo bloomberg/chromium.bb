@@ -113,9 +113,9 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
     base::WaitableEvent* event) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  std::unique_ptr<base::ScopedClosureRunner> scoped_runner;
+  base::ScopedClosureRunner scoped_runner;
   if (event) {
-    scoped_runner = std::make_unique<base::ScopedClosureRunner>(
+    scoped_runner.ReplaceClosure(
         base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
   }
 
