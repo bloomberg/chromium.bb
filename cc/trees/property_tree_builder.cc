@@ -433,6 +433,16 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
     source_offset = LayerParent(layer)->offset_to_transform_parent();
   }
 
+  // For a container of fixed position descendants, define for them their
+  // fixed-position transform parent as being this layer's transform node, or
+  // its transform parent's node if this layer won't have a node of its own.
+  //
+  // But if this layer is scrollable, then we point fixed position descendants
+  // to not be affected by this layer as it changes its scroll offset during
+  // a compositor thread scroll. We do this by pointing them to the direct
+  // parent of this layer, which acts as a proxy for this layer, without
+  // including scrolling, based on the assumption this layer has no transform
+  // itself when scrollable.
   if (IsContainerForFixedPositionLayers(layer) || is_root) {
     data_for_children->affected_by_outer_viewport_bounds_delta =
         layer->IsResizedByBrowserControls();
