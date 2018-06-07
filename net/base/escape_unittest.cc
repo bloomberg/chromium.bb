@@ -509,5 +509,18 @@ TEST(EscapeTest, EscapeExternalHandlerValue) {
             EscapeExternalHandlerValue("http://[2001:db8:0:1]:80"));
 }
 
+TEST(EscapeTest, ContainsEncodedBytes) {
+  EXPECT_FALSE(ContainsEncodedBytes("abc/def", {'/', '\\'}));
+  EXPECT_FALSE(ContainsEncodedBytes("abc%2Fdef", {'%'}));
+  EXPECT_TRUE(ContainsEncodedBytes("abc%252Fdef", {'%'}));
+  EXPECT_TRUE(ContainsEncodedBytes("abc%2Fdef", {'/', '\\'}));
+  EXPECT_TRUE(ContainsEncodedBytes("abc%5Cdef", {'/', '\\'}));
+  EXPECT_TRUE(ContainsEncodedBytes("abc%2fdef", {'/', '\\'}));
+
+  // Should be looking for byte values, not UTF-8 character values.
+  EXPECT_TRUE(ContainsEncodedBytes("caf%C3%A9", {'\xc3'}));
+  EXPECT_FALSE(ContainsEncodedBytes("caf%C3%A9", {'\xe9'}));
+}
+
 }  // namespace
 }  // namespace net

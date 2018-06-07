@@ -4,6 +4,8 @@
 
 #include "net/base/filename_util.h"
 
+#include <set>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -97,10 +99,28 @@ bool FileURLToFilePath(const GURL& url, base::FilePath* file_path) {
   if (path.empty())
     return false;
 
-  // GURL stores strings as percent-encoded 8-bit, this will undo if possible.
-  path = UnescapeURLComponent(
-      path, UnescapeRule::SPACES |
-                UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+  // "%2F" ('/') results in failure, because it represents a literal '/'
+  // character in a path segment (not a path separator). If this were decoded,
+  // it would be interpreted as a path separator on both POSIX and Windows (note
+  // that Firefox *does* decode this, but it was decided on
+  // https://crbug.com/585422 that this represents a potential security risk).
+  // It isn't correct to keep it as "%2F", so this just fails. This is fine,
+  // because '/' is not a valid filename character on either POSIX or Windows.
+  std::set<unsigned char> illegal_encoded_bytes{'/'};
+
+#if defined(OS_WIN)
+  // "%5C" ('\\') on Windows results in failure, for the same reason as '/'
+  // above. On POSIX, "%5C" simply decodes as '\\', a valid filename character.
+  illegal_encoded_bytes.insert('\\');
+#endif
+
+  if (ContainsEncodedBytes(path, illegal_encoded_bytes))
+    return false;
+
+  // Unescape all percent-encoded sequences, including blacklisted-for-display
+  // characters, control characters and invalid UTF-8 byte sequences.
+  // Percent-encoded bytes are not meaningful in a file system.
+  path = UnescapeBinaryURLComponent(path);
 
 #if defined(OS_WIN)
   if (base::IsStringUTF8(path)) {
