@@ -26,6 +26,7 @@ SettingsA11ySignOut.prototype = {
   // Include files that define the mocha tests.
   extraLibraries: SettingsAccessibilityTest.prototype.extraLibraries.concat([
     '../../test_browser_proxy.js',
+    '../sync_test_util.js',
     '../test_sync_browser_proxy.js',
   ]),
 };
@@ -59,8 +60,15 @@ AccessibilityTest.define('SettingsA11ySignOut', {
     this.peoplePage = settingsUi.$$('settings-main')
                           .$$('settings-basic-page')
                           .$$('settings-people-page');
-
     assert(!!this.peoplePage);
+
+    if (this.peoplePage.diceEnabled_) {
+      sync_test_util.simulateSyncStatus({
+        signedIn: false,
+        signinAllowed: true,
+        syncSystemEnabled: true,
+      });
+    }
   },
   /** @override */
   tests: {
@@ -68,7 +76,20 @@ AccessibilityTest.define('SettingsA11ySignOut', {
       return this.browserProxy.getSyncStatus().then((syncStatus) => {
         // Navigate to the sign out dialog.
         Polymer.dom.flush();
-        const disconnectButton = this.peoplePage.$$('#disconnectButton');
+        disconnectButton = null;
+        if (this.peoplePage.diceEnabled_) {
+          const syncAccountControl =
+              this.peoplePage.$$('settings-sync-account-control');
+          syncAccountControl.syncStatus = {
+            signedIn: true,
+            signedInUsername: 'bar@bar.com',
+            statusAction: settings.StatusAction.NO_ACTION,
+            hasError: false,
+          };
+          disconnectButton = syncAccountControl.$$('#turn-off');
+        } else {
+          disconnectButton = this.peoplePage.$$('#disconnectButton');
+        }
         assert(!!disconnectButton);
         MockInteractions.tap(disconnectButton);
         Polymer.dom.flush();
