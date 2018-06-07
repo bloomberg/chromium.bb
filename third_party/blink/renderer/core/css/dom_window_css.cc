@@ -50,9 +50,10 @@ bool DOMWindowCSS::supports(const ExecutionContext* execution_context,
         MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
     bool is_animation_tainted = false;
     return CSSParser::ParseValueForCustomProperty(
-        dummy_style, "--valid", nullptr, value, false,
-        execution_context->GetSecureContextMode(), nullptr,
-        is_animation_tainted);
+               dummy_style, "--valid", nullptr, value, false,
+               execution_context->GetSecureContextMode(), nullptr,
+               is_animation_tainted)
+        .did_parse;
   }
 
 #if DCHECK_IS_ON()
@@ -64,7 +65,8 @@ bool DOMWindowCSS::supports(const ExecutionContext* execution_context,
   MutableCSSPropertyValueSet* dummy_style =
       MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
   return CSSParser::ParseValue(dummy_style, unresolved_property, value, false,
-                               execution_context->GetSecureContextMode());
+                               execution_context->GetSecureContextMode())
+      .did_parse;
 }
 
 bool DOMWindowCSS::supports(const ExecutionContext* execution_context,
